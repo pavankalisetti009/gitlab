@@ -5,7 +5,6 @@ import VueApollo from 'vue-apollo';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import lockPathMutation from '~/repository/mutations/lock_path.mutation.graphql';
-import projectInfoQuery from 'ee_component/repository/queries/project_info.query.graphql';
 import { projectMock, userPermissionsMock } from 'ee_jest/repository/mock_data';
 import LockFileDropdownItem from 'ee_component/repository/components/header_area/lock_file_dropdown_item.vue';
 import { createAlert } from '~/alert';
@@ -17,22 +16,11 @@ describe('LockFileDropdownItem component', () => {
   let wrapper;
   let fakeApollo;
 
-  const projectInfoQueryMockResolver = jest
-    .fn()
-    .mockResolvedValue({ data: { project: projectMock } });
-  const projectInfoQueryErrorResolver = jest.fn().mockRejectedValue(new Error('Request failed'));
+  const lockPathMutationResolver = jest.fn();
 
-  const lochPathMutationResolver = jest.fn();
-
-  const createComponent = ({
-    mutationResolver = lochPathMutationResolver,
-    projectInfoResolver = projectInfoQueryMockResolver,
-  } = {}) => {
+  const createComponent = ({ props = {}, mutationResolver = lockPathMutationResolver } = {}) => {
     window.gon = { current_username: projectMock.pathLocks.nodes[0].user.username };
-    fakeApollo = createMockApollo([
-      [projectInfoQuery, projectInfoResolver],
-      [lockPathMutation, mutationResolver],
-    ]);
+    fakeApollo = createMockApollo([[lockPathMutation, mutationResolver]]);
 
     wrapper = shallowMount(LockFileDropdownItem, {
       apolloProvider: fakeApollo,
@@ -40,6 +28,10 @@ describe('LockFileDropdownItem component', () => {
         name: 'locked_file.js',
         path: 'some/path/locked_file.js',
         projectPath: 'some/project/path',
+        isLoading: false,
+        userPermissions: userPermissionsMock,
+        pathLocks: projectMock.pathLocks,
+        ...props,
       },
     });
   };
@@ -60,19 +52,13 @@ describe('LockFileDropdownItem component', () => {
   });
 
   it('renders disabled the lock dropdown item if user can not lock a file', async () => {
-    const projectWithNoPushPermission = {
-      data: {
-        project: {
-          ...projectMock,
-          userPermissions: {
-            ...userPermissionsMock,
-            pushCode: false,
-          },
+    createComponent({
+      props: {
+        userPermissions: {
+          ...userPermissionsMock,
+          pushCode: false,
         },
       },
-    };
-    createComponent({
-      projectInfoResolver: jest.fn().mockResolvedValue(projectWithNoPushPermission),
     });
     await waitForPromises();
 
@@ -82,12 +68,11 @@ describe('LockFileDropdownItem component', () => {
   });
 
   it('renders disabled until query fetches projects info', async () => {
-    const projectInfoQueryLoading = jest.fn().mockResolvedValue(new Promise(() => {}));
     createComponent({
-      projectInfoResolver: projectInfoQueryLoading,
+      props: { isLoading: true },
     });
     await waitForPromises();
-    expect(projectInfoQueryLoading).toHaveBeenCalled();
+
     expect(findLockFileDropdownItem().props('item')).toMatchObject({
       extraAttrs: { disabled: true },
     });
@@ -110,17 +95,8 @@ describe('LockFileDropdownItem component', () => {
   });
 
   it('renders the Lock dropdown item label, when file is not locked', async () => {
-    const projectWithNoLocks = {
-      data: {
-        project: {
-          ...projectMock,
-          pathLocks: { __typename: 'PathLockConnection', nodes: [] },
-        },
-      },
-    };
-
     createComponent({
-      projectInfoResolver: jest.fn().mockResolvedValue(projectWithNoLocks),
+      props: { pathLocks: { __typename: 'PathLockConnection', nodes: [] } },
     });
     await waitForPromises();
 
@@ -134,15 +110,6 @@ describe('LockFileDropdownItem component', () => {
     expect(findLockFileDropdownItem().props('item')).toMatchObject({
       text: 'Unlock',
       extraAttrs: { disabled: false },
-    });
-  });
-
-  it('creates an alert with the correct message, when projectInfo query fails', async () => {
-    createComponent({ projectInfoResolver: projectInfoQueryErrorResolver });
-    await waitForPromises();
-
-    expect(createAlert).toHaveBeenCalledWith({
-      message: 'An error occurred while fetching lock information, please try again.',
     });
   });
 
@@ -195,7 +162,7 @@ describe('LockFileDropdownItem component', () => {
       findLockFileDropdownItem().vm.$emit('action');
       clickSubmit();
 
-      expect(lochPathMutationResolver).toHaveBeenCalledWith({
+      expect(lockPathMutationResolver).toHaveBeenCalledWith({
         filePath: 'some/path/locked_file.js',
         lock: false,
         projectPath: 'some/project/path',
@@ -205,7 +172,7 @@ describe('LockFileDropdownItem component', () => {
     it('does not execute a lock mutation if lock not confirmed', () => {
       findLockFileDropdownItem().vm.$emit('action');
 
-      expect(lochPathMutationResolver).not.toHaveBeenCalled();
+      expect(lockPathMutationResolver).not.toHaveBeenCalled();
     });
   });
 });
