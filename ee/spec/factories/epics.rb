@@ -58,7 +58,9 @@ FactoryBot.define do
           iid: iid,
           updated_by: updated_by,
           state: state,
-          confidential: confidential
+          confidential: confidential,
+          start_date: start_date,
+          due_date: end_date
         )
       end
     end

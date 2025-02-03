@@ -38,10 +38,43 @@ class EpicPresenter < Gitlab::View::Presenter::Delegated
 
   delegator_override :subscribed?
   def subscribed?
+    return false if current_user.blank?
+
     epic.subscribed?(current_user)
   end
 
+  # With the new WorkItem structure the logic for the "inherited"/"fixed" dates changed
+  # To ensure we're using the same values on the new UI/APIs and on the legacy (like Roadmaps)
+  # we overwrite the *_date* methods to use the logic from WorkItems::StartAndDueDate
+  delegator_override :start_date,
+    :start_date_fixed,
+    :start_date_is_fixed,
+    :start_date_is_fixed?,
+    :due_date,
+    :due_date_fixed,
+    :due_date_is_fixed,
+    :due_date_is_fixed?
+
+  def start_date
+    start_and_due_date_widget.start_date
+  end
+  alias_method :start_date_fixed, :start_date
+
+  def due_date
+    start_and_due_date_widget.due_date
+  end
+  alias_method :due_date_fixed, :due_date
+
+  def start_date_is_fixed?
+    start_and_due_date_widget.fixed?
+  end
+  alias_method :due_date_is_fixed?, :start_date_is_fixed?
+
   private
+
+  def start_and_due_date_widget
+    @start_and_due_date_widget ||= epic.work_item.get_widget(:start_and_due_date)
+  end
 
   def initial_data
     { labels: epic.labels }
@@ -94,9 +127,9 @@ class EpicPresenter < Gitlab::View::Presenter::Delegated
   # as now source can be both milestone and child epic, but it does require a bunch of renaming on frontend as well
   def start_dates
     {
-      start_date: epic.start_date,
-      start_date_is_fixed: epic.start_date_is_fixed?,
-      start_date_fixed: epic.start_date_fixed,
+      start_date: start_date,
+      start_date_is_fixed: start_date_is_fixed?,
+      start_date_fixed: start_date_fixed,
       start_date_from_milestones: epic.start_date_from_inherited_source,
       start_date_sourcing_milestone_title: epic.start_date_from_inherited_source_title,
       start_date_sourcing_milestone_dates: {
@@ -110,9 +143,9 @@ class EpicPresenter < Gitlab::View::Presenter::Delegated
   # same renaming applies here
   def due_dates
     {
-      due_date: epic.due_date,
-      due_date_is_fixed: epic.due_date_is_fixed?,
-      due_date_fixed: epic.due_date_fixed,
+      due_date: due_date,
+      due_date_is_fixed: due_date_is_fixed?,
+      due_date_fixed: due_date_fixed,
       due_date_from_milestones: epic.due_date_from_inherited_source,
       due_date_sourcing_milestone_title: epic.due_date_from_inherited_source_title,
       due_date_sourcing_milestone_dates: {
@@ -143,8 +176,8 @@ class EpicPresenter < Gitlab::View::Presenter::Delegated
         title: epic.title,
         url: url_builder.epic_path(epic),
         state: epic.state,
-        human_readable_end_date: epic.end_date&.to_fs(:medium),
-        human_readable_timestamp: remaining_days_in_words(epic.end_date, epic.start_date)
+        human_readable_end_date: due_date&.to_fs(:medium),
+        human_readable_timestamp: remaining_days_in_words(due_date, start_date)
       }
     end
   end

@@ -60,8 +60,8 @@ module API
       def epic_options(entity: EE::API::Entities::Epic, issuable_metadata: nil)
         {
           with: entity,
-          user: current_user,
-          group: user_group,
+          current_user: current_user,
+          user_group: user_group,
           issuable_metadata: issuable_metadata
         }
       end
