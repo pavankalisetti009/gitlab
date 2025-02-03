@@ -314,7 +314,7 @@ gem 'rainbow', '~> 3.0', feature_category: :shared
 gem 'ruby-progressbar', '~> 1.10', feature_category: :shared
 
 # Linear-time regex library for untrusted regular expressions
-gem 're2', '2.7.0', feature_category: :shared
+gem 're2', '~> 2.15', feature_category: :shared
 
 # Misc
 
