@@ -60,8 +60,8 @@ By default, tokens are stored as-is (not encrypted).
 - `routable_token:`: A hash allowing to define "routable" parts that should be encoded in the token.
   This follows the [Routable Tokens design document](https://handbook.gitlab.com/handbook/engineering/architecture/design-documents/cells/routable_tokens/#proposal).
   Supported keys are:
-  - `if:`, a proc receiving the token owner record. The proc usually has a feature flag check, and/or other checks.
-    If the proc returns `false`, a random token is generated using `Devise.friendly_token`).
+  - `if:`: a proc receiving the token owner record. The proc usually has a feature flag check, and/or other checks.
+    If the proc returns `false`, a random token is generated using `Devise.friendly_token`.
   - `payload:`: A `{ key => proc }` hash with allowed keys `c`, `o`, `g`, `p`,`u` which
     [complies with the specification](https://handbook.gitlab.com/handbook/engineering/architecture/design-documents/cells/routable_tokens/#meaning-of-fields).
     See an example in the [Routable Tokens design document](https://handbook.gitlab.com/handbook/engineering/architecture/design-documents/cells/routable_tokens/#integration-into-token-authenticatable).
