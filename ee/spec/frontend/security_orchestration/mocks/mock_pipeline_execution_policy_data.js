@@ -15,6 +15,8 @@ import { fromYaml } from 'ee/security_orchestration/components/policy_editor/pip
 export const customYaml = `variable: true
 `;
 
+export const invalidYaml = 'variable: true:';
+
 export const customYamlObject = { variable: true };
 
 export const mockPipelineExecutionObject = {
@@ -75,7 +77,7 @@ content:
 
 export const mockWithoutRefPipelineExecutionObject = fromYaml({
   manifest: mockWithoutRefPipelineExecutionManifest,
-}).policy;
+});
 
 export const invalidStrategyManifest = `name: Ci config file
 description: triggers all protected branches except main

@@ -11,6 +11,26 @@ content:
     - project: ''
 `;
 
+export const PIPELINE_EXECUTION_POLICY_INVALID_STRATEGY = `type: pipeline_execution_policy
+name: ''
+description: ''
+enabled: true
+pipeline_config_strategy: invalid
+content:
+  include:
+    - project: ''
+`;
+
+export const PIPELINE_EXECUTION_POLICY_INVALID_CONTENT = `type: pipeline_execution_policy
+name: ''
+description: ''
+enabled: true
+pipeline_config_strategy: invalid
+content:
+  include_invalid:
+    - project: ''
+`;
+
 export const DEFAULT_PIPELINE_EXECUTION_POLICY_NEW_FORMAT = `pipeline_execution_policy:
 - name: ''
   description: ''
