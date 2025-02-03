@@ -39,23 +39,17 @@ RSpec.describe Gitlab::Auth::Saml::Config, feature_category: :system_access do
   shared_examples 'Microsoft Group Sync enabled?' do
     using RSpec::Parameterized::TableSyntax
 
-    where(:saml_enabled?, :feature_licensed?, :feature_flag_enabled?, :expect_microsoft_group_sync_enabled?) do
-      false | false | false | false
-      true  | false | false | false
-      false | true  | false | false
-      true  | true  | false | false
-
-      false | false | true  | false
-      true  | false | true  | false
-      false | true  | true  | false
-      true  | true  | true  | true
+    where(:saml_enabled?, :feature_licensed?, :expect_microsoft_group_sync_enabled?) do
+      false | false  | false
+      true  | false  | false
+      false | true   | false
+      true  | true   | true
     end
 
     with_them do
       before do
         stub_basic_saml_config if saml_enabled?
         stub_licensed_features(microsoft_group_sync: feature_licensed?)
-        stub_feature_flags(microsoft_azure_group_sync: feature_flag_enabled?)
       end
 
       it { is_expected.to eq(expect_microsoft_group_sync_enabled?) }

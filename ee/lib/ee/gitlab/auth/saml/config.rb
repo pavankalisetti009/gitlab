@@ -29,8 +29,7 @@ module EE
             # This method is not provider-specific.
             # Ensure at least one SAML provider is enabled and feature is licensed
             def microsoft_group_sync_enabled?
-              ::Feature.enabled?(:microsoft_azure_group_sync) &&
-                enabled? && ::License.feature_available?(:microsoft_group_sync)
+              enabled? && ::License.feature_available?(:microsoft_group_sync)
             end
           end
         end

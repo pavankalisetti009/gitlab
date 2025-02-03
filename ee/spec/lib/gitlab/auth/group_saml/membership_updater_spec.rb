@@ -183,7 +183,6 @@ RSpec.describe Gitlab::Auth::GroupSaml::MembershipUpdater, feature_category: :sy
         let!(:application) { create(:system_access_microsoft_application, enabled: true, namespace: group) }
 
         before do
-          stub_feature_flags(microsoft_azure_group_sync: true)
           stub_saml_group_sync_available(true)
         end
 
@@ -242,14 +241,6 @@ RSpec.describe Gitlab::Auth::GroupSaml::MembershipUpdater, feature_category: :sy
               end
 
               it_behaves_like 'not enqueueing Group SAML Group Sync worker'
-
-              context 'when microsoft_azure_group_sync feature flag is not enabled' do
-                before do
-                  stub_feature_flags(microsoft_azure_group_sync: false)
-                end
-
-                it_behaves_like 'not enqueueing Microsoft Group Sync worker'
-              end
             end
           end
         end
