@@ -22515,8 +22515,6 @@ CREATE TABLE virtual_registries_packages_maven_upstreams (
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
     url text NOT NULL,
-    encrypted_credentials bytea,
-    encrypted_credentials_iv bytea,
     cache_validity_hours smallint DEFAULT 24 NOT NULL,
     encrypted_username bytea,
     encrypted_username_iv bytea,
@@ -22524,9 +22522,7 @@ CREATE TABLE virtual_registries_packages_maven_upstreams (
     encrypted_password_iv bytea,
     CONSTRAINT check_2366658457 CHECK ((octet_length(encrypted_username) <= 1020)),
     CONSTRAINT check_26c0572777 CHECK ((char_length(url) <= 255)),
-    CONSTRAINT check_4af2999ab8 CHECK ((octet_length(encrypted_credentials_iv) <= 1020)),
     CONSTRAINT check_a3593dca3a CHECK ((cache_validity_hours >= 0)),
-    CONSTRAINT check_b9e3bfa31a CHECK ((octet_length(encrypted_credentials) <= 1020)),
     CONSTRAINT check_c3977cdb0c CHECK ((octet_length(encrypted_username_iv) <= 1020)),
     CONSTRAINT check_e4b6e651bf CHECK ((octet_length(encrypted_password_iv) <= 1020)),
     CONSTRAINT check_e57d1f3005 CHECK ((octet_length(encrypted_password) <= 1020))
