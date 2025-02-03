@@ -9,26 +9,43 @@ module Gitlab
         attr_accessor :definitions
 
         def all
-          load_abilities! if @definitions.nil?
+          standard.merge(admin)
+        end
 
-          @definitions
+        def admin
+          @admin_definitions ||= load_definitions(admin_path)
+        end
+
+        def standard
+          @standard_definitions ||= load_definitions(standard_path)
         end
 
         def load_abilities!
-          @definitions = {}
-
-          Dir.glob(path).each do |file|
-            definition = load_from_file(file)
-            name = definition[:name].to_sym
-
-            @definitions[name] = definition
-          end
+          @standard_definitions = load_definitions(standard_path)
+          @admin_definitions = load_definitions(admin_path)
         end
 
         private
 
-        def path
+        def standard_path
           Rails.root.join("ee/config/custom_abilities/*.yml")
+        end
+
+        def admin_path
+          Rails.root.join("ee/config/custom_abilities/admin/*.yml")
+        end
+
+        def load_definitions(path)
+          definitions = {}
+
+          Dir.glob(path).each do |file|
+            definition = load_from_file(file)
+
+            name = definition[:name].to_sym
+            definitions[name] = definition
+          end
+
+          definitions
         end
 
         def load_from_file(path)

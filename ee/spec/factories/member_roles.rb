@@ -12,18 +12,22 @@ FactoryBot.define do
       trait(role) { base_access_level { value } }
     end
 
-    Gitlab::CustomRoles::Definition.all.each_value do |attributes|
+    Gitlab::CustomRoles::Definition.standard.each_value do |attributes|
       trait attributes[:name].to_sym do
         send(attributes[:name].to_sym) { true }
 
         attributes.fetch(:requirements, []).each do |requirement|
           send(requirement.to_sym) { true }
         end
+      end
+    end
 
-        if attributes[:admin_ability]
-          namespace { nil }
-          base_access_level { nil }
-        end
+    Gitlab::CustomRoles::Definition.admin.each_value do |attributes|
+      trait attributes[:name].to_sym do
+        send(attributes[:name].to_sym) { true }
+
+        namespace { nil }
+        base_access_level { nil }
       end
     end
 

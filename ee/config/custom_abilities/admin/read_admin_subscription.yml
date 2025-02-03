@@ -6,7 +6,3 @@ introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/507961
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/178230
 feature_category: admin
 milestone: '17.9'
-admin_ability: true
-group_ability: false
-project_ability: false
-requirements: []
