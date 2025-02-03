@@ -123,9 +123,9 @@ RSpec.describe WorkItems::LegacyEpics::EpicIssues::CreateService, feature_catego
       context 'when user has permissions to link the issue' do
         let_it_be(:user) { guest }
 
-        context 'when work_item_epics_ssot is disabled' do
+        context 'when epic_issues_through_work_item_service is disabled' do
           before do
-            stub_feature_flags(work_item_epics_ssot: false)
+            stub_feature_flags(epic_issues_through_work_item_service: false)
           end
 
           it 'calls the legacy service' do
