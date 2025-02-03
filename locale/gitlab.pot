@@ -64552,7 +64552,7 @@ msgstr ""
 msgid "Wiki|The sidebar failed to load. You can reload the page to try again."
 msgstr ""
 
-msgid "Wiki|There are no pages in this wiki yet"
+msgid "Wiki|There are no pages in this wiki yet."
 msgstr ""
 
 msgid "Wiki|Use the sidebar to find a different page."
