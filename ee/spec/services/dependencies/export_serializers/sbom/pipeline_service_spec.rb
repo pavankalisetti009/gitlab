@@ -5,26 +5,12 @@ require 'spec_helper'
 RSpec.describe Dependencies::ExportSerializers::Sbom::PipelineService, feature_category: :dependency_management do
   let_it_be(:pipeline) { create(:ee_ci_pipeline, :with_cyclonedx_report) }
 
-  describe '.execute' do
-    let(:dependency_list_export) { instance_double(Dependencies::DependencyListExport, pipeline: pipeline) }
-
-    subject(:execute) { described_class.execute(dependency_list_export) }
-
-    it 'instantiates a service object and sends execute message to it' do
-      expect_next_instance_of(described_class, dependency_list_export) do |service_object|
-        expect(service_object).to receive(:execute)
-      end
-
-      execute
-    end
-  end
-
-  describe '#execute' do
+  describe '#generate' do
     let(:dependency_list_export) { create(:dependency_list_export, project: nil, exportable: pipeline) }
 
-    let(:service_class) { described_class.new(dependency_list_export) }
+    let(:service_class) { described_class.new(dependency_list_export, nil) }
 
-    subject(:components) { service_class.execute.as_json[:components] }
+    subject(:components) { Gitlab::Json.parse(service_class.generate)['components'] }
 
     before do
       stub_licensed_features(dependency_scanning: true)
@@ -56,7 +42,7 @@ RSpec.describe Dependencies::ExportSerializers::Sbom::PipelineService, feature_c
       end
 
       it 'raises a SchemaValidationError' do
-        expect { service_class.execute }.to raise_error(
+        expect { service_class.generate }.to raise_error(
           described_class::SchemaValidationError
         ).with_message(/Invalid CycloneDX report: /)
       end

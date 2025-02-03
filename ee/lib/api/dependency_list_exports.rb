@@ -45,7 +45,7 @@ module API
       post ':id/dependency_list_exports' do
         authorize! :read_dependency, user_group
 
-        result = ::Dependencies::CreateExportService.new(user_group, current_user).execute
+        result = ::Dependencies::CreateExportService.new(user_group, current_user, :json_array).execute
 
         present_created_export(result)
       end
@@ -63,7 +63,7 @@ module API
         authorize! :read_dependency, organization
 
         result = ::Dependencies::CreateExportService
-          .new(organization, current_user)
+          .new(organization, current_user, :csv)
           .execute
 
         present_created_export(result)

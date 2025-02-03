@@ -19501,6 +19501,18 @@ msgstr ""
 msgid "Dependency list"
 msgstr ""
 
+msgid "DependencyListExport|Location"
+msgstr ""
+
+msgid "DependencyListExport|Name"
+msgstr ""
+
+msgid "DependencyListExport|Packager"
+msgstr ""
+
+msgid "DependencyListExport|Version"
+msgstr ""
+
 msgid "DependencyProxy|%{docLinkStart}See the documentation%{docLinkEnd} for other ways to store Docker images in Dependency Proxy cache."
 msgstr ""
 
