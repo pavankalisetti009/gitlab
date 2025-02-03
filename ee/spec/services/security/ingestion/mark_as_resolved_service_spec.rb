@@ -266,6 +266,38 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
           end
         end
       end
+
+      context 'when the report type is specified' do
+        let_it_be(:sbom_scanner) do
+          create(:vulnerabilities_scanner, :sbom_scanner, project: project)
+        end
+
+        let(:command) { described_class.new(pipeline, sbom_scanner, ingested_ids, :dependency_scanning) }
+
+        let_it_be(:ds_vulnerability) do
+          create(:vulnerability, :dependency_scanning, :with_scanner,
+            project: project,
+            present_on_default_branch: true,
+            resolved_on_default_branch: false,
+            scanner: sbom_scanner)
+        end
+
+        let_it_be(:cs_vulnerability) do
+          create(:vulnerability, :container_scanning, :with_scanner,
+            project: project,
+            present_on_default_branch: true,
+            resolved_on_default_branch: false,
+            scanner: sbom_scanner)
+        end
+
+        it 'resolve vulnerabilities with the corresponding report type' do
+          expect { command.execute }.to change { ds_vulnerability.reload.resolved_on_default_branch }.to(true)
+        end
+
+        it 'does not resolve vulnerabilities with a different report type' do
+          expect { command.execute }.not_to change { cs_vulnerability.reload.resolved_on_default_branch }.from(false)
+        end
+      end
     end
 
     context 'when a scanner is not available' do
