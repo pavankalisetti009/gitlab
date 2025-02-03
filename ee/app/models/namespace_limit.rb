@@ -6,6 +6,7 @@ class NamespaceLimit < ApplicationRecord
   belongs_to :namespace, inverse_of: :namespace_limit
 
   validates :namespace, presence: true
+  validates :additional_purchased_storage_size, presence: true
 
   validate :namespace_is_root_namespace
 

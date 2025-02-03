@@ -80,6 +80,7 @@ RSpec.describe NamespaceLimit do
 
   describe 'validations' do
     it { is_expected.to validate_presence_of(:namespace) }
+    it { is_expected.to validate_presence_of(:additional_purchased_storage_size) }
 
     context 'with namespace_is_root_namespace' do
       let(:namespace_limit) { build(:namespace_limit, namespace: namespace) }
