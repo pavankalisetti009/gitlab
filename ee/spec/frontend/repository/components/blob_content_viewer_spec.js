@@ -17,7 +17,12 @@ import { mountExtended } from 'helpers/vue_test_utils_helper';
 import highlightMixin from '~/repository/mixins/highlight_mixin';
 import getRefMixin from '~/repository/mixins/get_ref';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import { simpleViewerMock, richViewerMock, propsMock } from 'jest/repository/mock_data';
+import {
+  simpleViewerMock,
+  richViewerMock,
+  propsMock,
+  FILE_SIZE_3MB,
+} from 'jest/repository/mock_data';
 import { projectMock, userPermissionsMock } from 'ee_jest/repository/mock_data';
 import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
 
@@ -137,11 +142,10 @@ describe('Blob content viewer component', () => {
       ${'does'}     | ${true}              | ${true}      | ${simpleViewerMock}
       ${'does not'} | ${false}             | ${false}     | ${richViewerMock}
       ${'does not'} | ${true}              | ${false}     | ${richViewerMock}
-      ${'does not'} | ${true}              | ${false}     | ${{ ...simpleViewerMock, simpleViewer: { ...simpleViewerMock.simpleViewer, tooLarge: true } }}
+      ${'does not'} | ${true}              | ${false}     | ${{ ...simpleViewerMock, size: FILE_SIZE_3MB, simpleViewer: { ...simpleViewerMock.simpleViewer } }}
     `(
       '$prefix render the AI Genie component when explainCodeAvailable flag is $explainCodeAvailable and correct blob is rendered',
-      async ({ explainCodeAvailable, blob, shouldRender, loggedIn }) => {
-        isLoggedIn.mockReturnValue(loggedIn);
+      async ({ explainCodeAvailable, blob, shouldRender }) => {
         await createComponent({ explainCodeAvailable, blob });
         expect(findAiGenie().exists()).toBe(shouldRender);
       },
