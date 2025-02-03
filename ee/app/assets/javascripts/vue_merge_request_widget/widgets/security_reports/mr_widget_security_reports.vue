@@ -1,6 +1,7 @@
 <script>
 import { GlBadge, GlButton, GlIcon, GlLink, GlPopover } from '@gitlab/ui';
 import { SEVERITY_LEVELS } from 'ee/security_dashboard/constants';
+import { visitUrl } from '~/lib/utils/url_utility';
 import { historyPushState } from '~/lib/utils/common_utils';
 import MrWidget from '~/vue_merge_request_widget/components/widget/widget.vue';
 import MrWidgetRow from '~/vue_merge_request_widget/components/widget/widget_content_row.vue';
@@ -53,7 +54,6 @@ export default {
       collapsedData: {},
     };
   },
-
   computed: {
     reports() {
       return this.endpoints
@@ -195,17 +195,56 @@ export default {
       return !this.mr.isPipelineActive && this.endpoints.length > 0;
     },
   },
+  beforeDestroy() {
+    this.cleanUpResolveWithAiHandlers();
+  },
   methods: {
     handleResolveWithAiSuccess(commentUrl) {
-      this.clearModalData();
+      // the note's id is the hash of the url and also the DOM id which we want to scroll to
+      const [, commentNoteId] = commentUrl.split('#');
 
-      const [, resultHash] = commentUrl.split('#');
-      if (resultHash && document.getElementById(resultHash)) {
-        window.location.assign(commentUrl);
-      } else {
-        // the comment has not been added to the DOM yet, so we need to hard-reload the page
+      const isCommentOnPage = () => document.getElementById(commentNoteId) !== null;
+      const closeModalAndScrollToComment = () => {
+        this.clearModalData();
+        visitUrl(commentUrl);
+      };
+
+      if (isCommentOnPage()) {
+        closeModalAndScrollToComment();
+        return;
+      }
+
+      // as a fallback we set a timeout and then manually do a hard page reload
+      this.commentNotefallBackTimeout = setTimeout(() => {
+        this.cleanUpResolveWithAiHandlers();
         historyPushState(commentUrl);
         window.location.reload();
+      }, 3000);
+
+      // observe the DOM and scroll to the comment when it's added
+      this.commentMutationObserver = new MutationObserver((mutationList) => {
+        for (const mutation of mutationList) {
+          // check if the added notes within the mutation contains the comment we're looking for
+          if (mutation.addedNodes.length > 0 && isCommentOnPage()) {
+            this.cleanUpResolveWithAiHandlers();
+            closeModalAndScrollToComment();
+            return;
+          }
+        }
+      });
+
+      this.commentMutationObserver.observe(document.getElementById('notes') || document.body, {
+        childList: true,
+        subtree: true,
+      });
+    },
+
+    cleanUpResolveWithAiHandlers() {
+      if (this.commentNotefallBackTimeout) {
+        clearTimeout(this.commentNotefallBackTimeout);
+      }
+      if (this.commentMutationObserver) {
+        this.commentMutationObserver.disconnect();
       }
     },
 
@@ -494,11 +533,11 @@ export default {
                         variant="link"
                         class="gl-ml-2 gl-overflow-hidden gl-text-ellipsis gl-whitespace-nowrap"
                         @click="setModalData(vuln)"
-                        >{{ vuln.name }}</gl-button
-                      >
-                      <gl-badge v-if="isDismissed(vuln)" class="gl-ml-3">{{
-                        $options.i18n.dismissed
-                      }}</gl-badge>
+                        >{{ vuln.name }}
+                      </gl-button>
+                      <gl-badge v-if="isDismissed(vuln)" class="gl-ml-3"
+                        >{{ $options.i18n.dismissed }}
+                      </gl-badge>
                       <template v-if="isAiResolvable(vuln)">
                         <gl-badge
                           :id="getAiResolvableBadgeId(vuln.uuid)"
@@ -516,9 +555,9 @@ export default {
                           :data-testid="`ai-resolvable-badge-popover-${vuln.uuid}`"
                         >
                           {{ $options.aiResolutionHelpPopOver.text }}
-                          <gl-link :href="$options.aiResolutionHelpPopOver.learnMorePath">{{
-                            __('Learn more')
-                          }}</gl-link>
+                          <gl-link :href="$options.aiResolutionHelpPopOver.learnMorePath"
+                            >{{ __('Learn more') }}
+                          </gl-link>
                         </gl-popover>
                       </template>
                     </template>

@@ -781,44 +781,72 @@ describe('MR Widget Security Reports', () => {
     });
 
     describe('resolve with AI', () => {
-      beforeEach(async () => {
-        await createComponentExpandWidgetAndOpenModal();
-      });
+      jest.useFakeTimers();
+      useMockLocationHelper();
+
       const aiCommentUrl = `${TEST_HOST}/project/merge_requests/2#note_1`;
       const addCommentToDOM = () => {
         const comment = document.createElement('div');
         comment.id = 'note_1';
         document.body.appendChild(comment);
+
+        return nextTick();
       };
 
-      useMockLocationHelper();
+      beforeEach(async () => {
+        await createComponentExpandWidgetAndOpenModal();
+      });
 
-      it('closes the modal when the "resolveWithAiSuccess" event is emitted', async () => {
+      afterEach(() => {
+        // remove the comment from the DOM
+        document.getElementById('note_1')?.remove();
+      });
+
+      it('scrolls to the comment when the comment note that is added by the AI-action is already on the page', async () => {
+        expect(window.location.assign).not.toHaveBeenCalled();
+        expect(findStandaloneModal().exists()).toBe(true);
+
         findStandaloneModal().vm.$emit('resolveWithAiSuccess', aiCommentUrl);
+
+        await addCommentToDOM();
+
+        expect(window.location.assign).toHaveBeenCalledWith(aiCommentUrl);
+        expect(window.location.reload).not.toHaveBeenCalled();
+
         await nextTick();
 
         expect(findStandaloneModal().exists()).toBe(false);
       });
 
-      it('does a hard-reload when the comment note that is added by the AI-action is not yet on the page', async () => {
+      it('scrolls to the comment when the comment note that is added by the AI-action is on the page', async () => {
+        expect(window.location.assign).not.toHaveBeenCalled();
+        expect(findStandaloneModal().exists()).toBe(true);
+
+        findStandaloneModal().vm.$emit('resolveWithAiSuccess', aiCommentUrl);
+
+        // at this point the comment is not yet within the DOM
+        expect(window.location.assign).not.toHaveBeenCalledWith(aiCommentUrl);
+
+        await addCommentToDOM();
+
+        expect(window.location.assign).toHaveBeenCalledWith(aiCommentUrl);
+        expect(window.location.reload).not.toHaveBeenCalled();
+
+        await nextTick();
+
+        expect(findStandaloneModal().exists()).toBe(false);
+      });
+
+      it('does a hard-reload when the comment note that is added by the AI-action is not on the page within 3 seconds', async () => {
         expect(window.location.reload).not.toHaveBeenCalled();
 
         findStandaloneModal().vm.$emit('resolveWithAiSuccess', aiCommentUrl);
         await nextTick();
 
+        jest.advanceTimersByTime(3000);
+
         expect(historyPushState).toHaveBeenCalledWith(aiCommentUrl);
         expect(window.location.reload).toHaveBeenCalled();
-      });
-
-      it('scrolls to the comment with no hard-reload when the comment note that is added by the AI-action is on the page', async () => {
-        addCommentToDOM();
-
-        expect(window.location.assign).not.toHaveBeenCalled();
-
-        findStandaloneModal().vm.$emit('resolveWithAiSuccess', aiCommentUrl);
-        await nextTick();
-
-        expect(window.location.assign).toHaveBeenCalledWith(aiCommentUrl);
       });
     });
 
