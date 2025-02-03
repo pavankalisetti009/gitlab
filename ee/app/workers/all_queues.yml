@@ -2615,7 +2615,7 @@
   :tags: []
 - :name: security_configuration_set_group_secret_push_protection
   :worker_name: Security::Configuration::SetGroupSecretPushProtectionWorker
-  :feature_category: :secret_detection
+  :feature_category: :security_testing_configuration
   :has_external_dependencies: false
   :urgency: :high
   :resource_boundary: :unknown

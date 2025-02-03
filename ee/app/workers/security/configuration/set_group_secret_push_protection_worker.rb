@@ -9,7 +9,7 @@ module Security
       data_consistency :sticky
       urgency :high
 
-      feature_category :secret_detection
+      feature_category :security_testing_configuration
 
       def perform(group_id, enable, current_user_id = nil, excluded_projects_ids = [])
         group = Group.find_by_id(group_id)

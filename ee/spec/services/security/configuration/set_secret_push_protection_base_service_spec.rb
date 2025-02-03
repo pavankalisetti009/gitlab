@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Security::Configuration::SetSecretPushProtectionBaseService, feature_category: :secret_detection do
+RSpec.describe Security::Configuration::SetSecretPushProtectionBaseService, feature_category: :security_testing_configuration do
   let_it_be(:user) { create(:user) }
   let_it_be(:project_1) { create(:project) }
   let(:service) { described_class.new(subject: project_1, enable: true, current_user: user) }

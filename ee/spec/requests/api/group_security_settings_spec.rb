@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe API::GroupSecuritySettings, :aggregate_failures, feature_category: :secret_detection do
+RSpec.describe API::GroupSecuritySettings, :aggregate_failures, feature_category: :security_testing_configuration do
   describe 'PUT /groups/:id/security_settings' do
     let_it_be(:group) { create(:group) }
     let_it_be(:maintainer) { create(:user, maintainer_of: group) }

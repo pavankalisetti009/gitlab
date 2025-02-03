@@ -2,7 +2,7 @@
 
 module API
   class GroupSecuritySettings < ::API::Base
-    feature_category :secret_detection
+    feature_category :security_testing_configuration
 
     before do
       authenticate!

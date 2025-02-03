@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Security::Configuration::SetGroupSecretPushProtectionWorker, feature_category: :secret_detection do
+RSpec.describe Security::Configuration::SetGroupSecretPushProtectionWorker, feature_category: :security_testing_configuration do
   let_it_be(:group) { create(:group) }
   let_it_be(:user) { create(:user) }
   let_it_be(:group_id) { group.id }
