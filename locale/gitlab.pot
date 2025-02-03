@@ -45781,6 +45781,12 @@ msgstr ""
 msgid "ProjectsNew|You can always change your URL later"
 msgstr ""
 
+msgid "ProjectsNew|You cannot create projects in your personal namespace. Contact your GitLab administrator."
+msgstr ""
+
+msgid "ProjectsNew|You've reached your limit of %{limit} projects created. Contact your GitLab administrator."
+msgstr ""
+
 msgid "ProjectsNew|Your project will be created at:"
 msgstr ""
 
