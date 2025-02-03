@@ -8,14 +8,14 @@ import {
 } from '~/lib/utils/common_utils';
 import {
   DATE_RANGE_OPTIONS,
-  DEFAULT_SELECTED_OPTION_INDEX,
-  CUSTOM_DATE_RANGE_KEY,
+  DATE_RANGE_OPTION_CUSTOM,
+  DATE_RANGE_OPTION_KEYS,
+  DEFAULT_SELECTED_DATE_RANGE_OPTION,
 } from './constants';
 
-const isCustomOption = (option) => option && option === CUSTOM_DATE_RANGE_KEY;
+const isCustomOption = (option) => option && option === DATE_RANGE_OPTION_CUSTOM;
 
-export const getDateRangeOption = (optionKey) =>
-  DATE_RANGE_OPTIONS.find(({ key }) => key === optionKey);
+export const getDateRangeOption = (optionKey) => DATE_RANGE_OPTIONS[optionKey] || null;
 
 export const dateRangeOptionToFilter = ({ startDate, endDate, key }) => ({
   startDate,
@@ -23,22 +23,26 @@ export const dateRangeOptionToFilter = ({ startDate, endDate, key }) => ({
   dateRangeOption: key,
 });
 
-const DEFAULT_FILTER = dateRangeOptionToFilter(DATE_RANGE_OPTIONS[DEFAULT_SELECTED_OPTION_INDEX]);
+const DEFAULT_FILTER = dateRangeOptionToFilter(
+  DATE_RANGE_OPTIONS[DEFAULT_SELECTED_DATE_RANGE_OPTION],
+);
 
-export const buildDefaultDashboardFilters = (queryString) => {
-  const {
-    dateRangeOption: optionKey,
-    startDate,
-    endDate,
-    filterAnonUsers,
-  } = convertObjectPropsToCamelCase(queryToObject(queryString, { gatherArrays: true }));
+export const buildDefaultDashboardFilters = (queryString, dashboardDefaultFilters = {}) => {
+  const { dateRangeOption, startDate, endDate, filterAnonUsers } = convertObjectPropsToCamelCase(
+    queryToObject(queryString, { gatherArrays: true }),
+  );
+
+  const optionKey = dateRangeOption || dashboardDefaultFilters?.dateRange?.defaultOption;
+  const dateRangeOverride = DATE_RANGE_OPTION_KEYS.includes(optionKey)
+    ? dateRangeOptionToFilter(getDateRangeOption(optionKey))
+    : {};
 
   const customDateRange = isCustomOption(optionKey);
 
   return {
     ...DEFAULT_FILTER,
     // Override default filter with user defined option
-    ...(optionKey && dateRangeOptionToFilter(getDateRangeOption(optionKey))),
+    ...dateRangeOverride,
     // Override date range when selected option is custom date range
     ...(customDateRange && { startDate: newDate(startDate) }),
     ...(customDateRange && { endDate: newDate(endDate) }),

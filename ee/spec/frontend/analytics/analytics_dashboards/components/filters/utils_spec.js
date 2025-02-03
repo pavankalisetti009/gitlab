@@ -8,16 +8,17 @@ import {
 } from 'ee/analytics/analytics_dashboards/components/filters/utils';
 import {
   DATE_RANGE_OPTIONS,
-  DEFAULT_SELECTED_OPTION_INDEX,
-  CUSTOM_DATE_RANGE_KEY,
+  DATE_RANGE_OPTION_CUSTOM,
+  DATE_RANGE_OPTION_LAST_90_DAYS,
+  DEFAULT_SELECTED_DATE_RANGE_OPTION,
 } from 'ee/analytics/analytics_dashboards/components/filters/constants';
 import { mockDateRangeFilterChangePayload } from '../../mock_data';
 
-const option = DATE_RANGE_OPTIONS[0];
+const option = DATE_RANGE_OPTIONS[DEFAULT_SELECTED_DATE_RANGE_OPTION];
 describe('buildDefaultDashboardFilters', () => {
-  it('returns the default option for an empty query string', () => {
-    const defaultOption = DATE_RANGE_OPTIONS[DEFAULT_SELECTED_OPTION_INDEX];
+  const defaultOption = DATE_RANGE_OPTIONS[DEFAULT_SELECTED_DATE_RANGE_OPTION];
 
+  it('returns the default option for an empty query string', () => {
     expect(buildDefaultDashboardFilters('')).toStrictEqual({
       startDate: defaultOption.startDate,
       endDate: defaultOption.endDate,
@@ -38,12 +39,12 @@ describe('buildDefaultDashboardFilters', () => {
   });
 
   it('returns the a custom range when the query string is custom and contains dates', () => {
-    const queryString = `date_range_option=${CUSTOM_DATE_RANGE_KEY}&start_date=2023-01-10&end_date=2023-02-08`;
+    const queryString = `date_range_option=${DATE_RANGE_OPTION_CUSTOM}&start_date=2023-01-10&end_date=2023-02-08`;
 
     expect(buildDefaultDashboardFilters(queryString)).toStrictEqual({
       startDate: newDate('2023-01-10'),
       endDate: newDate('2023-02-08'),
-      dateRangeOption: CUSTOM_DATE_RANGE_KEY,
+      dateRangeOption: DATE_RANGE_OPTION_CUSTOM,
       filterAnonUsers: false,
     });
   });
@@ -66,12 +67,41 @@ describe('buildDefaultDashboardFilters', () => {
       filterAnonUsers: true,
     });
   });
+
+  describe('with dashboardDefaultFilters', () => {
+    const selectedDateRangeOption = DATE_RANGE_OPTION_LAST_90_DAYS;
+    const dashboardDefaultFilters = {
+      dateRange: {
+        defaultOption: selectedDateRangeOption,
+      },
+    };
+
+    it('uses the dashboardDefaultFilters.dateRange if there is no queryString', () => {
+      expect(buildDefaultDashboardFilters('', dashboardDefaultFilters)).toStrictEqual({
+        startDate: newDate('2020-04-07'),
+        endDate: defaultOption.endDate,
+        filterAnonUsers: false,
+        dateRangeOption: selectedDateRangeOption,
+      });
+    });
+
+    it('returns the option that matches the date_range_option', () => {
+      const queryString = `date_range_option=${option.key}`;
+
+      expect(buildDefaultDashboardFilters(queryString, dashboardDefaultFilters)).toStrictEqual({
+        startDate: option.startDate,
+        endDate: option.endDate,
+        dateRangeOption: option.key,
+        filterAnonUsers: false,
+      });
+    });
+  });
 });
 
 describe('filtersToQueryParams', () => {
   const customOption = {
     ...mockDateRangeFilterChangePayload,
-    dateRangeOption: CUSTOM_DATE_RANGE_KEY,
+    dateRangeOption: DATE_RANGE_OPTION_CUSTOM,
   };
 
   const nonCustomOption = {
@@ -90,7 +120,7 @@ describe('filtersToQueryParams', () => {
 
   it('returns the dateRangeOption and date params when the option is custom', () => {
     expect(filtersToQueryParams(customOption)).toStrictEqual({
-      date_range_option: CUSTOM_DATE_RANGE_KEY,
+      date_range_option: DATE_RANGE_OPTION_CUSTOM,
       start_date: '2016-01-01',
       end_date: '2016-02-01',
       filter_anon_users: null,

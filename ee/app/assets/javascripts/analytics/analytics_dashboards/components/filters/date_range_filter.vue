@@ -2,7 +2,13 @@
 import { GlCollapsibleListbox, GlDaterangePicker, GlIcon, GlTooltipDirective } from '@gitlab/ui';
 import { n__ } from '~/locale';
 import { dateRangeOptionToFilter, getDateRangeOption } from './utils';
-import { TODAY, DATE_RANGE_OPTIONS, DEFAULT_SELECTED_OPTION_INDEX } from './constants';
+import {
+  TODAY,
+  DATE_RANGE_OPTIONS,
+  DATE_RANGE_OPTION_KEYS,
+  DEFAULT_DATE_RANGE_OPTIONS,
+  DEFAULT_SELECTED_DATE_RANGE_OPTION,
+} from './constants';
 
 export default {
   name: 'DateRangeFilter',
@@ -18,7 +24,7 @@ export default {
     defaultOption: {
       type: String,
       required: false,
-      default: DATE_RANGE_OPTIONS[DEFAULT_SELECTED_OPTION_INDEX].key,
+      default: DEFAULT_SELECTED_DATE_RANGE_OPTION,
     },
     startDate: {
       type: Date,
@@ -35,10 +41,17 @@ export default {
       required: false,
       default: 0,
     },
+    options: {
+      type: Array,
+      required: false,
+      default: () => DEFAULT_DATE_RANGE_OPTIONS,
+    },
   },
   data() {
     return {
-      selectedItem: getDateRangeOption(this.defaultOption),
+      selectedItem: this.options.includes(this.defaultOption)
+        ? getDateRangeOption(this.defaultOption)
+        : getDateRangeOption(DEFAULT_SELECTED_DATE_RANGE_OPTION),
     };
   },
   computed: {
@@ -69,14 +82,17 @@ export default {
       return null;
     },
     dropdownItems() {
-      return this.$options.DATE_RANGE_OPTIONS.map((item) => {
-        return { text: item.text, value: item.key };
-      });
+      return this.options
+        .filter((opt) => DATE_RANGE_OPTION_KEYS.includes(opt))
+        .map((key) => {
+          const item = getDateRangeOption(key);
+          return { text: item.text, value: key };
+        });
     },
   },
   methods: {
     selectItem(key) {
-      const item = this.$options.DATE_RANGE_OPTIONS.find((option) => option.key === key);
+      const item = this.$options.DATE_RANGE_OPTIONS[key];
       this.selectedItem = item;
 
       const { startDate, endDate, showDateRangePicker = false } = item;

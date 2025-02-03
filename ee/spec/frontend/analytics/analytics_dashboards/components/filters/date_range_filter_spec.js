@@ -3,9 +3,10 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import DateRangeFilter from 'ee/analytics/analytics_dashboards/components/filters/date_range_filter.vue';
 import {
+  DEFAULT_DATE_RANGE_OPTIONS,
   DATE_RANGE_OPTIONS,
-  DEFAULT_SELECTED_OPTION_INDEX,
   TODAY,
+  DEFAULT_SELECTED_DATE_RANGE_OPTION,
 } from 'ee/analytics/analytics_dashboards/components/filters/constants';
 import { dateRangeOptionToFilter } from 'ee/analytics/analytics_dashboards/components/filters/utils';
 
@@ -13,8 +14,9 @@ describe('DateRangeFilter', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
 
-  const dateRangeOption = DATE_RANGE_OPTIONS.find((option) => !option.showDateRangePicker);
-  const customRangeOption = DATE_RANGE_OPTIONS.find((option) => option.showDateRangePicker);
+  const AVAILABLE_OPTIONS = DEFAULT_DATE_RANGE_OPTIONS.map((key) => DATE_RANGE_OPTIONS[key]);
+  const dateRangeOption = AVAILABLE_OPTIONS.find((option) => !option.showDateRangePicker);
+  const customRangeOption = AVAILABLE_OPTIONS.find((option) => option.showDateRangePicker);
 
   const createWrapper = (props = {}) => {
     wrapper = shallowMountExtended(DateRangeFilter, {
@@ -38,12 +40,12 @@ describe('DateRangeFilter', () => {
 
     it('renders a dropdown with the value set to the default selected option', () => {
       expect(findCollapsibleListBox().props().selected).toBe(
-        DATE_RANGE_OPTIONS[DEFAULT_SELECTED_OPTION_INDEX].key,
+        DATE_RANGE_OPTIONS[DEFAULT_SELECTED_DATE_RANGE_OPTION].key,
       );
     });
 
     it('renders a dropdown item for each option', () => {
-      DATE_RANGE_OPTIONS.forEach((option, idx) => {
+      AVAILABLE_OPTIONS.forEach((option, idx) => {
         expect(findCollapsibleListBox().props('items').at(idx).text).toBe(option.text);
       });
     });
@@ -82,7 +84,7 @@ describe('DateRangeFilter', () => {
 
   describe('date range picker', () => {
     describe('by default', () => {
-      const { startDate, endDate } = DATE_RANGE_OPTIONS[DEFAULT_SELECTED_OPTION_INDEX];
+      const { startDate, endDate } = DATE_RANGE_OPTIONS[DEFAULT_SELECTED_DATE_RANGE_OPTION];
 
       beforeEach(() => {
         createWrapper({ startDate, endDate });
