@@ -116,8 +116,15 @@ export default {
         </gl-form-radio>
 
         <div class="gl-ml-6 gl-mt-3">
-          <gl-form-group id="user-cap-input-group" data-testid="user-cap-group">
+          <gl-form-group
+            id="user-cap-input-group"
+            data-testid="user-cap-group"
+            :label="s__('ApplicationSettings|Set user cap')"
+            label-for="user-cap-input"
+            label-sr-only
+          >
             <gl-form-input
+              id="user-cap-input"
               v-model="userCap"
               type="text"
               name="application_setting[new_user_signups_cap]"
@@ -171,7 +178,6 @@ export default {
     <gl-form-group
       v-if="promotionManagementAvailable"
       :label="s__('ApplicationSettings|Role Promotions')"
-      label-for="role-promotions"
     >
       <seat-control-member-promotion-management />
     </gl-form-group>
