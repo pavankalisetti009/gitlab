@@ -102,6 +102,15 @@
   :weight: 1
   :idempotent: true
   :tags: []
+- :name: cronjob:analytics_dump_ai_user_metrics_write_buffer_cron
+  :worker_name: Analytics::DumpAiUserMetricsWriteBufferCronWorker
+  :feature_category: :database
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
 - :name: cronjob:analytics_value_stream_dashboard_count
   :worker_name: Analytics::ValueStreamDashboard::CountWorker
   :feature_category: :value_stream_management

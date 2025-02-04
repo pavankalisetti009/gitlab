@@ -3,7 +3,7 @@
 module UsageEvents
   class DumpWriteBufferCronWorker
     include ApplicationWorker
-    include LoopWithRuntimeLimit
+    include ::Analytics::WriteBufferProcessorWorker
 
     idempotent!
     queue_namespace :cronjob
@@ -24,7 +24,7 @@ module UsageEvents
       status = loop_with_runtime_limit(MAX_RUNTIME) do
         inserted_rows = process_next_batch
         if inserted_rows == 0
-          break :processed if @current_model == MODELS.last
+          break :processed if current_model == MODELS.last
 
           current_model_index += 1
           @current_model = MODELS[current_model_index]
@@ -41,25 +41,14 @@ module UsageEvents
 
     private
 
-    def process_next_batch
-      valid_attributes = next_batch.filter_map do |attributes|
-        event = @current_model.new(attributes)
-        next unless event.valid?
-
-        event.attributes.compact
-      end
-
-      grouped_attributes = valid_attributes.group_by(&:keys).values
-
-      grouped_attributes.sum do |attributes|
-        res = @current_model.insert_all(attributes, unique_by: %i[id timestamp]) unless attributes.empty?
-
-        res ? res.rows.size : 0
-      end
+    def next_batch
+      Ai::UsageEventWriteBuffer.pop(current_model.name, BATCH_SIZE)
     end
 
-    def next_batch
-      Ai::UsageEventWriteBuffer.pop(@current_model.name, BATCH_SIZE)
+    def upsert_options
+      {
+        unique_by: %i[id timestamp]
+      }
     end
   end
 end

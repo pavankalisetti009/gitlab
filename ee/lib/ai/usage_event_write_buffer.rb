@@ -2,7 +2,7 @@
 
 module Ai
   module UsageEventWriteBuffer
-    include Gitlab::Redis::BackwardsCompatibility
+    extend Gitlab::Redis::BackwardsCompatibility
 
     BUFFER_KEY_PREFIX = 'usage_event_write_buffer_'
 
