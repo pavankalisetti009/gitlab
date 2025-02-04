@@ -12,6 +12,10 @@ query getInstanceRoles {
     nodes {
       ...Role
       detailsPath
+      dependentSecurityPolicies {
+        name
+        editPath
+      }
     }
   }
 }

@@ -34998,6 +34998,9 @@ msgstr ""
 msgid "MemberRole|Save role"
 msgstr ""
 
+msgid "MemberRole|Security policy dependency"
+msgstr ""
+
 msgid "MemberRole|Select a %{linkStart} default role%{linkEnd} to predefine a set of permissions."
 msgstr ""
 
@@ -35049,9 +35052,6 @@ msgstr ""
 msgid "MemberRole|This role is available by default and cannot be changed."
 msgstr ""
 
-msgid "MemberRole|To delete custom role, remove role from all group members."
-msgstr ""
-
 msgid "MemberRole|To delete custom role, remove role from all users."
 msgstr ""
 
@@ -35065,6 +35065,12 @@ msgid "MemberRole|Use LDAP sync role"
 msgstr ""
 
 msgid "MemberRole|View permissions"
+msgstr ""
+
+msgid "MemberRole|You can't delete this custom role until you remove it from all group members."
+msgstr ""
+
+msgid "MemberRole|You can't delete this custom role until you remove it from all security policies:"
 msgstr ""
 
 msgid "MemberRole|You must fill out all required fields."
