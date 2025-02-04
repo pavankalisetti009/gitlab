@@ -187,6 +187,35 @@ RSpec.describe Vulnerabilities::Statistic, feature_category: :vulnerability_mana
     end
   end
 
+  describe '.bulk_set_latest_pipelines_with' do
+    let_it_be(:pipelines) { create_list(:ci_pipeline, 2) }
+    let_it_be(:project_1) { pipelines.first.project }
+    let_it_be(:project_2) { pipelines.second.project }
+
+    subject(:bulk_set_latest_pipelines) { described_class.bulk_set_latest_pipelines_with(pipelines) }
+
+    context 'when there is already a vulnerability_statistic record available for the project of given pipeline' do
+      let(:vulnerability_statistic_1) { create(:vulnerability_statistic, project: project_1) }
+      let(:vulnerability_statistic_2) { create(:vulnerability_statistic, project: project_2) }
+
+      it 'updates the `latest_pipeline_id` attribute of the existing record' do
+        expect { bulk_set_latest_pipelines }
+          .to change { vulnerability_statistic_1.reload.pipeline }.from(nil).to(pipelines.first)
+          .and change { vulnerability_statistic_2.reload.pipeline }.from(nil).to(pipelines.second)
+      end
+    end
+
+    context 'when there is no vulnerability_statistic record available for the project of given pipeline' do
+      it 'creates a new record with the `latest_pipeline_id` attribute is set' do
+        expect { bulk_set_latest_pipelines }
+          .to change { project_1.reload.vulnerability_statistic }.from(nil).to(an_instance_of(described_class))
+          .and change { project_1.reload.vulnerability_statistic&.pipeline }.from(nil).to(pipelines.first)
+          .and change { project_2.reload.vulnerability_statistic }.from(nil).to(an_instance_of(described_class))
+          .and change { project_2.reload.vulnerability_statistic&.pipeline }.from(nil).to(pipelines.second)
+      end
+    end
+  end
+
   context 'loose foreign key on vulnerability_statistics.latest_pipeline_id' do
     it_behaves_like 'cleanup by a loose foreign key' do
       let!(:parent) { create(:ci_pipeline) }

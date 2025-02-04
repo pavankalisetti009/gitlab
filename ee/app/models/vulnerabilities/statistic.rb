@@ -78,6 +78,19 @@ module Vulnerabilities
         connection.execute(upsert_sql)
       end
 
+      # Bulk updates or inserts vulnerability statistic records with latest
+      # pipeline id containing a finding.
+      #
+      # @param pipelines [Array<Pipeline>] Collection of pipeline objects to process
+      # @return [void]
+      #
+      def bulk_set_latest_pipelines_with(pipelines)
+        pipelines.each_slice(BULK_UPSERT_BATCH_SIZE) do |batch|
+          bulk_upsert_sql = bulk_upsert_latest_pipeline_id_sql(batch)
+          connection.execute(bulk_upsert_sql)
+        end
+      end
+
       private
 
       UPSERT_LATEST_PIPELINE_ID_SQL_TEMPLATE = <<~SQL
@@ -102,6 +115,34 @@ module Vulnerabilities
           traversal_ids: traversal_ids_sql,
           latest_pipeline_id: pipeline.id,
           letter_grade: letter_grades[:a]
+        )
+      end
+
+      BULK_UPSERT_LATEST_PIPELINE_ID_SQL_TEMPLATE = <<~SQL
+        INSERT INTO %<table_name>s AS target (project_id, latest_pipeline_id, letter_grade, created_at, updated_at)
+          %<values>s
+        ON CONFLICT (project_id)
+          DO UPDATE SET
+            latest_pipeline_id = EXCLUDED.latest_pipeline_id, updated_at = now()
+      SQL
+
+      BULK_UPSERT_BATCH_SIZE = 250
+
+      private_constant :BULK_UPSERT_LATEST_PIPELINE_ID_SQL_TEMPLATE, :BULK_UPSERT_BATCH_SIZE
+
+      def bulk_upsert_latest_pipeline_id_sql(pipelines)
+        now = Arel::Nodes::SqlLiteral.new('now()')
+
+        values = pipelines.map do |pipeline|
+          [pipeline.project.id, pipeline.id, letter_grades[:a], now, now]
+        end
+
+        values_expression = Arel::Nodes::ValuesList.new(values).to_sql
+
+        format(
+          BULK_UPSERT_LATEST_PIPELINE_ID_SQL_TEMPLATE,
+          table_name: table_name,
+          values: values_expression
         )
       end
     end
