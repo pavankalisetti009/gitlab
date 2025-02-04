@@ -14,6 +14,7 @@ import {
   workItemResponseFactory,
   epicType,
   mockParticipantWidget,
+  allowedParentTypesResponse,
 } from 'jest/work_items/mock_data';
 import WorkItemParent from '~/work_items/components/work_item_parent.vue';
 import WorkItemAttributesWrapper from '~/work_items/components/work_item_attributes_wrapper.vue';
@@ -21,6 +22,7 @@ import workItemByIidQuery from '~/work_items/graphql/work_item_by_iid.query.grap
 import workItemParticipantsQuery from '~/work_items/graphql/work_item_participants.query.graphql';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
 import workItemUpdatedSubscription from '~/work_items/graphql/work_item_updated.subscription.graphql';
+import getAllowedWorkItemParentTypes from '~/work_items/graphql/work_item_allowed_parent_types.query.graphql';
 
 describe('EE WorkItemAttributesWrapper component', () => {
   let wrapper;
@@ -52,6 +54,7 @@ describe('EE WorkItemAttributesWrapper component', () => {
   const workItemUpdatedSubscriptionHandler = jest
     .fn()
     .mockResolvedValue({ data: { workItemUpdated: null } });
+  const allowedParentTypesHandler = jest.fn().mockResolvedValue(allowedParentTypesResponse);
 
   const findWorkItemIteration = () => wrapper.findComponent(WorkItemIteration);
   const findWorkItemWeight = () => wrapper.findComponent(WorkItemWeight);
@@ -75,6 +78,7 @@ describe('EE WorkItemAttributesWrapper component', () => {
         [workItemByIidQuery, handler],
         [workItemUpdatedSubscription, workItemUpdatedSubscriptionHandler],
         [workItemParticipantsQuery, workItemParticipantsQueryHandler],
+        [getAllowedWorkItemParentTypes, allowedParentTypesHandler],
         confidentialityMock,
       ]),
       propsData: {
@@ -272,9 +276,10 @@ describe('EE WorkItemAttributesWrapper component', () => {
       description                                       | hasSubepicsFeature | exists
       ${'renders when subepics is available'}           | ${true}            | ${true}
       ${'does not render when subepics is unavailable'} | ${false}           | ${false}
-    `('$description', ({ hasSubepicsFeature, exists }) => {
+    `('$description', async ({ hasSubepicsFeature, exists }) => {
       const response = workItemResponseFactory({ workItemType: epicType });
       createComponent({ workItem: response.data.workItem, hasSubepicsFeature });
+      await waitForPromises();
 
       expect(wrapper.findComponent(WorkItemParent).exists()).toBe(exists);
     });
