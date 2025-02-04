@@ -82,6 +82,29 @@ describe('DateRangeFilter', () => {
     });
   });
 
+  describe('options', () => {
+    it('overrides the default options', () => {
+      const options = ['7d', 'today'];
+      createWrapper({ options });
+
+      const res = findCollapsibleListBox()
+        .props('items')
+        .map(({ value }) => value);
+
+      expect(res).toEqual(options);
+    });
+
+    it('filters out invalid options', () => {
+      createWrapper({ options: [...DEFAULT_DATE_RANGE_OPTIONS, '25d'] });
+
+      expect(
+        findCollapsibleListBox()
+          .props('items')
+          .map(({ value }) => value),
+      ).not.toContain('25d');
+    });
+  });
+
   describe('date range picker', () => {
     describe('by default', () => {
       const { startDate, endDate } = DATE_RANGE_OPTIONS[DEFAULT_SELECTED_DATE_RANGE_OPTION];

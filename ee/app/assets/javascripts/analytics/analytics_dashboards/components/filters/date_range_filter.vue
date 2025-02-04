@@ -92,7 +92,7 @@ export default {
   },
   methods: {
     selectItem(key) {
-      const item = this.$options.DATE_RANGE_OPTIONS[key];
+      const item = getDateRangeOption(key);
       this.selectedItem = item;
 
       const { startDate, endDate, showDateRangePicker = false } = item;

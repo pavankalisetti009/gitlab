@@ -411,7 +411,7 @@ export default {
         const {
           dateRange: { defaultOption, options = [] },
         } = filters;
-        if (options.length && !options.includes(defaultOption)) {
+        if (!options.includes(defaultOption)) {
           this.showError({
             title: this.$options.i18n.dateRangeFilterValidationTitle,
             variant: VARIANT_WARNING,
