@@ -124,6 +124,7 @@ module Gitlab
 
           Gitlab::Duo::Chat::ReactExecutor.new(
             user_input: prompt_message.content,
+            thread: prompt_message.thread,
             tools: tools,
             context: context,
             response_handler: response_handler,

@@ -4,10 +4,11 @@ require 'spec_helper'
 
 RSpec.describe Gitlab::Llm::Chain::Utils::ChatConversation, feature_category: :duo_chat do
   describe "#truncated_conversation_list" do
-    subject(:conversation) { described_class.new(user).truncated_conversation_list }
+    subject(:conversation) { described_class.new(user, thread).truncated_conversation_list }
 
     let_it_be(:organization) { create(:organization) }
     let(:user) { create(:user, organizations: [organization]) }
+    let(:thread) { create(:ai_conversation_thread, user: user) }
 
     before do
       allow(::Gitlab::Llm::ChatStorage).to receive(:last_conversation).and_return(messages)
@@ -33,7 +34,7 @@ RSpec.describe Gitlab::Llm::Chain::Utils::ChatConversation, feature_category: :d
       end
 
       context "with limit on messages" do
-        subject(:conversation) { described_class.new(user).truncated_conversation_list(last_n: 3) }
+        subject(:conversation) { described_class.new(user, thread).truncated_conversation_list(last_n: 3) }
 
         it "returns exact number of messages" do
           expect(history).to contain_exactly("answer 1", "question 2", "answer 2")

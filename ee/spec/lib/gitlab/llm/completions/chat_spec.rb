@@ -72,8 +72,9 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
   let(:response_handler) { instance_double(Gitlab::Llm::ResponseService) }
   let(:stream_response_handler) { nil }
 
+  let(:thread) { create(:ai_conversation_thread, user: user) }
   let(:prompt_message) do
-    build(:ai_chat_message, user: user, resource: resource, request_id: 'uuid', content: content)
+    build(:ai_chat_message, user: user, resource: resource, request_id: 'uuid', content: content, thread: thread)
   end
 
   let(:tools) do
@@ -92,6 +93,7 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
     it 'calls the SingleAction Agent with the right parameters', :snowplow do
       expected_params = [
         user_input: content,
+        thread: thread,
         tools: match_array(tools),
         context: context,
         response_handler: response_handler,
@@ -103,7 +105,8 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
       end
 
       expect(response_handler).to receive(:execute)
-      expect(::Gitlab::Llm::ResponseService).to receive(:new).with(context, { request_id: 'uuid', ai_action: :chat })
+      expect(::Gitlab::Llm::ResponseService).to receive(:new)
+        .with(context, { request_id: 'uuid', ai_action: :chat, thread: thread })
         .and_return(response_handler)
       expect(::Gitlab::Llm::Chain::GitlabContext).to receive(:new)
         .with(current_user: user, container: expected_container, resource: resource, ai_request: ai_request,
@@ -131,7 +134,7 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
 
     context 'when client_subscription_id is set' do
       let(:prompt_message) do
-        build(:ai_chat_message, user: user, resource: resource,
+        build(:ai_chat_message, user: user, resource: resource, thread: thread,
           request_id: 'uuid', client_subscription_id: 'someid', content: content)
       end
 
@@ -140,6 +143,7 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
       it 'correctly initializes response handlers' do
         expected_params = [
           user_input: content,
+          thread: thread,
           tools: an_instance_of(Array),
           context: an_instance_of(Gitlab::Llm::Chain::GitlabContext),
           response_handler: response_handler,
@@ -152,12 +156,12 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
 
         expect(response_handler).to receive(:execute)
         expect(::Gitlab::Llm::ResponseService).to receive(:new).with(
-          an_instance_of(Gitlab::Llm::Chain::GitlabContext), { request_id: 'uuid', ai_action: :chat }
+          an_instance_of(Gitlab::Llm::Chain::GitlabContext), { request_id: 'uuid', ai_action: :chat, thread: thread }
         ).and_return(response_handler)
 
         expect(::Gitlab::Llm::ResponseService).to receive(:new).with(
-          an_instance_of(Gitlab::Llm::Chain::GitlabContext), { request_id: 'uuid', ai_action: :chat,
-client_subscription_id: 'someid' }
+          an_instance_of(Gitlab::Llm::Chain::GitlabContext),
+          { request_id: 'uuid', ai_action: :chat, client_subscription_id: 'someid', thread: thread }
         ).and_return(stream_response_handler).twice
         expect(stream_response_handler).to receive(:execute).with(response: anything, save_message: false)
         expect(categorize_service).to receive(:execute)
@@ -243,6 +247,7 @@ client_subscription_id: 'someid' }
       it 'calls zero shot agent with selected tools' do
         expected_params = [
           user_input: content,
+          thread: thread,
           tools: match_array(tools),
           context: context,
           response_handler: response_handler,
@@ -253,7 +258,8 @@ client_subscription_id: 'someid' }
           expect(instance).to receive(:execute).and_return(answer)
         end
         expect(response_handler).to receive(:execute)
-        expect(::Gitlab::Llm::ResponseService).to receive(:new).with(context, { ai_action: :chat, request_id: 'uuid' })
+        expect(::Gitlab::Llm::ResponseService).to receive(:new)
+          .with(context, { ai_action: :chat, request_id: 'uuid', thread: thread })
           .and_return(response_handler)
         expect(::Gitlab::Llm::Chain::GitlabContext).to receive(:new)
           .with(current_user: user, container: expected_container, resource: resource,
@@ -428,6 +434,7 @@ client_subscription_id: 'someid' }
       it 'does not execute question categorization' do
         expected_params = [
           user_input: content,
+          thread: thread,
           tools: match_array(tools),
           context: context,
           response_handler: response_handler,
@@ -439,7 +446,8 @@ client_subscription_id: 'someid' }
         end
 
         allow(response_handler).to receive(:execute)
-        allow(::Gitlab::Llm::ResponseService).to receive(:new).with(context, { request_id: 'uuid', ai_action: :chat })
+        allow(::Gitlab::Llm::ResponseService).to receive(:new)
+          .with(context, { request_id: 'uuid', ai_action: :chat, thread: thread })
           .and_return(response_handler)
         allow(::Gitlab::Llm::Chain::GitlabContext).to receive(:new)
           .with(current_user: user, container: expected_container, resource: resource, ai_request: ai_request,
