@@ -302,8 +302,8 @@ class License < ApplicationRecord
     return false if cloud_license?
 
     [restricted_attr(:trueup_quantity),
-     restricted_attr(:trueup_from),
-     restricted_attr(:trueup_to)].all?(&:present?)
+      restricted_attr(:trueup_from),
+      restricted_attr(:trueup_to)].all?(&:present?)
   end
 
   alias_method :exclude_guests_from_active_count?, :ultimate?

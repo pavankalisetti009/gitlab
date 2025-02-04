@@ -9,7 +9,7 @@ module Geo
     include ::EachBatch
 
     EVENT_CLASSES = %w[Geo::CacheInvalidationEvent
-                       Geo::Event].freeze
+      Geo::Event].freeze
 
     belongs_to :cache_invalidation_event,
       class_name: 'Geo::CacheInvalidationEvent',

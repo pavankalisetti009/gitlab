@@ -2,7 +2,7 @@
 
 class DastSiteProfile < Gitlab::Database::SecApplicationRecord
   API_SECRETS_KEYS = [Dast::SiteProfileSecretVariable::PASSWORD,
-                      Dast::SiteProfileSecretVariable::REQUEST_HEADERS].freeze
+    Dast::SiteProfileSecretVariable::REQUEST_HEADERS].freeze
 
   include Sanitizable
 

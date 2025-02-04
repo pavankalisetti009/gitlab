@@ -115,7 +115,7 @@ module Security
 
       def on_demand_stages
         [*Gitlab::Ci::Config::Entry::Stages.default,
-         AppSec::Dast::ScanConfigs::BuildService::STAGE_NAME]
+          AppSec::Dast::ScanConfigs::BuildService::STAGE_NAME]
       end
     end
   end

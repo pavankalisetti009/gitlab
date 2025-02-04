@@ -32,9 +32,9 @@ module EE
         before_action :set_application_context!, only: [:show, :diffs, :commits, :pipelines]
 
         feature_category :vulnerability_management, [:container_scanning_reports, :dependency_scanning_reports,
-                                                     :sast_reports, :secret_detection_reports, :dast_reports,
-                                                     :coverage_fuzzing_reports, :api_fuzzing_reports,
-                                                     :security_reports]
+          :sast_reports, :secret_detection_reports, :dast_reports,
+          :coverage_fuzzing_reports, :api_fuzzing_reports,
+          :security_reports]
         feature_category :observability, [:metrics_reports]
         feature_category :software_composition_analysis,
           [:license_scanning_reports, :license_scanning_reports_collapsed]
@@ -42,12 +42,12 @@ module EE
 
         urgency :high, [:delete_description_version]
         urgency :low, [:container_scanning_reports,
-                       :dependency_scanning_reports, :sast_reports,
-                       :secret_detection_reports, :dast_reports,
-                       :coverage_fuzzing_reports, :api_fuzzing_reports,
-                       :metrics_reports, :description_diff,
-                       :license_scanning_reports, :license_scanning_reports_collapsed,
-                       :security_reports, :reports]
+          :dependency_scanning_reports, :sast_reports,
+          :secret_detection_reports, :dast_reports,
+          :coverage_fuzzing_reports, :api_fuzzing_reports,
+          :metrics_reports, :description_diff,
+          :license_scanning_reports, :license_scanning_reports_collapsed,
+          :security_reports, :reports]
 
         def reports
           return render_404 unless ::Feature.enabled?(:mr_reports_tab, current_user, type: :wip)

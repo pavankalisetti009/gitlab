@@ -16,7 +16,7 @@ module EE
     DEFAULT_ROADMAP_LAYOUT = 'months'
     DEFAULT_GROUP_VIEW = 'details'
     ELASTICSEARCH_TRACKED_FIELDS = %w[id username email public_email name admin state organization
-                                      timezone external otp_required_for_login].freeze
+      timezone external otp_required_for_login].freeze
 
     prepended do
       include UsageStatistics

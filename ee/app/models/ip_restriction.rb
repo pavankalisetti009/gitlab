@@ -2,7 +2,7 @@
 
 class IpRestriction < ApplicationRecord
   INVALID_SUBNET_ERRORS = [IPAddr::AddressFamilyError,
-                           IPAddr::InvalidAddressError].freeze
+    IPAddr::InvalidAddressError].freeze
 
   belongs_to :group
 

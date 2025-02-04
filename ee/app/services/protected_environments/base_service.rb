@@ -43,7 +43,7 @@ module ProtectedEnvironments
           container.invited_groups
         elsif group_container?
           Group.from_union([container.self_and_descendants,
-                            container.shared_with_groups])
+            container.shared_with_groups])
         end.pluck_primary_key.to_set
       end
     end

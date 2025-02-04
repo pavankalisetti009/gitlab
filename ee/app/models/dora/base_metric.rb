@@ -30,9 +30,9 @@ module Dora
       deployments = Deployment.arel_table
 
       [deployments[:environment_id].eq(environment.id),
-       deployments[:finished_at].gteq(date.beginning_of_day),
-       deployments[:finished_at].lteq(date.end_of_day),
-       deployments[:status].eq(Deployment.statuses[:success])].reduce(&:and)
+        deployments[:finished_at].gteq(date.beginning_of_day),
+        deployments[:finished_at].lteq(date.end_of_day),
+        deployments[:status].eq(Deployment.statuses[:success])].reduce(&:and)
     end
   end
 end

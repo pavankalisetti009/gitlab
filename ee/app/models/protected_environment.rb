@@ -86,7 +86,7 @@ class ProtectedEnvironment < ApplicationRecord
 
       from_union([
         where(project: project_id, name: names),
-                   where(group: group_ids, name: tiers)
+        where(group: group_ids, name: tiers)
       ])
     end
   end
