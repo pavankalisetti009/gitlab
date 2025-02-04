@@ -16,7 +16,9 @@ function mountSelfHostedModelsApp() {
     return null;
   }
 
-  const { basePath, modelOptions } = JSON.parse(el.dataset.viewModel);
+  const { basePath, modelOptions, betaModelsEnabled, duoConfigurationSettingsPath } = JSON.parse(
+    el.dataset.viewModel,
+  );
 
   const router = createRouter(basePath);
 
@@ -28,6 +30,8 @@ function mountSelfHostedModelsApp() {
     provide: {
       basePath,
       modelOptions,
+      betaModelsEnabled,
+      duoConfigurationSettingsPath,
     },
     render(createElement) {
       return createElement('router-view');

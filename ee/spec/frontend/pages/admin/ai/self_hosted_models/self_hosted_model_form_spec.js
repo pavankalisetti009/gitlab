@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlForm } from '@gitlab/ui';
+import { GlAlert, GlForm } from '@gitlab/ui';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
@@ -31,6 +31,7 @@ describe('SelfHostedModelForm', () => {
   let wrapper;
 
   const basePath = '/admin/ai/self_hosted_models';
+  const duoConfigurationSettingsPath = '/admin/gitlab_duo/configuration';
   const createMutationSuccessHandler = jest.fn().mockResolvedValue({
     data: {
       aiSelfHostedModelCreate: {
@@ -47,6 +48,7 @@ describe('SelfHostedModelForm', () => {
       },
     },
     apolloHandlers = [[createSelfHostedModelMutation, createMutationSuccessHandler]],
+    injectedProps = {},
   } = {}) => {
     const mockApollo = createMockApollo([...apolloHandlers]);
 
@@ -55,7 +57,10 @@ describe('SelfHostedModelForm', () => {
       apolloProvider: mockApollo,
       provide: {
         basePath,
+        betaModelsEnabled: true,
         modelOptions: SELF_HOSTED_MODEL_OPTIONS,
+        duoConfigurationSettingsPath,
+        ...injectedProps,
       },
       propsData: {
         ...props,
@@ -88,6 +93,8 @@ describe('SelfHostedModelForm', () => {
   const findCreateButton = () => wrapper.find('button[type="submit"]');
   const findCancelButton = () => wrapper.findByText('Cancel');
   const findTestConnectionButton = () => wrapper.findComponent(TestConnectionButton);
+  const findBetaAlert = () => wrapper.findComponent(GlAlert);
+  const findDuoConfigurationLink = () => wrapper.findByTestId('duo-configuration-link');
 
   // Find validation messages
   const findNameValidationMessage = () => wrapper.findByText('Please enter a deployment name.');
@@ -102,6 +109,23 @@ describe('SelfHostedModelForm', () => {
 
   it('renders the self-hosted model form', () => {
     expect(findGlForm().exists()).toBe(true);
+  });
+
+  describe('when beta models are enabled', () => {
+    it('does not display a beta models info alert', () => {
+      expect(findBetaAlert().exists()).toBe(false);
+    });
+  });
+
+  describe('when beta models are disabled', () => {
+    beforeEach(() => {
+      createComponent({ injectedProps: { betaModelsEnabled: false } });
+    });
+
+    it('displays a beta models info alert', () => {
+      expect(findBetaAlert().text()).toMatch('More models are available in beta.');
+      expect(findDuoConfigurationLink().attributes('href')).toBe(duoConfigurationSettingsPath);
+    });
   });
 
   describe('form fields', () => {
