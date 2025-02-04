@@ -14,7 +14,7 @@ module Gitlab
         AgentEventError = Class.new(StandardError)
         RetryableAgentEventError = Class.new(StandardError)
 
-        attr_reader :tools, :user_input, :context, :response_handler
+        attr_reader :tools, :user_input, :context, :response_handler, :thread
         attr_accessor :iterations
 
         MAX_ITERATIONS = 10
@@ -30,8 +30,9 @@ module Gitlab
         # @param [GitlabContext] context - Gitlab context containing useful context information
         # @param [ResponseService] response_handler - Handles returning the response to the client
         # @param [ResponseService] stream_response_handler - Handles streaming chunks to the client
-        def initialize(user_input:, tools:, context:, response_handler:, stream_response_handler: nil)
+        def initialize(user_input:, tools:, context:, response_handler:, stream_response_handler: nil, thread: nil)
           @user_input = user_input
+          @thread = thread
           @tools = tools
           @context = context
           @iterations = 0
@@ -308,7 +309,7 @@ module Gitlab
         end
 
         def conversation
-          Gitlab::Llm::Chain::Utils::ChatConversation.new(context.current_user)
+          Gitlab::Llm::Chain::Utils::ChatConversation.new(context.current_user, thread)
             .truncated_conversation_list
         end
 

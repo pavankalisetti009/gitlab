@@ -7,8 +7,9 @@ module Gitlab
         class ChatConversation
           LAST_N_MESSAGES = 50
 
-          def initialize(user)
+          def initialize(user, thread)
             @user = user
+            @thread = thread
           end
 
           # We save a maximum of 50 chat history messages
@@ -36,13 +37,13 @@ module Gitlab
 
           private
 
-          attr_reader :user
+          attr_reader :user, :thread
 
           # agent_version is deprecated, Chat conversation doesn't have this param anymore
           # returns successful interactions with chat where both question and answer are present
           # messages are grouped into conversations based on request_id
           def successful_conversations
-            ChatStorage.new(user, nil)
+            ChatStorage.new(user, nil, thread)
               .last_conversation
               .reject { |message| message.errors.present? || message.content.blank? }
               .group_by(&:request_id)
