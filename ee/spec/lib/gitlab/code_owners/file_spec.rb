@@ -21,6 +21,50 @@ RSpec.describe Gitlab::CodeOwners::File, feature_category: :source_code_manageme
       file.parsed_data["codeowners"][pattern].owner_line
     end
 
+    context 'when handling exclusion patterns' do
+      let(:file_content) do
+        <<~CONTENT
+          * @group-x
+          !*.rb
+
+          [Ruby]
+          *.rb @ruby-devs
+          /config/example.yml @config-yml
+          !/config/**/*.rb
+        CONTENT
+      end
+
+      it 'excludes patterns correctly per section' do
+        parsed = file.parsed_data
+
+        expect(parsed['codeowners'].keys).to contain_exactly('/**/*', '/**/*.rb')
+        expect(parsed['codeowners']['/**/*'].owner_line).to eq('@group-x')
+        expect(parsed['codeowners']['/**/*.rb'].exclusion).to be(true)
+
+        expect(parsed['Ruby'].keys).to contain_exactly('/**/*.rb', '/config/example.yml', '/config/**/*.rb')
+        expect(parsed['Ruby']['/**/*.rb'].owner_line).to eq('@ruby-devs')
+        expect(parsed['Ruby']['/config/example.yml'].owner_line).to eq('@config-yml')
+        expect(parsed['Ruby']['/config/**/*.rb'].exclusion).to be(true)
+      end
+
+      context 'when "codeowners_file_exclusions" is disabled' do
+        before do
+          stub_feature_flags(codeowners_file_exclusions: false)
+        end
+
+        it 'does not mark excluded entries per section' do
+          parsed = file.parsed_data
+
+          expect(parsed['codeowners'].keys).to contain_exactly('/**/*', '/**/!*.rb')
+          expect(parsed['codeowners']['/**/*'].owner_line).to eq('@group-x')
+
+          expect(parsed['Ruby'].keys).to contain_exactly('/**/*.rb', '/config/example.yml', '/**/!/config/**/*.rb')
+          expect(parsed['Ruby']['/**/*.rb'].owner_line).to eq('@ruby-devs')
+          expect(parsed['Ruby']['/config/example.yml'].owner_line).to eq('@config-yml')
+        end
+      end
+    end
+
     context "when CODEOWNERS file contains no sections" do
       it 'parses all the required lines' do
         expected_patterns = [
@@ -423,6 +467,76 @@ RSpec.describe Gitlab::CodeOwners::File, feature_category: :source_code_manageme
           it 'matches the file in any folder' do
             expect(file.entries_for_path('baz/foo/bar').first.owner_line).to include('user-1', 'user-2')
             expect(file.entries_for_path('/foo/bar').first.owner_line).to include('user-1', 'user-2')
+          end
+        end
+      end
+    end
+
+    context 'when handling excluded patterns' do
+      let(:file_content) do
+        <<~CONTENT
+          * @group-x
+          !*.rb
+
+          [Ruby]
+          *.rb @ruby-devs
+          !/config/*
+        CONTENT
+      end
+
+      it 'matches non-excluded files to default owner' do
+        entry = file.entries_for_path('file.txt').first
+
+        expect(entry.owner_line).to eq('@group-x')
+      end
+
+      it 'matches .rb files to ruby owner except in config' do
+        ruby_entry = file.entries_for_path('app/models/user.rb').first
+        config_entry = file.entries_for_path('config/routes.rb')
+
+        expect(ruby_entry.owner_line).to eq('@ruby-devs')
+        expect(config_entry).to be_empty
+      end
+
+      it 'does not match excluded patterns' do
+        entries = file.entries_for_path('config/database.rb')
+
+        expect(entries).to be_empty
+      end
+
+      context 'with nested exclusions' do
+        let(:file_content) do
+          <<~CONTENT
+            * @group-x
+
+            !/app/temp/*
+            !/app/*/temp/*
+          CONTENT
+        end
+
+        it 'handles nested path exclusions correctly' do
+          regular_entry = file.entries_for_path('app/models/user.rb').first
+          temp_entry = file.entries_for_path('app/temp/temp.rb')
+          nested_temp_entry = file.entries_for_path('app/models/temp/file.rb')
+
+          expect(regular_entry.owner_line).to eq('@group-x')
+          expect(temp_entry).to be_empty
+          expect(nested_temp_entry).to be_empty
+        end
+
+        context 'when "codeowners_file_exclusions" is disabled' do
+          before do
+            stub_feature_flags(codeowners_file_exclusions: false)
+          end
+
+          it 'handles nested path exclusions correctly' do
+            regular_entry = file.entries_for_path('app/models/user.rb').first
+            temp_entry = file.entries_for_path('app/temp/temp.rb').first
+            nested_temp_entry = file.entries_for_path('app/models/temp/file.rb').first
+
+            expect(regular_entry.owner_line).to eq('@group-x')
+            expect(temp_entry.owner_line).to eq('@group-x')
+            expect(nested_temp_entry.owner_line).to eq('@group-x')
           end
         end
       end
