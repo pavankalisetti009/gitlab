@@ -540,4 +540,45 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
       expect(zoekt_index).not_to be_should_be_deleted
     end
   end
+
+  describe '#find_or_create_repository_by_project!' do
+    let_it_be(:zoekt_index) { create(:zoekt_index) }
+    let_it_be(:project) { create(:project) }
+
+    context 'when find_or_create_by! raises an error' do
+      before do
+        allow(zoekt_index).to receive_message_chain(:zoekt_repositories, :find_or_create_by!).and_raise(StandardError)
+      end
+
+      it 'raises the error' do
+        expect do
+          zoekt_index.find_or_create_repository_by_project!(project.id, project)
+        end.to raise_error(StandardError).and not_change { Search::Zoekt::Repository.count }
+      end
+    end
+
+    context 'when zoekt_repository exists with the given params' do
+      before do
+        create(:zoekt_repository, project: project, zoekt_index: zoekt_index)
+      end
+
+      it 'returns the existing record' do
+        result = nil
+        expect do
+          result = zoekt_index.find_or_create_repository_by_project!(project.id, project)
+        end.not_to change { zoekt_index.zoekt_repositories.count }
+        expect(result.project_identifier).to eq project.id
+      end
+    end
+
+    context 'when zoekt_repository does not exists with the given params' do
+      it 'creates and return the new record' do
+        result = nil
+        expect do
+          result = zoekt_index.find_or_create_repository_by_project!(project.id, project)
+        end.to change { zoekt_index.zoekt_repositories.count }.by(1)
+        expect(result.project_identifier).to eq project.id
+      end
+    end
+  end
 end

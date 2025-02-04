@@ -54,11 +54,8 @@ module Search
 
           perform_at = Time.current
           perform_at += delay if delay
-          ApplicationRecord.transaction do
-            Repository.create_tasks(
-              project_id: project_id, zoekt_index: idx, task_type: current_task_type, perform_at: perform_at
-            )
-          end
+          zoekt_repo = idx.find_or_create_repository_by_project!(project_id, project)
+          Repository.id_in(zoekt_repo).create_bulk_tasks(task_type: current_task_type, perform_at: perform_at)
         end
       end
 
