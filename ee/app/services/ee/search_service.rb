@@ -45,13 +45,13 @@ module EE
     def global_search_enabled_for_scope?
       case params[:scope]
       when 'blobs'
-        ::Feature.enabled?(:global_search_code_tab, current_user, type: :ops)
+        ::Gitlab::CurrentSettings.global_search_code_enabled?
       when 'commits'
-        ::Feature.enabled?(:global_search_commits_tab, current_user, type: :ops)
+        ::Gitlab::CurrentSettings.global_search_commits_enabled?
       when 'epics'
-        ::Feature.enabled?(:global_search_epics_tab, current_user, type: :ops)
+        ::Gitlab::CurrentSettings.global_search_epics_enabled?
       when 'wiki_blobs'
-        ::Feature.enabled?(:global_search_wiki_tab, current_user, type: :ops)
+        ::Gitlab::CurrentSettings.global_search_wiki_enabled?
       else
         super
       end

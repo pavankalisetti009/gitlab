@@ -203,15 +203,15 @@ RSpec.describe SearchController, :elastic, feature_category: :global_search do
 
       subject(:show) { get :show, params: { scope: scope, search: 'term' }, format: :html }
 
-      where(:feature_flag, :scope) do
-        :global_search_code_tab    | 'blobs'
-        :global_search_commits_tab | 'commits'
-        :global_search_wiki_tab    | 'wiki_blobs'
+      where(:admin_setting, :scope) do
+        :global_search_code_enabled    | 'blobs'
+        :global_search_commits_enabled | 'commits'
+        :global_search_wiki_enabled    | 'wiki_blobs'
       end
 
       with_them do
         it 'returns 200 if flag is enabled' do
-          stub_feature_flags(feature_flag => true)
+          stub_application_setting(admin_setting => true)
 
           show
 
@@ -219,7 +219,7 @@ RSpec.describe SearchController, :elastic, feature_category: :global_search do
         end
 
         it 'redirects with alert if flag is disabled' do
-          stub_feature_flags(feature_flag => false)
+          stub_application_setting(admin_setting => false)
 
           show
 

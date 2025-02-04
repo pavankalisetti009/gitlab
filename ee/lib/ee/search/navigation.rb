@@ -47,7 +47,7 @@ module EE
         return true if super
         return false if project
 
-        global_search_code_enabled = ::Feature.enabled?(:global_search_code_tab, user, type: :ops)
+        global_search_code_enabled =  ::Gitlab::CurrentSettings.global_search_code_enabled?
         global_search_zoekt_enabled = ::Feature.enabled?(:zoekt_cross_namespace_search, user, type: :ops)
 
         zoekt_enabled_for_user = zoekt_enabled? && ::Search::Zoekt.enabled_for_user?(user)
@@ -72,7 +72,7 @@ module EE
         return false unless show_elasticsearch_tabs?
         return true if group
 
-        ::Feature.enabled?(:global_search_wiki_tab, user, type: :ops)
+        ::Gitlab::CurrentSettings.global_search_wiki_enabled?
       end
 
       def show_epics_search_tab?
@@ -80,7 +80,7 @@ module EE
         return false unless options[:show_epics]
         return true if group
 
-        ::Feature.enabled?(:global_search_epics_tab, user, type: :ops)
+        ::Gitlab::CurrentSettings.global_search_epics_enabled?
       end
 
       override :show_commits_search_tab?
@@ -89,7 +89,7 @@ module EE
         return false unless show_elasticsearch_tabs? # advanced search enabled
         return true if group # group search
 
-        ::Feature.enabled?(:global_search_commits_tab, user, type: :ops) # global search
+        ::Gitlab::CurrentSettings.global_search_commits_enabled?
       end
     end
   end

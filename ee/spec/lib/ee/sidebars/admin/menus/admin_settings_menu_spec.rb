@@ -79,21 +79,7 @@ RSpec.describe Sidebars::Admin::Menus::AdminSettingsMenu, feature_category: :nav
     describe 'Search', feature_category: :global_search do
       let(:item_id) { :search }
 
-      context 'when elastic_search feature is not licensed' do
-        before do
-          stub_licensed_features(elastic_search: false)
-        end
-
-        it { is_expected.not_to be_present }
-      end
-
-      context 'when elastic_search feature is licensed' do
-        before do
-          stub_licensed_features(elastic_search: true)
-        end
-
-        it { is_expected.to be_present }
-      end
+      it { is_expected.to be_present }
     end
   end
 end

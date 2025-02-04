@@ -58,7 +58,7 @@ RSpec.describe 'getting a collection of blobs with multiple matches in a single 
 
     context 'when global search is disabled for blobs' do
       before do
-        stub_feature_flags(global_search_code_tab: false)
+        stub_application_setting(global_search_code_enabled: false)
       end
 
       context 'when group_id and project_id not passed' do

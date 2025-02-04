@@ -109,20 +109,20 @@ RSpec.describe SearchService, feature_category: :global_search do
     let(:search_service) { described_class.new(user, { scope: scope, search: search }) }
     let(:search) { 'foobar' }
 
-    where(:scope, :feature_flag, :enabled, :expected) do
-      'blobs'          | :global_search_code_tab           | false | false
-      'blobs'          | :global_search_code_tab           | true  | true
-      'commits'        | :global_search_commits_tab        | false | false
-      'commits'        | :global_search_commits_tab        | true  | true
-      'epics'          | :global_search_epics_tab          | false | false
-      'epics'          | :global_search_epics_tab          | true  | true
-      'wiki_blobs'     | :global_search_wiki_tab           | false | false
-      'wiki_blobs'     | :global_search_wiki_tab           | true  | true
+    where(:scope, :admin_setting, :setting_enabled, :expected) do
+      'blobs'          | :global_search_code_enabled           | false | false
+      'blobs'          | :global_search_code_enabled           | true  | true
+      'commits'        | :global_search_commits_enabled        | false | false
+      'commits'        | :global_search_commits_enabled        | true  | true
+      'epics'          | :global_search_epics_enabled          | false | false
+      'epics'          | :global_search_epics_enabled          | true  | true
+      'wiki_blobs'     | :global_search_wiki_enabled           | false | false
+      'wiki_blobs'     | :global_search_wiki_enabled           | true  | true
     end
 
     with_them do
       it 'returns false when feature_flag is not enabled and returns true when feature_flag is enabled' do
-        stub_feature_flags(feature_flag => enabled)
+        stub_application_setting(admin_setting => setting_enabled)
         expect(search_service.global_search_enabled_for_scope?).to eq expected
       end
     end

@@ -89,7 +89,11 @@ module EE
         :scan_execution_policies_action_limit,
         :secret_detection_service_auth_token,
         :secret_detection_service_url,
-        :fetch_observability_alerts_from_cloud
+        :fetch_observability_alerts_from_cloud,
+        :global_search_code_enabled,
+        :global_search_commits_enabled,
+        :global_search_wiki_enabled,
+        :global_search_epics_enabled
       ].tap do |settings|
         settings.concat(identity_verification_attributes)
         settings.concat(enable_promotion_management_attributes)
@@ -264,6 +268,32 @@ module EE
           unchecked_value: nil
         )
       end
+    end
+
+    override :global_search_settings_checkboxes
+    def global_search_settings_checkboxes(form)
+      super + [
+        form.gitlab_ui_checkbox_component(
+          :global_search_code_enabled,
+          _("Enable code tab in global search results"),
+          checkbox_options: { checked: @application_setting.global_search_code_enabled, multiple: false }
+        ),
+        form.gitlab_ui_checkbox_component(
+          :global_search_commits_enabled,
+          _("Enable commits tab in global search results"),
+          checkbox_options: { checked: @application_setting.global_search_commits_enabled, multiple: false }
+        ),
+        form.gitlab_ui_checkbox_component(
+          :global_search_epics_enabled,
+          _("Enable epics tab in global search results"),
+          checkbox_options: { checked: @application_setting.global_search_epics_enabled, multiple: false }
+        ),
+        form.gitlab_ui_checkbox_component(
+          :global_search_wiki_enabled,
+          _("Enable wiki tab in global search results"),
+          checkbox_options: { checked: @application_setting.global_search_wiki_enabled, multiple: false }
+        )
+      ]
     end
 
     def zoekt_settings_checkboxes(form)
