@@ -25293,9 +25293,6 @@ msgstr ""
 msgid "Geo"
 msgstr ""
 
-msgid "Geo Replication"
-msgstr ""
-
 msgid "Geo Replication - %{node_name}"
 msgstr ""
 
