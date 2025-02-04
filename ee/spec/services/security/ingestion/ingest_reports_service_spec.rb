@@ -38,10 +38,7 @@ RSpec.describe Security::Ingestion::IngestReportsService, feature_category: :vul
       expect(Security::Ingestion::IngestReportService).to have_received(:execute).once.with(security_scan_3)
     end
 
-    it 'sets the resolved vulnerabilities, latest pipeline ID and has_vulnerabilities flag' do
-      expect { ingest_reports }.to change { project.reload.project_setting&.has_vulnerabilities }.to(true)
-        .and change { project.reload.vulnerability_statistic&.latest_pipeline_id }.to(pipeline.id)
-    end
+    it_behaves_like 'schedules synchronization of vulnerability statistic'
 
     context 'when ingested reports are empty' do
       let(:ids_1) { [] }
@@ -101,30 +98,7 @@ RSpec.describe Security::Ingestion::IngestReportsService, feature_category: :vul
       end
     end
 
-    describe 'scheduling the SyncFindingsToApprovalRulesWorker background job' do
-      before do
-        allow(Security::ScanResultPolicies::SyncFindingsToApprovalRulesWorker).to receive(:perform_async)
-        stub_licensed_features(security_orchestration_policies: security_orchestration_policies_enabled)
-
-        ingest_reports
-      end
-
-      context 'when the security_orchestration_policies is not licensed for the project' do
-        let(:security_orchestration_policies_enabled) { false }
-
-        it 'does not schedule the background job' do
-          expect(Security::ScanResultPolicies::SyncFindingsToApprovalRulesWorker).not_to have_received(:perform_async)
-        end
-      end
-
-      context 'when the security_orchestration_policies is licensed for the project' do
-        let(:security_orchestration_policies_enabled) { true }
-
-        it 'schedules the background job' do
-          expect(Security::ScanResultPolicies::SyncFindingsToApprovalRulesWorker).to have_received(:perform_async).with(pipeline.id)
-        end
-      end
-    end
+    it_behaves_like 'schedules synchronization of findings to approval rules'
 
     context 'when scheduling the SBOM ingestion' do
       let(:sbom_ingestion_scheduler) { instance_double(::Sbom::ScheduleIngestReportsService, execute: nil) }
