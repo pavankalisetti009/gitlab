@@ -26777,9 +26777,6 @@ ALTER TABLE web_hook_logs
 ALTER TABLE vulnerability_finding_evidences
     ADD CONSTRAINT check_e8f37f70eb CHECK ((project_id IS NOT NULL)) NOT VALID;
 
-ALTER TABLE vulnerabilities
-    ADD CONSTRAINT check_e987357e3b CHECK ((detected_at IS NOT NULL)) NOT VALID;
-
 ALTER TABLE work_item_parent_links
     ADD CONSTRAINT check_e9c0111985 CHECK ((namespace_id IS NOT NULL)) NOT VALID;
 
