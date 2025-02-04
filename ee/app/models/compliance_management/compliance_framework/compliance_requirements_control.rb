@@ -47,6 +47,14 @@ module ComplianceManagement
       validates :name, uniqueness: { scope: :compliance_requirement_id }
       validates :secret_token, presence: true, if: :external?
 
+      def expression_as_hash
+        ::Gitlab::Json.parse(expression)
+      rescue JSON::ParserError
+        errors.add(:expression, _('should be a valid json object.'))
+
+        nil
+      end
+
       private
 
       def controls_count_per_requirement
@@ -62,14 +70,15 @@ module ComplianceManagement
       def validate_internal_expression
         return if expression.blank?
 
-        expression_schema_errors = CONTROL_EXPRESSION_SCHEMA.validate(Gitlab::Json.parse(expression)).to_a
+        hashed_expression = expression_as_hash
+        return if errors[:expression].any?
+
+        expression_schema_errors = CONTROL_EXPRESSION_SCHEMA.validate(hashed_expression).to_a
         return if expression_schema_errors.blank?
 
         expression_schema_errors.each do |error|
           errors.add(:expression, JSONSchemer::Errors.pretty(error))
         end
-      rescue JSON::ParserError
-        errors.add(:expression, _('should be a valid json object.'))
       end
     end
   end
