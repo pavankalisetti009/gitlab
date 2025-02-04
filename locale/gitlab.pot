@@ -21827,6 +21827,9 @@ msgstr ""
 msgid "Edits"
 msgstr ""
 
+msgid "Either the `publish` or `pages.publish` option may be present in `.gitlab-ci.yml`, but not both."
+msgstr ""
+
 msgid "Either the title or description must reference a Jira issue."
 msgstr ""
 

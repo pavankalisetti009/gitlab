@@ -1145,10 +1145,13 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
       false | {} | {}
       false | { pages: { path_prefix: 'foo' } } | {}
       true | { pages: { path_prefix: 'foo' } } | { path_prefix: 'foo' }
-      true | { pages: { path_prefix: nil } } | { path_prefix: '' }
+      true | { pages: { path_prefix: nil } } | {}
       true | { pages: { path_prefix: 'foo' }, publish: 'public' } | { path_prefix: 'foo', publish: 'public' }
+      true | { pages: { path_prefix: 'foo', publish: 'public' } } | { path_prefix: 'foo', publish: 'public' }
       true | { pages: { path_prefix: '$CI_COMMIT_BRANCH' } } | { path_prefix: 'master' }
       true | { pages: { path_prefix: 'foo', expire_in: '1d' } } | { path_prefix: 'foo', expire_in: '1d' }
+      true | { pages: { path_prefix: 'foo', expire_in: '1d', publish: '$CUSTOM_FOLDER' } } | { path_prefix: 'foo', expire_in: '1d', publish: 'custom_folder' }
+      true | { pages: { path_prefix: 'foo', expire_in: '1d', publish: 'public' } } | { path_prefix: 'foo', expire_in: '1d', publish: 'public' }
       true | { pages: { path_prefix: 'foo', expire_in: 'never' } } | { path_prefix: 'foo', expire_in: 'never' }
     end
 
@@ -1156,6 +1159,7 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
       before do
         allow(job).to receive(:pages_generator?).and_return(pages_generator)
         allow(job).to receive(:options).and_return(options)
+        create(:ci_job_variable, key: 'CUSTOM_FOLDER', value: 'custom_folder', job: job)
       end
 
       subject(:pages_options) { job.pages }
