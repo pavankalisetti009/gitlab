@@ -187,7 +187,7 @@ module Types
     field :blocked_by_epics, ::Types::EpicType.connection_type,
       null: true, complexity: 5, description: 'Epics blocking this epic.'
 
-    field :linked_work_items, ::Types::WorkItemType.connection_type,
+    field :linked_work_items, ::Types::WorkItems::LinkedItemType.connection_type,
       null: true, complexity: 5, resolver: Resolvers::WorkItems::LinkedItemsResolver,
       description: 'Work items linked to the epic.', extras: [:lookahead]
 
