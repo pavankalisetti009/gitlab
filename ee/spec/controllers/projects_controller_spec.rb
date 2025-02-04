@@ -308,7 +308,7 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
             post :create, params: { project: templates_params }
 
             created_project = Project.find_by_path('foo')
-            expect(flash[:notice]).to eq "Project 'foo' was successfully created."
+            expect(flash[:notice]).to eq "Project &#39;foo&#39; was successfully created."
             expect(created_project.repository.empty?).to be false
           end
         end
