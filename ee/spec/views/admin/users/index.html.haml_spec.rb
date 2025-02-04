@@ -3,14 +3,11 @@
 require 'spec_helper'
 
 RSpec.describe 'admin/users/index', :enable_admin_mode, feature_category: :user_management do
-  let(:should_check_namespace_plan) { false }
   let(:admin) { build_stubbed(:user, :admin) }
 
   before do
-    allow(Gitlab::CurrentSettings).to receive(:should_check_namespace_plan?)
-      .and_return(should_check_namespace_plan)
     allow(view).to receive_messages(container_class: 'ignored', current_user: admin)
-    create(:user) # to have at least one usser
+    create(:user) # to have at least one user
     assign(:users, User.all.page(1))
     assign(:cohorts, { months_included: 0, cohorts: [] })
 
@@ -19,13 +16,5 @@ RSpec.describe 'admin/users/index', :enable_admin_mode, feature_category: :user_
 
   it 'includes "Send email to users" link' do
     expect(rendered).to have_link href: admin_email_path
-  end
-
-  context 'when Gitlab::CurrentSettings.should_check_namespace_plan is true' do
-    let(:should_check_namespace_plan) { true }
-
-    it 'includes "Send email to users" link' do
-      expect(rendered).to have_link href: admin_email_path
-    end
   end
 end

@@ -1,5 +1,5 @@
 -# rubocop:disable CodeReuse/ActiveRecord
-- return unless Gitlab::CurrentSettings.should_check_namespace_plan?
+- return unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
 
 .form-group.gl-form-group{ role: 'group' }
   = f.label :plan, class: 'gl-block col-form-label'
