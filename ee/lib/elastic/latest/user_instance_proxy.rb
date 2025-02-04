@@ -3,7 +3,9 @@
 module Elastic
   module Latest
     class UserInstanceProxy < ApplicationInstanceProxy
-      def as_indexed_json(options = {})
+      SCHEMA_VERSION = 22_10
+
+      def as_indexed_json(_options = {})
         # We don't use as_json(only: ...) because it calls all virtual and serialized attributtes
         # https://gitlab.com/gitlab-org/gitlab/issues/349
 
@@ -36,7 +38,7 @@ module Elastic
 
         # Schema version. The format is Date.today.strftime('%y_%m')
         # Please update if you're changing the schema of the document
-        data['schema_version'] = 22_10
+        data['schema_version'] = SCHEMA_VERSION
 
         data.merge(generic_attributes)
       end
