@@ -4,7 +4,12 @@
 module EE
   module Admin
     module UsersController
+      extend ::ActiveSupport::Concern
       extend ::Gitlab::Utils::Override
+
+      prepended do
+        authorize! :read_admin_users, only: [:index, :show]
+      end
 
       def identity_verification_exemption
         if @user.add_identity_verification_exemption("set by #{current_user.username}")
