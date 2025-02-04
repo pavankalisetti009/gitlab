@@ -2,9 +2,8 @@
 stage: Systems
 group: Distribution
 info: To determine the technical writer assigned to the Stage/Group associated with this page, see https://handbook.gitlab.com/handbook/product/ux/technical-writing/#assignments
+title: Upgrading Linux package instances
 ---
-
-# Upgrading Linux package instances
 
 DETAILS:
 **Tier:** Free, Premium, Ultimate
@@ -47,7 +46,7 @@ Nevertheless, you should maintain a full up-to-date
 
 To upgrade a Linux package instance:
 
-1. [Complete the initial steps](../index.md#upgrade-gitlab) in the main GitLab upgrade documentation.
+1. [Complete the initial steps](../_index.md#upgrade-gitlab) in the main GitLab upgrade documentation.
 1. If you are upgrading from a non-package installation to a GitLab package installation, follow the steps in
    [Upgrading from a non-package installation to a GitLab package installation](https://docs.gitlab.com/omnibus/update/convert_to_omnibus.html).
 1. Continue the upgrade by following the sections below.

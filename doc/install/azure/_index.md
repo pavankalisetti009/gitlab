@@ -3,9 +3,8 @@ stage: Systems
 group: Distribution
 info: To determine the technical writer assigned to the Stage/Group associated with this page, see https://handbook.gitlab.com/handbook/product/ux/technical-writing/#assignments
 description: 'Learn how to spin up a pre-configured GitLab VM on Microsoft Azure.'
+title: Install GitLab on Microsoft Azure
 ---
-
-# Install GitLab on Microsoft Azure
 
 DETAILS:
 **Tier:** Free, Premium, Ultimate

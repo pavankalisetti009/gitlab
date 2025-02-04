@@ -2,9 +2,8 @@
 stage: GitLab Dedicated
 group: US Public Sector Services
 info: All material changes to this page must be approved by the [FedRAMP Compliance team](https://about.gitlab.com/handbook/security/security-assurance/dedicated-compliance/index.md). To determine the technical writer assigned to the Stage/Group associated with this page, see https://handbook.gitlab.com/handbook/product/ux/technical-writing/#assignments.
+title: NIST 800-53 compliance
 ---
-
-# NIST 800-53 compliance
 
 DETAILS:
 **Tier:** Ultimate
@@ -460,11 +459,11 @@ GitLab provides extensive documentation on the architectures supported
 in a self-managed instance. GitLab supports the following cloud service
 providers:
 
-- [Azure](../install/azure/index.md)
+- [Azure](../install/azure/_index.md)
 
-- [Google Cloud Platform](../install/google_cloud_platform/index.md)
+- [Google Cloud Platform](../install/google_cloud_platform/_index.md)
 
-- [Amazon Web Services](../install/aws/index.md)
+- [Amazon Web Services](../install/aws/_index.md)
 
 GitLab provides a [decision tree for assisting customers with selecting reference architectures and availability models](../administration/reference_architectures/index.md#decision-tree).
 Most cloud service providers provide resiliency in a region for

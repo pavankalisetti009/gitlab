@@ -28,7 +28,7 @@ To configure your GitLab instance to access the available self-hosted models in 
 
 Prerequisites:
 
-- [Upgrade to the latest version of GitLab](../../update/index.md).
+- [Upgrade to the latest version of GitLab](../../update/_index.md).
 
 To configure your GitLab instance to access the AI gateway:
 
