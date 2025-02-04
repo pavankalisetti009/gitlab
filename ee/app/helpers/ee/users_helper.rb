@@ -79,7 +79,7 @@ module EE
       return false if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions) # only available for SM instances
       return false unless ::Gitlab::CurrentSettings.seat_control_block_overages?
 
-      licensed_seats = License.current.restricted_user_count
+      licensed_seats = License.current.seats
 
       return false unless licensed_seats.present? && licensed_seats.nonzero?
 

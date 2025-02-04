@@ -162,7 +162,7 @@ class License < ApplicationRecord
   end
 
   def restricted_user_count?
-    restricted_user_count.to_i > 0
+    seats.to_i > 0
   end
 
   def ultimate?
@@ -316,11 +316,11 @@ class License < ApplicationRecord
   end
 
   def overage(user_count = nil)
-    return 0 if restricted_user_count.nil?
+    return 0 if seats.nil?
 
     user_count ||= daily_billable_users_count
 
-    [user_count - restricted_user_count, 0].max
+    [user_count - seats, 0].max
   end
 
   def overage_with_historical_max
@@ -403,14 +403,14 @@ class License < ApplicationRecord
 
   def active_user_count_threshold
     ACTIVE_USER_COUNT_THRESHOLD_LEVELS.find do |threshold|
-      threshold[:range].include?(restricted_user_count)
+      threshold[:range].include?(seats)
     end
   end
 
   def active_user_count_threshold_reached?
-    return false if restricted_user_count.nil?
+    return false if seats.nil?
     return false if daily_billable_users_count <= 1
-    return false if daily_billable_users_count > restricted_user_count
+    return false if daily_billable_users_count > seats
 
     active_user_count_threshold[:value] >= if active_user_count_threshold[:percentage]
                                              remaining_user_count.fdiv(daily_billable_users_count) * 100
@@ -420,7 +420,7 @@ class License < ApplicationRecord
   end
 
   def remaining_user_count
-    restricted_user_count - daily_billable_users_count
+    seats - daily_billable_users_count
   end
 
   LICENSEE_ATTRIBUTES.each do |attribute|
@@ -506,12 +506,12 @@ class License < ApplicationRecord
   end
 
   def restricted_user_count_with_threshold
-    (restricted_user_count * (1 + ALLOWED_PERCENTAGE_OF_USERS_OVERAGE)).to_i
+    (seats * (1 + ALLOWED_PERCENTAGE_OF_USERS_OVERAGE)).to_i
   end
 
   def check_users_limit
     return if cloud_license?
-    return unless restricted_user_count
+    return unless seats
 
     user_count = daily_billable_users_count
     current_period = true
@@ -567,7 +567,7 @@ class License < ApplicationRecord
 
   def check_restricted_user_count
     return if cloud_license?
-    return unless restricted_user_count && restricted_user_count_with_threshold < daily_billable_users_count
+    return unless seats && restricted_user_count_with_threshold < daily_billable_users_count
 
     add_limit_error(type: :check_restricted_user_count, user_count: daily_billable_users_count)
   end
@@ -577,7 +577,7 @@ class License < ApplicationRecord
 
     message =  [current_period ? "This GitLab installation currently has" : "During the year before this license started, this GitLab installation had"]
     message << "#{number_with_delimiter(user_count)} active #{'user'.pluralize(user_count)},"
-    message << "exceeding this license's limit of #{number_with_delimiter(restricted_user_count)} by"
+    message << "exceeding this license's limit of #{number_with_delimiter(seats)} by"
     message << "#{number_with_delimiter(overage_count)} #{'user'.pluralize(overage_count)}."
     message << "Please add a license for at least"
     message << "#{number_with_delimiter(user_count)} #{'user'.pluralize(user_count)} or contact sales at https://about.gitlab.com/sales/"

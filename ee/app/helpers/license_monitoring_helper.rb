@@ -47,7 +47,7 @@ module LicenseMonitoringHelper
   strong_memoize_attr :current_license_overage
 
   def total_user_count
-    current_license.restricted_user_count
+    current_license.seats
   end
   strong_memoize_attr :total_user_count
 

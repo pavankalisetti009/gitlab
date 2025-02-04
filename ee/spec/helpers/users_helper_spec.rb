@@ -280,7 +280,7 @@ RSpec.describe UsersHelper, feature_category: :user_profile do
 
     context 'when below license seat limit' do
       before do
-        allow(license).to receive(:restricted_user_count).and_return(10)
+        allow(license).to receive(:seats).and_return(10)
         allow(::User).to receive_message_chain(:billable, :limit, :count).and_return(5)
       end
 
@@ -293,7 +293,7 @@ RSpec.describe UsersHelper, feature_category: :user_profile do
 
     context 'when at license seat limit' do
       before do
-        allow(license).to receive(:restricted_user_count).and_return(10)
+        allow(license).to receive(:seats).and_return(10)
         allow(::User).to receive_message_chain(:billable, :limit, :count).and_return(10)
       end
 
@@ -306,7 +306,7 @@ RSpec.describe UsersHelper, feature_category: :user_profile do
 
     context 'when exceeding license seat limit' do
       before do
-        allow(license).to receive(:restricted_user_count).and_return(10)
+        allow(license).to receive(:seats).and_return(10)
         allow(::User).to receive_message_chain(:billable, :limit, :count).and_return(15)
       end
 

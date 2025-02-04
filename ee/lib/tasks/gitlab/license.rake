@@ -36,7 +36,7 @@ module Tasks
       puts "Today's Date: #{Date.today}"
       puts "Current User Count: #{::Gitlab::Utils::UsageData.count(User.active)}"
       puts "Max Historical Count: #{license.historical_max}"
-      puts "Max Users in License: #{license.restricted_user_count}"
+      puts "Max Users in License: #{license.seats}"
       puts "License valid from: #{license.starts_at} to #{license.expires_at}"
       puts "Email associated with license: #{license.licensee_email}"
     end

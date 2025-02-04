@@ -50,7 +50,7 @@ module EE
         return true unless perform_seat_check?
         return true unless user.using_license_seat?
 
-        licensed_seats = License.current.restricted_user_count
+        licensed_seats = License.current.seats
 
         return true unless licensed_seats.present? && licensed_seats.nonzero?
 

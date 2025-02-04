@@ -1268,27 +1268,27 @@ RSpec.describe License, feature_category: :plan_provisioning do
   end
 
   describe '#overage' do
-    it 'returns 0 if restricted_user_count is nil' do
-      allow(license).to receive(:restricted_user_count) { nil }
+    it 'returns 0 if seats is nil' do
+      allow(license).to receive(:seats) { nil }
 
       expect(license.overage).to eq(0)
     end
 
-    it 'returns the difference between user_count and restricted_user_count' do
-      allow(license).to receive(:restricted_user_count) { 10 }
+    it 'returns the difference between user_count and seats' do
+      allow(license).to receive(:seats) { 10 }
 
       expect(license.overage(14)).to eq(4)
     end
 
     it 'returns the difference using daily_billable_users_count as user_count if no user_count argument provided' do
       allow(license).to receive(:daily_billable_users_count) { 110 }
-      allow(license).to receive(:restricted_user_count) { 100 }
+      allow(license).to receive(:seats) { 100 }
 
       expect(license.overage).to eq(10)
     end
 
     it 'returns 0 if the difference is a negative number' do
-      allow(license).to receive(:restricted_user_count) { 2 }
+      allow(license).to receive(:seats) { 2 }
 
       expect(license.overage(1)).to eq(0)
     end
@@ -2009,13 +2009,13 @@ RSpec.describe License, feature_category: :plan_provisioning do
     subject { license.active_user_count_threshold }
 
     it 'returns nil for license with unlimited user count' do
-      allow(license).to receive(:restricted_user_count).and_return(nil)
+      allow(license).to receive(:seats).and_return(nil)
 
       expect(subject).to be_nil
     end
 
     context 'for license with users' do
-      where(:restricted_user_count, :active_user_count, :percentage, :threshold_value) do
+      where(:seats, :active_user_count, :percentage, :threshold_value) do
         3    | 2    | false | 1
         20   | 18   | false | 2
         90   | 80   | true  | 10
@@ -2025,7 +2025,7 @@ RSpec.describe License, feature_category: :plan_provisioning do
 
       with_them do
         before do
-          allow(license).to receive(:restricted_user_count).and_return(restricted_user_count)
+          allow(license).to receive(:seats).and_return(seats)
           allow(license).to receive(:daily_billable_users_count).and_return(active_user_count)
         end
 
@@ -2038,7 +2038,7 @@ RSpec.describe License, feature_category: :plan_provisioning do
   describe '#active_user_count_threshold_reached?' do
     subject { license.active_user_count_threshold_reached? }
 
-    where(:restricted_user_count, :daily_billable_users_count, :result) do
+    where(:seats, :daily_billable_users_count, :result) do
       10   | 9   | true
       nil  | 9   | false
       10   | 15  | false
@@ -2048,7 +2048,7 @@ RSpec.describe License, feature_category: :plan_provisioning do
     with_them do
       before do
         allow(license).to receive(:daily_billable_users_count).and_return(daily_billable_users_count)
-        allow(license).to receive(:restricted_user_count).and_return(restricted_user_count)
+        allow(license).to receive(:seats).and_return(seats)
       end
 
       it { is_expected.to eq(result) }
@@ -2058,7 +2058,7 @@ RSpec.describe License, feature_category: :plan_provisioning do
   describe '#restricted_user_count?' do
     subject { license.restricted_user_count? }
 
-    where(:restricted_user_count, :result) do
+    where(:seats, :result) do
       nil | false
       0   | false
       1   | true
@@ -2067,7 +2067,7 @@ RSpec.describe License, feature_category: :plan_provisioning do
 
     with_them do
       before do
-        allow(license).to receive(:restricted_user_count).and_return(restricted_user_count)
+        allow(license).to receive(:seats).and_return(seats)
       end
 
       it { is_expected.to eq(result) }

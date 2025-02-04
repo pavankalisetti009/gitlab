@@ -37,7 +37,7 @@ module Gitlab
 
             return if ::License.current.nil?
 
-            return ::License.current.restricted_user_count if license_attribute == "user_count"
+            return ::License.current.seats if license_attribute == "user_count"
 
             alt_usage_data(fallback: nil) do
               # license_attribute is checked in the constructor, so it's safe

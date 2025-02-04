@@ -22,7 +22,7 @@ RSpec.describe API::License, :aggregate_failures, :api, feature_category: :plan_
       add_ons: license.add_ons,
       expired: license.expired?,
       overage: license.overage,
-      user_limit: license.restricted_user_count,
+      user_limit: license.seats,
       maximum_user_count: license.maximum_user_count
     }
   end
