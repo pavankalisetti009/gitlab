@@ -1,4 +1,4 @@
-import { GlCollapsibleListbox, GlFormTextarea } from '@gitlab/ui';
+import { GlCollapsibleListbox, GlFormTextarea, GlSprintf } from '@gitlab/ui';
 import DenyAllowExceptions from 'ee/security_orchestration/components/policy_editor/scan_result/rule/deny_allow_list_exceptions.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { EXCEPTION_KEY } from 'ee/security_orchestration/components/policy_editor/constants';
@@ -17,6 +17,9 @@ describe('DenyAllowExceptions', () => {
   const createComponent = ({ propsData } = {}) => {
     wrapper = shallowMountExtended(DenyAllowExceptions, {
       propsData,
+      stubs: {
+        GlSprintf,
+      },
     });
   };
 
@@ -24,6 +27,7 @@ describe('DenyAllowExceptions', () => {
   const findTextArea = () => wrapper.findComponent(GlFormTextarea);
   const findDuplicateErrorMessage = () => wrapper.findByTestId('error-duplicates-message');
   const findValidationErrorMessage = () => wrapper.findByTestId('error-validation-message');
+  const findFormatDescription = () => wrapper.findByTestId('format-description');
 
   describe('default rendering', () => {
     it('renders default list with no exceptions', () => {
@@ -73,6 +77,9 @@ describe('DenyAllowExceptions', () => {
       });
 
       expect(findTextArea().props('value')).toBe(VALID_EXCEPTIONS_STRING);
+      expect(findFormatDescription().text()).toBe(
+        'Use purl format for package paths: scheme:type/namespace/name@version?qualifiers#subpath. For multiple packages, separate paths with comma ",".',
+      );
     });
 
     it('selects exceptions', () => {

@@ -1,6 +1,6 @@
 <script>
 import { debounce } from 'lodash';
-import { GlCollapsibleListbox, GlFormTextarea } from '@gitlab/ui';
+import { GlCollapsibleListbox, GlFormTextarea, GlSprintf } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
 import {
   EXCEPTION_KEY,
@@ -17,7 +17,7 @@ import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 export default {
   i18n: {
     exceptionMessage: s__(
-      'ScanResultPolicy|Use this format for package paths: path/file.yaml@group-name/project-name. For multiple packages, separate paths with comma ",".',
+      'ScanResultPolicy|Use purl format for package paths: %{schemaStart}scheme:type/namespace/name@version?qualifiers#subpath%{schemaEnd}. For multiple packages, separate paths with comma ",".',
     ),
     errorMessage: s__(
       'SecurityOrchestration|Add project full path after @ to following exceptions: %{exceptions}',
@@ -38,6 +38,7 @@ export default {
   components: {
     GlCollapsibleListbox,
     GlFormTextarea,
+    GlSprintf,
   },
   props: {
     disabled: {
@@ -151,7 +152,13 @@ export default {
         {{ errorMessage }}
       </p>
 
-      <p class="gl-mt-3">{{ $options.i18n.exceptionMessage }}</p>
+      <p data-testid="format-description" class="gl-mt-3">
+        <gl-sprintf :message="$options.i18n.exceptionMessage">
+          <template #schema="{ content }">
+            <code>{{ content }}</code>
+          </template>
+        </gl-sprintf>
+      </p>
     </div>
   </div>
 </template>
