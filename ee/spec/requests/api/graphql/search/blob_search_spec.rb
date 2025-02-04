@@ -117,6 +117,37 @@ RSpec.describe 'getting a collection of blobs with multiple matches in a single 
       expect(graphql_data_at(:blobSearch, :files).first).to eq(expected_file)
     end
 
+    it 'increments the custom search sli apdex' do
+      expect(Gitlab::Metrics::GlobalSearchSlis).to receive(:record_apdex).with(
+        elapsed: a_kind_of(Numeric),
+        search_scope: 'blobs',
+        search_type: 'zoekt',
+        search_level: 'group'
+      )
+
+      post_graphql(query, current_user: current_user)
+    end
+
+    context 'when the search results fail' do
+      it 'increments the custom search sli error rate with error true' do
+        results_double = instance_double(Search::Zoekt::SearchResults, blobs_count: 0,
+          failed?: true, error: 'hello error')
+        service_double = instance_double(SearchService, level: 'group', scope: 'blobs', search_type: 'zoekt',
+          search_results: results_double, search_objects: [])
+
+        allow(SearchService).to receive(:new).and_return(service_double)
+
+        expect(Gitlab::Metrics::GlobalSearchSlis).to receive(:record_error_rate).with(
+          error: true,
+          search_scope: 'blobs',
+          search_type: 'zoekt',
+          search_level: 'group'
+        )
+
+        post_graphql(query, current_user: current_user)
+      end
+    end
+
     context 'when project is archived' do
       before do
         project.update!(archived: true)
