@@ -79,7 +79,7 @@ RSpec.describe 'Create a namespace filter for group level external audit event d
 
               expect(mutation_response['errors'])
                 .to match_array(['External audit event destination has already been taken'])
-              expect(mutation_response['namespaceFilter']).to be nil
+              expect(mutation_response['namespaceFilter']).to be_nil
             end
           end
 
@@ -95,7 +95,7 @@ RSpec.describe 'Create a namespace filter for group level external audit event d
               expect { subject }.not_to change { AuditEvents::Streaming::HTTP::NamespaceFilter.count }
 
               expect(mutation_response['errors']).to match_array(['Namespace has already been taken'])
-              expect(mutation_response['namespaceFilter']).to be nil
+              expect(mutation_response['namespaceFilter']).to be_nil
             end
           end
         end

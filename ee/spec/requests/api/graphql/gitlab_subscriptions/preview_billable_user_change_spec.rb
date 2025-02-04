@@ -17,7 +17,7 @@ RSpec.describe 'Query.gitlabSubscriptionsPreviewBillableUserChange', feature_cat
       it 'returns nil' do
         post_graphql(query, current_user: current_user)
 
-        expect(subject).to be nil
+        expect(subject).to be_nil
       end
     end
 

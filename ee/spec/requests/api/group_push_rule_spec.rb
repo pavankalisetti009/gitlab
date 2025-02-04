@@ -420,7 +420,7 @@ RSpec.describe API::GroupPushRule, 'GroupPushRule', :aggregate_failures, :api, f
           delete_push_rule
 
           expect(response).to have_gitlab_http_status(:no_content)
-          expect(group.reload.push_rule).to be nil
+          expect(group.reload.push_rule).to be_nil
         end
       end
 

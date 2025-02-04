@@ -45,7 +45,7 @@ RSpec.describe 'Delete a namespace filter for instance level external audit even
           expect(destination.reload.namespace_filters).to be_empty
           expect_graphql_errors_to_be_empty
           expect(mutation_response['errors']).to be_empty
-          expect(mutation_response['namespaceFilter']).to be nil
+          expect(mutation_response['namespaceFilter']).to be_nil
         end
       end
 

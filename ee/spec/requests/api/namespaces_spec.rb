@@ -639,7 +639,7 @@ RSpec.describe API::Namespaces, :aggregate_failures, feature_category: :groups_a
 
             expect(response).to have_gitlab_http_status(:success)
             expect(json_response['reason']).to eq params[:reason]
-            expect(namespace.storage_limit_exclusion).not_to be nil
+            expect(namespace.storage_limit_exclusion).not_to be_nil
           end
         end
 
@@ -736,7 +736,7 @@ RSpec.describe API::Namespaces, :aggregate_failures, feature_category: :groups_a
               do_delete(namespace.id, admin, admin_mode: true)
 
               expect(response).to have_gitlab_http_status(:success)
-              expect(namespace.storage_limit_exclusion).to be nil
+              expect(namespace.storage_limit_exclusion).to be_nil
             end
           end
 

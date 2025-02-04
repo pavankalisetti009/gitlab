@@ -69,7 +69,7 @@ RSpec.describe 'Deleting a MergeTrain Car', feature_category: :merge_trains do
 
     it 'deletes the requested car' do
       expect { post_mutation }.to change { MergeTrains::Car.count }.by(-1)
-      expect(MergeTrains::Car.find_by(id: target_car.id)).to be(nil)
+      expect(MergeTrains::Car.find_by(id: target_car.id)).to be_nil
       expect_graphql_errors_to_be_empty
     end
 
