@@ -387,7 +387,7 @@ describe('ValueStreamFormContent', () => {
         it('redirects to the new value stream page', () => {
           expect(visitUrlWithAlerts).toHaveBeenCalledWith(valueStreamPath, [
             {
-              id: 'value-stream-created-success',
+              id: 'vsa-settings-form-submission-success',
               message: `'${streamName}' Value Stream has been successfully created.`,
               variant: 'success',
             },
@@ -629,7 +629,7 @@ describe('ValueStreamFormContent', () => {
         it('redirects to the updated value stream page', () => {
           expect(visitUrlWithAlerts).toHaveBeenCalledWith(valueStreamPath, [
             {
-              id: 'value-stream-updated-success',
+              id: 'vsa-settings-form-submission-success',
               message: `'${initialData.name}' Value Stream has been successfully saved.`,
               variant: 'success',
             },
