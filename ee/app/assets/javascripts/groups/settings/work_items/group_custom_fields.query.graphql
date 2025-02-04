@@ -1,7 +1,7 @@
-query groupCustomFields($fullPath: ID!) {
+query groupCustomFields($fullPath: ID!, $active: Boolean!) {
   group(fullPath: $fullPath) {
     id
-    customFields(active: true) {
+    customFields(active: $active) {
       count
       nodes {
         id

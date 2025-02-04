@@ -8,13 +8,13 @@ import TimeagoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import CustomFieldForm from 'ee/groups/settings/work_items/custom_field_form.vue';
 import CustomFieldsTable from 'ee/groups/settings/work_items/custom_fields_list.vue';
 import groupCustomFieldsQuery from 'ee/groups/settings/work_items/group_custom_fields.query.graphql';
+import customFieldArchiveMutation from 'ee/groups/settings/work_items/custom_field_archive.mutation.graphql';
 
 Vue.use(VueApollo);
 
 describe('CustomFieldsTable', () => {
   let wrapper;
-
-  const findDetailsButton = () => wrapper.find('[data-testid="toggleDetailsButton"');
+  let apolloProvider;
 
   const selectField = {
     id: '1',
@@ -50,6 +50,23 @@ describe('CustomFieldsTable', () => {
     createdAt: '2023-01-01T00:00:00Z',
   };
 
+  const createQueryResponse = (fields = [stringField]) => ({
+    data: {
+      group: {
+        id: '123',
+        customFields: {
+          nodes: fields,
+          count: fields.length,
+        },
+      },
+    },
+  });
+
+  const findTableItems = () => wrapper.findAll('tbody tr');
+  const findArchiveButton = () => wrapper.find('[data-testid="archiveButton"]');
+  const findDetailsButton = () => wrapper.find('[data-testid="toggleDetailsButton"');
+  const findAlert = () => wrapper.find('[data-testid="alert"]');
+
   const createComponent = ({
     fields = [selectField],
     customFieldsResponse = jest.fn().mockResolvedValue({
@@ -63,75 +80,81 @@ describe('CustomFieldsTable', () => {
         },
       },
     }),
+    archiveMutationResponse = jest.fn().mockResolvedValue({
+      data: {
+        customFieldArchive: {
+          customField: {
+            id: '1',
+            name: 'Test Field',
+            fieldType: 'STRING',
+          },
+          errors: [],
+        },
+      },
+    }),
   } = {}) => {
+    apolloProvider = createMockApollo([
+      [groupCustomFieldsQuery, customFieldsResponse],
+      [customFieldArchiveMutation, archiveMutationResponse],
+    ]);
     wrapper = mount(CustomFieldsTable, {
       provide: {
         fullPath: 'group/path',
       },
-      apolloProvider: createMockApollo([[groupCustomFieldsQuery, customFieldsResponse]]),
+      apolloProvider,
       stubs: { GlIntersperse: true },
     });
   };
 
-  it('displays correct count in badge', async () => {
-    createComponent();
-    await waitForPromises();
+  describe('fields loaded', () => {
+    beforeEach(() => {
+      createComponent();
+      return waitForPromises();
+    });
 
-    const badge = wrapper.findComponent(GlBadge);
-    expect(badge.text()).toBe('1/50');
-  });
+    it('displays correct count in badge', () => {
+      const badge = wrapper.findComponent(GlBadge);
+      expect(badge.text()).toBe('1/50');
+    });
 
-  it('detailsToggleIcon returns correct icon based on visibility', async () => {
-    createComponent();
-    await waitForPromises();
+    it('detailsToggleIcon returns correct icon based on visibility', async () => {
+      expect(findDetailsButton().props().icon).toBe('chevron-right');
 
-    expect(findDetailsButton().props().icon).toBe('chevron-right');
+      findDetailsButton().vm.$emit('click');
+      await nextTick();
 
-    findDetailsButton().trigger('click');
-    await nextTick();
+      expect(findDetailsButton().props().icon).toBe('chevron-down');
+    });
 
-    expect(findDetailsButton().props().icon).toBe('chevron-down');
-  });
+    it('humanizes field type', () => {
+      expect(wrapper.text()).toContain('Select');
+    });
 
-  it('humanizes field type', async () => {
-    createComponent();
-    await waitForPromises();
+    it('selectOptionsText returns correct text based on options length', () => {
+      expect(wrapper.text()).toContain('2 options');
+    });
 
-    expect(wrapper.text()).toContain('Select');
-  });
+    it('lists work item types', () => {
+      // Override default component creation for this test
+      createComponent({ fields: [stringField] });
+      return waitForPromises().then(() => {
+        expect(wrapper.text()).toContain('Issue');
+        expect(wrapper.text()).toContain('Task');
+      });
+    });
 
-  it('selectOptionsText returns correct text based on options length', async () => {
-    createComponent();
-    await waitForPromises();
+    it('toggles details when detail button is clicked', async () => {
+      expect(wrapper.text()).not.toContain('Last updated');
+      await findDetailsButton().vm.$emit('click');
 
-    expect(wrapper.text()).toContain('2 options');
-  });
+      expect(wrapper.text()).toContain('Last updated');
+    });
 
-  it('lists work item types', async () => {
-    createComponent({ fields: [stringField] });
-    await waitForPromises();
-
-    expect(wrapper.text()).toContain('Issue');
-    expect(wrapper.text()).toContain('Task');
-  });
-
-  it('toggles details when detail button is clicked', async () => {
-    createComponent();
-    await waitForPromises();
-
-    expect(wrapper.text()).not.toContain('Last updated');
-    await findDetailsButton().trigger('click');
-
-    expect(wrapper.text()).toContain('Last updated');
-  });
-
-  it('renders TimeagoTooltip components with correct timestamps', async () => {
-    createComponent();
-    await waitForPromises();
-
-    const timeagoComponents = wrapper.findAllComponents(TimeagoTooltip);
-    expect(timeagoComponents.exists()).toBe(true);
-    expect(timeagoComponents.at(0).props('time')).toBe(selectField.updatedAt);
+    it('renders TimeagoTooltip components with correct timestamps', () => {
+      const timeagoComponents = wrapper.findAllComponents(TimeagoTooltip);
+      expect(timeagoComponents.exists()).toBe(true);
+      expect(timeagoComponents.at(0).props('time')).toBe(selectField.updatedAt);
+    });
   });
 
   it('refetches list after create-custom-field emits created', async () => {
@@ -157,5 +180,80 @@ describe('CustomFieldsTable', () => {
     wrapper.findComponent(CustomFieldForm).vm.$emit('created');
 
     expect(customFieldsResponse).toHaveBeenCalledTimes(2);
+  });
+
+  it('shows dismissable alert when query fails', async () => {
+    createComponent({
+      customFieldsResponse: jest.fn().mockRejectedValue(new Error('error')),
+    });
+    await waitForPromises();
+    expect(findAlert().exists()).toBe(true);
+
+    findAlert().vm.$emit('dismiss');
+    await nextTick();
+    expect(findAlert().exists()).toBe(false);
+  });
+
+  it('optimistically removes field when archive button is clicked', async () => {
+    const fields = [stringField, { ...stringField, id: '2', name: 'Second Field' }];
+    const archiveMutationResponse = jest.fn().mockImplementation(() => new Promise(() => {})); // Never resolves
+
+    createComponent({ fields, archiveMutationResponse });
+    await waitForPromises();
+
+    expect(findTableItems()).toHaveLength(2);
+
+    findArchiveButton().vm.$emit('click');
+    await nextTick();
+
+    expect(findTableItems()).toHaveLength(1);
+  });
+
+  it('updates apollo cache after successful archive', async () => {
+    const initialResponse = createQueryResponse([stringField]);
+    const customFieldsHandler = jest
+      .fn()
+      .mockResolvedValueOnce(initialResponse)
+      .mockResolvedValueOnce({
+        data: {
+          group: {
+            ...initialResponse.data.group,
+            customFields: {
+              nodes: [],
+              count: 0,
+            },
+          },
+        },
+      });
+
+    createComponent({ customFieldsHandler });
+    await waitForPromises();
+
+    findArchiveButton().vm.$emit('click');
+    await waitForPromises();
+
+    const result = await apolloProvider.clients.defaultClient.query({
+      query: groupCustomFieldsQuery,
+      variables: { fullPath: 'group/path', active: true },
+    });
+
+    expect(result.data.group.customFields.nodes).toHaveLength(0);
+  });
+
+  it('shows alert on mutation error', async () => {
+    const archiveMutationResponse = jest.fn().mockRejectedValue(new Error('Network error'));
+
+    createComponent({
+      archiveMutationResponse,
+    });
+    await waitForPromises();
+
+    expect(findAlert().exists()).toBe(false);
+
+    await findArchiveButton().vm.$emit('click');
+    await waitForPromises();
+
+    expect(findAlert().exists()).toBe(true);
+    expect(findAlert().text()).toContain('Failed to archive custom field');
   });
 });
