@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Admin::RunnersController, feature_category: :fleet_visibility do
   let_it_be(:non_admin_user) { create(:user) }
+  let_it_be(:runner) { create(:ci_runner) }
 
   subject { response }
 
@@ -14,8 +15,6 @@ RSpec.describe Admin::RunnersController, feature_category: :fleet_visibility do
   end
 
   describe 'GET #edit' do
-    let_it_be(:runner) { create(:ci_runner) }
-
     before do
       get edit_admin_runner_path(runner)
     end
@@ -24,6 +23,14 @@ RSpec.describe Admin::RunnersController, feature_category: :fleet_visibility do
       let_it_be(:user) { non_admin_user }
 
       it { is_expected.to have_gitlab_http_status(:not_found) }
+    end
+  end
+
+  shared_examples 'accessible when user has read_admin_cicd ability through a custom role' do
+    context 'when user has read_admin_cicd ability through a custom role' do
+      let_it_be(:role) { create(:admin_role, :read_admin_cicd, user: user) }
+
+      it { is_expected.to have_gitlab_http_status(:ok) }
     end
   end
 
@@ -37,11 +44,21 @@ RSpec.describe Admin::RunnersController, feature_category: :fleet_visibility do
 
       it { is_expected.to have_gitlab_http_status(:not_found) }
 
-      context 'when assigned an admin custom role with read_admin_cicd enabled' do
-        let_it_be(:role) { create(:admin_role, :read_admin_cicd, user: user) }
+      it_behaves_like 'accessible when user has read_admin_cicd ability through a custom role'
+    end
+  end
 
-        it { is_expected.to have_gitlab_http_status(:ok) }
-      end
+  describe 'GET #show' do
+    before do
+      get admin_runner_path(runner)
+    end
+
+    context 'with a non-admin user' do
+      let_it_be(:user) { non_admin_user }
+
+      it { is_expected.to have_gitlab_http_status(:not_found) }
+
+      it_behaves_like 'accessible when user has read_admin_cicd ability through a custom role'
     end
   end
 end

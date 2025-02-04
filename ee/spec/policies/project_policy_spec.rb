@@ -3161,6 +3161,54 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
     end
 
+    context 'admin custom role' do
+      let_it_be(:project) { create(:project, :private, public_builds: false) }
+      let_it_be(:non_admin_user) { create(:user) }
+
+      let(:member_role_abilities) { [] }
+      let(:allowed_abilities) { [] }
+      let(:current_user) { non_admin_user }
+
+      subject { described_class.new(current_user, project) }
+
+      shared_examples 'admin custom roles abilities' do
+        context 'when custom roles feature is unavailable' do
+          before do
+            create(:admin_role, *member_role_abilities, user: current_user)
+
+            stub_licensed_features(custom_roles: false)
+          end
+
+          it { expect_disallowed(*allowed_abilities) }
+        end
+
+        context 'when custom roles feature is available' do
+          before do
+            stub_licensed_features(custom_roles: true)
+          end
+
+          context 'when a role enables the abilities' do
+            before do
+              create(:admin_role, *member_role_abilities, user: current_user)
+            end
+
+            it { expect_allowed(*allowed_abilities) }
+          end
+
+          context 'when a role does not enable the abilities' do
+            it { expect_disallowed(*allowed_abilities) }
+          end
+        end
+      end
+
+      context 'for an admin member role with read_admin_cicd true' do
+        let(:member_role_abilities) { [:read_admin_cicd] }
+        let(:allowed_abilities) { %i[read_project read_commit_status read_build read_pipeline] }
+
+        it_behaves_like 'admin custom roles abilities'
+      end
+    end
+
     describe 'permissions for suggested reviewers bot', :saas do
       let(:permissions) { [:admin_project_member, :create_resource_access_tokens] }
       let(:namespace) { build_stubbed(:namespace) }

@@ -1127,6 +1127,20 @@ module EE
       end.enable :access_ai_review_mr
 
       rule { duo_workflow_token & ~duo_features_enabled }.prevent_all
+
+      MemberRole.all_customizable_admin_permission_keys.each do |ability|
+        desc "Admin custom role that enables #{ability.to_s.tr('_', ' ')}"
+        condition(:"admin_custom_role_enables_#{ability}", scope: :user) do
+          ::Authz::CustomAbility.allowed?(@user, ability)
+        end
+      end
+
+      rule { admin_custom_role_enables_read_admin_cicd }.policy do
+        enable :read_project
+        enable :read_commit_status
+        enable :read_build
+        enable :read_pipeline
+      end
     end
 
     override :lookup_access_level!
