@@ -84,14 +84,18 @@ module EE
       factory_name(registry_class)
     end
 
-    def with_no_geo_database_configured(&block)
-      allow(::Gitlab::Geo).to receive(:geo_database_configured?).and_return(false)
+    def unstub_geo_database_configured
+      # We need to unstub it or the DatabaseCleaner will have issues since it
+      # will appear as though the tracking DB were not available
+      allow(::Gitlab::Geo).to receive(:geo_database_configured?).and_call_original
+    end
+
+    def with_geo_database_configured(enabled:, &block)
+      allow(::Gitlab::Geo).to receive(:geo_database_configured?).and_return(enabled)
 
       yield
 
-      # We need to unstub here or the DatabaseCleaner will have issues since it
-      # will appear as though the tracking DB were not available
-      allow(::Gitlab::Geo).to receive(:geo_database_configured?).and_call_original
+      unstub_geo_database_configured
     end
 
     def stub_dummy_replicator_class(model_class: 'DummyModel')

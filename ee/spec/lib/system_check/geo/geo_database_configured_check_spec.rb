@@ -3,7 +3,13 @@
 require 'spec_helper'
 
 RSpec.describe SystemCheck::Geo::GeoDatabaseConfiguredCheck, :silence_stdout, feature_category: :geo_replication do
+  include ::EE::GeoHelpers
+
   subject { described_class.new }
+
+  after do
+    unstub_geo_database_configured
+  end
 
   describe '#multi_check', :reestablished_active_record_base do
     it "checks database configuration" do

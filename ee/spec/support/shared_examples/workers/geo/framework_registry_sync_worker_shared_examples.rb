@@ -25,7 +25,7 @@ RSpec.shared_examples 'a framework registry sync worker' do |registry_factory, s
 
       expect(::Geo::SyncWorker).not_to receive(:perform_async)
 
-      with_no_geo_database_configured do
+      with_geo_database_configured(enabled: false) do
         subject.perform
       end
     end
