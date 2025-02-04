@@ -93,7 +93,7 @@ back to EE and restore the behavior if you leave it alone.
 After performing the above mentioned steps, you are now ready to downgrade your
 GitLab installation to the Community Edition.
 
-Remember to follow the correct [update guides](../update/index.md) to make sure all dependencies are up to date.
+Remember to follow the correct [update guides](../update/_index.md) to make sure all dependencies are up to date.
 
 ### Linux package installations
 

@@ -3,9 +3,8 @@ stage: Systems
 group: Distribution
 description: Latest version instructions.
 info: To determine the technical writer assigned to the Stage/Group associated with this page, see https://handbook.gitlab.com/handbook/product/ux/technical-writing/#assignments
+title: Upgrading GitLab
 ---
-
-# Upgrading GitLab
 
 DETAILS:
 **Tier:** Free, Premium, Ultimate
@@ -68,7 +67,7 @@ official ways to upgrade GitLab:
 
 :::TabTitle Linux packages (Omnibus)
 
-As part of a GitLab upgrade, the [Linux package upgrade guide](package/index.md) contains the specific steps to follow
+As part of a GitLab upgrade, the [Linux package upgrade guide](package/_index.md) contains the specific steps to follow
 to upgrade a Linux package instance.
 
 :::TabTitle Helm chart (Kubernetes)
@@ -92,7 +91,7 @@ for production. However, instructions on how to upgrade such an environment are 
 
 GitLab provides official Docker images for both Community and Enterprise
 editions, and they are based on the Omnibus package. See how to
-[install GitLab using Docker](../install/docker/index.md).
+[install GitLab using Docker](../install/docker/_index.md).
 
 :::TabTitle Self-compiled (source)
 

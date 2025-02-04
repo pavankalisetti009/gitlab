@@ -3,9 +3,8 @@ stage: Software Supply Chain Security
 group: Authentication
 description: SSH key limits, 2FA, tokens, hardening.
 info: To determine the technical writer assigned to the Stage/Group associated with this page, see https://handbook.gitlab.com/handbook/product/ux/technical-writing/#assignments
+title: Secure GitLab
 ---
-
-# Secure GitLab
 
 DETAILS:
 **Tier:** Free, Premium, Ultimate
@@ -59,7 +58,7 @@ You can find all those directories listed in the [Linux package configuration do
 
 ### Platform usage and settings
 
-- [Review GitLab token type and usages](tokens/index.md).
+- [Review GitLab token type and usages](tokens/_index.md).
 - [How to configure rate limits improve security and availability](rate_limits.md).
 - [How to filter outbound webhook requests](webhooks.md).
 - [How to configure import and export limits and timeouts](../administration/settings/import_and_export_settings.md).
