@@ -73,6 +73,49 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
     end
   end
 
+  describe 'POST /ai/duo_workflows/workflows/:id/checkpoint_writes_batch' do
+    let(:params) do
+      {
+        thread_ts: 'checkpoint_id',
+        checkpoint_writes: [task: 'id', idx: 0, channel: 'channel', write_type: 'type', data: 'data']
+      }
+    end
+
+    let(:path) { "/ai/duo_workflows/workflows/#{workflow.id}/checkpoint_writes_batch" }
+
+    it 'allows updating a workflow' do
+      post api(path, user), params: params
+
+      expect(response).to have_gitlab_http_status(:success)
+    end
+
+    context 'with a workflow belonging to a different user' do
+      let(:workflow) { create(:duo_workflows_workflow) }
+
+      it 'returns 404' do
+        post api(path, user), params: params
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+
+    context 'with invalid input' do
+      let(:params) do
+        {
+          thread_ts: 'checkpoint_id',
+          checkpoint_writes: [task: '', idx: 0, channel: 'channel', write_type: 'type', data: 'data']
+        }
+      end
+
+      it 'returns bad request' do
+        post api(path, user), params: params
+
+        expect(response).to have_gitlab_http_status(:bad_request)
+        expect(response.body).to eq({ message: "400 Bad request - Validation failed: Task can't be blank" }.to_json)
+      end
+    end
+  end
+
   describe 'POST /ai/duo_workflows/workflows/:id/events' do
     let(:path) { "/ai/duo_workflows/workflows/#{workflow.id}/events" }
     let(:params) do
