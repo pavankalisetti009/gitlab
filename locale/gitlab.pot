@@ -57142,9 +57142,6 @@ msgstr ""
 msgid "The CSV export will be created in the background. Once finished, it will be sent to %{email} in an attachment."
 msgstr ""
 
-msgid "The Gemnasium analyzer has been replaced with a new Dependency Scanning analyzer. %{learn_more_link_start}Learn more%{link_end}."
-msgstr ""
-
 msgid "The GitLab subscription service (customers.gitlab.com) is currently experiencing an outage. You can monitor the status and get updates at %{linkStart}status.gitlab.com%{linkEnd}."
 msgstr ""
 
@@ -65985,9 +65982,6 @@ msgid "You are receiving this message because you are a GitLab administrator for
 msgstr ""
 
 msgid "You are trying to upload something other than an image. Please upload a .png, .jpg, .jpeg, .gif, .bmp, .tiff or .ico."
-msgstr ""
-
-msgid "You are using a deprecated Dependency Scanning analyzer"
 msgstr ""
 
 msgid "You are using a trial license. When you use a paid subscription, you'll be charged for %{trueUpLinkStart}users over license%{trueUpLinkEnd}."
