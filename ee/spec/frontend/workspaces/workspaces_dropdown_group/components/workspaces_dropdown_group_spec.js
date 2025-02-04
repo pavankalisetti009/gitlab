@@ -274,7 +274,7 @@ describe('workspaces/dropdown_group/components/workspaces_dropdown_group.vue', (
 
     it('shows a link to the troubleshooting page', () => {
       expect(wrapper.findByTestId('workspaces-troubleshooting-doc-link').attributes('href')).toBe(
-        '/help/user/workspace/configuration.html#troubleshooting',
+        '/help/user/workspace/workspaces_troubleshooting.html',
       );
     });
   });
