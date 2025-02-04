@@ -53,18 +53,6 @@ module Search
 
       scope :searchable, -> { where(state: SEARCHABLE_STATES) }
 
-      def self.create_tasks(project_id:, zoekt_index:, task_type:, perform_at:)
-        project = Project.find_by_id(project_id)
-        find_or_initialize_by(project_identifier: project_id, project: project, zoekt_index: zoekt_index).tap do |item|
-          item.save! if item.new_record?
-          break if item.tasks.pending.exists?(zoekt_node_id: zoekt_index.zoekt_node_id, task_type: task_type)
-          break if item.failed? && task_type != :delete_repo
-
-          item.initializing! if item.pending?
-          item.tasks.create!(zoekt_node_id: zoekt_index.zoekt_node_id, task_type: task_type, perform_at: perform_at)
-        end
-      end
-
       def self.create_bulk_tasks(task_type: :index_repo, perform_at: Time.zone.now)
         scope = self
         unless task_type.to_sym == :delete_repo

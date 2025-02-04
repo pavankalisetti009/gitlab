@@ -148,6 +148,10 @@ module Search
         SHOULD_BE_DELETED_STATES.include? state.to_sym
       end
 
+      def find_or_create_repository_by_project!(identifier, project)
+        zoekt_repositories.find_or_create_by!(project_identifier: identifier, project: project)
+      end
+
       private
 
       def storage_percent_used
