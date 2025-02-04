@@ -19,7 +19,7 @@ module Gitlab
 
       def add(message)
         postgres_storage.add(message)
-        redis_storage.add(message)
+        redis_storage.add(message) if ::Feature.disabled?(:duo_chat_drop_redis_storage, user)
       end
 
       def update_message_extras(request_id, key, value)
@@ -30,12 +30,12 @@ module Gitlab
 
         message.extras[key] = value
         postgres_storage.update_message_extras(message)
-        redis_storage.update(message)
+        redis_storage.update(message) if ::Feature.disabled?(:duo_chat_drop_redis_storage, user)
       end
 
       def set_has_feedback(message)
         postgres_storage.set_has_feedback(message)
-        redis_storage.set_has_feedback(message)
+        redis_storage.set_has_feedback(message) if ::Feature.disabled?(:duo_chat_drop_redis_storage, user)
       end
 
       def messages_by(filters = {})
@@ -64,7 +64,7 @@ module Gitlab
 
       def clear!
         postgres_storage.clear!
-        redis_storage.clear!
+        redis_storage.clear! if ::Feature.disabled?(:duo_chat_drop_redis_storage, user)
       end
 
       private
