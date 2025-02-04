@@ -176,11 +176,9 @@ if (!process.env.JEST_WORKER_ID) {
 
   program
     .option('-l, --locale-root <locale_root>', 'Extract messages from subfolders in this directory')
-    .option(
-      '-o, --output-dir <output_dir>',
-      'Write app.js files into subfolders in this directory',
-    );
-  program.parse(process.argv);
+    .option('-o, --output-dir <output_dir>', 'Write app.js files into subfolders in this directory')
+    .parse(process.argv);
+
   const args = program.opts();
 
   main(args).catch((e) => {
