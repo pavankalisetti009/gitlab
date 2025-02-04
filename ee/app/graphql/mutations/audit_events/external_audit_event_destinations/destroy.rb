@@ -19,8 +19,7 @@ module Mutations
           if destination.destroy
             audit(destination, action: :destroy)
 
-            if Feature.enabled?(:audit_events_external_destination_streamer_consolidation_refactor,
-              :instance)
+            if Feature.enabled?(:audit_events_external_destination_streamer_consolidation_refactor, destination.group)
               paired_destination&.destroy
             end
           end
