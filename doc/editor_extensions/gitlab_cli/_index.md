@@ -3,9 +3,8 @@ stage: Create
 group: Code Review
 info: To determine the technical writer assigned to the Stage/Group associated with this page, see https://handbook.gitlab.com/handbook/product/ux/technical-writing/#assignments
 description: "Use the GitLab CLI (glab) to perform common GitLab actions in your terminal."
+title: GitLab CLI - `glab`
 ---
-
-# GitLab CLI - `glab`
 
 DETAILS:
 **Tier:** Free, Premium, Ultimate

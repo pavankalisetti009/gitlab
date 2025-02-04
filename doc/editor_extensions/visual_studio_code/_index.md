@@ -3,9 +3,8 @@ stage: Create
 group: Editor Extensions
 info: To determine the technical writer assigned to the Stage/Group associated with this page, see https://handbook.gitlab.com/handbook/product/ux/technical-writing/#assignments
 description: "Use the GitLab Workflow extension for VS Code to handle common GitLab tasks directly in VS Code."
+title: GitLab Workflow extension for VS Code
 ---
-
-# GitLab Workflow extension for VS Code
 
 The [GitLab Workflow extension](https://marketplace.visualstudio.com/items?itemName=GitLab.gitlab-workflow)
 for Visual Studio Code integrates GitLab Duo and other GitLab features directly into your IDE. It adds a
@@ -360,4 +359,4 @@ This search query looks for:
 - [Download the GitLab Workflow extension](https://marketplace.visualstudio.com/items?itemName=GitLab.gitlab-workflow)
 - Extension [source code](https://gitlab.com/gitlab-org/gitlab-vscode-extension/)
 - [GitLab Duo documentation](../../user/project/repository/code_suggestions/index.md)
-- [GitLab Language Server documentation](../language_server/index.md)
+- [GitLab Language Server documentation](../language_server/_index.md)

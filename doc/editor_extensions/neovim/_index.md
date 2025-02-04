@@ -3,9 +3,8 @@ stage: Create
 group: Editor Extensions
 info: To determine the technical writer assigned to the Stage/Group associated with this page, see https://handbook.gitlab.com/handbook/product/ux/technical-writing/#assignments
 description: "Connect and use GitLab Duo in Neovim."
+title: GitLab plugin for Neovim - `gitlab.vim`
 ---
-
-# GitLab plugin for Neovim - `gitlab.vim`
 
 The [GitLab plugin](https://gitlab.com/gitlab-org/editor-extensions/gitlab.vim) is a Lua-based plugin
 that integrates GitLab with Neovim.
@@ -58,4 +57,4 @@ in the `gitlab.vim` repository.
 
 - [Neovim troubleshooting](neovim_troubleshooting.md)
 - [View source code](https://gitlab.com/gitlab-org/editor-extensions/gitlab.vim)
-- [GitLab Language Server documentation](../language_server/index.md)
+- [GitLab Language Server documentation](../language_server/_index.md)

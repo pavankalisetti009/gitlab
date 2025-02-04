@@ -2,9 +2,8 @@
 stage: Solutions Architecture
 group: Solutions Architecture
 info: This page is owned by the Solutions Architecture team.
+title: Solutions architecture
 ---
-
-# Solutions architecture
 
 As with all extensible platforms, GitLab has many features that can be creatively combined together with third party functionality to create solutions that address the specific people, process, and technology challenges of the organizations that use it. Reference solutions and implementations can also be crafted at a more general level so that they can be adopted and customized by customers with similar needs to the reference solution.
 
@@ -16,6 +15,6 @@ While information in this section gives valuable and qualified guidance on ways 
 
 ## Solutions categories
 
-- [Cloud Solutions](cloud/index.md)
-- [Coding Languages and Frameworks](languages/index.md)
-- [Integrations](integrations/index.md)
+- [Cloud Solutions](cloud/_index.md)
+- [Coding Languages and Frameworks](languages/_index.md)
+- [Integrations](integrations/_index.md)

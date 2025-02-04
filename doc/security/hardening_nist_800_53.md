@@ -354,7 +354,7 @@ understand the applicable compliance requirements.
 Once audit events have been configured, those events must be monitored.
 GitLab provides a centralized management interface for compiling system
 alerts from a SIEM or other security tooling, triaging alerts and
-incidents, and informing stakeholders. The [incident management documentation](../operations/incident_management/index.md)
+incidents, and informing stakeholders. The [incident management documentation](../operations/incident_management/_index.md)
 outlines how GitLab can be used to run the aforementioned activities
 in a security incident response organization.
 
@@ -700,7 +700,7 @@ access tokens (personal access tokens not supported by FIPS) and OAuth
 
 #### Extensions
 
-[Extensions](../editor_extensions/index.md)
+[Extensions](../editor_extensions/_index.md)
 may meet NIST 800-53 requirements depending on which integrations are
 established. Editor and IDE extensions, for example, may be permissible
 whereas integrations with third parties may violate authorization

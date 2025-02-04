@@ -3,9 +3,8 @@ stage: Create
 group: Editor Extensions
 info: To determine the technical writer assigned to the Stage/Group associated with this page, see https://handbook.gitlab.com/handbook/product/ux/technical-writing/#assignments
 description: "Connect and use GitLab Duo in JetBrains IDEs."
+title: GitLab plugin for JetBrains IDEs
 ---
-
-# GitLab plugin for JetBrains IDEs
 
 The [GitLab Duo plugin](https://plugins.jetbrains.com/plugin/22325-gitlab-duo) integrates GitLab Duo with JetBrains IDEs
 like IntelliJ, PyCharm, GoLand, Webstorm, and Rubymine.
@@ -41,7 +40,7 @@ Prerequisites:
 To integrate GitLab for JetBrains with the 1Password CLI:
 
 1. Authenticate with GitLab. Either:
-   - [Install the `glab`](../gitlab_cli/index.md#install-the-cli) CLI and
+   - [Install the `glab`](../gitlab_cli/_index.md#install-the-cli) CLI and
      configure the [1Password shell plugin](https://developer.1password.com/docs/cli/shell-plugins/gitlab/).
    - Follow the GitLab for JetBrains
      [steps](https://gitlab.com/gitlab-org/editor-extensions/gitlab-jetbrains-plugin#setup).
@@ -83,7 +82,7 @@ built-in error reporting tool:
 
 - [Code Suggestions](../../user/project/repository/code_suggestions/index.md)
 - [JetBrains troubleshooting](jetbrains_troubleshooting.md)
-- [GitLab Language Server documentation](../language_server/index.md)
+- [GitLab Language Server documentation](../language_server/_index.md)
 - [About the Create:Editor Extensions Group](https://handbook.gitlab.com/handbook/engineering/development/dev/create/editor-extensions/)
 - [Open issues for this plugin](https://gitlab.com/gitlab-org/editor-extensions/gitlab-jetbrains-plugin/-/issues/)
 - [Plugin documentation](https://gitlab.com/gitlab-org/editor-extensions/gitlab-jetbrains-plugin/-/blob/main/README.md)

@@ -3,9 +3,8 @@ stage: Create
 group: Editor Extensions
 info: To determine the technical writer assigned to the Stage/Group associated with this page, see https://handbook.gitlab.com/handbook/product/ux/technical-writing/#assignments
 description: "Extend the features of GitLab to Visual Studio Code, JetBrains IDEs, Visual Studio, and Neovim."
+title: Editor Extensions
 ---
-
-# Editor Extensions
 
 GitLab Editor Extensions bring the power of GitLab and GitLab Duo directly into your preferred
 development environments. Use GitLab features and GitLab Duo AI capabilities to handle everyday tasks
@@ -23,16 +22,16 @@ between your coding environment and GitLab.
 
 GitLab offers extensions for the following development environments:
 
-- [GitLab Workflow extension for VS Code](visual_studio_code/index.md): Bring GitLab Duo,
+- [GitLab Workflow extension for VS Code](visual_studio_code/_index.md): Bring GitLab Duo,
   and other GitLab features, into Visual Studio Code.
-- [GitLab Duo for JetBrains IDEs](jetbrains_ide/index.md): Bring GitLab Duo AI capabilities
+- [GitLab Duo for JetBrains IDEs](jetbrains_ide/_index.md): Bring GitLab Duo AI capabilities
   to IntelliJ IDEA, PyCharm, WebStorm, and other JetBrains IDEs.
-- [GitLab Extension for Visual Studio](visual_studio/index.md): Bring GitLab Duo Code Suggestions to Visual Studio.
+- [GitLab Extension for Visual Studio](visual_studio/_index.md): Bring GitLab Duo Code Suggestions to Visual Studio.
 
 If you prefer a command-line interface, try:
 
-- [`glab`](gitlab_cli/index.md) the GitLab CLI.
-- [GitLab.nvim for Neovim](neovim/index.md): Bring GitLab Duo Code Suggestions directly to Neovim in your terminal window.
+- [`glab`](gitlab_cli/_index.md) the GitLab CLI.
+- [GitLab.nvim for Neovim](neovim/_index.md): Bring GitLab Duo Code Suggestions directly to Neovim in your terminal window.
 
 ## Features
 

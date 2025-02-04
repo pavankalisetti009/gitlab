@@ -206,7 +206,7 @@ Edition, follow the guides below based on the installation method:
 ### Enterprise to Community Edition
 
 To downgrade your Enterprise Edition installation back to Community
-Edition, you can follow [this guide](../downgrade_ee_to_ce/index.md) to make the process as smooth as
+Edition, you can follow [this guide](../downgrade_ee_to_ce/_index.md) to make the process as smooth as
 possible.
 
 ## Upgrade steps for additional features
