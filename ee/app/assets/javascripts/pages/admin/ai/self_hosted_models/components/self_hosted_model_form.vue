@@ -1,5 +1,6 @@
 <script>
 import {
+  GlAlert,
   GlButton,
   GlCollapsibleListbox,
   GlForm,
@@ -85,6 +86,7 @@ const bedrockFormFields = {
 export default {
   name: 'SelfHostedModelForm',
   components: {
+    GlAlert,
     GlButton,
     GlCollapsibleListbox,
     GlForm,
@@ -95,7 +97,7 @@ export default {
     ModelSelectDropdown,
     TestConnectionButton,
   },
-  inject: ['basePath', 'modelOptions'],
+  inject: ['basePath', 'modelOptions', 'betaModelsEnabled', 'duoConfigurationSettingsPath'],
   props: {
     submitButtonText: {
       type: String,
@@ -123,6 +125,9 @@ export default {
     successMessage: s__('AdminSelfHostedModels|The self-hosted model was successfully %{action}.'),
     awsSetupMessage: s__(
       'AdminSelfHostedModels|To fully set up AWS credentials for this model please refer to the %{linkStart}AWS Bedrock Configuration Guide%{linkEnd}',
+    ),
+    betaModelsAvailableMessage: s__(
+      'AdminSelfHostedModels|More models are available in beta. You can %{linkStart}turn on self-hosted model beta features%{linkEnd}.',
     ),
   },
   formId: 'self-hosted-model-form',
@@ -369,6 +374,22 @@ export default {
           :toggle-text="platform.text"
           block
         />
+      </template>
+
+      <template #after(platform)>
+        <div v-if="!betaModelsEnabled" class="gl-pb-6 gl-pt-3">
+          <gl-alert variant="info" :dismissible="false">
+            <gl-sprintf :message="$options.i18n.betaModelsAvailableMessage">
+              <template #link="{ content }">
+                <gl-link
+                  data-testid="duo-configuration-link"
+                  :href="duoConfigurationSettingsPath"
+                  >{{ content }}</gl-link
+                >
+              </template>
+            </gl-sprintf>
+          </gl-alert>
+        </div>
       </template>
 
       <template #group(model)-label-description>

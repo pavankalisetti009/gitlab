@@ -4034,6 +4034,9 @@ msgstr ""
 msgid "AdminSelfHostedModels|Model uses an API token"
 msgstr ""
 
+msgid "AdminSelfHostedModels|More models are available in beta. You can %{linkStart}turn on self-hosted model beta features%{linkEnd}."
+msgstr ""
+
 msgid "AdminSelfHostedModels|Name"
 msgstr ""
 
