@@ -24628,6 +24628,9 @@ msgstr ""
 msgid "File name of the Google Play service account key."
 msgstr ""
 
+msgid "File path"
+msgstr ""
+
 msgid "File permissions"
 msgstr ""
 
