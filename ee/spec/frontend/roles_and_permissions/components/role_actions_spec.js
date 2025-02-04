@@ -1,8 +1,7 @@
-import { GlDisclosureDropdown, GlIcon } from '@gitlab/ui';
+import { GlDisclosureDropdown, GlIcon, GlLink, GlPopover, GlTooltip } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import RoleActions from 'ee/roles_and_permissions/components/role_actions.vue';
-import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import { mockMemberRole } from '../mock_data';
 
 describe('Role actions', () => {
@@ -10,15 +9,22 @@ describe('Role actions', () => {
 
   const mockToastShow = jest.fn();
   const defaultRole = { accessLevel: 10 };
-  const customRole = { ...mockMemberRole, detailsPath: 'role/path/1' };
+  const customRole = {
+    ...mockMemberRole,
+    detailsPath: 'role/path/1',
+    dependentSecurityPolicies: [],
+  };
   const customRoleWithMembers = { ...customRole, usersCount: 2 };
+  const dependentSecurityPolicy = { editPath: 'path/to/security/policy', name: 'Security Policy' };
+  const customRoleWithSecurityPolicies = {
+    ...customRole,
+    usersCount: 2,
+    dependentSecurityPolicies: [dependentSecurityPolicy],
+  };
 
   const createComponent = ({ role = customRole } = {}) => {
     wrapper = mountExtended(RoleActions, {
       propsData: { role },
-      directives: {
-        GlTooltip: createMockDirective('gl-tooltip'),
-      },
       mocks: { $toast: { show: mockToastShow } },
     });
   };
@@ -28,7 +34,9 @@ describe('Role actions', () => {
   const findViewDetailsItem = () => wrapper.findByTestId('view-details-item');
   const findEditRoleItem = () => wrapper.findByTestId('edit-role-item');
   const findDeleteRoleItem = () => wrapper.findByTestId('delete-role-item');
-  const findDeleteRoleItemTooltip = () => getBinding(findDeleteRoleItem().element, 'gl-tooltip');
+  const findDeleteRoleItemTooltip = () => wrapper.findComponent(GlTooltip);
+  const findPopover = () => wrapper.findComponent(GlPopover);
+  const findLink = () => wrapper.findComponent(GlLink);
 
   describe('common behavior', () => {
     beforeEach(() => createComponent());
@@ -46,6 +54,10 @@ describe('Role actions', () => {
         text: 'View details',
         href: 'role/path/1',
       });
+    });
+
+    it('does not render the popover', () => {
+      expect(findPopover().exists()).toBe(false);
     });
   });
 
@@ -95,42 +107,74 @@ describe('Role actions', () => {
       });
     });
 
-    describe('Delete role item', () => {
-      it('shows item', () => {
-        expect(findDeleteRoleItem().props('item')).toMatchObject({
-          text: 'Delete role',
-          extraAttrs: { disabled: false, class: '!gl-text-red-500' },
+    describe('delete role item', () => {
+      describe('default', () => {
+        it('shows item', () => {
+          expect(findDeleteRoleItem().props('item')).toMatchObject({
+            text: 'Delete role',
+            extraAttrs: { disabled: false, class: '!gl-text-red-500' },
+          });
+        });
+
+        it('does not have tooltip', () => {
+          expect(findDeleteRoleItemTooltip().exists()).toBe(false);
+        });
+
+        it('emits delete event when clicked', async () => {
+          findDeleteRoleItem().vm.$emit('action');
+          await nextTick();
+
+          expect(wrapper.emitted('delete')).toHaveLength(1);
         });
       });
 
-      it('does not have tooltip text', () => {
-        expect(findDeleteRoleItemTooltip()).toMatchObject({ value: '' });
+      describe('when there are members assigned', () => {
+        beforeEach(() => createComponent({ role: customRoleWithMembers }));
+
+        it('shows item', () => {
+          expect(findDeleteRoleItem().props('item')).toMatchObject({
+            extraAttrs: { disabled: true, class: '' },
+          });
+        });
+
+        it('has expected tooltip', () => {
+          expect(findDeleteRoleItemTooltip().exists()).toBe(true);
+          expect(findDeleteRoleItemTooltip().props()).toEqual(
+            expect.objectContaining({
+              placement: 'left',
+              boundary: 'viewport',
+            }),
+          );
+          expect(findDeleteRoleItemTooltip().text()).toBe(
+            "You can't delete this custom role until you remove it from all group members.",
+          );
+        });
       });
 
-      it('emits delete event when clicked', async () => {
-        findDeleteRoleItem().vm.$emit('action');
-        await nextTick();
+      describe('when there are dependent security policies', () => {
+        beforeEach(() => createComponent({ role: customRoleWithSecurityPolicies }));
 
-        expect(wrapper.emitted('delete')).toHaveLength(1);
-      });
-    });
-  });
+        it('disables the delete button', () => {
+          expect(findDeleteRoleItem().props('item')).toMatchObject({
+            extraAttrs: { disabled: true, class: '' },
+          });
+        });
 
-  describe('Delete role item when there are members assigned to role', () => {
-    beforeEach(() => createComponent({ role: customRoleWithMembers }));
+        it('does not render the tooltip', () => {
+          expect(findDeleteRoleItemTooltip().exists()).toBe(false);
+        });
 
-    it('shows item', () => {
-      expect(findDeleteRoleItem().props('item')).toMatchObject({
-        extraAttrs: { disabled: true, class: '' },
-      });
-    });
+        it('renders the popover', () => {
+          expect(findPopover().exists()).toBe(true);
+          expect(findPopover().text()).toContain(
+            "You can't delete this custom role until you remove it from all security policies:",
+          );
+        });
 
-    it('has expected tooltip', () => {
-      const tooltip = getBinding(findDeleteRoleItem().element, 'gl-tooltip');
-
-      expect(tooltip).toEqual({
-        value: 'To delete custom role, remove role from all group members.',
-        modifiers: { d0: true, left: true, viewport: true },
+        it('renders the policy name as a link', () => {
+          expect(findLink().attributes('href')).toBe(dependentSecurityPolicy.editPath);
+          expect(findLink().text()).toBe(dependentSecurityPolicy.name);
+        });
       });
     });
   });
