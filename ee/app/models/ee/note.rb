@@ -157,9 +157,6 @@ module EE
       # We don't want the bot to talk to itself
       return false if authored_by_duo_bot?
 
-      # We only care about threads that Duo Code Review created
-      return false unless discussion.first_note.author == duo_code_review_bot
-
       mentioned_users.include?(duo_code_review_bot)
     end
 

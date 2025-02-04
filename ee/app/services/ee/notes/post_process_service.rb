@@ -40,8 +40,8 @@ module EE
         author = note.author
         return unless ::Feature.enabled?(:duo_code_review_chat, author)
 
-        # Duo Code Review also creates summary notes which we don't want it to respond to when mentioned.
-        return unless note.for_merge_request? && note.diff_note?
+        # Duo Code Review should respond to any MR note when mentioned
+        return unless note.for_merge_request?
 
         # We don't want the bot to talk to itself
         return if note.authored_by_duo_bot?
