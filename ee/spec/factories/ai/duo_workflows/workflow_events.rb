@@ -6,5 +6,6 @@ FactoryBot.define do
     project { association(:project) }
     event_type { 'pause' }
     event_status { 'queued' }
+    correlation_id_value { nil }
   end
 end
