@@ -185,7 +185,7 @@ if (!process.env.JEST_WORKER_ID) {
 
   main(args).catch((e) => {
     console.warn(`Something went wrong: ${e.message}`);
-    console.warn(program.outputHelp());
+    program.outputHelp();
     process.exitCode = 1;
   });
 }
