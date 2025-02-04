@@ -8,12 +8,6 @@ RSpec.describe Preloaders::UserMemberRolesForAdminPreloader, feature_category: :
 
   subject(:result) { described_class.new(user: user).execute }
 
-  def create_member_role(ability, user)
-    create(:member_role, ability).tap do |record|
-      create(:user_member_role, user: user, member_role: record)
-    end
-  end
-
   shared_examples 'custom roles' do |ability|
     let(:expected_abilities) { [ability].compact }
 
@@ -24,7 +18,7 @@ RSpec.describe Preloaders::UserMemberRolesForAdminPreloader, feature_category: :
 
       context 'when group has custom role' do
         let_it_be(:member_role) do
-          create_member_role(ability, user)
+          create(:admin_role, ability, user: user)
         end
 
         context 'when custom role has ability: true' do
