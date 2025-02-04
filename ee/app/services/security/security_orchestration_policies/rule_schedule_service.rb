@@ -40,10 +40,7 @@ module Security
       end
 
       def schedule_scans_using_a_worker(branches, schedule)
-        policy_configuration = schedule.security_orchestration_policy_configuration
-
-        if Feature.enabled?(:scan_execution_pipeline_concurrency_control,
-          policy_configuration.namespace) && schedule.time_window
+        if schedule.time_window
           time_window = schedule.time_window
 
           branches.map do |branch|
