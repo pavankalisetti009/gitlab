@@ -32,6 +32,7 @@ exports[`ExternalIssuesListRoot error handling when request fails displays error
 exports[`ExternalIssuesListRoot when request succeeds renders issuable-list component with correct props 1`] = `
 {
   "activeIssuable": null,
+  "addPadding": false,
   "currentPage": 1,
   "currentTab": "opened",
   "defaultPageSize": 2,
