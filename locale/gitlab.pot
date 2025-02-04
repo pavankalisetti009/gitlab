@@ -59590,6 +59590,9 @@ msgstr ""
 msgid "Todos|Assigned"
 msgstr ""
 
+msgid "Todos|At"
+msgstr ""
+
 msgid "Todos|Build failed"
 msgstr ""
 
@@ -59750,6 +59753,12 @@ msgstr ""
 msgid "Todos|Snooze"
 msgstr ""
 
+msgid "Todos|Snooze date can't be in the past."
+msgstr ""
+
+msgid "Todos|Snooze until"
+msgstr ""
+
 msgid "Todos|Snooze..."
 msgstr ""
 
@@ -59777,7 +59786,16 @@ msgstr ""
 msgid "Todos|Sorry, your filter produced no results"
 msgstr ""
 
+msgid "Todos|The date is required."
+msgstr ""
+
 msgid "Todos|The pipeline failed"
+msgstr ""
+
+msgid "Todos|The selected date and time cannot be in the past."
+msgstr ""
+
+msgid "Todos|The time is required."
 msgstr ""
 
 msgid "Todos|There are no done to-do items yet."
@@ -59793,6 +59811,9 @@ msgid "Todos|Undo"
 msgstr ""
 
 msgid "Todos|Unmergeable"
+msgstr ""
+
+msgid "Todos|Until a specific time and date"
 msgstr ""
 
 msgid "Todos|Until later today"
