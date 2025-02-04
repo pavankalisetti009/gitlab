@@ -50,10 +50,22 @@ RSpec.describe Ai::SelfHostedModel, feature_category: :"self-hosted_models" do
     end
 
     describe '#release_state' do
-      subject(:self_hosted_model) { build(:ai_self_hosted_model, model: :deepseekcoder) }
+      Ai::SelfHostedModel::MODELS_RELEASE_STATE.each do |model, expected_state|
+        context "when model is #{model}" do
+          subject(:self_hosted_model) { build(:ai_self_hosted_model, model: model) }
 
-      it 'returns release state of model' do
-        expect(self_hosted_model.release_state).to eq('BETA')
+          it "returns #{expected_state}" do
+            expect(self_hosted_model.release_state).to eq(expected_state)
+          end
+        end
+      end
+
+      context 'when model is not listed in MODELS_RELEASE_STATE' do
+        subject(:self_hosted_model) { build(:ai_self_hosted_model, model: nil) }
+
+        it 'returns EXPERIMENTAL as default release state' do
+          expect(self_hosted_model.release_state).to eq(Ai::SelfHostedModel::RELEASE_STATE_EXPERIMENTAL)
+        end
       end
     end
 

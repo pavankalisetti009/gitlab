@@ -58,7 +58,7 @@ module Ai
     end
 
     def release_state
-      MODELS_RELEASE_STATE[self[:model].to_sym]
+      MODELS_RELEASE_STATE[self[:model]&.to_sym] || RELEASE_STATE_EXPERIMENTAL
     end
 
     def ga?
