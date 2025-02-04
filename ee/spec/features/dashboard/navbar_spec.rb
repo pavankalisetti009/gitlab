@@ -15,7 +15,7 @@ RSpec.describe '"Your work" navbar', :js, feature_category: :navigation do
       sign_in(user)
 
       insert_after_nav_item(
-        _('Activity'),
+        _('Import history'),
         new_nav_item: {
           nav_item: _("Environments"),
           nav_sub_items: []
@@ -41,7 +41,7 @@ RSpec.describe '"Your work" navbar', :js, feature_category: :navigation do
       sign_in(user)
 
       insert_after_nav_item(
-        _('Activity'),
+        _('Import history'),
         new_nav_item: {
           nav_item: _("Security"),
           nav_sub_items: [
