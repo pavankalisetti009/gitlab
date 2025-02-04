@@ -14,6 +14,10 @@ module WorkItems
       before_validation :copy_namespace_from_work_item
 
       validates :namespace, :work_item, :custom_field, presence: true
+
+      scope :for_field_and_work_item, ->(field_ids, work_item_ids) {
+        where(custom_field_id: field_ids, work_item_id: work_item_ids)
+      }
     end
 
     private

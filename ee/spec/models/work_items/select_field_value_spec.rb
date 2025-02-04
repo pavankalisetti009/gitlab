@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe WorkItems::SelectFieldValue, feature_category: :team_planning do
   subject(:select_field_value) { build(:work_item_select_field_value) }
 
-  it_behaves_like 'a work item custom field value'
+  it_behaves_like 'a work item custom field value', factory: :work_item_select_field_value
 
   describe 'associations' do
     it { is_expected.to belong_to(:custom_field_select_option) }
