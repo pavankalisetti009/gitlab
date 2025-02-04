@@ -5,6 +5,7 @@ import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import { sendDuoChatCommand } from 'ee/ai/utils';
 import vulnerabilityStateMutations from 'ee/security_dashboard/graphql/mutate_vulnerability_state';
+import vulnerabilityOverrideSeverityMutation from 'ee/security_dashboard/graphql/mutations/vulnerability_override_severity.mutation.graphql';
 import StatusBadge from 'ee/vue_shared/security_reports/components/status_badge.vue';
 import { createAlert } from '~/alert';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
@@ -126,8 +127,8 @@ export default {
     latestComment() {
       return this.vulnerability.stateTransitions?.at(-1)?.comment;
     },
-    disabledChangeState() {
-      return !this.vulnerability.canAdmin;
+    canAdminVulnerability() {
+      return this.vulnerability.canAdmin;
     },
     vulnerabilityGraphqlId() {
       return convertToGraphQLId(TYPENAME_VULNERABILITY, this.vulnerability.id);
@@ -137,9 +138,6 @@ export default {
         {
           text: s__('SecurityReports|Change status'),
           action: () => this.$root.$emit(BV_SHOW_MODAL, VULNERABILITY_STATE_MODAL_ID),
-          extraAttrs: {
-            disabled: this.disabledChangeState,
-          },
         },
         {
           text: s__('SecurityReports|Change severity'),
@@ -230,13 +228,47 @@ export default {
         });
       } catch (error) {
         createAlert({
-          message: {
-            error,
-            captureError: true,
-            message: s__(
-              'VulnerabilityManagement|Something went wrong, could not update vulnerability state.',
-            ),
+          error,
+          captureError: true,
+          message: s__(
+            'VulnerabilityManagement|Something went wrong, could not update vulnerability state.',
+          ),
+        });
+      } finally {
+        this.isLoadingVulnerability = false;
+      }
+    },
+    async changeVulnerabilitySeverity({ newSeverity, comment }) {
+      this.isLoadingVulnerability = true;
+
+      try {
+        const {
+          data: {
+            securityFindingSeverityOverride: {
+              securityFinding: { uuid, severity },
+            },
           },
+        } = await this.$apollo.mutate({
+          mutation: vulnerabilityOverrideSeverityMutation,
+          variables: {
+            uuid: this.vulnerability.uuid,
+            severity: newSeverity.toUpperCase(),
+            comment,
+          },
+        });
+
+        this.$emit('vulnerability-severity-change', {
+          ...this.vulnerability,
+          uuid,
+          severity: severity.toLowerCase(),
+        });
+      } catch (error) {
+        createAlert({
+          error,
+          captureError: true,
+          message: s__(
+            'VulnerabilityManagement|Something went wrong, could not update vulnerability severity.',
+          ),
         });
       } finally {
         this.isLoadingVulnerability = false;
@@ -357,6 +389,7 @@ export default {
       <div class="detail-page-header-actions gl-flex gl-flex-wrap gl-items-center gl-gap-3">
         <template v-if="showSeverityModal">
           <gl-disclosure-dropdown
+            :disabled="!canAdminVulnerability"
             :toggle-text="s__('SecurityReports|Edit vulnerability')"
             :items="editVulnerabilityActions"
             :loading="isLoadingVulnerability"
@@ -365,12 +398,13 @@ export default {
           <severity-modal
             :modal-id="$options.VULNERABILITY_SEVERITY_MODAL_ID"
             :severity="vulnerability.severity"
+            @change="changeVulnerabilitySeverity"
           />
         </template>
         <template v-else>
           <gl-button
             v-gl-modal="$options.VULNERABILITY_STATE_MODAL_ID"
-            :disabled="disabledChangeState || isLoadingVulnerability"
+            :disabled="!canAdminVulnerability || isLoadingVulnerability"
             data-testid="change-status-btn"
             >{{ s__('SecurityReports|Change status') }}</gl-button
           >

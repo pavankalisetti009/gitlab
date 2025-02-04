@@ -10,7 +10,9 @@ import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completio
 import aiResolveVulnerability from 'ee/vulnerabilities/graphql/ai_resolve_vulnerability.mutation.graphql';
 import Api from 'ee/api';
 import { BV_SHOW_MODAL } from '~/lib/utils/constants';
+import { SEVERITY_LEVEL_HIGH, SEVERITY_LEVEL_INFO } from 'ee/security_dashboard/constants';
 import vulnerabilityStateMutations from 'ee/security_dashboard/graphql/mutate_vulnerability_state';
+import vulnerabilityOverrideSeverityMutation from 'ee/security_dashboard/graphql/mutations/vulnerability_override_severity.mutation.graphql';
 import VulnerabilityActionsDropdown from 'ee/vulnerabilities/components/vulnerability_actions_dropdown.vue';
 import StatusBadge from 'ee/vue_shared/security_reports/components/status_badge.vue';
 import Header, {
@@ -21,6 +23,7 @@ import Header, {
 import ResolutionAlert from 'ee/vulnerabilities/components/resolution_alert.vue';
 import StatusDescription from 'ee/vulnerabilities/components/status_description.vue';
 import StateModal from 'ee/vulnerabilities/components/state_modal.vue';
+import SeverityModal from 'ee/vulnerabilities/components/severity_modal.vue';
 import { FEEDBACK_TYPES, VULNERABILITY_STATE_OBJECTS } from 'ee/vulnerabilities/constants';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import UsersMockHelper from 'helpers/user_mock_data_helper';
@@ -125,12 +128,18 @@ describe('Vulnerability Header', () => {
   const findStatusDescription = () => wrapper.findComponent(StatusDescription);
   const findChangeStatusButton = () => wrapper.findComponent(GlButton);
   const findStateModal = () => wrapper.findComponent(StateModal);
+  const findSeverityModal = () => wrapper.findComponent(SeverityModal);
   const findEditVulnerabilityDropdown = () => wrapper.findComponent(GlDisclosureDropdown);
 
   const changeStatus = async ({ action, dismissalReason, comment }) => {
     wrapper.vm.$emit(BV_SHOW_MODAL, VULNERABILITY_STATE_MODAL_ID);
     await nextTick();
     findStateModal().vm.$emit('change', { action, dismissalReason, comment });
+  };
+  const changeSeverity = async ({ severity }) => {
+    wrapper.vm.$emit(BV_SHOW_MODAL, VULNERABILITY_SEVERITY_MODAL_ID);
+    await nextTick();
+    findSeverityModal().vm.$emit('change', { newSeverity: severity });
   };
 
   const createWrapper = ({
@@ -293,22 +302,90 @@ describe('Vulnerability Header', () => {
       expect(rootWrapper.emitted(BV_SHOW_MODAL)).toStrictEqual([[modal]]);
     });
 
-    it('disables "Change state" when user cannot admin vulnerability', () => {
+    it('is disabled when user cannot admin vulnerability', () => {
       createWrapper({ vulnerability: getVulnerability({ canAdmin: false }) });
 
-      expect(findEditVulnerabilityDropdown().props('items')).toMatchObject([
-        {
-          text: 'Change status',
-          action: expect.any(Function),
-          extraAttrs: {
-            disabled: true,
-          },
-        },
-        {
-          text: 'Change severity',
-          action: expect.any(Function),
-        },
-      ]);
+      expect(findEditVulnerabilityDropdown().props('disabled')).toBe(true);
+    });
+
+    describe('severity change', () => {
+      const featureFlags = {
+        vulnerabilitySeverityOverride: true,
+      };
+
+      describe('when API call is successful', () => {
+        beforeEach(() => {
+          const apolloProvider = createApolloProvider([
+            vulnerabilityOverrideSeverityMutation,
+            jest.fn().mockResolvedValue({
+              data: {
+                securityFindingSeverityOverride: {
+                  errors: [],
+                  securityFinding: {
+                    uuid: 'xxxxxxxx-xxxx-4xxx-xxxx-xxxxxxxxxxxx',
+                    severity: SEVERITY_LEVEL_HIGH.toUpperCase(),
+                  },
+                },
+              },
+            }),
+          ]);
+
+          createWrapper({
+            vulnerability: getVulnerability({ severity: SEVERITY_LEVEL_INFO }),
+            apolloProvider,
+            ...featureFlags,
+          });
+        });
+
+        it('dropdown is loading during GraphQL call', async () => {
+          await changeSeverity({ severity: SEVERITY_LEVEL_HIGH });
+          await nextTick();
+
+          expect(findEditVulnerabilityDropdown().props('loading')).toBe(true);
+        });
+
+        it(`emits the updated vulnerability`, async () => {
+          await changeSeverity({ severity: SEVERITY_LEVEL_HIGH });
+          await waitForPromises();
+
+          expect(wrapper.emitted('vulnerability-severity-change')[0][0]).toMatchObject({
+            ...getVulnerability(),
+            severity: SEVERITY_LEVEL_HIGH,
+          });
+        });
+
+        it('dropdown is not loading after GraphQL call', async () => {
+          await changeSeverity({ severity: SEVERITY_LEVEL_HIGH });
+          await waitForPromises();
+
+          expect(findEditVulnerabilityDropdown().props('loading')).toBe(false);
+        });
+      });
+
+      describe('when API call fails', () => {
+        beforeEach(() => {
+          const apolloProvider = createApolloProvider([
+            vulnerabilityOverrideSeverityMutation,
+            jest.fn().mockRejectedValue({
+              data: {
+                securityFindingSeverityOverride: {
+                  errors: [{ message: 'Something went wrong' }],
+                  vulnerability: {},
+                },
+              },
+            }),
+          ]);
+
+          createWrapper({ apolloProvider, ...featureFlags });
+        });
+
+        it('shows an error message', async () => {
+          await changeSeverity({ severity: SEVERITY_LEVEL_HIGH });
+
+          await waitForPromises();
+          expect(createAlert).toHaveBeenCalledTimes(1);
+        });
+      });
     });
   });
 
@@ -371,7 +448,7 @@ describe('Vulnerability Header', () => {
       ${true}                       | ${findEditVulnerabilityDropdown}
       ${false}                      | ${findStatusBadge}
     `(
-      'when vulnerability_severity_override is %s',
+      'when vulnerability_severity_override is $vulnerabilitySeverityOverride',
       ({ vulnerabilitySeverityOverride, findLoadingElement }) => {
         const featureFlags = {
           vulnerabilitySeverityOverride,

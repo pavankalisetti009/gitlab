@@ -63600,6 +63600,9 @@ msgstr ""
 msgid "VulnerabilityManagement|Something went wrong, could not get user."
 msgstr ""
 
+msgid "VulnerabilityManagement|Something went wrong, could not update vulnerability severity."
+msgstr ""
+
 msgid "VulnerabilityManagement|Something went wrong, could not update vulnerability state."
 msgstr ""
 

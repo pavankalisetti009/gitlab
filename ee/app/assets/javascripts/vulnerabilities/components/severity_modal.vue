@@ -59,8 +59,8 @@ export default {
         return;
       }
 
-      this.$emit('severityChange', {
-        severity: this.severity,
+      this.$emit('change', {
+        newSeverity: this.severity,
         comment: this.comment,
       });
       this.resetForm();
