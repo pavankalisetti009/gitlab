@@ -248,6 +248,10 @@ RSpec.describe Gitlab::Geo, :geo, :request_store, feature_category: :geo_replica
         allow(described_class).to receive(:gdk_geo_secondary?) { is_gdk_geo_secondary }
       end
 
+      after do
+        unstub_geo_database_configured
+      end
+
       it { is_expected.to be(expected_secondary) }
     end
   end

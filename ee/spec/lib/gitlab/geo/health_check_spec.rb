@@ -40,6 +40,10 @@ RSpec.describe Gitlab::Geo::HealthCheck, :geo, feature_category: :geo_replicatio
           allow(ApplicationRecord.database).to receive(:db_read_only?) { db_read_only }
         end
 
+        after do
+          unstub_geo_database_configured
+        end
+
         context 'when the Geo tracking DB is not configured' do
           let(:geo_database_configured) { false }
 
