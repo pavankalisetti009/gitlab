@@ -10,7 +10,8 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
     end
 
     it 'contains duo_features_enabled parameters' do
-      expect(visible_attributes).to include(*%i[duo_features_enabled lock_duo_features_enabled duo_availability enabled_expanded_logging])
+      expect(visible_attributes)
+        .to include(*%i[duo_features_enabled lock_duo_features_enabled duo_availability enabled_expanded_logging])
     end
 
     it 'contains search parameters' do
@@ -140,7 +141,8 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
     let(:promotion_management_available) { true }
 
     before do
-      allow(helper).to receive(:member_promotion_management_feature_available?).and_return(promotion_management_available)
+      allow(helper).to receive(:member_promotion_management_feature_available?)
+        .and_return(promotion_management_available)
       application_setting.enable_member_promotion_management = true
       helper.instance_variable_set(:@application_setting, application_setting)
     end
@@ -160,7 +162,10 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
       context 'when promotion management is unavailable' do
         let(:promotion_management_available) { false }
 
-        it { is_expected.to match(hash_including({ promotion_management_available: promotion_management_available.to_s })) }
+        it 'includes promotion_management_available as false' do
+          is_expected.to match(hash_including({ promotion_management_available: promotion_management_available.to_s }))
+        end
+
         it { is_expected.to match(hash_excluding(:enable_member_promotion_management)) }
       end
     end
@@ -229,7 +234,8 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
     end
 
     it 'returns correctly checked purl type checkboxes' do
-      helper.gitlab_ui_form_for(application_setting, url: '/admin/application_settings/security_and_compliance') do |form|
+      helper.gitlab_ui_form_for(application_setting,
+        url: '/admin/application_settings/security_and_compliance') do |form|
         result = helper.sync_purl_types_checkboxes(form)
 
         expected = ::Enums::Sbom.purl_types.map do |name, num|
@@ -290,7 +296,8 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
     it 'returns correctly checked checkboxes' do
       helper.gitlab_ui_form_for(application_setting, url: search_admin_application_settings_path) do |form|
         result = helper.zoekt_settings_checkboxes(form)
-        expect(result[0]).to have_checked_field("Delete offline nodes automatically after #{::Search::Zoekt::Node::LOST_DURATION_THRESHOLD.inspect}", with: 1)
+        expect(result[0]).to have_checked_field(
+          "Delete offline nodes automatically after #{::Search::Zoekt::Node::LOST_DURATION_THRESHOLD.inspect}", with: 1)
         expect(result[1]).not_to have_checked_field('Index all the namespaces', with: 1)
         expect(result[2]).to have_checked_field('Enable indexing for exact code search', with: 1)
         expect(result[3]).not_to have_checked_field('Pause indexing for exact code search', with: 1)
@@ -311,7 +318,8 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
       helper.gitlab_ui_form_for(application_setting, url: search_admin_application_settings_path) do |form|
         result = helper.zoekt_settings_inputs(form)
         expect(result[0]).to have_selector('label', text: 'Indexing CPU to tasks multiplier')
-        expect(result[1]).to have_selector('input[type="number"][name="application_setting[zoekt_cpu_to_tasks_ratio]"][value="1.5"]')
+        expect(result[1])
+          .to have_selector('input[type="number"][name="application_setting[zoekt_cpu_to_tasks_ratio]"][value="1.5"]')
       end
     end
   end
