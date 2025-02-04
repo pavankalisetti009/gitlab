@@ -24,8 +24,7 @@ RSpec.describe Admin::JobsController, feature_category: :fleet_visibility do
       it { is_expected.to have_gitlab_http_status(:not_found) }
 
       context 'when assigned an admin custom role with read_admin_cicd enabled' do
-        let_it_be(:role) { create(:member_role, :admin, :read_admin_cicd) }
-        let_it_be(:user_member_role) { create(:user_member_role, member_role: role, user: user) }
+        let_it_be(:role) { create(:admin_role, :read_admin_cicd, user: user) }
 
         it { is_expected.to have_gitlab_http_status(:ok) }
       end

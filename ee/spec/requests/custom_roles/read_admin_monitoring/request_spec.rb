@@ -5,8 +5,7 @@ require 'spec_helper'
 RSpec.describe 'User with read_admin_monitoring', feature_category: :audit_events do
   let_it_be(:current_user) { create(:user) }
   let_it_be(:permission) { :read_admin_monitoring }
-  let_it_be(:role) { create(:member_role, permission) }
-  let_it_be(:membership) { create(:user_member_role, user: current_user, member_role: role) }
+  let_it_be(:role) { create(:admin_role, permission, user: current_user) }
 
   before do
     stub_licensed_features(custom_roles: true)

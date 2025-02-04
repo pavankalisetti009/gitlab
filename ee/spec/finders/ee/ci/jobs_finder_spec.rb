@@ -146,8 +146,7 @@ RSpec.describe Ci::JobsFinder, '#execute', feature_category: :continuous_integra
       it { is_expected.to be_empty }
 
       context 'with admin custom role with read_admin_cicd enabled' do
-        let_it_be(:role) { create(:member_role, :admin, :read_admin_cicd) }
-        let_it_be(:user_member_role) { create(:user_member_role, member_role: role, user: current_user) }
+        let_it_be(:role) { create(:admin_role, :read_admin_cicd, user: current_user) }
 
         it { is_expected.to match_array([pending_job, running_job, successful_job]) }
       end

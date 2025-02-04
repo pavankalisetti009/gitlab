@@ -110,8 +110,7 @@ RSpec.describe Authz::CustomAbility, feature_category: :permissions do
       end
 
       context 'with a user assigned to an admin custom role' do
-        let_it_be(:role) { create(:member_role, :admin) }
-        let_it_be(:user_member_role) { create(:user_member_role, member_role: role, user: user) }
+        let_it_be(:role) { create(:admin_role, :read_admin_dashboard, user: user) }
 
         it { is_expected.to be_allowed(user, :read_admin_dashboard) }
       end
@@ -149,8 +148,7 @@ RSpec.describe Authz::CustomAbility, feature_category: :permissions do
       it { is_expected.not_to be_allowed(user, ability, root_group) }
 
       context 'with a user assigned to an admin custom role' do
-        let_it_be(:role) { create(:member_role, :admin) }
-        let_it_be(:user_member_role) { create(:user_member_role, member_role: role, user: user) }
+        let_it_be(:role) { create(:admin_role, :read_admin_dashboard, user: user) }
 
         it { is_expected.not_to be_allowed(user, :read_admin_dashboard) }
       end
