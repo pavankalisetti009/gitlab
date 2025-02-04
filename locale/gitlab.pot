@@ -24054,6 +24054,9 @@ msgstr ""
 msgid "Failed to enqueue the rebase operation, possibly due to a long-lived transaction. Try again later."
 msgstr ""
 
+msgid "Failed to export framework"
+msgstr ""
+
 msgid "Failed to fetch Namespace: %{fullPath}"
 msgstr ""
 
