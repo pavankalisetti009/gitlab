@@ -20,12 +20,10 @@ RSpec.describe 'Group projects page', feature_category: :groups_and_projects do
 
     let!(:project) { create(:project, :archived, namespace: group, marked_for_deletion_at: Date.current) }
 
-    it 'renders projects list' do
+    it 'redirects to the groups overview page' do
       visit projects_group_path(group)
 
-      expect(page).to have_link project.name
-      expect(page).not_to have_css('span.badge.badge-warning', text: 'archived')
-      expect(page).to have_css('span.badge.badge-warning', text: 'Pending deletion')
+      expect(page).to have_current_path(group_path(group))
     end
   end
 end
