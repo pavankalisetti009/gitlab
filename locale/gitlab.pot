@@ -43010,6 +43010,9 @@ msgstr ""
 msgid "Preferences|Choose the navigation theme."
 msgstr ""
 
+msgid "Preferences|Choose the syntax highlighting theme used when viewing or editing code in GitLab."
+msgstr ""
+
 msgid "Preferences|Choose what content you want to see by default on your homepage."
 msgstr ""
 
@@ -43035,9 +43038,6 @@ msgid "Preferences|Content will span %{percentage} of the page width."
 msgstr ""
 
 msgid "Preferences|Customize integrations with third party services."
-msgstr ""
-
-msgid "Preferences|Customize the appearance of the syntax."
 msgstr ""
 
 msgid "Preferences|Customize the behavior of the system layout and default views."
