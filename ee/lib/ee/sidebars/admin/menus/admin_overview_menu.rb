@@ -7,13 +7,37 @@ module EE
         module AdminOverviewMenu
           extend ::Gitlab::Utils::Override
 
+          RESTRICTED_ADMIN_PERMISSIONS = {
+            read_admin_dashboard: :dashboard_menu_item,
+            read_admin_users: :users_menu_item
+          }.freeze
+
           override :render?
           def render?
-            return super unless ::Feature.enabled?(:custom_ability_read_admin_dashboard, context.current_user)
+            super || restricted_administrator?
+          end
 
-            return true if context.current_user&.can?(:access_admin_area)
+          override :configure_menu_items
+          def configure_menu_items
+            return super if administrator?
 
-            super
+            RESTRICTED_ADMIN_PERMISSIONS.each_pair do |permission, name|
+              add_item(build_menu_item(name)) if can?(context.current_user, permission)
+            end
+          end
+
+          private
+
+          def build_menu_item(name)
+            method(name).call
+          end
+
+          def administrator?
+            can?(current_user, :admin_all_resources)
+          end
+
+          def restricted_administrator?
+            can_any?(current_user, RESTRICTED_ADMIN_PERMISSIONS.keys)
           end
         end
       end

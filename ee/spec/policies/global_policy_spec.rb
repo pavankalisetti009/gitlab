@@ -914,6 +914,7 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
       :read_admin_cicd         | %i[read_admin_cicd]
       :read_admin_dashboard    | %i[read_admin_dashboard access_admin_area]
       :read_admin_subscription | %i[read_admin_subscription read_billable_member read_licenses]
+      :read_admin_users        | %i[read_admin_users]
     end
 
     with_them do

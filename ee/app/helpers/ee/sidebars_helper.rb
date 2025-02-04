@@ -101,6 +101,8 @@ module EE
         admin_runners_path
       elsif current_user.can?(:read_admin_subscription)
         admin_subscription_path
+      elsif current_user.can?(:read_admin_users)
+        admin_users_path
       else
         super
       end

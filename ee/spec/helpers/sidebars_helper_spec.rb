@@ -279,14 +279,10 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
     let_it_be(:panel_type) { 'default' }
     let_it_be(:current_user_mode) { Gitlab::Auth::CurrentUserMode.new(user) }
 
-    let_it_be(:public_link) do
-      { title: s_('Navigation|Explore'), link: '/explore', icon: 'compass' }
-    end
-
     let_it_be(:public_links_for_user) do
       [
         { title: s_('Navigation|Your work'), link: '/', icon: 'work' },
-        public_link,
+        { title: s_('Navigation|Explore'), link: '/explore', icon: 'compass' },
         { title: s_('Navigation|Profile'), link: '/-/user_settings/profile', icon: 'profile' },
         { title: s_('Navigation|Preferences'), link: '/-/profile/preferences', icon: 'preferences' }
       ]
@@ -315,6 +311,7 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
           :read_admin_cicd         | '/admin/runners'
           :read_admin_dashboard    | '/admin'
           :read_admin_subscription | '/admin/subscription'
+          :read_admin_users        | ref(:admin_users_path)
         end
 
         with_them do

@@ -239,6 +239,8 @@ module EE
         enable :read_billable_member
         enable :read_licenses
       end
+
+      rule { custom_role_enables_read_admin_users }.enable :read_admin_users
     end
 
     def duo_chat
