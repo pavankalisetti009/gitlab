@@ -34,9 +34,9 @@ export const i18n = {
 };
 
 const workspacesHelpPath = helpPagePath('user/workspace/index.md');
-const workspacesTroubleshootingDocsPath = helpPagePath('user/workspace/configuration.html', {
-  anchor: 'troubleshooting',
-});
+const workspacesTroubleshootingDocsPath = helpPagePath(
+  'user/workspace/workspaces_troubleshooting.html',
+);
 
 export default {
   components: {
