@@ -6,12 +6,17 @@ import ValueStreamSelect from 'ee/analytics/cycle_analytics/components/value_str
 import { mockTracking, unmockTracking } from 'helpers/tracking_helper';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import { createMockDirective } from 'helpers/vue_mock_directive';
+import { dismissGlobalAlertById } from '~/lib/utils/global_alerts';
 import {
   valueStreams,
   defaultStageConfig,
   newValueStreamPath,
   editValueStreamPath,
 } from '../mock_data';
+
+jest.mock('~/lib/utils/global_alerts', () => ({
+  dismissGlobalAlertById: jest.fn(),
+}));
 
 Vue.use(Vuex);
 
@@ -282,6 +287,11 @@ describe('ValueStreamSelect', () => {
         expect(trackingSpy).toHaveBeenCalledWith(undefined, 'delete_value_stream', {
           extra: { name: selectedValueStream.name },
         });
+      });
+
+      it('dismisses value stream created/updated success alert', () => {
+        expect(dismissGlobalAlertById).toHaveBeenCalledTimes(1);
+        expect(dismissGlobalAlertById).toHaveBeenCalledWith('vsa-settings-form-submission-success');
       });
     });
 

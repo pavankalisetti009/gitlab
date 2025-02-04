@@ -14,6 +14,7 @@ import {
   defaultCustomStageFields,
   PRESET_OPTIONS,
   PRESET_OPTIONS_DEFAULT,
+  VSA_SETTINGS_FORM_SUBMISSION_SUCCESS_ALERT_ID,
 } from 'ee/analytics/cycle_analytics/components/create_value_stream_form/constants';
 import CustomStageFields from 'ee/analytics/cycle_analytics/components/create_value_stream_form/custom_stage_fields.vue';
 import DefaultStageFields from 'ee/analytics/cycle_analytics/components/create_value_stream_form/default_stage_fields.vue';
@@ -155,7 +156,7 @@ export default {
       return this.stages.map(({ name }) => cleanStageName(name));
     },
     submissionSuccessfulAlert() {
-      const id = this.isEditing ? 'value-stream-updated-success' : 'value-stream-created-success';
+      const id = VSA_SETTINGS_FORM_SUBMISSION_SUCCESS_ALERT_ID;
       const message = sprintf(
         this.isEditing
           ? this.$options.i18n.SETTINGS_FORM_UPDATED

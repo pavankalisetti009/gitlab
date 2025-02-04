@@ -131,3 +131,5 @@ export const ADDITIONAL_DEFAULT_STAGE_EVENTS = [
     name: i18n.CODE_STAGE_START,
   },
 ];
+
+export const VSA_SETTINGS_FORM_SUBMISSION_SUCCESS_ALERT_ID = 'vsa-settings-form-submission-success';
