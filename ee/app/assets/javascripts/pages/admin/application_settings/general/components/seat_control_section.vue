@@ -102,15 +102,17 @@ export default {
           {{ s__('ApplicationSettings|Restricted access') }}
           <gl-badge variants="neutral" class="gl-ml-2">{{ __('Beta') }}</gl-badge>
           <template #help>{{
-            s__('ApplicationSettings|Adding billable users above licensed user count is blocked')
+            s__(
+              'ApplicationSettings|New users cannot be added or request access. Restricts the occurrence of seat overages.',
+            )
           }}</template>
         </gl-form-radio>
 
         <gl-form-radio :value="$options.SEAT_CONTROL.USER_CAP" data-testid="seat-control-user-cap">
-          {{ s__('ApplicationSettings|Set user cap') }}
+          {{ s__('ApplicationSettings|Controlled access') }}
           <template #help>{{
             s__(
-              'ApplicationSettings|By setting a user cap, any user who is added or requests access in excess of the user cap must be approved by an admin',
+              'ApplicationSettings|Administrator approval required for new users. Set a user cap for the maximum number of users who can be added without administrator approval.',
             )
           }}</template>
         </gl-form-radio>
@@ -119,7 +121,7 @@ export default {
           <gl-form-group
             id="user-cap-input-group"
             data-testid="user-cap-group"
-            :label="s__('ApplicationSettings|Set user cap')"
+            :label="__('Set user cap')"
             label-for="user-cap-input"
             label-sr-only
           >
@@ -169,7 +171,7 @@ export default {
         <gl-form-radio :value="$options.SEAT_CONTROL.OFF" data-testid="seat-control-open-access">
           {{ s__('ApplicationSettings|Open access') }}
           <template #help>{{
-            s__('ApplicationSettings|Invitations do not require administrator approval')
+            s__('ApplicationSettings|Administrator approval not required for new users.')
           }}</template>
         </gl-form-radio>
       </gl-form-radio-group>
