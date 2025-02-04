@@ -16,7 +16,8 @@ RSpec.describe Gitlab::SidekiqConfig::WorkerMatcher do
           has_external_dependencies: false,
           urgency: :low,
           resource_boundary: :cpu,
-          tags: [:no_disk_io, :git_access]
+          tags: [:no_disk_io, :git_access],
+          queue_namespace: :pipeline_processing
         },
         {
           name: 'a:2',
@@ -25,7 +26,8 @@ RSpec.describe Gitlab::SidekiqConfig::WorkerMatcher do
           has_external_dependencies: false,
           urgency: :high,
           resource_boundary: :none,
-          tags: [:git_access]
+          tags: [:git_access],
+          queue_namespace: :pipeline_processing
         },
         {
           name: 'b',
@@ -34,7 +36,8 @@ RSpec.describe Gitlab::SidekiqConfig::WorkerMatcher do
           has_external_dependencies: true,
           urgency: :high,
           resource_boundary: :memory,
-          tags: [:no_disk_io]
+          tags: [:no_disk_io],
+          queue_namespace: :authorized_project_update
         },
         {
           name: 'c',
@@ -43,7 +46,8 @@ RSpec.describe Gitlab::SidekiqConfig::WorkerMatcher do
           has_external_dependencies: false,
           urgency: :throttled,
           resource_boundary: :memory,
-          tags: []
+          tags: [],
+          queue_namespace: :cronjob
         }
       ]
     end
@@ -99,6 +103,13 @@ RSpec.describe Gitlab::SidekiqConfig::WorkerMatcher do
         'tags!=no_disk_io' | %w[WorkerA2 WorkerC]
         'tags!=no_disk_io,git_access' | %w[WorkerC]
         'tags!=unknown_tag' | %w[WorkerA WorkerA2 WorkerB WorkerC]
+
+        # queue_namespace
+        'queue_namespace=pipeline_processing' | %w[WorkerA WorkerA2]
+        'queue_namespace=pipeline_processing,authorized_project_update' | %w[WorkerA WorkerA2 WorkerB]
+        'queue_namespace=pipeline_processing|queue_namespace=authorized_project_update' | %w[WorkerA WorkerA2 WorkerB]
+        'queue_namespace=cronjob' | %w[WorkerC]
+        'queue_namespace!=cronjob' | %w[WorkerA WorkerA2 WorkerB]
 
         # combinations
         'feature_category=category_a&urgency=high' | %w[WorkerA2]
