@@ -94,7 +94,7 @@ export default {
     },
   },
   mounted() {
-    this.stepsExpanded = Array(this.numOfSteps).fill(true);
+    this.stepsExpanded = Array(this.numOfFiles).fill(true);
   },
   created() {
     this.$emit('onSelectedStep', this.selectedStepNumber);
