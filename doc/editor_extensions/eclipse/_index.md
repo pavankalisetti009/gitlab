@@ -34,7 +34,7 @@ Use the `Bug` or `Feature Proposal` template.
 
 - [Code Suggestions](../../user/project/repository/code_suggestions/index.md)
 - [Eclipse troubleshooting](troubleshooting.md)
-- [GitLab Language Server documentation](../language_server/index.md)
+- [GitLab Language Server documentation](../language_server/_index.md)
 - [About the Create:Editor Extensions Group](https://handbook.gitlab.com/handbook/engineering/development/dev/create/editor-extensions/)
 - [Open issues for this plugin](https://gitlab.com/gitlab-org/editor-extensions/gitlab-eclipse-plugin/-/issues/)
 - [View source code](https://gitlab.com/gitlab-org/editor-extensions/gitlab-eclipse-plugin)

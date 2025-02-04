@@ -2,9 +2,8 @@
 stage: Solutions Architecture
 group: Solutions Architecture
 info: This page is owned by the Solutions Architecture team.
+title: AWS Solutions
 ---
-
-# AWS Solutions
 
 This documentation covers solutions relating to leveraging GitLab with and on Amazon Web Services (AWS).
 

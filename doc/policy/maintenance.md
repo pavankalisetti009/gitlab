@@ -2,9 +2,8 @@
 stage: Systems
 group: Distribution
 info: To determine the technical writer assigned to the Stage/Group associated with this page, see https://handbook.gitlab.com/handbook/product/ux/technical-writing/#assignments
+title: GitLab release and maintenance policy
 ---
-
-# GitLab release and maintenance policy
 
 The [Delivery Group](https://handbook.gitlab.com/handbook/engineering/infrastructure/team/delivery/) are the owners of the maintenance policy and must approve any requested updates. This follows our [DRI model](https://handbook.gitlab.com/handbook/people-group/directly-responsible-individuals/) and is in place to ensure predictability for customers.
 

@@ -40,7 +40,7 @@ We provide two debugging scripts to help administrators verify their self-hosted
 model configuration.
 
 1. Debug the GitLab to AI gateway connection. From your GitLab instance, run the
-   [Rake task](../../raketasks/index.md):
+   [Rake task](../../raketasks/_index.md):
 
    ```shell
    gitlab-rake "gitlab:duo:verify_self_hosted_setup[<username>]"

@@ -3,9 +3,8 @@ stage: Create
 group: Editor Extensions
 info: To determine the technical writer assigned to the Stage/Group associated with this page, see https://handbook.gitlab.com/handbook/product/ux/technical-writing/#assignments
 description: "Learn about the GitLab Language Server."
+title: GitLab Language Server
 ---
-
-# GitLab Language Server
 
 The [GitLab Language Server](https://gitlab.com/gitlab-org/editor-extensions/gitlab-lsp)
 powers various GitLab editor extensions across IDEs.

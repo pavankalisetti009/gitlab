@@ -92,7 +92,7 @@ export default {
     instrumentAppTitle: s__('ProductAnalytics|Instrument your application'),
     sdkClientsTitle: s__('ProductAnalytics|SDK clients'),
   },
-  docsPath: helpPagePath('operations/product_analytics/index'),
+  docsPath: helpPagePath('operations/product_analytics/_index'),
 };
 </script>
 
