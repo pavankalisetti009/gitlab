@@ -845,7 +845,11 @@ module EE
         enable :create_test_case
       end
 
-      rule { compliance_framework_available & can?(:owner_access) }.enable :admin_compliance_framework
+      condition(:can_admin_compliance_framework_in_group) do
+        in_group? && can?(:admin_compliance_framework, @subject.group)
+      end
+
+      rule { can_admin_compliance_framework_in_group }.enable :admin_compliance_framework
 
       rule { (admin | owner | auditor) & project_level_compliance_dashboard_enabled }.policy do
         enable :read_compliance_dashboard

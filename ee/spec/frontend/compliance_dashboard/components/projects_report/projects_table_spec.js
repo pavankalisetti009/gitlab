@@ -84,6 +84,7 @@ describe('ProjectsTable component', () => {
   const createComponent = (
     props = {},
     mockFrameworksGraphQlResponse = getMockFrameworksGraphQl(),
+    provide = {},
   ) => {
     updateComplianceFrameworkMockResponse = jest
       .fn()
@@ -102,6 +103,10 @@ describe('ProjectsTable component', () => {
         rootAncestor,
         hasFilters,
         ...props,
+      },
+      provide: {
+        canAdminComplianceFrameworks: true,
+        ...provide,
       },
       stubs: {
         FrameworkSelectionBox: stubComponent(FrameworkSelectionBox, {
@@ -484,6 +489,57 @@ describe('ProjectsTable component', () => {
       );
       await waitForPromises();
       expect(wrapper.findComponent(FrameworkSelectionBox).exists()).toBe(false);
+    });
+  });
+
+  describe('when used in project', () => {
+    const projectsResponse = createComplianceFrameworksResponse({
+      count: 2,
+      groupPath: subgroupPath,
+    });
+    const projects = mapProjects(projectsResponse.data.group.projects.nodes);
+
+    beforeEach(() => {
+      wrapper = createComponent({
+        projects,
+        projectPath: `${subgroupPath}/demo`,
+        projectId: 37,
+        groupPath: subgroupPath,
+        isLoading: false,
+      });
+    });
+
+    it('does not render selection operations', () => {
+      expect(wrapper.findComponent(SelectionOperations).exists()).toBe(false);
+    });
+
+    it('does not render selection column', async () => {
+      await waitForPromises();
+      expect(findTable().props('fields')).not.toContain(
+        expect.objectContaining({
+          key: 'selected',
+        }),
+      );
+    });
+
+    it('does not allow framework edit if not allowed to admin compliance framework', () => {
+      wrapper = createComponent(
+        {
+          projects,
+          projectPath: `${subgroupPath}/demo`,
+          projectId: 37,
+          groupPath: subgroupPath,
+          isLoading: false,
+        },
+        getMockFrameworksGraphQl(),
+        { canAdminComplianceFrameworks: false },
+      );
+      // We do not render checkbox column
+      const COLUMN_IDX = COMPLIANCE_FRAMEWORK_COLUMN_IDX - 1;
+
+      const badge = findTableRowData(0).at(COLUMN_IDX).findComponent(FrameworkBadge);
+
+      expect(badge.props('closeable')).toBe(false);
     });
   });
 });

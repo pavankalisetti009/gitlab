@@ -10,9 +10,11 @@ module EE
 
       adherence_report = can?(current_user, :read_compliance_adherence_report, container)
       violations_report = can?(current_user, :read_compliance_violations_report, container)
+      can_admin_compliance_frameworks = can?(current_user, :admin_compliance_framework, container)
 
       general_app_data = {
         base_path: base_path(container),
+        group_path: group.full_path,
         root_ancestor_path: group.root_ancestor.full_path,
         root_ancestor_name: group.root_ancestor.name,
         root_ancestor_compliance_center_path: group_security_compliance_dashboard_path(group.root_ancestor,
@@ -20,14 +22,13 @@ module EE
 
         feature_adherence_report_enabled: adherence_report.to_s,
         feature_violations_report_enabled: violations_report.to_s,
-
-        active_compliance_frameworks: group.active_compliance_frameworks?.to_s
+        active_compliance_frameworks: group.active_compliance_frameworks?.to_s,
+        feature_projects_report_enabled: true.to_s,
+        can_admin_compliance_frameworks: can_admin_compliance_frameworks.to_s
       }
 
       if container.is_a?(Group)
         {
-          group_path: group.full_path,
-
           feature_frameworks_report_enabled: true.to_s,
           feature_projects_report_enabled: true.to_s,
           feature_security_policies_enabled: can?(current_user, :read_security_orchestration_policies, group).to_s,
@@ -55,6 +56,7 @@ module EE
         }.merge(general_app_data)
       else
         {
+          project_id: project.id,
           project_path: project.full_path
         }.merge(general_app_data)
       end

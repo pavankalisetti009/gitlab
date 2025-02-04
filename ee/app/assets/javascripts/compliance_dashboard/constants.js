@@ -66,6 +66,7 @@ export const i18n = {
   ),
   frameworksTab: s__('Compliance Center|Frameworks'),
   projectsTab: __('Projects'),
+  projectTab: __('Project'),
   heading: __('Compliance center'),
   standardsAdherenceTab: s__('Compliance Center|Standards Adherence'),
   subheading: s__(

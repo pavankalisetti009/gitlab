@@ -20,7 +20,7 @@ import Filters from 'ee/compliance_dashboard/components/projects_report/filters.
 
 Vue.use(VueApollo);
 
-describe('ComplianceFrameworksReport component', () => {
+describe('ComplianceProjectsReport component', () => {
   let wrapper;
   let apolloProvider;
   const groupPath = 'group-path';
@@ -52,6 +52,7 @@ describe('ComplianceFrameworksReport component', () => {
     props = {},
     resolverMock = mockGraphQlLoading,
     queryParams = {},
+    provide = {},
   ) {
     const currentQueryParams = { ...queryParams };
     $router = {
@@ -69,6 +70,10 @@ describe('ComplianceFrameworksReport component', () => {
           groupPath,
           rootAncestor,
           ...props,
+        },
+        provide: {
+          canAdminComplianceFrameworks: true,
+          ...provide,
         },
         stubs: {
           BaseToken: true,
@@ -221,6 +226,11 @@ describe('ComplianceFrameworksReport component', () => {
 
         createComponent(mount, {}, mockResolver);
         return waitForPromises();
+      });
+
+      it('does not render filters when project path is provided', () => {
+        createComponent(mount, { projectPath: 'project-path' });
+        expect(findFilters().exists()).toBe(false);
       });
 
       it('shows the pagination', () => {
