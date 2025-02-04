@@ -27,7 +27,6 @@ function showVue3Help() {
 
 function parseArgumentsAndEnvironment() {
   program
-    .usage('[options]')
     .description(`Runs Jest under CI.`)
     .option(
       '--vue3',
