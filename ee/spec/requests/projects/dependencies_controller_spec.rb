@@ -117,6 +117,13 @@ RSpec.describe Projects::DependenciesController, feature_category: :dependency_m
             end
           end
 
+          context 'with license types filter' do
+            it_behaves_like 'it can filter dependencies', :licenses do
+              let(:filter_value) { ['Apache-2.0'] }
+              let(:expected_results) { [occurrences[0]] }
+            end
+          end
+
           context 'with packager filter' do
             it_behaves_like 'it can filter dependencies', :package_managers do
               let(:filter_value) { ['nuget'] }

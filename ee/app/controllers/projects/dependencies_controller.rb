@@ -76,6 +76,7 @@ module Projects
         :per_page,
         :sort,
         :sort_by,
+        licenses: [],
         package_managers: [],
         component_names: [],
         source_types: []
