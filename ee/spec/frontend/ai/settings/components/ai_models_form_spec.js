@@ -30,7 +30,7 @@ describe('AiModelsForm', () => {
 
   const findTitle = () => wrapper.find('h3').text();
   const findCheckbox = () => wrapper.findComponent(GlFormCheckbox);
-  const findCheckboxLabel = () => wrapper.findByTestId('ai-models-checkbox-label');
+  const findCheckboxLabel = () => wrapper.findByTestId('label');
   const findCheckboxHelpText = () => wrapper.find('.help-text');
   const findTestingAgreementLink = () => wrapper.findComponent(PromoPageLink);
 
