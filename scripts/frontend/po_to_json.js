@@ -172,9 +172,7 @@ async function convertPoFileForLocale({ locale, localeFile, resultDir }) {
  */
 if (!process.env.JEST_WORKER_ID) {
   // eslint-disable-next-line global-require
-  const { Command } = require('commander');
-
-  const program = new Command();
+  const { program } = require('commander');
 
   program
     .option('-l, --locale-root <locale_root>', 'Extract messages from subfolders in this directory')
