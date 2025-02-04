@@ -26,7 +26,7 @@ RSpec.describe LicenseMailer do
       it { is_expected.to bcc_to recipients }
       it { is_expected.to have_body_text "your subscription #{subscription_name}" }
       it { is_expected.to have_body_text "You have #{active_user_count} active users" }
-      it { is_expected.to have_body_text "the user limit of #{license.restricted_user_count}" }
+      it { is_expected.to have_body_text "the user limit of #{license.seats}" }
     end
 
     context 'when license is not present' do
@@ -43,7 +43,7 @@ RSpec.describe LicenseMailer do
       it { is_expected.to bcc_to recipients }
       it { is_expected.to have_body_text "your subscription #{subscription_name}" }
       it { is_expected.to have_body_text "You have #{active_user_count} active users" }
-      it { is_expected.to have_body_text "the user limit of #{license.restricted_user_count}" }
+      it { is_expected.to have_body_text "the user limit of #{license.seats}" }
     end
   end
 end

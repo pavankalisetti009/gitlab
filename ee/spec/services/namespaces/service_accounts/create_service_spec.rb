@@ -71,7 +71,7 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
 
         context 'when premium seats are not available' do
           before do
-            allow(license).to receive(:restricted_user_count).and_return(1)
+            allow(license).to receive(:seats).and_return(1)
           end
 
           it 'raises error' do
@@ -82,7 +82,7 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
 
         context 'when premium seats are available' do
           before do
-            allow(license).to receive(:restricted_user_count).and_return(User.service_account.count + 2)
+            allow(license).to receive(:seats).and_return(User.service_account.count + 2)
           end
 
           it_behaves_like 'service account creation success' do
