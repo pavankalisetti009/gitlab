@@ -1032,17 +1032,33 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
         end
 
         context 'when mixed with other action types' do
-          let(:policy) do
-            build(:security_policy, content: {
-              actions: [
-                { type: 'require_approval', approvals_required: 0 },
-                { type: 'other_action' },
-                { type: 'require_approval', approvals_required: 0 }
-              ]
-            })
+          context 'when all require_approval actions have approvals_required set to 0' do
+            let(:policy) do
+              build(:security_policy, content: {
+                actions: [
+                  { type: 'require_approval', approvals_required: 0 },
+                  { type: 'other_action' },
+                  { type: 'require_approval', approvals_required: 0 }
+                ]
+              })
+            end
+
+            it { is_expected.to be true }
           end
 
-          it { is_expected.to be true }
+          context 'when at least one require_approval action has approvals_required greater than 0' do
+            let(:policy) do
+              build(:security_policy, content: {
+                actions: [
+                  { type: 'require_approval', approvals_required: 0 },
+                  { type: 'other_action' },
+                  { type: 'require_approval', approvals_required: 1 }
+                ]
+              })
+            end
+
+            it { is_expected.to be false }
+          end
         end
 
         context 'when only other action types are present' do

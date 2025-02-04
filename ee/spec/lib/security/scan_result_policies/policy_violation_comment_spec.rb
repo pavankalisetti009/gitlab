@@ -494,18 +494,60 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
               create(:approval_policy_rule, security_policy: warn_mode_db_policy)
             end
 
-            before do
-              build_violation_details(:any_merge_request, { violations: { any_merge_request: { commits: true } } },
-                policy_read: warn_mode_policy_read, policy_rule: warn_mode_policy_rule)
+            let_it_be(:project_2) { create(:project, :repository) }
+
+            let_it_be(:security_orchestration_policy_configuration_2) do
+              create(:security_orchestration_policy_configuration, project: project_2)
             end
 
-            it 'includes information about warn mode policies' do
-              expect(body).to include('Additional information')
-              expect(body).to include(
-                'Review the following policies to understand requirements and identify policy owners for support:')
-              expect(body).to include(
-                "[#{warn_mode_policy_rule.security_policy.name}](#{warn_mode_policy_rule.security_policy.edit_path})"
-              )
+            let_it_be(:warn_mode_policy_read_2) do
+              create(:scan_result_policy_read, project: project_2,
+                security_orchestration_policy_configuration: security_orchestration_policy_configuration_2)
+            end
+
+            let_it_be(:warn_mode_db_policy_2) do
+              create(:security_policy, :warn_mode, policy_index: 0,
+                security_orchestration_policy_configuration: security_orchestration_policy_configuration_2)
+            end
+
+            let_it_be(:warn_mode_policy_rule_2) do
+              create(:approval_policy_rule, security_policy: warn_mode_db_policy)
+            end
+
+            context 'when there is one warn mode policy' do
+              before do
+                build_violation_details(:any_merge_request, { violations: { any_merge_request: { commits: true } } },
+                  policy_read: warn_mode_policy_read, policy_rule: warn_mode_policy_rule)
+              end
+
+              it 'includes information about warn mode policies' do
+                expect(body).to include('Additional information')
+                expect(body).to include(
+                  'Review the following policies to understand requirements and identify policy owners for support:')
+                expect(body).to include(
+                  "[#{warn_mode_policy_rule.security_policy.name}](#{warn_mode_policy_rule.security_policy.edit_path})"
+                )
+              end
+            end
+
+            context 'when there are multiple warn mode policies' do
+              before do
+                build_violation_details(:any_merge_request, { violations: { any_merge_request: { commits: true } } },
+                  policy_read: warn_mode_policy_read, policy_rule: warn_mode_policy_rule)
+                build_violation_details(:any_merge_request, { violations: { any_merge_request: { commits: true } } },
+                  policy_read: warn_mode_policy_read_2, policy_rule: warn_mode_policy_rule_2, name: 'Policy 2')
+              end
+
+              it 'includes information about warn mode policies' do
+                expect(body).to include('Additional information')
+                expect(body).to include(
+                  'Review the following policies to understand requirements and identify policy owners for support:')
+                expect(body).to include(
+                  "[#{warn_mode_policy_rule.security_policy.name}](#{warn_mode_policy_rule.security_policy.edit_path})",
+                  "[#{warn_mode_policy_rule_2.security_policy.name}]" \
+                    "(#{warn_mode_policy_rule_2.security_policy.edit_path})"
+                )
+              end
             end
 
             context 'when the feature flag is disabled' do
