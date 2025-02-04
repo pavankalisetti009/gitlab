@@ -30413,6 +30413,8 @@ CREATE INDEX idx_ci_running_builds_on_runner_type_and_owner_xid_and_id ON ci_run
 
 CREATE INDEX idx_compliance_requirements_controls_on_namespace_id ON compliance_requirements_controls USING btree (namespace_id);
 
+CREATE INDEX idx_compliance_requirements_controls_on_requirement_id ON compliance_requirements_controls USING btree (compliance_requirement_id);
+
 CREATE INDEX idx_compliance_security_policies_on_policy_configuration_id ON compliance_framework_security_policies USING btree (policy_configuration_id);
 
 CREATE INDEX idx_component_usages_on_catalog_resource_used_by_proj_used_date ON ONLY p_catalog_resource_component_usages USING btree (catalog_resource_id, used_by_project_id, used_date);
@@ -35419,7 +35421,7 @@ CREATE UNIQUE INDEX uniq_audit_group_event_filters_destination_id_and_event_type
 
 CREATE UNIQUE INDEX uniq_audit_instance_event_filters_destination_id_and_event_type ON audit_events_instance_streaming_event_type_filters USING btree (external_streaming_destination_id, audit_event_type);
 
-CREATE UNIQUE INDEX uniq_compliance_requirements_controls_name_requirement_id ON compliance_requirements_controls USING btree (compliance_requirement_id, name);
+CREATE UNIQUE INDEX uniq_compliance_controls_requirement_id_and_name ON compliance_requirements_controls USING btree (compliance_requirement_id, name) WHERE (control_type <> 1);
 
 CREATE UNIQUE INDEX uniq_compliance_statuses_control_project_id ON project_control_compliance_statuses USING btree (compliance_requirements_control_id, project_id);
 
