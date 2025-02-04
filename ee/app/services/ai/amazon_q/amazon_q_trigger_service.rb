@@ -138,7 +138,8 @@ module Ai
           application_id: ai_settings.amazon_q_oauth_application_id,
           redirect_uri: Gitlab::Routing.url_helpers.root_url,
           expires_in: 1.hour,
-          scopes: Gitlab::Auth::Q_SCOPES + dynamic_user_scope
+          scopes: Gitlab::Auth::Q_SCOPES + dynamic_user_scope,
+          organization: Gitlab::Current::Organization.new(user: user).organization
         ).plaintext_token
       end
 
