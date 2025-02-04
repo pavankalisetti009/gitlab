@@ -10,7 +10,9 @@ RSpec.describe RemoteDevelopment::Settings::SettingsInitializer,
     { requested_setting_names: requested_setting_names }
   end
 
-  let(:default_devfile_yaml) { ::RemoteDevelopment::Settings::DefaultSettings::DEFAULT_DEVFILE_YAML }
+  let(:default_devfile_yaml) do
+    File.read(Rails.root.join("ee/spec/fixtures/remote_development/example.default_devfile.yaml").to_s)
+  end
 
   subject(:returned_value) do
     described_class.init(context)
@@ -86,7 +88,7 @@ RSpec.describe RemoteDevelopment::Settings::SettingsInitializer,
           max_resources_per_workspace: Hash,
           max_stopped_hours_before_termination: Integer,
           network_policy_egress: Array,
-          network_policy_enabled: Object,
+          network_policy_enabled: :Boolean,
           partial_reconciliation_interval_seconds: Integer,
           project_cloner_image: String,
           tools_injector_image: String,

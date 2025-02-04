@@ -56,7 +56,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
     status =
       case [previous_actual_state, current_actual_state, workspace_exists]
       in [RemoteDevelopment::WorkspaceOperations::States::CREATION_REQUESTED, RemoteDevelopment::WorkspaceOperations::States::STARTING, _]
-        <<~STATUS_YAML
+        <<~'YAML'
           conditions:
           - lastTransitionTime: "2023-04-10T10:14:14Z"
             lastUpdateTime: "2023-04-10T10:14:14Z"
@@ -64,9 +64,9 @@ RSpec.shared_context 'with remote development shared fixtures' do
             reason: NewReplicaSetCreated
             status: "True"
             type: Progressing
-        STATUS_YAML
+        YAML
       in [RemoteDevelopment::WorkspaceOperations::States::STARTING, RemoteDevelopment::WorkspaceOperations::States::STARTING, false]
-        <<~STATUS_YAML
+        <<~'YAML'
           conditions:
           - lastTransitionTime: "2023-04-10T10:14:14Z"
             lastUpdateTime: "2023-04-10T10:14:14Z"
@@ -84,9 +84,9 @@ RSpec.shared_context 'with remote development shared fixtures' do
           replicas: 1
           unavailableReplicas: 1
           updatedReplicas: 1
-        STATUS_YAML
+        YAML
       in [RemoteDevelopment::WorkspaceOperations::States::STARTING, RemoteDevelopment::WorkspaceOperations::States::RUNNING, false]
-        <<~STATUS_YAML
+        <<~'YAML'
           availableReplicas: 1
           conditions:
           - lastTransitionTime: "2023-03-06T14:36:36Z"
@@ -104,7 +104,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
           readyReplicas: 1
           replicas: 1
           updatedReplicas: 1
-        STATUS_YAML
+        YAML
       in [RemoteDevelopment::WorkspaceOperations::States::STARTING, RemoteDevelopment::WorkspaceOperations::States::FAILED, false]
         raise RemoteDevelopment::AgentInfoStatusFixtureNotImplementedError
       in [RemoteDevelopment::WorkspaceOperations::States::FAILED, RemoteDevelopment::WorkspaceOperations::States::STARTING, false]
@@ -112,7 +112,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
       in [RemoteDevelopment::WorkspaceOperations::States::RUNNING, RemoteDevelopment::WorkspaceOperations::States::FAILED, _]
         raise RemoteDevelopment::AgentInfoStatusFixtureNotImplementedError
       in [RemoteDevelopment::WorkspaceOperations::States::RUNNING, RemoteDevelopment::WorkspaceOperations::States::STOPPING, _]
-        <<~STATUS_YAML
+        <<~'YAML'
           availableReplicas: 1
           conditions:
           - lastTransitionTime: "2023-04-10T10:40:35Z"
@@ -131,9 +131,9 @@ RSpec.shared_context 'with remote development shared fixtures' do
           readyReplicas: 1
           replicas: 1
           updatedReplicas: 1
-        STATUS_YAML
+        YAML
       in [RemoteDevelopment::WorkspaceOperations::States::STOPPING, RemoteDevelopment::WorkspaceOperations::States::STOPPED, _]
-        <<~STATUS_YAML
+        <<~'YAML'
           conditions:
           - lastTransitionTime: "2023-04-10T10:40:35Z"
             lastUpdateTime: "2023-04-10T10:40:35Z"
@@ -148,9 +148,9 @@ RSpec.shared_context 'with remote development shared fixtures' do
             status: "True"
             type: Progressing
           observedGeneration: 2
-        STATUS_YAML
+        YAML
       in [RemoteDevelopment::WorkspaceOperations::States::STOPPED, RemoteDevelopment::WorkspaceOperations::States::STOPPED, true]
-        <<~STATUS_YAML
+        <<~'YAML'
           conditions:
           - lastTransitionTime: "2023-04-10T10:40:24Z"
             lastUpdateTime: "2023-04-10T10:40:35Z"
@@ -165,13 +165,13 @@ RSpec.shared_context 'with remote development shared fixtures' do
             status: "True"
             type: Progressing
           observedGeneration: 2
-        STATUS_YAML
+        YAML
       in [RemoteDevelopment::WorkspaceOperations::States::STOPPING, RemoteDevelopment::WorkspaceOperations::States::FAILED, _]
         raise RemoteDevelopment::AgentInfoStatusFixtureNotImplementedError
       in [RemoteDevelopment::WorkspaceOperations::States::STOPPED, RemoteDevelopment::WorkspaceOperations::States::STARTING, _]
         # There are multiple state transitions inside kubernetes
         # Fields like `replicas`, `unavailableReplicas` and `updatedReplicas` eventually become present
-        <<~STATUS_YAML
+        <<~'YAML'
           conditions:
           - lastTransitionTime: "2023-04-10T10:40:24Z"
             lastUpdateTime: "2023-04-10T10:40:35Z"
@@ -186,7 +186,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
             status: "False"
             type: Available
           observedGeneration: 3
-        STATUS_YAML
+        YAML
       in [RemoteDevelopment::WorkspaceOperations::States::STOPPED, RemoteDevelopment::WorkspaceOperations::States::FAILED, _]
         # Stopped workspace is terminated by the user which results in a Failed actual state.
         # e.g. could not unmount volume and terminate the workspace
@@ -194,7 +194,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
       in [RemoteDevelopment::WorkspaceOperations::States::STARTING, RemoteDevelopment::WorkspaceOperations::States::STARTING, true]
         # There are multiple state transitions inside kubernetes
         # Fields like `replicas`, `unavailableReplicas` and `updatedReplicas` eventually become present
-        <<~STATUS_YAML
+        <<~'YAML'
           conditions:
           - lastTransitionTime: "2023-04-10T10:40:24Z"
             lastUpdateTime: "2023-04-10T10:40:35Z"
@@ -212,9 +212,9 @@ RSpec.shared_context 'with remote development shared fixtures' do
           replicas: 1
           unavailableReplicas: 1
           updatedReplicas: 1
-        STATUS_YAML
+        YAML
       in [RemoteDevelopment::WorkspaceOperations::States::STARTING, RemoteDevelopment::WorkspaceOperations::States::RUNNING, true]
-        <<~STATUS_YAML
+        <<~'YAML'
           availableReplicas: 1
           conditions:
           - lastTransitionTime: "2023-04-10T10:40:24Z"
@@ -233,7 +233,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
           readyReplicas: 1
           replicas: 1
           updatedReplicas: 1
-        STATUS_YAML
+        YAML
       in [RemoteDevelopment::WorkspaceOperations::States::STARTING, RemoteDevelopment::WorkspaceOperations::States::FAILED, true]
         raise RemoteDevelopment::AgentInfoStatusFixtureNotImplementedError
       in [RemoteDevelopment::WorkspaceOperations::States::FAILED, RemoteDevelopment::WorkspaceOperations::States::STARTING, true]
@@ -242,7 +242,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
         raise RemoteDevelopment::AgentInfoStatusFixtureNotImplementedError
       in [_, RemoteDevelopment::WorkspaceOperations::States::FAILED, _]
         raise RemoteDevelopment::AgentInfoStatusFixtureNotImplementedError
-        # <<~STATUS_YAML
+        # <<~'YAML'
         #   conditions:
         #     - lastTransitionTime: "2023-03-06T14:36:31Z"
         #       lastUpdateTime: "2023-03-08T11:16:35Z"
@@ -259,7 +259,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
         #     replicas: 1
         #     unavailableReplicas: 1
         #     updatedReplicas: 1
-        # STATUS_YAML
+        # YAML
       else
         msg =
           'Unsupported state transition passed for create_workspace_agent_info_hash fixture creation: ' \
@@ -474,6 +474,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
       yaml = YAML.dump(Gitlab::Utils.deep_sort_hash(resource).deep_stringify_keys)
       yaml.gsub!('test-project', project_name)
       yaml.gsub!('test-group', namespace_path)
+      yaml.gsub!('http://localhost/', root_url)
       yaml
     end.join
   end
@@ -545,15 +546,15 @@ RSpec.shared_context 'with remote development shared fixtures' do
             containers: [
               {
                 args: [
-                  <<~"SH".chomp
+                  <<~"SH"
                     sshd_path=$(which sshd)
                     if [ -x "$sshd_path" ]; then
                       echo "Starting sshd on port ${GL_SSH_PORT}"
-                      $sshd_path -D -p $GL_SSH_PORT &
+                      $sshd_path -D -p "${GL_SSH_PORT}" &
                     else
                       echo "'sshd' not found in path. Not starting SSH server."
                     fi
-                    ${GL_TOOLS_DIR}/init_tools.sh
+                    "${GL_TOOLS_DIR}/init_tools.sh"
                   SH
                 ],
                 command: %w[/bin/sh -c],
@@ -664,8 +665,8 @@ RSpec.shared_context 'with remote development shared fixtures' do
             initContainers: [
               {
                 args: [
-                  <<~ARGS.chomp
-                    if [ -f "${GL_PROJECT_CLONING_SUCCESSFUL_FILE}" ];
+                  <<~'SHELL'
+                    if [ -f "/projects/.gl_project_cloning_successful" ];
                     then
                       echo "Project cloning was already successful";
                       exit 0;
@@ -676,26 +677,22 @@ RSpec.shared_context 'with remote development shared fixtures' do
                       rm -rf "/projects/test-project";
                     fi
                     echo "Cloning project";
-                    git clone --branch "master" "#{root_url}test-group/test-project.git" "/projects/test-project";
+                    git clone --branch "master" "http://localhost/test-group/test-project.git" "/projects/test-project";
                     exit_code=$?
                     if [ "${exit_code}" -eq 0 ];
                     then
                       echo "Project cloning successful";
-                      touch "${GL_PROJECT_CLONING_SUCCESSFUL_FILE}";
+                      touch "/projects/.gl_project_cloning_successful";
                       echo "Updated file to indicate successful project cloning";
                       exit 0;
                     else
                       echo "Project cloning failed with exit code: ${exit_code}";
                       exit "${exit_code}";
                     fi
-                  ARGS
+                  SHELL
                 ],
                 command: %w[/bin/sh -c],
                 env: [
-                  {
-                    name: "GL_PROJECT_CLONING_SUCCESSFUL_FILE",
-                    value: "/projects/.gl_project_cloning_successful"
-                  },
                   {
                     name: "PROJECTS_ROOT",
                     value: "/projects"
@@ -1088,6 +1085,10 @@ RSpec.shared_context 'with remote development shared fixtures' do
 
   def yaml_safe_load_symbolized(yaml)
     YAML.safe_load(yaml).to_h.deep_symbolize_keys
+  end
+
+  def example_default_devfile_yaml
+    read_devfile_yaml('example.default_devfile.yaml')
   end
 
   def example_devfile_yaml

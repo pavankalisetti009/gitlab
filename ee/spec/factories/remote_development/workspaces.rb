@@ -58,7 +58,8 @@ FactoryBot.define do
       user = workspace.user
       workspace.project.add_developer(user)
       workspace.agent.project.add_developer(user)
-      workspace.url_prefix ||= "60001-#{workspace.name}"
+      workspace.url_prefix ||=
+        "#{RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::WORKSPACE_EDITOR_PORT}-#{workspace.name}"
       workspace.url_query_string ||= "folder=dir%2Ffile"
     end
 
