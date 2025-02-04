@@ -38,6 +38,13 @@ export default {
     'fullPath',
     'isGroup',
   ],
+  props: {
+    withTabs: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
+  },
   data() {
     return {
       workItemUpdateCount: 0,
@@ -133,6 +140,7 @@ export default {
   <work-items-list-app
     :show-bulk-edit-sidebar="showBulkEditSidebar"
     :ee-work-item-update-count="workItemUpdateCount"
+    :with-tabs="withTabs"
   >
     <template v-if="hasEpicsFeature && showNewIssueLink" #nav-actions>
       <div class="gl-flex gl-gap-3">

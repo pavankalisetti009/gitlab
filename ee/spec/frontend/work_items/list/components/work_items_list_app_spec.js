@@ -61,6 +61,7 @@ describeSkipVue3(skipReason, () => {
     canBulkEditEpics = true,
     bulkUpdateMutationEnabled = true,
     isGroup = true,
+    props = {},
   } = {}) => {
     wrapper = shallowMountExtended(EEWorkItemsListApp, {
       provide: {
@@ -77,6 +78,9 @@ describeSkipVue3(skipReason, () => {
         EmptyStateWithoutAnyIssues: {
           template: '<div></div>',
         },
+      },
+      propsData: {
+        ...props,
       },
     });
   };
@@ -257,6 +261,14 @@ describeSkipVue3(skipReason, () => {
           },
         },
       });
+    });
+  });
+
+  describe('when withTabs is false', () => {
+    it('passes the correct props to WorkItemsListApp', () => {
+      mountComponent({ props: { withTabs: false } });
+
+      expect(findWorkItemsListApp().props('withTabs')).toBe(false);
     });
   });
 });
