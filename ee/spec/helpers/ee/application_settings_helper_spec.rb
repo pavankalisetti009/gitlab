@@ -13,6 +13,20 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
       expect(visible_attributes).to include(*%i[duo_features_enabled lock_duo_features_enabled duo_availability enabled_expanded_logging])
     end
 
+    it 'contains search parameters' do
+      expected_fields = %i[
+        global_search_code_enabled
+        global_search_commits_enabled
+        global_search_wiki_enabled
+        global_search_epics_enabled
+        global_search_snippet_titles_enabled
+        global_search_users_enabled
+        global_search_issues_enabled
+        global_search_merge_requests_enabled
+      ]
+      expect(helper.visible_attributes).to include(*expected_fields)
+    end
+
     it 'contains zoekt parameters' do
       expected_fields = %i[
         zoekt_auto_delete_lost_nodes zoekt_auto_index_root_namespace zoekt_indexing_enabled
@@ -227,6 +241,36 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
         end
 
         expect(result).to match_array(expected)
+      end
+    end
+  end
+
+  describe '#global_search_settings_checkboxes', feature_category: :global_search do
+    let_it_be(:application_setting) { build(:application_setting) }
+
+    before do
+      application_setting.global_search_issues_enabled = true
+      application_setting.global_search_merge_requests_enabled = false
+      application_setting.global_search_snippet_titles_enabled = true
+      application_setting.global_search_users_enabled = false
+      application_setting.global_search_code_enabled = true
+      application_setting.global_search_commits_enabled = false
+      application_setting.global_search_epics_enabled = true
+      application_setting.global_search_wiki_enabled = true
+      helper.instance_variable_set(:@application_setting, application_setting)
+    end
+
+    it 'returns correctly checked checkboxes' do
+      helper.gitlab_ui_form_for(application_setting, url: search_admin_application_settings_path) do |form|
+        result = helper.global_search_settings_checkboxes(form)
+        expect(result[0]).to have_checked_field('Enable issues tab in global search results', with: 1)
+        expect(result[1]).not_to have_checked_field('Enable merge requests tab in global search results', with: 1)
+        expect(result[2]).to have_checked_field('Enable snippet tab in global search results', with: 1)
+        expect(result[3]).not_to have_checked_field('Enable users tab in global search results', with: 1)
+        expect(result[4]).to have_checked_field('Enable code tab in global search results', with: 1)
+        expect(result[5]).not_to have_checked_field('Enable commits tab in global search results', with: 1)
+        expect(result[6]).to have_checked_field('Enable epics tab in global search results', with: 1)
+        expect(result[7]).to have_checked_field('Enable wiki tab in global search results', with: 1)
       end
     end
   end

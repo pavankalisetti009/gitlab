@@ -44,7 +44,7 @@ RSpec.describe Search::Navigation, feature_category: :global_search do
         let(:project) { nil }
         let(:group) { group_double }
 
-        where(:feature_flag, :show_elasticsearch_tabs, :condition) do
+        where(:setting_enabled, :show_elasticsearch_tabs, :condition) do
           true  | true  | true
           true  | false | false
           false | true  | true
@@ -55,7 +55,7 @@ RSpec.describe Search::Navigation, feature_category: :global_search do
           let(:options) { { show_elasticsearch_tabs: show_elasticsearch_tabs } }
 
           before do
-            stub_feature_flags(global_search_commits_tab: feature_flag)
+            stub_application_setting(global_search_commits_enabled: setting_enabled)
           end
 
           it 'data item condition is set correctly' do
@@ -68,7 +68,7 @@ RSpec.describe Search::Navigation, feature_category: :global_search do
         let(:project) { nil }
         let(:group) { nil }
 
-        where(:feature_flag, :show_elasticsearch_tabs, :condition) do
+        where(:setting_enabled, :show_elasticsearch_tabs, :condition) do
           true  | true  | true
           false | true  | false
           false | false | false
@@ -81,7 +81,7 @@ RSpec.describe Search::Navigation, feature_category: :global_search do
           let(:options) { { show_elasticsearch_tabs: show_elasticsearch_tabs } }
 
           before do
-            stub_feature_flags(global_search_commits_tab: feature_flag)
+            stub_application_setting(global_search_commits_enabled: setting_enabled)
           end
 
           it 'data item condition is set correctly' do
@@ -95,7 +95,7 @@ RSpec.describe Search::Navigation, feature_category: :global_search do
       context 'when project search' do
         let(:project) { project_double }
 
-        where(:feature_flag, :show_epics, :condition) do
+        where(:setting_enabled, :show_epics, :condition) do
           false | true  | false
           false | false | false
           true  | true  | false
@@ -106,7 +106,7 @@ RSpec.describe Search::Navigation, feature_category: :global_search do
           let(:options) { { show_epics: show_epics } }
 
           it 'data item condition is set correctly' do
-            stub_feature_flags(global_search_epics_tab: feature_flag)
+            stub_application_setting(global_search_epics_enabled: setting_enabled)
 
             expect(tabs[:issues][:sub_items][:epic][:condition]).to eq(condition)
           end
@@ -136,7 +136,7 @@ RSpec.describe Search::Navigation, feature_category: :global_search do
         let(:project) { nil }
         let(:group) { nil }
 
-        where(:feature_flag, :show_epics, :condition) do
+        where(:setting_enabled, :show_epics, :condition) do
           false | false | false
           true  | false | false
           false | true  | false
@@ -147,7 +147,7 @@ RSpec.describe Search::Navigation, feature_category: :global_search do
           let(:options) { { show_epics: show_epics } }
 
           it 'data item condition is set correctly' do
-            stub_feature_flags(global_search_epics_tab: feature_flag)
+            stub_application_setting(global_search_epics_enabled: setting_enabled)
 
             expect(tabs[:issues][:sub_items][:epic][:condition]).to eq(condition)
           end
@@ -180,7 +180,7 @@ RSpec.describe Search::Navigation, feature_category: :global_search do
         let(:project) { nil }
         let(:group) { group_double }
 
-        where(:feature_flag, :show_elasticsearch_tabs, :condition) do
+        where(:setting_enabled, :show_elasticsearch_tabs, :condition) do
           true  | true  | true
           true  | false | false
           false | true  | true
@@ -191,7 +191,7 @@ RSpec.describe Search::Navigation, feature_category: :global_search do
           let(:options) { { show_elasticsearch_tabs: show_elasticsearch_tabs } }
 
           before do
-            stub_feature_flags(global_search_wiki_tab: feature_flag)
+            stub_application_setting(global_search_wiki_enabled: setting_enabled)
           end
 
           it 'data item condition is set correctly' do
@@ -204,7 +204,7 @@ RSpec.describe Search::Navigation, feature_category: :global_search do
         let(:project) { nil }
         let(:group) { nil }
 
-        where(:feature_flag, :show_elasticsearch_tabs, :condition) do
+        where(:setting_enabled, :show_elasticsearch_tabs, :condition) do
           true  | true  | true
           false | true  | false
           false | false | false
@@ -217,7 +217,7 @@ RSpec.describe Search::Navigation, feature_category: :global_search do
           let(:options) { { show_elasticsearch_tabs: show_elasticsearch_tabs } }
 
           before do
-            stub_feature_flags(global_search_wiki_tab: feature_flag)
+            stub_application_setting(global_search_wiki_enabled: setting_enabled)
           end
 
           it 'data item condition is set correctly' do
@@ -290,7 +290,7 @@ RSpec.describe Search::Navigation, feature_category: :global_search do
         let(:project) { nil }
         let(:group) { nil }
 
-        where(:global_search_code_tab_enabled, :global_search_with_zoekt_enabled, :show_elasticsearch_tabs,
+        where(:global_search_code_enabled, :global_search_with_zoekt_enabled, :show_elasticsearch_tabs,
           :zoekt_enabled, :zoekt_enabled_for_user, :condition) do
           false | false | false | false | false | false
           false | false | false | false | true  | false
@@ -330,7 +330,7 @@ RSpec.describe Search::Navigation, feature_category: :global_search do
           let(:options) { { show_elasticsearch_tabs: show_elasticsearch_tabs, zoekt_enabled: zoekt_enabled } }
 
           before do
-            stub_feature_flags(global_search_code_tab: global_search_code_tab_enabled)
+            stub_application_setting(global_search_code_enabled: global_search_code_enabled)
             stub_feature_flags(zoekt_cross_namespace_search: global_search_with_zoekt_enabled)
             allow(::Search::Zoekt).to receive(:enabled_for_user?).and_return(zoekt_enabled_for_user)
           end

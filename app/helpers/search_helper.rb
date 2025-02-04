@@ -428,7 +428,7 @@ module SearchHelper
   def users_autocomplete(term, limit = 5)
     unless current_user &&
         Ability.allowed?(current_user, :read_users_list) &&
-        Feature.enabled?(:global_search_users_tab, current_user, type: :ops)
+        ::Gitlab::CurrentSettings.global_search_users_enabled?
       return []
     end
 

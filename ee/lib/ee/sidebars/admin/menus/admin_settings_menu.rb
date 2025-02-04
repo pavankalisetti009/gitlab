@@ -14,7 +14,6 @@ module EE
 
             insert_item_after(:general_settings, service_accounts_menu_item)
             insert_item_after(:service_accounts, roles_and_permissions_menu_item)
-            insert_item_after(:roles_and_permissions, search_menu_item)
             insert_item_after(:admin_reporting, templates_menu_item)
             insert_item_after(:admin_ci_cd, security_and_compliance_menu_item)
             insert_item_after(:security_and_compliance_menu_item, analytics_menu_item)
@@ -53,18 +52,6 @@ module EE
           def service_accounts_available?
             ::Feature.enabled?(:service_accounts_crud, current_user) && can?(current_user, :admin_service_accounts) &&
               !gitlab_com_subscription?
-          end
-
-          def search_menu_item
-            return ::Sidebars::NilMenuItem.new(item_id: :search) unless ::License.feature_available?(:elastic_search)
-
-            ::Sidebars::MenuItem.new(
-              title: _('Search'),
-              link: search_admin_application_settings_path,
-              active_routes: { path: 'admin/application_settings#search' },
-              item_id: :search,
-              container_html_options: { testid: 'admin-settings-search-link' }
-            )
           end
 
           def templates_menu_item
