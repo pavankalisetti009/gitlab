@@ -34,8 +34,7 @@ module Resolvers
         argument :search, GraphQL::Types::String, required: true, description: 'Searched term.'
 
         def ready?(**args)
-          @project = Project.find_by_id(args[:project_id]&.model_id)
-          verify_repository_ref!(args[:repository_ref])
+          verify_repository_ref!(args[:project_id]&.model_id, args[:repository_ref])
 
           @search_service = SearchService.new(current_user, {
             group_id: args[:group_id]&.model_id,
@@ -51,9 +50,7 @@ module Resolvers
             include_forked: args[:include_forked]
           })
 
-          @search_level = @search_service.level
           verify_global_search_is_allowed!
-          @search_type = @search_service.search_type
           verify_search_is_zoekt!
           super
         end
@@ -76,35 +73,55 @@ module Resolvers
 
         private
 
-        def verify_repository_ref!(ref)
-          return if @project.nil? || ref.blank? || (@project.default_branch == ref)
+        def verify_repository_ref!(project_id, ref)
+          project = Project.find_by_id(project_id)
+          return if project.nil? || ref.blank? || (project.default_branch == ref)
 
           raise Gitlab::Graphql::Errors::ArgumentError, 'Search is only allowed in project default branch'
         end
 
         def verify_global_search_is_allowed!
-          return unless @search_level == 'global'
+          return unless @search_service.level == 'global'
           return if @search_service.global_search_enabled_for_scope?
 
           raise Gitlab::Graphql::Errors::ArgumentError, 'Global search is not enabled for this scope'
         end
 
         def verify_search_is_zoekt!
-          return if @search_type == 'zoekt'
+          return if @search_service.search_type == 'zoekt'
 
           raise Gitlab::Graphql::Errors::ArgumentError, 'Zoekt search is not available for this request'
         end
 
         def results(**args)
-          @results = @search_service.search_objects
-          search_results = @search_service.search_results
-          raise Gitlab::Graphql::Errors::BaseError, search_results.error if search_results.failed?
+          global_search_duration_s = Benchmark.realtime do
+            @results = @search_service.search_objects
+            @search_results = @search_service.search_results
+          end
+
+          if @search_results.failed?
+            Gitlab::Metrics::GlobalSearchSlis.record_error_rate(
+              error: true,
+              search_type: @search_service.search_type,
+              search_level: @search_service.level,
+              search_scope: @search_service.scope
+            )
+
+            raise Gitlab::Graphql::Errors::BaseError, @search_results.error
+          end
+
+          Gitlab::Metrics::GlobalSearchSlis.record_apdex(
+            elapsed: global_search_duration_s,
+            search_type: @search_service.search_type,
+            search_level: @search_service.level,
+            search_scope: @search_service.scope
+          )
 
           {
-            match_count: search_results.blobs_count,
-            file_count: search_results.file_count,
-            search_level: @search_level,
-            search_type: @search_type,
+            match_count: @search_results.blobs_count,
+            file_count: @search_results.file_count,
+            search_level: @search_service.level,
+            search_type: @search_service.search_type,
             per_page: args[:per_page],
             files: @results
           }
