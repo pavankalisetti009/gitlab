@@ -10,6 +10,7 @@ module API
           expose :parent_ts
           expose :checkpoint
           expose :metadata
+          expose :checkpoint_writes, using: 'API::Entities::Ai::DuoWorkflows::CheckpointWrite'
         end
       end
     end

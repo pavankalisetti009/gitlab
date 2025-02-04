@@ -8,6 +8,7 @@ module Ai
       belongs_to :user
       belongs_to :project
       has_many :checkpoints, class_name: 'Ai::DuoWorkflows::Checkpoint'
+      has_many :checkpoint_writes, class_name: 'Ai::DuoWorkflows::CheckpointWrite'
       has_many :events, class_name: 'Ai::DuoWorkflows::Event'
 
       validates :status, presence: true

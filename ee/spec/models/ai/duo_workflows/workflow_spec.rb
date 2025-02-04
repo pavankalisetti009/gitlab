@@ -8,6 +8,11 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_workflow do
   let(:owned_workflow) { create(:duo_workflows_workflow, user: user) }
   let(:not_owned_workflow) { create(:duo_workflows_workflow, user: another_user) }
 
+  describe 'associations' do
+    it { is_expected.to have_many(:checkpoints).class_name('Ai::DuoWorkflows::Checkpoint') }
+    it { is_expected.to have_many(:checkpoint_writes).class_name('Ai::DuoWorkflows::CheckpointWrite') }
+  end
+
   describe '.for_user_with_id!' do
     it 'finds the workflow for the given user and id' do
       expect(described_class.for_user_with_id!(user.id, owned_workflow.id)).to eq(owned_workflow)

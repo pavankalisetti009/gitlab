@@ -96,8 +96,33 @@ module API
 
                   get do
                     workflow = find_workflow!(params[:id])
-                    checkpoints = workflow.checkpoints.order(thread_ts: :desc) # rubocop:disable CodeReuse/ActiveRecord -- adding scope for order is no clearer
+                    checkpoints = workflow.checkpoints.ordered_with_writes
                     present paginate(checkpoints), with: ::API::Entities::Ai::DuoWorkflows::Checkpoint
+                  end
+                end
+
+                namespace :checkpoint_writes_batch do
+                  params do
+                    requires :id, type: Integer, desc: 'The ID of the workflow'
+                    requires :thread_ts, type: String, desc: 'The thread ts'
+                    requires :checkpoint_writes, type: Array, allow_blank: false, desc: 'List of checkpoint writes' do
+                      requires :task, type: String, desc: 'The task id'
+                      requires :idx, type: Integer, desc: 'The index of checkpoint write'
+                      requires :channel, type: String, desc: 'The channel'
+                      requires :write_type, type: String, desc: 'The type of data'
+                      requires :data, type: String, desc: 'The checkpoint write data'
+                    end
+                  end
+                  post do
+                    workflow = find_workflow!(params[:id])
+                    result = ::Ai::DuoWorkflows::CreateCheckpointWriteBatchService.new(
+                      workflow: workflow,
+                      params: declared_params(include_missing: false).except(:id)
+                    ).execute
+
+                    bad_request!(result.message) if result.error?
+
+                    status :ok
                   end
                 end
 
