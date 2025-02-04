@@ -21854,6 +21854,9 @@ msgstr ""
 msgid "Editing"
 msgstr ""
 
+msgid "Editor toolbar"
+msgstr ""
+
 msgid "Edits"
 msgstr ""
 
