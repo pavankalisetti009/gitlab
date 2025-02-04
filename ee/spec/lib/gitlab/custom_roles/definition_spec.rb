@@ -32,6 +32,7 @@ RSpec.describe Gitlab::CustomRoles::Definition, feature_category: :permissions d
       before do
         described_class.instance_variable_set(:@standard_definitions, nil)
         described_class.instance_variable_set(:@admin_definitions, nil)
+        described_class.instance_variable_set(:@all_definitions, nil)
       end
 
       it 'reloads the abilities from the yaml files' do
@@ -67,14 +68,16 @@ RSpec.describe Gitlab::CustomRoles::Definition, feature_category: :permissions d
 
   describe '.load_abilities!' do
     before do
-      described_class.instance_variable_set(:@standard_definitions, { old: 'ability' })
-      described_class.instance_variable_set(:@admin_definitions, { old: 'ability' })
+      described_class.instance_variable_set(:@standard_definitions, { old_std: 'ability' })
+      described_class.instance_variable_set(:@admin_definitions, { old_admin: 'ability' })
+      described_class.instance_variable_set(:@all_definitions, { old_std: 'ability', old_admin: 'ability' })
     end
 
     it 'returns the defined abilities' do
       expect { described_class.load_abilities! }.to change { described_class.admin.keys }
-        .from(%i[old]).to(defined_admin_abilities).and change { described_class.standard.keys }
-        .from(%i[old]).to(defined_standard_abilities)
+        .from(%i[old_admin]).to(array_including(defined_admin_abilities)).and change { described_class.standard.keys }
+        .from(%i[old_std]).to(array_including(defined_standard_abilities)).and change { described_class.all.keys }
+        .from(%i[old_std old_admin]).to(array_including(all_defined_abilities))
     end
   end
 
