@@ -27,7 +27,6 @@ let filesThatChanged;
 
 function parseArguments() {
   program
-    .usage('[options] <SPEC ...>')
     .description(
       `
 Checks whether Jest specs quarantined under Vue 3 should be unquarantined.
@@ -68,7 +67,7 @@ Locally:
       '--stdio',
       `Let Jest write to stderr as normal. By default, it writes to ${JEST_STDERR}. Should not be used in CI, as it can exceed maximum job log size.`,
     )
-    .argument('[string]')
+    .argument('[spec...]', 'List of spec files to run (incompatible with --all)')
     .parse(process.argv);
   const options = program.opts();
 
