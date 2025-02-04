@@ -13,7 +13,7 @@ program
   .option('-f, --file <file>', 'Extract message from one single file')
   .option('-a, --all', 'Extract message from all js/vue files')
   .parse(process.argv);
-program.parse(process.argv);
+
 const args = program.opts();
 
 const extractor = decorateExtractorWithHelpers(new GettextExtractor());
