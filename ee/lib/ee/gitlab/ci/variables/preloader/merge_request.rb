@@ -12,6 +12,11 @@ module EE
               :approvals,
               :approved_by_users,
               {
+                applicable_post_merge_approval_rules: [
+                  :approved_approvers,
+                  :group_users, :users,
+                  { approval_project_rule: [:protected_branches, :group_users, :users] }
+                ],
                 approval_rules: [
                   :group_users, :users,
                   { approval_project_rule: [:protected_branches, :group_users, :users] }
