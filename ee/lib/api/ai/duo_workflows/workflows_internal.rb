@@ -107,6 +107,8 @@ module API
                     requires :event_type, type: String, values: ::Ai::DuoWorkflows::Event.event_types.keys,
                       desc: 'The type of event'
                     requires :message, type: String, desc: "Message from the human"
+                    optional :correlation_id, type: String, desc: "Correlation ID for tracking events",
+                      regexp: ::Ai::DuoWorkflows::Event::UUID_REGEXP
                   end
                   post do
                     workflow = find_workflow!(params[:id])

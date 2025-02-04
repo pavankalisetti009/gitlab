@@ -75,10 +75,12 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
 
   describe 'POST /ai/duo_workflows/workflows/:id/events' do
     let(:path) { "/ai/duo_workflows/workflows/#{workflow.id}/events" }
+    let(:correlation_id) { nil }
     let(:params) do
       {
         event_type: 'message',
-        message: 'Hello, World!'
+        message: 'Hello, World!',
+        correlation_id: correlation_id
       }
     end
 
@@ -100,6 +102,28 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
             post api(path, oauth_access_token: ai_workflows_oauth_token), params: params
             expect(response).to have_gitlab_http_status(:created)
           end.to change { workflow.events.count }.by(1)
+        end
+      end
+
+      context 'when correlation_id is provided' do
+        let(:correlation_id) { '123e4567-e89b-12d3-a456-426614174000' }
+
+        it 'creates an event with the provided correlation_id' do
+          expect do
+            post api(path, oauth_access_token: ai_workflows_oauth_token), params: params
+            expect(response).to have_gitlab_http_status(:created)
+          end.to change { workflow.events.count }.by(1)
+          expect(json_response['correlation_id']).to eq(correlation_id)
+        end
+      end
+
+      context 'when an invalid correlation_id is provided' do
+        let(:correlation_id) { 'invalid_id' }
+
+        it 'rejects an invalid correlation_id' do
+          post api(path, user), params: params
+          expect(response).to have_gitlab_http_status(:bad_request)
+          expect(json_response['error']).to include('correlation_id is invalid')
         end
       end
     end

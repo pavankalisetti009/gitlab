@@ -6,6 +6,7 @@ module API
       module DuoWorkflows
         class Event < Grape::Entity
           expose :id
+          expose :correlation_id
           expose :event_type
           expose :event_status
           expose :message
