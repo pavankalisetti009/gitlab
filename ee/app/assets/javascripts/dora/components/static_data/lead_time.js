@@ -34,5 +34,5 @@ export const chartDescriptionText = s__(
 );
 
 export const chartDocumentationHref = helpPagePath('user/analytics/ci_cd_analytics', {
-  anchor: 'view-dora-lead-time-for-changes-chart',
+  anchor: 'view-cicd-analytics',
 });
