@@ -1037,6 +1037,14 @@ $$;
 
 COMMENT ON FUNCTION table_sync_function_e438f29263() IS 'Partitioning migration: table sync for ci_runner_machines table';
 
+CREATE FUNCTION timestamp_coalesce(t1 timestamp with time zone, t2 anyelement) RETURNS timestamp without time zone
+    LANGUAGE plpgsql IMMUTABLE
+    AS $$
+BEGIN
+  RETURN COALESCE(t1::TIMESTAMP, t2);
+END;
+$$;
+
 CREATE FUNCTION trigger_01b3fc052119() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -34522,6 +34530,8 @@ CREATE INDEX index_timelogs_on_spent_at ON timelogs USING btree (spent_at) WHERE
 CREATE INDEX index_timelogs_on_timelog_category_id ON timelogs USING btree (timelog_category_id);
 
 CREATE INDEX index_timelogs_on_user_id ON timelogs USING btree (user_id);
+
+CREATE INDEX index_todos_coalesced_snoozed_until_created_at ON todos USING btree (user_id, state, timestamp_coalesce(snoozed_until, created_at));
 
 CREATE INDEX index_todos_on_author_id ON todos USING btree (author_id);
 
