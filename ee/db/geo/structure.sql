@@ -720,47 +720,81 @@ CREATE UNIQUE INDEX idx_project_wiki_repository_registry_project_wiki_repository
 
 CREATE UNIQUE INDEX index_ci_secure_file_registry_on_ci_secure_file_id ON ci_secure_file_registry USING btree (ci_secure_file_id);
 
+CREATE INDEX index_ci_secure_file_registry_on_last_synced_at ON ci_secure_file_registry USING btree (last_synced_at);
+
 CREATE INDEX index_ci_secure_file_registry_on_retry_at ON ci_secure_file_registry USING btree (retry_at);
 
 CREATE INDEX index_ci_secure_file_registry_on_state ON ci_secure_file_registry USING btree (state);
+
+CREATE INDEX index_ci_secure_file_registry_on_verified_at ON ci_secure_file_registry USING btree (verified_at);
+
+CREATE INDEX index_container_repository_registry_on_last_synced_at ON container_repository_registry USING btree (last_synced_at);
 
 CREATE INDEX index_container_repository_registry_on_retry_at ON container_repository_registry USING btree (retry_at);
 
 CREATE INDEX index_container_repository_registry_on_state ON container_repository_registry USING btree (state);
 
+CREATE INDEX index_container_repository_registry_on_verified_at ON container_repository_registry USING btree (verified_at);
+
 CREATE UNIQUE INDEX index_container_repository_registry_repository_id_unique ON container_repository_registry USING btree (container_repository_id);
+
+CREATE INDEX index_dependency_proxy_blob_registry_on_last_synced_at ON dependency_proxy_blob_registry USING btree (last_synced_at);
 
 CREATE INDEX index_dependency_proxy_blob_registry_on_retry_at ON dependency_proxy_blob_registry USING btree (retry_at);
 
 CREATE INDEX index_dependency_proxy_blob_registry_on_state ON dependency_proxy_blob_registry USING btree (state);
 
+CREATE INDEX index_dependency_proxy_blob_registry_on_verified_at ON dependency_proxy_blob_registry USING btree (verified_at);
+
+CREATE INDEX index_dependency_proxy_manifest_registry_on_last_synced_at ON dependency_proxy_manifest_registry USING btree (last_synced_at);
+
 CREATE INDEX index_dependency_proxy_manifest_registry_on_retry_at ON dependency_proxy_manifest_registry USING btree (retry_at);
 
 CREATE INDEX index_dependency_proxy_manifest_registry_on_state ON dependency_proxy_manifest_registry USING btree (state);
+
+CREATE INDEX index_dependency_proxy_manifest_registry_on_verified_at ON dependency_proxy_manifest_registry USING btree (verified_at);
+
+CREATE INDEX index_design_management_repository_registry_on_last_synced_at ON design_management_repository_registry USING btree (last_synced_at);
 
 CREATE INDEX index_design_management_repository_registry_on_retry_at ON design_management_repository_registry USING btree (retry_at);
 
 CREATE INDEX index_design_management_repository_registry_on_state ON design_management_repository_registry USING btree (state);
 
+CREATE INDEX index_design_management_repository_registry_on_verified_at ON design_management_repository_registry USING btree (verified_at);
+
 CREATE UNIQUE INDEX index_design_repo_registry_on_design_repo_id ON design_management_repository_registry USING btree (design_management_repository_id);
 
 CREATE INDEX index_file_registry_file_id ON file_registry USING btree (file_id);
 
+CREATE INDEX index_file_registry_on_last_synced_at ON file_registry USING btree (last_synced_at);
+
 CREATE INDEX index_file_registry_on_retry_at ON file_registry USING btree (retry_at);
+
+CREATE INDEX index_file_registry_on_verified_at ON file_registry USING btree (verified_at);
 
 CREATE INDEX index_file_registry_state ON file_registry USING btree (state);
 
 CREATE UNIQUE INDEX index_g_wiki_repository_registry_on_group_wiki_repository_id ON group_wiki_repository_registry USING btree (group_wiki_repository_id);
 
+CREATE INDEX index_group_wiki_repository_registry_on_last_synced_at ON group_wiki_repository_registry USING btree (last_synced_at);
+
 CREATE INDEX index_group_wiki_repository_registry_on_retry_at ON group_wiki_repository_registry USING btree (retry_at);
 
 CREATE INDEX index_group_wiki_repository_registry_on_state ON group_wiki_repository_registry USING btree (state);
 
+CREATE INDEX index_group_wiki_repository_registry_on_verified_at ON group_wiki_repository_registry USING btree (verified_at);
+
 CREATE INDEX index_job_artifact_registry_on_artifact_id ON job_artifact_registry USING btree (artifact_id);
+
+CREATE INDEX index_job_artifact_registry_on_last_synced_at ON job_artifact_registry USING btree (last_synced_at);
 
 CREATE INDEX index_job_artifact_registry_on_retry_at ON job_artifact_registry USING btree (retry_at);
 
+CREATE INDEX index_job_artifact_registry_on_verified_at ON job_artifact_registry USING btree (verified_at);
+
 CREATE INDEX index_job_artifact_registry_state ON job_artifact_registry USING btree (state);
+
+CREATE INDEX index_lfs_object_registry_on_last_synced_at ON lfs_object_registry USING btree (last_synced_at);
 
 CREATE UNIQUE INDEX index_lfs_object_registry_on_lfs_object_id ON lfs_object_registry USING btree (lfs_object_id);
 
@@ -768,7 +802,11 @@ CREATE INDEX index_lfs_object_registry_on_retry_at ON lfs_object_registry USING 
 
 CREATE INDEX index_lfs_object_registry_on_success ON lfs_object_registry USING btree (success);
 
+CREATE INDEX index_lfs_object_registry_on_verified_at ON lfs_object_registry USING btree (verified_at);
+
 CREATE UNIQUE INDEX index_manifest_registry_on_manifest_id ON dependency_proxy_manifest_registry USING btree (dependency_proxy_manifest_id);
+
+CREATE INDEX index_merge_request_diff_registry_on_last_synced_at ON merge_request_diff_registry USING btree (last_synced_at);
 
 CREATE UNIQUE INDEX index_merge_request_diff_registry_on_mr_diff_id ON merge_request_diff_registry USING btree (merge_request_diff_id);
 
@@ -776,11 +814,19 @@ CREATE INDEX index_merge_request_diff_registry_on_retry_at ON merge_request_diff
 
 CREATE INDEX index_merge_request_diff_registry_on_state ON merge_request_diff_registry USING btree (state);
 
+CREATE INDEX index_merge_request_diff_registry_on_verified_at ON merge_request_diff_registry USING btree (verified_at);
+
+CREATE INDEX index_package_file_registry_on_last_synced_at ON package_file_registry USING btree (last_synced_at);
+
 CREATE INDEX index_package_file_registry_on_repository_id ON package_file_registry USING btree (package_file_id);
 
 CREATE INDEX index_package_file_registry_on_retry_at ON package_file_registry USING btree (retry_at);
 
 CREATE INDEX index_package_file_registry_on_state ON package_file_registry USING btree (state);
+
+CREATE INDEX index_package_file_registry_on_verified_at ON package_file_registry USING btree (verified_at);
+
+CREATE INDEX index_pages_deployment_registry_on_last_synced_at ON pages_deployment_registry USING btree (last_synced_at);
 
 CREATE UNIQUE INDEX index_pages_deployment_registry_on_pages_deployment_id ON pages_deployment_registry USING btree (pages_deployment_id);
 
@@ -788,11 +834,19 @@ CREATE INDEX index_pages_deployment_registry_on_retry_at ON pages_deployment_reg
 
 CREATE INDEX index_pages_deployment_registry_on_state ON pages_deployment_registry USING btree (state);
 
+CREATE INDEX index_pages_deployment_registry_on_verified_at ON pages_deployment_registry USING btree (verified_at);
+
+CREATE INDEX index_pipeline_artifact_registry_on_last_synced_at ON pipeline_artifact_registry USING btree (last_synced_at);
+
 CREATE UNIQUE INDEX index_pipeline_artifact_registry_on_pipeline_artifact_id ON pipeline_artifact_registry USING btree (pipeline_artifact_id);
 
 CREATE INDEX index_pipeline_artifact_registry_on_retry_at ON pipeline_artifact_registry USING btree (retry_at);
 
 CREATE INDEX index_pipeline_artifact_registry_on_state ON pipeline_artifact_registry USING btree (state);
+
+CREATE INDEX index_pipeline_artifact_registry_on_verified_at ON pipeline_artifact_registry USING btree (verified_at);
+
+CREATE INDEX index_project_repository_registry_on_last_synced_at ON project_repository_registry USING btree (last_synced_at);
 
 CREATE UNIQUE INDEX index_project_repository_registry_on_project_id ON project_repository_registry USING btree (project_id);
 
@@ -800,11 +854,19 @@ CREATE INDEX index_project_repository_registry_on_retry_at ON project_repository
 
 CREATE INDEX index_project_repository_registry_on_state ON project_repository_registry USING btree (state);
 
+CREATE INDEX index_project_repository_registry_on_verified_at ON project_repository_registry USING btree (verified_at);
+
+CREATE INDEX index_project_wiki_repository_registry_on_last_synced_at ON project_wiki_repository_registry USING btree (last_synced_at);
+
 CREATE UNIQUE INDEX index_project_wiki_repository_registry_on_project_id ON project_wiki_repository_registry USING btree (project_id);
 
 CREATE INDEX index_project_wiki_repository_registry_on_retry_at ON project_wiki_repository_registry USING btree (retry_at);
 
 CREATE INDEX index_project_wiki_repository_registry_on_state ON project_wiki_repository_registry USING btree (state);
+
+CREATE INDEX index_project_wiki_repository_registry_on_verified_at ON project_wiki_repository_registry USING btree (verified_at);
+
+CREATE INDEX index_snippet_repository_registry_on_last_synced_at ON snippet_repository_registry USING btree (last_synced_at);
 
 CREATE INDEX index_snippet_repository_registry_on_retry_at ON snippet_repository_registry USING btree (retry_at);
 
@@ -812,13 +874,19 @@ CREATE UNIQUE INDEX index_snippet_repository_registry_on_snippet_repository_id O
 
 CREATE INDEX index_snippet_repository_registry_on_state ON snippet_repository_registry USING btree (state);
 
+CREATE INDEX index_snippet_repository_registry_on_verified_at ON snippet_repository_registry USING btree (verified_at);
+
 CREATE INDEX index_state_in_lfs_objects ON lfs_object_registry USING btree (state);
+
+CREATE INDEX index_terraform_state_version_registry_on_last_synced_at ON terraform_state_version_registry USING btree (last_synced_at);
 
 CREATE INDEX index_terraform_state_version_registry_on_retry_at ON terraform_state_version_registry USING btree (retry_at);
 
 CREATE INDEX index_terraform_state_version_registry_on_state ON terraform_state_version_registry USING btree (state);
 
 CREATE UNIQUE INDEX index_terraform_state_version_registry_on_t_state_version_id ON terraform_state_version_registry USING btree (terraform_state_version_id);
+
+CREATE INDEX index_terraform_state_version_registry_on_verified_at ON terraform_state_version_registry USING btree (verified_at);
 
 CREATE UNIQUE INDEX index_tf_state_versions_registry_tf_state_versions_id_unique ON terraform_state_version_registry USING btree (terraform_state_version_id);
 
