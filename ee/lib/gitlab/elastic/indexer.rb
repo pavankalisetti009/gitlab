@@ -13,7 +13,7 @@ module Gitlab
       Error = Class.new(StandardError)
       BLOB_SCHEMA_VERSION = 23_08
       COMMIT_SCHEMA_VERSION = 23_06
-      WIKI_SCHEMA_VERSION = 25_04
+      WIKI_SCHEMA_VERSION = 25_06
 
       class << self
         def indexer_version
