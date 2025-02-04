@@ -10,7 +10,7 @@ import {
   GlTooltipDirective,
 } from '@gitlab/ui';
 import { nextTick } from 'vue';
-import { __, s__ } from '~/locale';
+import { __, s__, sprintf } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import createCustomFieldMutation from './create_custom_field.mutation.graphql';
 import updateCustomFieldMutation from './update_custom_field.mutation.graphql';
@@ -43,6 +43,11 @@ export default {
       required: false,
       default: null,
     },
+    customFieldName: {
+      type: String,
+      required: false,
+      default: '',
+    },
   },
   data() {
     return {
@@ -68,10 +73,15 @@ export default {
     isEditing() {
       return Boolean(this.customFieldId);
     },
+    editButtonText() {
+      return sprintf(s__('WorkItem|Edit %{fieldName}'), { fieldName: this.customFieldName });
+    },
     modalTitle() {
       return this.isEditing
-        ? s__('WorkItemCustomField|Edit custom field')
-        : s__('WorkItemCustomField|New custom field');
+        ? sprintf(s__('WorkItem|Edit custom field %{fieldName}'), {
+            fieldName: this.customFieldName,
+          })
+        : s__('WorkItem|New custom field');
     },
     saveButtonText() {
       return this.isEditing ? __('Update') : __('Save');
@@ -204,8 +214,8 @@ export default {
   <div>
     <gl-button
       v-if="isEditing"
-      v-gl-tooltip="__('Edit')"
-      :aria-label="__('Edit')"
+      v-gl-tooltip="editButtonText"
+      :aria-label="editButtonText"
       icon="pencil"
       category="tertiary"
       data-testid="toggle-edit-modal"

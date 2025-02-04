@@ -1,15 +1,26 @@
 <script>
-import { GlBadge, GlButton, GlIntersperse, GlLoadingIcon, GlSprintf, GlTable } from '@gitlab/ui';
+import {
+  GlAlert,
+  GlBadge,
+  GlButton,
+  GlIntersperse,
+  GlLoadingIcon,
+  GlSprintf,
+  GlTable,
+  GlTooltipDirective,
+} from '@gitlab/ui';
 import { humanize } from '~/lib/utils/text_utility';
-import { __, n__, s__ } from '~/locale';
+import { __, n__, s__, sprintf } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import TimeagoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import CustomFieldForm from './custom_field_form.vue';
 import groupCustomFieldsQuery from './group_custom_fields.query.graphql';
+import customFieldArchiveMutation from './custom_field_archive.mutation.graphql';
 
 export default {
   components: {
     CustomFieldForm,
+    GlAlert,
     GlBadge,
     GlButton,
     GlIntersperse,
@@ -18,11 +29,16 @@ export default {
     GlTable,
     TimeagoTooltip,
   },
+  directives: {
+    GlTooltip: GlTooltipDirective,
+  },
   inject: ['fullPath'],
   data() {
     return {
       customFields: [],
       customFieldsForList: [],
+      archivingId: null,
+      errorText: '',
     };
   },
   computed: {
@@ -36,6 +52,7 @@ export default {
       variables() {
         return {
           fullPath: this.fullPath,
+          active: true,
         };
       },
       update(data) {
@@ -48,6 +65,7 @@ export default {
         this.customFieldsForList = this.customFields?.nodes?.map((field) => ({ ...field })) ?? [];
       },
       error(error) {
+        this.errorText = s__('WorkItem|Failed to load custom fields.');
         Sentry.captureException(error.message);
       },
     },
@@ -55,6 +73,9 @@ export default {
   methods: {
     detailsToggleIcon(detailsVisible) {
       return detailsVisible ? 'chevron-down' : 'chevron-right';
+    },
+    dismissAlert() {
+      this.errorText = '';
     },
     formattedFieldType(item) {
       return humanize(item.fieldType.toLowerCase());
@@ -65,12 +86,94 @@ export default {
       }
       return null;
     },
+    archiveButtonText(item) {
+      return sprintf(s__('WorkItem|Archive %{itemName}'), { itemName: item.name });
+    },
+    async archiveCustomField(id) {
+      this.archivingId = id;
+
+      try {
+        await this.executeArchiveMutation(id);
+      } catch (error) {
+        this.handleArchiveError(error);
+      } finally {
+        this.archivingId = null;
+      }
+    },
+    async executeArchiveMutation(id) {
+      const field = this.getFieldById(id);
+      const optimisticResponse = this.createOptimisticResponse(field);
+
+      const { data } = await this.$apollo.mutate({
+        mutation: customFieldArchiveMutation,
+        variables: { id },
+        optimisticResponse,
+        update: this.updateCacheAfterArchive,
+      });
+
+      if (data?.customFieldArchive?.errors?.length) {
+        throw new Error(data.customFieldArchive.errors.join(', '));
+      }
+    },
+    getFieldById(id) {
+      return this.customFieldsForList.find((f) => f.id === id);
+    },
+    createOptimisticResponse(field) {
+      return {
+        customFieldArchive: {
+          __typename: 'CustomFieldArchivePayload',
+          customField: {
+            __typename: 'CustomField',
+            id: field.id,
+            name: field.name,
+            fieldType: field.fieldType,
+          },
+          errors: [],
+        },
+      };
+    },
+
+    updateCacheAfterArchive(cache, { data: { customFieldArchive } }) {
+      if (customFieldArchive?.errors?.length) return;
+
+      const queryParams = {
+        query: groupCustomFieldsQuery,
+        variables: { fullPath: this.fullPath, active: true },
+      };
+
+      const prevData = cache.readQuery(queryParams);
+      if (!prevData?.group?.customFields) return;
+
+      const updatedCustomFields = {
+        ...prevData.group.customFields,
+        nodes: prevData.group.customFields.nodes.filter(
+          (node) => node.id !== customFieldArchive.customField.id,
+        ),
+        count: prevData.group.customFields.count - 1,
+      };
+
+      cache.writeQuery({
+        ...queryParams,
+        data: {
+          group: {
+            ...prevData.group,
+            customFields: updatedCustomFields,
+          },
+        },
+      });
+    },
+
+    handleArchiveError(error) {
+      this.errorText = s__('WorkItem|Failed to archive custom field.');
+      Sentry.captureException(error);
+    },
   },
   fields: [
     {
       key: 'show_details',
-      label: '',
+      label: s__('WorkItem|Toggle details'),
       class: 'gl-w-0 !gl-align-middle',
+      thClass: 'gl-sr-only',
     },
     {
       key: 'name',
@@ -95,7 +198,7 @@ export default {
     {
       key: 'actions',
       label: __('Actions'),
-      class: 'gl-w-0 gl-text-right',
+      class: '!gl-align-middle',
     },
   ],
 };
@@ -103,6 +206,16 @@ export default {
 
 <template>
   <div>
+    <gl-alert
+      v-if="errorText"
+      variant="danger"
+      :dismissible="true"
+      class="gl-mb-5"
+      data-testid="alert"
+      @dismiss="dismissAlert"
+    >
+      {{ errorText }}
+    </gl-alert>
     <div
       class="gl-font-lg gl-border gl-flex gl-items-center gl-rounded-t-base gl-border-b-0 gl-px-5 gl-py-4 gl-font-bold"
     >
@@ -152,15 +265,29 @@ export default {
       <template #cell(lastModified)="{ item }">
         <timeago-tooltip :time="item.updatedAt" />
       </template>
+      <template #head(actions)>
+        <div class="gl-ml-auto">{{ __('Actions') }}</div>
+      </template>
       <template #cell(actions)="{ item }">
-        <custom-field-form
-          :custom-field-id="item.id"
-          @updated="$apollo.queries.customFields.refetch()"
-        />
+        <div class="gl-align-items-center gl-end gl-flex gl-justify-end gl-gap-1">
+          <custom-field-form
+            :custom-field-id="item.id"
+            :custom-field-name="item.name"
+            @updated="$apollo.queries.customFields.refetch()"
+          />
+          <gl-button
+            v-gl-tooltip="archiveButtonText(item)"
+            :aria-label="archiveButtonText(item)"
+            icon="archive"
+            category="tertiary"
+            data-testid="archiveButton"
+            @click="archiveCustomField(item.id)"
+          />
+        </div>
       </template>
       <template #row-details="{ item }">
         <div class="gl-border gl-col-span-5 gl-mt-3 gl-rounded-lg gl-bg-default gl-p-5">
-          <div class="gl-mb-3 gl-flex gl-gap-3">
+          <dl class="gl-mb-3 gl-flex gl-gap-3">
             <dt>{{ s__('WorkItem|Usage:') }}</dt>
             <dd>
               <gl-intersperse>
@@ -169,8 +296,8 @@ export default {
                 }}</span>
               </gl-intersperse>
             </dd>
-          </div>
-          <div v-if="item.selectOptions.length > 0" class="gl-mb-3">
+          </dl>
+          <dl v-if="item.selectOptions.length > 0" class="gl-mb-3">
             <dt>{{ s__('WorkItem|Options:') }}</dt>
             <dd>
               <ul>
@@ -179,7 +306,7 @@ export default {
                 </li>
               </ul>
             </dd>
-          </div>
+          </dl>
           <div class="gl-text-sm gl-text-subtle">
             <gl-sprintf :message="s__('WorkItem|Last updated %{timeago}')">
               <template #timeago>
