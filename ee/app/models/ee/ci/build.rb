@@ -207,11 +207,13 @@ module EE
       private
 
       def expand_pages_variables
-        pages_config.tap do |pages_options|
-          pages_options[:path_prefix] = ExpandVariables.expand(pages_options[:path_prefix].to_s, -> {
-            base_variables.sort_and_expand_all
-          })
-        end
+        pages_options = {}
+
+        pages_options[:path_prefix] = expanded_path_prefix if pages_config[:path_prefix].present?
+
+        return pages_options unless pages_config[:expire_in].present?
+
+        pages_options.merge(expire_in: pages_config[:expire_in])
       end
 
       def variables_hash
@@ -298,6 +300,10 @@ module EE
       def pages_config
         config = options&.dig(:pages)
         config.is_a?(Hash) ? config : {}
+      end
+
+      def expanded_path_prefix
+        ExpandVariables.expand(pages_config[:path_prefix].to_s, -> { base_variables.sort_and_expand_all })
       end
     end
   end
