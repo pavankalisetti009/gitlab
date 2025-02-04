@@ -89,5 +89,37 @@ RSpec.describe Ci::RunnerPolicy, feature_category: :runner do
         end
       end
     end
+
+    describe 'with admin custom roles' do
+      let_it_be(:instance_runner) { create(:ci_runner, :instance) }
+
+      where(:custom_permission, :abilities) do
+        :read_admin_cicd | %i[read_runner read_builds]
+      end
+
+      with_them do
+        [:instance_runner, :group_runner, :project_runner].each do |runner_type|
+          context "with a #{runner_type}" do
+            subject(:policy) { described_class.new(user, public_send(runner_type)) }
+
+            it { expect_disallowed(*abilities) }
+
+            context "when the user has the `#{params[:custom_permission]}` permission" do
+              let!(:role) { create(:admin_role, custom_permission, user: user) }
+
+              it { expect_allowed(*abilities) }
+
+              context "with the custom roles feature disabled" do
+                before do
+                  stub_licensed_features(custom_roles: false)
+                end
+
+                it { expect_disallowed(*abilities) }
+              end
+            end
+          end
+        end
+      end
+    end
   end
 end

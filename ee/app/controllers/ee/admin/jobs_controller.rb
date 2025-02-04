@@ -3,15 +3,10 @@
 module EE
   module Admin
     module JobsController
-      extend ::Gitlab::Utils::Override
+      extend ActiveSupport::Concern
 
-      private
-
-      override :authenticate_admin!
-      def authenticate_admin!
-        return if action_name == 'index' && can?(current_user, :read_admin_cicd)
-
-        super
+      prepended do
+        authorize! :read_admin_cicd, only: [:index]
       end
     end
   end

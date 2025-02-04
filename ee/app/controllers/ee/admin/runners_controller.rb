@@ -12,20 +12,12 @@ module EE
           push_licensed_feature(:runner_upgrade_management) if ::Gitlab::Ci::RunnerReleases.instance.enabled?
         end
         before_action(only: [:new, :show, :edit]) { push_licensed_feature(:runner_maintenance_note) }
+
+        authorize! :read_admin_cicd, only: %i[index show]
       end
 
       def dashboard
         render_404 unless License.feature_available?(:runner_performance_insights)
-      end
-
-      private
-
-      override :authenticate_admin!
-      def authenticate_admin!
-        return super unless action_name == 'index'
-        return if can?(current_user, :read_admin_cicd)
-
-        super
       end
     end
   end

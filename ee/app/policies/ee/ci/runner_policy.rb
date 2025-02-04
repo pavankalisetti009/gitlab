@@ -27,6 +27,15 @@ module EE
         end
 
         rule { custom_role_enables_read_runners }.enable(:read_runner)
+
+        condition(:admin_custom_role_enables_read_admin_cicd, scope: :user) do
+          ::Authz::CustomAbility.allowed?(@user, :read_admin_cicd)
+        end
+
+        rule { admin_custom_role_enables_read_admin_cicd }.policy do
+          enable :read_runner
+          enable :read_builds
+        end
       end
     end
   end
