@@ -306,5 +306,46 @@ RSpec.describe Sbom::AggregationsFinder, feature_category: :dependency_managemen
         end
       end
     end
+
+    describe 'filtering by package manager' do
+      using RSpec::Parameterized::TableSyntax
+
+      subject { execute.to_a.pluck(:package_manager).uniq }
+
+      before_all do
+        create(:sbom_occurrence, :bundler, project: target_projects.first)
+        create(:sbom_occurrence, :npm, project: target_projects.first)
+        create(:sbom_occurrence, :nuget, project: target_projects.first)
+        create(:sbom_occurrence, :yarn, project: target_projects.first)
+      end
+
+      let(:params) { { package_managers: input } }
+
+      where(:input, :expected_uniq_package_managers) do
+        %w[bundler npm] | %w[bundler npm]
+        %w[nuget]       | %w[nuget]
+        %w[yarn]        | %w[yarn]
+        %w[unknown]     | []
+        []              | %w[bundler npm nuget yarn]
+      end
+
+      with_them { it { is_expected.to match_array expected_uniq_package_managers } }
+
+      context 'when the dependencies_page_filter_by_package_manager FF is disabled' do
+        before do
+          stub_feature_flags(dependencies_page_filter_by_package_manager: false)
+        end
+
+        where(:input, :expected_uniq_package_managers) do
+          %w[bundler npm] | %w[bundler npm nuget yarn]
+          %w[nuget]       | %w[bundler npm nuget yarn]
+          %w[yarn]        | %w[bundler npm nuget yarn]
+          %w[unknown]     | %w[bundler npm nuget yarn]
+          []              | %w[bundler npm nuget yarn]
+        end
+
+        with_them { it { is_expected.to match_array expected_uniq_package_managers } }
+      end
+    end
   end
 end
