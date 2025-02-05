@@ -8,9 +8,12 @@ RSpec.describe MergeRequests::DuoCodeReviewChatWorker, feature_category: :code_r
   let_it_be(:project) { create(:project, :repository) }
   let_it_be(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
 
-  let_it_be(:first_discussion_note) do
+  let(:note_type) { :diff_note_on_merge_request }
+  let(:note_content) { "@#{::Users::Internal.duo_code_review_bot.username} Hello!" }
+
+  let!(:first_discussion_note) do
     create(
-      :diff_note_on_merge_request,
+      note_type,
       noteable: merge_request,
       project: project,
       author: ::Users::Internal.duo_code_review_bot,
@@ -18,9 +21,9 @@ RSpec.describe MergeRequests::DuoCodeReviewChatWorker, feature_category: :code_r
     )
   end
 
-  let_it_be(:excluded_note) do
+  let!(:excluded_note) do
     create(
-      :diff_note_on_merge_request,
+      note_type,
       noteable: merge_request,
       project: project,
       discussion_id: first_discussion_note.discussion_id,
@@ -28,13 +31,13 @@ RSpec.describe MergeRequests::DuoCodeReviewChatWorker, feature_category: :code_r
     )
   end
 
-  let_it_be(:note) do
+  let(:note) do
     create(
-      :diff_note_on_merge_request,
+      note_type,
       noteable: merge_request,
       project: project,
       discussion_id: first_discussion_note.discussion_id,
-      note: "@#{::Users::Internal.duo_code_review_bot.username} Hello!"
+      note: note_content
     )
   end
 
@@ -48,115 +51,129 @@ RSpec.describe MergeRequests::DuoCodeReviewChatWorker, feature_category: :code_r
       )
     end
 
-    before do
-      allow_next_instance_of(
-        Gitlab::Llm::Completions::Chat,
-        an_object_having_attributes(content: note.note),
-        nil,
-        additional_context: {
-          id: note.latest_diff_file_path,
-          category: 'merge_request',
-          content: note.raw_truncated_diff_lines
-        }
-      ) do |chat|
-        allow(chat)
-          .to receive(:execute)
-          .and_return(response_modifier)
-      end
+    let(:additional_context) do
+      {
+        id: note.latest_diff_file_path,
+        category: 'merge_request',
+        content: note.raw_truncated_diff_lines
+      }
     end
 
-    it 'creates note based on chat response' do
-      expect(Gitlab::Llm::ChatMessage)
-        .to receive(:new)
-        .with(
-          chat_message_params(
-            ::Gitlab::Llm::AiMessage::ROLE_ASSISTANT,
-            first_discussion_note,
-            first_discussion_note.note
-          )
-        )
-        .and_call_original
-
-      expect(Gitlab::Llm::ChatMessage)
-        .not_to receive(:new)
-        .with(
-          chat_message_params(
-            ::Gitlab::Llm::AiMessage::ROLE_USER,
-            excluded_note,
-            excluded_note.note
-          )
-        )
-
-      expect(Gitlab::Llm::ChatMessage)
-        .to receive(:new)
-        .with(
-          chat_message_params(
-            ::Gitlab::Llm::AiMessage::ROLE_USER,
-            note,
-            note.note
-          )
-        )
-        .and_call_original
-
-      worker.perform(note)
-
-      expect(Note.last.note).to eq(response_modifier.response_body)
-    end
-
-    context 'when an error gets raised' do
-      let(:error_note) do
-        s_("DuoCodeReview|I encountered some problems while responding to your query. Please try again later.")
-      end
-
+    shared_examples 'performing a Duo Code Review chat request' do
       before do
-        allow(::Gitlab::Llm::ChatMessage).to receive(:new).and_raise('error')
+        allow_next_instance_of(
+          Gitlab::Llm::Completions::Chat,
+          an_object_having_attributes(content: note.note),
+          nil,
+          additional_context: additional_context
+        ) do |chat|
+          allow(chat)
+            .to receive(:execute)
+            .and_return(response_modifier)
+        end
       end
 
-      it 'creates note with an error message' do
+      it 'creates note based on chat response' do
+        expect(Gitlab::Llm::ChatMessage)
+          .to receive(:new)
+          .with(
+            chat_message_params(
+              ::Gitlab::Llm::AiMessage::ROLE_ASSISTANT,
+              first_discussion_note,
+              first_discussion_note.note
+            )
+          )
+          .and_call_original
+
+        expect(Gitlab::Llm::ChatMessage)
+          .not_to receive(:new)
+          .with(
+            chat_message_params(
+              ::Gitlab::Llm::AiMessage::ROLE_USER,
+              excluded_note,
+              excluded_note.note
+            )
+          )
+
+        expect(Gitlab::Llm::ChatMessage)
+          .to receive(:new)
+          .with(
+            chat_message_params(
+              ::Gitlab::Llm::AiMessage::ROLE_USER,
+              note,
+              note.note
+            )
+          )
+          .and_call_original
+
         worker.perform(note)
 
-        expect(Note.last.note).to eq(error_note)
+        expect(Note.last.note).to eq(response_modifier.response_body)
+      end
+
+      context 'when an error gets raised' do
+        let(:error_note) do
+          s_("DuoCodeReview|I encountered some problems while responding to your query. Please try again later.")
+        end
+
+        before do
+          allow(::Gitlab::Llm::ChatMessage).to receive(:new).and_raise('error')
+        end
+
+        it 'creates note with an error message' do
+          worker.perform(note)
+
+          expect(Note.last.note).to eq(error_note)
+        end
+      end
+
+      context 'when note cannot be found' do
+        it 'does not create note' do
+          expect(Notes::CreateService).not_to receive(:new)
+
+          worker.perform(note.id + 1)
+        end
+      end
+
+      context 'when note does not mention GitLab Duo' do
+        let(:note_content) { 'Hello' }
+
+        it 'does not create note' do
+          expect(Notes::CreateService).not_to receive(:new)
+
+          worker.perform(note.id)
+        end
+      end
+
+      context 'when chat response is blank' do
+        let(:response_modifier) do
+          instance_double(
+            Gitlab::Llm::Chain::ResponseModifier,
+            response_body: ''
+          )
+        end
+
+        it 'does not create note' do
+          expect(Notes::CreateService).not_to receive(:new)
+
+          worker.perform(note.id)
+        end
       end
     end
 
-    context 'when note cannot be found' do
-      it 'does not create note' do
-        expect(Notes::CreateService).not_to receive(:new)
+    it_behaves_like 'performing a Duo Code Review chat request'
 
-        worker.perform(note.id + 1)
-      end
-    end
-
-    context 'when note does not mention GitLab Duo' do
-      let_it_be(:note) do
-        create(
-          :diff_note_on_merge_request,
-          noteable: merge_request,
-          project: project,
-          discussion_id: first_discussion_note.discussion_id
-        )
+    context 'when the note is not a diff note' do
+      let(:note_type) { :discussion_note_on_merge_request }
+      let(:additional_context) do
+        {
+          id: 'reference',
+          category: 'merge_request',
+          content: "!#{merge_request.iid}"
+        }
       end
 
-      it 'does not create note' do
-        expect(Notes::CreateService).not_to receive(:new)
-
-        worker.perform(note.id)
-      end
-    end
-
-    context 'when chat response is blank' do
-      let(:response_modifier) do
-        instance_double(
-          Gitlab::Llm::Chain::ResponseModifier,
-          response_body: ''
-        )
-      end
-
-      it 'does not create note' do
-        expect(Notes::CreateService).not_to receive(:new)
-
-        worker.perform(note.id)
-      end
+      it_behaves_like 'performing a Duo Code Review chat request'
     end
   end
 

@@ -422,23 +422,15 @@ RSpec.describe Note, feature_category: :team_planning do
   describe '#duo_bot_mentioned?' do
     let_it_be(:project) { create(:project, :repository) }
     let_it_be(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
-
-    let(:first_discussion_note) do
-      create(
-        :diff_note_on_merge_request,
-        noteable: merge_request,
-        project: project,
-        author: ::Users::Internal.duo_code_review_bot
-      )
-    end
+    let_it_be(:author) { create(:user) }
 
     let(:note) do
       create(
         :diff_note_on_merge_request,
         noteable: merge_request,
         project: project,
-        discussion_id: first_discussion_note.discussion_id,
-        note: "@#{::Users::Internal.duo_code_review_bot.username} Hello!"
+        note: "@#{::Users::Internal.duo_code_review_bot.username} Hello!",
+        author: author
       )
     end
 
@@ -448,14 +440,8 @@ RSpec.describe Note, feature_category: :team_planning do
       expect(duo_bot_mentioned?).to be(true)
     end
 
-    context 'when note is not part of a Duo Code Review thread' do
-      let(:first_discussion_note) do
-        create(
-          :diff_note_on_merge_request,
-          noteable: merge_request,
-          project: project
-        )
-      end
+    context 'when note is authored by GitLab Duo' do
+      let(:author) { ::Users::Internal.duo_code_review_bot }
 
       it 'returns false' do
         expect(duo_bot_mentioned?).to be(false)
@@ -467,8 +453,7 @@ RSpec.describe Note, feature_category: :team_planning do
         create(
           :diff_note_on_merge_request,
           noteable: merge_request,
-          project: project,
-          discussion_id: first_discussion_note.discussion_id
+          project: project
         )
       end
 

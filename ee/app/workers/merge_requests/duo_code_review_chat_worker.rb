@@ -72,13 +72,28 @@ module MergeRequests
         .new(
           prompt_message,
           nil,
-          additional_context: {
-            id: note.latest_diff_file_path,
-            category: 'merge_request',
-            content: note.raw_truncated_diff_lines
-          }
+          additional_context: additional_context(note)
         )
         .execute
+    end
+
+    # For non-diff notes, we include the full MR context by leveraging Duo Chat's merge_request_reader tool.
+    # We provide the MR's iid in a string format recognized by MergeRequestReader::Executor::SYSTEM_PROMPT,
+    # which helps to coerce the LLM into using the MR reader tool when necessary.
+    def additional_context(note)
+      if note.diff_note?
+        {
+          id: note.latest_diff_file_path,
+          category: 'merge_request',
+          content: note.raw_truncated_diff_lines
+        }
+      else
+        {
+          id: 'reference',
+          category: 'merge_request',
+          content: "!#{note.noteable.iid}"
+        }
+      end
     end
 
     def create_note_on(note, content)
@@ -92,7 +107,7 @@ module MergeRequests
         noteable: merge_request,
         note: content,
         in_reply_to_discussion_id: note.discussion_id,
-        type: 'DiffNote'
+        type: note.type
       ).execute
     end
 
