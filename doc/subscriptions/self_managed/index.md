@@ -376,7 +376,7 @@ Prerequisites:
 You can export your license usage into a CSV file.
 
 This file contains the information GitLab uses to manually process
-[quarterly reconciliations](../../subscriptions/quarterly_reconciliation.md)
+[quarterly reconciliations](../quarterly_reconciliation.md)
 or [renewals](#renew-your-subscription). If your instance is firewalled or an
 offline environment, you must provide GitLab with this information.
 
