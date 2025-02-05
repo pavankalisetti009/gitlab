@@ -52354,6 +52354,9 @@ msgstr ""
 msgid "SecurityOrchestration|Warn in merge request"
 msgstr ""
 
+msgid "SecurityOrchestration|Warn users with a bot comment and contact the following users as security consultants for support: %{approvers}"
+msgstr ""
+
 msgid "SecurityOrchestration|What does an example message look like?"
 msgstr ""
 

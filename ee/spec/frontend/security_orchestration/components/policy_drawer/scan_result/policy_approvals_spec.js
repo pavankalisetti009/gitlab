@@ -6,15 +6,13 @@ import { createApprovers } from '../../../mocks/mock_scan_result_policy_data';
 describe('PolicyApprovals component', () => {
   let wrapper;
 
+  const factory = (propsData) => {
+    wrapper = mount(PolicyApprovals, { propsData });
+  };
+
   const findApprovers = () => wrapper.findAll('[data-testid]');
   const findLinks = () => wrapper.findAllComponents(GlLink);
   const findSeparator = () => wrapper.find('.action-separator');
-
-  const factory = (propsData) => {
-    wrapper = mount(PolicyApprovals, {
-      propsData,
-    });
-  };
 
   describe.each`
     approvalsRequired | approvers                                                         | expectedTestIds                                                                                   | expectedApprovalText | expectedApproverText
@@ -92,6 +90,23 @@ describe('PolicyApprovals component', () => {
       });
 
       expect(findSeparator().exists()).toBe(false);
+    });
+  });
+
+  describe('warn mode', () => {
+    it('shows the correct text', () => {
+      factory({
+        action: { approvals_required: 0 },
+        approvers: createApprovers({ group: true, user: true, role: true }),
+        isWarnMode: true,
+      });
+      const text = wrapper.text();
+      expect(text).toContain(
+        'Warn users with a bot comment and contact the following users as security consultants for support',
+      );
+      expect(text).toContain('grouppath2,');
+      expect(text).toContain('username1 and');
+      expect(text).toContain('Owner');
     });
   });
 });
