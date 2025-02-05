@@ -621,8 +621,8 @@ Grafana is an open source, feature rich metrics dashboard and graph editor for G
 - Configuration:
   - [Omnibus](https://gitlab.com/gitlab-org/omnibus-gitlab/-/issues/4104)
   - [Charts](https://docs.gitlab.com/charts/charts/globals#tracing)
-  - [Source](../development/distributed_tracing.md#enabling-distributed-tracing)
-  - [GDK](../development/distributed_tracing.md#using-jaeger-in-the-gitlab-development-kit)
+  - [Source](distributed_tracing.md#enabling-distributed-tracing)
+  - [GDK](distributed_tracing.md#using-jaeger-in-the-gitlab-development-kit)
 - Layer: Monitoring
 - GitLab.com: [Configuration to enable Tracing for a GitLab instance](https://gitlab.com/gitlab-org/omnibus-gitlab/-/issues/4104) issue.
 

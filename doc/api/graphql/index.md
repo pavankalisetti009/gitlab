@@ -68,7 +68,7 @@ If the authentication information is not valid, GitLab returns an error message 
 
 Use any of the following tokens to authenticate with the GraphQL API:
 
-- [OAuth 2.0 tokens](../../api/oauth2.md)
+- [OAuth 2.0 tokens](../oauth2.md)
 - [Personal access tokens](../../user/profile/personal_access_tokens.md)
 - [Project access tokens](../../user/project/settings/project_access_tokens.md)
 - [Group access tokens](../../user/group/settings/group_access_tokens.md)
