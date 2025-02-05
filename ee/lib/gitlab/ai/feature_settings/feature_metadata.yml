@@ -27,7 +27,7 @@ code_completions:
     - claude_3
     - gpt
 duo_chat:
-  title: General Chat
+  title: --
   release_state: BETA
   main_feature: GitLab Duo Chat
   compatible_llms:
