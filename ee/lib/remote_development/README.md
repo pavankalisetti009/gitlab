@@ -348,6 +348,23 @@ We _currently_ do not make heavy use of metaprogramming. But, we may make use of
     - Spec/factory code may refer to constants from different modules than their own if necessary. The scoping rules only apply to usages within production code.
 - Do not declare string constants which are only interpolated into other string constants, and are not used anywhere else. Instead, declare a single constant as single string.
 
+### Using non-Ruby files in domain code
+
+The `RemoteDevelopment::Files` module contains constants for all the files (default devfile, shell scripts, script fragments, commands, etc)
+that are used in the Remote Development domain for various purposes, such as programatically injecting into container `ENTRYPOINT`/`CMD`, etc.
+For example: `RemoteDevelopment::Files::MAIN_COMPONENT_UPDATER_CONTAINER_ARGS`.
+
+The contents of these files are pulled out to separate files in the filesystem, instead of being hardcoded
+via inline Ruby HEREDOC or other means. This allows them to have full support for syntax highlighting and refactoring in IDEs,
+glob-based linting in CI (for example, running Shellcheck on all `**/*.sh`), etc.
+
+The files themselves should ideally be placed close to the code which uses them, and use a similar filename, so that the file list
+shows them right next to the code that uses them.
+
+For example, the file with the shell script injected into the main container is located at
+`ee/lib/remote_development/workspace_operations/create/workspace_variables_git_credential_store_script.sh`, and named
+with the `workspace_variables_` prefix, because it is used in`ee/lib/remote_development/workspace_operations/create/devfile_fetcher.rb`.
+
 ## Railway Oriented Programming and the Result class
 
 The Domain Logic layer uses the "Railway Oriented Programming" pattern (AKA "ROP"), which is [explained here in a presentation and video](https://fsharpforfunandprofit.com/rop/) by Scott Wlaschin. The presentation slides on that page give an overview which explains the motivation and implementation of this pattern.

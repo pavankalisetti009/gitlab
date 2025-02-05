@@ -98,12 +98,12 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
       { key: "GL_EDITOR_EXTENSIONS_GALLERY_ITEM_URL", type: :environment, value: "https://open-vsx.org/vscode/item" },
       { key: "GL_EDITOR_EXTENSIONS_GALLERY_RESOURCE_URL_TEMPLATE", type: :environment, value: "https://open-vsx.org/vscode/asset/{publisher}/{name}/{version}/Microsoft.VisualStudio.Code.WebResources/{path}" },
       { key: "GL_EDITOR_EXTENSIONS_GALLERY_SERVICE_URL", type: :environment, value: "https://open-vsx.org/vscode/gallery" },
-      { key: "GL_GIT_CREDENTIAL_STORE_FILE_PATH", type: :environment, value: "/.workspace-data/variables/file/gl_git_credential_store.sh" },
+      { key: "GL_GIT_CREDENTIAL_STORE_SCRIPT_FILE", type: :environment, value: "/.workspace-data/variables/file/gl_git_credential_store.sh" },
       { key: "GL_TOKEN_FILE_PATH", type: :environment, value: "/.workspace-data/variables/file/gl_token" },
       { key: "GL_WORKSPACE_DOMAIN_TEMPLATE", type: :environment, value: "${PORT}-workspace-#{agent.id}-#{user.id}-#{random_string}.#{dns_zone}" },
       { key: "GITLAB_WORKFLOW_INSTANCE_URL", type: :environment, value: Gitlab::Routing.url_helpers.root_url },
       { key: "GITLAB_WORKFLOW_TOKEN_FILE", type: :environment, value: "/.workspace-data/variables/file/gl_token" },
-      { key: "gl_git_credential_store.sh", type: :file, value: RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariables::GIT_CREDENTIAL_STORE_SCRIPT },
+      { key: "gl_git_credential_store.sh", type: :file, value: RemoteDevelopment::Files::WORKSPACE_VARIABLES_GIT_CREDENTIAL_STORE_SCRIPT },
       { key: "gl_token", type: :file, value: /glpat-.+/ }
     ]
     # rubocop:enable Layout/LineLength

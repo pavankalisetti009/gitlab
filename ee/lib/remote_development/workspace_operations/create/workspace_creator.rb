@@ -4,10 +4,9 @@ module RemoteDevelopment
   module WorkspaceOperations
     module Create
       class WorkspaceCreator
+        include CreateConstants
         include States
         include Messages
-
-        WORKSPACE_PORT = 60001
 
         # @param [Hash] context
         # @return [Gitlab::Fp::Result]
@@ -77,7 +76,7 @@ module RemoteDevelopment
         # @param [String] project_dir
         # @return [void]
         def self.set_workspace_url(workspace:, agent_dns_zone:, project_dir:)
-          host = "#{WORKSPACE_PORT}-#{workspace.name}.#{agent_dns_zone}"
+          host = "#{WORKSPACE_EDITOR_PORT}-#{workspace.name}.#{agent_dns_zone}"
           query = { folder: project_dir }.to_query
 
           # NOTE: Use URI builder to ensure that we are building a valid URI, then retrieve parts from it

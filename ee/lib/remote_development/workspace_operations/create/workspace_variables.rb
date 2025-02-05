@@ -5,27 +5,7 @@ module RemoteDevelopment
     module Create
       class WorkspaceVariables
         include CreateConstants
-
-        GIT_CREDENTIAL_STORE_SCRIPT = <<~SH.chomp
-          #!/bin/sh
-          # This is a readonly store so we can exit cleanly when git attempts a store or erase action
-          if [ "$1" != "get" ];
-          then
-            exit 0
-          fi
-
-          if [ -z "${GL_TOKEN_FILE_PATH}" ];
-          then
-            echo "We could not find the GL_TOKEN_FILE_PATH variable"
-            exit 1
-          fi
-          password=$(cat ${GL_TOKEN_FILE_PATH})
-
-          # The username is derived from the "user.email" configuration item. Ensure it is set.
-          echo "username=does-not-matter"
-          echo "password=${password}"
-          exit 0
-        SH
+        include Files
 
         # @param [String] name
         # @param [String] dns_zone
@@ -54,8 +34,8 @@ module RemoteDevelopment
               workspace_id: workspace_id
             },
             {
-              key: File.basename(GIT_CREDENTIAL_STORE_FILE),
-              value: GIT_CREDENTIAL_STORE_SCRIPT,
+              key: File.basename(GIT_CREDENTIAL_STORE_SCRIPT_FILE),
+              value: WORKSPACE_VARIABLES_GIT_CREDENTIAL_STORE_SCRIPT,
               variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:file],
               workspace_id: workspace_id
             },
@@ -73,7 +53,7 @@ module RemoteDevelopment
             },
             {
               key: 'GIT_CONFIG_VALUE_0',
-              value: GIT_CREDENTIAL_STORE_FILE,
+              value: GIT_CREDENTIAL_STORE_SCRIPT_FILE,
               variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
               workspace_id: workspace_id
             },
@@ -102,8 +82,8 @@ module RemoteDevelopment
               workspace_id: workspace_id
             },
             {
-              key: 'GL_GIT_CREDENTIAL_STORE_FILE_PATH',
-              value: GIT_CREDENTIAL_STORE_FILE,
+              key: 'GL_GIT_CREDENTIAL_STORE_SCRIPT_FILE',
+              value: GIT_CREDENTIAL_STORE_SCRIPT_FILE,
               variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
               workspace_id: workspace_id
             },

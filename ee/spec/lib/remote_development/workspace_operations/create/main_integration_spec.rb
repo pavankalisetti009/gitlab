@@ -27,7 +27,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
     ]
   end
 
-  let(:default_devfile_yaml) { ::RemoteDevelopment::Settings::DefaultSettings::DEFAULT_DEVFILE_YAML }
+  let(:default_devfile_yaml) { example_default_devfile_yaml }
 
   let(:project) do
     files = devfile_path.nil? ? {} : { devfile_path => devfile_yaml }

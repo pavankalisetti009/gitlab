@@ -5,6 +5,9 @@ module RemoteDevelopment
     module Create
       class MainComponentUpdater
         include CreateConstants
+        include Files
+
+        WORKSPACE_SSH_PORT = 60022
 
         # @param [Hash] context
         # @return [Hash]
@@ -14,9 +17,6 @@ module RemoteDevelopment
             tools_dir: String => tools_dir,
             vscode_extensions_gallery_metadata: Hash => vscode_extensions_gallery_metadata
           }
-
-          editor_port = WorkspaceCreator::WORKSPACE_PORT
-          ssh_port = 60022
 
           # NOTE: We will always have exactly one main_component found, because we have already
           #       validated this in post_flatten_devfile_validator.rb
@@ -30,15 +30,15 @@ module RemoteDevelopment
           update_env_vars(
             container: container,
             tools_dir: tools_dir,
-            editor_port: editor_port,
-            ssh_port: ssh_port,
+            editor_port: WORKSPACE_EDITOR_PORT,
+            ssh_port: WORKSPACE_SSH_PORT,
             enable_marketplace: vscode_extensions_gallery_metadata.fetch(:enabled)
           )
 
           update_endpoints(
             container: container,
-            editor_port: editor_port,
-            ssh_port: ssh_port
+            editor_port: WORKSPACE_EDITOR_PORT,
+            ssh_port: WORKSPACE_SSH_PORT
           )
 
           override_command_and_args(
@@ -113,16 +113,7 @@ module RemoteDevelopment
           # This overrides the main container's command
           # Open issue to support both starting the editor and running the default command:
           # https://gitlab.com/gitlab-org/gitlab/-/issues/392853
-          container_args = <<~"SH".chomp
-            sshd_path=$(which sshd)
-            if [ -x "$sshd_path" ]; then
-              echo "Starting sshd on port ${GL_SSH_PORT}"
-              $sshd_path -D -p $GL_SSH_PORT &
-            else
-              echo "'sshd' not found in path. Not starting SSH server."
-            fi
-            ${GL_TOOLS_DIR}/init_tools.sh
-          SH
+          container_args = MAIN_COMPONENT_UPDATER_CONTAINER_ARGS
 
           container[:command] = %w[/bin/sh -c]
           container[:args] = [container_args]

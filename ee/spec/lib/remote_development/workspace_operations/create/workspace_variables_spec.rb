@@ -13,7 +13,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariab
   let(:vscode_extensions_gallery_item_url) { "https://open-vsx.org/vscode/item" }
   let(:vscode_extensions_gallery_resource_url_template) { "https://open-vsx.org/vscode/asset/{publisher}/{name}/{version}/Microsoft.VisualStudio.Code.WebResources/{path}" }
   let(:git_credential_store_script) do
-    <<~SH.chomp
+    <<~SH
       #!/bin/sh
       # This is a readonly store so we can exit cleanly when git attempts a store or erase action
       if [ "$1" != "get" ];
@@ -26,7 +26,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariab
         echo "We could not find the GL_TOKEN_FILE_PATH variable"
         exit 1
       fi
-      password=$(cat ${GL_TOKEN_FILE_PATH})
+      password=$(cat "${GL_TOKEN_FILE_PATH}")
 
       # The username is derived from the "user.email" configuration item. Ensure it is set.
       echo "username=does-not-matter"
@@ -92,7 +92,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariab
         workspace_id: workspace_id
       },
       {
-        key: "GL_GIT_CREDENTIAL_STORE_FILE_PATH",
+        key: "GL_GIT_CREDENTIAL_STORE_SCRIPT_FILE",
         value: "/.workspace-data/variables/file/gl_git_credential_store.sh",
         variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
         workspace_id: workspace_id

@@ -5,6 +5,10 @@ module RemoteDevelopment
     module Create
       class ProjectClonerComponentInserter
         include CreateConstants
+        include Files
+
+        PROJECT_CLONER_COMPONENT_NAME = "gl-project-cloner"
+        PROJECT_CLONING_SUCCESSFUL_FILENAME = ".gl_project_cloning_successful"
 
         # @param [Hash] context
         # @return [Hash]
@@ -24,7 +28,7 @@ module RemoteDevelopment
           settings => {
             project_cloner_image: String => image,
           }
-          project_cloning_successful_file = "#{volume_path}/.gl_project_cloning_successful"
+          project_cloning_successful_file = "#{volume_path}/#{PROJECT_CLONING_SUCCESSFUL_FILENAME}"
 
           # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/408448
           #       replace the alpine/git docker image with one that is published by gitlab for security / reliability
@@ -40,31 +44,12 @@ module RemoteDevelopment
           # remove the directory before cloning.
           # Once cloning is successful, create the file which is used in the check above.
           # This will ensure the project is not cloned again on restarts.
-          container_args = <<~SH.chomp
-            if [ -f "${GL_PROJECT_CLONING_SUCCESSFUL_FILE}" ];
-            then
-              echo "Project cloning was already successful";
-              exit 0;
-            fi
-            if [ -d "#{Shellwords.shellescape(clone_dir)}" ];
-            then
-              echo "Removing unsuccessfully cloned project directory";
-              rm -rf "#{Shellwords.shellescape(clone_dir)}";
-            fi
-            echo "Cloning project";
-            git clone --branch "#{Shellwords.shellescape(project_ref)}" "#{Shellwords.shellescape(project_url)}" "#{Shellwords.shellescape(clone_dir)}";
-            exit_code=$?
-            if [ "${exit_code}" -eq 0 ];
-            then
-              echo "Project cloning successful";
-              touch "${GL_PROJECT_CLONING_SUCCESSFUL_FILE}";
-              echo "Updated file to indicate successful project cloning";
-              exit 0;
-            else
-              echo "Project cloning failed with exit code: ${exit_code}";
-              exit "${exit_code}";
-            fi
-          SH
+          container_args = format(PROJECTS_CLONER_COMPONENT_INSERTER_CONTAINER_ARGS,
+            project_cloning_successful_file: Shellwords.shellescape(project_cloning_successful_file),
+            clone_dir: Shellwords.shellescape(clone_dir),
+            project_ref: Shellwords.shellescape(project_ref),
+            project_url: Shellwords.shellescape(project_url)
+          )
 
           # TODO: https://gitlab.com/groups/gitlab-org/-/epics/10461
           #       implement better error handling to allow cloner to be able to deal with different categories of errors
@@ -77,12 +62,6 @@ module RemoteDevelopment
               # command has been overridden here as the default command in the alpine/git
               # container invokes git directly
               command: %w[/bin/sh -c],
-              env: [
-                {
-                  name: "GL_PROJECT_CLONING_SUCCESSFUL_FILE",
-                  value: project_cloning_successful_file
-                }
-              ],
               memoryLimit: "512Mi",
               memoryRequest: "256Mi",
               cpuLimit: "500m",

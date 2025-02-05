@@ -28,7 +28,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::DevfileFetcher,
     }
   end
 
-  let(:default_devfile_yaml) { ::RemoteDevelopment::Settings::DefaultSettings::DEFAULT_DEVFILE_YAML }
+  let(:default_devfile_yaml) { example_default_devfile_yaml }
 
   let(:context) do
     {
