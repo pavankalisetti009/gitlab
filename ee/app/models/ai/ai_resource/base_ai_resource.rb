@@ -13,6 +13,17 @@ module Ai
       def serialize_for_ai(_content_limit:)
         raise NotImplementedError
       end
+
+      def current_page_params
+        {
+          type: current_page_type,
+          title: resource.title
+        }
+      end
+
+      def current_page_type
+        raise NotImplementedError
+      end
     end
   end
 end

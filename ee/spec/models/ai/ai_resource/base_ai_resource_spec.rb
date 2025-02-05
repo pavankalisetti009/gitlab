@@ -9,4 +9,11 @@ RSpec.describe Ai::AiResource::BaseAiResource, feature_category: :duo_chat do
         .to raise_error(NotImplementedError)
     end
   end
+
+  describe '#current_page_params' do
+    it 'returns params to construct prompt' do
+      expect { described_class.new(nil, nil).current_page_params }
+        .to raise_error(NotImplementedError)
+    end
+  end
 end

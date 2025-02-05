@@ -13,7 +13,7 @@ module Gitlab
 
         attr_reader :project
 
-        delegate :current_page_type, :current_page_short_description,
+        delegate :current_page_type, :current_page_short_description, :current_page_params,
           to: :authorized_resource, allow_nil: true
 
         # rubocop:disable Metrics/ParameterLists -- we probably need to rethink this initializer
