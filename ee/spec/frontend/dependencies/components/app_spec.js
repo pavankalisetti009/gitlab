@@ -6,14 +6,11 @@ import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import DependenciesApp from 'ee/dependencies/components/app.vue';
 import DependenciesActions from 'ee/dependencies/components/dependencies_actions.vue';
 import SbomReportsErrorsAlert from 'ee/dependencies/components/sbom_reports_errors_alert.vue';
+import DependencyExportDropdown from 'ee/dependencies/components/dependency_export_dropdown.vue';
 import PaginatedDependenciesTable from 'ee/dependencies/components/paginated_dependencies_table.vue';
 import createStore from 'ee/dependencies/store';
 import { DEPENDENCY_LIST_TYPES } from 'ee/dependencies/store/constants';
-import {
-  NAMESPACE_GROUP,
-  NAMESPACE_ORGANIZATION,
-  NAMESPACE_PROJECT,
-} from 'ee/dependencies/constants';
+import { NAMESPACE_ORGANIZATION } from 'ee/dependencies/constants';
 import { TEST_HOST } from 'helpers/test_constants';
 import { getDateInPast } from '~/lib/utils/datetime_utility';
 import axios from '~/lib/utils/axios_utils';
@@ -73,7 +70,7 @@ describe('DependenciesApp component', () => {
   const findDependenciesTables = () => wrapper.findAllComponents(PaginatedDependenciesTable);
 
   const findHeader = () => wrapper.find('section > header');
-  const findExportButton = () => wrapper.findByTestId('export');
+  const findExportMenu = () => wrapper.findComponent(DependencyExportDropdown);
   const findHeaderHelpLink = () => findHeader().findComponent(GlLink);
   const findHeaderScanLink = () => wrapper.findComponent({ ref: 'scanLink' });
   const findTimeAgoMessage = () => wrapper.findByTestId('time-ago-message');
@@ -144,7 +141,7 @@ describe('DependenciesApp component', () => {
       });
 
       it('removes the export button', () => {
-        expect(findExportButton().exists()).toBe(false);
+        expect(findExportMenu().exists()).toBe(false);
       });
     });
 
@@ -210,46 +207,8 @@ describe('DependenciesApp component', () => {
         expectDependenciesTable();
       });
 
-      describe('export functionality', () => {
-        it('has a button to perform an async export of the dependency list', () => {
-          expect(findExportButton().attributes('icon')).toBe('export');
-
-          findExportButton().vm.$emit('click');
-
-          expect(store.dispatch).toHaveBeenCalledWith(`${allNamespace}/fetchExport`);
-        });
-
-        describe.each`
-          namespaceType             | expectedTooltip
-          ${NAMESPACE_ORGANIZATION} | ${'Export as CSV'}
-          ${NAMESPACE_PROJECT}      | ${'Export as JSON'}
-          ${NAMESPACE_GROUP}        | ${'Export as JSON'}
-        `('with namespaceType set to $namespaceType', ({ namespaceType, expectedTooltip }) => {
-          beforeEach(async () => {
-            factory({
-              provide: { namespaceType },
-            });
-            setStateLoaded();
-            await nextTick();
-          });
-
-          it('shows a tooltip for a CSV export', () => {
-            expect(findExportButton().attributes('title')).toBe(expectedTooltip);
-          });
-        });
-
-        describe('with fetching in progress', () => {
-          beforeEach(() => {
-            store.state[allNamespace].fetchingInProgress = true;
-          });
-
-          it('sets the icon to match the loading icon', () => {
-            expect(findExportButton().attributes()).toMatchObject({
-              icon: '',
-              loading: 'true',
-            });
-          });
-        });
+      it('renders export button', () => {
+        expect(findExportMenu().exists()).toBe(true);
       });
 
       describe('with namespaceType set to group', () => {

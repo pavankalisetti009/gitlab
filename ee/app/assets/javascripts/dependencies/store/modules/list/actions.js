@@ -128,15 +128,17 @@ export const toggleSortOrder = ({ commit, dispatch }) => {
   dispatch('fetchDependencies', { page: 1 });
 };
 
-export const fetchExport = ({ state, commit }) => {
+export const fetchExport = ({ state, commit }, params) => {
   if (!state.exportEndpoint) {
     return;
   }
 
   commit(types.SET_FETCHING_IN_PROGRESS, true);
 
+  const defaultParams = { send_email: true };
+
   axios
-    .post(state.exportEndpoint, { send_email: true })
+    .post(state.exportEndpoint, { ...defaultParams, ...params })
     .then((response) => {
       if (response?.status === HTTP_STATUS_CREATED) {
         commit(types.SET_FETCHING_IN_PROGRESS, false);

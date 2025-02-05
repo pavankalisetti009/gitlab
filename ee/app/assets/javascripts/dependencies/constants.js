@@ -19,3 +19,9 @@ export const DEPENDENCIES_TABLE_I18N = {
   locationDependencyTitle: s__('Dependencies|List of direct dependents'),
   toggleVulnerabilityList: s__('Dependencies|Toggle vulnerability list'),
 };
+
+export const EXPORT_FORMATS = {
+  csv: 'csv',
+  dependencyList: 'dependency_list',
+  jsonArray: 'json_array',
+};

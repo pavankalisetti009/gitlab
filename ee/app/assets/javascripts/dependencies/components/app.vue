@@ -1,6 +1,5 @@
 <script>
 import {
-  GlButton,
   GlEmptyState,
   GlLoadingIcon,
   GlSprintf,
@@ -13,17 +12,17 @@ import { getTimeago } from '~/lib/utils/datetime_utility';
 import { __, s__ } from '~/locale';
 import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import { DEPENDENCY_LIST_TYPES } from '../store/constants';
-import { NAMESPACE_GROUP, NAMESPACE_ORGANIZATION, NAMESPACE_PROJECT } from '../constants';
+import { NAMESPACE_ORGANIZATION, NAMESPACE_PROJECT } from '../constants';
 import { SORT_FIELD_SEVERITY } from '../store/modules/list/constants';
 import DependenciesActions from './dependencies_actions.vue';
 import SbomReportsErrorsAlert from './sbom_reports_errors_alert.vue';
 import PaginatedDependenciesTable from './paginated_dependencies_table.vue';
+import DependencyExportDropdown from './dependency_export_dropdown.vue';
 
 export default {
   name: 'DependenciesApp',
   components: {
     DependenciesActions,
-    GlButton,
     GlEmptyState,
     GlLoadingIcon,
     GlSprintf,
@@ -31,6 +30,7 @@ export default {
     PaginatedDependenciesTable,
     SbomReportsErrorsAlert,
     HelpIcon,
+    DependencyExportDropdown,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -56,19 +56,6 @@ export default {
     ...mapState(['currentList', 'listTypes']),
     ...mapGetters(['isInitialized', 'totals']),
     ...mapState(DEPENDENCY_LIST_TYPES.all.namespace, ['pageInfo']),
-    ...mapState({
-      fetchingInProgress(state) {
-        return state[this.currentList].fetchingInProgress;
-      },
-    }),
-    exportButtonIcon() {
-      return this.fetchingInProgress ? '' : 'export';
-    },
-    exportTooltip() {
-      return this.isOrganizationNamespace
-        ? s__('Dependencies|Export as CSV')
-        : s__('Dependencies|Export as JSON');
-    },
     currentListIndex: {
       get() {
         return this.listTypes.map(({ namespace }) => namespace).indexOf(this.currentList);
@@ -83,9 +70,6 @@ export default {
     },
     isProjectNamespace() {
       return this.namespaceType === NAMESPACE_PROJECT;
-    },
-    isGroupNamespace() {
-      return this.namespaceType === NAMESPACE_GROUP;
     },
     isOrganizationNamespace() {
       return this.namespaceType === NAMESPACE_ORGANIZATION;
@@ -119,11 +103,6 @@ export default {
       'setSortField',
       'setCurrentList',
     ]),
-    ...mapActions({
-      fetchExport(dispatch) {
-        dispatch(`${this.currentList}/fetchExport`);
-      },
-    }),
   },
   i18n: {
     emptyStateTitle: __('View dependency details for your project'),
@@ -191,18 +170,8 @@ export default {
           </span>
         </p>
       </div>
-      <gl-button
-        v-if="exportEndpoint"
-        v-gl-tooltip.hover
-        :title="exportTooltip"
-        class="gl-mt-3 md:gl-mt-0"
-        :icon="exportButtonIcon"
-        data-testid="export"
-        :loading="fetchingInProgress"
-        @click="fetchExport"
-      >
-        {{ __('Export') }}
-      </gl-button>
+
+      <dependency-export-dropdown v-if="exportEndpoint" :container="namespaceType" />
     </header>
 
     <dependencies-actions
