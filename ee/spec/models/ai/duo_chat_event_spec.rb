@@ -73,8 +73,7 @@ RSpec.describe Ai::DuoChatEvent, feature_category: :value_stream_management do
                                                  event: 'request_duo_chat_response',
                                                  timestamp: 1.day.ago,
                                                  user_id: user.id,
-                                                 personal_namespace_id: personal_namespace.id,
-                                                 payload: {}
+                                                 personal_namespace_id: personal_namespace.id
                                                }.with_indifferent_access)
 
         event.store_to_pg

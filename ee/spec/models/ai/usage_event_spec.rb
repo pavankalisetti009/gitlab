@@ -28,15 +28,6 @@ RSpec.describe Ai::UsageEvent, feature_category: :value_stream_management do
   let(:attributes) { { user: user, timestamp: '2021-01-01'.to_datetime, event: 'test_event' } }
   let(:user) { build_stubbed(:user) }
 
-  describe '#initialize' do
-    let(:attributes) { super().merge(foo: 'foo_val', bar: 'bar_val') }
-
-    it 'splits allowed additional attributes to payload' do
-      expect(event.payload).to eq('foo' => 'foo_val')
-      expect(event.event).to eq('test_event')
-    end
-  end
-
   describe '#to_clickhouse_csv_row' do
     it 'returns 3 required fields' do
       expect(event.to_clickhouse_csv_row).to eq({

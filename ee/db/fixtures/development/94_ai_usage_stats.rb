@@ -52,18 +52,28 @@ class Gitlab::Seeder::AiUsageStats # rubocop:disable Style/ClassAndModuleChildre
         )
       end
 
+      payload = {
+        unique_tracking_id: 'FOO',
+        language: 'ruby',
+        branch_name: 'main'
+      }
+
       CS_EVENT_COUNT_SAMPLE.times do
+        payload[:suggestion_size] = rand(100)
+
         Ai::CodeSuggestionEvent.new(
           user: user,
           event: 'code_suggestion_shown_in_ide',
-          timestamp: rand(TIME_PERIOD_DAYS).days.ago).tap(&:save!).tap(&:store_to_clickhouse)
+          timestamp: rand(TIME_PERIOD_DAYS).days.ago,
+          payload: payload).tap(&:save!).tap(&:store_to_clickhouse)
 
         next unless rand(100) < 35 # 35% acceptance rate
 
         Ai::CodeSuggestionEvent.new(
           user: user,
           event: 'code_suggestion_accepted_in_ide',
-          timestamp: rand(TIME_PERIOD_DAYS).days.ago + 2.seconds).tap(&:save!).tap(&:store_to_clickhouse)
+          timestamp: rand(TIME_PERIOD_DAYS).days.ago + 2.seconds,
+          payload: payload).tap(&:save!).tap(&:store_to_clickhouse)
       end
 
       CHAT_EVENT_COUNT_SAMPLE.times do

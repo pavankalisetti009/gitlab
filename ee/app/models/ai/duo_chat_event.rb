@@ -22,7 +22,7 @@ module Ai
     belongs_to :user
 
     validates :user_id, :timestamp, :personal_namespace_id, presence: true
-    validates :payload, json_schema: { filename: "duo_chat_event" }
+    validates :payload, json_schema: { filename: "duo_chat_event" }, allow_blank: true
     validate :validate_recent_timestamp, on: :create
 
     before_validation :populate_sharding_key
