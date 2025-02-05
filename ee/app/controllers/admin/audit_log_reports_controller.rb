@@ -4,6 +4,7 @@ class Admin::AuditLogReportsController < Admin::ApplicationController
   include AuditEvents::EnforcesValidDateParams
   include AuditEvents::DateRange
 
+  authorize! :read_admin_audit_log, only: :index
   before_action :validate_audit_event_reports_available!
 
   feature_category :audit_events

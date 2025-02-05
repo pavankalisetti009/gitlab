@@ -913,6 +913,7 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
     where(:custom_ability, :enabled_permissions) do
       :read_admin_cicd         | %i[read_admin_cicd]
       :read_admin_dashboard    | %i[read_admin_dashboard access_admin_area]
+      :read_admin_monitoring   | %i[read_admin_audit_log]
       :read_admin_subscription | %i[read_admin_subscription read_billable_member read_licenses]
       :read_admin_users        | %i[read_admin_users]
     end

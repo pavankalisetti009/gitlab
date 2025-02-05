@@ -8,16 +8,24 @@ RSpec.describe 'User with read_admin_monitoring', feature_category: :audit_event
   let_it_be(:role) { create(:admin_role, permission, user: current_user) }
 
   before do
-    stub_licensed_features(custom_roles: true)
+    stub_licensed_features(admin_audit_log: true, custom_roles: true)
     sign_in(current_user)
   end
 
   describe Admin::AuditLogsController do
-    it "GET #index", pending: "🚧 Under Construction" do
+    it "GET #index" do
       get admin_audit_logs_path
 
       expect(response).to have_gitlab_http_status(:ok)
       expect(response).to render_template(:index)
+    end
+  end
+
+  describe Admin::AuditLogReportsController do
+    it "GET #index" do
+      get admin_audit_log_reports_path(format: :csv)
+
+      expect(response).to have_gitlab_http_status(:ok)
     end
   end
 
