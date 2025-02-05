@@ -12,7 +12,7 @@ DETAILS:
 
 ## Snippet visibility level
 
-[Snippets](../api/project_snippets.md) in GitLab can be either private, internal or public.
+[Snippets](project_snippets.md) in GitLab can be either private, internal or public.
 You can set it with the `visibility` field in the snippet.
 
 Constants for snippet visibility levels are:

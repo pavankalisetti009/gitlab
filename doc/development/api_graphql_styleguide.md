@@ -244,7 +244,7 @@ The following are a list of tools to help you to optimize your GraphQL code:
 N+1 problems can be discovered during development of a feature by:
 
 - Tailing `development.log` while you execute GraphQL queries that return collections of data.
-  [Bullet](../development/profiling.md#bullet) may help.
+  [Bullet](profiling.md#bullet) may help.
 - Observing the [performance bar](../administration/monitoring/performance/performance_bar.md) if
   executing queries in the GitLab UI.
 - Adding a [request spec](#testing-tips-and-tricks) that asserts there are no (or limited) N+1
@@ -644,7 +644,7 @@ end
 
 ## Feature flags
 
-You can implement [feature flags](../development/feature_flags/_index.md) in GraphQL to toggle:
+You can implement [feature flags](feature_flags/_index.md) in GraphQL to toggle:
 
 - The return value of a field.
 - The behavior of an argument or mutation.
@@ -1207,7 +1207,7 @@ To limit the amount of queries performed, we can use [BatchLoader](graphql_guide
 
 ### Writing resolvers
 
-Our code should aim to be thin declarative wrappers around finders and [services](../development/reusing_abstractions.md#service-classes). You can
+Our code should aim to be thin declarative wrappers around finders and [services](reusing_abstractions.md#service-classes). You can
 repeat lists of arguments, or extract them to concerns. Composition is preferred over
 inheritance in most cases. Treat resolvers like controllers: resolvers should be a DSL
 that compose other application abstractions.
@@ -1718,7 +1718,7 @@ single mutation when multiple are performed in a single request.
 
 Similar to [writing resolvers](#writing-resolvers), the `resolve` method of a mutation
 should aim to be a thin declarative wrapper around a
-[service](../development/reusing_abstractions.md#service-classes).
+[service](reusing_abstractions.md#service-classes).
 
 The `resolve` method receives the mutation's arguments as keyword arguments.
 From here, we can call the service that modifies the resource.
@@ -1927,7 +1927,7 @@ needs of the _user_ from the needs of the _client_.
 If the user does need to know about it, communicate with frontend developers
 to make sure the error information we are passing back is relevant and serves a purpose.
 
-See also the [frontend GraphQL guide](../development/fe_guide/graphql.md#handling-errors).
+See also the [frontend GraphQL guide](fe_guide/graphql.md#handling-errors).
 
 ### Aliasing and deprecating mutations
 

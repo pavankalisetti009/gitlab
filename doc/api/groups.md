@@ -824,7 +824,7 @@ Parameters:
 | `include_service_accounts` | boolean        | yes (see description) | Include service account users. Either this value or `include_saml_users` must be `true`. |
 | `search`                   | string         | no                    | Search users by name, email, username. |
 
-If successful, returns [`200 OK`](../api/rest/troubleshooting.md#status-codes) and the
+If successful, returns [`200 OK`](rest/troubleshooting.md#status-codes) and the
 following response attributes:
 
 Example response:

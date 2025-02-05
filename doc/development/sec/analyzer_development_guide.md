@@ -296,7 +296,7 @@ To backport a critical fix or patch to an earlier version, follow the steps belo
 
 We occasionally need to build out new analyzer projects to support new frameworks and tools.
 In doing so we should follow [our engineering Open Source guidelines](https://handbook.gitlab.com/handbook/engineering/open-source/),
-including licensing and [code standards](../../development/go_guide/_index.md).
+including licensing and [code standards](../go_guide/_index.md).
 
 In addition, to write a custom analyzer that will integrate into the GitLab application
 a minimal feature set is required:
