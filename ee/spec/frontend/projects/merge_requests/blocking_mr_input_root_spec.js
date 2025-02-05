@@ -1,5 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
 import { nextTick } from 'vue';
+import { ENTER_KEY, TAB_KEY } from '~/lib/utils/keys';
 import BlockingMrInputRoot from 'ee/projects/merge_requests/blocking_mr_input_root.vue';
 import RelatedIssuableInput from '~/related_issues/components/related_issuable_input.vue';
 
@@ -69,6 +70,84 @@ describe('blocking mr input root', () => {
     getInput().vm.$emit('addIssuableFormBlur', '');
 
     expect(wrapper.vm.references).toHaveLength(0);
+  });
+
+  describe('"finish" keystrokes (Enter or Tab)', () => {
+    const mockEvent = {
+      preventDefault: jest.fn(),
+      stopPropagation: jest.fn(),
+      ctrlKey: false,
+      key: ENTER_KEY,
+      metaKey: false,
+    };
+
+    beforeEach(() => {
+      mockEvent.ctrlKey = false;
+      mockEvent.key = ENTER_KEY;
+      mockEvent.metaKey = false;
+      mockEvent.preventDefault.mockReset();
+      mockEvent.stopPropagation.mockReset();
+    });
+
+    it.each`
+      description | event
+      ${'tabs'}   | ${mockEvent}
+      ${'enters'} | ${mockEvent}
+    `('prevent the default event behavior for $description', ({ event }) => {
+      createComponent();
+
+      getInput().vm.$emit('addIssuableFinishEntry', { value: 'x', event });
+
+      expect(event.preventDefault).toHaveBeenCalledTimes(1);
+      expect(event.stopPropagation).toHaveBeenCalledTimes(1);
+    });
+
+    it('do not add empty references', () => {
+      createComponent();
+
+      getInput().vm.$emit('addIssuableFinishEntry', { value: '', event: mockEvent });
+
+      expect(wrapper.vm.references).toHaveLength(0);
+    });
+
+    it('add new tokens', () => {
+      createComponent();
+
+      getInput().vm.$emit('addIssuableFinishEntry', { value: '!1', event: mockEvent });
+      getInput().vm.$emit('addIssuableFinishEntry', { value: '!2', event: mockEvent });
+
+      expect(wrapper.vm.references).toEqual(['!1', '!2']);
+    });
+
+    describe('with modifiers', () => {
+      it.each`
+        modifier  | event
+        ${'Cmd'}  | ${{ ...mockEvent, metaKey: true, key: TAB_KEY }}
+        ${'Ctrl'} | ${{ ...mockEvent, ctrlKey: true, key: TAB_KEY }}
+      `('$modifier does not affect the Tab handler', ({ event }) => {
+        createComponent();
+
+        getInput().vm.$emit('addIssuableFinishEntry', { value: '!1', event });
+
+        expect(event.preventDefault).toHaveBeenCalledTimes(1);
+        expect(event.stopPropagation).toHaveBeenCalledTimes(1);
+        expect(wrapper.vm.references).toEqual(['!1']);
+      });
+
+      it.each`
+        modifier  | event
+        ${'Cmd'}  | ${{ ...mockEvent, metaKey: true }}
+        ${'Ctrl'} | ${{ ...mockEvent, ctrlKey: true }}
+      `('$modifier skips the special handler for Enter', ({ event }) => {
+        createComponent();
+
+        getInput().vm.$emit('addIssuableFinishEntry', { value: '!1', event });
+
+        expect(event.preventDefault).toHaveBeenCalledTimes(0);
+        expect(event.stopPropagation).toHaveBeenCalledTimes(0);
+        expect(wrapper.vm.references).toEqual([]);
+      });
+    });
   });
 
   describe('hidden inputs', () => {

@@ -1,4 +1,5 @@
 <script>
+import { ENTER_KEY, TAB_KEY } from '~/lib/utils/keys';
 import RelatedIssuableInput from '~/related_issues/components/related_issuable_input.vue';
 import { TYPE_MERGE_REQUEST } from '~/issues/constants';
 
@@ -60,6 +61,18 @@ export default {
         this.inputValue = '';
       }
     },
+    onKeyFinish({ value, event }) {
+      const isTab = event.key === TAB_KEY;
+      const isEnter = event.key === ENTER_KEY;
+      const isUnmodifiedEnter = isEnter && !(event.metaKey || event.ctrlKey);
+
+      if (isTab || isUnmodifiedEnter) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        this.onBlur(value);
+      }
+    },
   },
 };
 </script>
@@ -75,6 +88,7 @@ export default {
       @addIssuableFormInput="onAddIssuable"
       @pendingIssuableRemoveRequest="removeReference"
       @addIssuableFormBlur="onBlur"
+      @addIssuableFinishEntry="onKeyFinish"
     />
     <input
       v-for="ref in references"
