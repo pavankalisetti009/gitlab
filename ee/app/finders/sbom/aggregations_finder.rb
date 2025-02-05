@@ -95,6 +95,7 @@ module Sbom
       relation = filter_by_licences(relation)
       relation = filter_by_component_ids(relation)
       relation = filter_by_component_names(relation)
+      relation = filter_by_package_managers(relation)
 
       relation
         .order(inner_order)
@@ -118,6 +119,13 @@ module Sbom
       return relation unless params[:component_names].present?
 
       relation.filter_by_component_names(params[:component_names])
+    end
+
+    def filter_by_package_managers(relation)
+      return relation if Feature.disabled?(:dependencies_page_filter_by_package_manager, namespace)
+      return relation unless params[:package_managers].present?
+
+      relation.filter_by_package_managers(params[:package_managers])
     end
 
     def inner_order
