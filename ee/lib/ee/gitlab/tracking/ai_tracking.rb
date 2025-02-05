@@ -32,6 +32,9 @@ module EE
 
           context_hash = context_hash.with_indifferent_access
           context_hash[:event] = event_name
+          context_hash[:project] ||= ::Project.find(context_hash[:project_id]) if context_hash[:project_id]
+          context_hash[:namespace] ||= ::Namespace.find(context_hash[:namespace_id]) if context_hash[:namespace_id]
+
           context_hash[:namespace_path] ||= build_traversal_path(context_hash)
 
           basic_attributes = context_hash.slice(*matched_model::PERMITTED_ATTRIBUTES)
