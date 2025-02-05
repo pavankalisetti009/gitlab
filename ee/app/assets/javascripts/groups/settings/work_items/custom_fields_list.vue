@@ -3,6 +3,7 @@ import {
   GlAlert,
   GlBadge,
   GlButton,
+  GlButtonGroup,
   GlIntersperse,
   GlLoadingIcon,
   GlSprintf,
@@ -16,6 +17,7 @@ import TimeagoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import CustomFieldForm from './custom_field_form.vue';
 import groupCustomFieldsQuery from './group_custom_fields.query.graphql';
 import customFieldArchiveMutation from './custom_field_archive.mutation.graphql';
+import customFieldUnarchiveMutation from './custom_field_unarchive.mutation.graphql';
 
 export default {
   components: {
@@ -23,6 +25,7 @@ export default {
     GlAlert,
     GlBadge,
     GlButton,
+    GlButtonGroup,
     GlIntersperse,
     GlLoadingIcon,
     GlSprintf,
@@ -37,6 +40,7 @@ export default {
     return {
       customFields: [],
       customFieldsForList: [],
+      showActive: true,
       archivingId: null,
       errorText: '',
     };
@@ -45,6 +49,11 @@ export default {
     isLoading() {
       return this.$apollo.queries.customFields.loading;
     },
+    titleText() {
+      return this.showActive
+        ? s__('WorkItem|Active custom fields')
+        : s__('WorkItem|Archived custom fields');
+    },
   },
   apollo: {
     customFields: {
@@ -52,7 +61,7 @@ export default {
       variables() {
         return {
           fullPath: this.fullPath,
-          active: true,
+          active: this.showActive,
         };
       },
       update(data) {
@@ -80,6 +89,14 @@ export default {
     formattedFieldType(item) {
       return humanize(item.fieldType.toLowerCase());
     },
+    async setShowActive(val) {
+      if (this.showActive === val) {
+        return;
+      }
+      this.showActive = val;
+      await this.$nextTick();
+      this.$apollo.queries.customFields.refetch();
+    },
     selectOptionsText(item) {
       if (item.selectOptions.length > 0) {
         return n__('%d option', '%d options', item.selectOptions.length);
@@ -87,15 +104,16 @@ export default {
       return null;
     },
     archiveButtonText(item) {
-      return sprintf(s__('WorkItem|Archive %{itemName}'), { itemName: item.name });
+      return item.active
+        ? sprintf(s__('WorkItem|Archive %{itemName}'), { itemName: item.name })
+        : sprintf(s__('WorkItem|Unarchive %{itemName}'), { itemName: item.name });
     },
     async archiveCustomField(id) {
       this.archivingId = id;
-
       try {
         await this.executeArchiveMutation(id);
       } catch (error) {
-        this.handleArchiveError(error);
+        this.handleArchiveError(error, id);
       } finally {
         this.archivingId = null;
       }
@@ -103,12 +121,15 @@ export default {
     async executeArchiveMutation(id) {
       const field = this.getFieldById(id);
       const optimisticResponse = this.createOptimisticResponse(field);
+      const update = this.updateCacheAfterArchive(field);
+
+      const mutation = field.active ? customFieldArchiveMutation : customFieldUnarchiveMutation;
 
       const { data } = await this.$apollo.mutate({
-        mutation: customFieldArchiveMutation,
+        mutation,
         variables: { id },
         optimisticResponse,
-        update: this.updateCacheAfterArchive,
+        update,
       });
 
       if (data?.customFieldArchive?.errors?.length) {
@@ -119,9 +140,14 @@ export default {
       return this.customFieldsForList.find((f) => f.id === id);
     },
     createOptimisticResponse(field) {
+      const fieldName = field.active ? 'customFieldArchive' : 'customFieldUnarchive';
+      const payloadTypename = field.active
+        ? 'CustomFieldArchivePayload'
+        : 'CustomFieldUnarchivePayload';
+
       return {
-        customFieldArchive: {
-          __typename: 'CustomFieldArchivePayload',
+        [fieldName]: {
+          __typename: payloadTypename,
           customField: {
             __typename: 'CustomField',
             id: field.id,
@@ -132,39 +158,46 @@ export default {
         },
       };
     },
+    updateCacheAfterArchive(field) {
+      return (cache, response) => {
+        const fieldName = field.active ? 'customFieldArchive' : 'customFieldUnarchive';
+        if (response.data[fieldName]?.errors?.length) return;
 
-    updateCacheAfterArchive(cache, { data: { customFieldArchive } }) {
-      if (customFieldArchive?.errors?.length) return;
+        const queryParams = {
+          query: groupCustomFieldsQuery,
+          variables: { fullPath: this.fullPath, active: field.active },
+        };
 
-      const queryParams = {
-        query: groupCustomFieldsQuery,
-        variables: { fullPath: this.fullPath, active: true },
-      };
+        const prevData = cache.readQuery(queryParams);
+        if (!prevData?.group?.customFields) return;
 
-      const prevData = cache.readQuery(queryParams);
-      if (!prevData?.group?.customFields) return;
+        const updatedCustomFields = {
+          ...prevData.group.customFields,
+          nodes: prevData.group.customFields.nodes.filter(
+            (node) => node.id !== response.data[fieldName].customField.id,
+          ),
+          count: prevData.group.customFields.count - 1,
+        };
 
-      const updatedCustomFields = {
-        ...prevData.group.customFields,
-        nodes: prevData.group.customFields.nodes.filter(
-          (node) => node.id !== customFieldArchive.customField.id,
-        ),
-        count: prevData.group.customFields.count - 1,
-      };
-
-      cache.writeQuery({
-        ...queryParams,
-        data: {
-          group: {
-            ...prevData.group,
-            customFields: updatedCustomFields,
+        cache.writeQuery({
+          ...queryParams,
+          data: {
+            group: {
+              ...prevData.group,
+              customFields: updatedCustomFields,
+            },
           },
-        },
-      });
+        });
+      };
     },
-
-    handleArchiveError(error) {
-      this.errorText = s__('WorkItem|Failed to archive custom field.');
+    handleArchiveError(error, id) {
+      const field = this.getFieldById(id);
+      const errorText = field.active
+        ? s__('WorkItem|Failed to archive custom field %{fieldName}.')
+        : s__('WorkItem|Failed to unarchive custom field %{fieldName}.');
+      this.errorText = sprintf(errorText, {
+        fieldName: field.name,
+      });
       Sentry.captureException(error);
     },
   },
@@ -216,10 +249,29 @@ export default {
     >
       {{ errorText }}
     </gl-alert>
+
+    <gl-button-group class="gl-mb-5">
+      <gl-button
+        :selected="showActive"
+        data-testid="activeFilterButton"
+        @click="setShowActive(true)"
+      >
+        {{ s__('WorkItem|Active') }}
+      </gl-button>
+      <gl-button
+        :selected="!showActive"
+        data-testid="archivedFilterButton"
+        @click="setShowActive(false)"
+      >
+        {{ s__('WorkItem|Archived') }}
+      </gl-button>
+    </gl-button-group>
+
     <div
       class="gl-font-lg gl-border gl-flex gl-items-center gl-rounded-t-base gl-border-b-0 gl-px-5 gl-py-4 gl-font-bold"
+      data-testid="table-title"
     >
-      {{ s__('WorkItem|Active custom fields') }}
+      {{ titleText }}
       <gl-badge v-if="!isLoading" class="gl-mx-4">
         <!-- eslint-disable-next-line @gitlab/vue-require-i18n-strings -->
         {{ customFields.count }}/50
