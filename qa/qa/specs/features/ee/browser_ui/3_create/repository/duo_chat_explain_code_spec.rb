@@ -14,7 +14,7 @@ module QA
         ])
       end
 
-      it 'explains highlighted code',
+      it 'explains highlighted code in repository',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/469204' do
         project.visit!
 

@@ -3,10 +3,10 @@
 module QA
   # https://docs.gitlab.com/ee/development/ai_features/duo_chat.html
   RSpec.describe 'Create', product_group: :duo_chat do
-    describe 'Duo Chat in Web IDE' do
+    describe "Duo Chat in Web IDE" do
       include_context 'Web IDE test prep'
       shared_examples 'Duo Chat' do |testcase|
-        it 'gets a response back from Duo Chat', testcase: testcase do
+        it 'gets a valid response back', testcase: testcase do
           Page::Project::WebIDE::VSCode.perform do |ide|
             ide.open_duo_chat
             ide.within_vscode_duo_chat do
@@ -35,16 +35,18 @@ module QA
         load_web_ide
       end
 
-      context 'on GitLab.com', :external_ai_provider,
-        only: { pipeline: %i[staging staging-canary canary production] } do
-        it_behaves_like 'Duo Chat', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/443762'
-      end
+      context "when asking 'hi'" do
+        context 'on GitLab.com', :external_ai_provider,
+          only: { pipeline: %i[staging staging-canary canary production] } do
+          include_examples 'Duo Chat', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/443762'
+        end
 
-      context 'on Self-managed', :orchestrated, :ai_gateway, quarantine: {
-        type: :investigating,
-        issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/494690'
-      } do
-        it_behaves_like 'Duo Chat', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/468854'
+        context 'on Self-managed', :orchestrated, :ai_gateway, quarantine: {
+          type: :investigating,
+          issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/494690'
+        } do
+          include_examples 'Duo Chat', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/468854'
+        end
       end
     end
   end
