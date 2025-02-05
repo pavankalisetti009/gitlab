@@ -10,7 +10,7 @@ module QA
       let(:project) { create(:project, name: 'duo-chat-project', api_client: api_client) }
 
       shared_examples 'Duo Chat' do |testcase|
-        it 'gets a response back from Duo Chat', testcase: testcase do
+        it 'a valid response is returned', testcase: testcase do
           QA::EE::Page::Component::DuoChat.perform do |duo_chat|
             duo_chat.open_duo_chat
             duo_chat.clear_chat_history
@@ -32,17 +32,17 @@ module QA
         project.visit!
       end
 
-      context 'when initiating Duo Chat' do
+      context "when asking 'hi'" do
         context 'on GitLab.com', :external_ai_provider,
           only: { pipeline: %i[staging staging-canary canary production] } do
-          it_behaves_like 'Duo Chat', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/441192'
+          include_examples 'Duo Chat', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/441192'
         end
 
         context 'on Self-managed', :orchestrated, :ai_gateway do
           let(:api_client) { Runtime::User::Store.admin_api_client }
           let(:user) { Runtime::User::Store.admin_user }
 
-          it_behaves_like 'Duo Chat', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/464684'
+          include_examples 'Duo Chat', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/464684'
         end
       end
     end

@@ -2,7 +2,7 @@
 
 module QA
   RSpec.describe 'Create', product_group: :code_review do
-    describe 'Merge commit message' do
+    describe 'Generate merge commit message' do
       let(:project) { create(:project, :with_readme, name: 'mr-gen-commit-project') }
 
       let(:merge_request) do
@@ -23,8 +23,8 @@ module QA
         merge_request.visit!
       end
 
-      context 'when editing' do
-        it 'can be generated using GitLab Duo and merged', :external_ai_provider, only:
+      context 'as a maintainer' do
+        it 'can be generated using Duo', :external_ai_provider, only:
           { pipeline: %i[staging staging-canary canary production] },
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/495408' do
           Page::MergeRequest::Show.perform do |merge_request|
