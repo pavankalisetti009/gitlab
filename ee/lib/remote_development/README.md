@@ -201,6 +201,22 @@ that the types are correct. See [this comment thread](https://gitlab.com/gitlab-
 
 Also note that the destructuring a hash or array, even without the type checks (e.g. `x => {y: i}`), is still a form of type safety, because it will raise a `NoMatchingPatternKeyError` exception if the hash or array does not have the expected structure.
 
+#### Do not use type safety on unvalidated user-provided values
+
+We do not want to use type safety on values which come directly from user input, and have not yet been validated.
+For example, values from the API which will be used to create or update an ActiveRecord model instance.
+This applies to both rightward assignment pattern matching with types, as well as using `#fetch` for hashes.
+
+This is because the error from the type failure will not be user-friendly when it is displayed back to the user
+(in the API errors or Web UI).
+
+Instead, you should just let the ActiveRecord model handle all of the validation rules, because that will generate
+nicely formatted and descriptive user-facing messages (and if it doesn't then it should).
+
+If you are dealing with values from user input in a scenario where you _cannot_ rely on ActiveRecord validation,
+then you should manually perform validations and return any validation errors as nicely-formatted messages.
+You can still probably use `ActiveModel::Validations` for this even if an actual ActiveRecord model is not involved.
+
 ### Null safety
 
 When accessing a `Hash` entry by key (outside of pattern matching), where we expect that the value must present, we prefer to use `Hash#fetch`
