@@ -18,7 +18,7 @@ module Elastic
 
       mappings dynamic: 'strict' do
         indexes :type, type: :keyword
-        indexes :id, type: :integer
+        indexes :id, type: :long
 
         indexes :username, type: :text, fields: { raw: { type: :keyword } }
         indexes :email, type: :text, analyzer: :email_analyzer
