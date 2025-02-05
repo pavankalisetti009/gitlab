@@ -7,7 +7,7 @@ module Types
         graphql_name 'AiUsageData'
         description "Usage data for events stored in the default PostgreSQL database. " \
           "Data retained for three months. Requires a personal access token. " \
-          "Ultimate with GitLab Duo Enterprise only."
+          "Endpoint works only on the top-level group. Ultimate with GitLab Duo Enterprise only."
 
         authorize :read_enterprise_ai_analytics
 
