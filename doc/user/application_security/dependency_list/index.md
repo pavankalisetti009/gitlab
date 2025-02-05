@@ -43,7 +43,7 @@ GitLab already generates this document when the following requirements are met:
   supported by Gemnasium.
 - A successful pipeline was run on the default branch.
   You should not change the default behavior of allowing the
-  [application security jobs](../../application_security/detect/index.md) to fail.
+  [application security jobs](../detect/index.md) to fail.
 
 ## View project dependencies
 
@@ -140,7 +140,7 @@ Dependency paths are supported for the following package managers:
 
 ### Licenses
 
-If the [Dependency Scanning](../../application_security/dependency_scanning/index.md) CI job is configured,
+If the [Dependency Scanning](../dependency_scanning/index.md) CI job is configured,
 [discovered licenses](../../compliance/license_scanning_of_cyclonedx_files/index.md) are displayed on this page.
 
 ## Download the dependency list
