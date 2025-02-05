@@ -19,10 +19,6 @@ module EE
         end
       end
 
-      def after_execute(*)
-        sync_scan_finding_approval_rules
-      end
-
       private
 
       def blocked_by_scan_result_policy?(protected_branch)
