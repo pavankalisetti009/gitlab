@@ -53,6 +53,8 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
     end
 
     let(:issue_resource) { Ai::AiResource::Issue.new(user, resource) }
+    let(:issue_page_params) { { type: issue_resource.current_page_type, title: resource.title } }
+
     let(:answer_chunk) { create(:final_answer_chunk, chunk: "Ans") }
 
     let(:step_params) do
@@ -60,10 +62,7 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
         messages: [{
           role: "user",
           content: user_input,
-          context: {
-            type: issue_resource.current_page_type,
-            content: issue_resource.current_page_short_description
-          },
+          context: issue_page_params,
           current_file: nil,
           additional_context: context.additional_context
         }],
@@ -367,7 +366,7 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
     context "when error event received and it's prompt length error" do
       let(:message) do
         <<~MESSAGE
-        Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'prompt is too long: 200082 tokens > 199999 maximum'}}
+          Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'prompt is too long: 200082 tokens > 199999 maximum'}}
         MESSAGE
       end
 
@@ -435,6 +434,29 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
       end
     end
 
+    context "when there is no resource" do
+      let(:context) do
+        Gitlab::Llm::Chain::GitlabContext.new(
+          current_user: user,
+          container: nil,
+          resource: nil,
+          ai_request: nil
+        )
+      end
+
+      it "sends request without context" do
+        params = step_params
+        params[:messages].first[:context] = nil
+
+        expect_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
+          expect(react_agent).to receive(:step).with(hash_including(params))
+            .and_yield(action_event).and_return([action_event])
+        end
+
+        agent.execute
+      end
+    end
+
     context "when code is selected" do
       let(:selected_text) { 'code selection' }
       let(:current_file) do
@@ -482,6 +504,41 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
         end
 
         agent.execute
+      end
+    end
+
+    context "when current page is included in context" do
+      it "pass current page params" do
+        params = step_params
+        params[:messages].first[:context] = issue_page_params
+
+        expect_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
+          expect(react_agent).to receive(:step).with(params)
+            .and_yield(action_event).and_return([action_event])
+        end
+
+        agent.execute
+      end
+
+      context "with feature flag disabled" do
+        before do
+          stub_feature_flags(current_page_context_prompt_in_aigw: false)
+        end
+
+        it "pass current page description" do
+          params = step_params
+          params[:messages].first[:context] = {
+            type: issue_resource.current_page_type,
+            content: issue_resource.current_page_short_description
+          }
+
+          expect_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
+            expect(react_agent).to receive(:step).with(params)
+                                                 .and_yield(action_event).and_return([action_event])
+          end
+
+          agent.execute
+        end
       end
     end
 

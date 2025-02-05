@@ -37,4 +37,10 @@ RSpec.describe Ai::AiResource::Ci::Build, feature_category: :duo_chat do
         .to include("The user is currently on a page that displays a ci build")
     end
   end
+
+  describe '#current_page_params' do
+    it 'returns params to construct prompt' do
+      expect(wrapped_build.current_page_params.keys).to eq([:type])
+    end
+  end
 end

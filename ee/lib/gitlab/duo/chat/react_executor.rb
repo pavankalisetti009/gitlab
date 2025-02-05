@@ -314,6 +314,7 @@ module Gitlab
         end
 
         def current_resource_params
+          return current_page_params if Feature.enabled?(:current_page_context_prompt_in_aigw, context.current_user)
           return unless current_resource_type
 
           {
@@ -335,6 +336,13 @@ module Gitlab
           nil
         end
         strong_memoize_attr :current_resource_content
+
+        def current_page_params
+          context.current_page_params
+        rescue ArgumentError
+          nil
+        end
+        strong_memoize_attr :current_page_params
 
         def current_file_params
           return unless current_selection || current_blob
