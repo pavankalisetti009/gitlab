@@ -130,4 +130,17 @@ describe('Topic Badges', () => {
       });
     });
   });
+
+  describe('with relative url', () => {
+    beforeEach(() => {
+      gon.relative_url_root = '/gitlab/something//';
+      createComponent();
+    });
+
+    it('passes correct url prop to badge', () => {
+      expect(findFirstBadge().props('href')).toBe(
+        `/gitlab/something/explore/projects/topics/${defaultProps.topics[0]}`,
+      );
+    });
+  });
 });
