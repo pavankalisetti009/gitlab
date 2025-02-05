@@ -64,15 +64,6 @@ RSpec.describe ComplianceManagement::Pipl::TrackUserCountryAccessService, featur
       it_behaves_like 'does not execute any queries'
     end
 
-    context 'when track_user_access_from_pipl_countries FF is disabled' do
-      before do
-        stub_feature_flags(track_user_access_from_pipl_countries: false)
-      end
-
-      it_behaves_like 'does not enqueue an UpdateUserCountryAccessLogsWorker job'
-      it_behaves_like 'does not execute any queries'
-    end
-
     context "when country_code is not in %w[CN HK MO]" do
       let(:country_code) { 'US' }
 

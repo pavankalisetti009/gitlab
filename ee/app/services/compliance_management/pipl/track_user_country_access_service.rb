@@ -14,7 +14,6 @@ module ComplianceManagement
         return unless user
         return unless country_code
         return unless ::Gitlab::Saas.feature_available?(:pipl_compliance)
-        return unless ::Feature.enabled?(:track_user_access_from_pipl_countries, user)
 
         access_from_pipl_country = COVERED_COUNTRY_CODES.include?(country_code)
 
