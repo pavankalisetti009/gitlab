@@ -27,6 +27,7 @@ module Security
     AVAILABLE_POLICY_TYPES = (%i[scan_execution_policy pipeline_execution_policy vulnerability_management_policy] +
       Security::ScanResultPolicy::SCAN_RESULT_POLICY_TYPES).freeze
     JSON_SCHEMA_VALIDATION_TIMEOUT = 5.seconds
+    NAMESPACES_BATCH_SIZE = 1000
 
     belongs_to :project, inverse_of: :security_orchestration_policy_configuration, optional: true
     belongs_to :namespace, inverse_of: :security_orchestration_policy_configuration, optional: true
@@ -187,6 +188,24 @@ module Security
       end
 
       [new_policies, deleted_policies, policies_changes, rearranged_policies]
+    end
+
+    def all_project_ids
+      if namespace?
+        project_ids = []
+        cursor = { current_id: namespace_id, depth: [namespace_id] }
+        iterator = ::Gitlab::Database::NamespaceEachBatch.new(namespace_class: Namespace, cursor: cursor)
+
+        iterator.each_batch(of: NAMESPACES_BATCH_SIZE) do |ids|
+          namespace_ids = Namespaces::ProjectNamespace.where(id: ids)
+          # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- IDs will not be used in IN queries
+          project_ids.concat(Project.where(project_namespace_id: namespace_ids).pluck(:id))
+          # rubocop: enable Database/AvoidUsingPluckWithoutLimit
+        end
+        project_ids
+      else
+        Array.wrap(project_id)
+      end
     end
 
     private

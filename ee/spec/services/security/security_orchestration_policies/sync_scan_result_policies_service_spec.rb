@@ -10,29 +10,31 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesSe
   describe '#execute' do
     subject(:execute) { service.execute }
 
-    context 'with delay' do
-      let_it_be(:project1) { create(:project) }
-      let_it_be(:project2) { create(:project) }
-      let_it_be(:project3) { create(:project) }
+    context 'with configuration at group level and with delay' do
+      let_it_be(:namespace) { create(:namespace) }
+      let_it_be(:configuration, refind: true) do
+        create(:security_orchestration_policy_configuration, namespace: namespace, project: nil, configured_at: nil)
+      end
+
+      let_it_be(:project1) { create(:project, namespace: namespace) }
+      let_it_be(:project2) { create(:project, namespace: namespace) }
+      let_it_be(:project3) { create(:project, namespace: namespace) }
 
       let(:sync_project_service) do
         instance_double(Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesProjectService)
       end
 
-      let(:projects) { [project1, project2, project3] }
-
       before do
         allow(Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesProjectService).to receive(:new)
           .and_return(sync_project_service)
-        allow(service).to receive(:projects).and_return(projects)
+
+        stub_const("#{described_class}::PROJECTS_BATCH_SIZE", 1)
       end
 
-      it 'increases delay by 1 minute for each batch' do
-        allow(projects).to receive(:each_batch).and_yield(projects[0..1]).and_yield([projects[2]])
-
+      it 'increases delay by 10 seconds for each batch' do
         expect(sync_project_service).to receive(:execute).with(project1.id, { delay: 0.seconds })
-        expect(sync_project_service).to receive(:execute).with(project2.id, { delay: 0.seconds })
-        expect(sync_project_service).to receive(:execute).with(project3.id, { delay: 10.seconds })
+        expect(sync_project_service).to receive(:execute).with(project2.id, { delay: 10.seconds })
+        expect(sync_project_service).to receive(:execute).with(project3.id, { delay: 20.seconds })
 
         service.execute
       end
