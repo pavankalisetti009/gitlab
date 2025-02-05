@@ -89,9 +89,12 @@ module EE
         end
 
         def authorize_view_repository_settings!
-          return if can?(current_user, :admin_push_rules, project) ||
-            can?(current_user, :manage_deploy_tokens, project) ||
-            can?(current_user, :admin_protected_branch, project)
+          return if can_any?(current_user, [
+            :admin_push_rules,
+            :manage_deploy_tokens,
+            :admin_protected_branch,
+            :manage_protected_tags
+          ], project)
 
           authorize_admin_project!
         end

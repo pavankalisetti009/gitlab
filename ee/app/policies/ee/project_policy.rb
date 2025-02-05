@@ -306,6 +306,13 @@ module EE
         enable :manage_protected_tags
       end
 
+      rule { can?(:manage_protected_tags) }.policy do
+        enable :read_protected_tags
+        enable :create_protected_tags
+        enable :update_protected_tags
+        enable :destroy_protected_tags
+      end
+
       rule { custom_role_enables_admin_integrations }.policy do
         enable :admin_integrations
       end
