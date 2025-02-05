@@ -28,16 +28,10 @@ module EE
           context_hash[:event] = event_name
           context_hash[:namespace_path] ||= build_traversal_path(context_hash)
 
-          context_hash = filter_attributes(context_hash, matched_model)
+          basic_attributes = context_hash.slice(*matched_model::PERMITTED_ATTRIBUTES)
+          payload_attributes = context_hash.slice(*matched_model::PAYLOAD_ATTRIBUTES)
 
-          matched_model.new(context_hash)
-        end
-
-        def filter_attributes(hash, model)
-          hash.select do |key, _value|
-            key = key.to_s
-            model.attribute_types.key?(key) || model.attribute_types.key?("#{key}_id")
-          end
+          matched_model.new(basic_attributes.merge(payload: payload_attributes))
         end
 
         def store_to_clickhouse(event)

@@ -29,7 +29,7 @@ module Ai
     belongs_to :organization, class_name: 'Organizations::Organization'
 
     validates :user_id, :timestamp, :organization_id, presence: true
-    validates :payload, json_schema: { filename: "code_suggestion_event" }
+    validates :payload, json_schema: { filename: "code_suggestion_event" }, allow_blank: true
     validate :validate_recent_timestamp, on: :create
 
     before_validation :populate_organization_id
