@@ -168,11 +168,13 @@
   }
 }
 
+$job-log-line-y-padding: 1px;
+
 .job-log-line {
   display: flex;
-  // 1px vertical spacing so
+  // vertical spacing so
   // job log items don't stack
-  padding: 1px $gl-padding-8;
+  padding: $job-log-line-y-padding $gl-padding-8;
 }
 
 .job-log-line-number {
@@ -229,10 +231,17 @@
   }
 }
 
-.job-log-line-highlight {
-  @apply gl-border-l-solid gl-border-strong gl-border-l-4;
-  // Account for left border size
-  padding-left: $gl-padding-8 - 4px;
+.job-log-line-content-highlight {
+  $highlight-border-size: 2px;
+  $highlight-border: $highlight-border-size solid currentColor;
+  $highlight-padding-size: $gl-padding-8 - $highlight-border-size;
+
+  border-left: $highlight-border;
+  border-right: $highlight-border;
+  padding-left: $highlight-padding-size;
+  padding-right: $highlight-padding-size;
+  padding-top: $job-log-line-y-padding;
+  margin: -#{$job-log-line-y-padding} -#{$gl-padding-8};
   background-color: var(--gl-color-alpha-light-8);
 }
 

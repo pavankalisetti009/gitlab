@@ -68,20 +68,18 @@ export default {
 </script>
 
 <template>
-  <div
-    class="js-log-line job-log-line-header job-log-line"
-    :class="{ 'job-log-line-highlight': isHighlighted || applyHashHighlight }"
-    role="button"
-    @click="handleOnClick"
-  >
+  <div class="js-log-line job-log-line-header job-log-line" role="button" @click="handleOnClick">
     <gl-icon :name="iconName" class="arrow gl-absolute gl-top-2" />
     <line-number :line-number="line.lineNumber" :path="path" />
     <span v-if="line.time" class="job-log-time">{{ line.time }}</span>
-    <span class="job-log-line-content">
+    <span
+      class="job-log-line-content"
+      :class="{ 'job-log-line-content-highlight': isHighlighted || applyHashHighlight }"
+    >
       <span v-for="(content, i) in line.content" :key="i" :class="content.style">{{
         content.text
       }}</span>
     </span>
-    <duration-badge v-if="duration && !hideDuration" :duration="duration" />
+    <duration-badge v-if="duration && !hideDuration" :duration="duration" class="gl-ml-5" />
   </div>
 </template>
