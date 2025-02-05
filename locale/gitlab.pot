@@ -41580,6 +41580,9 @@ msgstr ""
 msgid "Personal access token"
 msgstr ""
 
+msgid "Personal access token is required."
+msgstr ""
+
 msgid "Personal access token prefix"
 msgstr ""
 
