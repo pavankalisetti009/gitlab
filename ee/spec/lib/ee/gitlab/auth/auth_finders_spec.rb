@@ -120,7 +120,7 @@ RSpec.describe Gitlab::Auth::AuthFinders, feature_category: :system_access do
         expect(find_user_from_bearer_token).to eq user
       end
 
-      context 'when personal access tokens are disabled' do
+      context 'when personal access tokens are disabled on instance level' do
         before do
           stub_licensed_features(disable_personal_access_tokens: true)
           stub_application_setting(disable_personal_access_tokens: true)
@@ -128,6 +128,43 @@ RSpec.describe Gitlab::Auth::AuthFinders, feature_category: :system_access do
 
         it 'raises unauthorized error' do
           expect { find_user_from_bearer_token }.to raise_error(Gitlab::Auth::UnauthorizedError)
+        end
+      end
+
+      context 'when personal access tokens are disabled by enterprise group' do
+        let_it_be(:enterprise_group) do
+          create(:group, namespace_settings: create(:namespace_settings, disable_personal_access_tokens: true))
+        end
+
+        let_it_be(:enterprise_user_of_the_group) { create(:enterprise_user, enterprise_group: enterprise_group) }
+        let_it_be(:enterprise_user_of_another_group) { create(:enterprise_user) }
+
+        before do
+          stub_licensed_features(disable_personal_access_tokens: true)
+        end
+
+        context 'for non-enterprise users of the group' do
+          let(:user) { enterprise_user_of_another_group }
+
+          it 'returns user' do
+            expect(find_user_from_bearer_token).to eq user
+          end
+        end
+
+        context 'for enterprise users of the group' do
+          let(:user) { enterprise_user_of_the_group }
+
+          it 'raises unauthorized error' do
+            expect { find_user_from_bearer_token }.to raise_error(Gitlab::Auth::UnauthorizedError)
+          end
+        end
+
+        context 'for service accounts of the group' do
+          let(:user) { create(:service_account, provisioned_by_group: enterprise_group) }
+
+          it 'returns user' do
+            expect(find_user_from_bearer_token).to eq user
+          end
         end
       end
     end
@@ -154,28 +191,40 @@ RSpec.describe Gitlab::Auth::AuthFinders, feature_category: :system_access do
         end
       end
 
-      context 'when personal access tokens are disabled for the group for enterprise users' do
-        let(:user) { create(:enterprise_user) }
+      context 'when personal access tokens are disabled by enterprise group' do
+        let_it_be(:enterprise_group) do
+          create(:group, namespace_settings: create(:namespace_settings, disable_personal_access_tokens: true))
+        end
+
+        let_it_be(:enterprise_user_of_the_group) { create(:enterprise_user, enterprise_group: enterprise_group) }
+        let_it_be(:enterprise_user_of_another_group) { create(:enterprise_user) }
 
         before do
-          user.enterprise_group.update!(disable_personal_access_tokens: true)
           stub_licensed_features(disable_personal_access_tokens: true)
         end
 
-        it 'raised unauthorized error' do
-          expect { find_user_from_access_token }.to raise_error(Gitlab::Auth::UnauthorizedError)
-        end
-      end
+        context 'for non-enterprise users of the group' do
+          let(:user) { enterprise_user_of_another_group }
 
-      context 'when personal access tokens are disabled for the group for service accounts' do
-        let(:user) { create(:service_account, provisioned_by_group: create(:group)) }
-
-        before do
-          user.provisioned_by_group.update!(disable_personal_access_tokens: true)
+          it 'returns user' do
+            expect(find_user_from_access_token).to eq user
+          end
         end
 
-        it 'returns user' do
-          expect(find_user_from_access_token).to eq user
+        context 'for enterprise users of the group' do
+          let(:user) { enterprise_user_of_the_group }
+
+          it 'raises unauthorized error' do
+            expect { find_user_from_access_token }.to raise_error(Gitlab::Auth::UnauthorizedError)
+          end
+        end
+
+        context 'for service accounts of the group' do
+          let(:user) { create(:service_account, provisioned_by_group: enterprise_group) }
+
+          it 'returns user' do
+            expect(find_user_from_access_token).to eq user
+          end
         end
       end
     end

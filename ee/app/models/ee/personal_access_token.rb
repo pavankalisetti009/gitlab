@@ -45,7 +45,15 @@ module EE
       # Disable lookup by token (token auth) when PATs disabled (FIPS)
       override :find_by_token
       def find_by_token(token)
-        super unless ::Gitlab::CurrentSettings.personal_access_tokens_disabled?
+        return if ::Gitlab::CurrentSettings.personal_access_tokens_disabled?
+
+        pat_token = super
+
+        personal_access_tokens_disabled_by_enterprise_group = pat_token&.user&.enterprise_user? &&
+          pat_token.user.enterprise_group.disable_personal_access_tokens?
+        return if personal_access_tokens_disabled_by_enterprise_group
+
+        pat_token
       end
     end
 

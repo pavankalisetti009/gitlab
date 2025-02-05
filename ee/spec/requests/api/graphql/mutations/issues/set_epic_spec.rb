@@ -71,6 +71,8 @@ RSpec.describe 'Setting the epic of an issue', feature_category: :team_planning 
   end
 
   it 'removes existing epic if epic_id is nil' do
+    allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(103)
+
     input[:epic_id] = nil
     post_graphql_mutation(mutation, current_user: current_user)
 

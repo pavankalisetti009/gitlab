@@ -20,6 +20,43 @@ RSpec.describe 'GraphQL', feature_category: :api do
     context 'with personal access token authentication' do
       let(:token) { create(:personal_access_token, user: user) }
 
+      context 'when personal access tokens are disabled by enterprise group' do
+        let_it_be(:enterprise_group) do
+          create(:group, namespace_settings: create(:namespace_settings, disable_personal_access_tokens: true))
+        end
+
+        let_it_be(:enterprise_user_of_the_group) { create(:enterprise_user, enterprise_group: enterprise_group) }
+        let_it_be(:enterprise_user_of_another_group) { create(:enterprise_user) }
+
+        before do
+          stub_licensed_features(disable_personal_access_tokens: true)
+        end
+
+        context 'for non-enterprise users of the group' do
+          let(:user) { enterprise_user_of_another_group }
+
+          it 'authenticates the user with a PAT', :aggregate_failures do
+            post_graphql(query, headers: { 'PRIVATE-TOKEN' => token.token })
+
+            expect(response).to have_gitlab_http_status(:ok)
+
+            expect(graphql_data['echo']).to eq("\"#{user.username}\" says: Hello world")
+          end
+        end
+
+        context 'for enterprise users of the group' do
+          let(:user) { enterprise_user_of_the_group }
+
+          it 'does not authenticate the user with a PAT', :aggregate_failures do
+            post_graphql(query, headers: { 'PRIVATE-TOKEN' => token.token })
+
+            expect(response).to have_gitlab_http_status(:unauthorized)
+
+            expect_graphql_errors_to_include(/Invalid token/)
+          end
+        end
+      end
+
       context 'when the personal access token has ai_features scope' do
         let_it_be(:thread) { create(:ai_conversation_thread, user: user) }
 

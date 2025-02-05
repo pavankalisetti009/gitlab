@@ -95,7 +95,8 @@ RSpec.describe 'Query.project(fullPath).dastSiteValidations', feature_category: 
         create(:dast_site_validation, dast_site_token: dast_site_token)
       end
 
-      expect { subject }.not_to exceed_query_limit(control)
+      # + 1 https://gitlab.com/gitlab-org/gitlab/-/merge_requests/181669
+      expect { subject }.not_to exceed_query_limit(control).with_threshold(1)
       expect(graphql_data_at(:project, :dast_site_validations, :nodes).size).to eq(9)
     end
   end
