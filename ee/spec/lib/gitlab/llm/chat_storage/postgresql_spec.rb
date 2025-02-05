@@ -88,6 +88,16 @@ RSpec.describe Gitlab::Llm::ChatStorage::Postgresql, :clean_gitlab_redis_chat, f
     it 'retrieves all stored messages' do
       expect(storage.messages.map(&:content)).to eq(%w[msg1 msg2])
     end
+
+    context 'when the count of messages exceed the limit' do
+      before do
+        stub_const('Gitlab::Llm::ChatStorage::Postgresql::MAX_MESSAGES', 1)
+      end
+
+      it 'retrieves messages within the max limit' do
+        expect(storage.messages.map(&:content)).to eq(%w[msg2])
+      end
+    end
   end
 
   describe '#clear!' do

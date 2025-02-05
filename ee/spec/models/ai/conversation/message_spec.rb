@@ -55,6 +55,28 @@ RSpec.describe Ai::Conversation::Message, feature_category: :duo_chat do
     end
   end
 
+  describe '.recent' do
+    subject(:messages) { described_class.recent(limit) }
+
+    let_it_be(:message1) { create(:ai_conversation_message) }
+    let_it_be(:message2) { create(:ai_conversation_message) }
+    let_it_be(:message3) { create(:ai_conversation_message) }
+
+    let(:limit) { 2 }
+
+    it 'returns recent messages' do
+      expect(messages).to eq([message2, message3])
+    end
+
+    context 'when limit is nil' do
+      let(:limit) { nil }
+
+      it 'returns recent messages without limit' do
+        expect(messages).to eq([message1, message2, message3])
+      end
+    end
+  end
+
   describe 'callbacks' do
     describe 'before_create :populate_organization_id' do
       let(:organization) { create(:organization) }

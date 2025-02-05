@@ -20,6 +20,10 @@ module Ai
 
       before_create :populate_organization
 
+      def self.recent(limit)
+        order(id: :desc).limit(limit).reverse
+      end
+
       private
 
       def populate_organization

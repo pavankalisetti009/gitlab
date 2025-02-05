@@ -5,6 +5,7 @@ module Gitlab
     class ChatStorage
       class Postgresql < Base
         DEFAULT_CONVERSATION_TYPE = :duo_chat
+        MAX_MESSAGES = 50
 
         def add(message)
           data = dump_message(message)
@@ -25,7 +26,7 @@ module Gitlab
         end
 
         def messages
-          current_thread.messages.map do |message|
+          current_thread.messages.recent(MAX_MESSAGES).map do |message|
             data = message.as_json
 
             data['id'] = data.delete('message_xid') if data['message_xid']
