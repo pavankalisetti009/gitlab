@@ -22,7 +22,6 @@ module EE
 
         super
 
-        sync_scan_finding_approval_rules
         sync_code_owner_approval_rules
         track_onboarding_progress
 
