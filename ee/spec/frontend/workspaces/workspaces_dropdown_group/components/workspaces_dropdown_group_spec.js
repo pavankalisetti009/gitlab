@@ -292,6 +292,20 @@ describe('workspaces/dropdown_group/components/workspaces_dropdown_group.vue', (
       );
     });
 
+    describe('when gitRef property is provided', () => {
+      beforeEach(async () => {
+        createWrapper({ propsData: { supportsWorkspaces: true, gitRef: 'v1.0.0' } });
+
+        await waitForPromises();
+      });
+
+      it('generates a new workspace link button that contains the gitref', () => {
+        expect(findNewWorkspaceButton().attributes().href).toBe(
+          `${newWorkspacePath}?project=${encodeURIComponent(PROJECT_FULL_PATH)}&gitRef=v1.0.0`,
+        );
+      });
+    });
+
     it('does not display "no workspaces support" message', () => {
       expect(wrapper.text()).not.toContain(
         'No agents available to create workspaces. Please consult Workspaces documentation',

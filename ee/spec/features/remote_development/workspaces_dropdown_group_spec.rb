@@ -83,7 +83,9 @@ RSpec.describe 'Remote Development workspaces dropdown group', :api, :js, featur
         click_link 'New workspace'
 
         # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
-        expect(page).to have_current_path("#{new_remote_development_workspace_path}?project=#{project.full_path}")
+        expect(page.current_url).to include(
+          "#{new_remote_development_workspace_path}?project=#{project.full_path.gsub('/', '%2F')}"
+        )
         expect(page).to have_css('button', text: project.name_with_namespace)
       end
 

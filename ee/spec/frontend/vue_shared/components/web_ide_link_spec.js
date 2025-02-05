@@ -85,7 +85,7 @@ describe('ee_component/vue_shared/components/web_ide_link', () => {
     describe('when workspaces dropdown group is visible', () => {
       beforeEach(async () => {
         createComponent({
-          props: { projectId, projectPath },
+          props: { projectId, projectPath, gitRef: 'v1.0.0' },
           provide: {
             newWorkspacePath,
             glFeatures: {
@@ -129,11 +129,11 @@ describe('ee_component/vue_shared/components/web_ide_link', () => {
             newWorkspacePath,
             borderPosition: 'top',
             supportsWorkspaces: true,
+            gitRef: 'v1.0.0',
           });
         });
       });
 
-      // TODO: This doesn't need to be a describe.each anymore...
       describe('when does not have cluster agents', () => {
         beforeEach(async () => {
           findGetProjectDetailsQuery().vm.$emit('result', { clusterAgents: [] });
@@ -152,6 +152,7 @@ describe('ee_component/vue_shared/components/web_ide_link', () => {
             newWorkspacePath,
             borderPosition: 'top',
             supportsWorkspaces: false,
+            gitRef: 'v1.0.0',
           });
         });
       });

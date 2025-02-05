@@ -70,6 +70,11 @@ export default {
       type: String,
       required: true,
     },
+    gitRef: {
+      type: String,
+      required: false,
+      default: '',
+    },
   },
   apollo: {
     workspaces: {
@@ -123,7 +128,9 @@ export default {
       return this.$apollo.queries.workspaces.loading;
     },
     newWorkspacePathWithProjectId() {
-      return `${this.newWorkspacePath}?project=${encodeURIComponent(this.projectFullPath)}`;
+      const basePath = `${this.newWorkspacePath}?project=${encodeURIComponent(this.projectFullPath)}`;
+
+      return this.gitRef ? `${basePath}&gitRef=${this.gitRef}` : basePath;
     },
   },
   methods: {

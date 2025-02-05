@@ -295,6 +295,23 @@ describe('workspaces/user/pages/create.vue', () => {
           labelDescription: 'The source branch, tag, or commit hash of your workspace.',
         });
       });
+
+      describe('when gitRef is provided in a route', () => {
+        beforeEach(async () => {
+          mockRouter.currentRoute.query = { gitRef: 'v1.0.0' };
+          createWrapper();
+
+          await selectProject();
+          await emitGetProjectDetailsQueryResult({
+            clusterAgents: twoClusterAgentsFixture,
+          });
+          await selectClusterAgent();
+        });
+
+        it('obtains initial ref from the router', () => {
+          expect(findDevfileRefRefSelector().props().value).toBe('v1.0.0');
+        });
+      });
     });
 
     describe('devfile path field', () => {
