@@ -46,10 +46,10 @@ module EE
     end
 
     def user_enterprise_group_text(user)
-      enterprise_group = user.user_detail.enterprise_group
-      list_item_classes = '!gl-grid md:gl-grid-cols-3 gl-gap-x-3'
+      enterprise_group = user.user_detail&.enterprise_group
       return unless enterprise_group
 
+      list_item_classes = '!gl-grid md:gl-grid-cols-3 gl-gap-x-3'
       group_info = link_to enterprise_group.name, admin_group_path(enterprise_group)
       user_enterprise_group = content_tag(:li, class: list_item_classes) do
         content_tag(:span, _("Enterprise user of: "), class: "gl-text-subtle") +

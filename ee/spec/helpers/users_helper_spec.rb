@@ -239,6 +239,16 @@ RSpec.describe UsersHelper, feature_category: :user_profile do
       end
     end
 
+    context 'when user has no user_detail' do
+      let(:user_without_user_detail) do
+        create(:user, user_detail: nil)
+      end
+
+      it 'does not display' do
+        expect(user_enterprise_group_text(user_without_user_detail)).to be_nil
+      end
+    end
+
     context 'when user is enterprise user' do
       let(:group) { build_stubbed(:group) }
       let(:user_with_enterprise_group) do
