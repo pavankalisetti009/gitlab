@@ -63,6 +63,7 @@ function mountBoardApp(el) {
     wiGroupPath,
     wiCanAdminLabel,
     wiIssuesListPath,
+    wiNewCommentTemplatePaths,
   } = el.dataset;
 
   const rawFilterParams = queryToObject(window.location.search, { gatherArrays: true });
@@ -134,6 +135,7 @@ function mountBoardApp(el) {
       issuesListPath: wiIssuesListPath,
       hasLinkedItemsEpicsFeature: parseBoolean(el.dataset.hasLinkedItemsEpicsFeature),
       hasOkrsFeature: parseBoolean(el.dataset.hasOkrsFeature),
+      commentTemplatePaths: JSON.parse(wiNewCommentTemplatePaths),
     },
     render: (createComponent) => createComponent(BoardApp),
   });
