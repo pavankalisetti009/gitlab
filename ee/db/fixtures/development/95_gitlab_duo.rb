@@ -19,7 +19,14 @@ class Gitlab::Seeder::GitLabDuo # rubocop:disable Style/ClassAndModuleChildren -
     group.add_owner(user)
 
     # Create group-level resources
-    FactoryBot.create(:epic, id: ID_BASE, group: group, author: user)
+    epic = FactoryBot.create(:epic,
+      id: ID_BASE,
+      iid: 1,
+      group: group,
+      author: user,
+      title: 'HTTP server examples for all programming languages',
+      description: 'This is an epic to add HTTP server examples for all programming languages.'
+    )
 
     # Create project
     project = FactoryBot.create(:project, :public, id: ID_BASE, name: 'Test', path: PROJECT_PATH,
@@ -33,7 +40,7 @@ class Gitlab::Seeder::GitLabDuo # rubocop:disable Style/ClassAndModuleChildren -
     end
 
     # Create project-level resources
-    FactoryBot.create(:issue,
+    issue = FactoryBot.create(:issue,
       id: ID_BASE,
       iid: 1,
       project: project,
@@ -41,6 +48,7 @@ class Gitlab::Seeder::GitLabDuo # rubocop:disable Style/ClassAndModuleChildren -
       description: 'We should add an example of HTTP server written in GoLang.',
       assignees: [user]
     )
+    FactoryBot.create(:epic_issue, epic: epic, issue: issue)
 
     FactoryBot.create(:merge_request,
       id: ID_BASE,
