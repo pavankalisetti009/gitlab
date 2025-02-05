@@ -342,7 +342,7 @@ RSpec.describe 'Group value stream analytics filters and data', :js, feature_cat
     end
   end
 
-  context 'with a predefined date range', :js, :freeze_time do
+  context 'with a predefined date range', :js, time_travel_to: '2024-07-11' do
     using RSpec::Parameterized::TableSyntax
 
     # add an additional date outside of the predefined start dates for testing purposes
