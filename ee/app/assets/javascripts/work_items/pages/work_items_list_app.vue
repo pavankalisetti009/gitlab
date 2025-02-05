@@ -44,6 +44,11 @@ export default {
       required: false,
       default: true,
     },
+    newCommentTemplatePaths: {
+      type: Array,
+      required: false,
+      default: () => [],
+    },
   },
   data() {
     return {
@@ -141,6 +146,7 @@ export default {
     :show-bulk-edit-sidebar="showBulkEditSidebar"
     :ee-work-item-update-count="workItemUpdateCount"
     :with-tabs="withTabs"
+    :new-comment-template-paths="newCommentTemplatePaths"
   >
     <template v-if="hasEpicsFeature && showNewIssueLink" #nav-actions>
       <div class="gl-flex gl-gap-3">
