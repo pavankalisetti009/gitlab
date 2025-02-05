@@ -61,12 +61,12 @@ const createTemplate = (config = {}) => {
       ciMinutesAnyProjectEnabled: true,
       ciMinutesDisplayMinutesAvailableData: true,
       ciMinutesLastResetDate,
-      ciMinutesMonthlyMinutesLimit: '10000',
-      ciMinutesMonthlyMinutesUsed: '2000',
-      ciMinutesMonthlyMinutesUsedPercentage: '20',
-      ciMinutesPurchasedMinutesLimit: '0',
-      ciMinutesPurchasedMinutesUsed: '0',
-      ciMinutesPurchasedMinutesUsedPercentage: '0',
+      ciMinutesMonthlyMinutesLimit: 10000,
+      ciMinutesMonthlyMinutesUsed: 2000,
+      ciMinutesMonthlyMinutesUsedPercentage: 20,
+      ciMinutesPurchasedMinutesLimit: 0,
+      ciMinutesPurchasedMinutesUsed: 0,
+      ciMinutesPurchasedMinutesUsedPercentage: 0,
       buyAdditionalMinutesPath: '/-/subscriptions/buy_minutes?selected_group=35',
       buyAdditionalMinutesTarget: '_self',
       ...provide,
@@ -83,9 +83,9 @@ export const Default = {
 export const Unused = {
   render: createTemplate({
     provide: {
-      ciMinutesMonthlyMinutesLimit: '10000',
-      ciMinutesMonthlyMinutesUsed: '0',
-      ciMinutesMonthlyMinutesUsedPercentage: '0',
+      ciMinutesMonthlyMinutesLimit: 10000,
+      ciMinutesMonthlyMinutesUsed: 0,
+      ciMinutesMonthlyMinutesUsedPercentage: 0,
     },
   }),
 };
@@ -96,7 +96,7 @@ export const Unlimited = {
       ciMinutesAnyProjectEnabled: true,
       ciMinutesDisplayMinutesAvailableData: false,
       ciMinutesMonthlyMinutesLimit: 'Unlimited',
-      ciMinutesMonthlyMinutesUsedPercentage: '0',
+      ciMinutesMonthlyMinutesUsedPercentage: 0,
     },
   }),
 };
@@ -114,12 +114,12 @@ export const InstanceRunnersDisabled = {
 export const WithPurchasedMinutes = {
   render: createTemplate({
     provide: {
-      ciMinutesMonthlyMinutesLimit: '10000',
-      ciMinutesMonthlyMinutesUsed: '10000',
-      ciMinutesMonthlyMinutesUsedPercentage: '100',
-      ciMinutesPurchasedMinutesLimit: '1000',
-      ciMinutesPurchasedMinutesUsed: '200',
-      ciMinutesPurchasedMinutesUsedPercentage: '20',
+      ciMinutesMonthlyMinutesLimit: 10000,
+      ciMinutesMonthlyMinutesUsed: 10000,
+      ciMinutesMonthlyMinutesUsedPercentage: 100,
+      ciMinutesPurchasedMinutesLimit: 1000,
+      ciMinutesPurchasedMinutesUsed: 200,
+      ciMinutesPurchasedMinutesUsedPercentage: 20,
     },
   }),
 };
@@ -127,12 +127,12 @@ export const WithPurchasedMinutes = {
 export const WithPurchasedMinutesUnused = {
   render: createTemplate({
     provide: {
-      ciMinutesMonthlyMinutesLimit: '10000',
-      ciMinutesMonthlyMinutesUsed: '9000',
-      ciMinutesMonthlyMinutesUsedPercentage: '90',
-      ciMinutesPurchasedMinutesLimit: '1000',
-      ciMinutesPurchasedMinutesUsed: '0',
-      ciMinutesPurchasedMinutesUsedPercentage: '0',
+      ciMinutesMonthlyMinutesLimit: 10000,
+      ciMinutesMonthlyMinutesUsed: 9000,
+      ciMinutesMonthlyMinutesUsedPercentage: 90,
+      ciMinutesPurchasedMinutesLimit: 1000,
+      ciMinutesPurchasedMinutesUsed: 0,
+      ciMinutesPurchasedMinutesUsedPercentage: 0,
     },
   }),
 };
