@@ -15,6 +15,7 @@ module Gitlab
         end
 
         def execute
+          return unless Feature.enabled?(:saml_groups_duo_add_on_assignment, group)
           return unless group_names_from_saml.any?
           return unless add_on_purchase&.active?
 

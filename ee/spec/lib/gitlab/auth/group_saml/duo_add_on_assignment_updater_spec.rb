@@ -67,6 +67,14 @@ RSpec.describe Gitlab::Auth::GroupSaml::DuoAddOnAssignmentUpdater, feature_categ
                 user.assigned_add_ons.for_active_add_on_purchase_ids(add_on_purchase.id).count
               }.from(0).to(1)
           end
+
+          context 'when the feature flag is disabled' do
+            before do
+              stub_feature_flags(saml_groups_duo_add_on_assignment: false)
+            end
+
+            it_behaves_like 'does not call the assignment workers'
+          end
         end
 
         context 'when the user is not in a matching SAML group link' do
@@ -84,6 +92,14 @@ RSpec.describe Gitlab::Auth::GroupSaml::DuoAddOnAssignmentUpdater, feature_categ
                 .to change {
                   user.assigned_add_ons.for_active_add_on_purchase_ids(add_on_purchase.id).count
                 }.from(1).to(0)
+            end
+
+            context 'when the feature flag is disabled' do
+              before do
+                stub_feature_flags(saml_groups_duo_add_on_assignment: false)
+              end
+
+              it_behaves_like 'does not call the assignment workers'
             end
           end
         end

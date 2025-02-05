@@ -59,6 +59,14 @@ RSpec.describe SamlGroupLinksHelper, feature_category: :system_access do
 
           it { is_expected.to be false }
         end
+
+        context 'when the feature flag is disabled' do
+          before do
+            stub_feature_flags(saml_groups_duo_add_on_assignment: false)
+          end
+
+          it { is_expected.to be false }
+        end
       end
     end
   end
