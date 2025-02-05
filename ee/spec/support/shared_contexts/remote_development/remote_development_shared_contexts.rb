@@ -752,7 +752,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
                     value: "/projects"
                   }
                 ],
-                image: "registry.gitlab.com/gitlab-org/workspaces/gitlab-workspaces-tools:4.0.0",
+                image: "registry.gitlab.com/gitlab-org/workspaces/gitlab-workspaces-tools:5.0.0",
                 imagePullPolicy: "Always",
                 name: "gl-tools-injector-gl-tools-injector-command-2",
                 resources: {
