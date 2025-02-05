@@ -51,23 +51,42 @@ module EE
           end
 
           def has_applicable_scan_execution_policies_defined?
-            triggered_for_branch &&
-              ::Enums::Ci::Pipeline.ci_and_security_orchestration_sources.key?(pipeline_source) &&
-              project.licensed_feature_available?(:security_orchestration_policies) &&
-              active_scan_execution_policies?
+            return false unless applicable_trigger?
+
+            valid_pipeline_source? && security_policies_available? && active_scan_execution_policies?
+          end
+
+          def applicable_trigger?
+            triggered_for_branch || triggered_for_mr_pipelines?
+          end
+
+          def triggered_for_mr_pipelines?
+            pipeline_source == :merge_request_event
+          end
+
+          def valid_pipeline_source?
+            ::Enums::Ci::Pipeline.ci_and_security_orchestration_sources.key?(pipeline_source)
+          end
+
+          def security_policies_available?
+            project.licensed_feature_available?(:security_orchestration_policies)
           end
 
           def active_scan_execution_policies?
-            return false unless ref
+            return applicable_policies.any? if triggered_for_mr_pipelines?
 
             service = ::Security::SecurityOrchestrationPolicies::PolicyBranchesService.new(project: project)
+            applicable_policies.any? { |policy| applicable_for_branch?(service, policy) }
+          end
 
+          def applicable_policies
             ::Gitlab::Security::Orchestration::ProjectPolicyConfigurations
               .new(project).all
               .to_a
               .flat_map(&:active_scan_execution_policies_for_pipelines)
-              .any? { |policy| policy_applicable?(policy) && applicable_for_branch?(service, policy) }
+              .select { |policy| policy_applicable?(policy) }
           end
+          strong_memoize_attr :applicable_policies
 
           def policy_applicable?(policy)
             ::Security::SecurityOrchestrationPolicies::PolicyScopeChecker

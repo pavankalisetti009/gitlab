@@ -203,6 +203,13 @@ RSpec.describe Gitlab::Ci::ProjectConfig, feature_category: :pipeline_compositio
       end
     end
 
+    shared_examples_for 'includes security policies default pipeline configuration content' do
+      it 'includes security policies default pipeline configuration content' do
+        expect(config.source).to eq(:security_policies_default_source)
+        expect(config.content).to eq(security_policy_default_content)
+      end
+    end
+
     context 'when policies should be enforced' do
       context 'when security_orchestration_policies feature is available' do
         before do
@@ -223,20 +230,20 @@ RSpec.describe Gitlab::Ci::ProjectConfig, feature_category: :pipeline_compositio
               context 'when pipeline execution policies are enforced' do
                 let(:has_execution_policy_pipelines) { true }
 
-                it 'includes security policies default pipeline configuration content' do
-                  expect(config.source).to eq(:security_policies_default_source)
-                  expect(config.content).to eq(security_policy_default_content)
-                end
+                it_behaves_like 'includes security policies default pipeline configuration content'
               end
 
               context 'when pipeline execution policies are not enforced' do
                 let(:has_execution_policy_pipelines) { false }
 
-                it 'includes security policies default pipeline configuration content' do
-                  expect(config.source).to eq(:security_policies_default_source)
-                  expect(config.content).to eq(security_policy_default_content)
-                end
+                it_behaves_like 'includes security policies default pipeline configuration content'
               end
+            end
+
+            context 'when triggered for merge request pipelines' do
+              let(:source) { :merge_request_event }
+
+              it_behaves_like 'includes security policies default pipeline configuration content'
             end
           end
         end
@@ -303,6 +310,12 @@ RSpec.describe Gitlab::Ci::ProjectConfig, feature_category: :pipeline_compositio
           end
 
           it_behaves_like 'with pipeline execution policies enforced'
+
+          context 'when triggered for merge request pipelines' do
+            let(:source) { :merge_request_event }
+
+            it_behaves_like 'does not include security policies default pipeline configuration content'
+          end
         end
 
         context 'when policy does not apply to the branch' do
