@@ -2,10 +2,13 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::Provision::SyncNamespaceService, feature_category: :plan_provisioning do
+RSpec.describe GitlabSubscriptions::Provision::SyncNamespaceService, :aggregate_failures, feature_category: :plan_provisioning do
   describe '#execute' do
     let_it_be(:ultimate_plan) { create(:ultimate_plan) }
     let_it_be_with_reload(:namespace) { create(:group) }
+    let_it_be(:start_date) { Date.current.to_s }
+    let_it_be(:end_date) { 1.year.from_now.to_date.to_s }
+
     let(:params) { {} }
 
     subject(:result) { described_class.new(namespace: namespace, params: params).execute }
@@ -17,24 +20,20 @@ RSpec.describe GitlabSubscriptions::Provision::SyncNamespaceService, feature_cat
     end
 
     context 'when syncing main plan' do
-      let(:start_date) { Date.current.to_s }
-      let(:end_date) { 1.year.from_now.to_date.to_s }
-      let(:main_plan_params) do
+      let(:params) do
         {
-          plan_code: 'ultimate',
-          seats: 30,
-          start_date: start_date,
-          end_date: end_date,
-          max_seats_used: 10,
-          auto_renew: true,
-          trial: false,
-          trial_starts_on: nil,
-          trial_ends_on: nil
+          main_plan: {
+            plan_code: 'ultimate',
+            seats: 30,
+            start_date: start_date,
+            end_date: end_date,
+            max_seats_used: 10,
+            auto_renew: true,
+            trial: false,
+            trial_starts_on: nil,
+            trial_ends_on: nil
+          }
         }
-      end
-
-      before do
-        params[:main_plan] = main_plan_params
       end
 
       it 'creates a new gitlab_subscription record with the given plan for the namespace' do
@@ -59,8 +58,8 @@ RSpec.describe GitlabSubscriptions::Provision::SyncNamespaceService, feature_cat
           namespace.create_gitlab_subscription!(
             plan_code: 'premium_trial',
             trial: true,
-            trial_starts_on: Date.current,
-            trial_ends_on: Date.current + 1.month
+            trial_starts_on: start_date,
+            trial_ends_on: 1.month.from_now.to_date.to_s
           )
         end
 
@@ -82,7 +81,7 @@ RSpec.describe GitlabSubscriptions::Provision::SyncNamespaceService, feature_cat
       end
 
       context 'when invalid record params are sent' do
-        let(:main_plan_params) { { seats: nil } }
+        let(:params) { { main_plan: { seats: nil } } }
 
         it 'returns error response' do
           expect(result).to be_error
@@ -92,11 +91,10 @@ RSpec.describe GitlabSubscriptions::Provision::SyncNamespaceService, feature_cat
     end
 
     context 'when syncing storage' do
-      let(:storage_ends_on) { Date.current + 1.year }
       let(:storage_params) do
         {
           additional_purchased_storage_size: 10_000,
-          additional_purchased_storage_ends_on: storage_ends_on
+          additional_purchased_storage_ends_on: end_date
         }
       end
 
@@ -106,7 +104,7 @@ RSpec.describe GitlabSubscriptions::Provision::SyncNamespaceService, feature_cat
 
       it 'updates the storage attributes for the namespace' do
         expect { result }.to change { namespace.reload.eligible_additional_purchased_storage_size }.to(10_000)
-          .and change { namespace.reload.additional_purchased_storage_ends_on }.to(storage_ends_on)
+          .and change { namespace.reload.additional_purchased_storage_ends_on }.to(Date.parse(end_date))
       end
 
       context 'when invalid record params are sent' do
@@ -173,23 +171,97 @@ RSpec.describe GitlabSubscriptions::Provision::SyncNamespaceService, feature_cat
       end
     end
 
-    context 'when all provision params are provided' do
-      before do
-        params[:main_plan] = {
-          plan_code: 'ultimate',
-          seats: 30,
-          start_date: Date.current,
-          end_date: Date.current + 1.year,
-          auto_renew: true,
+    context 'when syncing add-on purchases' do
+      let(:purchase_xid) { 'S-A00000001' }
+
+      let(:params) do
+        {
+          add_on_purchases:
+          {
+            duo_pro: [{
+              started_on: start_date,
+              expires_on: end_date,
+              purchase_xid: purchase_xid,
+              quantity: 1,
+              trial: false
+            }],
+            product_analytics: [{
+              started_on: start_date,
+              expires_on: end_date,
+              purchase_xid: purchase_xid,
+              quantity: 1,
+              trial: false
+            }]
+          }
+        }
+      end
+
+      it 'provisions add-ons correctly' do
+        expect do
+          expect(result).to be_success
+        end.to change { GitlabSubscriptions::AddOnPurchase.count }.from(0).to(2)
+
+        expect(namespace.subscription_add_on_purchases.for_gitlab_duo_pro.first).to have_attributes(
+          started_at: Date.parse(start_date),
+          expires_on: Date.parse(end_date),
+          purchase_xid: purchase_xid,
+          quantity: 1,
           trial: false
-        }
+        )
+        expect(namespace.subscription_add_on_purchases.for_product_analytics.first).to have_attributes(
+          started_at: Date.parse(start_date),
+          expires_on: Date.parse(end_date),
+          purchase_xid: purchase_xid,
+          quantity: 1,
+          trial: false
+        )
+      end
 
-        params[:storage] = {
-          additional_purchased_storage_size: 100
-        }
+      context 'when syncing add on purchases fails' do
+        it 'returns error response with message' do
+          expect_next_instance_of(::GitlabSubscriptions::AddOnPurchases::GitlabCom::ProvisionService) do |service|
+            expect(service).to receive(:execute).and_return(ServiceResponse.error(message: 'Validation failed'))
+          end
 
-        params[:compute_minutes] = {
-          extra_shared_runners_minutes_limit: 90
+          expect(result).to be_error
+          expect(result.message).to match(/Validation failed/)
+        end
+      end
+    end
+
+    context 'when all provision params are provided' do
+      let(:params) do
+        {
+          main_plan: {
+            plan_code: 'ultimate',
+            seats: 30,
+            start_date: start_date,
+            end_date: end_date,
+            auto_renew: true,
+            trial: false
+          },
+          storage: {
+            additional_purchased_storage_size: 100
+          },
+          compute_minutes: {
+            extra_shared_runners_minutes_limit: 90
+          },
+          add_on_purchases: {
+            duo_enterprise: [{
+              started_on: start_date,
+              expires_on: end_date,
+              purchase_xid: 'A-S00001',
+              quantity: 1,
+              trial: false
+            }],
+            product_analytics: [{
+              started_on: start_date,
+              expires_on: end_date,
+              purchase_xid: 'A-S00001',
+              quantity: 1,
+              trial: false
+            }]
+          }
         }
       end
 
@@ -199,6 +271,8 @@ RSpec.describe GitlabSubscriptions::Provision::SyncNamespaceService, feature_cat
         expect(namespace.reload.gitlab_subscription.plan_name).to eq('ultimate')
         expect(namespace.additional_purchased_storage_size).to eq(100)
         expect(namespace.extra_shared_runners_minutes_limit).to eq(90)
+        expect(namespace.subscription_add_on_purchases.uniq_add_on_names)
+          .to match_array(%w[duo_enterprise product_analytics])
       end
 
       context 'when any provisioning fails' do
@@ -247,6 +321,23 @@ RSpec.describe GitlabSubscriptions::Provision::SyncNamespaceService, feature_cat
 
             expect(namespace.reload.gitlab_subscription.plan_name).to eq('ultimate')
             expect(namespace.additional_purchased_storage_size).to eq(100)
+          end
+        end
+
+        context 'when add-on purchases provisioning fails' do
+          it 'continues with provisioning the rest with valid attributes' do
+            expect_next_instance_of(::GitlabSubscriptions::AddOnPurchases::GitlabCom::ProvisionService) do |service|
+              expect(service).to receive(:execute).and_return(ServiceResponse.error(message: 'Validation failed'))
+            end
+
+            expect do
+              expect(result).to be_error
+              expect(result.message).to match(/Validation failed/)
+            end.not_to change { namespace.subscription_add_on_purchases.count }
+
+            expect(namespace.reload.gitlab_subscription.plan_name).to eq('ultimate')
+            expect(namespace.additional_purchased_storage_size).to eq(100)
+            expect(namespace.extra_shared_runners_minutes_limit).to eq(90)
           end
         end
       end

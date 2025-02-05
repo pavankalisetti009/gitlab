@@ -22,10 +22,11 @@ module GitlabSubscriptions
         sync_main_plan
         sync_storage
         sync_compute_minutes
+        sync_add_on_purchases
 
         return ServiceResponse.success if errors.blank?
 
-        ServiceResponse.error(message: errors.flatten.join(", "))
+        ServiceResponse.error(message: errors.flatten.join(', '))
       end
 
       private
@@ -42,6 +43,10 @@ module GitlabSubscriptions
 
       def storage_params
         params[:storage]
+      end
+
+      def add_on_purchases_params
+        params[:add_on_purchases]
       end
 
       def sync_main_plan
@@ -64,6 +69,18 @@ module GitlabSubscriptions
         return if compute_minutes_params.blank?
 
         result = SyncComputeMinutesService.new(namespace: namespace.reset, params: compute_minutes_params).execute
+        return if result.success?
+
+        errors << result.message
+      end
+
+      def sync_add_on_purchases
+        return if add_on_purchases_params.blank?
+
+        result = ::GitlabSubscriptions::AddOnPurchases::GitlabCom::ProvisionService.new(
+          namespace.reset,
+          add_on_purchases_params
+        ).execute
         return if result.success?
 
         errors << result.message
