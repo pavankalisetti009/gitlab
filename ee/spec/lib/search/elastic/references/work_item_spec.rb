@@ -52,16 +52,6 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
       it 'serializes work_item as a hash' do
         expect(indexed_json).to match(expected_hash)
       end
-
-      context 'when add_work_item_type_correct_id migration is not complete' do
-        before do
-          set_elasticsearch_migration_to :add_work_item_type_correct_id, including: false
-        end
-
-        it 'does not include correct_work_item_type_id' do
-          expect(indexed_json).to match(expected_hash.except(:correct_work_item_type_id))
-        end
-      end
     end
 
     describe 'group namespace work item' do
@@ -77,16 +67,6 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
 
       it 'serializes work_item as a hash' do
         expect(indexed_json).to match(expected_hash)
-      end
-
-      context 'when add_work_item_type_correct_id migration is not complete' do
-        before do
-          set_elasticsearch_migration_to :add_work_item_type_correct_id, including: false
-        end
-
-        it 'does not include correct_work_item_type_id' do
-          expect(indexed_json).to match(expected_hash.except(:correct_work_item_type_id))
-        end
       end
     end
 
@@ -124,16 +104,6 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
         create(:note, :system, noteable: project_work_item, project: project, note: "Enchanting!")
 
         expect(indexed_json[:notes]).not_to include('Enchanting!')
-      end
-
-      context 'when add_work_item_type_correct_id migration is not complete' do
-        before do
-          set_elasticsearch_migration_to :add_work_item_type_correct_id, including: false
-        end
-
-        it 'does not include correct_work_item_type_id' do
-          expect(indexed_json).to match(expected_hash.except(:correct_work_item_type_id))
-        end
       end
 
       it 'includes notes or notes_internal', :aggregate_failures do
