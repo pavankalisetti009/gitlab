@@ -56,6 +56,4 @@ RSpec.describe 'getting a collection of projects', feature_category: :groups_and
       expect(returned_marked_for_deletion_on).to contain_exactly(marked_for_deletion_on.iso8601)
     end
   end
-
-  it_behaves_like 'projects graphql query with SAML session filtering'
 end

@@ -24,7 +24,9 @@ module EE
       def finder_params(args)
         super(args)
           .merge(args.slice(:aimed_for_deletion, :include_hidden, :marked_for_deletion_on))
-          .merge(filter_expired_saml_session_projects: true)
+          # Expired SAML session filter disabled for now.
+          # Further investigation needed in https://gitlab.com/gitlab-org/gitlab/-/issues/514406
+          .merge(filter_expired_saml_session_projects: false)
       end
     end
   end

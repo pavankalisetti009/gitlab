@@ -8,7 +8,9 @@ module EE
 
         override :finder_params
         def finder_params(args)
-          super.merge(filter_expired_saml_session_projects: true)
+          # Expired SAML session filter disabled for now.
+          # Further investigation needed in https://gitlab.com/gitlab-org/gitlab/-/issues/514406
+          super.merge(filter_expired_saml_session_projects: false)
         end
       end
     end
