@@ -66,7 +66,11 @@ export default {
     return h(
       'div',
       {
-        class: ['js-log-line', 'job-log-line'],
+        class: [
+          'js-log-line',
+          'job-log-line',
+          { 'job-log-line-highlight': isHighlighted || applyHashHighlight },
+        ],
       },
       [
         h(LineNumber, {
@@ -89,10 +93,7 @@ export default {
         h(
           'span',
           {
-            class: [
-              'job-log-line-content',
-              { 'job-log-line-content-highlight': isHighlighted || applyHashHighlight },
-            ],
+            class: 'job-log-line-content',
           },
           parts,
         ),
