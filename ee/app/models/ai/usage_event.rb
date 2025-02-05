@@ -10,6 +10,11 @@ module Ai
         def related_event?(event_name)
           events.key?(event_name)
         end
+
+        def payload_attributes
+          schema_validator = validators_on(:payload).detect { |v| v.is_a?(JsonSchemaValidator) }
+          schema_validator.schema.value['properties'].keys
+        end
       end
     end
 

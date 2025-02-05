@@ -13,6 +13,14 @@ RSpec.describe Ai::CodeSuggestionEvent, feature_category: :code_suggestions do
 
   it_behaves_like 'common ai_usage_event'
 
+  describe '.payload_attributes' do
+    it 'has list of payload attributes' do
+      expect(described_class.payload_attributes).to match_array(
+        %w[language suggestion_size unique_tracking_id branch_name]
+      )
+    end
+  end
+
   describe 'validations' do
     it { is_expected.to validate_presence_of(:user_id) }
     it { is_expected.to validate_presence_of(:timestamp) }
