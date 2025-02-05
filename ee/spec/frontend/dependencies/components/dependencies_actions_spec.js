@@ -13,7 +13,7 @@ describe('DependenciesActions component', () => {
   let wrapper;
   const { namespace } = DEPENDENCY_LIST_TYPES.all;
 
-  const factory = ({ propsData, provide, glFeatures = { projectComponentFilter: true } } = {}) => {
+  const factory = ({ propsData, provide } = {}) => {
     store = createStore();
     jest.spyOn(store, 'dispatch').mockImplementation();
 
@@ -26,7 +26,6 @@ describe('DependenciesActions component', () => {
       provide: {
         namespaceType: 'group',
         ...provide,
-        glFeatures,
       },
       stubs: {
         GroupDependenciesFilteredSearch: true,
@@ -50,21 +49,6 @@ describe('DependenciesActions component', () => {
         });
 
         expect(wrapper.findComponent({ name: componentName }).exists()).toBe(true);
-      });
-    });
-
-    describe('when feature flag "projectComponentFilter" is disabled', () => {
-      it('does not render filtered search component', () => {
-        factory({
-          provide: { namespaceType: 'project' },
-          glFeatures: { projectComponentFilter: false },
-        });
-        expect(wrapper.findComponent({ name: 'ProjectDependenciesFilteredSearch' }).exists()).toBe(
-          false,
-        );
-        expect(wrapper.findComponent({ name: 'GroupDependenciesFilteredSearch' }).exists()).toBe(
-          false,
-        );
       });
     });
   });

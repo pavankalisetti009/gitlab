@@ -7,7 +7,6 @@ module Projects
     include Gitlab::InternalEventsTracking
 
     before_action only: :index do
-      push_frontend_feature_flag(:project_component_filter, project)
       push_frontend_feature_flag(:version_filtering_on_project_level_dependency_list, project)
       push_frontend_feature_flag(:dependency_paths, project.group)
     end
