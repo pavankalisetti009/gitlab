@@ -6,7 +6,7 @@ import {
   SHARED_RUNNER_USAGE,
   SHARED_RUNNER_POPOVER_OPTIONS,
 } from '../constants';
-import { getUsageDataByYearByMonthAsObject } from '../utils';
+import { groupUsageDataByYearAndMonth } from '../utils';
 import MinutesUsagePerProjectChart from './minutes_usage_per_project_chart.vue';
 import NoMinutesAlert from './no_minutes_alert.vue';
 
@@ -35,8 +35,8 @@ export default {
     },
   },
   computed: {
-    usageDataByYearObject() {
-      return getUsageDataByYearByMonthAsObject(this.projectsCiMinutesUsage);
+    usageDataByYearAndMonth() {
+      return groupUsageDataByYearAndMonth(this.projectsCiMinutesUsage);
     },
     hasCiMinutes() {
       return this.projectsCiMinutesUsage.some((usage) => usage.minutes > 0);
@@ -57,7 +57,7 @@ export default {
       <no-minutes-alert v-if="!hasCiMinutes" />
       <minutes-usage-per-project-chart
         v-else
-        :usage-data-by-year="usageDataByYearObject"
+        :usage-data-by-year-and-month="usageDataByYearAndMonth"
         :selected-year="selectedYear"
         :selected-month="selectedMonth"
         data-testid="minutes-by-project"
@@ -73,7 +73,7 @@ export default {
       <no-minutes-alert v-if="!hasSharedRunnersMinutes" />
       <minutes-usage-per-project-chart
         v-else
-        :usage-data-by-year="usageDataByYearObject"
+        :usage-data-by-year-and-month="usageDataByYearAndMonth"
         :selected-year="selectedYear"
         :selected-month="selectedMonth"
         display-shared-runner-data

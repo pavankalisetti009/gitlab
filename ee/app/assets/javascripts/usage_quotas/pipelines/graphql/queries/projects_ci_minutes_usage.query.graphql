@@ -1,6 +1,6 @@
 #import "~/graphql_shared/fragments/page_info.fragment.graphql"
 
-query getGroupProjectsCiMinutesUsage(
+query getProjectsCiMinutesUsage(
   $namespaceId: NamespaceID
   $date: Date
   $first: Int

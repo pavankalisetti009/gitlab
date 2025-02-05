@@ -4,8 +4,8 @@ import { GlAlert, GlButton } from '@gitlab/ui';
 import MinutesUsagePerMonth from 'ee/usage_quotas/pipelines/components/minutes_usage_per_month.vue';
 import MonthlyUnitsUsageSummary from 'ee/usage_quotas/pipelines/components/cards/monthly_units_usage_summary.vue';
 import AdditionalUnitsUsageSummary from 'ee/usage_quotas/pipelines/components/cards/additional_units_usage_summary.vue';
-import getCiMinutesMonthlySummary from 'ee/usage_quotas/pipelines/graphql/queries/ci_minutes.query.graphql';
-import getCiMinutesMonthSummaryWithProjects from 'ee/usage_quotas/pipelines/graphql/queries/ci_minutes_projects.query.graphql';
+import getCiMinutesMonthlySummary from 'ee/usage_quotas/pipelines/graphql/queries/namespace_ci_minutes_usage.query.graphql';
+import getCiMinutesMonthSummaryWithProjects from 'ee/usage_quotas/pipelines/graphql/queries/projects_ci_minutes_usage.query.graphql';
 import { pushEECproductAddToCartEvent } from 'ee/google_tag_manager';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -22,8 +22,8 @@ import { logError } from '~/lib/logger';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import {
   defaultProvide,
-  mockGetCiMinutesUsageNamespace,
-  mockGetCiMinutesUsageNamespaceProjects,
+  mockGetNamespaceCiMinutesUsage,
+  mockGetProjectsCiMinutesUsage,
   emptyMockGetCiMinutesUsageNamespaceProjects,
   defaultProjectListProps,
 } from '../mock_data';
@@ -100,8 +100,8 @@ describe('PipelineUsageApp', () => {
   };
 
   beforeEach(() => {
-    ciMinutesHandler.mockResolvedValue(mockGetCiMinutesUsageNamespace);
-    ciMinutesProjectsHandler.mockResolvedValue(mockGetCiMinutesUsageNamespaceProjects);
+    ciMinutesHandler.mockResolvedValue(mockGetNamespaceCiMinutesUsage);
+    ciMinutesProjectsHandler.mockResolvedValue(mockGetProjectsCiMinutesUsage);
   });
 
   describe('rendering', () => {

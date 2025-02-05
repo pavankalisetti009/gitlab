@@ -1,19 +1,20 @@
 import { GlColumnChart } from '@gitlab/ui/dist/charts';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import MinutesUsagePerProjectChart from 'ee/usage_quotas/pipelines/components/minutes_usage_per_project_chart.vue';
-import { getUsageDataByYearByMonthAsObject } from 'ee/usage_quotas/pipelines/utils';
+import { groupUsageDataByYearAndMonth } from 'ee/usage_quotas/pipelines/utils';
 import {
   Y_AXIS_PROJECT_LABEL,
   Y_AXIS_SHARED_RUNNER_LABEL,
 } from 'ee/usage_quotas/pipelines/constants';
-import { mockGetCiMinutesUsageNamespaceProjects } from '../mock_data';
+import { mockGetProjectsCiMinutesUsage } from '../mock_data';
 
 const {
   data: { ciMinutesUsage },
-} = mockGetCiMinutesUsageNamespaceProjects;
-const usageDataByYearObject = getUsageDataByYearByMonthAsObject(ciMinutesUsage.nodes);
+} = mockGetProjectsCiMinutesUsage;
+const usageDataByYearAndMonth = groupUsageDataByYearAndMonth(ciMinutesUsage.nodes);
 
 describe('MinutesUsagePerProjectChart', () => {
+  /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
 
   const findColumnChart = () => wrapper.findComponent(GlColumnChart);
@@ -21,7 +22,7 @@ describe('MinutesUsagePerProjectChart', () => {
   const createComponent = (displaySharedRunner = false, selectedYear = 2022, selectedMonth = 7) => {
     wrapper = shallowMountExtended(MinutesUsagePerProjectChart, {
       propsData: {
-        usageDataByYear: usageDataByYearObject,
+        usageDataByYearAndMonth,
         selectedYear,
         selectedMonth,
         displaySharedRunnerData: displaySharedRunner,

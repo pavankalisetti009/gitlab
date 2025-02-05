@@ -23,7 +23,7 @@ export default {
       required: false,
       default: false,
     },
-    usageDataByYear: {
+    usageDataByYearAndMonth: {
       type: Object,
       required: true,
     },
@@ -57,7 +57,8 @@ export default {
       ];
     },
     selectedMonthProjectsData() {
-      const selectedMonthData = this.usageDataByYear?.[this.selectedYear]?.[this.selectedMonth];
+      const selectedMonthData =
+        this.usageDataByYearAndMonth?.[this.selectedYear]?.[this.selectedMonth];
       if (!selectedMonthData) return [];
 
       return selectedMonthData.projects.nodes.map((cur) => {

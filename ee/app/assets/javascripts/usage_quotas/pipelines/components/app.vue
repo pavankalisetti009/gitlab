@@ -17,11 +17,11 @@ import { pushEECproductAddToCartEvent } from 'ee/google_tag_manager';
 import { LIMITED_ACCESS_KEYS } from 'ee/usage_quotas/components/constants';
 import { logError } from '~/lib/logger';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
-import getCiMinutesUsageNamespace from '../graphql/queries/ci_minutes.query.graphql';
-import getCiMinutesUsageNamespaceProjects from '../graphql/queries/ci_minutes_projects.query.graphql';
+import getNamespaceCiMinutesUsage from '../graphql/queries/namespace_ci_minutes_usage.query.graphql';
+import getProjectsCiMinutesUsage from '../graphql/queries/projects_ci_minutes_usage.query.graphql';
 import { ERROR_MESSAGE, LABEL_BUY_ADDITIONAL_MINUTES } from '../constants';
 import { USAGE_BY_MONTH_HEADER, USAGE_BY_PROJECT_HEADER } from '../../constants';
-import { getUsageDataByYearAsArray } from '../utils';
+import { groupUsageDataByYear } from '../utils';
 import LimitedAccessModal from '../../components/limited_access_modal.vue';
 import ProjectList from './project_list.vue';
 import MinutesUsagePerMonth from './minutes_usage_per_month.vue';
@@ -85,7 +85,7 @@ export default {
   apollo: {
     ciMinutesUsage: {
       query() {
-        return getCiMinutesUsageNamespace;
+        return getNamespaceCiMinutesUsage;
       },
       variables() {
         return {
@@ -105,7 +105,7 @@ export default {
     },
     projectsCiMinutesUsage: {
       query() {
-        return getCiMinutesUsageNamespaceProjects;
+        return getProjectsCiMinutesUsage;
       },
       variables() {
         return {
@@ -174,7 +174,7 @@ export default {
       );
     },
     usageDataByYear() {
-      return getUsageDataByYearAsArray(this.ciMinutesUsage);
+      return groupUsageDataByYear(this.ciMinutesUsage);
     },
     years() {
       return Object.keys(this.usageDataByYear)

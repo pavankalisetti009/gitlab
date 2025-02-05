@@ -2,15 +2,16 @@ import timezoneMock from 'timezone-mock';
 import { GlAreaChart } from '@gitlab/ui/dist/charts';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import MinutesUsagePerMonth from 'ee/usage_quotas/pipelines/components/minutes_usage_per_month_chart.vue';
-import { getUsageDataByYearAsArray } from 'ee/usage_quotas/pipelines/utils';
-import { mockGetCiMinutesUsageNamespace } from '../mock_data';
+import { groupUsageDataByYear } from 'ee/usage_quotas/pipelines/utils';
+import { mockGetNamespaceCiMinutesUsage } from '../mock_data';
 
 const {
   data: { ciMinutesUsage },
-} = mockGetCiMinutesUsageNamespace;
-const usageDataByYear = getUsageDataByYearAsArray(ciMinutesUsage.nodes);
+} = mockGetNamespaceCiMinutesUsage;
+const usageDataByYear = groupUsageDataByYear(ciMinutesUsage.nodes);
 
 describe('MinutesUsagePerMonth', () => {
+  /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
 
   const findAreaChart = () => wrapper.findComponent(GlAreaChart);

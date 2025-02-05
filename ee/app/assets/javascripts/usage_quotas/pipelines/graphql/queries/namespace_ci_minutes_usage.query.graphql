@@ -1,4 +1,4 @@
-query getGroupCiMinutesUsage($namespaceId: NamespaceID) {
+query getNamespaceCiMinutesUsage($namespaceId: NamespaceID) {
   ciMinutesUsage(namespaceId: $namespaceId) {
     nodes {
       month

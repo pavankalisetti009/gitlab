@@ -1,38 +1,67 @@
 import { dateToYearMonthDate, newDate } from '~/lib/utils/datetime_utility';
 
-const formatMonthData = (cur) => {
-  const date = newDate(cur.monthIso8601);
+/**
+ * GraphQL data type for namespace_ci_minutes_usage.query.graphql
+ *
+ * @typedef {object} CiMinutesNamespaceMonthlyUsage
+ * @property {string} month
+ * @property {string} monthIso8601
+ * @property {number} minutes
+ * @property {number} sharedRunnersDuration
+ * @property {object[]} projects
+ */
+
+/**
+ * Parses date and extracts year, month and day from the monthy usage data
+ *
+ * @param {CiMinutesNamespaceMonthlyUsage} monthlyUsage
+ */
+const parseMonthData = (monthlyUsage) => {
+  const date = newDate(monthlyUsage.monthIso8601);
   const formattedDate = dateToYearMonthDate(date);
 
   return {
     date,
     ...formattedDate,
-    ...cur,
+    ...monthlyUsage,
   };
 };
 
-export const getUsageDataByYearAsArray = (ciMinutesUsage) => {
-  return ciMinutesUsage.reduce((acc, cur) => {
-    const formattedData = formatMonthData(cur);
+/**
+ * Groups namespace compute minutes usage data by year
+ *
+ * @param {CiMinutesNamespaceMonthlyUsage[]} ciMinutesUsage
+ */
+export const groupUsageDataByYear = (ciMinutesUsage) => {
+  return ciMinutesUsage.reduce((yearData, monthlyUsage) => {
+    const formattedData = parseMonthData(monthlyUsage);
 
-    if (acc[formattedData.year] != null) {
-      acc[formattedData.year].push(formattedData);
-    } else {
-      acc[formattedData.year] = [formattedData];
+    if (!yearData[formattedData.year]) {
+      // eslint-disable-next-line no-param-reassign
+      yearData[formattedData.year] = [];
     }
-    return acc;
+
+    yearData[formattedData.year].push(formattedData);
+    return yearData;
   }, {});
 };
 
-export const getUsageDataByYearByMonthAsObject = (ciMinutesUsage) => {
-  return ciMinutesUsage.reduce((acc, cur) => {
-    const formattedData = formatMonthData(cur);
+/**
+ * Groups namespace compute minutes usage data by year and month
+ *
+ * @param {CiMinutesNamespaceMonthlyUsage[]} ciMinutesUsage
+ */
+export const groupUsageDataByYearAndMonth = (ciMinutesUsage) => {
+  return ciMinutesUsage.reduce((yearData, monthlyUsage) => {
+    const formattedData = parseMonthData(monthlyUsage);
 
-    if (!acc[formattedData.year]) {
-      acc[formattedData.year] = {};
+    if (!yearData[formattedData.year]) {
+      // eslint-disable-next-line no-param-reassign
+      yearData[formattedData.year] = {};
     }
 
-    acc[formattedData.year][formattedData.date.getMonth()] = formattedData;
-    return acc;
+    // eslint-disable-next-line no-param-reassign
+    yearData[formattedData.year][formattedData.date.getMonth()] = formattedData;
+    return yearData;
   }, {});
 };

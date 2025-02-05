@@ -6,7 +6,7 @@ import {
   SHARED_RUNNER_USAGE,
   SHARED_RUNNER_POPOVER_OPTIONS,
 } from '../constants';
-import { getUsageDataByYearAsArray } from '../utils';
+import { groupUsageDataByYear } from '../utils';
 import MinutesUsagePerMonthChart from './minutes_usage_per_month_chart.vue';
 import SharedRunnerUsageMonthChart from './shared_runner_usage_month_chart.vue';
 import NoMinutesAlert from './no_minutes_alert.vue';
@@ -40,7 +40,7 @@ export default {
   },
   computed: {
     usageDataByYear() {
-      return getUsageDataByYearAsArray(this.ciMinutesUsage);
+      return groupUsageDataByYear(this.ciMinutesUsage);
     },
     hasCiMinutes() {
       return this.ciMinutesUsage.some((usage) => usage.minutes > 0);
