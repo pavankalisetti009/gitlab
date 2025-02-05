@@ -364,7 +364,7 @@ export default {
           @remove="removeActionOrRule($options.RULE, index)"
         />
 
-        <div class="gl-mb-5 gl-rounded-base gl-bg-gray-10 gl-p-5">
+        <div class="gl-mb-5 gl-rounded-base gl-bg-subtle gl-p-5">
           <gl-button variant="link" data-testid="add-rule" @click="addRule">
             {{ $options.i18n.ADD_CONDITION_LABEL }}
           </gl-button>
@@ -395,7 +395,7 @@ export default {
           @parsing-error="handleActionBuilderParsingError"
         />
 
-        <div class="gl-mb-5 gl-rounded-base gl-bg-gray-10 gl-p-5">
+        <div class="gl-mb-5 gl-rounded-base gl-bg-subtle gl-p-5">
           <span v-gl-tooltip :title="addActionButtonTitle" data-testid="add-action-wrapper">
             <gl-button
               :disabled="addActionButtonDisabled"

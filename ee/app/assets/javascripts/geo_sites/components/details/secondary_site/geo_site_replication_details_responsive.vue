@@ -43,7 +43,7 @@ export default {
 <template>
   <div>
     <div
-      class="geo-site-replication-details-grid-columns gl-grid gl-border-b-1 gl-border-b-default gl-bg-gray-10 gl-p-5 gl-border-b-solid"
+      class="geo-site-replication-details-grid-columns gl-grid gl-border-b-1 gl-border-b-default gl-bg-subtle gl-p-5 gl-border-b-solid"
       data-testid="replication-details-header"
     >
       <slot name="title" :translations="$options.i18n">

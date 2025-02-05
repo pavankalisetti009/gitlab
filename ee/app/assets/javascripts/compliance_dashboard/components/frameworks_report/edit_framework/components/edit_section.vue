@@ -116,7 +116,7 @@ export default {
     <gl-collapse
       :id="$options.collapseId"
       :visible="isExpanded"
-      class="gl-bg-gray-10 gl-px-5 gl-py-6"
+      class="gl-bg-subtle gl-px-5 gl-py-6"
     >
       <slot></slot>
     </gl-collapse>

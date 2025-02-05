@@ -395,7 +395,7 @@ export default {
 
 <template>
   <div>
-    <div class="gl-bg-gray-10 gl-px-5 gl-pt-5">
+    <div class="gl-bg-subtle gl-px-5 gl-pt-5">
       <div class="row gl-items-center gl-justify-between">
         <div class="col-12 col-sm-8 col-md-6 col-lg-5 row">
           <type-filter

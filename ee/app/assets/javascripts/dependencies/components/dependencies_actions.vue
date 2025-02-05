@@ -85,7 +85,7 @@ export default {
 
 <template>
   <div
-    class="gl-flex gl-items-start gl-border-t-1 gl-border-default gl-bg-gray-10 gl-p-5 gl-border-t-solid"
+    class="gl-flex gl-items-start gl-border-t-1 gl-border-default gl-bg-subtle gl-p-5 gl-border-t-solid"
   >
     <component
       :is="dependenciesFilteredSearchComponent"

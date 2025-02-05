@@ -233,7 +233,7 @@ export default {
       :busy="isLoading"
       outlined
       responsive
-      class="gl-rounded-b-base !gl-bg-gray-10"
+      class="gl-rounded-b-base !gl-bg-subtle"
     >
       <template #table-busy>
         <gl-loading-icon size="lg" class="gl-my-5" />

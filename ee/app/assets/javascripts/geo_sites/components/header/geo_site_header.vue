@@ -46,7 +46,7 @@ export default {
 
 <template>
   <div
-    class="geo-site-header-grid-columns gl-grid gl-border-b-1 gl-border-t-1 gl-border-b-default gl-border-t-default gl-bg-gray-10 gl-px-5 gl-py-3 gl-border-b-solid gl-border-t-solid"
+    class="geo-site-header-grid-columns gl-grid gl-border-b-1 gl-border-t-1 gl-border-b-default gl-border-t-default gl-bg-subtle gl-px-5 gl-py-3 gl-border-b-solid gl-border-t-solid"
   >
     <div class="gl-flex gl-items-center">
       <gl-button

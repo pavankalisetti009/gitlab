@@ -154,7 +154,7 @@ export default {
         <gl-badge class="gl-ml-2" variant="muted">{{ issueCount }}</gl-badge>
       </template>
 
-      <div class="card gl-flex gl-flex-row gl-flex-wrap gl-bg-gray-10 gl-px-4">
+      <div class="card gl-flex gl-flex-row gl-flex-wrap gl-bg-subtle gl-px-4">
         <div class="gl-my-3 gl-mr-4">
           <label for="iteration-group-by">{{ __('Group by') }}</label>
           <gl-form-select

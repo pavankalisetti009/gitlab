@@ -121,7 +121,7 @@ export default {
           <template v-for="rule in mappedRules(section.rules)">
             <tr
               :key="rule.id"
-              class="gl-border-b-1 gl-bg-gray-10"
+              class="gl-border-b-1 gl-bg-subtle"
               :class="{
                 'gl-border-b-default gl-border-b-solid': !rule.reviewers.length,
               }"
@@ -166,7 +166,7 @@ export default {
             <tr
               v-if="rule.reviewers.length"
               :key="`${rule.id}-reviewers`"
-              class="gl-border-b-1 gl-border-b-default gl-bg-gray-10 gl-border-b-solid"
+              class="gl-border-b-1 gl-border-b-default gl-bg-subtle gl-border-b-solid"
             >
               <td colspan="3" class="gl-px-5 gl-pb-3">
                 <uncollapsed-reviewer-list

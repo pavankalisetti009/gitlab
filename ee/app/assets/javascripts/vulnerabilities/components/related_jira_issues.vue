@@ -129,7 +129,7 @@ export default {
         'gl-items-center',
         { 'gl-border-b-0': !shouldShowIssuesBody },
       ]"
-      :body-class="['gl-bg-gray-10', { 'gl-hidden': !shouldShowIssuesBody }]"
+      :body-class="['gl-bg-subtle', { 'gl-hidden': !shouldShowIssuesBody }]"
     >
       <template #header>
         <h3 class="h5 gl-m-0">{{ $options.i18n.cardHeading }}</h3>

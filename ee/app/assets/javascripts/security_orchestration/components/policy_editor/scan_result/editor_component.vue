@@ -559,7 +559,7 @@ export default {
         </template>
 
         <template #disabled>
-          <div class="gl-rounded-base gl-bg-gray-10 gl-p-6"></div>
+          <div class="gl-rounded-base gl-bg-subtle gl-p-6"></div>
         </template>
 
         <rule-section
@@ -601,7 +601,7 @@ export default {
         </template>
 
         <template #disabled>
-          <div class="gl-rounded-base gl-bg-gray-10 gl-p-6"></div>
+          <div class="gl-rounded-base gl-bg-subtle gl-p-6"></div>
         </template>
 
         <div v-if="!hasWarnAction">
@@ -665,7 +665,7 @@ export default {
         </template>
 
         <template #disabled>
-          <div class="gl-rounded-base gl-bg-gray-10 gl-p-6"></div>
+          <div class="gl-rounded-base gl-bg-subtle gl-p-6"></div>
         </template>
 
         <settings-section :rules="policy.rules" :settings="settings" @changed="updateSettings" />

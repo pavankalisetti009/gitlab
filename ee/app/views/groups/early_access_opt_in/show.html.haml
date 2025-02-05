@@ -4,7 +4,7 @@
   %fieldset
     .form-group.gl-flex.gl-justify-center
       .gl-flex.gl-gap-5.gl-flex-col.gl-max-w-2xl
-        = render Pajamas::CardComponent.new( header_options: { class: 'gl-p-6 gl-bg-gray-10' }, body_options: { class: 'gl-p-6' }, footer_options: { class: 'gl-p-6' }) do |c|
+        = render Pajamas::CardComponent.new( header_options: { class: 'gl-p-6 gl-bg-subtle' }, body_options: { class: 'gl-p-6' }, footer_options: { class: 'gl-p-6' }) do |c|
           - c.with_header do
             %h2.gl-banner-title.gl-mb-0
               = _('Confirm enrollment in the Early Access Program')
