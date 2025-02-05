@@ -164,8 +164,7 @@ export default {
 
       this.projectDetailsLoaded = true;
       this.projectId = id;
-      this.devfileRef = rootRef;
-
+      this.devfileRef = this.$router.currentRoute.query?.gitRef || rootRef;
       this.clusterAgents = clusterAgents;
 
       clusterAgents.forEach((agent) => {

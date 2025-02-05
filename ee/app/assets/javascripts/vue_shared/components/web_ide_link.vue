@@ -30,6 +30,11 @@ export default {
       required: false,
       default: 0,
     },
+    gitRef: {
+      type: String,
+      required: false,
+      default: '',
+    },
   },
   data() {
     return {
@@ -89,6 +94,7 @@ export default {
         :project-id="projectId"
         :project-full-path="projectPath"
         :supports-workspaces="supportsWorkspaces"
+        :git-ref="gitRef"
         border-position="top"
       />
       <div v-else class="gl-my-3">
