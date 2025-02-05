@@ -579,6 +579,31 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
 
         execute_service
       end
+
+      context 'when email is of existing user' do
+        let(:invites) { project_users.map(&:email) }
+
+        it 'does not reject membership update for already billable user on billable role' do
+          project_member_a = project.add_developer(project_users.first)
+          project_member_b = project.add_developer(project_users.second)
+          params[:access_level] = ::Gitlab::Access::MAINTAINER
+
+          execute_service
+
+          expect(project_member_a.reload.access_level).to eq ::Gitlab::Access::MAINTAINER
+          expect(project_member_b.reload.access_level).to eq ::Gitlab::Access::MAINTAINER
+        end
+      end
+    end
+
+    context 'when we invite a bot user' do
+      let(:invites) { create(:user, :bot).id }
+
+      it 'does not reject bot users' do
+        params[:access_level] = ::Gitlab::Access::DEVELOPER
+
+        expect { execute_service }.to change { project.members.count }.by(1)
+      end
     end
 
     it 'adds guest users even if there are no seats available' do

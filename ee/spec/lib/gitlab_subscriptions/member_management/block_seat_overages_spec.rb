@@ -55,7 +55,7 @@ RSpec.describe GitlabSubscriptions::MemberManagement::BlockSeatOverages, feature
 
     context 'when on GitLab.com', :saas do
       it 'delegates to root namespace' do
-        expect(group).to receive(:seats_available_for?).with(invites, access_level, member_role_id)
+        expect(group).to receive(:seats_available_for?).with(invites.map(&:to_s), access_level, member_role_id)
 
         seats_available?
       end

@@ -13,9 +13,11 @@ module GitlabSubscriptions
 
         def seats_available_for?(source, invites, access_level, member_role_id)
           root_namespace = source.root_ancestor
-          return root_namespace.seats_available_for?(invites, access_level, member_role_id) if gitlab_com_subscription?
-
           parsed_invites = process_invites(source, invites)
+          if gitlab_com_subscription?
+            return root_namespace.seats_available_for?(parsed_invites, access_level, member_role_id)
+          end
+
           seats_available_for_self_managed?(parsed_invites, access_level, member_role_id)
         end
 
