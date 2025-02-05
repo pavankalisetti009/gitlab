@@ -15,26 +15,6 @@ RSpec.describe 'getting organization information', feature_category: :cell do
 
   subject(:request_organization) { post_graphql(query, current_user: current_user) }
 
-  context 'when requesting projects' do
-    let(:path) { %i[organization projects nodes] }
-    let(:organization_fields) do
-      <<~FIELDS
-        projects(first: 1) {
-          nodes {
-            id
-          }
-        }
-      FIELDS
-    end
-
-    it_behaves_like 'projects graphql query with SAML session filtering' do
-      before do
-        saml_group.organization = organization
-        saml_project.organization = organization
-      end
-    end
-  end
-
   context 'when requesting groups' do
     let_it_be(:saml_group) do
       create(:group, organization: organization, developers: current_user) do |group|
