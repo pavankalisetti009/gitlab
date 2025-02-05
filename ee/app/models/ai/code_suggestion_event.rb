@@ -11,19 +11,17 @@ module Ai
 
     partitioned_by :timestamp, strategy: :monthly, retain_for: 3.months
 
-    EVENTS = {
-      'code_suggestions_requested' => 1, # old data https://gitlab.com/gitlab-org/gitlab/-/issues/462809
-      'code_suggestion_shown_in_ide' => 2,
-      'code_suggestion_accepted_in_ide' => 3,
-      'code_suggestion_rejected_in_ide' => 4,
-      'code_suggestion_direct_access_token_refresh' => 5 # old data https://gitlab.com/gitlab-org/gitlab/-/issues/462809
-    }.freeze
-
     PAYLOAD_ATTRIBUTES = %w[language suggestion_size unique_tracking_id branch_name].freeze
 
     attribute :timestamp, :datetime, default: -> { DateTime.current }
 
-    enum event: EVENTS
+    enum event: {
+      code_suggestions_requested: 1, # old data https://gitlab.com/gitlab-org/gitlab/-/issues/462809
+      code_suggestion_shown_in_ide: 2,
+      code_suggestion_accepted_in_ide: 3,
+      code_suggestion_rejected_in_ide: 4,
+      code_suggestion_direct_access_token_refresh: 5 # old data https://gitlab.com/gitlab-org/gitlab/-/issues/462809
+    }
 
     belongs_to :user
     belongs_to :organization, class_name: 'Organizations::Organization'

@@ -11,13 +11,11 @@ module Ai
 
     partitioned_by :timestamp, strategy: :monthly, retain_for: 3.months
 
-    EVENTS = { 'request_duo_chat_response' => 1 }.freeze
-
     PAYLOAD_ATTRIBUTES = [].freeze
 
     attribute :timestamp, :datetime, default: -> { DateTime.current }
 
-    enum event: EVENTS
+    enum event: { request_duo_chat_response: 1 }
 
     belongs_to :user
 

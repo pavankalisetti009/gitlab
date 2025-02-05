@@ -11,6 +11,8 @@ RSpec.describe Ai::CodeSuggestionEvent, feature_category: :code_suggestions do
   it { is_expected.to belong_to(:organization) }
   it { is_expected.to belong_to(:user) }
 
+  it_behaves_like 'common ai_usage_event'
+
   describe 'validations' do
     it { is_expected.to validate_presence_of(:user_id) }
     it { is_expected.to validate_presence_of(:timestamp) }
@@ -57,7 +59,7 @@ RSpec.describe Ai::CodeSuggestionEvent, feature_category: :code_suggestions do
     it 'returns serialized attributes hash' do
       expect(event.to_clickhouse_csv_row).to eq({
         user_id: user.id,
-        event: described_class::EVENTS['code_suggestion_shown_in_ide'],
+        event: described_class.events[:code_suggestion_shown_in_ide],
         timestamp: 1.day.ago.to_f,
         suggestion_size: 3,
         language: 'foo',
