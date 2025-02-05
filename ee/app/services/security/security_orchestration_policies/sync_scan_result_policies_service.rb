@@ -3,6 +3,8 @@
 module Security
   module SecurityOrchestrationPolicies
     class SyncScanResultPoliciesService
+      PROJECTS_BATCH_SIZE = 1000
+
       def initialize(configuration)
         @configuration = configuration
         @sync_project_service = SyncScanResultPoliciesProjectService.new(configuration)
@@ -11,9 +13,9 @@ module Security
       def execute
         measure(:gitlab_security_policies_update_configuration_duration_seconds) do
           delay = 0
-          projects.each_batch do |projects|
-            projects.each do |project|
-              @sync_project_service.execute(project.id, { delay: delay })
+          configuration.all_project_ids.each_slice(PROJECTS_BATCH_SIZE) do |project_ids|
+            project_ids.each do |project_id|
+              @sync_project_service.execute(project_id, { delay: delay })
             end
 
             delay += 10.seconds
@@ -26,14 +28,6 @@ module Security
       attr_reader :configuration
 
       delegate :measure, to: ::Security::SecurityOrchestrationPolicies::ObserveHistogramsService
-
-      def projects
-        @projects ||= if configuration.namespace?
-                        configuration.namespace.all_project_ids
-                      else
-                        Project.id_in(configuration.project_id)
-                      end
-      end
     end
   end
 end

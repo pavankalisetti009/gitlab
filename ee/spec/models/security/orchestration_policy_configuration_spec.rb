@@ -3427,4 +3427,42 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
       it { is_expected.to be_falsey }
     end
   end
+
+  describe '#all_project_ids' do
+    let_it_be(:namespace) { create(:namespace) }
+    let_it_be(:project) { create(:project) }
+
+    context 'when configuration is at namespace-level' do
+      let_it_be(:configuration) do
+        create(:security_orchestration_policy_configuration, namespace: namespace, project: nil)
+      end
+
+      let_it_be(:project1) { create(:project, namespace: namespace) }
+      let_it_be(:project2) { create(:project, namespace: namespace) }
+      let_it_be(:project3) { create(:project, namespace: namespace) }
+
+      it 'returns all project IDs under the namespace' do
+        expect(configuration.all_project_ids).to match_array([project1.id, project2.id, project3.id])
+      end
+
+      it 'uses batch processing' do
+        expect(Gitlab::Database::NamespaceEachBatch)
+          .to receive(:new)
+          .with(namespace_class: Namespace, cursor: { current_id: namespace.id, depth: [namespace.id] })
+          .and_call_original
+
+        configuration.all_project_ids
+      end
+    end
+
+    context 'when configuration is at project-level' do
+      let_it_be(:configuration) do
+        create(:security_orchestration_policy_configuration, project: project, namespace: nil)
+      end
+
+      it 'returns single project id' do
+        expect(configuration.all_project_ids).to contain_exactly(project.id)
+      end
+    end
+  end
 end

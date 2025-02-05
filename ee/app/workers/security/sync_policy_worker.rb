@@ -31,8 +31,8 @@ module Security
       return unless policy.enabled
 
       sync_pipeline_execution_policy_metadata(policy)
-      all_projects(policy) do |project|
-        ::Security::SyncProjectPolicyWorker.perform_async(project.id, policy.id, {})
+      all_project_ids(policy).each do |project_id|
+        ::Security::SyncProjectPolicyWorker.perform_async(project_id, policy.id, {})
       end
     end
 
@@ -44,22 +44,13 @@ module Security
       sync_pipeline_execution_policy_metadata(policy) if policy_diff.content_changed?
       return unless policy_diff.needs_refresh? || policy_diff.needs_rules_refresh?
 
-      all_projects(policy) do |project|
-        ::Security::SyncProjectPolicyWorker.perform_async(project.id, policy.id, event_data)
+      all_project_ids(policy).each do |project_id|
+        ::Security::SyncProjectPolicyWorker.perform_async(project_id, policy.id, event_data)
       end
     end
 
-    def all_projects(policy)
-      configuration = policy.security_orchestration_policy_configuration
-      projects = if configuration.namespace?
-                   configuration.namespace.all_project_ids
-                 else
-                   Project.id_in(configuration.project_id).select(:id)
-                 end
-
-      projects.find_each do |project|
-        yield(project)
-      end
+    def all_project_ids(policy)
+      policy.security_orchestration_policy_configuration.all_project_ids
     end
 
     def sync_pipeline_execution_policy_metadata(policy)
