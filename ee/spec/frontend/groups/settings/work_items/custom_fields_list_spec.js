@@ -66,6 +66,9 @@ describe('CustomFieldsTable', () => {
   const findArchiveButton = () => wrapper.find('[data-testid="archiveButton"]');
   const findDetailsButton = () => wrapper.find('[data-testid="toggleDetailsButton"');
   const findAlert = () => wrapper.find('[data-testid="alert"]');
+  const findActiveFilterButton = () => wrapper.find('[data-testid="activeFilterButton"]');
+  const findArchivedFilterButton = () => wrapper.find('[data-testid="archivedFilterButton"]');
+  const findTitle = () => wrapper.find('[data-testid="table-title"]');
 
   const createComponent = ({
     fields = [selectField],
@@ -115,6 +118,25 @@ describe('CustomFieldsTable', () => {
     it('displays correct count in badge', () => {
       const badge = wrapper.findComponent(GlBadge);
       expect(badge.text()).toBe('1/50');
+    });
+
+    it('renders filter buttons', () => {
+      expect(findActiveFilterButton().exists()).toBe(true);
+      expect(findArchivedFilterButton().exists()).toBe(true);
+    });
+
+    it('sets active filter button as selected by default', () => {
+      expect(findActiveFilterButton().props('selected')).toBe(true);
+      expect(findArchivedFilterButton().props('selected')).toBe(false);
+    });
+
+    it('toggles button selected states when clicked', async () => {
+      findArchivedFilterButton().vm.$emit('click');
+
+      await nextTick();
+
+      expect(findActiveFilterButton().props('selected')).toBe(false);
+      expect(findArchivedFilterButton().props('selected')).toBe(true);
     });
 
     it('detailsToggleIcon returns correct icon based on visibility', async () => {
@@ -254,6 +276,77 @@ describe('CustomFieldsTable', () => {
     await waitForPromises();
 
     expect(findAlert().exists()).toBe(true);
-    expect(findAlert().text()).toContain('Failed to archive custom field');
+    expect(findAlert().text()).toContain(`Failed to archive custom field ${selectField.name}.`);
+  });
+
+  it('updates title text when filter changes', async () => {
+    createComponent();
+
+    expect(findTitle().text()).toContain('Active custom fields');
+
+    await findArchivedFilterButton().vm.$emit('click');
+
+    expect(findTitle().text()).toContain('Archived custom fields');
+  });
+
+  it('updates query variables when switching to archived view', async () => {
+    const customFieldsResponse = jest.fn().mockResolvedValue({
+      data: {
+        group: {
+          id: '123',
+          customFields: {
+            nodes: [],
+            count: 0,
+          },
+        },
+      },
+    });
+
+    createComponent({ customFieldsResponse });
+    await waitForPromises();
+
+    // First call should be for active fields
+    expect(customFieldsResponse).toHaveBeenCalledWith({
+      fullPath: 'group/path',
+      active: true,
+    });
+
+    await findArchivedFilterButton().vm.$emit('click');
+    await waitForPromises();
+
+    // Second call should be for archived fields
+    expect(customFieldsResponse).toHaveBeenCalledWith({
+      fullPath: 'group/path',
+      active: false,
+    });
+  });
+
+  it('maintains filter state when refetching after archive', async () => {
+    const customFieldsResponse = jest.fn().mockResolvedValue({
+      data: {
+        group: {
+          id: '123',
+          customFields: {
+            nodes: [],
+            count: 0,
+          },
+        },
+      },
+    });
+
+    createComponent({ customFieldsResponse });
+    await waitForPromises();
+
+    await findArchivedFilterButton().vm.$emit('click');
+    await waitForPromises();
+
+    wrapper.findComponent(CustomFieldForm).vm.$emit('created');
+    await waitForPromises();
+
+    // Should maintain archived filter state
+    expect(customFieldsResponse).toHaveBeenLastCalledWith({
+      fullPath: 'group/path',
+      active: false,
+    });
   });
 });
