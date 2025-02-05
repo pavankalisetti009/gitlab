@@ -133,7 +133,8 @@ module Sbom
           end
 
           def fetch(report_component, default = [])
-            licenses.fetch(report_component.key, default)
+            fetched_licences = licenses.fetch(report_component.key, default)
+            consolidate_unknown_licenses(fetched_licences)
           end
 
           private
@@ -154,13 +155,45 @@ module Sbom
           strong_memoize_attr :licenses
 
           def map_from(license)
-            return if license[:spdx_identifier].nil? || license[:spdx_identifier] == "unknown"
+            return if license[:spdx_identifier].blank? || skip_unknown_licenses?(license[:spdx_identifier])
 
             license.slice(:name, :spdx_identifier, :url)
           end
 
+          def consolidate_unknown_licenses(license_group)
+            return license_group unless ingest_unknown_licenses?
+
+            unknown_count = 0
+            license_group.reject! do |license|
+              unknown_count += 1 if license[:spdx_identifier] == unknown_license[:spdx_identifier]
+            end
+
+            if unknown_count > 0
+              license_group << {
+                spdx_identifier: unknown_license[:spdx_identifier],
+                name: "#{unknown_count} #{unknown_license[:name]}",
+                url: unknown_license[:url]
+              }
+            end
+
+            license_group
+          end
+
+          def skip_unknown_licenses?(spdx_identifier)
+            !ingest_unknown_licenses? && spdx_identifier == unknown_license[:spdx_identifier]
+          end
+
+          def ingest_unknown_licenses?
+            Feature.enabled?(:sbom_ingest_unknown_licenses_with_count, project)
+          end
+          strong_memoize_attr :ingest_unknown_licenses?
+
           def key_for(result)
             [result.name, result.version, result.purl_type]
+          end
+
+          def unknown_license
+            Gitlab::LicenseScanning::PackageLicenses::UNKNOWN_LICENSE
           end
         end
       end
