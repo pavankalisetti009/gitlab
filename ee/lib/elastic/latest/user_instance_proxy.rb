@@ -3,7 +3,7 @@
 module Elastic
   module Latest
     class UserInstanceProxy < ApplicationInstanceProxy
-      SCHEMA_VERSION = 22_10
+      SCHEMA_VERSION = 25_06
 
       def as_indexed_json(_options = {})
         # We don't use as_json(only: ...) because it calls all virtual and serialized attributtes
