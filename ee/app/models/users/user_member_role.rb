@@ -8,6 +8,6 @@ module Users
     belongs_to :user
 
     validates :member_role, presence: true
-    validates :user, presence: true
+    validates :user, presence: true, uniqueness: true
   end
 end

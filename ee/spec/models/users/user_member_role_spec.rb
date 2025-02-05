@@ -13,5 +13,6 @@ RSpec.describe Users::UserMemberRole, feature_category: :system_access do
 
     it { is_expected.to validate_presence_of(:member_role) }
     it { is_expected.to validate_presence_of(:user) }
+    it { is_expected.to validate_uniqueness_of(:user) }
   end
 end
