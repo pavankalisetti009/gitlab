@@ -203,6 +203,17 @@ RSpec.describe Members::UpdateService, feature_category: :groups_and_projects do
 
       expect(result[:status]).to eq(:success)
     end
+
+    it 'allows bot users updates' do
+      bot_member = group.add_developer(create(:user, :bot))
+
+      params = { access_level: ::Gitlab::Access::MAINTAINER, source: group }
+
+      result = described_class.new(user, params).execute(bot_member)
+
+      expect(result[:status]).to eq(:success)
+      expect(bot_member.reload.access_level).to eq(::Gitlab::Access::MAINTAINER)
+    end
   end
 
   context 'with block seat overages enabled for self-managed' do
