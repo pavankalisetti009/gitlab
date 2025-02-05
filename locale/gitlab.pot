@@ -37670,6 +37670,9 @@ msgstr ""
 msgid "New! Suggest changes directly"
 msgstr ""
 
+msgid "New, streamlined merge request homepage!"
+msgstr ""
+
 msgid "NewFramework|All todos done."
 msgstr ""
 
@@ -53019,6 +53022,9 @@ msgstr ""
 msgid "See examples."
 msgstr ""
 
+msgid "See how it works"
+msgstr ""
+
 msgid "See our website for help"
 msgstr ""
 
@@ -64336,6 +64342,9 @@ msgid "Welcome to GitLab, %{name}!"
 msgstr ""
 
 msgid "Welcome to GitLab,%{br_tag}%{name}!"
+msgstr ""
+
+msgid "Welcome to the new merge request homepage! This page gives you a centralized view of all the merge requests you're working on. Know at a glance what merge requests need your attention first so you can spend less time checking in, and more time reviewing and responding to feedback."
 msgstr ""
 
 msgid "Welcome, %{name}!"
