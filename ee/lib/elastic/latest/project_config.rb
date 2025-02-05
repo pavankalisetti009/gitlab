@@ -15,7 +15,7 @@ module Elastic
       )
 
       mappings dynamic: 'strict' do
-        indexes :id, type: :integer
+        indexes :id, type: :long
         indexes :created_at, type: :date
         indexes :updated_at, type: :date
 
@@ -40,7 +40,7 @@ module Elastic
 
         indexes :mirror, type: :boolean
         indexes :forked, type: :boolean
-        indexes :owner_id, type: :integer
+        indexes :owner_id, type: :long
         indexes :repository_languages, type: :keyword
 
         indexes :star_count, type: :integer

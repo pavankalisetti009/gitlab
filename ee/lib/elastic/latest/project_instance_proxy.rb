@@ -5,7 +5,7 @@ module Elastic
     class ProjectInstanceProxy < ApplicationInstanceProxy
       extend ::Gitlab::Utils::Override
 
-      SCHEMA_VERSION = 24_02
+      SCHEMA_VERSION = 25_06
 
       TRACKED_FEATURE_SETTINGS = %w[
         issues_access_level

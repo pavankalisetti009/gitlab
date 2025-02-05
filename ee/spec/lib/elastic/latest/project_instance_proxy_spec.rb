@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Elastic::Latest::ProjectInstanceProxy, :elastic_helpers, feature_category: :global_search do
   let_it_be(:project) { create(:project) }
 
-  let(:schema_version) { 2402 }
+  let(:schema_version) { 25_06 }
 
   subject(:proxy) { described_class.new(project) }
 
