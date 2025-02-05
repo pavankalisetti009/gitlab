@@ -1703,6 +1703,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_3be1956babdb() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."snippet_organization_id" IS NULL THEN
+  SELECT "organization_id"
+  INTO NEW."snippet_organization_id"
+  FROM "snippets"
+  WHERE "snippets"."id" = NEW."snippet_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_3d1a58344b29() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -2429,6 +2445,22 @@ IF NEW."project_id" IS NULL THEN
   INTO NEW."project_id"
   FROM "ci_secure_files"
   WHERE "ci_secure_files"."id" = NEW."ci_secure_file_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
+CREATE FUNCTION trigger_8ba074736a77() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."snippet_project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."snippet_project_id"
+  FROM "snippets"
+  WHERE "snippets"."id" = NEW."snippet_id";
 END IF;
 
 RETURN NEW;
@@ -21139,6 +21171,8 @@ CREATE TABLE snippet_repository_storage_moves (
     source_storage_name text NOT NULL,
     destination_storage_name text NOT NULL,
     error_message text,
+    snippet_project_id bigint,
+    snippet_organization_id bigint,
     CONSTRAINT check_a42ab83060 CHECK ((char_length(error_message) <= 256)),
     CONSTRAINT snippet_repository_storage_moves_destination_storage_name CHECK ((char_length(destination_storage_name) <= 255)),
     CONSTRAINT snippet_repository_storage_moves_source_storage_name CHECK ((char_length(source_storage_name) <= 255))
@@ -34444,6 +34478,10 @@ CREATE INDEX index_snippet_repositories_verification_state ON snippet_repositori
 
 CREATE INDEX index_snippet_repository_storage_moves_on_snippet_id ON snippet_repository_storage_moves USING btree (snippet_id);
 
+CREATE INDEX index_snippet_repository_storage_moves_on_snippet_organization_ ON snippet_repository_storage_moves USING btree (snippet_organization_id);
+
+CREATE INDEX index_snippet_repository_storage_moves_on_snippet_project_id ON snippet_repository_storage_moves USING btree (snippet_project_id);
+
 CREATE INDEX index_snippet_repository_storage_moves_on_state ON snippet_repository_storage_moves USING btree (state) WHERE (state = ANY (ARRAY[2, 3]));
 
 CREATE UNIQUE INDEX index_snippet_user_mentions_on_note_id ON snippet_user_mentions USING btree (note_id) WHERE (note_id IS NOT NULL);
@@ -37710,6 +37748,8 @@ CREATE TRIGGER trigger_38bfee591e40 BEFORE INSERT OR UPDATE ON dependency_proxy_
 
 CREATE TRIGGER trigger_397d1b13068e BEFORE INSERT OR UPDATE ON issue_customer_relations_contacts FOR EACH ROW EXECUTE FUNCTION trigger_397d1b13068e();
 
+CREATE TRIGGER trigger_3be1956babdb BEFORE INSERT OR UPDATE ON snippet_repository_storage_moves FOR EACH ROW EXECUTE FUNCTION trigger_3be1956babdb();
+
 CREATE TRIGGER trigger_3d1a58344b29 BEFORE INSERT OR UPDATE ON alert_management_alert_assignees FOR EACH ROW EXECUTE FUNCTION trigger_3d1a58344b29();
 
 CREATE TRIGGER trigger_3e067fa9bfe3 BEFORE INSERT OR UPDATE ON incident_management_timeline_event_tag_links FOR EACH ROW EXECUTE FUNCTION trigger_3e067fa9bfe3();
@@ -37801,6 +37841,8 @@ CREATE TRIGGER trigger_8a38ce2327de BEFORE INSERT OR UPDATE ON boards_epic_user_
 CREATE TRIGGER trigger_8ac78f164b2d BEFORE INSERT OR UPDATE ON design_management_repositories FOR EACH ROW EXECUTE FUNCTION trigger_8ac78f164b2d();
 
 CREATE TRIGGER trigger_8b39d532224c BEFORE INSERT OR UPDATE ON ci_secure_file_states FOR EACH ROW EXECUTE FUNCTION trigger_8b39d532224c();
+
+CREATE TRIGGER trigger_8ba074736a77 BEFORE INSERT OR UPDATE ON snippet_repository_storage_moves FOR EACH ROW EXECUTE FUNCTION trigger_8ba074736a77();
 
 CREATE TRIGGER trigger_8d002f38bdef BEFORE INSERT OR UPDATE ON packages_debian_group_components FOR EACH ROW EXECUTE FUNCTION trigger_8d002f38bdef();
 
@@ -38270,6 +38312,9 @@ ALTER TABLE ONLY import_failures
 ALTER TABLE ONLY project_ci_cd_settings
     ADD CONSTRAINT fk_24c15d2f2e FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY snippet_repository_storage_moves
+    ADD CONSTRAINT fk_2522a20cfb FOREIGN KEY (snippet_project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY security_pipeline_execution_policy_config_links
     ADD CONSTRAINT fk_256bbe966d FOREIGN KEY (security_policy_id) REFERENCES security_policies(id) ON DELETE CASCADE;
 
@@ -38371,6 +38416,9 @@ ALTER TABLE ONLY approvals
 
 ALTER TABLE ONLY namespaces
     ADD CONSTRAINT fk_319256d87a FOREIGN KEY (file_template_project_id) REFERENCES projects(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY snippet_repository_storage_moves
+    ADD CONSTRAINT fk_321e6c6235 FOREIGN KEY (snippet_organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY merge_request_approval_metrics
     ADD CONSTRAINT fk_324639fb86 FOREIGN KEY (target_project_id) REFERENCES projects(id) ON DELETE CASCADE;
