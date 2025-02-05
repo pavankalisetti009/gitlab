@@ -1,27 +1,50 @@
+import Vue from 'vue';
+import VueApollo from 'vue-apollo';
 import { shallowMount } from '@vue/test-utils';
 import MockAdapter from 'axios-mock-adapter';
+import createMockApollo from 'helpers/mock_apollo_helper';
 import { updateApplicationSettings } from '~/rest_api';
 import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
 import { createAlert } from '~/alert';
 import axios from '~/lib/utils/axios_utils';
 import AiCommonSettings from 'ee/ai/settings/components/ai_common_settings.vue';
+import AiGtewayUrlInputForm from 'ee/ai/settings/components/ai_gateway_url_input_form.vue';
 import CodeSuggestionsConnectionForm from 'ee/ai/settings/components/code_suggestions_connection_form.vue';
 import AiModelsForm from 'ee/ai/settings/components/ai_models_form.vue';
 import AiAdminSettings from 'ee/ai/settings/pages/ai_admin_settings.vue';
 import waitForPromises from 'helpers/wait_for_promises';
 import { AVAILABILITY_OPTIONS } from 'ee/ai/settings/constants';
+import updateAiSettingsMutation from 'ee/ai/graphql/update_ai_settings.mutation.graphql';
 
 jest.mock('~/rest_api');
 jest.mock('~/lib/utils/url_utility');
 jest.mock('~/alert');
 
+Vue.use(VueApollo);
+
 let wrapper;
 let axiosMock;
 
+const aiGatewayUrl = 'http://localhost:5052';
 const toggleBetaModelsPath = '/admin/ai/self_hosted_models/terms_and_condition';
+const updateAiSettingsSuccessHandler = jest.fn().mockResolvedValue({
+  data: {
+    duoSettings: {
+      aiGatewayUrl: 'http://new-aigw-url.com',
+      errors: [],
+    },
+  },
+});
 
-const createComponent = ({ props = {}, provide = {} } = {}) => {
+const createComponent = async ({
+  props = {},
+  provide = {},
+  apolloHandlers = [[updateAiSettingsMutation, updateAiSettingsSuccessHandler]],
+} = {}) => {
+  const mockApollo = createMockApollo([...apolloHandlers]);
+
   wrapper = shallowMount(AiAdminSettings, {
+    apolloProvider: mockApollo,
     propsData: {
       duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_ON,
       redirectPath: '/admin/application_settings',
@@ -31,20 +54,25 @@ const createComponent = ({ props = {}, provide = {} } = {}) => {
     provide: {
       disabledDirectConnectionMethod: false,
       betaSelfHostedModelsEnabled: false,
+      canManageSelfHostedModels: true,
       toggleBetaModelsPath,
+      aiGatewayUrl,
       ...provide,
     },
   });
+
+  await waitForPromises();
 };
 
 const findAiCommonSettings = () => wrapper.findComponent(AiCommonSettings);
 const findCodeSuggestionsConnectionForm = () =>
   wrapper.findComponent(CodeSuggestionsConnectionForm);
 const findAiModelsForm = () => wrapper.findComponent(AiModelsForm);
+const findAiGatewayUrlInputForm = () => wrapper.findComponent(AiGtewayUrlInputForm);
 
 describe('AiAdminSettings', () => {
-  beforeEach(() => {
-    createComponent();
+  beforeEach(async () => {
+    await createComponent();
   });
 
   describe('UI', () => {
@@ -72,6 +100,22 @@ describe('AiAdminSettings', () => {
         duo_availability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
         instance_level_ai_beta_features_enabled: false,
         disabled_direct_code_suggestions: false,
+      });
+    });
+
+    describe('when the AI gateway url input has changed', () => {
+      it('invokes the updateAiSettings mutation', async () => {
+        const newAiGatewayUrl = 'http://new-ai-gateway-url.com';
+
+        findAiGatewayUrlInputForm().vm.$emit('change', newAiGatewayUrl);
+
+        await findAiCommonSettings().vm.$emit('submit', {});
+
+        expect(updateAiSettingsSuccessHandler).toHaveBeenCalledWith({
+          input: {
+            aiGatewayUrl: 'http://new-ai-gateway-url.com',
+          },
+        });
       });
     });
 
@@ -123,8 +167,7 @@ describe('AiAdminSettings', () => {
       await waitForPromises();
       expect(createAlert).toHaveBeenCalledWith(
         expect.objectContaining({
-          message:
-            'An error occurred while retrieving your settings. Reload the page to try again.',
+          message: 'An error occurred while updating your settings. Reload the page to try again.',
           error,
         }),
       );
@@ -141,16 +184,37 @@ describe('AiAdminSettings', () => {
       createComponent({ props: { duoProVisible: false } });
       expect(findCodeSuggestionsConnectionForm().exists()).toBe(false);
     });
+  });
 
-    it('is not availabile it does not display the AI models form', () => {
-      createComponent({ props: { duoProVisible: false } });
-      expect(findAiModelsForm().exists()).toBe(false);
+  describe('canManageSelfHostedModels', () => {
+    describe('when canManageSelfHostedModels is true', () => {
+      it('renders AI models form', () => {
+        expect(findAiModelsForm().exists()).toBe(true);
+      });
+
+      it('renders AI gateway URL input form', () => {
+        expect(findAiGatewayUrlInputForm().exists()).toBe(true);
+      });
+    });
+
+    describe('when canManageSelfHostedModels is false', () => {
+      beforeEach(() => {
+        createComponent({ provide: { canManageSelfHostedModels: false } });
+      });
+
+      it('does not render self-hosted models form', () => {
+        expect(findAiModelsForm().exists()).toBe(false);
+      });
+
+      it('does not render AI gateway URL input form', () => {
+        expect(findAiGatewayUrlInputForm().exists()).toBe(false);
+      });
     });
   });
 
   describe('onConnectionFormChange', () => {
-    beforeEach(() => {
-      createComponent({ props: { duoProVisible: true } });
+    beforeEach(async () => {
+      await createComponent({ props: { duoProVisible: true } });
     });
 
     it('sets hasParentFormChanged to true when event emitted', async () => {
@@ -165,10 +229,24 @@ describe('AiAdminSettings', () => {
   });
 
   describe('onAiModelsFormChange', () => {
-    it('updates hasParentFormChanged when ai models form changes', async () => {
-      createComponent({ props: { duoProVisible: true } });
+    beforeEach(async () => {
+      await createComponent();
+    });
 
+    it('updates hasParentFormChanged when ai models form changes', async () => {
       await findAiModelsForm().vm.$emit('change', true);
+
+      expect(findAiCommonSettings().props('hasParentFormChanged')).toBe(true);
+    });
+  });
+
+  describe('onAiGatewayUrlChange', () => {
+    beforeEach(async () => {
+      await createComponent();
+    });
+
+    it('updates hasParentFormChanged when the AI gateway url value changes', async () => {
+      await findAiGatewayUrlInputForm().vm.$emit('change', true);
 
       expect(findAiCommonSettings().props('hasParentFormChanged')).toBe(true);
     });

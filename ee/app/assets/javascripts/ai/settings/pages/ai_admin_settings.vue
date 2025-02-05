@@ -7,21 +7,30 @@ import { __ } from '~/locale';
 import AiCommonSettings from '../components/ai_common_settings.vue';
 import CodeSuggestionsConnectionForm from '../components/code_suggestions_connection_form.vue';
 import AiModelsForm from '../components/ai_models_form.vue';
+import AiGatewayUrlInputForm from '../components/ai_gateway_url_input_form.vue';
+import updateAiSettingsMutation from '../../graphql/update_ai_settings.mutation.graphql';
 
 export default {
   name: 'AiAdminSettings',
   components: {
     AiCommonSettings,
+    AiGatewayUrlInputForm,
     AiModelsForm,
     CodeSuggestionsConnectionForm,
   },
   i18n: {
     successMessage: __('Application settings saved successfully.'),
     errorMessage: __(
-      'An error occurred while retrieving your settings. Reload the page to try again.',
+      'An error occurred while updating your settings. Reload the page to try again.',
     ),
   },
-  inject: ['disabledDirectConnectionMethod', 'betaSelfHostedModelsEnabled', 'toggleBetaModelsPath'],
+  inject: [
+    'disabledDirectConnectionMethod',
+    'betaSelfHostedModelsEnabled',
+    'toggleBetaModelsPath',
+    'canManageSelfHostedModels',
+    'aiGatewayUrl',
+  ],
   props: {
     redirectPath: {
       type: String,
@@ -39,23 +48,32 @@ export default {
       isLoading: false,
       disabledConnection: this.disabledDirectConnectionMethod,
       aiModelsEnabled: this.betaSelfHostedModelsEnabled,
+      aiGatewayUrlInput: this.aiGatewayUrl,
     };
   },
   computed: {
     hasFormChanged() {
       return (
         this.disabledConnection !== this.disabledDirectConnectionMethod ||
-        this.hasAiModelsFormChanged
+        this.hasAiModelsFormChanged ||
+        this.hasAiGatewayUrlChanged
       );
     },
     hasAiModelsFormChanged() {
       return this.aiModelsEnabled !== this.betaSelfHostedModelsEnabled;
+    },
+    hasAiGatewayUrlChanged() {
+      return this.aiGatewayUrlInput !== this.aiGatewayUrl;
     },
   },
   methods: {
     async updateSettings({ duoAvailability, experimentFeaturesEnabled }) {
       try {
         this.isLoading = true;
+
+        if (this.hasAiGatewayUrlChanged) {
+          await this.updateAiGatewayUrl();
+        }
 
         await updateApplicationSettings({
           duo_availability: duoAvailability,
@@ -89,11 +107,32 @@ export default {
           this.isLoading = false;
         });
     },
+    async updateAiGatewayUrl() {
+      const { data } = await this.$apollo.mutate({
+        mutation: updateAiSettingsMutation,
+        variables: {
+          input: {
+            aiGatewayUrl: this.aiGatewayUrlInput,
+          },
+        },
+      });
+
+      if (data) {
+        const { errors } = data.duoSettingsUpdate;
+
+        if (errors.length > 0) {
+          throw new Error(errors[0]);
+        }
+      }
+    },
     onConnectionFormChange(value) {
       this.disabledConnection = value;
     },
     onAiModelsFormChange(value) {
       this.aiModelsEnabled = value;
+    },
+    onAiGatewayUrlChange(value) {
+      this.aiGatewayUrlInput = value;
     },
     onError(error) {
       createAlert({
@@ -113,7 +152,8 @@ export default {
   >
     <template #ai-common-settings-bottom>
       <code-suggestions-connection-form v-if="duoProVisible" @change="onConnectionFormChange" />
-      <ai-models-form v-if="duoProVisible" @change="onAiModelsFormChange" />
+      <ai-models-form v-if="canManageSelfHostedModels" @change="onAiModelsFormChange" />
+      <ai-gateway-url-input-form v-if="canManageSelfHostedModels" @change="onAiGatewayUrlChange" />
     </template>
   </ai-common-settings>
 </template>
