@@ -38,6 +38,22 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrences, feature_category: :dep
     )
   end
 
+  let(:unknown_license) do
+    {
+      "name" => "#{unknown_licenses_count} #{unknown_licenses_name}",
+      "spdx_identifier" => unknown_licenses_spdx_identifier,
+      "url" => unknown_licenses_url
+    }
+  end
+
+  let(:unknown_licenses_spdx_identifier) { Gitlab::LicenseScanning::PackageLicenses::UNKNOWN_LICENSE[:spdx_identifier] }
+  let(:unknown_licenses_name) { Gitlab::LicenseScanning::PackageLicenses::UNKNOWN_LICENSE[:name] }
+  let(:unknown_licenses_url) { Gitlab::LicenseScanning::PackageLicenses::UNKNOWN_LICENSE[:url] }
+  let(:unknown_licenses_count) { 1 }
+  let(:unknown_ci_reports_sbom_license) do
+    build(:ci_reports_sbom_license, name: unknown_licenses_name, spdx_identifier: unknown_licenses_spdx_identifier)
+  end
+
   describe '#execute' do
     subject(:task) { described_class.execute(pipeline, occurrence_maps) }
 
@@ -210,19 +226,31 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrences, feature_category: :dep
     end
 
     context 'when there is no component version' do
+      let(:count) { 4 }
+      let(:unknown_licenses_arr) { [unknown_license] }
+      let(:unknown_licenses_count) { 1 }
       let(:occurrence_maps) do
-        create_list(:sbom_occurrence_map, 4, :for_occurrence_ingestion, component_version: nil, vulnerabilities: nil)
+        create_list(:sbom_occurrence_map, count, :for_occurrence_ingestion, component_version: nil,
+          vulnerabilities: nil)
       end
 
       it 'inserts records without the version' do
-        expect { task }.to change(Sbom::Occurrence, :count).by(4)
+        expect { task }.to change(Sbom::Occurrence, :count).by(count)
         expect(occurrence_maps).to all(have_attributes(occurrence_id: Integer))
       end
 
-      it 'does not include licenses' do
-        task
+      context 'when sbom_ingest_unknown_licenses_with_count is disabled' do
+        it 'does not include licenses' do
+          expect(Sbom::Occurrence.pluck(:licenses)).to all(be_empty)
+        end
+      end
 
-        expect(Sbom::Occurrence.pluck(:licenses)).to all(be_empty)
+      context 'when sbom_ingest_unknown_licenses_with_count is enabled' do
+        it 'associates the correct number of unknown licenses with each occurrence' do
+          task
+
+          expect(Sbom::Occurrence.pluck(:licenses)).to match_array([unknown_licenses_arr] * count)
+        end
       end
     end
 
@@ -289,8 +317,11 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrences, feature_category: :dep
           licenses: [build(:ci_reports_sbom_license, name: 'DOC License', spdx_identifier: 'DOC')])
       end
 
-      let_it_be(:component_with_license_nil_spdx) do
-        create(:ci_reports_sbom_component, licenses: [build(:ci_reports_sbom_license, spdx_identifier: nil)])
+      let_it_be(:component_with_license_blank_spdx) do
+        create(:ci_reports_sbom_component, licenses: [
+          build(:ci_reports_sbom_license, spdx_identifier: nil),
+          build(:ci_reports_sbom_license, spdx_identifier: "  ")
+        ])
       end
 
       let_it_be(:occurrence_map_without_license) do
@@ -301,8 +332,8 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrences, feature_category: :dep
         create(:sbom_occurrence_map, :for_occurrence_ingestion, report_component: component_with_license)
       end
 
-      let_it_be(:occurrence_map_with_license_nil_spdx) do
-        create(:sbom_occurrence_map, :for_occurrence_ingestion, report_component: component_with_license_nil_spdx)
+      let_it_be(:occurrence_map_with_license_blank_spdx) do
+        create(:sbom_occurrence_map, :for_occurrence_ingestion, report_component: component_with_license_blank_spdx)
       end
 
       before do
@@ -341,13 +372,102 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrences, feature_category: :dep
         end
       end
 
-      context 'when the SBOM provides licenses with missing spdx_identifier field' do
-        let_it_be(:occurrence_maps) { [occurrence_map_with_license_nil_spdx] }
+      context 'when the SBOM provides licenses with blank or missing spdx_identifier field' do
+        let_it_be(:occurrence_maps) { [occurrence_map_with_license_blank_spdx] }
 
         it 'does not set a license' do
           task
 
           expect(Sbom::Occurrence.last&.licenses).to be_empty
+        end
+      end
+
+      context 'when SBOM provides all unknown licenses for a component' do
+        let(:unknown_licenses_count) { 2 }
+
+        let(:report_licenses_unknown) { [unknown_license] }
+
+        let(:component_with_all_unknown_licenses) do
+          create(:ci_reports_sbom_component,
+            licenses: [unknown_ci_reports_sbom_license, unknown_ci_reports_sbom_license])
+        end
+
+        let(:occurrence_map_with_all_unknown_licenses) do
+          create(:sbom_occurrence_map, :for_occurrence_ingestion,
+            report_component: component_with_all_unknown_licenses)
+        end
+
+        let(:occurrence_maps) { [occurrence_map_with_all_unknown_licenses] }
+
+        context 'when sbom_ingest_unknown_licenses_with_count is enabled' do
+          it 'ingests occurrences with an unknown license with name 2 unknown licenses' do
+            expect { task }.to change(Sbom::Occurrence, :count).by(1)
+
+            occurrence = Sbom::Occurrence.last
+            expect(occurrence.licenses).to match_array(report_licenses_unknown)
+          end
+        end
+
+        context 'when sbom_ingest_unknown_licenses_with_count is disabled' do
+          before do
+            stub_feature_flags(sbom_ingest_unknown_licenses_with_count: false)
+          end
+
+          it 'does not ingest unknown licenses' do
+            expect { task }.to change(Sbom::Occurrence, :count).by(1)
+
+            occurrence = Sbom::Occurrence.last
+            expect(occurrence.licenses).to be_empty
+          end
+        end
+      end
+
+      context 'when SBOM provides mixed known and unknown licenses for a component' do
+        let(:licenses) do
+          [
+            {
+              "name" => 'Apache 2.0 License',
+              "spdx_identifier" => 'Apache-2.0',
+              "url" => 'https://spdx.org/licenses/Apache-2.0.html'
+            },
+            unknown_license
+          ]
+        end
+
+        let(:component_with_mixed_licenses) do
+          create(:ci_reports_sbom_component, licenses: [
+            build(:ci_reports_sbom_license, name: 'Apache 2.0 License', spdx_identifier: 'Apache-2.0',
+              url: 'https://spdx.org/licenses/Apache-2.0.html'),
+            unknown_ci_reports_sbom_license
+          ])
+        end
+
+        let(:occurrence_map_with_mixed_licenses) do
+          create(:sbom_occurrence_map, :for_occurrence_ingestion, report_component: component_with_mixed_licenses)
+        end
+
+        let(:occurrence_maps) { [occurrence_map_with_mixed_licenses] }
+
+        context 'when sbom_ingest_unknown_licenses_with_count is enabled' do
+          it 'ingests occurrences with mixed licenses, retaining all licenses' do
+            task
+
+            occurrence = Sbom::Occurrence.last
+            expect(occurrence.licenses).to match_array(licenses)
+          end
+        end
+
+        context 'when sbom_ingest_unknown_licenses_with_count is disabled' do
+          before do
+            stub_feature_flags(sbom_ingest_unknown_licenses_with_count: false)
+          end
+
+          it 'ingests occurrences with mixed licenses, retaining known licenses' do
+            task
+
+            occurrence = Sbom::Occurrence.last
+            expect(occurrence.licenses).to match_array([licenses.first])
+          end
         end
       end
     end
