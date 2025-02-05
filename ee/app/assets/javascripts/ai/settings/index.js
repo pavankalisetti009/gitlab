@@ -1,5 +1,13 @@
 import Vue from 'vue';
+import VueApollo from 'vue-apollo';
 import { parseBoolean, convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
+import createDefaultClient from '~/lib/graphql';
+
+Vue.use(VueApollo);
+
+const apolloProvider = new VueApollo({
+  defaultClient: createDefaultClient(),
+});
 
 export const initAiSettings = (id, component) => {
   const el = document.getElementById(id);
@@ -9,6 +17,8 @@ export const initAiSettings = (id, component) => {
   }
 
   const {
+    aiGatewayUrl,
+    canManageSelfHostedModels,
     cascadingSettingsData,
     duoAvailability,
     areDuoSettingsLocked,
@@ -39,7 +49,10 @@ export const initAiSettings = (id, component) => {
 
   return new Vue({
     el,
+    apolloProvider,
     provide: {
+      aiGatewayUrl,
+      canManageSelfHostedModels: parseBoolean(canManageSelfHostedModels),
       cascadingSettingsData: cascadingSettingsDataParsed,
       areDuoSettingsLocked: parseBoolean(areDuoSettingsLocked),
       duoAvailability,

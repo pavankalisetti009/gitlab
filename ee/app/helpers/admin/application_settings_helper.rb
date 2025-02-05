@@ -77,6 +77,9 @@ module Admin
       code_suggestions_purchased = CloudConnector::AvailableServices.find_by_name(:code_suggestions)&.purchased?
       disabled_direct_code_suggestions = ::Gitlab::CurrentSettings.disabled_direct_code_suggestions
       beta_self_hosted_models_enabled = ::Ai::TestingTermsAcceptance.has_accepted?
+      can_manage_self_hosted_models =
+        ::License.current&.ultimate? && ::GitlabSubscriptions::AddOnPurchase.for_duo_enterprise.active.exists?
+      ai_gateway_url = ::Ai::Setting.instance.ai_gateway_url
 
       {
         duo_availability: duo_availability.to_s,
@@ -86,7 +89,9 @@ module Admin
         duo_pro_visible: code_suggestions_purchased.to_s,
         disabled_direct_connection_method: disabled_direct_code_suggestions.to_s,
         beta_self_hosted_models_enabled: beta_self_hosted_models_enabled.to_s,
-        toggle_beta_models_path: toggle_beta_models_admin_ai_self_hosted_models_path
+        toggle_beta_models_path: toggle_beta_models_admin_ai_self_hosted_models_path,
+        can_manage_self_hosted_models: can_manage_self_hosted_models.to_s,
+        ai_gateway_url: ai_gateway_url
       }
     end
 

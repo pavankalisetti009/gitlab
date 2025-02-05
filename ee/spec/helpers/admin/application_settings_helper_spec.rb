@@ -65,15 +65,18 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
       using RSpec::Parameterized::TableSyntax
       let(:service) { double('CodeSuggestionsService') } # rubocop:disable RSpec/VerifiedDoubles -- Stubbed to test purchases call
       let(:enterprise_service) { double('EnterpriseService') } # rubocop:disable RSpec/VerifiedDoubles -- Stubbed to test purchases call
+      let(:ai_gateway_url) { "http://0.0.0.0:5052" }
 
       subject { helper.ai_settings_helper_data }
 
-      where(:terms_accepted, :purchased, :duo_ent, :duo_ent_purchased,
-        :expected_duo_pro_visible_value, :expected_experiments_visible_value) do
-        true | true | true | true | 'true' | 'true'
-        true | true | true | false | 'true' | 'false'
-        false | false | false | false | 'false' | 'false'
-        true | nil | nil | nil | '' | ''
+      where(
+        :terms_accepted, :purchased, :duo_ent, :duo_ent_purchased, :expected_duo_pro_visible_value,
+        :expected_experiments_visible_value, :can_manage_self_hosted_models
+      ) do
+        true  | true  | true  | true  | 'true'  | 'true'  | 'true'
+        true  | true  | true  | false | 'true'  | 'false' | 'true'
+        false | false | false | false | 'false' | 'false' | 'true'
+        true  | nil   | nil   | nil   | ''      | ''      | 'true'
       end
 
       with_them do
@@ -86,12 +89,18 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
             disabled_direct_connection_method: disabled_direct_code_suggestions.to_s,
             beta_self_hosted_models_enabled: terms_accepted.to_s,
             toggle_beta_models_path: toggle_beta_models_admin_ai_self_hosted_models_path,
-            duo_pro_visible: expected_duo_pro_visible_value
+            duo_pro_visible: expected_duo_pro_visible_value,
+            can_manage_self_hosted_models: can_manage_self_hosted_models.to_s,
+            ai_gateway_url: ai_gateway_url
           }
         end
 
         before do
           allow(::Ai::TestingTermsAcceptance).to receive(:has_accepted?).and_return(terms_accepted)
+          allow(License).to receive_message_chain(:current, :ultimate?).and_return(true)
+          allow(::GitlabSubscriptions::AddOnPurchase).to receive_message_chain(:for_duo_enterprise, :active,
+            :exists?).and_return(true)
+          allow(::Ai::Setting).to receive_message_chain(:instance, :ai_gateway_url).and_return(ai_gateway_url)
 
           if purchased.nil?
             allow(CloudConnector::AvailableServices)
