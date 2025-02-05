@@ -52,12 +52,16 @@ export const LICENCE_FILTERS = [
   {
     text: s__('ScanResultPolicy|License type'),
     value: TYPE,
-    tooltip: s__('ScanResultPolicy|Maximum of one license type criteria allowed'),
+    tooltip: s__(
+      'ScanResultPolicy|You can specify either a deny/allowlist or license types, not both.',
+    ),
   },
   {
     text: s__('ScanResultPolicy|Allowlist or Denylist'),
     value: ALLOW_DENY,
-    tooltip: s__('ScanResultPolicy|You can specify either a denylist or an allowlist, not both.'),
+    tooltip: s__(
+      'ScanResultPolicy|You can specify either a deny/allowlist or license types, not both.',
+    ),
   },
 ];
 

@@ -59,6 +59,7 @@ describe('DenyAllowListModal', () => {
       expect(findExceptions()).toHaveLength(1);
 
       expect(findModal().props('title')).toBe('Edit denylist');
+      expect(findModal().props('size')).toBe('lg');
       expect(findModal().props('actionPrimary').text).toBe('Save denylist');
     });
 

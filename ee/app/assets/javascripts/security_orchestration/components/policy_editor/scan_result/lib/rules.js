@@ -18,6 +18,7 @@ import {
   AGE_INTERVALS,
   VULNERABILITY_AGE_ALLOWED_KEYS,
   VULNERABILITY_ATTRIBUTES,
+  ALLOWED,
 } from '../rule/scan_filters/constants';
 
 const REPORT_TYPES_KEYS = Object.keys(REPORT_TYPES_DEFAULT);
@@ -52,11 +53,14 @@ export const securityScanBuildRule = () => ({
 });
 
 export const licenseScanBuildRule = () => {
+  const { excludeLicensePackages = false } = window.gon?.features || {};
+  const licenses = excludeLicensePackages ? { licenses: { [ALLOWED]: [] } } : { license_types: [] };
+
   return {
     id: uniqueId('rule_'),
     type: LICENSE_FINDING,
     match_on_inclusion_license: true,
-    license_types: [],
+    ...licenses,
     license_states: [],
     branch_type: ALL_PROTECTED_BRANCHES.value,
   };

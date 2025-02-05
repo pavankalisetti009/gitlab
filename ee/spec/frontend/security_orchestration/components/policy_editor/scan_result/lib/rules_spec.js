@@ -19,6 +19,7 @@ import {
   NEWLY_DETECTED,
   PREVIOUSLY_EXISTING,
   AGE_DAY,
+  ALLOWED,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/constants';
 import {
   ANY_OPERATOR,
@@ -277,5 +278,16 @@ describe('invalidVulnerabilityAttributes', () => {
         expect.objectContaining({ [MATCH_ON_INCLUSION_LICENSE]: true }),
       );
     });
+
+    it.each([false, true])(
+      'creates license rule with allow/deny list',
+      (excludeLicensePackages) => {
+        window.gon = { features: { excludeLicensePackages } };
+        const licenses = excludeLicensePackages
+          ? { licenses: { [ALLOWED]: [] } }
+          : { license_types: [] };
+        expect(licenseScanBuildRule()).toEqual(expect.objectContaining(licenses));
+      },
+    );
   });
 });

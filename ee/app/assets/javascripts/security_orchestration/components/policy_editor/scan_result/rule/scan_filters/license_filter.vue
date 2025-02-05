@@ -123,13 +123,11 @@ export default {
   <section-layout
     :class="{ 'gl-border gl-border-red-400': hasError }"
     class="gl-w-full gl-bg-white gl-pr-1 md:gl-items-center"
-    label-classes="!gl-text-base !gl-w-10 md:!gl-w-12 !gl-pl-0 !gl-font-bold"
+    :rule-label="$options.i18n.label"
+    label-classes="!gl-text-base !gl-w-10 md:!gl-w-12 !gl-pl-0 !gl-font-bold gl-mr-4"
     @remove="$emit('remove')"
   >
     <template #selector>
-      <label class="gl-mb-0 gl-mr-4 gl-font-normal" :title="$options.i18n.label">{{
-        $options.i18n.label
-      }}</label>
       <slot>
         <gl-collapsible-listbox
           v-model="matchType"

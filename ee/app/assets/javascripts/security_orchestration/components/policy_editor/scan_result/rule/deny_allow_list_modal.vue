@@ -197,6 +197,7 @@ export default {
     :action-primary="primaryAction"
     :title="modalTitle"
     scrollable
+    size="lg"
     content-class="security-policies-license-modal-min-height"
     modal-id="deny-allow-list-modal"
     @canceled="hideModalWindow"
