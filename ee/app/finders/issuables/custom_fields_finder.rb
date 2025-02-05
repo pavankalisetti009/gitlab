@@ -4,7 +4,20 @@ module Issuables
   class CustomFieldsFinder
     include Gitlab::SQL::Pattern
 
-    def initialize(current_user, group:, active: nil, search: nil, work_item_type_ids: nil)
+    def self.active_fields_for_work_item(work_item)
+      new(
+        nil,
+        group: work_item.namespace.root_ancestor,
+        active: true,
+        work_item_type_ids: [work_item.work_item_type_id],
+        skip_permissions_check: true
+      ).execute
+    end
+
+    def initialize(
+      current_user, group:, active: nil, search: nil, work_item_type_ids: nil,
+      skip_permissions_check: false
+    )
       raise ArgumentError, 'group argument is missing' if group.nil?
 
       @current_user = current_user
@@ -12,11 +25,15 @@ module Issuables
       @active = active
       @search = search
       @work_item_type_ids = work_item_type_ids
+      @skip_permissions_check = skip_permissions_check
     end
 
     def execute
       return Issuables::CustomField.none unless Feature.enabled?('custom_fields_feature', @group)
-      return Issuables::CustomField.none unless Ability.allowed?(@current_user, :read_custom_field, @group)
+      return Issuables::CustomField.none unless @group&.feature_available?(:custom_fields)
+
+      return Issuables::CustomField.none unless @skip_permissions_check ||
+        Ability.allowed?(@current_user, :read_custom_field, @group)
 
       items = Issuables::CustomField.of_namespace(@group)
       items = by_status(items)

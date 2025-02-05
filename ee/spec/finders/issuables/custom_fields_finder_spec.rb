@@ -20,6 +20,22 @@ RSpec.describe Issuables::CustomFieldsFinder, feature_category: :team_planning d
     stub_licensed_features(custom_fields: true)
   end
 
+  describe '.active_fields_for_work_item' do
+    it 'calls the finder with the correct arguments' do
+      work_item = create(:work_item, namespace: create(:group, :private, parent: group))
+
+      expect(described_class).to receive(:new).with(
+        nil,
+        group: group,
+        active: true,
+        work_item_type_ids: [work_item.work_item_type_id],
+        skip_permissions_check: true
+      ).and_call_original
+
+      described_class.active_fields_for_work_item(work_item)
+    end
+  end
+
   it 'returns custom fields of the group ordered by status and name' do
     expect(custom_fields).to eq([custom_field_2, custom_field_1, custom_field_archived])
   end
@@ -99,6 +115,25 @@ RSpec.describe Issuables::CustomFieldsFinder, feature_category: :team_planning d
 
     it 'returns an empty result' do
       expect(custom_fields).to be_empty
+    end
+  end
+
+  context 'when skip_permissions_check is true' do
+    let(:current_user) { nil }
+    let(:params) { { skip_permissions_check: true } }
+
+    it 'returns custom fields regardless of user access' do
+      expect(custom_fields).to eq([custom_field_2, custom_field_1, custom_field_archived])
+    end
+
+    context 'when feature is not available' do
+      before do
+        stub_licensed_features(custom_fields: false)
+      end
+
+      it 'returns an empty result' do
+        expect(custom_fields).to be_empty
+      end
     end
   end
 
