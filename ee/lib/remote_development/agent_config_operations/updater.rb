@@ -96,46 +96,25 @@ module RemoteDevelopment
       # @return [RemoteDevelopment::WorkspacesAgentConfig]
       # noinspection RubyResolve -- https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-32301
       def self.set_attributes_on_agent_config_model_instance(agent_config_model:, values:, agent_model:)
-        # Type check all the values via rightward assignment destructuring
-        values => {
-          allow_privilege_escalation: (TrueClass | FalseClass) => allow_privilege_escalation,
-          annotations: Hash => annotations,
-          default_resources_per_workspace_container: Hash => default_resources_per_workspace_container,
-          default_runtime_class: String => default_runtime_class,
-          dns_zone: String => dns_zone,
-          enabled: (TrueClass | FalseClass) => enabled,
-          gitlab_workspaces_proxy_namespace: String => gitlab_workspaces_proxy_namespace,
-          image_pull_secrets: Array => image_pull_secrets,
-          labels: Hash => labels,
-          max_active_hours_before_stop: Integer => max_active_hours_before_stop,
-          max_resources_per_workspace: Hash => max_resources_per_workspace,
-          max_stopped_hours_before_termination: Integer => max_stopped_hours_before_termination,
-          network_policy_egress: Array => network_policy_egress,
-          network_policy_enabled: (TrueClass | FalseClass) => network_policy_enabled,
-          use_kubernetes_user_namespaces: (TrueClass | FalseClass) => use_kubernetes_user_namespaces,
-          workspaces_per_user_quota: Integer => workspaces_per_user_quota,
-          workspaces_quota: Integer => workspaces_quota
-        }
-
         agent_config_model.assign_attributes({
-          allow_privilege_escalation: allow_privilege_escalation,
-          annotations: annotations,
-          default_resources_per_workspace_container: default_resources_per_workspace_container,
-          default_runtime_class: default_runtime_class,
-          dns_zone: dns_zone,
-          enabled: enabled,
-          gitlab_workspaces_proxy_namespace: gitlab_workspaces_proxy_namespace,
-          image_pull_secrets: image_pull_secrets,
-          labels: labels,
-          max_active_hours_before_stop: max_active_hours_before_stop,
-          max_resources_per_workspace: max_resources_per_workspace,
-          max_stopped_hours_before_termination: max_stopped_hours_before_termination,
-          network_policy_egress: network_policy_egress,
-          network_policy_enabled: network_policy_enabled,
+          allow_privilege_escalation: values[:allow_privilege_escalation],
+          annotations: values[:annotations],
+          default_resources_per_workspace_container: values[:default_resources_per_workspace_container],
+          default_runtime_class: values[:default_runtime_class],
+          dns_zone: values[:dns_zone],
+          enabled: values[:enabled],
+          gitlab_workspaces_proxy_namespace: values[:gitlab_workspaces_proxy_namespace],
+          image_pull_secrets: values[:image_pull_secrets],
+          labels: values[:labels],
+          max_active_hours_before_stop: values[:max_active_hours_before_stop],
+          max_resources_per_workspace: values[:max_resources_per_workspace],
+          max_stopped_hours_before_termination: values[:max_stopped_hours_before_termination],
+          network_policy_egress: values[:network_policy_egress],
+          network_policy_enabled: values[:network_policy_enabled],
           project_id: agent_model.project_id,
-          use_kubernetes_user_namespaces: use_kubernetes_user_namespaces,
-          workspaces_per_user_quota: workspaces_per_user_quota,
-          workspaces_quota: workspaces_quota
+          use_kubernetes_user_namespaces: values[:use_kubernetes_user_namespaces],
+          workspaces_per_user_quota: values[:workspaces_per_user_quota],
+          workspaces_quota: values[:workspaces_quota]
         })
       end
 
