@@ -54,7 +54,7 @@ RSpec.describe MergeRequests::DuoCodeReviewChatWorker, feature_category: :code_r
     let(:additional_context) do
       {
         id: note.latest_diff_file_path,
-        category: 'merge_request',
+        category: 'file',
         content: note.raw_truncated_diff_lines
       }
     end

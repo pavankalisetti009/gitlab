@@ -91,7 +91,7 @@ module MergeRequests
       if note.diff_note?
         {
           id: note.latest_diff_file_path,
-          category: 'merge_request',
+          category: 'file',
           content: note.raw_truncated_diff_lines
         }
       else
