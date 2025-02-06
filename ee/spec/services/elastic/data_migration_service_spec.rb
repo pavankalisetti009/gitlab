@@ -273,6 +273,7 @@ RSpec.describe Elastic::DataMigrationService, :elastic, :clean_gitlab_redis_shar
       let(:migration) { described_class.migrations.first }
 
       before do
+        stub_ee_application_setting(elasticsearch_indexing: true)
         # reset migration index to ensure cache is cleared
         described_class.mark_all_as_completed!
         migration.save!(completed: false)
@@ -285,6 +286,16 @@ RSpec.describe Elastic::DataMigrationService, :elastic, :clean_gitlab_redis_shar
 
       it 'returns true' do
         expect(described_class.pending_migrations?).to be(true)
+      end
+
+      context 'when elasticsearch_indexing is false' do
+        before do
+          stub_ee_application_setting(elasticsearch_indexing: false)
+        end
+
+        it 'returns false' do
+          expect(described_class.pending_migrations?).to be(false)
+        end
       end
     end
 

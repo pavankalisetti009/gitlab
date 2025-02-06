@@ -70,13 +70,23 @@ module Elastic
       end
 
       def pending_migrations?
+        unless ::Gitlab::CurrentSettings.elasticsearch_indexing?
+          logger.info(class: name, message: 'skip checking pending_migrations? elasticsearch_indexing is disabled.')
+
+          return false
+        end
+
         migrations(exclude_skipped: true).reverse.any? do |migration|
           !migration_has_finished?(migration.name_for_key)
         end
       end
 
       def pending_migrations
-        return [] unless ::Gitlab::CurrentSettings.elasticsearch_indexing?
+        unless ::Gitlab::CurrentSettings.elasticsearch_indexing?
+          logger.info(class: name, message: 'skip checking pending_migrations elasticsearch_indexing is disabled.')
+
+          return []
+        end
 
         migrations(exclude_skipped: true).select do |migration|
           !migration_has_finished?(migration.name_for_key)
@@ -124,6 +134,10 @@ module Elastic
 
       def helper
         @helper ||= ::Gitlab::Elastic::Helper.default
+      end
+
+      def logger
+        @logger ||= ::Gitlab::Elasticsearch::Logger.build
       end
     end
   end

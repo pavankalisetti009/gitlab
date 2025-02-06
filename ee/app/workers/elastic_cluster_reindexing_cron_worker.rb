@@ -15,6 +15,8 @@ class ElasticClusterReindexingCronWorker
   idempotent!
 
   def perform
+    return false unless ::Gitlab::CurrentSettings.elasticsearch_indexing?
+
     in_lock(self.class.name.underscore, ttl: 1.hour, retries: 10, sleep_sec: 1) do
       Search::Elastic::ReindexingTask.drop_old_indices!
 
