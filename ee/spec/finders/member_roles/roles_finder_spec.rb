@@ -141,7 +141,7 @@ RSpec.describe MemberRoles::RolesFinder, feature_category: :system_access do
       end
 
       it 'returns instance-level member roles' do
-        expect(find_member_roles).to eq([member_role_instance])
+        expect(find_member_roles).to match_array([member_role_admin, member_role_instance])
       end
     end
   end
@@ -276,7 +276,7 @@ RSpec.describe MemberRoles::RolesFinder, feature_category: :system_access do
         end
 
         it 'returns instance-level member roles' do
-          expect(find_member_roles).to eq([member_role_instance])
+          expect(find_member_roles).to match_array([member_role_admin, member_role_instance])
         end
       end
 
@@ -302,7 +302,7 @@ RSpec.describe MemberRoles::RolesFinder, feature_category: :system_access do
         end
 
         it 'returns instance-level member roles' do
-          expect(find_member_roles).to eq([member_role_instance])
+          expect(find_member_roles).to match_array([member_role_admin, member_role_instance])
         end
       end
 

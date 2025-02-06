@@ -21,7 +21,7 @@ module MemberRoles
     end
 
     def execute
-      return MemberRole.none unless License.feature_available?(:custom_roles)
+      return MemberRole.none unless current_user && License.feature_available?(:custom_roles)
 
       validate_arguments!
 
@@ -77,6 +77,7 @@ module MemberRoles
 
     def by_type(items)
       return for_admin(items) if params[:admin_roles]
+
       return items if gitlab_com_subscription?
 
       return MemberRole.none unless allowed_read_member_role?

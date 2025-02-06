@@ -18,11 +18,13 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
   has_many :user_member_roles, class_name: 'Users::UserMemberRole'
   belongs_to :namespace
 
-  validates :namespace, presence: true, if: :gitlab_com_subscription?
   validates :name, presence: true
   validates :name, uniqueness: { scope: :namespace_id }
   validates :base_access_level, presence: true, inclusion: { in: LEVELS }, unless: :admin_related_role?
   validates :permissions, json_schema: { filename: 'member_role_permissions' }
+  validates :namespace, presence: true, if: :gitlab_com_subscription?
+  validates :namespace, absence: true, if: :admin_related_role?
+
   validate :belongs_to_top_level_namespace
   validate :max_count_per_group_hierarchy, on: :create
   validate :validate_namespace_locked, on: :update
@@ -151,15 +153,10 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
   end
 
   def admin_related_permissions
-    self.class.all_customizable_admin_permission_keys & permissions.symbolize_keys.keys
+    self.class.all_customizable_admin_permission_keys & enabled_permissions
   end
 
   def admin_related_role?
-    if Feature.disabled?(:custom_ability_read_admin_dashboard, Feature.current_request) &&
-        Feature.disabled?(:custom_ability_read_admin_cicd, Feature.current_request)
-      return false
-    end
-
     admin_related_permissions.present?
   end
 

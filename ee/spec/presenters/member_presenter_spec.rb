@@ -13,6 +13,7 @@ RSpec.describe MemberPresenter, feature_category: :groups_and_projects do
   let_it_be(:member_root, reload: true) { create(:group_member, :reporter, group: root_group, user: user) }
   let_it_be(:member_subgroup, reload: true) { create(:group_member, :reporter, group: subgroup, user: user) }
   let_it_be(:permissions) { [{ name: 'View repository code', description: match(/.+/) }] }
+  let_it_be(:admin_permissions) { [{ name: 'Read-only access to admin dashboard', description: match(/.+/) }] }
 
   let(:current_user) { user }
 
@@ -193,6 +194,14 @@ RSpec.describe MemberPresenter, feature_category: :groups_and_projects do
         it 'returns instance-level roles' do
           expect(presenter.valid_member_roles).to match_array(
             [
+              {
+                base_access_level: nil,
+                member_role_id: member_role_admin.id,
+                name: member_role_admin.name,
+                description: nil,
+                occupies_seat: false,
+                permissions: admin_permissions
+              },
               {
                 base_access_level: Gitlab::Access::GUEST,
                 member_role_id: member_role_guest_instance.id,

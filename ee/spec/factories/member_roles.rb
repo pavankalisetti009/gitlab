@@ -38,7 +38,11 @@ FactoryBot.define do
       base_access_level { Gitlab::Access::GUEST }
 
       transient do
-        billable_role { Gitlab::CustomRoles::Definition.all.reject { |_k, v| v[:skip_seat_consumption] }.values.last }
+        billable_role do
+          Gitlab::CustomRoles::Definition.standard.reject do |_k, v|
+            v[:skip_seat_consumption]
+          end.values.last
+        end
       end
 
       after(:build) do |member_role, evaluator|
@@ -53,7 +57,7 @@ FactoryBot.define do
 
       transient do
         non_billable_role do
-          Gitlab::CustomRoles::Definition.all.select { |_k, v| v[:skip_seat_consumption] }.values.last
+          Gitlab::CustomRoles::Definition.standard.select { |_k, v| v[:skip_seat_consumption] }.values.last
         end
       end
 
@@ -77,6 +81,7 @@ FactoryBot.define do
 
     trait(:admin) do
       base_access_level { nil }
+      namespace_id { nil }
       read_code { false }
       read_admin_dashboard { true }
     end
