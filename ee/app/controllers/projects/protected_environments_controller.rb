@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 class Projects::ProtectedEnvironmentsController < Projects::ApplicationController
-  before_action :authorize_admin_project!
+  before_action :authorize_admin_protected_environments!
   before_action :protected_environment, except: [:create, :search]
 
   feature_category :continuous_delivery

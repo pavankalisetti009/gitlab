@@ -297,6 +297,10 @@ module EE
         enable :admin_cicd_variables
       end
 
+      rule { custom_role_enables_admin_protected_environments }.policy do
+        enable :admin_protected_environments
+      end
+
       rule { custom_role_enables_admin_push_rules }.policy do
         enable :admin_push_rules
       end

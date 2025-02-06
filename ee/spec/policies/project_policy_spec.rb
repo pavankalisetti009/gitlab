@@ -2966,6 +2966,13 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         it_behaves_like 'custom roles abilities'
       end
 
+      context 'for a custom role with the `admin_protected_environments` ability' do
+        let(:member_role_abilities) { { admin_protected_environments: true } }
+        let(:allowed_abilities) { [:admin_protected_environments] }
+
+        it_behaves_like 'custom roles abilities'
+      end
+
       context 'for a custom role with the `admin_push_rules` ability' do
         let(:member_role_abilities) { { admin_push_rules: true } }
         let(:allowed_abilities) { [:admin_push_rules] }

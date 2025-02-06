@@ -2,7 +2,7 @@
 
 module Groups
   class ProtectedEnvironmentsController < Groups::ApplicationController
-    before_action :authorize_admin_protected_environment!
+    before_action :authorize_admin_protected_environments!
     before_action :protected_environment, except: [:create]
 
     feature_category :continuous_delivery
@@ -62,8 +62,8 @@ module Groups
       %i[id _destroy group_id]
     end
 
-    def authorize_admin_protected_environment!
-      not_found unless can?(current_user, :admin_protected_environment, group)
+    def authorize_admin_protected_environments!
+      not_found unless can?(current_user, :admin_protected_environments, group)
     end
 
     def serialized_protected_environment

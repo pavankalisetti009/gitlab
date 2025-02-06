@@ -348,7 +348,7 @@ module EE
       end
 
       rule { owner }.policy do
-        enable :admin_protected_environment
+        enable :admin_protected_environments
         enable :admin_licensed_seat
       end
 
@@ -628,6 +628,10 @@ module EE
 
       rule { custom_role_enables_admin_cicd_variables }.policy do
         enable :admin_cicd_variables
+      end
+
+      rule { custom_role_enables_admin_protected_environments }.policy do
+        enable :admin_protected_environments
       end
 
       rule { custom_role_enables_admin_compliance_framework }.policy do

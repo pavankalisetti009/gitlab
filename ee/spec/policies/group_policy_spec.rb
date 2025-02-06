@@ -3888,6 +3888,13 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       it_behaves_like 'custom roles abilities'
     end
 
+    context 'for a custom role with the `admin_protected_environments` ability' do
+      let(:member_role_abilities) { { admin_protected_environments: true } }
+      let(:allowed_abilities) { [:admin_protected_environments] }
+
+      it_behaves_like 'custom roles abilities'
+    end
+
     context 'for a member role with admin_compliance_framework true' do
       let(:member_role_abilities) { { read_compliance_dashboard: true, admin_compliance_framework: true } }
 
