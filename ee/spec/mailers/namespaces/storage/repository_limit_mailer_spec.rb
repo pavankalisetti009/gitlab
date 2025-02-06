@@ -36,8 +36,8 @@ RSpec.describe Namespaces::Storage::RepositoryLimitMailer, feature_category: :co
       expect(mail).to have_text("We've noticed an unusually high storage usage on #{project.name}")
 
       expect(mail).to have_text(
-        "To manage your usage and prevent your project from being placed in a read-only state, " \
-          "contact support immediately."
+        "To prevent your project from being placed in a read-only state, manage your storage use " \
+          "or contact support immediately."
       )
     end
   end

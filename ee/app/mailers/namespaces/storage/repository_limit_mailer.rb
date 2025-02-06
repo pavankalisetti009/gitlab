@@ -29,6 +29,7 @@ module Namespaces
 
       def notify(subject, project_name, recipients)
         @support_url = 'https://support.gitlab.com'
+        @manage_storage_url = help_page_url('user/storage_usage_quotas.md', anchor: 'manage-storage-usage')
         @project_name = project_name
 
         mail_with_locale(
