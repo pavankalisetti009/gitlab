@@ -3,7 +3,7 @@ stage: Create
 group: Remote Development
 info: To determine the technical writer assigned to the Stage/Group associated with this page, see https://handbook.gitlab.com/handbook/product/ux/technical-writing/#assignments
 description: "Create a custom workspace image to support any workspace you create in GitLab."
-title: Tutorial: Create a custom workspace image that supports arbitrary user IDs
+title: 'Tutorial: Create a custom workspace image that supports arbitrary user IDs'
 ---
 
 In this tutorial, you'll learn how to create a custom workspace image that supports arbitrary user IDs.
