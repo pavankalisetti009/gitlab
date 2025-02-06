@@ -14,7 +14,7 @@ GitLab provides multiple methods to protect individual branches. These methods
 ensure your branches receive oversight and quality checks from their creation to their deletion:
 
 - Apply enhanced security and protection to your project's [default branch](default.md).
-- Configure [protected branches](../../repository/branches/protected.md) to:
+- Configure [protected branches](protected.md) to:
   - Limit who can push and merge to a branch.
   - Manage if users can force push to the branch.
   - Manage if changes to files listed in the `CODEOWNERS` file can be pushed directly to the branch.
@@ -211,7 +211,7 @@ NOTE:
 In GitLab Premium and Ultimate, you can also add groups or individual users
 to **Allowed to merge** and **Allowed to push and merge**.
 
-For additional information about branch protection controls, see [Protected branches](../../repository/branches/protected.md).
+For additional information about branch protection controls, see [Protected branches](protected.md).
 
 ## Delete a branch rule
 

@@ -75,7 +75,7 @@ or the command line. GitLab Premium and Ultimate tiers can also automate updates
 
 Prerequisites:
 
-- You must create your fork from an [unprotected branch](../repository/branches/protected.md) in upstream repository.
+- You must create your fork from an [unprotected branch](branches/protected.md) in upstream repository.
 
 To update your fork from the GitLab UI:
 

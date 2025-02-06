@@ -23,7 +23,7 @@ To use one or more custom domain names:
 - Add [SSL/TLS certification](#adding-an-ssltls-certificate-to-pages).
 
 WARNING:
-You cannot verify the [most popular public email domains](../../../../user/group/access_and_permissions.md#restrict-group-access-by-domain).
+You cannot verify the [most popular public email domains](../../../group/access_and_permissions.md#restrict-group-access-by-domain).
 
 ## Set up a custom domain
 

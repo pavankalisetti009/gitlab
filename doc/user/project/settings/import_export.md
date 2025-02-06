@@ -379,7 +379,7 @@ Group items that are exported include:
 - Epics
   - Epic resource state events. [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/291983) in GitLab 15.4.
 - Events
-- [Wikis](../../project/wiki/group.md)
+- [Wikis](../wiki/group.md)
 - Iterations cadences. [Introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/95372) in GitLab 15.4.
 
 ### Group items that are not exported

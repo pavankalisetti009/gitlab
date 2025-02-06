@@ -83,13 +83,13 @@ work as long as you don't redirect HTTP to HTTPS.
 ## GitLab Pages in projects and groups
 
 You must host your GitLab Pages website in a project. This project can be
-[private, internal, or public](../../../user/public_access.md) and belong
+[private, internal, or public](../../public_access.md) and belong
 to a [group](../../group/index.md) or [subgroup](../../group/subgroups/index.md).
 
-For [group websites](../../project/pages/getting_started_part_one.md#user-and-group-website-examples),
+For [group websites](../pages/getting_started_part_one.md#user-and-group-website-examples),
 the group must be at the top level and not a subgroup.
 
-For [project websites](../../project/pages/getting_started_part_one.md#project-website-examples),
+For [project websites](../pages/getting_started_part_one.md#project-website-examples),
 you can create your project first and access it under `http(s)://namespace.example.io/project-path`.
 
 ## Specific configuration options for Pages
