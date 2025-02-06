@@ -21,7 +21,11 @@ import {
   WORK_ITEM_TYPE_VALUE_KEY_RESULT,
 } from '~/work_items/constants';
 
-import { workItemChangeTypeWidgets, promoteToEpicMutationResponse } from '../mock_data';
+import {
+  workItemChangeTypeWidgets,
+  promoteToEpicMutationResponse,
+  namespaceWorkItemsWithoutEpicSupport,
+} from '../mock_data';
 
 describe('WorkItemChangeTypeModal component', () => {
   Vue.use(VueApollo);
@@ -43,6 +47,9 @@ describe('WorkItemChangeTypeModal component', () => {
   const namespaceWorkItemTypesWithOKRsQuerySuccessHandler = jest
     .fn()
     .mockResolvedValue(namespaceWorkItemTypesWithOKRsQueryResponse);
+  const namespaceWorkItemTypesWithoutEpicQuerySuccessHandler = jest
+    .fn()
+    .mockResolvedValue(namespaceWorkItemsWithoutEpicSupport);
   const noDesignQueryHandler = jest.fn().mockResolvedValue({
     data: {
       workItem: {
@@ -103,18 +110,6 @@ describe('WorkItemChangeTypeModal component', () => {
         workItemType,
         workItemIid: '1',
         getEpicWidgetDefinitions: typesQuerySuccessHandler,
-        allowedWorkItemTypesEE: [
-          {
-            text: 'Epic (Promote to group)',
-            value: WORK_ITEM_TYPE_ENUM_EPIC,
-          },
-        ],
-      },
-      provide: {
-        hasOkrsFeature: true,
-        glFeatures: {
-          okrsMvc: true,
-        },
       },
       stubs: {
         GlModal: stubComponent(GlModal, {
@@ -130,13 +125,24 @@ describe('WorkItemChangeTypeModal component', () => {
   const findWarningAlert = () => wrapper.findByTestId('change-type-warning-message');
   const findEpicTypeOption = () => findGlFormSelect().findAll('option').at(2);
 
-  it('renders epic type as select option when work item type is an issue', async () => {
+  it('renders epic type as an option when work item type is an issue', async () => {
     createComponent({ workItemType: WORK_ITEM_TYPE_VALUE_ISSUE });
 
     await waitForPromises();
 
     expect(findGlFormSelect().findAll('option')).toHaveLength(3);
     expect(findEpicTypeOption().text()).toBe('Epic (Promote to group)');
+  });
+
+  it('does not render epic type as an option when it is not supported', async () => {
+    createComponent({
+      workItemType: WORK_ITEM_TYPE_VALUE_ISSUE,
+      typesQuerySuccessHandler: namespaceWorkItemTypesWithoutEpicQuerySuccessHandler,
+    });
+
+    await waitForPromises();
+
+    expect(findGlFormSelect().findAll('option')).toHaveLength(2);
   });
 
   it('renders objective and key result types as select options', async () => {

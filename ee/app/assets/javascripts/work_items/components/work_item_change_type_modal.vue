@@ -4,6 +4,7 @@ import { __, s__, sprintf } from '~/locale';
 import { visitUrl } from '~/lib/utils/url_utility';
 import WorkItemChangeTypeModal from '~/work_items/components/work_item_change_type_modal.vue';
 import promoteToEpicMutation from '~/issues/show/queries/promote_to_epic.mutation.graphql';
+import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
 import {
   WORK_ITEM_TYPE_VALUE_EPIC,
   WIDGET_TYPE_WEIGHT,
@@ -61,9 +62,41 @@ export default {
       default: '',
     },
   },
+  data() {
+    return {
+      workItemTypes: [],
+    };
+  },
+  apollo: {
+    workItemTypes: {
+      query: namespaceWorkItemTypesQuery,
+      variables() {
+        return {
+          fullPath: this.fullPath,
+        };
+      },
+      update(data) {
+        return data.workspace?.workItemTypes?.nodes || [];
+      },
+      error(e) {
+        this.throwError(e);
+      },
+    },
+  },
   computed: {
+    supportedConversionTypes() {
+      return (
+        this.workItemTypes?.find((type) => type.name === this.workItemType)
+          ?.supportedConversionTypes || []
+      );
+    },
     allowedWorkItems() {
-      if (this.workItemType === WORK_ITEM_TYPE_VALUE_ISSUE) {
+      const isEpicSupportedType =
+        this.supportedConversionTypes.findIndex(
+          ({ name }) => name === WORK_ITEM_TYPE_VALUE_EPIC,
+        ) !== -1;
+
+      if (this.workItemType === WORK_ITEM_TYPE_VALUE_ISSUE && isEpicSupportedType) {
         return [
           {
             text: __('Epic (Promote to group)'),

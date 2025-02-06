@@ -153,9 +153,17 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
   end
 
   describe '#supported_conversion_types' do
-    let_it_be(:resource_parent) { create(:project) }
+    let_it_be(:root_group) { create(:group) }
+    let_it_be(:resource_parent) { create(:project, group: root_group) }
     let_it_be(:issue_type) { create(:work_item_type, :issue) }
     let(:work_item_type) { issue_type }
+    let_it_be(:developer_user) { create(:user) }
+    let_it_be(:guest_user) { create(:user) }
+
+    before_all do
+      resource_parent.add_guest(guest_user)
+      resource_parent.add_developer(developer_user)
+    end
 
     shared_examples 'licensed type availability' do |type, licensed_feature|
       let_it_be(:wi_type) { create(:work_item_type, type.to_sym) }
@@ -163,10 +171,12 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
       context "when #{licensed_feature} is available" do
         before do
           stub_licensed_features(licensed_feature => true)
+          allow(Ability).to receive(:allowed?).with(developer_user, :create_epic,
+            resource_parent.group).and_return(true)
         end
 
         it "returns #{type} type in the supported types" do
-          expect(work_item_type.supported_conversion_types(resource_parent)).to include(wi_type)
+          expect(work_item_type.supported_conversion_types(resource_parent, developer_user)).to include(wi_type)
         end
       end
 
@@ -176,14 +186,14 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
         end
 
         it "does not return #{type} type in the supported types" do
-          expect(work_item_type.supported_conversion_types(resource_parent)).not_to include(wi_type)
+          expect(work_item_type.supported_conversion_types(resource_parent, developer_user)).not_to include(wi_type)
         end
       end
     end
 
     shared_examples 'okrs types not included' do
       it 'does not return Objective and Key Result types in the supported types' do
-        expect(work_item_type.supported_conversion_types(resource_parent))
+        expect(work_item_type.supported_conversion_types(resource_parent, developer_user))
           .not_to include(objective, key_result)
       end
     end
@@ -218,7 +228,22 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
       end
 
       it "does not return epic type in the supported types" do
-        expect(work_item_type.supported_conversion_types(resource_parent)).not_to include(epic)
+        expect(work_item_type.supported_conversion_types(resource_parent, developer_user)).not_to include(epic)
+      end
+    end
+
+    context 'when user does not have permission' do
+      let_it_be(:epic) { create(:work_item_type, :epic) }
+
+      before do
+        stub_feature_flags(work_item_epics: true)
+        stub_licensed_features(epics: true)
+        allow(Ability).to receive(:allowed?).with(guest_user, :create_epic,
+          resource_parent.group).and_return(false)
+      end
+
+      it "does not return epic type in the supported types" do
+        expect(work_item_type.supported_conversion_types(resource_parent, guest_user)).not_to include(epic)
       end
     end
   end

@@ -1596,7 +1596,7 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
           post_graphql(query, current_user: current_user)
 
           expect(work_item_data['workItemType']).to match(
-            expected_work_item_type_response(work_item.resource_parent, work_item.work_item_type).first
+            expected_work_item_type_response(work_item.resource_parent, current_user, work_item.work_item_type).first
           )
         end
       end
@@ -1608,7 +1608,7 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
           post_graphql(query, current_user: current_user)
 
           expect(work_item_data['workItemType']).to match(
-            expected_work_item_type_response(work_item.resource_parent, work_item.work_item_type).first
+            expected_work_item_type_response(work_item.resource_parent, current_user, work_item.work_item_type).first
           )
         end
       end
