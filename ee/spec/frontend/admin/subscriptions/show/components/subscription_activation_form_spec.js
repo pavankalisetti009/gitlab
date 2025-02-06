@@ -13,7 +13,6 @@ import {
 } from 'ee/admin/subscriptions/show/constants';
 import activateSubscriptionMutation from 'ee/admin/subscriptions/show/graphql/mutations/activate_subscription.mutation.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
-import { stubComponent } from 'helpers/stub_component';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { preventDefault, stopPropagation } from 'ee_jest/admin/test_helpers';
@@ -42,10 +41,6 @@ describe('SubscriptionActivationForm', () => {
   const findActivateSubscriptionForm = () => wrapper.findComponent(GlForm);
   const findTermLink = () => findAgreementCheckboxFormGroup().findComponent(PromoPageLink);
 
-  const GlFormInputStub = stubComponent(GlFormInput, {
-    template: `<input />`,
-  });
-
   const createFakeEvent = () => ({ preventDefault, stopPropagation });
   const createComponentWithApollo = ({
     props = {},
@@ -59,7 +54,7 @@ describe('SubscriptionActivationForm', () => {
           ...props,
         },
         stubs: {
-          GlFormInput: GlFormInputStub,
+          GlFormInput,
           GlSprintf,
         },
       }),

@@ -15,6 +15,7 @@ exports[`AddEditScheduleForm renders form layout 1`] = `
     <gl-form-input-stub
       data-testid="schedule-name-field"
       id="reference-0"
+      type="text"
       value="Test schedule from query"
     />
   </gl-form-group-stub>
@@ -27,6 +28,7 @@ exports[`AddEditScheduleForm renders form layout 1`] = `
   >
     <gl-form-input-stub
       id="reference-1"
+      type="text"
       value="Description 1 lives here"
     />
   </gl-form-group-stub>
