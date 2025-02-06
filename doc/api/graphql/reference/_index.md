@@ -36214,7 +36214,6 @@ JSON structure of each line in a matched chunk.
 | ---- | ---- | ----------- |
 | <a id="searchbloblinehighlights"></a>`highlights` **{warning-solid}** | [`[[Int!]!]`](#int) | **Introduced** in GitLab 17.8. **Status**: Experiment. Column numbers of the first and last highlighted characters on a line. |
 | <a id="searchbloblinelinenumber"></a>`lineNumber` **{warning-solid}** | [`Int`](#int) | **Introduced** in GitLab 17.2. **Status**: Experiment. Line number of the blob. |
-| <a id="searchbloblinerichtext"></a>`richText` **{warning-solid}** | [`String`](#string) | **Introduced** in GitLab 17.2. **Status**: Experiment. Rich text of the blob. |
 | <a id="searchbloblinetext"></a>`text` **{warning-solid}** | [`String`](#string) | **Introduced** in GitLab 17.2. **Status**: Experiment. Text content of the blob. |
 
 ### `SecurityPolicyValidationError`

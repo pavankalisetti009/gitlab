@@ -11,8 +11,7 @@
             {
               "highlights": null,
               "line_number": 37,
-              "text": "      window.anotherDiv = document.createElement('div');",
-              "rich_text": "<span id=\"LC1\" class=\"line\" lang=\"javascript\">      <span class=\"nb\">window</span><span class=\"p\">.</span><span class=\"nx\">anotherDiv</span> <span class=\"o\">=</span> <span class=\"nb\">document</span><span class=\"p\">.</span><span class=\"nf\">createElement</span><span class=\"p\">(</span><span class=\"dl\">'</span><span class=\"s1\">div</span><span class=\"dl\">'</span><span class=\"p\">);</span></span>"
+              "text": "      window.anotherDiv = document.createElement('div');"
             },
             {
               "highlights": [
@@ -22,8 +21,7 @@
                 ]
               ],
               "line_number": 38,
-              "text": "      window.innerDiv = document.createElement('div');",
-              "rich_text": "<span id=\"LC1\" class=\"line\" lang=\"javascript\">      <span class=\"nb\">window</span><span class=\"p\">.</span><span class=\"nx\"><b>inner</b>Div</span> <span class=\"o\">=</span> <span class=\"nb\">document</span><span class=\"p\">.</span><span class=\"nf\">createElement</span><span class=\"p\">(</span><span class=\"dl\">'</span><span class=\"s1\">div</span><span class=\"dl\">'</span><span class=\"p\">);</span></span>"
+              "text": "      window.innerDiv = document.createElement('div');"
             },
             {
               "highlights": [
@@ -33,14 +31,12 @@
                 ]
               ],
               "line_number": 39,
-              "text": "      window.outerDiv.appendChild(window.innerDiv);",
-              "rich_text": "<span id=\"LC1\" class=\"line\" lang=\"javascript\">      <span class=\"nb\">window</span><span class=\"p\">.</span><span class=\"nx\">outerDiv</span><span class=\"p\">.</span><span class=\"nf\">appendChild</span><span class=\"p\">(</span><span class=\"nb\">window</span><span class=\"p\">.</span><span class=\"nx\"><b>inner</b>Div</span><span class=\"p\">);</span></span>"
+              "text": "      window.outerDiv.appendChild(window.innerDiv);"
             },
             {
               "highlights": null,
               "line_number": 40,
-              "text": "      document.body.appendChild(window.outerDiv);",
-              "rich_text": "<span id=\"LC1\" class=\"line\" lang=\"javascript\">      <span class=\"nb\">document</span><span class=\"p\">.</span><span class=\"nx\">body</span><span class=\"p\">.</span><span class=\"nf\">appendChild</span><span class=\"p\">(</span><span class=\"nb\">window</span><span class=\"p\">.</span><span class=\"nx\">outerDiv</span><span class=\"p\">);</span></span>"
+              "text": "      document.body.appendChild(window.outerDiv);"
             }
           ]
         },
@@ -50,8 +46,7 @@
             {
               "highlights": null,
               "line_number": 46,
-              "text": "      window.outerDiv = null;",
-              "rich_text": "<span id=\"LC1\" class=\"line\" lang=\"javascript\">      <span class=\"nb\">window</span><span class=\"p\">.</span><span class=\"nx\">outerDiv</span> <span class=\"o\">=</span> <span class=\"kc\">null</span><span class=\"p\">;</span></span>"
+              "text": "      window.outerDiv = null;"
             },
             {
               "highlights": [
@@ -61,14 +56,12 @@
                 ]
               ],
               "line_number": 47,
-              "text": "      window.innerDiv = null;",
-              "rich_text": "<span id=\"LC1\" class=\"line\" lang=\"javascript\">      <span class=\"nb\">window</span><span class=\"p\">.</span><span class=\"nx\"><b>inner</b>Div</span> <span class=\"o\">=</span> <span class=\"kc\">null</span><span class=\"p\">;</span></span>"
+              "text": "      window.innerDiv = null;"
             },
             {
               "highlights": null,
               "line_number": 48,
-              "text": "      Component.teardownAll();",
-              "rich_text": "<span id=\"LC1\" class=\"line\" lang=\"javascript\">      <span class=\"nx\">Component</span><span class=\"p\">.</span><span class=\"nf\">teardownAll</span><span class=\"p\">();</span></span>"
+              "text": "      Component.teardownAll();"
             }
           ]
         },
@@ -78,8 +71,7 @@
             {
               "highlights": null,
               "line_number": 51,
-              "text": "    it('bubbles native events between components', function () {",
-              "rich_text": "<span id=\"LC1\" class=\"line\" lang=\"javascript\">    <span class=\"nf\">it</span><span class=\"p\">(</span><span class=\"dl\">'</span><span class=\"s1\">bubbles native events between components</span><span class=\"dl\">'</span><span class=\"p\">,</span> <span class=\"nf\">function </span><span class=\"p\">()</span> <span class=\"p\">{</span></span>"
+              "text": "    it('bubbles native events between components', function () {"
             },
             {
               "highlights": [
@@ -89,14 +81,12 @@
                 ]
               ],
               "line_number": 52,
-              "text": "      var instance1 = (new Component).initialize(window.innerDiv);",
-              "rich_text": "<span id=\"LC1\" class=\"line\" lang=\"javascript\">      <span class=\"kd\">var</span> <span class=\"nx\">instance1</span> <span class=\"o\">=</span> <span class=\"p\">(</span><span class=\"k\">new</span> <span class=\"nx\">Component</span><span class=\"p\">).</span><span class=\"nf\">initialize</span><span class=\"p\">(</span><span class=\"nb\">window</span><span class=\"p\">.</span><span class=\"nx\"><b>inner</b>Div</span><span class=\"p\">);</span></span>"
+              "text": "      var instance1 = (new Component).initialize(window.innerDiv);"
             },
             {
               "highlights": null,
               "line_number": 53,
-              "text": "      var instance2 = (new Component).initialize(window.outerDiv);",
-              "rich_text": "<span id=\"LC1\" class=\"line\" lang=\"javascript\">      <span class=\"kd\">var</span> <span class=\"nx\">instance2</span> <span class=\"o\">=</span> <span class=\"p\">(</span><span class=\"k\">new</span> <span class=\"nx\">Component</span><span class=\"p\">).</span><span class=\"nf\">initialize</span><span class=\"p\">(</span><span class=\"nb\">window</span><span class=\"p\">.</span><span class=\"nx\">outerDiv</span><span class=\"p\">);</span></span>"
+              "text": "      var instance2 = (new Component).initialize(window.outerDiv);"
             }
           ]
         }
@@ -115,8 +105,7 @@
             {
               "highlights": null,
               "line_number": 49,
-              "text": "      window.outerDiv = document.createElement('div');",
-              "rich_text": "<span id=\"LC1\" class=\"line\" lang=\"javascript\">      <span class=\"nb\">window</span><span class=\"p\">.</span><span class=\"nx\">outerDiv</span> <span class=\"o\">=</span> <span class=\"nb\">document</span><span class=\"p\">.</span><span class=\"nf\">createElement</span><span class=\"p\">(</span><span class=\"dl\">'</span><span class=\"s1\">div</span><span class=\"dl\">'</span><span class=\"p\">);</span></span>"
+              "text": "      window.outerDiv = document.createElement('div');"
             },
             {
               "highlights": [
@@ -126,8 +115,7 @@
                 ]
               ],
               "line_number": 50,
-              "text": "      window.innerDiv = document.createElement('div');",
-              "rich_text": "<span id=\"LC1\" class=\"line\" lang=\"javascript\">      <span class=\"nb\">window</span><span class=\"p\">.</span><span class=\"nx\"><b>inner</b>Div</span> <span class=\"o\">=</span> <span class=\"nb\">document</span><span class=\"p\">.</span><span class=\"nf\">createElement</span><span class=\"p\">(</span><span class=\"dl\">'</span><span class=\"s1\">div</span><span class=\"dl\">'</span><span class=\"p\">);</span></span>"
+              "text": "      window.innerDiv = document.createElement('div');"
             },
             {
               "highlights": [
@@ -137,8 +125,7 @@
                 ]
               ],
               "line_number": 51,
-              "text": "      window.outerDiv.className = window.innerDiv.className = \"test-node\";",
-              "rich_text": "<span id=\"LC1\" class=\"line\" lang=\"javascript\">      <span class=\"nb\">window</span><span class=\"p\">.</span><span class=\"nx\">outerDiv</span><span class=\"p\">.</span><span class=\"nx\">className</span> <span class=\"o\">=</span> <span class=\"nb\">window</span><span class=\"p\">.</span><span class=\"nx\"><b>inner</b>Div</span><span class=\"p\">.</span><span class=\"nx\">className</span> <span class=\"o\">=</span> <span class=\"dl\">\"</span><span class=\"s2\">test-node</span><span class=\"dl\">\"</span><span class=\"p\">;</span></span>"
+              "text": "      window.outerDiv.className = window.innerDiv.className = \"test-node\";"
             },
             {
               "highlights": [
@@ -148,14 +135,12 @@
                 ]
               ],
               "line_number": 52,
-              "text": "      window.outerDiv.appendChild(window.innerDiv);",
-              "rich_text": "<span id=\"LC1\" class=\"line\" lang=\"javascript\">      <span class=\"nb\">window</span><span class=\"p\">.</span><span class=\"nx\">outerDiv</span><span class=\"p\">.</span><span class=\"nf\">appendChild</span><span class=\"p\">(</span><span class=\"nb\">window</span><span class=\"p\">.</span><span class=\"nx\"><b>inner</b>Div</span><span class=\"p\">);</span></span>"
+              "text": "      window.outerDiv.appendChild(window.innerDiv);"
             },
             {
               "highlights": null,
               "line_number": 53,
-              "text": "      document.body.appendChild(window.outerDiv);",
-              "rich_text": "<span id=\"LC1\" class=\"line\" lang=\"javascript\">      <span class=\"nb\">document</span><span class=\"p\">.</span><span class=\"nx\">body</span><span class=\"p\">.</span><span class=\"nf\">appendChild</span><span class=\"p\">(</span><span class=\"nb\">window</span><span class=\"p\">.</span><span class=\"nx\">outerDiv</span><span class=\"p\">);</span></span>"
+              "text": "      document.body.appendChild(window.outerDiv);"
             }
           ]
         },
@@ -165,8 +150,7 @@
             {
               "highlights": null,
               "line_number": 57,
-              "text": "      window.outerDiv = null;",
-              "rich_text": "<span id=\"LC1\" class=\"line\" lang=\"javascript\">      <span class=\"nb\">window</span><span class=\"p\">.</span><span class=\"nx\">outerDiv</span> <span class=\"o\">=</span> <span class=\"kc\">null</span><span class=\"p\">;</span></span>"
+              "text": "      window.outerDiv = null;"
             },
             {
               "highlights": [
@@ -176,14 +160,12 @@
                 ]
               ],
               "line_number": 58,
-              "text": "      window.innerDiv = null;",
-              "rich_text": "<span id=\"LC1\" class=\"line\" lang=\"javascript\">      <span class=\"nb\">window</span><span class=\"p\">.</span><span class=\"nx\"><b>inner</b>Div</span> <span class=\"o\">=</span> <span class=\"kc\">null</span><span class=\"p\">;</span></span>"
+              "text": "      window.innerDiv = null;"
             },
             {
               "highlights": null,
               "line_number": 59,
-              "text": "      Component.teardownAll();",
-              "rich_text": "<span id=\"LC1\" class=\"line\" lang=\"javascript\">      <span class=\"nx\">Component</span><span class=\"p\">.</span><span class=\"nf\">teardownAll</span><span class=\"p\">();</span></span>"
+              "text": "      Component.teardownAll();"
             }
           ]
         },
@@ -193,8 +175,7 @@
             {
               "highlights": null,
               "line_number": 93,
-              "text": "      expect(registry.findInstanceInfoByNode(window.outerDiv)).toBeTruthy();",
-              "rich_text": "<span id=\"LC1\" class=\"line\" lang=\"javascript\">      <span class=\"nf\">expect</span><span class=\"p\">(</span><span class=\"nx\">registry</span><span class=\"p\">.</span><span class=\"nf\">findInstanceInfoByNode</span><span class=\"p\">(</span><span class=\"nb\">window</span><span class=\"p\">.</span><span class=\"nx\">outerDiv</span><span class=\"p\">)).</span><span class=\"nf\">toBeTruthy</span><span class=\"p\">();</span></span>"
+              "text": "      expect(registry.findInstanceInfoByNode(window.outerDiv)).toBeTruthy();"
             },
             {
               "highlights": [
@@ -204,14 +185,12 @@
                 ]
               ],
               "line_number": 94,
-              "text": "      expect(registry.findInstanceInfoByNode(window.innerDiv)).toBeTruthy();",
-              "rich_text": "<span id=\"LC1\" class=\"line\" lang=\"javascript\">      <span class=\"nf\">expect</span><span class=\"p\">(</span><span class=\"nx\">registry</span><span class=\"p\">.</span><span class=\"nf\">findInstanceInfoByNode</span><span class=\"p\">(</span><span class=\"nb\">window</span><span class=\"p\">.</span><span class=\"nx\"><b>inner</b>Div</span><span class=\"p\">)).</span><span class=\"nf\">toBeTruthy</span><span class=\"p\">();</span></span>"
+              "text": "      expect(registry.findInstanceInfoByNode(window.innerDiv)).toBeTruthy();"
             },
             {
               "highlights": null,
               "line_number": 95,
-              "text": "    });",
-              "rich_text": "<span id=\"LC1\" class=\"line\" lang=\"javascript\">    <span class=\"p\">});</span></span>"
+              "text": "    });"
             }
           ]
         }
@@ -232,8 +211,7 @@
             {
               "highlights": null,
               "line_number": 15,
-              "text": "      window.outerDiv = document.createElement('div');",
-              "rich_text": "<span id=\"LC1\" class=\"line\" lang=\"javascript\">      <span class=\"nb\">window</span><span class=\"p\">.</span><span class=\"nx\">outerDiv</span> <span class=\"o\">=</span> <span class=\"nb\">document</span><span class=\"p\">.</span><span class=\"nf\">createElement</span><span class=\"p\">(</span><span class=\"dl\">'</span><span class=\"s1\">div</span><span class=\"dl\">'</span><span class=\"p\">);</span></span>"
+              "text": "      window.outerDiv = document.createElement('div');"
             },
             {
               "highlights": [
@@ -243,8 +221,7 @@
                 ]
               ],
               "line_number": 16,
-              "text": "      window.innerDiv = document.createElement('div');",
-              "rich_text": "<span id=\"LC1\" class=\"line\" lang=\"javascript\">      <span class=\"nb\">window</span><span class=\"p\">.</span><span class=\"nx\"><b>inner</b>Div</span> <span class=\"o\">=</span> <span class=\"nb\">document</span><span class=\"p\">.</span><span class=\"nf\">createElement</span><span class=\"p\">(</span><span class=\"dl\">'</span><span class=\"s1\">div</span><span class=\"dl\">'</span><span class=\"p\">);</span></span>"
+              "text": "      window.innerDiv = document.createElement('div');"
             },
             {
               "highlights": [
@@ -254,14 +231,12 @@
                 ]
               ],
               "line_number": 17,
-              "text": "      window.outerDiv.appendChild(window.innerDiv);",
-              "rich_text": "<span id=\"LC1\" class=\"line\" lang=\"javascript\">      <span class=\"nb\">window</span><span class=\"p\">.</span><span class=\"nx\">outerDiv</span><span class=\"p\">.</span><span class=\"nf\">appendChild</span><span class=\"p\">(</span><span class=\"nb\">window</span><span class=\"p\">.</span><span class=\"nx\"><b>inner</b>Div</span><span class=\"p\">);</span></span>"
+              "text": "      window.outerDiv.appendChild(window.innerDiv);"
             },
             {
               "highlights": null,
               "line_number": 18,
-              "text": "      document.body.appendChild(window.outerDiv);",
-              "rich_text": "<span id=\"LC1\" class=\"line\" lang=\"javascript\">      <span class=\"nb\">document</span><span class=\"p\">.</span><span class=\"nx\">body</span><span class=\"p\">.</span><span class=\"nf\">appendChild</span><span class=\"p\">(</span><span class=\"nb\">window</span><span class=\"p\">.</span><span class=\"nx\">outerDiv</span><span class=\"p\">);</span></span>"
+              "text": "      document.body.appendChild(window.outerDiv);"
             }
           ]
         },
@@ -271,8 +246,7 @@
             {
               "highlights": null,
               "line_number": 22,
-              "text": "      window.outerDiv = null;",
-              "rich_text": "<span id=\"LC1\" class=\"line\" lang=\"javascript\">      <span class=\"nb\">window</span><span class=\"p\">.</span><span class=\"nx\">outerDiv</span> <span class=\"o\">=</span> <span class=\"kc\">null</span><span class=\"p\">;</span></span>"
+              "text": "      window.outerDiv = null;"
             },
             {
               "highlights": [
@@ -282,14 +256,12 @@
                 ]
               ],
               "line_number": 23,
-              "text": "      window.innerDiv = null;",
-              "rich_text": "<span id=\"LC1\" class=\"line\" lang=\"javascript\">      <span class=\"nb\">window</span><span class=\"p\">.</span><span class=\"nx\"><b>inner</b>Div</span> <span class=\"o\">=</span> <span class=\"kc\">null</span><span class=\"p\">;</span></span>"
+              "text": "      window.innerDiv = null;"
             },
             {
               "highlights": null,
               "line_number": 24,
-              "text": "      Component.teardownAll();",
-              "rich_text": "<span id=\"LC1\" class=\"line\" lang=\"javascript\">      <span class=\"nx\">Component</span><span class=\"p\">.</span><span class=\"nf\">teardownAll</span><span class=\"p\">();</span></span>"
+              "text": "      Component.teardownAll();"
             }
           ]
         },
@@ -299,8 +271,7 @@
             {
               "highlights": null,
               "line_number": 100,
-              "text": "      //pass phoney node, find nothing",
-              "rich_text": "<span id=\"LC1\" class=\"line\" lang=\"javascript\">      <span class=\"c1\">//pass phoney node, find nothing</span></span>"
+              "text": "      //pass phoney node, find nothing"
             },
             {
               "highlights": [
@@ -310,14 +281,12 @@
                 ]
               ],
               "line_number": 101,
-              "text": "      expect(registry.findInstanceInfoByNode(window.innerDiv).length).toBeFalsy();",
-              "rich_text": "<span id=\"LC1\" class=\"line\" lang=\"javascript\">      <span class=\"nf\">expect</span><span class=\"p\">(</span><span class=\"nx\">registry</span><span class=\"p\">.</span><span class=\"nf\">findInstanceInfoByNode</span><span class=\"p\">(</span><span class=\"nb\">window</span><span class=\"p\">.</span><span class=\"nx\"><b>inner</b>Div</span><span class=\"p\">).</span><span class=\"nx\">length</span><span class=\"p\">).</span><span class=\"nf\">toBeFalsy</span><span class=\"p\">();</span></span>"
+              "text": "      expect(registry.findInstanceInfoByNode(window.innerDiv).length).toBeFalsy();"
             },
             {
               "highlights": null,
               "line_number": 102,
-              "text": "    });",
-              "rich_text": "<span id=\"LC1\" class=\"line\" lang=\"javascript\">    <span class=\"p\">});</span></span>"
+              "text": "    });"
             }
           ]
         }
