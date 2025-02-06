@@ -13,7 +13,11 @@ describe('ProjectsListItemEE', () => {
   let wrapper;
 
   const [mockProject] = convertObjectPropsToCamelCase(projects, { deep: true });
-  const project = { ...mockProject, avatarLabel: mockProject.nameWithNamespace, isForked: false };
+  const project = {
+    ...mockProject,
+    avatarLabel: mockProject.nameWithNamespace,
+    isForked: false,
+  };
 
   const defaultProps = { project };
 

@@ -45907,6 +45907,9 @@ msgstr ""
 msgid "Projects|An error occurred restoring the project. Please refresh the page to try again."
 msgstr ""
 
+msgid "Projects|Delete %{nameWithNamespace}"
+msgstr ""
+
 msgid "Projects|Projects are where you can store your code, access issues, wiki, and other features of GitLab."
 msgstr ""
 

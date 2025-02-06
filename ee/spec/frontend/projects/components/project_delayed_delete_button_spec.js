@@ -22,6 +22,7 @@ describe('Project delayed delete modal', () => {
     forksCount: 3,
     starsCount: 4,
     buttonText: 'Delete project',
+    nameWithNamespace: 'Foo / Bar',
   };
 
   const findLearnMoreLink = () => wrapper.findComponent(GlLink);
@@ -55,7 +56,7 @@ describe('Project delayed delete modal', () => {
       );
     });
 
-    it('passes confirmPhrase and formPath props to the shared delete button', () => {
+    it('passes correct props to shared delete button', () => {
       expect(findSharedDeleteButton().props()).toEqual({
         confirmPhrase: defaultProps.confirmPhrase,
         disabled: defaultProps.disabled,
@@ -66,6 +67,7 @@ describe('Project delayed delete modal', () => {
         mergeRequestsCount: defaultProps.mergeRequestsCount,
         starsCount: defaultProps.starsCount,
         buttonText: defaultProps.buttonText,
+        nameWithNamespace: defaultProps.nameWithNamespace,
       });
     });
   });
