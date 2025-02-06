@@ -28,6 +28,27 @@ RSpec.describe Vulnerabilities::SeverityOverride, feature_category: :vulnerabili
       expect { severity_override.save! }.to raise_error(ActiveRecord::RecordInvalid,
         'Validation failed: New severity must not be the same as original severity')
     end
+
+    context 'when attribute values are valid' do
+      let_it_be(:project) { create(:project) }
+      let_it_be(:vulnerability) { create(:vulnerability, project: project) }
+      let_it_be(:user) { create(:user) }
+      let_it_be(:severity_overrides) do
+        [
+          build(:vulnerability_severity_override,
+            vulnerability: vulnerability,
+            project: project,
+            author: user,
+            original_severity: :low,
+            new_severity: :critical
+          )
+        ]
+      end
+
+      subject { build(:vulnerability, severity_overrides: severity_overrides) }
+
+      it { is_expected.to be_valid }
+    end
   end
 
   context 'with loose foreign key on vulnerability_severity_overrides.author_id' do
