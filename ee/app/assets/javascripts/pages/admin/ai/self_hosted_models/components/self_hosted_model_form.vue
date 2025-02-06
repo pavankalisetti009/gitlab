@@ -141,9 +141,12 @@ export default {
       value: SELF_HOSTED_MODEL_PLATFORMS.BEDROCK,
     },
   ],
-  awsSetupUrl: helpPagePath('administration/self_hosted_models/supported_llm_serving_platforms', {
-    anchor: 'for-cloud-hosted-model-deployments',
-  }),
+  awsSetupUrl: helpPagePath(
+    'administration/gitlab_duo_self_hosted/supported_llm_serving_platforms',
+    {
+      anchor: 'for-cloud-hosted-model-deployments',
+    },
+  ),
   baseFormFieldClasses,
   data() {
     const {
