@@ -57,6 +57,8 @@ module EE
 
       if target.is_a?(Epic)
         attributes[:group_id] = target.group_id
+      elsif target.is_a?(WikiPage::Meta)
+        attributes[:group_id] = target.namespace_id
       end
 
       attributes
