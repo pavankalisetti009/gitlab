@@ -3056,6 +3056,56 @@ Input type: `BranchRuleExternalStatusCheckUpdateInput`
 | <a id="mutationbranchruleexternalstatuscheckupdateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
 | <a id="mutationbranchruleexternalstatuscheckupdateexternalstatuscheck"></a>`externalStatusCheck` | [`ExternalStatusCheck`](#externalstatuscheck) | Updated external status check after mutation. |
 
+### `Mutation.branchRuleSquashOptionDelete`
+
+Delete a squash option for a branch rule.
+
+DETAILS:
+**Introduced** in GitLab 17.9.
+**Status**: Experiment.
+
+Input type: `BranchRuleSquashOptionDeleteInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationbranchrulesquashoptiondeletebranchruleid"></a>`branchRuleId` | [`ProjectsBranchRuleID!`](#projectsbranchruleid) | Global ID of the branch rule. |
+| <a id="mutationbranchrulesquashoptiondeleteclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationbranchrulesquashoptiondeleteclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationbranchrulesquashoptiondeleteerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
+
+### `Mutation.branchRuleSquashOptionUpdate`
+
+Update a squash option for a branch rule.
+
+DETAILS:
+**Introduced** in GitLab 17.9.
+**Status**: Experiment.
+
+Input type: `BranchRuleSquashOptionUpdateInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationbranchrulesquashoptionupdatebranchruleid"></a>`branchRuleId` | [`ProjectsBranchRuleID!`](#projectsbranchruleid) | Global ID of the branch rule. |
+| <a id="mutationbranchrulesquashoptionupdateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationbranchrulesquashoptionupdatesquashoption"></a>`squashOption` | [`SquashOptionSetting!`](#squashoptionsetting) | Squash option after mutation. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationbranchrulesquashoptionupdateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationbranchrulesquashoptionupdateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
+| <a id="mutationbranchrulesquashoptionupdatesquashoption"></a>`squashOption` | [`SquashOption`](#squashoption) | Updated squash option after mutation. |
+
 ### `Mutation.branchRuleUpdate`
 
 DETAILS:
@@ -42441,6 +42491,17 @@ Values for sorting the mapping of users on source instance to users on destinati
 | <a id="sourceusersortsource_name_desc"></a>`SOURCE_NAME_DESC` | Instance source name by descending order. |
 | <a id="sourceusersortstatus_asc"></a>`STATUS_ASC` | Status of the mapping by ascending order. |
 | <a id="sourceusersortstatus_desc"></a>`STATUS_DESC` | Status of the mapping by descending order. |
+
+### `SquashOptionSetting`
+
+Options for default squash behaviour for merge requests.
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="squashoptionsettingallowed"></a>`ALLOWED` | Allow. |
+| <a id="squashoptionsettingalways"></a>`ALWAYS` | Require. |
+| <a id="squashoptionsettingencouraged"></a>`ENCOURAGED` | Encourage. |
+| <a id="squashoptionsettingnever"></a>`NEVER` | Do not allow. |
 
 ### `SubscriptionHistoryChangeType`
 

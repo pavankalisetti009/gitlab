@@ -44,14 +44,16 @@ RSpec.describe BranchRules::UpdateService, feature_category: :source_code_manage
       end
 
       it 'accepts params for EE only settings', :aggregate_failures do
+        expect { execute }
+          .to change { protected_branch.code_owner_approval_required }.to(code_owner_approval_required)
+          .and change { protected_branch.merge_access_levels.count }.by(2)
+          .and change { protected_branch.push_access_levels.count }.by(2)
+
         expect(execute).to be_success
-        expect(protected_branch.code_owner_approval_required).to eq(code_owner_approval_required)
-        expect(protected_branch.merge_access_levels.count).to eq(2)
-        expect(protected_branch.merge_access_levels.first.user_id).to eq(developer.id)
-        expect(protected_branch.merge_access_levels.second.group_id).to eq(developers_group.id)
-        expect(protected_branch.push_access_levels.count).to eq(2)
         expect(protected_branch.push_access_levels.first.user_id).to eq(developer.id)
         expect(protected_branch.push_access_levels.second.group_id).to eq(developers_group.id)
+        expect(protected_branch.merge_access_levels.first.user_id).to eq(developer.id)
+        expect(protected_branch.merge_access_levels.second.group_id).to eq(developers_group.id)
       end
 
       context 'when code_owner_approval_required is null' do
@@ -78,6 +80,32 @@ RSpec.describe BranchRules::UpdateService, feature_category: :source_code_manage
             "Push access levels user can't be blank",
             "Push access levels group can't be blank"
           ])
+        end
+      end
+
+      context 'when name and squash options are not compatible' do
+        let(:params) do
+          {
+            name: '*'
+          }
+        end
+
+        context 'and there is an existing squash option' do
+          let!(:squash_option) do
+            create(
+              :branch_rule_squash_option,
+              :default_on,
+              project: protected_branch.project,
+              protected_branch: protected_branch)
+          end
+
+          it 'returns an error response' do
+            response = execute
+            expect(response).to be_error
+            expect(response[:message]).to match_array([
+              'Squash option can only be configured for exact match branch rules'
+            ])
+          end
         end
       end
     end

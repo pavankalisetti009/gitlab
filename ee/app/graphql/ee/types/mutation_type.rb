@@ -104,6 +104,8 @@ module EE
         mount_mutation ::Mutations::BranchRules::ExternalStatusChecks::Create, experiment: { milestone: '16.11' }
         mount_mutation ::Mutations::BranchRules::ExternalStatusChecks::Update, experiment: { milestone: '17.0' }
         mount_mutation ::Mutations::BranchRules::ExternalStatusChecks::Destroy, experiment: { milestone: '17.0' }
+        mount_mutation ::Mutations::Projects::BranchRules::SquashOptions::Update, experiment: { milestone: '17.9' }
+        mount_mutation ::Mutations::Projects::BranchRules::SquashOptions::Delete, experiment: { milestone: '17.9' }
         mount_mutation ::Mutations::InstanceSecurityDashboard::AddProject
         mount_mutation ::Mutations::InstanceSecurityDashboard::RemoveProject
         mount_mutation ::Mutations::DastOnDemandScans::Create
