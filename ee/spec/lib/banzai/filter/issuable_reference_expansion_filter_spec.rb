@@ -83,4 +83,25 @@ RSpec.describe Banzai::Filter::IssuableReferenceExpansionFilter, feature_categor
       )
     end
   end
+
+  context 'when work_item_epics is enabled' do
+    let_it_be(:work_item) { create(:work_item, :epic_with_legacy_epic, assignees: [user], health_status: :at_risk) }
+    let_it_be(:epic) { work_item.synced_epic }
+
+    let_it_be(:context) { { current_user: user, issuable_reference_expansion_enabled: true, group: epic.group } }
+
+    before do
+      stub_feature_flags(work_item_epics: true)
+      stub_licensed_features(issuable_health_status: true, epics: true)
+    end
+
+    it 'shows additional details for epic references with +s' do
+      link = create_link(epic.to_reference, epic: epic.id, reference_type: 'epic', reference_format: '+s')
+
+      doc = filter(link, context)
+
+      expect(doc.css('a').last.text).to eq("#{epic.title} (#{epic.to_reference}) • #{user.name} • " \
+                                           "#{work_item.health_status.humanize}")
+    end
+  end
 end

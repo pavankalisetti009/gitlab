@@ -81,5 +81,21 @@ RSpec.describe Banzai::ReferenceParser::EpicParser do
       }
       expect(subject.records_for_nodes(nodes)).to eq(expected_hash)
     end
+
+    context 'when extended_preload is true' do
+      subject { described_class.new(Banzai::RenderContext.new(nil, user, options: { extended_preload: true })) }
+
+      it 'preloads the corresponding work item assignees and milestones when extended_preload is true' do
+        records = subject.records_for_nodes(nodes)
+
+        recorder = ActiveRecord::QueryRecorder.new do
+          records[nodes[0]].work_item
+          records[nodes[0]].work_item.milestone
+          records[nodes[0]].work_item.assignees
+        end
+
+        expect(recorder.count).to be_zero
+      end
+    end
   end
 end
