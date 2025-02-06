@@ -428,7 +428,7 @@ describe('EditorComponent', () => {
       });
 
       describe('add', () => {
-        it('always display rule selector with approver option, when all bot message is selected', () => {
+        it('displays the rule selector with approver option, when all bot message is selected', () => {
           factoryWithExistingPolicy({ policy: mockDefaultBranchesScanResultObject });
           expect(findScanFilterSelector().exists()).toBe(true);
           expect(
@@ -474,6 +474,13 @@ describe('EditorComponent', () => {
           expect(findPolicyEditorLayout().props('policy').actions).toEqual([
             expect.objectContaining(action),
           ]);
+        });
+
+        it('adds an action when there are no other actions in the policy', async () => {
+          factoryWithExistingPolicy({ hasActions: false });
+          expect(findAllActionSections()).toHaveLength(0);
+          await findScanFilterSelector().vm.$emit('select', REQUIRE_APPROVAL_TYPE);
+          expect(findAllActionSections()).toHaveLength(1);
         });
 
         it('adds multiple approval rules', async () => {
