@@ -9,8 +9,6 @@ module Geo
     MODEL_CLASS = ::Project
     MODEL_FOREIGN_KEY = :project_id
 
-    ignore_column :force_to_redownload, remove_with: '16.11', remove_after: '2024-03-21'
-
     belongs_to :project, class_name: 'Project'
 
     # @return [Boolean] whether the project repository is out-of-date on this site

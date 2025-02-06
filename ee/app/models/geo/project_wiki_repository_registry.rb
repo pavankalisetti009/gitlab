@@ -9,8 +9,6 @@ module Geo
     MODEL_CLASS = ::Projects::WikiRepository
     MODEL_FOREIGN_KEY = :project_wiki_repository_id
 
-    ignore_column :force_to_redownload, remove_with: '16.11', remove_after: '2024-03-21'
-
     belongs_to :project_wiki_repository, class_name: 'Projects::WikiRepository'
 
     validates :project_wiki_repository, presence: true, uniqueness: true
