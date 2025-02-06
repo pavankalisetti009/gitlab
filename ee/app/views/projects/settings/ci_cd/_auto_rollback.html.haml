@@ -15,7 +15,7 @@
                   - c.with_body do
                     .gl-form.form-check
                       - help_text = s_('AutoRollback|Automatic rollbacks start when a critical alert is triggered. If the last successful deployment fails to roll back automatically, it can still be done manually.')
-                      - more_info_link = link_to(_('More information'), help_page_path('ci/environments/index.md', anchor: 'auto-rollback'), target: '_blank', rel: 'noopener noreferrer')
+                      - more_info_link = link_to(_('More information'), help_page_path('ci/environments/_index.md', anchor: 'auto-rollback'), target: '_blank', rel: 'noopener noreferrer')
                       = f.gitlab_ui_checkbox_component :auto_rollback_enabled,
                           s_('AutoRollback|Enable automatic rollbacks'),
                           help_text: '%{help_text} %{more_info_link}'.html_safe % { help_text: help_text, more_info_link: more_info_link }
