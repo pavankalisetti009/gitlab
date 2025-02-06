@@ -11,6 +11,8 @@ RSpec.describe 'admin/dashboard/index.html.haml' do
     end
   end
 
+  let_it_be(:user) { create(:admin) }
+
   before do
     counts = Admin::DashboardController::COUNTED_ITEMS.index_with { 100 }
 
@@ -22,6 +24,7 @@ RSpec.describe 'admin/dashboard/index.html.haml' do
 
     allow(view).to receive(:admin?).and_return(true)
     allow(view).to receive(:current_application_settings).and_return(Gitlab::CurrentSettings.current_application_settings)
+    allow(view).to receive(:current_user).and_return(user)
   end
 
   context 'when license is present' do

@@ -246,6 +246,13 @@ module EE
         end
       end
 
+      MemberRole.all_customizable_admin_permission_keys.each do |ability|
+        desc "Admin custom role that enables #{ability.to_s.tr('_', ' ')}"
+        condition(:"custom_role_enables_#{ability}") do
+          admin_custom_role_ability(@user).allowed?(ability)
+        end
+      end
+
       with_scope :subject
       condition(:suggested_reviewers_available) do
         @subject.can_suggest_reviewers?
@@ -327,6 +334,10 @@ module EE
       rule { custom_role_enables_read_runners }.policy do
         enable :read_project_runners
         enable :read_runner
+      end
+
+      rule { custom_role_enables_read_admin_dashboard }.policy do
+        enable :read_member_access_request
       end
 
       condition(:ci_cancellation_maintainers_only, scope: :subject) do
@@ -1187,6 +1198,12 @@ module EE
     def custom_role_ability(user, subject)
       strong_memoize_with(:custom_role_ability, user, subject) do
         ::Authz::CustomAbility.new(user, subject)
+      end
+    end
+
+    def admin_custom_role_ability(user)
+      strong_memoize_with(:custom_role_ability, user) do
+        ::Authz::CustomAbility.new(user)
       end
     end
   end
