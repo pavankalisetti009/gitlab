@@ -241,7 +241,11 @@ describe('ComplianceViolationsReport component', () => {
     it('renders the violation severity badge', () => {
       const { severityLevel } = violations[0];
 
-      expect(findSeverityBadge().props()).toStrictEqual({ severity: severityLevel });
+      expect(findSeverityBadge().props()).toStrictEqual({
+        severity: severityLevel,
+        showSeverityOverrides: false,
+        severityOverrides: {},
+      });
     });
 
     it('renders the violation reason', () => {
