@@ -274,8 +274,7 @@ module EE
       condition(:target_branch_rules_available) { subject.licensed_feature_available?(:target_branch_rules) }
 
       condition(:pages_multiple_versions_available) do
-        ::Feature.enabled?(:pages_multiple_versions_setting, @subject) &&
-          @subject.licensed_feature_available?(:pages_multiple_versions)
+        @subject.licensed_feature_available?(:pages_multiple_versions)
       end
 
       condition(:merge_requests_is_a_private_feature) do

@@ -4712,4 +4712,28 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
     end
   end
+
+  describe 'pages_multiple_versions_available' do
+    let(:current_user) { maintainer }
+
+    before do
+      stub_licensed_features(pages_multiple_versions: licensed)
+    end
+
+    context 'when pages_multiple_versions feature is available' do
+      let(:licensed) { true }
+
+      it 'allows access to pages multiple deployments' do
+        is_expected.to allow_action(:pages_multiple_versions)
+      end
+    end
+
+    context 'when pages_multiple_versions feature is not available' do
+      let(:licensed) { false }
+
+      it 'denies access to pages multiple deployments' do
+        is_expected.not_to allow_action(:pages_multiple_versions)
+      end
+    end
+  end
 end
