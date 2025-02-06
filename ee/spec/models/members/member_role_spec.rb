@@ -63,19 +63,6 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
               end
             end
           end
-
-          context 'when no custom admin ability feature flag is enabled' do
-            let(:admin_role) { build(:member_role, :read_admin_dashboard) }
-
-            before do
-              stub_feature_flags(custom_ability_read_admin_dashboard: false, custom_ability_read_admin_cicd: false)
-            end
-
-            it "is invalid" do
-              expect(admin_role.base_access_level).to be_nil
-              expect(admin_role).not_to be_valid
-            end
-          end
         end
       end
 
@@ -85,6 +72,28 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
           member_role.name = 'foo'
 
           expect(member_role).not_to be_valid
+        end
+      end
+    end
+
+    describe 'namespace validation' do
+      context 'when running on Gitlab.com', :saas do
+        it { is_expected.to validate_presence_of(:namespace) }
+      end
+
+      context 'when running on self-managed' do
+        it { is_expected.to be_valid }
+      end
+
+      context 'when creating an admin role' do
+        subject(:member_role) { build(:member_role, :admin) }
+
+        it { is_expected.to validate_absence_of(:namespace) }
+
+        context 'when admin permissions are disabled' do
+          subject(:member_role) { build(:member_role, read_admin_dashboard: false) }
+
+          it { is_expected.not_to validate_absence_of(:namespace) }
         end
       end
     end
@@ -105,22 +114,6 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
 
         it { is_expected.not_to allow_value(permissions).for(:permissions) }
       end
-    end
-
-    context 'when running on Gitlab.com' do
-      before do
-        stub_saas_features(gitlab_com_subscriptions: true)
-      end
-
-      it { is_expected.to validate_presence_of(:namespace) }
-    end
-
-    context 'when running on self-managed' do
-      before do
-        stub_saas_features(gitlab_com_subscriptions: false)
-      end
-
-      it { is_expected.not_to validate_presence_of(:namespace) }
     end
 
     context 'for base_access_level_locked' do
@@ -347,7 +340,7 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
       let_it_be(:instance_member_role) { create(:member_role, :instance, name: 'Manager') }
 
       it 'returns member roles created on the instance' do
-        expect(described_class.for_instance).to match_array([instance_member_role])
+        expect(described_class.for_instance).to match_array([admin_member_role, instance_member_role])
       end
     end
 
