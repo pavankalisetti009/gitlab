@@ -13,37 +13,27 @@ module Vulnerabilities
     private
 
     def update_vulnerability_with(params)
-      Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
-        %w[
-          notes
-          system_note_metadata
-          vulnerability_user_mentions
-          vulnerability_state_transitions
-          vulnerability_feedback
-          vulnerabilities
-        ], url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/482672'
-      ) do
-        @vulnerability.transaction do
-          yield if block_given?
+      @vulnerability.transaction do
+        yield if block_given?
 
-          update_with_note(params)
+        raise ActiveRecord::Rollback unless @vulnerability.update(params)
+
+        @changed = @vulnerability.previous_changes.present?
+
+        # run_after_commit runs in the scope of the calling object, hence @user needs to be captured
+        user = @user
+        @vulnerability.run_after_commit do
+          # The following service call alters the `previous_changes` of the vulnerability object
+          # therefore, we are sending the cloned object as that information is important for the rest of the logic.
+          SystemNoteService.change_vulnerability_state(clone, user)
         end
-
-        update_statistics
       end
-    end
 
-    def update_with_note(params)
-      return false unless @vulnerability.update(params)
-
-      # The following service call alters the `previous_changes` of the vulnerability object
-      # therefore, we are sending the cloned object as that information is important for the rest of the logic.
-      SystemNoteService.change_vulnerability_state(@vulnerability.clone, @user)
-      true
+      update_statistics
     end
 
     def update_statistics
-      Vulnerabilities::Statistics::UpdateService.update_for(@vulnerability) if @vulnerability.previous_changes.present?
+      Vulnerabilities::Statistics::UpdateService.update_for(@vulnerability) if @changed
     end
 
     def authorized?
