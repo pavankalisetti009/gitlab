@@ -4,7 +4,7 @@ import { dateFormats } from '~/analytics/shared/constants';
 import { nDaysBefore, nMonthsBefore, getStartOfDay, dayAfter } from '~/lib/utils/datetime_utility';
 import { __, sprintf } from '~/locale';
 
-export const environmentTierDocumentationHref = helpPagePath('ci/environments/index.html', {
+export const environmentTierDocumentationHref = helpPagePath('ci/environments/_index.html', {
   anchor: 'deployment-tier-of-environments',
 });
 

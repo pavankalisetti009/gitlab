@@ -282,7 +282,7 @@ const DAST_VARIABLES = {
       message: s__(
         'DastProfiles|The password of the certificate used in `DAST_PKCS12_CERTIFICATE_BASE64`. Create sensitive %{linkStart}custom CI/CI variables%{linkEnd} using the GitLab UI.',
       ),
-      path: helpPagePath('ci/variables/index', { anchor: 'define-a-cicd-variable-in-the-ui' }),
+      path: helpPagePath('ci/variables/_index', { anchor: 'define-a-cicd-variable-in-the-ui' }),
     },
   },
   DAST_REQUEST_ADVERTISE_SCAN: {
