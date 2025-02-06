@@ -53,10 +53,10 @@ RSpec.describe 'Delete a namespace filter for group level external audit event d
 
         expect { mutate }.to change { AuditEvents::Streaming::HTTP::NamespaceFilter.count }.by(-1)
 
-        expect(destination.reload.namespace_filter).to be nil
+        expect(destination.reload.namespace_filter).to be_nil
         expect_graphql_errors_to_be_empty
         expect(mutation_response['errors']).to be_empty
-        expect(mutation_response['namespaceFilter']).to be nil
+        expect(mutation_response['namespaceFilter']).to be_nil
       end
     end
 

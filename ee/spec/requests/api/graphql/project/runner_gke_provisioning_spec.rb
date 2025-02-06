@@ -131,7 +131,7 @@ RSpec.describe 'RunnerGkeProvisioning', feature_category: :runner do
         it 'returns null' do
           request
 
-          expect(options_response).to be nil
+          expect(options_response).to be_nil
         end
       end
     end

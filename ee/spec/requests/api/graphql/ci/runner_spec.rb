@@ -284,14 +284,14 @@ RSpec.describe 'Query.runner(id)', feature_category: :fleet_visibility do
       context 'when unlicensed' do
         let(:runner_performance_insights) { false }
 
-        it { is_expected.to be nil }
+        it { is_expected.to be_nil }
       end
     end
 
     context 'when requested by a regular user' do
       let_it_be(:current_user) { developer }
 
-      it { is_expected.to be nil }
+      it { is_expected.to be_nil }
     end
 
     describe 'Query.group.runners.jobsStatistics' do
@@ -331,14 +331,14 @@ RSpec.describe 'Query.runner(id)', feature_category: :fleet_visibility do
         context 'when unlicensed' do
           let(:runner_performance_insights) { false }
 
-          it { is_expected.to be nil }
+          it { is_expected.to be_nil }
         end
       end
 
       context 'when requested by a developer' do
         let_it_be(:current_user) { developer }
 
-        it { is_expected.to be nil }
+        it { is_expected.to be_nil }
       end
     end
   end

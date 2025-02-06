@@ -179,7 +179,7 @@ RSpec.describe 'runnerGoogleCloudProvisioning', feature_category: :runner do
     context 'when user is not a maintainer or higher' do
       let(:current_user) { create(:user, developer_of: container) }
 
-      it { is_expected.to be nil }
+      it { is_expected.to be_nil }
     end
 
     context 'when SaaS feature is not enabled' do
@@ -187,7 +187,7 @@ RSpec.describe 'runnerGoogleCloudProvisioning', feature_category: :runner do
         stub_saas_features(google_cloud_support: false)
       end
 
-      it { is_expected.to be nil }
+      it { is_expected.to be_nil }
     end
   end
 end
