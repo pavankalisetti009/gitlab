@@ -205,7 +205,7 @@ export default {
         <div v-for="(highlightSectionInfo, index) in codeBlocks" :key="index">
           <div
             v-if="highlightSectionInfo.blockStartLine !== 1"
-            class="expansion-line gl-bg-gray-50 gl-p-1"
+            class="expansion-line gl-bg-strong gl-p-1"
           >
             <gl-button
               data-testid="expand-top-lines"
@@ -229,7 +229,7 @@ export default {
             :selected-step-number="selectedStepNumber"
           />
 
-          <div v-if="isEndOfCodeBlock(index)" class="expansion-line gl-bg-gray-50 gl-p-1">
+          <div v-if="isEndOfCodeBlock(index)" class="expansion-line gl-bg-strong gl-p-1">
             <gl-button
               data-testid="expand-bottom-lines"
               :title="$options.i18n.expandAllLines"

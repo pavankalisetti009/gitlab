@@ -236,7 +236,7 @@ export default {
     <div v-if="vulnerabilityDetectionData" data-testid="detection-note">
       <div class="system-note !gl-mt-6 gl-flex gl-items-center !gl-p-0">
         <div
-          class="gl-float-left !gl-m-0 -gl-mt-1 gl-ml-2 gl-flex gl-h-6 gl-w-6 gl-items-center gl-justify-center gl-rounded-full gl-bg-gray-50 gl-text-subtle"
+          class="gl-float-left !gl-m-0 -gl-mt-1 gl-ml-2 gl-flex gl-h-6 gl-w-6 gl-items-center gl-justify-center gl-rounded-full gl-bg-strong gl-text-subtle"
         >
           <gl-icon name="search-dot" class="circle-icon-container" variant="subtle" />
         </div>

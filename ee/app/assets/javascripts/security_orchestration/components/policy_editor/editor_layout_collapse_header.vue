@@ -41,7 +41,7 @@ export default {
 
 <template>
   <div class="gl-gap-x gl-flex gl-items-center">
-    <div class="gl-flex gl-flex-grow-2 gl-items-center gl-bg-gray-50 gl-px-4 gl-py-3">
+    <div class="gl-flex gl-flex-grow-2 gl-items-center gl-bg-strong gl-px-4 gl-py-3">
       <gl-button
         v-if="isRight"
         class="gl-mr-3 gl-hidden lg:gl-block"
@@ -66,7 +66,7 @@ export default {
     <gl-button
       v-if="hasResetButton"
       data-testid="reset-button"
-      class="security-policies-drag-thumbnail gl-ml-3 !gl-min-h-7 !gl-min-w-6 !gl-rounded-none !gl-border-0 !gl-bg-gray-50"
+      class="security-policies-drag-thumbnail gl-ml-3 !gl-min-h-7 !gl-min-w-6 !gl-rounded-none !gl-border-0 !gl-bg-strong"
       icon="redo"
       size="small"
       @click="$emit('reset-size')"

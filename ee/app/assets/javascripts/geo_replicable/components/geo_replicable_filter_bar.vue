@@ -113,7 +113,7 @@ export default {
 </script>
 
 <template>
-  <nav class="gl-bg-gray-50 gl-p-5">
+  <nav class="gl-bg-strong gl-p-5">
     <div class="geo-replicable-filter-grid gl-grid gl-gap-3">
       <div class="gl-flex gl-flex-col gl-items-center sm:gl-flex-row">
         <gl-collapsible-listbox
