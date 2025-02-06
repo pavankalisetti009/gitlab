@@ -40,7 +40,7 @@ class InstanceSecurityDashboard
 
     return Vulnerabilities::Read.none if project_ids.empty?
 
-    Vulnerabilities::Read.for_projects(project_ids, true)
+    Vulnerabilities::Read.for_projects(project_ids)
   end
 
   def vulnerability_scanners
