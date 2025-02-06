@@ -340,6 +340,10 @@ export default {
       return BRANCHES_KEY in rule;
     },
     addAction(type) {
+      if (!this.policy.actions) {
+        this.policy = { ...this.policy, actions: [] };
+      }
+
       if (
         (this.hasWarnAction && type !== WARN_TYPE) ||
         (!this.hasWarnAction && type === WARN_TYPE)
