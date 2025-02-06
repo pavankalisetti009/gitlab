@@ -11,12 +11,6 @@ module Mutations
 
         authorize :read_geo_registry
 
-        argument :registry_class,
-          ::Types::Geo::RegistryClassEnum,
-          required: false,
-          default_value: nil,
-          description: 'Class of the Geo registry to be updated.'
-
         argument :registry_id,
           Types::GlobalIDType[::Geo::BaseRegistry],
           required: true,
@@ -29,10 +23,7 @@ module Mutations
 
         field :registry, ::Types::Geo::RegistrableType, null: true, description: 'Updated Geo registry entry.'
 
-        # TODO: `registry_class` argument is unused in this mutation
-        # and it is `required: false`, expecting to be removed entirely.
-        # Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/424563
-        def resolve(action:, registry_id:, registry_class:) # rubocop:disable Lint/UnusedMethodArgument
+        def resolve(action:, registry_id:)
           registry = authorized_find!(id: registry_id)
 
           result = ::Geo::RegistryUpdateService.new(action, registry).execute

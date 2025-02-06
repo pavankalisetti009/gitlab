@@ -143,7 +143,6 @@ export const initiateReplicableAction = ({ state, dispatch }, { registryId, name
       variables: {
         action: action.toUpperCase(),
         registryId,
-        registryClass: state.graphqlMutationRegistryClass,
       },
     })
     .then(() => dispatch('receiveInitiateReplicableActionSuccess', { name, action }))

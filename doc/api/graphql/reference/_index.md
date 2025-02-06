@@ -5904,7 +5904,6 @@ Input type: `GeoRegistriesUpdateInput`
 | ---- | ---- | ----------- |
 | <a id="mutationgeoregistriesupdateaction"></a>`action` | [`GeoRegistryAction!`](#georegistryaction) | Action to be executed on a Geo registry. |
 | <a id="mutationgeoregistriesupdateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
-| <a id="mutationgeoregistriesupdateregistryclass"></a>`registryClass` | [`GeoRegistryClass`](#georegistryclass) | Class of the Geo registry to be updated. |
 | <a id="mutationgeoregistriesupdateregistryid"></a>`registryId` | [`GeoBaseRegistryID!`](#geobaseregistryid) | ID of the Geo registry entry to be updated. |
 
 #### Fields
