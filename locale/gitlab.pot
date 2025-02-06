@@ -61862,6 +61862,9 @@ msgstr ""
 msgid "Use %{code_start}::%{code_end} to create a %{link_start}scoped label set%{link_end} (eg. %{code_start}priority::1%{code_end})"
 msgstr ""
 
+msgid "Use %{code_start}authorized_keys%{code_end} file to authenticate SSH keys"
+msgstr ""
+
 msgid "Use .gitlab-ci.yml"
 msgstr ""
 
@@ -61878,9 +61881,6 @@ msgid "Use a one-time password authenticator on your mobile device or computer t
 msgstr ""
 
 msgid "Use an existing commit message"
-msgstr ""
-
-msgid "Use authorized_keys file to authenticate SSH keys"
 msgstr ""
 
 msgid "Use banners and notifications to notify your users about scheduled maintenance, recent upgrades, and more."
