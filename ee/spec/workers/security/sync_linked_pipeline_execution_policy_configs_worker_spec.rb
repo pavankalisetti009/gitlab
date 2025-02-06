@@ -38,6 +38,14 @@ RSpec.describe Security::SyncLinkedPipelineExecutionPolicyConfigsWorker, '#perfo
     let(:job_args) { [project_id, user_id, oldrev, newrev, ref] }
   end
 
+  shared_examples_for 'does not enqueue the worker' do
+    it 'does not enqueue the SyncPipelineExecutionPolicyMetadataWorker' do
+      expect(Security::SyncPipelineExecutionPolicyMetadataWorker).not_to receive(:perform_async)
+
+      perform
+    end
+  end
+
   it 'enqueues a SyncPipelineExecutionPolicyMetadataWorker for affected policy configs' do
     expect(Security::SyncPipelineExecutionPolicyMetadataWorker)
       .to receive(:perform_async).with(project_id, user_id, content, [policy.id])
@@ -90,11 +98,7 @@ RSpec.describe Security::SyncLinkedPipelineExecutionPolicyConfigsWorker, '#perfo
   context 'when ref in the policy does not match the ref of the push' do
     let(:ref) { 'refs/heads/feature' }
 
-    it 'does not enqueue a SyncPipelineExecutionPolicyMetadataWorker' do
-      expect(Security::SyncPipelineExecutionPolicyMetadataWorker).not_to receive(:perform_async)
-
-      perform
-    end
+    it_behaves_like 'does not enqueue the worker'
   end
 
   context 'when policy does not specify ref' do
@@ -121,32 +125,32 @@ RSpec.describe Security::SyncLinkedPipelineExecutionPolicyConfigsWorker, '#perfo
     context 'when ref is not the default branch' do
       let(:ref) { 'refs/heads/feature' }
 
-      it 'does not enqueue the worker' do
-        expect(Security::SyncPipelineExecutionPolicyMetadataWorker).not_to receive(:perform_async)
-
-        perform
-      end
+      it_behaves_like 'does not enqueue the worker'
     end
   end
 
   context 'when policy config file is not modified' do
     let(:modified_paths) { %w[README.md] }
 
-    it 'does not enqueue the worker' do
-      expect(Security::SyncPipelineExecutionPolicyMetadataWorker).not_to receive(:perform_async)
-
-      perform
-    end
+    it_behaves_like 'does not enqueue the worker'
   end
 
   context 'when branch is not updated' do
     let(:branch_updated) { false }
 
-    it 'does not enqueue the worker' do
-      expect(Security::SyncPipelineExecutionPolicyMetadataWorker).not_to receive(:perform_async)
+    it_behaves_like 'does not enqueue the worker'
+  end
 
-      perform
-    end
+  context 'when project cannot be found' do
+    let(:project_id) { non_existing_record_id }
+
+    it_behaves_like 'does not enqueue the worker'
+  end
+
+  context 'when user cannot be found' do
+    let(:user_id) { non_existing_record_id }
+
+    it_behaves_like 'does not enqueue the worker'
   end
 
   context 'when feature flag "pipeline_execution_policy_analyze_configs" is disabled' do
@@ -154,10 +158,6 @@ RSpec.describe Security::SyncLinkedPipelineExecutionPolicyConfigsWorker, '#perfo
       stub_feature_flags(pipeline_execution_policy_analyze_configs: false)
     end
 
-    it 'does not enqueue the worker' do
-      expect(Security::SyncPipelineExecutionPolicyMetadataWorker).not_to receive(:perform_async)
-
-      perform
-    end
+    it_behaves_like 'does not enqueue the worker'
   end
 end
