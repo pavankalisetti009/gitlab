@@ -32,7 +32,7 @@ and that users who pull from the cache have the necessary authentication:
 1. In the global configuration, if the following features are disabled, enable them:
    - The [`package` feature](../../../../administration/packages/index.md#enable-or-disable-the-package-registry). Enabled by default.
    - The [`dependency_proxy` feature](../../../../administration/packages/dependency_proxy.md#turn-on-the-dependency-proxy). Enabled by default.
-1. In the project settings, if the [`package` feature](../../package_registry/index.md#disable-the-package-registry)
+1. In the project settings, if the [`package` feature](../index.md#disable-the-package-registry)
    is disabled, enable it. It is enabled by default.
 1. [Add an authentication method](#configure-a-client). The dependency proxy supports the same [authentication methods](../index.md#authenticate-with-the-registry) as the package registry:
    - [Personal access token](../../../profile/personal_access_tokens.md)
@@ -83,7 +83,7 @@ When the dependency proxy pulls a file, the following occurs:
 Whether both steps are executed depends on user permissions.
 The dependency proxy uses the [same permissions as the package registry](../index.md#package-registry-visibility-permissions).
 
-| Project visibility | Minimum [role](../../../../user/permissions.md#roles) | Can read package files? | Can write package files? | Behavior |
+| Project visibility | Minimum [role](../../../permissions.md#roles) | Can read package files? | Can write package files? | Behavior |
 |--------------------|-------------------------------------------------------|-------------------------|--------------------------|----------|
 | Public             | Anonymous                                             | **{dotted-circle}** No  | **{dotted-circle}** No   | Request rejected. |
 | Public             | Guest                                                 | **{check-circle}** Yes  | **{dotted-circle}** No   | Package file returned from either the cache or the remote registry. |

@@ -51,7 +51,7 @@ Prerequisites:
 
 - Your GitLab username.
 - A personal access token or deploy token. For repository authentication:
-  - You can generate a [personal access token](../../../user/profile/personal_access_tokens.md).
+  - You can generate a [personal access token](../../profile/personal_access_tokens.md).
     - To install packages from the repository, the scope of the token must include `read_api` or `api`.
     - To publish packages to the repository, the scope of the token must include `api`.
   - You can generate a [deploy token](../../project/deploy_tokens/index.md).
@@ -556,7 +556,7 @@ Deleting a package is a permanent action that cannot be undone.
 
 Prerequisites:
 
-- You must have the [Maintainer](../../../user/permissions.md#project-members-permissions) role or higher in the project.
+- You must have the [Maintainer](../../permissions.md#project-members-permissions) role or higher in the project.
 - You must have both the package name and version.
 
 To delete a package with the NuGet CLI:
