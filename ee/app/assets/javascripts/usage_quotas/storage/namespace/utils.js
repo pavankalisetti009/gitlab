@@ -1,7 +1,19 @@
 import { parseBoolean } from '~/lib/utils/common_utils';
 import { storageTypeHelpPaths as helpLinks } from '~/usage_quotas/storage/constants';
-import { NAMESPACE_ENFORCEMENT_TYPE, PROJECT_ENFORCEMENT_TYPE } from './constants';
 
+// https://docs.gitlab.com/ee/user/storage_usage_quotas
+// declared in ee/app/models/namespaces/storage/root_excess_size.rb
+const PROJECT_ENFORCEMENT_TYPE = 'project_repository_limit';
+
+// https://internal.gitlab.com/handbook/engineering/fulfillment/namespace-storage-enforcement/
+// declared in ee/app/models/namespaces/storage/root_size.rb
+const NAMESPACE_ENFORCEMENT_TYPE = 'namespace_storage_limit';
+
+/**
+ * Parses group and profile data injected via a DOM element.
+ * @param {HTMLElement} el - DOM element
+ * @return parsed data
+ */
 export const parseNamespaceProvideData = (el) => {
   if (!el) {
     return {};

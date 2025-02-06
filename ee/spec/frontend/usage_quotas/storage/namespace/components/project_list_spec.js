@@ -3,7 +3,10 @@ import { merge } from 'lodash';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import ProjectList from '~/usage_quotas/storage/namespace/components/project_list.vue';
 import { storageTypeHelpPaths } from '~/usage_quotas/storage/constants';
-import { projectList } from 'jest/usage_quotas/storage/mock_data';
+import {
+  mockGetNamespaceStorageGraphQLResponse,
+  projectList,
+} from 'jest/usage_quotas/storage/mock_data';
 import { defaultNamespaceProvideValues } from '../../mock_data';
 
 /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
@@ -16,6 +19,7 @@ const createComponent = ({ provide = {}, props = {} } = {}) => {
       ...provide,
     },
     propsData: {
+      namespace: mockGetNamespaceStorageGraphQLResponse.data.namespace,
       projects: projectList,
       helpLinks: storageTypeHelpPaths,
       isLoading: false,
