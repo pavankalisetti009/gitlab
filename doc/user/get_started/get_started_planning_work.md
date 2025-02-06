@@ -2,9 +2,8 @@
 stage: Plan
 group: Project Management
 info: "To determine the technical writer assigned to the Stage/Group associated with this page, see https://handbook.gitlab.com/handbook/product/ux/technical-writing/#assignments"
+title: Get started planning work
 ---
-
-# Get started planning work
 
 GitLab has tools to help you plan, execute, and track your work.
 With planning, collaboration, documentation, time tracking, and reporting features,
