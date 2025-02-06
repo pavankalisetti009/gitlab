@@ -156,6 +156,7 @@ export default {
           :is-group="isGroup"
           class="gl-grow"
           :work-item-type-name="workItemTypeName"
+          :always-show-work-item-type-select="showNewIssueLink"
           @workItemCreated="incrementUpdateCount"
         />
       </div>
