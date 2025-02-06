@@ -77,7 +77,7 @@ data: [{ 'lead_time_for_changes' => 5.days.to_i }] })
             "label" => s_('ValueStreamAnalytics|Dashboard')
           },
           { "name" => _('Lead time for changes'),
-            "url" => helpers.help_page_path('user/analytics/index.md', anchor: 'definitions'),
+            "url" => helpers.help_page_path('user/analytics/_index.md', anchor: 'definitions'),
             "docs_link" => true,
             "label" => s_('ValueStreamAnalytics|Go to docs') }
         ]
@@ -100,7 +100,7 @@ data: [{ 'lead_time_for_changes' => 5.days.to_i }] })
               "label" => s_('ValueStreamAnalytics|Dashboard')
             },
             { "name" => _('Lead time for changes'),
-              "url" => helpers.help_page_path('user/analytics/index.md', anchor: 'definitions'),
+              "url" => helpers.help_page_path('user/analytics/_index.md', anchor: 'definitions'),
               "docs_link" => true,
               "label" => s_('ValueStreamAnalytics|Go to docs') }
           ]

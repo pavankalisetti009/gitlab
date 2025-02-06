@@ -34,7 +34,7 @@ module Gitlab
             [
               { "name" => _('Lead time'), "url" => dashboard_link, "label" => s_('ValueStreamAnalytics|Dashboard') },
               { "name" => _('Lead time'),
-                "url" => helpers.help_page_path('user/analytics/index.md', anchor: 'definitions'),
+                "url" => helpers.help_page_path('user/analytics/_index.md', anchor: 'definitions'),
                 "docs_link" => true,
                 "label" => s_('ValueStreamAnalytics|Go to docs') }
             ]

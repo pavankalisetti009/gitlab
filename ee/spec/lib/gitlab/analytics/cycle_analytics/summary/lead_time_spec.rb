@@ -27,7 +27,7 @@ RSpec.describe Gitlab::Analytics::CycleAnalytics::Summary::LeadTime, feature_cat
             "url" => helpers.group_issues_analytics_path(stage.parent),
             "label" => s_('ValueStreamAnalytics|Dashboard') },
           { "name" => _('Lead time'),
-            "url" => helpers.help_page_path('user/analytics/index.md', anchor: 'definitions'),
+            "url" => helpers.help_page_path('user/analytics/_index.md', anchor: 'definitions'),
             "docs_link" => true,
             "label" => s_('ValueStreamAnalytics|Go to docs') }
         ]
@@ -47,7 +47,7 @@ RSpec.describe Gitlab::Analytics::CycleAnalytics::Summary::LeadTime, feature_cat
               "url" => helpers.project_analytics_issues_analytics_path(project),
               "label" => s_('ValueStreamAnalytics|Dashboard') },
             { "name" => _('Lead time'),
-              "url" => helpers.help_page_path('user/analytics/index.md', anchor: 'definitions'),
+              "url" => helpers.help_page_path('user/analytics/_index.md', anchor: 'definitions'),
               "docs_link" => true,
               "label" => s_('ValueStreamAnalytics|Go to docs') }
           ]

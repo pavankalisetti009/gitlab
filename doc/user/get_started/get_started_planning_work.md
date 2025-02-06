@@ -116,7 +116,7 @@ Group issues by priority, category, or other custom criteria.
 
 For more information, see:
 
-- [Analyze GitLab usage](../analytics/index.md)
+- [Analyze GitLab usage](../analytics/_index.md)
 
 ## Step 7: Create documentation and share knowledge
 
