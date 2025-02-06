@@ -3127,7 +3127,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             security_scans_api: true,
             security_on_demand_scans: true,
             coverage_fuzzing: true,
-            pre_receive_secret_detection: true,
+            secret_push_protection: true,
             container_scanning_for_registry: true,
             project_level_compliance_dashboard: true }
         end
@@ -3140,7 +3140,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             :read_on_demand_dast_scan,
             :create_on_demand_dast_scan,
             :edit_on_demand_dast_scan,
-            :enable_pre_receive_secret_detection,
+            :enable_secret_push_protection,
             :read_project_security_dashboard,
             :read_project_security_exclusions,
             :read_coverage_fuzzing,
@@ -3153,7 +3153,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             :read_merge_request,
             :download_code,
             :read_project_runners,
-            :read_pre_receive_secret_detection_info
+            :read_secret_push_protection_info
           ]
         end
 
@@ -4426,19 +4426,19 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
     end
 
-    describe 'enable_pre_receive_secret_detection' do
+    describe 'enable_secret_push_protection' do
       where(:current_user, :licensed, :match_expected_result) do
-        ref(:owner)      | true  | be_allowed(:enable_pre_receive_secret_detection)
-        ref(:maintainer) | true  | be_allowed(:enable_pre_receive_secret_detection)
-        ref(:developer)  | true  | be_disallowed(:enable_pre_receive_secret_detection)
-        ref(:owner)      | false | be_disallowed(:enable_pre_receive_secret_detection)
-        ref(:maintainer) | false | be_disallowed(:enable_pre_receive_secret_detection)
-        ref(:developer)  | false | be_disallowed(:enable_pre_receive_secret_detection)
+        ref(:owner)      | true  | be_allowed(:enable_secret_push_protection)
+        ref(:maintainer) | true  | be_allowed(:enable_secret_push_protection)
+        ref(:developer)  | true  | be_disallowed(:enable_secret_push_protection)
+        ref(:owner)      | false | be_disallowed(:enable_secret_push_protection)
+        ref(:maintainer) | false | be_disallowed(:enable_secret_push_protection)
+        ref(:developer)  | false | be_disallowed(:enable_secret_push_protection)
       end
 
       with_them do
         before do
-          stub_licensed_features(pre_receive_secret_detection: licensed)
+          stub_licensed_features(secret_push_protection: licensed)
         end
 
         it { is_expected.to match_expected_result }
@@ -4447,7 +4447,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       describe 'when the project does not have the correct license' do
         let(:current_user) { owner }
 
-        it { is_expected.to be_disallowed(:enable_pre_receive_secret_detection) }
+        it { is_expected.to be_disallowed(:enable_secret_push_protection) }
       end
     end
 
@@ -4532,19 +4532,19 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
     end
 
-    describe 'read_pre_receive_secret_detection_info' do
+    describe 'read_secret_push_protection_info' do
       where(:current_user, :match_expected_result) do
-        ref(:owner)      | be_allowed(:read_pre_receive_secret_detection_info)
-        ref(:maintainer) | be_allowed(:read_pre_receive_secret_detection_info)
-        ref(:developer)  | be_allowed(:read_pre_receive_secret_detection_info)
-        ref(:planner)    | be_disallowed(:read_pre_receive_secret_detection_info)
-        ref(:guest)      | be_disallowed(:read_pre_receive_secret_detection_info)
-        ref(:non_member) | be_disallowed(:read_pre_receive_secret_detection_info)
+        ref(:owner)      | be_allowed(:read_secret_push_protection_info)
+        ref(:maintainer) | be_allowed(:read_secret_push_protection_info)
+        ref(:developer)  | be_allowed(:read_secret_push_protection_info)
+        ref(:planner)    | be_disallowed(:read_secret_push_protection_info)
+        ref(:guest)      | be_disallowed(:read_secret_push_protection_info)
+        ref(:non_member) | be_disallowed(:read_secret_push_protection_info)
       end
 
       with_them do
         before do
-          stub_licensed_features(pre_receive_secret_detection: true)
+          stub_licensed_features(secret_push_protection: true)
         end
 
         it { is_expected.to match_expected_result }

@@ -30,12 +30,12 @@ RSpec.describe Security::Configuration::SetGroupSecretPushProtectionService, fea
         security_setting = project.security_setting
 
         boolean_values.each do |enable_value|
-          expect { execute_service(subject: top_level_group, enable: enable_value, excluded_projects_ids: nil) }
-            .to change { security_setting.reload.pre_receive_secret_detection_enabled }
-            .from(!enable_value).to(enable_value)
+          expect { execute_service(subject: top_level_group, enable: enable_value) }.to change {
+            security_setting.reload.secret_push_protection_enabled
+          }.from(!enable_value).to(enable_value)
 
           expect { execute_service(subject: top_level_group, enable: enable_value) }
-            .not_to change { security_setting.reload.pre_receive_secret_detection_enabled }
+            .not_to change { security_setting.reload.secret_push_protection_enabled }
         end
       end
     end
@@ -49,17 +49,17 @@ RSpec.describe Security::Configuration::SetGroupSecretPushProtectionService, fea
     it 'doesnt change the attribute for projects in excluded list' do
       security_setting = excluded_project.security_setting
       expect { execute_service(subject: top_level_group) }.not_to change {
-        security_setting.reload.pre_receive_secret_detection_enabled
+        security_setting.reload.secret_push_protection_enabled
       }
 
       expect { execute_service(subject: mid_level_group, enable: false) }.not_to change {
-        security_setting.reload.pre_receive_secret_detection_enabled
+        security_setting.reload.secret_push_protection_enabled
       }
     end
 
     it 'rolls back changes when an error occurs' do
       initial_values = projects_to_change.map do |project|
-        project.security_setting.pre_receive_secret_detection_enabled
+        project.security_setting.secret_push_protection_enabled
       end
 
       call_counter = 0
@@ -78,7 +78,7 @@ RSpec.describe Security::Configuration::SetGroupSecretPushProtectionService, fea
 
       projects_to_change.each_with_index do |project, index|
         project.reload
-        expect(project.security_setting.pre_receive_secret_detection_enabled).to eq(initial_values[index])
+        expect(project.security_setting.secret_push_protection_enabled).to eq(initial_values[index])
       end
     end
 
@@ -141,7 +141,7 @@ groups/projects")
           bottom_level_group_project.reload.security_setting
         }.from(nil).to(be_a(ProjectSecuritySetting))
 
-        expect(bottom_level_group_project.reload.security_setting.pre_receive_secret_detection_enabled)
+        expect(bottom_level_group_project.reload.security_setting.secret_push_protection_enabled)
           .to be(true)
         expect(AuditEvent.last.details[:custom_message]).to eq(
           "Secret push protection has been enabled for group #{bottom_level_group.name} and all of its inherited \
@@ -153,7 +153,7 @@ groups/projects")
     context 'when arguments are invalid' do
       it 'does not change the attribute' do
         expect { execute_service(subject: top_level_group, enable: nil) }
-          .not_to change { top_level_group_project.reload.security_setting.pre_receive_secret_detection_enabled }
+          .not_to change { top_level_group_project.reload.security_setting.secret_push_protection_enabled }
       end
     end
   end

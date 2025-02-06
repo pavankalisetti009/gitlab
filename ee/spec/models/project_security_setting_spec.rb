@@ -47,7 +47,7 @@ RSpec.describe ProjectSecuritySetting, feature_category: :software_composition_a
     end
   end
 
-  describe '#set_pre_receive_secret_detection' do
+  describe '#set_secret_push_protection' do
     where(:value_before, :enabled, :value_after) do
       true  | false | false
       true  | true  | true
@@ -56,11 +56,11 @@ RSpec.describe ProjectSecuritySetting, feature_category: :software_composition_a
     end
 
     with_them do
-      let(:setting) { create(:project_security_setting, pre_receive_secret_detection_enabled: value_before) }
+      let(:setting) { create(:project_security_setting, secret_push_protection_enabled: value_before) }
 
       it 'updates the attribute and returns the new value' do
-        expect(setting.set_pre_receive_secret_detection!(enabled: enabled)).to eq(value_after)
-        expect(setting.reload.pre_receive_secret_detection_enabled).to eq(value_after)
+        expect(setting.set_secret_push_protection!(enabled: enabled)).to eq(value_after)
+        expect(setting.reload.secret_push_protection_enabled).to eq(value_after)
       end
     end
   end

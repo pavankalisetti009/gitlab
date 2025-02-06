@@ -87,10 +87,10 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
   end
 
   describe 'secret push protection' do
-    let_it_be(:security_setting) { create(:project_security_setting, pre_receive_secret_detection_enabled: true) }
+    let_it_be(:security_setting) { create(:project_security_setting, secret_push_protection_enabled: true) }
     let_it_be(:project) { security_setting.project }
 
-    describe 'pre_receive_secret_detection_enabled' do
+    describe 'secret_push_protection_enabled' do
       where(:user_role, :licensed_feature, :expected) do
         :guest     | true  | nil
         :developer | true  | true
@@ -99,7 +99,7 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
 
       with_them do
         before do
-          stub_licensed_features(pre_receive_secret_detection: licensed_feature)
+          stub_licensed_features(secret_push_protection: licensed_feature)
           project.add_role(user, user_role)
         end
 
@@ -107,7 +107,7 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
           %(
             query {
               project(fullPath: "#{project.full_path}") {
-                preReceiveSecretDetectionEnabled
+                secretPushProtectionEnabled
               }
             }
           )
@@ -115,9 +115,9 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
 
         subject(:response) { GitlabSchema.execute(query, context: { current_user: user }).as_json }
 
-        it 'returns the expected pre_receive_secret_detection_enabled value' do
-          pre_receive_secret_detection_enabled = response.dig('data', 'project', 'preReceiveSecretDetectionEnabled')
-          expect(pre_receive_secret_detection_enabled).to eq(expected)
+        it 'returns the expected secret_push_protection_enabled value' do
+          secret_push_protection_enabled = response.dig('data', 'project', 'secretPushProtectionEnabled')
+          expect(secret_push_protection_enabled).to eq(expected)
         end
       end
     end

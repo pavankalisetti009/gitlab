@@ -36,8 +36,8 @@ module Security
       def update_security_setting(project_ids)
         # rubocop:disable CodeReuse/ActiveRecord -- Specific use-case for this service
         updated_records = ProjectSecuritySetting.for_projects(project_ids)
-                              .where(pre_receive_secret_detection_enabled: !@enable)
-                                .update_all(pre_receive_secret_detection_enabled: @enable,
+                              .where(secret_push_protection_enabled: !@enable)
+                                .update_all(secret_push_protection_enabled: @enable,
                                   updated_at: Time.current)
         # rubocop:enable CodeReuse/ActiveRecord
 
@@ -49,7 +49,7 @@ module Security
         security_setting_attributes = projects_without_security_setting.map do |project|
           {
             project_id: project.id,
-            pre_receive_secret_detection_enabled: @enable,
+            secret_push_protection_enabled: @enable,
             updated_at: Time.current
           }
         end

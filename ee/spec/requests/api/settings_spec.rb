@@ -356,9 +356,9 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
     it_behaves_like 'settings for licensed features'
   end
 
-  context 'pre_receive_secret_detection_enabled' do
-    let(:settings) { { pre_receive_secret_detection_enabled: true } }
-    let(:feature) { :pre_receive_secret_detection }
+  context 'secret_push_protection_enabled' do
+    let(:settings) { { secret_push_protection_available: true } }
+    let(:feature) { :secret_push_protection }
 
     it_behaves_like 'settings for licensed features'
   end

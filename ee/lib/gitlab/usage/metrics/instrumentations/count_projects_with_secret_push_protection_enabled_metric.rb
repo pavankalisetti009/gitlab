@@ -8,7 +8,7 @@ module Gitlab
           operation :count
 
           relation do
-            ProjectSecuritySetting.where(pre_receive_secret_detection_enabled: true)
+            ProjectSecuritySetting.where(secret_push_protection_enabled: true)
           end
         end
       end

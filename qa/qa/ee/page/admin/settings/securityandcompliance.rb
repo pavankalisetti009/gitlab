@@ -16,7 +16,7 @@ module QA
               element 'save-package-registry-button'
             end
 
-            view 'ee/app/views/admin/application_settings/_pre_receive_secret_detection.html.haml' do
+            view 'ee/app/views/admin/application_settings/_secret_push_protection.html.haml' do
               element 'secret-push-protection-checkbox'
             end
 

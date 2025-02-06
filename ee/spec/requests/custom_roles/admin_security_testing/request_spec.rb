@@ -16,7 +16,7 @@ RSpec.describe 'User with admin_security_testing custom role', feature_category:
       security_dashboard: true,
       security_on_demand_scans: true,
       security_scans_api: true,
-      pre_receive_secret_detection: true,
+      secret_push_protection: true,
       container_scanning_for_registry: true,
       coverage_fuzzing: true)
     stub_feature_flags(custom_ability_admin_security_testing: true)

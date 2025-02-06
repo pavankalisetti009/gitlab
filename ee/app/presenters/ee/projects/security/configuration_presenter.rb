@@ -13,9 +13,9 @@ module EE
           project_settings&.container_scanning_for_registry_enabled
         end
 
-        override :pre_receive_secret_detection_enabled
-        def pre_receive_secret_detection_enabled
-          project_settings&.pre_receive_secret_detection_enabled
+        override :secret_push_protection_enabled
+        def secret_push_protection_enabled
+          project_settings&.secret_push_protection_enabled
         end
 
         override :features

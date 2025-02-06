@@ -274,7 +274,7 @@ module EE
         numericality: { only_integer: true, greater_than: proc { Devise.allow_unconfirmed_access_for.in_days.to_i } },
         if: :email_confirmation_setting_soft?
 
-      validates :pre_receive_secret_detection_enabled,
+      validates :secret_push_protection_available,
         inclusion: { in: [true, false], message: N_('must be a boolean value') },
         if: :gitlab_dedicated_instance
 

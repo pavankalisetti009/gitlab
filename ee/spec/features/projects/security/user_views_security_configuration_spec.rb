@@ -24,7 +24,7 @@ RSpec.describe 'User sees Security Configuration table', :js, feature_category: 
         coverage_fuzzing: true,
         api_fuzzing: true,
         security_configuration_in_ui: true,
-        pre_receive_secret_detection: true
+        secret_push_protection: true
       )
     end
 
@@ -158,7 +158,7 @@ RSpec.describe 'User sees Security Configuration table', :js, feature_category: 
       it 'shows secret push protection disabled' do
         visit_configuration_page
 
-        within_pre_receive_secret_detection_card do
+        within_secret_push_protection_card do
           expect(page).to have_text('Secret push protection')
           expect(page).to have_text('Not enabled')
 
@@ -171,13 +171,13 @@ RSpec.describe 'User sees Security Configuration table', :js, feature_category: 
 
     context 'with Secret push protection' do
       before do
-        stub_application_setting(pre_receive_secret_detection_enabled: true)
+        stub_application_setting(secret_push_protection_available: true)
       end
 
       it 'shows secret push protection' do
         visit_configuration_page
 
-        within_pre_receive_secret_detection_card do
+        within_secret_push_protection_card do
           expect(page).to have_text('Secret push protection')
           expect(page).to have_text('Not enabled')
 
@@ -271,7 +271,7 @@ RSpec.describe 'User sees Security Configuration table', :js, feature_category: 
     end
   end
 
-  def within_pre_receive_secret_detection_card
+  def within_secret_push_protection_card
     within '[data-testid="security-testing-card"]:nth-of-type(7)' do
       yield
     end

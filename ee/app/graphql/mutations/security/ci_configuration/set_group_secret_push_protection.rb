@@ -20,7 +20,7 @@ module Mutations
         argument :projects_to_exclude, [GraphQL::Types::Int], required: false,
           description: 'IDs of projects to exclude from the feature.'
 
-        authorize :enable_pre_receive_secret_detection
+        authorize :enable_secret_push_protection
 
         def resolve(namespace_path:, secret_push_protection_enabled:, projects_to_exclude: [])
           group = authorized_find!(group_path: namespace_path)

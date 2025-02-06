@@ -339,8 +339,8 @@ RSpec.describe Admin::ApplicationSettingsController do
     end
 
     context 'with secret detection settings' do
-      let(:settings) { { pre_receive_secret_detection_enabled: true } }
-      let(:license_feature) { :pre_receive_secret_detection }
+      let(:settings) { { secret_push_protection_available: true } }
+      let(:license_feature) { :secret_push_protection }
 
       before do
         stub_licensed_features(license_feature => true)
@@ -348,9 +348,9 @@ RSpec.describe Admin::ApplicationSettingsController do
 
       it_behaves_like 'settings for licensed features'
 
-      it 'updates pre_receive_secret_detection_enabled setting' do
+      it 'updates secret_push_protection_available setting' do
         expect { put :update, params: { application_setting: settings } }
-          .to change { ApplicationSetting.current.reload.attributes['pre_receive_secret_detection_enabled'] }
+          .to change { ApplicationSetting.current.reload.attributes['secret_push_protection_available'] }
       end
     end
 

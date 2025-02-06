@@ -83,17 +83,17 @@ RSpec.describe ::EE::API::Entities::Project, feature_category: :shared do
     end
   end
 
-  describe 'pre_receive_secret_detection_enabled' do
+  describe 'secret_push_protection_enabled' do
     let_it_be(:project) { create(:project) }
     let(:options) { { current_user: current_user } }
 
     before do
-      stub_licensed_features(pre_receive_secret_detection: true)
+      stub_licensed_features(secret_push_protection: true)
     end
 
     shared_examples 'returning nil' do
       it 'returns nil' do
-        expect(subject[:pre_receive_secret_detection_enabled]).to be(nil)
+        expect(subject[:secret_push_protection_enabled]).to be(nil)
       end
     end
 
@@ -102,7 +102,7 @@ RSpec.describe ::EE::API::Entities::Project, feature_category: :shared do
         let(:current_user) { developer }
 
         before do
-          stub_licensed_features(pre_receive_secret_detection: false)
+          stub_licensed_features(secret_push_protection: false)
         end
 
         it_behaves_like 'returning nil'
@@ -119,7 +119,7 @@ RSpec.describe ::EE::API::Entities::Project, feature_category: :shared do
       let(:current_user) { developer }
 
       it 'returns a boolean' do
-        expect(subject[:pre_receive_secret_detection_enabled]).to be_in([true, false])
+        expect(subject[:secret_push_protection_enabled]).to be_in([true, false])
       end
     end
   end

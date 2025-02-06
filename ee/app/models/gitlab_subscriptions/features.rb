@@ -240,7 +240,7 @@ module GitlabSubscriptions
       license_scanning
       okrs
       personal_access_token_expiration_policy
-      pre_receive_secret_detection
+      secret_push_protection
       product_analytics
       project_quality_summary
       project_level_analytics_dashboard

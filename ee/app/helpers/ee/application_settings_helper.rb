@@ -149,7 +149,7 @@ module EE
           updating_name_disabled_for_users
           maven_package_requests_forwarding
           npm_package_requests_forwarding
-          pre_receive_secret_detection_enabled
+          secret_push_protection_available
           pypi_package_requests_forwarding
           maintenance_mode
           maintenance_mode_message
