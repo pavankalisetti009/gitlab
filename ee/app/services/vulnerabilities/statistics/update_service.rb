@@ -19,8 +19,8 @@ module Vulnerabilities
       SQL
 
       UPSERT_SQL = <<~SQL
-        INSERT INTO #{Statistic.table_name} AS target (project_id, %{insert_attributes}, letter_grade, created_at, updated_at)
-          VALUES (%{project_id}, %{insert_values}, %{letter_grade}, now(), now())
+        INSERT INTO #{Statistic.table_name} AS target (project_id, archived, traversal_ids, %{insert_attributes}, letter_grade, created_at, updated_at)
+          VALUES (%{project_id}, %{archived}, %{traversal_ids}, %{insert_values}, %{letter_grade}, now(), now())
         ON CONFLICT (project_id)
           DO UPDATE SET
             %{update_values}, letter_grade = (#{LETTER_GRADE_SQL}), updated_at = now()
@@ -52,9 +52,13 @@ module Vulnerabilities
       end
 
       def upsert_sql
+        project = vulnerability.project
+
         format(
           UPSERT_SQL,
           project_id: stat_diff.project_id,
+          archived: project.archived,
+          traversal_ids: "'{#{project.namespace.traversal_ids.join(',')}}'",
           insert_attributes: insert_attributes,
           insert_values: insert_values,
           letter_grade: letter_grade,

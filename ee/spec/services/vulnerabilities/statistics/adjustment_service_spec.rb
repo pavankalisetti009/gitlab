@@ -71,6 +71,8 @@ RSpec.describe Vulnerabilities::Statistics::AdjustmentService, feature_category:
       end
 
       context 'when there is no vulnerability_statistic record for project' do
+        let_it_be_with_refind(:project) { create(:project, archived: true) }
+
         it 'creates a new record' do
           expect { adjust_statistics }.to change { Vulnerabilities::Statistic.count }.by(1)
         end
@@ -79,6 +81,9 @@ RSpec.describe Vulnerabilities::Statistics::AdjustmentService, feature_category:
           adjust_statistics
 
           expect(statistics).to eq(expected_statistics)
+
+          expect(project.vulnerability_statistic).to have_attributes(
+            archived: project.archived, traversal_ids: project.namespace.traversal_ids)
         end
 
         it_behaves_like 'ignoring the non-existing project IDs'

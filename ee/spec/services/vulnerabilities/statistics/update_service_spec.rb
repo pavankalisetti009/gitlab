@@ -21,7 +21,7 @@ RSpec.describe Vulnerabilities::Statistics::UpdateService, feature_category: :vu
   end
 
   describe '#execute' do
-    let_it_be(:project) { create(:project) }
+    let_it_be_with_refind(:project) { create(:project) }
     let(:statistic) { create(:vulnerability_statistic, project: project) }
     let(:vulnerability) { create(:vulnerability, severity: :high, project: project) }
 
@@ -71,6 +71,8 @@ RSpec.describe Vulnerabilities::Statistics::UpdateService, feature_category: :vu
       end
 
       context 'and there is no existing vulnerability_statistics record in the database' do
+        let_it_be_with_refind(:project) { create(:project, archived: true) }
+
         it 'creates a new record in the database with the expected values', :aggregate_failures do
           expect { update_stats }.to change { Vulnerabilities::Statistic.count }.from(0).to(1)
 
@@ -80,6 +82,8 @@ RSpec.describe Vulnerabilities::Statistics::UpdateService, feature_category: :vu
               high: 0,
               total: 1,
               project_id: project.id,
+              archived: project.archived,
+              traversal_ids: project.namespace.traversal_ids,
               letter_grade: 'f',
               created_at: be_a_kind_of(Time),
               updated_at: be_a_kind_of(Time)
