@@ -116,6 +116,22 @@ RSpec.describe 'Assigning a user to a member role', feature_category: :permissio
           end
         end
 
+        context 'with invalid user_id' do
+          let(:user_global_id) { "gid://gitlab/User/#{non_existing_record_id}" }
+
+          it_behaves_like 'a mutation that returns a top-level access error',
+            errors: ["The resource that you are attempting to access does not exist or " \
+              "you don't have permission to perform this action"]
+        end
+
+        context 'with invalid member_role_id' do
+          let(:member_role_global_id) { "gid://gitlab/MemberRole/#{non_existing_record_id}" }
+
+          it_behaves_like 'a mutation that returns a top-level access error',
+            errors: ["The resource that you are attempting to access does not exist or " \
+              "you don't have permission to perform this action"]
+        end
+
         context 'with member_role_id nil' do
           let(:member_role_global_id) { nil }
 
