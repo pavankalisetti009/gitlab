@@ -556,7 +556,8 @@ module EE
     end
 
     def first_non_empty_project
-      projects.detect { |project| !project.empty_repo? }
+      all_children_projects = self.projects_for_group_and_its_subgroups_without_deleted
+      all_children_projects.detect { |project| !project.empty_repo? }
     end
 
     def root_ancestor_ip_restrictions
