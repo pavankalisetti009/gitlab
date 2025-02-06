@@ -448,7 +448,7 @@ describe('Dependencies actions', () => {
       it('shows loading spinner then creates alert for export email', () =>
         testAction(
           actions.fetchExport,
-          undefined,
+          { send_email: true },
           state,
           [
             {

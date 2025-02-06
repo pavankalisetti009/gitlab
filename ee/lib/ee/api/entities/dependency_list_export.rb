@@ -8,6 +8,8 @@ module EE
 
         expose :id
         expose :finished?, as: :has_finished
+        expose :export_type
+        expose :send_email
 
         expose :self do |export|
           expose_url api_v4_dependency_list_exports_path(export_id: export.id)

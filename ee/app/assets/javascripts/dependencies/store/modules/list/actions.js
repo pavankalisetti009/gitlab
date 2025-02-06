@@ -143,7 +143,7 @@ export const fetchExport = ({ state, commit, dispatch }) => {
   commit(types.SET_FETCHING_IN_PROGRESS, true);
 
   axios
-    .post(state.exportEndpoint)
+    .post(state.exportEndpoint, { send_email: true })
     .then((response) => {
       if (response?.status === HTTP_STATUS_CREATED) {
         if (state.asyncExport) {
