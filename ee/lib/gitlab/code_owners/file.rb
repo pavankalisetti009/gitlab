@@ -61,11 +61,20 @@ module Gitlab
         matches = []
 
         parsed_data.each do |_, section_entries|
-          matching_pattern = section_entries.keys.reverse.detect do |pattern|
-            path_matches?(pattern, path)
-          end
+          if Feature.enabled?(:codeowners_file_exclusions, @blob.repository.project)
+            matching_patterns = section_entries.keys.reverse.select { |pattern| path_matches?(pattern, path) }
+            matching_entries = matching_patterns.map { |pattern| section_entries[pattern] }
 
-          matches << section_entries[matching_pattern].dup if matching_pattern
+            next if matching_entries.any?(&:exclusion?)
+
+            matches << matching_entries.first.dup if matching_entries.any?
+          else
+            matching_pattern = section_entries.keys.reverse.detect do |pattern|
+              path_matches?(pattern, path)
+            end
+
+            matches << section_entries[matching_pattern].dup if matching_pattern
+          end
         end
 
         matches
@@ -120,6 +129,12 @@ module Gitlab
 
       def parse_entry(line, parsed, section, line_number)
         pattern, _separator, entry_owners = line.partition(/(?<!\\)\s+/)
+
+        if Feature.enabled?(:codeowners_file_exclusions, @blob.repository.project)
+          is_exclusion = pattern.start_with?('!')
+          pattern = pattern[1..] if is_exclusion
+        end
+
         normalized_pattern = normalize_pattern(pattern)
 
         if entry_owners.present? && ReferenceExtractor.new(entry_owners).references.blank?
@@ -130,12 +145,17 @@ module Gitlab
 
         add_error(Error::MISSING_ENTRY_OWNER, line_number) if owners.blank?
 
-        parsed[section.name][normalized_pattern] = Entry.new(
+        entry_args = [
           pattern,
           owners,
           section.name,
           section.optional,
-          section.approvals)
+          section.approvals
+        ]
+
+        entry_args << is_exclusion if Feature.enabled?(:codeowners_file_exclusions, @blob.repository.project)
+
+        parsed[section.name][normalized_pattern] = Entry.new(*entry_args)
       end
 
       def skip?(line)
