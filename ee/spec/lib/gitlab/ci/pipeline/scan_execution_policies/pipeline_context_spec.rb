@@ -73,7 +73,9 @@ RSpec.describe Gitlab::Ci::Pipeline::ScanExecutionPolicies::PipelineContext, fea
       it { is_expected.to be(false) }
     end
 
-    context 'when no scan execution policies are associated with the project in the database' do
+    # TODO: Enable this after https://gitlab.com/gitlab-org/gitlab/-/issues/515866 is fixed
+    context 'when no scan execution policies are associated with the project in the database',
+      skip: 'Temporarily skipped due to inconsistent database state' do
       let!(:db_policies) { [] }
 
       it { is_expected.to be(false) }

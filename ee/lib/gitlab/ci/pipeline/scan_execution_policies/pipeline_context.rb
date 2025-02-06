@@ -38,7 +38,9 @@ module Gitlab
             return false unless project&.feature_available?(:security_orchestration_policies)
             return false unless Enums::Ci::Pipeline.ci_sources.key?(source&.to_sym)
 
-            project.security_policies.type_scan_execution_policy.exists?
+            # TODO: Uncomment this after https://gitlab.com/gitlab-org/gitlab/-/issues/515866 is fixed
+            # project.security_policies.type_scan_execution_policy.exists?
+            true
           end
 
           def policies
