@@ -7,7 +7,7 @@ module Vulnerabilities
 
       UPSERT_SQL = <<~SQL
         INSERT INTO vulnerability_statistics
-          (project_id, total, info, unknown, low, medium, high, critical, letter_grade, created_at, updated_at)
+          (project_id, archived, traversal_ids, total, info, unknown, low, medium, high, critical, letter_grade, created_at, updated_at)
           (%{stats_sql})
         ON CONFLICT (project_id)
         DO UPDATE SET
@@ -25,6 +25,8 @@ module Vulnerabilities
       STATS_SQL = <<~SQL
         SELECT
           project_ids.project_id AS project_id,
+          project_attributes.archived AS archived,
+          project_attributes.traversal_ids AS traversal_ids,
           COALESCE(severity_counts.total, 0) AS total,
           COALESCE(severity_counts.info, 0) AS info,
           COALESCE(severity_counts.unknown, 0) AS unknown,
@@ -49,6 +51,8 @@ module Vulnerabilities
           now() AS created_at,
           now() AS updated_at
         FROM unnest(ARRAY[%{project_ids}]) project_ids(project_id)
+        JOIN (%{project_attributes}) project_attributes(project_id, archived, traversal_ids)
+          ON project_attributes.project_id = project_ids.project_id
         LEFT OUTER JOIN(
           SELECT
             vulnerability_reads.project_id AS project_id,
@@ -101,7 +105,28 @@ module Vulnerabilities
       end
 
       def stats_sql
-        STATS_SQL % { project_ids: project_ids.join(', '), active_states: active_states }
+        STATS_SQL % {
+          project_ids: project_ids.join(', '),
+          project_attributes: project_attributes_as_values_sql,
+          active_states: active_states
+        }
+      end
+
+      def project_attributes_as_values_sql
+        # rubocop:disable CodeReuse/ActiveRecord -- not reusable
+        attributes = Project.where(id: project_ids).joins_namespace.limit(project_ids.length)
+                              .pluck(:id, :archived, :traversal_ids)
+        # rubocop:enable CodeReuse/ActiveRecord
+
+        tuples = attributes.map do |row|
+          [
+            row[0],
+            row[1],
+            Arel.sql("ARRAY#{row[2]}::bigint[]")
+          ]
+        end
+
+        Arel::Nodes::ValuesList.new(tuples).to_sql
       end
 
       def active_states
