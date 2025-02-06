@@ -15,11 +15,12 @@ module Mutations
           description: 'Global ID of the user to be assigned to a custom role.'
 
         argument :member_role_id, Types::GlobalIDType[::MemberRole],
-          required: true,
-          description: 'Global ID of the custom role to be assigned to a user.'
+          required: false,
+          description: 'Global ID of the custom role to be assigned to a user.
+            Admin roles will be unassigned from the user if omitted or set as NULL.'
 
         field :user_member_role, ::Types::Users::UserMemberRoleType,
-          description: 'Created user member role.', null: true
+          description: 'Created user member role or nil if the relation was deleted.', null: true
 
         def ready?(**args)
           raise_resource_not_available_error! if gitlab_com_subscription?

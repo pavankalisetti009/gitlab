@@ -80,15 +80,64 @@ RSpec.describe 'Assigning a user to a member role', feature_category: :permissio
       end
 
       context 'when on self-managed' do
-        it 'returns correct response', :aggregate_failures do
-          post_graphql_mutation(mutation, current_user: current_user)
+        context 'with valid member_role_id' do
+          it 'returns correct response', :aggregate_failures do
+            post_graphql_mutation(mutation, current_user: current_user)
 
-          response_object = mutation_response['userMemberRole']
+            response_object = mutation_response['userMemberRole']
 
-          expect(response).to have_gitlab_http_status(:success)
-          expect(mutation_response['errors']).to be_empty
-          expect(response_object['user']['id']).to eq(user_global_id)
-          expect(response_object['memberRole']['id']).to eq(member_role_global_id)
+            expect(response).to have_gitlab_http_status(:success)
+            expect(mutation_response['errors']).to be_empty
+            expect(response_object['user']['id']).to eq(user_global_id)
+            expect(response_object['memberRole']['id']).to eq(member_role_global_id)
+          end
+
+          it 'creates a new user member role' do
+            expect { post_graphql_mutation(mutation, current_user: current_user) }
+              .to change { ::Users::UserMemberRole.count }.by(1)
+          end
+        end
+
+        context 'with member_role_id nil' do
+          let(:member_role_global_id) { nil }
+
+          context 'when a user does not have any admin member role assigned' do
+            it 'returns an error message in response', :aggregate_failures do
+              post_graphql_mutation(mutation, current_user: current_user)
+
+              response_object = mutation_response['userMemberRole']
+
+              expect(response).to have_gitlab_http_status(:success)
+              expect(mutation_response['errors']).to include('No member role exists for the user.')
+
+              expect(response_object).to be_nil
+            end
+
+            it 'does not delete the user member role' do
+              expect { post_graphql_mutation(mutation, current_user: current_user) }
+                .not_to change { ::Users::UserMemberRole.count }
+            end
+          end
+
+          context 'when a user has an admin member role assigned' do
+            let_it_be(:user_member_role) { create(:user_member_role, member_role: member_role, user: user) }
+
+            it 'returns correct response', :aggregate_failures do
+              post_graphql_mutation(mutation, current_user: current_user)
+
+              response_object = mutation_response['userMemberRole']
+
+              expect(response).to have_gitlab_http_status(:success)
+              expect(mutation_response['errors']).to be_empty
+
+              expect(response_object).to be_nil
+            end
+
+            it 'deletes the user member role' do
+              expect { post_graphql_mutation(mutation, current_user: current_user) }
+                .to change { ::Users::UserMemberRole.count }.by(-1)
+            end
+          end
         end
       end
 

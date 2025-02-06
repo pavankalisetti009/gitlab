@@ -19,7 +19,25 @@ module Users
           return ServiceResponse.error(message: 'Not yet available', reason: :forbidden)
         end
 
-        user_member_role = Users::UserMemberRole.create!(params)
+        assign
+      end
+
+      private
+
+      def assign
+        user_member_role = if params[:member_role]
+                             Users::UserMemberRole.create(params)
+                           else
+                             user_role = Users::UserMemberRole.find_by_user_id(params[:user].id)
+
+                             unless user_role
+                               return ServiceResponse.error(message: 'No member role exists for the user.')
+                             end
+
+                             user_role.destroy!
+
+                             nil
+                           end
 
         ServiceResponse.success(payload: { user_member_role: user_member_role })
       end
