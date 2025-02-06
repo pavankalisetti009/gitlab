@@ -113,7 +113,7 @@ from public projects without authentication.)
 
 To authenticate to the package registry, you need one of the following:
 
-- A [personal access token](../../../user/profile/personal_access_tokens.md)
+- A [personal access token](../../profile/personal_access_tokens.md)
   with the scope set to `api`.
 - A [deploy token](../../project/deploy_tokens/index.md) with the
   scope set to `read_package_registry`, `write_package_registry`, or both.
