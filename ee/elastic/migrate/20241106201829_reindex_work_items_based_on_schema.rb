@@ -18,3 +18,5 @@ class ReindexWorkItemsBasedOnSchema < Elastic::Migration
     Search::Elastic::Types::WorkItem.index_name
   end
 end
+
+ReindexWorkItemsBasedOnSchema.prepend ::Elastic::MigrationObsolete
