@@ -34,8 +34,8 @@ RSpec.describe GitlabSubscriptions::Trials::CreateDuoEnterpriseService, feature_
     it_behaves_like 'with an unknown step'
     it_behaves_like 'with no step'
 
-    it_behaves_like 'for tracking the lead step', :ultimate_plan, :duo_enterprise
-    it_behaves_like 'for tracking the trial step', :ultimate_plan, :duo_enterprise
+    it_behaves_like 'for tracking the lead step', :ultimate_plan, 'duo_enterprise_'
+    it_behaves_like 'for tracking the trial step', :ultimate_plan, 'duo_enterprise_'
 
     it_behaves_like 'creating add-on when namespace_id is provided', :ultimate_plan, :premium_plan
   end

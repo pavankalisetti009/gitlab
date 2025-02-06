@@ -54,6 +54,16 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
 
       it_behaves_like 'namespace_id is passed'
 
+      context 'with tracking page render' do
+        it_behaves_like 'internal event tracking' do
+          let(:event) { 'render_lead_page' }
+
+          subject(:track_event) do
+            get new_trial_path, params: base_params
+          end
+        end
+      end
+
       context 'when there are no eligible namespaces' do
         it 'is empty' do
           get_new
@@ -81,11 +91,20 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
       context 'when on the trial step' do
         let(:base_params) { { step: 'trial' } }
 
-        before_all do
-          create(:group, owners: user)
-        end
+        let_it_be(:group) { create(:group, owners: user) }
 
         it { is_expected.to render_select_namespace }
+
+        context 'with tracking page render' do
+          it_behaves_like 'internal event tracking' do
+            let(:event) { 'render_trial_page' }
+            let(:namespace) { group }
+
+            subject(:track_event) do
+              get new_trial_path, params: base_params.merge(namespace_id: group.id)
+            end
+          end
+        end
       end
     end
   end

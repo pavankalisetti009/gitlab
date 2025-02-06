@@ -69,6 +69,11 @@ module GitlabSubscriptions
         assign_link = helpers.link_to('', assign_doc_url, target: '_blank', rel: 'noopener noreferrer')
         tag_pair(assign_link, :assign_link_start, :assign_link_end)
       end
+
+      def track_event(action)
+        Gitlab::InternalEvents
+          .track_event(action, user: current_user, namespace: namespace || eligible_namespaces.first)
+      end
     end
   end
 end

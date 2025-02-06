@@ -3,6 +3,8 @@
 module GitlabSubscriptions
   module Trials
     class CreateService < BaseCreateService
+      extend ::Gitlab::Utils::Override
+
       NAMESPACE_CREATE_FAILED = :namespace_create_failed
 
       private
@@ -55,6 +57,11 @@ module GitlabSubscriptions
 
       def namespaces_eligible_for_trial
         Namespaces::TrialEligibleFinder.new(user: user).execute
+      end
+
+      override :tracking_prefix
+      def tracking_prefix
+        ''
       end
     end
   end

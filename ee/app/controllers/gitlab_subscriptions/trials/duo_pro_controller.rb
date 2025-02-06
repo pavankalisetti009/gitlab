@@ -57,10 +57,6 @@ module GitlabSubscriptions
       end
       strong_memoize_attr :eligible_namespaces
 
-      def track_event(action)
-        Gitlab::InternalEvents.track_event(action, user: current_user, namespace: namespace)
-      end
-
       def trial_params
         params.permit(*::Onboarding::StatusPresenter::GLM_PARAMS, :namespace_id).to_h
       end
