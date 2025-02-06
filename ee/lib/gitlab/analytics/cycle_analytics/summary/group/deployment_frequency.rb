@@ -30,7 +30,7 @@ module Gitlab
             def links
               [
                 { "name" => _('Deployment frequency'), "url" => Gitlab::Routing.url_helpers.group_analytics_ci_cd_analytics_path(group, tab: 'deployment-frequency'), "label" => s_('ValueStreamAnalytics|Dashboard') },
-                { "name" => _('Deployment frequency'), "url" => Gitlab::Routing.url_helpers.help_page_path('user/analytics/index.md', anchor: 'definitions'), "docs_link" => true, "label" => s_('ValueStreamAnalytics|Go to docs') }
+                { "name" => _('Deployment frequency'), "url" => Gitlab::Routing.url_helpers.help_page_path('user/analytics/_index.md', anchor: 'definitions'), "docs_link" => true, "label" => s_('ValueStreamAnalytics|Go to docs') }
               ]
             end
           end

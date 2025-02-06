@@ -28,7 +28,7 @@ module Gitlab
               { "name" => title, "url" => dashboard_link,
                 "label" => s_('ValueStreamAnalytics|Merge request analytics') },
               { "name" => title,
-                "url" => helpers.help_page_path('user/analytics/index.md', anchor: 'definitions'),
+                "url" => helpers.help_page_path('user/analytics/_index.md', anchor: 'definitions'),
                 "docs_link" => true,
                 "label" => s_('ValueStreamAnalytics|Go to docs') }
             ]

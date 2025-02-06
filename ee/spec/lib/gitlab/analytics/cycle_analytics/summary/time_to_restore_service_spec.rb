@@ -62,7 +62,7 @@ data: [{ 'time_to_restore_service' => 5.days.to_i }] })
           },
           {
             "name" => _('Time to restore service'),
-            "url" => helpers.help_page_path('user/analytics/index.md', anchor: 'time-to-restore-service'),
+            "url" => helpers.help_page_path('user/analytics/_index.md', anchor: 'time-to-restore-service'),
             "docs_link" => true,
             "label" => s_('ValueStreamAnalytics|Go to docs')
           }
@@ -87,7 +87,7 @@ data: [{ 'time_to_restore_service' => 5.days.to_i }] })
             },
             {
               "name" => _('Time to restore service'),
-              "url" => helpers.help_page_path('user/analytics/index.md', anchor: 'time-to-restore-service'),
+              "url" => helpers.help_page_path('user/analytics/_index.md', anchor: 'time-to-restore-service'),
               "docs_link" => true,
               "label" => s_('ValueStreamAnalytics|Go to docs')
             }
