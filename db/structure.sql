@@ -20586,7 +20586,8 @@ CREATE TABLE sbom_occurrences_vulnerabilities (
     vulnerability_id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_a02e48df9c CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE sbom_occurrences_vulnerabilities_id_seq
@@ -26793,9 +26794,6 @@ ALTER TABLE terraform_state_versions
 
 ALTER TABLE approval_merge_request_rules
     ADD CONSTRAINT check_90caab37e0 CHECK ((project_id IS NOT NULL)) NOT VALID;
-
-ALTER TABLE sbom_occurrences_vulnerabilities
-    ADD CONSTRAINT check_a02e48df9c CHECK ((project_id IS NOT NULL)) NOT VALID;
 
 ALTER TABLE issue_links
     ADD CONSTRAINT check_c32f659c75 CHECK ((namespace_id IS NOT NULL)) NOT VALID;
