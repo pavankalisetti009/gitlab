@@ -342,6 +342,47 @@ RSpec.describe 'getting a work item list for a project', feature_category: :team
     end
   end
 
+  context 'with top level filters' do
+    let_it_be(:now) { Time.current }
+
+    let_it_be(:past_work_item) do
+      create(:work_item, project: project, created_at: 1.day.ago, due_date: 1.day.ago, closed_at: 1.day.ago,
+        updated_at: 1.day.ago)
+    end
+
+    let_it_be(:current_work_item) do
+      create(:work_item, project: project, created_at: now, updated_at: now, closed_at: now, due_date: now)
+    end
+
+    shared_examples 'filters work items by date' do |field_name|
+      context "with #{field_name}_before filter" do
+        let(:item_filter_params) { "#{field_name.camelize(:lower)}Before: \"#{now.iso8601}\"" }
+
+        it "filters work items by #{field_name} before" do
+          post_graphql(query, current_user: current_user)
+
+          expect(response).to have_gitlab_http_status(:success)
+          expect(item_ids).to contain_exactly(past_work_item.to_global_id.to_s)
+        end
+      end
+
+      context "with #{field_name}_after filter" do
+        let(:item_filter_params) { "#{field_name.camelize(:lower)}After: \"#{(now - 1).iso8601}\"" }
+
+        it "filters work items by #{field_name} after" do
+          post_graphql(query, current_user: current_user)
+
+          expect(response).to have_gitlab_http_status(:success)
+          expect(item_ids).to contain_exactly(current_work_item.to_global_id.to_s)
+        end
+      end
+    end
+
+    %w[created updated due closed].each do |field|
+      it_behaves_like 'filters work items by date', field
+    end
+  end
+
   def create_feature_flag_for(work_item)
     feature_flag = create(:operations_feature_flag, project: project)
     create(:feature_flag_issue, issue_id: work_item.id, feature_flag: feature_flag)

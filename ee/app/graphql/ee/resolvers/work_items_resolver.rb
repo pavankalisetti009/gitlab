@@ -14,6 +14,12 @@ module EE
           required: false,
           deprecated: { reason: 'Use work item IID filter instead', milestone: '15.9' },
           description: 'Input for legacy requirement widget filter.'
+        argument :health_status, ::Types::HealthStatusFilterEnum,
+          required: false,
+          description: 'Health status of the work item, "none" and "any" values are supported.'
+        argument :weight, GraphQL::Types::String,
+          required: false,
+          description: 'Weight applied to the work item, "none" and "any" values are supported.'
       end
 
       override :resolve_with_lookahead

@@ -10,8 +10,8 @@ RSpec.describe Resolvers::WorkItemsResolver do
 
   describe '#resolve', :aggregate_failures do
     let_it_be(:work_item1) { create(:work_item, :satisfied_status, project: project) }
-    let_it_be(:work_item2) { create(:work_item, :failed_status, project: project) }
-    let_it_be(:work_item3) { create(:work_item, :requirement, project: project) }
+    let_it_be(:work_item2) { create(:work_item, :failed_status, project: project, health_status: :at_risk, weight: 1) }
+    let_it_be(:work_item3) { create(:work_item, :requirement, project: project, health_status: :on_track, weight: 2) }
 
     context 'with status widget arguments', feature_category: :requirements_management do
       it 'filters work items by status' do
@@ -29,6 +29,26 @@ RSpec.describe Resolvers::WorkItemsResolver do
           expect(resolve_items(status_widget: { status: 'passed' }))
             .to contain_exactly(work_item1, work_item2, work_item3)
         end
+      end
+    end
+
+    context 'with health_status filter', feature_category: :requirements_management do
+      it 'filters work items by health_status' do
+        expect(resolve_items(health_status: :at_risk)).to contain_exactly(work_item2)
+        expect(resolve_items(health_status: :on_track)).to contain_exactly(work_item3)
+
+        expect(resolve_items(health_status: :any)).to contain_exactly(work_item2, work_item3)
+        expect(resolve_items(health_status: :none)).to contain_exactly(work_item1)
+      end
+    end
+
+    context 'with weight filter', feature_category: :requirements_management do
+      it 'filters work items by weight' do
+        expect(resolve_items(weight: '1')).to contain_exactly(work_item2)
+        expect(resolve_items(weight: '2')).to contain_exactly(work_item3)
+
+        expect(resolve_items(weight: 'any')).to contain_exactly(work_item2, work_item3)
+        expect(resolve_items(weight: 'none')).to contain_exactly(work_item1)
       end
     end
 
