@@ -126,6 +126,10 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
       allow(Gitlab.config.duo_workflow).to receive(:service_url).and_return duo_workflow_service_url
       stub_config(duo_workflow: {
         executor_binary_url: 'https://example.com/executor',
+        executor_binary_urls: {
+          'linux/arm' => 'https://example.com/linux-arm-executor.tar.gz',
+          'darwin/arm64' => 'https://example.com/darwin-arm64-executor.tar.gz'
+        },
         service_url: duo_workflow_service_url,
         executor_version: 'v1.2.3',
         secure: true
@@ -205,6 +209,10 @@ oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 
         expect(json_response['duo_workflow_executor']['executor_binary_url']).to eq('https://example.com/executor')
         expect(json_response['duo_workflow_executor']['version']).to eq('v1.2.3')
         expect(json_response['workflow_metadata']['extended_logging']).to eq(true)
+        expect(json_response['duo_workflow_executor']['executor_binary_urls']).to eq({
+          'linux/arm' => 'https://example.com/linux-arm-executor.tar.gz',
+          'darwin/arm64' => 'https://example.com/darwin-arm64-executor.tar.gz'
+        })
       end
 
       context 'when duo_workflow_extended_logging is disabled' do
