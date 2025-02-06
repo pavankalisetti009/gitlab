@@ -2664,6 +2664,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_951ac22c24d7() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."protected_branch_namespace_id" IS NULL THEN
+  SELECT "namespace_id"
+  INTO NEW."protected_branch_namespace_id"
+  FROM "protected_branches"
+  WHERE "protected_branches"."id" = NEW."protected_branch_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_96298f7da5d3() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -2913,6 +2929,22 @@ IF NEW."project_id" IS NULL THEN
   INTO NEW."project_id"
   FROM "incident_management_oncall_schedules"
   WHERE "incident_management_oncall_schedules"."id" = NEW."oncall_schedule_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
+CREATE FUNCTION trigger_b0f4298cadff() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."protected_branch_project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."protected_branch_project_id"
+  FROM "protected_branches"
+  WHERE "protected_branches"."id" = NEW."protected_branch_id";
 END IF;
 
 RETURN NEW;
@@ -20348,6 +20380,8 @@ CREATE TABLE required_code_owners_sections (
     id bigint NOT NULL,
     protected_branch_id bigint NOT NULL,
     name text NOT NULL,
+    protected_branch_project_id bigint,
+    protected_branch_namespace_id bigint,
     CONSTRAINT check_e58d53741e CHECK ((char_length(name) <= 1024))
 );
 
@@ -34342,6 +34376,10 @@ CREATE INDEX index_remote_mirrors_on_project_id ON remote_mirrors USING btree (p
 
 CREATE INDEX index_required_code_owners_sections_on_protected_branch_id ON required_code_owners_sections USING btree (protected_branch_id);
 
+CREATE INDEX index_required_code_owners_sections_on_protected_branch_namespa ON required_code_owners_sections USING btree (protected_branch_namespace_id);
+
+CREATE INDEX index_required_code_owners_sections_on_protected_branch_project ON required_code_owners_sections USING btree (protected_branch_project_id);
+
 CREATE INDEX index_requirements_management_test_reports_on_author_id ON requirements_management_test_reports USING btree (author_id);
 
 CREATE INDEX index_requirements_management_test_reports_on_build_id ON requirements_management_test_reports USING btree (build_id);
@@ -37998,6 +38036,8 @@ CREATE TRIGGER trigger_9259aae92378 BEFORE INSERT OR UPDATE ON packages_build_in
 
 CREATE TRIGGER trigger_94514aeadc50 BEFORE INSERT OR UPDATE ON deployment_approvals FOR EACH ROW EXECUTE FUNCTION trigger_94514aeadc50();
 
+CREATE TRIGGER trigger_951ac22c24d7 BEFORE INSERT OR UPDATE ON required_code_owners_sections FOR EACH ROW EXECUTE FUNCTION trigger_951ac22c24d7();
+
 CREATE TRIGGER trigger_96298f7da5d3 BEFORE INSERT OR UPDATE ON protected_branch_unprotect_access_levels FOR EACH ROW EXECUTE FUNCTION trigger_96298f7da5d3();
 
 CREATE TRIGGER trigger_9699ea03bb37 BEFORE INSERT OR UPDATE ON related_epic_links FOR EACH ROW EXECUTE FUNCTION trigger_9699ea03bb37();
@@ -38027,6 +38067,8 @@ CREATE TRIGGER trigger_a7e0fb195210 BEFORE INSERT OR UPDATE ON vulnerability_fin
 CREATE TRIGGER trigger_af3f17817e4d BEFORE INSERT OR UPDATE ON protected_tag_create_access_levels FOR EACH ROW EXECUTE FUNCTION trigger_af3f17817e4d();
 
 CREATE TRIGGER trigger_b046dd50c711 BEFORE INSERT OR UPDATE ON incident_management_oncall_rotations FOR EACH ROW EXECUTE FUNCTION trigger_b046dd50c711();
+
+CREATE TRIGGER trigger_b0f4298cadff BEFORE INSERT OR UPDATE ON required_code_owners_sections FOR EACH ROW EXECUTE FUNCTION trigger_b0f4298cadff();
 
 CREATE TRIGGER trigger_b2612138515d BEFORE INSERT OR UPDATE ON project_relation_exports FOR EACH ROW EXECUTE FUNCTION trigger_b2612138515d();
 
@@ -38530,6 +38572,9 @@ ALTER TABLE ONLY vulnerability_merge_request_links
 
 ALTER TABLE ONLY jira_tracker_data
     ADD CONSTRAINT fk_2ef8e4e35b FOREIGN KEY (instance_integration_id) REFERENCES instance_integrations(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY required_code_owners_sections
+    ADD CONSTRAINT fk_2f43f5cbbb FOREIGN KEY (protected_branch_project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY duo_workflows_workflows
     ADD CONSTRAINT fk_2f6398d8ee FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
@@ -39250,6 +39295,9 @@ ALTER TABLE ONLY vulnerability_occurrences
 
 ALTER TABLE ONLY project_control_compliance_statuses
     ADD CONSTRAINT fk_9826fbb4a6 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY required_code_owners_sections
+    ADD CONSTRAINT fk_98c3f48741 FOREIGN KEY (protected_branch_namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY protected_branch_merge_access_levels
     ADD CONSTRAINT fk_98f3d044fe FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
