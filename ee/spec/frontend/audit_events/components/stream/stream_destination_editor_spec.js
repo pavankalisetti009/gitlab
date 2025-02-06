@@ -189,7 +189,7 @@ describe('StreamDestinationEditor', () => {
 
         it('should render the destination URL input', () => {
           expect(findDestinationUrlFormGroup().exists()).toBe(true);
-          expect(findDestinationUrl().props('disabled')).toBeUndefined();
+          expect(findDestinationUrl().props('disabled')).toBe(false);
           expect(findDestinationUrl().attributes('placeholder')).toBe(
             ADD_STREAM_EDITOR_I18N.DESTINATION_URL_PLACEHOLDER,
           );
@@ -1036,7 +1036,7 @@ describe('StreamDestinationEditor', () => {
 
         it('should render the destination URL input', () => {
           expect(findDestinationUrlFormGroup().exists()).toBe(true);
-          expect(findDestinationUrl().props('disabled')).toBe(undefined);
+          expect(findDestinationUrl().props('disabled')).toBe(false);
           expect(findDestinationUrl().attributes('placeholder')).toBe(
             ADD_STREAM_EDITOR_I18N.DESTINATION_URL_PLACEHOLDER,
           );

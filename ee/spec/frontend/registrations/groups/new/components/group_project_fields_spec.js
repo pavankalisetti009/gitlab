@@ -340,8 +340,8 @@ describe('GroupProjectFields', () => {
       createComponent({ groupName: '@_', projectName: 'project name' });
       await nextTick();
 
-      expect(findInputByTestId('group-name').attributes('value')).toBe('@_');
-      expect(findInputByTestId('project-name').attributes('value')).toBe('project name');
+      expect(findInputByTestId('group-name').props('value')).toBe('@_');
+      expect(findInputByTestId('project-name').props('value')).toBe('project name');
       expect(wrapper.text()).toContain(buildUrl('_', 'project-name'));
     });
   });

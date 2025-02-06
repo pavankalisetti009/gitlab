@@ -33,7 +33,7 @@ describe('User invites', () => {
       });
 
       it('does not set a value', () => {
-        expect(inputs().at(0).attributes('value')).toBe(undefined);
+        expect(inputs().at(0).props('value')).toBe('');
       });
     });
 
@@ -49,7 +49,7 @@ describe('User invites', () => {
       });
 
       it.each([0, 1, 2])('restores the value of the passed emails', (index) => {
-        expect(inputs().at(index).attributes('value')).toBe(emails[index]);
+        expect(inputs().at(index).props('value')).toBe(emails[index]);
       });
     });
 
@@ -68,7 +68,7 @@ describe('User invites', () => {
       });
 
       it.each([0, 1])('does not set a value', (index) => {
-        expect(inputs().at(index).attributes('value')).toBe(undefined);
+        expect(inputs().at(index).props('value')).toBe('');
       });
 
       it('sets the focus to the new input field', () => {

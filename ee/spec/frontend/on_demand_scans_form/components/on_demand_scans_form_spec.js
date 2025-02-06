@@ -63,9 +63,6 @@ describe('OnDemandScansForm', () => {
   let wrapper;
   let requestHandlers;
 
-  const GlFormInputStub = stubComponent(GlFormInput, {
-    template: '<input />',
-  });
   const RefSelectorStub = stubComponent(RefSelector, {
     template: '<input />',
   });
@@ -92,7 +89,7 @@ describe('OnDemandScansForm', () => {
   };
 
   const setValidFormData = async () => {
-    findNameInput().vm.$emit('input', 'My daily scan');
+    findNameInput().setValue('My daily scan');
     findBranchInput().vm.$emit('input', selectedBranch);
     await findDastProfilesConfigurator().vm.$emit('profiles-selected', {
       scannerProfile: passiveScannerProfile,
@@ -100,6 +97,7 @@ describe('OnDemandScansForm', () => {
     });
     await nextTick();
   };
+
   const setupSuccess = ({ edit = false } = {}) => {
     wrapper.vm.$apollo.mutate.mockResolvedValue({
       data: {
@@ -171,7 +169,7 @@ describe('OnDemandScansForm', () => {
               ...glFeatures,
             },
             stubs: {
-              GlFormInput: GlFormInputStub,
+              GlFormInput,
               RefSelector: RefSelectorStub,
               ScanSchedule: true,
               SectionLayout,
@@ -258,9 +256,9 @@ describe('OnDemandScansForm', () => {
       });
 
       it('populates the fields with passed values', () => {
-        expect(findNameInput().attributes('value')).toBe(dastScan.name);
+        expect(findNameInput().props('value')).toBe(dastScan.name);
         expect(findBranchInput().props('value')).toBe(dastScan.branch.name);
-        expect(findDescriptionInput().attributes('value')).toBe(dastScan.description);
+        expect(findDescriptionInput().props('value')).toBe(dastScan.description);
         hasSiteProfileAttributes();
       });
     });

@@ -91,6 +91,7 @@ exports[`Status Page settings form default state should match the default snapsh
         >
           <gl-form-input-stub
             id="reference-3"
+            type="text"
             value=""
           />
           <p
@@ -114,6 +115,7 @@ exports[`Status Page settings form default state should match the default snapsh
         >
           <gl-form-input-stub
             id="reference-4"
+            type="text"
             value=""
           />
           <p
@@ -135,6 +137,7 @@ exports[`Status Page settings form default state should match the default snapsh
           <gl-form-input-stub
             id="reference-5"
             placeholder="example: us-west-2"
+            type="text"
             value=""
           />
           <p
@@ -155,6 +158,7 @@ exports[`Status Page settings form default state should match the default snapsh
         >
           <gl-form-input-stub
             id="reference-6"
+            type="text"
             value=""
           />
         </gl-form-group-stub>
@@ -168,6 +172,7 @@ exports[`Status Page settings form default state should match the default snapsh
         >
           <gl-form-input-stub
             id="reference-7"
+            type="text"
             value=""
           />
         </gl-form-group-stub>
