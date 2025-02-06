@@ -228,6 +228,8 @@ RSpec.describe 'Epic Issues', :js, feature_category: :portfolio_management do
         end
 
         it 'user can add new epics to the epic' do
+          allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(130)
+
           references = epic_to_add.to_reference(full: true)
           add_epics(references)
 
