@@ -106,7 +106,7 @@ export default {
   <div class="gl-grid gl-w-full gl-grid-cols-[38px_1fr_auto]">
     <div
       class="gl-col-span-3 -gl-mx-2 gl-grid gl-grid-cols-subgrid gl-gap-4 gl-rounded-base gl-px-4 gl-py-3"
-      :class="{ 'gl-bg-gray-50': active }"
+      :class="{ 'gl-bg-strong': active }"
     >
       <div>
         <ci-icon v-if="status === 'RUNNING'" :status="$options.EVALUATING_ICON" :use-link="false" />
@@ -138,7 +138,7 @@ export default {
           <gl-button
             category="tertiary"
             class="gl-w-full !gl-justify-start"
-            :class="{ '!gl-border-0 !gl-bg-gray-50': isFindingDrawerOpen(finding) }"
+            :class="{ '!gl-border-0 !gl-bg-strong': isFindingDrawerOpen(finding) }"
             :selected="isFindingDrawerOpen(finding)"
             data-testid="security-item-finding-button"
             @click="onClickFinding(finding)"

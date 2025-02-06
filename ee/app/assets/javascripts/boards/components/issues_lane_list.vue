@@ -445,7 +445,7 @@ export default {
     class="board gl-flex gl-shrink-0 gl-whitespace-normal gl-px-3 gl-align-top"
     :class="{ 'is-collapsed gl-w-10': list.collapsed }"
   >
-    <div class="gl-relative gl-w-full gl-rounded-base gl-bg-gray-50">
+    <div class="gl-relative gl-w-full gl-rounded-base gl-bg-strong dark:gl-bg-subtle">
       <board-new-issue
         v-if="showNewIssue"
         :list="list"

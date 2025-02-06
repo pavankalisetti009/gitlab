@@ -76,7 +76,7 @@ export default {
 <template>
   <div class="gl-mb-1">
     <div
-      class="gl-flex gl-cursor-pointer gl-items-center gl-bg-gray-50 gl-p-5"
+      class="gl-flex gl-cursor-pointer gl-items-center gl-bg-strong gl-p-5"
       tabindex="-1"
       role="button"
       :aria-expanded="isExpanded"
@@ -105,7 +105,7 @@ export default {
         {{ isRequired ? $options.i18n.required : $options.i18n.optional }}
       </gl-badge>
       <gl-button
-        class="gl-m-4 !gl-bg-gray-50"
+        class="gl-m-4 !gl-bg-strong"
         category="tertiary"
         :icon="collapseIconName"
         :aria-label="collapseButtonLabel"

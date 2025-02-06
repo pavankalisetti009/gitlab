@@ -452,7 +452,7 @@ export default {
           >
             <template #thumbnail>
               <gl-button
-                class="security-policies-drag-thumbnail !gl-min-h-7 !gl-min-w-5 !gl-rounded-none !gl-border-0 !gl-bg-gray-50"
+                class="security-policies-drag-thumbnail !gl-min-h-7 !gl-min-w-5 !gl-rounded-none !gl-border-0 !gl-bg-strong"
                 icon="grip"
                 size="small"
               />

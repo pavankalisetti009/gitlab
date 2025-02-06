@@ -37,7 +37,7 @@ export default {
     :project-full-path="projectFullPath"
   >
     <template #default="{ buttonLink, buttonText, dismiss, trackCTAClick }">
-      <div class="gl-border-t -gl-mx-5 gl-flex gl-border-default gl-bg-gray-50 gl-p-5">
+      <div class="gl-border-t -gl-mx-5 gl-flex gl-border-default gl-bg-strong gl-p-5">
         <gl-icon
           :size="16"
           name="bulb"

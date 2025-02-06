@@ -121,7 +121,7 @@ export default {
       <a
         v-else
         :href="link"
-        class="gl-block gl-rounded-base !gl-no-underline hover:gl-bg-gray-50"
+        class="gl-block gl-rounded-base !gl-no-underline hover:gl-bg-strong"
         data-testid="single-stat-link"
         @click="clickMetric(trackingLabel)"
       >
