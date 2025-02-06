@@ -246,6 +246,48 @@ RSpec.describe API::Internal::Base, feature_category: :source_code_management do
       end
     end
 
+    context 'with gitaly context' do
+      subject do
+        post(
+          api("/internal/allowed"),
+          params: params,
+          headers: gitlab_shell_internal_api_request_header
+        )
+      end
+
+      let_it_be(:project) { create(:project, :repository) }
+
+      let(:params) do
+        {
+          key_id: key.id,
+          project: project.full_path,
+          gl_repository: "project-#{project.id}",
+          action: 'git-upload-pack',
+          protocol: 'ssh',
+          gitaly_client_context_bin: Base64.encode64(gitaly_context.to_json)
+        }
+      end
+
+      let(:gitaly_context) { { key: :value } }
+
+      before do
+        project.add_developer(user)
+      end
+
+      it 'passes gitaly context to access checker' do
+        expect(Gitlab::GitAccessProject).to receive(:new).with(
+          key,
+          project,
+          'ssh',
+          a_hash_including(gitaly_context: { 'key' => 'value' })
+        ).and_call_original
+
+        subject
+
+        expect(response).to have_gitlab_http_status(:ok)
+      end
+    end
+
     context 'with a service account', :request_store do
       let_it_be(:project) { create(:project, :repository) }
       let_it_be(:other_user) { create(:user) }
