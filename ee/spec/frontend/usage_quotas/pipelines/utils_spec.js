@@ -1,7 +1,6 @@
 import {
   getUsageDataByYearAsArray,
   getUsageDataByYearByMonthAsObject,
-  formatIso8601Date,
 } from 'ee/usage_quotas/pipelines/utils';
 import { mockGetCiMinutesUsageNamespace } from './mock_data';
 
@@ -104,11 +103,5 @@ describe('Compute minutes Usage Utils', () => {
     };
 
     expect(getUsageDataByYearByMonthAsObject(nodes)).toEqual(expectedDataByYearMonth);
-  });
-
-  describe('formatIso8601Date', () => {
-    it('creates a ISO-8601 formated date', () => {
-      expect(formatIso8601Date(2021, 5, 1)).toBe('2021-06-01');
-    });
   });
 });

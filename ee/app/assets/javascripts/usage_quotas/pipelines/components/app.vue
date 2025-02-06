@@ -9,7 +9,7 @@ import {
   GlSprintf,
 } from '@gitlab/ui';
 import { getSubscriptionPermissionsData } from 'ee/fulfillment/shared_queries/subscription_actions_reason.customer.query.graphql';
-import { getMonthNames } from '~/lib/utils/datetime_utility';
+import { getMonthNames, formatIso8601Date } from '~/lib/utils/datetime_utility';
 import { TYPENAME_GROUP } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { captureException } from '~/ci/runner/sentry_utils';
@@ -21,7 +21,7 @@ import getCiMinutesUsageNamespace from '../graphql/queries/ci_minutes.query.grap
 import getCiMinutesUsageNamespaceProjects from '../graphql/queries/ci_minutes_projects.query.graphql';
 import { ERROR_MESSAGE, LABEL_BUY_ADDITIONAL_MINUTES } from '../constants';
 import { USAGE_BY_MONTH_HEADER, USAGE_BY_PROJECT_HEADER } from '../../constants';
-import { getUsageDataByYearAsArray, formatIso8601Date } from '../utils';
+import { getUsageDataByYearAsArray } from '../utils';
 import LimitedAccessModal from '../../components/limited_access_modal.vue';
 import ProjectList from './project_list.vue';
 import MinutesUsagePerMonth from './minutes_usage_per_month.vue';
