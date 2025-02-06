@@ -46,6 +46,8 @@ module GitlabSubscriptions
       end
 
       def after_lead_success_hook
+        track_event('lead_creation_success')
+
         if GitlabSubscriptions::Trials.single_eligible_namespace?(namespaces_eligible_for_trial)
           @namespace = namespaces_eligible_for_trial.first
           apply_trial_flow
@@ -65,6 +67,7 @@ module GitlabSubscriptions
       end
 
       def after_lead_error_hook(result)
+        track_event('lead_creation_failure')
         ServiceResponse.error(message: result.message, reason: LEAD_FAILED)
       end
 
@@ -105,6 +108,7 @@ module GitlabSubscriptions
       end
 
       def after_trial_success_hook(result)
+        track_event('trial_registration_success')
         Gitlab::Tracking.event(self.class.name, 'create_trial', namespace: namespace, user: user)
 
         ServiceResponse.success(
@@ -114,6 +118,8 @@ module GitlabSubscriptions
       end
 
       def after_trial_error_hook(result)
+        track_event('trial_registration_failure')
+
         ServiceResponse.error(
           message: result.message,
           payload: { namespace_id: trial_params[:namespace_id] },
@@ -127,6 +133,10 @@ module GitlabSubscriptions
 
       def trial_flow
         raise NoMethodError, 'Subclasses must implement the trial_flow method'
+      end
+
+      def tracking_prefix
+        raise NoMethodError, "Subclasses must implement the #{__method__} method"
       end
 
       def existing_namespace_flow
@@ -150,6 +160,12 @@ module GitlabSubscriptions
 
       def not_found
         ServiceResponse.error(message: 'Not found', reason: NOT_FOUND)
+      end
+
+      def track_event(action)
+        action_name = "#{tracking_prefix}#{action}"
+
+        Gitlab::InternalEvents.track_event(action_name, user: user, namespace: namespace)
       end
     end
   end

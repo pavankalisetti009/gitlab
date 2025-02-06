@@ -14,9 +14,13 @@ module GitlabSubscriptions
 
     def new
       if general_params[:step] == GitlabSubscriptions::Trials::CreateService::TRIAL
+        track_event('render_trial_page')
+
         render GitlabSubscriptions::Trials::TrialFormComponent
                  .new(eligible_namespaces: @eligible_namespaces, params: trial_form_params)
       else
+        track_event('render_lead_page')
+
         render GitlabSubscriptions::Trials::LeadFormComponent
                  .new(
                    user: current_user,

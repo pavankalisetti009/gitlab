@@ -32,7 +32,7 @@ module GitlabSubscriptions
 
       override :tracking_prefix
       def tracking_prefix
-        'duo_pro'
+        'duo_pro_'
       end
     end
   end

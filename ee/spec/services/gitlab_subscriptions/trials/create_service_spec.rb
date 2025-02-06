@@ -35,6 +35,9 @@ RSpec.describe GitlabSubscriptions::Trials::CreateService, feature_category: :pl
     it_behaves_like 'with an unknown step'
     it_behaves_like 'with no step'
 
+    it_behaves_like 'for tracking the lead step', :free_plan, ''
+    it_behaves_like 'for tracking the trial step', :free_plan, ''
+
     context 'with an expired legacy trial' do
       let_it_be(:group) do
         create(:gitlab_subscription, :premium, :expired_trial, :with_group, trial: false).namespace

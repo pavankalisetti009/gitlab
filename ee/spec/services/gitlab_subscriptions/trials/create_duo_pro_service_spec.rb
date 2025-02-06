@@ -34,8 +34,8 @@ RSpec.describe GitlabSubscriptions::Trials::CreateDuoProService, feature_categor
     it_behaves_like 'with an unknown step'
     it_behaves_like 'with no step'
 
-    it_behaves_like 'for tracking the lead step', :premium_plan, :duo_pro
-    it_behaves_like 'for tracking the trial step', :premium_plan, :duo_pro
+    it_behaves_like 'for tracking the lead step', :premium_plan, 'duo_pro_'
+    it_behaves_like 'for tracking the trial step', :premium_plan, 'duo_pro_'
 
     it_behaves_like 'creating add-on when namespace_id is provided', :premium_plan, :ultimate_plan
   end
@@ -71,8 +71,8 @@ RSpec.describe GitlabSubscriptions::Trials::CreateDuoProService, feature_categor
       it_behaves_like 'with an unknown step'
       it_behaves_like 'with no step'
 
-      it_behaves_like 'for tracking the lead step', :premium_plan, :duo_pro
-      it_behaves_like 'for tracking the trial step', :premium_plan, :duo_pro
+      it_behaves_like 'for tracking the lead step', :premium_plan, 'duo_pro_'
+      it_behaves_like 'for tracking the trial step', :premium_plan, 'duo_pro_'
 
       it_behaves_like 'creating add-on when namespace_id is provided', :premium_plan, :ultimate_plan
     end

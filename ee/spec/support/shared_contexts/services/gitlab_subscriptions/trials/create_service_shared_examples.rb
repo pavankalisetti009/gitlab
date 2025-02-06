@@ -195,7 +195,7 @@ RSpec.shared_examples 'returns an error of not_found and does not create lead or
   end
 end
 
-RSpec.shared_examples 'for tracking the lead step' do |plan_name, add_on|
+RSpec.shared_examples 'for tracking the lead step' do |plan_name, tracking_prefix|
   let_it_be(:namespace) do
     create(:group_with_plan, plan: plan_name, name: 'gitlab', owners: user)
   end
@@ -208,26 +208,26 @@ RSpec.shared_examples 'for tracking the lead step' do |plan_name, add_on|
       execute
     end
       .to(
-        trigger_internal_events("#{add_on}_lead_creation_success")
+        trigger_internal_events("#{tracking_prefix}lead_creation_success")
           .with(user: user, category: 'InternalEventTracking')
           .and(
-            trigger_internal_events("#{add_on}_trial_registration_failure")
+            trigger_internal_events("#{tracking_prefix}trial_registration_failure")
               .with(user: user, namespace: namespace, category: 'InternalEventTracking')
               .and(
                 not_trigger_internal_events(
-                  "#{add_on}_trial_registration_success", "#{add_on}_lead_creation_failure"
+                  "#{tracking_prefix}trial_registration_success", "#{tracking_prefix}lead_creation_failure"
                 )
               )
               .and(
                 increment_usage_metrics(
-                  "counts.count_total_#{add_on}_lead_creation_success",
-                  "counts.count_total_#{add_on}_trial_registration_failure"
+                  "counts.count_total_#{tracking_prefix}lead_creation_success",
+                  "counts.count_total_#{tracking_prefix}trial_registration_failure"
                 )
               )
               .and(
                 not_increment_usage_metrics(
-                  "counts.count_total_#{add_on}_trial_registration_success",
-                  "counts.count_total_#{add_on}_lead_creation_failure"
+                  "counts.count_total_#{tracking_prefix}trial_registration_success",
+                  "counts.count_total_#{tracking_prefix}lead_creation_failure"
                 )
               )
           )
@@ -241,28 +241,28 @@ RSpec.shared_examples 'for tracking the lead step' do |plan_name, add_on|
       execute
     end
       .to(
-        trigger_internal_events("#{add_on}_lead_creation_failure")
+        trigger_internal_events("#{tracking_prefix}lead_creation_failure")
           .with(user: user, category: 'InternalEventTracking')
           .and(
             not_trigger_internal_events(
-              "#{add_on}_lead_creation_success",
-              "#{add_on}_trial_registration_failure",
-              "#{add_on}_trial_registration_success"
+              "#{tracking_prefix}lead_creation_success",
+              "#{tracking_prefix}trial_registration_failure",
+              "#{tracking_prefix}trial_registration_success"
             )
           )
-          .and(increment_usage_metrics("counts.count_total_#{add_on}_lead_creation_failure"))
+          .and(increment_usage_metrics("counts.count_total_#{tracking_prefix}lead_creation_failure"))
           .and(
             not_increment_usage_metrics(
-              "counts.count_total_#{add_on}_lead_creation_success",
-              "counts.count_total_#{add_on}_trial_registration_failure",
-              "counts.count_total_#{add_on}_trial_registration_success"
+              "counts.count_total_#{tracking_prefix}lead_creation_success",
+              "counts.count_total_#{tracking_prefix}trial_registration_failure",
+              "counts.count_total_#{tracking_prefix}trial_registration_success"
             )
           )
       )
   end
 end
 
-RSpec.shared_examples 'for tracking the trial step' do |plan_name, add_on|
+RSpec.shared_examples 'for tracking the trial step' do |plan_name, tracking_prefix|
   let(:step) { described_class::TRIAL }
   let_it_be(:namespace) do
     create(:group_with_plan, plan: plan_name, name: 'gitlab', owners: user)
@@ -278,20 +278,20 @@ RSpec.shared_examples 'for tracking the trial step' do |plan_name, add_on|
       execute
     end
       .to(
-        trigger_internal_events("#{add_on}_trial_registration_success")
+        trigger_internal_events("#{tracking_prefix}trial_registration_success")
           .with(user: user, namespace: namespace, category: 'InternalEventTracking')
           .and(
             not_trigger_internal_events(
-              "#{add_on}_lead_creation_success",
-              "#{add_on}_lead_creation_failure",
-              "#{add_on}_trial_registration_failure"
+              "#{tracking_prefix}lead_creation_success",
+              "#{tracking_prefix}lead_creation_failure",
+              "#{tracking_prefix}trial_registration_failure"
             )
           )
-          .and(increment_usage_metrics("counts.count_total_#{add_on}_trial_registration_success"))
+          .and(increment_usage_metrics("counts.count_total_#{tracking_prefix}trial_registration_success"))
           .and(
             not_increment_usage_metrics(
-              "counts.count_total_#{add_on}_lead_creation_success",
-              "counts.count_total_#{add_on}_lead_creation_failure"
+              "counts.count_total_#{tracking_prefix}lead_creation_success",
+              "counts.count_total_#{tracking_prefix}lead_creation_failure"
             )
           )
       )
@@ -304,21 +304,21 @@ RSpec.shared_examples 'for tracking the trial step' do |plan_name, add_on|
       execute
     end
       .to(
-        trigger_internal_events("#{add_on}_trial_registration_failure")
+        trigger_internal_events("#{tracking_prefix}trial_registration_failure")
           .with(user: user, namespace: namespace, category: 'InternalEventTracking')
           .and(
             not_trigger_internal_events(
-              "#{add_on}_lead_creation_success",
-              "#{add_on}_lead_creation_failure",
-              "#{add_on}_trial_registration_success"
+              "#{tracking_prefix}lead_creation_success",
+              "#{tracking_prefix}lead_creation_failure",
+              "#{tracking_prefix}trial_registration_success"
             )
           )
-          .and(increment_usage_metrics("counts.count_total_#{add_on}_trial_registration_failure"))
+          .and(increment_usage_metrics("counts.count_total_#{tracking_prefix}trial_registration_failure"))
           .and(
             not_increment_usage_metrics(
-              "counts.count_total_#{add_on}_lead_creation_success",
-              "counts.count_total_#{add_on}_lead_creation_failure",
-              "counts.count_total_#{add_on}_trial_registration_success"
+              "counts.count_total_#{tracking_prefix}lead_creation_success",
+              "counts.count_total_#{tracking_prefix}lead_creation_failure",
+              "counts.count_total_#{tracking_prefix}trial_registration_success"
             )
           )
       )

@@ -35,6 +35,10 @@ RSpec.describe GitlabSubscriptions::Trials::BaseCreateService, feature_category:
         def lead_service_class
           GitlabSubscriptions::CreateLeadService
         end
+
+        def tracking_prefix
+          ''
+        end
       end
     end
 
@@ -70,5 +74,23 @@ RSpec.describe GitlabSubscriptions::Trials::BaseCreateService, feature_category:
     end
 
     it_behaves_like 'raises NoMethodError', 'Subclasses must implement the apply_trial_service_class method'
+  end
+
+  context 'when tracking_prefix is not implemented' do
+    let(:test_class) do
+      Class.new(described_class) do
+        def lead_service_class
+          GitlabSubscriptions::CreateLeadService
+        end
+      end
+    end
+
+    before do
+      allow_next_instance_of(GitlabSubscriptions::CreateLeadService) do |instance|
+        allow(instance).to receive(:execute).and_return(ServiceResponse.success)
+      end
+    end
+
+    it_behaves_like 'raises NoMethodError', 'Subclasses must implement the tracking_prefix method'
   end
 end

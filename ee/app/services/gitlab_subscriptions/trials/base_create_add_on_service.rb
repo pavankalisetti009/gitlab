@@ -20,34 +20,6 @@ module GitlabSubscriptions
         existing_namespace_flow
       end
 
-      override :after_lead_success_hook
-      def after_lead_success_hook
-        track_event('lead_creation_success')
-
-        super
-      end
-
-      override :after_lead_error_hook
-      def after_lead_error_hook(_result)
-        track_event('lead_creation_failure')
-
-        super
-      end
-
-      override :after_trial_success_hook
-      def after_trial_success_hook(_result)
-        track_event('trial_registration_success')
-
-        super
-      end
-
-      override :after_trial_error_hook
-      def after_trial_error_hook(_result)
-        track_event('trial_registration_failure')
-
-        super
-      end
-
       def lead_service_class
         GitlabSubscriptions::Trials::CreateAddOnLeadService
       end
@@ -65,16 +37,6 @@ module GitlabSubscriptions
 
       def product_interaction
         raise NoMethodError, "Subclasses must implement the #{__method__} method"
-      end
-
-      def tracking_prefix
-        raise NoMethodError, "Subclasses must implement the #{__method__} method"
-      end
-
-      def track_event(action)
-        action_name = "#{tracking_prefix}_#{action}"
-
-        Gitlab::InternalEvents.track_event(action_name, user: user, namespace: namespace)
       end
     end
   end
