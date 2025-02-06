@@ -1079,6 +1079,10 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
   end
 
   describe '#reindex_cluster' do
+    before do
+      stub_ee_application_setting(elasticsearch_indexing: true)
+    end
+
     subject(:reindex_cluster) { service.execute(:reindex_cluster) }
 
     it 'creates a reindexing task and queues the cron worker' do
@@ -1088,6 +1092,20 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
       expect(logger).to receive(:info).with(/Reindexing job was successfully scheduled/)
 
       reindex_cluster
+    end
+
+    context 'when elasticsearch_indexing is false' do
+      before do
+        stub_ee_application_setting(elasticsearch_indexing: false)
+      end
+
+      it 'does nothing and logs an warning' do
+        expect(::ElasticClusterReindexingCronWorker).not_to receive(:perform_async)
+
+        expect(logger).to receive(:warn).with(/Setting `elasticsearch_indexing` is disabled/)
+
+        reindex_cluster
+      end
     end
 
     context 'when a reindexing task is in progress' do

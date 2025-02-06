@@ -35,20 +35,16 @@ RSpec.describe SystemCheck::App::AdvancedSearchMigrationsCheck, feature_category
   end
 
   describe '.check?' do
-    before do
-      allow(Elastic::DataMigrationService).to receive(:migration_files).and_return(migration_files)
-    end
-
     context 'with pending migrations' do
       it 'returns false' do
-        allow(Elastic::DataMigrationService).to receive(:migration_has_finished?).with('test_migrate').and_return false
+        allow(Elastic::DataMigrationService).to receive(:pending_migrations?).and_return(true)
         expect(instance).not_to be_check
       end
     end
 
     context 'without pending migrations' do
       it 'returns true' do
-        allow(Elastic::DataMigrationService).to receive(:migration_has_finished?).with('test_migrate').and_return true
+        allow(Elastic::DataMigrationService).to receive(:pending_migrations?).and_return(false)
         expect(instance).to be_check
       end
     end

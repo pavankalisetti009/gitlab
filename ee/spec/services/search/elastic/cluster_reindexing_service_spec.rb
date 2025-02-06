@@ -9,11 +9,23 @@ RSpec.describe ::Search::Elastic::ClusterReindexingService, :elastic, :clean_git
   let(:helper) { Gitlab::Elastic::Helper.new }
 
   before do
+    stub_ee_application_setting(elasticsearch_indexing: true)
     allow(Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
   end
 
   context 'for state: initial' do
     let(:task) { create(:elastic_reindexing_task, state: :initial) }
+
+    context 'when elasticsearch_indexing is false' do
+      before do
+        stub_ee_application_setting(elasticsearch_indexing: false)
+      end
+
+      it 'aborts and returns an error' do
+        expect { cluster_reindexing_service.execute }.to change { task.reload.state }.from('initial').to('failure')
+        expect(task.reload.error_message).to match(/Elasticsearch indexing is disabled/)
+      end
+    end
 
     it 'aborts if the main index does not use aliases' do
       allow(helper).to receive(:alias_exists?).and_return(false)

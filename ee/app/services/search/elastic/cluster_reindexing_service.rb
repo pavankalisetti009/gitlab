@@ -48,6 +48,11 @@ module Search
       end
 
       def initial!
+        unless ::Gitlab::CurrentSettings.elasticsearch_indexing?
+          abort_reindexing!('Elasticsearch indexing is disabled')
+          return false
+        end
+
         if ::Elastic::DataMigrationService.pending_migrations? && !current_task.options[:skip_pending_migrations_check]
           # migrations may have paused indexing so we do not want to unpause when aborting the reindexing process
           abort_reindexing!('You have unapplied advanced search migrations. ' \

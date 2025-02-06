@@ -120,6 +120,12 @@ module Search
     end
 
     def reindex_cluster
+      unless ::Gitlab::CurrentSettings.elasticsearch_indexing?
+        logger.warn(Rainbow('WARNING: Setting `elasticsearch_indexing` is disabled. ' \
+          'This setting must be enabled to perform `reindex_cluster`. ').yellow)
+        return
+      end
+
       ::Search::Elastic::ReindexingTask.create!
 
       ::ElasticClusterReindexingCronWorker.perform_async
