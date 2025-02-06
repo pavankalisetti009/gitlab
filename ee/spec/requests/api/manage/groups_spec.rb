@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe API::Manage::GroupManage, feature_category: :system_access do
+RSpec.describe API::Manage::Groups, feature_category: :system_access do
   let_it_be(:current_user) { create(:user) }
   let_it_be(:group) { create(:group) }
   let_it_be(:current_user_token) { create(:personal_access_token, user: current_user, scopes: [:api]) }
