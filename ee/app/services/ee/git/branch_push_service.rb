@@ -12,11 +12,21 @@ module EE
         enqueue_update_external_pull_requests
         enqueue_product_analytics_event_metrics
         enqueue_repository_xray
+        enqueue_sync_pipeline_execution_policy_metadata
 
         super
       end
 
       private
+
+      def enqueue_sync_pipeline_execution_policy_metadata
+        return if ::Feature.disabled?(:pipeline_execution_policy_analyze_configs, project.group)
+        return unless project.licensed_feature_available?(:security_orchestration_policies)
+        return if ::Security::PipelineExecutionPolicyConfigLink.for_project(project).none?
+
+        ::Security::SyncLinkedPipelineExecutionPolicyConfigsWorker
+          .perform_async(project.id, current_user.id, oldrev, newrev, ref)
+      end
 
       def enqueue_product_analytics_event_metrics
         return unless project.product_analytics_enabled?
