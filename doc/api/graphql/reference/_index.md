@@ -7467,7 +7467,7 @@ Input type: `MemberRoleToUserAssignInput`
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="mutationmemberroletouserassignclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
-| <a id="mutationmemberroletouserassignmemberroleid"></a>`memberRoleId` | [`MemberRoleID!`](#memberroleid) | Global ID of the custom role to be assigned to a user. |
+| <a id="mutationmemberroletouserassignmemberroleid"></a>`memberRoleId` | [`MemberRoleID`](#memberroleid) | Global ID of the custom role to be assigned to a user. Admin roles will be unassigned from the user if omitted or set as NULL. |
 | <a id="mutationmemberroletouserassignuserid"></a>`userId` | [`UserID!`](#userid) | Global ID of the user to be assigned to a custom role. |
 
 #### Fields
@@ -7476,7 +7476,7 @@ Input type: `MemberRoleToUserAssignInput`
 | ---- | ---- | ----------- |
 | <a id="mutationmemberroletouserassignclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationmemberroletouserassignerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
-| <a id="mutationmemberroletouserassignusermemberrole"></a>`userMemberRole` | [`UserMemberRole`](#usermemberrole) | Created user member role. |
+| <a id="mutationmemberroletouserassignusermemberrole"></a>`userMemberRole` | [`UserMemberRole`](#usermemberrole) | Created user member role or nil if the relation was deleted. |
 
 ### `Mutation.memberRoleUpdate`
 
