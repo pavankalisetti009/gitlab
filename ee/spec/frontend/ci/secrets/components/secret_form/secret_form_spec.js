@@ -11,6 +11,7 @@ import SecretForm from 'ee/ci/secrets/components/secret_form/secret_form.vue';
 import SecretBranchesField from 'ee/ci/secrets/components/secret_form/secret_branches_field.vue';
 import CreateSecretMutation from 'ee/ci/secrets/graphql/mutations/create_secret.mutation.graphql';
 import GetProjectBranches from 'ee/ci/secrets/graphql/queries/get_project_branches.query.graphql';
+import { DETAILS_ROUTE_NAME } from 'ee/ci/secrets/constants';
 import { mockProjectBranches, mockProjectSecret } from '../../mock_data';
 
 jest.mock('~/alert');
@@ -284,6 +285,16 @@ describe('SecretForm component', () => {
       beforeEach(() => {
         mockCreateSecretResponse.mockResolvedValue(mockProjectSecret());
         createComponent({ mountFn: mountExtended });
+      });
+
+      it('redirects to the secret details page', async () => {
+        await submitSecret();
+        await waitForPromises();
+
+        expect(mockRouter.push).toHaveBeenCalledWith({
+          name: DETAILS_ROUTE_NAME,
+          params: { secretName: 'SECRET_KEY' },
+        });
       });
     });
 

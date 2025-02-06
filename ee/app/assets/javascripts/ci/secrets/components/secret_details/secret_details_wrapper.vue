@@ -1,5 +1,5 @@
 <script>
-import { GlAlert, GlBadge, GlButton, GlLoadingIcon } from '@gitlab/ui';
+import { GlAlert, GlButton, GlLoadingIcon } from '@gitlab/ui';
 import { __, s__, sprintf } from '~/locale';
 import { createAlert } from '~/alert';
 import { localeDateFormat } from '~/lib/utils/datetime_utility';
@@ -10,14 +10,13 @@ import {
   SECRET_STATUS,
   SCOPED_LABEL_COLOR,
 } from '../../constants';
-import getSecretDetailsQuery from '../../graphql/queries/client/get_secret_details.query.graphql';
+import getSecretDetailsQuery from '../../graphql/queries/get_secret_details.query.graphql';
 import SecretDetails from './secret_details.vue';
 
 export default {
   name: 'SecretDetailsWrapper',
   components: {
     GlAlert,
-    GlBadge,
     GlButton,
     GlLoadingIcon,
     SecretDetails,
@@ -32,25 +31,25 @@ export default {
       type: String,
       required: true,
     },
-    secretId: {
-      type: Number,
+    secretName: {
+      type: String,
       required: true,
     },
   },
   apollo: {
     secret: {
       skip() {
-        return !this.secretId;
+        return !this.secretName;
       },
       query: getSecretDetailsQuery,
       variables() {
         return {
           fullPath: this.fullPath,
-          id: this.secretId,
+          name: this.secretName,
         };
       },
       update(data) {
-        return data.project?.secret || null;
+        return data.projectSecret || null;
       },
       error() {
         createAlert({ message: this.$options.i18n.queryError });
@@ -78,7 +77,7 @@ export default {
   },
   methods: {
     goToEdit() {
-      this.$router.push({ name: EDIT_ROUTE_NAME, params: { id: this.secretId } });
+      this.$router.push({ name: EDIT_ROUTE_NAME, params: { secretName: this.secretName } });
     },
     goTo(name) {
       if (this.routeName !== name) {
@@ -123,18 +122,6 @@ export default {
             {{ __('Delete') }}
           </gl-button>
         </div>
-      </div>
-      <div class="gl-mb-4">
-        <gl-badge
-          icon-size="sm"
-          :icon="$options.SECRET_STATUS[secret.status].icon"
-          :variant="$options.SECRET_STATUS[secret.status].variant"
-        >
-          {{ $options.SECRET_STATUS[secret.status].text }}
-        </gl-badge>
-        <span class="gl-ml-3 gl-text-subtle" data-testid="secret-created-at">
-          {{ createdAtText }}
-        </span>
       </div>
       <secret-details :full-path="fullPath" :secret="secret" />
     </div>

@@ -1,6 +1,4 @@
-import { mockProjectSecretsData } from '../mock_data';
 import getSecretsQuery from './queries/client/get_secrets.query.graphql';
-import getSecretDetailsQuery from './queries/client/get_secret_details.query.graphql';
 
 export const cacheConfig = {
   typePolicies: {
@@ -53,18 +51,6 @@ export const resolvers = {
       }).project.secrets;
 
       return clientSidePaginate(sourceData, offset, limit);
-    },
-    secret({ fullPath }, { id }, { cache }) {
-      const sourceData = cache.readQuery({
-        query: getSecretDetailsQuery,
-        variables: { fullPath, id },
-      });
-
-      if (sourceData) {
-        return sourceData;
-      }
-
-      return mockProjectSecretsData[id - 1] || mockProjectSecretsData[0];
     },
   },
 };

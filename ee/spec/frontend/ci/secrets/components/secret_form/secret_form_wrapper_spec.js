@@ -83,9 +83,9 @@ describe('SecretFormWrapper component', () => {
     });
 
     it('shows edit form when editing', () => {
-      createComponent({ props: { isEditing: true, secretId: 123 } });
+      createComponent({ props: { isEditing: true, secretName: 'SECRET_KEY' } });
 
-      expect(findPageTitle()).toBe('Edit 123');
+      expect(findPageTitle()).toBe('Edit SECRET_KEY');
     });
   });
 

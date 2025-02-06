@@ -17,6 +17,7 @@ import { __, s__ } from '~/locale';
 import { getDateInFuture } from '~/lib/utils/datetime_utility';
 import CiEnvironmentsDropdown from '~/ci/common/private/ci_environments_dropdown';
 import {
+  DETAILS_ROUTE_NAME,
   INDEX_ROUTE_NAME,
   ROTATION_PERIOD_OPTIONS,
   SECRET_DESCRIPTION_MAX_LENGTH,
@@ -138,17 +139,17 @@ export default {
           },
         });
 
-        this.isSubmitting = false;
-
         const error = data.projectSecretCreate.errors[0];
         if (error) {
           createAlert({ message: error });
-        } else {
-          // TODO: redirect to secret details page when query for fetching details is available
+          return;
         }
+
+        this.$router.push({ name: DETAILS_ROUTE_NAME, params: { secretName: this.secret.name } });
       } catch (e) {
-        this.isSubmitting = false;
         createAlert({ message: __('Something went wrong on our end. Please try again.') });
+      } finally {
+        this.isSubmitting = false;
       }
     },
     editSecret() {

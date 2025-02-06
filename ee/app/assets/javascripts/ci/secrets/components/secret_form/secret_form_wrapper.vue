@@ -41,8 +41,8 @@ export default {
       required: false,
       default: false,
     },
-    secretId: {
-      type: Number,
+    secretName: {
+      type: String,
       required: false,
       default: null,
     },
@@ -91,7 +91,7 @@ export default {
       if (this.isEditing) {
         // TODO: This will be changed to `secret.key` when we develop the Edit form
         // https://gitlab.com/gitlab-org/gitlab/-/issues/432384#note_1924027555
-        return sprintf(s__('Secrets|Edit %{id}'), { id: this.secretId });
+        return sprintf(s__('Secrets|Edit %{id}'), { id: this.secretName });
       }
 
       return this.$options.i18n.titleNew;

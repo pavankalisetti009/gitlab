@@ -117,14 +117,10 @@ export const mockProjectSecret = ({ customSecret, errors = [] } = {}) => ({
 
 export const mockProjectSecretQueryResponse = ({ customSecret } = {}) => ({
   data: {
-    project: {
-      __typename: 'Project',
-      id: 'gid://gitlab/Project/19',
-      fullPath: '/path/to/project',
-      secret: {
-        ...mockSecret(),
-        ...customSecret,
-      },
+    projectSecret: {
+      __typename: 'ProjectSecret',
+      ...mockSecret(),
+      ...customSecret,
     },
   },
 });

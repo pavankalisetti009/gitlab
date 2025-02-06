@@ -34,7 +34,7 @@ describe('Secrets router', () => {
     projectSecretsSettingsPath: '/path/to/project/-/settings/ci_cd',
   };
 
-  const editRoute = { name: 'edit', params: { id: '123' } };
+  const editRoute = { name: 'edit', params: { secretName: 'SECRET_KEY' } };
 
   const createRouterWithNavigationGuards = (basePath, props, location) => {
     router = initNavigationGuards({
@@ -71,12 +71,12 @@ describe('Secrets router', () => {
   };
 
   it.each`
-    path              | componentNames            | components
-    ${'/'}            | ${'SecretsTable'}         | ${[SecretsTable]}
-    ${'/?page=2'}     | ${'SecretsTable'}         | ${[SecretsTable]}
-    ${'/new'}         | ${'SecretFormWrapper'}    | ${[SecretFormWrapper]}
-    ${'/key/details'} | ${'SecretDetailsWrapper'} | ${[SecretDetailsWrapper]}
-    ${'/key/edit'}    | ${'SecretFormWrapper'}    | ${[SecretFormWrapper]}
+    path                     | componentNames            | components
+    ${'/'}                   | ${'SecretsTable'}         | ${[SecretsTable]}
+    ${'/?page=2'}            | ${'SecretsTable'}         | ${[SecretsTable]}
+    ${'/new'}                | ${'SecretFormWrapper'}    | ${[SecretFormWrapper]}
+    ${'/secretName/details'} | ${'SecretDetailsWrapper'} | ${[SecretDetailsWrapper]}
+    ${'/secretName/edit'}    | ${'SecretFormWrapper'}    | ${[SecretFormWrapper]}
   `('uses $componentNames for path "$path"', ({ path, components }) => {
     router = createRouter(base, groupProps, defaultLocation);
 
@@ -84,9 +84,9 @@ describe('Secrets router', () => {
   });
 
   it.each`
-    path                   | redirect
-    ${'/key'}              | ${'/key/details'}
-    ${'/key/unknownroute'} | ${'/'}
+    path                          | redirect
+    ${'/secretName'}              | ${'/secretName/details'}
+    ${'/secretName/unknownroute'} | ${'/'}
   `('redirects from $path to $redirect', async ({ path, redirect }) => {
     router = createRouter(base, groupProps, defaultLocation);
 
@@ -125,7 +125,7 @@ describe('Secrets router', () => {
         entity,
         fullPath,
         isEditing: true,
-        secretId: 123,
+        secretName: 'SECRET_KEY',
       });
     });
   });
@@ -146,7 +146,7 @@ describe('Secrets router', () => {
         expect(visitUrl).not.toHaveBeenCalled();
       });
 
-      it.each([editRoute, '/new', '/key/details', '/key/edit'])(
+      it.each([editRoute, '/new', '/secretName/details', '/secretName/edit'])(
         'navigating to the non-index route %s redirects to the appropriate route in /-/secrets',
         (route) => {
           router.push(route);
@@ -161,7 +161,7 @@ describe('Secrets router', () => {
         createRouterWithNavigationGuards(secretsBase, projectProps, secretsLocation);
       });
 
-      it.each([editRoute, '/new', '/key/details', '/key/edit'])(
+      it.each([editRoute, '/new', '/secretName/details', '/secretName/edit'])(
         'navigating to the non-index route %s does not redirect',
         (route) => {
           router.push(route);
