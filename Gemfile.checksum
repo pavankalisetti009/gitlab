@@ -148,7 +148,7 @@
 {"name":"elasticsearch-rails","version":"7.2.1","platform":"ruby","checksum":"0750dc0e956358d9a3a0912a8186c266ef19f8de0b178c61996ed1a6998156e4"},
 {"name":"elasticsearch-transport","version":"7.17.11","platform":"ruby","checksum":"d18057d5295e4c39fe80084ede9e00e9c0e0d74580348985f8677b2fb7f70f03"},
 {"name":"email_reply_trimmer","version":"0.1.6","platform":"ruby","checksum":"9fede222ce660993e4e2e3dad282535ceb7914e246eb8302c19aa9e021f7326e"},
-{"name":"email_spec","version":"2.2.0","platform":"ruby","checksum":"60b7980580a835e7f676db60667f17a2d60e8e0e39c26d81cfc231805c544d79"},
+{"name":"email_spec","version":"2.3.0","platform":"ruby","checksum":"df23be7a131186f7a3d5be3b35eaac9196f9ac13bd26c9c3d59341e13d852d11"},
 {"name":"email_validator","version":"2.2.4","platform":"ruby","checksum":"5ab238095bec7aef9389f230e9e0c64c5081cdf91f19d6c5cecee0a93af20604"},
 {"name":"encryptor","version":"3.0.0","platform":"ruby","checksum":"abf23f94ab4d864b8cea85b43f3432044a60001982cda7c33c1cd90da8db1969"},
 {"name":"erubi","version":"1.12.0","platform":"ruby","checksum":"27bedb74dfb1e04ff60674975e182d8ca787f2224f2e8143268c7696f42e4723"},
