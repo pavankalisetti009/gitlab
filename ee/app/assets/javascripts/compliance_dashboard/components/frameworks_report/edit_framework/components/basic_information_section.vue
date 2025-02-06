@@ -91,13 +91,12 @@ export default {
         return this.pipelineExecutionPolicyPath;
       }
 
-      const urlSearchParams = new URLSearchParams([
-        ['path', this.formData.pipelineConfigurationFullPath],
-        ['compliance_framework_name', this.formData.name],
-        ['compliance_framework_id', getIdFromGraphQLId(this.formData.id)],
-      ]);
+      const url = new URL(this.pipelineExecutionPolicyPath, document.location.href);
+      url.searchParams.set('path', this.formData.pipelineConfigurationFullPath);
+      url.searchParams.set('compliance_framework_name', this.formData.name);
+      url.searchParams.set('compliance_framework_id', getIdFromGraphQLId(this.formData.id));
 
-      return `${this.pipelineExecutionPolicyPath}&${urlSearchParams.toString()}`;
+      return url.toString();
     },
     deprecationWarningButtonText() {
       if (this.isCreatingNewPolicy) {
