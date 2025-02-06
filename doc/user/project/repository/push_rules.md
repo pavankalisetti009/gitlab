@@ -15,7 +15,7 @@ DETAILS:
 Push rules are [`pre-receive` Git hooks](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks#:~:text=pre%2Dreceive,with%20the%20push.) you
 can enable in a user-friendly interface. Push rules give you more control over what
 can and can't be pushed to your repository. While GitLab offers
-[protected branches](../repository/branches/protected.md), you may need more specific rules, such as:
+[protected branches](branches/protected.md), you may need more specific rules, such as:
 
 - Evaluating the contents of a commit.
 - Confirming commit messages match expected formats.
@@ -305,7 +305,7 @@ You can combine multiple patterns into one expression. This example combines all
 - [Signing commits with GPG](signed_commits/gpg.md)
 - [Signing commits with SSH](signed_commits/ssh.md)
 - [Signing commits with X.509](signed_commits/x509.md)
-- [Protected branches](../repository/branches/protected.md)
+- [Protected branches](branches/protected.md)
 - [Secret detection](../../application_security/secret_detection/index.md)
 
 ## Troubleshooting

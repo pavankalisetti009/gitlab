@@ -16,7 +16,7 @@ DETAILS:
 Repository X-Ray automatically enriches:
 
 - Code generation requests for [GitLab Duo Code Suggestions](index.md) by providing additional context about a project's dependencies to improve the accuracy and relevance of code recommendations.
-- Requests to [refactor code](../../../../user/gitlab_duo_chat/examples.md#refactor-code-in-the-ide), [fix code](../../../../user/gitlab_duo_chat/examples.md#fix-code-in-the-ide), and [write tests](../../../../user/gitlab_duo_chat/examples.md#write-tests-in-the-ide).
+- Requests to [refactor code](../../../gitlab_duo_chat/examples.md#refactor-code-in-the-ide), [fix code](../../../gitlab_duo_chat/examples.md#fix-code-in-the-ide), and [write tests](../../../gitlab_duo_chat/examples.md#write-tests-in-the-ide).
 
 To do this, Repository X-Ray gives the code assistant more insight into the project's codebase and dependencies by:
 

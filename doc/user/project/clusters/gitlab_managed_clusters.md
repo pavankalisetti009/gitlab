@@ -13,8 +13,8 @@ DETAILS:
 
 WARNING:
 This feature was [deprecated](https://gitlab.com/groups/gitlab-org/configure/-/epics/8) in GitLab 14.5.
-To connect your cluster to GitLab, use the [GitLab agent](../../../user/clusters/agent/index.md).
-To manage applications, use the [Cluster Project Management Template](../../../user/clusters/management_project_template.md).
+To connect your cluster to GitLab, use the [GitLab agent](../../clusters/agent/index.md).
+To manage applications, use the [Cluster Project Management Template](../../clusters/management_project_template.md).
 
 FLAG:
 On GitLab Self-Managed, by default this feature is not available. To make it available, an administrator can [enable the feature flag](../../../administration/feature_flags.md) named `certificate_based_clusters`.

@@ -300,7 +300,7 @@ Prerequisites:
 
 ## Membership and visibility rights
 
-Depending on their membership type, members of groups or projects are granted different [visibility levels](../../../user/public_access.md)
+Depending on their membership type, members of groups or projects are granted different [visibility levels](../../public_access.md)
 and rights into the group or project.
 
 The following table lists the membership and visibility rights of project members.
