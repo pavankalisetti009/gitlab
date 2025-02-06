@@ -25837,9 +25837,6 @@ msgstr ""
 msgid "GiB"
 msgstr ""
 
-msgid "Git"
-msgstr ""
-
 msgid "Git HTTP rate limits"
 msgstr ""
 
