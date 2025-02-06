@@ -253,7 +253,7 @@ turn on GitLab Duo experimental and beta features for your group on GitLab.com.
 
 ::EndTabs
 
-This setting [cascades to all projects](../../user/project/merge_requests/approvals/settings.md#cascade-settings-from-the-instance-or-top-level-group)
+This setting [cascades to all projects](../project/merge_requests/approvals/settings.md#cascade-settings-from-the-instance-or-top-level-group)
 that belong to the group.
 
 ### On self-managed

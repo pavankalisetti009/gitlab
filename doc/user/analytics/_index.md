@@ -44,8 +44,8 @@ Use these features to gain insights into developer productivity and code coverag
 
 | Feature | Description | Project-level | Group-level | Instance-level |
 | ------- | ----------- | ------------- | ----------- | -------------- |
-| [Contribution analytics](../group/contribution_analytics/index.md) | Overview of [contribution events](../../user/profile/contributions_calendar.md) made by group members, with bar chart of push events, merge requests, and issues. | **{dotted-circle}** No | **{check-circle}** Yes | **{dotted-circle}** No |
-| [Contributor analytics](../../user/analytics/contributor_analytics.md) | Overview of commits made by project members, with line chart of number of commits. | **{check-circle}** Yes | **{dotted-circle}** No | **{dotted-circle}** No |
+| [Contribution analytics](../group/contribution_analytics/index.md) | Overview of [contribution events](../profile/contributions_calendar.md) made by group members, with bar chart of push events, merge requests, and issues. | **{dotted-circle}** No | **{check-circle}** Yes | **{dotted-circle}** No |
+| [Contributor analytics](../analytics/contributor_analytics.md) | Overview of commits made by project members, with line chart of number of commits. | **{check-circle}** Yes | **{dotted-circle}** No | **{dotted-circle}** No |
 | [Repository analytics](../group/repositories_analytics/index.md) | Programming languages used in the repository and code coverage statistics. | **{check-circle}** Yes | **{check-circle}** Yes | **{dotted-circle}** No |
 
 ### CI/CD analytics
