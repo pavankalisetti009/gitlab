@@ -8,9 +8,6 @@ export default {
   [types.SET_EXPORT_DEPENDENCIES_ENDPOINT](state, exportEndpoint) {
     state.exportEndpoint = exportEndpoint;
   },
-  [types.SET_ASYNC_EXPORT](state, asyncExportEnabled) {
-    state.asyncExport = asyncExportEnabled;
-  },
   [types.SET_NAMESPACE_TYPE](state, namespaceType) {
     state.namespaceType = namespaceType;
   },

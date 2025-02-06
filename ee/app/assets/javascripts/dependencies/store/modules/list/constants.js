@@ -43,9 +43,6 @@ export const EXPORT_STARTED_MESSAGE = s__(
   'Dependencies|Report export in progress. After the report is generated, an email will be sent with the download link.',
 );
 
-export const DEPENDENCIES_FILENAME = 'dependencies.json';
-export const DEPENDENCIES_CSV_FILENAME = 'dependencies.csv';
-
 export const LICENSES_FETCH_ERROR_MESSAGE = s__(
   'Dependencies|There was a problem fetching the licenses for this group.',
 );
