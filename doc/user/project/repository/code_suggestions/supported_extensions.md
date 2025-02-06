@@ -3,9 +3,8 @@ stage: Create
 group: Code Creation
 info: To determine the technical writer assigned to the Stage/Group associated with this page, see https://handbook.gitlab.com/handbook/product/ux/technical-writing/#assignments
 description: "Code Suggestions supports multiple editors and languages."
+title: Supported extensions and languages
 ---
-
-# Supported extensions and languages
 
 DETAILS:
 **Tier:** Premium with GitLab Duo Pro, Ultimate with GitLab Duo Pro or Enterprise - [Start a trial](https://about.gitlab.com/solutions/gitlab-duo-pro/sales/?type=free-trial)
