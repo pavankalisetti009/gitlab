@@ -275,6 +275,7 @@ module EE
         mount_mutation ::Mutations::ComplianceManagement::ComplianceFramework::ComplianceRequirementsControls::Update,
           experiment: { milestone: '17.9' }
         mount_mutation ::Mutations::Ai::DuoSettings::Update, experiment: { milestone: '17.9' }
+        mount_mutation ::Mutations::Ai::DeleteConversationThread, experiment: { milestone: '17.9' }
 
         prepend(Types::DeprecatedMutations)
       end
