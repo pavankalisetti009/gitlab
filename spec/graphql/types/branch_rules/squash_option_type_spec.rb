@@ -7,7 +7,7 @@ RSpec.describe GitlabSchema.types['SquashOption'], feature_category: :source_cod
 
   let(:fields) { %i[option help_text] }
 
-  it { is_expected.to require_graphql_authorizations(:read_branch_rule) }
+  it { is_expected.to require_graphql_authorizations(:read_squash_option) }
 
   it { is_expected.to have_graphql_fields(fields).at_least }
 end

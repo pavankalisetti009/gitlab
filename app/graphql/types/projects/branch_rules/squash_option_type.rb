@@ -6,8 +6,8 @@ module Types
       class SquashOptionType < Types::BaseObject
         graphql_name 'SquashOption'
         description 'Squash option overrides for a protected branch'
-        accepts ::Projects::BranchRules::SquashOption
-        authorize :read_branch_rule
+        accepts ::Projects::SquashOption
+        authorize :read_squash_option
         present_using ::Projects::BranchRules::SquashOptionPresenter
 
         field :option,

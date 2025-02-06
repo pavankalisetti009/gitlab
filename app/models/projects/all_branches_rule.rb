@@ -12,12 +12,9 @@ module Projects
       project.repository.branch_count
     end
 
-    def approval_project_rules
-      project.approval_rules.for_all_branches
-    end
-
-    def external_status_checks
-      project.external_status_checks.for_all_branches
+    def squash_option
+      project.project_setting
     end
   end
 end
+Projects::AllBranchesRule.prepend_mod_with('Projects::AllBranchesRule')

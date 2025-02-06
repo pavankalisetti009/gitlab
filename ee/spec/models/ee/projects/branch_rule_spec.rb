@@ -10,7 +10,6 @@ RSpec.describe Projects::BranchRule, feature_category: :source_code_management d
 
   it 'delegates methods to protected branch' do
     expect(branch_rule).to delegate_method(:external_status_checks).to(:protected_branch)
-    expect(branch_rule).to delegate_method(:squash_option).to(:protected_branch)
   end
 
   describe '#approval_project_rules' do
@@ -30,6 +29,12 @@ RSpec.describe Projects::BranchRule, feature_category: :source_code_management d
 
       expect(approval_project_rules).to include(policy1_rule1, policy2_rule1, other_rule1, other_rule2)
       expect(approval_project_rules).not_to include(policy1_rule2)
+    end
+  end
+
+  describe '#squash_option' do
+    it 'delegates to protected branch' do
+      expect(branch_rule.squash_option).to eq(protected_branch.squash_option)
     end
   end
 
