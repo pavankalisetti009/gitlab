@@ -149,7 +149,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions('diffs', ['toggleTreeOpen', 'goToFile', 'setRenderTreeList', 'setTreeOpen']),
+    ...mapActions('diffs', ['toggleTreeOpen', 'setRenderTreeList', 'setTreeOpen']),
 
     scrollVirtualScrollerToFileHash(hash) {
       const index = this.treeList.findIndex((f) => f.fileHash === hash);
@@ -235,7 +235,7 @@ export default {
                 :tabindex="0"
                 class="gl-relative !gl-m-1"
                 @toggleTreeOpen="toggleTreeOpen"
-                @clickFile="(path) => goToFile({ path })"
+                @clickFile="$emit('clickFile', $event)"
               />
             </template>
             <template #after>
