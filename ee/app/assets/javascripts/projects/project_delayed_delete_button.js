@@ -10,6 +10,7 @@ export default (selector = '#js-project-delayed-delete-button') => {
   const {
     delayedDeletionDate,
     confirmPhrase,
+    nameWithNamespace,
     formPath,
     restoreHelpPath,
     isFork,
@@ -28,6 +29,7 @@ export default (selector = '#js-project-delayed-delete-button') => {
         props: {
           delayedDeletionDate,
           confirmPhrase,
+          nameWithNamespace,
           formPath,
           restoreHelpPath,
           isFork: parseBoolean(isFork),

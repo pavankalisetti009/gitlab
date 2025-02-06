@@ -14,6 +14,10 @@ export default {
       type: String,
       required: true,
     },
+    nameWithNamespace: {
+      type: String,
+      required: true,
+    },
     formPath: {
       type: String,
       required: true,
@@ -62,6 +66,7 @@ export default {
 <template>
   <shared-delete-button
     :confirm-phrase="confirmPhrase"
+    :name-with-namespace="nameWithNamespace"
     :form-path="formPath"
     :is-fork="isFork"
     :issues-count="issuesCount"
