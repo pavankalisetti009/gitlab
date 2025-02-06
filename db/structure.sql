@@ -26744,6 +26744,9 @@ ALTER TABLE approval_project_rules_users
 ALTER TABLE status_check_responses
     ADD CONSTRAINT check_29114cce9c CHECK ((project_id IS NOT NULL)) NOT VALID;
 
+ALTER TABLE draft_notes
+    ADD CONSTRAINT check_2a752d05fe CHECK ((project_id IS NOT NULL)) NOT VALID;
+
 ALTER TABLE workspaces
     ADD CONSTRAINT check_2a89035b04 CHECK ((personal_access_token_id IS NOT NULL)) NOT VALID;
 
