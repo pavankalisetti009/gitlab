@@ -16,20 +16,24 @@ module EE
             true
           end
 
+          override :render_with_abilities
+          def render_with_abilities
+            super + %i[read_admin_audit_log]
+          end
+
           private
 
           def audit_events_menu_item
-            unless ::License.feature_available?(:admin_audit_log)
-              return ::Sidebars::NilMenuItem.new(item_id: :audit_logs)
-            end
-
-            ::Sidebars::MenuItem.new(
+            build_menu_item(
               title: _('Audit events'),
               link: admin_audit_logs_path,
               active_routes: { path: 'admin/audit_logs#index' },
               item_id: :audit_logs,
               container_html_options: { testid: 'admin-monitoring-audit-logs-link' }
-            )
+            ) do
+              ::License.feature_available?(:admin_audit_log) &&
+                can?(current_user, :read_admin_audit_log)
+            end
           end
         end
       end
