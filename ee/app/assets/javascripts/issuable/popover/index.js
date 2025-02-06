@@ -20,6 +20,7 @@ export const handleIssuablePopoverMount = ({
   innerText,
   referenceType,
   target,
+  placement,
 }) =>
   handleIssuablePopoverMountCE({
     componentsByReferenceType,
@@ -31,6 +32,7 @@ export const handleIssuablePopoverMount = ({
     innerText,
     referenceType,
     target,
+    placement,
   });
 
 export default (elements, issuablePopoverMount = handleIssuablePopoverMount) =>
