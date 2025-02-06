@@ -269,7 +269,7 @@ DETAILS:
 FLAG:
 The availability of this feature is controlled by a feature flag. For more information, see the history.
 
-You can set a CI/CD pipeline expiry time to help manage pipeline storage and improve system performance.
+Users with the Owner role can set a CI/CD pipeline expiry time to help manage pipeline storage and improve system performance.
 The system automatically deletes pipelines that were created before the configured value.
 
 1. On the left sidebar, select **Search or go to** and find your project.
