@@ -26,12 +26,14 @@ module API
     resource :projects, requirements: API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
       params do
         requires :id, types: [String, Integer], desc: 'The ID or URL-encoded path of the project'
+
+        optional :send_email, type: Boolean, default: false, desc: 'Send an email when the export completes'
       end
       desc 'Generate a dependency list export on a project-level'
       post ':id/dependency_list_exports' do
         authorize! :read_dependency, user_project
 
-        result = ::Dependencies::CreateExportService.new(user_project, current_user).execute
+        result = ::Dependencies::CreateExportService.new(user_project, current_user, params).execute
 
         present_created_export(result)
       end
@@ -40,12 +42,16 @@ module API
     resource :groups, requirements: API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
       params do
         requires :id, types: [String, Integer], desc: 'The ID or URL-encoded path of the group'
+
+        optional :send_email, type: Boolean, default: false, desc: 'Send an email when the export completes'
       end
       desc 'Generate a dependency list export on a group-level'
       post ':id/dependency_list_exports' do
         authorize! :read_dependency, user_group
 
-        result = ::Dependencies::CreateExportService.new(user_group, current_user, :json_array).execute
+        params[:export_type] = :json_array
+
+        result = ::Dependencies::CreateExportService.new(user_group, current_user, params).execute
 
         present_created_export(result)
       end
@@ -54,6 +60,8 @@ module API
     resource :organizations do
       params do
         requires :id, types: [String, Integer], desc: 'The ID of the organization'
+
+        optional :send_email, type: Boolean, default: false, desc: 'Send an email when the export completes'
       end
       desc 'Generate a dependency list export on an organization-level'
       post ':id/dependency_list_exports' do
@@ -62,8 +70,10 @@ module API
         organization = find_organization!(params[:id])
         authorize! :read_dependency, organization
 
+        params[:export_type] = :csv
+
         result = ::Dependencies::CreateExportService
-          .new(organization, current_user, :csv)
+          .new(organization, current_user, params)
           .execute
 
         present_created_export(result)
@@ -75,6 +85,7 @@ module API
         requires :id, types: [String, Integer], desc: 'The ID of the pipeline'
 
         optional :export_type, type: String, values: %w[sbom dependency_list], desc: 'The type of the export file'
+        optional :send_email, type: Boolean, default: false, desc: 'Send an email when the export completes'
       end
       desc 'Generate a dependency list export on a pipeline-level'
       post ':id/dependency_list_exports' do
@@ -84,7 +95,7 @@ module API
         authorize! :read_dependency, user_pipeline
 
         result = ::Dependencies::CreateExportService.new(
-          user_pipeline, current_user, params[:export_type]).execute
+          user_pipeline, current_user, params).execute
 
         present_created_export(result)
       end

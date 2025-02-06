@@ -8,7 +8,8 @@ RSpec.describe API::DependencyListExports, feature_category: :dependency_managem
   let_it_be(:project) { create(:project) }
   let_it_be(:pipeline) { create(:ci_pipeline, project: project) }
   let(:export_type) { nil }
-  let(:params) { { export_type: export_type } }
+  let(:send_email) { false }
+  let(:params) { { export_type: export_type, send_email: send_email } }
 
   shared_examples_for 'creating dependency list export' do
     subject(:create_dependency_list_export) { post api(request_path, user), params: params }
@@ -61,9 +62,19 @@ RSpec.describe API::DependencyListExports, feature_category: :dependency_managem
           expect(json_response).to have_key('has_finished')
           expect(json_response).to have_key('self')
           expect(json_response).to have_key('download')
+          expect(json_response['export_type']).to eq(export_type)
+          expect(json_response['send_email']).to eq(send_email)
+        end
 
-          created_export = ::Dependencies::DependencyListExport.find(json_response['id'])
-          expect(created_export.export_type).to eq(export_type)
+        context 'when send_email is true' do
+          let(:send_email) { true }
+
+          it 'sets value on created export' do
+            create_dependency_list_export
+
+            expect(response).to have_gitlab_http_status(:created)
+            expect(json_response['send_email']).to eq(send_email)
+          end
         end
 
         context 'when export creation fails' do

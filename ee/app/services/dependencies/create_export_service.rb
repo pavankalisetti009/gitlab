@@ -2,13 +2,18 @@
 
 module Dependencies
   class CreateExportService
-    attr_reader :author, :exportable, :export_type
+    ALLOWED_PARAMS = %i[
+      export_type
+      send_email
+    ].freeze
 
-    def initialize(exportable, author, export_type = 'dependency_list')
+    def initialize(exportable, author, params)
       @exportable = exportable
       @author = author
-      @export_type = export_type
+      @params = params
     end
+
+    attr_reader :author, :exportable, :params
 
     def execute
       dependency_list_export = create_export
@@ -28,8 +33,12 @@ module Dependencies
       Dependencies::DependencyListExport.create(
         exportable: exportable,
         author: author,
-        export_type: export_type
+        **create_params
       )
+    end
+
+    def create_params
+      params.slice(*ALLOWED_PARAMS)
     end
   end
 end

@@ -222,11 +222,22 @@ RSpec.describe Dependencies::DependencyListExport, feature_category: :dependency
 
     subject(:send_completion_email!) { export.send_completion_email! }
 
-    it 'delivers email using Sbom::ExportMailer' do
-      expect(Sbom::ExportMailer).to receive(:completion_email).with(export).and_return(message_delivery)
-      expect(message_delivery).to receive(:deliver_now)
+    it 'does not send email' do
+      allow(export).to receive(:email_delivery_enabled?).and_return(false)
+      expect(Sbom::ExportMailer).not_to receive(:completion_email)
 
       send_completion_email!
+    end
+
+    context 'when send_email is set to true' do
+      let_it_be(:export) { build_stubbed(:dependency_list_export, send_email: true) }
+
+      it 'delivers email using Sbom::ExportMailer' do
+        expect(Sbom::ExportMailer).to receive(:completion_email).with(export).and_return(message_delivery)
+        expect(message_delivery).to receive(:deliver_now)
+
+        send_completion_email!
+      end
     end
 
     context 'when email delivery is disabled' do

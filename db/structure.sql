@@ -12212,6 +12212,7 @@ CREATE TABLE dependency_list_exports (
     export_type smallint DEFAULT 0 NOT NULL,
     organization_id bigint,
     expires_at timestamp with time zone,
+    send_email boolean DEFAULT false NOT NULL,
     CONSTRAINT check_67a9c23e79 CHECK ((num_nonnulls(group_id, organization_id, project_id) > 0)),
     CONSTRAINT check_fff6fc9b2f CHECK ((char_length(file) <= 255))
 );
