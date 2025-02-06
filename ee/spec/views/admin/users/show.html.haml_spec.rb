@@ -35,11 +35,56 @@ RSpec.describe 'admin/users/show.html.haml', feature_category: :system_access do
     expect(rendered).to have_text('user@example.com', count: 1)
   end
 
-  context 'Gitlab.com' do
-    before do
-      allow(::Gitlab).to receive(:com?).and_return(true)
+  context 'for namespace plan info' do
+    context 'when gitlab_com_subscriptions SaaS feature is available' do
+      before do
+        stub_saas_features(gitlab_com_subscriptions: true)
+      end
+
+      it 'includes the plan info' do
+        render
+
+        expect(rendered).to have_text('Plan:')
+      end
+
+      context 'when namespace is not paid' do
+        it 'indicates there is no plan' do
+          render
+
+          expect(rendered).to have_text('No Plan')
+        end
+      end
+
+      context 'when namespace is paid', :saas do
+        let(:namespace) { build(:group) }
+        let(:user) { build_stubbed(:user, namespace: namespace) }
+
+        before do
+          build(:gitlab_subscription, :ultimate, namespace: namespace)
+        end
+
+        it 'indicates there is a paid plan' do
+          render
+
+          expect(rendered).to have_text('Ultimate')
+        end
+      end
     end
 
+    context 'when gitlab_com_subscriptions SaaS feature is not available' do
+      before do
+        stub_saas_features(gitlab_com_subscriptions: false)
+      end
+
+      it 'includes the plan info' do
+        render
+
+        expect(rendered).not_to have_text('Plan:')
+      end
+    end
+  end
+
+  context 'when on Gitlab.com', :saas do
     it 'includes credit card validation status' do
       render
 
