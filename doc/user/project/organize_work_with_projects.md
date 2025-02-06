@@ -3,9 +3,8 @@ stage: Tenant Scale
 group: Organizations
 description: Project visibility, search, badges, layout.
 info: To determine the technical writer assigned to the Stage/Group associated with this page, see https://handbook.gitlab.com/handbook/product/ux/technical-writing/#assignments
+title: Organize work with projects
 ---
-
-# Organize work with projects
 
 Create projects to host your codebase in GitLab.
 You can also use projects to:

@@ -3,9 +3,8 @@ stage: Create
 group: Code Creation
 info: To determine the technical writer assigned to the Stage/Group associated with this page, see https://handbook.gitlab.com/handbook/product/ux/technical-writing/#assignments
 description: "Troubleshooting tips for common problems in Code Suggestions."
+title: Troubleshooting Code Suggestions
 ---
-
-# Troubleshooting Code Suggestions
 
 DETAILS:
 **Tier:** Premium with GitLab Duo Pro, Ultimate with GitLab Duo Pro or Enterprise - [Start a trial](https://about.gitlab.com/solutions/gitlab-duo-pro/sales/?type=free-trial)

@@ -3,9 +3,8 @@ stage: Create
 group: Code Creation
 info: To determine the technical writer assigned to the Stage/Group associated with this page, see https://handbook.gitlab.com/handbook/product/ux/technical-writing/#assignments
 description: "Set up Code Suggestions."
+title: Set up Code Suggestions
 ---
-
-# Set up Code Suggestions
 
 You can use Code Suggestions in several different IDEs.
 To set up Code Suggestions, follow the instructions for your IDE.
