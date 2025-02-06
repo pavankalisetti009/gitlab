@@ -299,9 +299,9 @@ export default {
     {
       key: 'action',
       label: __('Action'),
+      thAlignRight: true,
       thClass: '!gl-align-middle',
-      tdClass: '!gl-align-middle',
-      sortable: false,
+      tdClass: '!gl-text-right',
     },
   ],
   i18n: {

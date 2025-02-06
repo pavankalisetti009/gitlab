@@ -245,7 +245,7 @@ export default {
     <div
       v-for="(controlId, index) in controlIds"
       :key="index"
-      class="gl-mb-5 gl-flex gl-justify-between"
+      class="gl-mb-3 gl-flex gl-justify-between gl-rounded-base gl-bg-gray-10 gl-p-3"
     >
       <gl-collapsible-listbox
         placement="bottom"
@@ -279,7 +279,7 @@ export default {
         size="small"
         category="secondary"
         variant="confirm"
-        class="gl-block"
+        class="gl-mt-3 gl-block"
         data-testid="add-control-button"
         :disabled="!canAddControl"
         @click="addControl"
