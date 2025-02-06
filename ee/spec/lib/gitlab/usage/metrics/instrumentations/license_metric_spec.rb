@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Usage::Metrics::Instrumentations::LicenseMetric do
+RSpec.describe Gitlab::Usage::Metrics::Instrumentations::LicenseMetric, feature_category: :plan_provisioning do
   let(:current_license) { ::License.current }
 
   it_behaves_like 'a correct instrumented metric value', { time_frame: 'none', options: { attribute: 'trial?' } } do
@@ -45,31 +45,61 @@ RSpec.describe Gitlab::Usage::Metrics::Instrumentations::LicenseMetric do
     let(:expected_value) { current_license.add_ons }
   end
 
-  context 'when no license present' do
-    let(:expected_value) { nil }
+  context 'without a valid license' do
+    using RSpec::Parameterized::TableSyntax
 
-    before do
-      allow(::License).to receive(:current).and_return(nil)
+    let_it_be(:unparsable_license) do
+      data = Gitlab::License::Encryptor
+        .new(OpenSSL::PKey::RSA.generate(3072))
+        .encrypt(Gitlab::License.new.to_json)
+
+      build(:license, data: data)
     end
 
-    it_behaves_like 'a correct instrumented metric value', { time_frame: 'none', options: { attribute: 'trial?' } }
+    where(:attribute, :timeframe) do
+      'trial?'                     | 'none'
+      'license_id'                 | 'none'
+      'expires_at'                 | 'none'
+      'trial_ends_on'              | 'none'
+      'plan'                       | 'none'
+      'subscription_id'            | 'none'
+      'starts_at'                  | 'none'
+      'user_count'                 | 'none'
+      'daily_billable_users_count' | 'all'
+      'add_ons'                    | 'none'
+    end
 
-    it_behaves_like 'a correct instrumented metric value', { time_frame: 'none', options: { attribute: 'license_id' } }
+    with_them do
+      let(:expected_value) { nil }
 
-    it_behaves_like 'a correct instrumented metric value', { time_frame: 'none', options: { attribute: 'expires_at' } }
+      context 'when the license is unparsable' do
+        before do
+          allow(::License).to receive(:current).and_return(unparsable_license)
+        end
 
-    it_behaves_like 'a correct instrumented metric value', { time_frame: 'none', options: { attribute: 'trial_ends_on' } }
+        it_behaves_like 'a correct instrumented metric value', {} do
+          let(:time_frame) { timeframe }
+          let(:options) { { attribute: attribute } }
+        end
+      end
 
-    it_behaves_like 'a correct instrumented metric value', { time_frame: 'none', options: { attribute: 'plan' } }
+      context 'when the license is absent', :without_license do
+        it_behaves_like 'a correct instrumented metric value', {} do
+          let(:time_frame) { timeframe }
+          let(:options) { { attribute: attribute } }
+        end
+      end
+    end
 
-    it_behaves_like 'a correct instrumented metric value', { time_frame: 'none', options: { attribute: 'subscription_id' } }
+    context 'for license info not stored on the unparsable license' do
+      let(:expected_value) { 1.week.from_now.to_date }
 
-    it_behaves_like 'a correct instrumented metric value', { time_frame: 'none', options: { attribute: 'starts_at' } }
+      before do
+        allow(::License).to receive(:current).and_return(unparsable_license)
+        allow(Gitlab::CurrentSettings).to receive(:license_trial_ends_on).and_return(expected_value)
+      end
 
-    it_behaves_like 'a correct instrumented metric value', { time_frame: 'none', options: { attribute: 'user_count' } }
-
-    it_behaves_like 'a correct instrumented metric value', { time_frame: 'all', options: { attribute: 'daily_billable_users_count' } }
-
-    it_behaves_like 'a correct instrumented metric value', { time_frame: 'none', options: { attribute: 'add_ons' } }
+      it_behaves_like 'a correct instrumented metric value', { time_frame: 'none', options: { attribute: 'trial_ends_on' } }
+    end
   end
 end
