@@ -5,11 +5,7 @@ require 'spec_helper'
 RSpec.describe 'Trial Sign In', feature_category: :subscription_management do
   let(:user) { create(:user) }
 
-  describe 'on GitLab.com' do
-    before do
-      allow(Gitlab).to receive(:com?).and_return(true).at_least(:once)
-    end
-
+  describe 'on GitLab.com', :saas do
     it 'logs the user in' do
       url_params = { glm_source: 'any-source', glm_content: 'any-content' }
       visit(new_trial_registration_path(url_params))
@@ -28,10 +24,6 @@ RSpec.describe 'Trial Sign In', feature_category: :subscription_management do
   end
 
   describe 'not on GitLab.com' do
-    before do
-      allow(Gitlab).to receive(:com?).and_return(false).at_least(:once)
-    end
-
     it 'returns 404' do
       visit(new_trial_registration_path)
 

@@ -2,23 +2,37 @@
 
 module Namespaces
   class TrialEligibleFinder
+    include Gitlab::Utils::StrongMemoize
+
+    EXPIRATION_TIME = 8.hours
+
     def initialize(params = {})
       @params = params
     end
 
     def execute
-      filter_by_duo_enterprise_eligibility.ordered_by_name
+      if params[:use_caching]
+        raise ArgumentError, 'Trial types must be provided' unless params[:trials]
+
+        namespaces = scope_by_plans
+        @namespace_ids = namespaces.map(&:id)
+        return Namespace.none if @namespace_ids.empty?
+
+        namespaces.id_in(find_eligible_namespace_ids).ordered_by_name
+      else
+        filter_by_duo_enterprise_eligibility.ordered_by_name
+      end
     end
 
     private
 
-    attr_reader :params
+    attr_reader :params, :namespace_ids
 
-    def scope_by_plans(plans)
+    def scope_by_plans(plans = nil)
       if params[:user] && params[:namespace]
         raise ArgumentError, 'Only User or Namespace can be provided, not both'
       elsif params[:user]
-        params[:user].owned_groups.in_specific_plans(plans)
+        plans ? params[:user].owned_groups.in_specific_plans(plans) : params[:user].owned_groups
       elsif params[:namespace]
         Namespace.id_in(params[:namespace])
       else
@@ -71,6 +85,68 @@ module Namespaces
     def base_qualifications
       scope_by_plans([no_subscription_plan_name, *::Plan::PLANS_ELIGIBLE_FOR_TRIAL])
         .not_duo_enterprise_or_no_add_on.no_active_duo_pro_trial.select(:id)
+    end
+
+    def find_eligible_namespace_ids
+      if cache_exists?
+        cached_eligible_namespace_ids
+      else
+        cache_eligible_namespace_ids
+      end
+    end
+
+    def client
+      Gitlab::SubscriptionPortal::Client
+    end
+
+    def cache_key(id)
+      "namespaces:eligible_trials:#{id}"
+    end
+
+    def cache_keys
+      namespace_ids.map { |id| cache_key(id) }
+    end
+    strong_memoize_attr :cache_keys
+
+    def cache_exists?
+      cache_keys.all? { |key| Rails.cache.exist?(key) }
+    end
+
+    def filter_namespace_ids(id_trials_hash)
+      id_trials_hash.select { |_, trials| (trials & params[:trials]).sort == params[:trials].sort }.keys
+    end
+
+    def cached_eligible_namespace_ids
+      values = Rails.cache.read_multi(*cache_keys).values
+      filter_namespace_ids(Hash[namespace_ids.zip(values)])
+    end
+
+    def eligible_trials_request
+      response = client.namespace_eligible_trials(namespace_ids: namespace_ids)
+
+      if response[:success]
+        response.dig(:data, :namespaces)
+      else
+        Gitlab::AppLogger.warn(
+          class: self.class.name,
+          message: 'Unable to fetch eligible trials from GitLab Customers App',
+          error_message: response.dig(:data, :errors)
+        )
+
+        {}
+      end
+    end
+
+    def cache_eligible_namespace_ids
+      response_data = eligible_trials_request
+      return [] if response_data.blank?
+
+      Rails.cache.write_multi(
+        response_data.transform_keys { |id| cache_key(id) },
+        expires_in: EXPIRATION_TIME
+      )
+
+      filter_namespace_ids(response_data)
     end
   end
 end

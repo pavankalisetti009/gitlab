@@ -61,6 +61,10 @@ module Gitlab
             http_post("api/v1/seat_links", json_headers, seat_link)
           end
 
+          def namespace_eligible_trials(params)
+            http_get('api/v1/gitlab/namespaces/trials/eligibility', admin_headers, params)
+          end
+
           private
 
           def error_message

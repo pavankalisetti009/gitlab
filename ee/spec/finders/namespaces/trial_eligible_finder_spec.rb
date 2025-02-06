@@ -10,8 +10,6 @@ RSpec.describe Namespaces::TrialEligibleFinder, feature_category: :subscription_
     let_it_be(:premium_plan) { create(:premium_plan) }
 
     context 'with no params' do
-      let_it_be(:namespace) { create(:group) }
-
       subject(:execute) { described_class.new.execute }
 
       it 'raises an error' do
@@ -225,6 +223,125 @@ RSpec.describe Namespaces::TrialEligibleFinder, feature_category: :subscription_
             it { is_expected.to eq(eligible_namespaces) }
           end
         end
+      end
+    end
+
+    context 'with caching' do
+      let_it_be(:user) { create(:user) }
+      let_it_be(:namespace_1) { create(:group, owners: user) }
+      let_it_be(:namespace_2) { create(:group, owners: user) }
+
+      let(:trials) { ['ultimate_with_gitlab_duo_enterprise'] }
+      let(:params) { { use_caching: true } }
+
+      subject(:execute) { described_class.new(params).execute }
+
+      shared_examples 'cached eligible namespaces' do
+        let(:cache_key_1) { "namespaces:eligible_trials:#{namespace_1.id}" }
+        let(:cache_key_2) { "namespaces:eligible_trials:#{namespace_2.id}" }
+
+        let(:namespaces_response) do
+          {
+            namespace_1.id.to_s => ['ultimate_with_gitlab_duo_enterprise'],
+            namespace_2.id.to_s => %w[ultimate_with_gitlab_duo_enterprise gitlab_duo_pro]
+          }
+        end
+
+        before do
+          allow(Rails.cache).to receive(:exist?).with(cache_key_1).once.and_return(true)
+        end
+
+        context 'when cache exists for all namespaces' do
+          before do
+            allow(Rails.cache).to receive(:exist?).with(cache_key_2).once.and_return(true)
+
+            allow(Rails.cache).to receive(:read_multi).with(cache_key_1, cache_key_2).and_return(
+              cache_key_1 => namespaces_response[namespace_1.id.to_s],
+              cache_key_2 => namespaces_response[namespace_2.id.to_s]
+            )
+          end
+
+          it { is_expected.to match_array([namespace_1, namespace_2]) }
+
+          context 'when requested trial is not eligible' do
+            let(:trials) { ['premium'] }
+
+            it { is_expected.to eq([]) }
+          end
+        end
+
+        context 'when cache is not complete' do
+          before do
+            allow(Rails.cache).to receive(:exist?).with(cache_key_2).once.and_return(false)
+
+            allow(Gitlab::SubscriptionPortal::Client)
+              .to receive(:namespace_eligible_trials)
+              .with(namespace_ids: [namespace_1.id, namespace_2.id])
+              .and_return(response)
+          end
+
+          context 'with a successful CustomersDot query', :aggregate_failures do
+            let(:response) { { success: true, data: { namespaces: namespaces_response } } }
+
+            it 'caches the query response' do
+              expect(Rails.cache).to receive(:write_multi).with(
+                {
+                  cache_key_1 => namespaces_response[namespace_1.id.to_s],
+                  cache_key_2 => namespaces_response[namespace_2.id.to_s]
+                },
+                expires_in: 8.hours
+              )
+
+              expect(execute).to match_array([namespace_1, namespace_2])
+            end
+          end
+
+          context 'with an unsuccessful CustomersDot query' do
+            let(:response) { { success: false } }
+
+            it { is_expected.to eq([]) }
+          end
+        end
+      end
+
+      context 'with no trials params' do
+        it 'raises an error' do
+          expect { execute }.to raise_error(ArgumentError, 'Trial types must be provided')
+        end
+      end
+
+      context 'with trials params' do
+        let(:params) { super().merge(trials: trials) }
+
+        it 'raises an error' do
+          expect { execute }.to raise_error(ArgumentError, 'User or Namespace must be provided')
+        end
+      end
+
+      context 'with user and namespace' do
+        let(:params) { super().merge(user: build(:user), namespace: build(:group), trials: trials) }
+
+        it 'raises an error' do
+          expect { execute }.to raise_error(ArgumentError, 'Only User or Namespace can be provided, not both')
+        end
+      end
+
+      context 'with user' do
+        let(:params) { super().merge(user: user, trials: trials) }
+
+        it_behaves_like 'cached eligible namespaces'
+
+        context 'when a user does not own any groups' do
+          let(:params) { super().merge(user: build(:user), trials: trials) }
+
+          it { is_expected.to eq([]) }
+        end
+      end
+
+      context 'with namespaces' do
+        let(:params) { super().merge(namespace: [namespace_1, namespace_2], trials: trials) }
+
+        it_behaves_like 'cached eligible namespaces'
       end
     end
   end
