@@ -8,7 +8,7 @@ import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.
 import WorkItemsListApp from '~/work_items/pages/work_items_list_app.vue';
 import EEWorkItemsListApp from 'ee/work_items/pages/work_items_list_app.vue';
 import { CREATED_DESC } from '~/issues/list/constants';
-import { WORK_ITEM_TYPE_ENUM_EPIC } from '~/work_items/constants';
+import { WORK_ITEM_TYPE_ENUM_EPIC, WORK_ITEM_TYPE_ENUM_ISSUE } from '~/work_items/constants';
 import getWorkItemsQuery from '~/work_items/graphql/list/get_work_items.query.graphql';
 import workItemBulkUpdateMutation from '~/work_items/graphql/work_item_bulk_update.mutation.graphql';
 import workItemParent from 'ee/work_items/graphql/list/work_item_parent.query.graphql';
@@ -39,7 +39,6 @@ describeSkipVue3(skipReason, () => {
 
   const baseProvide = {
     groupIssuesPath: 'groups/gitlab-org/-/issues',
-    workItemType: 'EPIC',
     fullPath: 'gitlab-org',
   };
 
@@ -61,6 +60,7 @@ describeSkipVue3(skipReason, () => {
     canBulkEditEpics = true,
     bulkUpdateMutationEnabled = true,
     isGroup = true,
+    workItemType = WORK_ITEM_TYPE_ENUM_EPIC,
     props = {},
   } = {}) => {
     wrapper = shallowMountExtended(EEWorkItemsListApp, {
@@ -69,6 +69,7 @@ describeSkipVue3(skipReason, () => {
         showNewIssueLink,
         canBulkEditEpics,
         isGroup,
+        workItemType,
         glFeatures: {
           bulkUpdateWorkItemsMutation: bulkUpdateMutationEnabled,
         },
@@ -94,6 +95,7 @@ describeSkipVue3(skipReason, () => {
     showNewIssueLink = true,
     canBulkEditEpics = true,
     bulkUpdateMutationEnabled = true,
+    workItemType = WORK_ITEM_TYPE_ENUM_EPIC,
   } = {}) => {
     wrapper = mountExtended(EEWorkItemsListApp, {
       apolloProvider: createMockApollo([
@@ -105,6 +107,7 @@ describeSkipVue3(skipReason, () => {
         hasEpicsFeature,
         showNewIssueLink,
         canBulkEditEpics,
+        workItemType,
         glFeatures: {
           bulkUpdateWorkItemsMutation: bulkUpdateMutationEnabled,
         },
@@ -146,6 +149,22 @@ describeSkipVue3(skipReason, () => {
       expect(findCreateWorkItemModal().props()).toMatchObject({
         isGroup: true,
         workItemTypeName: WORK_ITEM_TYPE_ENUM_EPIC,
+      });
+    });
+
+    it('passes the `alwaysShowWorkItemTypeSelect` props for project level', () => {
+      mountComponent({
+        hasEpicsFeature: true,
+        showNewIssueLink: true,
+        isGroup: false,
+        workItemType: WORK_ITEM_TYPE_ENUM_ISSUE,
+      });
+
+      expect(findCreateWorkItemModal().exists()).toBe(true);
+      expect(findCreateWorkItemModal().props()).toMatchObject({
+        isGroup: false,
+        alwaysShowWorkItemTypeSelect: true,
+        workItemTypeName: WORK_ITEM_TYPE_ENUM_ISSUE,
       });
     });
 
