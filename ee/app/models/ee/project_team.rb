@@ -5,6 +5,25 @@ module EE
     extend ActiveSupport::Concern
     extend ::Gitlab::Utils::Override
 
+    def members_with_access_level_or_custom_roles(levels: [], member_role_ids: [])
+      return ::User.none unless levels.any? || member_role_ids.any?
+
+      users = project.authorized_users
+
+      if levels.any? && member_role_ids.any?
+        users = users
+          .where(project_authorizations: { access_level: levels })
+          .or(users.where(members: { member_role_id: member_role_ids }))
+          .joins(:members)
+      elsif levels.any?
+        users = users.where(project_authorizations: { access_level: levels })
+      elsif member_role_ids.any?
+        users = users.joins(:members).where(members: { member_role_id: member_role_ids })
+      end
+
+      users
+    end
+
     override :add_members
     def add_members(
       users,

@@ -4,6 +4,7 @@ module Security
   class ScanResultPolicyRead < ApplicationRecord
     include EachBatch
     include ::Gitlab::Utils::StrongMemoize
+    include ::GitlabSubscriptions::SubscriptionHelper
 
     self.table_name = 'scan_result_policies'
 
@@ -113,5 +114,15 @@ module Security
       real_index
     end
     strong_memoize_attr :real_policy_index
+
+    def custom_role_ids_with_permission
+      member_roles = if gitlab_com_subscription?
+                       project.root_ancestor.member_roles.id_in(custom_roles)
+                     else
+                       MemberRole.for_instance.id_in(custom_roles)
+                     end
+
+      member_roles.permissions_where(admin_merge_request: true).pluck_primary_key
+    end
   end
 end
