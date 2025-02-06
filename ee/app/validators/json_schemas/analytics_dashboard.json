@@ -113,7 +113,10 @@
           "$ref": "#/definitions/GridAttributes"
         },
         "visualization": {
-          "type": "string"
+          "type": [
+            "string",
+            "object"
+          ]
         },
         "queryOverrides": {
           "$ref": "#/definitions/QueryOverrides"
@@ -172,9 +175,7 @@
           "type": "integer"
         }
       },
-      "required": [
-
-      ],
+      "required": [],
       "title": "PanelOptions"
     },
     "QueryOverrides": {
@@ -191,9 +192,7 @@
           "$ref": "#/definitions/QueryFilters"
         }
       },
-      "required": [
-
-      ],
+      "required": [],
       "title": "QueryOverrides"
     },
     "TimeDimensions": {
@@ -232,9 +231,7 @@
           }
         }
       },
-      "required": [
-
-      ],
+      "required": [],
       "title": "Filters"
     },
     "DateRangeFilterOptions": {

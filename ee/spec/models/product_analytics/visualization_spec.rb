@@ -219,63 +219,56 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
     end
   end
 
-  describe '.get_path_for_visualization' do
-    where(:input, :path) do
-      'average_session_duration' | ProductAnalytics::Visualization::PRODUCT_ANALYTICS_PATH
-      'average_sessions_per_user' | ProductAnalytics::Visualization::PRODUCT_ANALYTICS_PATH
-      'browsers_per_users' | ProductAnalytics::Visualization::PRODUCT_ANALYTICS_PATH
-      'daily_active_users' | ProductAnalytics::Visualization::PRODUCT_ANALYTICS_PATH
-      'events_over_time' | ProductAnalytics::Visualization::PRODUCT_ANALYTICS_PATH
-      'page_views_over_time' | ProductAnalytics::Visualization::PRODUCT_ANALYTICS_PATH
-      'returning_users_percentage' | ProductAnalytics::Visualization::PRODUCT_ANALYTICS_PATH
-      'sessions_over_time' | ProductAnalytics::Visualization::PRODUCT_ANALYTICS_PATH
-      'sessions_per_browser' | ProductAnalytics::Visualization::PRODUCT_ANALYTICS_PATH
-      'top_pages' | ProductAnalytics::Visualization::PRODUCT_ANALYTICS_PATH
-      'total_events' | ProductAnalytics::Visualization::PRODUCT_ANALYTICS_PATH
-      'total_pageviews' | ProductAnalytics::Visualization::PRODUCT_ANALYTICS_PATH
-      'total_sessions' | ProductAnalytics::Visualization::PRODUCT_ANALYTICS_PATH
-      'total_unique_users' | ProductAnalytics::Visualization::PRODUCT_ANALYTICS_PATH
-      'usage_overview' | ProductAnalytics::Visualization::VALUE_STREAM_DASHBOARD_PATH
-      'dora_chart' | ProductAnalytics::Visualization::VALUE_STREAM_DASHBOARD_PATH
-      'vsd_lifecycle_metrics_table' | ProductAnalytics::Visualization::VALUE_STREAM_DASHBOARD_PATH
-      'vsd_dora_metrics_table' | ProductAnalytics::Visualization::VALUE_STREAM_DASHBOARD_PATH
-      'vsd_security_metrics_table' | ProductAnalytics::Visualization::VALUE_STREAM_DASHBOARD_PATH
-      'dora_performers_score' | ProductAnalytics::Visualization::VALUE_STREAM_DASHBOARD_PATH
-      'dora_projects_comparison' | ProductAnalytics::Visualization::VALUE_STREAM_DASHBOARD_PATH
-      'deployment_frequency_over_time' | ProductAnalytics::Visualization::VALUE_STREAM_DASHBOARD_PATH
-      'lead_time_for_changes_over_time' | ProductAnalytics::Visualization::VALUE_STREAM_DASHBOARD_PATH
-      'time_to_restore_service_over_time' | ProductAnalytics::Visualization::VALUE_STREAM_DASHBOARD_PATH
-      'change_failure_rate_over_time' | ProductAnalytics::Visualization::VALUE_STREAM_DASHBOARD_PATH
-      'ai_impact_table' | ProductAnalytics::Visualization::AI_IMPACT_DASHBOARD_PATH
-      'ai_impact_lifecycle_metrics_table' | ProductAnalytics::Visualization::AI_IMPACT_DASHBOARD_PATH
-      'ai_impact_ai_metrics_table' | ProductAnalytics::Visualization::AI_IMPACT_DASHBOARD_PATH
+  describe '.from_file' do
+    where(:filename) do
+      %w[
+        average_session_duration
+        average_sessions_per_user
+        browsers_per_users
+        daily_active_users
+        events_over_time
+        page_views_over_time
+        returning_users_percentage
+        sessions_over_time
+        sessions_per_browser
+        top_pages
+        total_events
+        total_pageviews
+        total_sessions
+        total_unique_users
+        usage_overview
+        dora_chart
+        vsd_lifecycle_metrics_table
+        vsd_dora_metrics_table
+        vsd_security_metrics_table
+        dora_performers_score
+        dora_projects_comparison
+        deployment_frequency_over_time
+        lead_time_for_changes_over_time
+        time_to_restore_service_over_time
+        change_failure_rate_over_time
+        ai_impact_table
+        ai_impact_lifecycle_metrics_table
+        ai_impact_ai_metrics_table
+      ]
     end
 
     with_them do
       it 'returns the correct visualization path' do
-        expect(described_class.get_path_for_visualization(input)).to eq(path)
-      end
-    end
-  end
+        visualization = described_class.from_file(filename: filename, project: project)
 
-  describe '.load_visualization_data' do
-    context "when file exists" do
-      subject do
-        described_class.load_visualization_data("total_sessions")
-      end
-
-      it "initializes visualization from file" do
-        expect(subject.slug).to eq("total_sessions")
-        expect(subject.errors).to be_nil
+        expect(visualization.type).to be_present
+        expect(visualization.slug).to eq(filename)
+        expect(visualization.errors).to be_nil
       end
     end
 
     context 'when file cannot be opened' do
-      subject { described_class.load_visualization_data("not-existing-file") }
-
       it 'initializes visualization with errors' do
-        expect(subject.slug).to eq('not-existing-file')
-        expect(subject.errors).to match_array(["Visualization file not-existing-file.yaml not found"])
+        visualization = described_class.from_file(filename: 'not-existing-file', project: project)
+
+        expect(visualization.slug).to eq('not-existing-file')
+        expect(visualization.errors).to match_array(['Visualization file not-existing-file.yaml not found'])
       end
     end
   end
@@ -312,8 +305,35 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
     it_behaves_like 'a valid visualization'
   end
 
+  context 'when visualization is data not a file' do
+    let_it_be(:project) do
+      create(:project, :with_product_analytics_dashboard_with_inline_visualization, group: group,
+        project_setting: build(:project_setting, product_analytics_instrumentation_key: 'test')
+      )
+    end
+
+    let(:dashboard) { dashboards.find { |d| d.title == 'Dashboard Example Inline Vis' } }
+
+    it_behaves_like 'a valid visualization'
+  end
+
+  context 'when the inline visualization does not contain a slug' do
+    let_it_be(:project) do
+      create(:project, :with_product_analytics_dashboard_with_inline_visualization_no_slug, group: group,
+        project_setting: build(:project_setting, product_analytics_instrumentation_key: 'test')
+      )
+    end
+
+    let(:dashboard) { dashboards.find { |d| d.title == 'Dashboard Example Inline Vis No Slug' } }
+
+    it_behaves_like 'a valid visualization'
+
+    it 'contains a randomly generated slug' do
+      expect(dashboard.panels.first.visualization.slug).to be_a(String)
+    end
+  end
+
   context 'when visualization is loaded with attempted path traversal' do
-    let_it_be(:group) { create(:group) }
     let_it_be(:project) do
       create(:project, :with_dashboard_attempting_path_traversal, group: group,
         project_setting: build(:project_setting, product_analytics_instrumentation_key: 'test')
