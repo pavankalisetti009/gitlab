@@ -12,6 +12,7 @@ RSpec.describe WorkItems::RelatedWorkItemLinks::CreateService, feature_category:
     let_it_be(:work_item_a) { create(:work_item, project: project) }
     let_it_be(:project2) { create(:project, namespace: project.namespace, reporters: reporter) }
     let_it_be(:another_work_item) { create(:work_item, project: project2) }
+    let_it_be(:group) { create(:group) }
 
     let(:link_class) { ::WorkItems::RelatedWorkItemLink }
     let(:params) { { target_issuable: [work_item_a, another_work_item] } }
@@ -70,8 +71,47 @@ RSpec.describe WorkItems::RelatedWorkItemLinks::CreateService, feature_category:
       it_behaves_like 'successful response', link_type: 'is_blocked_by'
     end
 
+    context 'when linking group level work items' do
+      let_it_be(:work_item) { create(:work_item, namespace: group) }
+      let_it_be(:another_work_item) { create(:work_item, namespace: group) }
+
+      before_all do
+        group.add_guest(user)
+      end
+
+      before do
+        stub_licensed_features(epics: true, related_epics: true, blocked_work_items: true)
+      end
+
+      shared_examples 'successfully links work items' do
+        it 'creates relationships and notes' do
+          expect { link_items }.to change { link_class.count }.by(1)
+
+          expect(link_items.keys).to match_array([:status, :created_references, :message])
+          expect(link_items[:status]).to eq(:success)
+          expect(link_items[:created_references]).not_to be_empty
+          expect(link_items[:message]).to eq("Successfully linked ID(s): #{another_work_item.id}.")
+        end
+      end
+
+      context 'when using issuable_references param' do
+        let_it_be(:params) do
+          { issuable_references: [another_work_item.to_reference(full: true)] }
+        end
+
+        it_behaves_like 'successfully links work items'
+      end
+
+      context 'when using target_issuable param' do
+        let_it_be(:params) do
+          { target_issuable: [another_work_item] }
+        end
+
+        it_behaves_like 'successfully links work items'
+      end
+    end
+
     context 'for epic work items' do
-      let_it_be(:group) { create(:group) }
       let_it_be(:epic) { create(:epic, group: group) }
       let_it_be(:epic_a) { create(:epic, group: group) }
       let_it_be(:epic_b) { create(:epic, group: group) }
@@ -93,6 +133,20 @@ RSpec.describe WorkItems::RelatedWorkItemLinks::CreateService, feature_category:
 
       it_behaves_like 'successful response', link_type: 'blocks'
       it_behaves_like 'successful response', link_type: 'is_blocked_by'
+
+      context 'when using issuable_references param with legacy epic reference' do
+        let(:params) do
+          {
+            issuable_references: [
+              work_item_a.synced_epic.to_reference(full: true), another_work_item.synced_epic.to_reference(full: true)
+            ]
+          }
+        end
+
+        it 'successfully creates the records' do
+          expect { link_items }.to change { Epic::RelatedEpicLink.count }.and change { IssueLink.count }
+        end
+      end
 
       context 'when one work item is not an epic' do
         let_it_be(:issue_work_item) { create(:work_item, :issue, namespace: group) }

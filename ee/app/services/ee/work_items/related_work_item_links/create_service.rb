@@ -41,6 +41,16 @@ module EE
 
         private
 
+        def extractor_context
+          return { group: issuable.namespace } if issuable.namespace.is_a?(Group)
+
+          super
+        end
+
+        def references(extractor)
+          super + ::WorkItem.id_in(extractor.epics.map(&:issue_id))
+        end
+
         # This override prevents calling :create_notes_async
         # inside a transaction.
         # Can be removed after migration of epics to work_items.

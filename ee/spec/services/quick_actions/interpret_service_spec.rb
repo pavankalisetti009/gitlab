@@ -1567,6 +1567,7 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
       let_it_be(:ref2) { create(:issue, project: project).to_reference }
       let_it_be(:ref3) { create(:work_item, project: project).to_reference }
       let_it_be(:ref4) { create(:work_item, :epic, namespace: group).to_reference }
+      let_it_be(:ref5) { create(:work_item, :epic_with_legacy_epic, namespace: group).to_reference(full: true) }
 
       let(:target) { issue }
 
@@ -1650,6 +1651,22 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
             let(:target) { create(:epic, group: group) }
 
             it_behaves_like 'quick action is unavailable', :relate
+          end
+
+          context 'when target is a work item epic with a legacy epic' do
+            let(:target) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
+            let(:relate_command) { "/relate #{ref5}" }
+
+            before do
+              group.add_developer(current_user)
+              stub_licensed_features(epics: true, related_epics: true)
+            end
+
+            it '/relate execution method' do
+              expect { service.execute(relate_command, target) }
+                .to change { IssueLink.count }.by(1)
+                .and change { Epic::RelatedEpicLink.count }.by(1)
+            end
           end
         end
 
