@@ -198,6 +198,7 @@ module EE
           reason: 'CVS has been enabled permanently. See [this ' \
             'epic](https://gitlab.com/groups/gitlab-org/-/epics/11474) for more information'
         }
+        mount_mutation ::Mutations::Security::CiConfiguration::SetSecretPushProtection
         mount_mutation ::Mutations::Security::CiConfiguration::SetPreReceiveSecretDetection
         mount_mutation ::Mutations::Security::CiConfiguration::SetGroupSecretPushProtection
         mount_mutation ::Mutations::Security::CiConfiguration::SetContainerScanningForRegistry

@@ -19,19 +19,19 @@ RSpec.describe Security::Configuration::SetProjectSecretPushProtectionService, f
     it 'changes the attribute' do
       security_setting = project_2.security_setting
       expect { execute_service(subject: project_2) }.to change {
-        security_setting.reload.pre_receive_secret_detection_enabled
+        security_setting.reload.secret_push_protection_enabled
       }.from(false).to(true)
 
       expect { execute_service(subject: project_2) }.not_to change {
-        security_setting.reload.pre_receive_secret_detection_enabled
+        security_setting.reload.secret_push_protection_enabled
       }
 
       expect { execute_service(subject: project_2, enable: false) }.to change {
-        security_setting.reload.pre_receive_secret_detection_enabled
+        security_setting.reload.secret_push_protection_enabled
       }.from(true).to(false)
 
       expect { execute_service(subject: project_2, enable: false) }.not_to change {
-        security_setting.reload.pre_receive_secret_detection_enabled
+        security_setting.reload.secret_push_protection_enabled
       }
     end
 
@@ -81,7 +81,7 @@ RSpec.describe Security::Configuration::SetProjectSecretPushProtectionService, f
           .to change { project_without_security_setting.reload.security_setting }
                 .from(nil).to(be_a(ProjectSecuritySetting))
 
-        expect(project_without_security_setting.reload.security_setting.pre_receive_secret_detection_enabled)
+        expect(project_without_security_setting.reload.security_setting.secret_push_protection_enabled)
           .to be(true)
 
         expect(AuditEvent.last.details[:custom_message]).to eq("Secret push protection has been enabled")
@@ -92,7 +92,7 @@ RSpec.describe Security::Configuration::SetProjectSecretPushProtectionService, f
     context 'when arguments are invalid' do
       it 'does not change the attribute' do
         expect { execute_service(subject: project_2, enable: nil) }
-          .not_to change { project_2.reload.security_setting.pre_receive_secret_detection_enabled }
+          .not_to change { project_2.reload.security_setting.secret_push_protection_enabled }
       end
     end
   end

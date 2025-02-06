@@ -498,9 +498,9 @@ module EE
         enable :create_merge_request_from
       end
 
-      rule { pre_receive_secret_detection_available & can?(:admin_security_testing) }.policy do
-        enable :read_pre_receive_secret_detection_info
-        enable :enable_pre_receive_secret_detection
+      rule { secret_push_protection_available & can?(:admin_security_testing) }.policy do
+        enable :read_secret_push_protection_info
+        enable :enable_secret_push_protection
         enable :read_project_security_exclusions
       end
 
@@ -1082,12 +1082,12 @@ module EE
         enable :update_saved_replies
       end
 
-      condition(:pre_receive_secret_detection_available) do
-        @subject.licensed_feature_available?(:pre_receive_secret_detection)
+      condition(:secret_push_protection_available) do
+        @subject.licensed_feature_available?(:secret_push_protection)
       end
 
-      rule { pre_receive_secret_detection_available & can?(:maintainer_access) }.policy do
-        enable :enable_pre_receive_secret_detection
+      rule { secret_push_protection_available & can?(:maintainer_access) }.policy do
+        enable :enable_secret_push_protection
       end
 
       condition(:container_scanning_for_registry_available) do
@@ -1097,8 +1097,8 @@ module EE
         enable :enable_container_scanning_for_registry
       end
 
-      rule { pre_receive_secret_detection_available & can?(:developer_access) }.policy do
-        enable :read_pre_receive_secret_detection_info
+      rule { secret_push_protection_available & can?(:developer_access) }.policy do
+        enable :read_secret_push_protection_info
       end
 
       condition(:duo_workflow_enabled) do

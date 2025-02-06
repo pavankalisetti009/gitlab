@@ -586,8 +586,8 @@ module EE
         enable :read_security_resource
       end
 
-      rule { pre_receive_secret_detection_available & can?(:admin_security_testing) }.policy do
-        enable :enable_pre_receive_secret_detection
+      rule { secret_push_protection_available & can?(:admin_security_testing) }.policy do
+        enable :enable_secret_push_protection
       end
 
       rule { custom_role_enables_admin_group_member }.policy do
@@ -882,12 +882,12 @@ module EE
 
       rule { ~clickhouse_main_database_available }.prevent :read_runner_usage
 
-      condition(:pre_receive_secret_detection_available) do
-        @subject.licensed_feature_available?(:pre_receive_secret_detection)
+      condition(:secret_push_protection_available) do
+        @subject.licensed_feature_available?(:secret_push_protection)
       end
 
-      rule { pre_receive_secret_detection_available & can?(:maintainer_access) }.policy do
-        enable :enable_pre_receive_secret_detection
+      rule { secret_push_protection_available & can?(:maintainer_access) }.policy do
+        enable :enable_secret_push_protection
       end
 
       rule { can?(:admin_group) }.policy do

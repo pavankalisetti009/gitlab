@@ -154,9 +154,9 @@ module EE
         end
 
         # Remove the inline rubocop disablement of Metrics/PerceivedComplexity when we can move
-        # pre_receive_secret_detection_enabled to the simple License feature => attribute name
+        # secret_push_protection_available to the simple License feature => attribute name
         # hash above.
-        attrs << :pre_receive_secret_detection_enabled if License.feature_available?(:pre_receive_secret_detection)
+        attrs << :secret_push_protection_available if License.feature_available?(:secret_push_protection)
 
         if License.feature_available?(:admin_merge_request_approvers_rules)
           attrs += EE::ApplicationSettingsHelper.merge_request_appovers_rules_attributes

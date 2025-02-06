@@ -7,7 +7,7 @@ RSpec.describe Gitlab::Usage::Metrics::Instrumentations::CountProjectsWithSecret
 
   before do
     3.times do
-      create(:project).security_setting.update!(pre_receive_secret_detection_enabled: true)
+      create(:project).security_setting.update!(secret_push_protection_enabled: true)
     end
     create(:project)
   end

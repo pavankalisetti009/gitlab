@@ -14,10 +14,10 @@ RSpec.describe 'admin/application_settings/security_and_compliance.html.haml', f
     assign(:application_setting, app_settings)
     allow(view).to receive(:current_user).and_return(user)
 
-    stub_licensed_features(pre_receive_secret_detection: feature_available)
+    stub_licensed_features(secret_push_protection: feature_available)
   end
 
-  shared_examples 'renders pre receive secret detection setting' do
+  shared_examples 'renders secret push protection setting' do
     it do
       render
 
@@ -25,7 +25,7 @@ RSpec.describe 'admin/application_settings/security_and_compliance.html.haml', f
     end
   end
 
-  shared_examples 'does not render pre receive secret detection setting' do
+  shared_examples 'does not render secret push protection setting' do
     it do
       render
 
@@ -36,12 +36,12 @@ RSpec.describe 'admin/application_settings/security_and_compliance.html.haml', f
   describe 'feature available' do
     let(:feature_available) { true }
 
-    it_behaves_like 'renders pre receive secret detection setting'
+    it_behaves_like 'renders secret push protection setting'
   end
 
   describe 'feature not available' do
     let(:feature_available) { false }
 
-    it_behaves_like 'does not render pre receive secret detection setting'
+    it_behaves_like 'does not render secret push protection setting'
   end
 end

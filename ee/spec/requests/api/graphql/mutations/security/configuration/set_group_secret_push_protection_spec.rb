@@ -27,7 +27,7 @@ RSpec.describe 'Setting Group Secret Push Protection', feature_category: :securi
     context 'with group' do
       before do
         allow(::Security::Configuration::SetGroupSecretPushProtectionWorker).to receive(:perform_async)
-        stub_licensed_features(pre_receive_secret_detection: true)
+        stub_licensed_features(secret_push_protection: true)
       end
 
       # user is not a member of the group at all, so they're got an unauthorized error

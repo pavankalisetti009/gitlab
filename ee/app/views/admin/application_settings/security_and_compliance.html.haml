@@ -13,7 +13,7 @@
   - c.with_body do
     = render 'license_compliance'
 
-- if License.feature_available?(:pre_receive_secret_detection)
+- if License.feature_available?(:secret_push_protection)
   = render ::Layouts::SettingsBlockComponent.new(_('Secret Detection'),
     id: 'js-secret-detection-settings',
     testid: 'admin-secret-detection-settings',
@@ -21,4 +21,4 @@
     - c.with_description do
       = _('Manage secret detection behavior for all projects in your GitLab instance')
     - c.with_body do
-      = render 'pre_receive_secret_detection'
+      = render 'secret_push_protection'

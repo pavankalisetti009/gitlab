@@ -10,7 +10,7 @@ RSpec.describe Projects::Security::SecretDetectionConfigurationController,
 
   describe 'GET #show' do
     before do
-      stub_licensed_features(security_dashboard: true, pre_receive_secret_detection: true)
+      stub_licensed_features(security_dashboard: true, secret_push_protection: true)
       login_as(user)
     end
 
@@ -43,7 +43,7 @@ RSpec.describe Projects::Security::SecretDetectionConfigurationController,
     context 'when feature is not available' do
       context "when license doesn't support the feature" do
         before do
-          stub_licensed_features(pre_receive_secret_detection: false)
+          stub_licensed_features(secret_push_protection: false)
         end
 
         before_all do

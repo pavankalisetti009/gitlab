@@ -22,8 +22,8 @@ RSpec.describe Projects::Security::ConfigurationPresenter, feature_category: :so
       expect(result[:container_scanning_for_registry_enabled]).to eq(false)
     end
 
-    it 'includes a default value for pre_receive_secret_detection_enabled' do
-      expect(result[:pre_receive_secret_detection_enabled]).to eq(false)
+    it 'includes a default value for secret_push_protection_enabled' do
+      expect(result[:secret_push_protection_enabled]).to eq(false)
     end
   end
 

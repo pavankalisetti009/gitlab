@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Security::Configuration::SetSecretPushProtectionService, feature_category: :secret_detection do
   describe '#execute' do
-    let_it_be(:security_setting) { create(:project_security_setting, pre_receive_secret_detection_enabled: false) }
+    let_it_be(:security_setting) { create(:project_security_setting, secret_push_protection_enabled: false) }
     let_it_be(:current_user) { create(:user, :admin) }
     let_it_be(:project) { security_setting.project }
 
@@ -17,15 +17,15 @@ RSpec.describe Security::Configuration::SetSecretPushProtectionService, feature_
 
     it 'changes the attribute' do
       expect { described_class.execute(current_user: current_user, project: project, enable: true) }
-        .to change { security_setting.reload.pre_receive_secret_detection_enabled }
+        .to change { security_setting.reload.secret_push_protection_enabled }
         .from(false).to(true)
       expect { described_class.execute(current_user: current_user, project: project, enable: true) }
-        .not_to change { security_setting.reload.pre_receive_secret_detection_enabled }
+        .not_to change { security_setting.reload.secret_push_protection_enabled }
       expect { described_class.execute(current_user: current_user, project: project, enable: false) }
-        .to change { security_setting.reload.pre_receive_secret_detection_enabled }
+        .to change { security_setting.reload.secret_push_protection_enabled }
         .from(true).to(false)
       expect { described_class.execute(current_user: current_user, project: project, enable: false) }
-        .not_to change { security_setting.reload.pre_receive_secret_detection_enabled }
+        .not_to change { security_setting.reload.secret_push_protection_enabled }
     end
 
     context 'when security_setting record does not yet exist' do
@@ -51,7 +51,7 @@ RSpec.describe Security::Configuration::SetSecretPushProtectionService, feature_
     end
 
     context 'when attribute changes from true to false' do
-      let(:security_setting2) { create(:project_security_setting, pre_receive_secret_detection_enabled: true) }
+      let(:security_setting2) { create(:project_security_setting, secret_push_protection_enabled: true) }
       let(:project2) { security_setting2.project }
 
       it 'creates an audit event with the correct message' do
@@ -70,7 +70,7 @@ RSpec.describe Security::Configuration::SetSecretPushProtectionService, feature_
 
       it 'does not change the attribute' do
         expect { described_class.execute(current_user: current_user, project: project, enable: nil) }
-          .not_to change { security_setting.reload.pre_receive_secret_detection_enabled }
+          .not_to change { security_setting.reload.secret_push_protection_enabled }
       end
     end
   end

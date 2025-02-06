@@ -16,7 +16,7 @@ module Projects
       private
 
       def ensure_feature_is_available!
-        not_found unless project.licensed_feature_available?(:pre_receive_secret_detection)
+        not_found unless project.licensed_feature_available?(:secret_push_protection)
       end
 
       def authorize_read_project_security_exclusions!

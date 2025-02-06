@@ -7,6 +7,8 @@ class ProjectSecuritySetting < ApplicationRecord
 
   scope :for_projects, ->(project_ids) { where(project_id: project_ids) }
 
+  ignore_column :pre_receive_secret_detection_enabled, remove_with: '17.9', remove_after: '2025-02-15'
+
   def set_continuous_vulnerability_scans!(enabled:)
     enabled if update!(continuous_vulnerability_scans_enabled: enabled)
   end
@@ -15,7 +17,7 @@ class ProjectSecuritySetting < ApplicationRecord
     enabled if update!(container_scanning_for_registry_enabled: enabled)
   end
 
-  def set_pre_receive_secret_detection!(enabled:)
-    enabled if update!(pre_receive_secret_detection_enabled: enabled)
+  def set_secret_push_protection!(enabled:)
+    enabled if update!(secret_push_protection_enabled: enabled)
   end
 end

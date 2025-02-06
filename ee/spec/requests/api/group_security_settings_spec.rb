@@ -20,7 +20,7 @@ RSpec.describe API::GroupSecuritySettings, :aggregate_failures, feature_category
 
     context 'when user is authenticated' do
       before do
-        stub_licensed_features(pre_receive_secret_detection: true)
+        stub_licensed_features(secret_push_protection: true)
         allow(::Security::Configuration::SetGroupSecretPushProtectionWorker).to receive(:perform_async)
       end
 

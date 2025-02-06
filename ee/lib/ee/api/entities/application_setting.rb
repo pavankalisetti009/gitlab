@@ -24,7 +24,10 @@ module EE
           expose :updating_name_disabled_for_users, if: ->(_instance, _opts) { ::License.feature_available?(:disable_name_update_for_users) }
           expose :maven_package_requests_forwarding, if: ->(_instance, _opts) { ::License.feature_available?(:package_forwarding) }
           expose :npm_package_requests_forwarding, if: ->(_instance, _opts) { ::License.feature_available?(:package_forwarding) }
-          expose :pre_receive_secret_detection_enabled, if: ->(_instance, _opts) { ::License.feature_available?(:pre_receive_secret_detection) }
+          expose :secret_push_protection_available, if: ->(_instance, _opts) { ::License.feature_available?(:secret_push_protection) }
+          expose :secret_push_protection_available,
+            if: ->(_instance, _opts) { ::License.feature_available?(:secret_push_protection) },
+            as: :pre_receive_secret_detection_enabled
           expose :pypi_package_requests_forwarding, if: ->(_instance, _opts) { ::License.feature_available?(:package_forwarding) }
           expose :group_owners_can_manage_default_branch_protection, if: ->(_instance, _opts) { ::License.feature_available?(:default_branch_protection_restriction_in_groups) }
           expose :maintenance_mode, if: ->(_instance, _opts) { RegistrationFeatures::MaintenanceMode.feature_available? }

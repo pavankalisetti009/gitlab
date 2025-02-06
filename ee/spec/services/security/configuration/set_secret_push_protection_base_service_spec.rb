@@ -13,7 +13,7 @@ RSpec.describe Security::Configuration::SetSecretPushProtectionBaseService, feat
         allow(service).to receive_messages(valid_request?: true, subject_project_ids: [project_1.id],
           audit: nil)
         expect { service.execute }.to change {
-          project_1.security_setting.reload.pre_receive_secret_detection_enabled
+          project_1.security_setting.reload.secret_push_protection_enabled
         }.from(false).to(true)
         expect(service.execute).to be(true)
       end
@@ -24,7 +24,7 @@ RSpec.describe Security::Configuration::SetSecretPushProtectionBaseService, feat
         allow(service).to receive_messages(valid_request?: false, subject_project_ids: [project_1.id],
           audit: nil)
         expect { service.execute }.not_to change {
-          project_1.security_setting.reload.pre_receive_secret_detection_enabled
+          project_1.security_setting.reload.secret_push_protection_enabled
         }
         expect(service.execute).to be_nil
       end

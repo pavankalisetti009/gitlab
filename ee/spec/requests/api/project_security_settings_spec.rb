@@ -20,7 +20,7 @@ RSpec.describe API::ProjectSecuritySettings, :aggregate_failures, feature_catego
 
     context 'when user is authenticated' do
       before do
-        stub_licensed_features(pre_receive_secret_detection: true)
+        stub_licensed_features(secret_push_protection: true)
       end
 
       it 'returns project security settings when the user has at least the Developer role' do
@@ -59,20 +59,33 @@ RSpec.describe API::ProjectSecuritySettings, :aggregate_failures, feature_catego
 
     context 'when user is authenticated' do
       before do
-        stub_licensed_features(pre_receive_secret_detection: true)
+        stub_licensed_features(secret_push_protection: true)
       end
 
-      it 'updates project security settings for users with Maintainer role' do
-        project.add_maintainer(user)
-        put api(url, user), params: { pre_receive_secret_detection_enabled: true }
+      context 'when the user is a Maintainer' do
+        before do
+          project.add_maintainer(user)
+        end
 
-        expect(response).to have_gitlab_http_status(:ok)
-        expect(json_response['pre_receive_secret_detection_enabled']).to be(true)
+        it 'updates project security settings using the secret_push_protection_enabled param' do
+          put api(url, user), params: { secret_push_protection_enabled: true }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['secret_push_protection_enabled']).to be(true)
+        end
+
+        it 'updates project security settings using the pre_receive_secret_detection_enabled param' do
+          project.add_maintainer(user)
+          put api(url, user), params: { pre_receive_secret_detection_enabled: true }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['secret_push_protection_enabled']).to be(true)
+        end
       end
 
       it 'returns 401 Unauthorized for users with Developer role' do
         project.add_developer(user)
-        put api(url, user), params: { pre_receive_secret_detection_enabled: true }
+        put api(url, user), params: { secret_push_protection_enabled: true }
 
         expect(response).to have_gitlab_http_status(:unauthorized)
       end

@@ -10,7 +10,7 @@ RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection
   describe '#validate!' do
     context 'when application setting is disabled' do
       before do
-        Gitlab::CurrentSettings.update!(pre_receive_secret_detection_enabled: false)
+        Gitlab::CurrentSettings.update!(secret_push_protection_available: false)
       end
 
       it_behaves_like 'skips the push check'
@@ -18,12 +18,12 @@ RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection
 
     context 'when application setting is enabled' do
       before do
-        Gitlab::CurrentSettings.update!(pre_receive_secret_detection_enabled: true)
+        Gitlab::CurrentSettings.update!(secret_push_protection_available: true)
       end
 
       context 'when project setting is disabled' do
         before do
-          project.security_setting.update!(pre_receive_secret_detection_enabled: false)
+          project.security_setting.update!(secret_push_protection_enabled: false)
         end
 
         it_behaves_like 'skips the push check'
@@ -31,7 +31,7 @@ RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection
 
       context 'when project setting is enabled' do
         before do
-          project.security_setting.update!(pre_receive_secret_detection_enabled: true)
+          project.security_setting.update!(secret_push_protection_enabled: true)
         end
 
         context 'when license is not ultimate' do
@@ -40,7 +40,7 @@ RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection
 
         context 'when license is ultimate' do
           before do
-            stub_licensed_features(pre_receive_secret_detection: true)
+            stub_licensed_features(secret_push_protection: true)
           end
 
           context 'when SDS should be called (on SaaS)' do

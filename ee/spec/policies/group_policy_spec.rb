@@ -3967,7 +3967,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
         let(:member_role_abilities) { { admin_security_testing: true } }
         let(:licensed_features) do
           { security_dashboard: true,
-            pre_receive_secret_detection: true,
+            secret_push_protection: true,
             group_level_compliance_dashboard: true }
         end
 
@@ -3977,7 +3977,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
             :read_security_configuration,
             :read_group_security_dashboard,
             :read_security_resource,
-            :enable_pre_receive_secret_detection
+            :enable_secret_push_protection
           ]
         end
 
@@ -4365,21 +4365,21 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     end
   end
 
-  describe 'enable_pre_receive_secret_detection' do
+  describe 'enable_secret_push_protection' do
     using RSpec::Parameterized::TableSyntax
 
     where(:current_user, :licensed, :match_expected_result) do
-      ref(:owner)      | true  | be_allowed(:enable_pre_receive_secret_detection)
-      ref(:maintainer) | true  | be_allowed(:enable_pre_receive_secret_detection)
-      ref(:developer)  | true  | be_disallowed(:enable_pre_receive_secret_detection)
-      ref(:owner)      | false | be_disallowed(:enable_pre_receive_secret_detection)
-      ref(:maintainer) | false | be_disallowed(:enable_pre_receive_secret_detection)
-      ref(:developer)  | false | be_disallowed(:enable_pre_receive_secret_detection)
+      ref(:owner)      | true  | be_allowed(:enable_secret_push_protection)
+      ref(:maintainer) | true  | be_allowed(:enable_secret_push_protection)
+      ref(:developer)  | true  | be_disallowed(:enable_secret_push_protection)
+      ref(:owner)      | false | be_disallowed(:enable_secret_push_protection)
+      ref(:maintainer) | false | be_disallowed(:enable_secret_push_protection)
+      ref(:developer)  | false | be_disallowed(:enable_secret_push_protection)
     end
 
     with_them do
       before do
-        stub_licensed_features(pre_receive_secret_detection: licensed)
+        stub_licensed_features(secret_push_protection: licensed)
       end
 
       it { is_expected.to match_expected_result }
@@ -4388,7 +4388,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     describe 'when the group does not have the correct license' do
       let(:current_user) { owner }
 
-      it { is_expected.to be_disallowed(:enable_pre_receive_secret_detection) }
+      it { is_expected.to be_disallowed(:enable_secret_push_protection) }
     end
   end
 

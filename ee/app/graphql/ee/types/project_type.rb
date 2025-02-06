@@ -386,7 +386,12 @@ module EE
         field :pre_receive_secret_detection_enabled, GraphQL::Types::Boolean,
           null: true,
           description: 'Indicates whether Secret Push Protection is on or not for the project.',
-          authorize: :read_pre_receive_secret_detection_info
+          authorize: :read_secret_push_protection_info
+
+        field :secret_push_protection_enabled, GraphQL::Types::Boolean,
+          null: true,
+          description: 'Indicates whether Secret Push Protection is on or not for the project.',
+          authorize: :read_secret_push_protection_info
 
         field :prevent_merge_without_jira_issue_enabled, GraphQL::Types::Boolean,
           null: false,
@@ -577,8 +582,8 @@ module EE
         object.project_setting.product_analytics_instrumentation_key
       end
 
-      def pre_receive_secret_detection_enabled
-        object.security_setting.pre_receive_secret_detection_enabled
+      def secret_push_protection_enabled
+        object.security_setting.secret_push_protection_enabled
       end
 
       def api_fuzzing_ci_configuration

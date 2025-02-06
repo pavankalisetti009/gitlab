@@ -3,8 +3,8 @@
 module Mutations
   module Security
     module CiConfiguration
-      class SetPreReceiveSecretDetection < BaseMutation
-        graphql_name 'SetPreReceiveSecretDetection'
+      class SetSecretPushProtection < BaseMutation
+        graphql_name 'SetSecretPushProtection'
 
         include ResolvesProject
 
@@ -32,10 +32,11 @@ module Mutations
 
         def resolve(namespace_path:, enable:)
           project = authorized_find!(project_path: namespace_path)
+
           response = ::Security::Configuration::SetSecretPushProtectionService
             .execute(current_user: current_user, project: project, enable: enable)
 
-          { pre_receive_secret_detection_enabled: response.payload[:enabled], errors: response.errors }
+          { secret_push_protection_enabled: response.payload[:enabled], errors: response.errors }
         end
 
         private

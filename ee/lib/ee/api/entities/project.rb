@@ -38,8 +38,14 @@ module EE
           expose :security_and_compliance_enabled do |project, options|
             project.feature_available?(:security_and_compliance, options[:current_user])
           end
-          expose :pre_receive_secret_detection_enabled, documentation: { type: 'boolean' }, if: ->(project, options) { Ability.allowed?(options[:current_user], :read_pre_receive_secret_detection_info, project) } do |project|
-            project.security_setting&.pre_receive_secret_detection_enabled
+          expose :secret_push_protection_enabled, documentation: { type: 'boolean' }, if: ->(project, options) { Ability.allowed?(options[:current_user], :read_secret_push_protection_info, project) } do |project|
+            project.security_setting&.secret_push_protection_enabled
+          end
+          expose :secret_push_protection_enabled,
+            as: :pre_receive_secret_detection_enabled,
+            documentation: { type: 'boolean' },
+            if: ->(project, options) { Ability.allowed?(options[:current_user], :read_secret_push_protection_info, project) } do |project|
+            project.security_setting&.secret_push_protection_enabled
           end
           expose :compliance_frameworks do |project, _|
             project.compliance_management_frameworks_names

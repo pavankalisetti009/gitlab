@@ -84,9 +84,9 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
   end
 
   describe '.possible_licensed_attributes' do
-    it 'contains pre_receive_secret_detection_enabled' do
+    it 'contains secret_push_protection_enabled' do
       expect(described_class.possible_licensed_attributes).to include(
-        :pre_receive_secret_detection_enabled
+        :secret_push_protection_available
       )
     end
   end

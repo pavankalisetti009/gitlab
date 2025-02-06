@@ -69,9 +69,9 @@ module Gitlab
         #   4. if it is a delete branch/tag operation, as it would require scanning the entire revision history
         #   5. if options are passed for us to skip the check
 
-        return unless project.licensed_feature_available?(:pre_receive_secret_detection)
+        return unless project.licensed_feature_available?(:secret_push_protection)
 
-        return unless run_pre_receive_secret_detection?
+        return unless run_secret_push_protection?
 
         return if includes_full_revision_history?
 
@@ -176,9 +176,9 @@ module Gitlab
       ##############################
       # Project Eligibility Checks
 
-      def run_pre_receive_secret_detection?
-        ::Gitlab::CurrentSettings.current_application_settings.pre_receive_secret_detection_enabled &&
-          project.security_setting&.pre_receive_secret_detection_enabled
+      def run_secret_push_protection?
+        ::Gitlab::CurrentSettings.current_application_settings.secret_push_protection_available &&
+          project.security_setting&.secret_push_protection_enabled
       end
 
       def use_secret_detection_service?
