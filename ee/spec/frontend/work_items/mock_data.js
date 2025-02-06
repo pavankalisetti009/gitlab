@@ -247,3 +247,136 @@ export const getEpicWeightWidgetDefinitions = (editable = false) => {
     },
   ];
 };
+
+export const namespaceWorkItemsWithoutEpicSupport = {
+  data: {
+    workspace: {
+      id: 'gid://gitlab/Group/14',
+      workItemTypes: {
+        nodes: [
+          {
+            id: 'gid://gitlab/WorkItems::Type/1',
+            name: 'Issue',
+            iconName: 'issue-type-issue',
+            supportedConversionTypes: [
+              {
+                id: 'gid://gitlab/WorkItems::Type/2',
+                name: 'Incident',
+                __typename: 'WorkItemType',
+              },
+              {
+                id: 'gid://gitlab/WorkItems::Type/5',
+                name: 'Task',
+                __typename: 'WorkItemType',
+              },
+              {
+                id: 'gid://gitlab/WorkItems::Type/3',
+                name: 'Test Case',
+                __typename: 'WorkItemType',
+              },
+              {
+                id: 'gid://gitlab/WorkItems::Type/9',
+                name: 'Ticket',
+                __typename: 'WorkItemType',
+              },
+            ],
+            widgetDefinitions: [
+              {
+                type: 'ASSIGNEES',
+                allowsMultipleAssignees: true,
+                canInviteMembers: false,
+                __typename: 'WorkItemWidgetDefinitionAssignees',
+              },
+              {
+                type: 'AWARD_EMOJI',
+                __typename: 'WorkItemWidgetDefinitionGeneric',
+              },
+              {
+                type: 'CRM_CONTACTS',
+                __typename: 'WorkItemWidgetDefinitionGeneric',
+              },
+              {
+                type: 'CURRENT_USER_TODOS',
+                __typename: 'WorkItemWidgetDefinitionGeneric',
+              },
+              {
+                type: 'DESCRIPTION',
+                __typename: 'WorkItemWidgetDefinitionGeneric',
+              },
+              {
+                type: 'DESIGNS',
+                __typename: 'WorkItemWidgetDefinitionGeneric',
+              },
+              {
+                type: 'DEVELOPMENT',
+                __typename: 'WorkItemWidgetDefinitionGeneric',
+              },
+              {
+                type: 'EMAIL_PARTICIPANTS',
+                __typename: 'WorkItemWidgetDefinitionGeneric',
+              },
+              {
+                type: 'HIERARCHY',
+                allowedChildTypes: {
+                  nodes: [
+                    {
+                      id: 'gid://gitlab/WorkItems::Type/5',
+                      name: 'Task',
+                      __typename: 'WorkItemType',
+                    },
+                  ],
+                  __typename: 'WorkItemTypeConnection',
+                },
+                __typename: 'WorkItemWidgetDefinitionHierarchy',
+              },
+              {
+                type: 'ITERATION',
+                __typename: 'WorkItemWidgetDefinitionGeneric',
+              },
+              {
+                type: 'LABELS',
+                allowsScopedLabels: false,
+                __typename: 'WorkItemWidgetDefinitionLabels',
+              },
+              {
+                type: 'LINKED_ITEMS',
+                __typename: 'WorkItemWidgetDefinitionGeneric',
+              },
+              {
+                type: 'MILESTONE',
+                __typename: 'WorkItemWidgetDefinitionGeneric',
+              },
+              {
+                type: 'NOTES',
+                __typename: 'WorkItemWidgetDefinitionGeneric',
+              },
+              {
+                type: 'NOTIFICATIONS',
+                __typename: 'WorkItemWidgetDefinitionGeneric',
+              },
+              {
+                type: 'PARTICIPANTS',
+                __typename: 'WorkItemWidgetDefinitionGeneric',
+              },
+              {
+                type: 'START_AND_DUE_DATE',
+                __typename: 'WorkItemWidgetDefinitionGeneric',
+              },
+              {
+                type: 'TIME_TRACKING',
+                __typename: 'WorkItemWidgetDefinitionGeneric',
+              },
+              {
+                type: 'WEIGHT',
+                editable: true,
+                rollUp: false,
+                __typename: 'WorkItemWidgetDefinitionWeight',
+              },
+            ],
+            __typename: 'WorkItemType',
+          },
+        ],
+      },
+    },
+  },
+};

@@ -70,12 +70,15 @@ module EE
       end
 
       override :supported_conversion_base_types
-      def supported_conversion_base_types(resource_parent)
+      def supported_conversion_base_types(resource_parent, user)
         ee_base_types = LICENSED_TYPES.flat_map do |type, licensed_feature|
           type.to_s if resource_parent.licensed_feature_available?(licensed_feature.to_sym)
         end.compact
 
-        unless ::Feature.enabled?(:work_item_epics, resource_parent.root_ancestor, type: :beta)
+        group = resource_parent.is_a?(Group) ? resource_parent : resource_parent.group
+
+        unless ::Feature.enabled?(:work_item_epics, resource_parent.root_ancestor,
+          type: :beta) && Ability.allowed?(user, :create_epic, group)
           ee_base_types -= %w[epic]
         end
 
