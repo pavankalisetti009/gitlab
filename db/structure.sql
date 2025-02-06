@@ -15972,6 +15972,30 @@ CREATE TABLE merge_requests (
     CONSTRAINT check_970d272570 CHECK ((lock_version IS NOT NULL))
 );
 
+CREATE TABLE merge_requests_approval_rules (
+    id bigint NOT NULL,
+    name text NOT NULL,
+    approvals_required integer DEFAULT 0 NOT NULL,
+    rule_type smallint DEFAULT 0 NOT NULL,
+    origin smallint DEFAULT 0 NOT NULL,
+    project_id bigint,
+    group_id bigint,
+    source_rule_id bigint,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    CONSTRAINT check_ba7b03c61a CHECK ((num_nonnulls(group_id, project_id) = 1)),
+    CONSTRAINT check_c7c36145b7 CHECK ((char_length(name) <= 255))
+);
+
+CREATE SEQUENCE merge_requests_approval_rules_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE merge_requests_approval_rules_id_seq OWNED BY merge_requests_approval_rules.id;
+
 CREATE TABLE merge_requests_closing_issues (
     id bigint NOT NULL,
     merge_request_id bigint NOT NULL,
@@ -25202,6 +25226,8 @@ ALTER TABLE ONLY merge_request_user_mentions ALTER COLUMN id SET DEFAULT nextval
 
 ALTER TABLE ONLY merge_requests ALTER COLUMN id SET DEFAULT nextval('merge_requests_id_seq'::regclass);
 
+ALTER TABLE ONLY merge_requests_approval_rules ALTER COLUMN id SET DEFAULT nextval('merge_requests_approval_rules_id_seq'::regclass);
+
 ALTER TABLE ONLY merge_requests_closing_issues ALTER COLUMN id SET DEFAULT nextval('merge_requests_closing_issues_id_seq'::regclass);
 
 ALTER TABLE ONLY merge_requests_compliance_violations ALTER COLUMN id SET DEFAULT nextval('merge_requests_compliance_violations_id_seq'::regclass);
@@ -27759,6 +27785,9 @@ ALTER TABLE ONLY merge_request_reviewers
 
 ALTER TABLE ONLY merge_request_user_mentions
     ADD CONSTRAINT merge_request_user_mentions_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY merge_requests_approval_rules
+    ADD CONSTRAINT merge_requests_approval_rules_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY merge_requests_closing_issues
     ADD CONSTRAINT merge_requests_closing_issues_pkey PRIMARY KEY (id);
@@ -33143,6 +33172,12 @@ CREATE INDEX index_merge_request_reviewers_on_user_id ON merge_request_reviewers
 
 CREATE UNIQUE INDEX index_merge_request_user_mentions_on_note_id ON merge_request_user_mentions USING btree (note_id) WHERE (note_id IS NOT NULL);
 
+CREATE INDEX index_merge_requests_approval_rules_on_group_id ON merge_requests_approval_rules USING btree (group_id);
+
+CREATE INDEX index_merge_requests_approval_rules_on_project_id ON merge_requests_approval_rules USING btree (project_id);
+
+CREATE INDEX index_merge_requests_approval_rules_on_source_rule_id ON merge_requests_approval_rules USING btree (source_rule_id);
+
 CREATE INDEX index_merge_requests_closing_issues_on_issue_id ON merge_requests_closing_issues USING btree (issue_id);
 
 CREATE INDEX index_merge_requests_closing_issues_on_merge_request_id ON merge_requests_closing_issues USING btree (merge_request_id);
@@ -38070,6 +38105,9 @@ ALTER TABLE ONLY cluster_agent_url_configurations
 ALTER TABLE ONLY incident_management_escalation_rules
     ADD CONSTRAINT fk_0314ee86eb FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY merge_requests_approval_rules
+    ADD CONSTRAINT fk_03983bf729 FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY audit_events_instance_google_cloud_logging_configurations
     ADD CONSTRAINT fk_03a15ca4fa FOREIGN KEY (stream_destination_id) REFERENCES audit_events_instance_external_streaming_destinations(id) ON DELETE SET NULL;
 
@@ -38942,6 +38980,9 @@ ALTER TABLE ONLY scan_result_policies
 
 ALTER TABLE ONLY catalog_resource_versions
     ADD CONSTRAINT fk_7ad8849db4 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY merge_requests_approval_rules
+    ADD CONSTRAINT fk_7af76dbd21 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY issue_customer_relations_contacts
     ADD CONSTRAINT fk_7b92f835bb FOREIGN KEY (contact_id) REFERENCES customer_relations_contacts(id) ON DELETE CASCADE;
@@ -39896,6 +39937,9 @@ ALTER TABLE ONLY application_settings
 
 ALTER TABLE ONLY issuable_severities
     ADD CONSTRAINT fk_f9df19ecb6 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY merge_requests_approval_rules
+    ADD CONSTRAINT fk_fa5b38e373 FOREIGN KEY (source_rule_id) REFERENCES merge_requests_approval_rules(id) ON DELETE SET NULL;
 
 ALTER TABLE ONLY clusters_managed_resources
     ADD CONSTRAINT fk_fad3c3b2e2 FOREIGN KEY (environment_id) REFERENCES environments(id) ON DELETE CASCADE;
