@@ -161,6 +161,7 @@ module IdentityVerifiable
 
   delegate :arkose_verified?, :assume_low_risk!, :assume_high_risk!, :assumed_high_risk?,
     :add_identity_verification_exemption, :remove_identity_verification_exemption, :phone_number_verification_exempt?,
+    :assume_high_risk_if_phone_verification_limit_exceeded!,
     to: :risk_profile
   delegate :high_risk?, :medium_risk?, :low_risk?, :remove_phone_number_verification_exemption,
     to: :risk_profile, private: true

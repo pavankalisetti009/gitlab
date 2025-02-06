@@ -806,11 +806,19 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
       expect(instance).to receive(:assume_low_risk!).with(reason: 'Low reason').ordered
       expect(instance).to receive(:assume_high_risk!).with(reason: 'High reason').ordered
       expect(instance).to receive(:assumed_high_risk?).ordered
+      expect(instance).to receive(:add_identity_verification_exemption)
+      expect(instance).to receive(:remove_identity_verification_exemption)
+      expect(instance).to receive(:phone_number_verification_exempt?)
+      expect(instance).to receive(:assume_high_risk_if_phone_verification_limit_exceeded!)
     end
 
     user.arkose_verified?
     user.assume_low_risk!(reason: 'Low reason')
     user.assume_high_risk!(reason: 'High reason')
     user.assumed_high_risk?
+    user.add_identity_verification_exemption
+    user.remove_identity_verification_exemption
+    user.phone_number_verification_exempt?
+    user.assume_high_risk_if_phone_verification_limit_exceeded!
   end
 end
