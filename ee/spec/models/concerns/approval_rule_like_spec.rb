@@ -62,6 +62,100 @@ RSpec.describe ApprovalRuleLike, feature_category: :source_code_management do
           expect(rule.approvers_include_user?(user3)).to be_falsey
         end
       end
+
+      context 'when dealing with team members and custom roles' do
+        let_it_be(:group) { create(:group) }
+        let_it_be(:group_project) { create(:project, group: group) }
+        let_it_be(:custom_role) { create(:member_role, :instance, :admin_merge_request) }
+        let_it_be(:team_member_with_role) { create(:user) }
+        let_it_be(:team_member_without_role) { create(:user) }
+        let_it_be(:scan_result_policy_read) do
+          create(:scan_result_policy_read, custom_roles: [custom_role.id])
+        end
+
+        before do
+          project = rule.project
+          project.update!(group: group)
+
+          rule.update!(scan_result_policy_read: scan_result_policy_read)
+
+          create(:group_member, member_role: custom_role, user: team_member_with_role, group: group)
+          create(:group_member, :developer, user: team_member_without_role, group: group)
+        end
+
+        context 'when scan_result_policy_read is nil' do
+          before do
+            rule.update!(scan_result_policy_read: nil)
+          end
+
+          it 'returns false' do
+            expect(rule.approvers_include_user?(team_member_with_role)).to be_falsey
+            expect(rule.approvers_include_user?(team_member_without_role)).to be_falsey
+          end
+        end
+
+        context 'for a team member with the custom role' do
+          context 'when security_policy_custom_roles feature flag is enabled' do
+            it 'returns true when user belongs to custom role and false otherwise' do
+              expect(rule.approvers_include_user?(team_member_with_role)).to be_truthy
+              expect(rule.approvers_include_user?(team_member_without_role)).to be_falsey
+            end
+          end
+
+          context 'when security_policy_custom_roles feature flag is disabled' do
+            before do
+              stub_feature_flags(security_policy_custom_roles: false)
+            end
+
+            it 'returns false regardless of custom role assignment' do
+              expect(rule.approvers_include_user?(team_member_with_role)).to be_falsey
+            end
+          end
+        end
+
+        it 'returns false for a team member without the custom role' do
+          expect(rule.approvers_include_user?(team_member_without_role)).to be_falsey
+        end
+
+        it 'returns false for a user who is not a team member' do
+          non_team_member = create(:user)
+          expect(rule.approvers_include_user?(non_team_member)).to be_falsey
+        end
+
+        context 'when the user relations are already loaded' do
+          context 'for a team member with the custom role' do
+            context 'when security_policy_custom_roles feature flag is enabled' do
+              it 'returns true when user belongs to custom role and false otherwise' do
+                rule.users.to_a
+                rule.group_members.to_a
+
+                expect(rule.approvers_include_user?(team_member_with_role)).to be_truthy
+                expect(rule.approvers_include_user?(team_member_without_role)).to be_falsey
+              end
+            end
+
+            context 'when security_policy_custom_roles feature flag is disabled' do
+              before do
+                stub_feature_flags(security_policy_custom_roles: false)
+              end
+
+              it 'returns false regardless of custom role assignment' do
+                rule.users.to_a
+                rule.group_members.to_a
+
+                expect(rule.approvers_include_user?(team_member_with_role)).to be_falsey
+              end
+            end
+          end
+
+          it 'returns false for a team member without the custom role' do
+            rule.users.to_a
+            rule.group_members.to_a
+
+            expect(rule.approvers_include_user?(team_member_without_role)).to be_falsey
+          end
+        end
+      end
     end
 
     describe '#approvers' do

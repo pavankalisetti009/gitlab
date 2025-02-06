@@ -357,6 +357,44 @@ RSpec.describe Security::ScanResultPolicyRead, feature_category: :security_polic
     end
   end
 
+  describe '#custom_role_ids_with_permission' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:group) { create(:group) }
+
+    subject(:custom_role_ids_with_permission) { scan_result_policy_read.custom_role_ids_with_permission }
+
+    context 'when on gitlab.com' do
+      let_it_be(:role_with_permission) { create(:member_role, :admin_merge_request, namespace: group) }
+      let_it_be(:role_without_permission) { create(:member_role, namespace: group) }
+      let_it_be(:scan_result_policy_read) do
+        create(:scan_result_policy_read, project: project,
+          custom_roles: [role_with_permission.id, role_without_permission.id])
+      end
+
+      before do
+        allow(scan_result_policy_read).to receive(:gitlab_com_subscription?).and_return(true)
+        allow(project).to receive(:root_ancestor).and_return(group)
+      end
+
+      it { is_expected.to contain_exactly(role_with_permission.id) }
+    end
+
+    context 'when not on gitlab.com' do
+      let_it_be(:role_with_permission) { create(:member_role, :admin_merge_request, :instance) }
+      let_it_be(:role_without_permission) { create(:member_role, :instance) }
+      let_it_be(:scan_result_policy_read) do
+        create(:scan_result_policy_read, project: project,
+          custom_roles: [role_with_permission.id, role_without_permission.id])
+      end
+
+      before do
+        allow(scan_result_policy_read).to receive(:gitlab_com_subscription?).and_return(false)
+      end
+
+      it { is_expected.to contain_exactly(role_with_permission.id) }
+    end
+  end
+
   describe '.for_project' do
     let_it_be(:project) { create(:project) }
     let_it_be(:scan_result_policy_read_1) { create(:scan_result_policy_read, project: project) }
