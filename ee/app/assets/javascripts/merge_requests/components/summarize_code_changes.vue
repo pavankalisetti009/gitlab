@@ -1,6 +1,7 @@
 <script>
 import { v4 as uuidv4 } from 'uuid';
 import { GlButton, GlBadge } from '@gitlab/ui';
+import { InternalEvents } from '~/tracking';
 import { CONTENT_EDITOR_PASTE } from '~/vue_shared/constants';
 import { updateText } from '~/lib/utils/text_markdown';
 import { TYPENAME_PROJECT, TYPENAME_USER } from '~/graphql_shared/constants';
@@ -16,6 +17,7 @@ export default {
     GlButton,
     GlBadge,
   },
+  mixins: [InternalEvents.mixin()],
   inject: ['projectId', 'sourceBranch', 'targetBranch'],
   apollo: {
     $subscribe: {
@@ -65,9 +67,14 @@ export default {
       return convertToGraphQLId(TYPENAME_USER, gon.current_user_id);
     },
   },
+  mounted() {
+    this.trackEvent('render_summarize_code_changes');
+  },
   methods: {
     onClick() {
       this.loading = true;
+      this.trackEvent('click_summarize_code_changes');
+
       this.$apollo.mutate({
         mutation: aiActionMutation,
         variables: {
