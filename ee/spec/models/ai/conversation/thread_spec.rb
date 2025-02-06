@@ -15,7 +15,13 @@ RSpec.describe Ai::Conversation::Thread, type: :model, feature_category: :duo_ch
   end
 
   describe 'enums' do
-    it { is_expected.to define_enum_for(:conversation_type).with_values(duo_chat: 1, duo_code_review: 2) }
+    it 'defines enum' do
+      is_expected.to define_enum_for(:conversation_type).with_values(
+        duo_chat: 1,
+        duo_code_review: 2,
+        duo_quick_chat: 3
+      )
+    end
   end
 
   describe 'scopes' do
