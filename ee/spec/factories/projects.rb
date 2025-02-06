@@ -140,6 +140,35 @@ FactoryBot.modify do
       end
     end
 
+    trait :with_product_analytics_dashboard_with_inline_visualization do
+      repository
+
+      after(:create) do |project|
+        project.repository.create_file(
+          project.creator,
+          '.gitlab/analytics/dashboards/dashboard_example_inline_vis/dashboard_example_inline_vis.yaml',
+          File.open(Rails.root.join('ee/spec/fixtures/product_analytics/dashboard_example_inline_vis.yaml')).read,
+          message: 'test',
+          branch_name: 'master'
+        )
+      end
+    end
+
+    trait :with_product_analytics_dashboard_with_inline_visualization_no_slug do
+      repository
+
+      after(:create) do |project|
+        dashboard = 'dashboard_example_inline_vis_no_slug'
+        project.repository.create_file(
+          project.creator,
+          ".gitlab/analytics/dashboards/#{dashboard}/#{dashboard}.yaml",
+          File.open(Rails.root.join("ee/spec/fixtures/product_analytics/#{dashboard}.yaml")).read,
+          message: 'test',
+          branch_name: 'master'
+        )
+      end
+    end
+
     trait :with_product_analytics_custom_visualization do
       repository
 
