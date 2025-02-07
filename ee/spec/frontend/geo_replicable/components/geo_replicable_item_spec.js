@@ -1,7 +1,7 @@
 import Vue from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
-import { GlLink } from '@gitlab/ui';
+import { GlLink, GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import GeoReplicableItem from 'ee/geo_replicable/components/geo_replicable_item.vue';
@@ -28,6 +28,7 @@ describe('GeoReplicableItem', () => {
   const defaultProps = {
     name: mockReplicable.name,
     registryId: mockReplicable.id,
+    modelRecordId: 11,
     syncStatus: mockReplicable.state,
     lastSynced: mockReplicable.lastSyncedAt,
     lastVerified: mockReplicable.verifiedAt,
@@ -64,6 +65,7 @@ describe('GeoReplicableItem', () => {
     findReplicableItemTimeAgos().wrappers.map((w) => w.props('dateString'));
   const findReplicableTimeAgosDefaultTexts = () =>
     findReplicableItemTimeAgos().wrappers.map((w) => w.props('defaultText'));
+  const findReplicableItemModelRecordId = () => wrapper.findComponent(GlSprintf);
 
   describe.each`
     verificationEnabled | showResyncAction | showReverifyAction
@@ -203,5 +205,13 @@ describe('GeoReplicableItem', () => {
         GeoReplicableItem.i18n.nA,
       ]);
     });
+  });
+
+  it('renders a model record id', () => {
+    createComponent();
+
+    expect(findReplicableItemModelRecordId().attributes('message')).toBe(
+      'Model record: %{modelRecordId}',
+    );
   });
 });

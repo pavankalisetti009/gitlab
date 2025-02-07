@@ -65,6 +65,9 @@ describe('GeoReplicable', () => {
 
       for (let i = 0; i < replicableItemWrappers.length; i += 1) {
         expect(replicableItemWrappers.at(i).props().registryId).toBe(replicableItems[i].id);
+        expect(replicableItemWrappers.at(i).props().modelRecordId).toBe(
+          replicableItems[i].modelRecordId,
+        );
       }
     });
 

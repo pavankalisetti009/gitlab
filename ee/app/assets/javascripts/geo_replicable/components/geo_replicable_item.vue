@@ -1,5 +1,5 @@
 <script>
-import { GlButton, GlLink } from '@gitlab/ui';
+import { GlButton, GlLink, GlSprintf } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
@@ -18,12 +18,14 @@ export default {
     resync: s__('Geo|Resync'),
     reverify: s__('Geo|Reverify'),
     lastVerified: s__('Geo|Last time verified'),
+    modelRecordId: s__('Geo|Model record: %{modelRecordId}'),
   },
   components: {
     GlButton,
     GlLink,
     GeoReplicableTimeAgo,
     GeoReplicableStatus,
+    GlSprintf,
   },
   mixins: [glFeatureFlagsMixin()],
   inject: ['replicableBasePath'],
@@ -34,6 +36,10 @@ export default {
     },
     registryId: {
       type: [String, Number],
+      required: true,
+    },
+    modelRecordId: {
+      type: Number,
       required: true,
     },
     syncStatus: {
@@ -117,6 +123,14 @@ export default {
       </div>
     </div>
     <div class="gl-flex gl-flex-wrap gl-items-center">
+      <span class="gl-border-r-1 gl-px-2 gl-text-sm gl-text-subtle gl-border-r-solid">
+        <gl-sprintf :message="$options.i18n.modelRecordId">
+          <template #modelRecordId>
+            {{ modelRecordId }}
+          </template>
+        </gl-sprintf>
+      </span>
+
       <geo-replicable-time-ago
         v-for="(timeAgo, index) in timeAgoArray"
         :key="index"

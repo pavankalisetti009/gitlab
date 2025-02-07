@@ -10,6 +10,7 @@ export const MOCK_BASIC_GRAPHQL_DATA = [
   {
     name: 'test 1',
     id: 'gid://gitlab/Geo::MockRegistry/1',
+    modelRecordId: 1,
     state: 'PENDING',
     lastSyncedAt: new Date().toString(),
     verifiedAt: new Date().toString(),
@@ -17,6 +18,7 @@ export const MOCK_BASIC_GRAPHQL_DATA = [
   {
     name: 'test 2',
     id: 'gid://gitlab/Geo::MockRegistry/2',
+    modelRecordId: 2,
     state: 'SYNCED',
     lastSyncedAt: null,
     verifiedAt: null,
