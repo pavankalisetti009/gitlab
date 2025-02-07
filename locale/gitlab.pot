@@ -4025,7 +4025,7 @@ msgstr ""
 msgid "AdminSelfHostedModels|Model identifier must be less than 255 characters."
 msgstr ""
 
-msgid "AdminSelfHostedModels|Model identifier must start with \"bedrock/\""
+msgid "AdminSelfHostedModels|Model identifier must start with \"%{bedrockIdentifierPrefix}\""
 msgstr ""
 
 msgid "AdminSelfHostedModels|Model uses an API token"
@@ -4107,9 +4107,6 @@ msgid "AdminSelfHostedModels|You do not currently have any self-hosted models. %
 msgstr ""
 
 msgid "AdminSelfHostedModels|Your self-hosted model was successfully deleted."
-msgstr ""
-
-msgid "AdminSelfHostedModels|bedrock/"
 msgstr ""
 
 msgid "AdminSettings|%{generate_manually_link_start}Generate%{generate_manually_link_end} Service Ping to preview and download service usage data payload."
