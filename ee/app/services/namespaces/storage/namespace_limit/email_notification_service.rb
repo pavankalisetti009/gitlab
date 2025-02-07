@@ -10,7 +10,7 @@ module Namespaces
 
         def execute(namespace)
           return unless namespace.root_storage_statistics
-          return unless ::Namespaces::Storage::Enforcement.enforce_limit?(namespace)
+          return unless ::Namespaces::Storage::NamespaceLimit::Enforcement.enforce_limit?(namespace)
 
           root_storage_size = namespace.root_storage_size
           level = notification_level(root_storage_size)

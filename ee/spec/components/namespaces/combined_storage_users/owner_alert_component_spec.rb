@@ -19,7 +19,7 @@ RSpec.describe Namespaces::CombinedStorageUsers::OwnerAlertComponent, :saas, typ
   before do
     enforce_free_user_caps
     set_dashboard_limit(namespace, megabytes: 5_000)
-    allow(::Namespaces::Storage::Enforcement).to receive(:show_pre_enforcement_alert?)
+    allow(::Namespaces::Storage::NamespaceLimit::Enforcement).to receive(:show_pre_enforcement_alert?)
       .with(namespace).and_return(over_storage_limit)
     allow_next_instance_of(::Namespaces::FreeUserCap::EnforcementWithoutStorage, namespace) do |instance|
       allow(instance).to receive(:over_limit?).and_return(over_users_limit)

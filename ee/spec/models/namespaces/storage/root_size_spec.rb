@@ -361,8 +361,8 @@ RSpec.describe Namespaces::Storage::RootSize, :saas, feature_category: :consumab
   end
 
   describe '#enforce_limit?' do
-    it 'delegates to Namespaces::Storage::Enforcement' do
-      expect(::Namespaces::Storage::Enforcement).to receive(:enforce_limit?).with(namespace)
+    it 'delegates to Namespaces::Storage::NamespaceLimit::Enforcement' do
+      expect(::Namespaces::Storage::NamespaceLimit::Enforcement).to receive(:enforce_limit?).with(namespace)
 
       model.enforce_limit?
     end

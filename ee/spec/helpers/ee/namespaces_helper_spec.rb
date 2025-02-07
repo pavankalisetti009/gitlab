@@ -334,7 +334,7 @@ RSpec.describe EE::NamespacesHelper, feature_category: :groups_and_projects do
     with_them do
       before do
         namespace.actual_plan.actual_limits.update!(storage_size_limit: storage_size_limit)
-        allow(Namespaces::Storage::Enforcement).to(
+        allow(Namespaces::Storage::NamespaceLimit::Enforcement).to(
           receive(:enforce_limit?).and_return(enforcement_type == :namespace_storage_limit)
         )
         allow(namespace.root_storage_size).to receive(:enforcement_type).and_return(enforcement_type)

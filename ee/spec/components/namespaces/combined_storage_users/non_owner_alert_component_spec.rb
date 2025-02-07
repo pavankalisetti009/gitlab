@@ -22,7 +22,7 @@ RSpec.describe Namespaces::CombinedStorageUsers::NonOwnerAlertComponent, :saas, 
   before do
     stub_ee_application_setting(dashboard_limit: 5)
     set_dashboard_limit(namespace, megabytes: 5_000)
-    allow(::Namespaces::Storage::Enforcement).to receive(:show_pre_enforcement_alert?)
+    allow(::Namespaces::Storage::NamespaceLimit::Enforcement).to receive(:show_pre_enforcement_alert?)
       .with(namespace).and_return(over_storage_limit)
     allow_next_instance_of(::Namespaces::FreeUserCap::EnforcementWithoutStorage, namespace) do |instance|
       allow(instance).to receive(:over_limit?).and_return(over_users_limit)

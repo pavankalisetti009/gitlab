@@ -376,11 +376,12 @@ module EE
     # This only return the storage limit included in the plan, to add the purchased storage to the
     # limit please use root_storage_size.limit
     def actual_size_limit
-      return actual_repository_size_limit unless ::Namespaces::Storage::Enforcement.enforce_limit?(root_ancestor)
+      return actual_repository_size_limit unless ::Namespaces::Storage::NamespaceLimit::Enforcement
+        .enforce_limit?(root_ancestor)
 
       # Both limits are returned in bytes, but the Namespace enforcement limits are stored in megabytes,
       # so we need to call `megabytes` here
-      ::Namespaces::Storage::Enforcement.enforceable_storage_limit(root_ancestor).megabytes
+      ::Namespaces::Storage::NamespaceLimit::Enforcement.enforceable_storage_limit(root_ancestor).megabytes
     end
 
     def sync_membership_lock_with_parent
@@ -557,7 +558,7 @@ module EE
     end
 
     def root_storage_size
-      if ::Namespaces::Storage::Enforcement.enforce_limit?(root_ancestor)
+      if ::Namespaces::Storage::NamespaceLimit::Enforcement.enforce_limit?(root_ancestor)
         ::Namespaces::Storage::RootSize.new(root_ancestor)
       else
         ::Namespaces::Storage::RepositoryLimit::Enforcement.new(root_ancestor)

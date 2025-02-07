@@ -29,6 +29,6 @@ module NamespaceStorageHelpers
     stub_feature_flags(namespace_storage_limit: root_namespace)
     stub_saas_features(namespaces_storage_limit: true, gitlab_com_subscriptions: true)
 
-    allow(::Namespaces::Storage::Enforcement).to receive(:enforceable_namespace?).and_return true
+    allow(::Namespaces::Storage::NamespaceLimit::Enforcement).to receive(:enforceable_namespace?).and_return true
   end
 end

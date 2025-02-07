@@ -8,7 +8,7 @@ module Namespaces
       end
 
       def over_storage_limit?(root_namespace)
-        ::Namespaces::Storage::Enforcement.show_pre_enforcement_alert?(root_namespace)
+        ::Namespaces::Storage::NamespaceLimit::Enforcement.show_pre_enforcement_alert?(root_namespace)
       end
 
       def over_user_limit?(root_namespace)

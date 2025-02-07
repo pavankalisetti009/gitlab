@@ -73,7 +73,8 @@ module EE
     def storage_usage_app_data(namespace)
       per_project_storage_limit = namespace.actual_repository_size_limit
       namespace_storage_limit = namespace.actual_limits.storage_size_limit.megabytes
-      is_in_namespace_limits_pre_enforcement = ::Namespaces::Storage::Enforcement.in_pre_enforcement_phase?(namespace)
+      is_in_namespace_limits_pre_enforcement = ::Namespaces::Storage::NamespaceLimit::Enforcement
+        .in_pre_enforcement_phase?(namespace)
 
       unless ::Gitlab::CurrentSettings.should_check_namespace_plan?
         # EE SM app data
@@ -99,7 +100,7 @@ module EE
     end
 
     def namespace_subject_to_high_limit?(namespace)
-      return false if ::Namespaces::Storage::Enforcement.enforce_limit?(namespace.root_ancestor)
+      return false if ::Namespaces::Storage::NamespaceLimit::Enforcement.enforce_limit?(namespace.root_ancestor)
 
       namespace.root_storage_size.subject_to_high_limit?
     end

@@ -15,7 +15,7 @@ module Namespaces
 
         def hide_threshold_banner?
           alert_level.in?(%i[warning alert]) &&
-            ::Namespaces::Storage::Enforcement.in_enforcement_rollout?(root_namespace)
+            Enforcement.in_enforcement_rollout?(root_namespace)
         end
 
         def limit
