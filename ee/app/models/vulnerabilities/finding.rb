@@ -136,7 +136,7 @@ module Vulnerabilities
 
     validates :metadata_version, presence: true
     validates :raw_metadata, presence: true
-    validates :details, json_schema: { filename: 'vulnerability_finding_details', draft: 7 }
+    validates :details, json_schema: { filename: 'vulnerability_finding_details' }
 
     COLUMN_LENGTH_LIMITS = {
       description: 15_000,
