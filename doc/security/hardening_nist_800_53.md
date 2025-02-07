@@ -546,13 +546,13 @@ Geo provides the following core features:
 
 Additional Geo Resources:
 
-- [Setting up Geo](../administration/geo/setup/index.md)
+- [Setting up Geo](../administration/geo/setup/_index.md)
 
 - [Requirements for running Geo](../administration/geo/index.md#requirements-for-running-geo)
 
 - [Geo Limitations](../administration/geo/index.md)
 
-- [Geo Disaster Recovery Steps](../administration/geo/disaster_recovery/index.md)
+- [Geo Disaster Recovery Steps](../administration/geo/disaster_recovery/_index.md)
 
 **PostgreSQL**
 

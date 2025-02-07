@@ -77,6 +77,6 @@ To learn more, see [GitLab Dedicated Architecture](architecture.md).
 
 To get started with GitLab Dedicated:
 
-1. [Create your GitLab Dedicated instance](../dedicated/create_instance.md).
-1. [Configure your GitLab Dedicated instance](../dedicated/configure_instance/index.md).
-1. [Create a hosted runner](../dedicated/hosted_runners.md).
+1. [Create your GitLab Dedicated instance](create_instance.md).
+1. [Configure your GitLab Dedicated instance](configure_instance/_index.md).
+1. [Create a hosted runner](hosted_runners.md).
