@@ -11,7 +11,7 @@ module Security
       def execute
         return ServiceResponse.success(payload: security_policy) unless security_policy.type_pipeline_execution_policy?
 
-        security_policy.metadata[:enforced_scans] = enforced_scans
+        security_policy.enforced_scans = enforced_scans
         security_policy.save!
         ServiceResponse.success(payload: security_policy)
       rescue StandardError => e

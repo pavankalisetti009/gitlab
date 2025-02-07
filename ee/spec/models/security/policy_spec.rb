@@ -1076,4 +1076,46 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
       end
     end
   end
+
+  describe '#enforced_scans' do
+    subject(:enforced_scans) { policy.enforced_scans }
+
+    let(:policy) { build(:security_policy, :pipeline_execution_policy, metadata: metadata) }
+    let(:metadata) { { enforced_scans: %w[secret_detection] } }
+
+    it { is_expected.to eq %w[secret_detection] }
+
+    context 'when metadata is empty' do
+      let(:metadata) { {} }
+
+      it { is_expected.to eq [] }
+    end
+
+    context 'when metadata does not contain enforced_scans' do
+      let(:metadata) { { other: 'property' } }
+
+      it { is_expected.to eq [] }
+    end
+  end
+
+  describe '#enforced_scans=' do
+    let(:policy) { build(:security_policy, :pipeline_execution_policy, metadata: metadata) }
+    let(:metadata) { {} }
+
+    it 'updates metadata' do
+      policy.enforced_scans = %w[secret_detection]
+
+      expect(policy.metadata).to eq('enforced_scans' => %w[secret_detection])
+    end
+
+    context 'when metadata contains other properties' do
+      let(:metadata) { { other: 'property' } }
+
+      it 'updates extends metadata and keeps the other property' do
+        policy.enforced_scans = %w[secret_detection]
+
+        expect(policy.metadata).to eq('enforced_scans' => %w[secret_detection], 'other' => 'property')
+      end
+    end
+  end
 end

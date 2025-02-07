@@ -70,7 +70,7 @@ module Security
         return false unless rule.scan_result_policy_read&.unblock_rules_using_execution_policies?
         return false unless rule_excludable?(rule)
 
-        if scan_execution_policy_scan_enforced?(rule)
+        if execution_policy_scan_enforced?(rule)
           track_unblock_event(rule)
           return true
         end
@@ -78,13 +78,32 @@ module Security
         false
       end
 
-      def scan_execution_policy_scan_enforced?(rule)
+      def execution_policy_scan_enforced?(rule)
         scanners = extract_scanners(rule)
         return false if scanners.blank?
 
+        return scan_execution_policy_scan_enforced?(scanners) if ::Feature.disabled?(
+          :unblock_rules_using_pipeline_execution_policies, project.group)
+
+        enforced_scans = Set.new(active_scan_execution_policy_scans + pipeline_execution_policy_scans(rule))
+        scanners.all? { |scanner| enforced_scans.include?(scanner) }
+      end
+
+      def scan_execution_policy_scan_enforced?(scanners)
         scanners.all? do |scanner|
           active_scan_execution_policy_scans.include?(scanner)
         end
+      end
+
+      def pipeline_execution_policy_scans(rule)
+        # NOTE: Only take configurations for the rule's configuration and its ancestors,
+        # so that an approval rule defined by group cannot get unblocked by a project-level policy.
+        configuration_ids = rule.security_orchestration_policy_configuration&.self_and_ancestor_configuration_ids
+        return [] if configuration_ids.blank?
+
+        project.security_policies.type_pipeline_execution_policy
+               .for_policy_configuration(configuration_ids)
+               .flat_map(&:enforced_scans).compact.uniq
       end
 
       # Only allow rules to be excludable if they only target newly detected states. We cannot reliably exclude

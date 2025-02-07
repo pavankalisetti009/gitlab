@@ -3465,4 +3465,69 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
       end
     end
   end
+
+  describe '#self_and_ancestor_configuration_ids' do
+    subject(:self_and_ancestor_configuration_ids) { configuration.self_and_ancestor_configuration_ids }
+
+    let_it_be(:top_level_group) { create(:group) }
+    let_it_be(:direct_subgroup) { create(:group, parent: top_level_group) }
+    let_it_be(:nested_subgroup) { create(:group, parent: direct_subgroup) }
+    let_it_be(:direct_subgroup_project) { create(:project, group: direct_subgroup) }
+
+    let_it_be(:configuration_top_level_group) do
+      create(:security_orchestration_policy_configuration, :namespace, namespace: top_level_group,
+        security_policy_management_project: security_policy_management_project)
+    end
+
+    let_it_be(:configuration_direct_subgroup) do
+      create(:security_orchestration_policy_configuration, :namespace, namespace: direct_subgroup,
+        security_policy_management_project: security_policy_management_project)
+    end
+
+    let_it_be(:configuration_nested_subgroup) do
+      create(:security_orchestration_policy_configuration, :namespace, namespace: nested_subgroup,
+        security_policy_management_project: security_policy_management_project)
+    end
+
+    let_it_be(:configuration_project) do
+      create(:security_orchestration_policy_configuration, project: direct_subgroup_project,
+        security_policy_management_project: security_policy_management_project)
+    end
+
+    context 'with project configuration' do
+      let(:configuration) { configuration_project }
+
+      it 'returns project and ancestor configuration ids and excludes nested_subgroup configuration' do
+        expect(self_and_ancestor_configuration_ids)
+          .to contain_exactly(configuration_project.id, configuration_direct_subgroup.id, configuration_top_level_group.id)
+      end
+    end
+
+    context 'with nested_subgroup configuration' do
+      let(:configuration) { configuration_nested_subgroup }
+
+      it 'returns nested_subgroup, direct_subgroup and top-level group configuration ids' do
+        expect(self_and_ancestor_configuration_ids)
+          .to contain_exactly(configuration_nested_subgroup.id, configuration_direct_subgroup.id,
+            configuration_top_level_group.id)
+      end
+    end
+
+    context 'with direct_subgroup configuration' do
+      let(:configuration) { configuration_direct_subgroup }
+
+      it 'returns direct_subgroup and top-level group configuration ids' do
+        expect(self_and_ancestor_configuration_ids)
+          .to contain_exactly(configuration_direct_subgroup.id, configuration_top_level_group.id)
+      end
+    end
+
+    context 'with top-level group configuration' do
+      let(:configuration) { configuration_top_level_group }
+
+      it 'returns top-level group configuration id' do
+        expect(self_and_ancestor_configuration_ids).to contain_exactly(configuration_top_level_group.id)
+      end
+    end
+  end
 end
