@@ -144,7 +144,7 @@ module EE
 
     def sso_enforcement_redirect
       # redirection should occur for group searches only
-      return unless search_service.level == 'group' && ::Feature.enabled?(:search_group_sso_redirect, current_user)
+      return unless search_service.level == 'group'
 
       search_group = search_service.group
       return unless search_group
