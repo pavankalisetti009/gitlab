@@ -17,6 +17,10 @@ module ComplianceManagement
       validates :project_id, uniqueness: { scope: :compliance_requirements_control_id }
       validates_presence_of :status, :project, :namespace, :compliance_requirement,
         :compliance_requirements_control
+
+      scope :for_project_and_control, ->(project_id, control_id) {
+        where(project_id: project_id, compliance_requirements_control_id: control_id)
+      }
     end
   end
 end

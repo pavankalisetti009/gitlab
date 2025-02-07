@@ -38,7 +38,8 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
         merge_request_prevent_author_approval: 2,
         merge_request_prevent_committers_approval: 3,
         project_visibility_not_internal: 4,
-        default_branch_protected: 5
+        default_branch_protected: 5,
+        external_control: 10000
       )
     end
 
