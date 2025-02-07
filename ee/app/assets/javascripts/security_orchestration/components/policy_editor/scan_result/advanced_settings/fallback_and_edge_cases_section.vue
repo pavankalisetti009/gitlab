@@ -1,10 +1,9 @@
 <script>
-import { GlExperimentBadge } from '@gitlab/ui';
+import { GlAlert, GlExperimentBadge } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import EdgeCasesSection from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/edge_cases_section.vue';
 import FallbackSection from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/fallback_section.vue';
-import DimDisableContainer from '../../dim_disable_container.vue';
 import { CLOSED } from './constants';
 
 export default {
@@ -13,16 +12,19 @@ export default {
     fallbackBehaviorTitle: s__('ScanResultPolicy|Fallback behavior'),
     edgeCaseSettingsTitle: s__('ScanResultPolicy|Edge case settings'),
     experimentTitle: __('Experiment'),
+    invalidFallbackMessage: s__(
+      'ScanResultPolicy|Invalid fallback value detected. Please update your selection.',
+    ),
   },
   components: {
-    FallbackSection,
     EdgeCasesSection,
-    DimDisableContainer,
+    FallbackSection,
+    GlAlert,
     GlExperimentBadge,
   },
   mixins: [glFeatureFlagsMixin()],
   props: {
-    disabled: {
+    hasError: {
       type: Boolean,
       required: false,
       default: false,
@@ -49,23 +51,20 @@ export default {
 
 <template>
   <div>
-    <dim-disable-container :disabled="disabled">
-      <template #title>
-        <h4>{{ $options.i18n.title }}</h4>
-      </template>
+    <h4>{{ $options.i18n.title }}</h4>
 
-      <template #disabled>
-        <div class="rounded gl-bg-subtle gl-p-6"></div>
-      </template>
+    <h5>{{ $options.i18n.fallbackBehaviorTitle }}</h5>
 
-      <h5>{{ $options.i18n.fallbackBehaviorTitle }}</h5>
-      <fallback-section :property="fallbackBehaviorSetting" @changed="updateProperty" />
+    <gl-alert v-if="hasError" variant="danger" :dismissible="false" class="gl-mb-5">
+      {{ $options.i18n.invalidFallbackMessage }}
+    </gl-alert>
 
-      <h5>
-        {{ $options.i18n.edgeCaseSettingsTitle }}
-        <gl-experiment-badge class="gl-ml-2" />
-      </h5>
-      <edge-cases-section :policy-tuning="policy.policy_tuning" @changed="updateProperty" />
-    </dim-disable-container>
+    <fallback-section :property="fallbackBehaviorSetting" @changed="updateProperty" />
+
+    <h5>
+      {{ $options.i18n.edgeCaseSettingsTitle }}
+      <gl-experiment-badge class="gl-ml-2" />
+    </h5>
+    <edge-cases-section :policy-tuning="policy.policy_tuning" @changed="updateProperty" />
   </div>
 </template>

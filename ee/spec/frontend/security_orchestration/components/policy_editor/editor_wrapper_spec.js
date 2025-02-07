@@ -291,7 +291,7 @@ describe('EditorWrapper component', () => {
         await findScanExecutionPolicyEditor().vm.$emit('save', {
           action: SECURITY_POLICY_ACTIONS.APPEND,
           policy: mockDastScanExecutionManifest,
-          isActiveRuleMode: true,
+          isRuleMode: true,
         });
         await waitForPromises();
         await nextTick();
@@ -312,7 +312,7 @@ describe('EditorWrapper component', () => {
         await findScanExecutionPolicyEditor().vm.$emit('save', {
           action: SECURITY_POLICY_ACTIONS.APPEND,
           policy: mockDastScanExecutionManifest,
-          isActiveRuleMode: true,
+          isRuleMode: true,
         });
         await waitForPromises();
         await nextTick();
@@ -368,7 +368,7 @@ describe('EditorWrapper component', () => {
         await findScanExecutionPolicyEditor().vm.$emit('save', {
           action: SECURITY_POLICY_ACTIONS.APPEND,
           policy: mockDastScanExecutionManifest,
-          isActiveRuleMode: true,
+          isRuleMode: true,
         });
         await waitForPromises();
         expect(findScanExecutionPolicyEditor().props('errorSources')).toEqual([

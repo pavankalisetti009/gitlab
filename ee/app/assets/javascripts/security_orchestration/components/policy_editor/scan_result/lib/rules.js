@@ -167,6 +167,34 @@ export const invalidVulnerabilityAge = (rules) => {
     });
 };
 
+/**
+ * Check if any rule has invalid branch type
+ * @param rules list of rules with either branches or branch_type property
+ * @returns {Boolean}
+ */
+export const invalidBranchType = (rules) => {
+  if (!rules) return false;
+
+  return rules.some(
+    (rule) =>
+      BRANCH_TYPE_KEY in rule && !VALID_SCAN_RESULT_BRANCH_TYPE_OPTIONS.includes(rule.branch_type),
+  );
+};
+
+/**
+ * Check if any rule has invalid values for required keys
+ * @param {Array} rules
+ * @returns {Boolean}
+ */
+export const hasInvalidRules = (rules) =>
+  invalidScanners(rules) ||
+  invalidSeverities(rules) ||
+  invalidVulnerabilitiesAllowed(rules) ||
+  invalidVulnerabilityStates(rules) ||
+  invalidBranchType(rules) ||
+  invalidVulnerabilityAge(rules) ||
+  invalidVulnerabilityAttributes(rules);
+
 /*
   Returns the config for a particular rule type
 */
@@ -203,20 +231,6 @@ export const getInvalidBranches = async ({ branches, projectId }) => {
   }
 
   return invalidBranches;
-};
-
-/**
- * Check if any rule has invalid branch type
- * @param rules list of rules with either branches or branch_type property
- * @returns {Boolean}
- */
-export const invalidBranchType = (rules) => {
-  if (!rules) return false;
-
-  return rules.some(
-    (rule) =>
-      BRANCH_TYPE_KEY in rule && !VALID_SCAN_RESULT_BRANCH_TYPE_OPTIONS.includes(rule.branch_type),
-  );
 };
 
 export const humanizeInvalidBranchesError = (branches) => {

@@ -45,9 +45,9 @@ import {
   mockDeprecatedScanResultManifest,
   mockDeprecatedScanResultObject,
   mockWarnActionScanResultObject,
+  mockFallbackInvalidScanResultManifest,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_result_policy_data';
 import {
-  unsupportedManifest,
   APPROVAL_POLICY_DEFAULT_POLICY,
   APPROVAL_POLICY_DEFAULT_POLICY_WITH_SCOPE_WITH_GROUP_SETTINGS,
   ASSIGNED_POLICY_PROJECT,
@@ -63,11 +63,7 @@ import {
   REQUIRE_PASSWORD_TO_APPROVE,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib/settings';
 import { removeIdsFromPolicy } from 'ee/security_orchestration/components/policy_editor/utils';
-import {
-  SECURITY_POLICY_ACTIONS,
-  PARSING_ERROR_MESSAGE,
-} from 'ee/security_orchestration/components/policy_editor/constants';
-import DimDisableContainer from 'ee/security_orchestration/components/policy_editor/dim_disable_container.vue';
+import { SECURITY_POLICY_ACTIONS } from 'ee/security_orchestration/components/policy_editor/constants';
 import ActionSection from 'ee/security_orchestration/components/policy_editor/scan_result/action/action_section.vue';
 import RuleSection from 'ee/security_orchestration/components/policy_editor/scan_result/rule/rule_section.vue';
 import { mockLinkedSppItemsResponse } from 'ee_jest/security_orchestration/mocks/mock_apollo';
@@ -149,6 +145,7 @@ describe('EditorComponent', () => {
     });
   };
 
+  const findDisabledSection = (section) => wrapper.findByTestId(`disabled-${section}`);
   const findEmptyState = () => wrapper.findComponent(GlEmptyState);
   const findFallbackAndEdgeCasesSection = () => wrapper.findComponent(FallbackAndEdgeCasesSection);
   const findPolicyEditorLayout = () => wrapper.findComponent(EditorLayout);
@@ -157,7 +154,6 @@ describe('EditorComponent', () => {
   const findAddRuleButton = () => wrapper.findByTestId('add-rule');
   const findTooltip = () =>
     getBinding(wrapper.findByTestId('add-rule-wrapper').element, 'gl-tooltip');
-  const findAllDisabledComponents = () => wrapper.findAllComponents(DimDisableContainer);
   const findAllRuleSections = () => wrapper.findAllComponents(RuleSection);
   const findSettingsSection = () => wrapper.findComponent(SettingsSection);
   const findEmptyActionsAlert = () => wrapper.findByTestId('empty-actions-alert');
@@ -165,11 +161,6 @@ describe('EditorComponent', () => {
   const findBotCommentAction = () => wrapper.findComponent(BotCommentAction);
   const findBotCommentActions = () => wrapper.findAllComponents(BotCommentAction);
   const findWarnAction = () => wrapper.findByTestId('warn-action');
-
-  const verifiesParsingError = () => {
-    expect(findPolicyEditorLayout().props('hasParsingError')).toBe(true);
-    expect(findPolicyEditorLayout().attributes('parsingerror')).toBe(PARSING_ERROR_MESSAGE);
-  };
 
   beforeEach(() => {
     getInvalidBranches.mockClear();
@@ -629,7 +620,7 @@ describe('EditorComponent', () => {
 
         it('creates an error when the action section emits one', async () => {
           await findActionSection().vm.$emit('error');
-          verifiesParsingError();
+          expect(findDisabledSection('actions').props('disabled')).toBe(true);
         });
       });
     });
@@ -647,13 +638,6 @@ describe('EditorComponent', () => {
         removeIdsFromPolicy(mockDefaultBranchesScanResultObject),
       );
     });
-
-    it('disables all rule mode related components when the yaml is invalid', async () => {
-      await findPolicyEditorLayout().vm.$emit('update-yaml', unsupportedManifest);
-
-      expect(findAllDisabledComponents().at(0).props('disabled')).toBe(true);
-      expect(findAllDisabledComponents().at(1).props('disabled')).toBe(true);
-    });
   });
 
   describe('modifying a policy', () => {
@@ -667,7 +651,7 @@ describe('EditorComponent', () => {
       findPolicyEditorLayout().vm.$emit(event);
       await waitForPromises();
       expect(wrapper.emitted('save')).toEqual([
-        [{ action, isActiveRuleMode: true, policy: yamlEditorValue }],
+        [{ action, isRuleMode: true, policy: yamlEditorValue }],
       ]);
     });
 
@@ -692,56 +676,11 @@ describe('EditorComponent', () => {
   describe('yaml mode validation errors', () => {
     it('creates an error for invalid yaml', async () => {
       factory();
-
-      await findPolicyEditorLayout().vm.$emit('update-yaml', 'invalid manifest');
-
-      verifiesParsingError();
-    });
-
-    it('creates an error when policy scanners are invalid', async () => {
-      factoryWithExistingPolicy({ policy: { rules: [{ scanners: ['cluster_image_scanning'] }] } });
-
-      await goToRuleMode(findPolicyEditorLayout);
-      verifiesParsingError();
-    });
-
-    it('creates an error when policy severity_levels are invalid', async () => {
-      factoryWithExistingPolicy({ policy: { rules: [{ severity_levels: ['non-existent'] }] } });
-
-      await goToRuleMode(findPolicyEditorLayout);
-      verifiesParsingError();
-    });
-
-    it('creates an error when vulnerabilities_allowed are invalid', async () => {
-      factoryWithExistingPolicy({ policy: { rules: [{ vulnerabilities_allowed: 'invalid' }] } });
-
-      await goToRuleMode(findPolicyEditorLayout);
-      verifiesParsingError();
-    });
-
-    it('creates an error when vulnerability_states are invalid', async () => {
-      factoryWithExistingPolicy({ policy: { rules: [{ vulnerability_states: ['invalid'] }] } });
-
-      await goToRuleMode(findPolicyEditorLayout);
-      verifiesParsingError();
-    });
-
-    it('creates an error when vulnerability_age is invalid', async () => {
-      factoryWithExistingPolicy({
-        policy: { rules: [{ vulnerability_age: { operator: 'invalid' } }] },
-      });
-
-      await goToRuleMode(findPolicyEditorLayout);
-      verifiesParsingError();
-    });
-
-    it('creates an error when vulnerability_attributes are invalid', async () => {
-      factoryWithExistingPolicy({
-        policy: { rules: [{ vulnerability_attributes: [{ invalid: true }] }] },
-      });
-
-      await goToRuleMode(findPolicyEditorLayout);
-      verifiesParsingError();
+      await findPolicyEditorLayout().vm.$emit('update-yaml', 'invalid: manifest:');
+      expect(findDisabledSection('actions').props('disabled')).toBe(true);
+      expect(findDisabledSection('rules').props('disabled')).toBe(true);
+      expect(findDisabledSection('settings').props('disabled')).toBe(true);
+      expect(findFallbackAndEdgeCasesSection().props('hasError')).toBe(true);
     });
 
     describe('existing approvers', () => {
@@ -776,7 +715,7 @@ describe('EditorComponent', () => {
           });
 
           await goToRuleMode(findPolicyEditorLayout);
-          expect(findPolicyEditorLayout().props('hasParsingError')).toBe(output);
+          expect(findDisabledSection('actions').props('disabled')).toBe(output);
         },
       );
     });
@@ -1018,6 +957,17 @@ describe('EditorComponent', () => {
         }),
       );
     });
+
+    it('clears the fallback parsing error on update', async () => {
+      factory();
+      expect(findFallbackAndEdgeCasesSection().props('hasError')).toBe(false);
+      await findPolicyEditorLayout().vm.$emit('update-yaml', mockFallbackInvalidScanResultManifest);
+      expect(findFallbackAndEdgeCasesSection().props('hasError')).toBe(true);
+      await findFallbackAndEdgeCasesSection().vm.$emit('changed', 'fallback_behavior', {
+        fail: OPEN,
+      });
+      expect(findFallbackAndEdgeCasesSection().props('hasError')).toBe(false);
+    });
   });
 
   describe('new yaml format with type as a wrapper', () => {
@@ -1049,7 +999,7 @@ describe('EditorComponent', () => {
         [
           {
             action: undefined,
-            isActiveRuleMode: false,
+            isRuleMode: true,
             policy: `name: ''
 description: ''
 enabled: true

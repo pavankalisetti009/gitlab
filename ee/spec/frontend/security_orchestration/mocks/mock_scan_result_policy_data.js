@@ -298,18 +298,6 @@ policy_scope:
     - id: 26
 `;
 
-export const mockPolicyScopeScanResultObject = {
-  type: 'approval_policy',
-  name: 'policy scope',
-  description: 'This policy enforces policy scope',
-  enabled: true,
-  rules: [],
-  actions: [],
-  policy_scope: {
-    compliance_frameworks: [{ id: 26 }],
-  },
-};
-
 export const mockApprovalSettingsScanResultObject = {
   ...mockDefaultBranchesScanResultObject,
   approval_settings: {
@@ -508,6 +496,32 @@ export const mockProjectPolicyTuningScanResultObject = {
     unblock_rules_using_execution_policies: true,
   },
 };
+
+export const mockInvalidRulesScanResultManifest = `type: approval_policy
+name: critical vulnerability CS approvals
+description: This policy enforces critical vulnerability CS approvals
+enabled: true
+rules:
+  - type: scan_finding
+    branches: []
+    scanners:
+      - fake_container_scanning
+    vulnerabilities_allowed: 1
+    severity_levels:
+      - critical
+    vulnerability_states:
+      - newly_detected
+actions: []
+`;
+
+export const mockInvalidApprovalSettingScanResultManifest = mockDefaultBranchesScanResultManifest
+  .concat(`approval_settings:\n  fake_block_branch_modification: true\n`)
+  .concat(`fallback_behavior:\n  fail: open`);
+
+export const mockInvalidGroupApprovalSettingStructureScanResultManifest =
+  mockDefaultBranchesScanResultManifest
+    .concat(`approval_settings:\n  prevent_pushing_and_force_pushing:\n   []\n`)
+    .concat(`fallback_behavior:\n  fail: open`);
 
 export const mockProjectApprovalSettingsScanResultManifest = mockDefaultBranchesScanResultManifest
   .concat(
