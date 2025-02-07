@@ -14,6 +14,9 @@ module Types
 
       field :top_level, GraphQL::Types::Boolean,
         null: true, description: 'Is top level dependency.'
+
+      field :ancestors, [Types::Sbom::AncestorType],
+        null: true, description: 'Ancestors of the dependency.'
     end
   end
 end
