@@ -13,10 +13,11 @@ module Gitlab
             @command = command # TODO: decouple from this (https://gitlab.com/gitlab-org/gitlab/-/issues/503788)
           end
 
-          delegate :policy_pipelines, :override_policy_stages, :build_policy_pipelines!, :creating_policy_pipeline?,
+          delegate :policy_pipelines, :override_policy_stages, :build_policy_pipelines!,
+            :creating_policy_pipeline?, :creating_project_pipeline?,
             :has_execution_policy_pipelines?, :has_overriding_execution_policy_pipelines?, :collect_declared_stages!,
-            :inject_policy_reserved_stages?, :valid_stage?, :policy_management_project_access_allowed?,
-            :applying_config_override?,
+            :inject_policy_stages?, :valid_stage?, :has_injected_stages?, :injected_policy_stages,
+            :has_override_stages?, :policy_management_project_access_allowed?, :applying_config_override?,
             to: :pipeline_execution_context
 
           def pipeline_execution_context

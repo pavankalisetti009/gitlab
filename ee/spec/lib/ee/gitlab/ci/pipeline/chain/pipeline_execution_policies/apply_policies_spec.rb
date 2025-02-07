@@ -384,7 +384,8 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::ApplyPoli
 
         before do
           allow(command.pipeline_policy_context.pipeline_execution_context)
-            .to receive(:override_policy_stages).and_return(%w[policy-test])
+            .to receive(:override_policy_stages)
+                  .and_return(%w[.pipeline-policy-pre .pre policy-test .post .pipeline-policy-post])
         end
 
         it 'uses override_policy_stages to inject jobs' do

@@ -46,9 +46,8 @@ module EE
               private
 
               def collect_policy_pipeline_stages
-                # We save declared stages of `override_project_ci` policies in the pipeline context
-                # to use them in the main pipeline
-                command.pipeline_policy_context.collect_declared_stages!(command.yaml_processor_result.stages)
+                # We save declared policy stages in the pipeline context to use them in the main pipeline
+                command.pipeline_policy_context.collect_declared_stages!(declared_stages)
               rescue ::Gitlab::Ci::Pipeline::PipelineExecutionPolicies::OverrideStagesConflictError => e
                 # This error is propagated into `EvaluatePolicies` because it can only happen while building
                 # the policy pipeline. `EvaluatePolicies` decorates the error with
@@ -95,7 +94,7 @@ module EE
               end
 
               def declared_stages
-                command.pipeline_policy_context.override_policy_stages.presence || command.yaml_processor_result.stages
+                command.yaml_processor_result.stages
               end
             end
           end

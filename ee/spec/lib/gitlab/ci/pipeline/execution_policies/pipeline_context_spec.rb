@@ -19,11 +19,17 @@ RSpec.describe Gitlab::Ci::Pipeline::ExecutionPolicies::PipelineContext, feature
     it { is_expected.to delegate_method(:override_policy_stages).to(:pipeline_execution_context) }
     it { is_expected.to delegate_method(:build_policy_pipelines!).to(:pipeline_execution_context) }
     it { is_expected.to delegate_method(:creating_policy_pipeline?).to(:pipeline_execution_context) }
+    it { is_expected.to delegate_method(:creating_project_pipeline?).to(:pipeline_execution_context) }
     it { is_expected.to delegate_method(:has_execution_policy_pipelines?).to(:pipeline_execution_context) }
     it { is_expected.to delegate_method(:has_overriding_execution_policy_pipelines?).to(:pipeline_execution_context) }
     it { is_expected.to delegate_method(:collect_declared_stages!).to(:pipeline_execution_context) }
-    it { is_expected.to delegate_method(:inject_policy_reserved_stages?).to(:pipeline_execution_context) }
+    it { is_expected.to delegate_method(:inject_policy_stages?).to(:pipeline_execution_context) }
     it { is_expected.to delegate_method(:valid_stage?).to(:pipeline_execution_context) }
+    it { is_expected.to delegate_method(:has_injected_stages?).to(:pipeline_execution_context) }
+    it { is_expected.to delegate_method(:has_override_stages?).to(:pipeline_execution_context) }
+    it { is_expected.to delegate_method(:injected_policy_stages).to(:pipeline_execution_context) }
+    it { is_expected.to delegate_method(:policy_management_project_access_allowed?).to(:pipeline_execution_context) }
+    it { is_expected.to delegate_method(:applying_config_override?).to(:pipeline_execution_context) }
   end
 
   describe '#pipeline_execution_context' do

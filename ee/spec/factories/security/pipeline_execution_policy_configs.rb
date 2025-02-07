@@ -20,6 +20,10 @@ FactoryBot.define do
       policy factory: [:pipeline_execution_policy, :override_project_ci]
     end
 
+    trait :inject_policy do
+      policy factory: [:pipeline_execution_policy, :inject_policy]
+    end
+
     trait :suffix_on_conflict do
       policy factory: [:pipeline_execution_policy, :suffix_on_conflict]
     end

@@ -22,6 +22,22 @@ RSpec.describe Security::PipelineExecutionPolicy::Config, feature_category: :sec
     end
   end
 
+  describe '#strategy_inject_policy?' do
+    subject { config.strategy_inject_policy? }
+
+    context 'with inject_ci' do
+      let(:policy) { build(:pipeline_execution_policy, pipeline_config_strategy: 'inject_ci') }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'with inject_policy' do
+      let(:policy) { build(:pipeline_execution_policy, pipeline_config_strategy: 'inject_policy') }
+
+      it { is_expected.to be(true) }
+    end
+  end
+
   describe '#suffix' do
     subject { config.suffix }
 

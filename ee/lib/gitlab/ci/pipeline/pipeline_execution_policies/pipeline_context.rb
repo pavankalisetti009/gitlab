@@ -10,7 +10,7 @@ module Gitlab
         class PipelineContext
           include ::Gitlab::Utils::StrongMemoize
 
-          attr_reader :policy_pipelines, :override_policy_stages
+          attr_reader :policy_pipelines, :override_policy_stages, :injected_policy_stages
 
           def initialize(context:, project:, command: nil)
             @context = context
@@ -18,6 +18,7 @@ module Gitlab
             @command = command # TODO: decouple from this (https://gitlab.com/gitlab-org/gitlab/-/issues/503788)
             @policy_pipelines = []
             @override_policy_stages = []
+            @injected_policy_stages = []
           end
 
           def build_policy_pipelines!(partition_id)
@@ -47,6 +48,10 @@ module Gitlab
             current_policy.present?
           end
 
+          def creating_project_pipeline?
+            !creating_policy_pipeline?
+          end
+
           def has_execution_policy_pipelines?
             policy_pipelines.present?
           end
@@ -72,35 +77,37 @@ module Gitlab
           end
 
           def applying_config_override?
-            has_overriding_execution_policy_pipelines? && !creating_policy_pipeline?
+            has_overriding_execution_policy_pipelines? && creating_project_pipeline?
           end
 
           def collect_declared_stages!(new_stages)
             return unless creating_policy_pipeline?
-            return unless current_policy.strategy_override_project_ci?
 
-            error = OverrideStagesConflictError.new(
-              "Policy `#{current_policy.name}` could not be applied. " \
-                "Its stages are incompatible with stages of another `override_project_ci` policy: " \
-                "#{override_policy_stages.join(', ')}.")
-
-            if new_stages.size > override_policy_stages.size
-              raise error unless stages_compatible?(override_policy_stages, new_stages)
-
-              @override_policy_stages = new_stages
-            else
-              raise error unless stages_compatible?(new_stages, override_policy_stages)
+            if current_policy.strategy_override_project_ci?
+              collect_declared_override_stages!(new_stages)
+            elsif current_policy.strategy_inject_policy?
+              @injected_policy_stages << new_stages
             end
           end
 
-          # We inject reserved policy stages only when;
+          def has_override_stages?
+            # Stages collected from all `override_project_ci` policies that are applied on the main pipeline.
+            override_policy_stages.present?
+          end
+
+          def has_injected_stages?
+            # The stages are applied on the main pipeline based on all policy pipelines.
+            injected_policy_stages.present?
+          end
+
+          # We inject policy stages only when;
           # - creating_policy_pipeline?: This is a temporary pipeline creation mode.
           #   We need to inject these stages for the validation because the policy may use them.
           # - has_execution_policy_pipelines?: This is the actual pipeline creation mode.
           #   It means that the result pipeline will have PEPs.
           #   We need to inject these stages because some of the policies may use them.
           # - this is a scheduled PEP pipeline
-          def inject_policy_reserved_stages?
+          def inject_policy_stages?
             creating_policy_pipeline? || has_execution_policy_pipelines? || scheduled_execution_policy_pipeline?
           end
 
@@ -146,6 +153,21 @@ module Gitlab
             @current_policy = policy
             yield.tap do
               @current_policy = nil
+            end
+          end
+
+          def collect_declared_override_stages!(new_stages)
+            error = OverrideStagesConflictError.new(
+              "Policy `#{current_policy.name}` could not be applied. " \
+                "Its stages are incompatible with stages of another `override_project_ci` policy: " \
+                "#{override_policy_stages.join(', ')}.")
+
+            if new_stages.size > override_policy_stages.size
+              raise error unless stages_compatible?(override_policy_stages, new_stages)
+
+              @override_policy_stages = new_stages
+            else
+              raise error unless stages_compatible?(new_stages, override_policy_stages)
             end
           end
 

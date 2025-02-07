@@ -66,7 +66,7 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
       rspec:
         stage: test
         script:
-          -echo 'test'
+          - echo 'test'
     YAML
   end
 
@@ -334,7 +334,7 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
       expect(test_stage.builds.map(&:name)).to contain_exactly('project_policy_job')
     end
 
-    context 'and policy uses custom stages' do
+    context 'and override policy uses custom stages' do
       let(:project_policy_content) do
         { stages: %w[build test policy-test deploy],
           project_policy_job: { stage: 'policy-test', script: 'project script' } }
@@ -349,6 +349,34 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
         expect(build_stage.builds.map(&:name)).to contain_exactly('namespace_policy_job')
         policy_test_stage = stages.find_by(name: 'policy-test')
         expect(policy_test_stage.builds.map(&:name)).to contain_exactly('project_policy_job')
+      end
+
+      context 'and inject_policy policy uses custom stages' do
+        let(:namespace_policy_content) do
+          { stages: %w[build policy-build],
+            namespace_policy_job: { stage: 'policy-build', script: 'policy build script' } }
+        end
+
+        let(:namespace_policy) do
+          build(:pipeline_execution_policy, :inject_policy,
+            content: { include: [{
+              project: compliance_project.full_path,
+              file: namespace_policy_file,
+              ref: compliance_project.default_branch_or_main
+            }] })
+        end
+
+        it 'includes jobs with custom stages', :aggregate_failures do
+          expect { execute }.to change { Ci::Build.count }.from(0).to(2)
+          expect(execute).to be_success
+          expect(execute.payload).to be_persisted
+
+          stages = execute.payload.stages
+          expect(stages.map(&:name)).to contain_exactly('policy-build', 'policy-test')
+
+          expect(stages.find_by(name: 'policy-build').builds.map(&:name)).to contain_exactly('namespace_policy_job')
+          expect(stages.find_by(name: 'policy-test').builds.map(&:name)).to contain_exactly('project_policy_job')
+        end
       end
 
       context 'and also namespace policy uses `override_project_ci` with incompatible stages' do
@@ -490,6 +518,121 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
           .to contain_exactly(
             'pre-compliance job: chosen stage `.pipeline-policy-pre` is reserved for Pipeline Execution Policies'
           )
+      end
+    end
+  end
+
+  describe 'injected custom stages with `inject_policy` strategy' do
+    let(:namespace_policy_content) do
+      { stages: %w[build policy-build], namespace_build_job: { stage: 'policy-build', script: 'policy build script' } }
+    end
+
+    let(:project_policy_content) do
+      { stages: %w[test policy-test], project_test_job: { stage: 'policy-test', script: 'policy test script' } }
+    end
+
+    let(:project_policy) do
+      build(:pipeline_execution_policy, :inject_policy,
+        content: { include: [{
+          project: compliance_project.full_path,
+          file: project_policy_file,
+          ref: compliance_project.default_branch_or_main
+        }] })
+    end
+
+    let(:namespace_policy) do
+      build(:pipeline_execution_policy, :inject_policy,
+        content: { include: [{
+          project: compliance_project.full_path,
+          file: namespace_policy_file,
+          ref: compliance_project.default_branch_or_main
+        }] })
+    end
+
+    it 'responds with success and persists jobs in the policy stages', :aggregate_failures do
+      expect { execute }.to change { Ci::Build.count }.from(0).to(4)
+      expect(execute).to be_success
+      expect(execute.payload).to be_persisted
+
+      stages = execute.payload.stages
+      expect(stages.map(&:name)).to contain_exactly('build', 'policy-build', 'test', 'policy-test')
+
+      expect(stages.find_by(name: 'build').builds.map(&:name)).to contain_exactly('build')
+      expect(stages.find_by(name: 'policy-build').builds.map(&:name)).to contain_exactly('namespace_build_job')
+      expect(stages.find_by(name: 'test').builds.map(&:name)).to contain_exactly('rspec')
+      expect(stages.find_by(name: 'policy-test').builds.map(&:name)).to contain_exactly('project_test_job')
+    end
+
+    context 'when policy stages specify stages not found in the project' do
+      let(:project_policy_content) do
+        { stages: %w[build compile check test policy-test publish deploy],
+          project_test_job: { stage: 'policy-test', script: 'policy test script' } }
+      end
+
+      it 'responds with success and ignores not used stages', :aggregate_failures do
+        expect { execute }.to change { Ci::Build.count }.from(0).to(4)
+        expect(execute).to be_success
+        expect(execute.payload).to be_persisted
+
+        stages = execute.payload.stages
+        expect(stages.map(&:name)).to contain_exactly('build', 'policy-build', 'test', 'policy-test')
+
+        expect(stages.find_by(name: 'build').builds.map(&:name)).to contain_exactly('build')
+        expect(stages.find_by(name: 'policy-build').builds.map(&:name)).to contain_exactly('namespace_build_job')
+        expect(stages.find_by(name: 'test').builds.map(&:name)).to contain_exactly('rspec')
+        expect(stages.find_by(name: 'policy-test').builds.map(&:name)).to contain_exactly('project_test_job')
+      end
+    end
+
+    context 'when policy stages specify reserved stages' do
+      let(:namespace_policy_content) do
+        { stages: %w[policy-build .pipeline-policy-pre],
+          namespace_build_job: { stage: 'policy-build', script: 'policy build script' },
+          namespace_pre_job: { stage: '.pipeline-policy-pre', script: 'policy pre script' } }
+      end
+
+      let(:project_policy_content) do
+        { stages: %w[.pipeline-policy-post policy-test],
+          project_test_job: { stage: 'policy-test', script: 'policy test script' },
+          project_post_job: { stage: '.pipeline-policy-post', script: 'policy post script' } }
+      end
+
+      # Reconsider this result https://gitlab.com/gitlab-org/gitlab/-/issues/514931
+      it 'responds with success and enforces reserved stages positions', :aggregate_failures do
+        expect { execute }.to change { Ci::Build.count }.from(0).to(6)
+        expect(execute).to be_success
+        expect(execute.payload).to be_persisted
+
+        stages = execute.payload.stages
+        expect(stages.sort_by(&:position).map(&:name))
+          .to eq(%w[.pipeline-policy-pre build test policy-test policy-build .pipeline-policy-post])
+
+        expect(stages.find_by(name: '.pipeline-policy-pre').builds.map(&:name)).to contain_exactly('namespace_pre_job')
+        expect(stages.find_by(name: 'build').builds.map(&:name)).to contain_exactly('build')
+        expect(stages.find_by(name: 'policy-build').builds.map(&:name)).to contain_exactly('namespace_build_job')
+        expect(stages.find_by(name: 'test').builds.map(&:name)).to contain_exactly('rspec')
+        expect(stages.find_by(name: 'policy-test').builds.map(&:name)).to contain_exactly('project_test_job')
+        expect(stages.find_by(name: '.pipeline-policy-post').builds.map(&:name)).to contain_exactly('project_post_job')
+      end
+    end
+
+    context 'when there are cyclic dependencies' do
+      let(:project_ci_yaml) do
+        <<~YAML
+          stages: [policy-test, test]
+          rspec:
+            stage: test
+            script:
+              - echo 'rspec'
+        YAML
+      end
+
+      it 'responds with error', :aggregate_failures do
+        expect(execute).to be_error
+        expect(execute.payload).to be_persisted
+        expect(execute.payload.errors.full_messages)
+          .to contain_exactly(
+            /^Pipeline execution policy error: Cyclic dependencies detected when enforcing policies./)
       end
     end
   end

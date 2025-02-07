@@ -29,6 +29,12 @@ module Security
         config_strategy == :override_project_ci
       end
 
+      # New inject CI strategy that allows custom policy stages to be injected into the project CI config.
+      # It is going to replace `inject_ci` strategy.
+      def strategy_inject_policy?
+        config_strategy == :inject_policy
+      end
+
       def suffix
         return if suffix_strategy == SUFFIX_STRATEGIES[:never]
 

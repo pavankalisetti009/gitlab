@@ -255,6 +255,20 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
     end
   end
 
+  describe '#creating_project_pipeline?' do
+    subject { context.creating_project_pipeline? }
+
+    include_context 'with mocked current_policy'
+
+    it { is_expected.to eq(true) }
+
+    context 'with current_policy' do
+      let(:current_policy) { build(:pipeline_execution_policy_config) }
+
+      it { is_expected.to eq(false) }
+    end
+  end
+
   describe '#has_execution_policy_pipelines?' do
     subject { context.has_execution_policy_pipelines? }
 
@@ -326,9 +340,9 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
 
     subject { context.applying_config_override? }
 
-    where(:has_overriding_policies, :creating_policy_pipeline, :expected_result) do
-      true  | true  | false
-      true  | false | true
+    where(:has_overriding_policies, :creating_project_pipeline, :expected_result) do
+      true  | false | false
+      true  | true | true
       false | true  | false
       false | false | false
     end
@@ -337,7 +351,7 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
       before do
         allow(context).to receive_messages(
           has_overriding_execution_policy_pipelines?: has_overriding_policies,
-          creating_policy_pipeline?: creating_policy_pipeline
+          creating_project_pipeline?: creating_project_pipeline
         )
       end
 
@@ -345,8 +359,8 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
     end
   end
 
-  describe '#inject_policy_reserved_stages?' do
-    subject { context.inject_policy_reserved_stages? }
+  describe '#inject_policy_stages?' do
+    subject { context.inject_policy_stages? }
 
     it { is_expected.to eq(false) }
 
@@ -423,65 +437,158 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
     end
   end
 
-  describe '#collect_declared_stages!, #override_policy_stages' do
+  describe '#collect_declared_stages!' do
     using RSpec::Parameterized::TableSyntax
 
     include_context 'with mocked current_policy'
 
-    let(:current_policy) { build(:pipeline_execution_policy_config, :override_project_ci) }
+    context 'with override_project_ci' do
+      let(:current_policy) { build(:pipeline_execution_policy_config, :override_project_ci) }
 
-    context 'when adding compatible stages' do
-      where(:stages1, :stages2, :result) do
-        []                                | %w[test]                          | %w[test]
-        %w[test]                          | %w[build test]                    | %w[build test]
-        %w[build test]                    | %w[test]                          | %w[build test]
-        %w[build test]                    | %w[build test]                    | %w[build test]
-        %w[build test deploy]             | %w[build deploy]                  | %w[build test deploy]
-        %w[build test deploy]             | %w[test deploy]                   | %w[build test deploy]
-        %w[build test policy-test deploy] | %w[build test deploy]             | %w[build test policy-test deploy]
-        %w[policy-test]                   | %w[build test policy-test deploy] | %w[build test policy-test deploy]
+      context 'when adding compatible stages' do
+        where(:stages1, :stages2, :result) do
+          []                                | %w[test]                          | %w[test]
+          %w[test]                          | %w[build test]                    | %w[build test]
+          %w[build test]                    | %w[test]                          | %w[build test]
+          %w[build test]                    | %w[build test]                    | %w[build test]
+          %w[build test deploy]             | %w[build deploy]                  | %w[build test deploy]
+          %w[build test deploy]             | %w[test deploy]                   | %w[build test deploy]
+          %w[build test policy-test deploy] | %w[build test deploy]             | %w[build test policy-test deploy]
+          %w[policy-test]                   | %w[build test policy-test deploy] | %w[build test policy-test deploy]
+        end
+
+        with_them do
+          it 'sets the largest set of stages as override_policy_stages' do
+            context.collect_declared_stages!(stages1)
+            context.collect_declared_stages!(stages2)
+
+            expect(context.override_policy_stages).to eq(result)
+            expect(context.injected_policy_stages).to be_empty
+          end
+
+          context 'when creating a project pipeline' do
+            let(:current_policy) { nil }
+
+            it 'does not collect the stages' do
+              context.collect_declared_stages!(stages1)
+              context.collect_declared_stages!(stages2)
+
+              expect(context.override_policy_stages).to be_empty
+              expect(context.injected_policy_stages).to be_empty
+            end
+          end
+        end
       end
 
-      with_them do
-        it 'sets the largest set of stages as override_policy_stages' do
-          context.collect_declared_stages!(stages1)
-          context.collect_declared_stages!(stages2)
+      context 'when adding incompatible stages' do
+        where(:stages1, :stages2) do
+          %w[test]              | %w[build]
+          %w[build test]        | %w[test build]
+          %w[build test]        | %w[test deploy]
+          %w[build other]       | %w[build test deploy]
+          %w[build deploy]      | %w[deploy test build]
+          %w[deploy test build] | %w[build deploy]
+          %w[deploy test build] | %w[build other]
+          %w[deploy test]       | %w[build policy-build test policy-test deploy]
+        end
 
-          expect(context.override_policy_stages).to eq(result)
+        with_them do
+          it 'raises an error' do
+            context.collect_declared_stages!(stages1)
+
+            expect { context.collect_declared_stages!(stages2) }
+              .to raise_error(::Gitlab::Ci::Pipeline::PipelineExecutionPolicies::OverrideStagesConflictError)
+          end
         end
       end
     end
 
-    context 'when adding incompatible stages' do
-      where(:stages1, :stages2) do
-        %w[test]              | %w[build]
-        %w[build test]        | %w[test build]
-        %w[build test]        | %w[test deploy]
-        %w[build other]       | %w[build test deploy]
-        %w[build deploy]      | %w[deploy test build]
-        %w[deploy test build] | %w[build deploy]
-        %w[deploy test build] | %w[build other]
-        %w[deploy test]       | %w[build policy-build test policy-test deploy]
-      end
-
-      with_them do
-        it 'raises an error' do
-          context.collect_declared_stages!(stages1)
-
-          expect { context.collect_declared_stages!(stages2) }
-            .to raise_error(::Gitlab::Ci::Pipeline::PipelineExecutionPolicies::OverrideStagesConflictError)
-        end
-      end
-    end
-
-    context 'when config is inject_ci' do
+    context 'with inject_ci' do
       let(:current_policy) { build(:pipeline_execution_policy_config) }
 
       it 'does not affect the resulting stages' do
         context.collect_declared_stages!(%w[build test])
 
         expect(context.override_policy_stages).to be_empty
+        expect(context.injected_policy_stages).to be_empty
       end
+    end
+
+    context 'with inject_policy' do
+      let(:current_policy) { build(:pipeline_execution_policy_config, :inject_policy) }
+      let(:stages1) do
+        %w[.pipeline-policy-pre .pre build test policy-test .post .pipeline-policy-post]
+      end
+
+      let(:stages2) do
+        %w[.pipeline-policy-pre .pre policy-build .post .pipeline-policy-post]
+      end
+
+      it 'includes stages from all policies' do
+        context.collect_declared_stages!(stages1)
+        context.collect_declared_stages!(stages2)
+
+        expect(context.override_policy_stages).to be_empty
+        expect(context.injected_policy_stages).to contain_exactly(stages1, stages2)
+      end
+
+      context 'when creating a project pipeline' do
+        let(:current_policy) { nil }
+
+        it 'does not collect the stages' do
+          context.collect_declared_stages!(stages1)
+          context.collect_declared_stages!(stages2)
+
+          expect(context.override_policy_stages).to be_empty
+          expect(context.injected_policy_stages).to be_empty
+        end
+      end
+    end
+  end
+
+  describe '#has_override_stages?' do
+    subject { context.has_override_stages? }
+
+    let(:stages) do
+      %w[.pipeline-policy-pre .pre policy-test .post .pipeline-policy-post]
+    end
+
+    context 'when no override stages are collected' do
+      it { is_expected.to be(false) }
+    end
+
+    context 'with override stages' do
+      before do
+        allow(context).to receive(:override_policy_stages).and_return(stages)
+      end
+
+      it { is_expected.to be(true) }
+
+      context 'when collected stages are empty' do
+        let(:stages) { [] }
+
+        it { is_expected.to be(false) }
+      end
+    end
+  end
+
+  describe '#has_injected_stages?' do
+    subject { context.has_injected_stages? }
+
+    let(:stages) do
+      %w[.pipeline-policy-pre .pre build test policy-test .post .pipeline-policy-post]
+    end
+
+    context 'when no stages are collected' do
+      it { is_expected.to be(false) }
+    end
+
+    context 'when stages are injected' do
+      before do
+        allow(context).to receive(:injected_policy_stages).and_return(stages)
+      end
+
+      it { is_expected.to be(true) }
     end
   end
 

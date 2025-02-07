@@ -278,6 +278,10 @@ FactoryBot.define do
       pipeline_config_strategy { 'override_project_ci' }
     end
 
+    trait :inject_policy do
+      pipeline_config_strategy { 'inject_policy' }
+    end
+
     trait :suffix_on_conflict do
       suffix { 'on_conflict' }
     end

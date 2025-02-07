@@ -10,14 +10,18 @@ module EE
 
         override :rescue_errors
         def rescue_errors
-          [*super, ::Gitlab::Ci::Config::Required::Processor::RequiredError]
+          [
+            *super,
+            ::Gitlab::Ci::Config::Required::Processor::RequiredError,
+            ::Gitlab::Ci::Pipeline::PipelineExecutionPolicies::CustomStagesInjector::InvalidStageConditionError
+          ]
         end
 
         override :build_config
         def build_config(config)
           super
             .then { |config| process_required_includes(config) }
-            .then { |config| inject_pipeline_execution_policy_stages(config) }
+            .then { |config| enforce_pipeline_execution_policy_stages(config) }
             .then { |config| process_security_orchestration_policy_includes(config) }
         end
 
@@ -27,12 +31,26 @@ module EE
           ::Gitlab::Ci::Config::Required::Processor.new(config).perform
         end
 
-        def inject_pipeline_execution_policy_stages(config)
-          return config unless pipeline_policy_context&.inject_policy_reserved_stages?
+        # Refactoring: https://gitlab.com/gitlab-org/gitlab/-/issues/514933
+        def enforce_pipeline_execution_policy_stages(config)
+          return config unless pipeline_policy_context&.inject_policy_stages?
 
           logger.instrument(:config_pipeline_execution_policy_stages_inject, once: true) do
-            ::Gitlab::Ci::Pipeline::PipelineExecutionPolicies::ReservedStagesInjector
-              .inject_reserved_stages(config)
+            config = ::Gitlab::Ci::Pipeline::PipelineExecutionPolicies::ReservedStagesInjector
+                       .inject_reserved_stages(config)
+
+            if pipeline_policy_context.creating_project_pipeline?
+              if pipeline_policy_context.has_override_stages?
+                config[:stages] = pipeline_policy_context.override_policy_stages
+              end
+
+              if pipeline_policy_context.has_injected_stages?
+                config[:stages] = ::Gitlab::Ci::Pipeline::PipelineExecutionPolicies::CustomStagesInjector
+                           .inject(config[:stages], pipeline_policy_context.injected_policy_stages)
+              end
+            end
+
+            config
           end
         end
 

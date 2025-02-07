@@ -245,10 +245,11 @@
             "$ref": "#/$defs/pipeline_execution_content"
           },
           "pipeline_config_strategy": {
-            "description": "Defines the method for merging the policy configuration with the project pipeline. `inject_ci` preserves the project CI configuration and injects additional jobs from the policy. Having multiple policies enabled injects all jobs additively. `override_project_ci` replaces the project CI configuration and keeps only the policy jobs in the pipeline.",
+            "description": "Defines the method for merging the policy configuration with the project pipeline. `inject_ci` preserves the project CI configuration and injects additional jobs from the policy. Having multiple policies enabled injects all jobs additively. `inject_policy` behaves like `inject_ci`, but allows custom policy stages to be injected too. `override_project_ci` replaces the project CI configuration and keeps only the policy jobs in the pipeline.",
             "type": "string",
             "enum": [
               "inject_ci",
+              "inject_policy",
               "override_project_ci"
             ]
           },
