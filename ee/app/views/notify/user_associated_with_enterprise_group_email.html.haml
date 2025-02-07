@@ -1,7 +1,7 @@
 %tr
   %td.text-content
     %p
-      = _('Your GitLab account is now an %{source_link}:').html_safe % { source_link: link_to(_('Enterprise User'), help_page_url('user/enterprise_user/index.md'), target: '_blank', rel: 'noopener noreferrer', class: :highlight)}
+      = _('Your GitLab account is now an %{source_link}:').html_safe % { source_link: link_to(_('Enterprise User'), help_page_url('user/enterprise_user/_index.md'), target: '_blank', rel: 'noopener noreferrer', class: :highlight)}
     %p
       = _('Username: %{username}') % { username: @user.username }
       %br

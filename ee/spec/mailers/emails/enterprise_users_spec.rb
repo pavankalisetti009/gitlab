@@ -41,8 +41,8 @@ RSpec.describe Emails::EnterpriseUsers, feature_category: :user_management do
       it 'has the correct subject and body' do
         is_expected.to have_subject 'Enterprise User Account on GitLab'
 
-        is_expected.to have_text_part_content(help_page_url('user/enterprise_user/index.md'))
-        is_expected.to have_html_part_content(help_page_url('user/enterprise_user/index.md'))
+        is_expected.to have_text_part_content(help_page_url('user/enterprise_user/_index.md'))
+        is_expected.to have_html_part_content(help_page_url('user/enterprise_user/_index.md'))
 
         is_expected.to have_text_part_content(user.user_detail.enterprise_group.name)
         is_expected.to have_html_part_content(user.user_detail.enterprise_group.name)
