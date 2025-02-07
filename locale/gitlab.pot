@@ -55244,9 +55244,6 @@ msgstr ""
 msgid "SourcegraphAdmin|https://sourcegraph.example.com"
 msgstr ""
 
-msgid "SourcegraphPreferences|This feature is experimental and currently limited to certain projects."
-msgstr ""
-
 msgid "SourcegraphPreferences|This feature is experimental and limited to public projects."
 msgstr ""
 
