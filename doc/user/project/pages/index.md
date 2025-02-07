@@ -295,7 +295,7 @@ branch named `username/testing_feature`, this parallel Pages deployment would be
 The number of parallel deployments is limited by the root-level namespace. For
 specific limits for:
 
-- GitLab.com, see [Other limits](../../gitlab_com/index.md#other-limits).
+- GitLab.com, see [Other limits](../../gitlab_com/_index.md#other-limits).
 - GitLab Self-Managed, see
   [Number of parallel Pages deployments](../../../administration/instance_limits.md#number-of-parallel-pages-deployments).
 
