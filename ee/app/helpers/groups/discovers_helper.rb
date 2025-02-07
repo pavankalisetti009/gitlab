@@ -70,7 +70,7 @@ module Groups
           description: s_("TrialDiscoverPage|Target the right approvers for your merge request by assigning " \
                           "owners to specific files."),
           plan: s_("TrialDiscoverPage|Premium"),
-          doc_url: help_page_url("user/project/codeowners/index.md"),
+          doc_url: help_page_url("user/project/codeowners/_index.md"),
           video_url: "https://vimeo.com/670896787",
           container_class: 'lg:gl-basis-1/3',
           description_class: 'gl-h-13',

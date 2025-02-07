@@ -24,7 +24,7 @@ export const i18n = {
   hideAll: s__('CodeOwners|Hide all'),
 };
 
-export const codeOwnersHelpPath = helpPagePath('user/project/codeowners/index.md');
+export const codeOwnersHelpPath = helpPagePath('user/project/codeowners/_index.md');
 
 export default {
   i18n,

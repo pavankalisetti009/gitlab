@@ -94,7 +94,7 @@ RSpec.describe Projects::LearnGitlabHelper, feature_category: :onboarding do
         user_added: a_hash_including(url: %r{#\z}),
         merge_request_created: a_hash_including(url: %r{/#{project.path}/-/merge_requests\z}),
         code_added: a_hash_including(url: %r{/-/ide/project/#{project.full_path}/edit\z}),
-        code_owners_enabled: a_hash_including(url: %r{/user/project/codeowners/index.md#set-up-code-owners\z}),
+        code_owners_enabled: a_hash_including(url: %r{/user/project/codeowners/_index.md#set-up-code-owners\z}),
         required_mr_approvals_enabled: a_hash_including(
           url: %r{/ci/testing/code_coverage/_index.md#add-a-coverage-check-approval-rule\z}
         ),
@@ -154,7 +154,7 @@ RSpec.describe Projects::LearnGitlabHelper, feature_category: :onboarding do
               message: disabled_message
             ),
             code_owners_enabled: a_hash_including(
-              url: help_page_path('user/project/codeowners/index.md', anchor: 'set-up-code-owners'),
+              url: help_page_path('user/project/codeowners/_index.md', anchor: 'set-up-code-owners'),
               enabled: true
             ),
             required_mr_approvals_enabled: a_hash_including(
@@ -181,7 +181,7 @@ RSpec.describe Projects::LearnGitlabHelper, feature_category: :onboarding do
               message: disabled_message
             ),
             code_owners_enabled: a_hash_including(
-              url: help_page_path('user/project/codeowners/index.md', anchor: 'set-up-code-owners'),
+              url: help_page_path('user/project/codeowners/_index.md', anchor: 'set-up-code-owners'),
               enabled: true
             ),
             required_mr_approvals_enabled: a_hash_including(
@@ -201,7 +201,7 @@ RSpec.describe Projects::LearnGitlabHelper, feature_category: :onboarding do
               message: disabled_message
             ),
             code_owners_enabled: a_hash_including(
-              url: help_page_path('user/project/codeowners/index.md', anchor: 'set-up-code-owners'),
+              url: help_page_path('user/project/codeowners/_index.md', anchor: 'set-up-code-owners'),
               enabled: true
             ),
             required_mr_approvals_enabled: a_hash_including(

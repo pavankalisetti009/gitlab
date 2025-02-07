@@ -102,7 +102,7 @@ export default {
       return null;
     },
   },
-  codeOwnerHelpPage: helpPagePath('user/project/codeowners/index'),
+  codeOwnerHelpPage: helpPagePath('user/project/codeowners/_index'),
 };
 </script>
 
