@@ -483,7 +483,6 @@ describe('GeoReplicable Store Actions', () => {
             variables: {
               action: action.toUpperCase(),
               registryId,
-              registryClass: MOCK_GRAPHQL_REGISTRY_CLASS,
             },
           });
         });
@@ -514,7 +513,6 @@ describe('GeoReplicable Store Actions', () => {
             variables: {
               action: action.toUpperCase(),
               registryId,
-              registryClass: MOCK_GRAPHQL_REGISTRY_CLASS,
             },
           });
         });
