@@ -30,7 +30,7 @@ You can also copy GitLab projects by using a GitLab file export, which is a supp
 
 The import sources that are available to you by default depend on which GitLab you use:
 
-- GitLab.com: all available import sources are [enabled by default](../../gitlab_com/index.md#default-import-sources).
+- GitLab.com: all available import sources are [enabled by default](../../gitlab_com/_index.md#default-import-sources).
 - GitLab Self-Managed: no import sources are enabled by default and must be
   [enabled](../../../administration/settings/import_and_export_settings.md#configure-allowed-import-sources).
 

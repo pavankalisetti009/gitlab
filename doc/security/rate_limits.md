@@ -11,7 +11,7 @@ DETAILS:
 
 NOTE:
 For GitLab.com, see
-[GitLab.com-specific rate limits](../user/gitlab_com/index.md#gitlabcom-specific-rate-limits).
+[GitLab.com-specific rate limits](../user/gitlab_com/_index.md#gitlabcom-specific-rate-limits).
 
 Rate limiting is a common technique used to improve the security and durability
 of a web application.

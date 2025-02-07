@@ -113,7 +113,7 @@ On GitLab.com instance runners are added to the [global allowlist](../../adminis
 
 Artifact and Registry downloading from runners is sourced from any Google or, in the case of MacOS runners, Amazon IP address in that region.
 The download is therefore not added to the global allowlist.
-To allow runner downloading, add the [outbound runner CIDR ranges](../gitlab_com/index.md#ip-range) to your group allowlist.
+To allow runner downloading, add the [outbound runner CIDR ranges](../gitlab_com/_index.md#ip-range) to your group allowlist.
 
 ## Restrict group access by domain
 

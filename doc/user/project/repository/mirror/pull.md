@@ -46,7 +46,7 @@ After you configure a GitLab repository as a pull mirror:
 1. GitLab adds the repository to a queue.
 1. Once per minute, a Sidekiq cron job schedules repository mirrors to update, based on:
    - Available capacity, determined by Sidekiq settings. For GitLab.com, read
-     [GitLab.com Sidekiq settings](../../../gitlab_com/index.md#sidekiq).
+     [GitLab.com Sidekiq settings](../../../gitlab_com/_index.md#sidekiq).
    - How many mirrors are already in the queue and due for updates. Being due depends
      on when the repository mirror was last updated, and how many times updates have been retried.
 1. Sidekiq becomes available to process updates, mirrors are updated. If the update process:
