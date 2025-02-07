@@ -1,7 +1,6 @@
 <script>
 import { s__, sprintf } from '~/locale';
 import { createAlert } from '~/alert';
-import { subscriptionTypes } from 'ee/admin/subscriptions/show/constants';
 import { RELEASE_STATES } from '../../self_hosted_models/constants';
 import updateAiFeatureSetting from '../graphql/mutations/update_ai_feature_setting.mutation.graphql';
 import getAiFeatureSettingsQuery from '../graphql/queries/get_ai_feature_settings.query.graphql';
@@ -24,10 +23,6 @@ export default {
       type: Object,
       required: true,
     },
-    license: {
-      type: Object,
-      required: true,
-    },
   },
   i18n: {
     defaultErrorMessage: s__(
@@ -37,7 +32,6 @@ export default {
   },
   data() {
     const { provider, selfHostedModel, validModels } = this.aiFeatureSetting;
-    const { type: licenseType } = this.license;
 
     const selectedOption = provider === PROVIDERS.SELF_HOSTED ? selfHostedModel?.id : provider;
 
@@ -45,7 +39,6 @@ export default {
       provider,
       selfHostedModelId: selfHostedModel?.id,
       compatibleModels: validModels?.nodes,
-      isOnlineCloudLicense: licenseType === subscriptionTypes.ONLINE_CLOUD,
       selectedOption,
       isSaving: false,
     };
@@ -74,15 +67,6 @@ export default {
         text: s__('AdminAIPoweredFeatures|Disabled'),
       };
 
-      const vendoredOption = {
-        value: PROVIDERS.VENDORED,
-        text: s__('AdminAIPoweredFeatures|GitLab AI Vendor'),
-      };
-
-      if (this.isOnlineCloudLicense) {
-        return [...modelOptions, vendoredOption, disableOption];
-      }
-
       return [...modelOptions, disableOption];
     },
     selectedModel() {
@@ -94,9 +78,6 @@ export default {
     dropdownToggleText() {
       if (this.provider === PROVIDERS.DISABLED) {
         return s__('AdminAIPoweredFeatures|Disabled');
-      }
-      if (this.isOnlineCloudLicense && this.provider === PROVIDERS.VENDORED) {
-        return s__('AdminAIPoweredFeatures|GitLab AI Vendor');
       }
       if (this.selectedModel) {
         return `${this.selectedModel.name} (${this.selectedModel.modelDisplayName})`;
@@ -110,17 +91,13 @@ export default {
       this.isSaving = true;
 
       try {
-        const selectedOption = [PROVIDERS.DISABLED, PROVIDERS.VENDORED].includes(option)
-          ? {
-              option,
-              provider: option,
-              selfHostedModelId: null,
-            }
-          : {
-              option,
-              provider: PROVIDERS.SELF_HOSTED,
-              selfHostedModelId: option,
-            };
+        const isDisabledOption = option === PROVIDERS.DISABLED;
+
+        const selectedOption = {
+          option,
+          provider: isDisabledOption ? option : PROVIDERS.SELF_HOSTED,
+          selfHostedModelId: isDisabledOption ? null : option,
+        };
 
         const { data } = await this.$apollo.mutate({
           mutation: updateAiFeatureSetting,

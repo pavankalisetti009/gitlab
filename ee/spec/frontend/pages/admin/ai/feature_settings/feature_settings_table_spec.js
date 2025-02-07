@@ -5,10 +5,8 @@ import { mountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import FeatureSettingsTable from 'ee/pages/admin/ai/feature_settings/components/feature_settings_table.vue';
 import getAiFeatureSettingsQuery from 'ee/pages/admin/ai/feature_settings/graphql/queries/get_ai_feature_settings.query.graphql';
-import getCurrentLicense from 'ee/admin/subscriptions/show/graphql/queries/get_current_license.query.graphql';
 import { createAlert } from '~/alert';
 import waitForPromises from 'helpers/wait_for_promises';
-import { license } from 'ee_jest/admin/subscriptions/show/mock_data';
 import { mockAiFeatureSettings } from './mock_data';
 
 Vue.use(VueApollo);
@@ -27,20 +25,8 @@ describe('FeatureSettingsTable', () => {
     },
   });
 
-  const getCurrentLicenseSuccessHandler = jest.fn().mockResolvedValue({
-    data: {
-      currentLicense: {
-        ...license.ULTIMATE,
-        errors: [],
-      },
-    },
-  });
-
   const createComponent = ({
-    apolloHandlers = [
-      [getAiFeatureSettingsQuery, getAiFeatureSettingsSuccessHandler],
-      [getCurrentLicense, getCurrentLicenseSuccessHandler],
-    ],
+    apolloHandlers = [[getAiFeatureSettingsQuery, getAiFeatureSettingsSuccessHandler]],
   } = {}) => {
     const mockApollo = createMockApollo([...apolloHandlers]);
 
@@ -100,10 +86,7 @@ describe('FeatureSettingsTable', () => {
     describe('due to a general error', () => {
       it('displays an error message for feature settings', async () => {
         createComponent({
-          apolloHandlers: [
-            [getAiFeatureSettingsQuery, jest.fn().mockRejectedValue('ERROR')],
-            [getCurrentLicense, getCurrentLicenseSuccessHandler],
-          ],
+          apolloHandlers: [[getAiFeatureSettingsQuery, jest.fn().mockRejectedValue('ERROR')]],
         });
 
         await waitForPromises();
@@ -111,23 +94,6 @@ describe('FeatureSettingsTable', () => {
         expect(createAlert).toHaveBeenCalledWith(
           expect.objectContaining({
             message: 'An error occurred while loading the AI feature settings. Please try again.',
-          }),
-        );
-      });
-
-      it('displays an error message for the license', async () => {
-        createComponent({
-          apolloHandlers: [
-            [getAiFeatureSettingsQuery, getAiFeatureSettingsSuccessHandler],
-            [getCurrentLicense, jest.fn().mockRejectedValue('ERROR')],
-          ],
-        });
-
-        await waitForPromises();
-
-        expect(createAlert).toHaveBeenCalledWith(
-          expect.objectContaining({
-            message: 'An error occurred while loading the current license. Please try again.',
           }),
         );
       });
@@ -144,10 +110,7 @@ describe('FeatureSettingsTable', () => {
 
       it('displays an error message for feature settings', async () => {
         createComponent({
-          apolloHandlers: [
-            [getAiFeatureSettingsQuery, getAiFeatureSettingsErrorHandler],
-            [getCurrentLicense, getCurrentLicenseSuccessHandler],
-          ],
+          apolloHandlers: [[getAiFeatureSettingsQuery, getAiFeatureSettingsErrorHandler]],
         });
 
         await waitForPromises();

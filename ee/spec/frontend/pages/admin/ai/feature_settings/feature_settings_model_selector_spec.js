@@ -11,7 +11,6 @@ import getAiFeatureSettingsQuery from 'ee/pages/admin/ai/feature_settings/graphq
 import getSelfHostedModelsQuery from 'ee/pages/admin/ai/self_hosted_models/graphql/queries/get_self_hosted_models.query.graphql';
 import { createAlert } from '~/alert';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
-import { license } from 'ee_jest/admin/subscriptions/show/mock_data';
 import { mockSelfHostedModels, mockAiFeatureSettings } from './mock_data';
 
 Vue.use(VueApollo);
@@ -63,7 +62,6 @@ describe('FeatureSettingsModelSelector', () => {
         apolloProvider: mockApollo,
         propsData: {
           aiFeatureSetting: mockAiFeatureSetting,
-          license: license.ULTIMATE,
           ...props,
         },
         mocks: {
@@ -98,29 +96,8 @@ describe('FeatureSettingsModelSelector', () => {
         ['Model 5 (Claude 3)', 'GA'],
         ['Model 2 (Code Llama)', 'BETA'],
         ['Model 3 (CodeGemma)', 'BETA'],
-        ['GitLab AI Vendor'],
         ['Disabled'],
       ]);
-    });
-
-    it('does not return Gitlab AI Vendor option for an offline license', () => {
-      createComponent({
-        props: {
-          license: license.ULTIMATE_OFFLINE,
-        },
-      });
-
-      const modelOptions = findModelSelectDropdown().props('items');
-      expect(modelOptions.map(({ text, releaseState }) => [text, releaseState])).toEqual([
-        ['Model 1 (Mistral)', 'GA'],
-        ['Model 4 (GPT)', 'GA'],
-        ['Model 5 (Claude 3)', 'GA'],
-        ['Model 2 (Code Llama)', 'BETA'],
-        ['Model 3 (CodeGemma)', 'BETA'],
-        ['Disabled'],
-      ]);
-
-      expect(findDropdownToggleText()).toBe('Select a self-hosted model');
     });
   });
 
@@ -137,20 +114,6 @@ describe('FeatureSettingsModelSelector', () => {
   describe('updating the feature setting', () => {
     beforeEach(() => {
       createComponent();
-    });
-
-    describe('with a vendored model', () => {
-      it('calls the update mutation with the right input', () => {
-        findModelSelectDropdown().vm.$emit('select', 'vendored');
-
-        expect(updateFeatureSettingsSuccessHandler).toHaveBeenCalledWith({
-          input: {
-            feature: 'CODE_GENERATIONS',
-            provider: 'VENDORED',
-            aiSelfHostedModelId: null,
-          },
-        });
-      });
     });
 
     describe('with a self-hosted model', () => {
@@ -202,7 +165,7 @@ describe('FeatureSettingsModelSelector', () => {
 
     describe('when the feature state is changed', () => {
       it('updates the dropdown toggle text', async () => {
-        expect(findDropdownToggleText()).toBe('GitLab AI Vendor');
+        expect(findDropdownToggleText()).toBe('Select a self-hosted model');
 
         findModelSelectDropdown().vm.$emit('select', 'disabled');
 
@@ -253,10 +216,9 @@ describe('FeatureSettingsModelSelector', () => {
     });
 
     it('does not update the selected option', () => {
-      expect(findModelSelectDropdown().props('selectedOption')).toEqual({
-        text: 'GitLab AI Vendor',
-        value: 'vendored',
-      });
+      expect(findModelSelectDropdown().props('dropdownToggleText')).toEqual(
+        'Select a self-hosted model',
+      );
     });
 
     it('triggers an error message', () => {

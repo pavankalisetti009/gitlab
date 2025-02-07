@@ -2,7 +2,6 @@
 import { GlTableLite, GlSkeletonLoader } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
-import getCurrentLicense from 'ee/admin/subscriptions/show/graphql/queries/get_current_license.query.graphql';
 import getAiFeatureSettingsQuery from '../graphql/queries/get_ai_feature_settings.query.graphql';
 import FeatureSettingsModelSelector from './feature_settings_model_selector.vue';
 
@@ -17,14 +16,10 @@ export default {
     errorMessage: s__(
       'AdminAIPoweredFeatures|An error occurred while loading the AI feature settings. Please try again.',
     ),
-    errorLicenseMessage: s__(
-      'AdminAIPoweredFeatures|An error occurred while loading the current license. Please try again.',
-    ),
   },
   data() {
     return {
       aiFeatureSettings: [],
-      currentLicense: {},
     };
   },
   fields: [
@@ -78,19 +73,6 @@ export default {
     },
   },
   apollo: {
-    currentLicense: {
-      query: getCurrentLicense,
-      update({ currentLicense }) {
-        return currentLicense || {};
-      },
-      error(error) {
-        createAlert({
-          message: this.$options.i18n.errorLicenseMessage,
-          error,
-          captureError: true,
-        });
-      },
-    },
     aiFeatureSettings: {
       query: getAiFeatureSettingsQuery,
       update(data) {
@@ -132,11 +114,7 @@ export default {
       <gl-skeleton-loader v-if="isLoading" :height="46" :width="600">
         <rect y="8" :width="item.loaderWidth.modelName" height="32" rx="10" />
       </gl-skeleton-loader>
-      <feature-settings-model-selector
-        v-else
-        :ai-feature-setting="item"
-        :license="currentLicense"
-      />
+      <feature-settings-model-selector v-else :ai-feature-setting="item" />
     </template>
   </gl-table-lite>
 </template>
