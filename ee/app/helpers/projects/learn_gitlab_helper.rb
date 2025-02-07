@@ -91,7 +91,7 @@ module Projects
 
       trial_items = {
         trial_started: project_project_members_path(project),
-        required_mr_approvals_enabled: help_page_path('ci/testing/code_coverage.md',
+        required_mr_approvals_enabled: help_page_path('ci/testing/code_coverage/_index.md',
           anchor: 'add-a-coverage-check-approval-rule'),
         code_owners_enabled: help_page_path('user/project/codeowners/index.md', anchor: 'set-up-code-owners')
       }

@@ -234,7 +234,7 @@ is supported in GitLab CI/CD natively with CI/CD keywords and features.
 
 | TeamCity plugin                                                                                                                    | GitLab feature |
 |------------------------------------------------------------------------------------------------------------------------------------|----------------|
-| [Code coverage](https://www.jetbrains.com/help/teamcity/configuring-test-reports-and-code-coverage.html#Code+Coverage+in+TeamCity) | [Code coverage](../testing/code_coverage.md) and [Test coverage visualization](../testing/test_coverage_visualization/index.md) |
+| [Code coverage](https://www.jetbrains.com/help/teamcity/configuring-test-reports-and-code-coverage.html#Code+Coverage+in+TeamCity) | [Code coverage](../testing/code_coverage/_index.md) and [Test coverage visualization](../testing/code_coverage/_index.md#coverage-visualization) |
 | [Unit Test Report](https://www.jetbrains.com/help/teamcity/configuring-test-reports-and-code-coverage.html)                        | [JUnit test report artifacts](../yaml/artifacts_reports.md#artifactsreportsjunit) and [Unit test reports](../testing/unit_test_reports.md) |
 | [Notifications](https://www.jetbrains.com/help/teamcity/configuring-notifications.html)                                            | [Notification emails](../../user/profile/notifications.md) and [Slack](../../user/project/integrations/gitlab_slack_application.md) |
 
