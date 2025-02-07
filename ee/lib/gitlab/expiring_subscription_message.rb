@@ -123,7 +123,7 @@ module Gitlab
         {
           expires_on: subscribable.expires_at.iso8601,
           downgrades_on: subscribable.block_changes_at.iso8601,
-          learn_more_url: help_page_path('subscriptions/self_managed/index.md', anchor: 'renew-your-subscription'), target: '_blank', rel: 'noopener noreferrer',
+          learn_more_url: help_page_path('subscriptions/self_managed/_index.md', anchor: 'renew-your-subscription'), target: '_blank', rel: 'noopener noreferrer',
           learn_more_link: '<a href="%{learn_more_url}">How do I renew my subscription?</a>',
           plan_name: plan_name,
           strong: strong,

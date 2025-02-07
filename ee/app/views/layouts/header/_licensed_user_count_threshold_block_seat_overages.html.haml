@@ -5,5 +5,5 @@
   - c.with_body do
     = _('Your instance has %{remaining_user_count} users remaining of the %{total_user_count} in your subscription. When there are no more seats, users cannot be invited or added to the instance.') % { remaining_user_count: remaining_user_count, total_user_count: total_user_count }
   - c.with_actions do
-    = render Pajamas::ButtonComponent.new(variant: :confirm, href: help_page_path('subscriptions/gitlab_com/index.md', anchor: 'add-seats-to-subscription')) do
+    = render Pajamas::ButtonComponent.new(variant: :confirm, href: help_page_path('subscriptions/gitlab_com/_index.md', anchor: 'add-seats-to-subscription')) do
       = s_('Purchase more seats')

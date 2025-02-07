@@ -31,9 +31,9 @@ pre-configured features and integrations.
 Atlassian offers Bamboo in its Cloud (SaaS) or Data center (self-hosted) options.
 A third Server option is scheduled for [EOL on February 15, 2024](https://about.gitlab.com/blog/2023/09/26/atlassian-server-ending-move-to-a-single-devsecops-platform/).
 
-These options are similar to [GitLab.com](../../subscriptions/gitlab_com/index.md)
-and [GitLab Self-Managed](../../subscriptions/self_managed/index.md). GitLab also offers
-[GitLab Dedicated](../../subscriptions/gitlab_dedicated/index.md), a fully isolated
+These options are similar to [GitLab.com](../../subscriptions/gitlab_com/_index.md)
+and [GitLab Self-Managed](../../subscriptions/self_managed/_index.md). GitLab also offers
+[GitLab Dedicated](../../subscriptions/gitlab_dedicated/_index.md), a fully isolated
 single-tenant SaaS service.
 
 ### Agents vs Runners

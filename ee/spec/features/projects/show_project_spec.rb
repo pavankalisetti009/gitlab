@@ -150,7 +150,7 @@ RSpec.describe 'Project show page', :feature, feature_category: :groups_and_proj
             expect(page).to have_text "Your namespace has used all the seats in your subscription and users can " \
                                       "no longer be invited or added to the namespace."
             expect(page).to have_link 'Purchase more seats', href:
-              help_page_path('subscriptions/gitlab_com/index.md', anchor: 'add-seats-to-subscription')
+              help_page_path('subscriptions/gitlab_com/_index.md', anchor: 'add-seats-to-subscription')
           end
         end
       end
