@@ -62,6 +62,19 @@ export default {
       return this.location.path && this.location.blobPath;
     },
   },
+  methods: {
+    target() {
+      /**
+       * When the dependency list reloads during filtering, the component temporarily unmounts
+       * while updating, causing $refs.moreLink to become undefined. When migrated to Vue 3,
+       * we can use optional chaining in templates.
+       *
+       * Fix is similar to:
+       * https://gitlab.com/gitlab-org/gitlab/-/merge_requests/49628#note_464803276
+       */
+      return this.$refs.moreLink?.$el;
+    },
+  },
   i18n: DEPENDENCIES_TABLE_I18N,
 };
 </script>
@@ -97,11 +110,7 @@ export default {
     <span v-if="showMoreLink">
       <gl-link ref="moreLink" class="gl-whitespace-nowrap">{{ nMoreMessage }}</gl-link>
 
-      <gl-popover
-        :target="() => $refs.moreLink.$el"
-        placement="top"
-        :title="s__('Dependencies|Direct dependents')"
-      >
+      <gl-popover :target="target" placement="top" :title="s__('Dependencies|Direct dependents')">
         <dependency-path-viewer :dependencies="ancestors" />
       </gl-popover>
     </span>
