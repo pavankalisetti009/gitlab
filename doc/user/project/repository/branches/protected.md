@@ -373,7 +373,7 @@ DETAILS:
 **Tier:** Premium, Ultimate
 **Offering:** GitLab.com, GitLab Self-Managed, GitLab Dedicated
 
-For a protected branch, you can require at least one approval by a [Code Owner](../../codeowners/index.md).
+For a protected branch, you can require at least one approval by a [Code Owner](../../codeowners/_index.md).
 If a branch is protected by multiple rules, code owner approval is required if _any_ of
 the applicable rules have **Required approval from code owners** enabled.
 

@@ -163,7 +163,7 @@ After you change a path, you must update the existing URL in the following resou
   instead of the numeric namespace and project IDs.
 - [Docker image references](../../../ci/yaml/_index.md#image).
 - Variables that specify a project or namespace.
-- [CODEOWNERS file](../codeowners/index.md#codeowners-file).
+- [CODEOWNERS file](../codeowners/_index.md#codeowners-file).
 
 ## Related topics
 
