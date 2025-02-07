@@ -8,7 +8,7 @@ import {
   REQUIRE_PASSWORD_TO_APPROVE,
 } from './settings';
 
-export { createPolicyObject, fromYaml } from './from_yaml';
+export * from './from_yaml';
 export { policyToYaml } from './to_yaml';
 export * from './rules';
 export * from './actions';

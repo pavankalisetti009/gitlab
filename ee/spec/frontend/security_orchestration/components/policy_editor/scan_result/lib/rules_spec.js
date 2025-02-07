@@ -3,6 +3,7 @@ import { HTTP_STATUS_NOT_FOUND, HTTP_STATUS_OK } from '~/lib/utils/http_status';
 import axios from '~/lib/utils/axios_utils';
 import {
   getInvalidBranches,
+  hasInvalidRules,
   invalidScanners,
   invalidSeverities,
   invalidVulnerabilitiesAllowed,
@@ -95,6 +96,32 @@ describe('invalidSeverities', () => {
 
   it('returns true with rules with invalid severities', () => {
     expect(invalidSeverities([{ severity_levels: ['invalid'] }])).toBe(true);
+  });
+});
+
+describe('hasInvalidRules', () => {
+  it('creates an error when policy scanners are invalid', () => {
+    expect(hasInvalidRules([{ scanners: ['cluster_image_scanning'] }])).toBe(true);
+  });
+
+  it('creates an error when policy severity_levels are invalid', () => {
+    expect(hasInvalidRules([{ severity_levels: ['non-existent'] }])).toBe(true);
+  });
+
+  it('creates an error when vulnerabilities_allowed are invalid', () => {
+    expect(hasInvalidRules([{ vulnerabilities_allowed: 'invalid' }])).toBe(true);
+  });
+
+  it('creates an error when vulnerability_states are invalid', () => {
+    expect(hasInvalidRules([{ vulnerability_states: ['invalid'] }])).toBe(true);
+  });
+
+  it('creates an error when vulnerability_age is invalid', () => {
+    expect(hasInvalidRules([{ vulnerability_age: { operator: 'invalid' } }])).toBe(true);
+  });
+
+  it('creates an error when vulnerability_attributes are invalid', () => {
+    expect(hasInvalidRules([{ vulnerability_attributes: [{ invalid: true }] }])).toBe(true);
   });
 });
 

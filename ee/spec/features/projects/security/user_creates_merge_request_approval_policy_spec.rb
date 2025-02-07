@@ -37,7 +37,7 @@ RSpec.describe "User creates merge request approval policy", :js, feature_catego
   it "fails to create a policy when user has an incompatible role" do
     fill_in _('Name'), with: 'Missing approvers'
 
-    page.within(find_by_testid('actions-section')) do
+    page.within(find_by_testid('disabled-actions')) do
       select_from_listbox 'Roles', from: 'Choose approver type'
       select_from_listbox 'Developer', from: 'Choose specific role'
     end

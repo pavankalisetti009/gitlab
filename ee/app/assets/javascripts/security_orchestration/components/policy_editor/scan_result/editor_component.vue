@@ -17,6 +17,7 @@ import {
   mapYamlApproversActionsFormatToEditorFormat,
 } from 'ee/security_orchestration/components/policy_editor/utils';
 import {
+  ACTION_SECTION_DISABLE_ERROR,
   ADD_ACTION_LABEL,
   BRANCHES_KEY,
   EDITOR_MODE_YAML,
@@ -26,11 +27,13 @@ import {
   ACTIONS_LABEL,
   ADD_RULE_LABEL,
   RULES_LABEL,
+  RULE_SECTION_DISABLE_ERROR,
   MAX_ALLOWED_RULES_LENGTH,
   MAX_ALLOWED_APPROVER_ACTION_LENGTH,
+  SETTING_SECTION_DISABLE_ERROR,
 } from '../constants';
+import DisabledSection from '../disabled_section.vue';
 import EditorLayout from '../editor_layout.vue';
-import DimDisableContainer from '../dim_disable_container.vue';
 import ScanFilterSelector from '../scan_filter_selector.vue';
 import SettingsSection from './settings/settings_section.vue';
 import ActionSection from './action/action_section.vue';
@@ -47,14 +50,7 @@ import {
   getPolicyYaml,
   approversOutOfSync,
   emptyBuildRule,
-  invalidScanners,
-  invalidSeverities,
-  invalidVulnerabilitiesAllowed,
-  invalidVulnerabilityStates,
-  invalidVulnerabilityAge,
-  invalidVulnerabilityAttributes,
   humanizeInvalidBranchesError,
-  invalidBranchType,
   BOT_MESSAGE_TYPE,
   PERMITTED_INVALID_SETTINGS_KEY,
   REQUIRE_APPROVAL_TYPE,
@@ -69,8 +65,11 @@ export default {
   EDITOR_MODE_YAML,
   EDITOR_MODE_RULE,
   i18n: {
+    ACTION_SECTION_DISABLE_ERROR,
     ADD_ACTION_LABEL,
     PARSING_ERROR_MESSAGE,
+    RULE_SECTION_DISABLE_ERROR,
+    SETTING_SECTION_DISABLE_ERROR,
     createMergeRequest: __('Configure with a merge request'),
     filterHeaderText: s__('SecurityOrchestration|Choose an action'),
     notOwnerButtonText: __('Learn more'),
@@ -103,7 +102,7 @@ export default {
   components: {
     ActionSection,
     BotCommentAction,
-    DimDisableContainer,
+    DisabledSection,
     FallbackAndEdgeCasesSection,
     GlAlert,
     GlButton,
@@ -187,14 +186,14 @@ export default {
       ? policyToYaml(this.existingPolicy, POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter)
       : newPolicyYaml;
 
-    const { policy, hasParsingError } = createPolicyObject(yamlEditorValue);
+    const { policy, parsingError } = createPolicyObject(yamlEditorValue);
 
     return {
       errors: { action: [] },
       invalidBranches: [],
       linkedSppGroups: [],
+      parsingError,
       policy,
-      hasParsingError,
       documentationPath: setUrlFragment(
         this.scanPolicyDocumentationPath,
         'scan-result-policy-editor',
@@ -269,6 +268,9 @@ export default {
     hasRequireApprovalAction() {
       return this.policy.actions?.some(({ type }) => type === REQUIRE_APPROVAL_TYPE);
     },
+    showAlert() {
+      return isEmpty(this.parsingError) && !this.hasRequireApprovalAction;
+    },
     hasEmptyActions() {
       return this.policy.actions?.every(
         ({ type, enabled }) => type === BOT_MESSAGE_TYPE && !enabled,
@@ -298,8 +300,8 @@ export default {
         ({ type, enabled }) => type === BOT_MESSAGE_TYPE && !enabled,
       );
     },
-    isActiveRuleMode() {
-      return this.mode === EDITOR_MODE_RULE && !this.hasParsingError;
+    isRuleMode() {
+      return this.mode === EDITOR_MODE_RULE;
     },
     allBranches() {
       return this.policy.rules.flatMap((rule) => rule.branches);
@@ -405,6 +407,10 @@ export default {
       this.errors.action = [];
       this.updateYamlEditorValue(this.policy);
     },
+    updateFallbackAndEdgeCases(property, value) {
+      this.parsingError.fallback = false;
+      this.handleUpdateProperty(property, value);
+    },
     updateSettings(values) {
       if (!this.policy.approval_settings) {
         this.policy = {
@@ -431,7 +437,7 @@ export default {
       this.updateYamlEditorValue(this.policy);
     },
     handleParsingError() {
-      this.hasParsingError = true;
+      this.parsingError = { ...this.parsingError, actions: true };
     },
     async handleModifyPolicy(action) {
       /**
@@ -449,7 +455,7 @@ export default {
       this.$emit('save', {
         action,
         policy: payload,
-        isActiveRuleMode: this.isActiveRuleMode,
+        isRuleMode: this.isRuleMode,
       });
     },
     handleRemoveProperty(property) {
@@ -462,9 +468,9 @@ export default {
       this.updateYamlEditorValue(this.policy);
     },
     updateYaml(manifest) {
-      const { policy, hasParsingError } = createPolicyObject(manifest);
+      const { policy, parsingError } = createPolicyObject(manifest);
       this.yamlEditorValue = manifest;
-      this.hasParsingError = hasParsingError;
+      this.parsingError = parsingError;
       this.policy = policy;
       this.updatePolicyApproversFromYaml();
     },
@@ -476,8 +482,8 @@ export default {
     },
     async changeEditorMode(mode) {
       this.mode = mode;
-      if (this.isActiveRuleMode) {
-        this.hasParsingError = this.invalidForRuleMode();
+      if (this.isRuleMode) {
+        this.parsingError = this.verifyActions();
 
         if (!this.hasEmptyRules && this.isProject && this.rulesHaveBranches) {
           this.invalidBranches = await getInvalidBranches({
@@ -493,22 +499,12 @@ export default {
     updatePolicyApproversFromYaml() {
       this.existingApprovers = mapYamlApproversActionsFormatToEditorFormat(this.approversActions);
     },
-    invalidForRuleMode() {
-      const { rules } = this.policy;
-      const invalidApprovers = this.existingApprovers.some((existingApprovers, index) =>
+    verifyActions() {
+      const hasInvalidApprovers = this.existingApprovers.some((existingApprovers, index) =>
         approversOutOfSync(this.approversActions[index], existingApprovers),
       );
 
-      return (
-        invalidApprovers ||
-        invalidScanners(rules) ||
-        invalidSeverities(rules) ||
-        invalidVulnerabilitiesAllowed(rules) ||
-        invalidVulnerabilityStates(rules) ||
-        invalidBranchType(rules) ||
-        invalidVulnerabilityAge(rules) ||
-        invalidVulnerabilityAttributes(rules)
-      );
+      return { ...this.parsingError, actions: hasInvalidApprovers };
     },
     shouldDisableActionSelector(filter) {
       if (filter === WARN_TYPE) {
@@ -538,11 +534,9 @@ export default {
   <editor-layout
     v-if="!disableScanPolicyUpdate"
     :custom-save-button-text="$options.i18n.createMergeRequest"
-    :has-parsing-error="hasParsingError"
     :is-editing="isEditing"
     :is-removing-policy="isDeleting"
     :is-updating-policy="isCreating"
-    :parsing-error="$options.i18n.PARSING_ERROR_MESSAGE"
     :policy="policy"
     :yaml-editor-value="yamlEditorValue"
     @remove-policy="handleModifyPolicy($options.SECURITY_POLICY_ACTIONS.REMOVE)"
@@ -553,7 +547,11 @@ export default {
     @update-editor-mode="changeEditorMode"
   >
     <template #rules>
-      <dim-disable-container :disabled="hasParsingError">
+      <disabled-section
+        :disabled="parsingError.rules"
+        :error="$options.i18n.RULE_SECTION_DISABLE_ERROR"
+        data-testid="disabled-rules"
+      >
         <template #title>
           <h4>{{ $options.RULES_LABEL }}</h4>
         </template>
@@ -592,10 +590,14 @@ export default {
             </gl-button>
           </span>
         </div>
-      </dim-disable-container>
+      </disabled-section>
     </template>
     <template #actions>
-      <dim-disable-container data-testid="actions-section" :disabled="hasParsingError">
+      <disabled-section
+        :disabled="parsingError.actions"
+        :error="$options.i18n.ACTION_SECTION_DISABLE_ERROR"
+        data-testid="disabled-actions"
+      >
         <template #title>
           <h4>{{ $options.i18n.ACTIONS_LABEL }}</h4>
         </template>
@@ -656,27 +658,27 @@ export default {
           :filters="$options.ACTION_LISTBOX_ITEMS"
           @select="addAction"
         />
-      </dim-disable-container>
+      </disabled-section>
     </template>
     <template #settings>
-      <dim-disable-container :disabled="hasParsingError">
+      <disabled-section
+        :disabled="parsingError.settings"
+        :error="$options.i18n.SETTING_SECTION_DISABLE_ERROR"
+        data-testid="disabled-settings"
+      >
         <template #title>
           <h4>{{ $options.i18n.settingsTitle }}</h4>
         </template>
 
-        <template #disabled>
-          <div class="gl-rounded-base gl-bg-subtle gl-p-6"></div>
-        </template>
-
         <settings-section :rules="policy.rules" :settings="settings" @changed="updateSettings" />
-      </dim-disable-container>
+      </disabled-section>
       <fallback-and-edge-cases-section
+        :has-error="parsingError.fallback"
         :policy="policy"
-        :disabled="hasParsingError"
-        @changed="handleUpdateProperty"
+        @changed="updateFallbackAndEdgeCases"
       />
       <gl-alert
-        v-if="!hasParsingError && !hasRequireApprovalAction"
+        v-if="showAlert"
         data-testid="empty-actions-alert"
         class="gl-mb-5"
         :title="settingAlert.title"

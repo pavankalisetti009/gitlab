@@ -4,6 +4,8 @@ import { TYPENAME_GROUP, TYPENAME_PROJECT } from '~/graphql_shared/constants';
 export const actionId = 'action_0';
 export const ruleId = 'rule_0';
 
+export const invalidYaml = 'variable: true:';
+
 export const unsupportedManifest = `---
 name: This policy has an unsupported attribute
 enabled: false

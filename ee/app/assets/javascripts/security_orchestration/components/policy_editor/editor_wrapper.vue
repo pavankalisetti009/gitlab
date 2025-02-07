@@ -71,7 +71,7 @@ export default {
   data() {
     return {
       currentAssignedPolicyProject: this.assignedPolicyProject,
-      isActiveRuleMode: true,
+      isRuleMode: true,
       error: '',
       errorMessages: [],
       errorSources: [],
@@ -116,7 +116,7 @@ export default {
       // https://gitlab.com/gitlab-org/gitlab/-/issues/486021
       const newErrorSources = [];
       // Emit error for alert
-      if (this.isActiveRuleMode && error.cause?.length) {
+      if (this.isRuleMode && error.cause?.length) {
         const ACTION_ERROR_FIELD = 'actions';
 
         const actionErrors = error.cause.filter((cause) => ACTION_ERROR_FIELD === cause.field);
@@ -139,11 +139,11 @@ export default {
       // Process error to pass to specific component
       this.errorSources = [...newErrorSources, ...parseError(error)];
     },
-    async handleSave({ action, extraMergeRequestInput = null, policy, isActiveRuleMode = false }) {
+    async handleSave({ action, extraMergeRequestInput = null, policy, isRuleMode = false }) {
       this.extraMergeRequestInput = extraMergeRequestInput;
       this.policyModificationAction = action || this.policyActionName;
       this.policy = policy;
-      this.isActiveRuleMode = isActiveRuleMode;
+      this.isRuleMode = isRuleMode;
 
       this.setError('');
       this.setLoadingFlag(true);
