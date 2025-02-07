@@ -11,7 +11,7 @@ DETAILS:
 
 This tutorial shows you how to configure and run your first CI/CD pipeline in GitLab.
 
-If you are already familiar with [basic CI/CD concepts](../index.md), you can learn about
+If you are already familiar with [basic CI/CD concepts](../_index.md), you can learn about
 common keywords in [Tutorial: Create a complex pipeline](tutorial.md).
 
 ## Prerequisites
@@ -144,7 +144,7 @@ Here are some tips to get started working with the `.gitlab-ci.yml` file.
 
 For the complete `.gitlab-ci.yml` syntax, see the full [CI/CD YAML syntax reference](../yaml/_index.md).
 
-- Use the [pipeline editor](../pipeline_editor/index.md) to edit your `.gitlab-ci.yml` file.
+- Use the [pipeline editor](../pipeline_editor/_index.md) to edit your `.gitlab-ci.yml` file.
 - Each job contains a script section and belongs to a stage:
   - [`stage`](../yaml/_index.md#stage) describes the sequential execution of jobs.
     If there are runners available, jobs in a single stage run in parallel.

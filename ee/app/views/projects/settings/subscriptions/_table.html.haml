@@ -24,7 +24,7 @@
           .form-group
             = f.label :upstream_project_path do
               = _("Project path")
-              = link_to sprite_icon('question-o'), help_page_path('ci/pipelines/index.md', anchor: 'trigger-a-pipeline-when-an-upstream-project-is-rebuilt-deprecated'), target: '_blank', rel: 'noopener noreferrer'
+              = link_to sprite_icon('question-o'), help_page_path('ci/pipelines/_index.md', anchor: 'trigger-a-pipeline-when-an-upstream-project-is-rebuilt-deprecated'), target: '_blank', rel: 'noopener noreferrer'
             = f.text_field :upstream_project_path, class: "form-control", data: { testid: "upstream-project-path-field" }
           .gl-flex.gl-gap-3.gl-mt-3
             = render Pajamas::ButtonComponent.new(variant: :confirm, type: :submit, button_options: { data: { testid: "subscribe-button" } }) do

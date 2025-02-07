@@ -19,7 +19,7 @@ generates on-demand, short-lived credentials without needing to store any secret
 
 To get started, configure OpenID Connect (OIDC) for identity federation between GitLab
 and Google Cloud. For more information on using OIDC with GitLab, read
-[Connect to cloud services](../index.md).
+[Connect to cloud services](../_index.md).
 
 This tutorial assumes you have a Google Cloud account and a Google Cloud project.
 Your account must have at least the **Workload Identity Pool Admin** permission
@@ -68,7 +68,7 @@ inside the Workload Identity Pool created in the previous step, using the follow
   - The address must not end in a trailing slash.
 - **Provider attributes mapping**: Create the following mappings, where `attribute.X` is the
   name of the attribute to be included as a claim in the Google token, and `assertion.X`
-  is the value to extract from the [GitLab claim](../index.md#how-it-works):
+  is the value to extract from the [GitLab claim](../_index.md#how-it-works):
 
   | Attribute (on Google) | Assertion (from GitLab) |
   | --- | --- |

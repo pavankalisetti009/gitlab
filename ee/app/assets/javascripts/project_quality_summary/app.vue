@@ -105,7 +105,7 @@ export default {
   i18n,
   testRunsHelpPath: helpPagePath('ci/testing/unit_test_reports'),
   codeQualityHelpPath: helpPagePath('ci/testing/code_quality'),
-  coverageHelpPath: helpPagePath('ci/testing/test_coverage_visualization'),
+  coverageHelpPath: helpPagePath('ci/testing/test_coverage_visualization/_index'),
 };
 </script>
 <template>

@@ -34,7 +34,7 @@ and the product documentation refers to it as the `.gitlab-ci.yml` file or the C
 
 For more information, see:
 
-- [Tutorial: Create your first `.gitlab-ci.yml` file](quick_start/index.md)
+- [Tutorial: Create your first `.gitlab-ci.yml` file](quick_start/_index.md)
 - [The CI/CD YAML syntax reference](yaml/_index.md), which lists all possible keywords
 - <i class="fa fa-youtube-play youtube" aria-hidden="true"></i> [Continuous Integration overview](https://www.youtube-nocookie.com/embed/eyr5YnkWq_I)
 - <i class="fa fa-youtube-play youtube" aria-hidden="true"></i> [Continuous Delivery overview](https://www.youtube-nocookie.com/embed/M7rBDZYsx8U)
@@ -74,9 +74,9 @@ In your pipeline, you can integrate with a wide range of tools and platforms.
 
 For more information, see:
 
-- [Pipeline editor](pipeline_editor/index.md), which you use to edit your configuration
-- [Visualize your pipeline](pipeline_editor/index.md#visualize-ci-configuration)
-- [Pipelines](pipelines/index.md)
+- [Pipeline editor](pipeline_editor/_index.md), which you use to edit your configuration
+- [Visualize your pipeline](pipeline_editor/_index.md#visualize-ci-configuration)
+- [Pipelines](pipelines/_index.md)
 
 ## Step 4: Use CI/CD variables as part of jobs
 
@@ -115,4 +115,4 @@ GitLab also has CI/CD component templates for common tasks and integrations.
 
 For more information, see:
 
-- [CI/CD components](components/index.md)
+- [CI/CD components](components/_index.md)

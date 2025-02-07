@@ -19,9 +19,9 @@ Pipelines are composed of:
 
 - [Global YAML keywords](../yaml/_index.md#global-keywords) that control the overall
   behavior of the project's pipelines.
-- [Jobs](../jobs/index.md) that execute commands to accomplish a task. For example,
+- [Jobs](../jobs/_index.md) that execute commands to accomplish a task. For example,
   a job could compile, test, or deploy code. Jobs run independently from each other,
-  and are executed by [runners](../runners/index.md).
+  and are executed by [runners](../runners/_index.md).
 - Stages, which define how to group jobs together. Stages run in sequence, while the jobs
   in a stage run in parallel. For example, an early stage could have jobs that lint and compile
   code, while later stages could have jobs that test and deploy code. If all jobs in a stage succeed,
@@ -36,7 +36,7 @@ A small pipeline could consist of three stages, executed in the following order:
 - A `deploy` stage, with a job called `deploy-to-production`. This job would only run
   if both jobs in the `test` stage started and completed successfully.
 
-To get started with your first pipeline, see [Create and run your first GitLab CI/CD pipeline](../quick_start/index.md).
+To get started with your first pipeline, see [Create and run your first GitLab CI/CD pipeline](../quick_start/_index.md).
 
 ## Types of pipelines
 
@@ -62,7 +62,7 @@ Pipelines can be configured in many different ways:
 
 Pipelines and their component jobs and stages are defined with [YAML keywords](../yaml/_index.md)
 in the CI/CD pipeline configuration file for each project. When editing CI/CD configuration
-in GitLab, you should use the [pipeline editor](../pipeline_editor/index.md).
+in GitLab, you should use the [pipeline editor](../pipeline_editor/_index.md).
 
 You can also configure specific aspects of your pipelines through the GitLab UI:
 
@@ -273,7 +273,7 @@ DETAILS:
 
 WARNING:
 This feature was [deprecated](https://gitlab.com/gitlab-org/gitlab/-/issues/501460) in GitLab 17.6
-and is planned for removal in 19.0. Use [CI/CD jobs with pipeline trigger tokens](../triggers/index.md#use-a-cicd-job) instead.
+and is planned for removal in 19.0. Use [CI/CD jobs with pipeline trigger tokens](../triggers/_index.md#use-a-cicd-job) instead.
 This is a breaking change.
 
 You can set up your project to automatically trigger a pipeline based on tags in a different project.
@@ -466,7 +466,7 @@ GitLab provides API endpoints to:
 - Perform basic functions. For more information, see [Pipelines API](../../api/pipelines.md).
 - Maintain pipeline schedules. For more information, see [Pipeline schedules API](../../api/pipeline_schedules.md).
 - Trigger pipeline runs. For more information, see:
-  - [Triggering pipelines through the API](../triggers/index.md).
+  - [Triggering pipelines through the API](../triggers/_index.md).
   - [Pipeline triggers API](../../api/pipeline_triggers.md).
 
 ## Ref specs for runners

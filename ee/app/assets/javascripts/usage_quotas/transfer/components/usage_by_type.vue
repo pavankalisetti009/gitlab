@@ -68,7 +68,7 @@ export default {
           label: __('Artifacts'),
           description: s__('UsageQuota|Pipeline artifacts and job artifacts, created with CI/CD.'),
           icon: 'disk',
-          helpPath: helpPagePath('ci/caching/index', {
+          helpPath: helpPagePath('ci/caching/_index', {
             anchor: 'artifacts',
           }),
           humanSize: numberToHumanSize(this.egressTypesCombined[EGRESS_TYPE_ARTIFACTS]),

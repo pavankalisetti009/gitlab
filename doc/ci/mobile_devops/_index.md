@@ -20,7 +20,7 @@ GitLab Mobile DevOps integrates key mobile development capabilities into the Git
 
 ## Build environments
 
-For complete control over the build environment, you can use [GitLab-hosted runners](../runners/index.md),
+For complete control over the build environment, you can use [GitLab-hosted runners](../runners/_index.md),
 or set up [self-managed runners](https://docs.gitlab.com/runner/#use-self-managed-runners).
 
 ## Code signing
@@ -29,7 +29,7 @@ All Android and iOS apps must be securely signed before being distributed throug
 the various app stores. Signing ensures that applications haven't been tampered with
 before reaching a user's device.
 
-With [project-level secure files](../secure_files/index.md), you can store the following
+With [project-level secure files](../secure_files/_index.md), you can store the following
 in GitLab, so that they can be used to securely sign apps in CI/CD builds:
 
 - Keystores

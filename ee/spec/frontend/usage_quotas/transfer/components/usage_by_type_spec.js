@@ -136,7 +136,7 @@ describe('UsageByType', () => {
       describe('Transfer type column', () => {
         describe.each`
           rowIndex | expectedIcon                 | expectedLabelAndDescription                                                          | expectedHelpPath
-          ${0}     | ${'disk'}                    | ${'Artifacts Pipeline artifacts and job artifacts, created with CI/CD.'}             | ${'/help/ci/caching/index#artifacts'}
+          ${0}     | ${'disk'}                    | ${'Artifacts Pipeline artifacts and job artifacts, created with CI/CD.'}             | ${'/help/ci/caching/_index#artifacts'}
           ${1}     | ${'infrastructure-registry'} | ${'Repository Git repository.'}                                                      | ${'/help/user/project/repository/repository_size'}
           ${2}     | ${'package'}                 | ${'Packages Code packages and container images.'}                                    | ${'/help/user/packages/package_registry/index'}
           ${3}     | ${'disk'}                    | ${'Registry Gitlab-integrated Docker Container Registry for storing Docker Images.'} | ${'/help/user/packages/container_registry/reduce_container_registry_storage'}

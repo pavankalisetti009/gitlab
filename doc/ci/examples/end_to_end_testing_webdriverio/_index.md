@@ -1,11 +1,11 @@
 ---
-redirect_to: '../index.md'
+redirect_to: '../_index.md'
 remove_date: '2025-04-27'
 ---
 
 <!-- markdownlint-disable -->
 
-This document was removed. You can check other [CI/CD examples](../index.md).
+This document was removed. You can check other [CI/CD examples](../_index.md).
 
 <!-- This redirect file can be deleted after <2025-04-27>. -->
 <!-- Redirects that point to other docs in the same project expire in three months. -->

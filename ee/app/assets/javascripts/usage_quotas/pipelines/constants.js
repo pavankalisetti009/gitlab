@@ -58,4 +58,4 @@ export const LABEL_BUY_ADDITIONAL_MINUTES = s__('UsageQuota|Buy additional compu
 export const LABEL_CI_MINUTES_DISABLED = s__(
   'UsageQuota|No compute usage data because %{linkStart}Instance runners%{linkEnd} are disabled, or there are no projects in this group.',
 );
-export const SHARED_RUNNERS_DOC_LINK = helpPagePath('ci/runners/index.md');
+export const SHARED_RUNNERS_DOC_LINK = helpPagePath('ci/runners/_index.md');

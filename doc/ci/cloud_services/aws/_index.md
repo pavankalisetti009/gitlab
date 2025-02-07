@@ -14,7 +14,7 @@ WARNING:
 and is scheduled to be removed in GitLab 17.0. Use [ID tokens](../../yaml/_index.md#id_tokens) instead.
 
 In this tutorial, we'll show you how to use a GitLab CI/CD job with a JSON web token (JWT) to retrieve temporary credentials from AWS without needing to store secrets.
-To do this, you must configure OpenID Connect (OIDC) for ID federation between GitLab and AWS. For background and requirements for integrating GitLab using OIDC, see [Connect to cloud services](../index.md).
+To do this, you must configure OpenID Connect (OIDC) for ID federation between GitLab and AWS. For background and requirements for integrating GitLab using OIDC, see [Connect to cloud services](../_index.md).
 
 To complete this tutorial:
 
@@ -39,7 +39,7 @@ After you create the identity provider, configure a [web identity role](https://
 
 You can create a [custom trust policy](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-custom.html)
 for the role to limit authorization to a specific group, project, branch, or tag.
-For the full list of supported filtering types, see [Connect to cloud services](../index.md#configure-a-conditional-role-with-oidc-claims).
+For the full list of supported filtering types, see [Connect to cloud services](../_index.md#configure-a-conditional-role-with-oidc-claims).
 
 ```json
 {
@@ -110,7 +110,7 @@ Not authorized to perform sts:AssumeRoleWithWebIdentity
 It can occur for multiple reasons:
 
 - The cloud administrator has not configured the project to use OIDC with GitLab.
-- The role is restricted from being run on the branch or tag. See [configure a conditional role](../index.md).
+- The role is restricted from being run on the branch or tag. See [configure a conditional role](../_index.md).
 - `StringEquals` is used instead of `StringLike` when using a wildcard condition. See [related issue](https://gitlab.com/guided-explorations/aws/configure-openid-connect-in-aws/-/issues/2#note_852901934).
 
 ### `Could not connect to openid configuration of provider` error

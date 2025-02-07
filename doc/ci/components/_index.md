@@ -575,7 +575,7 @@ To access the CI/CD Catalog and view the published components that are available
 1. Select **Explore**.
 1. Select **CI/CD Catalog**.
 
-Alternatively, if you are already in the [pipeline editor](../pipeline_editor/index.md)
+Alternatively, if you are already in the [pipeline editor](../pipeline_editor/_index.md)
 in your project, you can select **CI/CD Catalog**.
 
 Visibility of components in the CI/CD catalog follows the component source project's
@@ -708,14 +708,14 @@ Any existing CI/CD template that you use in projects by using the `include:` syn
 can be converted to a CI/CD component:
 
 1. Decide if you want the component to be grouped with other components as part of
-   an existing [component project](index.md#component-project), or [create a new component project](#create-a-component-project).
-1. Create a YAML file in the component project according to the [directory structure](index.md#directory-structure).
+   an existing [component project](#component-project), or [create a new component project](#create-a-component-project).
+1. Create a YAML file in the component project according to the [directory structure](#directory-structure).
 1. Copy the content of the original template YAML file into the new component YAML file.
 1. Refactor the new component's configuration to:
    - Follow the guidance on [writing a component](#write-a-component).
    - Improve the configuration, for example by enabling [merge request pipelines](../pipelines/merge_request_pipelines.md)
      or making it [more efficient](../pipelines/pipeline_efficiency.md).
-1. Leverage the `.gitlab-ci.yml` in the components repository to [test changes to the component](index.md#test-the-component).
+1. Leverage the `.gitlab-ci.yml` in the components repository to [test changes to the component](#test-the-component).
 1. Tag and [release the component](#publish-a-new-release).
 
 You can learn more by following a practical example for [migrating the Go CI/CD template to CI/CD component](examples.md#cicd-component-migration-example-go).
@@ -741,7 +741,7 @@ To mirror a GitLab.com component in your GitLab Self-Managed instance:
    for the component project mirror because mirroring repositories does not copy the description.
 1. [Set the self-hosted component project as a catalog resource](#set-a-component-project-as-a-catalog-project).
 1. Publish [a new release](../../user/project/releases/index.md) in the self-hosted component project by
-   [running a pipeline](../pipelines/index.md#run-a-pipeline-manually) for a tag (usually the latest tag).
+   [running a pipeline](../pipelines/_index.md#run-a-pipeline-manually) for a tag (usually the latest tag).
 
 ## CI/CD component security best practices
 
