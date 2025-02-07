@@ -6,6 +6,7 @@ import { createAlert, VARIANT_INFO } from '~/alert';
 import { __ } from '~/locale';
 import AiCommonSettings from '../components/ai_common_settings.vue';
 import CodeSuggestionsConnectionForm from '../components/code_suggestions_connection_form.vue';
+import DuoExpandedLoggingForm from '../components/duo_expanded_logging_form.vue';
 import AiModelsForm from '../components/ai_models_form.vue';
 import AiGatewayUrlInputForm from '../components/ai_gateway_url_input_form.vue';
 import updateAiSettingsMutation from '../../graphql/update_ai_settings.mutation.graphql';
@@ -17,6 +18,7 @@ export default {
     AiGatewayUrlInputForm,
     AiModelsForm,
     CodeSuggestionsConnectionForm,
+    DuoExpandedLoggingForm,
   },
   i18n: {
     successMessage: __('Application settings saved successfully.'),
@@ -30,6 +32,7 @@ export default {
     'toggleBetaModelsPath',
     'canManageSelfHostedModels',
     'aiGatewayUrl',
+    'enabledExpandedLogging',
   ],
   props: {
     redirectPath: {
@@ -49,6 +52,7 @@ export default {
       disabledConnection: this.disabledDirectConnectionMethod,
       aiModelsEnabled: this.betaSelfHostedModelsEnabled,
       aiGatewayUrlInput: this.aiGatewayUrl,
+      expandedLogging: this.enabledExpandedLogging,
     };
   },
   computed: {
@@ -56,7 +60,8 @@ export default {
       return (
         this.disabledConnection !== this.disabledDirectConnectionMethod ||
         this.hasAiModelsFormChanged ||
-        this.hasAiGatewayUrlChanged
+        this.hasAiGatewayUrlChanged ||
+        this.hasExpandedAiLoggingChanged
       );
     },
     hasAiModelsFormChanged() {
@@ -64,6 +69,9 @@ export default {
     },
     hasAiGatewayUrlChanged() {
       return this.aiGatewayUrlInput !== this.aiGatewayUrl;
+    },
+    hasExpandedAiLoggingChanged() {
+      return this.expandedLogging !== this.enabledExpandedLogging;
     },
   },
   methods: {
@@ -79,6 +87,7 @@ export default {
           duo_availability: duoAvailability,
           instance_level_ai_beta_features_enabled: experimentFeaturesEnabled,
           disabled_direct_code_suggestions: this.disabledConnection,
+          enabled_expanded_logging: this.expandedLogging,
         });
 
         if (this.hasAiModelsFormChanged) {
@@ -134,6 +143,9 @@ export default {
     onAiGatewayUrlChange(value) {
       this.aiGatewayUrlInput = value;
     },
+    onExpandedLoggingChange(value) {
+      this.expandedLogging = value;
+    },
     onError(error) {
       createAlert({
         message: this.$options.i18n.errorMessage,
@@ -152,8 +164,11 @@ export default {
   >
     <template #ai-common-settings-bottom>
       <code-suggestions-connection-form v-if="duoProVisible" @change="onConnectionFormChange" />
-      <ai-models-form v-if="canManageSelfHostedModels" @change="onAiModelsFormChange" />
-      <ai-gateway-url-input-form v-if="canManageSelfHostedModels" @change="onAiGatewayUrlChange" />
+      <template v-if="canManageSelfHostedModels">
+        <ai-models-form @change="onAiModelsFormChange" />
+        <duo-expanded-logging-form @change="onExpandedLoggingChange" />
+        <ai-gateway-url-input-form @change="onAiGatewayUrlChange" />
+      </template>
     </template>
   </ai-common-settings>
 </template>

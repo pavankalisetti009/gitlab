@@ -15,6 +15,7 @@ import AiAdminSettings from 'ee/ai/settings/pages/ai_admin_settings.vue';
 import waitForPromises from 'helpers/wait_for_promises';
 import { AVAILABILITY_OPTIONS } from 'ee/ai/settings/constants';
 import updateAiSettingsMutation from 'ee/ai/graphql/update_ai_settings.mutation.graphql';
+import DuoExpandedLoggingForm from 'ee/ai/settings/components/duo_expanded_logging_form.vue';
 
 jest.mock('~/rest_api');
 jest.mock('~/lib/utils/url_utility');
@@ -55,6 +56,7 @@ const createComponent = async ({
       disabledDirectConnectionMethod: false,
       betaSelfHostedModelsEnabled: false,
       canManageSelfHostedModels: true,
+      enabledExpandedLogging: false,
       toggleBetaModelsPath,
       aiGatewayUrl,
       ...provide,
@@ -69,6 +71,7 @@ const findCodeSuggestionsConnectionForm = () =>
   wrapper.findComponent(CodeSuggestionsConnectionForm);
 const findAiModelsForm = () => wrapper.findComponent(AiModelsForm);
 const findAiGatewayUrlInputForm = () => wrapper.findComponent(AiGtewayUrlInputForm);
+const findDuoExpandedLoggingForm = () => wrapper.findComponent(DuoExpandedLoggingForm);
 
 describe('AiAdminSettings', () => {
   beforeEach(async () => {
@@ -100,6 +103,7 @@ describe('AiAdminSettings', () => {
         duo_availability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
         instance_level_ai_beta_features_enabled: false,
         disabled_direct_code_suggestions: false,
+        enabled_expanded_logging: false,
       });
     });
 
@@ -195,6 +199,10 @@ describe('AiAdminSettings', () => {
       it('renders AI gateway URL input form', () => {
         expect(findAiGatewayUrlInputForm().exists()).toBe(true);
       });
+
+      it('renders the expanded logging form', () => {
+        expect(findDuoExpandedLoggingForm().exists()).toBe(true);
+      });
     });
 
     describe('when canManageSelfHostedModels is false', () => {
@@ -208,6 +216,10 @@ describe('AiAdminSettings', () => {
 
       it('does not render AI gateway URL input form', () => {
         expect(findAiGatewayUrlInputForm().exists()).toBe(false);
+      });
+
+      it('does not render the expanded logging form', () => {
+        expect(findDuoExpandedLoggingForm().exists()).toBe(false);
       });
     });
   });
@@ -247,6 +259,18 @@ describe('AiAdminSettings', () => {
 
     it('updates hasParentFormChanged when the AI gateway url value changes', async () => {
       await findAiGatewayUrlInputForm().vm.$emit('change', true);
+
+      expect(findAiCommonSettings().props('hasParentFormChanged')).toBe(true);
+    });
+  });
+
+  describe('onExpandedLoggingFormChanged', () => {
+    beforeEach(async () => {
+      await createComponent();
+    });
+
+    it('updates hasParentFormChanged when Duo expanded logging form changes', async () => {
+      await findDuoExpandedLoggingForm().vm.$emit('change', true);
 
       expect(findAiCommonSettings().props('hasParentFormChanged')).toBe(true);
     });
