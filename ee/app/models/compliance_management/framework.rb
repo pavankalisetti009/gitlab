@@ -53,6 +53,8 @@ module ComplianceManagement
       query.present? ? fuzzy_search(query, [:name], use_minimum_char_limit: true) : all
     end
 
+    def filename = "compliance-framework-#{name.parameterize}-#{id}"
+
     private
 
     def namespace_is_root_level_group
