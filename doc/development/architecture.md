@@ -553,7 +553,7 @@ You can use it to sync deployments onto your Kubernetes cluster.
 #### GitLab Pages
 
 - Configuration:
-  - [Omnibus](../administration/pages/index.md)
+  - [Omnibus](../administration/pages/_index.md)
   - [Charts](https://gitlab.com/gitlab-org/charts/gitlab/-/issues/37)
   - [Source](../install/installation.md#install-gitlab-pages)
   - [GDK](https://gitlab.com/gitlab-org/gitlab-development-kit/blob/main/doc/howto/pages.md)
@@ -859,7 +859,7 @@ Starting with GitLab 13.0, Puma is the default web server.
 #### LDAP Authentication
 
 - Configuration:
-  - [Omnibus](../administration/auth/ldap/index.md)
+  - [Omnibus](../administration/auth/ldap/_index.md)
   - [Charts](https://docs.gitlab.com/charts/charts/globals.html#ldap)
   - [Source](https://gitlab.com/gitlab-org/gitlab/-/blob/master/config/gitlab.yml.example)
   - [GDK](https://gitlab.com/gitlab-org/gitlab-development-kit/blob/main/doc/howto/ldap.md)

@@ -365,4 +365,4 @@ To delete AWS S3 streaming destinations to a top-level group:
 
 ## Related topics
 
-- [Audit event streaming for instances](../../administration/audit_event_streaming/index.md)
+- [Audit event streaming for instances](../../administration/audit_event_streaming/_index.md)

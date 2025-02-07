@@ -66,7 +66,7 @@ Prerequisites:
   create a [personal access token for GitHub](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)
   with the `repo` scope. If 2FA is enabled, this personal access
   token serves as your GitHub password.
-- [GitLab Silent Mode](../../../../administration/silent_mode/index.md) is not enabled.
+- [GitLab Silent Mode](../../../../administration/silent_mode/_index.md) is not enabled.
 
 1. On the left sidebar, select **Search or go to** and find your project.
 1. Select **Settings > Repository**.
