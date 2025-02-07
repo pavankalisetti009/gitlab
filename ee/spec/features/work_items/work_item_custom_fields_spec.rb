@@ -40,6 +40,27 @@ RSpec.describe 'Work Item Custom Fields', :js, feature_category: :team_planning 
       end
     end
 
+    it 'displays single select custom field correctly' do
+      visit project_work_item_path(project, work_item)
+      wait_for_requests
+
+      within_testid('work-item-custom-field') do
+        expect(page).to have_text('Single select custom field label')
+        expect(page).to have_text('Option 1')
+      end
+    end
+
+    it 'displays multi select custom field correctly' do
+      visit project_work_item_path(project, work_item)
+      wait_for_requests
+
+      within_testid('work-item-custom-field') do
+        expect(page).to have_text('Multi select custom field label')
+        expect(page).to have_text('Option 1')
+        expect(page).to have_text('Option 2')
+      end
+    end
+
     it 'displays fields as read-only for users without update permissions' do
       project.add_guest(user)
       visit project_work_item_path(project, work_item)
