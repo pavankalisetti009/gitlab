@@ -3,6 +3,12 @@
 module Search
   module Zoekt
     class CallbackService
+      LAST_INDEXED_DEBOUNCE_PERIOD = 30.seconds
+
+      def self.execute(...)
+        new(...).execute
+      end
+
       def initialize(node, params)
         @node = node
         @params = params.with_indifferent_access
@@ -12,10 +18,6 @@ module Search
         return unless task
 
         params[:success] ? process_success : process_failure
-      end
-
-      def self.execute(...)
-        new(...).execute
       end
 
       private
@@ -45,9 +47,12 @@ module Search
             repo.index_file_count = index_file_count if index_file_count
             repo.retries_left = Repository.columns_hash['retries_left'].default
             index = repo.zoekt_index
-            index.last_indexed_at = repo.indexed_at if repo.indexed_at > index.last_indexed_at
+            if repo.indexed_at > index.last_indexed_at + LAST_INDEXED_DEBOUNCE_PERIOD
+              index.last_indexed_at = repo.indexed_at
+              index.save!
+            end
+
             repo.save!
-            index.save!
           end
 
           task.done!
