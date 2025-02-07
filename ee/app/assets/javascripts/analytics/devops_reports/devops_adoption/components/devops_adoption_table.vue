@@ -204,6 +204,7 @@ export default {
           :key="col.key"
           :data-testid="col.testId"
           :enabled="Boolean(item.latestSnapshot[col.key])"
+          :name="col.tooltip"
           with-text
         />
       </template>
