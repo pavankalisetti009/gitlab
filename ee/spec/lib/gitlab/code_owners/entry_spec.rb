@@ -42,17 +42,7 @@ RSpec.describe Gitlab::CodeOwners::Entry, feature_category: :source_code_managem
     let(:project) { build(:project) }
 
     it 'returns the unique roles in an array' do
-      expect(entry.role_approvers(project)).to match_array([Gitlab::Access::DEVELOPER, Gitlab::Access::MAINTAINER])
-    end
-
-    context 'when the codeowner_role_approvers feature flag is disabled' do
-      before do
-        stub_feature_flags(codeowner_role_approvers: false)
-      end
-
-      it 'returns an empty array' do
-        expect(entry.role_approvers(project)).to eq([])
-      end
+      expect(entry.roles).to match_array([Gitlab::Access::DEVELOPER, Gitlab::Access::MAINTAINER])
     end
   end
 

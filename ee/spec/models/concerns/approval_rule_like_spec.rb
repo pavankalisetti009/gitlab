@@ -432,18 +432,6 @@ RSpec.describe ApprovalRuleLike, feature_category: :source_code_management do
 
           expect(rule.approvers).to contain_exactly(user1)
         end
-
-        context 'when feature flag is disabled' do
-          before do
-            stub_feature_flags(codeowner_role_approvers: false)
-          end
-
-          it 'contains no approvers' do
-            rule = subject.class.find(subject.id)
-
-            expect(rule.approvers).to be_empty
-          end
-        end
       end
     end
 
@@ -462,16 +450,6 @@ RSpec.describe ApprovalRuleLike, feature_category: :source_code_management do
 
       it 'returns false for user not within the selected roles' do
         expect(rule.approvers_include_user?(user2)).to be_falsey
-      end
-
-      context 'when feature flag is disabled' do
-        before do
-          stub_feature_flags(codeowner_role_approvers: false)
-        end
-
-        it 'returns false for a role user' do
-          expect(rule.approvers_include_user?(user1)).to be_falsey
-        end
       end
     end
 

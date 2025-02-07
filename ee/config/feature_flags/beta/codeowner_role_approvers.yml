@@ -1,9 +1,0 @@
----
-name: codeowner_role_approvers
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/282438
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/165537
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/497504
-milestone: '17.7'
-group: group::source code
-type: beta
-default_enabled: true
