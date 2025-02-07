@@ -212,7 +212,7 @@ You can change the order of designs by dragging them to a new position.
 
 ## Add a comment to a design
 
-You can start [discussions](../../discussions/index.md) on uploaded designs. To do so:
+You can start [discussions](../../discussions/_index.md) on uploaded designs. To do so:
 
 1. Go to an issue.
 1. Select the design.

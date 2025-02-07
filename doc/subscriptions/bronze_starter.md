@@ -36,7 +36,7 @@ the tiers are no longer mentioned in GitLab documentation:
 - Issues:
   - [Multiple assignees for issues](../user/project/issues/multiple_assignees_for_issues.md)
   - [Issue weights](../user/project/issues/issue_weight.md)
-  - Issue histories contain [changes to issue description](../user/discussions/index.md#view-description-change-history)
+  - Issue histories contain [changes to issue description](../user/discussions/_index.md#view-description-change-history)
   - [Adding an issue to an iteration](../user/project/issues/managing_issues.md#add-an-issue-to-an-iteration)
 - [Iterations](../user/group/iterations/index.md)
 - [Kerberos integration](../integration/kerberos.md)

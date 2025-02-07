@@ -3,7 +3,7 @@
 = render ::Layouts::PageHeadingComponent.new(_('Domain Verification')) do |c|
   - c.with_description do
     = s_('DomainVerification|The following domains are configured for projects in this group. Users with email addresses that match a verified domain do not need to confirm their account.')
-    = link_to s_('DomainVerification|How do I configure a domain?'), help_page_path('user/enterprise_user/index.md', anchor: 'verified-domains-for-groups')
+    = link_to s_('DomainVerification|How do I configure a domain?'), help_page_path('user/enterprise_user/_index.md', anchor: 'verified-domains-for-groups')
 
 = render ::Layouts::CrudComponent.new(_('Domains'),
   icon: 'link',

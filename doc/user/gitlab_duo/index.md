@@ -42,7 +42,7 @@ To improve your workflow while planning work, try these features:
 - [Issue Description Generation](../project/issues/managing_issues.md#populate-an-issue-with-issue-description-generation): Generate a more in-depth issue description based on a short summary.
   <i class="fa fa-youtube-play youtube" aria-hidden="true"></i> [Watch overview](https://www.youtube.com/watch?v=-BWBQat7p5M)
   <!-- Video published on 2024-12-18 -->
-- [Discussion Summary](../discussions/index.md#summarize-issue-discussions-with-duo-chat): Summarize lengthy conversations in an issue.
+- [Discussion Summary](../discussions/_index.md#summarize-issue-discussions-with-duo-chat): Summarize lengthy conversations in an issue.
   <i class="fa fa-youtube-play youtube" aria-hidden="true"></i> [Watch overview](https://www.youtube.com/watch?v=IcdxLfTIUgc)
   <!-- Video published on 2024-03-28 -->
 
@@ -103,7 +103,7 @@ To improve your security, try these features:
 | [Self-Hosted Models](../../administration/self_hosted_models/index.md) | Ultimate | GitLab Duo Enterprise | Self-managed | Beta |
 | [GitLab Duo Workflow](../duo_workflow/index.md) | Ultimate | - | GitLab.com | Experiment |
 | [Issue Description Generation](../project/issues/managing_issues.md#populate-an-issue-with-issue-description-generation) | Ultimate | GitLab Duo Enterprise | GitLab.com | Experiment |
-| [Discussion Summary](../discussions/index.md#summarize-issue-discussions-with-duo-chat) | Ultimate | GitLab Duo Enterprise | GitLab.com, Self-managed, GitLab Dedicated | General availability |
+| [Discussion Summary](../discussions/_index.md#summarize-issue-discussions-with-duo-chat) | Ultimate | GitLab Duo Enterprise | GitLab.com, Self-managed, GitLab Dedicated | General availability |
 | [Code Suggestions](../project/repository/code_suggestions/index.md) | Premium, Ultimate | GitLab Duo Pro or Enterprise | GitLab.com, Self-managed, GitLab Dedicated | General availability |
 | [Code Explanation](../project/repository/code_explain.md) | Premium, Ultimate | GitLab Duo Pro or Enterprise | GitLab.com, Self-managed, GitLab Dedicated | General availability |
 | [Test Generation](../gitlab_duo_chat/examples.md#write-tests-in-the-ide) | Premium, Ultimate | GitLab Duo Pro or Enterprise | GitLab.com, Self-managed, GitLab Dedicated | General availability |

@@ -41,7 +41,7 @@ Do not use Latin abbreviations. Use **and** instead, unless you are documenting 
 ## `@mention`
 
 Try to avoid **`@mention`**. Say **mention** instead, and consider linking to the
-[mentions topic](../../../user/discussions/index.md#mentions).
+[mentions topic](../../../user/discussions/_index.md#mentions).
 Don't use backticks.
 
 ## 2FA, two-factor authentication

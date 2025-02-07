@@ -683,7 +683,7 @@ You can create a comment in an issue by sending an email.
 Sending an email to this address creates a comment that contains the email body.
 
 For more information about creating comments by sending an email and the necessary configuration, see
-[Reply to a comment by sending email](../../discussions/index.md#reply-to-a-comment-by-sending-email).
+[Reply to a comment by sending email](../../discussions/_index.md#reply-to-a-comment-by-sending-email).
 
 To copy the issue's email address:
 
