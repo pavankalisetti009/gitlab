@@ -217,6 +217,9 @@ module EE
 
           store.subscribe ::Search::Zoekt::UpdateIndexUsedStorageBytesEventWorker,
             to: ::Search::Zoekt::UpdateIndexUsedStorageBytesEvent
+
+          store.subscribe ::Search::Zoekt::SaasRolloutEventWorker,
+            to: ::Search::Zoekt::SaasRolloutEvent
         end
 
         def subscribe_to_members_added_event(store)

@@ -1,9 +1,0 @@
----
-name: zoekt_dot_com_rollout
-feature_issue_url:
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/144988
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/442203
-milestone: '16.10'
-group: group::global search
-type: beta
-default_enabled: false

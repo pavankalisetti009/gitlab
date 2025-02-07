@@ -68,6 +68,7 @@ RSpec.describe Gitlab::EventStore, feature_category: :shared do
         Search::Zoekt::RepoToIndexEvent,
         Search::Zoekt::TaskFailedEvent,
         Search::Zoekt::UpdateIndexUsedStorageBytesEvent,
+        Search::Zoekt::SaasRolloutEvent,
         Security::PolicyCreatedEvent,
         Security::PolicyUpdatedEvent,
         Security::PolicyDeletedEvent,
