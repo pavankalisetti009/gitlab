@@ -8,7 +8,7 @@ module Security
 
         old_policy_project = security_orchestration_policy_configuration.security_policy_management_project
 
-        remove_bot if delete_bot
+        remove_bot(security_orchestration_policy_configuration) if delete_bot
 
         delete_configuration(security_orchestration_policy_configuration, old_policy_project)
       end
@@ -32,11 +32,11 @@ module Security
         ServiceResponse.error(message: message)
       end
 
-      def remove_bot
+      def remove_bot(security_orchestration_policy_configuration)
         if container.is_a?(Project)
           Security::OrchestrationConfigurationRemoveBotWorker.perform_async(container.id, current_user.id)
         else
-          container.all_project_ids.pluck_primary_key.each do |project_id|
+          security_orchestration_policy_configuration.all_project_ids.each do |project_id|
             Security::OrchestrationConfigurationRemoveBotWorker.perform_async(project_id, current_user.id)
           end
         end

@@ -115,7 +115,7 @@ module Security
         if container.is_a?(Project)
           Security::OrchestrationConfigurationCreateBotWorker.perform_async(container.id, current_user.id)
         else
-          container.all_project_ids.pluck_primary_key.each do |project_id|
+          container.security_orchestration_policy_configuration.all_project_ids.each do |project_id|
             Security::OrchestrationConfigurationCreateBotWorker.perform_async(project_id, current_user.id)
           end
         end
