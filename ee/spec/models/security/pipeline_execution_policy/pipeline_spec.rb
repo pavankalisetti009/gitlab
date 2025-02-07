@@ -18,6 +18,18 @@ RSpec.describe Security::PipelineExecutionPolicy::Pipeline, feature_category: :s
     end
   end
 
+  describe '#strategy_inject_policy?' do
+    subject { instance.strategy_inject_policy? }
+
+    it { is_expected.to be(false) }
+
+    context 'when strategy is inject_policy' do
+      let(:policy_config) { build(:pipeline_execution_policy_config, :inject_policy) }
+
+      it { is_expected.to be(true) }
+    end
+  end
+
   describe '#suffix_on_conflict?' do
     subject { instance.suffix_on_conflict? }
 

@@ -42,6 +42,7 @@
       "type": "string",
       "enum": [
         "inject_ci",
+        "inject_policy",
         "override_project_ci"
       ]
     },
