@@ -14,7 +14,6 @@ module Projects
 
         def execute
           return ServiceResponse.error(message: AUTHORIZATION_ERROR_MESSAGE) unless authorized?
-          return ServiceResponse.error(message: NOT_FOUND_ERROR_MESSAGE) if squash_option.blank?
 
           squash_option.destroy!
           ServiceResponse.success
@@ -25,7 +24,7 @@ module Projects
         attr_reader :branch_rule, :current_user
 
         def authorized?
-          Ability.allowed?(current_user, :update_branch_rule, branch_rule)
+          Ability.allowed?(current_user, :destroy_squash_option, squash_option)
         end
 
         def squash_option
