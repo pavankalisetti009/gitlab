@@ -5,7 +5,7 @@ info: Any user with at least the Maintainer role can merge updates to this conte
 title: Developing support for a new package format
 ---
 
-This document guides you through adding support to GitLab for a new a [package management system](../../administration/packages/index.md).
+This document guides you through adding support to GitLab for a new a [package management system](../../administration/packages/_index.md).
 
 See the already supported formats in the [Packages and registries documentation](../../user/packages/index.md)
 

@@ -1,7 +1,7 @@
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { __, s__ } from '~/locale';
 
-export const GEO_INFO_URL = helpPagePath('administration/geo/index.md');
+export const GEO_INFO_URL = helpPagePath('administration/geo/_index.md');
 
 export const HELP_SITE_HEALTH_URL = helpPagePath(
   'administration/geo/replication/troubleshooting/common.html',
@@ -9,7 +9,7 @@ export const HELP_SITE_HEALTH_URL = helpPagePath(
 );
 
 export const GEO_TROUBLESHOOTING_URL = helpPagePath(
-  'administration/geo/replication/troubleshooting.html',
+  'administration/geo/replication/troubleshooting/_index.md',
 );
 
 export const HELP_INFO_URL = helpPagePath(
@@ -17,7 +17,7 @@ export const HELP_INFO_URL = helpPagePath(
   { anchor: 'repository-verification' },
 );
 
-export const REPLICATION_PAUSE_URL = helpPagePath('administration/geo/index.html', {
+export const REPLICATION_PAUSE_URL = helpPagePath('administration/geo/_index.html', {
   anchor: 'pausing-and-resuming-replication',
 });
 

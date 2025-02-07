@@ -1413,7 +1413,7 @@ test:
 - Glob patterns are unsupported.
 - If a directory is specified and there is more than one file in the directory,
   the link is to the job [artifacts browser](../jobs/job_artifacts.md#download-job-artifacts).
-- If [GitLab Pages](../../administration/pages/index.md) is enabled, GitLab automatically
+- If [GitLab Pages](../../administration/pages/_index.md) is enabled, GitLab automatically
   renders the artifacts when the artifacts is a single file with one of these extensions:
   - `.html` or `.htm`
   - `.txt`

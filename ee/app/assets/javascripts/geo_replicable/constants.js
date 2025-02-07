@@ -62,5 +62,5 @@ export const DEFAULT_PAGE_SIZE = 20;
 export const GEO_BULK_ACTION_MODAL_ID = 'geo-bulk-action';
 
 export const GEO_TROUBLESHOOTING_LINK = helpPagePath(
-  'administration/geo/replication/troubleshooting.md',
+  'administration/geo/replication/troubleshooting/_index.md',
 );

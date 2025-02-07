@@ -689,7 +689,7 @@ The total number of custom domains per GitLab Pages website is limited to `150` 
 
 The default limit for [GitLab Self-Managed](../subscriptions/self_managed/_index.md) is `0` (unlimited).
 To set a limit on your instance, use the
-[**Admin** area](pages/index.md#set-maximum-number-of-gitlab-pages-custom-domains-for-a-project).
+[**Admin** area](pages/_index.md#set-maximum-number-of-gitlab-pages-custom-domains-for-a-project).
 
 ### Number of parallel Pages deployments
 
@@ -1022,7 +1022,7 @@ that only people you trust can add content.
 
 ## Wiki limits
 
-- [Wiki page content size limit](wikis/index.md#wiki-page-content-size-limit).
+- [Wiki page content size limit](wikis/_index.md#wiki-page-content-size-limit).
 - [Length restrictions for file and directory names](../user/project/wiki/index.md#length-restrictions-for-file-and-directory-names).
 
 ## Snippets limits

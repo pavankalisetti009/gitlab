@@ -84,7 +84,7 @@ export const STREAM_ITEMS_I18N = {
   FILTER_TOOLTIP_LABEL: s__(
     'AuditStreams|Destination has filters applied. %{linkStart}What are filters?%{linkEnd}',
   ),
-  FILTER_TOOLTIP_ADMIN_LINK: helpPagePath('administration/audit_event_streaming/index', {
+  FILTER_TOOLTIP_ADMIN_LINK: helpPagePath('administration/audit_event_streaming/_index', {
     anchor: 'update-event-filters',
   }),
   FILTER_TOOLTIP_GROUP_LINK: helpPagePath('user/compliance/audit_event_streaming', {

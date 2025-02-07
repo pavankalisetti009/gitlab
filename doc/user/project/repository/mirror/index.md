@@ -127,7 +127,7 @@ You can also manually trigger an update:
   set by the administrator on self-managed instances.
 
 NOTE:
-[GitLab Silent Mode](../../../../administration/silent_mode/index.md) disables both push and pull updates.
+[GitLab Silent Mode](../../../../administration/silent_mode/_index.md) disables both push and pull updates.
 
 ### Force an update
 
