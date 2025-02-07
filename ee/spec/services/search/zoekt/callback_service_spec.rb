@@ -75,6 +75,34 @@ RSpec.describe Search::Zoekt::CallbackService, feature_category: :global_search 
                         .and change { index_zoekt_task.zoekt_repository.zoekt_index.last_indexed_at }.to(Time.current)
           end
         end
+
+        context 'when updating index timestamps', :freeze_time do
+          let(:task_type) { 'index' }
+          let(:task_id) { index_zoekt_task.id }
+          let(:repo) { index_zoekt_task.zoekt_repository }
+          let(:index) { repo.zoekt_index }
+
+          it 'updates timestamp when difference is more than the minimum interval' do
+            old_time = (described_class::LAST_INDEXED_DEBOUNCE_PERIOD + 1.second).ago
+            index.update!(last_indexed_at: old_time)
+
+            expect { execute }.to change { index.reload.last_indexed_at }.from(old_time).to(Time.current)
+          end
+
+          it 'does not update timestamp when difference is less than the minimum interval' do
+            recent_time = (described_class::LAST_INDEXED_DEBOUNCE_PERIOD - 1.second).ago
+            index.update!(last_indexed_at: recent_time)
+
+            expect { execute }.not_to change { index.reload.last_indexed_at }
+          end
+
+          it 'updates timestamp on first indexing' do
+            old_time = Time.zone.at(0)
+            index.update!(last_indexed_at: old_time)
+
+            expect { execute }.to change { index.reload.last_indexed_at }.from(old_time).to(Time.current)
+          end
+        end
       end
 
       context 'when the task type is delete' do
