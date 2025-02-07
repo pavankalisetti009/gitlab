@@ -10,7 +10,7 @@ module EE
           null: true,
           description: 'Retrieve the active add-on purchase. ' \
                        'This query can be used in GitLab SaaS and self-managed environments.',
-          deprecated: { reason: 'Use add_on_purchases instead', milestone: '17.4' },
+          deprecated: { reason: 'Use [addOnPurchases](#queryaddonpurchases) instead', milestone: '17.4' },
           resolver: ::Resolvers::GitlabSubscriptions::AddOnPurchaseResolver
         field :add_on_purchases,
           [::Types::GitlabSubscriptions::AddOnPurchaseType],

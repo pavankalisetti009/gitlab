@@ -81,7 +81,7 @@ Retrieve the active add-on purchase. This query can be used in GitLab SaaS and s
 
 DETAILS:
 **Deprecated** in GitLab 17.4.
-Use add_on_purchases instead.
+Use [addOnPurchases](#queryaddonpurchases) instead.
 
 Returns [`AddOnPurchase`](#addonpurchase).
 
