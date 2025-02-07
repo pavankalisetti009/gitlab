@@ -1179,8 +1179,6 @@ GEM
       mustermann (>= 1.0.0)
     mutex_m (0.3.0)
     nap (1.1.0)
-    neighbor (0.3.2)
-      activerecord (>= 6.1)
     nenv (0.3.0)
     net-http (0.6.0)
       uri
@@ -2188,7 +2186,6 @@ DEPENDENCIES
   minitest (~> 5.11.0)
   multi_json (~> 1.14.1)
   mutex_m (~> 0.3)
-  neighbor (~> 0.3.2)
   net-http (= 0.6.0)
   net-ldap (~> 0.17.1)
   net-ntp
