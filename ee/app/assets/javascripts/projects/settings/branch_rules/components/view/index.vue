@@ -6,7 +6,7 @@ import ProjectRules from 'ee/approvals/project_settings/project_rules.vue';
 import StatusChecks from 'ee/projects/settings/branch_rules/components/view/status_checks/status_checks.vue';
 import { I18N } from '~/projects/settings/branch_rules/components/view/constants';
 
-const approvalsHelpDocLink = helpPagePath('user/project/merge_requests/approvals/index');
+const approvalsHelpDocLink = helpPagePath('user/project/merge_requests/approvals/_index');
 const statusChecksHelpDocLink = helpPagePath('user/project/merge_requests/status_checks');
 
 // This is a false violation of @gitlab/no-runtime-template-compiler, since it

@@ -71,7 +71,7 @@ describe('EE Approvals Group Settings App', () => {
   it.each`
     findComponent          | text                      | href
     ${findDescriptionLink} | ${'separation of duties'} | ${'/help/user/compliance/compliance_center/compliance_violations_report#separation-of-duties'}
-    ${findLearnMoreLink}   | ${'Learn more.'}          | ${'/help/user/project/merge_requests/approvals/index.md'}
+    ${findLearnMoreLink}   | ${'Learn more.'}          | ${'/help/user/project/merge_requests/approvals/_index.md'}
   `('has the correct link for $text', ({ findComponent, text, href }) => {
     createWrapper();
 

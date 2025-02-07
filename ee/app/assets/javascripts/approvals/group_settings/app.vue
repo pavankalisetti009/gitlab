@@ -26,7 +26,7 @@ export default {
     },
   },
   links: {
-    groupSettingsDocsPath: helpPagePath('user/project/merge_requests/approvals/index.md'),
+    groupSettingsDocsPath: helpPagePath('user/project/merge_requests/approvals/_index.md'),
     separationOfDutiesDocsPath: helpPagePath(
       'user/compliance/compliance_center/compliance_violations_report',
       {

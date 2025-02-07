@@ -10,7 +10,7 @@ DETAILS:
 **Tier:** Premium, Ultimate
 **Offering:** GitLab.com, GitLab Self-Managed, GitLab Dedicated
 
-You can configure the settings for [merge request approvals](index.md) to
+You can configure the settings for [merge request approvals](_index.md) to
 ensure the approval rules meet your use case. You can also configure
 [approval rules](rules.md), which define the number and type of users who must
 approve work before it's merged. Merge request approval settings define how

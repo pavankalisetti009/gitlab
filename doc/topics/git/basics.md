@@ -61,7 +61,7 @@ For more information, see [Add files to a branch](add_files.md).
 
 A merge request is a request to merge changes from one branch into another branch.
 Merge requests provide a way to collaborate and review code changes.
-For more information, see [Merge requests](../../user/project/merge_requests/index.md)
+For more information, see [Merge requests](../../user/project/merge_requests/_index.md)
 and [Merge your branch](merge.md).
 
 ## Update your fork

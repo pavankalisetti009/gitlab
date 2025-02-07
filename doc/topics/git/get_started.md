@@ -55,7 +55,7 @@ In GitLab, the default branch is usually called `main`.
 ### Merge a branch
 
 After a feature is complete or a bug is fixed, you can merge your branch into the default branch.
-You can do this in a [Merge request](../../user/project/merge_requests/index.md).
+You can do this in a [Merge request](../../user/project/merge_requests/_index.md).
 Merging is a safe way to bring changes from one branch into another while preserving the
 history of the changes.
 

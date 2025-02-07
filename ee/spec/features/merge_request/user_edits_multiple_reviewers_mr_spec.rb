@@ -81,7 +81,7 @@ RSpec.describe 'Merge request > User edits MR with multiple reviewers', feature_
       find('.js-reviewer-search').click
       wait_for_requests
 
-      help_page_path = help_page_path('user/project/merge_requests/reviews/index.md', anchor: 'request-a-review')
+      help_page_path = help_page_path('user/project/merge_requests/reviews/_index.md', anchor: 'request-a-review')
 
       page.within '.dropdown-menu-reviewer' do
         expect(page).to have_content('Suggestion(s)')

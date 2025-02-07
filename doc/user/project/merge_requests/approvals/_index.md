@@ -97,7 +97,7 @@ To check if your approval satisfies Code Owner requirements, select **Expand eli
 
 ### In the list of merge requests
 
-The list of merge requests for [your project or group](../index.md#view-merge-requests)
+The list of merge requests for [your project or group](../_index.md#view-merge-requests)
 shows the approval status for each merge request:
 
 | Example | Description |
@@ -123,7 +123,7 @@ Each reviewer's status is shown next to the their name.
 
    ![This reviewer has requested changes, and blocked this merge request.](img/reviewer_blocks_mr_v17_3.png)
 
-To [re-request a review](../reviews/index.md#re-request-a-review), select the **Re-request a review** icon (**{redo}**) next to the user.
+To [re-request a review](../reviews/_index.md#re-request-a-review), select the **Re-request a review** icon (**{redo}**) next to the user.
 
 ## Approve a merge request
 
@@ -136,7 +136,7 @@ Approved merge requests display a green check mark (**{check-circle-filled}**) n
 After a merge request receives the required approvals, it is ready to merge, unless it's blocked due to:
 
 - [Merge conflicts](../conflicts.md)
-- [Unresolved threads](../index.md#prevent-merge-unless-all-threads-are-resolved)
+- [Unresolved threads](../_index.md#prevent-merge-unless-all-threads-are-resolved)
 - [Failed CI/CD pipeline](../auto_merge.md)
 
 ### Prevent author approval

@@ -10,7 +10,7 @@ DETAILS:
 **Offering:** GitLab.com, GitLab Self-Managed, GitLab Dedicated
 
 Use GitLab CI/CD to test the changes included in a feature branch. You can also
-display reports or link to important information directly from [merge requests](../../user/project/merge_requests/index.md).
+display reports or link to important information directly from [merge requests](../../user/project/merge_requests/_index.md).
 
 | Feature                                                                                | Description |
 |----------------------------------------------------------------------------------------|-------------|
