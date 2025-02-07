@@ -6,7 +6,8 @@
 #js-workspaces{ data: {
     options: {
       workspaces_list_path: remote_development_workspaces_path,
-      empty_state_svg_path: image_path('illustrations/empty-state/empty-workspaces-md.svg')
+      empty_state_svg_path: image_path('illustrations/empty-state/empty-workspaces-md.svg'),
+      default_devfile: ::RemoteDevelopment::Settings::DefaultSettings.default_settings[:default_devfile_yaml][0],
     }.to_json
   }
 }
