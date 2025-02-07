@@ -7,6 +7,7 @@ module EE
     prepended do
       before_action do
         push_licensed_feature(:escalation_policies, project)
+        push_frontend_feature_flag(:custom_fields_feature, project&.root_ancestor)
       end
     end
   end
