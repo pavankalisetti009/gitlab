@@ -518,7 +518,7 @@ repository updates to secondary nodes.
 #### GitLab Geo
 
 - Configuration:
-  - [Omnibus](../administration/geo/setup/index.md)
+  - [Omnibus](../administration/geo/setup/_index.md)
   - [Charts](https://docs.gitlab.com/charts/advanced/geo/)
   - [GDK](https://gitlab.com/gitlab-org/gitlab-development-kit/blob/main/doc/howto/geo.md)
 - Layer: Core Service (Processor)

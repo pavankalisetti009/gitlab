@@ -16,7 +16,7 @@ DETAILS:
 Silent Mode allows you to silence outbound communication, such as emails, from GitLab. Silent Mode is not intended to be used on environments which are in-use. Two use-cases are:
 
 - Validating Geo site promotion. You have a secondary Geo site as part of your
-  [disaster recovery](../geo/disaster_recovery/index.md) solution. You want to
+  [disaster recovery](../geo/disaster_recovery/_index.md) solution. You want to
   regularly test promoting it to become a primary Geo site, as a best practice
   to ensure your disaster recovery plan actually works. But you don't want to
   actually perform an entire failover, since the primary site lives in a region
