@@ -71,8 +71,6 @@ gem 'view_component', '~> 3.21.0', feature_category: :shared
 # Supported DBs
 gem 'pg', '~> 1.5.6', feature_category: :database
 
-gem 'neighbor', '~> 0.3.2', feature_category: :duo_chat
-
 gem 'rugged', '~> 1.6', feature_category: :gitaly
 
 gem 'faraday', '~> 2', feature_category: :shared

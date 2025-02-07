@@ -1196,8 +1196,6 @@ GEM
       mustermann (>= 1.0.0)
     mutex_m (0.3.0)
     nap (1.1.0)
-    neighbor (0.3.2)
-      activerecord (>= 6.1)
     nenv (0.3.0)
     net-http (0.6.0)
       uri
@@ -1578,7 +1576,7 @@ GEM
       msgpack (>= 0.4.3)
       optimist (>= 3.0.0)
     rchardet (1.8.0)
-    rdoc (6.11.0)
+    rdoc (6.12.0)
       psych (>= 4.0.0)
     re2 (2.15.0)
       mini_portile2 (~> 2.8.7)
@@ -2223,7 +2221,6 @@ DEPENDENCIES
   minitest (~> 5.11.0)
   multi_json (~> 1.14.1)
   mutex_m (~> 0.3)
-  neighbor (~> 0.3.2)
   net-http (= 0.6.0)
   net-ldap (~> 0.17.1)
   net-ntp
