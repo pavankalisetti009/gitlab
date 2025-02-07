@@ -15,6 +15,13 @@ module Users
           return ServiceResponse.error(message: 'Forbidden', reason: :forbidden)
         end
 
+        unless valid_member_role_param?
+          return ServiceResponse.error(
+            message: 'Only admin custom roles can be assigned directly to a user.',
+            reason: :forbidden
+          )
+        end
+
         unless Feature.enabled?(:custom_ability_read_admin_dashboard, current_user)
           return ServiceResponse.error(message: 'Not yet available', reason: :forbidden)
         end
@@ -23,6 +30,12 @@ module Users
       end
 
       private
+
+      def valid_member_role_param?
+        return true unless params[:member_role]
+
+        params[:member_role].admin_related_role?
+      end
 
       def assign
         user_member_role = if params[:member_role]
