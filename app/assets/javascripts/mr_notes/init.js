@@ -9,7 +9,7 @@ import { getDerivedMergeRequestInformation } from '~/diffs/utils/merge_request';
 import { getReviewsForMergeRequest } from '~/diffs/utils/file_reviews';
 import { DIFF_VIEW_COOKIE_NAME, INLINE_DIFF_VIEW_TYPE } from '~/diffs/constants';
 
-function setupMrNotesState(store, notesDataset, diffsDataset) {
+function setupMrNotesState(store, notesDataset, diffsDataset = {}) {
   const noteableData = JSON.parse(notesDataset.noteableData);
   noteableData.noteableType = notesDataset.noteableType;
   noteableData.targetType = notesDataset.targetType;
@@ -57,7 +57,7 @@ export function initMrStateLazyLoad(store = mrNotes) {
   stop = store.watch(
     (state) => state.page.activeTab,
     (activeTab) => {
-      setupMrNotesState(store, discussionsEl.dataset, diffsEl.dataset);
+      setupMrNotesState(store, discussionsEl.dataset, diffsEl?.dataset);
 
       // prevent loading MR state on commits and pipelines pages
       // this is due to them having a shared controller with the Overview page
