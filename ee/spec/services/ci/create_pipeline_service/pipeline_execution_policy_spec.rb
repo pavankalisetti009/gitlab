@@ -407,6 +407,38 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
       end
     end
 
+    context 'and Scan Execution Policy is additionally applied on the project' do
+      let(:scan_execution_policy) do
+        build(:scan_execution_policy, actions: [{ scan: 'secret_detection' }])
+      end
+
+      let(:project_policy_yaml) do
+        build(:orchestration_policy_yaml,
+          pipeline_execution_policy: [project_policy],
+          scan_execution_policy: [scan_execution_policy])
+      end
+
+      before do
+        create(:security_policy, :scan_execution_policy, linked_projects: [project],
+          content: scan_execution_policy.slice(:actions),
+          security_orchestration_policy_configuration: project_configuration)
+      end
+
+      it 'persists both pipeline execution policy and scan execution policy jobs', :aggregate_failures do
+        expect { execute }.to change { Ci::Build.count }.from(0).to(3)
+
+        expect(execute).to be_success
+        expect(execute.payload).to be_persisted
+
+        stages = execute.payload.stages
+        expect(stages.map(&:name)).to contain_exactly('build', 'test')
+
+        expect(stages.find_by(name: 'build').builds.map(&:name)).to contain_exactly('namespace_policy_job')
+        expect(stages.find_by(name: 'test').builds.map(&:name))
+          .to contain_exactly('project_policy_job', 'secret-detection-0')
+      end
+    end
+
     context 'and the project has an invalid .gitlab-ci.yml' do
       let(:project_ci_yaml) do
         <<~YAML

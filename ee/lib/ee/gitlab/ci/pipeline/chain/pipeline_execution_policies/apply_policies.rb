@@ -56,17 +56,11 @@ module EE
               end
 
               def clear_project_pipeline
-                # We remove the project pipeline config in two scenarios;
-                # 1. pipeline_execution_policy_forced?: It means that it is only
+                # We remove the project pipeline config if pipeline was forced by a policy (no other config found);
+                # pipeline_execution_policy_forced?: It means that it is only
                 # the DUMMY job to enforce the pipeline without project CI configuration.
-                # 2. any policy uses `override_project_ci` strategy.
                 # It means that we need to ignore the project CI configuration.
-                unless pipeline.pipeline_execution_policy_forced? ||
-                    command.pipeline_policy_context.has_overriding_execution_policy_pipelines?
-                  return
-                end
-
-                pipeline.stages = []
+                pipeline.stages = [] if pipeline.pipeline_execution_policy_forced?
               end
 
               def merge_policy_jobs
