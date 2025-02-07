@@ -144,6 +144,12 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
     policies.for_policy_configuration(namespace.all_descendant_security_orchestration_policy_configurations)
   end
 
+  def admin_related_role?
+    admin_related_permissions.present? && admin_related_permissions.all? do |permission|
+      self.class.permission_enabled?(permission)
+    end
+  end
+
   private
 
   def security_policies_disabled?
@@ -154,10 +160,6 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
 
   def admin_related_permissions
     self.class.all_customizable_admin_permission_keys & enabled_permissions
-  end
-
-  def admin_related_role?
-    admin_related_permissions.present?
   end
 
   def belongs_to_top_level_namespace

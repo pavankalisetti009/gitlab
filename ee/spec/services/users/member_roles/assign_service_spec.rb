@@ -80,6 +80,18 @@ RSpec.describe Users::MemberRoles::AssignService, feature_category: :permissions
           end
         end
       end
+
+      context 'when the provided custom role is not an admin role' do
+        let_it_be(:member_role) { create(:member_role) }
+
+        it 'does not create a new user member role relation' do
+          expect { assign_member_role }.not_to change { Users::UserMemberRole.count }
+        end
+
+        it 'returns error' do
+          expect(assign_member_role).to be_error
+        end
+      end
     end
   end
 end

@@ -9,9 +9,12 @@ RSpec.describe 'Assigning a user to a member role', feature_category: :permissio
 
   let_it_be(:user) { create(:user) }
   let_it_be(:member_role) { create(:member_role, :admin) }
+  let_it_be(:regular_member_role) { create(:member_role) }
+
+  let(:member_role_param) { member_role }
 
   let(:user_global_id) { GitlabSchema.id_from_object(user).to_s }
-  let(:member_role_global_id) { GitlabSchema.id_from_object(member_role).to_s }
+  let(:member_role_global_id) { GitlabSchema.id_from_object(member_role_param).to_s }
 
   let(:input) do
     {
@@ -95,6 +98,21 @@ RSpec.describe 'Assigning a user to a member role', feature_category: :permissio
           it 'creates a new user member role' do
             expect { post_graphql_mutation(mutation, current_user: current_user) }
               .to change { ::Users::UserMemberRole.count }.by(1)
+          end
+        end
+
+        context 'when the provided custom role is not an admin role' do
+          let(:member_role_param) { regular_member_role }
+
+          it 'returns error in the response', :aggregate_failures do
+            post_graphql_mutation(mutation, current_user: current_user)
+
+            response_object = mutation_response['userMemberRole']
+
+            expect(response).to have_gitlab_http_status(:success)
+            expect(mutation_response['errors'])
+              .to eq(['Only admin custom roles can be assigned directly to a user.'])
+            expect(response_object).to be_nil
           end
         end
 
