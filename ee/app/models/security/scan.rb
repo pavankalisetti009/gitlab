@@ -10,7 +10,7 @@ module Security
 
     validates :build_id, presence: true
     validates :scan_type, presence: true
-    validates :info, json_schema: { filename: 'security_scan_info', draft: 7 }
+    validates :info, json_schema: { filename: 'security_scan_info' }
 
     belongs_to :build, class_name: 'Ci::Build'
     belongs_to :project
