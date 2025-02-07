@@ -18,7 +18,7 @@ RSpec.describe Gitlab::CodeOwners::UsersLoader, feature_category: :source_code_m
 
   describe '#load_to' do
     subject(:load_users) do
-      described_class.new(project, extractor).load_to([entry])
+      described_class.new(project, names: extractor.names, emails: extractor.emails).load_to([entry])
     end
 
     before do

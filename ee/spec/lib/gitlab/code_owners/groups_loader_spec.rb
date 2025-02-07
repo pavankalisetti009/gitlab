@@ -17,7 +17,7 @@ RSpec.describe Gitlab::CodeOwners::GroupsLoader, feature_category: :source_code_
 
   describe '#load_to' do
     subject(:load_groups) do
-      described_class.new(project, extractor).load_to([entry])
+      described_class.new(project, names: extractor.names).load_to([entry])
     end
 
     before do
