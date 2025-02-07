@@ -96,7 +96,7 @@ RSpec.describe Projects::LearnGitlabHelper, feature_category: :onboarding do
         code_added: a_hash_including(url: %r{/-/ide/project/#{project.full_path}/edit\z}),
         code_owners_enabled: a_hash_including(url: %r{/user/project/codeowners/index.md#set-up-code-owners\z}),
         required_mr_approvals_enabled: a_hash_including(
-          url: %r{/ci/testing/code_coverage.md#add-a-coverage-check-approval-rule\z}
+          url: %r{/ci/testing/code_coverage/_index.md#add-a-coverage-check-approval-rule\z}
         ),
         license_scanning_run: a_hash_including(
           url: help_page_path(described_class::LICENSE_SCANNING_RUN_PATH)
@@ -158,7 +158,7 @@ RSpec.describe Projects::LearnGitlabHelper, feature_category: :onboarding do
               enabled: true
             ),
             required_mr_approvals_enabled: a_hash_including(
-              url: help_page_path('ci/testing/code_coverage.md', anchor: 'add-a-coverage-check-approval-rule'),
+              url: help_page_path('ci/testing/code_coverage/_index.md', anchor: 'add-a-coverage-check-approval-rule'),
               enabled: true
             )
           }
@@ -185,7 +185,7 @@ RSpec.describe Projects::LearnGitlabHelper, feature_category: :onboarding do
               enabled: true
             ),
             required_mr_approvals_enabled: a_hash_including(
-              url: help_page_path('ci/testing/code_coverage.md', anchor: 'add-a-coverage-check-approval-rule'),
+              url: help_page_path('ci/testing/code_coverage/_index.md', anchor: 'add-a-coverage-check-approval-rule'),
               enabled: true
             )
           }
@@ -205,7 +205,7 @@ RSpec.describe Projects::LearnGitlabHelper, feature_category: :onboarding do
               enabled: true
             ),
             required_mr_approvals_enabled: a_hash_including(
-              url: help_page_path('ci/testing/code_coverage.md', anchor: 'add-a-coverage-check-approval-rule'),
+              url: help_page_path('ci/testing/code_coverage/_index.md', anchor: 'add-a-coverage-check-approval-rule'),
               enabled: true
             )
           }
