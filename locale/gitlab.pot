@@ -55991,6 +55991,9 @@ msgstr ""
 msgid "The current user is not authorized to manage the pipeline trigger token"
 msgstr ""
 
+msgid "The current user is not authorized to remove the Pages deployment"
+msgstr ""
+
 msgid "The current user is not authorized to set pipeline schedule variables"
 msgstr ""
 
