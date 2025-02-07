@@ -137,7 +137,9 @@ export default {
         {
           text: s__('SecurityReports|Change status'),
           action: () => this.$root.$emit(BV_SHOW_MODAL, VULNERABILITY_STATE_MODAL_ID),
-          extraAttrs: { disabled: this.disabledChangeState },
+          extraAttrs: {
+            disabled: this.disabledChangeState,
+          },
         },
         {
           text: s__('SecurityReports|Change severity'),
@@ -358,6 +360,7 @@ export default {
             :toggle-text="s__('SecurityReports|Edit vulnerability')"
             :items="editVulnerabilityActions"
             :loading="isLoadingVulnerability"
+            data-testid="edit-vulnerability-dropdown"
           />
           <severity-modal
             :modal-id="$options.VULNERABILITY_SEVERITY_MODAL_ID"
