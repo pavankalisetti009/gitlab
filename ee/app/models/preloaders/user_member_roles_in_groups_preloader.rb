@@ -10,6 +10,8 @@ module Preloaders
     end
 
     def execute
+      return {} if groups.blank? || user.blank?
+
       group_ids = groups.map { |group| group.respond_to?(:id) ? group.id : group }
 
       ::Gitlab::SafeRequestLoader.execute(

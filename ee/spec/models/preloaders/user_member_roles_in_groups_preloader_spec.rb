@@ -103,6 +103,31 @@ RSpec.describe Preloaders::UserMemberRolesInGroupsPreloader, feature_category: :
               expect(result[sub_group_1.id]).to match_array(expected_abilities.without(ability))
             end
           end
+
+          context 'when ActiveRecord::Relation of groups is passed' do
+            let(:groups_list) { Group.where(id: [sub_group_1.id, sub_group_2.id]) }
+
+            it 'returns all requested group IDs with their respective abilities', :aggregate_failures do
+              expect(result[sub_group_1.id]).to match_array(expected_abilities)
+              expect(result[sub_group_2.id]).to match_array(expected_abilities_2)
+            end
+          end
+
+          context 'when nil groups are passed' do
+            let(:groups_list) { nil }
+
+            it 'returns an empty hash' do
+              expect(result).to eq({})
+            end
+          end
+
+          context 'when nil user is passed' do
+            let(:user) { nil }
+
+            it 'returns an empty hash' do
+              expect(result).to eq({})
+            end
+          end
         end
 
         context 'when a user is assigned to different custom roles in group and subgroup' do

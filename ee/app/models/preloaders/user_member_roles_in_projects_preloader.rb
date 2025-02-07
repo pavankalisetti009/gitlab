@@ -10,6 +10,8 @@ module Preloaders
     end
 
     def execute
+      return {} if projects.blank? || user.blank?
+
       project_ids = projects.map { |project| project.respond_to?(:id) ? project.id : project }
 
       ::Gitlab::SafeRequestLoader.execute(

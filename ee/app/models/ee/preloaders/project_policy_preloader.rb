@@ -14,6 +14,10 @@ module EE
         ActiveRecord::Associations::Preloader.new(records: projects, associations: [:group, :invited_groups]).call
         ::Preloaders::ProjectRootAncestorPreloader.new(projects, :group, root_ancestor_preloads).execute
 
+        if ::Feature.enabled?(:preload_member_roles, current_user)
+          ::Preloaders::UserMemberRolesInProjectsPreloader.new(projects: projects, user: current_user).execute
+        end
+
         # Manually preloads saml_providers, which cannot be done in AR, since the
         # relationship is on the root ancestor.
         # This is required since the `:read_group` ability depends on `Group.saml_provider`

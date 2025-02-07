@@ -115,6 +115,22 @@ RSpec.describe Preloaders::UserMemberRolesInProjectsPreloader, feature_category:
               expect(result[project.id]).to match_array(expected_abilities)
             end
           end
+
+          context 'when nil projects are passed' do
+            let(:projects_list) { nil }
+
+            it 'returns an empty hash' do
+              expect(result).to eq({})
+            end
+          end
+
+          context 'when nil user is passed' do
+            let(:user) { nil }
+
+            it 'returns an empty hash' do
+              expect(result).to eq({})
+            end
+          end
         end
 
         context 'when a user is assigned custom roles in both group and project' do
