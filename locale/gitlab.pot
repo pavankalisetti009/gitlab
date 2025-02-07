@@ -12324,7 +12324,7 @@ msgstr ""
 msgid "CiVariables|Masked and hidden"
 msgstr ""
 
-msgid "CiVariables|Masked in job logs but value can be revealed in CI/CD settings. Requires values to meet regular expressions requirements."
+msgid "CiVariables|Masked in job logs but value can be revealed in CI/CD settings. Requires values to meet %{linkStart}regular expressions requirements%{linkEnd}."
 msgstr ""
 
 msgid "CiVariables|Masked in job logs, and can never be revealed in the CI/CD settings after the variable is saved."
@@ -12375,10 +12375,19 @@ msgstr ""
 msgid "CiVariables|The description of the variable's value or usage."
 msgstr ""
 
+msgid "CiVariables|The value cannot contain the following characters: %{unsupportedChars} and whitespace characters."
+msgstr ""
+
+msgid "CiVariables|The value cannot contain the following characters: %{unsupportedChars}."
+msgstr ""
+
+msgid "CiVariables|The value cannot contain the following characters: whitespace characters."
+msgstr ""
+
 msgid "CiVariables|The value is masked and hidden permanently."
 msgstr ""
 
-msgid "CiVariables|The value must have at least %{charsAmount} characters."
+msgid "CiVariables|The value must have %{charsAmount} characters."
 msgstr ""
 
 msgid "CiVariables|There was an error fetching the inherited CI variables."
@@ -12387,16 +12396,10 @@ msgstr ""
 msgid "CiVariables|This %{entity} has %{currentVariableCount} defined CI/CD variables. The maximum number of variables per %{entity} is %{maxVariableLimit}. To add new variables, you must reduce the number of defined variables."
 msgstr ""
 
-msgid "CiVariables|This value cannot be masked because it contains the following characters: %{unsupportedChars} and whitespace characters."
-msgstr ""
-
-msgid "CiVariables|This value cannot be masked because it contains the following characters: %{unsupportedChars}."
-msgstr ""
-
-msgid "CiVariables|This value cannot be masked because it contains the following characters: whitespace characters."
-msgstr ""
-
 msgid "CiVariables|Type"
+msgstr ""
+
+msgid "CiVariables|Unable to create masked variable because:"
 msgstr ""
 
 msgid "CiVariables|Unselect \"Expand variable reference\" if you want to use the variable value as a raw string."
