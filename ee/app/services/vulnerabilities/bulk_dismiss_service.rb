@@ -1,85 +1,78 @@
 # frozen_string_literal: true
 
 module Vulnerabilities
-  class BulkDismissService
-    include Gitlab::Allowable
-    MAX_BATCH = 100
-
+  class BulkDismissService < BaseBulkUpdateService
     def initialize(current_user, vulnerability_ids, comment, dismissal_reason)
-      @user = current_user
-      @vulnerability_ids = vulnerability_ids
-      @comment = comment
+      super(current_user, vulnerability_ids, comment)
       @dismissal_reason = dismissal_reason
-      @project_ids = {}
-    end
-
-    def execute
-      ensure_authorized_projects!
-
-      vulnerability_ids.each_slice(MAX_BATCH).each do |ids|
-        dismiss(Vulnerability.id_in(ids))
-      end
-      refresh_statistics
-
-      ServiceResponse.success(payload: {
-        vulnerabilities: Vulnerability.id_in(vulnerability_ids)
-      })
-    rescue ActiveRecord::ActiveRecordError
-      ServiceResponse.error(message: "Could not dismiss vulnerabilities")
     end
 
     private
 
-    attr_reader :vulnerability_ids, :user, :comment, :dismissal_reason, :project_ids
+    attr_reader :dismissal_reason
 
-    def ensure_authorized_projects!
-      raise Gitlab::Access::AccessDeniedError unless authorized_and_ff_enabled?
-    end
-
-    def authorized_and_ff_enabled?
-      project_ids = Vulnerability.id_in(vulnerability_ids).pluck(:project_id).uniq # rubocop: disable CodeReuse/ActiveRecord -- Vulnerabilities are unlikely to have many linked issues.
-
-      Project.id_in(project_ids)
-        .with_group
-        .with_namespace
-        .include_project_feature
-        .all? do |project|
-          can?(user, :admin_vulnerability, project)
-        end
-    end
-
-    def dismiss(vulnerabilities)
-      vulnerability_attrs = vulnerabilities
-        .select(:id, :state, :project_id).with_projects
-        .map { |v| [v.id, v.state, v.project_id, v.project.project_namespace_id] }
-
+    def update(vulnerabilities_ids)
+      vulnerabilities = vulnerabilities_to_update(vulnerabilities_ids)
+      vulnerability_attrs = vulnerabilities_attributes(vulnerabilities)
       return if vulnerability_attrs.empty?
 
-      state_transitions = transition_attributes_for(vulnerability_attrs)
-      system_notes = system_note_attributes_for(vulnerability_attrs)
+      db_attributes = db_attributes_for(vulnerability_attrs)
 
       Gitlab::Database::SecApplicationRecord.transaction do
-        Vulnerabilities::StateTransition.insert_all!(state_transitions)
-        # The `insert_or_update_vulnerability_reads` database trigger does not
-        # update the dismissal_reason and we are moving away from using
-        # database triggers to keep tables up to date.
-        Vulnerabilities::Read
-          .by_vulnerabilities(vulnerabilities)
-          .update_all(dismissal_reason: dismissal_reason, auto_resolved: false)
-
-        vulnerabilities.update_all(
-          state: :dismissed,
-          auto_resolved: false,
-          dismissed_by_id: user.id,
-          dismissed_at: now,
-          updated_at: now
-        )
+        update_support_tables(vulnerabilities, db_attributes)
+        vulnerabilities.update_all(db_attributes[:vulnerabilities])
       end
-      Note.insert_all!(system_notes)
+
+      Note.transaction do
+        notes_ids = Note.insert_all!(db_attributes[:system_notes], returning: %w[id])
+        SystemNoteMetadata.insert_all!(system_note_metadata_attributes_for(notes_ids))
+      end
     end
 
-    def transition_attributes_for(attrs)
-      attrs.map do |id, state, _, _|
+    def vulnerabilities_to_update(ids)
+      Vulnerability.id_in(ids)
+    end
+
+    def update_support_tables(vulnerabilities, db_attributes)
+      Vulnerabilities::StateTransition.insert_all!(db_attributes[:state_transitions])
+      # The `insert_or_update_vulnerability_reads` database trigger does not
+      # update the dismissal_reason and we are moving away from using
+      # database triggers to keep tables up to date.
+      Vulnerabilities::Read
+        .by_vulnerabilities(vulnerabilities)
+        .update_all(dismissal_reason: dismissal_reason, auto_resolved: false)
+    end
+
+    def vulnerabilities_attributes(vulnerabilities)
+      vulnerabilities
+        .select(:id, :state, :project_id).with_projects
+        .map { |v| [v.id, v.state, v.project_id, v.project.project_namespace_id] }
+    end
+
+    def db_attributes_for(vulnerability_attrs)
+      {
+        vulnerabilities: vulnerabilities_update_attributes,
+        system_notes: system_note_attributes_for(vulnerability_attrs),
+        state_transitions: transition_attributes_for(vulnerability_attrs)
+      }
+    end
+
+    def vulnerabilities_update_attributes
+      {
+        state: :dismissed,
+        auto_resolved: false,
+        dismissed_by_id: user.id,
+        dismissed_at: now,
+        updated_at: now,
+        confirmed_at: nil,
+        confirmed_by_id: nil,
+        resolved_at: nil,
+        resolved_by_id: nil
+      }
+    end
+
+    def transition_attributes_for(vulnerability_attrs)
+      vulnerability_attrs.map do |id, state, _, _|
         {
           vulnerability_id: id,
           from_state: state,
@@ -93,9 +86,8 @@ module Vulnerabilities
       end
     end
 
-    def system_note_attributes_for(attrs)
-      attrs.map do |id, _, project_id, namespace_id|
-        project_ids[project_id] = true
+    def system_note_attributes_for(vulnerability_attrs)
+      vulnerability_attrs.map do |id, _, project_id, namespace_id|
         {
           noteable_type: "Vulnerability",
           noteable_id: id,
@@ -110,23 +102,29 @@ module Vulnerabilities
           ),
           author_id: user.id,
           created_at: now,
+          updated_at: now,
+          discussion_id: Discussion.discussion_id(Note.new({
+            noteable_id: id,
+            noteable_type: "Vulnerability"
+          }))
+        }
+      end
+    end
+
+    def system_note_metadata_attributes_for(results)
+      results.map do |row|
+        id = row['id']
+        {
+          note_id: id,
+          action: system_note_metadata_action,
+          created_at: now,
           updated_at: now
         }
       end
     end
 
-    def refresh_statistics
-      return if project_ids.empty?
-
-      Vulnerabilities::Statistics::AdjustmentWorker.perform_async(project_ids.keys)
-    end
-
-    # We use this for setting the created_at and updated_at timestamps
-    # for the various records created by this service.
-    # The time is memoized on the first call to this method so all of the
-    # created records will have the same timestamps.
-    def now
-      @now ||= Time.current.utc
+    def system_note_metadata_action
+      'vulnerability_dismissed'
     end
   end
 end

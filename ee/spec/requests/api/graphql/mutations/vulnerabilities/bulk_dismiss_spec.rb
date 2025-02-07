@@ -101,11 +101,14 @@ RSpec.describe "Mutation.vulnerabilitiesDismiss", feature_category: :vulnerabili
       end
 
       context "when too many vulnerabilities are passed" do
-        before do
-          stub_const("::Vulnerabilities::BulkDismissService::MAX_BATCH", 1)
+        let(:vulnerability_ids) do
+          Array.new(::Mutations::Vulnerabilities::CreateIssue::MAX_VULNERABILITIES + 1) do
+            'gid://gitlab/Vulnerability/1'
+          end
         end
 
-        it_behaves_like 'a mutation that returns top-level errors', errors: [/Maximum vulnerability_ids exceeded \(1\)/]
+        it_behaves_like 'a mutation that returns top-level errors',
+          errors: ["vulnerabilityIds is too long (maximum is 100)"]
       end
 
       context "when vulnerability_id is nil" do
@@ -118,7 +121,7 @@ RSpec.describe "Mutation.vulnerabilitiesDismiss", feature_category: :vulnerabili
         let(:vulnerability_ids) { [] }
 
         it_behaves_like 'a mutation that returns top-level errors',
-          errors: ["At least 1 value must be provided for vulnerability_ids"]
+          errors: ["vulnerabilityIds is too short (minimum is 1)"]
       end
     end
   end

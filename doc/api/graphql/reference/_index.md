@@ -11621,6 +11621,27 @@ Input type: `VulnerabilitiesRemoveAllFromProjectInput`
 | <a id="mutationvulnerabilitiesremoveallfromprojecterrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
 | <a id="mutationvulnerabilitiesremoveallfromprojectprojects"></a>`projects` | [`[Project!]!`](#project) | Projects for which the deletion was scheduled. |
 
+### `Mutation.vulnerabilitiesSeverityOverride`
+
+Input type: `vulnerabilitiesSeverityOverrideInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationvulnerabilitiesseverityoverrideclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationvulnerabilitiesseverityoverridecomment"></a>`comment` | [`String`](#string) | Comment why vulnerability severity was changed (maximum 50,000 characters). |
+| <a id="mutationvulnerabilitiesseverityoverrideseverity"></a>`severity` | [`VulnerabilitySeverity!`](#vulnerabilityseverity) | New severity value for the severities. |
+| <a id="mutationvulnerabilitiesseverityoverridevulnerabilityids"></a>`vulnerabilityIds` | [`[VulnerabilityID!]!`](#vulnerabilityid) | IDs of the vulnerabilities for which severity needs to be changed (maximum 100 entries). |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationvulnerabilitiesseverityoverrideclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationvulnerabilitiesseverityoverrideerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
+| <a id="mutationvulnerabilitiesseverityoverridevulnerabilities"></a>`vulnerabilities` | [`[Vulnerability!]!`](#vulnerability) | Vulnerabilities after severity change. |
+
 ### `Mutation.vulnerabilityConfirm`
 
 Input type: `VulnerabilityConfirmInput`

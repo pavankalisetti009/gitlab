@@ -96,7 +96,6 @@ RSpec.describe Vulnerabilities::BulkDismissService, feature_category: :vulnerabi
       it 'returns a service response' do
         result = service.execute
 
-        expect(result.payload).to have_key(:vulnerabilities)
         expect(result.payload[:vulnerabilities].count).to eq(vulnerability_ids.count)
       end
 
@@ -113,7 +112,28 @@ RSpec.describe Vulnerabilities::BulkDismissService, feature_category: :vulnerabi
           result = service.execute
 
           expect(result).to be_error
-          expect(result.errors).to eq(['Could not dismiss vulnerabilities'])
+          expect(result.errors).to eq(['Could not modify vulnerabilities'])
+        end
+      end
+
+      context 'when existing vulnerability had previous state changes data' do
+        before do
+          vulnerability.update!({
+            resolved_at: Time.current,
+            resolved_by: user,
+            confirmed_at: Time.current,
+            confirmed_by: user
+          })
+        end
+
+        it 'cleanses the previous state changes data' do
+          service.execute
+
+          vulnerability.reload
+          expect(vulnerability.resolved_at).to be_nil
+          expect(vulnerability.resolved_by).to be_nil
+          expect(vulnerability.confirmed_at).to be_nil
+          expect(vulnerability.confirmed_by).to be_nil
         end
       end
 
@@ -121,12 +141,18 @@ RSpec.describe Vulnerabilities::BulkDismissService, feature_category: :vulnerabi
         let_it_be(:vulnerabilities) { create_list(:vulnerability, 2, :with_findings, project: project) }
         let_it_be(:vulnerability_ids) { vulnerabilities.map(&:id) }
 
+        before do
+          allow_next_instance_of(described_class) do |instance|
+            allow(instance).to receive(:authorized_and_ff_enabled_for_all_projects?).and_return(true)
+          end
+        end
+
         it 'does not introduce N+1 queries' do
           control = ActiveRecord::QueryRecorder.new do
             described_class.new(user, vulnerability_ids, comment, dismissal_reason).execute
           end
 
-          new_vulnerability = create(:vulnerability, :with_findings, project: project)
+          new_vulnerability = create(:vulnerability, :with_findings)
           vulnerability_ids << new_vulnerability.id
 
           expect do
