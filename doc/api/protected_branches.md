@@ -688,5 +688,5 @@ Example response:
 ## Related topics
 
 - [Protected branches](../user/project/repository/branches/protected.md)
-- [Branches](../user/project/repository/branches/index.md)
+- [Branches](../user/project/repository/branches/_index.md)
 - [Branches API](branches.md)

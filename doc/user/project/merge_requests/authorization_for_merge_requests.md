@@ -46,7 +46,7 @@ To set up a protected branch flow:
 1. If your team has multiple branches, and you would like to manage who can merge changes and who
    explicitly has the option to push or force push, consider making those branches protected:
 
-   - [Manage and Protect Branches](../repository/branches/index.md#manage-and-protect-branches)
+   - [Manage and Protect Branches](../repository/branches/_index.md#manage-and-protect-branches)
    - [Protected Branches](../repository/branches/protected.md)
 
 1. Each change to the code comes through as a commit.
