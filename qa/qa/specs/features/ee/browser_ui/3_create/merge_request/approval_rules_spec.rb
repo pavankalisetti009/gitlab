@@ -2,11 +2,7 @@
 
 module QA
   RSpec.describe 'Create' do
-    describe 'Approval rules', :requires_admin, product_group: :code_review, quarantine: {
-      type: :bug,
-      issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/423899',
-      only: { pipeline: %i[canary production] }
-    } do
+    describe 'Approval rules', :requires_admin, product_group: :code_review do
       let(:approver1) { create(:user) }
       let(:approver2) { create(:user) }
       let(:project) { create(:project, name: 'approval-rules') }
