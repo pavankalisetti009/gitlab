@@ -40,7 +40,7 @@ You can find all those directories listed in the [Linux package configuration do
 
 ### User accounts
 
-- [Review authentication options](../administration/auth/index.md).
+- [Review authentication options](../administration/auth/_index.md).
 - [Configure password length limits](password_length_limits.md).
 - [Restrict SSH key technologies and require minimum key lengths](ssh_keys_restrictions.md).
 - [Restrict account creation with sign up restrictions](../administration/settings/sign_up_restrictions.md).

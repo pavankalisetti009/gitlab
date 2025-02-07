@@ -119,7 +119,7 @@ prometheus['scrape_configs'] = [
 You can use the Linux package to configure a standalone Monitoring node running Prometheus.
 An external [Grafana](../performance/grafana_configuration.md) can be configured to this monitoring node to display dashboards.
 
-A standalone Monitoring node is recommended for [GitLab deployments with multiple nodes](../../reference_architectures/index.md).
+A standalone Monitoring node is recommended for [GitLab deployments with multiple nodes](../../reference_architectures/_index.md).
 
 The steps below are the minimum necessary to configure a Monitoring node running Prometheus with the Linux
 package:

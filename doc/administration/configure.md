@@ -12,7 +12,7 @@ DETAILS:
 
 Customize and configure GitLab Self-Managed.
 
-- [Authentication](auth/index.md)
+- [Authentication](auth/_index.md)
 - [CI/CD](cicd/_index.md)
 - [Configuration](admin_area.md)
 - [Consul](consul.md)

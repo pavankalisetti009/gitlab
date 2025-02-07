@@ -1312,7 +1312,7 @@ if you migrate to the [metadata database](container_registry_metadata_database.m
 
 This section outlines the potential performance bottlenecks as registry traffic increases by component.
 Each subsection is roughly ordered by recommendations that benefit from smaller to larger registry workloads.
-The registry is not included in the [reference architectures](../reference_architectures/index.md),
+The registry is not included in the [reference architectures](../reference_architectures/_index.md),
 and there are no scaling guides which target number of seats or requests per second.
 
 ### Database

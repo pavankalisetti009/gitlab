@@ -22,7 +22,7 @@ or management of third party services, such as AWS RDS, please refer to the resp
 ## Before you start
 
 Achieving _true_ zero downtime as part of an upgrade is notably difficult for any distributed application. The process detailed in
-this guide has been tested as given against our HA [Reference Architectures](../administration/reference_architectures/index.md)
+this guide has been tested as given against our HA [Reference Architectures](../administration/reference_architectures/_index.md)
 and was found to result in effectively no observable downtime, but please be aware your mileage may vary dependent on the specific system makeup.
 
 For additional confidence, some customers have found success with further techniques such as the

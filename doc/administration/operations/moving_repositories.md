@@ -181,7 +181,7 @@ Each of the approaches we list can or does overwrite data in the target director
 
 ### Recommended approach in all cases
 
-For either Gitaly or Gitaly Cluster targets, the GitLab [backup and restore capability](../backup_restore/index.md)
+For either Gitaly or Gitaly Cluster targets, the GitLab [backup and restore capability](../backup_restore/_index.md)
 should be used. Git repositories are accessed, managed, and stored on GitLab servers by Gitaly as a database. Data loss
 can result from directly accessing and copying Gitaly files using tools like `rsync`.
 

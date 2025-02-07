@@ -12,7 +12,7 @@ DETAILS:
 Configure Gitaly Cluster using either:
 
 - Gitaly Cluster configuration instructions available as part of
-  [reference architectures](../reference_architectures/index.md) for installations of up to:
+  [reference architectures](../reference_architectures/_index.md) for installations of up to:
   - [60 RPS or 3,000 users](../reference_architectures/3k_users.md#configure-gitaly-cluster).
   - [100 RPS or 5,000 users](../reference_architectures/5k_users.md#configure-gitaly-cluster).
   - [200 RPS or 10,000 users](../reference_architectures/10k_users.md#configure-gitaly-cluster).
