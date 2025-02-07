@@ -171,7 +171,7 @@ After you change a path, you must update the existing URL in the following resou
 - [Lock files and prevent change conflicts](../file_lock.md)
 - [Repository API](../../../api/repositories.md)
 - [Files](files/index.md)
-- [Branches](branches/index.md)
+- [Branches](branches/_index.md)
 - [Create a directory](web_editor.md#create-a-directory)
 - [Find file history](files/git_history.md)
 - [Identify changes by line (Git blame)](files/git_blame.md)
