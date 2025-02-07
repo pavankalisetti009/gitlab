@@ -85,7 +85,7 @@ You can run [`git fsck`](https://git-scm.com/docs/git-fsck) using the command li
 
 ## What to do if a check failed
 
-If a repository check fails, locate the error in the [`repocheck.log` file](logs/index.md#repochecklog) on disk at:
+If a repository check fails, locate the error in the [`repocheck.log` file](logs/_index.md#repochecklog) on disk at:
 
 - `/var/log/gitlab/gitlab-rails` for Linux package installations.
 - `/home/git/gitlab/log` for self-compiled installations.

@@ -98,10 +98,10 @@ While this isn't an exhaustive list, following these steps gives you a solid sta
 After you've established your basic setup, you're ready to review the GitLab monitoring services. Prometheus is our core performance monitoring tool.
 Unlike other monitoring solutions (for example, Zabbix or New Relic), Prometheus is tightly integrated with GitLab and has extensive community support.
 
-- [Prometheus](monitoring/prometheus/index.md) captures
+- [Prometheus](monitoring/prometheus/_index.md) captures
   [these GitLab metrics](monitoring/prometheus/gitlab_metrics.md#metrics-available).
-- Learn more about GitLab [bundled software metrics](monitoring/prometheus/index.md#bundled-software-metrics).
-- Prometheus and its exporters are on by default. However, you need to [configure the service](monitoring/prometheus/index.md#configuring-prometheus).
+- Learn more about GitLab [bundled software metrics](monitoring/prometheus/_index.md#bundled-software-metrics).
+- Prometheus and its exporters are on by default. However, you need to [configure the service](monitoring/prometheus/_index.md#configuring-prometheus).
 - Learn more about [GitLab architecture](../development/architecture.md).
 - Find out why [application performance metrics](https://about.gitlab.com/blog/2020/05/07/working-with-performance-metrics/) matter.
 - Integrate Grafana to [build visual dashboards](https://youtu.be/f4R7s0An1qE) based on performance metrics.
