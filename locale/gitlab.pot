@@ -53059,6 +53059,9 @@ msgstr ""
 msgid "Select"
 msgstr ""
 
+msgid "Select %{name}"
+msgstr ""
+
 msgid "Select Git revision"
 msgstr ""
 

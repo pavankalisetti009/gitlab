@@ -1,13 +1,22 @@
 <script>
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import { CUSTOM_FIELDS_TYPE_NUMBER, CUSTOM_FIELDS_TYPE_TEXT } from '~/work_items/constants';
+import {
+  CUSTOM_FIELDS_TYPE_NUMBER,
+  CUSTOM_FIELDS_TYPE_TEXT,
+  CUSTOM_FIELDS_TYPE_SINGLE_SELECT,
+  CUSTOM_FIELDS_TYPE_MULTI_SELECT,
+} from '~/work_items/constants';
 import WorkItemCustomFieldNumber from './work_item_custom_fields_number.vue';
 import WorkItemCustomFieldText from './work_item_custom_fields_text.vue';
+import WorkItemCustomFieldSingleSelect from './work_item_custom_fields_single_select.vue';
+import WorkItemCustomFieldMultiSelect from './work_item_custom_fields_multi_select.vue';
 
 export default {
   components: {
     WorkItemCustomFieldNumber,
     WorkItemCustomFieldText,
+    WorkItemCustomFieldSingleSelect,
+    WorkItemCustomFieldMultiSelect,
   },
   props: {
     customFieldValues: {
@@ -36,6 +45,10 @@ export default {
           return WorkItemCustomFieldNumber;
         case CUSTOM_FIELDS_TYPE_TEXT:
           return WorkItemCustomFieldText;
+        case CUSTOM_FIELDS_TYPE_SINGLE_SELECT:
+          return WorkItemCustomFieldSingleSelect;
+        case CUSTOM_FIELDS_TYPE_MULTI_SELECT:
+          return WorkItemCustomFieldMultiSelect;
         default:
           Sentry.captureException(
             new Error(`Unknown custom field type: ${customField.fieldType}`),
