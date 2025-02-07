@@ -10,6 +10,7 @@ import {
 import { defaultProvide, defaultProjectListProps } from '../mock_data';
 
 describe('ProjectCIMinutesList', () => {
+  /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
 
   const createComponent = ({ provide = {}, props = {} } = {}) => {

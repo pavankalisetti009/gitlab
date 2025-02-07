@@ -26,7 +26,7 @@ export const pageInfo = {
   endCursor: 'eyJpZCI6IjYifQ',
 };
 
-export const mockGetCiMinutesUsageNamespace = {
+export const mockGetNamespaceCiMinutesUsage = {
   data: {
     ciMinutesUsage: {
       nodes: [
@@ -59,7 +59,7 @@ export const mockGetCiMinutesUsageNamespace = {
   },
 };
 
-export const mockGetCiMinutesUsageNamespaceProjects = {
+export const mockGetProjectsCiMinutesUsage = {
   data: {
     ciMinutesUsage: {
       nodes: [
@@ -110,6 +110,6 @@ export const emptyMockGetCiMinutesUsageNamespaceProjects = {
 };
 
 export const defaultProjectListProps = {
-  projects: mockGetCiMinutesUsageNamespaceProjects.data.ciMinutesUsage.nodes[0].projects.nodes,
+  projects: mockGetProjectsCiMinutesUsage.data.ciMinutesUsage.nodes[0].projects.nodes,
   pageInfo,
 };

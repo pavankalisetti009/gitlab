@@ -1,17 +1,17 @@
 import {
-  getUsageDataByYearAsArray,
-  getUsageDataByYearByMonthAsObject,
+  groupUsageDataByYear,
+  groupUsageDataByYearAndMonth,
 } from 'ee/usage_quotas/pipelines/utils';
-import { mockGetCiMinutesUsageNamespace } from './mock_data';
+import { mockGetNamespaceCiMinutesUsage } from './mock_data';
 
 const {
   data: {
     ciMinutesUsage: { nodes },
   },
-} = mockGetCiMinutesUsageNamespace;
+} = mockGetNamespaceCiMinutesUsage;
 
 describe('Compute minutes Usage Utils', () => {
-  it('getUsageDataByYearAsArray normalizes data by year', () => {
+  it('groupUsageDataByYear normalizes data by year', () => {
     const expectedDataByYear = {
       2021: [
         {
@@ -55,10 +55,10 @@ describe('Compute minutes Usage Utils', () => {
       ],
     };
 
-    expect(getUsageDataByYearAsArray(nodes)).toEqual(expectedDataByYear);
+    expect(groupUsageDataByYear(nodes)).toEqual(expectedDataByYear);
   });
 
-  it('getUsageDataByYearByMonthAsObject normalizes data by year and by month', () => {
+  it('groupUsageDataByYearAndMonth normalizes data by year and by month', () => {
     const expectedDataByYearMonth = {
       2021: {
         0: {
@@ -102,6 +102,6 @@ describe('Compute minutes Usage Utils', () => {
       },
     };
 
-    expect(getUsageDataByYearByMonthAsObject(nodes)).toEqual(expectedDataByYearMonth);
+    expect(groupUsageDataByYearAndMonth(nodes)).toEqual(expectedDataByYearMonth);
   });
 });

@@ -3,12 +3,13 @@ import { cloneDeep } from 'lodash';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import MinutesUsagePerMonth from 'ee/usage_quotas/pipelines/components/minutes_usage_per_month.vue';
 import NoMinutesAlert from 'ee/usage_quotas/pipelines/components/no_minutes_alert.vue';
-import { mockGetCiMinutesUsageNamespace } from '../mock_data';
+import { mockGetNamespaceCiMinutesUsage } from '../mock_data';
 
 describe('MinutesUsagePerMonth', () => {
+  /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
   const defaultProps = {
-    ciMinutesUsage: cloneDeep(mockGetCiMinutesUsageNamespace.data.ciMinutesUsage.nodes),
+    ciMinutesUsage: cloneDeep(mockGetNamespaceCiMinutesUsage.data.ciMinutesUsage.nodes),
     selectedYear: 2022,
   };
 
