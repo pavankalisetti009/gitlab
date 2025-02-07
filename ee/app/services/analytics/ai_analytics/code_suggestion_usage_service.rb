@@ -21,7 +21,7 @@ module Analytics
       CODE_CONTRIBUTORS_COUNT_QUERY = "SELECT count(*) FROM code_contributors"
       private_constant :CODE_CONTRIBUTORS_COUNT_QUERY
 
-      code_suggestion_usage_events = ::Ai::CodeSuggestionEvent::EVENTS.values_at(
+      code_suggestion_usage_events = ::Ai::CodeSuggestionEvent.events.values_at(
         'code_suggestions_requested',
         'code_suggestion_shown_in_ide',
         'code_suggestion_direct_access_token_refresh'
@@ -43,7 +43,7 @@ module Analytics
         WHERE user_id IN (SELECT author_id FROM code_contributors)
         AND date >= {from:Date}
         AND date <= {to:Date}
-        AND event = #{::Ai::CodeSuggestionEvent::EVENTS['code_suggestion_shown_in_ide']}
+        AND event = #{::Ai::CodeSuggestionEvent.events['code_suggestion_shown_in_ide']}
       SQL
       private_constant :CODE_SUGGESTIONS_SHOWN_COUNT_QUERY
 
@@ -53,7 +53,7 @@ module Analytics
         WHERE user_id IN (SELECT author_id FROM code_contributors)
         AND date >= {from:Date}
         AND date <= {to:Date}
-        AND event = #{::Ai::CodeSuggestionEvent::EVENTS['code_suggestion_accepted_in_ide']}
+        AND event = #{::Ai::CodeSuggestionEvent.events['code_suggestion_accepted_in_ide']}
       SQL
       private_constant :CODE_SUGGESTIONS_ACCEPTED_COUNT_QUERY
 

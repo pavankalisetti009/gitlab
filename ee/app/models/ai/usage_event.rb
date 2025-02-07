@@ -8,7 +8,7 @@ module Ai
     included do
       class << self
         def related_event?(event_name)
-          event_name.in?(const_get(:EVENTS, false))
+          events.key?(event_name)
         end
       end
     end
@@ -18,10 +18,15 @@ module Ai
 
     def to_clickhouse_csv_row
       {
-        event: self.class::EVENTS[event],
+        event: self.class.events[event],
         timestamp: timestamp.to_f,
         user_id: user&.id
       }
+    end
+
+    # Default to empty hash if payload is empty
+    def payload
+      super || {}
     end
   end
 end

@@ -11,6 +11,8 @@ RSpec.describe Ai::DuoChatEvent, feature_category: :value_stream_management do
 
   it { is_expected.to belong_to(:user) }
 
+  it_behaves_like 'common ai_usage_event'
+
   describe 'validations' do
     it { is_expected.to validate_presence_of(:user_id) }
     it { is_expected.to validate_presence_of(:timestamp) }
@@ -47,7 +49,7 @@ RSpec.describe Ai::DuoChatEvent, feature_category: :value_stream_management do
     it 'returns serialized attributes hash' do
       expect(event.to_clickhouse_csv_row).to eq({
         user_id: user.id,
-        event: described_class::EVENTS['request_duo_chat_response'],
+        event: described_class.events[:request_duo_chat_response],
         timestamp: 1.day.ago.to_f
       })
     end

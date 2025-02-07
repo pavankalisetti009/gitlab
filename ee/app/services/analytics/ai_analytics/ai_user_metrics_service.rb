@@ -9,7 +9,7 @@ module Analytics
         WHERE user_id IN ({user_ids:Array(UInt64)})
         AND date >= {from:Date}
         AND date <= {to:Date}
-        AND event = #{::Ai::CodeSuggestionEvent::EVENTS['code_suggestion_accepted_in_ide']}
+        AND event = #{::Ai::CodeSuggestionEvent.events['code_suggestion_accepted_in_ide']}
         GROUP BY user_id
       SQL
       private_constant :CODE_SUGGESTIONS_ACCEPTED_COUNT_QUERY
