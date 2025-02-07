@@ -195,6 +195,6 @@ To do this:
 ## Related topics
 
 - [Merge request approval settings for your instance](../../../../administration/merge_requests_approvals.md)
-- [Compliance center](../../../compliance/compliance_center/index.md)
+- [Compliance center](../../../compliance/compliance_center/_index.md)
 - [Merge request approvals API](../../../../api/merge_request_approvals.md)
 - [Merge request approval settings API](../../../../api/merge_request_approval_settings.md)

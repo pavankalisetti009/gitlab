@@ -128,7 +128,7 @@ Project Owners can perform any listed action, and can delete pipelines:
 | View pipelines tab in MR                                                                                                       |     ✓      |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      | Non-members and guests: Only if the project is public. |
 | View [vulnerabilities in a pipeline](application_security/vulnerability_report/pipeline.md#view-vulnerabilities-in-a-pipeline) |            |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      | Guests: Only if **Public pipelines** is enabled in **Project Settings > CI/CD**. |
 | Run deployment job for a protected environment                                                                                 |            |       |         |    ✓     |     ✓     |     ✓      | Reporters: Only if the user is [part of a group with access to the protected environment](../ci/environments/protected_environments.md#deployment-only-access-to-protected-environments).<br>Developers and maintainers: Only if the user is [allowed to deploy to the protected branch](../ci/environments/protected_environments.md#protecting-environments). |
-| View [agents for Kubernetes](clusters/agent/index.md)                                                                          |            |       |         |          |     ✓     |     ✓      |       |
+| View [agents for Kubernetes](clusters/agent/_index.md)                                                                          |            |       |         |          |     ✓     |     ✓      |       |
 | View project [Secure Files](../api/secure_files.md)                                                                            |            |       |         |          |     ✓     |     ✓      |       |
 | Download project [Secure Files](../api/secure_files.md)                                                                        |            |       |         |          |     ✓     |     ✓      |       |
 | View a job with [debug logging](../ci/variables/_index.md#enable-debug-logging)                                                 |            |       |         |          |     ✓     |     ✓      |       |
@@ -145,7 +145,7 @@ Project Owners can perform any listed action, and can delete pipelines:
 | Read [Terraform](infrastructure/index.md) state                                                                                |            |       |         |          |     ✓     |     ✓      |       |
 | Run [interactive web terminals](../ci/interactive_web_terminal/index.md)                                                       |            |       |         |          |     ✓     |     ✓      |       |
 | Use pipeline editor                                                                                                            |            |       |         |          |     ✓     |     ✓      |       |
-| Manage [agents for Kubernetes](clusters/agent/index.md)                                                                        |            |       |         |          |           |     ✓      |       |
+| Manage [agents for Kubernetes](clusters/agent/_index.md)                                                                        |            |       |         |          |           |     ✓      |       |
 | Manage CI/CD settings                                                                                                          |            |       |         |          |           |     ✓      |       |
 | Manage job triggers                                                                                                            |            |       |         |          |           |     ✓      |       |
 | Manage project CI/CD variables                                                                                                 |            |       |         |          |           |     ✓      |       |
@@ -175,11 +175,11 @@ Guest users and members with the Reporter role cannot do any of these actions.
 
 ### Compliance
 
-Project permissions for [compliance](compliance/index.md) features including compliance center, audit events, compliance frameworks, and licenses.
+Project permissions for [compliance](compliance/_index.md) features including compliance center, audit events, compliance frameworks, and licenses.
 
 | Action                                                                                            | Guest | Planner | Reporter | Developer | Maintainer | Owner | Notes |
 | ------------------------------------------------------------------------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: | ----- |
-| View [allowed and denied licenses in MR](compliance/license_scanning_of_cyclonedx_files/index.md) |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   | On GitLab Self-Managed, users with the Guest role are able to perform this action only on public and internal projects (not on private projects). [External users](../administration/external_users.md) must be have at least the Reporter role, even if the project is internal. Users with the Guest role on GitLab.com are able to perform this action only on public projects because internal visibility is not available. |
+| View [allowed and denied licenses in MR](compliance/license_scanning_of_cyclonedx_files/_index.md) |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   | On GitLab Self-Managed, users with the Guest role are able to perform this action only on public and internal projects (not on private projects). [External users](../administration/external_users.md) must be have at least the Reporter role, even if the project is internal. Users with the Guest role on GitLab.com are able to perform this action only on public projects because internal visibility is not available. |
 | View [audit events](compliance/audit_events.md)                                                   |       |         |          |     ✓     |     ✓      |   ✓   | Users can only view events based on their individual actions. For more details, see the [prerequisites](compliance/audit_events.md#prerequisites). |
 | View licenses in [dependency list](application_security/dependency_list/index.md)                 |       |         |          |     ✓     |     ✓      |   ✓   |       |
 | Manage [audit streams](compliance/audit_event_streaming.md)                                       |       |         |          |           |            |   ✓   |       |
@@ -455,13 +455,13 @@ Group permissions for [CI/CD](../ci/index.md) features including runners, variab
 
 ### Compliance group permissions
 
-Group permissions for [compliance](compliance/index.md) features including compliance center, audit events, compliance frameworks, and licenses.
+Group permissions for [compliance](compliance/_index.md) features including compliance center, audit events, compliance frameworks, and licenses.
 
 | Action                                                                                | Guest | Planner | Reporter | Developer | Maintainer | Owner | Notes |
 | ------------------------------------------------------------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: | ----- |
 | View [audit events](compliance/audit_events.md)                                       |       |         |          |     ✓     |     ✓      |   ✓   | Users can view only events based on their individual actions. For more details, see the [prerequisites](compliance/audit_events.md#prerequisites). |
 | View licenses in the [dependency list](application_security/dependency_list/index.md) |       |         |          |     ✓     |     ✓      |   ✓   |       |
-| View the [compliance center](compliance/compliance_center/index.md)                   |       |         |          |           |            |   ✓   |       |
+| View the [compliance center](compliance/compliance_center/_index.md)                  |       |         |          |           |            |   ✓   |       |
 | Manage [compliance frameworks](group/compliance_frameworks.md)                        |       |         |          |           |            |   ✓   |       |
 | Assign [compliance frameworks](group/compliance_frameworks.md) to projects            |       |         |          |           |            |   ✓   |       |
 | Manage [audit streams](compliance/audit_event_streaming.md)                           |       |         |          |           |            |   ✓   |       |

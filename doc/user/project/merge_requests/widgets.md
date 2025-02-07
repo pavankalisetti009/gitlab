@@ -73,7 +73,7 @@ DETAILS:
 **Offering:** GitLab.com, GitLab Self-Managed, GitLab Dedicated
 
 To view a list of licenses that detected for your project's dependencies,
-configure [License Compliance](../../compliance/license_scanning_of_cyclonedx_files/index.md)
+configure [License Compliance](../../compliance/license_scanning_of_cyclonedx_files/_index.md)
 for your project.
 
 ![Merge request pipeline](img/license_compliance_widget_v15_3.png)

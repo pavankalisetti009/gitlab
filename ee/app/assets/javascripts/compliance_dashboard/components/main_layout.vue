@@ -132,7 +132,7 @@ export default {
   ROUTE_FRAMEWORKS,
   ROUTE_PROJECTS,
   i18n,
-  documentationPath: helpPagePath('user/compliance/compliance_center/index.md'),
+  documentationPath: helpPagePath('user/compliance/compliance_center/_index.md'),
 };
 </script>
 <template>

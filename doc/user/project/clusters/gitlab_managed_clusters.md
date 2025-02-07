@@ -13,7 +13,7 @@ DETAILS:
 
 WARNING:
 This feature was [deprecated](https://gitlab.com/groups/gitlab-org/configure/-/epics/8) in GitLab 14.5.
-To connect your cluster to GitLab, use the [GitLab agent](../../clusters/agent/index.md).
+To connect your cluster to GitLab, use the [GitLab agent](../../clusters/agent/_index.md).
 To manage applications, use the [Cluster Project Management Template](../../clusters/management_project_template.md).
 
 FLAG:
