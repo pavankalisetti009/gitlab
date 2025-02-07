@@ -1,7 +1,6 @@
 import { s__ } from '~/locale';
 import { parseBoolean } from '~/lib/utils/common_utils';
 import apolloProvider from '../shared/provider';
-import { CODE_SUGGESTIONS_TAB_METADATA_EL_SELECTOR } from '../constants';
 import CodeSuggestionsUsage from './components/code_suggestions_usage.vue';
 
 export const parseProvideData = (el) => {
@@ -69,7 +68,7 @@ export const parseProvideData = (el) => {
 };
 
 export const getCodeSuggestionsTabMetadata = ({ includeEl = false } = {}) => {
-  const el = document.querySelector(CODE_SUGGESTIONS_TAB_METADATA_EL_SELECTOR);
+  const el = document.querySelector('#js-code-suggestions-usage-app');
 
   if (!el) return false;
 

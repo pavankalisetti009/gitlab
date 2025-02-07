@@ -3,7 +3,6 @@ import Vuex from 'vuex';
 import { __ } from '~/locale';
 import { parseBoolean } from '~/lib/utils/common_utils';
 import apolloProvider from '../shared/provider';
-import { SEATS_TAB_METADATA_EL_SELECTOR } from '../constants';
 import { writeDataToApolloCache as writeSeatsDataToApolloCache } from './graphql/utils';
 import initialSeatUsageStore from './store';
 import SeatUsageApp from './components/subscription_seats.vue';
@@ -39,7 +38,7 @@ export const parseProvideData = (el) => {
 };
 
 export const getSeatTabMetadata = ({ includeEl = false } = {}) => {
-  const el = document.querySelector(SEATS_TAB_METADATA_EL_SELECTOR);
+  const el = document.querySelector('#js-seat-usage-app');
 
   if (!el) return false;
 

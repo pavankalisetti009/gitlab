@@ -2,7 +2,6 @@ import VueApollo from 'vue-apollo';
 import { __ } from '~/locale';
 import createDefaultClient from '~/lib/graphql';
 import { GROUP_VIEW_TYPE, PROJECT_VIEW_TYPE } from '~/usage_quotas/constants';
-import { TRANSFER_TAB_METADATA_EL_SELECTOR } from '../constants';
 import GroupTransferApp from './components/group_transfer_app.vue';
 import ProjectTransferApp from './components/project_transfer_app.vue';
 
@@ -26,7 +25,7 @@ const getViewComponent = (viewType) => {
 };
 
 export const getTransferTabMetadata = ({ viewType = null, includeEl = false } = {}) => {
-  const el = document.querySelector(TRANSFER_TAB_METADATA_EL_SELECTOR);
+  const el = document.querySelector('#js-transfer-usage-app');
   const vueComponent = getViewComponent(viewType);
 
   if (!el || !vueComponent) return false;

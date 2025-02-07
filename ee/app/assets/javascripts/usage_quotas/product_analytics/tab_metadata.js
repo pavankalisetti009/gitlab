@@ -1,7 +1,6 @@
 import { s__ } from '~/locale';
 import { parseBoolean } from '~/lib/utils/common_utils';
 import apolloProvider from '../shared/provider';
-import { PRODUCT_ANALYTICS_TAB_METADATA_EL_SELECTOR } from '../constants';
 import ProductAnalyticsUsageQuotaApp from './components/product_analytics_usage_quota_app.vue';
 
 const parseProvideData = (el) => {
@@ -15,7 +14,7 @@ const parseProvideData = (el) => {
 };
 
 export const getProductAnalyticsTabMetadata = ({ includeEl = false } = {}) => {
-  const el = document.querySelector(PRODUCT_ANALYTICS_TAB_METADATA_EL_SELECTOR);
+  const el = document.querySelector('#js-product-analytics-usage-quota-app');
 
   if (!el) return false;
 

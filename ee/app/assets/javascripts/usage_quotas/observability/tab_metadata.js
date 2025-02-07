@@ -1,5 +1,4 @@
 import { s__ } from '~/locale';
-import { OBSERVABILITY_TAB_METADATA_EL_SELECTOR } from '../constants';
 import ObservabilityUsageQuotaApp from './components/observability_usage_quota_app.vue';
 
 export const parseProvideData = (element) => {
@@ -7,7 +6,7 @@ export const parseProvideData = (element) => {
 };
 
 export const getObservabilityTabMetadata = ({ includeEl = false } = {}) => {
-  const el = document.querySelector(OBSERVABILITY_TAB_METADATA_EL_SELECTOR);
+  const el = document.querySelector('#js-observability-usage-quota-app');
 
   if (!el) return false;
 

@@ -1,7 +1,6 @@
 import { __ } from '~/locale';
 import { parseBoolean } from '~/lib/utils/common_utils';
 import apolloProvider from '../shared/provider';
-import { PAGES_TAB_METADATA_EL_SELECTOR } from '../constants';
 import PagesDeploymentsApp from './components/app.vue';
 
 export const parseProvideData = (el) => {
@@ -27,7 +26,7 @@ export const parseProvideData = (el) => {
 };
 
 export const getPagesTabMetadata = ({ viewType } = {}) => {
-  const el = document.querySelector(PAGES_TAB_METADATA_EL_SELECTOR);
+  const el = document.querySelector('#js-pages-deployments-app');
 
   if (!el) return false;
 
