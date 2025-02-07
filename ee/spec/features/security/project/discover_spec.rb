@@ -22,7 +22,7 @@ RSpec.describe 'Project security discover page', :js, :saas, feature_category: :
         expect(page).to have_content "#{project.name} is a personal project, so none of this is available."
         expect(page).to have_link(
           'Learn to move a project to a group',
-          href: help_page_path('tutorials/move_personal_project_to_group/index.md')
+          href: help_page_path('tutorials/move_personal_project_to_group/_index.md')
         )
       end
     end
