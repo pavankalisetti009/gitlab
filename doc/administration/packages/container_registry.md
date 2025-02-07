@@ -1004,7 +1004,7 @@ notifications:
 
 Prerequisites:
 
-- If you use a distributed architecture where the container registry runs on a different node than Sidekiq, follow the steps in [Configure the container registry when using an external Sidekiq](../sidekiq/index.md#configure-the-container-registry-when-using-an-external-sidekiq).
+- If you use a distributed architecture where the container registry runs on a different node than Sidekiq, follow the steps in [Configure the container registry when using an external Sidekiq](../sidekiq/_index.md#configure-the-container-registry-when-using-an-external-sidekiq).
 
 After you [create a cleanup policy](../../user/packages/container_registry/reduce_container_registry_storage.md#create-a-cleanup-policy), you can run it immediately to reduce the container registry storage space. You don't have to wait for the scheduled cleanup.
 

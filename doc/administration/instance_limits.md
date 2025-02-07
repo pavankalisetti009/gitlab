@@ -1027,7 +1027,7 @@ that only people you trust can add content.
 
 ## Snippets limits
 
-See the [documentation about Snippets settings](snippets/index.md).
+See the [documentation about Snippets settings](snippets/_index.md).
 
 ## Design Management limits
 

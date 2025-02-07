@@ -192,7 +192,7 @@ Clustered database support for other databases (for example, Praefect and Geo da
 The following options are available:
 
 - For non-Geo installations, either:
-  - Use one of the documented [PostgreSQL setups](../postgresql/index.md).
+  - Use one of the documented [PostgreSQL setups](../postgresql/_index.md).
   - Use your own third-party database setup. This requires [manual setup](#manual-database-setup).
 - For Geo instances, either:
   - Set up a separate [PostgreSQL instance](https://www.postgresql.org/docs/11/high-availability.html).
