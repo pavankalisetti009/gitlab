@@ -17,6 +17,7 @@ export default (graphQlFieldName, verificationEnabled) => {
             lastSyncFailure
             retryAt
             lastSyncedAt
+            modelRecordId
             verifiedAt @include (if: ${verificationEnabled})
             createdAt
           }
