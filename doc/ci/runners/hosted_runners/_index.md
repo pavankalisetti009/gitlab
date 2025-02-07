@@ -85,7 +85,7 @@ stored in a Google Cloud Storage (GCS) bucket. Cache contents not updated in the
 removed, based on the [object lifecycle management policy](https://cloud.google.com/storage/docs/lifecycle).
 The maximum size of an uploaded cache artifact can be 5 GB after the cache becomes a compressed archive.
 
-For more information about how caching works, see [Architecture diagram of hosted runners for GitLab.com](#architecture-diagram-of-hosted-runners-for-gitlabcom), and [Caching in GitLab CI/CD](../../caching/index.md).
+For more information about how caching works, see [Architecture diagram of hosted runners for GitLab.com](#architecture-diagram-of-hosted-runners-for-gitlabcom), and [Caching in GitLab CI/CD](../../caching/_index.md).
 
 ### Pricing of hosted runners for GitLab.com
 

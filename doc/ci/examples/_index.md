@@ -10,7 +10,7 @@ DETAILS:
 **Offering:** GitLab.com, GitLab Self-Managed, GitLab Dedicated
 
 This page contains links to a variety of examples that can help you understand how to
-implement [GitLab CI/CD](../index.md) for your specific use case.
+implement [GitLab CI/CD](../_index.md) for your specific use case.
 
 Examples are available in several forms. As a collection of:
 
@@ -25,7 +25,7 @@ The following table lists examples with step-by-step tutorials that are containe
 
 | Use case                      | Resource |
 |-------------------------------|----------|
-| Deployment with Dpl           | [Using `dpl` as deployment tool](deployment/index.md). |
+| Deployment with Dpl           | [Using `dpl` as deployment tool](deployment/_index.md). |
 | GitLab Pages                  | See the [GitLab Pages](../../user/project/pages/index.md) documentation for a complete example of deploying a static site. |
 | Multi project pipeline        | [Build, test deploy using multi project pipeline](https://gitlab.com/gitlab-examples/upstream-project). |
 | npm with semantic-release     | [Publish npm packages to the GitLab package registry using semantic-release](semantic-release.md). |

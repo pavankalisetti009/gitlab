@@ -560,7 +560,7 @@ delegate: install_java
 
 ## Combine CI/CD Components and CI/CD Steps
 
-[CI/CD components](../components/index.md) are reusable single pipeline configuration units. They are included in a pipeline when it is
+[CI/CD components](../components/_index.md) are reusable single pipeline configuration units. They are included in a pipeline when it is
 created, adding jobs and configuration to the pipeline. Files such as common scripts or programs
 from the component project cannot be referenced from a CI/CD job.
 

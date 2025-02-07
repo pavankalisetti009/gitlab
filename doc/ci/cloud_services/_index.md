@@ -110,6 +110,6 @@ The condition is validated against the JWT to create a trust specifically agains
 
 To connect with your cloud provider, see the following tutorials:
 
-- [Configure OpenID Connect in AWS](aws/index.md)
-- [Configure OpenID Connect in Azure](azure/index.md)
-- [Configure OpenID Connect in Google Cloud](google_cloud/index.md)
+- [Configure OpenID Connect in AWS](aws/_index.md)
+- [Configure OpenID Connect in Azure](azure/_index.md)
+- [Configure OpenID Connect in Google Cloud](google_cloud/_index.md)

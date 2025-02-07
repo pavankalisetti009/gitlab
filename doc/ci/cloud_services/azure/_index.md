@@ -17,7 +17,7 @@ This tutorial demonstrates how to use a JSON web token (JWT) in a GitLab CI/CD j
 to retrieve temporary credentials from Azure without needing to store secrets.
 
 To get started, configure OpenID Connect (OIDC) for identity federation between GitLab and Azure.
-For more information on using OIDC with GitLab, read [Connect to cloud services](../index.md).
+For more information on using OIDC with GitLab, read [Connect to cloud services](../_index.md).
 
 Prerequisites:
 
@@ -221,7 +221,7 @@ CI/CD variables, from the Azure Portal:
 1. Under `Certificates & secrets`, go to `Federated credentials` to review your
    Azure AD federated identity credentials.
 
-Review [Connect to cloud services](../index.md) for further details.
+Review [Connect to cloud services](../_index.md) for further details.
 
 ### `Request to External OIDC endpoint failed` message
 

@@ -9,13 +9,13 @@ DETAILS:
 **Tier:** Free, Premium, Ultimate
 **Offering:** GitLab.com, GitLab Self-Managed, GitLab Dedicated
 
-CI/CD jobs are the fundamental elements of a [GitLab CI/CD pipeline](../pipelines/index.md).
+CI/CD jobs are the fundamental elements of a [GitLab CI/CD pipeline](../pipelines/_index.md).
 Jobs are configured in the `.gitlab-ci.yml` file with a list of commands to execute
 to accomplish tasks like building, testing, or deploying code.
 
 Jobs:
 
-- Execute on a [runner](../runners/index.md), for example in a Docker container.
+- Execute on a [runner](../runners/_index.md), for example in a Docker container.
 - Run independently from other jobs.
 - Have a [job log](job_logs.md) with the full execution log for the job.
 
@@ -26,7 +26,7 @@ of the job's execution, including keywords that:
 - Group jobs together in collections called [stages](../yaml/_index.md#stages).
   Stages run in sequence, while all jobs in a stage can run in parallel.
 - Define [CI/CD variables](../variables/_index.md) for flexible configuration.
-- Define [caches](../caching/index.md) to speed up job execution.
+- Define [caches](../caching/_index.md) to speed up job execution.
 - Save files as [artifacts](job_artifacts.md) which can be used by other jobs.
 
 ## Add a job to a pipeline
@@ -190,8 +190,8 @@ When you access a pipeline, you can see the related jobs for that pipeline.
 
 The order of jobs in a pipeline depends on the type of pipeline graph.
 
-- For [full pipeline graphs](../pipelines/index.md#pipeline-details), jobs are sorted by name.
-- For [pipeline mini graphs](../pipelines/index.md#pipeline-mini-graphs), jobs are sorted by status, and then by name.
+- For [full pipeline graphs](../pipelines/_index.md#pipeline-details), jobs are sorted by name.
+- For [pipeline mini graphs](../pipelines/_index.md#pipeline-mini-graphs), jobs are sorted by status, and then by name.
   The job status order is:
 
   1. failed
@@ -233,7 +233,7 @@ You can filter the list by [job status](#view-jobs-in-a-pipeline) and [job name]
 
 ### Group similar jobs together in pipeline views
 
-If you have many similar jobs, your [pipeline graph](../pipelines/index.md#pipeline-details)
+If you have many similar jobs, your [pipeline graph](../pipelines/_index.md#pipeline-details)
 becomes long and hard to read.
 
 You can automatically group similar jobs together. If the job names are formatted in a certain way,
@@ -289,7 +289,7 @@ job names are not removed.
 When a pipeline fails or is allowed to fail, there are several places where you
 can find the reason:
 
-- In the [pipeline graph](../pipelines/index.md#pipeline-details), in the pipeline details view.
+- In the [pipeline graph](../pipelines/_index.md#pipeline-details), in the pipeline details view.
 - In the pipeline widgets, in the merge requests and commit pages.
 - In the job views, in the global and detailed views of a job.
 

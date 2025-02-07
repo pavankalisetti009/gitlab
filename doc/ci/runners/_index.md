@@ -36,7 +36,7 @@ The assigned runner receives the job details. The runner prepares the environmen
 
 When deciding on which runners you want to execute your CI/CD jobs, you can choose:
 
-- [GitLab-hosted runners](index.md) for GitLab.com or GitLab Dedicated users.
+- [GitLab-hosted runners](hosted_runners/_index.md) for GitLab.com or GitLab Dedicated users.
 - [Self-managed runners](https://docs.gitlab.com/runner/) for all GitLab installations.
 
 Runners can be group, project, or instance runners. GitLab-hosted runners are instance runners.
