@@ -36,6 +36,7 @@ export const initAiSettings = (id, component) => {
     configurationSettingsPath,
     areExperimentSettingsAllowed,
     showRedirectBanner,
+    enabledExpandedLogging,
   } = el.dataset;
 
   let cascadingSettingsDataParsed;
@@ -61,6 +62,7 @@ export const initAiSettings = (id, component) => {
       showEarlyAccessBanner: parseBoolean(showEarlyAccessBanner),
       betaSelfHostedModelsEnabled: parseBoolean(betaSelfHostedModelsEnabled),
       toggleBetaModelsPath,
+      enabledExpandedLogging: parseBoolean(enabledExpandedLogging),
       earlyAccessPath,
       amazonQAvailable: parseBoolean(amazonQAvailable),
       onGeneralSettingsPage: parseBoolean(onGeneralSettingsPage),
