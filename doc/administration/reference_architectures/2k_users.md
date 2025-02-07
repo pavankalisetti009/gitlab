@@ -626,7 +626,7 @@ you can scale it accordingly. Refer to the [scaling documentation](_index.md#sca
 NOTE:
 When configuring additional GitLab functionality such as Container Registry, SAML, or LDAP,
 update the Sidekiq configuration in addition to the Rails configuration.
-Refer to the [external Sidekiq documentation](../sidekiq/index.md) for more information.
+Refer to the [external Sidekiq documentation](../sidekiq/_index.md) for more information.
 
 To configure the Sidekiq server, on the server node you want to use for Sidekiq:
 

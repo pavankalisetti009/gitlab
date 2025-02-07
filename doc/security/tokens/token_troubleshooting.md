@@ -171,7 +171,7 @@ you might have unexpected authentication failures when trying to sign into GitLa
 on that date.
 
 To manage this issue, you should upgrade to GitLab 17.2 or later, because these versions
-contain a [tool that assists with analyzing, extending, or remove token expiration dates](../../administration/raketasks/tokens/index.md).
+contain a [tool that assists with analyzing, extending, or remove token expiration dates](../../administration/raketasks/tokens/_index.md).
 
 If you cannot run the tool, you can also run scripts in self-managed instances to identify
 tokens that either:

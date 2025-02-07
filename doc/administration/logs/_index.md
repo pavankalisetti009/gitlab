@@ -1234,7 +1234,7 @@ These statistics are logged on .com only, disabled on self-deployments.
 
 ## Gathering logs
 
-When [troubleshooting](../troubleshooting/index.md) issues that aren't localized to one of the
+When [troubleshooting](../troubleshooting/_index.md) issues that aren't localized to one of the
 previously listed components, it's helpful to simultaneously gather multiple logs and statistics
 from a GitLab instance.
 

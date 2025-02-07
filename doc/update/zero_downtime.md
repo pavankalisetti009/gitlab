@@ -323,7 +323,7 @@ In addition to the above, Rails is where the main database migrations need to be
 
 ### Sidekiq
 
-[Sidekiq](../administration/sidekiq/index.md) follows the same underlying process as others to upgrading without downtime.
+[Sidekiq](../administration/sidekiq/_index.md) follows the same underlying process as others to upgrading without downtime.
 
 Run through the following steps sequentially on each component node to perform the upgrade:
 
