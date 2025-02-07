@@ -208,6 +208,14 @@ module Security
       end
     end
 
+    def self_and_ancestor_configuration_ids
+      if project?
+        [*group_configurations_ids(project.namespace), id]
+      else
+        group_configurations_ids(namespace)
+      end
+    end
+
     private
 
     def yaml_differs_from_db?(policies_persisted_in_database, policies_in_policy_yaml)
@@ -249,6 +257,11 @@ module Security
       Gitlab::ErrorTracking.log_exception(e, action: action, security_orchestration_policy_configuration_id: id)
 
       nil
+    end
+
+    def group_configurations_ids(group)
+      parent_group_ids = group.self_and_ancestor_ids
+      self.class.for_namespace(parent_group_ids).pluck_primary_key
     end
   end
 end

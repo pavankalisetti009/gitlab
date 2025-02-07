@@ -9,7 +9,12 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationServ
     create(:merge_request, source_project: project, target_project: project)
   end
 
-  let_it_be(:policy_configuration) { create(:security_orchestration_policy_configuration, project: project) }
+  let_it_be(:security_policy_project) { create(:project, :repository) }
+  let_it_be_with_reload(:policy_configuration) do
+    create(:security_orchestration_policy_configuration, project: project,
+      security_policy_management_project: security_policy_project)
+  end
+
   let_it_be(:protected_branch) do
     create(:protected_branch, name: merge_request.target_branch, project: project)
   end
@@ -32,7 +37,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationServ
       vulnerability_states: vulnerability_states,
       protected_branches: [protected_branch],
       scanners: rule_scanners,
-      scan_result_policy_read: policy_a)
+      scan_result_policy_read: policy_a,
+      security_orchestration_policy_configuration: policy_configuration)
   end
 
   let!(:approval_rule_1) do
@@ -41,7 +47,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationServ
       approval_project_rule: approval_project_rule_1,
       vulnerability_states: vulnerability_states,
       scanners: rule_scanners,
-      scan_result_policy_read: policy_a)
+      scan_result_policy_read: policy_a,
+      security_orchestration_policy_configuration: policy_configuration)
   end
 
   let(:approval_project_rule_2) do
@@ -50,7 +57,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationServ
       vulnerability_states: vulnerability_states,
       protected_branches: [protected_branch],
       scanners: rule_scanners,
-      scan_result_policy_read: policy_b)
+      scan_result_policy_read: policy_b,
+      security_orchestration_policy_configuration: policy_configuration)
   end
 
   let!(:approval_rule_2) do
@@ -59,7 +67,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationServ
       approval_project_rule: approval_project_rule_2,
       vulnerability_states: vulnerability_states,
       scanners: rule_scanners,
-      scan_result_policy_read: policy_b)
+      scan_result_policy_read: policy_b,
+      security_orchestration_policy_configuration: policy_configuration)
   end
 
   let(:report_type) { :scan_finding }
@@ -160,13 +169,23 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationServ
           end
         end
 
-        context 'with scan execution policies defined for the errored rule' do
-          let(:scans) { %w[dependency_scanning container_scanning] }
-          let(:scan_execution_policy) do
-            build(:scan_execution_policy, actions: scans.map { |scan| { scan: scan } })
+        shared_examples_for 'does not create a violation' do
+          it 'does not create violations' do
+            expect { execute_with_error }.not_to change { violated_policies }
+            expect(violated_policies).to be_empty
           end
+        end
 
-          let(:policy_yaml) { build(:orchestration_policy_yaml, scan_execution_policy: [scan_execution_policy]) }
+        shared_examples_for 'creates a violation' do
+          it 'creates violations' do
+            execute_with_error
+
+            expect(violated_policies).to contain_exactly policy_a
+          end
+        end
+
+        shared_examples_for 'rule scanners enforced by execution policy' do
+          let(:scans) { %w[dependency_scanning container_scanning] }
           let(:unblock_enabled) { true }
 
           subject(:execute_with_error) do
@@ -181,13 +200,10 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationServ
             end
           end
 
-          it 'does not create violations' do
-            expect { execute_with_error }.not_to change { violated_policies }
-            expect(violated_policies).to be_empty
-          end
+          it_behaves_like 'does not create a violation'
 
           describe 'events' do
-            subject { service.error!(approval_rule_1, :scan_removed, missing_scans: rule_scanners) }
+            subject { service.error!(approval_rule_1, :missing_artifacts, missing_scans: rule_scanners) }
 
             it_behaves_like 'internal event tracking' do
               let(:category) { described_class.name }
@@ -203,29 +219,19 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationServ
           context 'when the unblocking is not enabled by the policy' do
             let(:unblock_enabled) { false }
 
-            it 'updates violations' do
-              execute_with_error
-
-              expect(violated_policies).to contain_exactly policy_a
-            end
+            it_behaves_like 'creates a violation'
           end
 
           context 'when rule has default vulnerability_states' do
             let(:vulnerability_states) { [] }
 
-            it 'does not create violations' do
-              expect { execute_with_error }.not_to change { violated_policies }
-              expect(violated_policies).to be_empty
-            end
+            it_behaves_like 'does not create a violation'
           end
 
           context 'when rule targets different scanners' do
             let(:rule_scanners) { %w[secret_detection] }
 
-            it 'updates violations' do
-              execute_with_error
-              expect(violated_policies).to contain_exactly policy_a
-            end
+            it_behaves_like 'creates a violation'
           end
 
           context 'when rule is not excludable' do
@@ -233,11 +239,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationServ
               let(:report_type) { :scan_finding }
               let(:vulnerability_states) { %w[detected] }
 
-              it 'updates violations' do
-                execute_with_error
-
-                expect(violated_policies).to contain_exactly policy_a
-              end
+              it_behaves_like 'creates a violation'
             end
 
             context 'when report is license_scanning' do
@@ -247,23 +249,137 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationServ
                 policy_a.update!(license_states: ['detected'])
               end
 
-              it 'updates violations' do
-                execute_with_error
-
-                expect(violated_policies).to contain_exactly policy_a
-              end
+              it_behaves_like 'creates a violation'
             end
 
             context 'when report is any_merge_request' do
               let(:report_type) { :any_merge_request }
 
-              it 'updates violations' do
-                execute_with_error
-
-                expect(violated_policies).to contain_exactly policy_a
-              end
+              it_behaves_like 'creates a violation'
             end
           end
+        end
+
+        context 'with pipeline execution policies defined for the errored rule' do
+          let(:pipeline_execution_policy) { build(:pipeline_execution_policy) }
+          let(:policy_yaml) do
+            build(:orchestration_policy_yaml, pipeline_execution_policy: [pipeline_execution_policy])
+          end
+
+          let(:policy_metadata) { { enforced_scans: scans } }
+          let(:pipeline_execution_policy_configuration) { policy_configuration }
+
+          before do
+            create(:security_policy, :pipeline_execution_policy,
+              security_orchestration_policy_configuration: pipeline_execution_policy_configuration,
+              linked_projects: [project],
+              metadata: policy_metadata)
+          end
+
+          include_context 'rule scanners enforced by execution policy'
+
+          context 'when policy metadata is not present' do
+            let(:policy_metadata) { {} }
+
+            it_behaves_like 'creates a violation'
+          end
+
+          context 'when feature flag "unblock_rules_using_pipeline_execution_policies" is disabled' do
+            before do
+              stub_feature_flags(unblock_rules_using_pipeline_execution_policies: false)
+            end
+
+            it_behaves_like 'creates a violation'
+          end
+
+          context 'when scans are enforced by both pipeline and scan execution policies' do
+            let(:scans) { %w[dependency_scanning] }
+            let(:scan_execution_policy) do
+              build(:scan_execution_policy, actions: scan_execution_policy_scans.map { |scan| { scan: scan } })
+            end
+
+            let(:policy_yaml) do
+              build(:orchestration_policy_yaml,
+                pipeline_execution_policy: [pipeline_execution_policy],
+                scan_execution_policy: [scan_execution_policy])
+            end
+
+            context 'when some scans are enforced by PEP and some by SEP' do
+              let(:scan_execution_policy_scans) { %w[container_scanning] }
+
+              it_behaves_like 'does not create a violation'
+
+              context 'when feature flag "unblock_rules_using_pipeline_execution_policies" is disabled' do
+                before do
+                  stub_feature_flags(unblock_rules_using_pipeline_execution_policies: false)
+                end
+
+                it_behaves_like 'creates a violation'
+
+                context 'when all scans related to the rule are enforced by SEP' do
+                  let(:scan_execution_policy_scans) { %w[dependency_scanning container_scanning] }
+
+                  it_behaves_like 'does not create a violation'
+                end
+              end
+            end
+
+            context 'when SEP enforces scans unrelated to the rule' do
+              let(:scan_execution_policy_scans) { %w[secret_detection] }
+
+              it_behaves_like 'creates a violation'
+            end
+          end
+
+          context 'with group policies' do
+            let_it_be(:parent_group) { create(:group) }
+            let_it_be(:group) { create(:group, parent: parent_group) }
+
+            before do
+              project.update!(group: group)
+            end
+
+            context 'when policy is defined for a configuration in a group' do
+              let_it_be(:pipeline_execution_policy_configuration) do
+                create(:security_orchestration_policy_configuration, :namespace,
+                  security_policy_management_project: security_policy_project, namespace: group)
+              end
+
+              it_behaves_like 'does not create a violation'
+            end
+
+            context 'when policy is defined for a configuration in a parent group' do
+              let_it_be(:pipeline_execution_policy_configuration) do
+                create(:security_orchestration_policy_configuration, :namespace,
+                  security_policy_management_project: security_policy_project, namespace: parent_group)
+              end
+
+              it_behaves_like 'does not create a violation'
+            end
+
+            context 'when policy is defined for a configuration in a descendent group' do
+              let_it_be(:descendent_group) { create(:group, parent: group) }
+              let_it_be(:pipeline_execution_policy_configuration) do
+                create(:security_orchestration_policy_configuration, :namespace,
+                  security_policy_management_project: security_policy_project, namespace: descendent_group)
+              end
+
+              # NOTE: Approval rules belong to `group` config,
+              # but pipeline execution policy is defined in the `descendant_group`.
+              # Rules only get unblocked by ancestors of the configuration that created them.
+              it_behaves_like 'creates a violation'
+            end
+          end
+        end
+
+        context 'with scan execution policies defined for the errored rule' do
+          let(:scan_execution_policy) do
+            build(:scan_execution_policy, actions: scans.map { |scan| { scan: scan } })
+          end
+
+          let(:policy_yaml) { build(:orchestration_policy_yaml, scan_execution_policy: [scan_execution_policy]) }
+
+          include_context 'rule scanners enforced by execution policy'
         end
       end
     end

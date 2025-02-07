@@ -299,6 +299,14 @@ module Security
       end
     end
 
+    def enforced_scans
+      metadata.fetch('enforced_scans', [])
+    end
+
+    def enforced_scans=(scans)
+      metadata['enforced_scans'] = scans
+    end
+
     private
 
     def link_policy_rules_project!(project, policy_rules = approval_policy_rules.undeleted)
