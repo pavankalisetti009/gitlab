@@ -19,7 +19,8 @@ import { SELF_HOSTED_MODEL_PLATFORMS, BEDROCK_DUMMY_ENDPOINT, RELEASE_STATES } f
 import ModelSelectDropdown from '../../custom_models/shared/model_select_dropdown.vue';
 import TestConnectionButton from './test_connection_button.vue';
 
-const isBedrockModelIdentifier = (identifier) => identifier.startsWith('bedrock/');
+const bedrockIdentifierPrefix = 'bedrock/';
+const isBedrockModelIdentifier = (identifier) => identifier.startsWith(bedrockIdentifierPrefix);
 const baseFormFieldClasses = ['gl-bg-subtle', 'gl-w-full', 'gl-p-6', 'gl-pb-2', 'gl-m-0'];
 const baseFormFields = {
   name: {
@@ -66,7 +67,12 @@ const bedrockFormFields = {
     validators: [
       formValidators.required(s__('AdminSelfHostedModels|Please enter a model identifier.')),
       formValidators.factory(
-        s__('AdminSelfHostedModels|Model identifier must start with "bedrock/"'),
+        sprintf(
+          s__(
+            'AdminSelfHostedModels|Model identifier must start with "%{bedrockIdentifierPrefix}"',
+          ),
+          { bedrockIdentifierPrefix },
+        ),
         (val) => isBedrockModelIdentifier(val),
       ),
       formValidators.factory(
@@ -78,7 +84,7 @@ const bedrockFormFields = {
       class: baseFormFieldClasses,
     },
     inputAttrs: {
-      placeholder: s__('AdminSelfHostedModels|bedrock/'),
+      placeholder: bedrockIdentifierPrefix,
     },
   },
 };
