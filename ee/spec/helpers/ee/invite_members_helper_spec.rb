@@ -108,7 +108,7 @@ RSpec.describe EE::InviteMembersHelper, feature_category: :groups_and_projects d
         stub_member_access_level(group, owner: current_user)
 
         expect(helper.common_invite_modal_dataset(project)[:add_seats_href])
-          .to eq(help_page_url("subscriptions/self_managed/index.md", anchor: "add-seats-to-a-subscription"))
+          .to eq(help_page_url("subscriptions/self_managed/_index.md", anchor: "add-seats-to-a-subscription"))
       end
 
       context "when seat control feature is not licensed" do

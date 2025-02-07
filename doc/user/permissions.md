@@ -491,11 +491,11 @@ Group permissions for [group features](group/index.md):
 | Change custom settings for the [project integrations](project/integrations/index.md)       |       |         |          |           |     ✓      |   ✓   |       |
 | Edit [epic](group/epics/index.md) comments (posted by any user)                            |       |    ✓    |          |           |     ✓      |   ✓   |       |
 | Fork project into a group                                                                  |       |         |          |           |     ✓      |   ✓   |       |
-| View [Billing](../subscriptions/gitlab_com/index.md#view-gitlabcom-subscription)           |       |         |          |           |            |   ✓   | Does not apply to subgroups |
+| View [Billing](../subscriptions/gitlab_com/_index.md#view-gitlabcom-subscription)          |       |         |          |           |            |   ✓   | Does not apply to subgroups |
 | View group [Usage Quotas](storage_usage_quotas.md) page                                    |       |         |          |           |            |   ✓   | Does not apply to subgroups |
 | [Migrate group](group/import/index.md)                                                     |       |         |          |           |            |   ✓   |       |
 | Delete group                                                                               |       |         |          |           |            |   ✓   |       |
-| Manage [subscriptions, storage, and compute minutes](../subscriptions/gitlab_com/index.md) |       |         |          |           |            |   ✓   |       |
+| Manage [subscriptions, storage, and compute minutes](../subscriptions/gitlab_com/_index.md) |       |         |          |           |            |   ✓   |       |
 | Manage [group access tokens](group/settings/group_access_tokens.md)                        |       |         |          |           |            |   ✓   |       |
 | Change group visibility level                                                              |       |         |          |           |            |   ✓   |       |
 | Edit group settings                                                                        |       |         |          |           |            |   ✓   |       |

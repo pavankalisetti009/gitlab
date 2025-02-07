@@ -102,13 +102,13 @@ export const SORT_OPTIONS = [
   },
 ];
 export const EXPLORE_PAID_PLANS_CLICKED = 'explore_paid_plans_clicked';
-export const seatsInUseLink = helpPagePath('subscriptions/gitlab_com/index', {
+export const seatsInUseLink = helpPagePath('subscriptions/gitlab_com/_index', {
   anchor: 'how-seat-usage-is-determined',
 });
-export const seatsOwedLink = helpPagePath('subscriptions/gitlab_com/index', {
+export const seatsOwedLink = helpPagePath('subscriptions/gitlab_com/_index', {
   anchor: 'seats-owed',
 });
-export const seatsUsedLink = helpPagePath('subscriptions/gitlab_com/index', {
+export const seatsUsedLink = helpPagePath('subscriptions/gitlab_com/_index', {
   anchor: 'view-gitlabcom-subscription',
 });
 export const emailNotVisibleTooltipText = s__(

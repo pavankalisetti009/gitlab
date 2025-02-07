@@ -38,7 +38,7 @@ RSpec.describe 'Display approaching user count limit banner', :js, feature_categ
 
       expect(page).to have_content('Your instance is approaching its licensed user count')
       expect(page).to have_content('users cannot be invited or added to the instance.')
-      expect(page).to have_link('Purchase more seats', href: help_page_path('subscriptions/gitlab_com/index.md',
+      expect(page).to have_link('Purchase more seats', href: help_page_path('subscriptions/gitlab_com/_index.md',
         anchor: 'add-seats-to-subscription'))
     end
   end

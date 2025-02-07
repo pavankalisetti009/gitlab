@@ -37,7 +37,7 @@ module EE
         if ::Gitlab::CurrentSettings.seat_control_block_overages?
           dataset[:has_bso_feature_enabled] = true.to_s
           dataset[:add_seats_href] = help_page_url(
-            "subscriptions/self_managed/index.md",
+            "subscriptions/self_managed/_index.md",
             anchor: "add-seats-to-a-subscription"
           )
         else

@@ -9,5 +9,5 @@
     - c.with_body do
       %p= _('Your namespace has used all the seats in your subscription and users can no longer be invited or added to the namespace.')
     - c.with_actions do
-      = render Pajamas::ButtonComponent.new(variant: :confirm, href: help_page_path('subscriptions/gitlab_com/index.md', anchor: 'add-seats-to-subscription')) do
+      = render Pajamas::ButtonComponent.new(variant: :confirm, href: help_page_path('subscriptions/gitlab_com/_index.md', anchor: 'add-seats-to-subscription')) do
         = s_('Purchase more seats')

@@ -78,7 +78,7 @@ module Namespaces
         def alert_message_cta
           manage_storage_link = help_page_path('user/storage_usage_quotas.md', anchor: 'manage-storage-usage')
           group_member_link = group_group_members_path(root_namespace)
-          purchase_more_link = help_page_path('subscriptions/gitlab_com/index.md', anchor: 'purchase-more-storage')
+          purchase_more_link = help_page_path('subscriptions/gitlab_com/_index.md', anchor: 'purchase-more-storage')
           text_args = {
             **tag_pair(link_to('', manage_storage_link), :manage_storage_link_start, :link_end),
             **tag_pair(link_to('', group_member_link), :group_member_link_start, :link_end),
