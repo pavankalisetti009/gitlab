@@ -331,7 +331,7 @@ To merge topics:
 ## Administering Gitaly servers
 
 You can list all Gitaly servers in the GitLab instance from the **Admin** area's **Gitaly servers**
-page. For more details, see [Gitaly](gitaly/index.md).
+page. For more details, see [Gitaly](gitaly/_index.md).
 
 To access the **Gitaly servers** page:
 

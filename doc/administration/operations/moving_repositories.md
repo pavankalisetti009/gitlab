@@ -29,7 +29,7 @@ For more information, see:
   querying and scheduling snippet repository moves.
 - [The API documentation](../../api/group_repository_storage_moves.md) details the endpoints for
   querying and scheduling group repository moves.
-- [Migrate to Gitaly Cluster](../gitaly/index.md#migrate-to-gitaly-cluster).
+- [Migrate to Gitaly Cluster](../gitaly/_index.md#migrate-to-gitaly-cluster).
 
 ### Moving Repositories
 

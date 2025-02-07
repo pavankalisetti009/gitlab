@@ -420,7 +420,7 @@ are supported and can be added if needed.
 
 ## Configure Gitaly
 
-[Gitaly](../gitaly/index.md) server node requirements are dependent on data size,
+[Gitaly](../gitaly/_index.md) server node requirements are dependent on data size,
 specifically the number of projects and those projects' sizes.
 
 WARNING:

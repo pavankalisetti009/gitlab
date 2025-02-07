@@ -320,7 +320,7 @@ Any "burstable" instance types are not recommended due to inconsistent performan
 
 Most standard disk types are expected to work for GitLab. However, be aware of the following specific call-outs:
 
-- [Gitaly](../gitaly/index.md#disk-requirements) requires at least 8,000 input/output operations per second (IOPS) for read operations, and 2,000 IOPS for write operations.
+- [Gitaly](../gitaly/_index.md#disk-requirements) requires at least 8,000 input/output operations per second (IOPS) for read operations, and 2,000 IOPS for write operations.
 - We don't recommend the use of any disk types that are "burstable" due to inconsistent performance.
 
 Other disk types are expected to work with GitLab. Choose based on your requirements such as durability or cost.
@@ -835,7 +835,7 @@ For more information, see the following documentation:
 
 - [Redis to multi-node Redis w/ Redis Sentinel](../redis/replication_and_failover.md#switching-from-an-existing-single-machine-installation)
 - [Postgres to multi-node Postgres w/ Consul + PgBouncer](../postgresql/moving.md)
-- [Gitaly to Gitaly Cluster w/ Praefect](../gitaly/index.md#migrate-to-gitaly-cluster)
+- [Gitaly to Gitaly Cluster w/ Praefect](../gitaly/_index.md#migrate-to-gitaly-cluster)
 
 ### Upgrades
 
