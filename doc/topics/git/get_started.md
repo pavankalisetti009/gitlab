@@ -112,7 +112,7 @@ the Git client on your computer.
 
 The installation process varies depending on your operating system.
 For example, Windows, MacOS, or Linux.
-For information on how to install Git, see [Install Git](how_to_install_git/index.md).
+For information on how to install Git, see [Install Git](how_to_install_git/_index.md).
 
 ## Git commands
 

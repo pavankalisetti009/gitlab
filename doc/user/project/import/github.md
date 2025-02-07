@@ -128,7 +128,7 @@ To import your GitHub repository using a GitHub personal access token:
    1. Go to <https://github.com/settings/tokens/new>.
    1. In the **Note** field, enter a token description.
    1. Select the `repo` scope.
-   1. Optional. To [import collaborators](#select-additional-items-to-import), or if your project has [Git LFS files](../../../topics/git/lfs/index.md), select the `read:org` scope.
+   1. Optional. To [import collaborators](#select-additional-items-to-import), or if your project has [Git LFS files](../../../topics/git/lfs/_index.md), select the `read:org` scope.
    1. Select **Generate token**.
 1. On the GitLab left sidebar, at the top, select **Create new** (**{plus}**) and **New project/repository**.
 1. Select **Import project** and then **GitHub**.
@@ -157,7 +157,7 @@ To import your GitHub repository using the GitLab REST API:
    1. Go to <https://github.com/settings/tokens/new>.
    1. In the **Note** field, enter a token description.
    1. Select the `repo` scope.
-   1. Optional. To [import collaborators](#select-additional-items-to-import), or if your project has [Git LFS files](../../../topics/git/lfs/index.md), select the `read:org` scope.
+   1. Optional. To [import collaborators](#select-additional-items-to-import), or if your project has [Git LFS files](../../../topics/git/lfs/_index.md), select the `read:org` scope.
    1. Select **Generate token**.
 1. Use the [GitLab REST API](../../../api/import.md#import-repository-from-github) to import your GitHub repository.
 
@@ -357,7 +357,7 @@ The following items of a project are imported:
   be imported [as an additional item](#select-additional-items-to-import). The feature flag was removed.
 - Pull request review comments.
 - Regular issue and pull request comments.
-- [Git Large File Storage (LFS) Objects](../../../topics/git/lfs/index.md).
+- [Git Large File Storage (LFS) Objects](../../../topics/git/lfs/_index.md).
 - Pull request reviews.
 - Pull request assigned reviewers. [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/355137) in GitLab 15.6.
 - Pull request "merged by" information.

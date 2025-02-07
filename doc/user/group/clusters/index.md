@@ -60,7 +60,7 @@ your cluster, resources for your projects are automatically created. See the
 section for details on which resources GitLab creates for you.
 
 For clusters not managed by GitLab, project-specific resources aren't created
-automatically. If you're using [Auto DevOps](../../../topics/autodevops/index.md)
+automatically. If you're using [Auto DevOps](../../../topics/autodevops/_index.md)
 for deployments with a cluster not managed by GitLab, you must ensure:
 
 - The project's deployment service account has permissions to deploy to
@@ -89,7 +89,7 @@ To clear the cache:
 Domains at the cluster level permit support for multiple domains
 per [multiple Kubernetes clusters](#multiple-kubernetes-clusters) When specifying a domain,
 this is automatically set as an environment variable (`KUBE_INGRESS_BASE_DOMAIN`) during
-the [Auto DevOps](../../../topics/autodevops/index.md) stages.
+the [Auto DevOps](../../../topics/autodevops/_index.md) stages.
 
 The domain should have a wildcard DNS configured to the Ingress IP address. [More details](../../project/clusters/gitlab_managed_clusters.md#base-domain).
 
