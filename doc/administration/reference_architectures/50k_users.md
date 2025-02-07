@@ -2144,7 +2144,7 @@ the [HTTPS documentation](https://docs.gitlab.com/omnibus/settings/ssl/index.htm
 ## Configure Prometheus
 
 The Linux package can be used to configure a standalone Monitoring node
-running [Prometheus](../monitoring/prometheus/index.md).
+running [Prometheus](../monitoring/prometheus/_index.md).
 
 The following IP will be used as an example:
 

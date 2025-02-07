@@ -76,7 +76,7 @@ Each architecture is designed to handle specific RPS targets for different types
 
 Finding out the RPS can depend notably on the specific environment setup and monitoring stack. Some potential options include:
 
-- [GitLab Prometheus](../monitoring/prometheus/index.md#sample-prometheus-queries) with queries like `sum(irate(gitlab_transaction_duration_seconds_count{controller!~'HealthController|MetricsController|'}[1m])) by (controller, action)`.
+- [GitLab Prometheus](../monitoring/prometheus/_index.md#sample-prometheus-queries) with queries like `sum(irate(gitlab_transaction_duration_seconds_count{controller!~'HealthController|MetricsController|'}[1m])) by (controller, action)`.
 - [`get-rps` script](https://gitlab.com/gitlab-com/support/toolbox/dotfiles/-/blob/main/scripts/get-rps.rb?ref_type=heads) from GitLab Support.
 - Other monitoring solutions.
 - Load Balancer statistics.
@@ -848,10 +848,10 @@ You should upgrade a reference architecture in the same order as you created it.
 
 ### Monitoring
 
-You can monitor your infrastructure and [GitLab](../monitoring/index.md) using various options. See the selected monitoring solution's documentation for more information.
+You can monitor your infrastructure and [GitLab](../monitoring/_index.md) using various options. See the selected monitoring solution's documentation for more information.
 
 NOTE:
-GitLab application is bundled with [Prometheus and various Prometheus compatible exporters](../monitoring/prometheus/index.md) that could be hooked into your solution.
+GitLab application is bundled with [Prometheus and various Prometheus compatible exporters](../monitoring/prometheus/_index.md) that could be hooked into your solution.
 
 ## Update history
 

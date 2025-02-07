@@ -205,7 +205,7 @@ By default, [Prometheus](https://prometheus.io) and its related exporters are en
 These processes consume approximately 200 MB of memory.
 
 For more information, see
-[monitoring GitLab with Prometheus](../administration/monitoring/prometheus/index.md).
+[monitoring GitLab with Prometheus](../administration/monitoring/prometheus/_index.md).
 
 ## Supported web browsers
 

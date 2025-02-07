@@ -749,7 +749,7 @@ GitLab packages the popular Database to provide storage for Application meta dat
 
 - [Project page](https://github.com/prometheus/prometheus/blob/main/README.md)
 - Configuration:
-  - [Omnibus](../administration/monitoring/prometheus/index.md)
+  - [Omnibus](../administration/monitoring/prometheus/_index.md)
   - [Charts](https://docs.gitlab.com/charts/installation/deployment.html#prometheus)
 - Layer: Monitoring
 - Process: `prometheus`

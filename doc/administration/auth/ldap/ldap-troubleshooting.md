@@ -196,7 +196,7 @@ The user should now be able to sign in.
 #### Email has already been taken
 
 A user tries to sign in with the correct LDAP credentials, is denied access,
-and the [production.log](../../logs/index.md#productionlog) shows an error that looks like this:
+and the [production.log](../../logs/_index.md#productionlog) shows an error that looks like this:
 
 ```plaintext
 (LDAP) Error saving user <USER DN> (email@example.com): ["Email has already been taken"]
@@ -826,10 +826,10 @@ users, [see what to do when no users are found](#no-users-are-found).
 ### GitLab logs
 
 If a user account is blocked or unblocked due to the LDAP configuration, a
-message is [logged to `application_json.log`](../../logs/index.md#application_jsonlog).
+message is [logged to `application_json.log`](../../logs/_index.md#application_jsonlog).
 
 If there is an unexpected error during an LDAP lookup (configuration error,
-timeout), the sign-in is rejected and a message is [logged to `production.log`](../../logs/index.md#productionlog).
+timeout), the sign-in is rejected and a message is [logged to `production.log`](../../logs/_index.md#productionlog).
 
 ### ldapsearch
 

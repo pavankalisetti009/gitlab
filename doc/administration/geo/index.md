@@ -367,7 +367,7 @@ To find out how to disable Geo, see [Disabling Geo](replication/disable_geo.md).
 
 Geo stores structured log messages in a `geo.log` file.
 
-For more information on how to access and consume Geo logs, see the [Geo section in the log system documentation](../logs/index.md#geolog).
+For more information on how to access and consume Geo logs, see the [Geo section in the log system documentation](../logs/_index.md#geolog).
 
 ## Disaster Recovery
 

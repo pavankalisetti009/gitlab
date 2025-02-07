@@ -59,8 +59,8 @@ the tiers are no longer mentioned in GitLab documentation:
     - Rake tasks for [LDAP tasks](../administration/raketasks/ldap.md), including
       [syncing groups](../administration/raketasks/ldap.md#run-a-group-sync)
 - Logging:
-  - [`audit_json.log`](../administration/logs/index.md#audit_jsonlog) (specific entries)
-  - [`elasticsearch.log`](../administration/logs/index.md#elasticsearchlog)
+  - [`audit_json.log`](../administration/logs/_index.md#audit_jsonlog) (specific entries)
+  - [`elasticsearch.log`](../administration/logs/_index.md#elasticsearchlog)
 - Merge requests:
   - [Full code quality reports in the code quality tab](../ci/testing/code_quality.md#pipeline-details-view)
   - [Merge request approvals](../user/project/merge_requests/approvals/_index.md)

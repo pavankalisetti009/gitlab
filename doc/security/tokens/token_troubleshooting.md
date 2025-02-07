@@ -30,7 +30,7 @@ Prerequisites:
 You must:
 
 - Be an administrator.
-- Have access to the [`api_json.log`](../../administration/logs/index.md#api_jsonlog) file.
+- Have access to the [`api_json.log`](../../administration/logs/_index.md#api_jsonlog) file.
 
 To identify which `401 Unauthorized` requests are failing due to
 expired access tokens, use the following fields in the `api_json.log` file:
