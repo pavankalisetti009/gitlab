@@ -15,11 +15,13 @@ module Gitlab
         DOWNLOAD_URL = 'https://gitlab.com/gitlab-org/ai-powered/datasets/-/package_files/135727282/download'
         GROUP_IMPORT_URL = '/api/v4/groups/import'
         PROJECT_IMPORT_URL = '/api/v4/projects/import'
+        TIME_LIMIT = 180
 
         def initialize(group)
           @main_group = group
           @current_user = User.find_by(username: 'root') # rubocop:disable CodeReuse/ActiveRecord -- we need admin user
           @errors = []
+          @project_ids = []
         end
 
         def execute
@@ -30,6 +32,7 @@ module Gitlab
           download_and_unpack_file
           create_subgroups
           create_subprojects
+          check_import_status
           delete_temporary_directory!
           clean_up_token!
 
@@ -38,7 +41,8 @@ module Gitlab
 
         private
 
-        attr_reader :main_group, :current_user, :token_value, :token, :errors
+        attr_reader :main_group, :current_user, :token_value, :token
+        attr_accessor :errors, :project_ids
 
         # rubocop:disable Style/GuardClause -- Keep it explicit
         def ensure_dev_mode!
@@ -116,9 +120,6 @@ module Gitlab
         def create_subgroup(params)
           url = "#{instance_url}#{GROUP_IMPORT_URL}"
 
-          headers = {
-            'PRIVATE-TOKEN' => token_value
-          }
           body = {
             name: params[:name],
             path: params[:name],
@@ -132,15 +133,12 @@ module Gitlab
           errors << { group: params[:name] } unless response.success?
 
           puts "API response for #{params[:name]} import"
-          puts response.body
+          puts response.parsed_response
         end
 
         def create_subproject(params)
           url = "#{instance_url}#{PROJECT_IMPORT_URL}"
 
-          headers = {
-            'PRIVATE-TOKEN' => token_value
-          }
           body = {
             name: params[:name],
             path: params[:name],
@@ -152,8 +150,9 @@ module Gitlab
 
           errors << { project: params[:name] } unless response.success?
 
+          project_ids << response.parsed_response.fetch('id')
           puts "API response for #{params[:name]} import"
-          puts response.body
+          puts response.parsed_response
         end
 
         def instance_url
@@ -162,6 +161,38 @@ module Gitlab
 
         def delete_temporary_directory!
           FileUtils.rm_rf(Rails.root.join(DOWNLOAD_FOLDER, SAMPLES_FOLDER))
+        end
+
+        def headers
+          {
+            'PRIVATE-TOKEN' => token_value
+          }
+        end
+
+        def check_import_status
+          time_counter = 0
+          imported_projects = project_ids.index_with { |_id| false }
+          until imported_projects.values.all?
+            break if time_counter > TIME_LIMIT
+
+            imported_projects.each do |id, _status|
+              puts "Checking import status for #{id}"
+
+              check_status = Gitlab::HTTP.get("#{instance_url}/api/v4/projects/#{id}/import",
+                headers: headers)
+
+              if check_status.success? &&
+                  check_status.parsed_response.fetch('import_status') == 'finished'
+                imported_projects[id] = true
+              end
+            end
+            time_counter += 5
+            sleep 5
+          end
+
+          return if imported_projects.values.all?
+
+          errors << { time_limit: "exceeded" }
         end
 
         def print_output

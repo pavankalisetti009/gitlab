@@ -6,7 +6,7 @@ RSpec.describe Gitlab::Duo::Developments::SetupGroupsForModelEvaluation, :saas, 
   let_it_be(:user) { create(:user, username: 'root') }
   let(:group) { create(:group) }
   let(:setup_evaluation) { described_class.new(group) }
-  let(:http_response) { instance_double(HTTParty::Response, body: 'File content') }
+  let(:http_response) { instance_double(HTTParty::Response) }
   let(:file_double) { instance_double(File) }
 
   before do
@@ -17,7 +17,7 @@ RSpec.describe Gitlab::Duo::Developments::SetupGroupsForModelEvaluation, :saas, 
     context 'when the server is running' do
       before do
         allow(http_response).to receive(:success?).and_return(true)
-        allow(http_response).to receive(:parsed_response).and_return({})
+        allow(http_response).to receive(:parsed_response).and_return({ 'id' => 1 })
         allow(Gitlab::HTTP).to receive(:get).and_return(http_response)
         allow(Gitlab::HTTP).to receive(:get).with("https://gitlab.com/gitlab-org/ai-powered/datasets/-/package_files/135727282/download")
           .and_return(http_response)
@@ -30,6 +30,7 @@ RSpec.describe Gitlab::Duo::Developments::SetupGroupsForModelEvaluation, :saas, 
         expect(setup_evaluation).to receive(:download_and_unpack_file)
         expect(setup_evaluation).to receive(:create_subgroups)
         expect(setup_evaluation).to receive(:create_subprojects)
+        expect(setup_evaluation).to receive(:check_import_status)
         expect(setup_evaluation).to receive(:delete_temporary_directory!)
         expect(setup_evaluation).to receive(:clean_up_token!)
         expect(setup_evaluation).to receive(:print_output)
@@ -147,6 +148,66 @@ RSpec.describe Gitlab::Duo::Developments::SetupGroupsForModelEvaluation, :saas, 
 
           setup_evaluation.send(:create_subproject, name: 'www-gitlab-com', file: file,
             namespace_id: gitlab_com_group.id)
+        end
+      end
+
+      describe '#check_import_status' do
+        before do
+          allow(http_response).to receive(:parsed_response).and_return({ 'import_status' => 'finished' })
+          allow(setup_evaluation).to receive(:token_value).and_return('token-string-1')
+        end
+
+        it 'checks import status for projects' do
+          setup_evaluation.instance_variable_set(:@project_ids, [1])
+
+          expect(Gitlab::HTTP).to receive(:get)
+                                    .with("#{setup_evaluation.send(:instance_url)}/api/v4/projects/1/import",
+                                      headers: { 'PRIVATE-TOKEN' => 'token-string-1' })
+                                    .and_return(http_response)
+
+          setup_evaluation.send(:check_import_status)
+          expect(setup_evaluation.send(:errors)).to be_empty
+        end
+
+        context 'with import not finished' do
+          before do
+            allow(http_response).to receive(:parsed_response).and_return({ 'import_status' => 'scheduled' },
+              { 'import_status' => 'finished' })
+            allow(http_response).to receive(:success?).and_return(true).twice
+          end
+
+          it 'waits for the import to finish' do
+            setup_evaluation.instance_variable_set(:@project_ids, [1])
+
+            expect(Gitlab::HTTP).to receive(:get)
+                                      .with("#{setup_evaluation.send(:instance_url)}/api/v4/projects/1/import",
+                                        headers: { 'PRIVATE-TOKEN' => 'token-string-1' })
+                                      .and_return(http_response)
+
+            expect(setup_evaluation).to receive(:sleep).with(5).twice
+            setup_evaluation.send(:check_import_status)
+            expect(setup_evaluation.send(:errors)).to be_empty
+          end
+        end
+
+        context 'when time limit is exceeded' do
+          before do
+            stub_const("#{described_class}::TIME_LIMIT", 1)
+            allow(http_response).to receive(:parsed_response).and_return({ 'import_status' => 'scheduled' })
+            allow(http_response).to receive(:success?).and_return(true)
+          end
+
+          it 'waits for the import to finish' do
+            setup_evaluation.instance_variable_set(:@project_ids, [1])
+
+            expect(Gitlab::HTTP).to receive(:get)
+                                      .with("#{setup_evaluation.send(:instance_url)}/api/v4/projects/1/import",
+                                        headers: { 'PRIVATE-TOKEN' => 'token-string-1' })
+                                      .and_return(http_response)
+
+            setup_evaluation.send(:check_import_status)
+            expect(setup_evaluation.send(:errors)).to include(time_limit: 'exceeded')
+          end
         end
       end
 
