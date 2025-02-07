@@ -9,9 +9,7 @@ module Mutations
       argument :vulnerability_ids,
         [::Types::GlobalIDType[::Vulnerability]],
         required: true,
-        prepare: ->(vulnerability_ids, ctx) {
-          ::Mutations::Vulnerabilities::BulkDismiss.prepare(vulnerability_ids, ctx)
-        },
+        validates: { length: { minimum: 1, maximum: ::Vulnerabilities::BulkDismissService::MAX_BATCH } },
         description: "IDs of the vulnerabilities to be dismissed (maximum " \
                      "#{::Vulnerabilities::BulkDismissService::MAX_BATCH} entries)."
 
@@ -29,7 +27,7 @@ module Mutations
         null: false,
         description: 'Vulnerabilities after state change.'
 
-      def resolve(comment: nil, dismissal_reason: nil, vulnerability_ids: [])
+      def resolve(vulnerability_ids: [], dismissal_reason: nil, comment: nil)
         ids = vulnerability_ids.map(&:model_id).uniq
 
         response = ::Vulnerabilities::BulkDismissService.new(
@@ -45,17 +43,6 @@ module Mutations
         }
       rescue Gitlab::Access::AccessDeniedError
         raise_resource_not_available_error!
-      end
-
-      def self.prepare(vulnerability_ids, _ctx)
-        max_vulnerabilities = ::Vulnerabilities::BulkDismissService::MAX_BATCH
-        if vulnerability_ids.length > max_vulnerabilities
-          raise GraphQL::ExecutionError, "Maximum vulnerability_ids exceeded (#{max_vulnerabilities})"
-        elsif vulnerability_ids.empty?
-          raise GraphQL::ExecutionError, "At least 1 value must be provided for vulnerability_ids"
-        end
-
-        vulnerability_ids
       end
     end
   end
