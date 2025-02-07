@@ -265,13 +265,7 @@ module Search
     end
 
     def list_pending_migrations
-      pending_migrations = ::Elastic::DataMigrationService.pending_migrations
-
-      if pending_migrations.any?
-        display_pending_migrations(pending_migrations)
-      else
-        logger.info('There are no pending migrations.')
-      end
+      display_pending_migrations
     end
 
     def enable_search_with_elasticsearch
@@ -417,11 +411,12 @@ module Search
       setting = ::ApplicationSetting.current
       current_index_version = helper.get_meta&.dig('created_by')
 
+      server_info = helper.server_info(skip_cache: true)
       logger.info(Rainbow("\nAdvanced Search").yellow)
       logger.info("Server version:\t\t\t" \
-        "#{helper.server_info[:version] || Rainbow('unknown').red}")
+        "#{server_info[:version] || Rainbow('unknown').red}")
       logger.info("Server distribution:\t\t" \
-        "#{helper.server_info[:distribution] || Rainbow('unknown').red}")
+        "#{server_info[:distribution] || Rainbow('unknown').red}")
       logger.info("Indexing enabled:\t\t#{setting.elasticsearch_indexing? ? Rainbow('yes').green : 'no'}")
       logger.info("Search enabled:\t\t\t#{setting.elasticsearch_search? ? Rainbow('yes').green : 'no'}")
       logger.info("Requeue Indexing workers:\t" \
@@ -440,9 +435,7 @@ module Search
       display_indexing_queues
 
       check_handler do
-        pending_migrations = ::Elastic::DataMigrationService.pending_migrations
-
-        display_pending_migrations(pending_migrations) if pending_migrations.any?
+        display_pending_migrations
       end
 
       check_handler do
@@ -451,6 +444,7 @@ module Search
 
       display_index_settings
     end
+
     # rubocop:enable Metrics/AbcSize
 
     def check_handler
@@ -460,12 +454,15 @@ module Search
     end
 
     def display_current_migration
+      logger.info(Rainbow("\nCurrent Migration").yellow)
+
       current_migration = ::Elastic::MigrationRecord.current_migration
-      return unless current_migration
+      unless current_migration
+        logger.info('There is no current migration.')
+        return
+      end
 
       current_state = current_migration.load_state
-
-      logger.info(Rainbow("\nCurrent Migration").yellow)
       logger.info("Name:\t\t\t#{current_migration.name}")
       logger.info("Started:\t\t#{current_migration.started? ? Rainbow('yes').green : 'no'}")
       logger.info("Halted:\t\t\t#{current_migration.halted? ? Rainbow('yes').red : Rainbow('no').green}")
@@ -509,8 +506,21 @@ module Search
       end
     end
 
-    def display_pending_migrations(pending_migrations)
-      logger.info(Rainbow('Pending Migrations').yellow)
+    def display_pending_migrations
+      logger.info(Rainbow("\nPending Migrations").yellow)
+
+      unless helper.ping?
+        logger.error(Rainbow('Unable to connect to search cluster to retrieve data.').red)
+        return
+      end
+
+      pending_migrations = ::Elastic::DataMigrationService.pending_migrations
+
+      unless pending_migrations.any?
+        logger.info('There are no pending migrations.')
+        return
+      end
+
       pending_migrations.each do |migration|
         migration_info = migration.name
         if migration.obsolete?

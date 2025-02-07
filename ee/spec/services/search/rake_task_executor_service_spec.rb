@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_stdout, feature_category: :global_search do
-  let(:logger) { instance_double('Logger') }
+  let(:logger) { instance_double(Logger) }
   let(:service) { described_class.new(logger: logger) }
 
   before do
@@ -71,7 +71,7 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
         Gitlab::Elastic::Helper::ES_SEPARATE_CLASSES.each do |class_name|
           proxy = get_class_proxy(class_name: class_name, use_separate_indices: true)
 
-          expect(es_helper.alias_exists?(name: proxy.index_name)).to eq(false), "#{proxy.index_name} shouldn't exist"
+          expect(es_helper.alias_exists?(name: proxy.index_name)).to be(false), "#{proxy.index_name} shouldn't exist"
         end
       end
     end
@@ -90,7 +90,7 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
       Gitlab::Elastic::Helper::ES_SEPARATE_CLASSES.each do |class_name|
         proxy = get_class_proxy(class_name: class_name, use_separate_indices: true)
 
-        expect(es_helper.index_exists?(index_name: proxy.index_name)).to eq(true), "#{proxy.index_name} shouldn exist"
+        expect(es_helper.index_exists?(index_name: proxy.index_name)).to be(true), "#{proxy.index_name} shouldn't exist"
       end
     end
 
@@ -154,8 +154,8 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
 
     context 'when the index does not exist' do
       it 'does not error' do
-        delete_index
-        delete_index
+        expect { service.execute(:delete_index) }.not_to raise_error
+        expect { service.execute(:delete_index) }.not_to raise_error
       end
     end
   end
@@ -241,8 +241,8 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
   describe '#estimate_cluster_size' do
     before do
       create(:namespace_root_storage_statistics, repository_size: 1.megabyte)
-      create(:namespace_root_storage_statistics, repository_size: 10.megabyte)
-      create(:namespace_root_storage_statistics, repository_size: 30.megabyte)
+      create(:namespace_root_storage_statistics, repository_size: 10.megabytes)
+      create(:namespace_root_storage_statistics, repository_size: 30.megabytes)
     end
 
     it 'outputs estimates' do
@@ -357,6 +357,13 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
   end
 
   describe '#list_pending_migrations' do
+    let(:helper) { es_helper }
+
+    before do
+      allow(::Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
+      allow(helper).to receive(:ping?).and_return(true)
+    end
+
     context 'when there are pending migrations' do
       let(:pending_migrations) { ::Elastic::DataMigrationService.migrations.last(2) }
       let(:pending_migration1) { pending_migrations.first }
@@ -373,6 +380,19 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
 
         service.execute(:list_pending_migrations)
       end
+
+      context 'when search service unreachable' do
+        before do
+          allow(helper).to receive(:ping?).and_return(false)
+        end
+
+        it 'outputs an error' do
+          expect(logger).to receive(:info).with(/Pending Migrations/)
+          expect(logger).to receive(:error).with(/Unable to connect to search cluster to retrieve data./)
+
+          service.execute(:list_pending_migrations)
+        end
+      end
     end
 
     context 'when there is no pending migrations' do
@@ -381,6 +401,7 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
       end
 
       it 'outputs message there are no pending migrations' do
+        expect(logger).to receive(:info).with(/Pending Migrations/)
         expect(logger).to receive(:info).with(/There are no pending migrations./)
 
         service.execute(:list_pending_migrations)
@@ -864,8 +885,8 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
   end
 
   describe '#info', :elastic do
-    let(:settings) { ::Gitlab::CurrentSettings }
     let(:helper) { es_helper }
+    let(:settings) { ::Gitlab::CurrentSettings }
 
     subject(:info) { service.execute(:info) }
 
@@ -873,8 +894,7 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
       settings.update!(elasticsearch_search: true, elasticsearch_indexing: true)
 
       allow(::Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
-      allow(helper).to receive(:get_meta)
-        .and_return({ 'created_by' => '123' })
+      allow(helper).to receive_messages(ping?: true, get_meta: { 'created_by' => '123' })
     end
 
     it 'outputs server version' do
@@ -938,48 +958,85 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
       info
     end
 
-    it 'outputs pending migrations' do
-      pending_migration = ::Elastic::DataMigrationService.migrations.last
-      obsolete_migration = ::Elastic::DataMigrationService.migrations.first
-      allow(pending_migration).to receive(:completed?).and_return(false)
-      allow(obsolete_migration).to receive(:completed?).and_return(false)
-      allow(obsolete_migration).to receive(:obsolete?).and_return(true)
-      allow(::Elastic::DataMigrationService).to receive(:pending_migrations)
-        .and_return([pending_migration, obsolete_migration])
+    describe 'pending migration status' do
+      it 'outputs pending migrations' do
+        pending_migration = ::Elastic::DataMigrationService.migrations.last
+        obsolete_migration = ::Elastic::DataMigrationService.migrations.first
+        allow(pending_migration).to receive(:completed?).and_return(false)
+        allow(obsolete_migration).to receive_messages(completed?: false, obsolete?: true)
+        allow(::Elastic::DataMigrationService).to receive(:pending_migrations)
+          .and_return([pending_migration, obsolete_migration])
 
-      expect(logger).to receive(:info).with(/Pending Migrations/)
-      expect(logger).to receive(:info).with(/#{pending_migration.name}/)
-      expect(logger).to receive(:warn).with(/#{obsolete_migration.name} \[Obsolete\]/)
+        expect(logger).to receive(:info).with(/Pending Migrations/)
+        expect(logger).to receive(:info).with(/#{pending_migration.name}/)
+        expect(logger).to receive(:warn).with(/#{obsolete_migration.name} \[Obsolete\]/)
 
-      info
-    end
-
-    it 'outputs current migration' do
-      migration = ::Elastic::DataMigrationService.migrations.last
-      allow(migration).to receive(:started?).and_return(true)
-      allow(migration).to receive(:load_state).and_return({ test: 'value' })
-      allow(Elastic::MigrationRecord).to receive(:current_migration).and_return(migration)
-
-      expected_regex = [
-        /Name:\s+#{migration.name}/,
-        /Started:\s+yes/,
-        /Halted:\s+no/,
-        /Failed:\s+no/,
-        /Obsolete:\s+no/,
-        /Current state:\s+{"test":"value"}/
-      ]
-
-      # avoid printing pending migrations
-      allow(::Elastic::DataMigrationService).to receive(:pending_migrations).and_return([])
-
-      expected_regex.each do |expected|
-        expect(logger).to receive(:info).with(expected)
+        info
       end
 
-      info
+      context 'when search service is unreachable' do
+        before do
+          allow(helper).to receive(:ping?).and_return(false)
+        end
+
+        it 'outputs an error' do
+          expect(logger).to receive(:info).with(/Pending Migrations/)
+          expect(logger).to receive(:error).with(/Unable to connect to search cluster to retrieve data/)
+
+          info
+        end
+      end
     end
 
-    context 'with index settings' do
+    describe 'current migration status' do
+      it 'outputs current migration' do
+        migration = ::Elastic::DataMigrationService.migrations.last
+        allow(migration).to receive_messages(started?: true, load_state: { test: 'value' })
+        allow(Elastic::MigrationRecord).to receive(:current_migration).and_return(migration)
+
+        expected_regex = [
+          /Name:\s+#{migration.name}/,
+          /Started:\s+yes/,
+          /Halted:\s+no/,
+          /Failed:\s+no/,
+          /Obsolete:\s+no/,
+          /Current state:\s+{"test":"value"}/
+        ]
+
+        # avoid printing pending migrations
+        allow(::Elastic::DataMigrationService).to receive(:pending_migrations).and_return([])
+
+        expected_regex.each do |expected|
+          expect(logger).to receive(:info).with(expected)
+        end
+
+        info
+      end
+
+      context 'when there is no current migration' do
+        it 'outputs a message stating no current migration' do
+          expect(logger).to receive(:info).with(/Current Migration/)
+          expect(logger).to receive(:info).with(/There is no current migration/)
+
+          info
+        end
+      end
+
+      context 'when search service is unreachable' do
+        before do
+          allow(helper).to receive(:ping?).and_return(false)
+        end
+
+        it 'outputs an error' do
+          expect(logger).to receive(:info).with(/Current Migration/)
+          expect(logger).to receive(:error).with(/Unable to connect to search cluster to retrieve data/)
+
+          info
+        end
+      end
+    end
+
+    describe 'index settings' do
       let(:helper) { es_helper }
       let(:setting) do
         ::Elastic::IndexSetting.new(number_of_replicas: 1, number_of_shards: 8, alias_name: 'gitlab-development')
