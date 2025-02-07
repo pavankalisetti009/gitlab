@@ -28,7 +28,8 @@ module ComplianceManagement
         merge_request_prevent_author_approval: 2,
         merge_request_prevent_committers_approval: 3,
         project_visibility_not_internal: 4,
-        default_branch_protected: 5
+        default_branch_protected: 5,
+        external_control: 10000
       }
 
       enum control_type: {
@@ -43,8 +44,9 @@ module ComplianceManagement
       validate :validate_internal_expression, if: :internal?
       validate :controls_count_per_requirement
 
-      validates :external_url, presence: true, addressable_url: true, if: :external?
-      validates :name, uniqueness: { scope: :compliance_requirement_id }
+      validates :external_url, presence: true, addressable_url: true,
+        uniqueness: { scope: :compliance_requirement_id }, if: :external?
+      validates :name, uniqueness: { scope: :compliance_requirement_id }, if: :internal?
       validates :secret_token, presence: true, if: :external?
 
       def expression_as_hash

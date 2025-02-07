@@ -40,4 +40,51 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectControlComplian
       expect(status).to be_valid
     end
   end
+
+  describe '.for_project_and_control' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:another_project) { create(:project) }
+    let_it_be(:control) { create(:compliance_requirements_control) }
+    let_it_be(:another_control) { create(:compliance_requirements_control) }
+
+    let_it_be(:status) do
+      create(:project_control_compliance_status,
+        project: project,
+        compliance_requirements_control: control
+      )
+    end
+
+    let_it_be(:another_project_status) do
+      create(:project_control_compliance_status,
+        project: another_project,
+        compliance_requirements_control: control
+      )
+    end
+
+    let_it_be(:another_control_status) do
+      create(:project_control_compliance_status,
+        project: project,
+        compliance_requirements_control: another_control
+      )
+    end
+
+    it 'returns records matching project_id and control_id' do
+      result = described_class.for_project_and_control(project.id, control.id)
+
+      expect(result).to contain_exactly(status)
+    end
+
+    it 'returns empty when no matching records exist' do
+      result = described_class.for_project_and_control(non_existing_record_id, non_existing_record_id)
+
+      expect(result).to be_empty
+    end
+
+    it 'does not return records for different project' do
+      result = described_class.for_project_and_control(another_project.id, control.id)
+
+      expect(result).not_to include(status)
+      expect(result).to contain_exactly(another_project_status)
+    end
+  end
 end
