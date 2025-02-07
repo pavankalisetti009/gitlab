@@ -12,7 +12,7 @@ module Search
 
       defer_on_database_health_signal :gitlab_main, [:zoekt_repositories, :zoekt_tasks], 10.minutes
 
-      BATCH_SIZE = 1000
+      BATCH_SIZE = 500
 
       def handle_event(_event)
         Repository.should_be_deleted.limit(BATCH_SIZE).create_bulk_tasks(task_type: :delete_repo)

@@ -16,9 +16,7 @@ RSpec.describe Search::Zoekt::RepoMarkedAsToDeleteEventWorker, :zoekt_settings_e
 
   it_behaves_like 'an idempotent worker' do
     it 'creates a delete repo task for all repos in the list' do
-      expect(Search::Zoekt::Repository).to receive(:should_be_deleted).and_return(scope)
-      expect(scope).to receive(:limit).with(described_class::BATCH_SIZE).and_call_original
-
+      expect(Search::Zoekt::Repository).to receive(:should_be_deleted).and_call_original
       expect do
         consume_event(subscriber: described_class, event: event)
       end.to change { Search::Zoekt::Task.where(task_type: :delete_repo).size }.from(0).to(repos.size)
@@ -26,8 +24,7 @@ RSpec.describe Search::Zoekt::RepoMarkedAsToDeleteEventWorker, :zoekt_settings_e
 
     it 'processes in batches' do
       stub_const("#{described_class}::BATCH_SIZE", 2)
-      expect(Search::Zoekt::Repository).to receive(:should_be_deleted).and_return(scope)
-      expect(scope).to receive(:limit).with(described_class::BATCH_SIZE).and_call_original
+      expect(Search::Zoekt::Repository).to receive(:should_be_deleted).and_call_original
       expect do
         consume_event(subscriber: described_class, event: event)
       end.to change { Search::Zoekt::Task.where(task_type: :delete_repo).size }.from(0).to(described_class::BATCH_SIZE)
