@@ -65098,6 +65098,9 @@ msgstr ""
 msgid "WorkItem|Edit custom field %{fieldName}"
 msgstr ""
 
+msgid "WorkItem|Edit work item"
+msgstr ""
+
 msgid "WorkItem|Email participants"
 msgstr ""
 
