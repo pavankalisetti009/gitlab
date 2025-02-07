@@ -834,7 +834,7 @@ After you have done at least one successful Rclone copy from the old location to
 
 ## Alternatives to file system storage
 
-If you're working to [scale out](reference_architectures/index.md) your GitLab implementation,
+If you're working to [scale out](reference_architectures/_index.md) your GitLab implementation,
 or add fault tolerance and redundancy, you may be
 looking at removing dependencies on block or network file systems.
 See the following additional guides:

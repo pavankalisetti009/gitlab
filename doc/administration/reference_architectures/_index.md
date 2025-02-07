@@ -335,7 +335,7 @@ their services, or self-managed (ESXi) that meet both:
 
 However, this does not guarantee compatibility with every potential permutation.
 
-See [Recommended cloud providers and services](index.md#recommended-cloud-providers-and-services) for more information.
+See [Recommended cloud providers and services](#recommended-cloud-providers-and-services) for more information.
 
 ### Large Monorepos
 
@@ -361,7 +361,7 @@ follow these guidance to ensure good performance and to keep costs in check:
 
 ### Additional workloads
 
-These architectures have been [designed and tested](index.md#validation-and-test-results) for standard GitLab
+These architectures have been [designed and tested](#validation-and-test-results) for standard GitLab
 setups based on real data.
 
 However, additional workloads can multiply the impact of operations by triggering follow-up actions.

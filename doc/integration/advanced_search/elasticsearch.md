@@ -983,7 +983,7 @@ Prerequisites:
 WARNING:
 Indexing a large instance generates a lot of Sidekiq jobs.
 Make sure to prepare for this task by having a
-[scalable setup](../../administration/reference_architectures/index.md) or by creating
+[scalable setup](../../administration/reference_architectures/_index.md) or by creating
 [extra Sidekiq processes](../../administration/sidekiq/extra_sidekiq_processes.md).
 
 If [enabling advanced search](#enable-advanced-search) causes problems

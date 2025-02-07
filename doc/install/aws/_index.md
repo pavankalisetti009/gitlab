@@ -850,7 +850,7 @@ Read more on configuring an
 
 ## Backup and restore
 
-GitLab provides [a tool to back up](../../administration/backup_restore/index.md)
+GitLab provides [a tool to back up](../../administration/backup_restore/_index.md)
 and restore its Git data, database, attachments, LFS objects, and so on.
 
 Some important things to know:
@@ -874,7 +874,7 @@ To back up GitLab:
 
 ### Restoring GitLab from a backup
 
-To restore GitLab, first review the [restore documentation](../../administration/backup_restore/index.md#restore-gitlab),
+To restore GitLab, first review the [restore documentation](../../administration/backup_restore/_index.md#restore-gitlab),
 and primarily the restore prerequisites. Then, follow the steps under the
 [Linux package installations section](../../administration/backup_restore/restore_gitlab.md#restore-for-linux-package-installations).
 
@@ -917,7 +917,7 @@ Have a read through these other resources and feel free to
 [open an issue](https://gitlab.com/gitlab-org/gitlab/-/issues/new)
 to request additional material:
 
-- [Scaling GitLab](../../administration/reference_architectures/index.md):
+- [Scaling GitLab](../../administration/reference_architectures/_index.md):
   GitLab supports several different types of clustering.
 - [Geo replication](../../administration/geo/index.md):
   Geo is the solution for widely distributed development teams.

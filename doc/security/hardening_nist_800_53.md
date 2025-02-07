@@ -97,7 +97,7 @@ identity providers and protocols, including
 
 - [SAML](../integration/saml.md)
 
-- More information on identity providers can be found in [GitLab Docs](../administration/auth/index.md).
+- More information on identity providers can be found in [GitLab Docs](../administration/auth/_index.md).
 
 #### Native GitLab User Authentication Configurations
 
@@ -465,7 +465,7 @@ providers:
 
 - [Amazon Web Services](../install/aws/_index.md)
 
-GitLab provides a [decision tree for assisting customers with selecting reference architectures and availability models](../administration/reference_architectures/index.md#decision-tree).
+GitLab provides a [decision tree for assisting customers with selecting reference architectures and availability models](../administration/reference_architectures/_index.md#decision-tree).
 Most cloud service providers provide resiliency in a region for
 managed services. When selecting an architecture, it is important to
 consider the organization's tolerance for downtime and the criticality
