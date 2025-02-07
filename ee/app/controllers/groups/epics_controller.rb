@@ -27,7 +27,7 @@ class Groups::EpicsController < Groups::ApplicationController
     push_frontend_feature_flag(:epics_list_drawer, @group)
     push_frontend_feature_flag(:bulk_update_work_items_mutation, @group)
     push_frontend_feature_flag(:work_item_description_templates, @group)
-    push_force_frontend_feature_flag(:custom_fields_feature, @group)
+    push_frontend_feature_flag(:custom_fields_feature, @group&.root_ancestor)
   end
 
   before_action only: :show do

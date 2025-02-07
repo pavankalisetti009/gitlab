@@ -15,6 +15,11 @@ module EE
         include Observability::ObservabilityIssuesHelper
 
         before_action :disable_query_limiting_ee, only: [:update, :bulk_update]
+
+        before_action do
+          push_frontend_feature_flag(:custom_fields_feature, project&.root_ancestor)
+        end
+
         before_action only: [:new, :create] do
           if can?(current_user, :generate_description, project)
             push_licensed_feature(:generate_description, project)
