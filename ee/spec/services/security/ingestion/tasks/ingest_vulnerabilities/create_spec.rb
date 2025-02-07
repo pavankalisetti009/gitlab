@@ -31,6 +31,14 @@ RSpec.describe Security::Ingestion::Tasks::IngestVulnerabilities::Create, featur
     end
   end
 
+  context 'detected_at date for new records' do
+    it 'is not empty' do
+      subject
+
+      expect(vulnerability.detected_at).not_to be_nil
+    end
+  end
+
   context 'vulnerability CVSS vectors' do
     let(:expected_hash) do
       { "vector" => "CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:L/I:L/A:N", "vendor" => "GitLab" }
