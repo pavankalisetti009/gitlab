@@ -165,10 +165,6 @@ module Gitlab
             Gitlab::AiGateway.push_feature_flag(:enable_anthropic_prompt_caching, user)
           end
 
-          if Feature.enabled?(:conciseness_prompt_change, user)
-            Gitlab::AiGateway.push_feature_flag(:conciseness_prompt_change, user)
-          end
-
           return if ::CloudConnector.self_managed_cloud_connected?
 
           Gitlab::AiGateway.push_feature_flag(:expanded_ai_logging, user)
