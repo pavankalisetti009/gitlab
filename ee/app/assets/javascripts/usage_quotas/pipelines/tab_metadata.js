@@ -2,7 +2,6 @@ import { __ } from '~/locale';
 import { parseBoolean } from '~/lib/utils/common_utils';
 import apolloProvider from 'ee/usage_quotas/shared/provider';
 import { isNumeric } from '~/lib/utils/number_utils';
-import { PIPELINES_TAB_METADATA_EL_SELECTOR } from '../constants';
 import PipelineUsageApp from './components/app.vue';
 
 export const parseProvideData = (el) => {
@@ -49,7 +48,7 @@ export const parseProvideData = (el) => {
 };
 
 export const getPipelineTabMetadata = ({ includeEl = false } = {}) => {
-  const el = document.querySelector(PIPELINES_TAB_METADATA_EL_SELECTOR);
+  const el = document.querySelector('#js-pipeline-usage-app');
 
   if (!el) return false;
 
