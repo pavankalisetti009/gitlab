@@ -188,7 +188,7 @@ A scheduled pipeline:
 ### Cadence
 
 Use the `cadence` field to schedule when you want the policy's actions to run. The `cadence` field
-uses [cron syntax](../../../topics/cron/index.md), but with some restrictions:
+uses [cron syntax](../../../topics/cron/_index.md), but with some restrictions:
 
 - Only the following types of cron syntax are supported:
   - A daily cadence of once per hour around specified time, for example: `0 18 * * *`
@@ -248,7 +248,7 @@ Use this schema to define `agents` objects in the [`schedule` rule type](#schedu
 
 The keys for a schedule rule are:
 
-- `cadence` (required): a [Cron expression](../../../topics/cron/index.md) for when the scans are
+- `cadence` (required): a [Cron expression](../../../topics/cron/_index.md) for when the scans are
   run.
 - `agents:<agent-name>` (required): The name of the agent to use for scanning.
 - `agents:<agent-name>:namespaces` (optional): The Kubernetes namespaces to scan. If omitted, all namespaces are scanned.

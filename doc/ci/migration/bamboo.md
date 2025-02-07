@@ -20,7 +20,7 @@ the basic concepts and how to create your first [`.gitlab-ci.yml` file](../quick
 If you already have some experience using GitLab CI/CD, you can review [CI/CD YAML syntax reference](../yaml/_index.md)
 to see the full list of available keywords.
 
-You can also take a look at [Auto DevOps](../../topics/autodevops/index.md), which automatically
+You can also take a look at [Auto DevOps](../../topics/autodevops/_index.md), which automatically
 builds, tests, and deploys your application using a collection of
 pre-configured features and integrations.
 
@@ -81,7 +81,7 @@ Bamboo Specs can also be [repository-stored](https://confluence.atlassian.com/ba
 #### `.gitlab-ci.yml` configuration file
 
 GitLab, by default, uses a `.gitlab-ci.yml` file for CI/CD configuration.
-Alternatively, [Auto DevOps](../../topics/autodevops/index.md) can automatically build,
+Alternatively, [Auto DevOps](../../topics/autodevops/_index.md) can automatically build,
 test, and deploy your application without a manually configured `.gitlab-ci.yml` file.
 
 GitLab CI/CD configuration can be organized into templates that are reusable across projects.

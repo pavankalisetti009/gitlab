@@ -21,7 +21,7 @@ release features incrementally.
 
 ## Related topics
 
-- [Auto DevOps](autodevops/index.md) is an automated CI/CD-based workflow that supports the entire software
+- [Auto DevOps](autodevops/_index.md) is an automated CI/CD-based workflow that supports the entire software
   supply chain: build, test, lint, package, deploy, secure, and monitor applications using GitLab CI/CD.
   It provides a set of ready-to-use templates that serve the vast majority of use cases.
 - [Auto Deploy](autodevops/stages.md#auto-deploy) is the DevOps stage dedicated to software

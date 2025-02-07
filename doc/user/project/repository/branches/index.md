@@ -325,7 +325,7 @@ To do this:
 - [Protected branches](protected.md)
 - [Branches API](../../../../api/branches.md)
 - [Protected Branches API](../../../../api/protected_branches.md)
-- [Getting started with Git](../../../../topics/git/index.md)
+- [Getting started with Git](../../../../topics/git/_index.md)
 - [Branches in a Nutshell](https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell)
 
 ## Troubleshooting

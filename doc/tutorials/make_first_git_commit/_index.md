@@ -13,7 +13,7 @@ When you're done, you'll have a project where you can practice using Git.
 
 ## Before you begin
 
-- [Install Git on your local machine](../../topics/git/how_to_install_git/index.md).
+- [Install Git on your local machine](../../topics/git/how_to_install_git/_index.md).
 - Ensure you can sign in to an instance of GitLab. If your organization doesn't
   have GitLab, create an account on GitLab.com.
 - [Create SSH keys and add them to GitLab](../../user/ssh.md). SSH keys are how you

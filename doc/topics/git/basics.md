@@ -73,7 +73,7 @@ For more information, see [Update a fork](forks.md).
 ## Related topics
 
 - [Get started learning Git](get_started.md)
-  - [Install Git](how_to_install_git/index.md)
+  - [Install Git](how_to_install_git/_index.md)
   - [Common Git commands](commands.md)
 - [Advanced operations](advanced.md)
 - [Troubleshooting Git](troubleshooting_git.md)

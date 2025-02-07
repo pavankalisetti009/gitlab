@@ -229,7 +229,7 @@ explains if the integration has any deployment variables available.
 
 ## Auto DevOps variables
 
-When [Auto DevOps](../../topics/autodevops/index.md) is enabled, some additional
+When [Auto DevOps](../../topics/autodevops/_index.md) is enabled, some additional
 [pre-pipeline](#variable-availability) variables are made available:
 
 - `AUTO_DEVOPS_EXPLICITLY_ENABLED`: Has a value of `1` to indicate Auto DevOps is enabled.

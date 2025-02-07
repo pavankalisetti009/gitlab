@@ -5,7 +5,7 @@ info: To determine the technical writer assigned to the Stage/Group associated w
 title: Use Auto DevOps to deploy an application to Amazon Elastic Kubernetes Service (EKS)
 ---
 
-In this tutorial, we'll help you to get started with [Auto DevOps](../index.md)
+In this tutorial, we'll help you to get started with [Auto DevOps](../_index.md)
 through an example of how to deploy an application to Amazon Elastic Kubernetes Service (EKS).
 
 The tutorial uses the GitLab native Kubernetes integration, so you don't need
@@ -285,7 +285,7 @@ You started from building and testing, to deploying and monitoring an applicatio
 all in GitLab. Despite its automatic nature, Auto DevOps can also be configured
 and customized to fit your workflow. Here are some helpful resources for further reading:
 
-1. [Auto DevOps](../index.md)
+1. [Auto DevOps](../_index.md)
 1. [Multiple Kubernetes clusters](../multiple_clusters_auto_devops.md)
 1. [Incremental rollout to production](../cicd_variables.md#incremental-rollout-to-production)
 1. [Disable jobs you don't need with CI/CD variables](../cicd_variables.md)

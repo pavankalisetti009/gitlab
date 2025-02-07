@@ -27,7 +27,7 @@ without any need to access Kubernetes.
 
 NOTE:
 If you have a Kubernetes cluster, you can Auto Deploy applications to production
-environments by using [Auto DevOps](../../topics/autodevops/index.md).
+environments by using [Auto DevOps](../../topics/autodevops/_index.md).
 
 ## Overview
 

@@ -13,7 +13,7 @@ Review apps are a collaboration tool that provide an environment to showcase pro
 
 NOTE:
 If you have a Kubernetes cluster, you can automate this feature in your applications
-by using [Auto DevOps](../../topics/autodevops/index.md).
+by using [Auto DevOps](../../topics/autodevops/_index.md).
 
 Review apps:
 
