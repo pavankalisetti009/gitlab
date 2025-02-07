@@ -42678,6 +42678,7 @@ Sort options for todos.
 | <a id="todotargetenummergerequest"></a>`MERGEREQUEST` | Merge request. |
 | <a id="todotargetenumnamespace"></a>`NAMESPACE` | Namespace. |
 | <a id="todotargetenumproject"></a>`PROJECT` | Project. |
+| <a id="todotargetenumuser"></a>`USER` | User. |
 | <a id="todotargetenumvulnerability"></a>`VULNERABILITY` | Vulnerability. |
 | <a id="todotargetenumwikipagemeta"></a>`WIKIPAGEMETA` | Wiki page. |
 | <a id="todotargetenumworkitem"></a>`WORKITEM` | Work item. |
@@ -45104,9 +45105,12 @@ Returns [`TimeboxReport`](#timeboxreport).
 
 Implementations:
 
+- [`AddOnUser`](#addonuser)
 - [`AlertManagementAlert`](#alertmanagementalert)
+- [`AutocompletedUser`](#autocompleteduser)
 - [`BoardEpic`](#boardepic)
 - [`Commit`](#commit)
+- [`CurrentUser`](#currentuser)
 - [`Design`](#design)
 - [`Epic`](#epic)
 - [`EpicIssue`](#epicissue)
@@ -45114,8 +45118,13 @@ Implementations:
 - [`Issue`](#issue)
 - [`Key`](#key)
 - [`MergeRequest`](#mergerequest)
+- [`MergeRequestAssignee`](#mergerequestassignee)
+- [`MergeRequestAuthor`](#mergerequestauthor)
+- [`MergeRequestParticipant`](#mergerequestparticipant)
+- [`MergeRequestReviewer`](#mergerequestreviewer)
 - [`Namespace`](#namespace)
 - [`Project`](#project)
+- [`UserCore`](#usercore)
 - [`Vulnerability`](#vulnerability)
 - [`WikiPage`](#wikipage)
 - [`WorkItem`](#workitem)
