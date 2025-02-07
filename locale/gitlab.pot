@@ -21201,6 +21201,9 @@ msgstr ""
 msgid "Download image"
 msgstr ""
 
+msgid "Download one of the files below to see all changes."
+msgstr ""
+
 msgid "Download raw data (.csv)"
 msgstr ""
 
@@ -24926,7 +24929,7 @@ msgstr ""
 msgid "For a faster browsing experience, only %{strongStart}%{visible} of %{total}%{strongEnd} files are shown. Download one of the files below to see all changes."
 msgstr ""
 
-msgid "For a faster browsing experience, only %{strong_open}%{display_size} of %{real_size}%{strong_close} files are shown. Download one of the files below to see all changes."
+msgid "For a faster browsing experience, only %{strong_open}%{display_size} of %{real_size}%{strong_close} files are shown."
 msgstr ""
 
 msgid "For a faster browsing experience, some files are collapsed by default."
