@@ -5,17 +5,18 @@ import {
   GlButton,
   GlForm,
   GlFormGroup,
-  GlFormInput,
   GlFormSelect,
-  GlFormInputGroup,
+  GlPopover,
   GlTooltipDirective,
   GlLink,
   GlSprintf,
 } from '@gitlab/ui';
 import { omit } from 'lodash';
+import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { s__, __ } from '~/locale';
 import { createAlert } from '~/alert';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import { logError } from '~/lib/logger';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import RefSelector from '~/ref/components/ref_selector.vue';
@@ -23,12 +24,14 @@ import GetProjectDetailsQuery from '../../common/components/get_project_details_
 import WorkspaceVariables from '../components/workspace_variables.vue';
 import SearchProjectsListbox from '../components/search_projects_listbox.vue';
 import workspaceCreateMutation from '../graphql/mutations/workspace_create.mutation.graphql';
+import DevfileListbox from '../components/devfile_listbox.vue';
+import DevfileHelpDrawer from '../components/devfile_help_drawer.vue';
 import { addWorkspace } from '../services/apollo_cache_mutators';
 import {
   DEFAULT_DESIRED_STATE,
-  DEFAULT_DEVFILE_PATH,
   ROUTES,
   PROJECT_VISIBILITY,
+  DEFAULT_DEVFILE_OPTION,
 } from '../constants';
 
 export const i18n = {
@@ -38,6 +41,7 @@ export const i18n = {
   form: {
     devfileProject: s__('Workspaces|Project'),
     projectReference: s__('Workspaces|Project reference'),
+    devfile: s__('Workspaces|Devfile'),
     devfileLocation: {
       label: s__('Workspaces|Devfile location'),
       title: s__('Workspaces|What is a devfile?'),
@@ -88,15 +92,17 @@ export default {
     GlButton,
     GlForm,
     GlFormGroup,
-    GlFormInputGroup,
     GlFormSelect,
-    GlFormInput,
+    GlPopover,
     GlLink,
     GlSprintf,
+    HelpIcon,
     RefSelector,
     SearchProjectsListbox,
     GetProjectDetailsQuery,
     WorkspaceVariables,
+    DevfileListbox,
+    DevfileHelpDrawer,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -109,13 +115,13 @@ export default {
       clusterAgents: [],
       clusterAgentsMap: {},
       devfileRef: '',
-      devfilePath: DEFAULT_DEVFILE_PATH,
       projectId: null,
       maxHoursBeforeTermination: 0,
       workspaceVariables: [],
       showWorkspaceVariableValidations: false,
       projectDetailsLoaded: false,
       error: '',
+      selectedDevfilePath: null,
     };
   },
   computed: {
@@ -126,13 +132,13 @@ export default {
       return this.projectDetailsLoaded && this.emptyAgents;
     },
     saveWorkspaceEnabled() {
-      return this.selectedProject && this.selectedAgent;
+      return this.selectedProject && this.selectedAgent && this.selectedDevfilePath;
     },
     selectedProjectFullPath() {
       return this.selectedProject?.fullPath || this.$router.currentRoute.query?.project;
     },
-    selectedProjectFullPathDisplay() {
-      return `${this.selectedProjectFullPath.split('/').join(' / ')} /`;
+    devfilePath() {
+      return this.selectedDevfilePath === DEFAULT_DEVFILE_OPTION ? null : this.selectedDevfilePath;
     },
     projectApiId() {
       if (!this.projectId) {
@@ -265,6 +271,8 @@ export default {
   PROJECT_VISIBILITY,
   devfileHelpPath,
   workspacesTroubleshootingDocsPath,
+  DRAWER_Z_INDEX,
+  DEFAULT_DEVFILE_OPTION,
 };
 </script>
 <template>
@@ -347,22 +355,34 @@ export default {
               />
             </div>
           </gl-form-group>
-          <gl-form-group
-            data-testid="devfile-path"
-            :label="$options.i18n.form.devfileLocation.label"
-            :description="$options.i18n.form.devfileLocation.descriptionContent"
-            :label-description="$options.i18n.form.devfileLocation.labelDescriptionContent"
-          >
-            <gl-form-input-group>
-              <template #prepend>
-                <div class="input-group-text">{{ selectedProjectFullPathDisplay }}</div>
-              </template>
-              <gl-form-input
-                id="workspace-devfile-path"
-                v-model="devfilePath"
-                :placeholder="$options.i18n.form.pathToDevfile"
-              />
-            </gl-form-input-group>
+          <gl-form-group class="gl-mb-6" data-testid="devfile">
+            <template #label>
+              <span id="devfile-selector-label" class="gl-flex gl-items-center gl-gap-3">
+                {{ $options.i18n.form.devfile }}
+                <help-icon id="devfile-location-popover" />
+              </span>
+            </template>
+            <devfile-listbox
+              v-model="selectedDevfilePath"
+              :project-path="selectedProject.fullPath"
+              :devfile-ref="devfileRef"
+              toggle-aria-labelled-by="devfile-selector-label"
+            />
+            <devfile-help-drawer v-if="selectedDevfilePath === $options.DEFAULT_DEVFILE_OPTION" />
+            <gl-popover
+              triggers="hover focus"
+              :title="$options.i18n.form.devfileLocation.title"
+              placement="top"
+              target="devfile-location-popover"
+            >
+              <div class="gl-flex gl-flex-col">
+                <p>{{ $options.i18n.form.devfileLocation.contentParagraph1 }}</p>
+                <p>{{ $options.i18n.form.devfileLocation.contentParagraph2 }}</p>
+              </div>
+              <gl-link :href="$options.devfileHelpPath" target="_blank">
+                {{ $options.i18n.form.devfileLocation.linkText }}
+              </gl-link>
+            </gl-popover>
           </gl-form-group>
           <workspace-variables
             v-model="workspaceVariables"

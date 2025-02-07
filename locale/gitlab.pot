@@ -18978,6 +18978,9 @@ msgstr ""
 msgid "Decrement suggestion line start"
 msgstr ""
 
+msgid "Default"
+msgstr ""
+
 msgid "Default - Never run"
 msgstr ""
 
@@ -65697,6 +65700,9 @@ msgstr ""
 msgid "Workspaces|A devfile defines the development environment for a GitLab project. A workspace must have a valid devfile in the Git reference you use."
 msgstr ""
 
+msgid "Workspaces|A devfile is a file that detines a development environment by specifying the necessary tools, languages, runtimes, and other components for a GitLab project."
+msgstr ""
+
 msgid "Workspaces|A workspace is a virtual sandbox environment for your code in GitLab."
 msgstr ""
 
@@ -65760,6 +65766,9 @@ msgstr ""
 msgid "Workspaces|Defines the workspace's development environment."
 msgstr ""
 
+msgid "Workspaces|Devfile"
+msgstr ""
+
 msgid "Workspaces|Devfile location"
 msgstr ""
 
@@ -65775,7 +65784,19 @@ msgstr ""
 msgid "Workspaces|Failed to create workspace"
 msgstr ""
 
+msgid "Workspaces|Failed to fetch custom devfiles. %{linkStart}Reload to try again%{linkEnd}."
+msgstr ""
+
 msgid "Workspaces|Failed to update workspace"
+msgstr ""
+
+msgid "Workspaces|From your code"
+msgstr ""
+
+msgid "Workspaces|GitLab default devfile contents"
+msgstr ""
+
+msgid "Workspaces|GitLab devfile"
 msgstr ""
 
 msgid "Workspaces|Group agents"
@@ -65883,7 +65904,16 @@ msgstr ""
 msgid "Workspaces|Unknown state"
 msgstr ""
 
+msgid "Workspaces|Use GitLab default devfile"
+msgstr ""
+
 msgid "Workspaces|What is a devfile?"
+msgstr ""
+
+msgid "Workspaces|What's the %{linkStart}Gitlab default devfile%{linkEnd}?"
+msgstr ""
+
+msgid "Workspaces|When no devfile is provided, the GitLab default devfile will be used."
 msgstr ""
 
 msgid "Workspaces|Workspace automatically terminates after"
@@ -65893,6 +65923,9 @@ msgid "Workspaces|Workspaces"
 msgstr ""
 
 msgid "Workspaces|Workspaces Settings"
+msgstr ""
+
+msgid "Workspaces|Workspaces have built-in support for devfiles. The default location is .devfile.yaml, but you can also use a custom location. The devfile is used to automatically configure the development environment with the defined specifications."
 msgstr ""
 
 msgid "Workspaces|You can open the workspace only once it is ready."

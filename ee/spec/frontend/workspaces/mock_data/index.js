@@ -330,6 +330,116 @@ export const GET_PROJECT_DETAILS_QUERY_RESULT = {
   },
 };
 
+export const GET_DOT_DEVFILE_YAML_RESULT = {
+  data: {
+    project: {
+      id: 'gid://gitlab/Project/1',
+      repository: {
+        blobs: {
+          nodes: [
+            {
+              id: 1,
+              path: '.devfile.yaml',
+              __typename: 'RepositoryBlob',
+            },
+            {
+              id: 2,
+              path: '.devfile.yml',
+              __typename: 'RepositoryBlob',
+            },
+          ],
+          __typename: 'RepositoryBlobConnection',
+        },
+        __typename: 'Repository',
+      },
+      __typename: 'Project',
+    },
+  },
+};
+
+export const GET_DOT_DEVFILE_YAML_RESULT_WITH_NO_RETURN_RESULT = {
+  data: {
+    project: {
+      id: 'gid://gitlab/Project/2',
+      repository: {
+        blobs: {
+          nodes: [],
+          __typename: 'RepositoryBlobConnection',
+        },
+        __typename: 'Repository',
+      },
+      __typename: 'Project',
+    },
+  },
+};
+
+export const GET_DOT_DEVFILE_FOLDER_RESULT = {
+  data: {
+    project: {
+      id: 'gid://gitlab/Project/1',
+      __typename: 'Project',
+      repository: {
+        __typename: 'Repository',
+        tree: {
+          __typename: 'Tree',
+          blobs: {
+            __typename: 'BlobConnection',
+            edges: [
+              {
+                __typename: 'BlobEdge',
+                node: {
+                  id: 1,
+                  __typename: 'Blob',
+                  path: '.devfile/.devfile.1.yaml',
+                },
+              },
+              {
+                __typename: 'BlobEdge',
+                node: {
+                  id: 2,
+                  __typename: 'Blob',
+                  path: '.devfile/.devfile.2.yaml',
+                },
+              },
+              {
+                __typename: 'BlobEdge',
+                node: {
+                  id: 3,
+                  __typename: 'Blob',
+                  path: '.devfile/.gitkeep',
+                },
+              },
+            ],
+            pageInfo: {
+              hasNextPage: true,
+              endCursor: 'MTc',
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
+export const GET_DOT_DEVFILE_FOLDER_WITH_NO_RETURN_RESULT = {
+  data: {
+    project: {
+      id: 'gid://gitlab/Project/2',
+      __typename: 'Project',
+      repository: {
+        __typename: 'Repository',
+        tree: {
+          __typename: 'Tree',
+          blobs: {
+            __typename: 'BlobConnection',
+            edges: [],
+          },
+        },
+      },
+    },
+  },
+};
+
 export const GET_PROJECTS_DETAILS_QUERY_RESULT = {
   data: {
     projects: {

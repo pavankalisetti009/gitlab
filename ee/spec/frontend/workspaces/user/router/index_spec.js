@@ -2,6 +2,8 @@ import Vue from 'vue';
 import VueRouter from 'vue-router';
 import VueApollo from 'vue-apollo';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
+import getDotDevfileYamlQuery from 'ee/workspaces/user/graphql/queries/get_dot_devfile_yaml.query.graphql';
+import getDotDevfileFolderQuery from 'ee/workspaces/user/graphql/queries/get_dot_devfile_folder.query.graphql';
 import getProjectsDetailsQuery from 'ee/workspaces/common/graphql/queries/get_projects_details.query.graphql';
 import userWorkspacesTabListQuery from 'ee/workspaces/common/graphql/queries/user_workspaces_tab_list.query.graphql';
 import App from 'ee/workspaces/user/pages/app.vue';
@@ -14,6 +16,8 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import {
   GET_PROJECTS_DETAILS_QUERY_RESULT,
   USER_WORKSPACES_TAB_LIST_QUERY_EMPTY_RESULT,
+  GET_DOT_DEVFILE_YAML_RESULT,
+  GET_DOT_DEVFILE_FOLDER_RESULT,
 } from '../../mock_data';
 
 Vue.use(VueRouter);
@@ -49,10 +53,13 @@ describe('workspaces/router/index.js', () => {
           getProjectsDetailsQuery,
           jest.fn().mockResolvedValueOnce(GET_PROJECTS_DETAILS_QUERY_RESULT),
         ],
+        [getDotDevfileYamlQuery, jest.fn().mockResolvedValue(GET_DOT_DEVFILE_YAML_RESULT)],
+        [getDotDevfileFolderQuery, jest.fn().mockResolvedValue(GET_DOT_DEVFILE_FOLDER_RESULT)],
       ]),
       provide: {
         emptyStateSvgPath: SVG_PATH,
         defaultMaxHoursBeforeTermination: DEFAULT_MAX_HOURS_BEFORE_TERMINATION,
+        defaultDevfile: 'mock-devfile-value',
       },
       stubs: {
         SearchProjectsListbox: {

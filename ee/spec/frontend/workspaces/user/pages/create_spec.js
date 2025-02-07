@@ -1,9 +1,12 @@
 import VueApollo from 'vue-apollo';
 import Vue, { nextTick } from 'vue';
 import { cloneDeep } from 'lodash';
-import { GlForm, GlFormSelect, GlSprintf, GlFormInput, GlFormInputGroup } from '@gitlab/ui';
+import { GlForm, GlFormSelect, GlLink, GlSprintf, GlPopover, GlFormGroup } from '@gitlab/ui';
+import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import RefSelector from '~/ref/components/ref_selector.vue';
 import SearchProjectsListbox from 'ee/workspaces/user/components/search_projects_listbox.vue';
+import DevfileListbox from 'ee/workspaces/user/components/devfile_listbox.vue';
+import DevfileHelpDrawer from 'ee/workspaces/user/components/devfile_help_drawer.vue';
 import GetProjectDetailsQuery from 'ee/workspaces/common/components/get_project_details_query.vue';
 import WorkspaceVariables from 'ee/workspaces/user/components/workspace_variables.vue';
 import WorkspaceCreate, { i18n } from 'ee/workspaces/user/pages/create.vue';
@@ -69,7 +72,7 @@ describe('workspaces/user/pages/create.vue', () => {
 
   const buildMockApollo = () => {
     workspaceCreateMutationHandler = jest.fn();
-    workspaceCreateMutationHandler.mockResolvedValueOnce(WORKSPACE_CREATE_MUTATION_RESULT);
+    workspaceCreateMutationHandler.mockResolvedValue(WORKSPACE_CREATE_MUTATION_RESULT);
     mockApollo = createMockApollo([[workspaceCreateMutation, workspaceCreateMutationHandler]]);
   };
 
@@ -119,8 +122,8 @@ describe('workspaces/user/pages/create.vue', () => {
       apolloProvider: mockApollo,
       stubs: {
         GlFormSelect: GlFormSelectStub,
-        GlFormInputGroup,
         GlSprintf,
+        GlFormGroup,
       },
       mocks: {
         $router: mockRouter,
@@ -146,23 +149,27 @@ describe('workspaces/user/pages/create.vue', () => {
     const field = findDevfileRefField();
     return {
       label: field.attributes('label'),
-      labelDescription: field.attributes('labeldescription'),
+      labelDescription: field.props('labelDescription'),
     };
   };
 
-  const findDevfilePathField = () => wrapper.findByTestId('devfile-path');
-  const findDevfilePathInputGroup = () => findDevfilePathField().findComponent(GlFormInputGroup);
-  const findDevfilePathInput = () => findDevfilePathInputGroup().findComponent(GlFormInput);
-  const findDevfilePathFieldParts = () => {
-    const field = findDevfilePathField();
+  const findDevfileField = () => wrapper.findByTestId('devfile');
+  const findDevfileTitleText = () => findDevfileField().find('#devfile-selector-label').text();
+  const findDevfileHelpIcon = () => findDevfileField().findComponent(HelpIcon);
+  const findDevfilePopover = () => {
+    const field = findDevfileField();
+    const popover = field.findComponent(GlPopover);
+    const popoverContent = popover.find('div.gl-flex.gl-flex-col').findAll('p');
+
     return {
-      label: field.attributes('label'),
-      inputPrepend: findDevfilePathInputGroup().text(),
-      inputPlaceholder: findDevfilePathInput().attributes('placeholder'),
-      description: field.attributes('description'),
-      labelDescription: field.attributes('labeldescription'),
+      popoverTextParagraph1: popoverContent.at(0).text(),
+      popoverTextParagraph2: popoverContent.at(1).text(),
+      popoverLinkHref: popover.findComponent(GlLink).attributes('href'),
+      popoverLinkText: popover.findComponent(GlLink).text(),
     };
   };
+  const findDevfileDropDown = () => findDevfileField().findComponent(DevfileListbox);
+  const findDevfileHelpDrawer = () => findDevfileField().findComponent(DevfileHelpDrawer);
 
   const findMaxHoursBeforeTerminationField = () =>
     wrapper.findByTestId('max-hours-before-termination');
@@ -234,7 +241,7 @@ describe('workspaces/user/pages/create.vue', () => {
     });
 
     it('does not display devfile path field', () => {
-      expect(findDevfilePathField().exists()).toBe(false);
+      expect(findDevfileField().exists()).toBe(false);
     });
 
     it('does not display max hours before termination field', () => {
@@ -278,6 +285,7 @@ describe('workspaces/user/pages/create.vue', () => {
         clusterAgents: twoClusterAgentsFixture,
       });
       await selectClusterAgent();
+      wrapper.findComponent(DevfileListbox).vm.$emit('input', 'default_devfile');
     });
 
     it('enables create workspace button', () => {
@@ -314,20 +322,6 @@ describe('workspaces/user/pages/create.vue', () => {
       });
     });
 
-    describe('devfile path field', () => {
-      it('renders parts', () => {
-        expect(findDevfilePathFieldParts()).toEqual({
-          inputPrepend: 'gitlab-org / gitlab /',
-          inputPlaceholder: 'Path to devfile',
-          label: 'Devfile location',
-          labelDescription: expect.stringMatching(
-            `${i18n.form.devfileLocation.labelDescriptionContent}`,
-          ),
-          description: expect.stringMatching(`${i18n.form.devfileLocation.descriptionContent}`),
-        });
-      });
-    });
-
     describe('when selecting a different cluster agent', () => {
       beforeEach(async () => {
         await selectClusterAgent(selectedClusterAgentTwoIDFixture);
@@ -336,9 +330,6 @@ describe('workspaces/user/pages/create.vue', () => {
       it('submits workspaceCreate mutation with correct data', async () => {
         const devfileRef = 'mybranch';
         findDevfileRefRefSelector().vm.$emit('input', devfileRef);
-
-        const devfilePath = 'path/to/mydevfile.yaml';
-        findDevfilePathInput().vm.$emit('input', devfilePath);
 
         await nextTick();
         await submitCreateWorkspaceForm();
@@ -350,6 +341,36 @@ describe('workspaces/user/pages/create.vue', () => {
           }),
         });
       });
+    });
+
+    it('renders correct title text', () => {
+      expect(findDevfileTitleText()).toBe('Devfile');
+    });
+
+    it('renders help icon', () => {
+      expect(findDevfileHelpIcon().exists()).toBe(true);
+    });
+
+    it('renders popover', () => {
+      expect(findDevfilePopover()).toEqual({
+        popoverTextParagraph1:
+          'A devfile defines the development environment for a GitLab project. A workspace must have a valid devfile in the Git reference you use.',
+        popoverTextParagraph2:
+          'If your devfile is not in the root directory of your project, specify a relative path.',
+        popoverLinkHref: '/help/user/workspace/index.md#devfile',
+        popoverLinkText: 'Learn more.',
+      });
+    });
+
+    it('renders devfile dropdown component', () => {
+      expect(findDevfileDropDown().props()).toMatchObject({
+        projectPath: 'gitlab-org/gitlab',
+        devfileRef: 'v1.0.0',
+      });
+    });
+
+    it('renders devfile help drawer component', () => {
+      expect(findDevfileHelpDrawer().exists()).toBe(true);
     });
 
     it('renders workspace variables component', () => {
@@ -374,10 +395,7 @@ describe('workspaces/user/pages/create.vue', () => {
         const maxHoursBeforeTermination = 100;
         const devfileRef = 'mybranch';
         findDevfileRefRefSelector().vm.$emit('input', devfileRef);
-
-        const devfilePath = 'path/to/mydevfile.yaml';
-        findDevfilePathInput().vm.$emit('input', devfilePath);
-
+        await waitForPromises();
         await nextTick();
         await submitCreateWorkspaceForm();
 
@@ -386,7 +404,7 @@ describe('workspaces/user/pages/create.vue', () => {
             clusterAgentId: selectedClusterAgentOneIDFixture,
             projectId: projectGid,
             desiredState: DEFAULT_DESIRED_STATE,
-            devfilePath,
+            devfilePath: null,
             maxHoursBeforeTermination,
             devfileRef,
             variables: findWorkspaceVariables().props().variables,
