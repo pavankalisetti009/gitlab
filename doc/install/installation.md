@@ -762,7 +762,7 @@ sudo -u git -H editor config.toml
 ```
 
 For more information about configuring Gitaly see
-[the Gitaly documentation](../administration/gitaly/index.md).
+[the Gitaly documentation](../administration/gitaly/_index.md).
 
 ### Install the service
 

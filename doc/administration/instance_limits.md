@@ -101,7 +101,7 @@ This setting limits the request rate on the Packages API per user or IP. For mor
 
 This setting limits the request rate on the [Git LFS](../topics/git/lfs/_index.md)
 requests per user. For more information, read
-[GitLab Git Large File Storage (LFS) Administration](lfs/index.md).
+[GitLab Git Large File Storage (LFS) Administration](lfs/_index.md).
 
 - **Default rate limit**: Disabled by default.
 

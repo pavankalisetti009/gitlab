@@ -1342,7 +1342,7 @@ In the following cases, consider using file system data transfer or snapshots as
 - Your GitLab instance has a problem and using the regular backup and import Rake tasks isn't possible.
 
 WARNING:
-Gitaly Cluster [does not support snapshot backups](../gitaly/index.md#snapshot-backup-and-recovery).
+Gitaly Cluster [does not support snapshot backups](../gitaly/_index.md#snapshot-backup-and-recovery).
 
 When considering using file system data transfer or snapshots:
 

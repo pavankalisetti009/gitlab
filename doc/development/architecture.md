@@ -495,7 +495,7 @@ Elasticsearch is a distributed RESTful search engine built for the cloud.
 
 - [Project page](https://gitlab.com/gitlab-org/gitaly/blob/master/README.md)
 - Configuration:
-  - [Omnibus](../administration/gitaly/index.md)
+  - [Omnibus](../administration/gitaly/_index.md)
   - [Charts](https://docs.gitlab.com/charts/charts/gitlab/gitaly/)
   - [Source](../install/installation.md#install-gitaly)
 - Layer: Core Service (Data)
@@ -507,7 +507,7 @@ Gitaly is a service designed by GitLab to remove our need for NFS for Git storag
 
 - [Project page](https://gitlab.com/gitlab-org/gitaly/blob/master/README.md)
 - Configuration:
-  - [Omnibus](../administration/gitaly/index.md)
+  - [Omnibus](../administration/gitaly/_index.md)
   - [Source](../install/installation.md#install-gitaly)
 - Layer: Core Service (Data)
 - Process: `praefect`
