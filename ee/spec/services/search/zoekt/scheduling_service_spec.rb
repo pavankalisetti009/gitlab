@@ -212,44 +212,6 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
     end
   end
 
-  describe '#dot_com_rollout' do
-    let(:task) { :dot_com_rollout }
-
-    it 'returns false unless saas' do
-      expect(execute_task).to be(false)
-    end
-
-    context 'when on .com', :saas do
-      let_it_be(:group) { create(:group) }
-      let_it_be(:subscription) { create(:gitlab_subscription, namespace: group) }
-      let_it_be(:root_storage_statistics) { create(:namespace_root_storage_statistics, namespace: group) }
-
-      it_behaves_like 'a execute_every task', period: 2.hours
-
-      context 'when feature flag is disabled' do
-        before do
-          stub_feature_flags(zoekt_dot_com_rollout: false)
-        end
-
-        it 'returns false' do
-          create(:zoekt_enabled_namespace)
-
-          expect(execute_task).to be(false)
-        end
-      end
-
-      it 'creates an enabled namespace for namespaces with active subscriptions' do
-        another_group = create(:group)
-        create(:gitlab_subscription, namespace: another_group, end_date: 2.weeks.ago)
-        create(:namespace_root_storage_statistics, namespace: another_group)
-
-        expect { execute_task }.to change { ::Search::Zoekt::EnabledNamespace.count }.by(1)
-
-        expect(::Search::Zoekt::EnabledNamespace.pluck(:root_namespace_id)).to contain_exactly(group.id)
-      end
-    end
-  end
-
   describe '#remove_expired_subscriptions' do
     let(:task) { :remove_expired_subscriptions }
 

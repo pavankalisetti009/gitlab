@@ -2883,6 +2883,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: search_zoekt_saas_rollout_event
+  :worker_name: Search::Zoekt::SaasRolloutEventWorker
+  :feature_category: :global_search
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: search_zoekt_task_failed_event
   :worker_name: Search::Zoekt::TaskFailedEventWorker
   :feature_category: :global_search
