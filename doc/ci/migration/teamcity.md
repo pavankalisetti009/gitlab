@@ -280,7 +280,7 @@ Before doing any migration work, you should first:
 1. Create a `.gitlab-ci.yml` file in each project.
 1. Migrate TeamCity configuration to GitLab CI/CD jobs and configure them to show results directly in merge requests.
 1. Migrate deployment jobs by using [cloud deployment templates](../cloud_deployment/index.md),
-   [environments](../environments/_index.md), and the [GitLab agent for Kubernetes](../../user/clusters/agent/index.md).
+   [environments](../environments/_index.md), and the [GitLab agent for Kubernetes](../../user/clusters/agent/_index.md).
 1. Check if any CI/CD configuration can be reused across different projects, then create
    and share [CI/CD templates](../examples/index.md#cicd-templates) or [CI/CD components](../components/index.md).
 1. See [pipeline efficiency](../pipelines/pipeline_efficiency.md)

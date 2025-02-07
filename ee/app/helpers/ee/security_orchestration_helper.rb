@@ -61,7 +61,7 @@ module EE::SecurityOrchestrationHelper
 
     if container.is_a?(::Project)
       policy_data.merge(
-        create_agent_help_path: help_page_url('user/clusters/agent/install/index.md')
+        create_agent_help_path: help_page_url('user/clusters/agent/install/_index.md')
       )
     else
       policy_data

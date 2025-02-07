@@ -156,7 +156,7 @@ describe('ComplianceReportsApp component', () => {
         'Report and manage standards adherence, violations, and compliance frameworks for the group. Learn more.',
       );
       expect(wrapper.findComponent(GlLink).attributes('href')).toBe(
-        helpPagePath('user/compliance/compliance_center/index.md'),
+        helpPagePath('user/compliance/compliance_center/_index.md'),
       );
     });
 
@@ -198,7 +198,7 @@ describe('ComplianceReportsApp component', () => {
         'Report and manage standards adherence, violations, and compliance frameworks for the group. Learn more.',
       );
       expect(wrapper.findComponent(GlLink).attributes('href')).toBe(
-        helpPagePath('user/compliance/compliance_center/index.md'),
+        helpPagePath('user/compliance/compliance_center/_index.md'),
       );
     });
 
