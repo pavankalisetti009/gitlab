@@ -76,10 +76,9 @@ module Search
             updated_at: Time.zone.now
           )
         end
-        ApplicationRecord.transaction do
-          scope.pending.update_all(state: :initializing)
-          Search::Zoekt::Task.bulk_insert!(tasks)
-        end
+        Search::Zoekt::Task.bulk_insert!(tasks)
+        repo_ids = tasks.map(&:zoekt_repository_id)
+        Search::Zoekt::Repository.id_in(repo_ids).pending.each_batch { |repos| repos.update_all(state: :initializing) }
       end
 
       private

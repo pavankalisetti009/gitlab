@@ -131,5 +131,18 @@ RSpec.describe Search::Zoekt::Repository, feature_category: :global_search do
         expect(zoekt_repo_with_pending_tasks).to be_pending
       end
     end
+
+    context 'when bulk_insert! raises an exception' do
+      before do
+        allow(Search::Zoekt::Task).to receive(:bulk_insert!).and_raise(ActiveRecord::StatementInvalid)
+      end
+
+      it 'raises the exception' do
+        initial_zoekt_repo_states = described_class.all.pluck(:state, :id)
+        expect { described_class.create_bulk_tasks }.to raise_error(ActiveRecord::StatementInvalid)
+                                                          .and not_change { Search::Zoekt::Task.count }
+        expect(described_class.all.pluck(:state, :id)).to match_array(initial_zoekt_repo_states)
+      end
+    end
   end
 end
