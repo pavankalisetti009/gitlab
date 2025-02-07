@@ -29,7 +29,12 @@ module Resolvers
 
         argument :keyword, GraphQL::Types::String,
           required: false,
-          description: 'Filters registries by their attributes using a keyword.'
+          description: 'Filters registries by their attributes using a keyword.',
+          deprecated: {
+            reason: 'A keyword search feature on Geo registries will not be built in the UI due to
+                     poor search UX and performance',
+            milestone: '17.9'
+          }
 
         def resolve(**args)
           return registry_class.none unless geo_node_is_current?
