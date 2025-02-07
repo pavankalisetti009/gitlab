@@ -187,7 +187,6 @@ class ApprovalMergeRequestRule < ApplicationRecord
   private
 
   def code_owner_role_approvers
-    return User.none unless Feature.enabled?(:codeowner_role_approvers, project)
     return User.none unless code_owner?
 
     role_approver_user_ids = project.project_members.with_roles(role_approvers).pluck_user_ids

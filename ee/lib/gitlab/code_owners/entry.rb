@@ -38,10 +38,8 @@ module Gitlab
         @users.to_a
       end
 
-      def role_approvers(project)
-        return [] unless Feature.enabled?(:codeowner_role_approvers, project)
-
-        roles
+      def roles
+        @roles ||= extractor.roles
       end
 
       def groups
@@ -82,9 +80,7 @@ module Gitlab
       private
 
       def role_members(project)
-        return [] unless Feature.enabled?(:codeowner_role_approvers, project)
-
-        role_approver_user_ids = project.project_members.with_roles(role_approvers(project)).pluck_user_ids
+        role_approver_user_ids = project.project_members.with_roles(roles).pluck_user_ids
         User.by_ids(role_approver_user_ids)
       end
 
@@ -98,10 +94,6 @@ module Gitlab
 
       def names
         @names ||= extractor.names.map(&:downcase)
-      end
-
-      def roles
-        @roles ||= extractor.roles
       end
 
       def matching_group?(group)
