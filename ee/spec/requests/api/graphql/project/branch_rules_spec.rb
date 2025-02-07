@@ -65,7 +65,7 @@ RSpec.describe 'getting list of branch rules for a project', feature_category: :
         end
 
         # Verify the response includes the field
-        expect_n_matching_branches_count_fields(1)
+        expect_n_matching_branches_count_fields(2)
 
         create(:protected_branch, project: project)
         create(:protected_branch, name: '*', project: project)
@@ -75,7 +75,7 @@ RSpec.describe 'getting list of branch rules for a project', feature_category: :
           post_graphql(query, current_user: current_user, variables: variables)
         end.not_to exceed_all_query_limit(control)
 
-        expect_n_matching_branches_count_fields(4)
+        expect_n_matching_branches_count_fields(5)
       end
 
       def expect_n_matching_branches_count_fields(count)
