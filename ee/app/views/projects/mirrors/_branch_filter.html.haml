@@ -13,14 +13,14 @@
         radio_options: { class: 'js-mirror-branch-setting' }) do |c|
       = c.with_help_text do
         = _("If enabled, all branches will be mirrored.")
-        = link_to _('Learn more.'), help_page_path('user/project/repository/mirror/index.md'), target: '_blank', rel: 'noopener noreferrer'
+        = link_to _('Learn more.'), help_page_path('user/project/repository/mirror/_index.md'), target: '_blank', rel: 'noopener noreferrer'
     = render Pajamas::RadioTagComponent.new(name: :mirror_branch_setting,
         label: _('Mirror only protected branches'),
         value: :protected,
         radio_options: { class: 'js-mirror-branch-setting' }) do |c|
       = c.with_help_text do
         = _('If enabled, only protected branches will be mirrored.')
-        = link_to _('Learn more.'), help_page_path('user/project/repository/mirror/index.md', anchor: 'mirror-only-protected-branches'), target: '_blank', rel: 'noopener noreferrer'
+        = link_to _('Learn more.'), help_page_path('user/project/repository/mirror/_index.md', anchor: 'mirror-only-protected-branches'), target: '_blank', rel: 'noopener noreferrer'
     = render Pajamas::RadioTagComponent.new(name: :mirror_branch_setting,
       value: :regex,
       help_text: safe_format(_('All branch names must match %{link_start}this regular expression%{link_end}. If empty, any branch name is allowed.'),

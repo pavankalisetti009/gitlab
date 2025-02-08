@@ -65,7 +65,7 @@ export const AI_IMPACT_OVER_TIME_METRICS_TOOLTIPS = {
     description: s__(
       'AiImpactAnalytics|Monthly user engagement with AI Code Suggestions. Percentage ratio calculated as monthly unique Code Suggestions users / total monthly unique code contributors in the last 30 days. %{linkStart}Learn more%{linkEnd}.',
     ),
-    descriptionLink: helpPagePath('user/project/repository/code_suggestions/index', {
+    descriptionLink: helpPagePath('user/project/repository/code_suggestions/_index', {
       anchor: 'use-code-suggestions',
     }),
   },
@@ -73,7 +73,7 @@ export const AI_IMPACT_OVER_TIME_METRICS_TOOLTIPS = {
     description: s__(
       'AiImpactAnalytics|%{codeSuggestionsAcceptedCount} out of %{codeSuggestionsShownCount} code suggestions were accepted in the last 30 days. %{linkStart}Learn more%{linkEnd}.',
     ),
-    descriptionLink: helpPagePath('user/project/repository/code_suggestions/index', {
+    descriptionLink: helpPagePath('user/project/repository/code_suggestions/_index', {
       anchor: 'use-code-suggestions',
     }),
   },
