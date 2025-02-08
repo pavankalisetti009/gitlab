@@ -39,6 +39,13 @@ RSpec.describe AppSec::Dast::SiteValidations::RunnerService do
         stub_licensed_features(security_on_demand_scans: true)
       end
 
+      it 'is allowed to set pipeline variables regardless of minimum override role' do
+        project.update!(restrict_user_defined_variables: true, ci_pipeline_variables_minimum_override_role: :maintainer)
+
+        expect(developer.can?(:set_pipeline_variables, project)).to be false
+        expect(subject).to be_success
+      end
+
       it 'communicates success' do
         expect(subject).to have_attributes(status: :success, payload: dast_site_validation)
       end
