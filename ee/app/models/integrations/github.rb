@@ -55,7 +55,7 @@ module Integrations
 
       docs_link = ActionController::Base.helpers.link_to(
         _('What is repository mirroring?'),
-        Rails.application.routes.url_helpers.help_page_url('user/project/repository/mirror/index.md')
+        Rails.application.routes.url_helpers.help_page_url('user/project/repository/mirror/_index.md')
       )
       safe_format(s_("GithubIntegration|This requires mirroring your GitHub repository to this project. %{docs_link}" % { docs_link: docs_link }))
     end
