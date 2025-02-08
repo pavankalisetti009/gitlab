@@ -560,6 +560,15 @@ export const mockGroupApprovalSettingsScanResultObject = {
   },
 };
 
+export const mockWarnActionScanResultManifest = zeroActionsScanResultManifest.concat(`actions:
+  - type: require_approval
+    approvals_required: 0
+    role_approvers:
+      - owner
+  - type: send_bot_message
+    enabled: true
+`);
+
 export const mockWarnActionScanResultObject = {
   ...mockDefaultBranchesScanResultObject,
   actions: [

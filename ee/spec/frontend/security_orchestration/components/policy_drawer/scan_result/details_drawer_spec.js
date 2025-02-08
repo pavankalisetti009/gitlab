@@ -19,6 +19,7 @@ import {
   zeroActionsScanResultManifest,
   mockProjectPolicyTuningScanResultManifest,
   allowDenyScanResultLicenseNonEmptyManifest,
+  mockWarnActionScanResultManifest,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_result_policy_data';
 
 describe('DetailsDrawer component', () => {
@@ -95,6 +96,7 @@ describe('DetailsDrawer component', () => {
         factory({ props: { policy: mockProjectWithAllApproverTypesScanResultPolicy } });
         expect(findPolicyApprovals().exists()).toBe(true);
         expect(findPolicyApprovals().props('isLastItem')).toBe(false);
+        expect(findPolicyApprovals().props('isWarnMode')).toBe(false);
         expect(findApprovalSubheader().exists()).toBe(true);
         expect(findPolicyApprovals().props('approvers')).toStrictEqual([
           ...mockProjectWithAllApproverTypesScanResultPolicy.actionApprovers[0].allGroups,
@@ -108,6 +110,21 @@ describe('DetailsDrawer component', () => {
       it('should not render branch exceptions list without exceptions', () => {
         factory({ props: { policy: mockProjectWithAllApproverTypesScanResultPolicy } });
         expect(findToggleList().exists()).toBe(false);
+      });
+
+      it('renders in warn mode', () => {
+        factory({
+          props: {
+            policy: {
+              ...mockProjectWithAllApproverTypesScanResultPolicy,
+              yaml: mockWarnActionScanResultManifest,
+            },
+          },
+        });
+        expect(findPolicyApprovals().exists()).toBe(true);
+        expect(findPolicyApprovals().props('isLastItem')).toBe(false);
+        expect(findPolicyApprovals().props('isWarnMode')).toBe(true);
+        expect(findBotMessage().exists()).toBe(false);
       });
     });
 

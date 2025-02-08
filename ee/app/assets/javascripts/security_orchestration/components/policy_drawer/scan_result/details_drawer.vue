@@ -87,6 +87,12 @@ export default {
     hasRequireApprovals() {
       return this.requireApprovals.length > 0;
     },
+    isWarnMode() {
+      return (
+        this.requireApprovals.some((action) => action.approvals_required === 0) &&
+        this.hasBotMessage
+      );
+    },
     requireApprovals() {
       return this.actions?.filter((action) => action.type === REQUIRE_APPROVAL_TYPE) || [];
     },
@@ -105,7 +111,7 @@ export default {
     settings() {
       return this.parsedYaml?.approval_settings || {};
     },
-    shouldRenderBotMessage() {
+    hasBotMessage() {
       return !this.actions?.some(({ type, enabled }) => type === BOT_MESSAGE_TYPE && !enabled);
     },
   },
@@ -146,11 +152,12 @@ export default {
           :key="action.id"
           class="gl-mb-2 gl-block"
           :action="action"
-          :is-last-item="!shouldRenderBotMessage"
           :approvers="mapApproversToArray(index)"
+          :is-last-item="!hasBotMessage"
+          :is-warn-mode="isWarnMode"
         />
 
-        <div v-if="shouldRenderBotMessage" class="gl-mt-2" data-testid="policy-bot-message">
+        <div v-if="hasBotMessage && !isWarnMode" class="gl-mt-2" data-testid="policy-bot-message">
           {{ $options.i18n.botActionText }}
         </div>
 

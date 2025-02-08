@@ -14,6 +14,9 @@ export default {
     additional_approvers: s__('SecurityOrchestration|, and %{count} more'),
     and: __(' and '),
     comma: __(', '),
+    warnModeText: s__(
+      'SecurityOrchestration|Warn users with a bot comment and contact the following users as security consultants for support: %{approvers}',
+    ),
   },
   components: {
     GlSprintf,
@@ -34,6 +37,11 @@ export default {
       required: false,
       default: false,
     },
+    isWarnMode: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   computed: {
     approvalsRequired() {
@@ -49,9 +57,13 @@ export default {
       return isEmpty(this.action);
     },
     showSeparator() {
-      return !this.isLastItem && !this.isEmptyAction;
+      return !this.isLastItem && !this.isEmptyAction && !this.isWarnMode;
     },
     message() {
+      if (this.isWarnMode) {
+        return this.$options.i18n.warnModeText;
+      }
+
       return this.isEmptyAction ? this.$options.i18n.noActionText : this.$options.i18n.actionText;
     },
   },
