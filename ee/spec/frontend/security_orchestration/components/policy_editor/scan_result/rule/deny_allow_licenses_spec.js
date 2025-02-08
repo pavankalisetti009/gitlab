@@ -72,6 +72,20 @@ describe('DenyAllowLicenses', () => {
       ]);
     });
 
+    it('searches through unselected licenses', async () => {
+      createComponent({
+        propsData: {
+          allLicenses: [UNKNOWN_LICENSE, LICENSE],
+        },
+      });
+
+      await findListBox().vm.$emit('search', 'unkn');
+
+      expect(findListBox().props('items')).toEqual([
+        { text: 'Licenses', options: [UNKNOWN_LICENSE] },
+      ]);
+    });
+
     it.each`
       title                   | licenses
       ${'without duplicates'} | ${[UNKNOWN_LICENSE, LICENSE]}
