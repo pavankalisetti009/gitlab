@@ -791,9 +791,9 @@ RSpec.describe Group, feature_category: :groups_and_projects do
 
   describe '#vulnerability_historical_statistics' do
     let(:date_1) { Date.new(2020, 8, 10) }
-    let(:root_group) { build(:group, traversal_ids: [1]) }
-    let(:group) { create(:group, parent: root_group, traversal_ids: [1, 2]) }
-    let(:sub_group) { create(:group, parent: group, traversal_ids: [1, 2, 3]) }
+    let(:root_group) { create(:group) }
+    let(:group) { create(:group, parent: root_group) }
+    let(:sub_group) { create(:group, parent: group) }
     let!(:root_vulnerability_namespace_historical_statistic) do
       create(:vulnerability_namespace_historical_statistic, namespace: root_group, date: date_1,
         traversal_ids: root_group.traversal_ids)
