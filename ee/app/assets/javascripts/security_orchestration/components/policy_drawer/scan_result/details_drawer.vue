@@ -114,6 +114,9 @@ export default {
     hasBotMessage() {
       return !this.actions?.some(({ type, enabled }) => type === BOT_MESSAGE_TYPE && !enabled);
     },
+    shouldRenderBotMessage() {
+      return this.hasBotMessage && !this.isWarnMode;
+    },
   },
   methods: {
     capitalizedCriteriaMessage(message) {
@@ -157,7 +160,7 @@ export default {
           :is-warn-mode="isWarnMode"
         />
 
-        <div v-if="hasBotMessage && !isWarnMode" class="gl-mt-2" data-testid="policy-bot-message">
+        <div v-if="shouldRenderBotMessage" class="gl-mt-2" data-testid="policy-bot-message">
           {{ $options.i18n.botActionText }}
         </div>
 
