@@ -3144,6 +3144,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_c6728503decb() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."namespace_id" IS NULL THEN
+  SELECT "namespace_id"
+  INTO NEW."namespace_id"
+  FROM "design_management_designs"
+  WHERE "design_management_designs"."id" = NEW."design_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_c8bc8646bce9() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -12828,7 +12844,8 @@ CREATE TABLE design_user_mentions (
     mentioned_users_ids bigint[],
     mentioned_projects_ids bigint[],
     mentioned_groups_ids bigint[],
-    note_id bigint NOT NULL
+    note_id bigint NOT NULL,
+    namespace_id bigint
 );
 
 CREATE SEQUENCE design_user_mentions_id_seq
@@ -32470,6 +32487,8 @@ CREATE INDEX index_design_management_versions_on_namespace_id ON design_manageme
 
 CREATE UNIQUE INDEX index_design_management_versions_on_sha_and_issue_id ON design_management_versions USING btree (sha, issue_id);
 
+CREATE INDEX index_design_user_mentions_on_namespace_id ON design_user_mentions USING btree (namespace_id);
+
 CREATE UNIQUE INDEX index_design_user_mentions_on_note_id ON design_user_mentions USING btree (note_id);
 
 CREATE UNIQUE INDEX index_diff_note_positions_on_note_id_and_diff_type ON diff_note_positions USING btree (note_id, diff_type);
@@ -38190,6 +38209,8 @@ CREATE TRIGGER trigger_c59fe6f31e71 BEFORE INSERT OR UPDATE ON security_orchestr
 
 CREATE TRIGGER trigger_c5eec113ea76 BEFORE INSERT OR UPDATE ON dast_pre_scan_verifications FOR EACH ROW EXECUTE FUNCTION trigger_c5eec113ea76();
 
+CREATE TRIGGER trigger_c6728503decb BEFORE INSERT OR UPDATE ON design_user_mentions FOR EACH ROW EXECUTE FUNCTION trigger_c6728503decb();
+
 CREATE TRIGGER trigger_c8bc8646bce9 BEFORE INSERT OR UPDATE ON vulnerability_state_transitions FOR EACH ROW EXECUTE FUNCTION trigger_c8bc8646bce9();
 
 CREATE TRIGGER trigger_c9090feed334 BEFORE INSERT OR UPDATE ON boards_epic_lists FOR EACH ROW EXECUTE FUNCTION trigger_c9090feed334();
@@ -39805,6 +39826,9 @@ ALTER TABLE ONLY agent_activity_events
 
 ALTER TABLE ONLY agent_activity_events
     ADD CONSTRAINT fk_c8b006d40f FOREIGN KEY (agent_token_id) REFERENCES cluster_agent_tokens(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY design_user_mentions
+    ADD CONSTRAINT fk_c8d8144d72 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY issue_links
     ADD CONSTRAINT fk_c900194ff2 FOREIGN KEY (source_id) REFERENCES issues(id) ON DELETE CASCADE;
