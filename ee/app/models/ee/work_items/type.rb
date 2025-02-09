@@ -53,6 +53,10 @@ module EE
             unavailable_widgets << ::WorkItems::Widgets::Assignees
           end
 
+          if epic? && !resource_parent.try(:work_items_alpha_feature_flag_enabled?)
+            unavailable_widgets << ::WorkItems::Widgets::Milestone
+          end
+
           if ::Feature.disabled?(:custom_fields_feature, resource_parent.root_ancestor)
             unavailable_widgets << ::WorkItems::Widgets::CustomFields
           end
