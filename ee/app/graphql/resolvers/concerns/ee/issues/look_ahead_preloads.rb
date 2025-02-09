@@ -12,6 +12,7 @@ module EE
       def preloads
         super.merge(
           {
+            epic: [:epic],
             sla_due_at: [:issuable_sla],
             metric_images: [:metric_images],
             related_vulnerabilities: :related_vulnerabilities
