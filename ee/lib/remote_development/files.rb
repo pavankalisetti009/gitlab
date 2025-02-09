@@ -17,7 +17,7 @@ module RemoteDevelopment
     ####################################
 
     # When updating DEFAULT_DEVFILE_YAML contents in `default_devfile.yaml`, update the user facing doc as well.
-    # https://docs.gitlab.com/ee/user/workspace/#devfault-devfile
+    # https://docs.gitlab.com/ee/user/workspace/#gitlab-default-devfile
     #
     # The container image is pinned to linux/amd64 digest, instead of the tag digest.
     # This is to prevent Rancher Desktop from pulling the linux/arm64 architecture of the image
