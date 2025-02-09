@@ -37,6 +37,7 @@ describe('AnalyticsDashboardPanel', () => {
         rootNamespaceName: 'MEOW',
         rootNamespaceFullPath: 'namespace',
         isProject: true,
+        dataSourceClickhouse: true,
         ...provide,
       },
       propsData: {

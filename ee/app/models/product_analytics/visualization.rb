@@ -53,6 +53,14 @@ module ProductAnalytics
       duo_usage_rate_over_time
     ].freeze
 
+    CONTRIBUTIONS_DASHBOARD_PATH = 'ee/lib/gitlab/analytics/contributions_dashboard/visualizations'
+    CONTRIBUTIONS_DASHBOARD_VISUALIZATIONS = %w[
+      pushes
+      merge_requests
+      issues
+      contributions_by_user
+    ].freeze
+
     VISUALIZATIONS_FOR_GROUP_ONLY = %w[
       dora_performers_score
       dora_projects_comparison
@@ -175,6 +183,8 @@ module ProductAnalytics
           VALUE_STREAM_DASHBOARD_PATH
         elsif AI_IMPACT_DASHBOARD_VISUALIZATIONS.include?(data)
           AI_IMPACT_DASHBOARD_PATH
+        elsif CONTRIBUTIONS_DASHBOARD_VISUALIZATIONS.include?(data)
+          CONTRIBUTIONS_DASHBOARD_PATH
         else
           PRODUCT_ANALYTICS_PATH
         end

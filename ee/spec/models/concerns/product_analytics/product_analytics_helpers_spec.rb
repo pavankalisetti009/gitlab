@@ -121,6 +121,34 @@ RSpec.describe ProductAnalyticsHelpers, feature_category: :product_analytics do
       end
     end
 
+    describe '#contributions_dashboard_available?' do
+      subject { entity.contributions_dashboard_available? }
+
+      context 'when entity is a group' do
+        let(:entity) { group }
+
+        it { is_expected.to be_truthy }
+
+        context 'when contributions_analytics_dashboard feature is disabled' do
+          before do
+            stub_feature_flags(contributions_analytics_dashboard: false)
+          end
+
+          it { is_expected.to be_falsey }
+        end
+      end
+
+      context 'when entity is not a group' do
+        let(:entity) { project }
+
+        before do
+          stub_feature_flags(contributions_analytics_dashboard: true)
+        end
+
+        it { is_expected.to be_falsey }
+      end
+    end
+
     context 'without configuration project' do
       before do
         allow(::Gitlab::CurrentSettings).to receive(:product_analytics_enabled?).and_return true

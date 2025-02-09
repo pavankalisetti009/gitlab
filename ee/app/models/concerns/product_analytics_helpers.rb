@@ -52,6 +52,10 @@ module ProductAnalyticsHelpers
     Ability.allowed?(user, :read_enterprise_ai_analytics, self)
   end
 
+  def contributions_dashboard_available?
+    is_a?(Group) && Feature.enabled?(:contributions_analytics_dashboard, self)
+  end
+
   def product_analytics_dashboards(user)
     ::ProductAnalytics::Dashboard.for(container: self, user: user)
   end

@@ -12,6 +12,7 @@ module ProductAnalytics
     PRODUCT_ANALYTICS_DASHBOARDS_LIST = %w[audience behavior].freeze
     VALUE_STREAMS_DASHBOARD_NAME = 'value_streams_dashboard'
     AI_IMPACT_DASHBOARD_NAME = 'ai_impact'
+    CONTRIBUTION_DASHBOARD_NAME = 'contributions_dashboard'
     PROJECT_VALUE_STREAMS_DASHBOARD_NAME = 'project_value_streams_dashboard'
     SCHEMA_PATH = 'ee/app/validators/json_schemas/analytics_dashboard.json'
 
@@ -140,12 +141,27 @@ module ProductAnalytics
       )
     end
 
+    def self.contributions_dashboard(container, config_project)
+      return unless container.contributions_dashboard_available?
+
+      config = load_yaml_dashboard_config('dashboard', 'ee/lib/gitlab/analytics/contributions_dashboard')
+
+      new(
+        slug: CONTRIBUTION_DASHBOARD_NAME,
+        container: container,
+        config: config,
+        config_project: config_project,
+        user_defined: false
+      )
+    end
+
     def self.builtin_dashboards(container, config_project, user)
       builtin = []
 
       builtin << product_analytics_dashboards(container, config_project, user)
       builtin << value_stream_dashboard(container, config_project)
       builtin << ai_impact_dashboard(container, config_project, user)
+      builtin << contributions_dashboard(container, config_project)
 
       builtin.flatten
     end

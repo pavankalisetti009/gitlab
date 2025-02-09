@@ -33,4 +33,5 @@ export default {
   dora_metrics_over_time: () => import('./dora_metrics_over_time'),
   dora_metrics_by_project: () => import('./dora_metrics_by_project'),
   ai_impact_over_time: () => import('./ai_impact_over_time'),
+  contributions: () => import('./contributions'),
 };

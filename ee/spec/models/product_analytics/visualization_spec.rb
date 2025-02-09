@@ -250,6 +250,10 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
         ai_impact_table
         ai_impact_lifecycle_metrics_table
         ai_impact_ai_metrics_table
+        pushes
+        merge_requests
+        issues
+        contributions_by_user
       ]
     end
 
@@ -362,7 +366,8 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
       expected = ["property '/type' is not one of: " \
                   "[\"LineChart\", \"ColumnChart\", \"DataTable\", \"SingleStat\", " \
                   "\"DORAChart\", \"UsageOverview\", \"DoraPerformersScore\", \"DoraProjectsComparison\", " \
-                  "\"AiImpactTable\"]"]
+                  "\"AiImpactTable\", \"ContributionsByUserTable\", \"ContributionsPushesChart\", " \
+                  "\"ContributionsIssuesChart\", \"ContributionsMergeRequestsChart\"]"]
       expect(vis&.errors).to match_array(expected)
     end
   end
