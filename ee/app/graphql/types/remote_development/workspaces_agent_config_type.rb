@@ -49,16 +49,30 @@ module Types
       field :use_kubernetes_user_namespaces, GraphQL::Types::Boolean,
         null: false, description: 'Indicates whether to use user namespaces in Kubernetes.'
 
-      # rubocop:disable GraphQL/ ExtractType -- The field name is called default_runtime_class
       field :default_runtime_class, GraphQL::Types::String,
         null: false, description: 'Default Kubernetes RuntimeClass.'
-      # rubocop:enable GraphQL/ ExtractType
 
       field :annotations, [::Types::RemoteDevelopment::KubernetesAnnotationType],
         null: false, description: 'Annotations to apply to Kubernetes objects.'
 
       field :labels, [::Types::RemoteDevelopment::KubernetesLabelType],
         null: false, description: 'Labels to apply to Kubernetes objects.'
+
+      field :default_resources_per_workspace_container, ::Types::RemoteDevelopment::WorkspaceResourcesType, # rubocop:disable GraphQL/ExtractType -- We don't want to extract to a new type for backwards compatibility
+        experiment: { milestone: '17.9' },
+        null: false, description: 'Default cpu and memory resources of the workspace container.'
+
+      field :max_resources_per_workspace, ::Types::RemoteDevelopment::WorkspaceResourcesType,
+        experiment: { milestone: '17.9' },
+        null: false, description: 'Maximum cpu and memory resources of the workspace.'
+
+      field :network_policy_egress, [::Types::RemoteDevelopment::NetworkPolicyEgressType], # rubocop:disable GraphQL/ExtractType -- We don't want to extract to a new type for backwards compatibility
+        experiment: { milestone: '17.9' },
+        null: false, description: 'IP CIDR range specifications for egress destinations from a workspace.'
+
+      field :image_pull_secrets, [::Types::RemoteDevelopment::ImagePullSecretsType],
+        experiment: { milestone: '17.9' },
+        null: false, description: 'Kubernetes secrets to pull private images for a workspace.'
 
       field :created_at, Types::TimeType,
         null: false, description: 'Timestamp of when the workspaces agent config was created.'
