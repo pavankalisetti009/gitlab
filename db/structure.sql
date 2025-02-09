@@ -1851,6 +1851,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_3f28a0bfdb16() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."project_id" IS NULL THEN
+  SELECT "target_project_id"
+  INTO NEW."project_id"
+  FROM "merge_requests"
+  WHERE "merge_requests"."id" = NEW."merge_request_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_3fe922f4db67() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -15877,7 +15893,8 @@ CREATE TABLE merge_request_cleanup_schedules (
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
     status smallint DEFAULT 0 NOT NULL,
-    failed_count integer DEFAULT 0 NOT NULL
+    failed_count integer DEFAULT 0 NOT NULL,
+    project_id bigint
 );
 
 CREATE SEQUENCE merge_request_cleanup_schedules_merge_request_id_seq
@@ -38097,6 +38114,8 @@ CREATE TRIGGER trigger_3be1956babdb BEFORE INSERT OR UPDATE ON snippet_repositor
 CREATE TRIGGER trigger_3d1a58344b29 BEFORE INSERT OR UPDATE ON alert_management_alert_assignees FOR EACH ROW EXECUTE FUNCTION trigger_3d1a58344b29();
 
 CREATE TRIGGER trigger_3e067fa9bfe3 BEFORE INSERT OR UPDATE ON incident_management_timeline_event_tag_links FOR EACH ROW EXECUTE FUNCTION trigger_3e067fa9bfe3();
+
+CREATE TRIGGER trigger_3f28a0bfdb16 BEFORE INSERT OR UPDATE ON merge_request_cleanup_schedules FOR EACH ROW EXECUTE FUNCTION trigger_3f28a0bfdb16();
 
 CREATE TRIGGER trigger_3fe922f4db67 BEFORE INSERT OR UPDATE ON vulnerability_merge_request_links FOR EACH ROW EXECUTE FUNCTION trigger_3fe922f4db67();
 
