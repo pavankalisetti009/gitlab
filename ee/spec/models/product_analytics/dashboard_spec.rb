@@ -97,7 +97,6 @@ description: with missing properties
       end
 
       it 'returns a collection of builtin dashboards' do
-        expect(subject.size).to eq(4)
         expect(subject.map(&:title)).to match_array(
           ['Audience', 'Behavior', 'Value Streams Dashboard', 'AI impact analytics']
         )
@@ -168,8 +167,8 @@ description: with missing properties
       subject { described_class.for(container: resource_parent, user: user) }
 
       it 'returns a collection of builtin dashboards' do
-        expect(subject.size).to eq(2)
-        expect(subject.map(&:title)).to match_array(['Value Streams Dashboard', 'AI impact analytics'])
+        expect(subject.map(&:title)).to match_array(['Value Streams Dashboard', 'AI impact analytics',
+          'Contributions Dashboard'])
       end
 
       context 'when configuration project is set' do
@@ -177,11 +176,10 @@ description: with missing properties
           resource_parent.update!(analytics_dashboards_configuration_project: config_project)
         end
 
-        it 'returns custom and value stream dashboards' do
+        it 'returns custom and builtin dashboards' do
           expect(subject).to be_a(Array)
-          expect(subject.size).to eq(3)
           expect(subject.map(&:title)).to match_array(
-            ['Value Streams Dashboard', 'AI impact analytics', 'Dashboard Example 1']
+            ['Value Streams Dashboard', 'AI impact analytics', 'Dashboard Example 1', 'Contributions Dashboard']
           )
         end
       end
@@ -198,7 +196,9 @@ description: with missing properties
         end
 
         it 'excludes the dashboard from the list' do
-          expect(subject.size).to eq(3)
+          expect(subject.map(&:title)).to match_array(
+            ['Value Streams Dashboard', 'AI impact analytics', 'Dashboard Example 1', 'Contributions Dashboard']
+          )
         end
       end
     end
@@ -333,6 +333,34 @@ description: with missing properties
 
         it { is_expected.to be_nil }
       end
+    end
+  end
+
+  describe '.contributions_dashboard' do
+    context 'for groups' do
+      subject { described_class.contributions_dashboard(group, config_project) }
+
+      it 'returns the dashboard' do
+        expect(subject.title).to eq('Contributions Dashboard')
+        expect(subject.slug).to eq('contributions_dashboard')
+        expect(subject.schema_version).to eq('2')
+        expect(subject.filters).to eq({ "dateRange" => { "enabled" => true, "numberOfDaysLimit" => 90,
+                                                         "options" => %w[7d 30d 90d custom] } })
+      end
+
+      context 'when contributions_analytics_dashboard feature is disabled' do
+        before do
+          stub_feature_flags(contributions_analytics_dashboard: false)
+        end
+
+        it { is_expected.to be_nil }
+      end
+    end
+
+    context 'for projects' do
+      subject { described_class.contributions_dashboard(project, config_project) }
+
+      it { is_expected.to be_nil }
     end
   end
 

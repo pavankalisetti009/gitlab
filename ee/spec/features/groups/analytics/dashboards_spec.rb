@@ -51,15 +51,22 @@ RSpec.describe 'Analytics Dashboard', :js, feature_category: :value_stream_manag
 
           it 'renders custom dashboard link' do
             dashboard_items = page.all(dashboard_list_item_testid)
-            first_dashboard = dashboard_items[0]
-            second_dashboard = dashboard_items[1]
 
-            expect(dashboard_items.length).to eq(2)
-            expect(first_dashboard).to have_content _('Value Streams Dashboard')
-            expect(first_dashboard).to have_selector(dashboard_by_gitlab_testid)
-            expect(second_dashboard).to have_content _('Custom VSD')
-            expect(second_dashboard).to have_content _('VSD from fixture')
-            expect(second_dashboard).not_to have_selector(dashboard_by_gitlab_testid)
+            vsd_dashboard = dashboard_items[0]
+            contribution_dashboard = dashboard_items[1]
+            custom_dashboard = dashboard_items[2]
+
+            expect(dashboard_items.length).to eq(3)
+
+            expect(vsd_dashboard).to have_content _('Value Streams Dashboard')
+            expect(vsd_dashboard).to have_selector(dashboard_by_gitlab_testid)
+
+            expect(contribution_dashboard).to have_content _('Contributions Dashboard')
+            expect(contribution_dashboard).to have_selector(dashboard_by_gitlab_testid)
+
+            expect(custom_dashboard).to have_content _('Custom VSD')
+            expect(custom_dashboard).to have_content _('VSD from fixture')
+            expect(custom_dashboard).not_to have_selector(dashboard_by_gitlab_testid)
           end
         end
 

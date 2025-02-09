@@ -63,3 +63,10 @@ export const STACKED_AREA_CHART_SERIES_OPTIONS = {
 export const STACKED_AREA_CHART_NULL_SERIES_OPTIONS = {
   stack: 'null',
 };
+
+export const CONTRIBUTIONS_METRICS = {
+  PUSHES: 'pushes',
+  MERGE_REQUESTS: 'merge_requests',
+  ISSUES: 'issues',
+  CONTRIBUTIONS_BY_USER: 'contributions_by_user',
+};

@@ -39,6 +39,23 @@ export default {
       ),
     AiImpactTable: () =>
       import('ee/analytics/analytics_dashboards/components/visualizations/ai_impact_table.vue'),
+    ContributionsPushesChart: () =>
+      import(
+        'ee/analytics/analytics_dashboards/components/visualizations/contributions/contributions_pushes_chart.vue'
+      ),
+
+    ContributionsMergeRequestsChart: () =>
+      import(
+        'ee/analytics/analytics_dashboards/components/visualizations/contributions/contributions_merge_requests_chart.vue'
+      ),
+    ContributionsIssuesChart: () =>
+      import(
+        'ee/analytics/analytics_dashboards/components/visualizations/contributions/contributions_issues_chart.vue'
+      ),
+    ContributionsByUserTable: () =>
+      import(
+        'ee/analytics/analytics_dashboards/components/visualizations/contributions/contributions_by_user_table.vue'
+      ),
   },
   inject: [
     'namespaceId',
@@ -47,6 +64,7 @@ export default {
     'isProject',
     'rootNamespaceName',
     'rootNamespaceFullPath',
+    'dataSourceClickhouse',
   ],
   props: {
     visualization: {
@@ -206,6 +224,7 @@ export default {
           setVisualizationOverrides: ({ visualizationOptionOverrides = {} }) => {
             this.visualizationOptionOverrides = visualizationOptionOverrides;
           },
+          dataSourceClickhouse: this.dataSourceClickhouse,
         });
 
         if (this.currentRequestNumber === requestNumber) {
