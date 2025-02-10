@@ -6,19 +6,25 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
   subject(:helper) { described_class.default }
 
   shared_context 'with a legacy index' do
+    let(:the_index_name) { helper.target_name }
+
     before do
-      @index_name = helper.create_empty_index(with_alias: false, options: { index_name: helper.target_name }).each_key.first
+      helper.create_empty_index(with_alias: false, options: { index_name: the_index_name })
+    end
+
+    after do
+      helper.delete_index(index_name: the_index_name)
     end
   end
 
   shared_context 'with an existing index and alias' do
     before do
-      @index_name = helper.create_empty_index(with_alias: true).each_key.first
+      helper.create_empty_index(with_alias: true)
     end
-  end
 
-  after do
-    helper.delete_index(index_name: @index_name) if @index_name
+    after do
+      helper.delete_index(index_name: helper.target_index_name)
+    end
   end
 
   describe '.new' do
@@ -46,7 +52,7 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
   end
 
   describe '.connection_settings' do
-    it 'returns a hash compatible with elasticsearcht-transport client settings' do
+    it 'returns a hash compatible with elasticsearch-transport client settings' do
       settings = described_class.connection_settings(uri: "http://localhost:9200")
 
       expect(settings).to eq({
@@ -82,7 +88,8 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
     end
 
     it 'prioritizes creds in arguments over those in url' do
-      settings = described_class.connection_settings(uri: "http://elastic:password@localhost:9200", user: "myuser", password: "p@ssword")
+      settings = described_class
+        .connection_settings(uri: "http://elastic:password@localhost:9200", user: "myuser", password: "p@ssword")
 
       expect(settings).to eq({
         scheme: "http",
@@ -130,13 +137,14 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
       expect(helper.default_mappings[:properties].keys).to match_array(expected)
     end
 
-    context 'custom analyzers' do
+    context 'with custom analyzers' do
       let(:custom_analyzers_mappings) do
         { properties: { title: { fields: { custom: true } } } }
       end
 
       before do
-        allow(::Elastic::Latest::CustomLanguageAnalyzers).to receive(:custom_analyzers_mappings).and_return(custom_analyzers_mappings)
+        allow(::Elastic::Latest::CustomLanguageAnalyzers).to receive(:custom_analyzers_mappings)
+          .and_return(custom_analyzers_mappings)
       end
 
       it 'merges custom language analyzers mappings' do
@@ -160,64 +168,71 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
   end
 
   describe '#create_migrations_index' do
-    after do
+    it 'creates the index' do
+      # ensure the migrations index does not exist
       helper.delete_migrations_index
-    end
 
-    it 'creates the index', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/495782' do
       expect { helper.create_migrations_index }
         .to change { helper.migrations_index_exists? }
               .from(false).to(true)
+
+      # cleanup to not pollute other tests
+      helper.delete_migrations_index
     end
   end
 
-  describe '#create_standalone_indices', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/297357' do
-    after do
-      @indices.each do |index_name, _|
-        helper.delete_index(index_name: index_name)
-      end
-    end
-
+  describe '#create_standalone_indices' do
     it 'creates standalone indices' do
-      @indices = helper.create_standalone_indices
+      delete_all_standalone_indices
 
-      @indices.each do |index|
-        expect(helper.index_exists?(index_name: index)).to be_truthy
+      aggregate_changes = helper.standalone_indices_proxies.map do |proxy|
+        change { helper.index_exists?(index_name: proxy.index_name) }.from(false).to(true)
       end
+
+      expect { helper.create_standalone_indices }.to aggregate_changes.reduce(&:and)
+
+      delete_all_standalone_indices
     end
 
-    it 'raises an exception when there is an existing alias' do
-      @indices = helper.create_standalone_indices
+    context 'when indices already exist' do
+      before do
+        allow(helper).to receive(:index_exists?).and_return(true)
+      end
 
-      expect { helper.create_standalone_indices }.to raise_error(/already exists/)
-    end
+      it 'raises an exception when there is an existing alias' do
+        expect { helper.create_standalone_indices }.to raise_error(/already exists/)
+      end
 
-    it 'does not raise an exception with skip_if_exists option' do
-      @indices = helper.create_standalone_indices
+      it 'does not raise an exception with skip_if_exists option' do
+        expect { helper.create_standalone_indices(options: { skip_if_exists: true }) }.not_to raise_error
+      end
 
-      expect { helper.create_standalone_indices(options: { skip_if_exists: true }) }.not_to raise_error
-    end
-
-    it 'raises an exception when there is an existing index' do
-      @indices = helper.create_standalone_indices(with_alias: false)
-
-      expect { helper.create_standalone_indices(with_alias: false) }.to raise_error(/already exists/)
+      it 'raises an exception when there is an existing index' do
+        expect { helper.create_standalone_indices(with_alias: false) }.to raise_error(/already exists/)
+      end
     end
   end
 
-  describe '#delete_standalone_indices', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/297357' do
-    before do
-      helper.create_standalone_indices
+  describe '#delete_standalone_indices' do
+    before_all do
+      delete_all_standalone_indices
+
+      described_class.default.create_standalone_indices
     end
 
-    subject { helper.delete_standalone_indices }
+    it 'removes all standalone indices' do
+      aggregate_changes = helper.standalone_indices_proxies.map do |proxy|
+        change { helper.index_exists?(index_name: proxy.index_name) }.from(true).to(false)
+      end
 
-    it_behaves_like 'deletes all standalone indices'
+      expect { helper.delete_standalone_indices }.to aggregate_changes.reduce(&:and)
+    end
   end
 
   describe '#delete_migrations_index' do
     before do
-      helper.create_migrations_index
+      # avoid flakiness
+      helper.create_migrations_index unless helper.migrations_index_exists?
     end
 
     it 'deletes the migrations index' do
@@ -233,8 +248,8 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
         include_context 'with an existing index and alias'
 
         it 'creates index and alias' do
-          expect(helper.index_exists?).to eq(true)
-          expect(helper.alias_exists?).to eq(true)
+          expect(helper.index_exists?).to be(true)
+          expect(helper.alias_exists?).to be(true)
         end
       end
 
@@ -242,31 +257,37 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
         include_context 'with a legacy index'
 
         it 'creates the index only' do
-          expect(helper.index_exists?).to eq(true)
-          expect(helper.alias_exists?).to eq(false)
+          expect(helper.index_exists?).to be(true)
+          expect(helper.alias_exists?).to be(false)
         end
       end
 
-      it 'creates an index with a custom name' do
-        @index_name = 'test-custom-index-name'
+      context 'with a custom index name' do
+        let(:index_name) { 'test-custom-index-name' }
 
-        helper.create_empty_index(with_alias: false, options: { index_name: @index_name })
+        it 'creates an index with a custom name' do
+          # prevent flakiness
+          helper.delete_index(index_name: index_name) if helper.index_exists?(index_name: index_name)
+          helper.create_empty_index(with_alias: false, options: { index_name: index_name })
 
-        expect(helper.index_exists?(index_name: @index_name)).to eq(true)
-        expect(helper.index_exists?).to eq(false)
+          expect(helper.index_exists?(index_name: index_name)).to be(true)
+          expect(helper.index_exists?).to be(false)
+
+          helper.delete_index(index_name: index_name)
+        end
       end
 
       context 'with non-default number of shards' do
-        let(:number_of_shards) { 7 }
+        include_context 'with an existing index and alias'
 
-        before do
+        let_it_be(:number_of_shards) { 7 }
+
+        before_all do
           Elastic::IndexSetting.default.update!(number_of_shards: number_of_shards)
         end
 
         it 'creates an index with correct number of shards' do
-          @index_name = helper.create_empty_index(with_alias: false).each_key.first
-
-          settings = helper.get_settings(index_name: @index_name)
+          settings = helper.get_settings(index_name: helper.target_name)
           expect(settings['number_of_shards'].to_i).to eq(number_of_shards)
         end
       end
@@ -275,7 +296,7 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
     context 'when there is an alias' do
       include_context 'with an existing index and alias'
 
-      it 'raises an error', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/457794' do
+      it 'raises an error' do
         expect { helper.create_empty_index }.to raise_error(/Index under '.+' already exists/)
       end
 
@@ -336,13 +357,13 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
   end
 
   describe '#migrations_index_exists?', :elastic do
+    before do
+      helper.delete_migrations_index
+    end
+
     subject { helper.migrations_index_exists? }
 
     context 'without an existing migrations index' do
-      before do
-        helper.delete_migrations_index
-      end
-
       it { is_expected.to be_falsy }
     end
 
@@ -393,12 +414,14 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
     let(:new_index_name) { 'test-switch-alias' }
 
     it 'switches the alias' do
+      old_index_name = helper.target_index_name
       helper.create_empty_index(with_alias: false, options: { index_name: new_index_name })
 
       expect { helper.switch_alias(to: new_index_name) }
         .to change { helper.target_index_name }.to(new_index_name)
 
       helper.delete_index(index_name: new_index_name)
+      helper.delete_index(index_name: old_index_name) # cleanup to not pollute tests
     end
   end
 
@@ -480,14 +503,16 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
   end
 
   describe '#standalone_indices_proxies' do
-    subject(:standalone_indices_proxies) { helper.standalone_indices_proxies(target_classes: target_classes, exclude_classes: exclude_classes) }
+    subject(:standalone_indices_proxies) do
+      helper.standalone_indices_proxies(target_classes: target_classes, exclude_classes: exclude_classes)
+    end
 
     let(:target_classes) { nil }
     let(:exclude_classes) { nil }
 
     context 'when target_classes and exclude_classes are not provided' do
       it 'creates proxies for each separate class' do
-        expect(subject.count).to eq(Gitlab::Elastic::Helper::ES_SEPARATE_CLASSES.count)
+        expect(standalone_indices_proxies.count).to eq(Gitlab::Elastic::Helper::ES_SEPARATE_CLASSES.count)
       end
     end
 
@@ -495,7 +520,8 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
       let(:exclude_classes) { [Epic, Wiki] }
 
       it 'creates proxies for each separate classes except exclude_classes' do
-        expect(subject.map(&:target)).to match_array(Gitlab::Elastic::Helper::ES_SEPARATE_CLASSES - exclude_classes)
+        expected = Gitlab::Elastic::Helper::ES_SEPARATE_CLASSES - exclude_classes
+        expect(standalone_indices_proxies.map(&:target)).to match_array(expected)
       end
     end
 
@@ -503,7 +529,7 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
       let(:target_classes) { [Issue] }
 
       it 'creates proxies for only the target classes' do
-        expect(subject.count).to eq(1)
+        expect(standalone_indices_proxies.count).to eq(1)
       end
     end
 
@@ -542,13 +568,11 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
   end
 
   describe '#ping?' do
-    subject { helper.ping? }
-
     it 'does not raise any exception' do
       allow(described_class.default.client).to receive(:ping).and_raise(StandardError)
 
-      expect(subject).to be_falsey
-      expect { subject }.not_to raise_exception
+      expect(helper.ping?).to be_falsey
+      expect { helper.ping? }.not_to raise_exception
     end
   end
 
@@ -577,12 +601,12 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
     context 'without cached information' do
       subject { helper.server_info(skip_cache: true) }
 
-      context 'server is accessible' do
+      context 'when server is accessible' do
         before do
           allow(described_class.default.client).to receive(:info).and_return(info)
         end
 
-        context 'using elasticsearch' do
+        context 'when using elasticsearch' do
           let(:info) do
             {
               'version' => {
@@ -594,11 +618,12 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
           end
 
           it 'returns server info' do
-            is_expected.to include(distribution: 'elasticsearch', version: '7.9.3', build_type: 'docker', lucene_version: '8.11.4')
+            is_expected.to include(distribution: 'elasticsearch', version: '7.9.3',
+              build_type: 'docker', lucene_version: '8.11.4')
           end
         end
 
-        context 'using opensearch' do
+        context 'when using opensearch' do
           let(:info) do
             {
               'version' => {
@@ -611,12 +636,13 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
           end
 
           it 'returns server info' do
-            is_expected.to include(distribution: 'opensearch', version: '1.0.0', build_type: 'tar', lucene_version: '8.10.1')
+            is_expected.to include(distribution: 'opensearch', version: '1.0.0',
+              build_type: 'tar', lucene_version: '8.10.1')
           end
         end
       end
 
-      context 'server is inaccessible' do
+      context 'when server is inaccessible' do
         before do
           allow(described_class.default.client).to receive(:info).and_raise(StandardError)
         end
@@ -909,7 +935,8 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
         let(:rid) { "wiki_#{container_type.downcase}_#{container_id}" }
 
         it 'calls delete_by_query with passed namespace_routing_id as routing' do
-          expect(helper.client).to receive(:delete_by_query).with({ body: body, index: index, conflicts: 'proceed', routing: "n_#{namespace_routing_id}" })
+          expect(helper.client).to receive(:delete_by_query)
+            .with({ body: body, index: index, conflicts: 'proceed', routing: "n_#{namespace_routing_id}" })
           helper.remove_wikis_from_the_standalone_index(container_id, container_type, namespace_routing_id)
         end
       end
@@ -996,6 +1023,18 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
 
       it 'returns a hash with a single key value pair' do
         expect(helper.target_index_names(target: nil)).to match({ 'gitlab-test' => true })
+      end
+    end
+  end
+
+  private
+
+  def delete_all_standalone_indices
+    hlpr = described_class.default
+
+    hlpr.standalone_indices_proxies.each do |proxy|
+      hlpr.client.cat.indices(index: "#{proxy.index_name}*", format: 'json').each do |index|
+        hlpr.client.indices.delete(index: index['index'])
       end
     end
   end
