@@ -68,6 +68,8 @@ export const CANNOT_REMOVE_BILLABLE_MEMBER_MODAL_CONTENT = s__(
   `Billing|Members who were invited via a group invitation cannot be removed.
   You can either remove the entire group, or ask an Owner of the invited group to remove the member.`,
 );
+export const DELETED_BILLABLE_MEMBERS_STORAGE_KEY_SUFFIX = 'group-members-deleted';
+export const DELETED_BILLABLE_MEMBERS_EXPIRES_STORAGE_KEY_SUFFIX = 'group-members-deleted.expires';
 export const REMOVE_BILLABLE_MEMBER_MODAL_ID = 'billable-member-remove-modal';
 export const REMOVE_BILLABLE_MEMBER_MODAL_CONTENT_TEXT_TEMPLATE = s__(
   `Billing|You are about to remove user %{username} from your subscription.
