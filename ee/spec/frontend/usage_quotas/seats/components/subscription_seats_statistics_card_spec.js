@@ -46,7 +46,6 @@ describe('SubscriptionSeatsStatisticsCard', () => {
         activeTrial: false,
         hasLimitedFreePlan: false,
         hasError: false,
-        hasNoSubscription: true,
         maxFreeNamespaceSeats: 5,
         namespaceId: 13,
         seatsInSubscription: 13,
@@ -59,6 +58,7 @@ describe('SubscriptionSeatsStatisticsCard', () => {
     initialGetters = {},
     initialState = {},
     props = {},
+    provide = {},
   } = {}) => {
     const apolloProvider = createMockApolloProvider(initialApolloData);
     wrapper = shallowMountExtended(SubscriptionSeatsStatisticsCard, {
@@ -66,6 +66,10 @@ describe('SubscriptionSeatsStatisticsCard', () => {
       propsData: {
         billableMembersCount: 3,
         ...props,
+      },
+      provide: {
+        hasNoSubscription: true,
+        ...provide,
       },
       store: fakeStore(initialGetters, initialState),
     });
@@ -203,9 +207,9 @@ describe('SubscriptionSeatsStatisticsCard', () => {
 
   describe('with a community plan', () => {
     beforeEach(() => {
-      const initialState = { hasNoSubscription: false };
+      const provide = { hasNoSubscription: false };
       const initialApolloData = { communityPlan: true };
-      createWrapper({ initialApolloData, initialState });
+      createWrapper({ initialApolloData, provide });
       return waitForPromises();
     });
 
@@ -237,8 +241,8 @@ describe('SubscriptionSeatsStatisticsCard', () => {
   describe('with a plan', () => {
     beforeEach(() => {
       const initialGetters = { hasFreePlan: () => false };
-      const initialState = { hasNoSubscription: false };
-      createWrapper({ initialGetters, initialState });
+      const provide = { hasNoSubscription: false };
+      createWrapper({ initialGetters, provide });
       return waitForPromises();
     });
 

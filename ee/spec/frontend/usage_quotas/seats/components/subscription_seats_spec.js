@@ -27,6 +27,7 @@ const providedFields = {
   hasNoSubscription: false,
   hasLimitedFreePlan: false,
   activeTrial: false,
+  addSeatsHref: '/groups/test_group/-/seat_usage.csv',
 };
 
 const fakeStore = ({ initialState, initialGetters }) =>
@@ -58,6 +59,8 @@ describe('Subscription Seats', () => {
   let wrapper;
 
   const fullPath = 'group-path';
+  const { explorePlansPath, addSeatsHref } = providedFields;
+
   const defaultBillableMembersCountMockHandler = jest.fn().mockResolvedValue({
     data: {
       group: {
@@ -69,13 +72,12 @@ describe('Subscription Seats', () => {
   });
 
   const defaultInitialState = {
-    hasNoSubscription: false,
     total: 2,
     maxSeatsUsed: 3,
     seatsOwed: 1,
   };
 
-  const createComponent = ({ initialState = {}, initialGetters = {} } = {}) => {
+  const createComponent = ({ initialState = {}, initialGetters = {}, provide = {} } = {}) => {
     const { isPublicNamespace = false } = initialState;
 
     const handlers = [[getBillableMembersCountQuery, defaultBillableMembersCountMockHandler]];
@@ -85,7 +87,14 @@ describe('Subscription Seats', () => {
       shallowMount(SubscriptionSeats, {
         store: fakeStore({ initialState, initialGetters }),
         apolloProvider,
-        provide: { fullPath, isPublicNamespace },
+        provide: {
+          fullPath,
+          isPublicNamespace,
+          explorePlansPath,
+          addSeatsHref,
+          hasNoSubscription: null,
+          ...provide,
+        },
       }),
     );
 
@@ -115,13 +124,15 @@ describe('Subscription Seats', () => {
       return createComponent({
         initialState: {
           ...defaultInitialState,
-          hasNoSubscription: true,
           hasLimitedFreePlan: false,
           activeTrial: false,
           isPublicNamespace: true,
         },
         initialGetters: {
           hasFreePlan: () => true,
+        },
+        provide: {
+          hasNoSubscription: true,
         },
       });
     });
@@ -156,7 +167,10 @@ describe('Subscription Seats', () => {
     describe('for free namespace with limit', () => {
       beforeEach(() => {
         return createComponent({
-          initialState: { hasNoSubscription: true, hasLimitedFreePlan: true },
+          initialState: { hasLimitedFreePlan: true },
+          provide: {
+            hasNoSubscription: true,
+          },
         });
       });
 
