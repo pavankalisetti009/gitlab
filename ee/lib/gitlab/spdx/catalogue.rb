@@ -5,6 +5,8 @@ module Gitlab
     class Catalogue
       include Enumerable
 
+      LATEST_ACTIVE_LICENSES_CACHE_KEY = [name, 'latest_active_licenses'].freeze
+
       def initialize(catalogue = {})
         @catalogue = catalogue
       end
@@ -28,7 +30,13 @@ module Gitlab
       end
 
       def self.latest_active_licenses
-        @latest_active_licenses ||= latest.licenses.reject(&:deprecated).sort_by(&:name)
+        Rails.cache.fetch(LATEST_ACTIVE_LICENSES_CACHE_KEY, expires_in: 7.days) do
+          latest.licenses.reject(&:deprecated).sort_by(&:name)
+        end
+      end
+
+      def self.latest_active_license_names
+        latest_active_licenses.map(&:name)
       end
 
       private

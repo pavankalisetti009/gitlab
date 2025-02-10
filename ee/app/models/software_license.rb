@@ -41,12 +41,16 @@ class SoftwareLicense < ApplicationRecord
       approval_policy_rule_id: nil,
       custom_software_license: nil
     )
+
+      catalogue_license = Gitlab::SPDX::Catalogue.latest_active_licenses.find { |license| license.name == name }
+
       project.software_license_policies.create!(
         classification: classification,
         software_license: find_or_create_by!(name: name),
         scan_result_policy_read: scan_result_policy_read,
         approval_policy_rule_id: approval_policy_rule_id,
-        custom_software_license: custom_software_license
+        custom_software_license: custom_software_license,
+        software_license_spdx_identifier: catalogue_license&.id
       )
     end
   end

@@ -40,7 +40,7 @@ module EE::SecurityOrchestrationHelper
       role_approver_types: Security::ScanResultPolicy::ALLOWED_ROLES,
       scan_policy_documentation_path: help_page_path('user/application_security/policies/index.md'),
       action_approvers: approvers&.to_json,
-      software_licenses: SoftwareLicense.all_license_names,
+      software_licenses: software_licenses,
       global_group_approvers_enabled: Gitlab::CurrentSettings.security_policy_global_group_approvers_enabled.to_json,
       root_namespace_path: container.root_ancestor&.full_path,
       timezones: timezone_data(format: :full).to_json,
@@ -156,5 +156,15 @@ module EE::SecurityOrchestrationHelper
     end
 
     ::Security::OrchestrationPolicyConfiguration.for_management_project(project)
+  end
+
+  private
+
+  def software_licenses
+    if Feature.enabled?(:static_licenses) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- The feature flag is global
+      ::Gitlab::SPDX::Catalogue.latest_active_license_names
+    else
+      SoftwareLicense.all_license_names
+    end
   end
 end

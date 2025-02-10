@@ -97,7 +97,7 @@ RSpec.describe Gitlab::SPDX::Catalogue, feature_category: :software_composition_
     end
   end
 
-  describe ".latest_active_licenses" do
+  describe ".latest_active_licenses", :clean_gitlab_redis_cache do
     subject(:latest_active_licenses) { described_class.latest_active_licenses }
 
     it 'rejects deprecated licenses' do
@@ -110,6 +110,43 @@ RSpec.describe Gitlab::SPDX::Catalogue, feature_category: :software_composition_
 
     it 'returns the expected active licenses' do
       expect(latest_active_licenses.find { |l| l.id == 'MIT' }).to be_present
+    end
+
+    it 'caches the active license' do
+      expect(Rails.cache).to receive(:fetch).with(described_class::LATEST_ACTIVE_LICENSES_CACHE_KEY, expires_in: 7.days)
+      latest_active_licenses
+    end
+  end
+
+  describe ".latest_active_license_names", :clean_gitlab_redis_cache do
+    let(:academic) { build(:spdx_license, name: 'Academic Free License v1.1', deprecated: false) }
+    let(:mit) { build(:spdx_license, name: 'MIT License', deprecated: false) }
+    let(:affero) { build(:spdx_license, name: 'GNU Affero General Public License v3.0', deprecated: true) }
+
+    let(:licenses) { [academic, mit, affero] }
+
+    let(:catalogue_hash) do
+      {
+        licenseListVersion: "3.6",
+        licenses: [
+          { isDeprecatedLicenseId: false, name: 'Academic Free License v1.1' },
+          { isDeprecatedLicenseId: false, name: 'MIT License' },
+          { isDeprecatedLicenseId: true, name: 'GNU Affero General Public License v3.0' }
+        ]
+      }
+    end
+
+    let(:gateway) { instance_double(Gitlab::SPDX::CatalogueGateway, fetch: catalogue) }
+    let(:catalogue) { described_class.new(catalogue_hash) }
+
+    before do
+      allow(Gitlab::SPDX::CatalogueGateway).to receive(:new).and_return(gateway)
+    end
+
+    subject(:latest_active_license_names) { described_class.latest_active_license_names }
+
+    it 'returns only active licenses sorted by name' do
+      expect(latest_active_license_names).to contain_exactly(academic.name, mit.name)
     end
   end
 end

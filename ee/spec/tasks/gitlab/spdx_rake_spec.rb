@@ -8,7 +8,7 @@ RSpec.describe 'gitlab:rake tasks', :silence_stdout, feature_category: :software
   end
 
   describe 'import' do
-    subject { run_rake_task 'gitlab:spdx:import' }
+    subject(:spdx_import) { run_rake_task 'gitlab:spdx:import' }
 
     let(:path) { Gitlab::SPDX::CatalogueGateway::OFFLINE_CATALOGUE_PATH }
     let(:data) { { license1: 'test', license2: 'test2' } }
@@ -22,7 +22,25 @@ RSpec.describe 'gitlab:rake tasks', :silence_stdout, feature_category: :software
       end
 
       it 'saves the catalogue to the file' do
-        expect { subject }.to output("Local copy of SPDX catalogue is saved to #{path}\n").to_stdout
+        expect { spdx_import }.to output("Local copy of SPDX catalogue is saved to #{path}\n").to_stdout
+      end
+
+      it 'deletes the software licenses from cache' do
+        expect(Rails.cache).to receive(:delete).with(::Gitlab::SPDX::Catalogue::LATEST_ACTIVE_LICENSES_CACHE_KEY)
+
+        spdx_import
+      end
+
+      context 'when the feature flag static_licenses is disabled' do
+        before do
+          stub_feature_flags(static_licenses: false)
+        end
+
+        it 'does not deletes the software licenses from cache' do
+          expect(Rails.cache).not_to receive(:delete).with(::Gitlab::SPDX::Catalogue::LATEST_ACTIVE_LICENSES_CACHE_KEY)
+
+          spdx_import
+        end
       end
     end
 
@@ -33,7 +51,7 @@ RSpec.describe 'gitlab:rake tasks', :silence_stdout, feature_category: :software
       end
 
       it 'raises parsing failure' do
-        expect { subject }.to output(/Import of SPDX catalogue failed: unexpected colon \(after \)/).to_stdout
+        expect { spdx_import }.to output(/Import of SPDX catalogue failed: unexpected colon \(after \)/).to_stdout
       end
     end
 
@@ -43,7 +61,7 @@ RSpec.describe 'gitlab:rake tasks', :silence_stdout, feature_category: :software
       end
 
       it 'raises network failure error' do
-        expect { subject }.to output("Import of SPDX catalogue failed: Network failure\n").to_stdout
+        expect { spdx_import }.to output("Import of SPDX catalogue failed: Network failure\n").to_stdout
       end
     end
   end

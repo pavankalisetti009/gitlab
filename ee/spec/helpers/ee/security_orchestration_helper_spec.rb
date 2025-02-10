@@ -123,13 +123,35 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
   end
 
   describe '#orchestration_policy_data' do
+    shared_examples_for 'loads software_licenses names' do
+      context 'for software_licenses' do
+        context 'when static_licenses feature flag is disabled' do
+          before do
+            stub_feature_flags(static_licenses: false)
+          end
+
+          it 'gets the license names from SoftwareLicense' do
+            expect(SoftwareLicense).to receive(:all_license_names)
+
+            orchestration_policy_data
+          end
+        end
+
+        context 'when static_licenses feature flag is enabled' do
+          it 'gets the license names from ::Gitlab::SPDX::Catalogue' do
+            expect(::Gitlab::SPDX::Catalogue).to receive(:latest_active_license_names)
+
+            orchestration_policy_data
+          end
+        end
+      end
+    end
+
     context 'for project' do
       let(:approvers) { { single_approvers: %w[approver1 approver2] } }
       let(:owner) { project.first_owner }
       let(:policy) { nil }
       let(:policy_type) { 'scan_execution_policy' }
-      let_it_be(:mit_license) { create(:software_license, :mit) }
-      let_it_be(:apache_license) { create(:software_license, :apache_2_0) }
       let(:base_data) do
         {
           assigned_policy_project: nil.to_json,
@@ -144,7 +166,7 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
           role_approver_types: %w[developer maintainer owner],
           scan_policy_documentation_path: kind_of(String),
           action_approvers: approvers&.to_json,
-          software_licenses: [apache_license.name, mit_license.name],
+          software_licenses: kind_of(Array),
           global_group_approvers_enabled:
             Gitlab::CurrentSettings.security_policy_global_group_approvers_enabled.to_json,
           root_namespace_path: project.root_ancestor.full_path,
@@ -169,7 +191,7 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
         allow(helper).to receive(:can?).with(owner, :modify_security_policy, project) { true }
       end
 
-      subject { helper.orchestration_policy_data(project, policy_type, policy, approvers) }
+      subject(:orchestration_policy_data) { helper.orchestration_policy_data(project, policy_type, policy, approvers) }
 
       context 'when a new policy is being created' do
         let(:policy) { nil }
@@ -212,12 +234,11 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
           }.to_json))
         end
       end
+
+      it_behaves_like 'loads software_licenses names'
     end
 
     context 'for namespace' do
-      let_it_be(:mit_license) { create(:software_license, :mit) }
-      let_it_be(:apache_license) { create(:software_license, :apache_2_0) }
-
       let(:approvers) { { single_approvers: %w[approver1 approver2] } }
       let(:owner) { namespace.first_owner }
       let(:policy) { nil }
@@ -235,7 +256,7 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
           namespace_path: namespace.full_path,
           namespace_id: namespace.id,
           action_approvers: approvers&.to_json,
-          software_licenses: [apache_license.name, mit_license.name],
+          software_licenses: kind_of(Array),
           global_group_approvers_enabled:
             Gitlab::CurrentSettings.security_policy_global_group_approvers_enabled.to_json,
           root_namespace_path: namespace.root_ancestor.full_path,
@@ -260,7 +281,9 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
         allow(helper).to receive(:can?).with(owner, :modify_security_policy, namespace) { true }
       end
 
-      subject { helper.orchestration_policy_data(namespace, policy_type, policy, approvers) }
+      subject(:orchestration_policy_data) do
+        helper.orchestration_policy_data(namespace, policy_type, policy, approvers)
+      end
 
       context 'when a new policy is being created' do
         let(:policy) { nil }
@@ -309,6 +332,8 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
           }.to_json))
         end
       end
+
+      it_behaves_like 'loads software_licenses names'
     end
   end
 
