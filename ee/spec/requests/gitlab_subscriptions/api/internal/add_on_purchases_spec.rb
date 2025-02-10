@@ -100,10 +100,12 @@ RSpec.describe GitlabSubscriptions::API::Internal::AddOnPurchases, :aggregate_fa
         let(:existing_add_on_purchase_params) do
           {
             quantity: 5,
-            purchase_xid: 'A-S000010',
-            trial: false
+            purchase_xid: 'trial-order-12345',
+            trial: true
           }
         end
+
+        let(:trial) { false }
 
         before do
           create(
