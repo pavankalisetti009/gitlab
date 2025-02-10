@@ -8498,7 +8498,8 @@ CREATE TABLE approval_merge_request_rule_sources (
     id bigint NOT NULL,
     approval_merge_request_rule_id bigint NOT NULL,
     approval_project_rule_id bigint NOT NULL,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_f82666a937 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE approval_merge_request_rule_sources_id_seq
@@ -27145,9 +27146,6 @@ ALTER TABLE vulnerability_finding_signatures
 
 ALTER TABLE merge_request_blocks
     ADD CONSTRAINT check_f8034ca45e CHECK ((project_id IS NOT NULL)) NOT VALID;
-
-ALTER TABLE approval_merge_request_rule_sources
-    ADD CONSTRAINT check_f82666a937 CHECK ((project_id IS NOT NULL)) NOT VALID;
 
 ALTER TABLE projects
     ADD CONSTRAINT check_fa75869cb1 CHECK ((project_namespace_id IS NOT NULL)) NOT VALID;
