@@ -13,53 +13,53 @@ Here are the related spec folders for the fields (in alphabetical order by resol
 
 - GraphQL Field: `Query.workspaces`
     - Spec folder: `ee/spec/requests/api/graphql/remote_development/workspaces`
-    - API docs: https://docs.gitlab.com/ee/api/graphql/reference/index.html#queryworkspaces
+    - API docs: https://docs.gitlab.com/ee/api/graphql/reference/#queryworkspaces
     - Resolver source file for `tests.yml` and `verify-tff-mapping`: `ee/app/graphql/resolvers/remote_development/workspaces_admin_resolver.rb`
     - Notes: Only admins may use this field.
 
 - GraphQL Field: `Query.project.clusterAgent.remoteDevelopmentAgentConfig`
   - Spec folder: `ee/spec/requests/api/graphql/remote_development/cluster_agent/remote_development_agent_config`
-  - API docs: https://docs.gitlab.com/ee/api/graphql/reference/index.html#clusteragentremotedevelopmentagentconfig
+  - API docs: https://docs.gitlab.com/ee/api/graphql/reference/#clusteragentremotedevelopmentagentconfig
   - Resolver source file for `tests.yml` and `verify-tff-mapping`: `ee/app/graphql/resolvers/remote_development/cluster_agent/remote_development_agent_config_resolver.rb`
   - Note: THIS FIELD IS DEPRECATED, AND WILL BE REMOVED IN A FUTURE RELEASE.
 
 - Field: `Query.project.clusterAgent.workspaces`
     - Spec folder: `ee/spec/requests/api/graphql/remote_development/cluster_agent/workspaces`
-    - API docs: https://docs.gitlab.com/ee/api/graphql/reference/index.html#clusteragentworkspaces
+    - API docs: https://docs.gitlab.com/ee/api/graphql/reference/#clusteragentworkspaces
     - Resolver source file for `tests.yml` and `verify-tff-mapping`: `ee/app/graphql/resolvers/remote_development/cluster_agent/workspaces.rb`
 
 - GraphQL Field: `Query.project.clusterAgent.workspacesAgentConfig`
   - Spec folder: `ee/spec/requests/api/graphql/remote_development/cluster_agent/workspaces_agent_config`
-  - API docs: https://docs.gitlab.com/ee/api/graphql/reference/index.html#clusteragentworkspacesagentconfig
+  - API docs: https://docs.gitlab.com/ee/api/graphql/reference/#clusteragentworkspacesagentconfig
   - Resolver source file for `tests.yml` and `verify-tff-mapping`: `ee/app/graphql/resolvers/remote_development/cluster_agent/workspaces_agent_config_resolver.rb`
 
 - GraphQL Field: `Query.namespace.remote_development_cluster_agents`
   - Spec folder: `ee/spec/requests/api/graphql/remote_development/namespace/remote_development_cluster_agents`
-  - API docs: https://docs.gitlab.com/ee/api/graphql/reference/index.html#namespaceremotedevelopmentclusteragents
+  - API docs: https://docs.gitlab.com/ee/api/graphql/reference/#namespaceremotedevelopmentclusteragents
   - Resolver source file for `tests.yml` and `verify-tff-mapping`: `ee/app/graphql/resolvers/remote_development/namespace/cluster_agents_resolver.rb` 
   - Notes: This is the same resolver used by `Query.currentUser.namespace.workspaces_cluster_agents`. THIS FIELD IS DEPRECATED AND WILL BE REMOVED IN THE 18.0 RELEASE.
 
 - GraphQL Field: `Query.namespace.namespace.workspaces_cluster_agents`
   - Spec folder: `ee/spec/requests/api/graphql/remote_development/namespace/workspaces_cluster_agents`
-  - API docs: https://docs.gitlab.com/ee/api/graphql/reference/index.html#namespaceworkspacesclusteragents
+  - API docs: https://docs.gitlab.com/ee/api/graphql/reference/#namespaceworkspacesclusteragents
   - Resolver source file for `tests.yml` and `verify-tff-mapping`: `ee/app/graphql/resolvers/remote_development/namespace/cluster_agents_resolver.rb`
   - Notes: This is the same resolver used by `Query.currentUser.namespace.remote_development_cluster_agents`.
 
 - GraphQL Field: `Query.workspace`
   - Spec folder: `ee/spec/requests/api/graphql/remote_development/workspace`
-  - API docs: https://docs.gitlab.com/ee/api/graphql/reference/index.html#queryworkspace
+  - API docs: https://docs.gitlab.com/ee/api/graphql/reference/#queryworkspace
   - Resolver source file for `tests.yml` and `verify-tff-mapping`: `ee/app/graphql/resolvers/remote_development/namespace/workspaces_resolver.rb`
   - Notes: This is the same resolver used by `Query.currentUser.workspaces`
 
 - GraphQL Field: `Query.workspace.workspaceVariables`
     - Spec folder: `ee/spec/requests/api/graphql/remote_development/workspace_variables`
-    - API docs:  https://docs.gitlab.com/ee/api/graphql/reference/index.html##workspacevariableconnection
+    - API docs:  https://docs.gitlab.com/ee/api/graphql/reference/##workspacevariableconnection
     - Resolver source file for `tests.yml` and `verify-tff-mapping`: `ee/app/graphql/resolvers/remote_development/namespace/workspaces_resolver.rb`
     - Notes: This is the same resolver used by `Query.currentUser.workspaces`
 
 - GraphQL Field: `Query.currentUser.workspaces`
     - Spec folder: `ee/spec/requests/api/graphql/remote_development/current_user/workspaces`
-    - API docs: https://docs.gitlab.com/ee/api/graphql/reference/index.html#currentuserworkspaces
+    - API docs: https://docs.gitlab.com/ee/api/graphql/reference/#currentuserworkspaces
     - Resolver source file for `tests.yml` and `verify-tff-mapping`: `ee/app/graphql/resolvers/remote_development/workspaces_resolver.rb`
     - Notes: This is the same resolver used by `Query.currentUser.workspace`
 

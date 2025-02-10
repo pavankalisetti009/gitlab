@@ -109,7 +109,7 @@ module Admin
     end
 
     def direct_connections_docs_url
-      'https://docs.gitlab.com/ee/user/project/repository/code_suggestions/_index.html#disable-direct-connections-to-the-ai-gateway'
+      'https://docs.gitlab.com/ee/user/project/repository/code_suggestions/#direct-and-indirect-connections'
     end
     # rubocop:enable Gitlab/DocumentationLinks/HardcodedUrl
 

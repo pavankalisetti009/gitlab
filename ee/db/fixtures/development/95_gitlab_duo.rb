@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # This class is responsible for seeding group/project resources for testing GitLab Duo features.
-# See https://docs.gitlab.com/ee/development/ai_features/index.html#seed-project-and-group-resources-for-testing-and-evaluation
+# See https://docs.gitlab.com/ee/development/ai_features/#seed-project-and-group-resources-for-testing-and-evaluation
 # for more information.
 class Gitlab::Seeder::GitLabDuo # rubocop:disable Style/ClassAndModuleChildren -- this is a seed script
   GROUP_PATH = 'gitlab-duo'
