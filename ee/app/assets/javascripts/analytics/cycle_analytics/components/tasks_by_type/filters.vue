@@ -3,7 +3,6 @@ import { GlCollapsibleListbox, GlSegmentedControl } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapState, mapGetters } from 'vuex';
 import { difference, debounce } from 'lodash';
-import { removeFlash } from '~/analytics/shared/utils';
 import { createAlert, VARIANT_INFO } from '~/alert';
 import { __, s__, n__, sprintf } from '~/locale';
 import { getGroupLabels } from 'ee/api/analytics_api';
@@ -38,6 +37,7 @@ export default {
       searching: false,
       loading: false,
       debouncedSearch: null,
+      maxLabelsAlert: null,
     };
   },
   computed: {
@@ -120,12 +120,12 @@ export default {
       return this.labels.find((label) => label.title === title);
     },
     toggleLabel(title) {
-      removeFlash('notice');
       if (this.maxLabelsSelected && !this.selectedLabelNames.includes(title)) {
         this.createMaxLabelsSelectedAlert();
         return;
       }
 
+      this.maxLabelsAlert?.dismiss();
       this.$emit('toggle-label', this.findLabel(title));
     },
     createMaxLabelsSelectedAlert() {
@@ -134,7 +134,7 @@ export default {
         s__('CycleAnalytics|Only %{maxLabels} labels can be selected at this time'),
         { maxLabels },
       );
-      createAlert({ message, variant: VARIANT_INFO });
+      this.maxLabelsAlert = createAlert({ message, variant: VARIANT_INFO });
     },
     setSearchTerm(value) {
       this.searchTerm = value;

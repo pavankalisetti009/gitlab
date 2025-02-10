@@ -18,7 +18,12 @@ import { groupLabels, groupLabelNames } from '../../mock_data';
 
 Vue.use(Vuex);
 
-jest.mock('~/alert');
+const mockAlertDismiss = jest.fn();
+jest.mock('~/alert', () => ({
+  createAlert: jest.fn().mockImplementation(() => ({
+    dismiss: mockAlertDismiss,
+  })),
+}));
 
 describe('TasksByTypeFilters', () => {
   let wrapper = null;
@@ -69,6 +74,7 @@ describe('TasksByTypeFilters', () => {
 
       expect(wrapper.emitted('toggle-label').length).toBe(1);
       expect(wrapper.emitted('toggle-label')[0][0]).toEqual(groupLabels[0]);
+      expect(mockAlertDismiss).not.toHaveBeenCalled();
     });
 
     it('renders the count of currently selected labels', () => {
@@ -113,12 +119,21 @@ describe('TasksByTypeFilters', () => {
         message: 'Only 2 labels can be selected at this time',
         variant: VARIANT_INFO,
       });
+      expect(mockAlertDismiss).not.toHaveBeenCalled();
     });
 
     it('should allow removing a label', () => {
       findCollapsibleListbox().vm.$emit('select', [groupLabels[0].title]);
       expect(wrapper.emitted('toggle-label').length).toBe(1);
       expect(wrapper.emitted('toggle-label')[0][0]).toEqual(groupLabels[1]);
+    });
+
+    it('should dismiss maximum labels alert upon removing a label', () => {
+      findCollapsibleListbox().vm.$emit('select', [...selectedLabelNames, groupLabels[2].title]);
+      expect(createAlert).toHaveBeenCalled();
+
+      findCollapsibleListbox().vm.$emit('select', [groupLabels[0].title]);
+      expect(mockAlertDismiss).toHaveBeenCalled();
     });
   });
 

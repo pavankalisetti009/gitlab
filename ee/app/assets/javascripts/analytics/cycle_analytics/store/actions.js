@@ -1,5 +1,4 @@
 import { getGroupLabels } from 'ee/api/analytics_api';
-import { removeFlash } from '~/analytics/shared/utils';
 import { createAlert } from '~/alert';
 import { constructPathWithNamespace } from '~/analytics/cycle_analytics/utils';
 import { LABELS_ENDPOINT, MILESTONES_ENDPOINT } from '~/analytics/cycle_analytics/constants';
@@ -57,8 +56,6 @@ export const receiveCycleAnalyticsDataError = ({ commit }, { response = {} }) =>
 };
 
 export const fetchCycleAnalyticsData = ({ dispatch }) => {
-  removeFlash();
-
   return Promise.resolve()
     .then(() => dispatch('requestCycleAnalyticsData'))
     .then(() => dispatch('fetchValueStreams'))
