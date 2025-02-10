@@ -16,7 +16,7 @@ module EE
 
     def extensions_marketplace_view
       if License.feature_available?(:remote_development) &&
-          ::WebIde::ExtensionsMarketplace.feature_enabled?(user: current_user)
+          ::WebIde::ExtensionMarketplace.feature_enabled?(user: current_user)
         build_extensions_marketplace_view(
           title: s_("Preferences|Web IDE and Workspaces"),
           message: s_("PreferencesIntegrations|Uses %{extensions_marketplace_home} as the extension marketplace " \

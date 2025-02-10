@@ -4272,7 +4272,7 @@ RSpec.describe Group, feature_category: :groups_and_projects do
 
     with_them do
       before do
-        allow(::WebIde::ExtensionsMarketplace).to receive(:feature_enabled_for_any_user?).and_return(feature_flags_enabled)
+        allow(::WebIde::ExtensionMarketplace).to receive(:feature_enabled_for_any_user?).and_return(feature_flags_enabled)
         stub_licensed_features(disable_extensions_marketplace_for_enterprise_users: licensed_feature_available)
       end
 
@@ -4339,7 +4339,7 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     with_them do
       before do
         group.update!(enterprise_users_extensions_marketplace_enabled: value)
-        allow(::WebIde::ExtensionsMarketplace).to receive(:feature_enabled_for_any_user?).and_return(true)
+        allow(::WebIde::ExtensionMarketplace).to receive(:feature_enabled_for_any_user?).and_return(true)
         stub_licensed_features(disable_extensions_marketplace_for_enterprise_users: licensed_feature_available)
       end
 
