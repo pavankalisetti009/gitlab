@@ -51,7 +51,7 @@ RSpec.describe GitlabSchema.types['MlExperiment'], feature_category: :mlops do
         'name' => experiment.name,
         'createdAt' => experiment.created_at.iso8601(0),
         'candidateCount' => experiment.candidates.count,
-        'path' => "/#{project.path_with_namespace}/-/ml/experiments/#{experiment.id}",
+        'path' => "/#{project.path_with_namespace}/-/ml/experiments/#{experiment.iid}",
         'creator' => {
           'id' => project.owner.to_global_id.to_s,
           'name' => project.owner.name,
@@ -80,7 +80,7 @@ RSpec.describe GitlabSchema.types['MlExperiment'], feature_category: :mlops do
         'name' => experiment.name,
         'createdAt' => experiment.created_at.iso8601(0),
         'candidateCount' => experiment.candidates.count,
-        'path' => "/#{project.path_with_namespace}/-/ml/experiments/#{experiment.id}",
+        'path' => "/#{project.path_with_namespace}/-/ml/experiments/#{experiment.iid}",
         'creator' => {
           'id' => project.owner.to_global_id.to_s,
           'name' => project.owner.name,
@@ -104,7 +104,7 @@ RSpec.describe GitlabSchema.types['MlExperiment'], feature_category: :mlops do
         'name' => experiment.name,
         'createdAt' => experiment.created_at.iso8601(0),
         'candidateCount' => experiment.candidates.count,
-        'path' => "/#{project.path_with_namespace}/-/ml/experiments/#{experiment.id}",
+        'path' => "/#{project.path_with_namespace}/-/ml/experiments/#{experiment.iid}",
         'creator' => {
           'id' => project.owner.to_global_id.to_s,
           'name' => project.owner.name,
