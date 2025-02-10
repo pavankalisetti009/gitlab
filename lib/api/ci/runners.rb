@@ -318,8 +318,8 @@ module API
           present paginate(runners), with: Entities::Ci::Runner
         end
 
-        desc 'Enable a runner in project' do
-          detail "Enable an available project runner in the project."
+        desc 'Assign a runner to project' do
+          detail "Assign an available project runner to the project."
           success Entities::Ci::Runner
           failure [[400, 'Bad Request'],
                    [403, 'No access granted'], [403, 'Runner is a group runner'], [403, 'Runner is locked'],
@@ -343,8 +343,8 @@ module API
           end
         end
 
-        desc "Disable project's runner" do
-          summary "Disable a project runner from the project"
+        desc "Unassign a runner from project" do
+          summary "Unassign a project runner from the project"
           detail "It works only if the project isn't the only project associated with the specified runner. " \
                  "If so, an error is returned. Use the call to delete a runner instead."
           success Entities::Ci::Runner
