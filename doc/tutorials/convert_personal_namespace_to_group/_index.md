@@ -52,7 +52,7 @@ you must perform the steps below for each project.
 Before you start the transfer process, make sure you:
 
 - Have the Owner role for the project.
-- Remove [container images](../../user/packages/container_registry/index.md#move-or-rename-container-registry-repositories).
+- Remove [container images](../../user/packages/container_registry/_index.md#move-or-rename-container-registry-repositories).
   You can't transfer a project that contains container images.
 - Remove npm packages. You can't update the root namespace of a project that contains npm packages.
 

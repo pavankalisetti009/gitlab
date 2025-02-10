@@ -289,7 +289,7 @@ Project permissions for [container registry](packages/_index.md):
 
 | Action                                    | Guest | Planner | Reporter | Developer | Maintainer | Owner | Notes |
 | ----------------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: | ----- |
-| Pull an image from the container registry |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   | The ability to view the container registry and pull images is controlled by the [container registry's visibility permissions](packages/container_registry/index.md#container-registry-visibility-permissions). |
+| Pull an image from the container registry |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   | The ability to view the container registry and pull images is controlled by the [container registry's visibility permissions](packages/container_registry/_index.md#container-registry-visibility-permissions). |
 | Push an image to the container registry   |       |         |          |     ✓     |     ✓      |   ✓   |       |
 | Delete a container registry image         |       |         |          |     ✓     |     ✓      |   ✓   |       |
 | Manage cleanup policies                   |       |         |          |           |     ✓      |   ✓   |       |
@@ -645,6 +645,6 @@ To work around the issue, give these users the Guest role or higher to any proje
 - [Project aliases](project/working_with_projects.md#project-aliases)
 - [Auditor users](../administration/auditor_users.md)
 - [Confidential issues](project/issues/confidential_issues.md)
-- [Container registry permissions](packages/container_registry/index.md#container-registry-visibility-permissions)
+- [Container registry permissions](packages/container_registry/_index.md#container-registry-visibility-permissions)
 - [Release permissions](project/releases/index.md#release-permissions)
 - [Read-only namespaces](read_only_namespaces.md)
