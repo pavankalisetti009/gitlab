@@ -49015,6 +49015,9 @@ msgstr ""
 msgid "Runners|Failed adding runner to project"
 msgstr ""
 
+msgid "Runners|Failed unassigning runner from project"
+msgstr ""
+
 msgid "Runners|Fetch GitLab Runner release version data from GitLab.com"
 msgstr ""
 
