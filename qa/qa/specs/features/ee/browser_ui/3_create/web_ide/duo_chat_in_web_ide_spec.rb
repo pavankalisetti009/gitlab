@@ -16,10 +16,11 @@ module QA
                 duo_chat.send_duo_chat_prompt('hi')
 
                 Support::Waiter.wait_until(message: 'Wait for Duo Chat response and feedback message') do
+                  raise "Error found in Duo Chat: '#{duo_chat.error_text}'" if duo_chat.has_error?
+
                   duo_chat.number_of_messages > 1 && duo_chat.has_feedback_message?
                 end
 
-                expect(duo_chat.has_error?).to be_falsey, 'Unexpected error from Duo Chat'
                 QA::Runtime::Logger.debug("Latest Duo Chat response #{duo_chat.latest_response}")
                 expect(duo_chat.latest_response).not_to be_blank, 'Expected a response from Duo Chat'
               end
@@ -45,6 +46,9 @@ module QA
           type: :investigating,
           issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/494690'
         } do
+          let(:api_client) { Runtime::User::Store.admin_api_client }
+          let(:user) { Runtime::User::Store.admin_user }
+
           include_examples 'Duo Chat', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/468854'
         end
       end

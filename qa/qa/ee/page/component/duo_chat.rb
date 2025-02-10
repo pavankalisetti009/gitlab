@@ -36,7 +36,11 @@ module QA
           end
 
           def has_error?
-            has_css?('.has-error', text: 'Error code', wait: 1)
+            has_css?('.has-error', wait: 1)
+          end
+
+          def error_text
+            find('.has-error').text
           end
 
           def number_of_messages
