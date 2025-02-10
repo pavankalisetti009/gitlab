@@ -45,4 +45,17 @@ RSpec.describe Security::SyncProjectPolicyWorker, feature_category: :security_po
       end
     end
   end
+
+  describe 'deduplication' do
+    let(:policy_changes_2) { { 'some_key' => 'some_other_value' } }
+    let(:job_a) { { 'class' => described_class.name, 'args' => [project_id, security_policy_id, policy_changes] } }
+    let(:job_b) { { 'class' => described_class.name, 'args' => [project_id, security_policy_id, policy_changes_2] } }
+
+    let(:duplicate_job_a) { Gitlab::SidekiqMiddleware::DuplicateJobs::DuplicateJob.new(job_a, 'test') }
+    let(:duplicate_job_b) { Gitlab::SidekiqMiddleware::DuplicateJobs::DuplicateJob.new(job_b, 'test') }
+
+    specify do
+      expect(duplicate_job_a.send(:idempotency_key) == duplicate_job_b.send(:idempotency_key)).to be(true)
+    end
+  end
 end
