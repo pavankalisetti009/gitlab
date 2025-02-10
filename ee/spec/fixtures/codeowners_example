@@ -18,10 +18,10 @@
 CODEOWNERS @multiple @owners	@tab-separated
 
 # Both usernames or email addresses can be used to match
-# users. Everything else will be ignored. For example this will
+# users. For example this will
 # specify `@legal` and a user with email `janedoe@gitlab.com` as the
 # owner for the LICENSE file
-LICENSE @legal this does not match janedoe@gitlab.com
+LICENSE @legal janedoe@gitlab.com
 
 # Ending a path in a `/` will specify the code owners for every file
 # nested in that directory, on any level
