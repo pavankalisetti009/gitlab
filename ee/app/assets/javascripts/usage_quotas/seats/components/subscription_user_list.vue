@@ -59,7 +59,7 @@ export default {
     SubscriptionSeatDetails,
   },
   mixins: [glFeatureFlagMixin()],
-  inject: ['subscriptionHistoryHref'],
+  inject: ['subscriptionHistoryHref', 'seatUsageExportPath'],
   props: {
     hasFreePlan: {
       type: Boolean,
@@ -79,7 +79,6 @@ export default {
       'perPage',
       'total',
       'namespaceId',
-      'seatUsageExportPath',
       'billableMemberToRemove',
       'search',
       'removedBillableMemberId',

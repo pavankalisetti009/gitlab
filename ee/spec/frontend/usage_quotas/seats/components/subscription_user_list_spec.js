@@ -43,6 +43,7 @@ const defaultProvide = {
   glFeatures: {
     billableMemberAsyncDeletion: true,
   },
+  seatUsageExportPath: MOCK_SEAT_USAGE_EXPORT_PATH,
 };
 
 const defaultProps = {
@@ -65,7 +66,6 @@ const fakeStore = ({ initialState, initialGetters }) =>
       page: 1,
       perPage: 5,
       sort: 'last_activity_on_desc',
-      seatUsageExportPath: MOCK_SEAT_USAGE_EXPORT_PATH,
       removedBillableMemberId: null,
       ...initialState,
     },

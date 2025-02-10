@@ -18,13 +18,14 @@ export default {
     GlSprintf,
     GlBadge,
   },
+  inject: ['namespaceName'],
   data() {
     return {
       enteredMemberUsername: null,
     };
   },
   computed: {
-    ...mapState(['namespaceName', 'billableMemberToRemove']),
+    ...mapState(['billableMemberToRemove']),
     modalTitle() {
       return sprintf(s__('Billing|Remove user %{username} from your subscription'), {
         username: this.usernameWithAtPrepended,

@@ -39,7 +39,13 @@ export default {
       },
     },
   },
-  inject: ['fullPath', 'isPublicNamespace'],
+  inject: [
+    'fullPath',
+    'isPublicNamespace',
+    'explorePlansPath',
+    'addSeatsHref',
+    'hasNoSubscription',
+  ],
   data() {
     return {
       billableMembersCount: 0,
@@ -51,10 +57,7 @@ export default {
       'hasError',
       'maxSeatsUsed',
       'seatsOwed',
-      'addSeatsHref',
-      'hasNoSubscription',
       'maxFreeNamespaceSeats',
-      'explorePlansPath',
       'hasLimitedFreePlan',
       'activeTrial',
     ]),
