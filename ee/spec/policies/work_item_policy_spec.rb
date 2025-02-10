@@ -105,4 +105,27 @@ RSpec.describe WorkItemPolicy, feature_category: :team_planning do
       end
     end
   end
+
+  context 'with move and clone permission on various work item types' do
+    let_it_be(:issue) { create(:work_item, :issue, project: project) }
+    let_it_be(:incident) { create(:work_item, :incident, project: project) }
+    let_it_be(:test_case) { create(:work_item, :test_case, project: project) }
+    let_it_be(:task) { create(:work_item, :task, project: project) }
+    let_it_be(:objective) { create(:work_item, :objective, project: project) }
+    let_it_be(:key_result) { create(:work_item, :key_result, project: project) }
+    let_it_be(:epic) { create(:work_item, :epic, namespace: group) }
+
+    it 'checks move and clone permission on work item' do
+      move_and_clone_permissions = [:move_work_item, :move_issue, :clone_work_item, :clone_issue]
+
+      expect(permissions(owner, issue)).to be_allowed(*move_and_clone_permissions)
+      expect(permissions(owner, incident)).to be_allowed(*move_and_clone_permissions)
+      expect(permissions(owner, test_case)).to be_allowed(*move_and_clone_permissions)
+
+      expect(permissions(owner, task)).to be_disallowed(*move_and_clone_permissions)
+      expect(permissions(owner, objective)).to be_disallowed(*move_and_clone_permissions)
+      expect(permissions(owner, key_result)).to be_disallowed(*move_and_clone_permissions)
+      expect(permissions(owner, epic)).to be_disallowed(*move_and_clone_permissions)
+    end
+  end
 end
