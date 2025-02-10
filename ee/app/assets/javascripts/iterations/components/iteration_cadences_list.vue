@@ -26,7 +26,7 @@ import projectQuery from '../queries/project_iteration_cadences_list.query.graph
 import IterationCadenceListItem from './iteration_cadence_list_item.vue';
 
 export default {
-  iterationCadencesHelpPagePath: helpPagePath('user/group/iterations/index.md', {
+  iterationCadencesHelpPagePath: helpPagePath('user/group/iterations/_index.md', {
     anchor: 'iteration-cadences',
   }),
   i18n: {

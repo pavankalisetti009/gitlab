@@ -7,7 +7,7 @@ const valueStreamTitle = 'New value stream';
 const aggregatingMessage = `'${valueStreamTitle}' is collecting the data. This can take a few minutes.`;
 const nextUpdateMsg =
   'If you have recently upgraded your GitLab license from a tier without this feature, it can take up to 30 minutes for data to collect and display.';
-const secondaryBtnLink = '/help/user/group/value_stream_analytics/index#create-a-value-stream';
+const secondaryBtnLink = '/help/user/group/value_stream_analytics/_index#create-a-value-stream';
 
 const createComponent = (props = {}) =>
   extendedWrapper(

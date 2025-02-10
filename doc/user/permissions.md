@@ -75,7 +75,7 @@ Project permissions for [analytics](analytics/_index.md) features including valu
 | Action                                                                                     | Guest | Planner | Reporter | Developer | Maintainer | Owner | Notes |
 | ------------------------------------------------------------------------------------------ | :---: | :-----: | :------: | :-------: | :--------: | :---: | ----- |
 | View [issue analytics](group/issues_analytics/_index.md)                                   |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| View [value stream analytics](group/value_stream_analytics/index.md)                       |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
+| View [value stream analytics](group/value_stream_analytics/_index.md)                      |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
 | View [CI/CD analytics](analytics/ci_cd_analytics.md)                                       |       |         |    ✓     |     ✓     |     ✓      |   ✓   |       |
 | View [code review analytics](analytics/code_review_analytics.md)                           |       |         |    ✓     |     ✓     |     ✓      |   ✓   |       |
 | View [DORA metrics](analytics/ci_cd_analytics.md)                                          |       |         |    ✓     |     ✓     |     ✓      |   ✓   |       |
@@ -480,14 +480,14 @@ Group permissions for [GitLab Duo](gitlab_duo/index.md):
 
 ### Groups group permissions
 
-Group permissions for [group features](group/index.md):
+Group permissions for [group features](group/_index.md):
 
 | Action                                                                                     | Guest | Planner | Reporter | Developer | Maintainer | Owner | Notes |
 | ------------------------------------------------------------------------------------------ | :---: | :-----: | :------: | :-------: | :--------: | :---: | ----- |
 | Browse group                                                                               |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
 | View group [audit events](compliance/audit_events.md)                                      |       |         |          |     ✓     |     ✓      |   ✓   | Developers and Maintainers can only view events based on their individual actions. For more details, see the [prerequisites](compliance/audit_events.md#prerequisites). |
-| Create project in group                                                                    |       |         |          |     ✓     |     ✓      |   ✓   | Developers, Maintainers and Owners: Only if the project creation role is set [for the instance](../administration/settings/visibility_and_access_controls.md#define-which-roles-can-create-projects) or [for the group](group/index.md#specify-who-can-add-projects-to-a-group).<br><br>Developers: Developers can push commits to the default branch of a new project only if the [default branch protection](group/manage.md#change-the-default-branch-protection-of-a-group) is set to "Partially protected" or "Not protected". |
-| Create subgroup                                                                            |       |         |          |           |     ✓      |   ✓   | Maintainers: Only if users with the Maintainer role [can create subgroups](group/subgroups/index.md#change-who-can-create-subgroups). |
+| Create project in group                                                                    |       |         |          |     ✓     |     ✓      |   ✓   | Developers, Maintainers and Owners: Only if the project creation role is set [for the instance](../administration/settings/visibility_and_access_controls.md#define-which-roles-can-create-projects) or [for the group](group/_index.md#specify-who-can-add-projects-to-a-group).<br><br>Developers: Developers can push commits to the default branch of a new project only if the [default branch protection](group/manage.md#change-the-default-branch-protection-of-a-group) is set to "Partially protected" or "Not protected". |
+| Create subgroup                                                                            |       |         |          |           |     ✓      |   ✓   | Maintainers: Only if users with the Maintainer role [can create subgroups](group/subgroups/_index.md#change-who-can-create-subgroups). |
 | Change custom settings for the [project integrations](project/integrations/index.md)       |       |         |          |           |     ✓      |   ✓   |       |
 | Edit [epic](group/epics/_index.md) comments (posted by any user)                            |       |    ✓    |          |           |     ✓      |   ✓   |       |
 | Fork project into a group                                                                  |       |         |          |           |     ✓      |   ✓   |       |
@@ -500,7 +500,7 @@ Group permissions for [group features](group/index.md):
 | Change group visibility level                                                              |       |         |          |           |            |   ✓   |       |
 | Edit group settings                                                                        |       |         |          |           |            |   ✓   |       |
 | Configure project templates                                                                |       |         |          |           |            |   ✓   |       |
-| Configure [SAML SSO](group/saml_sso/index.md)                                              |       |         |          |           |            |   ✓   | Does not apply to subgroups |
+| Configure [SAML SSO](group/saml_sso/_index.md)                                             |       |         |          |           |            |   ✓   | Does not apply to subgroups |
 | Disable notification emails                                                                |       |         |          |           |            |   ✓   |       |
 
 ### Project planning group permissions
@@ -598,7 +598,7 @@ permission level from the parent groups. This model allows access to
 nested groups if you have membership in one of its parents.
 
 For more information, see
-[subgroup memberships](group/subgroups/index.md#subgroup-membership).
+[subgroup memberships](group/subgroups/_index.md#subgroup-membership).
 
 ## Users with Minimal Access
 
@@ -616,7 +616,7 @@ Users with the Minimal Access role do not:
 Owners must explicitly add these users to the specific subgroups and
 projects.
 
-You can use the Minimal Access role with [SAML SSO for GitLab.com groups](group/saml_sso/index.md)
+You can use the Minimal Access role with [SAML SSO for GitLab.com groups](group/saml_sso/_index.md)
 to control access to groups and projects in the group hierarchy. You can set the default role to
 Minimal Access for members automatically added to the top-level group through SSO.
 
@@ -641,7 +641,7 @@ To work around the issue, give these users the Guest role or higher to any proje
 - [Members](project/members/index.md)
 - Customize permissions on [protected branches](project/repository/branches/protected.md)
 - [LDAP user permissions](group/access_and_permissions.md#manage-group-memberships-with-ldap)
-- [Value stream analytics permissions](group/value_stream_analytics/index.md#access-permissions-for-value-stream-analytics)
+- [Value stream analytics permissions](group/value_stream_analytics/_index.md#access-permissions-for-value-stream-analytics)
 - [Project aliases](project/working_with_projects.md#project-aliases)
 - [Auditor users](../administration/auditor_users.md)
 - [Confidential issues](project/issues/confidential_issues.md)

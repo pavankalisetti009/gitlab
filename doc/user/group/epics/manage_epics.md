@@ -26,7 +26,7 @@ To create an epic in the group you're in:
    - Go to your group and from the left sidebar select **Epics**. Then select **New epic**.
    - From an epic in your group, select **Epic actions** (**{ellipsis_v}**). Then select **New epic**.
    - From anywhere, in the top menu, select **New** (**{plus-square}**). Then select **New epic**.
-   - In an empty [roadmap](../roadmap/index.md), select **New epic**.
+   - In an empty [roadmap](../roadmap/_index.md), select **New epic**.
 
 1. Enter a title.
 1. Complete the fields.
@@ -216,7 +216,7 @@ Use colors to:
 - Indicate levels in the epic hierarchy.
 - Group related epics together.
 
-Epic colors are visible in [roadmaps](../roadmap/index.md) and [epic boards](epic_boards.md).
+Epic colors are visible in [roadmaps](../roadmap/_index.md) and [epic boards](epic_boards.md).
 
 On roadmaps, the timeline bars match the epic's color:
 
@@ -383,7 +383,7 @@ You can sort the epics list by:
 
 Each option contains a button that can toggle the order between **Ascending** and **Descending**.
 The sort option and order is saved and used wherever you browse epics, including the
-[Roadmap](../roadmap/index.md).
+[Roadmap](../roadmap/_index.md).
 
 ![epics sort](img/epics_sort_v14_7.png)
 
@@ -739,7 +739,7 @@ To add a child epic from another group, paste the epic's URL when [adding an exi
 
 ### View child epics on a roadmap
 
-From an epic, view its child epics and related milestones on the [roadmap](../roadmap/index.md).
+From an epic, view its child epics and related milestones on the [roadmap](../roadmap/_index.md).
 
 Prerequisites:
 

@@ -25,7 +25,7 @@ export default {
     Api.trackRedisHllUserEvent(VISIT_EVENT_NAME);
   },
   i18n,
-  learnMoreLinkPath: helpPagePath('user/group/repositories_analytics/index.md'),
+  learnMoreLinkPath: helpPagePath('user/group/repositories_analytics/_index.md'),
 };
 </script>
 

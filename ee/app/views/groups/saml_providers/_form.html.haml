@@ -8,7 +8,7 @@
       = f.gitlab_ui_checkbox_component :disable_password_authentication_for_enterprise_users, s_('GroupSAML|Disable password authentication for enterprise users'), help_text: saml_sso_settings_generate_helper_text(display_none: saml_provider.enabled?, text: disable_password_authentication_for_enterprise_users_help_text), checkbox_options: { class: 'js-group-saml-disable-password-authentication-for-enterprise-users-input' }
     .form-group
       - enable_saml_help_text = s_('GroupSAML|Before enforcing SSO, enable SAML authentication.')
-      - web_activity_warning_link_start = '<a href="%{url}" target="_blank" rel="noopener noreferrer">'.html_safe % { url: help_page_path('user/group/saml_sso/index.md', anchor: 'sso-enforcement') }
+      - web_activity_warning_link_start = '<a href="%{url}" target="_blank" rel="noopener noreferrer">'.html_safe % { url: help_page_path('user/group/saml_sso/_index.md', anchor: 'sso-enforcement') }
       - web_activity_warning_text = html_escape(s_('GroupSAML|%{strongOpen}Warning%{strongClose} - Enable %{linkStart}SSO enforcement%{linkEnd} to reduce security risks.')) % { strongOpen: '<strong>'.html_safe, strongClose: '</strong>'.html_safe, linkStart: web_activity_warning_link_start, linkEnd: '</a>'.html_safe }
       - web_activity_warning_tag = '<span class="js-warning %{class}">%{text}</span>'.html_safe % { class: saml_provider.enforced_sso? && 'gl-hidden', text: web_activity_warning_text }
       - web_activity_help_text = '%{enable_saml_help_text_tag}%{web_activity_warning_tag}'.html_safe % { enable_saml_help_text_tag: saml_sso_settings_generate_helper_text(display_none: saml_provider.enabled?, text: enable_saml_help_text), web_activity_warning_tag: web_activity_warning_tag }

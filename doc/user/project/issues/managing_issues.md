@@ -92,7 +92,7 @@ When bulk editing issues in a project, you can edit the following attributes:
 - [Labels](../labels.md)
 - [Health status](#health-status)
 - [Notification](../../profile/notifications.md) subscription
-- [Iteration](../../group/iterations/index.md)
+- [Iteration](../../group/iterations/_index.md)
 - [Confidentiality](confidential_issues.md)
 
 ### Bulk edit issues from a group
@@ -122,7 +122,7 @@ When bulk editing issues in a group, you can edit the following attributes:
 
 - [Epic](../../group/epics/_index.md)
 - [Milestone](../milestones/index.md)
-- [Iteration](../../group/iterations/index.md)
+- [Iteration](../../group/iterations/_index.md)
 - [Labels](../labels.md)
 - [Health status](#health-status)
 
@@ -526,7 +526,7 @@ DETAILS:
 **Tier:** Premium, Ultimate
 **Offering:** GitLab.com, GitLab Self-Managed, GitLab Dedicated
 
-To add an issue to an [iteration](../../group/iterations/index.md):
+To add an issue to an [iteration](../../group/iterations/_index.md):
 
 1. On the left sidebar, select **Search or go to** and find your project.
 1. Select **Plan > Issues**, then select your issue to view it.

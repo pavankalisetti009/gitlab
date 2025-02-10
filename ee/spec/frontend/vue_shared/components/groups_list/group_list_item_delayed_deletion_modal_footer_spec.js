@@ -9,7 +9,7 @@ describe('GroupListItemDelayedDeletionModalFooterEE', () => {
 
   const [group] = groups;
   const MOCK_PERM_DELETION_DATE = '2024-03-31';
-  const HELP_PATH = helpPagePath('user/group/index', {
+  const HELP_PATH = helpPagePath('user/group/_index', {
     anchor: 'restore-a-group',
   });
 

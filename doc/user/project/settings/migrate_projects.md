@@ -40,7 +40,7 @@ Errors during the transfer process may lead to data loss of the project's compon
 
 Prerequisites:
 
-- You must have at least the Maintainer role for the [group](../../group/index.md#create-a-group) you are transferring to.
+- You must have at least the Maintainer role for the [group](../../group/_index.md#create-a-group) you are transferring to.
 - You must be the Owner of the project you transfer.
 - The group must allow creation of new projects.
 - For projects where the container registry is enabled:
