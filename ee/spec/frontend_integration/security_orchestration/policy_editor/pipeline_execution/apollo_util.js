@@ -21,10 +21,11 @@ const mockApolloHandlers = () => {
   };
 };
 
-export const createMockApolloProvider = () => {
+export const createMockApolloProvider = (handlers = []) => {
   Vue.use(VueApollo);
   return createMockApollo([
     [getGroupProjects, mockApolloHandlers],
     [securityPolicyProjectCreated, createSppSubscriptionHandler()],
+    ...handlers,
   ]);
 };

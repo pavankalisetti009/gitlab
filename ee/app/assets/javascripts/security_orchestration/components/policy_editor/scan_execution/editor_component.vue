@@ -315,7 +315,7 @@ export default {
     :policy="policy"
     :yaml-editor-value="yamlEditorValue"
     @remove-policy="handleModifyPolicy($options.SECURITY_POLICY_ACTIONS.REMOVE)"
-    @save-policy="handleModifyPolicy()"
+    @save-policy="handleModifyPolicy"
     @remove-property="handleRemoveProperty"
     @update-property="handleUpdateProperty"
     @update-yaml="updateYaml"

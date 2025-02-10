@@ -1,4 +1,5 @@
 import { GROUP_TYPE, USER_TYPE } from 'ee/security_orchestration/constants';
+import { fromYaml } from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
 import { removeGroupSetting } from '../utils';
 
 const BOT_ACTION = `  - type: send_bot_message
@@ -144,3 +145,5 @@ actions:
   .concat(PROJECT_SETTINGS)
   .concat(FALLBACK)
   .concat(TYPE);
+
+export const mockScanResultObject = fromYaml({ manifest: mockAnyMergeRequestApprovalManifest });

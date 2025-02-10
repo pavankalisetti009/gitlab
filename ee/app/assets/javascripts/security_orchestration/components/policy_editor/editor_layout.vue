@@ -274,7 +274,7 @@ export default {
       this.$emit('remove-policy');
     },
     savePolicy() {
-      this.$emit('save-policy', this.selectedEditorMode);
+      this.$emit('save-policy');
     },
     removeProperty(property) {
       this.$emit('remove-property', property);
