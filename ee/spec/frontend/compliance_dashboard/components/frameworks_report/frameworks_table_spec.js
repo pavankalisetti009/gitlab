@@ -19,13 +19,15 @@ import {
 } from 'ee_jest/compliance_dashboard/mock_data';
 import FrameworksTable from 'ee/compliance_dashboard/components/frameworks_report/frameworks_table.vue';
 import FrameworkInfoDrawer from 'ee/compliance_dashboard/components/frameworks_report/framework_info_drawer.vue';
-import { ROUTE_EDIT_FRAMEWORK } from 'ee/compliance_dashboard/constants';
+import { ROUTE_EDIT_FRAMEWORK, ROUTE_EXPORT_FRAMEWORK } from 'ee/compliance_dashboard/constants';
 import { DOCS_URL_IN_EE_DIR } from 'jh_else_ce/lib/utils/url_utility';
 import DeleteModal from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/delete_modal.vue';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import FrameworkBadge from 'ee/compliance_dashboard/components/shared/framework_badge.vue';
 
 Vue.use(VueApollo);
+
+jest.mock('~/lib/utils/axios_utils');
 
 describe('FrameworksTable component', () => {
   let wrapper;
@@ -337,8 +339,8 @@ describe('FrameworksTable component', () => {
       );
     });
 
-    it('dropdown has three actions', () => {
-      expect(findActionsDropdownItems()).toHaveLength(3);
+    it('dropdown has four actions', () => {
+      expect(findActionsDropdownItems()).toHaveLength(4);
     });
 
     describe('edit action', () => {
@@ -495,6 +497,54 @@ describe('FrameworksTable component', () => {
 
     it('sets framework badge popover mode to details', () => {
       expect(findBadge().props('popoverMode')).toBe('details');
+    });
+  });
+
+  describe('exportFramework', () => {
+    const mockFrameworkId = '123';
+    const expectedUrl = '/groups/group-path/-/security/compliance_frameworks/123.json';
+    let locationMock;
+
+    beforeEach(() => {
+      wrapper = createComponent({
+        groupPath: 'group-path',
+      });
+
+      locationMock = {
+        href: 'http://test.host/',
+      };
+
+      jest.spyOn(window, 'location', 'get').mockImplementation(() => locationMock);
+
+      jest.clearAllMocks();
+    });
+
+    it('redirects to framework export URL when export succeeds', async () => {
+      const framework = { id: mockFrameworkId };
+      const resolvedRoute = { href: expectedUrl };
+
+      $router.resolve = jest.fn().mockReturnValue(resolvedRoute);
+
+      await wrapper.vm.exportFramework(framework);
+
+      expect($router.resolve).toHaveBeenCalledWith({
+        name: ROUTE_EXPORT_FRAMEWORK,
+        params: { id: getIdFromGraphQLId(mockFrameworkId) },
+      });
+      expect(locationMock.href).toBe(expectedUrl);
+    });
+
+    it('shows error toast when export fails', async () => {
+      const error = new Error('Export failed');
+      const toastSpy = jest.spyOn(wrapper.vm.$toast, 'show');
+
+      $router.resolve = jest.fn().mockImplementation(() => {
+        throw error;
+      });
+
+      await wrapper.vm.exportFramework({ id: mockFrameworkId });
+
+      expect(toastSpy).toHaveBeenCalledWith('Failed to export framework');
     });
   });
 });

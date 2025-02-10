@@ -10,6 +10,7 @@ import {
   ROUTE_NEW_FRAMEWORK,
   ROUTE_EDIT_FRAMEWORK,
   ROUTE_NEW_FRAMEWORK_SUCCESS,
+  ROUTE_EXPORT_FRAMEWORK,
 } from './constants';
 
 import MainLayout from './components/main_layout.vue';
@@ -113,6 +114,10 @@ export function createRouter(basePath, props) {
         },
       },
       children: [...availableTabRoutes, { path: '*', redirect: { name: defaultRoute } }],
+    },
+    {
+      name: ROUTE_EXPORT_FRAMEWORK,
+      path: '/frameworks/:id.json',
     },
   ];
 
