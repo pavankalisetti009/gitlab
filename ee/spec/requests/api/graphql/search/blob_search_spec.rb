@@ -2,7 +2,8 @@
 
 require 'spec_helper'
 
-RSpec.describe 'getting a collection of blobs with multiple matches in a single file', feature_category: :global_search do
+RSpec.describe 'getting a collection of blobs with multiple matches in a single file', :zoekt,
+  feature_category: :global_search do
   include GraphqlHelpers
   let_it_be(:current_user) { create(:user) }
   let_it_be(:group) { create(:group) }
@@ -93,22 +94,20 @@ RSpec.describe 'getting a collection of blobs with multiple matches in a single 
 
       # rubocop:disable Layout/LineLength -- Keep it readable
       expected_file = {
-        "path" => "PROCESS.md",
-        "fileUrl" => "http://localhost/#{project.full_path}/-/blob/master/PROCESS.md",
-        "blameUrl" => "http://localhost/#{project.full_path}/-/blame/master/PROCESS.md",
-        "matchCountTotal" => 2,
-        "matchCount" => 2,
-        "projectPath" => project.full_path,
-        "language" => "Markdown",
-        "chunks" => [{
+        'path' => 'PROCESS.md',
+        'fileUrl' => "http://localhost/#{project.full_path}/-/blob/master/PROCESS.md",
+        'blameUrl' => "http://localhost/#{project.full_path}/-/blame/master/PROCESS.md",
+        'matchCountTotal' => 2,
+        'matchCount' => 2,
+        'projectPath' => project.full_path,
+        'language' => 'Markdown',
+        'chunks' => [{
           'matchCountInChunk' => 2,
           'lines' => [
-            { "highlights" => nil, "lineNumber" => 4, "richText" => "", "text" => "" },
+            { 'highlights' => nil, 'lineNumber' => 4, 'text' => '' },
             { 'highlights' => [[116, 126], [188, 198]],
-              'lineNumber' => 5,
-              'richText' => "<span id=\"LC1\" class=\"line\" lang=\"markdown\">Below we describe the contributing process to GitLab for two reasons. So that contributors know what to expect from <b>maintainers</b> (possible responses, friendly treatment, etc.). And so that <b>maintainers</b> know what to expect from contributors (use the latest version, ensure that the issue is addressed, friendly treatment, etc.).</span>",
-              'text' => "Below we describe the contributing process to GitLab for two reasons. So that contributors know what to expect from maintainers (possible responses, friendly treatment, etc.). And so that maintainers know what to expect from contributors (use the latest version, ensure that the issue is addressed, friendly treatment, etc.).\n" },
-            { "highlights" => nil, "lineNumber" => 6, "richText" => "", "text" => "" }
+              'lineNumber' => 5, 'text' => "Below we describe the contributing process to GitLab for two reasons. So that contributors know what to expect from maintainers (possible responses, friendly treatment, etc.). And so that maintainers know what to expect from contributors (use the latest version, ensure that the issue is addressed, friendly treatment, etc.).\n" },
+            { 'highlights' => nil, 'lineNumber' => 6, 'text' => '' }
           ]
         }]
       }
