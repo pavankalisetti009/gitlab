@@ -59,12 +59,7 @@ export const getSeatTabMetadata = ({ includeEl = false } = {}) => {
   const store = new Vuex.Store(
     initialSeatUsageStore({
       namespaceId,
-      namespaceName,
-      seatUsageExportPath,
-      addSeatsHref,
-      hasNoSubscription,
       maxFreeNamespaceSeats,
-      explorePlansPath,
       enforcementFreeUserCapEnabled,
     }),
   );
@@ -82,6 +77,10 @@ export const getSeatTabMetadata = ({ includeEl = false } = {}) => {
         fullPath,
         isPublicNamespace,
         namespaceId,
+        namespaceName,
+        addSeatsHref,
+        seatUsageExportPath,
+        hasNoSubscription,
       },
       store,
       render(createElement) {

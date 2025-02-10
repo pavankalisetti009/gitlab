@@ -31,6 +31,9 @@ describe('RemoveBillableMemberModal', () => {
       stubs: {
         GlSprintf,
       },
+      provide: {
+        namespaceName: 'Dummy namespace',
+      },
     });
   };
 

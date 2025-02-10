@@ -16,6 +16,7 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
+  inject: ['hasNoSubscription'],
   props: {
     billableMembersCount: {
       type: Number,
@@ -50,7 +51,6 @@ export default {
     ...mapState([
       'activeTrial',
       'hasLimitedFreePlan',
-      'hasNoSubscription',
       'maxFreeNamespaceSeats',
       'namespaceId',
       'seatsInSubscription',
