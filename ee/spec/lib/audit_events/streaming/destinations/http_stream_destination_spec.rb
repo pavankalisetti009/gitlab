@@ -45,17 +45,56 @@ RSpec.describe AuditEvents::Streaming::Destinations::HttpStreamDestination, feat
     subject(:headers) { http_destination.send(:build_headers) }
 
     context 'when config includes headers' do
-      let(:config_headers) { { 'Custom-Header' => 'Custom Value' } }
+      let(:custom_value) { 'Custom-Value' }
+      let(:config_headers) { { 'X-Custom-Header' => custom_value } }
 
       before do
         destination.config["headers"] = {
-          'Custom-Header' => 'Custom Value'
+          'X-Custom-Header' => {
+            'value' => custom_value,
+            'active' => true
+          }
         }
       end
 
-      it 'includes configured headers and event type', :aggregate_failures do
+      it 'includes configured headers, streaming token and event type', :aggregate_failures do
         expect(headers).to include(config_headers)
         expect(headers[described_class::EVENT_TYPE_HEADER_KEY]).to eq(event_type)
+        expect(headers[described_class::STREAMING_TOKEN_HEADER_KEY]).to eq(destination.secret_token)
+      end
+
+      context 'when header is explicitly inactive' do
+        before do
+          destination.config["headers"]['X-Custom-Header']['active'] = false
+        end
+
+        it 'excludes inactive headers but includes required headers' do
+          expect(headers).not_to include(config_headers)
+          expect(headers[described_class::EVENT_TYPE_HEADER_KEY]).to eq(event_type)
+          expect(headers[described_class::STREAMING_TOKEN_HEADER_KEY]).to eq(destination.secret_token)
+        end
+      end
+
+      context 'when multiple valid headers are configured' do
+        before do
+          destination.config["headers"] = {
+            'X-Custom-Header-1' => {
+              'value' => 'Value-1',
+              'active' => true
+            },
+            'X-Custom-Header-2' => {
+              'value' => 'Value-2',
+              'active' => true
+            }
+          }
+        end
+
+        it 'includes all active headers' do
+          expect(headers).to include(
+            'X-Custom-Header-1' => 'Value-1',
+            'X-Custom-Header-2' => 'Value-2'
+          )
+        end
       end
     end
 
@@ -64,16 +103,20 @@ RSpec.describe AuditEvents::Streaming::Destinations::HttpStreamDestination, feat
         destination.config['headers'] = nil
       end
 
-      it 'includes event type header with event_type' do
-        expect(headers).to eq({ described_class::EVENT_TYPE_HEADER_KEY => event_type })
+      it 'includes event type header and streaming token' do
+        expect(headers).to include(
+          described_class::EVENT_TYPE_HEADER_KEY => event_type,
+          described_class::STREAMING_TOKEN_HEADER_KEY => destination.secret_token
+        )
       end
     end
 
     context 'when event type is empty' do
       let(:event_type) { '' }
 
-      it 'does not event type header it with no event_type' do
+      it 'does not include event type header but includes streaming token' do
         expect(headers).not_to include(described_class::EVENT_TYPE_HEADER_KEY)
+        expect(headers).to include(described_class::STREAMING_TOKEN_HEADER_KEY => destination.secret_token)
       end
     end
   end
