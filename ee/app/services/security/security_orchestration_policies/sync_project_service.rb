@@ -9,9 +9,13 @@ module Security
       end
 
       def execute
-        return sync_policy_changes if policy_diff.any_changes?
-
-        link_policy
+        if policy_diff.any_changes?
+          # Existing policy has been changed.
+          sync_policy_changes
+        else
+          # Policy has just been created, link it.
+          link_policy
+        end
       end
 
       private
@@ -27,6 +31,7 @@ module Security
 
       def sync_policy_changes
         return unlink_policy if should_unlink_policy?
+        return link_policy if should_link_policy?
         return unless security_policy.type_approval_policy?
 
         sync_project_approval_policy_rules_service.sync_policy_diff(policy_diff)
@@ -36,8 +41,20 @@ module Security
         policy_disabled? || policy_unscoped?
       end
 
+      def should_link_policy?
+        policy_enabled? || policy_scoped?
+      end
+
+      def policy_enabled?
+        policy_diff.status_changed? && security_policy.enabled?
+      end
+
       def policy_disabled?
         policy_diff.status_changed? && !security_policy.enabled?
+      end
+
+      def policy_scoped?
+        policy_diff.scope_changed? && security_policy.scope_applicable?(project)
       end
 
       def policy_unscoped?

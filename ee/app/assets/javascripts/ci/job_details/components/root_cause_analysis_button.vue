@@ -64,13 +64,17 @@ export default {
 };
 </script>
 <template>
-  <gl-button
-    v-if="shouldDisplayButton"
-    icon="duo-chat"
-    variant="confirm"
-    data-testid="rca-duo-button"
-    @click="callDuo"
-  >
-    {{ s__('Jobs|Troubleshoot') }}
-  </gl-button>
+  <div>
+    <nav
+      v-if="shouldDisplayButton"
+      class="rca-bar-component gl-fixed gl-left-0 gl-flex gl-w-full gl-items-center"
+      data-testid="rca-bar-component"
+    >
+      <div class="rca-bar-content gl-flex gl-w-full gl-justify-end" data-testid="rca-bar-content">
+        <gl-button icon="duo-chat" variant="confirm" data-testid="rca-duo-button" @click="callDuo">
+          {{ s__('Jobs|Troubleshoot') }}
+        </gl-button>
+      </div>
+    </nav>
+  </div>
 </template>

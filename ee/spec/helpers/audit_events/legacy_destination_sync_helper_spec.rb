@@ -607,4 +607,56 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
       end
     end
   end
+
+  describe '#legacy_destination_sync_enabled?' do
+    let(:helper) { Class.new { include AuditEvents::LegacyDestinationSyncHelper }.new }
+
+    context 'when checking instance level' do
+      it 'returns true when feature flag is enabled' do
+        stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: true)
+
+        expect(helper.send(:legacy_destination_sync_enabled?, nil, true)).to be true
+      end
+
+      it 'returns false when feature flag is disabled' do
+        stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: false)
+
+        expect(helper.send(:legacy_destination_sync_enabled?, nil, true)).to be false
+      end
+    end
+
+    context 'when checking group level' do
+      let(:group) { build_stubbed(:group) }
+      let(:subgroup) { build_stubbed(:group, parent: group) }
+      let(:legacy_destination_model) { instance_double(AuditEvents::ExternalAuditEventDestination, group: group) }
+      let(:subgroup_legacy_destination_model) do
+        instance_double(AuditEvents::ExternalAuditEventDestination, group: subgroup)
+      end
+
+      it 'returns true when feature flag is enabled globally' do
+        stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: true)
+
+        expect(helper.send(:legacy_destination_sync_enabled?, legacy_destination_model, false)).to be true
+      end
+
+      it 'returns false when feature flag is disabled globally' do
+        stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: false)
+
+        expect(helper.send(:legacy_destination_sync_enabled?, legacy_destination_model, false)).to be false
+      end
+
+      it 'returns true when feature flag is enabled for the specific group' do
+        stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: group)
+
+        expect(helper.send(:legacy_destination_sync_enabled?, legacy_destination_model, false)).to be true
+      end
+
+      it 'returns false when feature flag is enabled for a different group' do
+        other_group = build_stubbed(:group)
+        stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: other_group)
+
+        expect(helper.send(:legacy_destination_sync_enabled?, legacy_destination_model, false)).to be false
+      end
+    end
+  end
 end

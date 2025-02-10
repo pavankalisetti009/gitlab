@@ -508,6 +508,69 @@ RSpec.describe AuditEvents::StreamDestinationSyncHelper, feature_category: :audi
       end
     end
   end
+
+  describe '#stream_destination_sync_enabled?' do
+    let(:helper) { Class.new { include AuditEvents::StreamDestinationSyncHelper }.new }
+
+    context 'when checking instance level' do
+      let(:stream_destination) do
+        instance_double(AuditEvents::Instance::ExternalStreamingDestination, respond_to?: false)
+      end
+
+      it 'returns true when feature flag is enabled' do
+        stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: true)
+
+        expect(helper.send(:stream_destination_sync_enabled?, stream_destination)).to be true
+      end
+
+      it 'returns false when feature flag is disabled' do
+        stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: false)
+
+        expect(helper.send(:stream_destination_sync_enabled?, stream_destination)).to be false
+      end
+    end
+
+    context 'when checking group level' do
+      let(:group) { create(:group) }
+      let(:subgroup) { create(:group, parent: group) }
+      let(:stream_destination) do
+        instance_double(AuditEvents::Group::ExternalStreamingDestination,
+          respond_to?: true,
+          group: group)
+      end
+
+      let(:subgroup_stream_destination) do
+        instance_double(AuditEvents::Group::ExternalStreamingDestination,
+          respond_to?: true,
+          group: subgroup)
+      end
+
+      it 'returns true when feature flag is enabled globally' do
+        stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: true)
+
+        expect(helper.send(:stream_destination_sync_enabled?, stream_destination)).to be true
+      end
+
+      it 'returns false when feature flag is disabled globally' do
+        stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: false)
+
+        expect(helper.send(:stream_destination_sync_enabled?, stream_destination)).to be false
+      end
+
+      it 'returns true when feature flag is enabled for the specific group' do
+        stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: group)
+
+        expect(helper.send(:stream_destination_sync_enabled?, stream_destination)).to be true
+      end
+
+      it 'returns false when feature flag is enabled for a different group' do
+        other_group = create(:group)
+        stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: other_group)
+
+        expect(helper.send(:stream_destination_sync_enabled?, stream_destination)).to be false
+      end
+    end
+  end
 end
 
 # rubocop:enable RSpec/FactoryBot/AvoidCreate
