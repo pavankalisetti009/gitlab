@@ -9,7 +9,6 @@ import {
   GlTruncate,
   GlTooltipDirective,
 } from '@gitlab/ui';
-import { flattenDeep } from 'lodash';
 import { __, s__, sprintf } from '~/locale';
 
 export default {
@@ -55,34 +54,37 @@ export default {
     };
   },
   computed: {
-    vulnerabilityFlowDetails() {
-      const groupedItems = this.details.items[0].reduce((acc, item, index) => {
-        const { fileName } = item.fileLocation;
+    steps() {
+      return this.details.items[0];
+    },
+    stepsGroupedByFile() {
+      return this.steps.reduce((acc, step, index) => {
+        const { fileName, lineStart } = step.fileLocation;
         if (!acc[fileName]) {
           acc[fileName] = [];
         }
-        const fileDescription = this.getDescription(
-          this.rawTextBlobs[item.fileLocation.fileName],
-          item.fileLocation.lineStart - 1,
-        );
-
+        const fileDescription = this.getDescription(this.rawTextBlobs[fileName], lineStart - 1);
         acc[fileName].push({
-          ...item,
-          nodeType: item.nodeType.toLowerCase(),
+          ...step,
+          nodeType: step.nodeType.toLowerCase(),
           stepNumber: index + 1,
-          rawTextBlob: this.rawTextBlobs[item.fileLocation.fileName],
+          rawTextBlob: this.rawTextBlobs[fileName],
           fileDescription,
         });
         return acc;
       }, {});
-      const vulnerabilityFlow = [{ items: Object.values(groupedItems) }];
-      return vulnerabilityFlow[0].items;
+    },
+    nextStepNumber() {
+      return this.selectedStepNumber + 1;
+    },
+    previousStepNumber() {
+      return this.selectedStepNumber - 1;
     },
     numOfSteps() {
-      return this.details.items[0].length;
+      return this.steps.length;
     },
     numOfFiles() {
-      return this.vulnerabilityFlowDetails.length;
+      return Object.keys(this.stepsGroupedByFile).length;
     },
     stepsHeader() {
       return sprintf(__('%{numOfSteps} steps across %{numOfFiles} files'), {
@@ -92,7 +94,7 @@ export default {
     },
   },
   mounted() {
-    this.stepsExpanded = Array(this.vulnerabilityFlowDetails.length).fill(true);
+    this.stepsExpanded = Array(this.numOfFiles).fill(true);
   },
   created() {
     this.$emit('onSelectedStep', this.selectedStepNumber);
@@ -106,31 +108,20 @@ export default {
     getPathIcon(index) {
       return this.stepsExpanded[index] ? 'chevron-down' : 'chevron-right';
     },
-    fileName(fileName) {
+    getFileName(fileName) {
       return fileName.split('/').pop();
     },
-    filePath(fileName) {
+    getFilePath(fileName) {
       return fileName.slice(0, fileName.lastIndexOf('/') + 1);
     },
-    selectStep(vulnerabilityItem) {
-      this.selectedStepNumber = vulnerabilityItem.stepNumber;
-      this.selectedVulnerability = vulnerabilityItem;
-      this.$emit('onSelectedStep', this.selectedStepNumber);
+    isOutOfRange(stepNumber) {
+      return stepNumber > this.numOfSteps || stepNumber <= 0;
     },
-    getNextIndex(isNext) {
-      return isNext ? this.selectedStepNumber + 1 : this.selectedStepNumber - 1;
-    },
-    isOutOfRange(isNext) {
-      const calculation = this.getNextIndex(isNext);
-      return calculation > this.numOfSteps || calculation <= 0;
-    },
-    changeSelectedVulnerability(isNextVulnerability) {
-      if (this.isOutOfRange(isNextVulnerability)) return;
-      this.selectedVulnerability = flattenDeep(this.vulnerabilityFlowDetails).find(
-        (item) => item.stepNumber === this.getNextIndex(isNextVulnerability),
-      );
-      this.selectedStepNumber = this.selectedVulnerability.stepNumber;
-      this.$emit('onSelectedStep', this.selectedStepNumber);
+    selectStep(stepNumber) {
+      if (this.isOutOfRange(stepNumber)) return;
+      this.selectedStepNumber = stepNumber;
+      this.selectedVulnerability = this.steps.find((item) => item.stepNumber === stepNumber);
+      this.$emit('onSelectedStep', stepNumber);
     },
     showNodeTypePopover(nodeType) {
       return nodeType === 'source'
@@ -174,97 +165,94 @@ export default {
         <gl-button
           icon="chevron-up"
           :aria-label="__(`Previous step`)"
-          :disabled="isOutOfRange(false)"
-          @click="changeSelectedVulnerability(false)"
+          :disabled="isOutOfRange(previousStepNumber)"
+          @click="selectStep(previousStepNumber)"
         />
         <gl-button
           icon="chevron-down"
           :aria-label="__(`Next step`)"
-          :disabled="isOutOfRange(true)"
-          @click="changeSelectedVulnerability(true)"
+          :disabled="isOutOfRange(nextStepNumber)"
+          @click="selectStep(nextStepNumber)"
         />
       </gl-button-group>
     </div>
     <div class="gl-ml-4 gl-pt-3">
       <div
-        v-for="(vulnerabilityFlow, index) in vulnerabilityFlowDetails"
-        :key="index"
+        v-for="(vulnerabilityFlow, fileName, fileIndex) in stepsGroupedByFile"
+        :key="fileIndex"
         class="-gl-ml-4"
-        :data-testid="`file-steps-${index}`"
+        :data-testid="`file-steps-${fileIndex}`"
       >
         <div
           v-gl-tooltip
-          :title="vulnerabilityFlow[0].fileLocation.fileName"
+          :title="fileName"
           class="gl-inline-flex gl-max-w-full gl-items-center"
-          :data-testid="`file-name-${index}`"
+          :data-testid="`file-name-${fileIndex}`"
         >
           <gl-button
-            :icon="getPathIcon(index)"
+            :icon="getPathIcon(fileIndex)"
             category="tertiary"
-            :aria-label="toggleAriaLabel(index)"
-            @click="openFileSteps(index)"
+            :aria-label="toggleAriaLabel(fileIndex)"
+            @click="openFileSteps(fileIndex)"
           />
           <gl-truncate
             class="gl-min-w-0 gl-flex-shrink"
-            :text="filePath(vulnerabilityFlow[0].fileLocation.fileName)"
+            :text="getFilePath(fileName)"
             position="end"
           /><gl-truncate
             class="gl-flex-shrink-0 gl-font-bold"
-            :text="fileName(vulnerabilityFlow[0].fileLocation.fileName)"
+            :text="getFileName(fileName)"
             position="start"
           />
         </div>
-        <gl-collapse class="gl-mt-2 gl-pl-6" :visible="isVisibleCollapse(index)">
+        <gl-collapse class="gl-mt-2 gl-pl-6" :visible="isVisibleCollapse(fileIndex)">
           <gl-link
-            v-for="(vulnerabilityItem, i) in vulnerabilityFlow"
-            :key="i"
+            v-for="(
+              { stepNumber, nodeType, fileDescription, fileLocation: { lineStart } }, stepIndex
+            ) in vulnerabilityFlow"
+            :key="stepIndex"
             class="align-content-center gl-flex gl-justify-between !gl-rounded-base gl-pb-2 gl-pl-2 gl-pr-2 gl-pt-2 !gl-text-inherit !gl-no-underline"
             :class="{
-              'gl-rounded-base gl-bg-blue-50': selectedStepNumber === vulnerabilityItem.stepNumber,
+              'gl-rounded-base gl-bg-blue-50': selectedStepNumber === stepNumber,
             }"
-            :data-testid="`step-row-${i}`"
-            @click="selectStep(vulnerabilityItem)"
+            :data-testid="`step-row-${stepIndex}`"
+            @click="selectStep(stepNumber)"
           >
             <gl-badge
               class="gl-mr-3 gl-h-6 gl-w-6 gl-rounded-base gl-pl-4 gl-pr-4"
               :class="{
-                '!gl-bg-blue-500 !gl-text-white':
-                  selectedStepNumber === vulnerabilityItem.stepNumber,
+                '!gl-bg-blue-500 !gl-text-white': selectedStepNumber === stepNumber,
               }"
               size="lg"
               variant="muted"
             >
-              <strong v-if="selectedStepNumber === vulnerabilityItem.stepNumber">{{
-                vulnerabilityItem.stepNumber
-              }}</strong>
-              <span v-else>{{ vulnerabilityItem.stepNumber }}</span>
+              <strong v-if="selectedStepNumber === stepNumber">{{ stepNumber }}</strong>
+              <span v-else>{{ stepNumber }}</span>
             </gl-badge>
             <span
               class="align-content-center gl-mr-auto gl-overflow-hidden gl-text-ellipsis gl-whitespace-nowrap"
             >
               <gl-badge
-                v-if="['source', 'sink'].includes(vulnerabilityItem.nodeType)"
-                :id="vulnerabilityItem.nodeType"
-                :data-testid="vulnerabilityItem.nodeType"
+                v-if="['source', 'sink'].includes(nodeType)"
+                :id="nodeType"
+                :data-testid="nodeType"
                 class="gl-mr-3 gl-pl-4 gl-pr-4"
                 size="md"
                 variant="muted"
               >
-                {{ vulnerabilityItem.nodeType }}
+                {{ nodeType }}
               </gl-badge>
               <gl-popover
                 triggers="hover focus"
                 placement="top"
-                :target="vulnerabilityItem.nodeType"
-                :content="showNodeTypePopover(vulnerabilityItem.nodeType)"
+                :target="nodeType"
+                :content="showNodeTypePopover(nodeType)"
                 :show="false"
               />
 
-              {{ vulnerabilityItem.fileDescription }}
+              {{ fileDescription }}
             </span>
-            <span class="align-content-center gl-pr-3 gl-text-subtle">{{
-              vulnerabilityItem.fileLocation.lineStart
-            }}</span>
+            <span class="align-content-center gl-pr-3 gl-text-subtle">{{ lineStart }}</span>
           </gl-link>
         </gl-collapse>
       </div>
