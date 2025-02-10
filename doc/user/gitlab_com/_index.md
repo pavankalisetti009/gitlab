@@ -227,7 +227,7 @@ the related documentation.
 ## Package registry limits
 
 The [maximum file size](../../administration/instance_limits.md#file-size-limits)
-for a package uploaded to the [GitLab package registry](../packages/package_registry/index.md)
+for a package uploaded to the [GitLab package registry](../packages/package_registry/_index.md)
 varies by format:
 
 | Package type              | GitLab.com |

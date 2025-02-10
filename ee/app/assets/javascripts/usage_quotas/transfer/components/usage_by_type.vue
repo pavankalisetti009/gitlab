@@ -90,7 +90,7 @@ export default {
           label: __('Packages'),
           description: s__('UsageQuota|Code packages and container images.'),
           icon: 'package',
-          helpPath: helpPagePath('user/packages/package_registry/index'),
+          helpPath: helpPagePath('user/packages/package_registry/_index'),
           humanSize: numberToHumanSize(this.egressTypesCombined[EGRESS_TYPE_PACKAGES]),
           value: this.egressTypesCombined[EGRESS_TYPE_PACKAGES],
           formattedValue: numberToHumanSize(this.egressTypesCombined[EGRESS_TYPE_PACKAGES]),

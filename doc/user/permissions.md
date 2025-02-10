@@ -285,7 +285,7 @@ Project permissions for [wikis](project/wiki/index.md):
 
 ### Packages and registry
 
-Project permissions for [container registry](packages/index.md):
+Project permissions for [container registry](packages/_index.md):
 
 | Action                                    | Guest | Planner | Reporter | Developer | Maintainer | Owner | Notes |
 | ----------------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: | ----- |
@@ -294,7 +294,7 @@ Project permissions for [container registry](packages/index.md):
 | Delete a container registry image         |       |         |          |     ✓     |     ✓      |   ✓   |       |
 | Manage cleanup policies                   |       |         |          |           |     ✓      |   ✓   |       |
 
-Project permissions for [package registry](packages/index.md):
+Project permissions for [package registry](packages/_index.md):
 
 | Action                                  | Guest | Planner | Reporter | Developer | Maintainer | Owner | Notes |
 | --------------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: | ----- |
@@ -537,7 +537,7 @@ Group permissions for [wikis](project/wiki/group.md):
 
 ### Packages and registries group permissions
 
-Group permissions for [container registry](packages/index.md):
+Group permissions for [container registry](packages/_index.md):
 
 | Action                                            | Guest | Planner | Reporter | Developer | Maintainer | Owner | Notes |
 | ------------------------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: | ----- |
@@ -545,7 +545,7 @@ Group permissions for [container registry](packages/index.md):
 | Pull a container image using the dependency proxy |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
 | Delete a container registry image                 |       |         |          |     ✓     |     ✓      |   ✓   |       |
 
-Group permissions for [package registry](packages/index.md):
+Group permissions for [package registry](packages/_index.md):
 
 | Action                                   | Guest | Planner | Reporter | Developer | Maintainer | Owner | Notes |
 | ---------------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: | ----- |

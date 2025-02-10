@@ -27,7 +27,7 @@ set up and maintained without being impacted by changes in human user membership
 
 You can authenticate as a service account with a [personal access token](personal_access_tokens.md).
 Service account users with a personal access token have the same abilities as a standard user.
-This includes interacting with [registries](../packages/index.md) and using the personal access
+This includes interacting with [registries](../packages/_index.md) and using the personal access
 token for [Git operations](personal_access_tokens.md#clone-repository-using-personal-access-token).
 
 [Rate limits](../../security/rate_limits.md) apply to service accounts:
