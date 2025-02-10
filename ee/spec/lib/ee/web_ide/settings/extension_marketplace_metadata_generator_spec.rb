@@ -2,7 +2,7 @@
 
 require "fast_spec_helper"
 
-RSpec.describe WebIde::Settings::ExtensionsGalleryMetadataGenerator, feature_category: :web_ide do
+RSpec.describe WebIde::Settings::ExtensionMarketplaceMetadataGenerator, feature_category: :web_ide do
   using RSpec::Parameterized::TableSyntax
 
   let(:user_class) { stub_const('User', Class.new) }
@@ -36,10 +36,12 @@ RSpec.describe WebIde::Settings::ExtensionsGalleryMetadataGenerator, feature_cat
 
   with_them do
     before do
-      allow(user).to receive(:enterprise_user?).and_return(!!enterprise_group)
-      allow(user).to receive(:enterprise_group).and_return(enterprise_group)
       # note: Leaving user's opt_in unset so we can test that the CE checks are still running
-      allow(user).to receive(:extensions_marketplace_opt_in_status).and_return(:unset)
+      allow(user).to receive_messages(
+        enterprise_user?: !!enterprise_group,
+        enterprise_group: enterprise_group,
+        extensions_marketplace_opt_in_status: :unset
+      )
       allow(group).to receive(:enterprise_users_extensions_marketplace_enabled?).and_return(enterprise_group_enabled)
     end
 

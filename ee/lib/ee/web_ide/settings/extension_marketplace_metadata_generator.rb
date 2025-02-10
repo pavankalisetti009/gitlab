@@ -3,7 +3,7 @@
 module EE
   module WebIde
     module Settings
-      module ExtensionsGalleryMetadataGenerator
+      module ExtensionMarketplaceMetadataGenerator
         extend ActiveSupport::Concern
 
         # NOTE: Please see the note for DISABLED_REASONS in the relevant CE module
