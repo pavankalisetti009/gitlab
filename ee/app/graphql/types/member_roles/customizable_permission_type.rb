@@ -34,11 +34,6 @@ module Types
         description: 'Value of the permission.',
         method: :itself
 
-      field :available_from_access_level,
-        type: Types::AccessLevelType,
-        null: true,
-        description: 'Access level from which the permission is available.'
-
       field :enabled_for_group_access_levels,
         type: [Types::AccessLevelEnum],
         null: true,
@@ -67,10 +62,6 @@ module Types
 
       def requirements
         permission[:requirements].presence&.map(&:to_sym)
-      end
-
-      def available_from_access_level
-        permission[:available_from_access_level]
       end
 
       def enabled_for_group_access_levels

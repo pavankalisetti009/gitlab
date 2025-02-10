@@ -23381,7 +23381,6 @@ Represents a custom field select option.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="customizableadminpermissionavailablefor"></a>`availableFor` | [`[String!]!`](#string) | Objects the permission is available for. |
-| <a id="customizableadminpermissionavailablefromaccesslevel"></a>`availableFromAccessLevel` | [`AccessLevel`](#accesslevel) | Access level from which the permission is available. |
 | <a id="customizableadminpermissiondescription"></a>`description` | [`String`](#string) | Description of the permission. |
 | <a id="customizableadminpermissionenabledforgroupaccesslevels"></a>`enabledForGroupAccessLevels` | [`[AccessLevelEnum!]`](#accesslevelenum) | Group access levels from which the permission is allowed. |
 | <a id="customizableadminpermissionenabledforprojectaccesslevels"></a>`enabledForProjectAccessLevels` | [`[AccessLevelEnum!]`](#accesslevelenum) | Project access levels from which the permission is allowed. |
@@ -23442,7 +23441,6 @@ Represents a product analytics dashboard visualization.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="customizablepermissionavailablefor"></a>`availableFor` | [`[String!]!`](#string) | Objects the permission is available for. |
-| <a id="customizablepermissionavailablefromaccesslevel"></a>`availableFromAccessLevel` | [`AccessLevel`](#accesslevel) | Access level from which the permission is available. |
 | <a id="customizablepermissiondescription"></a>`description` | [`String`](#string) | Description of the permission. |
 | <a id="customizablepermissionenabledforgroupaccesslevels"></a>`enabledForGroupAccessLevels` | [`[AccessLevelEnum!]`](#accesslevelenum) | Group access levels from which the permission is allowed. |
 | <a id="customizablepermissionenabledforprojectaccesslevels"></a>`enabledForProjectAccessLevels` | [`[AccessLevelEnum!]`](#accesslevelenum) | Project access levels from which the permission is allowed. |
@@ -23457,7 +23455,6 @@ Represents a product analytics dashboard visualization.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="customizablestandardpermissionavailablefor"></a>`availableFor` | [`[String!]!`](#string) | Objects the permission is available for. |
-| <a id="customizablestandardpermissionavailablefromaccesslevel"></a>`availableFromAccessLevel` | [`AccessLevel`](#accesslevel) | Access level from which the permission is available. |
 | <a id="customizablestandardpermissiondescription"></a>`description` | [`String`](#string) | Description of the permission. |
 | <a id="customizablestandardpermissionenabledforgroupaccesslevels"></a>`enabledForGroupAccessLevels` | [`[AccessLevelEnum!]`](#accesslevelenum) | Group access levels from which the permission is allowed. |
 | <a id="customizablestandardpermissionenabledforprojectaccesslevels"></a>`enabledForProjectAccessLevels` | [`[AccessLevelEnum!]`](#accesslevelenum) | Project access levels from which the permission is allowed. |

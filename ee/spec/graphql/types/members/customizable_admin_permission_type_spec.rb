@@ -21,7 +21,6 @@ RSpec.describe GitlabSchema.types['CustomizableAdminPermission'], feature_catego
       name
       requirements
       value
-      available_from_access_level
       enabled_for_group_access_levels
       enabled_for_project_access_levels
     ]
