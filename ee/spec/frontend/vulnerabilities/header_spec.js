@@ -10,9 +10,8 @@ import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completio
 import aiResolveVulnerability from 'ee/vulnerabilities/graphql/ai_resolve_vulnerability.mutation.graphql';
 import Api from 'ee/api';
 import { BV_SHOW_MODAL } from '~/lib/utils/constants';
-import { SEVERITY_LEVEL_HIGH, SEVERITY_LEVEL_INFO } from 'ee/security_dashboard/constants';
 import vulnerabilityStateMutations from 'ee/security_dashboard/graphql/mutate_vulnerability_state';
-import vulnerabilityOverrideSeverityMutation from 'ee/security_dashboard/graphql/mutations/vulnerability_override_severity.mutation.graphql';
+import vulnerabilitiesSeverityOverrideMutation from 'ee/security_dashboard/graphql/mutations/vulnerabilities_severity_override.mutation.graphql';
 import VulnerabilityActionsDropdown from 'ee/vulnerabilities/components/vulnerability_actions_dropdown.vue';
 import StatusBadge from 'ee/vue_shared/security_reports/components/status_badge.vue';
 import Header, {
@@ -316,46 +315,48 @@ describe('Vulnerability Header', () => {
       describe('when API call is successful', () => {
         beforeEach(() => {
           const apolloProvider = createApolloProvider([
-            vulnerabilityOverrideSeverityMutation,
+            vulnerabilitiesSeverityOverrideMutation,
             jest.fn().mockResolvedValue({
               data: {
-                securityFindingSeverityOverride: {
+                vulnerabilitiesSeverityOverride: {
                   errors: [],
-                  securityFinding: {
-                    uuid: 'xxxxxxxx-xxxx-4xxx-xxxx-xxxxxxxxxxxx',
-                    severity: SEVERITY_LEVEL_HIGH.toUpperCase(),
-                  },
+                  vulnerabilities: [
+                    {
+                      id: 1,
+                      severity: 'HIGH',
+                    },
+                  ],
                 },
               },
             }),
           ]);
 
           createWrapper({
-            vulnerability: getVulnerability({ severity: SEVERITY_LEVEL_INFO }),
+            vulnerability: getVulnerability({ severity: 'info' }),
             apolloProvider,
             ...featureFlags,
           });
         });
 
         it('dropdown is loading during GraphQL call', async () => {
-          await changeSeverity({ severity: SEVERITY_LEVEL_HIGH });
+          await changeSeverity({ severity: 'high' });
           await nextTick();
 
           expect(findEditVulnerabilityDropdown().props('loading')).toBe(true);
         });
 
         it(`emits the updated vulnerability`, async () => {
-          await changeSeverity({ severity: SEVERITY_LEVEL_HIGH });
+          await changeSeverity({ severity: 'high' });
           await waitForPromises();
 
           expect(wrapper.emitted('vulnerability-severity-change')[0][0]).toMatchObject({
             ...getVulnerability(),
-            severity: SEVERITY_LEVEL_HIGH,
+            severity: 'high',
           });
         });
 
         it('dropdown is not loading after GraphQL call', async () => {
-          await changeSeverity({ severity: SEVERITY_LEVEL_HIGH });
+          await changeSeverity({ severity: 'high' });
           await waitForPromises();
 
           expect(findEditVulnerabilityDropdown().props('loading')).toBe(false);
@@ -365,10 +366,10 @@ describe('Vulnerability Header', () => {
       describe('when API call fails', () => {
         beforeEach(() => {
           const apolloProvider = createApolloProvider([
-            vulnerabilityOverrideSeverityMutation,
+            vulnerabilitiesSeverityOverrideMutation,
             jest.fn().mockRejectedValue({
               data: {
-                securityFindingSeverityOverride: {
+                vulnerabilitiesSeverityOverride: {
                   errors: [{ message: 'Something went wrong' }],
                   vulnerability: {},
                 },
@@ -380,7 +381,7 @@ describe('Vulnerability Header', () => {
         });
 
         it('shows an error message', async () => {
-          await changeSeverity({ severity: SEVERITY_LEVEL_HIGH });
+          await changeSeverity({ severity: 'high' });
 
           await waitForPromises();
           expect(createAlert).toHaveBeenCalledTimes(1);

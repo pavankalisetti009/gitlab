@@ -2,7 +2,6 @@ import { nextTick } from 'vue';
 import { GlModal } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import SeverityModal from 'ee/vulnerabilities/components/severity_modal.vue';
-import { SEVERITY_LEVEL_HIGH, SEVERITY_LEVEL_INFO } from 'ee/security_dashboard/constants';
 
 describe('SeverityModal', () => {
   let wrapper;
@@ -38,14 +37,14 @@ describe('SeverityModal', () => {
   it('can select a severity', async () => {
     expect(findSeverity().props('selected')).toBe(null);
 
-    findSeverity().vm.$emit('select', SEVERITY_LEVEL_HIGH);
+    findSeverity().vm.$emit('select', 'high');
     await nextTick();
 
-    expect(findSeverity().props('selected')).toBe(SEVERITY_LEVEL_HIGH);
+    expect(findSeverity().props('selected')).toBe('high');
   });
 
   it('emits a change event', () => {
-    const severity = SEVERITY_LEVEL_INFO;
+    const severity = 'info';
     const comment = 'Not applicable';
 
     findSeverity().vm.$emit('select', severity);
@@ -55,7 +54,7 @@ describe('SeverityModal', () => {
     expect(wrapper.emitted('change')).toStrictEqual([
       [
         {
-          severity,
+          newSeverity: severity,
           comment,
         },
       ],
@@ -72,7 +71,7 @@ describe('SeverityModal', () => {
       expect(findSeverityFormGroup().attributes('invalid-feedback')).toBe('Severity is required.');
       expect(wrapper.emitted('change')).toBeUndefined();
 
-      findSeverity().vm.$emit('select', SEVERITY_LEVEL_HIGH);
+      findSeverity().vm.$emit('select', 'high');
       saveChange();
       await nextTick();
 
@@ -81,7 +80,7 @@ describe('SeverityModal', () => {
     });
 
     it('requires a comment', async () => {
-      findSeverity().vm.$emit('select', SEVERITY_LEVEL_HIGH);
+      findSeverity().vm.$emit('select', 'high');
       saveChange();
       await nextTick();
 

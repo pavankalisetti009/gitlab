@@ -5,7 +5,7 @@ import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import { sendDuoChatCommand } from 'ee/ai/utils';
 import vulnerabilityStateMutations from 'ee/security_dashboard/graphql/mutate_vulnerability_state';
-import vulnerabilityOverrideSeverityMutation from 'ee/security_dashboard/graphql/mutations/vulnerability_override_severity.mutation.graphql';
+import vulnerabilitiesSeverityOverrideMutation from 'ee/security_dashboard/graphql/mutations/vulnerabilities_severity_override.mutation.graphql';
 import StatusBadge from 'ee/vue_shared/security_reports/components/status_badge.vue';
 import { createAlert } from '~/alert';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
@@ -244,14 +244,12 @@ export default {
       try {
         const {
           data: {
-            securityFindingSeverityOverride: {
-              securityFinding: { uuid, severity },
-            },
+            vulnerabilitiesSeverityOverride: { vulnerabilities },
           },
         } = await this.$apollo.mutate({
-          mutation: vulnerabilityOverrideSeverityMutation,
+          mutation: vulnerabilitiesSeverityOverrideMutation,
           variables: {
-            uuid: this.vulnerability.uuid,
+            vulnerabilityIds: [convertToGraphQLId(TYPENAME_VULNERABILITY, this.vulnerability.id)],
             severity: newSeverity.toUpperCase(),
             comment,
           },
@@ -259,8 +257,7 @@ export default {
 
         this.$emit('vulnerability-severity-change', {
           ...this.vulnerability,
-          uuid,
-          severity: severity.toLowerCase(),
+          severity: vulnerabilities[0].severity.toLowerCase(),
         });
       } catch (error) {
         createAlert({
