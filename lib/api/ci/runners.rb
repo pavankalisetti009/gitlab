@@ -282,7 +282,8 @@ module API
           runner = get_runner(params[:id])
           authenticate_update_runner!(runner)
 
-          runner.reset_token!
+          ::Ci::Runners::ResetAuthenticationTokenService.new(runner: runner, current_user: current_user).execute!
+
           present runner.token_with_expiration, with: Entities::Ci::ResetTokenResult
         end
       end
