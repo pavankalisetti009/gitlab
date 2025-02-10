@@ -15,8 +15,8 @@ module Types
         field :duo_chat_interactions_count, GraphQL::Types::Int,
           description: 'Number of user interactions with GitLab Duo Chat.',
           null: true
-        field :user, Types::UserType,
-          description: 'User metrics.',
+        field :user, Types::GitlabSubscriptions::AddOnUserType,
+          description: 'User associated with metrics.',
           null: false
 
         alias_method :user, :object

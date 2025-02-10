@@ -12,6 +12,7 @@ RSpec.describe GitlabSchema.types['AddOnUser'], feature_category: :shared do
     add_on_user_fields = %w[
       add_on_assignments
       last_activity_on
+      last_duo_activity_on
       last_login_at
     ]
 

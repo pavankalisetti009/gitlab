@@ -16,6 +16,8 @@ module EE
 
           store_to_clickhouse(event)
           store_to_postgres(event)
+
+          Ai::UserMetrics.refresh_last_activity_on(context_hash[:user])
         end
 
         private

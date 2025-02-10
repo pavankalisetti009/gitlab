@@ -27129,11 +27129,20 @@ ALTER TABLE vulnerability_finding_links
 ALTER TABLE epic_user_mentions
     ADD CONSTRAINT check_4865a37c73 CHECK ((group_id IS NOT NULL)) NOT VALID;
 
+ALTER TABLE ONLY instance_type_ci_runners_e59bb2812d
+    ADD CONSTRAINT check_5c34a3c1db UNIQUE (id);
+
+ALTER TABLE ONLY project_type_ci_runners_e59bb2812d
+    ADD CONSTRAINT check_619c71f3a2 UNIQUE (id);
+
 ALTER TABLE vulnerability_findings_remediations
     ADD CONSTRAINT check_65e61a488a CHECK ((project_id IS NOT NULL)) NOT VALID;
 
 ALTER TABLE p_ci_pipeline_variables
     ADD CONSTRAINT check_6e932dbabf CHECK ((project_id IS NOT NULL)) NOT VALID;
+
+ALTER TABLE ONLY group_type_ci_runners_e59bb2812d
+    ADD CONSTRAINT check_81b90172a6 UNIQUE (id);
 
 ALTER TABLE terraform_state_versions
     ADD CONSTRAINT check_84142902f6 CHECK ((project_id IS NOT NULL)) NOT VALID;
@@ -38636,6 +38645,9 @@ ALTER TABLE ONLY approval_group_rules
 ALTER TABLE ONLY ldap_group_links
     ADD CONSTRAINT fk_14a86de4b3 FOREIGN KEY (member_role_id) REFERENCES member_roles(id) ON DELETE SET NULL;
 
+ALTER TABLE ONLY ci_runner_namespaces
+    ADD CONSTRAINT fk_14d16929fa FOREIGN KEY (runner_id) REFERENCES group_type_ci_runners_e59bb2812d(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY incident_management_timeline_event_tag_links
     ADD CONSTRAINT fk_152216ca4f FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
@@ -39569,6 +39581,9 @@ ALTER TABLE ONLY project_control_compliance_statuses
 ALTER TABLE ONLY required_code_owners_sections
     ADD CONSTRAINT fk_98c3f48741 FOREIGN KEY (protected_branch_namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY ci_runner_projects
+    ADD CONSTRAINT fk_98f08fcaf7 FOREIGN KEY (runner_id) REFERENCES project_type_ci_runners_e59bb2812d(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY protected_branch_merge_access_levels
     ADD CONSTRAINT fk_98f3d044fe FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
@@ -39628,6 +39643,9 @@ ALTER TABLE ONLY protected_environments
 
 ALTER TABLE ONLY alert_management_alerts
     ADD CONSTRAINT fk_9e49e5c2b7 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY ci_cost_settings
+    ADD CONSTRAINT fk_9e5e051839 FOREIGN KEY (runner_id) REFERENCES instance_type_ci_runners_e59bb2812d(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY issue_tracker_data
     ADD CONSTRAINT fk_9e6e0e7d23 FOREIGN KEY (instance_integration_id) REFERENCES instance_integrations(id) ON DELETE CASCADE;
