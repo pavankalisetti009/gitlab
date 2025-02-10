@@ -148,6 +148,14 @@ export default {
       return Boolean(this.selectedFilters[filter]);
     },
     shouldDisableFilterSelector(filter) {
+      if (filter === TYPE) {
+        return this.isFilterSelected(filter) || this.isFilterSelected(ALLOW_DENY);
+      }
+
+      if (filter === ALLOW_DENY) {
+        return this.isFilterSelected(filter) || this.isFilterSelected(TYPE);
+      }
+
       return this.isFilterSelected(filter);
     },
     selectFilter(filter, value = true) {
@@ -225,7 +233,7 @@ export default {
         <status-filter
           :show-remove-button="false"
           class="!gl-bg-white md:gl-items-center"
-          label-classes="!gl-text-base !gl-w-12 !gl-pl-0"
+          label-classes="!gl-text-base !gl-w-12 !gl-pl-0 !gl-font-bold"
         >
           <rule-multi-select
             v-model="licenseStatuses"
