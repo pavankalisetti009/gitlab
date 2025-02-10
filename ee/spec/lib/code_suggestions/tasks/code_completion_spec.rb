@@ -268,4 +268,38 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
       end
     end
   end
+
+  describe 'when amazon q is connected' do
+    before do
+      stub_licensed_features(amazon_q: true)
+      Ai::Setting.instance.update!(
+        amazon_q_ready: true,
+        amazon_q_role_arn: 'role::arn'
+      )
+    end
+
+    it_behaves_like 'code suggestion task' do
+      let(:expected_feature_name) { :amazon_q_integration }
+
+      let(:expected_body) do
+        unsafe_params.merge({
+          model_name: 'amazon_q',
+          model_provider: 'amazon_q',
+          prompt_version: 2,
+          role_arn: 'role::arn'
+        })
+      end
+    end
+
+    context 'when amazon_q_chat_and_code_suggestions is disabled' do
+      before do
+        stub_feature_flags(amazon_q_chat_and_code_suggestions: false)
+      end
+
+      it_behaves_like 'code suggestion task' do
+        let(:expected_feature_name) { :code_suggestions }
+        let(:expected_body) { unsafe_params.merge(prompt_version: 1) }
+      end
+    end
+  end
 end
