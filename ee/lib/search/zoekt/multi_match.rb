@@ -9,6 +9,8 @@ module Search
       HIGHLIGHT_START_TAG = 'gitlabzoekt_start_'
       HIGHLIGHT_END_TAG = '_gitlabzoekt_end'
 
+      attr_reader :max_chunks_size
+
       def initialize(requested_chunk_size = DEFAULT_REQUESTED_CHUNK_SIZE)
         requested_chunk_size ||= DEFAULT_REQUESTED_CHUNK_SIZE
         @max_chunks_size = requested_chunk_size.clamp(0, MAX_CHUNKS_PER_FILE)
@@ -95,7 +97,7 @@ module Search
             chunks << transform_chunk(chunk)
           end
 
-          break if chunks.count == @max_chunks_size
+          break if chunks.count == max_chunks_size
         end
         [chunks, limited_match_count_per_file]
       end

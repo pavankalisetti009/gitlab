@@ -11,8 +11,11 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt, feature_category: :global
   let(:limit_projects) { Project.id_in(project_1.id) }
   let(:node_id) { ::Search::Zoekt::Node.last.id }
   let(:filters) { {} }
+  let(:multi_match_enabled) { false }
   let(:results) do
-    described_class.new(user, query, limit_projects, node_id: node_id, filters: filters, modes: { regex: true })
+    described_class.new(user, query, limit_projects,
+      node_id: node_id, filters: filters,
+      multi_match_enabled: multi_match_enabled, modes: { regex: true })
   end
 
   before do
@@ -37,19 +40,44 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt, feature_category: :global
       expect(results).to have_attributes(file_count: 2)
     end
 
-    it 'instantiates zoekt cache with correct arguments' do
-      expect(Search::Zoekt::Cache).to receive(:new).with(
-        query,
-        current_user: user,
-        page: 1,
-        per_page: described_class::DEFAULT_PER_PAGE,
-        project_ids: [project_1.id],
-        max_per_page: described_class::DEFAULT_PER_PAGE * 2,
-        search_mode: :regex,
-        multi_match: false
-      ).and_call_original
+    describe 'caching' do
+      context 'when multi_match is false' do
+        let(:multi_match_enabled) { false }
 
-      objects
+        it 'instantiates zoekt cache with correct arguments' do
+          expect(Search::Zoekt::Cache).to receive(:new).with(
+            query,
+            current_user: user,
+            page: 1,
+            per_page: described_class::DEFAULT_PER_PAGE,
+            project_ids: [project_1.id],
+            max_per_page: described_class::DEFAULT_PER_PAGE * 2,
+            search_mode: :regex,
+            multi_match: nil
+          ).and_call_original
+
+          objects
+        end
+      end
+
+      context 'when multi_match is true' do
+        let(:multi_match_enabled) { true }
+
+        it 'instantiates zoekt cache with correct arguments' do
+          expect(Search::Zoekt::Cache).to receive(:new).with(
+            query,
+            current_user: user,
+            page: 1,
+            per_page: described_class::DEFAULT_PER_PAGE,
+            project_ids: [project_1.id],
+            max_per_page: described_class::DEFAULT_PER_PAGE * 2,
+            search_mode: :regex,
+            multi_match: an_instance_of(Search::Zoekt::MultiMatch)
+          ).and_call_original
+
+          objects
+        end
+      end
     end
 
     it 'correctly handles pagination' do
@@ -240,18 +268,20 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt, feature_category: :global
     end
 
     context 'when multi_match_enabled is passed as true' do
+      let(:multi_match_enabled) { true }
+
       it 'returns just one blob of kind Search::FoundMultiLineBlob' do
-        instance = described_class.new(nil, 'test', limit_projects, multi_match_enabled: true)
-        results = instance.objects('blobs', per_page: 1)
-        expect(results).to contain_exactly(a_kind_of(Search::FoundMultiLineBlob))
+        expect(results.objects('blobs', per_page: 1)).to contain_exactly(a_kind_of(Search::FoundMultiLineBlob))
       end
 
-      it 'removes the results from the deleted projects' do
-        projects = limit_projects.or(Project.where(id: project_2.id))
-        instance = described_class.new(nil, 'test', projects, multi_match_enabled: true)
-        project_2.destroy!
-        results = instance.objects
-        expect(results.map(&:project_path).uniq).to contain_exactly(project_1.full_path)
+      context 'when projects are deleted' do
+        let(:limit_projects) { Project.where(id: [project_1.id, project_2.id]) }
+
+        it 'removes the results from the deleted projects' do
+          project_2.destroy!
+          results_project_paths = results.objects.map(&:project_path).uniq
+          expect(results_project_paths).to contain_exactly(project_1.full_path)
+        end
       end
     end
 

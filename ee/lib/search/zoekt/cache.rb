@@ -48,6 +48,11 @@ module Search
         "cache:zoekt:{#{user_id}}/#{search_fingerprint}/#{per_page}/#{page}"
       end
 
+      def legacy_cache_key(page: current_page)
+        user_id = current_user&.id || 0
+        "cache:zoekt:{#{user_id}}/#{legacy_search_fingerprint}/#{per_page}/#{page}"
+      end
+
       private
 
       def valid_arguments?
@@ -65,12 +70,20 @@ module Search
       end
 
       def search_fingerprint
+        project_ids_key = project_ids.sort.hash.to_s
+        multi_match_key = multi_match.present? ? multi_match.max_chunks_size : 'false'
+
+        OpenSSL::Digest.hexdigest('SHA256',
+          "#{query}-#{project_ids_key}-#{search_mode}-#{multi_match_key}")
+      end
+
+      def legacy_search_fingerprint
         OpenSSL::Digest.hexdigest('SHA256', "#{query}-#{project_ids.sort.join(',')}-#{search_mode}-#{multi_match}")
       end
 
       def read_cache
         data = with_redis do |redis|
-          redis.get(cache_key)
+          redis.mget(cache_key, legacy_cache_key).compact.first
         end
 
         return unless data
