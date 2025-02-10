@@ -52,6 +52,7 @@ module Gitlab
 
             next unless answer
 
+            answer.content = Gitlab::Duo::Chat::Parsers::FinalAnswerParser.sanitize(answer.content)
             log_info(message: "ReAct turn", react_turn: i, event_name: 'react_turn', ai_component: 'duo_chat')
 
             record_first_token_error(false)
