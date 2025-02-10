@@ -22137,6 +22137,9 @@ msgstr ""
 msgid "Enable authenticated web request rate limit"
 msgstr ""
 
+msgid "Enable automatic redirection from the root"
+msgstr ""
+
 msgid "Enable automatic repository housekeeping"
 msgstr ""
 
@@ -48598,6 +48601,9 @@ msgstr ""
 msgid "Rollback"
 msgstr ""
 
+msgid "Root Moved Permanently redirection response"
+msgstr ""
+
 msgid "Ruby"
 msgstr ""
 
@@ -64468,6 +64474,9 @@ msgid "When enabled, SSH keys with no expiry date or an invalid expiration date 
 msgstr ""
 
 msgid "When enabled, cleanup policies execute faster but put more load on Redis."
+msgstr ""
+
+msgid "When enabled, it will send 301 Moved Permanently instead of 302 if you want web crawlers to index a different site such as the Home Page URL."
 msgstr ""
 
 msgid "When enabled, job logs are collected by Datadog and displayed along with pipeline execution traces."
