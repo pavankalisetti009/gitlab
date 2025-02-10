@@ -15883,7 +15883,8 @@ CREATE TABLE merge_request_assignees (
     user_id bigint NOT NULL,
     merge_request_id bigint NOT NULL,
     created_at timestamp with time zone,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_1442f79624 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE merge_request_assignees_id_seq
@@ -27187,9 +27188,6 @@ ALTER TABLE ONLY chat_names
 
 ALTER TABLE ONLY chat_teams
     ADD CONSTRAINT chat_teams_pkey PRIMARY KEY (id);
-
-ALTER TABLE merge_request_assignees
-    ADD CONSTRAINT check_1442f79624 CHECK ((project_id IS NOT NULL)) NOT VALID;
 
 ALTER TABLE status_check_responses
     ADD CONSTRAINT check_29114cce9c CHECK ((project_id IS NOT NULL)) NOT VALID;
