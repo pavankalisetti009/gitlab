@@ -71,7 +71,7 @@ or epic such as `type::feature`, `type::defect`, and `type::maintenance`.
 
 ## Create your epics and issues
 
-Now you can get started planning your iterations. Start by creating [epics](../../user/group/epics/index.md)
+Now you can get started planning your iterations. Start by creating [epics](../../user/group/epics/_index.md)
 in the group where you created your iteration cadence,
 then create child [issues](../../user/project/issues/index.md) in one or more of your projects.
 Add labels to each as needed.

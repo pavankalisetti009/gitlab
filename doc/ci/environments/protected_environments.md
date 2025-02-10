@@ -225,7 +225,7 @@ configured:
   the higher environments (such as production) in the group-level settings page,
   which includes group-level protected environments,
   [group-level runners](../runners/runners_scope.md#group-runners), and
-  [group-level clusters](../../user/group/clusters/index.md). Those
+  [group-level clusters](../../user/group/clusters/_index.md). Those
   configurations are inherited to the child projects as read-only entries.
   This ensures that only operators can configure the organization-wide
   deployment ruleset.

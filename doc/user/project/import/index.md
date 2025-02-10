@@ -18,7 +18,7 @@ To bring existing projects to GitLab, or copy GitLab groups and projects to a di
 ## Migrate from GitLab to GitLab by using direct transfer
 
 The best way to copy GitLab groups and projects between GitLab instances, or in the same GitLab instance, is
-[by using direct transfer](../../group/import/index.md).
+[by using direct transfer](../../group/import/_index.md).
 
 Another option is to move GitLab groups using [group transfer](../../group/manage.md#transfer-a-group).
 
@@ -102,7 +102,7 @@ NOTE:
 To leave feedback about this feature, add a comment to [issue 502565](https://gitlab.com/gitlab-org/gitlab/-/issues/502565).
 
 This method of user contribution and membership mapping is available by default for
-[direct transfer](../../group/import/index.md), [GitHub importer](github.md),
+[direct transfer](../../group/import/_index.md), [GitHub importer](github.md),
 [Bitbucket Server importer](bitbucket_server.md), and [Gitea importer](gitea.md) on
 GitLab.com and GitLab Self-Managed.
 For information on the other method available for GitLab Self-Managed with disabled feature flags,
@@ -663,4 +663,4 @@ Check the information gathered in [Review logs](#review-logs) against the follow
 
 - **Interrupted jobs**: If you see a high `interrupted_count` or `job_status` indicating failure, the import job may have been interrupted multiple times and placed in a dead queue.
 - **S3 connectivity**: For imports using S3, check for any S3-related error messages in the logs.
-- **Large repository**: If the repository is very large, the import might time out. Consider using [Direct transfer](../../group/import/index.md) in this case.
+- **Large repository**: If the repository is very large, the import might time out. Consider using [Direct transfer](../../group/import/_index.md) in this case.

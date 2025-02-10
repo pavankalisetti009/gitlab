@@ -104,7 +104,7 @@ the one being mapped, the membership is mapped as a direct membership instead. T
 elevated permissions.
 
 NOTE:
-There is a [known issue](index.md#known-issues) affecting the mapping of shared memberships.
+There is a [known issue](_index.md#known-issues) affecting the mapping of shared memberships.
 
 ### Configure users on destination instance
 

@@ -239,7 +239,7 @@ Feature flags support the development and rollout of new or experimental feature
 To migrate your data to GitLab Dedicated:
 
 - From another GitLab instance:
-  - Use [direct transfer](../../user/group/import/index.md).
+  - Use [direct transfer](../../user/group/import/_index.md).
   - Use the [direct transfer API](../../api/bulk_imports.md).
 - From third-party services:
   - Use [the import sources](../../user/project/import/index.md#supported-import-sources).

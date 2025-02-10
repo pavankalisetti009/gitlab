@@ -74,7 +74,7 @@ Project permissions for [analytics](analytics/_index.md) features including valu
 
 | Action                                                                                     | Guest | Planner | Reporter | Developer | Maintainer | Owner | Notes |
 | ------------------------------------------------------------------------------------------ | :---: | :-----: | :------: | :-------: | :--------: | :---: | ----- |
-| View [issue analytics](group/issues_analytics/index.md)                                    |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
+| View [issue analytics](group/issues_analytics/_index.md)                                   |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
 | View [value stream analytics](group/value_stream_analytics/index.md)                       |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
 | View [CI/CD analytics](analytics/ci_cd_analytics.md)                                       |       |         |    ✓     |     ✓     |     ✓      |   ✓   |       |
 | View [code review analytics](analytics/code_review_analytics.md)                           |       |         |    ✓     |     ✓     |     ✓      |   ✓   |       |
@@ -421,11 +421,11 @@ Group permission for [analytics](analytics/_index.md) features including value s
 | ------------------------------------------------------------------ | :---: | :-----: | :------: | :-------: | :--------: | :---: | ----- |
 | View [Insights](project/insights/index.md)                         |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
 | View [Insights](project/insights/index.md) charts                  |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| View [Issue analytics](group/issues_analytics/index.md)            |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
+| View [Issue analytics](group/issues_analytics/_index.md)           |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
 | View Contribution analytics                                        |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
 | View value stream analytics                                        |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
 | View [Productivity analytics](analytics/productivity_analytics.md) |       |         |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| View [Group DevOps Adoption](group/devops_adoption/index.md)       |       |         |    ✓     |     ✓     |     ✓      |   ✓   |       |
+| View [Group DevOps Adoption](group/devops_adoption/_index.md)      |       |         |    ✓     |     ✓     |     ✓      |   ✓   |       |
 | View metrics dashboard annotations                                 |       |         |    ✓     |     ✓     |     ✓      |   ✓   |       |
 | Create/edit/delete metrics dashboard annotations                   |       |         |          |     ✓     |     ✓      |   ✓   |       |
 
@@ -489,11 +489,11 @@ Group permissions for [group features](group/index.md):
 | Create project in group                                                                    |       |         |          |     ✓     |     ✓      |   ✓   | Developers, Maintainers and Owners: Only if the project creation role is set [for the instance](../administration/settings/visibility_and_access_controls.md#define-which-roles-can-create-projects) or [for the group](group/index.md#specify-who-can-add-projects-to-a-group).<br><br>Developers: Developers can push commits to the default branch of a new project only if the [default branch protection](group/manage.md#change-the-default-branch-protection-of-a-group) is set to "Partially protected" or "Not protected". |
 | Create subgroup                                                                            |       |         |          |           |     ✓      |   ✓   | Maintainers: Only if users with the Maintainer role [can create subgroups](group/subgroups/index.md#change-who-can-create-subgroups). |
 | Change custom settings for the [project integrations](project/integrations/index.md)       |       |         |          |           |     ✓      |   ✓   |       |
-| Edit [epic](group/epics/index.md) comments (posted by any user)                            |       |    ✓    |          |           |     ✓      |   ✓   |       |
+| Edit [epic](group/epics/_index.md) comments (posted by any user)                            |       |    ✓    |          |           |     ✓      |   ✓   |       |
 | Fork project into a group                                                                  |       |         |          |           |     ✓      |   ✓   |       |
 | View [Billing](../subscriptions/gitlab_com/_index.md#view-gitlabcom-subscription)          |       |         |          |           |            |   ✓   | Does not apply to subgroups |
 | View group [Usage Quotas](storage_usage_quotas.md) page                                    |       |         |          |           |            |   ✓   | Does not apply to subgroups |
-| [Migrate group](group/import/index.md)                                                     |       |         |          |           |            |   ✓   |       |
+| [Migrate group](group/import/_index.md)                                                     |       |         |          |           |            |   ✓   |       |
 | Delete group                                                                               |       |         |          |           |            |   ✓   |       |
 | Manage [subscriptions, storage, and compute minutes](../subscriptions/gitlab_com/_index.md) |       |         |          |           |            |   ✓   |       |
 | Manage [group access tokens](group/settings/group_access_tokens.md)                        |       |         |          |           |            |   ✓   |       |
@@ -513,7 +513,7 @@ Group permissions for project planning features including iterations, milestones
 | Manage group milestones |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
 | Manage iterations       |       |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
 
-Group permissions for [epics](group/epics/index.md):
+Group permissions for [epics](group/epics/_index.md):
 
 | Action                                                                        | Guest | Planner | Reporter | Developer | Maintainer | Owner | Notes |
 | ----------------------------------------------------------------------------- | ----- | ------- | -------- | --------- | ---------- | ----- | ----- |
@@ -522,7 +522,7 @@ Group permissions for [epics](group/epics/index.md):
 | Edit epic, including metadata, item locking, and resolving threads            |       | ✓       | ✓        | ✓         | ✓          | ✓     |       |
 | Delete epic                                                                   |       | ✓       |          |           |            | ✓     |       |
 | Manage [epic boards](group/epics/epic_boards.md)                              |       | ✓       | ✓        | ✓         | ✓          | ✓     |       |
-| Add issue to an [epic](group/epics/index.md)                                  | ✓     | ✓       | ✓        | ✓         | ✓          | ✓     | You must have permission to [view the epic](group/epics/manage_epics.md#who-can-view-an-epic) and edit the issue. |
+| Add issue to an [epic](group/epics/_index.md)                                  | ✓     | ✓       | ✓        | ✓         | ✓          | ✓     | You must have permission to [view the epic](group/epics/manage_epics.md#who-can-view-an-epic) and edit the issue. |
 | Add/remove [child epics](group/epics/manage_epics.md#multi-level-child-epics) | ✓     | ✓       | ✓        | ✓         | ✓          | ✓     | You must have permission to [view](group/epics/manage_epics.md#who-can-view-an-epic) the parent and child epics. |
 | Add internal note                                                             |       | ✓       | ✓        | ✓         | ✓          | ✓     |       |
 

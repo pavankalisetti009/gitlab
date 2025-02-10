@@ -12,7 +12,7 @@ module Groups
           description: s_("TrialDiscoverPage|Collaborate on high-level ideas that share a common theme. " \
                           "Use epics to group issues that cross milestones and projects."),
           plan: s_("TrialDiscoverPage|Premium"),
-          doc_url: help_page_url("user/group/epics/index.md"),
+          doc_url: help_page_url("user/group/epics/_index.md"),
           video_url: "https://vimeo.com/693759778",
           container_class: 'lg:gl-basis-1/3',
           description_class: 'gl-h-13',
