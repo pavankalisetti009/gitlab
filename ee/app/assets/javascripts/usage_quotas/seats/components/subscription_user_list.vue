@@ -23,13 +23,20 @@ import {
   CANNOT_REMOVE_BILLABLE_MEMBER_MODAL_ID,
   CANNOT_REMOVE_BILLABLE_MEMBER_MODAL_TITLE,
   CANNOT_REMOVE_BILLABLE_MEMBER_MODAL_CONTENT,
+  DELETED_BILLABLE_MEMBERS_STORAGE_KEY_SUFFIX,
+  DELETED_BILLABLE_MEMBERS_EXPIRES_STORAGE_KEY_SUFFIX,
   emailNotVisibleTooltipText,
   filterUsersPlaceholder,
 } from 'ee/usage_quotas/seats/constants';
 import { s__, __ } from '~/locale';
 import SearchAndSortBar from '~/usage_quotas/components/search_and_sort_bar/search_and_sort_bar.vue';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import RemoveBillableMemberModal from './remove_billable_member_modal.vue';
 import SubscriptionSeatDetails from './subscription_seat_details.vue';
+
+export const FIVE_MINUTES_IN_MS = 1000 * 60 * 5;
+
+const now = () => new Date().getTime();
 
 export default {
   name: 'SubscriptionUserList',
@@ -51,6 +58,7 @@ export default {
     SearchAndSortBar,
     SubscriptionSeatDetails,
   },
+  mixins: [glFeatureFlagMixin()],
   inject: ['subscriptionHistoryHref'],
   props: {
     hasFreePlan: {
@@ -58,6 +66,11 @@ export default {
       required: false,
       default: true,
     },
+  },
+  data() {
+    return {
+      recentlyDeletedMembersIds: [],
+    };
   },
   computed: {
     ...mapState([
@@ -89,9 +102,31 @@ export default {
     isLoaderShown() {
       return this.isLoading || this.hasError;
     },
+    deletedMembersKey() {
+      return `${this.namespaceId}-${DELETED_BILLABLE_MEMBERS_STORAGE_KEY_SUFFIX}`;
+    },
+    deletedMembersExpireKey() {
+      return `${this.namespaceId}-${DELETED_BILLABLE_MEMBERS_EXPIRES_STORAGE_KEY_SUFFIX}`;
+    },
     shouldShowDownloadSeatUsageHistory() {
       return !this.hasFreePlan;
     },
+  },
+  watch: {
+    removedBillableMemberId(value) {
+      if (!this.glFeatures.billableMemberAsyncDeletion) return;
+      const uniqueMembersIds = Array.from(new Set([...this.recentlyDeletedMembersIds, value]));
+      try {
+        const deleteMembersString = JSON.stringify(uniqueMembersIds);
+        localStorage.setItem(this.deletedMembersExpireKey, now() + FIVE_MINUTES_IN_MS);
+        localStorage.setItem(this.deletedMembersKey, deleteMembersString);
+      } finally {
+        this.recentlyDeletedMembersIds = uniqueMembersIds;
+      }
+    },
+  },
+  mounted() {
+    this.recentlyDeletedMembersIds = this.getRecentlyDeletedMembersIds();
   },
   methods: {
     ...mapActions([
@@ -113,6 +148,11 @@ export default {
         this.$refs.cannotRemoveModal.show();
       }
     },
+    hasLocalStorageExpired() {
+      const expire = localStorage.getItem(this.deletedMembersExpireKey);
+      if (!expire) return true;
+      return now() > expire;
+    },
     isGroupInvite(user) {
       return user.membership_type === 'group_invite';
     },
@@ -120,7 +160,20 @@ export default {
       return user.membership_type === 'project_invite';
     },
     isUserRemoved(user) {
-      return this.removedBillableMemberId === user?.id;
+      if (!this.glFeatures.billableMemberAsyncDeletion) return false;
+      if (this.removedBillableMemberId === user?.id) return true;
+      return this.recentlyDeletedMembersIds.includes(user?.id);
+    },
+    getRecentlyDeletedMembersIds() {
+      try {
+        if (this.hasLocalStorageExpired()) {
+          localStorage.removeItem(this.deletedMembersKey);
+          return [];
+        }
+        return JSON.parse(localStorage.getItem(this.deletedMembersKey) || '[]');
+      } catch {
+        return [];
+      }
     },
   },
   i18n: {
