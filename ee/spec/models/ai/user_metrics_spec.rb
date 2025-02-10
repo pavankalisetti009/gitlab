@@ -30,4 +30,14 @@ last_duo_activity_on: 1.minute.ago })
       described_class.refresh_last_activity_on(user, last_duo_activity_on: 1.minute.ago)
     end
   end
+
+  describe '.for_users', :freeze_time do
+    let_it_be(:metrics1) { create(:ai_user_metrics, last_duo_activity_on: 1.day.ago) }
+    let_it_be(:metrics2) { create(:ai_user_metrics, last_duo_activity_on: 3.days.ago) }
+    let_it_be(:metrics3) { create(:ai_user_metrics, last_duo_activity_on: 5.days.ago) }
+
+    it 'returns data scoped to given users' do
+      expect(described_class.for_users([metrics1.user, metrics3.user])).to contain_exactly(metrics1, metrics3)
+    end
+  end
 end
