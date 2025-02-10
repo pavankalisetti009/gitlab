@@ -173,7 +173,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
 
         expect(response).to eq({
           status: :error,
-          message: "Workspace create post flatten devfile validation failed: No components present in devfile",
+          message: "Workspace create devfile validation failed: No components present in devfile",
           reason: :bad_request
         })
       end

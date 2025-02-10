@@ -7,9 +7,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::Main, feature_cat
   let(:rop_steps) do
     [
       [RemoteDevelopment::WorkspaceOperations::Create::DevfileFetcher, :and_then],
-      [RemoteDevelopment::WorkspaceOperations::Create::PreFlattenDevfileValidator, :and_then],
+      [RemoteDevelopment::WorkspaceOperations::Create::DevfileValidator, :and_then],
       [RemoteDevelopment::WorkspaceOperations::Create::DevfileFlattener, :and_then],
-      [RemoteDevelopment::WorkspaceOperations::Create::PostFlattenDevfileValidator, :and_then],
+      [RemoteDevelopment::WorkspaceOperations::Create::DevfileValidator, :and_then],
       [RemoteDevelopment::WorkspaceOperations::Create::VolumeDefiner, :map],
       [RemoteDevelopment::WorkspaceOperations::Create::ToolsInjectorComponentInserter, :map],
       [RemoteDevelopment::WorkspaceOperations::Create::MainComponentUpdater, :map],
@@ -107,19 +107,19 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::Main, feature_cat
           },
         ],
         [
-          "when PreFlattenDevfileValidator returns WorkspaceCreatePreFlattenDevfileValidationFailed",
+          "when DevfileValidator returns WorkspaceCreateDevfileValidationFailed before devfile is flattened",
           {
-            step_class: RemoteDevelopment::WorkspaceOperations::Create::PreFlattenDevfileValidator,
-            returned_message: lazy { RemoteDevelopment::Messages::WorkspaceCreatePreFlattenDevfileValidationFailed.new(err_message_content) }
+            step_class: RemoteDevelopment::WorkspaceOperations::Create::DevfileValidator,
+            returned_message: lazy { RemoteDevelopment::Messages::WorkspaceCreateDevfileValidationFailed.new(err_message_content) }
           },
           {
             status: :error,
-            message: lazy { "Workspace create pre flatten devfile validation failed: #{error_details}" },
+            message: lazy { "Workspace create devfile validation failed: #{error_details}" },
             reason: :bad_request
           },
         ],
         [
-          "when DevfileFlattener returns WorkspaceCreatePreFlattenDevfileValidationFailed",
+          "when DevfileFlattener returns WorkspaceCreateDevfileValidationFailed",
           {
             step_class: RemoteDevelopment::WorkspaceOperations::Create::DevfileFlattener,
             returned_message: lazy { RemoteDevelopment::Messages::WorkspaceCreateDevfileFlattenFailed.new(err_message_content) }
@@ -131,14 +131,14 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::Main, feature_cat
           },
         ],
         [
-          "when PostFlattenDevfileValidator returns WorkspaceCreatePostFlattenDevfileValidationFailed",
+          "when DevfileValidator returns WorkspaceCreateDevfileValidationFailed after devfile is flattened",
           {
-            step_class: RemoteDevelopment::WorkspaceOperations::Create::PostFlattenDevfileValidator,
-            returned_message: lazy { RemoteDevelopment::Messages::WorkspaceCreatePostFlattenDevfileValidationFailed.new(err_message_content) }
+            step_class: RemoteDevelopment::WorkspaceOperations::Create::DevfileValidator,
+            returned_message: lazy { RemoteDevelopment::Messages::WorkspaceCreateDevfileValidationFailed.new(err_message_content) }
           },
           {
             status: :error,
-            message: lazy { "Workspace create post flatten devfile validation failed: #{error_details}" },
+            message: lazy { "Workspace create devfile validation failed: #{error_details}" },
             reason: :bad_request
           },
         ],
