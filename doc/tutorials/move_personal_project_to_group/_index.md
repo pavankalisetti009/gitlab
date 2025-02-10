@@ -9,7 +9,7 @@ DETAILS:
 **Tier:** Free, Premium, Ultimate
 **Offering:** GitLab.com
 
-If you created a project under a [personal namespace](../../user/namespace/index.md),
+If you created a project under a [personal namespace](../../user/namespace/_index.md),
 you can perform common tasks, like managing issues, merge requests,
 source control, and CI/CD.
 

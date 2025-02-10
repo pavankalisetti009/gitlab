@@ -29,7 +29,7 @@ To access your user settings:
 
 ## Change your username
 
-Your username has a unique [namespace](../namespace/index.md),
+Your username has a unique [namespace](../namespace/_index.md),
 which is updated when you change your username. Before you change your username, read about
 [how redirects behave](../project/repository/index.md#repository-path-changes).
 If you do not want to update the namespace, you can create a new user or group and transfer projects to it instead.

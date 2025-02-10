@@ -58,7 +58,7 @@ available only:
 - For group and project Owners.
 - For Administrators.
 
-Personal [namespace](namespace/index.md) owners:
+Personal [namespace](namespace/_index.md) owners:
 
 - Are displayed as having the Maintainer role on projects in the namespace, but have the same permissions as a user with the Owner role.
 - For new projects in the namespace, are displayed as having the Owner role.
@@ -142,7 +142,7 @@ Project Owners can perform any listed action, and can delete pipelines:
 | Enable [review apps](../ci/review_apps/_index.md)                                                                              |            |       |         |          |     ✓     |     ✓      |       |
 | Cancel jobs                                                                                                                    |            |       |         |          |     ✓     |     ✓      | Cancellation permissions can be [restricted in the pipeline settings](../ci/pipelines/settings.md#restrict-roles-that-can-cancel-pipelines-or-jobs). |
 | Retry jobs                                                                                                                     |            |       |         |          |     ✓     |     ✓      |       |
-| Read [Terraform](infrastructure/index.md) state                                                                                |            |       |         |          |     ✓     |     ✓      |       |
+| Read [Terraform](infrastructure/_index.md) state                                                                               |            |       |         |          |     ✓     |     ✓      |       |
 | Run [interactive web terminals](../ci/interactive_web_terminal/_index.md)                                                      |            |       |         |          |     ✓     |     ✓      |       |
 | Use pipeline editor                                                                                                            |            |       |         |          |     ✓     |     ✓      |       |
 | Manage [agents for Kubernetes](clusters/agent/_index.md)                                                                        |            |       |         |          |           |     ✓      |       |
@@ -151,7 +151,7 @@ Project Owners can perform any listed action, and can delete pipelines:
 | Manage project CI/CD variables                                                                                                 |            |       |         |          |           |     ✓      |       |
 | Manage project protected environments                                                                                          |            |       |         |          |           |     ✓      |       |
 | Manage project [Secure Files](../api/secure_files.md)                                                                          |            |       |         |          |           |     ✓      |       |
-| Manage [Terraform](infrastructure/index.md) state                                                                              |            |       |         |          |           |     ✓      |       |
+| Manage [Terraform](infrastructure/_index.md) state                                                                             |            |       |         |          |           |     ✓      |       |
 | Add project runners to project                                                                                                 |            |       |         |          |           |     ✓      |       |
 | Clear runner caches manually                                                                                                   |            |       |         |          |           |     ✓      |       |
 | Enable instance runners in project                                                                                             |            |       |         |          |           |     ✓      |       |

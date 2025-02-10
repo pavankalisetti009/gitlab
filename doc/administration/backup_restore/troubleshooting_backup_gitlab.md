@@ -17,7 +17,7 @@ that contain required, sensitive information. If the key is lost, GitLab can't
 decrypt those columns, preventing access to the following items:
 
 - [CI/CD variables](../../ci/variables/_index.md)
-- [Kubernetes / GCP integration](../../user/infrastructure/clusters/index.md)
+- [Kubernetes / GCP integration](../../user/infrastructure/clusters/_index.md)
 - [Custom Pages domains](../../user/project/pages/custom_domains_ssl_tls_certification/index.md)
 - [Project error tracking](../../operations/error_tracking.md)
 - [Runner authentication](../../ci/runners/_index.md)

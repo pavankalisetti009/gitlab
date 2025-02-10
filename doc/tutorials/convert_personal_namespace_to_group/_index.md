@@ -9,7 +9,7 @@ DETAILS:
 **Tier:** Free, Premium, Ultimate
 **Offering:** GitLab.com
 
-If you've started out with a personal [namespace](../../user/namespace/index.md), but find
+If you've started out with a personal [namespace](../../user/namespace/_index.md), but find
 that you've outgrown its capabilities, you can switch to a group namespace instead.
 With a group namespace, you can create multiple subgroups and manage their members and permissions.
 
