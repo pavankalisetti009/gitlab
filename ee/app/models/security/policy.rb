@@ -4,6 +4,7 @@ module Security
   class Policy < ApplicationRecord
     include EachBatch
     include Security::Policies::VulnerabilityManagement
+    include Gitlab::Utils::StrongMemoize
 
     self.table_name = 'security_policies'
     self.inheritance_column = :_type_disabled
@@ -191,9 +192,10 @@ module Security
     end
 
     def scope_applicable?(project)
-      policy_scope_checker = Security::SecurityOrchestrationPolicies::PolicyScopeChecker.new(project: project)
-
-      policy_scope_checker.security_policy_applicable?(self)
+      strong_memoize_with(:scope_applicable, project) do
+        policy_scope_checker = Security::SecurityOrchestrationPolicies::PolicyScopeChecker.new(project: project)
+        policy_scope_checker.security_policy_applicable?(self)
+      end
     end
 
     def scope_has_framework?(compliance_framework_id)

@@ -519,7 +519,7 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
 
   describe '#scope_applicable?' do
     let_it_be(:project) { create(:project) }
-    let_it_be(:policy) { create(:security_policy) }
+    let(:policy) { build(:security_policy) }
 
     let(:policy_scope_checker) { instance_double(Security::SecurityOrchestrationPolicies::PolicyScopeChecker) }
 
