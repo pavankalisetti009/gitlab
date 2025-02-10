@@ -40,7 +40,8 @@ RSpec.describe SoftwareLicensePolicies::CreateService, feature_category: :securi
 
     context 'when valid parameters are specified' do
       context 'when custom_software_license feature flag is disabled' do
-        let(:license_name) { 'MIT' }
+        let(:license_name) { 'MIT License' }
+        let(:license_spdx_identifier) { 'MIT' }
         let(:params) { { name: license_name, approval_status: 'allowed' } }
         let(:result) { subject.execute }
 
@@ -57,6 +58,7 @@ RSpec.describe SoftwareLicensePolicies::CreateService, feature_category: :securi
           expect(result[:software_license_policy]).to be_persisted
           expect(result[:software_license_policy].name).to eq(params[:name])
           expect(result[:software_license_policy].classification).to eq(params[:approval_status])
+          expect(result[:software_license_policy].spdx_identifier).to eq(license_spdx_identifier)
         end
 
         context 'when name contains whitespaces' do
@@ -87,6 +89,7 @@ RSpec.describe SoftwareLicensePolicies::CreateService, feature_category: :securi
             result
 
             expect(result[:software_license_policy].software_license.name).to eq(license_name)
+            expect(result[:software_license_policy].spdx_identifier).to eq(license_spdx_identifier)
             expect(result[:software_license_policy].custom_software_license).to be_nil
           end
         end
@@ -103,11 +106,12 @@ RSpec.describe SoftwareLicensePolicies::CreateService, feature_category: :securi
             result
           end
 
-          it 'sets both the software license and custom software license' do
+          it 'sets the expected attributes' do
             result
 
             expect(result[:software_license_policy].software_license.name).to eq(license_name)
             expect(result[:software_license_policy].custom_software_license.name).to eq(license_name)
+            expect(result[:software_license_policy].spdx_identifier).to be_nil
           end
 
           it_behaves_like 'when an error occurs during the software license creation'

@@ -19,6 +19,10 @@ namespace :gitlab do
       File.write(path, output, mode: 'w')
 
       puts "Local copy of SPDX catalogue is saved to #{path}"
+
+      if ::Feature.enabled?(:static_licenses) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- The feature flag is global
+        Rails.cache.delete(::Gitlab::SPDX::Catalogue::LATEST_ACTIVE_LICENSES_CACHE_KEY)
+      end
     rescue StandardError => e
       puts "Import of SPDX catalogue failed: #{e}"
     end

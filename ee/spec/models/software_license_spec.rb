@@ -23,6 +23,12 @@ RSpec.describe SoftwareLicense, feature_category: :security_policy_management do
 
       subject
     end
+
+    it 'sets the software_license_spdx_identifier' do
+      subject
+
+      expect(project.software_license_policies.last.spdx_identifier).to eq('MIT')
+    end
   end
 
   describe 'scopes' do

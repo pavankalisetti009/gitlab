@@ -106,7 +106,7 @@ class SoftwareLicensePolicy < ApplicationRecord
 
   def name
     if Feature.enabled?(:static_licenses) && software_license_spdx_identifier # rubocop:disable Gitlab/FeatureFlagWithoutActor -- The feature flag is global
-      self.class.latest_active_licenses_by_spdx(software_license_spdx_identifier).first&.name
+      self.class.latest_active_licenses_by_spdx(software_license_spdx_identifier)&.first&.name
     elsif Feature.enabled?(:custom_software_license, project) && custom_software_license
       custom_software_license&.name
     else
