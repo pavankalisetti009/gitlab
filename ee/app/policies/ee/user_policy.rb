@@ -20,6 +20,11 @@ module EE
         ::Gitlab::CurrentSettings.personal_access_tokens_disabled?
       end
 
+      desc "Personal access tokens are disabled by enterprise group"
+      condition(:personal_access_tokens_disabled_by_enterprise_group, scope: :subject) do
+        @subject.enterprise_user? && @subject.enterprise_group.disable_personal_access_tokens?
+      end
+
       condition(:profiles_can_be_made_private, scope: :global) { profiles_can_be_made_private? }
 
       rule { can?(:update_user) }.enable :update_name
@@ -28,7 +33,8 @@ module EE
 
       rule { user_is_self & ~can_remove_self }.prevent :destroy_user
 
-      rule { personal_access_tokens_disabled }.prevent :create_user_personal_access_token
+      rule { personal_access_tokens_disabled | personal_access_tokens_disabled_by_enterprise_group }
+        .prevent :create_user_personal_access_token
 
       rule { ~profiles_can_be_made_private & ~admin }.prevent :make_profile_private
     end

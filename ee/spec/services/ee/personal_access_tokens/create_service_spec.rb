@@ -259,5 +259,36 @@ RSpec.describe PersonalAccessTokens::CreateService, feature_category: :system_ac
         end
       end
     end
+
+    context 'when personal access tokens are disabled by enterprise group' do
+      let_it_be(:enterprise_group) do
+        create(:group, namespace_settings: create(:namespace_settings, disable_personal_access_tokens: true))
+      end
+
+      let_it_be(:enterprise_user_of_the_group) { create(:enterprise_user, enterprise_group: enterprise_group) }
+      let_it_be(:enterprise_user_of_another_group) { create(:enterprise_user) }
+
+      let(:params) { valid_params }
+
+      before do
+        stub_licensed_features(disable_personal_access_tokens: true)
+      end
+
+      context 'for non-enterprise users of the group' do
+        let(:current_user) { enterprise_user_of_another_group }
+        let(:target_user) { enterprise_user_of_another_group }
+
+        it 'creates a token successfully' do
+          expect(create_token.success?).to be true
+        end
+      end
+
+      context 'for enterprise users of the group' do
+        let(:current_user) { enterprise_user_of_the_group }
+        let(:target_user) { enterprise_user_of_the_group }
+
+        it_behaves_like 'an unsuccessfully created token'
+      end
+    end
   end
 end
