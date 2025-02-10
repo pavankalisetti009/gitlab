@@ -42,8 +42,8 @@ The **Metric trends** table displays metrics for the last six months, with month
 
 #### Lifecycle metrics
 
-- [**Cycle time**](../group/value_stream_analytics/index.md#lifecycle-metrics)
-- [**Lead time**](../group/value_stream_analytics/index.md#lifecycle-metrics)
+- [**Cycle time**](../group/value_stream_analytics/_index.md#lifecycle-metrics)
+- [**Lead time**](../group/value_stream_analytics/_index.md#lifecycle-metrics)
 - [**Deployment frequency**](dora_metrics.md#deployment-frequency)
 - [**Change failure rate**](dora_metrics.md#change-failure-rate)
 - [**Critical vulnerabilities over time**](../application_security/vulnerability_report/index.md)

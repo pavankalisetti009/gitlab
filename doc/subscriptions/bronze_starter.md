@@ -38,7 +38,7 @@ the tiers are no longer mentioned in GitLab documentation:
   - [Issue weights](../user/project/issues/issue_weight.md)
   - Issue histories contain [changes to issue description](../user/discussions/_index.md#view-description-change-history)
   - [Adding an issue to an iteration](../user/project/issues/managing_issues.md#add-an-issue-to-an-iteration)
-- [Iterations](../user/group/iterations/index.md)
+- [Iterations](../user/group/iterations/_index.md)
 - [Kerberos integration](../integration/kerberos.md)
 - LDAP:
   - Querying LDAP [from the Rails console](../administration/auth/ldap/ldap-troubleshooting.md#query-ldap), or

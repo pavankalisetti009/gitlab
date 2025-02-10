@@ -20,7 +20,7 @@ Use these features to gain insights into your overall software development lifec
 | Feature | Description | Project-level | Group-level | Instance-level |
 | ------- | ----------- | ------------- | ----------- | -------------- |
 | [Value Streams Dashboard](value_streams_dashboard.md) | Insights into DevSecOps trends, patterns, and opportunities for digital transformation improvements. | **{check-circle}** Yes | **{check-circle}** Yes | **{dotted-circle}** No |
-| [Value Stream Management Analytics](../group/value_stream_analytics/index.md) | Insights into time-to-value through customizable stages. | **{check-circle}** Yes | **{check-circle}** Yes | **{dotted-circle}** No |
+| [Value Stream Management Analytics](../group/value_stream_analytics/_index.md) | Insights into time-to-value through customizable stages. | **{check-circle}** Yes | **{check-circle}** Yes | **{dotted-circle}** No |
 | DevOps adoption [by group](../group/devops_adoption/_index.md) and [by instance](../../administration/analytics/dev_ops_reports.md) | Organization's maturity in DevOps adoption, with feature adoption over time and feature distribution by group. | **{dotted-circle}** No | **{check-circle}** Yes | **{check-circle}** Yes |
 | [Usage trends](../../administration/analytics/usage_trends.md) | Overview of instance data and changes in data volume over time. | **{dotted-circle}** No | **{dotted-circle}** No | **{check-circle}** Yes |
 | [Insights](../project/insights/index.md) | Customizable reports to explore issues, merged merge requests, and triage hygiene. | **{check-circle}** Yes | **{check-circle}** Yes | **{dotted-circle}** No |
@@ -46,7 +46,7 @@ Use these features to gain insights into developer productivity and code coverag
 | ------- | ----------- | ------------- | ----------- | -------------- |
 | [Contribution analytics](../group/contribution_analytics/_index.md) | Overview of [contribution events](../profile/contributions_calendar.md) made by group members, with bar chart of push events, merge requests, and issues. | **{dotted-circle}** No | **{check-circle}** Yes | **{dotted-circle}** No |
 | [Contributor analytics](../analytics/contributor_analytics.md) | Overview of commits made by project members, with line chart of number of commits. | **{check-circle}** Yes | **{dotted-circle}** No | **{dotted-circle}** No |
-| [Repository analytics](../group/repositories_analytics/index.md) | Programming languages used in the repository and code coverage statistics. | **{check-circle}** Yes | **{check-circle}** Yes | **{dotted-circle}** No |
+| [Repository analytics](../group/repositories_analytics/_index.md) | Programming languages used in the repository and code coverage statistics. | **{check-circle}** Yes | **{check-circle}** Yes | **{dotted-circle}** No |
 
 ### CI/CD analytics
 

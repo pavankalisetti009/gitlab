@@ -61,7 +61,7 @@ export default {
     EMPTY_STATE_FILTER_ERROR_TITLE,
     EMPTY_STATE_FILTER_ERROR_DESCRIPTION,
   },
-  docsPath: helpPagePath('user/group/value_stream_analytics/index', {
+  docsPath: helpPagePath('user/group/value_stream_analytics/_index', {
     anchor: 'create-a-value-stream',
   }),
 };

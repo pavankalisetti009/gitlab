@@ -228,7 +228,7 @@ DETAILS:
 **Offering:** GitLab.com, GitLab Self-Managed, GitLab Dedicated
 
 An issue board can be associated with a [milestone](milestones/index.md),
-[labels](labels.md), assignee, weight, and current [iteration](../group/iterations/index.md),
+[labels](labels.md), assignee, weight, and current [iteration](../group/iterations/_index.md),
 which automatically filter the board issues accordingly.
 This allows you to create unique boards according to your team's need.
 
@@ -434,7 +434,7 @@ You can edit the following issue attributes in the right sidebar:
 - Due date
 - [Epic](../group/epics/_index.md)
 - [Health status](issues/managing_issues.md#health-status)
-- [Iteration](../group/iterations/index.md)
+- [Iteration](../group/iterations/_index.md)
 - Labels
 - Milestone
 - Notifications setting
@@ -535,7 +535,7 @@ You can filter by the following:
 - Assignee
 - Author
 - [Epic](../group/epics/_index.md)
-- [Iteration](../group/iterations/index.md)
+- [Iteration](../group/iterations/_index.md)
 - Label
 - Milestone
 - My Reaction

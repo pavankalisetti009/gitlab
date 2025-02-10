@@ -211,7 +211,7 @@ export const VALUE_STREAM_METRIC_TILE_METADATA = {
     description: s__('ValueStreamAnalytics|Median time from issue created to issue closed.'),
     groupLink: '-/analytics/value_stream_analytics',
     projectLink: '-/value_stream_analytics',
-    docsLink: helpPagePath('user/group/value_stream_analytics/index', {
+    docsLink: helpPagePath('user/group/value_stream_analytics/_index', {
       anchor: 'lifecycle-metrics',
     }),
     unit: UNITS.DAYS,
@@ -223,7 +223,7 @@ export const VALUE_STREAM_METRIC_TILE_METADATA = {
     ),
     groupLink: '-/analytics/value_stream_analytics',
     projectLink: '-/value_stream_analytics',
-    docsLink: helpPagePath('user/group/value_stream_analytics/index', {
+    docsLink: helpPagePath('user/group/value_stream_analytics/_index', {
       anchor: 'lifecycle-metrics',
     }),
     unit: UNITS.DAYS,

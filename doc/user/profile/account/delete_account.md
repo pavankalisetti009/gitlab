@@ -214,7 +214,7 @@ ERROR: null value in column "user_id" violates not-null constraint
 The error can be found in the [PostgreSQL log](../../../administration/logs/_index.md#postgresql-logs) and
 in the **Retries** section of the [background jobs view](../../../administration/admin_area.md#background-jobs) in the **Admin** area.
 
-If the user being deleted used the [iterations](../../group/iterations/index.md) feature, such
+If the user being deleted used the [iterations](../../group/iterations/_index.md) feature, such
 as adding an issue to an iteration, you must use
 [the workaround documented in the issue](https://gitlab.com/gitlab-org/gitlab/-/issues/349411#workaround)
 to delete the user.

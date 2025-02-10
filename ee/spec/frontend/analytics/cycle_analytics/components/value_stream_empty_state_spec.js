@@ -66,7 +66,7 @@ describe('ValueStreamEmptyState', () => {
       expect(findSecondaryAction().exists()).toBe(true);
       expect(findSecondaryAction().text()).toBe(EMPTY_STATE_SECONDARY_TEXT);
       expect(findSecondaryAction().attributes('href')).toBe(
-        '/help/user/group/value_stream_analytics/index#create-a-value-stream',
+        '/help/user/group/value_stream_analytics/_index#create-a-value-stream',
       );
     });
   });

@@ -395,7 +395,7 @@ DETAILS:
 > - [Moved](https://gitlab.com/gitlab-org/gitlab/-/issues/367456) to feature flag named `work_items_mvc` in GitLab 15.7. Disabled by default.
 > - [Generally available](https://gitlab.com/gitlab-org/gitlab/-/issues/367456) in GitLab 15.7. Feature flag `work_items_mvc` removed.
 
-You can add a task to an [iteration](group/iterations/index.md).
+You can add a task to an [iteration](group/iterations/_index.md).
 You can see the iteration title and period only when you view a task.
 
 Prerequisites:

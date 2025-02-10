@@ -123,7 +123,7 @@ Groups are permanently deleted after a seven-day delay.
 
 If you are on the Free tier, your groups are immediately deleted, and you will not be able to restore them.
 
-You can [view and restore groups marked for deletion](../group/index.md#restore-a-group).
+You can [view and restore groups marked for deletion](../group/_index.md#restore-a-group).
 
 ## Delayed project deletion
 

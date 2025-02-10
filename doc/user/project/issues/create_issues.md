@@ -215,4 +215,4 @@ When you're creating a new issue, you can complete the following fields:
 - [Due date](due_dates.md)
 - [Milestone](../milestones/index.md)
 - [Labels](../labels.md)
-- [Iteration](../../group/iterations/index.md)
+- [Iteration](../../group/iterations/_index.md)

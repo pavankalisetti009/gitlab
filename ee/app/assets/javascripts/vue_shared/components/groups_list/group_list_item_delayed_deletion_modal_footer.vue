@@ -28,7 +28,7 @@ export default {
       return this.group.isAdjournedDeletionEnabled && !this.isMarkedForDeletion;
     },
   },
-  HELP_PAGE_PATH: helpPagePath('user/group/index', { anchor: 'restore-a-group' }),
+  HELP_PAGE_PATH: helpPagePath('user/group/_index', { anchor: 'restore-a-group' }),
 };
 </script>
 

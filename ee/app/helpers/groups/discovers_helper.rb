@@ -23,7 +23,7 @@ module Groups
           title: s_("TrialDiscoverPage|Roadmaps"),
           description: s_("TrialDiscoverPage|Visualize your epics and milestones in a timeline."),
           plan: s_("TrialDiscoverPage|Premium"),
-          doc_url: help_page_url("user/group/roadmap/index.md"),
+          doc_url: help_page_url("user/group/roadmap/_index.md"),
           video_url: "https://vimeo.com/670922063",
           container_class: 'lg:gl-basis-1/3',
           description_class: 'gl-h-13',
