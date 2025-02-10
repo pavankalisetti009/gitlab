@@ -2091,6 +2091,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_4dc8ec48e038() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."project_id"
+  FROM "issues"
+  WHERE "issues"."id" = NEW."issue_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_54707c384ad7() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -20597,7 +20613,8 @@ CREATE TABLE requirements_management_test_reports (
     state smallint NOT NULL,
     build_id bigint,
     issue_id bigint,
-    uses_legacy_iid boolean DEFAULT true NOT NULL
+    uses_legacy_iid boolean DEFAULT true NOT NULL,
+    project_id bigint
 );
 
 CREATE SEQUENCE requirements_management_test_reports_id_seq
@@ -34588,6 +34605,8 @@ CREATE INDEX index_requirements_management_test_reports_on_build_id ON requireme
 
 CREATE INDEX index_requirements_management_test_reports_on_issue_id ON requirements_management_test_reports USING btree (issue_id);
 
+CREATE INDEX index_requirements_management_test_reports_on_project_id ON requirements_management_test_reports USING btree (project_id);
+
 CREATE UNIQUE INDEX index_requirements_on_issue_id ON requirements USING btree (issue_id);
 
 CREATE INDEX index_requirements_on_project_id ON requirements USING btree (project_id);
@@ -38166,6 +38185,8 @@ CREATE TRIGGER trigger_4b43790d717f BEFORE INSERT OR UPDATE ON protected_environ
 
 CREATE TRIGGER trigger_4cc5c3ac4d7f BEFORE INSERT OR UPDATE ON bulk_import_export_uploads FOR EACH ROW EXECUTE FUNCTION trigger_4cc5c3ac4d7f();
 
+CREATE TRIGGER trigger_4dc8ec48e038 BEFORE INSERT OR UPDATE ON requirements_management_test_reports FOR EACH ROW EXECUTE FUNCTION trigger_4dc8ec48e038();
+
 CREATE TRIGGER trigger_54707c384ad7 BEFORE INSERT OR UPDATE ON security_orchestration_policy_rule_schedules FOR EACH ROW EXECUTE FUNCTION trigger_54707c384ad7();
 
 CREATE TRIGGER trigger_56d49f4ed623 BEFORE INSERT OR UPDATE ON workspace_variables FOR EACH ROW EXECUTE FUNCTION trigger_56d49f4ed623();
@@ -38473,6 +38494,9 @@ ALTER TABLE ONLY design_management_designs_versions
 
 ALTER TABLE ONLY external_status_checks_protected_branches
     ADD CONSTRAINT fk_0480f2308c FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY requirements_management_test_reports
+    ADD CONSTRAINT fk_05094e3d87 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY analytics_dashboards_pointers
     ADD CONSTRAINT fk_05d96922bd FOREIGN KEY (target_project_id) REFERENCES projects(id) ON DELETE CASCADE;
