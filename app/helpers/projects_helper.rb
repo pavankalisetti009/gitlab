@@ -460,7 +460,7 @@ module ProjectsHelper
       allowedVisibilityOptions: project_allowed_visibility_levels(project),
       visibilityHelpPath: help_page_path('user/public_access.md'),
       registryAvailable: Gitlab.config.registry.enabled,
-      registryHelpPath: help_page_path('user/packages/container_registry/index.md'),
+      registryHelpPath: help_page_path('user/packages/container_registry/_index.md'),
       lfsAvailable: Gitlab.config.lfs.enabled,
       lfsHelpPath: help_page_path('topics/git/lfs/_index.md'),
       lfsObjectsExist: project.lfs_objects.exists?,

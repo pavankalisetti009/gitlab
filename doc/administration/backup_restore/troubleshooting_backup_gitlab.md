@@ -205,7 +205,7 @@ You should verify that the secrets are the root cause before deleting any data.
 
 ## Container registry is not restored
 
-If you restore a backup from an environment that uses the [container registry](../../user/packages/container_registry/index.md)
+If you restore a backup from an environment that uses the [container registry](../../user/packages/container_registry/_index.md)
 to a newly installed environment where the container registry is not enabled, the container registry is not restored.
 
 To also restore the container registry, you need to [enable it](../packages/container_registry.md#enable-the-container-registry) in the new
@@ -213,7 +213,7 @@ environment before you restore the backup.
 
 ## Container registry push failures after restoring from a backup
 
-If you use the [container registry](../../user/packages/container_registry/index.md),
+If you use the [container registry](../../user/packages/container_registry/_index.md),
 pushes to the registry may fail after restoring your backup on a Linux package (Omnibus)
 instance after restoring the registry data.
 
