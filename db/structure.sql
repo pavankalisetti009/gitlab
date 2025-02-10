@@ -8681,7 +8681,8 @@ CREATE TABLE approval_project_rules_users (
     id bigint NOT NULL,
     approval_project_rule_id bigint NOT NULL,
     user_id bigint NOT NULL,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_26058e3982 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE approval_project_rules_users_id_seq
@@ -27067,9 +27068,6 @@ ALTER TABLE ONLY chat_teams
 
 ALTER TABLE merge_request_assignees
     ADD CONSTRAINT check_1442f79624 CHECK ((project_id IS NOT NULL)) NOT VALID;
-
-ALTER TABLE approval_project_rules_users
-    ADD CONSTRAINT check_26058e3982 CHECK ((project_id IS NOT NULL)) NOT VALID;
 
 ALTER TABLE status_check_responses
     ADD CONSTRAINT check_29114cce9c CHECK ((project_id IS NOT NULL)) NOT VALID;
