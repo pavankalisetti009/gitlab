@@ -139,7 +139,7 @@ describe('Metric table cell', () => {
     it('renders popover content based on the metric identifier', () => {
       expect(findPopover().props('title')).toBe(metricLabel);
       expect(findPopover().text()).toContain('Number of new issues created.');
-      expect(findPopoverLink().attributes('href')).toBe('/help/user/group/issues_analytics/index');
+      expect(findPopoverLink().attributes('href')).toBe('/help/user/group/issues_analytics/_index');
       expect(findPopoverLink().text()).toBe(MetricTableCell.i18n.docsLabel);
     });
   });

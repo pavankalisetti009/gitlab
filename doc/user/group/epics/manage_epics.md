@@ -9,7 +9,7 @@ DETAILS:
 **Tier:** Premium, Ultimate
 **Offering:** GitLab.com, GitLab Self-Managed, GitLab Dedicated
 
-This page collects instructions for all the things you can do with [epics](index.md) or in relation
+This page collects instructions for all the things you can do with [epics](_index.md) or in relation
 to them.
 
 ## Create an epic
@@ -541,7 +541,7 @@ The maximum number of direct child issues and epics is 5000.
 
 > - Minimum required role for the project [changed](https://gitlab.com/gitlab-org/gitlab/-/issues/382506) from Reporter to Guest in GitLab 15.8.
 
-You can add existing issues to an epic, including issues in a project from a [different group hierarchy](index.md#child-issues-from-different-group-hierarchies).
+You can add existing issues to an epic, including issues in a project from a [different group hierarchy](_index.md#child-issues-from-different-group-hierarchies).
 Newly added issues appear at the top of the list of issues in the **Child issues and epics** section.
 
 An epic contains a list of issues and an issue can be set as a child item of at most one epic.

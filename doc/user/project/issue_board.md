@@ -432,7 +432,7 @@ You can edit the following issue attributes in the right sidebar:
 - Assignees
 - Confidentiality
 - Due date
-- [Epic](../group/epics/index.md)
+- [Epic](../group/epics/_index.md)
 - [Health status](issues/managing_issues.md#health-status)
 - [Iteration](../group/iterations/index.md)
 - Labels
@@ -534,7 +534,7 @@ You can filter by the following:
 
 - Assignee
 - Author
-- [Epic](../group/epics/index.md)
+- [Epic](../group/epics/_index.md)
 - [Iteration](../group/iterations/index.md)
 - Label
 - Milestone

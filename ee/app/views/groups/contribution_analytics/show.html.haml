@@ -1,7 +1,7 @@
 - page_title _('Contribution Analytics')
 
 - if @data_source_clickhouse
-  - clickhouse_popover_docs_link = link_to('', help_page_path('user/group/contribution_analytics/index.md', anchor: 'contribution-analytics-with-clickhouse'), target: '_blank', rel: 'noopener noreferrer')
+  - clickhouse_popover_docs_link = link_to('', help_page_path('user/group/contribution_analytics/_index.md', anchor: 'contribution-analytics-with-clickhouse'), target: '_blank', rel: 'noopener noreferrer')
   - clickhouse_popover_content = safe_format(s_('ContributionAnalytics|This page sources data from the %{link_start}analytical database ClickHouse%{link_end}, with a few minutes of delay.'), tag_pair(clickhouse_popover_docs_link, :link_start, :link_end))
   - clickhouse_popover_data = { container: 'body', toggle: 'popover', html: 'true', triggers: 'hover focus', content: clickhouse_popover_content }
 
