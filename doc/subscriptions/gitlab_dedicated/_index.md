@@ -212,7 +212,7 @@ The following GitLab application features are not available:
 
 The following features are not supported:
 
-- [Mattermost](../../integration/mattermost/index.md)
+- [Mattermost](../../integration/mattermost/_index.md)
 - [Server-side Git hooks](../../administration/server_hooks.md)
 
 NOTE:
