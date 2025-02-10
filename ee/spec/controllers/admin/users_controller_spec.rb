@@ -19,7 +19,29 @@ RSpec.describe Admin::UsersController, feature_category: :user_management do
     end
   end
 
-  describe 'POST update' do
+  describe 'POST #create' do
+    context 'when no user is returned' do
+      before do
+        allow_next_instance_of(Users::CreateService) do |service|
+          allow(service).to receive(:execute).and_return(
+            ServiceResponse.error(message: 'This is an error')
+          )
+        end
+
+        post :create, params: { user: attributes_for(:user) }
+      end
+
+      it 'redirects to admin path' do
+        expect(response).to redirect_to(admin_users_path)
+      end
+
+      it 'sets a flash notice' do
+        expect(controller).to set_flash[:notice].to('This is an error')
+      end
+    end
+  end
+
+  describe 'POST #update' do
     context 'update custom attributes' do
       let!(:custom_attribute) do
         user.custom_attributes.create!(key: UserCustomAttribute::ARKOSE_RISK_BAND,
