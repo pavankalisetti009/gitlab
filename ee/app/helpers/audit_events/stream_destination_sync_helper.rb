@@ -14,7 +14,7 @@ module AuditEvents
     }.freeze
 
     def create_legacy_destination(stream_destination_model)
-      return unless stream_destination_sync_enabled?
+      return unless stream_destination_sync_enabled?(stream_destination_model)
 
       model_class = legacy_class_for(stream_destination_model)
 
@@ -40,7 +40,7 @@ module AuditEvents
     end
 
     def update_legacy_destination(stream_destination_model)
-      return unless stream_destination_sync_enabled?
+      return unless stream_destination_sync_enabled?(stream_destination_model)
 
       destination = stream_destination_model.legacy_destination
 
@@ -60,8 +60,9 @@ module AuditEvents
 
     private
 
-    def stream_destination_sync_enabled?
-      Feature.enabled?(:audit_events_external_destination_streamer_consolidation_refactor, :instance)
+    def stream_destination_sync_enabled?(stream_destination_model)
+      Feature.enabled?(:audit_events_external_destination_streamer_consolidation_refactor,
+        stream_destination_model.respond_to?(:group) ? stream_destination_model.group : :instance)
     end
 
     def legacy_class_for(model)

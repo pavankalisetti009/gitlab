@@ -17,8 +17,7 @@ module Mutations
           if config.destroy
             audit(config, action: :deleted)
 
-            if Feature.enabled?(:audit_events_external_destination_streamer_consolidation_refactor,
-              :instance)
+            if Feature.enabled?(:audit_events_external_destination_streamer_consolidation_refactor, config.group)
               paired_destination&.destroy
             end
           end
