@@ -213,7 +213,7 @@ They MUST be always published to RubyGems.
 
 At GitLab we use a number of external gems:
 
-- [LabKit Ruby](https://gitlab.com/gitlab-org/labkit-ruby)
+- [LabKit Ruby](https://gitlab.com/gitlab-org/ruby/gems/labkit-ruby)
 - [GitLab Ruby Gems](https://gitlab.com/gitlab-org/ruby/gems)
 
 ### Potential disadvantages
