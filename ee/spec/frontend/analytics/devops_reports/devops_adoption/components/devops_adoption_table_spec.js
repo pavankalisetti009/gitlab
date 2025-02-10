@@ -169,6 +169,11 @@ describe('DevopsAdoptionTable', () => {
       const booleanFlag = findColSubComponent(testId, DevopsAdoptionTableCellFlag);
 
       expect(booleanFlag.exists()).toBe(true);
+      expect(booleanFlag.props()).toMatchObject({
+        enabled: expect.any(Boolean),
+        withText: expect.any(Boolean),
+        name: expect.any(String),
+      });
     });
 
     describe.each`

@@ -7,6 +7,7 @@ import DevopsAdoptionOverviewChart from 'ee/analytics/devops_reports/devops_adop
 import getSnapshotsQuery from 'ee/analytics/devops_reports/devops_adoption/graphql/queries/devops_adoption_overview_chart.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import DevopsAdoptionTableCellFlag from 'ee/analytics/devops_reports/devops_adoption/components/devops_adoption_table_cell_flag.vue';
 import { namespaceWithSnapotsData } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -36,6 +37,8 @@ describe('DevopsAdoptionOverviewChart', () => {
 
   const findChartSkeletonLoader = () => wrapper.findComponent(ChartSkeletonLoader);
   const findGlStackedColumnChart = () => wrapper.findComponent(GlStackedColumnChart);
+  const findDevopsAdoptionTableCellFlags = () =>
+    wrapper.findAllComponents(DevopsAdoptionTableCellFlag);
 
   describe('default state', () => {
     beforeEach(async () => {
@@ -100,6 +103,12 @@ describe('DevopsAdoptionOverviewChart', () => {
 
     it('displays the tooltip information correctly', () => {
       expect(wrapper.element).toMatchSnapshot();
+
+      expect(findDevopsAdoptionTableCellFlags().exists()).toBe(true);
+      expect(findDevopsAdoptionTableCellFlags().at(0).props()).toMatchObject({
+        enabled: expect.any(Boolean),
+        name: expect.any(String),
+      });
     });
   });
 });
