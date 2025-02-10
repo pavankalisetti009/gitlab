@@ -234,7 +234,7 @@ module Search
           project_ids: limit_project_ids,
           max_per_page: DEFAULT_PER_PAGE * 2,
           search_mode: search_mode,
-          multi_match: multi_match.present?
+          multi_match: multi_match
         )
 
         search_results, total_count, file_count = zoekt_cache.fetch do |page_limit|

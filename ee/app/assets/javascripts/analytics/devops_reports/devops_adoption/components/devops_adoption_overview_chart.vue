@@ -160,7 +160,11 @@ export default {
           <div v-if="hasFeaturesAvailable(section)" class="gl-flex gl-flex-col gl-gap-2">
             <div v-for="feature in section.featureMeta" :key="feature.title">
               <div v-if="feature.tracked" class="gl-flex">
-                <devops-adoption-table-cell-flag :enabled="feature.adopted" class="gl-mr-3" />
+                <devops-adoption-table-cell-flag
+                  :enabled="feature.adopted"
+                  :name="feature.title"
+                  class="gl-mr-3"
+                />
                 {{ feature.title }}
               </div>
             </div>

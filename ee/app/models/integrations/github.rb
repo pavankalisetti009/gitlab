@@ -57,7 +57,7 @@ module Integrations
         _('What is repository mirroring?'),
         Rails.application.routes.url_helpers.help_page_url('user/project/repository/mirror/_index.md')
       )
-      safe_format(s_("GithubIntegration|This requires mirroring your GitHub repository to this project. %{docs_link}" % { docs_link: docs_link }))
+      safe_format(s_("GithubIntegration|This requires mirroring your GitHub repository to this project. %{docs_link}"), docs_link: docs_link)
     end
 
     def self.to_param

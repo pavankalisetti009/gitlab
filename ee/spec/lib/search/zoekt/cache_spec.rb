@@ -25,6 +25,8 @@ RSpec.describe Search::Zoekt::Cache, :clean_gitlab_redis_cache, feature_category
   end
 
   describe '#cache_key' do
+    let(:multi_match_1) { instance_double(::Search::Zoekt::MultiMatch, max_chunks_size: 1) }
+    let(:multi_match_2) { instance_double(::Search::Zoekt::MultiMatch, max_chunks_size: 5) }
     let(:uniq_examples) do
       [
         { current_user: build(:user, id: 1), query: 'foo', project_ids: [3, 2], page: 1 },
@@ -33,7 +35,9 @@ RSpec.describe Search::Zoekt::Cache, :clean_gitlab_redis_cache, feature_category
         { current_user: build(:user, id: 1), query: 'foo', project_ids: [2], page: 1 },
         { current_user: build(:user, id: 1), query: 'foo', project_ids: [3, 2], page: 2 },
         { current_user: build(:user, id: 2), query: 'foo', project_ids: [3, 2], page: 1 },
-        { current_user: build(:user, id: nil), query: 'foo', project_ids: [3, 2], page: 1 }
+        { current_user: build(:user, id: nil), query: 'foo', project_ids: [3, 2], page: 1 },
+        { current_user: build(:user, id: 1), query: 'foo', project_ids: [3, 2], page: 1, multi_match: multi_match_1 },
+        { current_user: build(:user, id: 1), query: 'foo', project_ids: [3, 2], page: 1, multi_match: multi_match_2 }
       ]
     end
 
