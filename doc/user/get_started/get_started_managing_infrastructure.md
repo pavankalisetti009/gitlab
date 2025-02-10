@@ -33,7 +33,7 @@ The various GitLab integrations help you:
 
 For more information, see:
 
-- [Infrastructure as Code](../infrastructure/iac/index.md)
+- [Infrastructure as Code](../infrastructure/iac/_index.md)
 
 ## Step 2: Interact with Kubernetes clusters
 

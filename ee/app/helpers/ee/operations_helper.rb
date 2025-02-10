@@ -9,8 +9,8 @@ module EE
         'add-path' => add_operations_project_path(format: :json),
         'list-path' => operations_path(format: :json),
         'empty-dashboard-svg-path' => image_path('illustrations/empty-state/empty-radar-md.svg'),
-        'empty-dashboard-help-path' => help_page_path('user/operations_dashboard/index.md'),
-        'operations-dashboard-help-path' => help_page_path('user/operations_dashboard/index.md')
+        'empty-dashboard-help-path' => help_page_path('user/operations_dashboard/_index.md'),
+        'operations-dashboard-help-path' => help_page_path('user/operations_dashboard/_index.md')
       }
     end
 

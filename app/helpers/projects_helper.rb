@@ -475,7 +475,7 @@ module ProjectsHelper
       environmentsHelpPath: help_page_path('ci/environments/_index.md'),
       featureFlagsHelpPath: help_page_path('operations/feature_flags.md'),
       releasesHelpPath: help_page_path('user/project/releases/index.md'),
-      infrastructureHelpPath: help_page_path('user/infrastructure/index.md')
+      infrastructureHelpPath: help_page_path('user/infrastructure/_index.md')
     }
   end
 
