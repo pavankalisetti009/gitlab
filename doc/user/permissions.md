@@ -360,8 +360,8 @@ Project permissions for [repository](project/repository/index.md) features inclu
 | View commit status                                                    |       |         |    ✓     |     ✓     |     ✓      |   ✓   |       |
 | Create commit status                                                  |       |         |          |     ✓     |     ✓      |   ✓   | If the [branch is protected](project/repository/branches/protected.md), this depends on the access given to Developers and Maintainers. |
 | Update commit status                                                  |       |         |          |     ✓     |     ✓      |   ✓   | If the [branch is protected](project/repository/branches/protected.md), this depends on the access given to Developers and Maintainers. |
-| Create [Git tags](project/repository/tags/index.md)                   |       |         |          |     ✓     |     ✓      |   ✓   |       |
-| Delete [Git tags](project/repository/tags/index.md)                   |       |         |          |     ✓     |     ✓      |   ✓   |       |
+| Create [Git tags](project/repository/tags/_index.md)                   |       |         |          |     ✓     |     ✓      |   ✓   |       |
+| Delete [Git tags](project/repository/tags/_index.md)                   |       |         |          |     ✓     |     ✓      |   ✓   |       |
 | Create new [branches](project/repository/branches/_index.md)           |       |         |          |     ✓     |     ✓      |   ✓   |       |
 | Delete non-protected branches                                         |       |         |          |     ✓     |     ✓      |   ✓   |       |
 | Force push to non-protected branches                                  |       |         |          |     ✓     |     ✓      |   ✓   |       |
