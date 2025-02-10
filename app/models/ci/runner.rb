@@ -633,7 +633,7 @@ module Ci
     end
 
     def any_project
-      errors.add(:runner, 'needs to be assigned to at least one project') unless runner_projects.any?
+      errors.add(:runner, 'needs to be assigned to at least one project') if runner_projects.empty?
     end
 
     def exactly_one_group

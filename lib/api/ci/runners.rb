@@ -356,11 +356,10 @@ module API
         params do
           requires :runner_id, type: Integer, desc: 'The ID of a runner'
         end
-        # rubocop: disable CodeReuse/ActiveRecord
         delete ':id/runners/:runner_id' do
           authorize! :admin_project_runners, user_project
 
-          runner_project = user_project.runner_projects.find_by(runner_id: params[:runner_id])
+          runner_project = user_project.runner_projects.find_by_runner_id(params[:runner_id])
           not_found!('Runner') unless runner_project
 
           runner = runner_project.runner
@@ -370,7 +369,6 @@ module API
 
           destroy_conditionally!(runner_project)
         end
-        # rubocop: enable CodeReuse/ActiveRecord
       end
 
       params do
