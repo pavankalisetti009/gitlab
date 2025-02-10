@@ -3152,4 +3152,119 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
       expect(merge_request.ai_reviewable_diff_files).to match_array([diff_file_a, diff_file_c])
     end
   end
+
+  describe '#squash_option' do
+    let_it_be(:target_branch) { 'target_branch' }
+
+    let(:merge_request) { build(:merge_request, project: project, target_branch: target_branch) }
+    let(:project_setting) { project.project_setting }
+
+    subject { merge_request.squash_option }
+
+    context 'when branch_rule_squash_settings is disabled' do
+      let_it_be(:protected_branch) { create(:protected_branch, name: target_branch, project_id: project.id) }
+      let_it_be(:squash_option) { create(:branch_rule_squash_option, protected_branch: protected_branch, project: project) }
+
+      before do
+        stub_feature_flags(branch_rule_squash_settings: false)
+      end
+
+      it { is_expected.to eq(project_setting) }
+    end
+
+    context 'when the target branch matches a wildcard protected branch' do
+      let_it_be_with_refind(:protected_branch) { create(:protected_branch, name: '*', project_id: project.id) }
+
+      it { is_expected.to eq(project_setting) }
+    end
+
+    context 'when the target branch exact matches a protected branch' do
+      let_it_be_with_refind(:protected_branch) { create(:protected_branch, name: target_branch, project_id: project.id) }
+
+      context 'and the protected branch has a defined squash_option' do
+        let_it_be(:squash_option) { create(:branch_rule_squash_option, protected_branch: protected_branch, project: project) }
+
+        it { is_expected.to eq(squash_option) }
+      end
+
+      context 'and the protected branch does not have a squash_option' do
+        it { is_expected.to eq(project_setting) }
+      end
+    end
+
+    it { is_expected.to eq(project_setting) }
+  end
+
+  describe '#missing_required_squash?' do
+    using RSpec::Parameterized::TableSyntax
+
+    context 'when the target branch is not protected' do
+      where(:squash, :require_squash, :expected) do
+        false | true  | true
+        false | false | false
+        true  | true  | false
+        true  | false | false
+      end
+
+      with_them do
+        let(:merge_request) { build_stubbed(:merge_request, squash: squash, project: project) }
+
+        subject { merge_request.missing_required_squash? }
+
+        before do
+          allow(project.project_setting).to receive(:squash_always?).and_return(require_squash)
+        end
+
+        it { is_expected.to eq(expected) }
+      end
+    end
+
+    context 'when the target branch is protected' do
+      let(:protected_branch) { create(:protected_branch, name: merge_request.target_branch, project: project) }
+
+      where(:squash, :require_squash, :expected) do
+        false | true  | true
+        false | false | false
+        true  | true  | false
+        true  | false | false
+      end
+
+      with_them do
+        let(:merge_request) { build_stubbed(:merge_request, squash: squash, project: project) }
+
+        subject { merge_request.missing_required_squash? }
+
+        before do
+          allow(project.project_setting).to receive(:squash_always?).and_return(require_squash)
+        end
+
+        it { is_expected.to eq(expected) }
+      end
+
+      context 'when the target branch is protected and specifies a squash option' do
+        let(:squash_option) { create(:branch_rule_squash_option, protected_branch: protected_branch, project: project) }
+
+        where(:squash, :project_require_squash, :require_squash, :expected) do
+          false | false | true  | true
+          false | true  | false | false
+          true  | false | true  | false
+          true  | true  | false | false
+        end
+
+        with_them do
+          let(:merge_request) { build_stubbed(:merge_request, squash: squash, project: project) }
+
+          subject { merge_request.missing_required_squash? }
+
+          before do
+            allow(project.project_setting).to receive(:squash_always?).and_return(project_require_squash)
+            allow(merge_request).to receive(:squash_option).and_return(squash_option)
+            allow(squash_option).to receive(:squash_always?).and_return(require_squash)
+          end
+
+          it { is_expected.to eq(expected) }
+        end
+      end
+    end
+  end
 end
