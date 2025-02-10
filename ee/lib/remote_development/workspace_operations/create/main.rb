@@ -16,9 +16,11 @@ module RemoteDevelopment
           result =
             initial_result
               .and_then(DevfileFetcher.method(:fetch))
-              .and_then(PreFlattenDevfileValidator.method(:validate))
+              # NOTE: DevfileValidator is called before DevfileFlattener to ensure a sanitized devfile is flattened.
+              .and_then(DevfileValidator.method(:validate))
               .and_then(DevfileFlattener.method(:flatten))
-              .and_then(PostFlattenDevfileValidator.method(:validate))
+              # NOTE: DevfileValidator is called after DevfileFlattener again to validate the flattened devfile.
+              .and_then(DevfileValidator.method(:validate))
               .map(VolumeDefiner.method(:define))
               .map(ToolsInjectorComponentInserter.method(:insert))
               .map(MainComponentUpdater.method(:update))
@@ -34,11 +36,9 @@ module RemoteDevelopment
             generate_error_response_from_message(message: message, reason: :bad_request)
           in { err: WorkspaceCreateDevfileLoadFailed => message }
             generate_error_response_from_message(message: message, reason: :bad_request)
-          in { err: WorkspaceCreatePreFlattenDevfileValidationFailed => message }
+          in { err: WorkspaceCreateDevfileValidationFailed => message }
             generate_error_response_from_message(message: message, reason: :bad_request)
           in { err: WorkspaceCreateDevfileFlattenFailed => message }
-            generate_error_response_from_message(message: message, reason: :bad_request)
-          in { err: WorkspaceCreatePostFlattenDevfileValidationFailed => message }
             generate_error_response_from_message(message: message, reason: :bad_request)
           in { err: WorkspaceCreateFailed => message }
             generate_error_response_from_message(message: message, reason: :bad_request)

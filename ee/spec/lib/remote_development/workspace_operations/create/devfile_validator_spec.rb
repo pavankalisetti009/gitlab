@@ -2,18 +2,19 @@
 
 require 'fast_spec_helper'
 
-RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::PostFlattenDevfileValidator, feature_category: :workspaces do
+RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::DevfileValidator, feature_category: :workspaces do
   include ResultMatchers
 
   include_context 'with remote development shared fixtures'
 
-  let(:flattened_devfile_name) { 'example.flattened-with-entries-devfile.yaml' }
+  let(:devfile_name) { 'example.flattened-with-entries-devfile.yaml' }
   let(:main_component_indicator_attribute) do
     ::RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::MAIN_COMPONENT_INDICATOR_ATTRIBUTE
   end
 
-  let(:processed_devfile) { yaml_safe_load_symbolized(read_devfile_yaml(flattened_devfile_name)) }
-  let(:context) { { processed_devfile: processed_devfile } }
+  let(:devfile) { yaml_safe_load_symbolized(read_devfile_yaml(devfile_name)) }
+  let(:processed_devfile) { yaml_safe_load_symbolized(read_devfile_yaml(devfile_name)) }
+  let(:context) { { devfile: processed_devfile, processed_devfile: processed_devfile } }
 
   subject(:result) do
     described_class.validate(context)
@@ -21,23 +22,26 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::PostFlattenDevf
 
   context 'for devfiles containing no violations' do
     it 'returns an ok Result containing the original context' do
-      expect(result).to eq(Gitlab::Fp::Result.ok({ processed_devfile: processed_devfile }))
+      expect(result).to eq(Gitlab::Fp::Result.ok({ devfile: devfile, processed_devfile: processed_devfile }))
     end
 
     context 'when devfile has multiple array entries' do
-      let(:flattened_devfile_name) { 'example.multi-entry-devfile.yaml' }
+      let(:devfile_name) { 'example.multi-entry-devfile.yaml' }
 
       it 'returns an ok Result containing the original context' do
-        expect(result).to eq(Gitlab::Fp::Result.ok({ processed_devfile: processed_devfile }))
+        expect(result).to eq(Gitlab::Fp::Result.ok({ devfile: devfile, processed_devfile: processed_devfile }))
       end
     end
   end
 
-  context 'for devfiles containing post flatten violations' do
+  context 'for devfiles containing violations' do
     using RSpec::Parameterized::TableSyntax
 
     # rubocop:disable Layout/LineLength -- we want single lines for RSpec::Parameterized::TableSyntax
-    where(:flattened_devfile_name, :error_str) do
+    where(:devfile_name, :error_str) do
+      'example.invalid-unsupported-parent-inheritance-devfile.yaml' | "Inheriting from 'parent' is not yet supported"
+      'example.invalid-unsupported-schema-version-devfile.yaml' | "'schemaVersion' '2.0.0' is not supported, it must be '2.2.0'"
+      'example.invalid-invalid-schema-version-devfile.yaml' | "Invalid 'schemaVersion' 'example'"
       'example.invalid-restricted-prefix-command-apply-component-name-devfile.yaml' | "Component name 'gl-example' for command id 'example' must not start with 'gl-'"
       'example.invalid-restricted-prefix-command-exec-component-name-devfile.yaml' | "Component name 'gl-example' for command id 'example' must not start with 'gl-'"
       'example.invalid-restricted-prefix-command-name-devfile.yaml' | "Command id 'gl-example' must not start with 'gl-'"
@@ -69,7 +73,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::PostFlattenDevf
     with_them do
       it 'returns an err Result containing error details' do
         is_expected.to be_err_result do |message|
-          expect(message).to be_a(RemoteDevelopment::Messages::WorkspaceCreatePostFlattenDevfileValidationFailed)
+          expect(message).to be_a(RemoteDevelopment::Messages::WorkspaceCreateDevfileValidationFailed)
           message.content => { details: String => error_details }
           expect(error_details).to eq(error_str)
         end
@@ -77,7 +81,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::PostFlattenDevf
     end
   end
 
-  context 'for multi-array-entry devfiles containing post flatten violations' do
+  context 'for multi-array-entry devfiles containing violations' do
     # NOTE: This context guards against the incorrect usage of
     #       `return Gitlab::Fp::Result.ok(context) unless condition`
     #       guard clauses within iterator blocks in the validator logic.
@@ -88,7 +92,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::PostFlattenDevf
     using RSpec::Parameterized::TableSyntax
 
     # rubocop:disable Layout/LineLength -- we want single lines for RSpec::Parameterized::TableSyntax
-    where(:flattened_devfile_name, :error_str) do
+    where(:devfile_name, :error_str) do
       'example.invalid-multi-component-devfile.yaml' | "Component name 'gl-example-invalid-second-component' must not start with 'gl-'"
       'example.invalid-multi-endpoint-devfile.yaml' | "Endpoint name 'gl-example-invalid-second-endpoint' of component 'example-invalid-second-component' must not start with 'gl-'"
       'example.invalid-multi-command-devfile.yaml' | "Component name 'gl-example-invalid-component' for command id 'example-invalid-second-component-command' must not start with 'gl-'"
@@ -100,7 +104,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::PostFlattenDevf
     with_them do
       it 'returns an err Result containing error details' do
         is_expected.to be_err_result do |message|
-          expect(message).to be_a(RemoteDevelopment::Messages::WorkspaceCreatePostFlattenDevfileValidationFailed)
+          expect(message).to be_a(RemoteDevelopment::Messages::WorkspaceCreateDevfileValidationFailed)
           message.content => { details: String => error_details }
           expect(error_details).to eq(error_str)
         end

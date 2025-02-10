@@ -19,7 +19,7 @@ module RemoteDevelopment
           }
 
           # NOTE: We will always have exactly one main_component found, because we have already
-          #       validated this in post_flatten_devfile_validator.rb
+          #       validated this in devfile_validator.rb
           main_component =
             processed_devfile
               .fetch(:components)

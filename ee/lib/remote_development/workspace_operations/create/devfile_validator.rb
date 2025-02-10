@@ -3,7 +3,8 @@
 module RemoteDevelopment
   module WorkspaceOperations
     module Create
-      class PostFlattenDevfileValidator
+      class DevfileValidator
+        include RemoteDevelopmentConstants
         include CreateConstants
         include Messages
 
@@ -12,7 +13,7 @@ module RemoteDevelopment
         # add additional guard clauses.
         # Devfile standard only allows name/id to be of the format /'^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'/
         # Hence, we do no need to restrict the prefix `gl_`.
-        # However, we do that for the 'variables' in the processed_devfile since they do not have any such restriction
+        # However, we do that for the 'variables' in the devfile since they do not have any such restriction
         RESTRICTED_PREFIX = "gl-"
 
         # Currently, we only support 'container' and 'volume' type components.
@@ -29,6 +30,8 @@ module RemoteDevelopment
         # @return [Gitlab::Fp::Result]
         def self.validate(context)
           Gitlab::Fp::Result.ok(context)
+                .and_then(method(:validate_schema_version))
+                .and_then(method(:validate_parent))
                 .and_then(method(:validate_projects))
                 .and_then(method(:validate_root_attributes))
                 .and_then(method(:validate_components))
@@ -40,12 +43,58 @@ module RemoteDevelopment
         end
 
         # @param [Hash] context
+        # @return [Hash] the `processed_devfile` out of the `context` if it exists, otherwise the `devfile`
+        def self.devfile_to_validate(context)
+          # NOTE: `processed_devfile` is not available in the context until the devfile has been flattened.
+          #       If the devfile is flattened, use `processed_devfile`. Else, use `devfile`.
+          context[:processed_devfile] || context[:devfile]
+        end
+
+        # @param [Hash] context
+        # @return [Gitlab::Fp::Result]
+        def self.validate_schema_version(context)
+          devfile = devfile_to_validate(context)
+
+          devfile_schema_version_string = devfile.fetch(:schemaVersion)
+          begin
+            devfile_schema_version = Gem::Version.new(devfile_schema_version_string)
+          rescue ArgumentError
+            return err(
+              format(_("Invalid 'schemaVersion' '%{schema_version}'"), schema_version: devfile_schema_version_string)
+            )
+          end
+
+          minimum_schema_version = Gem::Version.new(REQUIRED_DEVFILE_SCHEMA_VERSION)
+          unless devfile_schema_version == minimum_schema_version
+            return err(
+              format(
+                _("'schemaVersion' '%{given_version}' is not supported, it must be '%{required_version}'"),
+                given_version: devfile_schema_version_string,
+                required_version: REQUIRED_DEVFILE_SCHEMA_VERSION
+              )
+            )
+          end
+
+          Gitlab::Fp::Result.ok(context)
+        end
+
+        # @param [Hash] context
+        # @return [Gitlab::Fp::Result]
+        def self.validate_parent(context)
+          devfile = devfile_to_validate(context)
+
+          return err(format(_("Inheriting from 'parent' is not yet supported"))) if devfile[:parent]
+
+          Gitlab::Fp::Result.ok(context)
+        end
+
+        # @param [Hash] context
         # @return [Gitlab::Fp::Result]
         def self.validate_projects(context)
-          context => { processed_devfile: Hash => processed_devfile }
+          devfile = devfile_to_validate(context)
 
-          return err(_("'starterProjects' is not yet supported")) if processed_devfile[:starterProjects]
-          return err(_("'projects' is not yet supported")) if processed_devfile[:projects]
+          return err(_("'starterProjects' is not yet supported")) if devfile[:starterProjects]
+          return err(_("'projects' is not yet supported")) if devfile[:projects]
 
           Gitlab::Fp::Result.ok(context)
         end
@@ -53,9 +102,9 @@ module RemoteDevelopment
         # @param [Hash] context
         # @return [Gitlab::Fp::Result]
         def self.validate_root_attributes(context)
-          context => { processed_devfile: Hash => processed_devfile }
+          devfile = devfile_to_validate(context)
 
-          return err(_("Attribute 'pod-overrides' is not yet supported")) if processed_devfile.dig(:attributes,
+          return err(_("Attribute 'pod-overrides' is not yet supported")) if devfile.dig(:attributes,
             :"pod-overrides")
 
           Gitlab::Fp::Result.ok(context)
@@ -64,9 +113,9 @@ module RemoteDevelopment
         # @param [Hash] context
         # @return [Gitlab::Fp::Result]
         def self.validate_components(context)
-          context => { processed_devfile: Hash => processed_devfile }
+          devfile = devfile_to_validate(context)
 
-          components = processed_devfile[:components]
+          components = devfile[:components]
 
           return err(_("No components present in devfile")) if components.blank?
 
@@ -123,9 +172,9 @@ module RemoteDevelopment
         # @param [Hash] context
         # @return [Gitlab::Fp::Result]
         def self.validate_containers(context)
-          context => { processed_devfile: Hash => processed_devfile }
+          devfile = devfile_to_validate(context)
 
-          components = processed_devfile.fetch(:components)
+          components = devfile.fetch(:components)
 
           components.each do |component|
             container = component[:container]
@@ -147,9 +196,9 @@ module RemoteDevelopment
         # @param [Hash] context
         # @return [Gitlab::Fp::Result]
         def self.validate_endpoints(context)
-          context => { processed_devfile: Hash => processed_devfile }
+          devfile = devfile_to_validate(context)
 
-          components = processed_devfile.fetch(:components)
+          components = devfile.fetch(:components)
 
           err_result = nil
 
@@ -181,10 +230,10 @@ module RemoteDevelopment
         # @param [Hash] context
         # @return [Gitlab::Fp::Result]
         def self.validate_commands(context)
-          context => { processed_devfile: Hash => processed_devfile }
+          devfile = devfile_to_validate(context)
 
           # Ensure no command name starts with restricted_prefix
-          processed_devfile.fetch(:commands).each do |command|
+          devfile.fetch(:commands, []).each do |command|
             command_id = command.fetch(:id)
             if command_id.downcase.start_with?(RESTRICTED_PREFIX)
               return err(
@@ -221,9 +270,9 @@ module RemoteDevelopment
         # @param [Hash] context
         # @return [Gitlab::Fp::Result]
         def self.validate_events(context)
-          context => { processed_devfile: Hash => processed_devfile }
+          devfile = devfile_to_validate(context)
 
-          processed_devfile.fetch(:events).each do |event_type, event_type_events|
+          devfile.fetch(:events, {}).each do |event_type, event_type_events|
             # Ensure no event type other than "preStart" are allowed
 
             unless SUPPORTED_EVENTS.include?(event_type)
@@ -251,12 +300,12 @@ module RemoteDevelopment
         # @param [Hash] context
         # @return [Gitlab::Fp::Result]
         def self.validate_variables(context)
-          context => { processed_devfile: Hash => processed_devfile }
+          devfile = devfile_to_validate(context)
 
           restricted_prefix_underscore = RESTRICTED_PREFIX.tr("-", "_")
 
           # Ensure no variable name starts with restricted_prefix
-          processed_devfile.fetch(:variables).each_key do |variable|
+          devfile.fetch(:variables, {}).each_key do |variable|
             [RESTRICTED_PREFIX, restricted_prefix_underscore].each do |prefix|
               next unless variable.downcase.start_with?(prefix)
 
@@ -276,9 +325,10 @@ module RemoteDevelopment
         # @param [String] details
         # @return [Gitlab::Fp::Result]
         def self.err(details)
-          Gitlab::Fp::Result.err(WorkspaceCreatePostFlattenDevfileValidationFailed.new({ details: details }))
+          Gitlab::Fp::Result.err(WorkspaceCreateDevfileValidationFailed.new({ details: details }))
         end
-        private_class_method :validate_projects, :validate_components, :validate_containers,
+        private_class_method :devfile_to_validate, :validate_schema_version, :validate_parent,
+          :validate_projects, :validate_components, :validate_containers,
           :validate_endpoints, :validate_commands, :validate_events,
           :validate_variables, :err, :validate_root_attributes
       end
