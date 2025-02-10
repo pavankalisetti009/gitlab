@@ -11,17 +11,17 @@ RSpec.describe WebIde::Settings::ExtensionsGalleryMetadataGenerator, feature_cat
   let(:group) { group_class.new }
   let(:input_context) do
     {
-      requested_setting_names: [:vscode_extensions_gallery_metadata],
+      requested_setting_names: [:vscode_extension_marketplace_metadata],
       options: {
         user: user,
-        vscode_extensions_marketplace_feature_flag_enabled: true
+        vscode_extension_marketplace_feature_flag_enabled: true
       },
       settings: {}
     }
   end
 
   subject(:actual_settings) do
-    described_class.generate(input_context).dig(:settings, :vscode_extensions_gallery_metadata)
+    described_class.generate(input_context).dig(:settings, :vscode_extension_marketplace_metadata)
   end
 
   where(

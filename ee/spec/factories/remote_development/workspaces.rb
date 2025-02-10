@@ -84,8 +84,8 @@ FactoryBot.define do
             user_name: workspace.user.name,
             user_email: workspace.user.email,
             workspace_id: workspace.id,
-            vscode_extensions_gallery:
-              WebIde::Settings::DefaultSettings.default_settings.fetch(:vscode_extensions_gallery).first,
+            vscode_extension_marketplace:
+              WebIde::Settings::DefaultSettings.default_settings.fetch(:vscode_extension_marketplace).first,
             variables: []
           )
 

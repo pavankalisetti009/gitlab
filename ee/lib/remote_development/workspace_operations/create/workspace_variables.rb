@@ -13,14 +13,14 @@ module RemoteDevelopment
         # @param [String] user_name
         # @param [String] user_email
         # @param [Integer] workspace_id
-        # @param [Hash] vscode_extensions_gallery
+        # @param [Hash] vscode_extension_marketplace
         # @param [Array<Hash>] variables
         # @return [Array<Hash>]
         def self.variables(
           name:, dns_zone:, personal_access_token_value:, user_name:, user_email:, workspace_id:,
-          vscode_extensions_gallery:, variables:
+          vscode_extension_marketplace:, variables:
         )
-          vscode_extensions_gallery => {
+          vscode_extension_marketplace => {
             service_url: String => vscode_extensions_gallery_service_url,
             item_url: String => vscode_extensions_gallery_item_url,
             resource_url_template: String => vscode_extensions_gallery_resource_url_template,

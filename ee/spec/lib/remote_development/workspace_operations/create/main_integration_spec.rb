@@ -56,7 +56,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
     "registry.gitlab.com/gitlab-org/workspaces/gitlab-workspaces-tools:5.0.0"
   end
 
-  let(:vscode_extensions_gallery) do
+  let(:vscode_extension_marketplace) do
     {
       service_url: "https://open-vsx.org/vscode/gallery",
       item_url: "https://open-vsx.org/vscode/item",
@@ -72,15 +72,15 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
     }
   end
 
-  let(:vscode_extensions_gallery_metadata_enabled) { false }
+  let(:vscode_extension_marketplace_metadata_enabled) { false }
 
   let(:context) do
     {
       user: user,
       params: params,
       settings: settings,
-      vscode_extensions_gallery: vscode_extensions_gallery,
-      vscode_extensions_gallery_metadata: { enabled: vscode_extensions_gallery_metadata_enabled }
+      vscode_extension_marketplace: vscode_extension_marketplace,
+      vscode_extension_marketplace_metadata: { enabled: vscode_extension_marketplace_metadata_enabled }
     }
   end
 
@@ -220,9 +220,9 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
     end
   end
 
-  context "when vscode_extensions_gallery_metadata Web IDE setting is disabled" do
+  context "when vscode_extension_marketplace_metadata Web IDE setting is disabled" do
     let(:tools_injector_image_from_settings) { 'my/awesome/image:42' }
-    let(:vscode_extensions_gallery_metadata_enabled) { false }
+    let(:vscode_extension_marketplace_metadata_enabled) { false }
 
     it 'uses image override' do
       tools_injector_component_name =

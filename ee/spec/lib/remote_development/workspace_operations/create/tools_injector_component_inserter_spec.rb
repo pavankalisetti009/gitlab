@@ -18,7 +18,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::ToolsInjectorComp
     }
   end
 
-  let(:vscode_extensions_gallery_metadata_enabled) { false }
+  let(:vscode_extension_marketplace_metadata_enabled) { false }
 
   let(:context) do
     {
@@ -26,7 +26,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::ToolsInjectorComp
       tools_dir: "#{RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::WORKSPACE_DATA_VOLUME_PATH}/" \
         "#{RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::TOOLS_DIR_NAME}",
       settings: settings,
-      vscode_extensions_gallery_metadata: { enabled: vscode_extensions_gallery_metadata_enabled }
+      vscode_extension_marketplace_metadata: { enabled: vscode_extension_marketplace_metadata_enabled }
     }
   end
 

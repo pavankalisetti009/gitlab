@@ -129,20 +129,20 @@ module Mutations
           )
 
           WebIde::Settings.get(
-            [:vscode_extensions_gallery_metadata, :vscode_extensions_gallery],
+            [:vscode_extension_marketplace_metadata, :vscode_extension_marketplace],
             user: current_user,
-            vscode_extensions_marketplace_feature_flag_enabled: true
+            vscode_extension_marketplace_feature_flag_enabled: true
           ) =>
             {
-              vscode_extensions_gallery_metadata: Hash => vscode_extensions_gallery_metadata,
-              vscode_extensions_gallery: Hash => vscode_extensions_gallery
+              vscode_extension_marketplace_metadata: Hash => vscode_extension_marketplace_metadata,
+              vscode_extension_marketplace: Hash => vscode_extension_marketplace
             }
 
           domain_main_class_args = {
             user: current_user,
             params: params,
-            vscode_extensions_gallery_metadata: vscode_extensions_gallery_metadata,
-            vscode_extensions_gallery: vscode_extensions_gallery
+            vscode_extension_marketplace_metadata: vscode_extension_marketplace_metadata,
+            vscode_extension_marketplace: vscode_extension_marketplace
           }
 
           response = ::RemoteDevelopment::CommonService.execute(
