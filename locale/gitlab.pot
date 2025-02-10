@@ -24247,6 +24247,9 @@ msgstr ""
 msgid "Failed to publish issue on status page."
 msgstr ""
 
+msgid "Failed to rebase. Please try again."
+msgstr ""
+
 msgid "Failed to regenerate unique domain"
 msgstr ""
 
@@ -47025,6 +47028,9 @@ msgstr ""
 msgid "Reauthenticating with SAML provider."
 msgstr ""
 
+msgid "Rebase"
+msgstr ""
+
 msgid "Rebase completed"
 msgstr ""
 
@@ -47032,6 +47038,9 @@ msgid "Rebase source branch"
 msgstr ""
 
 msgid "Rebase source branch on the target branch."
+msgstr ""
+
+msgid "Rebase source branch?"
 msgstr ""
 
 msgid "Recaptcha verified"
@@ -58967,6 +58976,9 @@ msgstr ""
 msgid "This vulnerability was automatically resolved because its vulnerability type was disabled in this project or removed from GitLab's default ruleset. For details about SAST rule changes, see https://docs.gitlab.com/ee/user/application_security/sast/rules#important-rule-changes."
 msgstr ""
 
+msgid "This will rebase all commits from the source branch onto the target branch."
+msgstr ""
+
 msgid "This will remove the fork relationship between this project and %{fork_source}."
 msgstr ""
 
@@ -68859,6 +68871,9 @@ msgid "mrWidget|Revert this merge request in a new merge request"
 msgstr ""
 
 msgid "mrWidget|Revoke approval"
+msgstr ""
+
+msgid "mrWidget|Scheduled a rebase of branch %{branch}."
 msgstr ""
 
 msgid "mrWidget|Set by %{merge_author} to be added to the merge train when all merge checks pass"
