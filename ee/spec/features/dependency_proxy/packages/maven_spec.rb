@@ -49,7 +49,7 @@ RSpec.describe 'Dependency Proxy for maven packages', :js, :aggregate_failures, 
   shared_examples 'pulling and caching the remote file' do
     it 'pulls and caches the remote file' do
       expect { response }
-        .to change { project.packages.maven.count }.from(0).to(1)
+        .to change { ::Packages::Maven::Package.for_projects(project).count }.from(0).to(1)
         .and change { ::Packages::PackageFile.count }.from(0).to(1)
       expect(last_package.name).to eq('foo/bar')
       expect(last_package.version).to eq('1.2.3')
@@ -68,7 +68,7 @@ RSpec.describe 'Dependency Proxy for maven packages', :js, :aggregate_failures, 
       expect(Gitlab::Workhorse).not_to receive(:send_url)
       expect(Gitlab::Workhorse).not_to receive(:send_dependency)
       expect { response }
-        .to not_change { project.packages.maven.count }
+        .to not_change { ::Packages::Maven::Package.for_projects(project).count }
         .and not_change { ::Packages::PackageFile.count }
       expect(response.code).to eq(200)
       expect(response.body).to eq(remote_file_content)
@@ -82,7 +82,7 @@ RSpec.describe 'Dependency Proxy for maven packages', :js, :aggregate_failures, 
         expect(Gitlab::Workhorse).to receive(:send_url).and_call_original
         expect(Gitlab::Workhorse).not_to receive(:send_dependency).and_call_original
         expect { response }
-          .to not_change { project.packages.maven.count }
+          .to not_change { ::Packages::Maven::Package.for_projects(project).count }
           .and not_change { ::Packages::PackageFile.pending_destruction.count }
         expect(response.code).to eq(200)
         expect(response.body).to eq(remote_file_content)
@@ -114,7 +114,7 @@ RSpec.describe 'Dependency Proxy for maven packages', :js, :aggregate_failures, 
     context 'with no existing file' do
       it 'pulls the remote file without caching' do
         expect { response }
-          .to not_change { project.packages.maven.count }
+          .to not_change { ::Packages::Maven::Package.for_projects(project).count }
           .and not_change { ::Packages::PackageFile.count }
         expect(response.code).to eq(200)
         expect(response.body).to eq(remote_file_content)
@@ -142,7 +142,7 @@ RSpec.describe 'Dependency Proxy for maven packages', :js, :aggregate_failures, 
 
         it 'times out and return service unavailable' do
           expect { response }
-            .to not_change { project.packages.maven.count }
+            .to not_change { ::Packages::Maven::Package.for_projects(project).count }
             .and not_change { ::Packages::PackageFile.count }
           expect(response.code).to eq(504)
         end
@@ -158,7 +158,7 @@ RSpec.describe 'Dependency Proxy for maven packages', :js, :aggregate_failures, 
 
         it 'pulls the remote file without caching' do
           expect { response }
-            .to not_change { project.packages.maven.count }
+            .to not_change { ::Packages::Maven::Package.for_projects(project).count }
             .and not_change { ::Packages::PackageFile.count }
           expect(response.code).to eq(200)
           expect(response.body).to eq(remote_file_content)
@@ -237,7 +237,7 @@ RSpec.describe 'Dependency Proxy for maven packages', :js, :aggregate_failures, 
           expect(Gitlab::Workhorse).not_to receive(:send_url)
           expect(Gitlab::Workhorse).to receive(:send_dependency).and_call_original
           expect { response }
-            .to not_change { project.packages.maven.count }
+            .to not_change { ::Packages::Maven::Package.for_projects(project).count }
             .and change { ::Packages::PackageFile.pending_destruction.count }.from(0).to(1)
           expect(response.code).to eq(200)
           expect(response.body).to eq(remote_file_content)
