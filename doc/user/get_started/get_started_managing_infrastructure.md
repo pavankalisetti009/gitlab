@@ -60,4 +60,4 @@ to issues, merge requests, and other GitLab objects.
 
 For more information, see:
 
-- [How executable runbooks work in GitLab](../project/clusters/runbooks/index.md)
+- [How executable runbooks work in GitLab](../project/clusters/runbooks/_index.md)
