@@ -610,6 +610,10 @@ module EE
         prevent(*create_read_update_admin_destroy(:iteration))
       end
 
+      rule { repository_disabled }.policy do
+        prevent :read_code
+      end
+
       rule { dependency_scanning_enabled & can?(:download_code) }.enable :read_dependency
 
       rule { license_scanning_enabled & can?(:download_code) }.enable :read_licenses
