@@ -17,8 +17,8 @@ module GitlabSubscriptions
                 @add_on = find_or_create_subscription_add_on!(params[:add_on_name], @namespace) if params[:add_on_name]
               end
 
-              desc 'Create multiple add-on purchases for the namespace' do
-                detail 'Creates multiple subscription add-on records for the given namespace'
+              desc 'Create or update multiple add-on purchases for the namespace' do
+                detail 'Create or update multiple subscription add-on records for the given namespace'
                 success Entities::Internal::GitlabSubscriptions::AddOnPurchase
                 failure [
                   { code: 400, message: 'Bad request' },
@@ -35,7 +35,7 @@ module GitlabSubscriptions
                     values: { value: ->(v) { v >= 0 }, message: 'Must be a non-negative integer if provided' }
                   optional :purchase_xid, type: String,
                     desc: 'The purchase identifier  (example: the subscription name)'
-                  optional :trial, type: Boolean, default: false, desc: 'Whether the add-on is a trial'
+                  optional :trial, type: Boolean, desc: 'Whether the add-on is a trial'
                 end
               end
 
@@ -70,8 +70,8 @@ module GitlabSubscriptions
                 end
               end
 
-              desc 'Returns an add-on purchase for the namespace' do
-                detail 'Gets the add-on purchase record for the given namespace and add-on'
+              desc 'Return an add-on purchase for the namespace' do
+                detail 'Get the add-on purchase record for the given namespace and add-on'
                 success Entities::Internal::GitlabSubscriptions::AddOnPurchase
                 failure [
                   { code: 400, message: 'Bad request' },
