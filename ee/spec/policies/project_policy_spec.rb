@@ -2760,6 +2760,10 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       subject { described_class.new(current_user, project) }
 
+      before do
+        stub_licensed_features(custom_roles: true)
+      end
+
       def create_member_role(member, abilities = member_role_abilities)
         params = abilities.merge(namespace: project.group)
 
@@ -2821,6 +2825,20 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         let(:allowed_abilities) { [:read_code] }
 
         it_behaves_like 'custom roles abilities'
+
+        context 'when repository access level is set as disabled' do
+          before do
+            project.project_feature.update_column(:repository_access_level, ProjectFeature::DISABLED)
+
+            create_member_role(project_member_guest)
+          end
+
+          after do
+            project.project_feature.update_column(:repository_access_level, ProjectFeature::ENABLED)
+          end
+
+          it { expect_disallowed(:read_code) }
+        end
       end
 
       context 'for a member role with admin_runners true' do
