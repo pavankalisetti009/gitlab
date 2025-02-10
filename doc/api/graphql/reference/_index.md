@@ -30915,6 +30915,7 @@ Machine learning experiment in model experiments.
 | <a id="mlexperimentmodelid"></a>`modelId` | [`MlModelID`](#mlmodelid) | ID of the model. |
 | <a id="mlexperimentname"></a>`name` | [`String!`](#string) | Name of the experiment. |
 | <a id="mlexperimentpath"></a>`path` | [`String!`](#string) | Web URL of the experiment. |
+| <a id="mlexperimentupdatedat"></a>`updatedAt` | [`Time!`](#time) | Timestamp of when the experiment was updated. |
 
 ### `MlModel`
 

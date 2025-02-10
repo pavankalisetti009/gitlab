@@ -14,6 +14,7 @@ RSpec.describe GitlabSchema.types['MlExperiment'], feature_category: :mlops do
           id
           name
           createdAt
+          updatedAt
           path
           candidateCount
           creator {
@@ -38,7 +39,7 @@ RSpec.describe GitlabSchema.types['MlExperiment'], feature_category: :mlops do
   specify { expect(described_class.description).to eq('Machine learning experiment in model experiments') }
 
   it 'includes all the fields' do
-    expected_fields = %w[id name createdAt path candidateCount creator modelId candidates]
+    expected_fields = %w[id name createdAt updatedAt path candidateCount creator modelId candidates]
 
     expect(described_class).to include_graphql_fields(*expected_fields)
   end
@@ -50,6 +51,7 @@ RSpec.describe GitlabSchema.types['MlExperiment'], feature_category: :mlops do
         'id' => experiment_id,
         'name' => experiment.name,
         'createdAt' => experiment.created_at.iso8601(0),
+        'updatedAt' => experiment.updated_at.iso8601(0),
         'candidateCount' => experiment.candidates.count,
         'path' => "/#{project.path_with_namespace}/-/ml/experiments/#{experiment.iid}",
         'creator' => {
@@ -79,6 +81,7 @@ RSpec.describe GitlabSchema.types['MlExperiment'], feature_category: :mlops do
         'id' => experiment_id,
         'name' => experiment.name,
         'createdAt' => experiment.created_at.iso8601(0),
+        'updatedAt' => experiment.updated_at.iso8601(0),
         'candidateCount' => experiment.candidates.count,
         'path' => "/#{project.path_with_namespace}/-/ml/experiments/#{experiment.iid}",
         'creator' => {
@@ -103,6 +106,7 @@ RSpec.describe GitlabSchema.types['MlExperiment'], feature_category: :mlops do
         'id' => experiment_id,
         'name' => experiment.name,
         'createdAt' => experiment.created_at.iso8601(0),
+        'updatedAt' => experiment.updated_at.iso8601(0),
         'candidateCount' => experiment.candidates.count,
         'path' => "/#{project.path_with_namespace}/-/ml/experiments/#{experiment.iid}",
         'creator' => {
