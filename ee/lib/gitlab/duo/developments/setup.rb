@@ -238,7 +238,7 @@ module Gitlab
 
             Visit "#{Gitlab.config.gitlab.protocol}://#{Gitlab.config.gitlab.host}:#{Gitlab.config.gitlab.port}/#{@namespace.presence}" for testing GitLab Duo features.
 
-            For more development guidelines, see https://docs.gitlab.com/ee/development/ai_features/index.html.
+            For more development guidelines, see https://docs.gitlab.com/ee/development/ai_features/.
           MSG
 
           Group.find_by_full_path(@namespace)
