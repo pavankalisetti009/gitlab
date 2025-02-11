@@ -23,10 +23,6 @@ export default {
     FrameworksTable,
   },
   inject: {
-    featurePipelineMaintenanceModeEnabled: {
-      taype: Boolean,
-      default: false,
-    },
     migratePipelineToPolicyPath: {
       type: String,
       default: '#',
@@ -94,7 +90,7 @@ export default {
       return Boolean(this.$apollo.queries.frameworks.loading);
     },
     showMaintenanceModeAlert() {
-      return this.featurePipelineMaintenanceModeEnabled && !this.maintenanceModeDismissed;
+      return !this.maintenanceModeDismissed;
     },
   },
   methods: {
