@@ -11,7 +11,7 @@ DETAILS:
 
 > - [Renamed](https://gitlab.com/gitlab-org/gitlab/-/issues/457449) from **DAST API vulnerability checks** to **API security testing vulnerability checks** in GitLab 17.0.
 
-[API security testing](../index.md) provides vulnerability checks that are used to
+[API security testing](../_index.md) provides vulnerability checks that are used to
 scan for vulnerabilities in the API under test.
 
 ## Passive checks

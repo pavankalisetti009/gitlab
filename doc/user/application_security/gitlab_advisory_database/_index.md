@@ -7,7 +7,7 @@ title: GitLab Advisory Database
 
 The [GitLab Advisory Database](https://gitlab.com/gitlab-org/security-products/gemnasium-db) serves as a repository for security advisories related to software dependencies. It is updated on an hourly basis with the latest security advisories.
 
-The database is an essential component of both [Dependency Scanning](../dependency_scanning/index.md) and [Container Scanning](../container_scanning/index.md).
+The database is an essential component of both [Dependency Scanning](../dependency_scanning/_index.md) and [Container Scanning](../container_scanning/_index.md).
 
 A free and open-source version of the GitLab Advisory Database is also available as [GitLab Advisory Database (Open Source Edition)](https://gitlab.com/gitlab-org/advisories-community). However, there is a 30-day delay in updates.
 
@@ -15,9 +15,9 @@ A free and open-source version of the GitLab Advisory Database is also available
 
 In our advisories, we adopt standardized practices to effectively communicate vulnerabilities and their impact.
 
-- [CVE](../terminology/index.md#cve)
-- [CVSS](../terminology/index.md#cvss)
-- [CWE](../terminology/index.md#cwe)
+- [CVE](../terminology/_index.md#cve)
+- [CVSS](../terminology/_index.md#cvss)
+- [CWE](../terminology/_index.md#cwe)
 
 ## Explore the database
 
@@ -47,8 +47,8 @@ The open-source version is a time-delayed clone of the GitLab Advisory Database,
 
 ## Integrations
 
-- [Dependency Scanning](../dependency_scanning/index.md)
-- [Container Scanning](../container_scanning/index.md)
+- [Dependency Scanning](../dependency_scanning/_index.md)
+- [Container Scanning](../container_scanning/_index.md)
 - Third-party tools
 
 NOTE:

@@ -6,7 +6,7 @@ module Projects
     IMAGE_PATH_PLAN = "learn_gitlab/section_plan.svg"
     IMAGE_PATH_DEPLOY = "learn_gitlab/section_deploy.svg"
     IMAGE_PATH_WORKSPACE = "learn_gitlab/section_workspace.svg"
-    LICENSE_SCANNING_RUN_PATH = 'user/compliance/license_scanning_of_cyclonedx_files/index'
+    LICENSE_SCANNING_RUN_PATH = 'user/compliance/license_scanning_of_cyclonedx_files/_index'
     GITLAB_COM = 'gitlab.com'
     ONBOARDING_START_TRIAL = 'onboarding-start-trial'
     ONBOARDING_REQUIRE_MR_APPROVALS = 'onboarding-require-merge-approvals'

@@ -64,14 +64,14 @@ mirroring the packages inside your own offline network.
 ### Interacting with the vulnerabilities
 
 Once a vulnerability is found, you can interact with it. Read more on how to
-[address the vulnerabilities](../vulnerabilities/index.md).
+[address the vulnerabilities](../vulnerabilities/_index.md).
 
 In some cases the reported vulnerabilities provide metadata that can contain
 external links exposed in the UI. These links might not be accessible within an offline environment.
 
 ### Resolving vulnerabilities
 
-The [resolving vulnerabilities](../vulnerabilities/index.md#resolve-a-vulnerability) feature is available for offline Dependency Scanning and Container Scanning, but may not work
+The [resolving vulnerabilities](../vulnerabilities/_index.md#resolve-a-vulnerability) feature is available for offline Dependency Scanning and Container Scanning, but may not work
 depending on your instance's configuration. We can only suggest solutions, which are generally more
 current versions that have been patched, when we are able to access up-to-date registry services
 hosting the latest versions of that dependency or image.
@@ -90,13 +90,13 @@ hosted within your network.
 Each individual scanner may be slightly different than the steps described
 above. You can find more information at each of the pages below:
 
-- [Container scanning offline directions](../container_scanning/index.md#running-container-scanning-in-an-offline-environment)
-- [SAST offline directions](../sast/index.md#running-sast-in-an-offline-environment)
-- [Secret Detection offline directions](../secret_detection/pipeline/index.md#offline-configuration)
+- [Container scanning offline directions](../container_scanning/_index.md#running-container-scanning-in-an-offline-environment)
+- [SAST offline directions](../sast/_index.md#running-sast-in-an-offline-environment)
+- [Secret Detection offline directions](../secret_detection/pipeline/_index.md#offline-configuration)
 - [DAST offline directions](../dast/browser/configuration/offline_configuration.md)
 - [API Fuzzing offline directions](../api_fuzzing/configuration/offline_configuration.md)
 - [License Scanning offline directions](../../compliance/license_scanning_of_cyclonedx_files/_index.md#running-in-an-offline-environment)
-- [Dependency Scanning offline directions](../dependency_scanning/index.md#offline-environment)
+- [Dependency Scanning offline directions](../dependency_scanning/_index.md#offline-environment)
 
 ## Loading Docker images onto your offline host
 
@@ -137,7 +137,7 @@ a bastion, and used only for this specific project.
 
 WARNING:
 This template does not include updates for the container scanning analyzer. See
-[Container scanning offline directions](../container_scanning/index.md#running-container-scanning-in-an-offline-environment).
+[Container scanning offline directions](../container_scanning/_index.md#running-container-scanning-in-an-offline-environment).
 
 #### Scheduling the updates
 

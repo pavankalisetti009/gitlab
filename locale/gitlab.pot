@@ -59716,9 +59716,6 @@ msgstr ""
 msgid "Todos|Alert"
 msgstr ""
 
-msgid "Todos|All"
-msgstr ""
-
 msgid "Todos|Approval required"
 msgstr ""
 

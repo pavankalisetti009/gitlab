@@ -43250,10 +43250,10 @@ The state of the vulnerability.
 
 | Value | Description |
 | ----- | ----------- |
-| <a id="vulnerabilitystateconfirmed"></a>`CONFIRMED` | For details, see [vulnerability status values](https://docs.gitlab.com/ee/user/application_security/vulnerabilities/index.html#vulnerability-status-values). |
-| <a id="vulnerabilitystatedetected"></a>`DETECTED` | For details, see [vulnerability status values](https://docs.gitlab.com/ee/user/application_security/vulnerabilities/index.html#vulnerability-status-values). |
-| <a id="vulnerabilitystatedismissed"></a>`DISMISSED` | For details, see [vulnerability status values](https://docs.gitlab.com/ee/user/application_security/vulnerabilities/index.html#vulnerability-status-values). |
-| <a id="vulnerabilitystateresolved"></a>`RESOLVED` | For details, see [vulnerability status values](https://docs.gitlab.com/ee/user/application_security/vulnerabilities/index.html#vulnerability-status-values). |
+| <a id="vulnerabilitystateconfirmed"></a>`CONFIRMED` | For details, see [vulnerability status values](https://docs.gitlab.com/ee/user/application_security/vulnerabilities/#vulnerability-status-values). |
+| <a id="vulnerabilitystatedetected"></a>`DETECTED` | For details, see [vulnerability status values](https://docs.gitlab.com/ee/user/application_security/vulnerabilities/#vulnerability-status-values). |
+| <a id="vulnerabilitystatedismissed"></a>`DISMISSED` | For details, see [vulnerability status values](https://docs.gitlab.com/ee/user/application_security/vulnerabilities/#vulnerability-status-values). |
+| <a id="vulnerabilitystateresolved"></a>`RESOLVED` | For details, see [vulnerability status values](https://docs.gitlab.com/ee/user/application_security/vulnerabilities/#vulnerability-status-values). |
 
 ### `WeightWildcardId`
 

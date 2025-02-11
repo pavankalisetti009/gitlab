@@ -44,7 +44,7 @@ describe('MR Widget App', () => {
       apolloProvider: mockApollo,
       propsData: {
         mr: {
-          securityConfigurationPath: '/help/user/application_security/index.md',
+          securityConfigurationPath: '/help/user/application_security/_index.md',
           sourceProjectFullPath: 'namespace/project',
           pipeline: {
             path: '/path/to/pipeline',

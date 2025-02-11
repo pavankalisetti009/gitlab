@@ -560,7 +560,7 @@ module EE
       if ::Namespaces::Storage::Enforcement.enforce_limit?(root_ancestor)
         ::Namespaces::Storage::RootSize.new(root_ancestor)
       else
-        ::Namespaces::Storage::RootExcessSize.new(root_ancestor)
+        ::Namespaces::Storage::RepositoryLimit::Enforcement.new(root_ancestor)
       end
     end
 

@@ -84,7 +84,7 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
 
         context 'when usage_ratio < 0.75' do
           before do
-            allow_next_instance_of(Namespaces::Storage::RootExcessSize) do |root_storage|
+            allow_next_instance_of(Namespaces::Storage::RepositoryLimit::Enforcement) do |root_storage|
               allow(root_storage).to receive(:usage_ratio).and_return(0.5)
               allow(root_storage).to receive(:above_size_limit?).and_return(true)
             end
@@ -99,7 +99,7 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
 
         context 'when usage_ratio >= 0.75' do
           before do
-            allow_next_instance_of(Namespaces::Storage::RootExcessSize) do |root_storage|
+            allow_next_instance_of(Namespaces::Storage::RepositoryLimit::Enforcement) do |root_storage|
               allow(root_storage).to receive(:usage_ratio).and_return(0.75)
               allow(root_storage).to receive(:above_size_limit?).and_return(true)
             end

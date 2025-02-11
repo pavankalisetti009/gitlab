@@ -20,7 +20,7 @@ Secret push protection blocks secrets such as keys and API tokens from being pus
 content of each [file or commit](#coverage) is checked for secrets when pushed to GitLab. By
 default, the push is blocked if a secret is found.
 
-Use [pipeline secret detection](../index.md) together with secret push protection to further strengthen your security.
+Use [pipeline secret detection](../_index.md) together with secret push protection to further strengthen your security.
 
 <i class="fa fa-youtube-play youtube" aria-hidden="true"></i>
 For an overview, see the playlist [Get Started with Secret Push Protection](https://www.youtube.com/playlist?list=PL05JrBw4t0KoADm-g2vxfyR0m6QLphTv-).
@@ -191,7 +191,7 @@ secret push protection is skipped. Audit event details include:
 - Target branch. (Introduced in GitLab 17.4)
 - Commits that skipped secret push protection. (Introduced in GitLab 17.9)
 
-If [pipeline secret detection](../pipeline/index.md) is enabled, the content of all commits are
+If [pipeline secret detection](../pipeline/_index.md) is enabled, the content of all commits are
 scanned after they are pushed to the repository.
 
 To skip secret push protection for all commits in a push, either:

@@ -49,7 +49,7 @@ export default {
     },
   },
   containerScanningForRegistryHelpUrl: helpPagePath(
-    'user/application_security/continuous_vulnerability_scanning/index',
+    'user/application_security/continuous_vulnerability_scanning/_index',
   ),
 };
 </script>

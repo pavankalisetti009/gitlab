@@ -5,8 +5,9 @@ require 'spec_helper'
 RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_management do
   include RepoHelpers
 
-  subject(:execute) { service.execute(:push, **opts) }
+  subject(:execute) { service.execute(source, **opts) }
 
+  let(:source) { :push }
   let(:opts) { {} }
   let_it_be(:group) { create(:group) }
   let_it_be_with_refind(:project) { create(:project, :repository, :auto_devops_disabled, group: group) }
@@ -70,7 +71,8 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
     YAML
   end
 
-  let(:service) { described_class.new(project, user, { ref: 'master' }) }
+  let(:service) { described_class.new(project, user, params) }
+  let(:params) { { ref: 'master' } }
 
   around do |example|
     create_and_delete_files(project, { '.gitlab-ci.yml' => project_ci_yaml }) do
@@ -869,6 +871,62 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
 
       stages = execute.payload.stages
       expect(stages.find_by(name: 'test').builds.map(&:name)).to include('namespace_policy_job')
+    end
+  end
+
+  context 'when running for a merge request' do
+    let_it_be(:merge_request) do
+      create(:merge_request, source_project: project, target_project: project,
+        source_branch: 'feature', target_branch: 'master')
+    end
+
+    let(:source) { :merge_request_event }
+    let(:opts) { { merge_request: merge_request } }
+    let(:params) do
+      { ref: merge_request.ref_path,
+        source_sha: merge_request.source_branch_sha,
+        target_sha: merge_request.target_branch_sha,
+        checkout_sha: merge_request.diff_head_sha }
+    end
+
+    let(:project_policy_content) do
+      {
+        project_policy_job: {
+          rules: [{ if: '$CI_MERGE_REQUEST_TARGET_BRANCH_SHA' }],
+          script: 'project script'
+        }
+      }
+    end
+
+    let(:namespace_policy_content) do
+      {
+        namespace_policy_job: {
+          rules: [{ if: '$CI_MERGE_REQUEST_SOURCE_BRANCH_SHA' }],
+          script: 'namespace script'
+        }
+      }
+    end
+
+    before do
+      project.update!(merge_pipelines_enabled: true)
+      stub_licensed_features(merge_pipelines: true, security_orchestration_policies: true)
+      stub_ci_pipeline_yaml_file(project_ci_yaml)
+    end
+
+    it 'creates pipeline with policy jobs', :aggregate_failures do
+      expect { execute }.to change { Ci::Build.count }.by(2)
+
+      stages = execute.payload.stages
+      test_stage = stages.find_by(name: 'test')
+      expect(test_stage.builds.map(&:name)).to include('namespace_policy_job', 'project_policy_job')
+
+      project_policy_job = test_stage.builds.find_by(name: 'project_policy_job')
+      expect(get_job_variable(project_policy_job, 'CI_MERGE_REQUEST_TARGET_BRANCH_SHA'))
+        .to eq(merge_request.target_branch_sha)
+
+      namespace_policy_job = test_stage.builds.find_by(name: 'namespace_policy_job')
+      expect(get_job_variable(namespace_policy_job, 'CI_MERGE_REQUEST_SOURCE_BRANCH_SHA'))
+        .to eq(merge_request.source_branch_sha)
     end
   end
 

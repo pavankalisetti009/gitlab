@@ -35,7 +35,7 @@ RSpec.describe SecurityHelper, feature_category: :vulnerability_management do
         instance_dashboard_settings_path: settings_security_dashboard_path,
         vulnerabilities_export_endpoint: api_v4_security_vulnerability_exports_path,
         can_admin_vulnerability: expected_can_admin_vulnerability,
-        false_positive_doc_url: help_page_path('user/application_security/vulnerabilities/index.md'),
+        false_positive_doc_url: help_page_path('user/application_security/vulnerabilities/_index.md'),
         can_view_false_positive: 'false',
         has_projects: 'true',
         dismissal_descriptions: dismissal_descriptions_json

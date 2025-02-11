@@ -2,7 +2,7 @@ import { parseBoolean } from '~/lib/utils/common_utils';
 import { storageTypeHelpPaths as helpLinks } from '~/usage_quotas/storage/constants';
 
 // https://docs.gitlab.com/ee/user/storage_usage_quotas
-// declared in ee/app/models/namespaces/storage/root_excess_size.rb
+// declared in ee/app/models/namespaces/storage/repository_limit/enforcement.rb
 const PROJECT_ENFORCEMENT_TYPE = 'project_repository_limit';
 
 // https://internal.gitlab.com/handbook/engineering/fulfillment/namespace-storage-enforcement/

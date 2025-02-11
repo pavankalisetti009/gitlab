@@ -79,7 +79,7 @@ Passive scans are enabled by default.
 The checks search HTTP messages, cookies, storage events, console events, and DOM for vulnerabilities.
 Examples of passive checks include searching for exposed credit cards, exposed secret tokens, missing content security policies, and redirection to untrusted locations.
 
-See [checks](checks/index.md) for more information about individual checks.
+See [checks](checks/_index.md) for more information about individual checks.
 
 ### Active scans
 

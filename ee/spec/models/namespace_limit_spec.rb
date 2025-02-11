@@ -2,27 +2,25 @@
 
 require 'spec_helper'
 
-RSpec.describe NamespaceLimit do
+RSpec.describe NamespaceLimit, feature_category: :consumables_cost_management do
   let(:namespace_limit) { build(:namespace_limit) }
   let(:usage_ratio) { 0.5 }
   let(:namespace_storage_limit_enabled) { true }
 
-  subject { namespace_limit }
-
   before do
     stub_feature_flags(namespace_storage_limit: namespace_storage_limit_enabled)
 
-    [Namespaces::Storage::RootSize, Namespaces::Storage::RootExcessSize].each do |class_name|
+    [Namespaces::Storage::RootSize, Namespaces::Storage::RepositoryLimit::Enforcement].each do |class_name|
       allow_next_instance_of(class_name, namespace_limit.namespace) do |root_storage|
         allow(root_storage).to receive(:usage_ratio).and_return(usage_ratio)
       end
     end
   end
 
-  it { is_expected.to belong_to(:namespace) }
+  it { expect(namespace_limit).to belong_to(:namespace) }
 
   describe '#eligible_additional_purchased_storage_size' do
-    subject { namespace_limit.eligible_additional_purchased_storage_size }
+    subject(:eligible_additional_purchased_storage_size) { namespace_limit.eligible_additional_purchased_storage_size }
 
     before do
       allow(namespace_limit).to receive(:additional_purchased_storage_size)
@@ -79,8 +77,8 @@ RSpec.describe NamespaceLimit do
   end
 
   describe 'validations' do
-    it { is_expected.to validate_presence_of(:namespace) }
-    it { is_expected.to validate_presence_of(:additional_purchased_storage_size) }
+    it { expect(namespace_limit).to validate_presence_of(:namespace) }
+    it { expect(namespace_limit).to validate_presence_of(:additional_purchased_storage_size) }
 
     context 'with namespace_is_root_namespace' do
       let(:namespace_limit) { build(:namespace_limit, namespace: namespace) }
@@ -88,15 +86,15 @@ RSpec.describe NamespaceLimit do
       context 'when associated namespace is root' do
         let(:namespace) { build(:group, parent: nil) }
 
-        it { is_expected.to be_valid }
+        it { expect(namespace_limit).to be_valid }
       end
 
       context 'when associated namespace is not root' do
         let(:namespace) { build(:group, :nested) }
 
         it 'is invalid' do
-          expect(subject).to be_invalid
-          expect(subject.errors[:namespace]).to include('must be a root namespace')
+          expect(namespace_limit).to be_invalid
+          expect(namespace_limit.errors[:namespace]).to include('must be a root namespace')
         end
       end
     end

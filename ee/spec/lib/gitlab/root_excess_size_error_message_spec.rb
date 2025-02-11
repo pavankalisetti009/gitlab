@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Gitlab::RootExcessSizeErrorMessage, feature_category: :consumables_cost_management do
   let(:namespace) { build(:namespace, additional_purchased_storage_size: limit) }
-  let(:checker) { Namespaces::Storage::RootExcessSize.new(namespace) }
+  let(:checker) { Namespaces::Storage::RepositoryLimit::Enforcement.new(namespace) }
   let(:current_size) { 9.megabytes }
   let(:limit) { 10 }
   let(:message_params) do

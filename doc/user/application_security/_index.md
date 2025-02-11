@@ -19,20 +19,20 @@ For a click-through demo, see [Integrating security to the pipeline](https://git
 <!-- Demo published on 2024-01-15 -->
 
 For details of how vulnerabilities are detected throughout your application's development lifecycle
-see [Detect](detect/index.md).
+see [Detect](detect/_index.md).
 
 Statistics and details on vulnerabilities are included in the merge request. Providing
 actionable information _before_ changes are merged enables you to be proactive.
 
 To help with the task of managing and addressing vulnerabilities, GitLab provides a security
 dashboard you can access from your project or group. For more details, see
-[Security Dashboard](security_dashboard/index.md).
+[Security Dashboard](security_dashboard/_index.md).
 
 ## Data privacy
 
 Concerning data privacy in the domain of security scanners, GitLab processes the source code and performs analysis locally on the GitLab Runner. No data is transmitted outside GitLab infrastructure (server and runners).
 
-Our scanners access the internet only to download the latest sets of signatures, rules, and patches. If you prefer the scanners do not access the internet, consider using an [offline environment](offline_deployments/index.md).
+Our scanners access the internet only to download the latest sets of signatures, rules, and patches. If you prefer the scanners do not access the internet, consider using an [offline environment](offline_deployments/_index.md).
 
 ## Vulnerability scanner maintenance
 
@@ -40,11 +40,11 @@ The following vulnerability scanners and their databases are regularly updated:
 
 | Secure scanning tool                                            | Vulnerabilities database updates |
 |:----------------------------------------------------------------|:---------------------------------|
-| [Container Scanning](container_scanning/index.md)            | A job runs on a daily basis to build new images with the latest vulnerability database updates from the upstream scanner. GitLab monitors this job through an internal alert that tells the engineering team when the database becomes more than 48 hours old. For more information, see the [Vulnerabilities database update](container_scanning/index.md#vulnerabilities-database). |
-| [Dependency Scanning](dependency_scanning/index.md)          | Relies on the [GitLab Advisory Database](gitlab_advisory_database/index.md) which is updated on a daily basis using data from the National Vulnerability Database (NVD) and the GitHub Advisory Database. |
-| [Dynamic Application Security Testing (DAST)](dast/index.md) | [DAST](dast/browser/index.md) analyzer is updated on a periodic basis. |
-| [Secret Detection](secret_detection/pipeline/index.md#detected-secrets) | GitLab maintains the [detection rules](secret_detection/pipeline/index.md#detected-secrets) and [accepts community contributions](secret_detection/pipeline/index.md#add-new-patterns). The scanning engine is updated at least once per month if a relevant update is available. |
-| [Static Application Security Testing (SAST)](sast/index.md)  | The source of scan rules depends on which [analyzer](sast/analyzers.md) is used for each [supported programming language](sast/index.md#supported-languages-and-frameworks). GitLab maintains a ruleset for the Semgrep-based analyzer and updates it regularly based on internal research and user feedback. For other analyzers, the ruleset is sourced from the upstream open-source scanner. Each analyzer is updated at least once per month if a relevant update is available. |
+| [Container Scanning](container_scanning/_index.md)            | A job runs on a daily basis to build new images with the latest vulnerability database updates from the upstream scanner. GitLab monitors this job through an internal alert that tells the engineering team when the database becomes more than 48 hours old. For more information, see the [Vulnerabilities database update](container_scanning/_index.md#vulnerabilities-database). |
+| [Dependency Scanning](dependency_scanning/_index.md)          | Relies on the [GitLab Advisory Database](gitlab_advisory_database/_index.md) which is updated on a daily basis using data from the National Vulnerability Database (NVD) and the GitHub Advisory Database. |
+| [Dynamic Application Security Testing (DAST)](dast/_index.md) | [DAST](dast/browser/_index.md) analyzer is updated on a periodic basis. |
+| [Secret Detection](secret_detection/pipeline/_index.md#detected-secrets) | GitLab maintains the [detection rules](secret_detection/pipeline/_index.md#detected-secrets) and [accepts community contributions](secret_detection/pipeline/_index.md#add-new-patterns). The scanning engine is updated at least once per month if a relevant update is available. |
+| [Static Application Security Testing (SAST)](sast/_index.md)  | The source of scan rules depends on which [analyzer](sast/analyzers.md) is used for each [supported programming language](sast/_index.md#supported-languages-and-frameworks). GitLab maintains a ruleset for the Semgrep-based analyzer and updates it regularly based on internal research and user feedback. For other analyzers, the ruleset is sourced from the upstream open-source scanner. Each analyzer is updated at least once per month if a relevant update is available. |
 
 In versions of GitLab that use the same major version of the analyzer, you do not have to update
 them to benefit from the latest vulnerabilities definitions. The security tools are released as
@@ -133,7 +133,7 @@ security issues:
 
 ## Self managed installation options
 
-For self managed installations, you can choose to run most of the GitLab security scanners even when [not connected to the internet](offline_deployments/index.md).
+For self managed installations, you can choose to run most of the GitLab security scanners even when [not connected to the internet](offline_deployments/_index.md).
 
 Self managed installations can also run the security scanners on a GitLab Runner [running inside OpenShift](../../install/openshift_and_gitlab/_index.md).
 

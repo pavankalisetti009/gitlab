@@ -19,7 +19,6 @@ describe('Basic information section', () => {
   };
 
   const defaultProvides = {
-    featurePipelineMaintenanceModeEnabled: true,
     migratePipelineToPolicyPath: '/migratepipelinetopolicypath',
     pipelineConfigurationFullPathEnabled: true,
     pipelineConfigurationEnabled: true,
@@ -182,15 +181,6 @@ describe('Basic information section', () => {
       expect(maintenanceAlert.text()).not.toContain(
         `This compliance framework's compliance pipeline has been migrated to a pipeline execution policy`,
       );
-    });
-  });
-
-  describe('when ff_compliance_pipeline_maintenance_mode feature flag is disabled', () => {
-    it('does not render the maintenance-mode-alert', () => {
-      createComponent({}, { featurePipelineMaintenanceModeEnabled: false });
-      const maintenanceAlert = findMaintenanceAlert();
-
-      expect(maintenanceAlert.exists()).toBe(false);
     });
   });
 });

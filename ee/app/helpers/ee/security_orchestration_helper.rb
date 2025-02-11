@@ -38,7 +38,7 @@ module EE::SecurityOrchestrationHelper
       policy_editor_empty_state_svg_path: image_path('illustrations/monitoring/unable_to_connect.svg'),
       policy_type: policy_type,
       role_approver_types: Security::ScanResultPolicy::ALLOWED_ROLES,
-      scan_policy_documentation_path: help_page_path('user/application_security/policies/index.md'),
+      scan_policy_documentation_path: help_page_path('user/application_security/policies/_index.md'),
       action_approvers: approvers&.to_json,
       software_licenses: software_licenses,
       global_group_approvers_enabled: Gitlab::CurrentSettings.security_policy_global_group_approvers_enabled.to_json,
