@@ -21,7 +21,7 @@ module EE
 
       override :upload_http_url_to_repo
       def upload_http_url_to_repo
-        return geo_primary_http_url_to_repo(project) if ::Gitlab::Geo.primary?
+        return geo_primary_http_url_to_repo(repository) if ::Gitlab::Geo.primary?
 
         super
       end
