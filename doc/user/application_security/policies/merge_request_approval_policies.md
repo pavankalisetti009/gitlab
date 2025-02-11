@@ -243,6 +243,12 @@ the bot message is sent as long as at least one of those policies has the `send_
 
 ![scan_results_example_bot_message_v17_0](img/scan_result_policy_example_bot_message_artifacts_v17_0.png)
 
+## Warn mode
+
+> - [Introduced](https://gitlab.com/groups/gitlab-org/-/epics/15552) in GitLab 17.8 [with a flag](../../../administration/feature_flags.md) named `security_policy_approval_warn_mode`. Disabled by default
+
+When warn mode is enabled and a merge request triggers a security policy that doesn't require any additional approvers, a bot comment is added to the merge request. The comment directs users to the policy for more information.
+
 ## `approval_settings`
 
 > - [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/420724) the `block_group_branch_modification` field in GitLab 16.8 [with flag](../../../administration/feature_flags.md) named `scan_result_policy_block_group_branch_modification`.
