@@ -149,6 +149,10 @@ module Security
       )
     end
 
+    scope :except_scanners, ->(scanners) do
+      where.not(scanner: scanners)
+    end
+
     delegate :scan_type, :pipeline, :remediations_proxy, to: :scan, allow_nil: true
     delegate :project, :sha, to: :pipeline
 

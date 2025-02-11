@@ -26,6 +26,19 @@ export const unsupportedManifestObject = {
   actions: [{ scan: 'sast', id: actionId }],
 };
 
+export const invalidPolicyRules = {
+  name: 'This policy has invalid properties',
+  enabled: true,
+  rules: [{ type: 'pipeline', branches: ['main'], id: ruleId, branch_type: 'invalid' }],
+  actions: [{ scan: 'sast', id: actionId }],
+};
+export const invalidPolicyActions = {
+  name: 'This policy has invalid properties',
+  enabled: true,
+  rules: [{ type: 'pipeline', branches: ['main'], id: ruleId }],
+  actions: [{ scan: 'invalid', id: actionId }],
+};
+
 export const RUNNER_TAG_LIST_MOCK = [
   {
     id: 'gid://gitlab/Ci::Runner/1',

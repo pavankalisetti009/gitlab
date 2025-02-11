@@ -100,6 +100,38 @@ RSpec.shared_examples 'a Geo framework registry' do
     end
   end
 
+  describe '.ordered_by' do
+    let!(:registry1) { create(registry_class_factory, last_synced_at: 3.hours.ago, verified_at: 6.hours.ago) }
+    let!(:registry2) { create(registry_class_factory, last_synced_at: 6.hours.ago, verified_at: 3.hours.ago) }
+    # rubocop:disable Rails/SaveBang -- Rubocop believes this is a record creation, not factory :(
+    let!(:registry3) { create(registry_class_factory) }
+    # rubocop:enable Rails/SaveBang
+
+    it 'orders records by id ASC by default' do
+      expect(described_class.ordered_by('').to_a).to eq([registry1, registry2, registry3])
+    end
+
+    it 'orders records by id DESC' do
+      expect(described_class.ordered_by('id_desc').to_a).to eq([registry3, registry2, registry1])
+    end
+
+    it 'orders records by last_synced_at DESC' do
+      expect(described_class.ordered_by('last_synced_at_desc').to_a).to eq([registry3, registry1, registry2])
+    end
+
+    it 'orders records by last_synced_at ASC' do
+      expect(described_class.ordered_by('last_synced_at_asc').to_a).to eq([registry2, registry1, registry3])
+    end
+
+    it 'orders records by verified_at DESC' do
+      expect(described_class.ordered_by('verified_at_desc').to_a).to eq([registry3, registry2, registry1])
+    end
+
+    it 'orders records by verified_at ASC' do
+      expect(described_class.ordered_by('verified_at_asc').to_a).to eq([registry1, registry2, registry3])
+    end
+  end
+
   describe '.fail_sync_timeouts' do
     it 'marks started records as failed if they are expired' do
       record1 = create(registry_class_factory, :started, last_synced_at: 9.hours.ago)

@@ -24,7 +24,7 @@ module Geo
         registry_entries = by_replication_state(registry_entries)
         registry_entries = by_verification_state(registry_entries)
         registry_entries = by_keyword(registry_entries)
-        registry_entries.ordered_by_id
+        ordered(registry_entries)
       end
 
       private
@@ -75,6 +75,15 @@ module Geo
         end
 
         registry_entries.with_search(params[:keyword])
+      end
+
+      def ordered(registry_entries)
+        if params[:sort].to_s.include?('verified_at') && verification_disabled?
+          raise ArgumentError, "Sorting by verified_at is not supported " \
+            "because verification is not enabled for #{replicator_class.model}"
+        end
+
+        registry_entries.ordered_by(params[:sort])
       end
     end
   end

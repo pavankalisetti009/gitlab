@@ -89,4 +89,14 @@ RSpec.describe Vulnerabilities::Scanner, feature_category: :vulnerability_manage
       let_it_be(:model) { create(:vulnerabilities_scanner, project: parent) }
     end
   end
+
+  describe '.sbom_scanner' do
+    let_it_be(:sbom_scanner) { create(:vulnerabilities_scanner, :sbom_scanner) }
+    let_it_be(:sbom_scanner_2) { create(:vulnerabilities_scanner, :sbom_scanner) }
+
+    it 'returns the sbom record related to project' do
+      expect(described_class.sbom_scanner(project_id: sbom_scanner.project_id)).to have_attributes(id: sbom_scanner.id,
+        project_id: sbom_scanner.project_id)
+    end
+  end
 end
