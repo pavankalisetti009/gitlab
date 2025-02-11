@@ -19,7 +19,7 @@ module Groups
         push_frontend_feature_flag(:vulnerability_report_vr_filter, @group, type: :beta)
         push_frontend_feature_flag(:vulnerability_report_filtered_search_v2, @project, type: :wip)
         push_frontend_feature_flag(:enhanced_vulnerability_bulk_actions, @group, type: :wip)
-
+        push_frontend_feature_flag(:vulnerability_severity_override, @group.root_ancestor, type: :wip)
         push_frontend_ability(ability: :resolve_vulnerability_with_ai, resource: @group, user: current_user)
       end
 
