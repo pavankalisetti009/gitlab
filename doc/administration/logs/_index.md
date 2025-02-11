@@ -438,7 +438,7 @@ This file is located at:
 - `/var/log/gitlab/gitlab-rails/kubernetes.log` on Linux package installations.
 - `/home/git/gitlab/log/kubernetes.log` on self-compiled installations.
 
-It logs information related to [certificate-based clusters](../../user/project/clusters/index.md), such as connectivity errors. Each line contains JSON that can be ingested by services like Elasticsearch and Splunk.
+It logs information related to [certificate-based clusters](../../user/project/clusters/_index.md), such as connectivity errors. Each line contains JSON that can be ingested by services like Elasticsearch and Splunk.
 
 ## `git_json.log`
 

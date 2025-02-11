@@ -318,8 +318,8 @@ Project permissions for [project features](project/organize_work_with_projects.m
 | View [snippets](snippets.md)                                              |   ✓   |    ✓    |    ✓     |     ✓     |     ✓      |   ✓   |       |
 | View [project traffic statistics](../api/project_statistics.md)           |       |         |    ✓     |     ✓     |     ✓      |   ✓   |       |
 | Create [snippets](snippets.md)                                            |       |         |    ✓     |     ✓     |     ✓      |   ✓   |       |
-| View [releases](project/releases/index.md)                                |       |    ✓    |          |     ✓     |     ✓      |   ✓   | Guest users can access GitLab [**Releases**](project/releases/index.md) for downloading assets but are not allowed to download the source code nor see [repository information like commits and release evidence](project/releases/index.md#view-a-release-and-download-assets). |
-| Manage [releases](project/releases/index.md)                              |       |         |          |           |     ✓      |   ✓   | If the [tag is protected](project/protected_tags.md), this depends on the access given to Developers and Maintainers. |
+| View [releases](project/releases/_index.md)                                |       |    ✓    |          |     ✓     |     ✓      |   ✓   | Guest users can access GitLab [**Releases**](project/releases/_index.md) for downloading assets but are not allowed to download the source code nor see [repository information like commits and release evidence](project/releases/_index.md#view-a-release-and-download-assets). |
+| Manage [releases](project/releases/_index.md)                              |       |         |          |           |     ✓      |   ✓   | If the [tag is protected](project/protected_tags.md), this depends on the access given to Developers and Maintainers. |
 | Configure [webhooks](project/integrations/webhooks.md)                    |       |         |          |           |     ✓      |   ✓   |       |
 | Manage [project access tokens](project/settings/project_access_tokens.md) |       |         |          |           |     ✓      |   ✓   | For GitLab Self-Managed, project access tokens are available in all tiers. For GitLab.com, project access tokens are supported in the Premium and Ultimate tier (excluding [trial licenses](https://about.gitlab.com/free-trial/)). |
 | [Export project](project/settings/import_export.md)                       |       |         |          |           |     ✓      |   ✓   |       |
@@ -329,7 +329,7 @@ Project permissions for [project features](project/organize_work_with_projects.m
 | Change [project features visibility](public_access.md) level              |       |         |          |           |     ✓      |   ✓   | A Maintainer or Owner can't change project features visibility level if [project visibility](public_access.md) is set to private. |
 | Change custom settings for [project integrations](project/integrations/_index.md) |       |         |          |           |     ✓      |   ✓   |       |
 | Edit comments (posted by any user)                                        |       |         |          |           |     ✓      |   ✓   |       |
-| Add [deploy keys](project/deploy_keys/index.md)                           |       |         |          |           |     ✓      |   ✓   |       |
+| Add [deploy keys](project/deploy_keys/_index.md)                           |       |         |          |           |     ✓      |   ✓   |       |
 | Manage [Project Operations](../operations/_index.md)                      |       |         |          |           |     ✓      |   ✓   |       |
 | View [Usage Quotas](storage_usage_quotas.md) page                         |       |         |          |           |     ✓      |   ✓   |       |
 | Globally delete [snippets](snippets.md)                                   |       |         |          |           |     ✓      |   ✓   |       |
@@ -340,7 +340,7 @@ Project permissions for [project features](project/organize_work_with_projects.m
 | Disable notification emails                                               |       |         |          |           |            |   ✓   |       |
 | Transfer project                                                          |       |         |          |           |            |   ✓   |       |
 
-Project permissions for [GitLab Pages](project/pages/index.md):
+Project permissions for [GitLab Pages](project/pages/_index.md):
 
 | Action                                                                                 | Guest | Planner | Reporter | Developer | Maintainer | Owner | Notes |
 | -------------------------------------------------------------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: | ----- |
@@ -566,7 +566,7 @@ Group permissions for [repository](project/repository/_index.md) features includ
 
 | Action                                                                                 | Guest | Planner | Reporter | Developer | Maintainer | Owner | Notes |
 | -------------------------------------------------------------------------------------- | :---: | :-----: | :------: | :-------: | :--------: | :---: | ----- |
-| Manage [deploy tokens](project/deploy_tokens/index.md)                                 |       |         |          |           |            |   ✓   |       |
+| Manage [deploy tokens](project/deploy_tokens/_index.md)                                 |       |         |          |           |            |   ✓   |       |
 | Manage [merge request settings](group/manage.md#group-merge-request-approval-settings) |       |         |          |           |            |   ✓   |       |
 | Manage [push rules](group/access_and_permissions.md#group-push-rules)                  |       |         |          |           |            |   ✓   |       |
 
@@ -646,5 +646,5 @@ To work around the issue, give these users the Guest role or higher to any proje
 - [Auditor users](../administration/auditor_users.md)
 - [Confidential issues](project/issues/confidential_issues.md)
 - [Container registry permissions](packages/container_registry/_index.md#container-registry-visibility-permissions)
-- [Release permissions](project/releases/index.md#release-permissions)
+- [Release permissions](project/releases/_index.md#release-permissions)
 - [Read-only namespaces](read_only_namespaces.md)

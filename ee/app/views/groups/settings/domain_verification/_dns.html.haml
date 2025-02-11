@@ -6,5 +6,5 @@
     .input-group-append
       = clipboard_button(target: '#domain_verification', category: :primary, size: :medium)
   %p.form-text.gl-text-subtle
-    - link_to_help = link_to(s_('DomainVerification|How to set up DNS records?'), help_page_path('user/project/pages/custom_domains_ssl_tls_certification/index.md', anchor: '3-set-up-dns-records'))
+    - link_to_help = link_to(s_('DomainVerification|How to set up DNS records?'), help_page_path('user/project/pages/custom_domains_ssl_tls_certification/_index.md', anchor: '3-set-up-dns-records'))
     = s_("DomainVerification|To verify ownership of your domain, add the above key to a TXT record within your DNS configuration within seven days. %{link_to_help}").html_safe % { link_to_help: link_to_help }

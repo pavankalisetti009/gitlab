@@ -125,7 +125,7 @@ deploy-pages:
   pages: true  # specifies that this is a Pages job
 ```
 
-The example in this page uses [user-defined job names](../index.md#user-defined-job-names).
+The example in this page uses [user-defined job names](../_index.md#user-defined-job-names).
 
 ## Specify the `public` directory for output
 
@@ -444,7 +444,7 @@ Now GitLab CI/CD not only builds the website, but also:
 To view the HTML and other assets that were created for the site,
 [download the job artifacts](../../../../ci/jobs/job_artifacts.md#download-job-artifacts).
 
-The example in this page uses [user-defined job names](../index.md#user-defined-job-names).
+The example in this page uses [user-defined job names](../_index.md#user-defined-job-names).
 
 ## Related topics
 

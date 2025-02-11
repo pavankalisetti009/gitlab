@@ -1487,7 +1487,7 @@ settings with access control options can be one of:
 | `model_registry_access_level`          | string | No       | Set visibility of [machine learning model registry](../user/project/ml/model_registry/_index.md#access-the-model-registry). |
 | `monitor_access_level`                 | string | No       | Set visibility of [application performance monitoring](../operations/_index.md). |
 | `pages_access_level`                   | string | No       | Set visibility of [GitLab Pages](../user/project/pages/pages_access_control.md). |
-| `releases_access_level`                | string | No       | Set visibility of [releases](../user/project/releases/index.md). |
+| `releases_access_level`                | string | No       | Set visibility of [releases](../user/project/releases/_index.md). |
 | `repository_access_level`              | string | No       | Set visibility of [repository](../user/project/repository/_index.md). |
 | `requirements_access_level`            | string | No       | Set visibility of [requirements management](../user/project/requirements/_index.md). |
 | `security_and_compliance_access_level` | string | No       | Set visibility of [security and compliance](../user/application_security/index.md). |
@@ -1610,7 +1610,7 @@ settings with access control options can be one of:
 | `model_registry_access_level`          | string | No       | Set visibility of [machine learning model registry](../user/project/ml/model_registry/_index.md#access-the-model-registry). |
 | `monitor_access_level`                 | string | No       | Set visibility of [application performance monitoring](../operations/_index.md). |
 | `pages_access_level`                   | string | No       | Set visibility of [GitLab Pages](../user/project/pages/pages_access_control.md). |
-| `releases_access_level`                | string | No       | Set visibility of [releases](../user/project/releases/index.md). |
+| `releases_access_level`                | string | No       | Set visibility of [releases](../user/project/releases/_index.md). |
 | `repository_access_level`              | string | No       | Set visibility of [repository](../user/project/repository/_index.md). |
 | `requirements_access_level`            | string | No       | Set visibility of [requirements management](../user/project/requirements/_index.md). |
 | `security_and_compliance_access_level` | string | No       | Set visibility of [security and compliance](../user/application_security/index.md). |
@@ -1748,7 +1748,7 @@ Supported project visibility attributes:
 | `model_registry_access_level`          | string | No       | Set visibility of [machine learning model registry](../user/project/ml/model_registry/_index.md#access-the-model-registry). |
 | `monitor_access_level`                 | string | No       | Set visibility of [application performance monitoring](../operations/_index.md). |
 | `pages_access_level`                   | string | No       | Set visibility of [GitLab Pages](../user/project/pages/pages_access_control.md). |
-| `releases_access_level`                | string | No       | Set visibility of [releases](../user/project/releases/index.md). |
+| `releases_access_level`                | string | No       | Set visibility of [releases](../user/project/releases/_index.md). |
 | `repository_access_level`              | string | No       | Set visibility of [repository](../user/project/repository/_index.md). |
 | `requirements_access_level`            | string | No       | Set visibility of [requirements management](../user/project/requirements/_index.md). |
 | `security_and_compliance_access_level` | string | No       | Set visibility of [security and compliance](../user/application_security/index.md). |
