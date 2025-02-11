@@ -23339,7 +23339,8 @@ CREATE TABLE vulnerability_issue_links (
     link_type smallint DEFAULT 1 NOT NULL,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_55acc7b923 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE vulnerability_issue_links_id_seq
