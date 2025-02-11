@@ -11,9 +11,6 @@ export const setDependenciesEndpoint = (handle, endpoint) =>
 export const setExportDependenciesEndpoint = (handle, payload) =>
   dispatchForNamespaces(handle, 'setExportDependenciesEndpoint', payload);
 
-export const setAsyncExport = (handle, payload) =>
-  dispatchForNamespaces(handle, 'setAsyncExport', payload);
-
 export const setNamespaceType = (handle, payload) =>
   dispatchForNamespaces(handle, 'setNamespaceType', payload);
 

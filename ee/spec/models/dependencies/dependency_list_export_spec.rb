@@ -223,7 +223,6 @@ RSpec.describe Dependencies::DependencyListExport, feature_category: :dependency
     subject(:send_completion_email!) { export.send_completion_email! }
 
     it 'does not send email' do
-      allow(export).to receive(:email_delivery_enabled?).and_return(false)
       expect(Sbom::ExportMailer).not_to receive(:completion_email)
 
       send_completion_email!
@@ -239,15 +238,6 @@ RSpec.describe Dependencies::DependencyListExport, feature_category: :dependency
         send_completion_email!
       end
     end
-
-    context 'when email delivery is disabled' do
-      it 'does not send email' do
-        allow(export).to receive(:email_delivery_enabled?).and_return(false)
-        expect(Sbom::ExportMailer).not_to receive(:completion_email)
-
-        send_completion_email!
-      end
-    end
   end
 
   describe '#schedule_export_deletion' do
@@ -258,54 +248,6 @@ RSpec.describe Dependencies::DependencyListExport, feature_category: :dependency
     it 'sets `expires_at`', :freeze_time do
       expect { schedule_export_deletion }.to change { export.reload.expires_at }
         .from(nil).to(described_class::EXPIRES_AFTER.from_now)
-    end
-
-    context 'when email delivery is disabled' do
-      before do
-        allow(export).to receive(:email_delivery_enabled?).and_return(false)
-      end
-
-      it 'schedules the export deletion' do
-        expect(Dependencies::DestroyExportWorker).to receive(:perform_in).with(1.hour, export.id)
-
-        schedule_export_deletion
-      end
-    end
-  end
-
-  describe '#email_delivery_enabled?' do
-    subject(:email_delivery_enabled?) { export.email_delivery_enabled? }
-
-    context 'when exportable is a group' do
-      let(:export) { create(:dependency_list_export, group: group, project: nil) }
-
-      context 'when feature flag is enabled for group' do
-        it { is_expected.to be(true) }
-      end
-
-      context 'when feature flag is disabled for group' do
-        before do
-          stub_feature_flags(asynchronous_dependency_export_delivery_for_groups: false)
-        end
-
-        it { is_expected.to be(false) }
-      end
-    end
-
-    context 'when exportable is a project' do
-      let(:export) { create(:dependency_list_export, project: project) }
-
-      context 'when feature flag is enabled for project' do
-        it { is_expected.to be(true) }
-      end
-
-      context 'when feature flag is disabled for project' do
-        before do
-          stub_feature_flags(asynchronous_dependency_export_delivery_for_projects: false)
-        end
-
-        it { is_expected.to be(false) }
-      end
     end
   end
 

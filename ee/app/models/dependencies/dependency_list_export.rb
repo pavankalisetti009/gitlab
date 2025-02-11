@@ -86,21 +86,13 @@ module Dependencies
     end
 
     def send_completion_email!
-      return unless send_email? && email_delivery_enabled?
+      return unless send_email?
 
       Sbom::ExportMailer.completion_email(self).deliver_now
     end
 
     def schedule_export_deletion
-      if email_delivery_enabled?
-        update!(expires_at: EXPIRES_AFTER.from_now)
-      else
-        Dependencies::DestroyExportWorker.perform_in(1.hour, id)
-      end
-    end
-
-    def email_delivery_enabled?
-      email_delivery_enabled_for_group? || email_delivery_enabled_for_project?
+      update!(expires_at: EXPIRES_AFTER.from_now)
     end
 
     def timed_out?
@@ -116,14 +108,6 @@ module Dependencies
     end
 
     private
-
-    def email_delivery_enabled_for_group?
-      exportable.is_a?(::Group) && Feature.enabled?(:asynchronous_dependency_export_delivery_for_groups, exportable)
-    end
-
-    def email_delivery_enabled_for_project?
-      exportable.is_a?(::Project) && Feature.enabled?(:asynchronous_dependency_export_delivery_for_projects, exportable)
-    end
 
     def only_one_exportable
       # When we have a pipeline, it is ok to also have a project. All pipeline exports _should_
