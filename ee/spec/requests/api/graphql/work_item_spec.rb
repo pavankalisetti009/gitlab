@@ -1584,6 +1584,95 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
 
         it_behaves_like 'avoids N+1 queries for processing participants'
       end
+
+      describe 'custom fields widget' do
+        include_context 'with group configured with custom fields'
+
+        let_it_be(:project) { create(:project, group: group) }
+        let_it_be(:work_item) { create(:work_item, work_item_type: issue_type, project: project) }
+
+        let(:work_item_fields) do
+          <<~GRAPHQL
+            id
+            widgets {
+              type
+              ... on WorkItemWidgetCustomFields {
+                customFieldValues {
+                  customField {
+                    id
+                  }
+                  ... on WorkItemTextFieldValue {
+                    value
+                  }
+                  ... on WorkItemNumberFieldValue {
+                    value
+                  }
+                  ... on WorkItemSelectFieldValue {
+                    selectedOptions {
+                      id
+                    }
+                  }
+                }
+              }
+            }
+          GRAPHQL
+        end
+
+        before_all do
+          group.add_guest(guest)
+        end
+
+        before do
+          stub_licensed_features(custom_fields: true)
+
+          create(:work_item_text_field_value, work_item: work_item, custom_field: text_field, value: 'text value')
+          create(:work_item_number_field_value, work_item: work_item, custom_field: number_field, value: 10)
+
+          create(:work_item_select_field_value, work_item: work_item, custom_field: select_field,
+            custom_field_select_option: select_option_2)
+
+          create(:work_item_select_field_value, work_item: work_item, custom_field: multi_select_field,
+            custom_field_select_option: multi_select_option_3)
+          create(:work_item_select_field_value, work_item: work_item, custom_field: multi_select_field,
+            custom_field_select_option: multi_select_option_1)
+        end
+
+        it 'returns widget information' do
+          post_graphql(query, current_user: current_user)
+
+          expect(work_item_data).to include(
+            'id' => work_item.to_gid.to_s,
+            'widgets' => include(
+              hash_including(
+                'type' => 'CUSTOM_FIELDS',
+                'customFieldValues' => [
+                  {
+                    'customField' => { 'id' => select_field.to_gid.to_s },
+                    'selectedOptions' => [
+                      { 'id' => select_option_2.to_gid.to_s }
+                    ]
+                  },
+                  {
+                    'customField' => { 'id' => number_field.to_gid.to_s },
+                    'value' => 10
+                  },
+                  {
+                    'customField' => { 'id' => text_field.to_gid.to_s },
+                    'value' => 'text value'
+                  },
+                  {
+                    'customField' => { 'id' => multi_select_field.to_gid.to_s },
+                    'selectedOptions' => [
+                      { 'id' => multi_select_option_1.to_gid.to_s },
+                      { 'id' => multi_select_option_3.to_gid.to_s }
+                    ]
+                  }
+                ]
+              )
+            )
+          )
+        end
+      end
     end
 
     context 'when querying work item type information' do
