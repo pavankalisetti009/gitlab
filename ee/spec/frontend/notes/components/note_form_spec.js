@@ -1,10 +1,18 @@
-import { nextTick } from 'vue';
+import Vue, { nextTick } from 'vue';
+import { createTestingPinia } from '@pinia/testing';
+import { PiniaVuePlugin } from 'pinia';
+// eslint-disable-next-line no-restricted-imports
+import Vuex from 'vuex';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import CommentTemperature from 'ee_component/ai/components/comment_temperature.vue';
-import batchComments from '~/batch_comments/stores/modules/batch_comments';
 import MarkdownEditor from '~/vue_shared/components/markdown/markdown_editor.vue';
 import NoteForm from '~/notes/components/note_form.vue';
 import createStore from '~/notes/stores';
+import { globalAccessorPlugin } from '~/pinia/plugins';
+import { useNotes } from '~/notes/store/legacy_notes';
+import { useLegacyDiffs } from '~/diffs/stores/legacy_diffs';
+import { useBatchComments } from '~/batch_comments/store';
+import mrNotesStore from '~/mr_notes/stores/modules';
 import {
   notesDataMock,
   noteableDataMock,
@@ -15,8 +23,11 @@ jest.mock('~/lib/utils/autosave');
 
 const badNote = 'very bad note';
 
+Vue.use(PiniaVuePlugin);
+
 describe('issue_comment_form component', () => {
   let wrapper;
+  let pinia;
 
   const findMarkdownEditor = () => wrapper.findComponent(MarkdownEditor);
   const findMarkdownEditorTextarea = () => findMarkdownEditor().find('textarea');
@@ -32,6 +43,9 @@ describe('issue_comment_form component', () => {
     stubs = {},
     store = createStore(),
   } = {}) => {
+    store.registerModule('page', new Vuex.Store(mrNotesStore));
+    // eslint-disable-next-line no-param-reassign
+    store.state.page.activeTab = 'diffs';
     store.dispatch('setNoteableData', {
       ...noteableDataMock,
       noteableType,
@@ -41,6 +55,7 @@ describe('issue_comment_form component', () => {
 
     wrapper = mountExtended(NoteForm, {
       store,
+      pinia,
       propsData: {
         isEditing: false,
         noteBody: 'Magni suscipit eius consectetur enim et ex et commodi.',
@@ -58,6 +73,13 @@ describe('issue_comment_form component', () => {
       stubs,
     });
   };
+
+  beforeEach(() => {
+    pinia = createTestingPinia({ plugins: [globalAccessorPlugin] });
+    useLegacyDiffs();
+    useNotes();
+    useBatchComments().$patch({ isMergeRequest: true });
+  });
 
   describe('markdown editor', () => {
     it('shows markdown editor', () => {
@@ -193,7 +215,6 @@ describe('issue_comment_form component', () => {
           beforeEach(() => {
             bootstrapFn = (updatedNoteBody = badNote) => {
               const store = createStore();
-              store.registerModule('batchComments', batchComments());
               createComponentWrapper({
                 noteableType,
                 initialData: { updatedNoteBody },

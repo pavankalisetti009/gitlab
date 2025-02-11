@@ -2,6 +2,7 @@ import { shallowMount } from '@vue/test-utils';
 import Vue from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
+import { createTestingPinia } from '@pinia/testing';
 import waitForPromises from 'helpers/wait_for_promises';
 import { sprintf } from '~/locale';
 import { createAlert } from '~/alert';
@@ -10,6 +11,10 @@ import note from 'jest/notes/mock_data';
 import DiffLineNoteForm from '~/diffs/components/diff_line_note_form.vue';
 import NoteForm from '~/notes/components/note_form.vue';
 import { SOMETHING_WENT_WRONG, SAVING_THE_COMMENT_FAILED } from '~/diffs/i18n';
+import { globalAccessorPlugin } from '~/pinia/plugins';
+import { useLegacyDiffs } from '~/diffs/stores/legacy_diffs';
+import { useNotes } from '~/notes/store/legacy_notes';
+import { useBatchComments } from '~/batch_comments/store';
 
 Vue.use(Vuex);
 jest.mock('~/alert');
@@ -17,7 +22,7 @@ jest.mock('~/alert');
 describe('EE DiffLineNoteForm', () => {
   let wrapper;
 
-  const saveDraft = jest.fn();
+  let saveDraft;
 
   const createStoreOptions = (headSha) => {
     const state = {
@@ -52,10 +57,6 @@ describe('EE DiffLineNoteForm', () => {
             cancelCommentForm: jest.fn(),
           },
         },
-        batchComments: {
-          namespaced: true,
-          actions: { saveDraft },
-        },
       },
     };
   };
@@ -84,7 +85,14 @@ describe('EE DiffLineNoteForm', () => {
 
   const submitNoteAddToReview = () =>
     wrapper.findComponent(NoteForm).vm.$emit('handleFormUpdateAddToReview', note);
-  const saveDraftCommitId = () => saveDraft.mock.calls[0][1].data.note.commit_id;
+  const saveDraftCommitId = () => saveDraft.mock.calls[0][0].data.note.commit_id;
+
+  beforeEach(() => {
+    createTestingPinia({ plugins: [globalAccessorPlugin] });
+    useLegacyDiffs();
+    useNotes();
+    saveDraft = useBatchComments().saveDraft.mockImplementation(() => Promise.resolve());
+  });
 
   describe('when user submits note to review', () => {
     it('should call saveDraft action with commit_id === null when store has no commit', () => {
