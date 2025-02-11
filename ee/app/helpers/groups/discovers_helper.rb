@@ -106,7 +106,7 @@ module Groups
           description: s_("TrialDiscoverPage|Keep your application secure by checking your libraries for " \
                           "vulnerabilities."),
           plan: s_("TrialDiscoverPage|Ultimate"),
-          doc_url: help_page_url("user/application_security/dependency_scanning/index.md"),
+          doc_url: help_page_url("user/application_security/dependency_scanning/_index.md"),
           video_url: "https://vimeo.com/670886968",
           container_class: 'md:gl-basis-1/2',
           description_class: 'gl-h-10',
@@ -118,7 +118,7 @@ module Groups
           description: s_("TrialDiscoverPage|Keep your application secure by checking your deployed environments " \
                           "for vulnerabilities."),
           plan: s_("TrialDiscoverPage|Ultimate"),
-          doc_url: help_page_url("user/application_security/dast/index.md"),
+          doc_url: help_page_url("user/application_security/dast/_index.md"),
           video_url: "https://vimeo.com/670891385",
           container_class: 'md:gl-basis-1/2',
           description_class: 'gl-h-10',

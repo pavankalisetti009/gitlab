@@ -32,7 +32,7 @@ describe('EmptyState', () => {
   it('renders the documentation link in the description', () => {
     expect(findLink().exists()).toBe(true);
     expect(findLink().attributes('href')).toBe(
-      '/help/user/application_security/secret_detection/index',
+      '/help/user/application_security/secret_detection/_index',
     );
   });
 

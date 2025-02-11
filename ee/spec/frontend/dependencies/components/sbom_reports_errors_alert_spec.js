@@ -36,7 +36,7 @@ describe('SbomReportsErrorsAlert component', () => {
 
   it('links to the SBOM report documentation', () => {
     expect(findHelpPageLink().props()).toEqual({
-      href: 'user/application_security/dependency_list/index',
+      href: 'user/application_security/dependency_list/_index',
       anchor: 'prerequisites',
     });
   });

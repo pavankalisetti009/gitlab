@@ -7,7 +7,7 @@ RSpec.describe DependenciesHelper, feature_category: :dependency_management do
     it 'returns data shared between all views' do
       is_expected.to include(
         has_dependencies: 'false',
-        documentation_path: a_string_including("user/application_security/dependency_list/index"),
+        documentation_path: a_string_including("user/application_security/dependency_list/_index"),
         empty_state_svg_path: match(%r{illustrations/empty-state/empty-radar-md.*\.svg})
       )
     end

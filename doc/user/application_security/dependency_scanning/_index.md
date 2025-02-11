@@ -59,9 +59,9 @@ pipeline runs, vulnerabilities are identified and compared between the source an
 Vulnerabilities and their severity are listed in the merge request, enabling you to proactively
 address the risk to your application, before the code change is committed.
 Vulnerabilities can also be identified outside a pipeline by
-[Continuous Vulnerability Scanning](../continuous_vulnerability_scanning/index.md).
+[Continuous Vulnerability Scanning](../continuous_vulnerability_scanning/_index.md).
 
-GitLab offers both Dependency Scanning and [Container Scanning](../container_scanning/index.md) to
+GitLab offers both Dependency Scanning and [Container Scanning](../container_scanning/_index.md) to
 ensure coverage for all of these dependency types. To cover as much of your risk area as possible,
 we encourage you to use all of our security scanners. For a comparison of these features, see
 [Dependency Scanning compared to Container Scanning](../comparison_dependency_and_container_scanning.md).
@@ -1097,7 +1097,7 @@ DETAILS:
 
 For instances in an environment with limited, restricted, or intermittent access
 to external resources through the internet, some adjustments are required for dependency scanning
-jobs to run successfully. For more information, see [Offline environments](../offline_deployments/index.md).
+jobs to run successfully. For more information, see [Offline environments](../offline_deployments/_index.md).
 
 ### Requirements
 
@@ -1126,7 +1126,7 @@ To use dependency scanning with all [supported languages and frameworks](#suppor
    The process for importing Docker images into a local offline Docker registry depends on
    **your network security policy**. Consult your IT staff to find an accepted and approved
    process by which external resources can be imported or temporarily accessed.
-   These scanners are [periodically updated](../index.md#vulnerability-scanner-maintenance)
+   These scanners are [periodically updated](../_index.md#vulnerability-scanner-maintenance)
    with new definitions, and you may want to download them regularly.
 
 1. Configure GitLab CI/CD to use the local analyzers.

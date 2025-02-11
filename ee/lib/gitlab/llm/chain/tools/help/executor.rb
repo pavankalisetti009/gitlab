@@ -42,7 +42,7 @@ GitLab Duo Chat is your personal AI-powered assistant for boosting productivity.
   * `How do I add CI/CD variables to a project?`
 * [Troubleshooting a failed pipeline](#{::Gitlab::Routing.url_helpers.help_page_url('user/gitlab_duo_chat/examples.md', anchor: 'troubleshoot-failed-cicd-jobs-with-root-cause-analysis')}) (Requires Ultimate and is part of GitLab Duo Enterprise):
   * On the job log page, select **Troubleshoot** or open GitLab Duo Chat and type `/troubleshoot`.
-* [Explain a vulnerability](#{::Gitlab::Routing.url_helpers.help_page_url('user/application_security/vulnerabilities/index.md', anchor: 'explaining-a-vulnerability')}) found by a SAST scanner (Requires Ultimate and is part of GitLab Duo Enterprise):
+* [Explain a vulnerability](#{::Gitlab::Routing.url_helpers.help_page_url('user/application_security/vulnerabilities/_index.md', anchor: 'explaining-a-vulnerability')}) found by a SAST scanner (Requires Ultimate and is part of GitLab Duo Enterprise):
   * In the upper right, from the Resolve with merge request dropdown list, select **Explain vulnerability**, then select **Explain vulnerability**.
   * Or, open GitLab Duo Chat and type `/vulnerability_explain`.
 

@@ -18,7 +18,7 @@ import LinkedItemsDropdown from '../../shared/linked_items_dropdown.vue';
 export default {
   EXCEPTION_TYPE_LISTBOX_ITEMS,
   GROUP_EXCEPTION_TYPE_LISTBOX_ITEMS,
-  LINKED_GROUP_PATH: helpPagePath('user/application_security/policies/index.md'),
+  LINKED_GROUP_PATH: helpPagePath('user/application_security/policies/_index.md'),
   i18n: {
     groupErrorDescription: s__('SecurityOrchestration|Failed to load groups'),
     projectErrorDescription: s__('SecurityOrchestration|Failed to load projects'),

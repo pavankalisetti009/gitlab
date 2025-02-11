@@ -62,7 +62,7 @@ export default {
       <gl-sprintf :message="$options.i18n.SBOM_ERROR_ACTION">
         <template #helpPageLink="{ content }">
           <help-page-link
-            href="user/application_security/dependency_list/index"
+            href="user/application_security/dependency_list/_index"
             anchor="prerequisites"
             target="_blank"
             >{{ content }}</help-page-link

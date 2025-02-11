@@ -57,7 +57,7 @@ RSpec.describe Groups::Security::PoliciesController, type: :request, feature_cat
             "/groups/#{group.full_path}/-/security/policies"
           )
           expect(app.attributes['data-scan-policy-documentation-path'].value).to eq(
-            '/help/user/application_security/policies/index.md'
+            '/help/user/application_security/policies/_index.md'
           )
           expect(app.attributes['data-namespace-path'].value).to eq(group.full_path)
           expect(app.attributes['data-namespace-id'].value).to eq(group.id.to_s)

@@ -51,7 +51,7 @@ describe('ee/security_dashboard/components/pipeline/resolve_with_ai_info_popver.
     it('renders a link to the related documentation', () => {
       const link = findPublicProjectWarningAlert().findComponent(GlLink);
       expect(link.attributes('href')).toBe(
-        '/help/user/application_security/vulnerabilities/index#vulnerability-resolution',
+        '/help/user/application_security/vulnerabilities/_index#vulnerability-resolution',
       );
       expect(link.text()).toBe('Resolving a vulnerability privately');
     });

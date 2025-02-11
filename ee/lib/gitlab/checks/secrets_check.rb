@@ -42,7 +42,7 @@ module Gitlab
 
       PAYLOAD_BYTES_LIMIT = 1.megabyte # https://handbook.gitlab.com/handbook/engineering/architecture/design-documents/secret_detection/#target-types
       SPECIAL_COMMIT_FLAG = /\[skip secret push protection\]/i
-      DOCUMENTATION_PATH = 'user/application_security/secret_detection/secret_push_protection/index.html'
+      DOCUMENTATION_PATH = 'user/application_security/secret_detection/secret_push_protection/_index.html'
       DOCUMENTATION_PATH_ANCHOR = 'resolve-a-blocked-push'
       EXCLUSION_TYPE_MAP = {
         rule: ::Gitlab::SecretDetection::GRPC::ExclusionType::EXCLUSION_TYPE_RULE,

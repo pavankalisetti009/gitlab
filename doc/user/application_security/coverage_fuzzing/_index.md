@@ -14,7 +14,7 @@ an effort to cause unexpected behavior. Such behavior indicates a bug that you s
 GitLab allows you to add coverage-guided fuzz testing to your pipelines. This helps you discover
 bugs and potential security issues that other QA processes may miss.
 
-We recommend that you use fuzz testing in addition to the other security scanners in [GitLab Secure](../index.md)
+You should use fuzz testing in addition to the other security scanners in [GitLab Secure](../_index.md)
 and your own test processes. If you're using [GitLab CI/CD](../../../ci/_index.md),
 you can run your coverage-guided fuzz testing as part your CI/CD workflow.
 
@@ -28,7 +28,7 @@ The fuzz testing process:
 1. Compiles the target application.
 1. Runs the instrumented application, using the `gitlab-cov-fuzz` tool.
 1. Parses and analyzes the exception information output by the fuzzer.
-1. Downloads the [corpus](../terminology/index.md#corpus) from either:
+1. Downloads the [corpus](../terminology/_index.md#corpus) from either:
    - The previous pipelines.
    - If `COVFUZZ_USE_REGISTRY` is set to `true`, the [corpus registry](#corpus-registry).
 1. Downloads crash events from previous pipeline.
@@ -138,7 +138,7 @@ a large number of false positives.
 
 #### Seed corpus
 
-Files in the [seed corpus](../terminology/index.md#seed-corpus) must be updated manually. They are
+Files in the [seed corpus](../terminology/_index.md#seed-corpus) must be updated manually. They are
 not updated or overwritten by the coverage-guide fuzz testing job.
 
 ## Output
@@ -331,13 +331,13 @@ To use coverage fuzzing in an offline environment:
 
 ## Interacting with the vulnerabilities
 
-After a vulnerability is found, you can [address it](../vulnerabilities/index.md).
+After a vulnerability is found, you can [address it](../vulnerabilities/_index.md).
 The merge request widget lists the vulnerability and contains a button for downloading the fuzzing
 artifacts. By selecting one of the detected vulnerabilities, you can see its details.
 
 ![Coverage Fuzzing Security Report](img/coverage_fuzzing_report_v13_6.png)
 
-You can also view the vulnerability from the [Security Dashboard](../security_dashboard/index.md),
+You can also view the vulnerability from the [Security Dashboard](../security_dashboard/_index.md),
 which shows an overview of all the security vulnerabilities in your groups, projects, and pipelines.
 
 Selecting the vulnerability opens a modal that provides additional information about the

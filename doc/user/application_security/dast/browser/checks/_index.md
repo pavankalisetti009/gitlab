@@ -10,7 +10,7 @@ DETAILS:
 **Tier:** Ultimate
 **Offering:** GitLab.com, GitLab Self-Managed, GitLab Dedicated
 
-The [DAST browser-based crawler](../index.md) provides vulnerability checks that are used to
+The [DAST browser-based crawler](../_index.md) provides vulnerability checks that are used to
 scan for vulnerabilities in the site under test.
 
 ## Passive Checks

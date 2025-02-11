@@ -11,7 +11,7 @@ import BaseItemsDropdown from './base_items_dropdown.vue';
 
 export default {
   ERROR_KEY: 'linked-items-query-error',
-  SECURITY_POLICY_PROJECT_PATH: helpPagePath('user/application_security/policies/index.md', {
+  SECURITY_POLICY_PROJECT_PATH: helpPagePath('user/application_security/policies/_index.md', {
     anchor: 'security-policy-project',
   }),
   i18n: {

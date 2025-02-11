@@ -136,7 +136,7 @@ To resolve the vulnerability:
 1. In the upper-right corner, select **Resolve with AI**. If this project is a public project be aware that creating an MR will publicly expose the vulnerability and offered resolution. To create the MR privately, please [create a private fork](../../project/merge_requests/confidential.md), and repeat this process.
 1. Add an additional commit to the MR. This forces a new pipeline to run.
 1. After the pipeline is complete, on the [pipeline security tab](../vulnerability_report/pipeline.md#view-vulnerabilities-in-a-pipeline), confirm that the vulnerability no longer appears.
-1. On the vulnerability report, [manually update the vulnerability](../vulnerability_report/index.md#change-status-of-vulnerabilities).
+1. On the vulnerability report, [manually update the vulnerability](../vulnerability_report/_index.md#change-status-of-vulnerabilities).
 
 A merge request containing the AI remediation suggestions is opened. Review the suggested changes,
 then process the merge request according to your standard workflow.
@@ -446,18 +446,18 @@ Be aware of the following conditions between a vulnerability and a linked Jira i
 
 For some vulnerabilities a solution is already known but needs to be implemented manually. The
 **Solution** field in the Vulnerability page is provided by the security scanning tool that
-reported the security finding, or entered during the [manual creation of a vulnerability](../vulnerability_report/index.md#manually-add-a-vulnerability).
-The GitLab tools utilize information from the [GitLab Advisory Database](../gitlab_advisory_database/index.md).
+reported the security finding, or entered during the [manual creation of a vulnerability](../vulnerability_report/_index.md#manually-add-a-vulnerability).
+The GitLab tools utilize information from the [GitLab Advisory Database](../gitlab_advisory_database/_index.md).
 
 Additionally, some tools may include a software patch to apply the suggested solution. In those instances,
 a vulnerability's page includes a **Resolve with merge request** option.
 
 The following scanners are supported by this feature:
 
-- [Dependency Scanning](../dependency_scanning/index.md).
+- [Dependency Scanning](../dependency_scanning/_index.md).
   Automatic patch creation is only available for Node.js projects managed with
   `yarn`. Also, Automatic patch creation is only supported when [FIPS mode](../../../development/fips_gitlab.md#enable-fips-mode) is disabled.
-- [Container Scanning](../container_scanning/index.md).
+- [Container Scanning](../container_scanning/_index.md).
 
 To resolve a vulnerability, you can either:
 

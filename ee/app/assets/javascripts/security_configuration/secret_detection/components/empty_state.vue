@@ -19,7 +19,7 @@ export default {
     },
   },
   emptyStateSvgPath,
-  learnMoreLink: helpPagePath('user/application_security/secret_detection/index'),
+  learnMoreLink: helpPagePath('user/application_security/secret_detection/_index'),
   i18n: {
     emptyStateTitle: s__('SecretDetection|No exclusions yet'),
     emptyStateDescription: s__(

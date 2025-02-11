@@ -14,7 +14,7 @@ DETAILS:
 
 Perform Dynamic Application Security Testing (DAST) of web APIs to help discover bugs and potential
 security issues that other QA processes may miss. Use API security testing in addition to
-other [GitLab Secure](../index.md) security scanners and your own test processes. You can run DAST
+other [GitLab Secure](../_index.md) security scanners and your own test processes. You can run DAST
 API tests either as part your CI/CD workflow, [on-demand](../dast/on-demand_scan.md), or both.
 
 WARNING:

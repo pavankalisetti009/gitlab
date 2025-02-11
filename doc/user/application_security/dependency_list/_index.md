@@ -34,15 +34,15 @@ Although this is not mandatory for populating the dependency list, the SBOM docu
 
 GitLab already generates this document when the following requirements are met:
 
-- The [Dependency Scanning](../dependency_scanning/index.md)
-  or [Container Scanning](../container_scanning/index.md)
+- The [Dependency Scanning](../dependency_scanning/_index.md)
+  or [Container Scanning](../container_scanning/_index.md)
   CI job must be configured for your project.
 - Your project uses at least one of the
-  [languages and package managers](../dependency_scanning/index.md#supported-languages-and-package-managers)
+  [languages and package managers](../dependency_scanning/_index.md#supported-languages-and-package-managers)
   supported by Gemnasium.
 - A successful pipeline was run on the default branch.
   You should not change the default behavior of allowing the
-  [application security jobs](../detect/index.md) to fail.
+  [application security jobs](../detect/_index.md) to fail.
 
 ## View project dependencies
 
@@ -101,7 +101,7 @@ The dependency list shows only dependencies that match your filters.
 If a dependency has known vulnerabilities, view them by selecting the arrow next to the
 dependency's name or the badge that indicates how many known vulnerabilities exist. For each
 vulnerability, its severity and description appears below it. To view more details of a vulnerability,
-select the vulnerability's description. The [vulnerability's details](../vulnerabilities/index.md) page is opened.
+select the vulnerability's description. The [vulnerability's details](../vulnerabilities/_index.md) page is opened.
 
 ## Dependency paths
 
@@ -139,7 +139,7 @@ Dependency paths are supported for the following package managers:
 
 ### Licenses
 
-If the [Dependency Scanning](../dependency_scanning/index.md) CI job is configured,
+If the [Dependency Scanning](../dependency_scanning/_index.md) CI job is configured,
 [discovered licenses](../../compliance/license_scanning_of_cyclonedx_files/_index.md) are displayed on this page.
 
 ## Download the dependency list

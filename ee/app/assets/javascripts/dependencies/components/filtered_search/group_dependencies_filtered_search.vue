@@ -64,7 +64,7 @@ export default {
       ];
     },
   },
-  GROUP_LEVEL_DEPENDENCY_LIST_DOC: helpPagePath('user/application_security/dependency_list/index'),
+  GROUP_LEVEL_DEPENDENCY_LIST_DOC: helpPagePath('user/application_security/dependency_list/_index'),
   i18n: {
     popoverTitle: s__('Dependencies|Filtering unavailable'),
     description: s__(
