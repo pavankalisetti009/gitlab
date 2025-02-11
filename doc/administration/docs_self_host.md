@@ -87,7 +87,7 @@ Prerequisites:
 
 To host the product documentation site with GitLab Pages:
 
-1. [Create a blank project](../user/project/index.md#create-a-blank-project).
+1. [Create a blank project](../user/project/_index.md#create-a-blank-project).
 1. Create a new or edit your existing `.gitlab-ci.yml` file, and add the following
    `pages` job, while ensuring the version is the same as your GitLab installation:
 

@@ -1,7 +1,7 @@
 = render ::Layouts::SettingsSectionComponent.new(_('Insights'), id: 'js-insights-settings') do |c|
   - c.with_description do
     = s_('GroupSettings|Select the project containing your custom Insights file.')
-    = link_to(s_('GroupSettings|What is Insights?'), help_page_path('user/project/insights/index.md'), target: '_blank', rel: 'noopener noreferrer')
+    = link_to(s_('GroupSettings|What is Insights?'), help_page_path('user/project/insights/_index.md'), target: '_blank', rel: 'noopener noreferrer')
   - c.with_body do
     = gitlab_ui_form_for @group, url: group_settings_analytics_path(@group, anchor: 'js-insights-settings'), html: { class: 'fieldset-form', data: { testid: 'insights-settings' } } do |form|
       = form_errors(@group)
