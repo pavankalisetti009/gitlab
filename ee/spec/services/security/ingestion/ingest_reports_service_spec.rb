@@ -38,7 +38,9 @@ RSpec.describe Security::Ingestion::IngestReportsService, feature_category: :vul
       expect(Security::Ingestion::IngestReportService).to have_received(:execute).once.with(security_scan_3)
     end
 
-    it_behaves_like 'schedules synchronization of vulnerability statistic'
+    it_behaves_like 'schedules synchronization of vulnerability statistic' do
+      let(:latest_pipeline) { pipeline }
+    end
 
     context 'when ingested reports are empty' do
       let(:ids_1) { [] }
@@ -98,7 +100,9 @@ RSpec.describe Security::Ingestion::IngestReportsService, feature_category: :vul
       end
     end
 
-    it_behaves_like 'schedules synchronization of findings to approval rules'
+    it_behaves_like 'schedules synchronization of findings to approval rules' do
+      let(:latest_pipeline) { pipeline }
+    end
 
     context 'when scheduling the SBOM ingestion' do
       let(:sbom_ingestion_scheduler) { instance_double(::Sbom::ScheduleIngestReportsService, execute: nil) }

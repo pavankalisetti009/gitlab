@@ -22,7 +22,7 @@ RSpec.shared_examples 'schedules synchronization of findings to approval rules' 
 
       it 'schedules the background job' do
         expect(Security::ScanResultPolicies::SyncFindingsToApprovalRulesWorker).to have_received(:perform_async)
-          .with(pipeline.id)
+          .with(latest_pipeline.id)
       end
     end
   end
