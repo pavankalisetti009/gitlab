@@ -153,8 +153,8 @@ module Security
       where.not(scanner: scanners)
     end
 
-    delegate :scan_type, :pipeline, :remediations_proxy, to: :scan, allow_nil: true
-    delegate :project, :sha, to: :pipeline
+    delegate :scan_type, :project, :pipeline, :remediations_proxy, to: :scan, allow_nil: true
+    delegate :sha, to: :pipeline
 
     class << self
       def count_by_scan_type

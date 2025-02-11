@@ -53,6 +53,7 @@ RSpec.describe EE::GeoHelper, feature_category: :geo_replication do
         name: replicator.replicable_name,
         name_plural: replicator.replicable_name_plural,
         graphql_field_name: replicator.graphql_field_name,
+        graphql_registry_class: replicator.registry_class,
         graphql_mutation_registry_class: replicator.graphql_mutation_registry_class,
         verification_enabled: replicator.verification_enabled?
       })

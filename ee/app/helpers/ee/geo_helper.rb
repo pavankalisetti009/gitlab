@@ -59,6 +59,7 @@ module EE
         name: replicator_class.replicable_name,
         name_plural: replicator_class.replicable_name_plural,
         graphql_field_name: replicator_class.graphql_field_name,
+        graphql_registry_class: replicator_class.registry_class,
         graphql_mutation_registry_class: replicator_class.graphql_mutation_registry_class,
         verification_enabled: replicator_class.verification_enabled?
       }
