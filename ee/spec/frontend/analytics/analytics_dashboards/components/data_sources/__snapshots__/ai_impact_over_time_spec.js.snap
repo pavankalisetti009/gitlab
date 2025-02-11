@@ -123,7 +123,7 @@ exports[`AI Impact Over Time Data Source fetch setVisualizationOverrides callbac
         "titleIcon": "clock",
         "tooltip": {
           "description": "5 out of 10 GitLab Duo users interacted with Duo Chat in the last 30 days. %{linkStart}Learn more%{linkEnd}.",
-          "descriptionLink": "/help/user/gitlab_duo_chat/index",
+          "descriptionLink": "/help/user/gitlab_duo_chat/_index",
         },
       },
     },

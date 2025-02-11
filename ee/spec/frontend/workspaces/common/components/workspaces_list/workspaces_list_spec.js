@@ -75,7 +75,7 @@ describe('workspaces/common/components/workspaces_list/workspaces_list_spec.js',
     });
 
     it('displays a link that navigates to the workspaces help page', () => {
-      expect(findHelpLink().attributes().href).toContain('user/workspace/index.md');
+      expect(findHelpLink().attributes().href).toContain('user/workspace/_index.md');
     });
 
     describe('When the pagination component emits input event', () => {

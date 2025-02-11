@@ -357,7 +357,7 @@ describe('workspaces/user/pages/create.vue', () => {
           'A devfile defines the development environment for a GitLab project. A workspace must have a valid devfile in the Git reference you use.',
         popoverTextParagraph2:
           'If your devfile is not in the root directory of your project, specify a relative path.',
-        popoverLinkHref: '/help/user/workspace/index.md#devfile',
+        popoverLinkHref: '/help/user/workspace/_index.md#devfile',
         popoverLinkText: 'Learn more.',
       });
     });
