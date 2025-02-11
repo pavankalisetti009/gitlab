@@ -16347,7 +16347,8 @@ CREATE TABLE merge_requests_closing_issues (
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL,
     from_mr_description boolean DEFAULT true NOT NULL,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_8532dd8dc4 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE merge_requests_closing_issues_id_seq
