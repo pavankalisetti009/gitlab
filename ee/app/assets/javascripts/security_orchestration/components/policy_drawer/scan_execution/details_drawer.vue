@@ -65,7 +65,7 @@ export default {
       return humanizeRules(this.rules);
     },
     parsedYaml() {
-      return fromYaml({ manifest: this.policy.yaml }).policy;
+      return fromYaml({ manifest: this.policy.yaml });
     },
     configuration() {
       return this.parsedYaml.skip_ci || DEFAULT_SKIP_SI_CONFIGURATION;

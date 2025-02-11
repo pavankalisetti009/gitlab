@@ -198,7 +198,7 @@ enabled: true`;
 
       expect(findPolicyEditorLayout().props()).toMatchObject({
         parsingError: '',
-        policy: fromYaml({ manifest: DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE }).policy,
+        policy: fromYaml({ manifest: DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE }),
         yamlEditorValue: DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE,
       });
       findPolicyEditorLayout().vm.$emit('update-yaml', newManifest);
@@ -256,7 +256,7 @@ enabled: true`;
       const initialValue = [RULE_KEY_MAP[SCAN_EXECUTION_PIPELINE_RULE]()];
       expect(findPolicyEditorLayout().props('policy').rules).toStrictEqual(initialValue);
       expect(
-        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).policy.rules,
+        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).rules,
       ).toStrictEqual(initialValue);
       expect(findAllRuleSections()).toHaveLength(1);
 
@@ -269,7 +269,7 @@ enabled: true`;
       ];
       expect(findPolicyEditorLayout().props('policy').rules).toStrictEqual(finalValue);
       expect(
-        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).policy.rules,
+        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).rules,
       ).toStrictEqual(finalValue);
       expect(findAllRuleSections()).toHaveLength(2);
     });
@@ -287,7 +287,7 @@ enabled: true`;
       const initialValue = [RULE_KEY_MAP[SCAN_EXECUTION_PIPELINE_RULE]()];
       expect(findPolicyEditorLayout().props('policy').rules).toStrictEqual(initialValue);
       expect(
-        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).policy.rules,
+        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).rules,
       ).toStrictEqual(initialValue);
 
       const finalValue = [{ ...RULE_KEY_MAP[SCAN_EXECUTION_PIPELINE_RULE](), branches: ['main'] }];
@@ -296,7 +296,7 @@ enabled: true`;
 
       expect(findPolicyEditorLayout().props('policy').rules).toStrictEqual(finalValue);
       expect(
-        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).policy.rules,
+        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).rules,
       ).toStrictEqual(finalValue);
     });
 
@@ -308,7 +308,7 @@ enabled: true`;
       expect(findAllRuleSections()).toHaveLength(2);
       expect(findPolicyEditorLayout().props('policy').rules).toHaveLength(2);
       expect(
-        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).policy.rules,
+        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).rules,
       ).toHaveLength(2);
 
       findRuleSection().vm.$emit('remove', 1);
@@ -317,7 +317,7 @@ enabled: true`;
       expect(findAllRuleSections()).toHaveLength(1);
       expect(findPolicyEditorLayout().props('policy').rules).toHaveLength(1);
       expect(
-        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).policy.rules,
+        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).rules,
       ).toHaveLength(1);
     });
   });
@@ -332,7 +332,7 @@ enabled: true`;
       const initialValue = [buildScannerAction({ scanner: DEFAULT_SCANNER })];
       expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(initialValue);
       expect(
-        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).policy.actions,
+        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).actions,
       ).toStrictEqual(initialValue);
 
       findAddActionButton().vm.$emit('click');
@@ -344,7 +344,7 @@ enabled: true`;
       ];
       expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(finalValue);
       expect(
-        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).policy.actions,
+        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).actions,
       ).toStrictEqual(finalValue);
     });
 
@@ -362,7 +362,7 @@ enabled: true`;
       const initialValue = [buildScannerAction({ scanner: DEFAULT_SCANNER })];
       expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(initialValue);
       expect(
-        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).policy.actions,
+        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).actions,
       ).toStrictEqual(initialValue);
 
       const finalValue = [buildScannerAction({ scanner: 'sast' })];
@@ -371,7 +371,7 @@ enabled: true`;
 
       expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(finalValue);
       expect(
-        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).policy.actions,
+        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).actions,
       ).toStrictEqual(finalValue);
     });
 
@@ -383,7 +383,7 @@ enabled: true`;
       expect(findAllActionBuilders()).toHaveLength(2);
       expect(findPolicyEditorLayout().props('policy').actions).toHaveLength(2);
       expect(
-        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).policy.actions,
+        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).actions,
       ).toHaveLength(2);
 
       findActionBuilder().vm.$emit('remove', 1);
@@ -392,7 +392,7 @@ enabled: true`;
       expect(findAllActionBuilders()).toHaveLength(1);
       expect(findPolicyEditorLayout().props('policy').actions).toHaveLength(1);
       expect(
-        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).policy.actions,
+        fromYaml({ manifest: findPolicyEditorLayout().props('yamlEditorValue') }).actions,
       ).toHaveLength(1);
     });
 
@@ -714,7 +714,7 @@ enabled: true`;
     it('renders default yaml in new format', () => {
       expect(findPolicyEditorLayout().props()).toMatchObject({
         parsingError: '',
-        policy: fromYaml({ manifest: DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE_NEW_FORMAT }).policy,
+        policy: fromYaml({ manifest: DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE_NEW_FORMAT }),
         yamlEditorValue: DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE_NEW_FORMAT,
       });
     });

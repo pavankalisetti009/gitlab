@@ -56,11 +56,9 @@ export const hasInvalidScanners = (actions = []) => {
  * Construct a policy object expected by the policy editor from a yaml manifest.
  * @param {Object} options
  * @param {String}  options.manifest a security policy in yaml form
- * @param {Boolean} options.validateRuleMode if properties should be validated
- * @returns {Object} security policy object and any errors
+ * @returns {Object} security policy as JS object
  */
-export const fromYaml = ({ manifest, validateRuleMode = false }) => {
-  const error = { hasParsingError: false };
+export const fromYaml = ({ manifest }) => {
   const { securityPoliciesNewYamlFormat = false } = window.gon?.features || {};
 
   try {
@@ -72,31 +70,35 @@ export const fromYaml = ({ manifest, validateRuleMode = false }) => {
         })
       : safeLoad(manifest, { json: true });
 
-    const policy = addIdsToPolicy(payload);
-
-    if (validateRuleMode) {
-      if (
-        hasConflictingKeys(policy.rules) ||
-        hasInvalidBranchType(policy.rules) ||
-        hasInvalidCron(policy.rules)
-      ) {
-        error.hasParsingError = true;
-        error.rules = true;
-      }
-
-      if (hasInvalidTemplate(policy.actions) || hasInvalidScanners(policy.actions)) {
-        error.hasParsingError = true;
-        error.actions = true;
-      }
-    }
-
-    return { policy, parsingError: error };
+    return addIdsToPolicy(payload);
   } catch {
     /**
      * Catch parsing error of safeLoad
      */
-    return { policy: {}, parsingError: { hasParsingError: true, actions: true, rules: true } };
+    return {};
   }
+};
+
+/**
+ * Validate policy actions and rules keys
+ * @param policy
+ * @returns {Object} errors object. If empty, policy is valid.
+ */
+export const validatePolicy = (policy) => {
+  const error = {};
+  if (
+    hasConflictingKeys(policy.rules) ||
+    hasInvalidBranchType(policy.rules) ||
+    hasInvalidCron(policy.rules)
+  ) {
+    error.rules = true;
+  }
+
+  if (hasInvalidTemplate(policy.actions) || hasInvalidScanners(policy.actions)) {
+    error.actions = true;
+  }
+
+  return error;
 };
 
 /**
@@ -105,5 +107,8 @@ export const fromYaml = ({ manifest, validateRuleMode = false }) => {
  * @returns {Object} security policy object and any errors
  */
 export const createPolicyObject = (manifest) => {
-  return fromYaml({ manifest, validateRuleMode: true });
+  const policy = fromYaml({ manifest });
+  const parsingError = validatePolicy(policy);
+
+  return { policy, parsingError };
 };

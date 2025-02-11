@@ -159,7 +159,6 @@ export default {
       : newPolicyYaml;
 
     const { policy, parsingError } = createPolicyObject(yamlEditorValue);
-    const { hasParsingError } = parsingError;
 
     const hasSkipCi = 'skip_ci' in policy;
     if (!hasSkipCi && this.glFeatures.securityPoliciesSkipCi) {
@@ -173,7 +172,6 @@ export default {
       dismissPerformanceWarningModal: false,
       policy,
       policyModificationAction: null,
-      hasParsingError,
       yamlEditorValue,
       mode: EDITOR_MODE_RULE,
       documentationPath: setUrlFragment(
@@ -267,8 +265,7 @@ export default {
       this.mode = mode;
     },
     handleActionBuilderParsingError(key) {
-      this.hasParsingError = true;
-      this.parsingError = { ...this.parsingError, hasParsingError: true, actions: true };
+      this.parsingError = { ...this.parsingError, actions: true };
       this.specificActionSectionError = ERROR_MESSAGE_MAP[key] || '';
     },
     handleRemoveProperty(property) {
@@ -314,7 +311,6 @@ export default {
       this.yamlEditorValue = manifest;
       this.policy = policy;
       this.parsingError = parsingError;
-      this.hasParsingError = parsingError.hasParsingError;
       this.specificActionSectionError = '';
     },
     updateYamlEditorValue(policy) {
