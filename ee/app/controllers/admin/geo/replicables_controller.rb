@@ -4,7 +4,7 @@ class Admin::Geo::ReplicablesController < Admin::Geo::ApplicationController
   before_action :check_license!
   before_action :set_replicator_class, only: [:index, :show]
   before_action :set_replicator_with_id, only: :show
-  before_action :load_node_data, only: [:index]
+  before_action :load_node_data, only: [:index, :show]
   before_action -> { push_frontend_feature_flag(:geo_replicables_show_view, current_user) }, only: :index
 
   def index
