@@ -51,39 +51,43 @@ RSpec.describe 'getting an issue list at root level', feature_category: :team_pl
   end
 
   context 'when fetching issues from multiple projects' do
-    context 'when ip_restrictions feature is enabled' do
-      before do
-        stub_licensed_features(group_ip_restriction: true)
+    before do
+      stub_licensed_features(group_ip_restriction: true)
+      stub_application_setting(check_namespace_plan: true)
+    end
+
+    let(:fields) do
+      <<~QUERY
+        nodes {
+          id
+          epic {
+            id
+          }
+        }
+      QUERY
+    end
+
+    it 'avoids N+1 queries', :use_sql_query_cache do
+      post_query # warm-up
+
+      control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
+        post_graphql(query, current_user: current_user)
       end
+      expect_graphql_errors_to_be_empty
 
-      context 'when check_namespace_plan setting is enabled' do
-        before do
-          stub_application_setting(check_namespace_plan: true)
-        end
+      new_private_project = create(:project, :private, developers: current_user)
+      create(:issue, project: new_private_project)
 
-        it 'avoids N+1 queries', :use_sql_query_cache do
-          post_query # warm-up
+      root_group = create(:group, :private, maintainers: current_user)
+      create(:issue, project: create(:project, :private, group: root_group))
+      child_group = create(:group, :private, parent: root_group)
+      create(:issue, project: create(:project, :private, group: child_group))
 
-          control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
-            post_graphql(query, current_user: current_user)
-          end
-          expect_graphql_errors_to_be_empty
-
-          new_private_project = create(:project, :private, developers: current_user)
-          create(:issue, project: new_private_project)
-
-          root_group = create(:group, :private, maintainers: current_user)
-          create(:issue, project: create(:project, :private, group: root_group))
-          child_group = create(:group, :private, parent: root_group)
-          create(:issue, project: create(:project, :private, group: child_group))
-
-          # Added a threshold here because a nested issue was created, which involves another query for preloading the
-          # child group's parent namespaces used for the `user_banned_from_namespace` policy.
-          expect { post_graphql(query, current_user: current_user) }.not_to exceed_all_query_limit(control)
-            .with_threshold(1)
-          expect_graphql_errors_to_be_empty
-        end
-      end
+      # Added a threshold here because a nested issue was created, which involves another query for preloading the
+      # child group's parent namespaces used for the `user_banned_from_namespace` policy.
+      expect { post_graphql(query, current_user: current_user) }.not_to exceed_all_query_limit(control)
+        .with_threshold(1)
+      expect_graphql_errors_to_be_empty
     end
   end
 
