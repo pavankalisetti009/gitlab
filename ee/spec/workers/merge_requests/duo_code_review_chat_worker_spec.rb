@@ -10,6 +10,7 @@ RSpec.describe MergeRequests::DuoCodeReviewChatWorker, feature_category: :code_r
 
   let(:note_type) { :diff_note_on_merge_request }
   let(:note_content) { "@#{::Users::Internal.duo_code_review_bot.username} Hello!" }
+  let(:expected_note_content) { ::Gitlab::Llm::Utils::CodeSuggestionFormatter.append_prompt(note.note) }
 
   let!(:first_discussion_note) do
     create(
@@ -59,20 +60,20 @@ RSpec.describe MergeRequests::DuoCodeReviewChatWorker, feature_category: :code_r
       }
     end
 
-    shared_examples 'performing a Duo Code Review chat request' do
-      before do
-        allow_next_instance_of(
-          Gitlab::Llm::Completions::Chat,
-          an_object_having_attributes(content: note.note),
-          nil,
-          additional_context: additional_context
-        ) do |chat|
-          allow(chat)
-            .to receive(:execute)
-            .and_return(response_modifier)
-        end
+    before do
+      allow_next_instance_of(
+        Gitlab::Llm::Completions::Chat,
+        an_object_having_attributes(content: expected_note_content),
+        nil,
+        additional_context: additional_context
+      ) do |chat|
+        allow(chat)
+          .to receive(:execute)
+          .and_return(response_modifier)
       end
+    end
 
+    shared_examples 'performing a Duo Code Review chat request' do
       it 'creates note based on chat response' do
         expect(Gitlab::Llm::ChatMessage)
           .to receive(:new)
@@ -101,7 +102,7 @@ RSpec.describe MergeRequests::DuoCodeReviewChatWorker, feature_category: :code_r
             chat_message_params(
               ::Gitlab::Llm::AiMessage::ROLE_USER,
               try(:resource) || note,
-              note.note
+              expected_note_content
             )
           )
           .and_call_original
@@ -163,7 +164,45 @@ RSpec.describe MergeRequests::DuoCodeReviewChatWorker, feature_category: :code_r
 
     it_behaves_like 'performing a Duo Code Review chat request'
 
+    context 'when the response body includes code suggestion' do
+      let(:response_modifier) do
+        instance_double(
+          Gitlab::Llm::Chain::ResponseModifier,
+          response_body: response_body
+        )
+      end
+
+      let(:response_body) do
+        <<~RESPONSE
+        Comment with suggestions
+        <from>
+          first offending line
+            second offending line
+        </from>
+        <to>
+          first improved line
+            second improved line
+        </to>
+        Some more comments
+        RESPONSE
+      end
+
+      it 'parses code suggestions' do
+        worker.perform(note.id)
+
+        expect(Note.last.note).to eq <<~NOTE_CONTENT
+        Comment with suggestions
+        ```suggestion:-0+1
+          first improved line
+            second improved line
+        ```
+        Some more comments
+        NOTE_CONTENT
+      end
+    end
+
     context 'when the note is not a diff note' do
+      let(:expected_note_content) { note.note }
       let(:note_type) { :discussion_note_on_merge_request }
       let(:resource) { merge_request }
       let(:additional_context) do
