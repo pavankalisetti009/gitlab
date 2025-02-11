@@ -182,7 +182,7 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :cell do
     The table `#{table_name}` has an invalid `desired_sharding_key` in the `db/docs` YML file. The column references `#{references}` but it must reference one of `#{allowed_sharding_key_referenced_tables.join(', ')}`.
 
       To choose an appropriate desired_sharding_key for this table please refer
-      to our guidelines at https://docs.gitlab.com/ee/development/cells/index.html#defining-a-desired-sharding-key, or consult with the Tenant Scale group.
+      to our guidelines at https://docs.gitlab.com/ee/development/cells/#define-a-desired_sharding_key-to-automatically-backfill-a-sharding_key, or consult with the Tenant Scale group.
     HEREDOC
   end
 
