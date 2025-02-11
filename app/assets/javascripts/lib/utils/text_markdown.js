@@ -16,6 +16,8 @@ const INDENT_LENGTH = 2;
 const LIST_LINE_HEAD_PATTERN =
   /^(?<indent>\s*)(?<leader>((?<isUl>[*+-])|(?<isOl>\d+\.))( \[([xX~\s])\])?\s)(?<content>.)?/;
 
+const INDENTED_LINE_PATTERN = /^(?<indent>\s+)(?<content>.)?/;
+
 // detect a horizontal rule that might be mistaken for a list item (not full pattern for an <hr>)
 const HR_PATTERN = /^((\s{0,3}-+\s*-+\s*-+\s*[\s-]*)|(\s{0,3}\*+\s*\*+\s*\*+\s*[\s*]*))$/;
 
@@ -627,6 +629,18 @@ function handleSurroundSelectedText(e, textArea) {
 
 /* eslint-enable @gitlab/require-i18n-strings */
 
+function isEnterPressedOnly(e) {
+  return e.key === 'Enter' && !e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey;
+}
+
+function shouldHandleIndentation(e, textArea) {
+  return (
+    isEnterPressedOnly(e) &&
+    textArea.selectionStart === textArea.selectionEnd &&
+    !compositioningNoteText
+  );
+}
+
 /**
  * Returns the content for a new line following a ordered list item.
  *
@@ -704,12 +718,10 @@ function updateOlLineNumbersAfterSelection(textArea, listLineMatch, from) {
 
 function handleContinueList(e, textArea) {
   if (!gon.markdown_automatic_lists) return;
-  if (!(e.key === 'Enter')) return;
-  if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
-  if (textArea.selectionStart !== textArea.selectionEnd) return;
 
-  // prevent unintended line breaks inserted using Japanese IME on MacOS
-  if (compositioningNoteText) return;
+  if (!shouldHandleIndentation(e, textArea)) {
+    return;
+  }
 
   const selectedLines = linesFromSelection(textArea);
   const firstSelectedLine = selectedLines.lines[0];
@@ -761,12 +773,54 @@ function handleContinueList(e, textArea) {
   }
 }
 
+function handleContinueIndentedText(e, textArea) {
+  if (!gon.features?.continueIndentedText) return;
+
+  if (!shouldHandleIndentation(e, textArea)) {
+    return;
+  }
+
+  const selectedLines = linesFromSelection(textArea);
+  const firstSelectedLine = selectedLines.lines[0];
+  const lineMatch = firstSelectedLine.match(INDENTED_LINE_PATTERN);
+
+  if (!lineMatch) return;
+
+  const { indent, content } = lineMatch.groups;
+  const isInsideLeadingWhitespace =
+    selectedLines.selectionStart - selectedLines.startPos < indent.length;
+  if (isInsideLeadingWhitespace) {
+    return;
+  }
+
+  if (!content) {
+    textArea.selectionStart -= lineMatch[0].length;
+    return;
+  }
+
+  e.preventDefault();
+
+  updateText({
+    tag: indent,
+    textArea,
+    blockTag: '',
+    wrap: false,
+    select: '',
+    tagContent: '',
+  });
+}
+
 export function keypressNoteText(e) {
   const textArea = this;
 
   if ($(textArea).atwho?.('isSelecting')) return;
 
   handleContinueList(e, textArea);
+
+  // If this was in fact a valid list item, indentation was handled already
+  if (!e.isDefaultPrevented()) {
+    handleContinueIndentedText(e, textArea);
+  }
   handleSurroundSelectedText(e, textArea);
 }
 
