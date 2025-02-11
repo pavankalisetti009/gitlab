@@ -45,7 +45,6 @@ export default {
     GlAccordionItem,
   },
   inject: [
-    'featurePipelineMaintenanceModeEnabled',
     'migratePipelineToPolicyPath',
     'pipelineConfigurationFullPathEnabled',
     'pipelineConfigurationEnabled',
@@ -163,7 +162,7 @@ export default {
       );
     },
     showMaintenanceModeAlert() {
-      return this.featurePipelineMaintenanceModeEnabled && !this.maintenanceModeDismissed;
+      return !this.maintenanceModeDismissed;
     },
     showPostMigrationAlert() {
       return !this.isCreatingNewPolicy && this.hasMigratedPipeline;

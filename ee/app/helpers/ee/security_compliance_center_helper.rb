@@ -31,8 +31,6 @@ module EE
           feature_frameworks_report_enabled: true.to_s,
           feature_projects_report_enabled: true.to_s,
           feature_security_policies_enabled: can?(current_user, :read_security_orchestration_policies, group).to_s,
-          feature_pipeline_maintenance_mode_enabled: ::Feature.enabled?(:ff_compliance_pipeline_maintenance_mode,
-            group).to_s,
           adherence_v2_enabled: ::Feature.enabled?(:enable_standards_adherence_dashboard_v2, group).to_s,
 
           violations_csv_export_path: violations_report && group_security_compliance_violation_reports_path(

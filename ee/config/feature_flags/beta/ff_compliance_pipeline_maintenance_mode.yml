@@ -1,9 +1,0 @@
----
-name: ff_compliance_pipeline_maintenance_mode
-feature_issue_url: https://gitlab.com/groups/gitlab-org/-/epics/12324
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/145169
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/440149
-milestone: '16.10'
-group: group::compliance
-type: beta
-default_enabled: true

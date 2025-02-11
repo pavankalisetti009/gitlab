@@ -52,7 +52,6 @@ describe('ComplianceFrameworksReport component', () => {
   });
 
   const defaultInjects = {
-    featurePipelineMaintenanceModeEnabled: false,
     migratePipelineToPolicyPath: '/migrate-pipeline--to-policy-example-path',
     pipelineExecutionPolicyPath: '/pipeline-execution-policy-example-path',
     groupSecurityPoliciesPath: '/group-security-policies-example-path',
@@ -128,15 +127,11 @@ describe('ComplianceFrameworksReport component', () => {
     it('does not render an error message', () => {
       expect(findQueryError().exists()).toBe(false);
     });
-
-    it('does not render the maintenance-mode-alert', () => {
-      expect(findMaintenanceAlert().exists()).toBe(false);
-    });
   });
 
-  describe('when feature flag for pipeline maintenance mode is enabled', () => {
+  describe('maintenence mode', () => {
     beforeEach(() => {
-      createComponent(mount, {}, {}, {}, { featurePipelineMaintenanceModeEnabled: true });
+      createComponent(mount, {});
     });
 
     it('renders the maintenance-mode-alert', () => {
