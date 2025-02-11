@@ -105,7 +105,7 @@ To host the product documentation site with GitLab Pages:
 1. Optional. Set the GitLab Pages domain name. Depending on the type of the
    GitLab Pages website, you have two options:
 
-   | Type of website         | [Default domain](../user/project/pages/getting_started_part_one.md#gitlab-pages-default-domain-names) | [Custom domain](../user/project/pages/custom_domains_ssl_tls_certification/index.md) |
+   | Type of website         | [Default domain](../user/project/pages/getting_started_part_one.md#gitlab-pages-default-domain-names) | [Custom domain](../user/project/pages/custom_domains_ssl_tls_certification/_index.md) |
    |-------------------------|----------------|---------------|
    | [Project website](../user/project/pages/getting_started_part_one.md#project-website-examples) | Not supported | Supported |
    | [User or group website](../user/project/pages/getting_started_part_one.md#user-and-group-website-examples) | Supported | Supported |

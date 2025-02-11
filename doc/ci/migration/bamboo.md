@@ -644,7 +644,7 @@ Production:
 ```
 
 In GitLab CI/CD, You can create a [deployment job](../jobs/_index.md#deployment-jobs)
-that deploys to an [environment](../environments/_index.md) or creates a [release](../../user/project/releases/index.md).
+that deploys to an [environment](../environments/_index.md) or creates a [release](../../user/project/releases/_index.md).
 
 For example, in a GitLab CI/CD `.gitlab-ci.yml` file:
 

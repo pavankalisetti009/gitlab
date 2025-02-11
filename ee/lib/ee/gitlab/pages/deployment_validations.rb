@@ -27,7 +27,7 @@ module EE
           return if versioned_deployments_limit > versioned_deployments_count
 
           docs_link = Rails.application.routes.url_helpers.help_page_url(
-            'user/project/pages/index.md',
+            'user/project/pages/_index.md',
             anchor: 'limits'
           )
 

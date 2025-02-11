@@ -126,7 +126,7 @@ GitLab Dedicated uses the [advanced search functionality](../../integration/adva
 
 #### GitLab Pages
 
-You can use [GitLab Pages](../../user/project/pages/index.md) on GitLab Dedicated to host your static website. The domain name is `tenant_name.gitlab-dedicated.site`, where `tenant_name` is the same as your instance URL.
+You can use [GitLab Pages](../../user/project/pages/_index.md) on GitLab Dedicated to host your static website. The domain name is `tenant_name.gitlab-dedicated.site`, where `tenant_name` is the same as your instance URL.
 
 NOTE:
 Custom domains for GitLab Pages are not supported. For example, if you added a custom domain named `gitlab.my-company.com`, the URL to access the Pages site for your GitLab Dedicated instance would still be `tenant_name.gitlab-dedicated.site`.

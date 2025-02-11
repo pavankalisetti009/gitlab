@@ -693,7 +693,7 @@ To set a limit on your instance, use the
 
 ### Number of parallel Pages deployments
 
-When using [parallel Pages deployments](../user/project/pages/index.md#parallel-deployments), the total number
+When using [parallel Pages deployments](../user/project/pages/_index.md#parallel-deployments), the total number
 of parallel Pages deployments permitted for a top-level namespace is 1000.
 
 ### Number of registered runners per scope

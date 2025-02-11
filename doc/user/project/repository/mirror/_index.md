@@ -175,7 +175,7 @@ If you're mirroring over SSH (using an `ssh://` URL), you can authenticate using
 
 - Password-based authentication, just as over HTTPS.
 - Public key authentication. This method is often more secure than password authentication,
-  especially when the other repository supports [deploy keys](../../deploy_keys/index.md).
+  especially when the other repository supports [deploy keys](../../deploy_keys/_index.md).
 
 ### Get your SSH public key
 
@@ -190,7 +190,7 @@ needs this key to establish trust with your GitLab repository. To copy your SSH 
 1. Identify the correct repository, and select **Copy SSH public key** (**{copy-to-clipboard}**).
 1. Add the public SSH key to the other repository's configuration:
    - If the other repository is hosted on GitLab, add the public SSH key
-     as a [deploy key](../../deploy_keys/index.md).
+     as a [deploy key](../../deploy_keys/_index.md).
    - If the other repository is hosted elsewhere, add the key to
      your user's `authorized_keys` file. Paste the entire public SSH key into the
      file on its own line and save it.
