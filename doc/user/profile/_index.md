@@ -75,7 +75,7 @@ You can update your [primary email address](#change-your-primary-email).
 
 NOTE:
 [Making your email non-public](#set-your-public-email) does not prevent it from being used for commit matching,
-[project imports](../project/import/index.md), and [group migrations](../group/import/_index.md).
+[project imports](../project/import/_index.md), and [group migrations](../group/import/_index.md).
 
 ## Delete email addresses from your user profile
 

@@ -403,7 +403,7 @@ This file is located at:
 - `/var/log/gitlab/gitlab-rails/integrations_json.log` on Linux package installations.
 - `/home/git/gitlab/log/integrations_json.log` on self-compiled installations.
 
-It contains information about [integration](../../user/project/integrations/index.md)
+It contains information about [integration](../../user/project/integrations/_index.md)
 activities, such as Jira, Asana, and irker services. It uses JSON format,
 like this example:
 
@@ -694,7 +694,7 @@ This file is located at:
 - `/var/log/gitlab/gitlab-rails/importer.log` on Linux package installations.
 - `/home/git/gitlab/log/importer.log` on self-compiled installations.
 
-This file logs the progress of [project imports and migrations](../../user/project/import/index.md).
+This file logs the progress of [project imports and migrations](../../user/project/import/_index.md).
 
 ## `exporter.log`
 

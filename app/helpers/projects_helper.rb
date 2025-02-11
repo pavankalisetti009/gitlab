@@ -470,7 +470,7 @@ module ProjectsHelper
       pagesAccessControlEnabled: Gitlab.config.pages.access_control,
       pagesAccessControlForced: ::Gitlab::Pages.access_control_is_forced?(project.group),
       pagesHelpPath: help_page_path('user/project/pages/pages_access_control.md'),
-      issuesHelpPath: help_page_path('user/project/issues/index.md'),
+      issuesHelpPath: help_page_path('user/project/issues/_index.md'),
       membersPagePath: project_project_members_path(project),
       environmentsHelpPath: help_page_path('ci/environments/_index.md'),
       featureFlagsHelpPath: help_page_path('operations/feature_flags.md'),

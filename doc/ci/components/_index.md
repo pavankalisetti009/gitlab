@@ -52,7 +52,7 @@ to a dedicated component project.
 
 To create a component project, you must:
 
-1. [Create a new project](../../user/project/index.md#create-a-blank-project) with a `README.md` file:
+1. [Create a new project](../../user/project/_index.md#create-a-blank-project) with a `README.md` file:
    - Ensure the description gives a clear introduction to the component.
    - Optional. After the project is created, you can [add a project avatar](../../user/project/working_with_projects.md#add-a-project-avatar).
 
