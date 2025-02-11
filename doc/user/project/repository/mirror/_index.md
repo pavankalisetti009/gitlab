@@ -124,7 +124,7 @@ You can also manually trigger an update:
 
 - At most once every five minutes on GitLab.com.
 - According to [the pull mirroring interval limit](../../../../administration/instance_limits.md#pull-mirroring-interval)
-  set by the administrator on self-managed instances.
+  set by the administrator on GitLab Self-Managed instances.
 
 NOTE:
 [GitLab Silent Mode](../../../../administration/silent_mode/_index.md) disables both push and pull updates.
@@ -145,8 +145,7 @@ Prerequisites:
 1. Select **Settings > Repository**.
 1. Expand **Mirroring repositories**.
 1. Scroll to **Mirrored repositories** and identify the mirror to update.
-1. Select **Update now** (**{retry}**):
-   ![Repository mirroring force update user interface](img/repository_mirroring_force_update_v11_5.png)
+1. Select **Update now** (**{retry}**).
 
 ## Authentication methods for mirrors
 
