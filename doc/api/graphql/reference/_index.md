@@ -10520,6 +10520,30 @@ Input type: `TodoSnoozeInput`
 | <a id="mutationtodosnoozeerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
 | <a id="mutationtodosnoozetodo"></a>`todo` | [`Todo!`](#todo) | Requested to-do item. |
 
+### `Mutation.todoSnoozeMany`
+
+DETAILS:
+**Introduced** in GitLab 17.9.
+**Status**: Experiment.
+
+Input type: `TodoSnoozeManyInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationtodosnoozemanyclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationtodosnoozemanyids"></a>`ids` | [`[TodoID!]!`](#todoid) | Global IDs of the to-do items to process (a maximum of 100 is supported at once). |
+| <a id="mutationtodosnoozemanysnoozeuntil"></a>`snoozeUntil` | [`Time!`](#time) | Time until which the todos should be snoozed. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationtodosnoozemanyclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationtodosnoozemanyerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
+| <a id="mutationtodosnoozemanytodos"></a>`todos` | [`[Todo!]!`](#todo) | Updated to-do items. |
+
 ### `Mutation.todoUnSnooze`
 
 DETAILS:
@@ -10542,6 +10566,29 @@ Input type: `TodoUnSnoozeInput`
 | <a id="mutationtodounsnoozeclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationtodounsnoozeerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
 | <a id="mutationtodounsnoozetodo"></a>`todo` | [`Todo!`](#todo) | Requested to-do item. |
+
+### `Mutation.todoUnsnoozeMany`
+
+DETAILS:
+**Introduced** in GitLab 17.9.
+**Status**: Experiment.
+
+Input type: `TodoUnsnoozeManyInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationtodounsnoozemanyclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationtodounsnoozemanyids"></a>`ids` | [`[TodoID!]!`](#todoid) | Global IDs of the to-do items to process (a maximum of 100 is supported at once). |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationtodounsnoozemanyclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationtodounsnoozemanyerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
+| <a id="mutationtodounsnoozemanytodos"></a>`todos` | [`[Todo!]!`](#todo) | Updated to-do items. |
 
 ### `Mutation.todosMarkAllDone`
 
