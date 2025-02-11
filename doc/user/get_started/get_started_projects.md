@@ -54,8 +54,8 @@ Use the following tools to manage secure access to your projects:
 For more information, see:
 
 - [Project access tokens](../project/settings/project_access_tokens.md)
-- [Deploy keys](../project/deploy_keys/index.md)
-- [Deploy tokens](../project/deploy_tokens/index.md)
+- [Deploy keys](../project/deploy_keys/_index.md)
+- [Deploy tokens](../project/deploy_tokens/_index.md)
 
 ## Step 3: Collaborate and share projects
 

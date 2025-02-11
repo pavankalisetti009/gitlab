@@ -740,7 +740,7 @@ To mirror a GitLab.com component in your GitLab Self-Managed instance:
 1. Write a [project description](../../user/project/working_with_projects.md#edit-project-name-and-description)
    for the component project mirror because mirroring repositories does not copy the description.
 1. [Set the self-hosted component project as a catalog resource](#set-a-component-project-as-a-catalog-project).
-1. Publish [a new release](../../user/project/releases/index.md) in the self-hosted component project by
+1. Publish [a new release](../../user/project/releases/_index.md) in the self-hosted component project by
    [running a pipeline](../pipelines/_index.md#run-a-pipeline-manually) for a tag (usually the latest tag).
 
 ## CI/CD component security best practices

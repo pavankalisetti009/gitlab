@@ -123,14 +123,14 @@ RSpec.describe Gitlab::Pages::DeploymentValidations, feature_category: :pages do
         let(:pages_unique_domain_enabled) { false }
 
         include_examples "invalid pages deployment",
-          message: "Namespace reached its allowed limit of 2 extra deployments. Learn more: http://localhost/help/user/project/pages/index.md#limits"
+          message: "Namespace reached its allowed limit of 2 extra deployments. Learn more: http://localhost/help/user/project/pages/_index.md#limits"
       end
 
       context "when unique domains are enabled" do
         let(:pages_unique_domain_enabled) { true }
 
         include_examples "invalid pages deployment",
-          message: "Namespace reached its allowed limit of 2 extra deployments. Learn more: http://localhost/help/user/project/pages/index.md#limits"
+          message: "Namespace reached its allowed limit of 2 extra deployments. Learn more: http://localhost/help/user/project/pages/_index.md#limits"
       end
     end
 
@@ -149,7 +149,7 @@ RSpec.describe Gitlab::Pages::DeploymentValidations, feature_category: :pages do
         let(:pages_unique_domain_enabled) { false }
 
         include_examples "invalid pages deployment",
-          message: "Namespace reached its allowed limit of 2 extra deployments. Learn more: http://localhost/help/user/project/pages/index.md#limits"
+          message: "Namespace reached its allowed limit of 2 extra deployments. Learn more: http://localhost/help/user/project/pages/_index.md#limits"
       end
 
       context "when unique domains are enabled" do
