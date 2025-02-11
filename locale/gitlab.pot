@@ -42487,6 +42487,9 @@ msgstr ""
 msgid "Pipelines|There are no merge trains for the %{branch} target branch in %{projectName}. Merge requests added to a merge train are displayed on this page. Go to a merge request to %{linkStart}start a merge train.%{linkEnd}"
 msgstr ""
 
+msgid "Pipelines|There was a problem fetching the downstream pipeline jobs."
+msgstr ""
+
 msgid "Pipelines|There was a problem fetching the pipeline iid."
 msgstr ""
 
@@ -63120,6 +63123,9 @@ msgid "Versions"
 msgstr ""
 
 msgid "View File Metadata"
+msgstr ""
+
+msgid "View Pipeline: %{title}"
 msgstr ""
 
 msgid "View Stage: %{title}"
