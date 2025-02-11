@@ -3,16 +3,9 @@ import MockAdapter from 'axios-mock-adapter';
 import { sortBy } from 'lodash';
 import * as actions from 'ee/dependencies/store/modules/list/actions';
 import {
-  NAMESPACE_ORGANIZATION,
-  NAMESPACE_GROUP,
-  NAMESPACE_PROJECT,
-} from 'ee/dependencies/constants';
-import {
   FILTER,
   SORT_DESCENDING,
   FETCH_EXPORT_ERROR_MESSAGE,
-  DEPENDENCIES_CSV_FILENAME,
-  DEPENDENCIES_FILENAME,
   LICENSES_FETCH_ERROR_MESSAGE,
   VULNERABILITIES_FETCH_ERROR_MESSAGE,
   EXPORT_STARTED_MESSAGE,
@@ -422,7 +415,6 @@ describe('Dependencies actions', () => {
     beforeEach(() => {
       state = getInitialState();
       state.exportEndpoint = `${TEST_HOST}/dependency_list_exports`;
-      state.asyncExport = true;
       mock = new MockAdapter(axios);
     });
 
@@ -468,31 +460,6 @@ describe('Dependencies actions', () => {
             variant: VARIANT_INFO,
           });
         }));
-
-      describe('when async export is disabled', () => {
-        beforeEach(() => {
-          state.asyncExport = false;
-        });
-
-        it('sets SET_FETCHING_IN_PROGRESS and dispatches downloadExport', () =>
-          testAction(
-            actions.fetchExport,
-            undefined,
-            state,
-            [
-              {
-                type: 'SET_FETCHING_IN_PROGRESS',
-                payload: true,
-              },
-            ],
-            [
-              {
-                type: 'downloadExport',
-                payload: mockResponseExportEndpoint.self,
-              },
-            ],
-          ));
-      });
     });
 
     describe('on success with status other than created (201)', () => {
@@ -500,31 +467,7 @@ describe('Dependencies actions', () => {
         mock.onPost(state.exportEndpoint).replyOnce(HTTP_STATUS_OK, mockResponseExportEndpoint);
       });
 
-      it('does not dispatch downloadExport', () =>
-        testAction(
-          actions.fetchExport,
-          undefined,
-          state,
-          [
-            {
-              type: 'SET_FETCHING_IN_PROGRESS',
-              payload: true,
-            },
-            {
-              type: 'SET_FETCHING_IN_PROGRESS',
-              payload: false,
-            },
-          ],
-          [],
-        ));
-    });
-
-    describe('on failure', () => {
-      beforeEach(() => {
-        mock.onPost(state.exportEndpoint).replyOnce(HTTP_STATUS_NOT_FOUND);
-      });
-
-      it('does not dispatch downloadExport', () =>
+      it('shows alert with error', () =>
         testAction(
           actions.fetchExport,
           undefined,
@@ -547,66 +490,22 @@ describe('Dependencies actions', () => {
           });
         }));
     });
-  });
-
-  describe('downloadExport', () => {
-    let mock;
-
-    beforeEach(() => {
-      mock = new MockAdapter(axios);
-    });
-
-    afterEach(() => {
-      mock.restore();
-    });
-
-    describe('on success', () => {
-      beforeEach(() => {
-        mock
-          .onGet(mockResponseExportEndpoint.self)
-          .replyOnce(HTTP_STATUS_OK, mockResponseExportEndpoint);
-      });
-
-      describe.each`
-        namespaceType             | fileName
-        ${NAMESPACE_ORGANIZATION} | ${DEPENDENCIES_CSV_FILENAME}
-        ${NAMESPACE_GROUP}        | ${DEPENDENCIES_FILENAME}
-        ${NAMESPACE_PROJECT}      | ${DEPENDENCIES_FILENAME}
-      `('$namespaceType', ({ namespaceType, fileName }) => {
-        it(`saves the file as ${fileName}`, async () => {
-          await testAction(
-            actions.downloadExport,
-            mockResponseExportEndpoint.self,
-            { namespaceType },
-            [
-              {
-                type: 'SET_FETCHING_IN_PROGRESS',
-                payload: false,
-              },
-            ],
-            [],
-          );
-
-          expect(download).toHaveBeenCalledTimes(1);
-          expect(download).toHaveBeenCalledWith({
-            url: mockResponseExportEndpoint.download,
-            fileName,
-          });
-        });
-      });
-    });
 
     describe('on failure', () => {
       beforeEach(() => {
-        mock.onGet(mockResponseExportEndpoint.self).replyOnce(HTTP_STATUS_NOT_FOUND);
+        mock.onPost(state.exportEndpoint).replyOnce(HTTP_STATUS_NOT_FOUND);
       });
 
-      it('sets SET_FETCHING_IN_PROGRESS', () =>
+      it('shows alert with error', () =>
         testAction(
-          actions.downloadExport,
-          mockResponseExportEndpoint.self,
+          actions.fetchExport,
           undefined,
+          state,
           [
+            {
+              type: 'SET_FETCHING_IN_PROGRESS',
+              payload: true,
+            },
             {
               type: 'SET_FETCHING_IN_PROGRESS',
               payload: false,
@@ -618,7 +517,6 @@ describe('Dependencies actions', () => {
           expect(createAlert).toHaveBeenCalledWith({
             message: FETCH_EXPORT_ERROR_MESSAGE,
           });
-          expect(download).toHaveBeenCalledTimes(0);
         }));
     });
   });
