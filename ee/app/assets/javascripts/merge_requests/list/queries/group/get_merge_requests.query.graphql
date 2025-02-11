@@ -27,6 +27,7 @@ query getGroupMergeRequestsEE(
   $deployedBefore: Time
   $deployedAfter: Time
   $environmentName: String
+  $subscribed: SubscriptionStatus
   $not: MergeRequestsResolverNegatedParams
   $beforeCursor: String
   $afterCursor: String
@@ -58,6 +59,7 @@ query getGroupMergeRequestsEE(
       deployedBefore: $deployedBefore
       deployedAfter: $deployedAfter
       environmentName: $environmentName
+      subscribed: $subscribed
       not: $not
       includeSubgroups: true
       before: $beforeCursor

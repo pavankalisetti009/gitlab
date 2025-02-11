@@ -43,6 +43,7 @@ query getIssuesEE(
   $createdBefore: Time
   $closedAfter: Time
   $closedBefore: Time
+  $subscribed: SubscriptionStatus
 ) {
   group(fullPath: $fullPath) @skip(if: $isProject) @persist {
     id
@@ -84,6 +85,7 @@ query getIssuesEE(
       createdBefore: $createdBefore
       closedAfter: $closedAfter
       closedBefore: $closedBefore
+      subscribed: $subscribed
     ) {
       __persist
       pageInfo {
@@ -143,6 +145,7 @@ query getIssuesEE(
       createdBefore: $createdBefore
       closedAfter: $closedAfter
       closedBefore: $closedBefore
+      subscribed: $subscribed
     ) {
       __persist
       pageInfo {
