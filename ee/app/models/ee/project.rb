@@ -856,7 +856,16 @@ module EE
     override :triggered_hooks
     def triggered_hooks(scope, data)
       triggered = super
-      triggered.add_hooks(group_hooks) if group && feature_available?(:group_webhooks)
+
+      if group && feature_available?(:group_webhooks)
+        if ::Feature.enabled?(:extended_expiry_webhook_execution_setting, self.namespace) &&
+            scope == :resource_access_token_hooks &&
+            data[:interval] != :seven_days
+          triggered.add_hooks(group_webhooks_including_extended_token_expiry)
+        else
+          triggered.add_hooks(group_hooks)
+        end
+      end
 
       triggered
     end
@@ -1517,6 +1526,10 @@ module EE
 
     def group_hooks
       GroupHook.where(group_id: group.self_and_ancestors)
+    end
+
+    def group_webhooks_including_extended_token_expiry
+      GroupHook.where(group_id: group.groups_for_extended_webhook_execution_on_token_expiry)
     end
 
     def set_override_pull_mirror_available

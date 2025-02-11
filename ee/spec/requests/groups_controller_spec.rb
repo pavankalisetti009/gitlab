@@ -363,6 +363,43 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
       end
     end
 
+    context 'when settings extended_grat_expiry_webhooks_execute' do
+      let(:params) { { group: { extended_grat_expiry_webhooks_execute: true } } }
+
+      context 'when licensed feature is not available' do
+        before do
+          stub_licensed_features(group_webhooks: false)
+        end
+
+        it 'does not change the column' do
+          expect { subject }.not_to change { group.reload.extended_grat_expiry_webhooks_execute? }
+          expect(response).to have_gitlab_http_status(:found)
+        end
+      end
+
+      context 'when licensed feature is available' do
+        before do
+          stub_licensed_features(group_webhooks: true)
+        end
+
+        it 'successfully changes the column' do
+          expect { subject }.to change { group.reload.extended_grat_expiry_webhooks_execute? }
+          expect(response).to have_gitlab_http_status(:found)
+        end
+
+        context 'when feature flag is disabled' do
+          before do
+            stub_feature_flags(extended_expiry_webhook_execution_setting: false)
+          end
+
+          it 'does not change the column' do
+            expect { subject }.not_to change { group.reload.extended_grat_expiry_webhooks_execute? }
+            expect(response).to have_gitlab_http_status(:found)
+          end
+        end
+      end
+    end
+
     context 'settings enterprise_users_extensions_marketplace_enabled' do
       let(:params) { { group: { enterprise_users_extensions_marketplace_enabled: true } } }
 

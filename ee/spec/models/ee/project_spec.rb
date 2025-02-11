@@ -1391,7 +1391,9 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       end
 
       it 'returns true when the resolver returns true' do
-        expect(ComplianceManagement::MergeRequestApprovalSettings::Resolver).to receive(:new).with(root_ancestor, project: project)
+        expect(ComplianceManagement::MergeRequestApprovalSettings::Resolver)
+          .to receive(:new)
+          .with(root_ancestor, project: project)
 
         allow_next_instance_of(ComplianceManagement::MergeRequestApprovalSettings::Resolver) do |resolver|
           # internally still maps to require_password_to_approve so mock that call
@@ -1407,7 +1409,9 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       end
 
       it 'returns false when the resolver returns false' do
-        expect(ComplianceManagement::MergeRequestApprovalSettings::Resolver).to receive(:new).with(root_ancestor, project: project)
+        expect(ComplianceManagement::MergeRequestApprovalSettings::Resolver)
+          .to receive(:new)
+          .with(root_ancestor, project: project)
 
         allow_next_instance_of(ComplianceManagement::MergeRequestApprovalSettings::Resolver) do |resolver|
           # internally still maps to require_password_to_approve so mock that call
@@ -1432,7 +1436,9 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       end
 
       it 'returns true when the resolver returns true' do
-        expect(ComplianceManagement::MergeRequestApprovalSettings::Resolver).to receive(:new).with(root_ancestor, project: project)
+        expect(ComplianceManagement::MergeRequestApprovalSettings::Resolver)
+          .to receive(:new)
+          .with(root_ancestor, project: project)
 
         allow_next_instance_of(ComplianceManagement::MergeRequestApprovalSettings::Resolver) do |resolver|
           allow(resolver).to receive(:require_password_to_approve)
@@ -1447,7 +1453,9 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       end
 
       it 'returns false when the resolver returns false' do
-        expect(ComplianceManagement::MergeRequestApprovalSettings::Resolver).to receive(:new).with(root_ancestor, project: project)
+        expect(ComplianceManagement::MergeRequestApprovalSettings::Resolver)
+          .to receive(:new)
+          .with(root_ancestor, project: project)
 
         allow_next_instance_of(ComplianceManagement::MergeRequestApprovalSettings::Resolver) do |resolver|
           allow(resolver).to receive(:require_password_to_approve)
@@ -1638,9 +1646,9 @@ RSpec.describe Project, feature_category: :groups_and_projects do
 
   describe "#execute_hooks" do
     context "group hooks" do
-      let(:group) { create(:group) }
-      let(:project) { create(:project, namespace: group) }
-      let(:group_hook) { create(:group_hook, group: group, push_events: true) }
+      let_it_be_with_reload(:group) { create(:group) }
+      let_it_be_with_reload(:project) { create(:project, namespace: group) }
+      let_it_be_with_reload(:group_hook) { create(:group_hook, group: group, resource_access_token_events: true) }
 
       it 'does not execute the hook when the feature is disabled' do
         stub_licensed_features(group_webhooks: false)
@@ -1672,6 +1680,98 @@ RSpec.describe Project, feature_category: :groups_and_projects do
               ) { fake_wh_service }
 
             project.execute_hooks(some: 'info')
+          end
+        end
+
+        context 'when resource access token hooks for expiry notification' do
+          let(:wh_service) { double(async_execute: true) }
+
+          context 'when interval is seven days' do
+            let(:data) { { interval: :seven_days } }
+
+            it 'executes webhook' do
+              expect(WebHookService)
+                .to receive(:new)
+                .with(group_hook, data, 'resource_access_token_hooks', idempotency_key: anything)
+                .and_return(wh_service)
+
+              project.execute_hooks(data, :resource_access_token_hooks)
+            end
+          end
+
+          context 'when feature flag is disabled' do
+            let(:data) { { interval: :thirty_days } }
+
+            before do
+              stub_feature_flags(extended_expiry_webhook_execution_setting: false)
+            end
+
+            it 'adds webhook to the execution list since no setting is there' do
+              expect(WebHookService)
+                .to receive(:new)
+                .with(group_hook, data, 'resource_access_token_hooks', idempotency_key: anything)
+                .and_return(wh_service)
+
+              project.execute_hooks(data, :resource_access_token_hooks)
+            end
+          end
+
+          context 'when setting extended_grat_expiry_webhooks_execute is disabled' do
+            before do
+              group.namespace_settings.update!(extended_grat_expiry_webhooks_execute: false)
+            end
+
+            context 'when interval is thirty days' do
+              let(:data) { { interval: :thirty_days } }
+
+              it 'does not execute the hook' do
+                expect(WebHookService).not_to receive(:new)
+
+                project.execute_hooks(data, :resource_access_token_hooks)
+              end
+            end
+
+            context 'when interval is sixty days' do
+              let(:data) { { interval: :sixty_days } }
+
+              it 'does not execute the hook' do
+                expect(WebHookService).not_to receive(:new)
+
+                project.execute_hooks(data, :resource_access_token_hooks)
+              end
+            end
+          end
+
+          context 'when setting extended_grat_expiry_webhooks_execute is enabled' do
+            before do
+              group.namespace_settings.update!(extended_grat_expiry_webhooks_execute: true)
+            end
+
+            context 'when interval is thirty days' do
+              let(:data) { { interval: :thirty_days } }
+
+              it 'executes webhook' do
+                expect(WebHookService)
+                  .to receive(:new)
+                  .with(group_hook, data, 'resource_access_token_hooks', idempotency_key: anything)
+                  .and_return(wh_service)
+
+                project.execute_hooks(data, :resource_access_token_hooks)
+              end
+            end
+
+            context 'when interval is sixty days' do
+              let(:data) { { interval: :sixty_days } }
+
+              it 'executes webhook' do
+                expect(WebHookService)
+                  .to receive(:new)
+                  .with(group_hook, data, 'resource_access_token_hooks', idempotency_key: anything)
+                  .and_return(wh_service)
+
+                project.execute_hooks(data, :resource_access_token_hooks)
+              end
+            end
           end
         end
 
@@ -2134,7 +2234,9 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     end
 
     it 'returns false when the resolver returns true' do
-      expect(ComplianceManagement::MergeRequestApprovalSettings::Resolver).to receive(:new).with(root_ancestor, project: project)
+      expect(ComplianceManagement::MergeRequestApprovalSettings::Resolver)
+        .to receive(:new)
+        .with(root_ancestor, project: project)
 
       allow_next_instance_of(ComplianceManagement::MergeRequestApprovalSettings::Resolver) do |resolver|
         allow(resolver).to receive(:retain_approvals_on_push)
@@ -2149,7 +2251,9 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     end
 
     it 'returns true when the resolver returns false' do
-      expect(ComplianceManagement::MergeRequestApprovalSettings::Resolver).to receive(:new).with(root_ancestor, project: project)
+      expect(ComplianceManagement::MergeRequestApprovalSettings::Resolver)
+        .to receive(:new)
+        .with(root_ancestor, project: project)
 
       allow_next_instance_of(ComplianceManagement::MergeRequestApprovalSettings::Resolver) do |resolver|
         allow(resolver).to receive(:retain_approvals_on_push)

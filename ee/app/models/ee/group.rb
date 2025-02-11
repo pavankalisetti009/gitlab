@@ -116,6 +116,8 @@ module EE
       delegate :wiki_access_level, :wiki_access_level=, to: :group_feature, allow_nil: true
       delegate :enable_auto_assign_gitlab_duo_pro_seats, :enable_auto_assign_gitlab_duo_pro_seats=, :enable_auto_assign_gitlab_duo_pro_seats_human_readable, :enable_auto_assign_gitlab_duo_pro_seats_human_readable=, to: :namespace_settings, allow_nil: true
 
+      delegate :extended_grat_expiry_webhooks_execute, :extended_grat_expiry_webhooks_execute=, to: :namespace_settings
+
       # Use +checked_file_template_project+ instead, which implements important
       # visibility checks
       private :file_template_project
@@ -830,10 +832,20 @@ module EE
 
       return unless feature_available?(:group_webhooks)
 
-      self_and_ancestor_hooks = GroupHook.where(group_id: self_and_ancestors)
-      self_and_ancestor_hooks.hooks_for(hooks_scope).each do |hook|
-        hook.async_execute(data, hooks_scope.to_s)
-      end
+      # By default the webhook resource_access_token_hooks will execute for
+      # seven_days interval but we have a setting to allow webhook execution
+      # for thirty_days and sixty_days_plus interval too.
+      is_extended_expiry_webhook = hooks_scope == :resource_access_token_hooks &&
+        data[:interval] != :seven_days &&
+        ::Feature.enabled?(:extended_expiry_webhook_execution_setting, self)
+
+      group_hooks = if is_extended_expiry_webhook
+                      GroupHook.where(group_id: groups_for_extended_webhook_execution_on_token_expiry)
+                    else
+                      GroupHook.where(group_id: self_and_ancestors)
+                    end
+
+      execute_async_hooks(group_hooks, hooks_scope, data)
     end
 
     override :git_transfer_in_progress?
@@ -1099,6 +1111,11 @@ module EE
         namespace_settings.disable_personal_access_tokens?
     end
 
+    def extended_grat_expiry_webhooks_execute?
+      licensed_feature_available?(:group_webhooks) &&
+        namespace_settings&.extended_grat_expiry_webhooks_execute?
+    end
+
     def active_compliance_frameworks?
       # test default framework first since it is most likely to have projects assigned
       [[default_compliance_framework] + compliance_management_frameworks].flatten.compact.uniq.any? do |framework|
@@ -1112,7 +1129,21 @@ module EE
       namespace_settings.enable_auto_assign_gitlab_duo_pro_seats? if namespace_settings
     end
 
+    def groups_for_extended_webhook_execution_on_token_expiry
+      return Group.none unless ::Feature.enabled?(:extended_expiry_webhook_execution_setting, self)
+
+      self_and_ancestors
+        .joins(:namespace_settings)
+        .where(namespace_settings: { extended_grat_expiry_webhooks_execute: true })
+    end
+
     private
+
+    def execute_async_hooks(group_hooks, hooks_scope, data)
+      group_hooks.hooks_for(hooks_scope).each do |hook|
+        hook.async_execute(data, hooks_scope.to_s)
+      end
+    end
 
     def active_project_tokens_of_root_ancestor
       root_ancestor_and_descendants_project_bots = ::User
