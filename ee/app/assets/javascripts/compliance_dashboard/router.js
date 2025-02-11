@@ -26,8 +26,11 @@ export function createRouter(basePath, props) {
   const {
     mergeCommitsCsvExportPath,
     groupPath,
+    groupName,
+    groupComplianceCenterPath,
     projectId,
     projectPath,
+    projectName,
     rootAncestorPath,
     rootAncestorName,
     rootAncestorComplianceCenterPath,
@@ -75,8 +78,11 @@ export function createRouter(basePath, props) {
       component: ProjectsReport,
       props: {
         groupPath,
+        groupName,
+        groupComplianceCenterPath,
         projectId,
         projectPath,
+        projectName,
         rootAncestor: {
           path: rootAncestorPath,
           name: rootAncestorName,

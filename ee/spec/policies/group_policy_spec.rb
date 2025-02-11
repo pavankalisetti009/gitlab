@@ -2767,7 +2767,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
     context ':admin_compliance_framework' do
       let(:policy) { :admin_compliance_framework }
-      let(:licensed_feature) { :compliance_framework }
+      let(:licensed_feature) { :custom_compliance_frameworks }
       let(:feature_flag_name) { nil }
 
       include_examples 'compliance framework permissions'
@@ -3912,6 +3912,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
         let(:licensed_features) do
           {
             compliance_framework: true,
+            custom_compliance_frameworks: true,
             evaluate_group_level_compliance_pipeline: true,
             group_level_compliance_dashboard: true,
             group_level_compliance_adherence_report: true,

@@ -42,7 +42,7 @@ RSpec.describe Mutations::Projects::SetComplianceFramework do
   describe '#resolve' do
     context 'feature is licensed' do
       before do
-        stub_licensed_features(compliance_framework: true)
+        stub_licensed_features(compliance_framework: true, custom_compliance_frameworks: true)
       end
 
       context 'current_user is a guest' do

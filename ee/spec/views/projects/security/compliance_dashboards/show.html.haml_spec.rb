@@ -25,8 +25,8 @@ RSpec.describe "projects/security/compliance_dashboards/show", type: :view, feat
     expect(rendered).to have_selector("[data-root-ancestor-path='#{group.root_ancestor.full_path}']")
     expect(rendered).to have_selector("[data-feature-adherence-report-enabled='true']")
     expect(rendered).to have_selector("[data-feature-violations-report-enabled='true']")
+    expect(rendered).to have_selector("[data-feature-projects-report-enabled='true']")
 
     expect(rendered).not_to have_selector("[data-feature-frameworks-report-enabled='true']")
-    expect(rendered).not_to have_selector("[data-feature-projects-report-enabled='true']")
   end
 end

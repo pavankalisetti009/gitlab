@@ -3,6 +3,7 @@ import { GlAlert, GlLink, GlSprintf } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { fetchPolicies } from '~/lib/graphql';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
+import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import { s__ } from '~/locale';
 
 import {
@@ -35,12 +36,26 @@ export default {
       type: String,
       required: true,
     },
+    groupName: {
+      type: String,
+      required: true,
+    },
+    groupComplianceCenterPath: {
+      type: String,
+      required: false,
+      default: null,
+    },
     projectId: {
       type: String,
       required: false,
       default: null,
     },
     projectPath: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    projectName: {
       type: String,
       required: false,
       default: null,
@@ -75,8 +90,7 @@ export default {
         };
 
         if (this.projectId) {
-          // eslint-disable-next-line @gitlab/require-i18n-strings
-          baseVariables.ids = [convertToGraphQLId('Project', this.projectId)];
+          baseVariables.ids = [convertToGraphQLId(TYPENAME_PROJECT, this.projectId)];
         }
 
         return baseVariables;
@@ -217,11 +231,8 @@ export default {
     queryError: s__(
       'ComplianceReport|Unable to load the compliance framework projects report. Refresh the page and try again.',
     ),
-    projectComplianceCenterInfoTitle: s__(
-      'ComplianceReport|You are viewing project compliance center.',
-    ),
     projectComplianceCenterInfoContent: s__(
-      'ComplianceReport|Only current project is displayed. For list of all projects visit top-level group %{linkStart}namespace%{linkEnd}',
+      'ComplianceReport|You are viewing the compliance centre for %{project}. To see information for all projects, go to %{linkStart}group%{linkEnd}.',
     ),
   },
 };
@@ -251,16 +262,11 @@ export default {
     </gl-alert>
 
     <template v-else>
-      <gl-alert
-        v-if="projectPath"
-        variant="info"
-        :title="$options.i18n.projectComplianceCenterInfoTitle"
-      >
+      <gl-alert v-if="projectPath" variant="info" :dismissible="false">
         <gl-sprintf :message="$options.i18n.projectComplianceCenterInfoContent">
+          <template #project>{{ projectName }}</template>
           <template #link>
-            <gl-link :href="rootAncestor.complianceCenterPath">
-              {{ rootAncestor.name }}
-            </gl-link>
+            <gl-link :href="groupComplianceCenterPath">{{ groupName }}</gl-link>
           </template>
         </gl-sprintf>
       </gl-alert>

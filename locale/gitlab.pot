@@ -14883,9 +14883,6 @@ msgstr ""
 msgid "ComplianceReport|No violations found. Change search options and try again"
 msgstr ""
 
-msgid "ComplianceReport|Only current project is displayed. For list of all projects visit top-level group %{linkStart}namespace%{linkEnd}"
-msgstr ""
-
 msgid "ComplianceReport|Only group owners and maintainers can view the framework details"
 msgstr ""
 
@@ -14925,7 +14922,7 @@ msgstr ""
 msgid "ComplianceReport|View the framework details"
 msgstr ""
 
-msgid "ComplianceReport|You are viewing project compliance center."
+msgid "ComplianceReport|You are viewing the compliance centre for %{project}. To see information for all projects, go to %{linkStart}group%{linkEnd}."
 msgstr ""
 
 msgid "ComplianceReport|and %{count} more"

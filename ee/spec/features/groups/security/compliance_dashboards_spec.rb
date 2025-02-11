@@ -15,11 +15,10 @@ RSpec.describe 'Compliance Dashboard', :js, feature_category: :compliance_manage
   let_it_be(:project) { create(:project, :repository, :public, namespace: group, compliance_framework_settings: [create(:compliance_framework_project_setting, compliance_management_framework: framework2)]) }
   let_it_be(:project_2) { create(:project, :repository, :public, namespace: group) }
 
-  let(:compliance_framework_ff) { false }
-
   before do
     stub_licensed_features(
       compliance_framework: true,
+      custom_compliance_frameworks: true,
       group_level_compliance_dashboard: true,
       group_level_compliance_adherence_report: true,
       group_level_compliance_violations_report: true)

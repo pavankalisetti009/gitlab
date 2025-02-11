@@ -44,7 +44,7 @@ RSpec.describe 'Update project compliance framework', feature_category: :complia
   describe '#resolve' do
     context 'when feature is not available' do
       before do
-        stub_licensed_features(compliance_framework: false)
+        stub_licensed_features(compliance_framework: false, custom_compliance_frameworks: false)
       end
 
       it_behaves_like 'a mutation that returns top-level errors',
@@ -54,7 +54,7 @@ RSpec.describe 'Update project compliance framework', feature_category: :complia
 
     context 'when feature is available' do
       before do
-        stub_licensed_features(compliance_framework: true)
+        stub_licensed_features(compliance_framework: true, custom_compliance_frameworks: true)
       end
 
       context 'when there is no framework associated with the project' do

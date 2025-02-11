@@ -171,7 +171,7 @@ module EE
       condition(:eligible_for_trial, scope: :subject) { @subject.eligible_for_trial? }
 
       condition(:compliance_framework_available, scope: :subject) do
-        @subject.feature_available?(:compliance_framework)
+        @subject.feature_available?(:custom_compliance_frameworks)
       end
 
       condition(:group_level_compliance_pipeline_available, scope: :subject) do

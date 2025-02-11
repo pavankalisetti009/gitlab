@@ -1904,7 +1904,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
         before do
           project.group.public_send("add_#{role}", current_user) unless role == :admin
-          stub_licensed_features(compliance_framework: feature_enabled)
+          stub_licensed_features(compliance_framework: feature_enabled, custom_compliance_frameworks: feature_enabled)
           enable_admin_mode!(current_user) if admin_mode
         end
 

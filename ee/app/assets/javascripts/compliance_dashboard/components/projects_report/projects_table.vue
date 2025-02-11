@@ -313,6 +313,7 @@ export default {
       thAlignRight: true,
       thClass: '!gl-align-middle',
       tdClass: '!gl-text-right',
+      sortable: false,
     },
   ],
   i18n: {
