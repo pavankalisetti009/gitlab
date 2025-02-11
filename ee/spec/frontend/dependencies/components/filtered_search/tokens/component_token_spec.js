@@ -251,4 +251,37 @@ describe('ee/dependencies/components/filtered_search/tokens/component_token.vue'
       expect(findSuggestions().exists()).toBe(false);
     });
   });
+
+  describe('where there is a suggestion dropdown', () => {
+    it('displays when user types less than 3 characters', async () => {
+      createComponent({ mountFn: mountExtended });
+
+      const suggestionText = 'Enter at least 3 characters to view available components.';
+
+      await searchForComponent('we');
+      expect(wrapper.text()).toBe(suggestionText);
+
+      await searchForComponent('web');
+      expect(wrapper.text()).not.toBe(suggestionText);
+    });
+
+    it('displays when no results are found', async () => {
+      createComponent({
+        handlers: {
+          getGroupComponentsHandler: jest.fn().mockResolvedValue({
+            data: {
+              group: {
+                id: 'some-group-id',
+                components: [],
+              },
+            },
+          }),
+        },
+      });
+
+      await searchForComponent('XXXXXXXX');
+
+      expect(wrapper.text()).toBe('No components found.');
+    });
+  });
 });

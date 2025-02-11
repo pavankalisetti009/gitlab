@@ -19427,6 +19427,9 @@ msgstr ""
 msgid "Dependencies|Direct dependents"
 msgstr ""
 
+msgid "Dependencies|Enter at least 3 characters to view available components."
+msgstr ""
+
 msgid "Dependencies|Error exporting the dependency list. Please reload the page."
 msgstr ""
 
@@ -19452,6 +19455,9 @@ msgid "Dependencies|List of direct dependents"
 msgstr ""
 
 msgid "Dependencies|Location"
+msgstr ""
+
+msgid "Dependencies|No components found."
 msgstr ""
 
 msgid "Dependencies|Packager"
