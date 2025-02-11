@@ -1,4 +1,4 @@
-import { TASKS_BY_TYPE_FILTERS } from '../constants';
+import { TASKS_BY_TYPE_FILTERS } from '../../constants';
 
 export const subjectFilter = TASKS_BY_TYPE_FILTERS.SUBJECT;
 

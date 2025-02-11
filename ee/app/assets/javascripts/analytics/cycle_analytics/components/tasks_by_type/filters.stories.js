@@ -1,6 +1,6 @@
 import { withVuexStore } from 'storybook_addons/vuex_store';
-import { defaultGroupLabels, subjectFilter } from '../stories_constants';
 import { TASKS_BY_TYPE_MAX_LABELS } from '../../constants';
+import { defaultGroupLabels, subjectFilter } from './stories_constants';
 import TasksByTypeFilters from './filters.vue';
 
 export default {

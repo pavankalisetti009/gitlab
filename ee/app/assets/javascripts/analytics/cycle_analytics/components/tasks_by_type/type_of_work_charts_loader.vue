@@ -12,8 +12,8 @@ import {
   alertErrorIfStatusNotOk,
   transformRawTasksByTypeData,
   toggleSelectedLabel,
-} from '../utils';
-import { TASKS_BY_TYPE_SUBJECT_ISSUE } from '../constants';
+} from '../../utils';
+import { TASKS_BY_TYPE_SUBJECT_ISSUE } from '../../constants';
 import TypeOfWorkCharts from './type_of_work_charts.vue';
 
 export default {

@@ -6,15 +6,15 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 import { HTTP_STATUS_NOT_FOUND, HTTP_STATUS_OK } from '~/lib/utils/http_status';
 import waitForPromises from 'helpers/wait_for_promises';
-import TypeOfWorkChartsLoader from 'ee/analytics/cycle_analytics/components/type_of_work_charts_loader.vue';
-import TypeOfWorkCharts from 'ee/analytics/cycle_analytics/components/type_of_work_charts.vue';
+import TypeOfWorkChartsLoader from 'ee/analytics/cycle_analytics/components/tasks_by_type/type_of_work_charts_loader.vue';
+import TypeOfWorkCharts from 'ee/analytics/cycle_analytics/components/tasks_by_type/type_of_work_charts.vue';
 import {
   TASKS_BY_TYPE_SUBJECT_MERGE_REQUEST,
   TASKS_BY_TYPE_SUBJECT_ISSUE,
 } from 'ee/analytics/cycle_analytics/constants';
 import { createAlert } from '~/alert';
 import ChartSkeletonLoader from '~/vue_shared/components/resizable_chart/skeleton_loader.vue';
-import { rawTasksByTypeData, groupLabels, groupLabelNames, endpoints } from '../mock_data';
+import { rawTasksByTypeData, groupLabels, groupLabelNames, endpoints } from '../../mock_data';
 
 Vue.use(Vuex);
 jest.mock('~/alert');

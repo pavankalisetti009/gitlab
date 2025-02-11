@@ -7,7 +7,7 @@ import Vue, { nextTick } from 'vue';
 import Vuex from 'vuex';
 import Component from 'ee/analytics/cycle_analytics/components/base.vue';
 import DurationChartLoader from 'ee/analytics/cycle_analytics/components/duration_charts/duration_chart_loader.vue';
-import TypeOfWorkChartsLoader from 'ee/analytics/cycle_analytics/components/type_of_work_charts_loader.vue';
+import TypeOfWorkChartsLoader from 'ee/analytics/cycle_analytics/components/tasks_by_type/type_of_work_charts_loader.vue';
 import ValueStreamSelect from 'ee/analytics/cycle_analytics/components/value_stream_select.vue';
 import ValueStreamAggregationStatus from 'ee/analytics/cycle_analytics/components/value_stream_aggregation_status.vue';
 import ValueStreamEmptyState from 'ee/analytics/cycle_analytics/components/value_stream_empty_state.vue';

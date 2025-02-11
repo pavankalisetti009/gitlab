@@ -1,4 +1,4 @@
-import { tasksByTypeChartData } from '../stories_constants';
+import { tasksByTypeChartData } from './stories_constants';
 import TasksByTypeChart from './chart.vue';
 
 export default {

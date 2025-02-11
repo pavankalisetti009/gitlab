@@ -6,13 +6,13 @@ import Vuex from 'vuex';
 import waitForPromises from 'helpers/wait_for_promises';
 import TasksByTypeChart from 'ee/analytics/cycle_analytics/components/tasks_by_type/chart.vue';
 import TasksByTypeFilters from 'ee/analytics/cycle_analytics/components/tasks_by_type/filters.vue';
-import TypeOfWorkCharts from 'ee/analytics/cycle_analytics/components/type_of_work_charts.vue';
+import TypeOfWorkCharts from 'ee/analytics/cycle_analytics/components/tasks_by_type/type_of_work_charts.vue';
 import NoDataAvailableState from 'ee/analytics/cycle_analytics/components/no_data_available_state.vue';
 import {
   TASKS_BY_TYPE_SUBJECT_MERGE_REQUEST,
   TASKS_BY_TYPE_SUBJECT_ISSUE,
 } from 'ee/analytics/cycle_analytics/constants';
-import { tasksByTypeData, groupLabelNames } from '../mock_data';
+import { tasksByTypeData, groupLabelNames } from '../../mock_data';
 
 Vue.use(Vuex);
 
