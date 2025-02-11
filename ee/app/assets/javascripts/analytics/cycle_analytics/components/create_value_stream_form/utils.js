@@ -1,10 +1,14 @@
 import { isEqual, pick } from 'lodash';
 import { convertObjectPropsToSnakeCase } from '~/lib/utils/common_utils';
-import { isStartEvent, getAllowedEndEvents, eventToOption, eventsByIdentifier } from '../../utils';
+import {
+  isStartEvent,
+  getAllowedEndEvents,
+  eventToOption,
+  eventsByIdentifier,
+  isLabelEvent,
+} from '../../utils';
 import {
   ERRORS,
-  defaultErrors,
-  defaultFields,
   NAME_MAX_LENGTH,
   NAME_MIN_LENGTH,
   formFieldKeys,
@@ -46,38 +50,6 @@ export const endEventOptions = (eventsList, startEventIdentifier) => {
 };
 
 /**
- * @typedef {Object} CustomStageFormData
- * @property {Object.<String, String>} fields - form field values
- * @property {Object.<String, Array>} errors - form field errors
- */
-
-/**
- * Initializes the fields and errors for the custom stages form
- * providing defaults for any missing keys
- *
- * @param {CustomStageFormData} data
- * @returns {CustomStageFormData} the updated initial data with all defaults
- */
-export const initializeFormData = ({ fields, errors }) => {
-  const initErrors = fields?.endEventIdentifier
-    ? defaultErrors
-    : {
-        ...defaultErrors,
-        endEventIdentifier: !fields?.startEventIdentifier ? [ERRORS.SELECT_START_EVENT_FIRST] : [],
-      };
-  return {
-    fields: {
-      ...defaultFields,
-      ...fields,
-    },
-    errors: {
-      ...initErrors,
-      ...errors,
-    },
-  };
-};
-
-/**
  * Returns a clean string for comparison, converted lower case with whitespace trimmed
  * @param {String} str the string to be cleaned
  * @returns {String}
@@ -86,14 +58,19 @@ export const cleanStageName = (str = '') => str?.trim().toLowerCase();
 
 /**
  * Validates the form fields for the custom stages form
- * Any errors will be returned in a object where the key is
- * the name of the field.g
+ * Any errors will be returned in an object where the key is
+ * the name of the field
  *
- * @param {Object} currentStage the current stage to be validated
- * @param {Object} allStageNames array of the existing value stream stage names
+ * @param {Object} currentStage - the current stage to be validated
+ * @param {Array} allStageNames - array of the existing value stream stage names
+ * @param {Array} labelEvents - array of all label events
  * @returns {Object} key value pair of form fields with an array of errors
  */
-export const validateStage = (currentStage, allStageNames = []) => {
+export const validateStage = ({
+  currentStage = null,
+  allStageNames = [],
+  labelEvents = [],
+} = {}) => {
   const newErrors = {};
 
   if (currentStage?.name) {
@@ -117,9 +94,24 @@ export const validateStage = (currentStage, allStageNames = []) => {
     if (!currentStage?.endEventIdentifier) {
       newErrors.endEventIdentifier = [ERRORS.END_EVENT_REQUIRED];
     }
+
+    if (
+      isLabelEvent(labelEvents, currentStage.startEventIdentifier) &&
+      !currentStage?.startEventLabelId
+    ) {
+      newErrors.startEventLabelId = [ERRORS.EVENT_LABEL_REQUIRED];
+    }
   } else {
     newErrors.startEventIdentifier = [ERRORS.START_EVENT_REQUIRED];
-    newErrors.endEventIdentifier = [ERRORS.SELECT_START_EVENT_FIRST];
+  }
+
+  if (currentStage?.endEventIdentifier) {
+    if (
+      isLabelEvent(labelEvents, currentStage.endEventIdentifier) &&
+      !currentStage?.endEventLabelId
+    ) {
+      newErrors.endEventLabelId = [ERRORS.EVENT_LABEL_REQUIRED];
+    }
   }
   return newErrors;
 };

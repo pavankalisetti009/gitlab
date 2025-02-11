@@ -25,6 +25,7 @@ import {
   formatStageDataForSubmission,
   hasDirtyStage,
 } from 'ee/analytics/cycle_analytics/components/create_value_stream_form/utils';
+import { getLabelEventsIdentifiers } from 'ee/analytics/cycle_analytics/utils';
 import ValueStreamFormContentActions from './value_stream_form_content_actions.vue';
 
 const initializeStageErrors = (defaultStageConfig, selectedPreset = PRESET_OPTIONS_DEFAULT) =>
@@ -219,7 +220,13 @@ export default {
       return current.trim().toLowerCase() !== original.trim().toLowerCase();
     },
     validateStages() {
-      return this.stages.map((stage) => validateStage(stage, this.currentValueStreamStageNames));
+      return this.stages.map((stage) =>
+        validateStage({
+          currentStage: stage,
+          allStageNames: this.currentValueStreamStageNames,
+          labelEvents: getLabelEventsIdentifiers(this.formEvents),
+        }),
+      );
     },
     validate() {
       const { name } = this;
@@ -239,7 +246,7 @@ export default {
     },
     validateStageFields(index) {
       const copy = [...this.stageErrors];
-      copy[index] = validateStage(this.stages[index]);
+      copy[index] = validateStage({ currentStage: this.stages[index] });
       this.stageErrors = copy;
     },
     fieldErrors(index) {

@@ -17091,6 +17091,9 @@ msgstr ""
 msgid "CreateValueStreamForm|End event"
 msgstr ""
 
+msgid "CreateValueStreamForm|End event is required"
+msgstr ""
+
 msgid "CreateValueStreamForm|End event label"
 msgstr ""
 
@@ -17104,6 +17107,9 @@ msgid "CreateValueStreamForm|Enter value stream name"
 msgstr ""
 
 msgid "CreateValueStreamForm|Issue stage end"
+msgstr ""
+
+msgid "CreateValueStreamForm|Label is required"
 msgstr ""
 
 msgid "CreateValueStreamForm|Maximum length %{maxLength} characters"
@@ -17125,15 +17131,6 @@ msgid "CreateValueStreamForm|New value stream"
 msgstr ""
 
 msgid "CreateValueStreamForm|Plan stage start"
-msgstr ""
-
-msgid "CreateValueStreamForm|Please select a start event"
-msgstr ""
-
-msgid "CreateValueStreamForm|Please select a start event first"
-msgstr ""
-
-msgid "CreateValueStreamForm|Please select an end event"
 msgstr ""
 
 msgid "CreateValueStreamForm|Recover hidden stage"
@@ -17167,6 +17164,9 @@ msgid "CreateValueStreamForm|Start event"
 msgstr ""
 
 msgid "CreateValueStreamForm|Start event changed, please select a valid end event"
+msgstr ""
+
+msgid "CreateValueStreamForm|Start event is required"
 msgstr ""
 
 msgid "CreateValueStreamForm|Start event label"
