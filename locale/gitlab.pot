@@ -27511,9 +27511,6 @@ msgstr ""
 msgid "Group can't be be deleted"
 msgstr ""
 
-msgid "Group cannot be deleted because one of its projects is linked as Security Policy Project"
-msgstr ""
-
 msgid "Group comment templates"
 msgstr ""
 
@@ -51882,6 +51879,9 @@ msgstr ""
 msgid "SecurityOrchestration|Group ID: %{id}"
 msgstr ""
 
+msgid "SecurityOrchestration|Group cannot be deleted because it has projects that are linked as a security policy project"
+msgstr ""
+
 msgid "SecurityOrchestration|Groups"
 msgstr ""
 
@@ -52353,6 +52353,9 @@ msgid "SecurityOrchestration|Turn off default mode to edit scope."
 msgstr ""
 
 msgid "SecurityOrchestration|Unlink project"
+msgstr ""
+
+msgid "SecurityOrchestration|Unlink the following projects from the following containers:"
 msgstr ""
 
 msgid "SecurityOrchestration|Unlink the project from the following containers:"

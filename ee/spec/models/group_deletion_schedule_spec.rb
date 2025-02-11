@@ -33,7 +33,7 @@ RSpec.describe GroupDeletionSchedule do
 
         specify do
           expect(deletion_schedule.errors[:base])
-            .to include('Group cannot be deleted because one of its projects is linked as Security Policy Project')
+            .to include('Group cannot be deleted because it has projects that are linked as a security policy project')
         end
 
         context 'with feature disabled' do
