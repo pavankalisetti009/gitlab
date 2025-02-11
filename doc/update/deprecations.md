@@ -1210,6 +1210,30 @@ for more information.
 
 <div class="deprecation breaking-change" data-milestone="18.0">
 
+### Make the `gitlab-runner-helper-images` Linux OS package an optional dependency of `gitlab-runner`
+
+<div class="deprecation-notes">
+
+- Announced in GitLab <span class="milestone">17.9</span>
+- Removal in GitLab <span class="milestone">18.0</span> ([breaking change](https://docs.gitlab.com/ee/update/terminology.html#breaking-change))
+- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/gitlab/-/issues/517765).
+
+</div>
+
+Currently the `gitlab-runner` OS package depends on the `gitlab-runner-helper-images` package. The
+`gitlab-runner-helper-images` package provides an exported archive of the `gitlab-runner-helper` Docker images for
+several OS architectures. The archive is ~500MB, but is required by only some users. The required dependency means
+users are forced to install the latter package even if they do not need the exported runner helper images it
+provides.
+
+In GitLab 18.0 this dependency will become optional, and users that need the exported helper images will have to
+explicitly install them. This means that in very specific cases, CI jobs can fail when attempting to pull the helper
+Docker image.
+
+</div>
+
+<div class="deprecation breaking-change" data-milestone="18.0">
+
 ### New data retention limits for vulnerabilities on GitLab.com
 
 <div class="deprecation-notes">
