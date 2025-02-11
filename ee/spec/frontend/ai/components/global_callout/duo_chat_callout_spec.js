@@ -65,7 +65,7 @@ describe('DuoChatCallout', () => {
     expect(findPopoverWithinDismisser().text()).toContain(
       'You can also use Chat in GitLab. Ask questions about:',
     );
-    expect(findLearnHowLink().attributes('href')).toBe('/help/user/gitlab_duo/index');
+    expect(findLearnHowLink().attributes('href')).toBe('/help/user/gitlab_duo/_index');
     expect(findLearnHowLink().text()).toBe('Learn how');
     expect(findLinkWithinDismisser().text()).toBe('Ask GitLab Duo');
   });

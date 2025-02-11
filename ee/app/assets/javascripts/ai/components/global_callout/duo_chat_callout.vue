@@ -74,7 +74,7 @@ export default {
   },
   DUO_CHAT_ILLUSTRATION,
   i18n,
-  learnHowPath: helpPagePath('user/gitlab_duo/index'),
+  learnHowPath: helpPagePath('user/gitlab_duo/_index'),
 };
 </script>
 <template>

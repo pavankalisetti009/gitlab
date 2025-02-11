@@ -33,7 +33,7 @@ export const i18n = {
   ),
 };
 
-const workspacesHelpPath = helpPagePath('user/workspace/index.md');
+const workspacesHelpPath = helpPagePath('user/workspace/_index.md');
 const workspacesTroubleshootingDocsPath = helpPagePath(
   'user/workspace/workspaces_troubleshooting.html',
 );

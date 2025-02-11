@@ -81,7 +81,7 @@ export const i18n = {
   ),
 };
 
-export const devfileHelpPath = helpPagePath('user/workspace/index.md#devfile');
+export const devfileHelpPath = helpPagePath('user/workspace/_index.md#devfile');
 export const workspacesTroubleshootingDocsPath = helpPagePath(
   'user/workspace/workspaces_troubleshooting.html',
 );
