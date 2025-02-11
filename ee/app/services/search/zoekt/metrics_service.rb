@@ -6,8 +6,9 @@ module Search
       include Gitlab::Loggable
 
       METRICS = %i[
-        node_metrics
         indices_metrics
+        node_metrics
+        tasks_metrics
       ].freeze
 
       def self.execute(metric)
@@ -58,6 +59,13 @@ module Search
         )
 
         logger.info(log_data)
+      end
+
+      def tasks_metrics
+        task_gauge = ::Gitlab::Metrics.gauge(:search_zoekt_task_processing_queue_size,
+          'Number of tasks waiting to be processed by Zoekt', {}, :max)
+
+        task_gauge.set({}, ::Search::Zoekt::Task.processing_queue.count)
       end
 
       def logger
