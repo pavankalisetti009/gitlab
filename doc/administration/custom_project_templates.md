@@ -63,4 +63,4 @@ identical to the data exported with the [GitLab Project Import/Export](../user/p
 
 ## Related topics
 
-- [Custom group-level project templates](../user/group/custom_project_templates.md).
+- [Custom project templates for groups](../user/group/custom_project_templates.md).
