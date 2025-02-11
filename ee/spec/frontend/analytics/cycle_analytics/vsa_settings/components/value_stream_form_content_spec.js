@@ -46,7 +46,7 @@ describe('ValueStreamFormContent', () => {
     stages: [
       {
         name: ['Name field is required'],
-        endEventIdentifier: ['Please select a start event first'],
+        startEventIdentifier: ['Start event is required'],
       },
     ],
   };
@@ -298,9 +298,9 @@ describe('ValueStreamFormContent', () => {
 
         expectFieldError('custom-stage-name-0', initialFormStageErrors.stages[0].name[0]);
         expectCustomFieldError(
-          1,
+          0,
           'identifiererror',
-          initialFormStageErrors.stages[0].endEventIdentifier[0],
+          initialFormStageErrors.stages[0].startEventIdentifier[0],
         );
       });
     });

@@ -4,7 +4,6 @@ import {
   editableFormFieldKeys,
 } from 'ee/analytics/cycle_analytics/components/create_value_stream_form/constants';
 import {
-  initializeFormData,
   validateStage,
   validateValueStreamName,
   hasDirtyStage,
@@ -12,78 +11,7 @@ import {
   generateInitialStageData,
   cleanStageName,
 } from 'ee/analytics/cycle_analytics/components/create_value_stream_form/utils';
-import { emptyErrorsState, emptyState, formInitialData } from './mock_data';
-
-describe('initializeFormData', () => {
-  const checkInitializedData = (
-    { emptyFieldState = emptyState, fields = {}, errors = emptyErrorsState },
-    { fields: resultFields = emptyState, errors: resultErrors = emptyErrorsState },
-  ) => {
-    const res = initializeFormData({ emptyFieldState, fields, errors });
-    expect(res.fields).toEqual(resultFields);
-    expect(res.errors).toMatchObject(resultErrors);
-  };
-
-  describe('without a startEventIdentifier', () => {
-    it('with no errors', () => {
-      checkInitializedData(
-        { fields: {} },
-        { errors: { endEventIdentifier: ['Please select a start event first'] } },
-      );
-    });
-
-    it('with field errors', () => {
-      const data = { errors: { name: ['is reserved'] } };
-      const result = {
-        errors: {
-          endEventIdentifier: ['Please select a start event first'],
-          name: ['is reserved'],
-        },
-      };
-      checkInitializedData(data, result);
-    });
-  });
-
-  describe('with a startEventIdentifier', () => {
-    it('with no errors', () => {
-      const data = {
-        fields: { startEventIdentifier: 'start-event' },
-        errors: { ...emptyErrorsState, endEventIdentifier: [] },
-      };
-      const result = {
-        fields: { ...emptyState, startEventIdentifier: 'start-event' },
-        errors: { ...emptyErrorsState, endEventIdentifier: [] },
-      };
-      checkInitializedData(data, result);
-    });
-
-    it('with field errors', () => {
-      const data = {
-        fields: { startEventIdentifier: 'start-event' },
-        errors: { name: ['is reserved'] },
-      };
-      const result = {
-        fields: { ...emptyState, startEventIdentifier: 'start-event' },
-        errors: { endEventIdentifier: [], name: ['is reserved'] },
-      };
-      checkInitializedData(data, result);
-    });
-  });
-
-  describe('with all fields set', () => {
-    it('with no errors', () => {
-      const data = { fields: formInitialData };
-      const result = { fields: formInitialData };
-      checkInitializedData(data, result);
-    });
-
-    it('with field errors', () => {
-      const data = { fields: formInitialData, errors: { name: ['is reserved'] } };
-      const result = { fields: formInitialData, errors: { name: ['is reserved'] } };
-      checkInitializedData(data, result);
-    });
-  });
-});
+import { labelStartEvent, labelEndEvent } from 'ee_jest/analytics/cycle_analytics/mock_data';
 
 describe('cleanStageName', () => {
   it.each`
@@ -100,7 +28,9 @@ describe('validateStage', () => {
   const defaultFields = {
     name: '',
     startEventIdentifier: '',
+    startEventLabelId: '',
     endEventIdentifier: '',
+    endEventLabelId: '',
     custom: true,
   };
 
@@ -117,44 +47,56 @@ describe('validateStage', () => {
       ${'Issue'}                         | ${ERRORS.STAGE_NAME_EXISTS} | ${'is a capitalized default name'}
       ${' Code '}                        | ${ERRORS.STAGE_NAME_EXISTS} | ${'has whitespace'}
     `('returns "$error" if name field $msg', ({ value, error }) => {
-      const result = validateStage(
-        { ...defaultFields, name: value },
-        currentStageNames.concat(cleanStageName(value)),
-      );
+      const result = validateStage({
+        currentStage: { ...defaultFields, name: value },
+        allStageNames: currentStageNames.concat(cleanStageName(value)),
+      });
       expectFieldError({ result, error, field: 'name' });
     });
   });
 
   describe('event fields', () => {
-    it(`returns "${ERRORS.START_EVENT_REQUIRED}" and "${ERRORS.SELECT_START_EVENT_FIRST}" with no events set`, () => {
-      const result = validateStage(defaultFields);
+    it(`returns correct error message when no start event set`, () => {
+      const result = validateStage({ currentStage: defaultFields });
 
       expectFieldError({
         result,
-        error: ERRORS.START_EVENT_REQUIRED,
+        error: 'Start event is required',
         field: 'startEventIdentifier',
       });
-
-      expectFieldError({
-        result,
-        error: ERRORS.SELECT_START_EVENT_FIRST,
-        field: 'endEventIdentifier',
-      });
     });
 
-    it(`returns "${ERRORS.SELECT_START_EVENT_FIRST}" with an end event set, but no start event`, () => {
-      const result = validateStage({ ...defaultFields, endEventIdentifier: 'end-event' });
-
-      expectFieldError({
-        result,
-        error: ERRORS.SELECT_START_EVENT_FIRST,
-        field: 'endEventIdentifier',
+    it(`returns correct error message with a start event but no end event set`, () => {
+      const result = validateStage({
+        currentStage: { ...defaultFields, startEventIdentifier: 'start-event' },
       });
+      expectFieldError({ result, error: 'End event is required', field: 'endEventIdentifier' });
     });
 
-    it(`returns "${ERRORS.END_EVENT_REQUIRED}" with a start event and no end event set`, () => {
-      const result = validateStage({ ...defaultFields, startEventIdentifier: 'start-event' });
-      expectFieldError({ result, error: ERRORS.END_EVENT_REQUIRED, field: 'endEventIdentifier' });
+    it('returns the correct error message when start event label is required', () => {
+      const result = validateStage({
+        currentStage: {
+          name: 'cool stage',
+          startEventIdentifier: labelStartEvent.identifier,
+          endEventIdentifier: 'end-event',
+        },
+        labelEvents: [labelStartEvent.identifier],
+      });
+
+      expectFieldError({ result, error: 'Label is required', field: 'startEventLabelId' });
+    });
+
+    it('returns the correct error message when end event label is required', () => {
+      const result = validateStage({
+        currentStage: {
+          ...defaultFields,
+          startEventIdentifier: labelStartEvent.identifier,
+          endEventIdentifier: labelEndEvent.identifier,
+        },
+        labelEvents: [labelEndEvent.identifier],
+      });
+
+      expectFieldError({ result, error: 'Label is required', field: 'endEventLabelId' });
     });
   });
 });

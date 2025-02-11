@@ -158,6 +158,15 @@ module EE::SecurityOrchestrationHelper
     ::Security::OrchestrationPolicyConfiguration.for_management_project(project)
   end
 
+  def security_configurations_preventing_group_deletion(group)
+    unless ::Feature.enabled?(:reject_security_policy_project_deletion_groups, group) &&
+        group.licensed_feature_available?(:security_orchestration_policies)
+      return ::Security::OrchestrationPolicyConfiguration.none
+    end
+
+    ::Security::OrchestrationPolicyConfiguration.for_management_project(group.all_project_ids)
+  end
+
   private
 
   def software_licenses

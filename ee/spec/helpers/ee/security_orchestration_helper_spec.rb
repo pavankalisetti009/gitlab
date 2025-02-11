@@ -619,7 +619,7 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
     end
 
     context 'when there are no preventing configurations' do
-      it 'returns an empty relation' do
+      it 'is an empty relation' do
         expect(preventing_configurations).to be_empty
       end
     end
@@ -638,7 +638,7 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
           stub_licensed_features(security_orchestration_policies: false)
         end
 
-        it 'returns an empty relation' do
+        it 'is an empty relation' do
           expect(preventing_configurations).to be_empty
         end
       end
@@ -648,9 +648,55 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
           stub_feature_flags(reject_security_policy_project_deletion: false)
         end
 
-        it 'returns an empty relation' do
+        it 'is an empty relation' do
           expect(preventing_configurations).to be_empty
         end
+      end
+    end
+  end
+
+  describe '#security_configurations_preventing_group_deletion' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project, group: group) }
+    let(:feature_licensed) { true }
+
+    subject(:preventing_configurations) { helper.security_configurations_preventing_group_deletion(group) }
+
+    before do
+      stub_licensed_features(security_orchestration_policies: feature_licensed)
+    end
+
+    context 'when security orchestration policies are not available' do
+      let(:feature_licensed) { false }
+
+      it 'is an empty relation' do
+        expect(preventing_configurations).to be_empty
+      end
+    end
+
+    context 'when there are no preventing configurations' do
+      it 'is an empty relation' do
+        expect(preventing_configurations).to be_empty
+      end
+    end
+
+    context 'when there are preventing configurations' do
+      let!(:config) do
+        create(:security_orchestration_policy_configuration, security_policy_management_project: project)
+      end
+
+      it 'returns the preventing configurations' do
+        expect(preventing_configurations).to contain_exactly(config)
+      end
+    end
+
+    context 'when the feature flag is disabled' do
+      before do
+        stub_feature_flags(reject_security_policy_project_deletion_groups: false)
+      end
+
+      it 'is an empty relation' do
+        expect(preventing_configurations).to be_empty
       end
     end
   end

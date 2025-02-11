@@ -180,9 +180,9 @@ export default {
           :key="idx"
           class="gl-pt-5"
         >
-          <gl-sprintf v-if="showItems(licenses)" :message="summary">
+          <gl-sprintf :message="summary">
             <template #licenses>
-              <toggle-list data-testid="licences-list" class="gl-mb-2" :items="licenses" />
+              <toggle-list v-if="showItems(licenses)" class="gl-mb-2" :items="licenses" />
             </template>
           </gl-sprintf>
           <deny-allow-view-list
