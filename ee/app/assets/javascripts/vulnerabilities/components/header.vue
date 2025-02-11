@@ -3,6 +3,7 @@ import { GlModalDirective, GlTooltipDirective, GlButton, GlDisclosureDropdown } 
 import { v4 as uuidv4 } from 'uuid';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
+import toast from '~/vue_shared/plugins/global_toast';
 import { sendDuoChatCommand } from 'ee/ai/utils';
 import vulnerabilityStateMutations from 'ee/security_dashboard/graphql/mutate_vulnerability_state';
 import vulnerabilitiesSeverityOverrideMutation from 'ee/security_dashboard/graphql/mutations/vulnerabilities_severity_override.mutation.graphql';
@@ -262,7 +263,7 @@ export default {
           ...this.vulnerability,
           severity: severity.toLowerCase(),
         });
-        this.$toast.show(
+        toast(
           sprintf(s__('VulnerabilityManagement|Vulnerability set to %{severity} severity'), {
             severity: severity.toLowerCase(),
           }),

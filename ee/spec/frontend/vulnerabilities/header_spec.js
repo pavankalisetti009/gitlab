@@ -28,6 +28,7 @@ import { FEEDBACK_TYPES, VULNERABILITY_STATE_OBJECTS } from 'ee/vulnerabilities/
 import createMockApollo from 'helpers/mock_apollo_helper';
 import UsersMockHelper from 'helpers/user_mock_data_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import toast from '~/vue_shared/plugins/global_toast';
 import { createAlert } from '~/alert';
 import axios from '~/lib/utils/axios_utils';
 import { convertObjectPropsToSnakeCase } from '~/lib/utils/common_utils';
@@ -52,6 +53,7 @@ const MOCK_SUBSCRIPTION_RESPONSE = getAiSubscriptionResponse(
 const vulnerabilityStateEntries = Object.entries(VULNERABILITY_STATE_OBJECTS);
 const mockAxios = new MockAdapter(axios);
 jest.mock('~/alert');
+jest.mock('~/vue_shared/plugins/global_toast');
 jest.mock('~/lib/utils/downloader');
 jest.mock('~/lib/utils/url_utility', () => ({
   ...jest.requireActual('~/lib/utils/url_utility'),
@@ -62,9 +64,6 @@ jest.spyOn(aiUtils, 'sendDuoChatCommand');
 
 describe('Vulnerability Header', () => {
   let wrapper;
-  const $toast = {
-    show: jest.fn(),
-  };
 
   const defaultVulnerability = {
     id: 1,
@@ -176,9 +175,6 @@ describe('Vulnerability Header', () => {
       },
       stubs: {
         GlDisclosureDropdown,
-      },
-      mocks: {
-        $toast,
       },
     });
   };
@@ -360,7 +356,7 @@ describe('Vulnerability Header', () => {
             ...getVulnerability(),
             severity: 'high',
           });
-          expect($toast.show).toHaveBeenCalledWith('Vulnerability set to high severity');
+          expect(toast).toHaveBeenCalledWith('Vulnerability set to high severity');
         });
 
         it('dropdown is not loading after GraphQL call', async () => {
