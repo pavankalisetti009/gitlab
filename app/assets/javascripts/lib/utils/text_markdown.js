@@ -68,6 +68,45 @@ function lineAfterSelection(text, textArea) {
 }
 
 /**
+ * Return subsequent lines after textArea.selectionEnd
+ * that satisfy the provided condition.
+ *
+ * @param {Object} textArea - the targeted text area
+ * @param {Function} condition - A function that takes a string as an
+ *        argument and returns a boolean indicating whether the line
+ *        meets the specified condition.
+ * @returns {Object} An object containing:
+ *   - {Array} lines - An array of lines that satisfy the condition.
+ *   - {Number} startPos - The starting position of the first line
+ *        that satisfies the condition.
+ *   - {Number} endPos - The ending position of the last line that
+ *        satisfies the condition.
+ */
+function linesAfterSelection(textArea, condition) {
+  const { selectionEnd, value } = textArea;
+
+  const selectionEndOfLine = value.indexOf('\n', selectionEnd);
+  if (selectionEndOfLine === -1) {
+    return { lines: [], startPos: -1, endPos: -1 };
+  }
+
+  const remainingText = value.substring(selectionEndOfLine);
+
+  const lines = [];
+  const startPos = selectionEndOfLine + 1; // Move to new line
+  let currentPos = startPos;
+
+  for (const line of remainingText.replace(/^\n/, '').split('\n')) {
+    if (!condition(line)) break;
+
+    lines.push(line);
+    currentPos += line.length + 1; // +1 for the newline character
+  }
+
+  return { lines, startPos, endPos: currentPos - 1 }; // -1 to exclude the last newline
+}
+
+/**
  * Returns the single character before the current selection,
  * or empty string if there is none.
  *
@@ -589,22 +628,78 @@ function handleSurroundSelectedText(e, textArea) {
 /* eslint-enable @gitlab/require-i18n-strings */
 
 /**
- * Returns the content for a new line following a list item.
+ * Returns the content for a new line following a ordered list item.
  *
  * @param {Object} listLineMatch - regex match of the current line
- * @param {Object?} nextLineMatch - regex match of the next line
- * @returns string with the new list item
+ * @param {Number} num - number for the list item
+ * @returns {String} with the new list item
  */
-function continueOlText(listLineMatch, nextLineMatch) {
+function createOlText(listLineMatch, num) {
   const { indent, leader } = listLineMatch.groups;
-  const { indent: nextIndent, isOl: nextIsOl } = nextLineMatch?.groups ?? {};
-
-  const [numStr, postfix = ''] = leader.split('.');
-
-  const incrementBy = nextIsOl && nextIndent === indent ? 0 : 1;
-  const num = parseInt(numStr, 10) + incrementBy;
-
+  const [, postfix = ''] = leader.split('.');
   return `${indent}${num}.${postfix}`;
+}
+
+/**
+ * Returns the ordering number for ordered list item
+ *
+ * @param {Object} regex match of the current line
+ * @returns {Number} ordering nubmer for the regex match of the current line
+ */
+function parseOlNum({ groups: { leader } }) {
+  return parseInt(leader, 10);
+}
+
+/**
+ * Update ordered list line numbers in textArea from startPos to endPos
+ *
+ * @param {Object} textArea - textArea object
+ * @param {Array} lines - array of strings from startPos to endPos in textArea
+ * @param {Number} startPos - start position of the lines array
+ * @param {Number} endPos - end position of the lines array
+ * @param {Number} from - starting number for the first line in lines
+ */
+function updateOlLineNumbers({ textArea, lines, startPos, endPos, from }) {
+  if (lines.length === 0) {
+    return;
+  }
+
+  const incrementedLines = [];
+  const { selectionStart, selectionEnd } = textArea;
+
+  let orderingNumber = from;
+  lines.forEach((line) => {
+    const lineMatch = line.match(LIST_LINE_HEAD_PATTERN);
+    const lineContent = line.slice(lineMatch.groups.leader.length + lineMatch.groups.indent.length);
+
+    const incrementedLine = createOlText(lineMatch, orderingNumber) + lineContent;
+    incrementedLines.push(incrementedLine);
+    orderingNumber = orderingNumber + 1;
+  });
+
+  textArea.focus();
+  textArea.setSelectionRange(startPos, endPos);
+  const textToInsert = incrementedLines.join('\n');
+  insertText(textArea, textToInsert);
+  textArea.setSelectionRange(selectionStart, selectionEnd);
+}
+
+/**
+ * Updates all subsequent ordered list items starting from textArea.endPos
+ *
+ * @param {Object} textArea - the targeted text area
+ * @param {Object} listLineMatch - regex match of the current line
+ * @param {Number} from - starting number for the first subsequent ordered list line
+ */
+function updateOlLineNumbersAfterSelection(textArea, listLineMatch, from) {
+  const { indent } = listLineMatch.groups;
+  const { lines, startPos, endPos } = linesAfterSelection(textArea, (text) => {
+    const textMatch = text.match(LIST_LINE_HEAD_PATTERN);
+    const { indent: nextIndent, isOl: nextIsOl } = textMatch?.groups ?? {};
+    return nextIsOl && nextIndent === indent;
+  });
+
+  updateOlLineNumbers({ textArea, lines, startPos, endPos, from });
 }
 
 function handleContinueList(e, textArea) {
@@ -634,6 +729,7 @@ function handleContinueList(e, textArea) {
       // erase empty list item - select the text and allow the
       // natural line feed to erase the text
       textArea.selectionStart = textArea.selectionStart - listLineMatch[0].length;
+      updateOlLineNumbersAfterSelection(textArea, listLineMatch, 1);
       return;
     }
 
@@ -641,10 +737,9 @@ function handleContinueList(e, textArea) {
 
     // Behaviors specific to either `ol` or `ul`
     if (isOl) {
-      const nextLine = lineAfterSelection(textArea.value, textArea);
-      const nextLineMatch = nextLine.match(LIST_LINE_HEAD_PATTERN);
-
-      itemToInsert = continueOlText(listLineMatch, nextLineMatch);
+      const nextNum = parseOlNum(listLineMatch) + 1;
+      itemToInsert = createOlText(listLineMatch, nextNum);
+      updateOlLineNumbersAfterSelection(textArea, listLineMatch, nextNum + 1);
     } else {
       if (firstSelectedLine.match(HR_PATTERN)) return;
 
