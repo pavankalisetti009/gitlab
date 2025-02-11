@@ -73,18 +73,6 @@ RSpec.describe SearchController, type: :request, feature_category: :global_searc
           expect(response).to have_gitlab_http_status(:redirect)
           expect(response).to redirect_to(sso_group_saml_providers_url(group, { redirect: request.fullpath }))
         end
-
-        context 'when search_group_sso_redirect feature flag is not enabled' do
-          before do
-            stub_feature_flags(search_group_sso_redirect: false)
-          end
-
-          it 'does not redirect user to sso sign-in' do
-            send_search_request(params)
-
-            expect(response).to have_gitlab_http_status(:ok)
-          end
-        end
       end
 
       context 'for project level search' do
