@@ -3415,7 +3415,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
         it 'returns nil' do
           project = create(:project)
 
-          expect(project.add_import_job).to be nil
+          expect(project.add_import_job).to be_nil
         end
       end
 

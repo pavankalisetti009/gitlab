@@ -111,7 +111,7 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
       let(:allowed) { true }
 
       it 'returns nil' do
-        expect(described_class.chat_disabled_reason(user: user, container: container)).to be(nil)
+        expect(described_class.chat_disabled_reason(user: user, container: container)).to be_nil
       end
     end
 
@@ -136,7 +136,7 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
         let(:container) { nil }
 
         it 'returns nil' do
-          expect(described_class.chat_disabled_reason(user: user, container: container)).to be(nil)
+          expect(described_class.chat_disabled_reason(user: user, container: container)).to be_nil
         end
       end
     end

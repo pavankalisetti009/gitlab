@@ -260,7 +260,7 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
 
         created_project = Project.find_by_path('foo')
         expect(created_project.reload.mirror).to be false
-        expect(created_project.reload.mirror_user).to be nil
+        expect(created_project.reload.mirror_user).to be_nil
       end
     end
 

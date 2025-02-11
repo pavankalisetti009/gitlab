@@ -210,7 +210,7 @@ RSpec.describe EE::SubscribableBannerHelper, :saas do
 
   describe '#display_subscription_banner!' do
     it 'sets @display_subscription_banner to true' do
-      expect(helper.instance_variable_get(:@display_subscription_banner)).to be nil
+      expect(helper.instance_variable_get(:@display_subscription_banner)).to be_nil
 
       helper.display_subscription_banner!
 

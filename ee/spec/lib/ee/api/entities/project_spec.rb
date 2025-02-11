@@ -56,7 +56,7 @@ RSpec.describe ::EE::API::Entities::Project, feature_category: :shared do
       end
 
       context 'when not available' do
-        it { expect(subject[:ci_restrict_pipeline_cancellation_role]).to be nil }
+        it { expect(subject[:ci_restrict_pipeline_cancellation_role]).to be_nil }
       end
     end
 
@@ -68,11 +68,11 @@ RSpec.describe ::EE::API::Entities::Project, feature_category: :shared do
           mock_available
         end
 
-        it { expect(subject[:ci_restrict_pipeline_cancellation_role]).to be nil }
+        it { expect(subject[:ci_restrict_pipeline_cancellation_role]).to be_nil }
       end
 
       context 'when not available' do
-        it { expect(subject[:ci_restrict_pipeline_cancellation_role]).to be nil }
+        it { expect(subject[:ci_restrict_pipeline_cancellation_role]).to be_nil }
       end
     end
 
@@ -93,7 +93,7 @@ RSpec.describe ::EE::API::Entities::Project, feature_category: :shared do
 
     shared_examples 'returning nil' do
       it 'returns nil' do
-        expect(subject[:secret_push_protection_enabled]).to be(nil)
+        expect(subject[:secret_push_protection_enabled]).to be_nil
       end
     end
 

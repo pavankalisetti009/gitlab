@@ -26,7 +26,7 @@ RSpec.describe Elastic::Latest::GitInstanceProxy, feature_category: :global_sear
 
     context 'for wiki is true' do
       it 'returns nil' do
-        expect(included_class.new(project.wiki.repository).es_parent(true)).to be nil
+        expect(included_class.new(project.wiki.repository).es_parent(true)).to be_nil
       end
     end
   end

@@ -46,7 +46,7 @@ RSpec.describe ::EE::API::Entities::UserWithAdmin do
       end
 
       it 'does not have the is_auditor param' do
-        expect(subject[:is_auditor]).to be nil
+        expect(subject[:is_auditor]).to be_nil
       end
     end
   end
@@ -58,7 +58,7 @@ RSpec.describe ::EE::API::Entities::UserWithAdmin do
       end
 
       it 'returns false when user is not provisioned by group' do
-        expect(subject[:provisioned_by_group]).to be nil
+        expect(subject[:provisioned_by_group]).to be_nil
       end
 
       context 'when user is provisioned by group' do
@@ -82,7 +82,7 @@ RSpec.describe ::EE::API::Entities::UserWithAdmin do
       end
 
       it 'does not have the provisioned_by_group_id param' do
-        expect(subject[:provisioned_by_group_id]).to be nil
+        expect(subject[:provisioned_by_group_id]).to be_nil
       end
     end
   end
@@ -94,7 +94,7 @@ RSpec.describe ::EE::API::Entities::UserWithAdmin do
       end
 
       it 'returns nil when user is not associated with an enterprise group' do
-        expect(subject[:enterprise_group_id]).to be nil
+        expect(subject[:enterprise_group_id]).to be_nil
       end
 
       context 'when user is associated with an enterprise group' do
@@ -116,7 +116,7 @@ RSpec.describe ::EE::API::Entities::UserWithAdmin do
       end
 
       it 'does not have the enterprise_group_id param' do
-        expect(subject[:enterprise_group_id]).to be nil
+        expect(subject[:enterprise_group_id]).to be_nil
       end
     end
   end
@@ -128,7 +128,7 @@ RSpec.describe ::EE::API::Entities::UserWithAdmin do
       end
 
       it 'returns nil when user is not associated with an enterprise group' do
-        expect(subject[:enterprise_group_associated_at]).to be nil
+        expect(subject[:enterprise_group_associated_at]).to be_nil
       end
 
       context 'when user is associated with an enterprise group' do
@@ -151,7 +151,7 @@ RSpec.describe ::EE::API::Entities::UserWithAdmin do
       end
 
       it 'does not have the enterprise_group_associated_at param' do
-        expect(subject[:enterprise_group_associated_at]).to be nil
+        expect(subject[:enterprise_group_associated_at]).to be_nil
       end
     end
   end

@@ -161,10 +161,10 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
         metadata = feature_setting.metadata
 
         expect(metadata).to be_an_instance_of(Ai::FeatureSetting::FeatureMetadata)
-        expect(metadata.title).to be nil
-        expect(metadata.main_feature).to be nil
-        expect(metadata.compatible_llms).to be nil
-        expect(metadata.release_state).to be nil
+        expect(metadata.title).to be_nil
+        expect(metadata.main_feature).to be_nil
+        expect(metadata.compatible_llms).to be_nil
+        expect(metadata.release_state).to be_nil
       end
     end
   end
