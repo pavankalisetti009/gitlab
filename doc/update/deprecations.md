@@ -1882,6 +1882,29 @@ For migration instructions, see
 
 <div class="deprecation breaking-change" data-milestone="18.0">
 
+### `kpt`-based `agentk` is deprecated
+
+<div class="deprecation-notes">
+
+- Announced in GitLab <span class="milestone">17.9</span>
+- Removal in GitLab <span class="milestone">18.0</span> ([breaking change](https://docs.gitlab.com/ee/update/terminology.html#breaking-change))
+- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/cluster-integration/gitlab-agent/-/issues/656).
+
+</div>
+
+In GitLab 18.0, we'll remove support for the `kpt`-based installation of the agent for Kubernetes.
+Instead, you should install the agent with one of the supported installation methods:
+
+- Helm (recommended)
+- GitLab CLI
+- Flux
+
+To migrate from `kpt` to Helm, follow [the agent installation documentation](https://docs.gitlab.com/ee/user/clusters/agent/install/) to overwrite your `kpt`-deployed `agentk` instance.
+
+</div>
+
+<div class="deprecation breaking-change" data-milestone="18.0">
+
 ### `maxHoursBeforeTermination` GraphQL field is deprecated
 
 <div class="deprecation-notes">
