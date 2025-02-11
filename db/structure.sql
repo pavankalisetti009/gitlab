@@ -23233,7 +23233,8 @@ CREATE TABLE vulnerability_finding_signatures (
     updated_at timestamp with time zone NOT NULL,
     algorithm_type smallint NOT NULL,
     signature_sha bytea NOT NULL,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_f4ab9ffc5a CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE vulnerability_finding_signatures_id_seq
@@ -27182,9 +27183,6 @@ ALTER TABLE work_item_parent_links
 
 ALTER TABLE project_relation_exports
     ADD CONSTRAINT check_f461e3537f CHECK ((project_id IS NOT NULL)) NOT VALID;
-
-ALTER TABLE vulnerability_finding_signatures
-    ADD CONSTRAINT check_f4ab9ffc5a CHECK ((project_id IS NOT NULL)) NOT VALID;
 
 ALTER TABLE merge_request_blocks
     ADD CONSTRAINT check_f8034ca45e CHECK ((project_id IS NOT NULL)) NOT VALID;
