@@ -137,5 +137,22 @@ RSpec.describe Banzai::Filter::KrokiFilter, feature_category: :markdown do
     expect(doc.to_s).to eq %(<a><pre data-canonical-lang='f/" onerror=alert(1) onload=alert(1) '><code data-canonical-lang="wavedrom">xss</code></pre></a>)
   end
 
+  it "strips at most one trailing newline from the diagram's source" do
+    stub_application_setting(kroki_enabled: true, kroki_url: "http://localhost:8000")
+
+    # Input rendered from the following Markdown:
+    #
+    # ```graphviz
+    # digraph { a -> b }
+    # // Next line left intentionally blank.
+    #
+    # ```
+    input = %(<pre data-canonical-lang="graphviz"><code>digraph { a -> b }\n// Next line left intentionally blank.\n\n</code></pre>)
+    output = '<img src="http://localhost:8000/graphviz/svg/eNpLyUwvSizIUKhWSFTQtVNIUqjl0tdX8EutKFHIycxLVchJTStRyMwrSc0ryczPS8zJqVRIyknMy9bjAgArOBNq" class="js-render-kroki" data-diagram="graphviz" data-diagram-src="data:text/plain;base64,ZGlncmFwaCB7IGEgLT4gYiB9Ci8vIE5leHQgbGluZSBsZWZ0IGludGVudGlvbmFsbHkgYmxhbmsuCg==">'
+    doc = filter(input)
+
+    expect(doc.to_s).to eq output
+  end
+
   it_behaves_like 'pipeline timing check'
 end

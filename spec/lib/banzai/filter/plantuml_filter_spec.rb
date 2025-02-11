@@ -63,5 +63,22 @@ RSpec.describe Banzai::Filter::PlantumlFilter, feature_category: :markdown do
     expect(doc.to_s).to eq input
   end
 
+  it "strips at most one trailing newline from the diagram's source" do
+    stub_application_setting(plantuml_enabled: true, plantuml_url: "http://localhost:8080")
+
+    # Input rendered from the following Markdown:
+    #
+    # ```plantuml
+    # Bob -> Sara : Hello
+    # ' Next line left intentionally blank.
+    #
+    # ```
+    input = %(<pre data-canonical-lang="plantuml"><code>Bob -&gt; Sara : Hello\n' Next line left intentionally blank.\n\n</code></pre>)
+    output = '<img class="plantuml" src="http://localhost:8080/png/U9npoazIqBLJ24uiIbImKl18pSd9vr9Ny4kjA578oSnBLSX9JIjHoCmhISqhoSpFIyp9gLH8oadCozRZ0W0Q7XD1" data-diagram="plantuml" data-diagram-src="data:text/plain;base64,Qm9iIC0+IFNhcmEgOiBIZWxsbwonIE5leHQgbGluZSBsZWZ0IGludGVudGlvbmFsbHkgYmxhbmsuCg==">'
+    doc = filter(input)
+
+    expect(doc.to_s).to eq output
+  end
+
   it_behaves_like 'pipeline timing check'
 end
