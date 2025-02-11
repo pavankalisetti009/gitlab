@@ -36612,6 +36612,9 @@ msgstr ""
 msgid "MlModelRegistry|Metric"
 msgstr ""
 
+msgid "MlModelRegistry|Model"
+msgstr ""
+
 msgid "MlModelRegistry|Model card"
 msgstr ""
 
@@ -36669,6 +36672,9 @@ msgstr ""
 msgid "MlModelRegistry|No logged parameters"
 msgstr ""
 
+msgid "MlModelRegistry|No results"
+msgstr ""
+
 msgid "MlModelRegistry|No runs associated with this model"
 msgstr ""
 
@@ -36703,6 +36709,12 @@ msgid "MlModelRegistry|Runs"
 msgstr ""
 
 msgid "MlModelRegistry|Save changes"
+msgstr ""
+
+msgid "MlModelRegistry|Select a model"
+msgstr ""
+
+msgid "MlModelRegistry|Select the model that will contain the new version. The run will move to the default experiment of that model."
 msgstr ""
 
 msgid "MlModelRegistry|Setting up the client"
@@ -48713,9 +48725,6 @@ msgid "Run this job again in order to create the necessary resources."
 msgstr ""
 
 msgid "Run untagged jobs"
-msgstr ""
-
-msgid "Run's experiment does not belong to this model"
 msgstr ""
 
 msgid "Runner"
