@@ -78,6 +78,10 @@ module Issuables
       archived_at.nil?
     end
 
+    def field_type_select?
+      field_type_single_select? || field_type_multi_select?
+    end
+
     # These associations have ordering scopes. We need to reset these when mutated
     # so that the cache is cleared and they are fetched again in the correct order.
     def reset_ordered_associations

@@ -376,4 +376,24 @@ RSpec.describe Issuables::CustomField, feature_category: :team_planning do
       expect(field.active?).to eq(false)
     end
   end
+
+  describe '#field_type_select?' do
+    it 'returns true for single select types' do
+      field = build(:custom_field, field_type: :single_select)
+
+      expect(field.field_type_select?).to eq(true)
+    end
+
+    it 'returns true for multi select types' do
+      field = build(:custom_field, field_type: :multi_select)
+
+      expect(field.field_type_select?).to eq(true)
+    end
+
+    it 'returns false for other types' do
+      field = build(:custom_field, field_type: :text)
+
+      expect(field.field_type_select?).to eq(false)
+    end
+  end
 end

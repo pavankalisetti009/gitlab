@@ -96,10 +96,6 @@ module EE
       ::Search::Elastic::References::WorkItem.serialize(self)
     end
 
-    def custom_field_values
-      []
-    end
-
     private
 
     override :linked_work_items_query

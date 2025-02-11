@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Types::WorkItems::Widgets::CustomFieldsType, feature_category: :team_planning do
   let(:fields) do
-    %i[type]
+    %i[type customFieldValues]
   end
 
   specify { expect(described_class).to have_graphql_fields(fields) }
