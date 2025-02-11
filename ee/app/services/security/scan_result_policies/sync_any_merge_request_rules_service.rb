@@ -88,14 +88,25 @@ module Security
       strong_memoize_attr :policy_branch_service
 
       def policy_affected_by_target_branch?(policy)
-        # If there are approval rules, they are already filtered for target branch and we don't have to invoke gitaly
-        return true if policy.approval_merge_request_rules.any?
-
         rule = active_policies.dig(policy.orchestration_policy_idx, :rules, policy.rule_idx)
         return true if rule.blank?
 
+        return false if branch_excepted?(rule[:branch_exceptions])
+
+        # If there are approval rules, they are already filtered for target branch
+        return true if policy.approval_merge_request_rules.any?
+
         affected_branches = policy_branch_service.scan_result_branches([rule])
         affected_branches.include? merge_request.target_branch
+      end
+
+      def branch_excepted?(exceptions)
+        exceptions&.any? do |exception|
+          case exception
+          when String then merge_request.target_branch == exception
+          when Hash then merge_request.target_branch == exception[:name] && exception[:full_path] == project.full_path
+          end
+        end
       end
 
       def any_merge_request_rules
