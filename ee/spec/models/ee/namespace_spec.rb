@@ -1890,8 +1890,8 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
         stub_feature_flags(namespace_storage_limit: false)
       end
 
-      it 'returns an instance of RootExcessSize' do
-        expect(root_storage_size).to be_an_instance_of(::Namespaces::Storage::RootExcessSize)
+      it 'returns an instance of Namespaces::Storage::RepositoryLimit::Enforcement' do
+        expect(root_storage_size).to be_an_instance_of(::Namespaces::Storage::RepositoryLimit::Enforcement)
       end
     end
 
@@ -1902,8 +1902,8 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
         stub_feature_flags(namespace_storage_limit: false)
       end
 
-      it 'returns an instance of RootExcessSize' do
-        expect(root_storage_size).to be_an_instance_of(::Namespaces::Storage::RootExcessSize)
+      it 'returns an instance of Namespaces::Storage::RepositoryLimit::Enforcement' do
+        expect(root_storage_size).to be_an_instance_of(::Namespaces::Storage::RepositoryLimit::Enforcement)
       end
     end
 
@@ -1917,10 +1917,10 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
         expect(root_storage_size).to be_an_instance_of(::Namespaces::Storage::RootSize)
       end
 
-      it 'returns an instance of RootExcessSize for a paid namespace' do
+      it 'returns an instance of Namespaces::Storage::RepositoryLimit::Enforcement for a paid namespace' do
         paid_namespace = create(:namespace_with_plan, plan: :ultimate_plan)
 
-        expect(paid_namespace.root_storage_size).to be_an_instance_of(::Namespaces::Storage::RootExcessSize)
+        expect(paid_namespace.root_storage_size).to be_an_instance_of(::Namespaces::Storage::RepositoryLimit::Enforcement)
       end
     end
   end
