@@ -48,7 +48,7 @@ module EE
         end
 
         def environment_dropdown
-          @environment_dropdown ||= ProtectedEnvironments::EnvironmentDropdownService
+          @environment_dropdown ||= ProtectedEnvironments::EnvironmentDropdownService.new(project)
         end
       end
     end
