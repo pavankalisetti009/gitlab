@@ -359,7 +359,7 @@ enabled: true
 rules:
   - type: license_finding
     match_on_inclusion_license: true
-    license_types: []
+    license_types: ['MIT']
     license_states:
       - detected
     branch_type: protected

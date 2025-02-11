@@ -1,7 +1,8 @@
+import { GlSprintf } from '@gitlab/ui';
 import { convertToTitleCase } from '~/lib/utils/text_utility';
 import DetailsDrawer from 'ee/security_orchestration/components/policy_drawer/scan_result/details_drawer.vue';
 import ToggleList from 'ee/security_orchestration/components/policy_drawer/toggle_list.vue';
-import PolicyDrawerLayout from 'ee/security_orchestration/components/policy_drawer/drawer_layout.vue';
+import DrawerLayout from 'ee/security_orchestration/components/policy_drawer/drawer_layout.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import Approvals from 'ee/security_orchestration/components/policy_drawer/scan_result/policy_approvals.vue';
@@ -28,7 +29,7 @@ describe('DetailsDrawer component', () => {
   const findFallbackDetails = () => wrapper.findByTestId('fallback-details');
   const findSummary = () => wrapper.findByTestId('policy-summary');
   const findPolicyApprovals = () => wrapper.findComponent(Approvals);
-  const findPolicyDrawerLayout = () => wrapper.findComponent(PolicyDrawerLayout);
+  const findDrawerLayout = () => wrapper.findComponent(DrawerLayout);
   const findToggleList = () => wrapper.findComponent(ToggleList);
   const findSettings = () => wrapper.findComponent(Settings);
   const findBotMessage = () => wrapper.findByTestId('policy-bot-message');
@@ -44,20 +45,21 @@ describe('DetailsDrawer component', () => {
       },
       provide: { namespaceType: NAMESPACE_TYPES.PROJECT, ...provide },
       stubs: {
-        PolicyDrawerLayout,
+        DrawerLayout,
+        GlSprintf,
       },
     });
   };
 
   describe('policy drawer layout props', () => {
-    it('passes the policy to the PolicyDrawerLayout component', () => {
+    it('passes the policy to the DrawerLayout component', () => {
       factory();
-      expect(findPolicyDrawerLayout().props('policy')).toBe(mockProjectScanResultPolicy);
+      expect(findDrawerLayout().props('policy')).toBe(mockProjectScanResultPolicy);
     });
 
-    it('passes the description to the PolicyDrawerLayout component', () => {
+    it('passes the description to the DrawerLayout component', () => {
       factory();
-      expect(findPolicyDrawerLayout().props('description')).toBe(
+      expect(findDrawerLayout().props('description')).toBe(
         'This policy enforces critical vulnerability CS approvals',
       );
     });
@@ -65,16 +67,122 @@ describe('DetailsDrawer component', () => {
     it('renders layout if yaml is invalid', () => {
       factory({ props: { policy: {} } });
 
-      expect(findPolicyDrawerLayout().exists()).toBe(true);
-      expect(findPolicyDrawerLayout().props('description')).toBe('');
+      expect(findDrawerLayout().exists()).toBe(true);
+      expect(findDrawerLayout().props('description')).toBe('');
       expect(findDenyAllowViewList().exists()).toBe(false);
     });
   });
 
   describe('summary', () => {
-    it('renders the policy summary', () => {
-      factory();
-      expect(findSummary().exists()).toBe(true);
+    describe('actions', () => {
+      describe('approvals', () => {
+        it('renders the "Approvals" component correctly', () => {
+          factory({ props: { policy: mockProjectWithAllApproverTypesScanResultPolicy } });
+          expect(findPolicyApprovals().exists()).toBe(true);
+          expect(findPolicyApprovals().props('isLastItem')).toBe(false);
+          expect(findApprovalSubheader().exists()).toBe(true);
+          expect(findPolicyApprovals().props('isWarnMode')).toBe(false);
+          expect(findPolicyApprovals().props('approvers')).toStrictEqual([
+            ...mockProjectWithAllApproverTypesScanResultPolicy.actionApprovers[0].allGroups,
+            ...mockProjectWithAllApproverTypesScanResultPolicy.actionApprovers[0].roles.map((r) =>
+              convertToTitleCase(r.toLowerCase()),
+            ),
+            ...mockProjectWithAllApproverTypesScanResultPolicy.actionApprovers[0].users,
+          ]);
+        });
+
+        it('should not render branch exceptions list without exceptions', () => {
+          factory({ props: { policy: mockProjectWithAllApproverTypesScanResultPolicy } });
+          expect(findToggleList().exists()).toBe(false);
+        });
+      });
+
+      describe('send bot message', () => {
+        it('hides the text when it is disabled', () => {
+          factory({
+            props: {
+              policy: {
+                ...mockProjectWithAllApproverTypesScanResultPolicy,
+                yaml: disabledSendBotMessageActionScanResultManifest,
+              },
+            },
+          });
+          expect(findBotMessage().exists()).toBe(false);
+          expect(findApprovalSubheader().exists()).toBe(false);
+        });
+
+        it('shows the message when the action is not included', () => {
+          factory({ props: { policy: mockProjectScanResultPolicy } });
+          expect(findBotMessage().text()).toBe('Send a bot message when the conditions match.');
+        });
+
+        it('shows the message when the action is enabled', () => {
+          factory({
+            props: {
+              policy: {
+                ...mockProjectWithAllApproverTypesScanResultPolicy,
+                yaml: enabledSendBotMessageActionScanResultManifest,
+              },
+            },
+          });
+          expect(findBotMessage().text()).toBe('Send a bot message when the conditions match.');
+        });
+
+        it('shows the message when there are zero actions is enabled', () => {
+          factory({
+            props: {
+              policy: {
+                ...mockProjectWithAllApproverTypesScanResultPolicy,
+                yaml: zeroActionsScanResultManifest,
+              },
+            },
+          });
+          expect(findBotMessage().exists()).toBe(true);
+          expect(findApprovalSubheader().exists()).toBe(false);
+        });
+      });
+
+      describe('warn mode', () => {
+        it('renders', () => {
+          factory({
+            props: {
+              policy: {
+                ...mockProjectWithAllApproverTypesScanResultPolicy,
+                yaml: mockWarnActionScanResultManifest,
+              },
+            },
+          });
+          expect(findPolicyApprovals().exists()).toBe(true);
+          expect(findPolicyApprovals().props('isLastItem')).toBe(false);
+          expect(findPolicyApprovals().props('isWarnMode')).toBe(true);
+          expect(findBotMessage().exists()).toBe(false);
+        });
+      });
+    });
+
+    describe('rules', () => {
+      it('renders the summary for a security scan rule', () => {
+        factory();
+        expect(findSummary().text()).toContain(
+          'When Container Scanning scanner finds more than 1 vulnerability in an open merge request targeting any protected branch and all the following apply:',
+        );
+        expect(findToggleList().exists()).toBe(false);
+      });
+
+      it('renders the summary for a license rule when licenses are present', () => {
+        factory({
+          props: {
+            policy: {
+              ...mockProjectScanResultPolicy,
+              yaml: allowDenyScanResultLicenseNonEmptyManifest,
+            },
+          },
+        });
+        expect(findSummary().text()).toContain(
+          'When license scanner finds any license matching  that is pre-existing and is in an open merge request targeting any protected branch.',
+        );
+        expect(findToggleList().exists()).toBe(true);
+      });
     });
 
     describe('settings', () => {
@@ -88,88 +196,6 @@ describe('DetailsDrawer component', () => {
       it('passes the empty object to the "Settings" component if no settings are present', () => {
         factory();
         expect(findSettings().props('settings')).toEqual({});
-      });
-    });
-
-    describe('approvals', () => {
-      it('renders the "Approvals" component correctly', () => {
-        factory({ props: { policy: mockProjectWithAllApproverTypesScanResultPolicy } });
-        expect(findPolicyApprovals().exists()).toBe(true);
-        expect(findPolicyApprovals().props('isLastItem')).toBe(false);
-        expect(findPolicyApprovals().props('isWarnMode')).toBe(false);
-        expect(findApprovalSubheader().exists()).toBe(true);
-        expect(findPolicyApprovals().props('approvers')).toStrictEqual([
-          ...mockProjectWithAllApproverTypesScanResultPolicy.actionApprovers[0].allGroups,
-          ...mockProjectWithAllApproverTypesScanResultPolicy.actionApprovers[0].roles.map((r) =>
-            convertToTitleCase(r.toLowerCase()),
-          ),
-          ...mockProjectWithAllApproverTypesScanResultPolicy.actionApprovers[0].users,
-        ]);
-      });
-
-      it('should not render branch exceptions list without exceptions', () => {
-        factory({ props: { policy: mockProjectWithAllApproverTypesScanResultPolicy } });
-        expect(findToggleList().exists()).toBe(false);
-      });
-
-      it('renders in warn mode', () => {
-        factory({
-          props: {
-            policy: {
-              ...mockProjectWithAllApproverTypesScanResultPolicy,
-              yaml: mockWarnActionScanResultManifest,
-            },
-          },
-        });
-        expect(findPolicyApprovals().exists()).toBe(true);
-        expect(findPolicyApprovals().props('isLastItem')).toBe(false);
-        expect(findPolicyApprovals().props('isWarnMode')).toBe(true);
-        expect(findBotMessage().exists()).toBe(false);
-      });
-    });
-
-    describe('send bot message', () => {
-      it('hides the text when it is disabled', () => {
-        factory({
-          props: {
-            policy: {
-              ...mockProjectWithAllApproverTypesScanResultPolicy,
-              yaml: disabledSendBotMessageActionScanResultManifest,
-            },
-          },
-        });
-        expect(findBotMessage().exists()).toBe(false);
-        expect(findApprovalSubheader().exists()).toBe(false);
-      });
-
-      it('shows the message when the action is not included', () => {
-        factory({ props: { policy: mockProjectScanResultPolicy } });
-        expect(findBotMessage().text()).toBe('Send a bot message when the conditions match.');
-      });
-
-      it('shows the message when the action is enabled', () => {
-        factory({
-          props: {
-            policy: {
-              ...mockProjectWithAllApproverTypesScanResultPolicy,
-              yaml: enabledSendBotMessageActionScanResultManifest,
-            },
-          },
-        });
-        expect(findBotMessage().text()).toBe('Send a bot message when the conditions match.');
-      });
-
-      it('shows the message when there are zero actions is enabled', () => {
-        factory({
-          props: {
-            policy: {
-              ...mockProjectWithAllApproverTypesScanResultPolicy,
-              yaml: zeroActionsScanResultManifest,
-            },
-          },
-        });
-        expect(findBotMessage().exists()).toBe(true);
-        expect(findApprovalSubheader().exists()).toBe(false);
       });
     });
   });
