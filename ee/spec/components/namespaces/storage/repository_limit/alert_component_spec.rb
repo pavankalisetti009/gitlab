@@ -61,7 +61,7 @@ RSpec.describe Namespaces::Storage::RepositoryLimit::AlertComponent, :saas, type
           repository_size_excess_project_count: 1,
           additional_purchased_storage_size: 0
         )
-        allow_next_instance_of(::Namespaces::Storage::RootExcessSize) do |size_checker|
+        allow_next_instance_of(::Namespaces::Storage::RepositoryLimit::Enforcement) do |size_checker|
           allow(size_checker).to receive_messages(
             usage_ratio: 1,
             above_size_limit?: true
@@ -98,7 +98,7 @@ RSpec.describe Namespaces::Storage::RepositoryLimit::AlertComponent, :saas, type
       context 'and under storage size limit' do
         before do
           allow(group).to receive(:additional_purchased_storage_size).and_return(1)
-          allow_next_instance_of(::Namespaces::Storage::RootExcessSize) do |size_checker|
+          allow_next_instance_of(::Namespaces::Storage::RepositoryLimit::Enforcement) do |size_checker|
             allow(size_checker).to receive(:usage_ratio).and_return(0.75)
           end
         end
@@ -127,7 +127,7 @@ RSpec.describe Namespaces::Storage::RepositoryLimit::AlertComponent, :saas, type
             repository_size_excess_project_count: 1,
             additional_purchased_storage_size: 1
           )
-          allow_next_instance_of(::Namespaces::Storage::RootExcessSize) do |size_checker|
+          allow_next_instance_of(::Namespaces::Storage::RepositoryLimit::Enforcement) do |size_checker|
             allow(size_checker).to receive_messages(
               usage_ratio: 1,
               above_size_limit?: true
@@ -181,7 +181,7 @@ RSpec.describe Namespaces::Storage::RepositoryLimit::AlertComponent, :saas, type
       before do
         allow(Ability).to receive(:allowed?).with(user, :owner_access, group).and_return(false)
         allow(Ability).to receive(:allowed?).with(user, :owner_access, project_over_limit).and_return(false)
-        allow_next_instance_of(::Namespaces::Storage::RootExcessSize) do |size_checker|
+        allow_next_instance_of(::Namespaces::Storage::RepositoryLimit::Enforcement) do |size_checker|
           allow(size_checker).to receive_messages(
             usage_ratio: 1,
             above_size_limit?: true
@@ -207,7 +207,7 @@ RSpec.describe Namespaces::Storage::RepositoryLimit::AlertComponent, :saas, type
           repository_size_excess_project_count: 1,
           additional_purchased_storage_size: 0
         )
-        allow_next_instance_of(::Namespaces::Storage::RootExcessSize) do |size_checker|
+        allow_next_instance_of(::Namespaces::Storage::RepositoryLimit::Enforcement) do |size_checker|
           allow(size_checker).to receive_messages(
             usage_ratio: 1,
             above_size_limit?: false
@@ -225,7 +225,7 @@ RSpec.describe Namespaces::Storage::RepositoryLimit::AlertComponent, :saas, type
       subject(:component) { described_class.new(context: group, user: user) }
 
       before do
-        root_storage_size = ::Namespaces::Storage::RootExcessSize.new(group)
+        root_storage_size = ::Namespaces::Storage::RepositoryLimit::Enforcement.new(group)
 
         allow(root_storage_size).to receive_messages(
           usage_ratio: 1,

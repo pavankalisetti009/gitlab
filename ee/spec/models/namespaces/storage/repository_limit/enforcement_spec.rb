@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Namespaces::Storage::RootExcessSize, feature_category: :consumables_cost_management do
+RSpec.describe Namespaces::Storage::RepositoryLimit::Enforcement, feature_category: :consumables_cost_management do
   using RSpec::Parameterized::TableSyntax
 
   let(:namespace) { create(:group, additional_purchased_storage_size: additional_purchased_storage_size) }
@@ -110,6 +110,41 @@ RSpec.describe Namespaces::Storage::RootExcessSize, feature_category: :consumabl
   describe '#enforcement_type' do
     it 'returns :project_repository_limit' do
       expect(model.enforcement_type).to eq(:project_repository_limit)
+    end
+  end
+
+  describe '#exceeded_size' do
+    context 'when given a parameter' do
+      where(:change_size, :expected_excess_size) do
+        150.megabytes | 100.megabytes
+        60.megabytes  | 10.megabytes
+        51.megabytes  | 1.megabyte
+        50.megabytes  | 0
+        10.megabytes  | 0
+        0             | 0
+      end
+
+      with_them do
+        it 'returns the size in bytes that the change exceeds the limit' do
+          expect(model.exceeded_size(change_size)).to eq(expected_excess_size)
+        end
+      end
+    end
+
+    context 'without a parameter' do
+      where(:total_repository_size_excess, :expected_excess_size) do
+        0             | 0
+        50.megabytes  | 0
+        100.megabytes | 0
+        101.megabytes | 1.megabyte
+        170.megabytes | 70.megabytes
+      end
+
+      with_them do
+        it 'returns the size in bytes that the current storage size exceeds the limit' do
+          expect(model.exceeded_size).to eq(expected_excess_size)
+        end
+      end
     end
   end
 

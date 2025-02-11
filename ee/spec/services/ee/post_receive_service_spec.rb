@@ -106,7 +106,7 @@ RSpec.describe PostReceiveService, :geo, feature_category: :team_planning do
   describe 'storage size limit alerts', feature_category: :consumables_cost_management do
     context 'when there is no alert' do
       before do
-        allow_next_instance_of(Namespaces::Storage::RootExcessSize) do |root_storage_size|
+        allow_next_instance_of(Namespaces::Storage::RepositoryLimit::Enforcement) do |root_storage_size|
           allow(root_storage_size).to receive(:usage_ratio).and_return(0.94).at_least(:once)
         end
       end
@@ -133,7 +133,7 @@ RSpec.describe PostReceiveService, :geo, feature_category: :team_planning do
           before do
             stub_ee_application_setting(repository_size_limit: 10.gigabytes)
 
-            allow_next_instance_of(Namespaces::Storage::RootExcessSize) do |root_storage_size|
+            allow_next_instance_of(Namespaces::Storage::RepositoryLimit::Enforcement) do |root_storage_size|
               allow(root_storage_size).to receive(:current_size).and_return(55)
               allow(root_storage_size).to receive(:limit).and_return(10)
             end
@@ -156,7 +156,7 @@ RSpec.describe PostReceiveService, :geo, feature_category: :team_planning do
         end
 
         it 'returns warning message when under storage limit' do
-          allow_next_instance_of(Namespaces::Storage::RootExcessSize) do |root_storage_size|
+          allow_next_instance_of(Namespaces::Storage::RepositoryLimit::Enforcement) do |root_storage_size|
             allow(root_storage_size).to receive(:usage_ratio).and_return(0.95)
           end
 
@@ -180,7 +180,7 @@ RSpec.describe PostReceiveService, :geo, feature_category: :team_planning do
             stub_ee_application_setting(automatic_purchased_storage_allocation: false)
             stub_ee_application_setting(should_check_namespace_plan: false)
 
-            allow_next_instance_of(Namespaces::Storage::RootExcessSize) do |root_storage_size|
+            allow_next_instance_of(Namespaces::Storage::RepositoryLimit::Enforcement) do |root_storage_size|
               allow(root_storage_size).to receive(:usage_ratio).and_return(1)
             end
           end
