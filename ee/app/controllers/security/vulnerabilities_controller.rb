@@ -13,6 +13,10 @@ module Security
       push_frontend_feature_flag(:vulnerability_report_vr_badge, current_user, type: :beta)
       push_frontend_feature_flag(:vulnerability_report_vr_filter, current_user, type: :beta)
       push_frontend_feature_flag(:enhanced_vulnerability_bulk_actions, current_user, type: :wip)
+      push_frontend_feature_flag(:existing_jira_issue_attachment_from_vulnerability_bulk_action,
+        current_user,
+        type: :wip
+      )
 
       push_frontend_ability(ability: :resolve_vulnerability_with_ai, resource: vulnerable, user: current_user)
     end
