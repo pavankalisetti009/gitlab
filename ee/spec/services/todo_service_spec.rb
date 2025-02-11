@@ -375,6 +375,40 @@ RSpec.describe TodoService, feature_category: :notifications do
     end
   end
 
+  describe 'Wiki pages' do
+    let_it_be(:group) { create(:group, :private, developers: [author, john_doe]) }
+    let_it_be(:wiki_page_meta) { create(:wiki_page_meta, :for_wiki_page, container: group) }
+
+    let(:note) do
+      create(
+        :note,
+        namespace: group,
+        project: nil,
+        noteable: wiki_page_meta,
+        author: author,
+        note: "Hey #{john_doe.to_reference}"
+      )
+    end
+
+    before do
+      stub_licensed_features(group_wikis: true)
+    end
+
+    it 'creates a todo with the relevant group id for mentioned user on new diff note' do
+      attributes = {
+        user: john_doe,
+        target: wiki_page_meta,
+        action: Todo::MENTIONED,
+        note: note,
+        group: group,
+        author: author,
+        state: :pending
+      }
+
+      expect { service.new_note(note, author) }.to change { Todo.where(attributes).count }.by(1)
+    end
+  end
+
   describe '#added_approver' do
     let_it_be(:users) { create_list(:user, 2) }
     let_it_be(:merge_request) { create(:merge_request) }
