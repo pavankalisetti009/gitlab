@@ -53,6 +53,15 @@ RSpec.shared_examples_for 'a Geo registries resolver' do |registry_factory_name|
             end
           end
 
+          context 'when the sort argument is present' do
+            it 'returns all registries in sort order' do
+              args = { sort: 'id_desc'.upcase }
+              expected = [registry4, registry3, registry2, registry1]
+
+              expect(resolve_registries(args).to_a).to eq(expected)
+            end
+          end
+
           context 'with verification enabled' do
             before do
               skip_if_verification_is_not_enabled
@@ -62,6 +71,15 @@ RSpec.shared_examples_for 'a Geo registries resolver' do |registry_factory_name|
               it 'returns registries with requested verification state, in order' do
                 args = { verification_state: ::Types::Geo::VerificationStateEnum.values['SUCCEEDED'].value }
                 expected = [registry2, registry4]
+
+                expect(resolve_registries(args).to_a).to eq(expected)
+              end
+            end
+
+            context 'when the verified_at sort argument is present' do
+              it 'returns registries with requested verified_at, in order' do
+                args = { sort: 'verified_at_asc'.upcase }
+                expected = [registry2, registry4, registry1, registry3]
 
                 expect(resolve_registries(args).to_a).to eq(expected)
               end
@@ -77,6 +95,16 @@ RSpec.shared_examples_for 'a Geo registries resolver' do |registry_factory_name|
               it 'raises ArgumentError' do
                 args = { verification_state: ::Types::Geo::VerificationStateEnum.values['SUCCEEDED'].value }
                 message = "Filtering by verification_state is not supported " \
+                  "because verification is not enabled for #{replicator_class.model}"
+
+                expect { resolve_registries(args) }.to raise_error(ArgumentError, message)
+              end
+            end
+
+            context 'when the verified_at sort argument is present' do
+              it 'raises ArgumentError' do
+                args = { sort: 'verified_at_asc'.upcase }
+                message = "Sorting by verified_at is not supported " \
                   "because verification is not enabled for #{replicator_class.model}"
 
                 expect { resolve_registries(args) }.to raise_error(ArgumentError, message)

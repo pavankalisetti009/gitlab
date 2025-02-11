@@ -31,6 +31,10 @@ module Resolvers
           required: false,
           description: 'Filters registries by their attributes using a keyword.'
 
+        argument :sort, ::Types::Geo::RegistrySortEnum,
+          required: false,
+          description: 'Sort registries by given criteria.'
+
         def resolve(**args)
           return registry_class.none unless geo_node_is_current?
 
@@ -47,7 +51,8 @@ module Resolvers
             ids: registry_ids(args[:ids]),
             replication_state: args[:replication_state],
             verification_state: args[:verification_state],
-            keyword: args[:keyword]
+            keyword: args[:keyword],
+            sort: args[:sort]
           }.compact
         end
 

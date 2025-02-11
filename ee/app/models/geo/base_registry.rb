@@ -28,6 +28,23 @@ class Geo::BaseRegistry < Geo::TrackingBase
     order(:id)
   end
 
+  def self.ordered_by(method)
+    case method.to_s
+    when 'id_desc'
+      order(id: :desc)
+    when 'verified_at_asc'
+      order(verified_at: :asc)
+    when 'verified_at_desc'
+      order(verified_at: :desc)
+    when 'last_synced_at_asc'
+      order(last_synced_at: :asc)
+    when 'last_synced_at_desc'
+      order(last_synced_at: :desc)
+    else
+      ordered_by_id
+    end
+  end
+
   def self.after_bulk_mark_update_cursor(bulk_mark_update_cursor)
     where("id > ?", bulk_mark_update_cursor)
   end
