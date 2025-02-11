@@ -331,6 +331,82 @@ RSpec.describe Security::StoreSecurityReportsByProjectWorker, feature_category: 
         expect(project.vulnerabilities.map(&:resolved_on_default_branch)).not_to include(true)
       end
     end
+
+    context 'with report related findings matching all security findings' do
+      let(:sast_scanner) { create(:vulnerabilities_scanner, project: project) }
+      let(:sbom_scanner) { create(:vulnerabilities_scanner, :sbom_scanner, project: project) }
+      let(:scan_sast) do
+        create(:security_scan, :latest_successful, scan_type: :sast,
+          project: project, build: build_sast)
+      end
+
+      let(:build_sast) do
+        create(
+          :ci_build, :sast, :success,
+          user: project.creator, pipeline: pipeline, project: project)
+      end
+
+      let(:artifact_sast1) do
+        create(:ee_ci_job_artifact, :semgrep_api_vulnerabilities, job: build_sast)
+      end
+
+      before do
+        allow_next_instance_of(Security::Scan) do |instance|
+          allow(instance).to receive(:scanner).and_return(sast_scanner)
+        end
+        stub_licensed_features(
+          sast: true,
+          vulnerability_finding_signatures: true
+        )
+        update_cache(pipeline)
+        scan_sast.reload.report_findings.each do |finding|
+          create(:security_finding, deduplicated: true,
+            scan: scan_sast, scanner: sast_scanner, uuid: finding.uuid)
+        end
+      end
+
+      it 'does not generate errors' do
+        expect { worker.perform(project.id) }.not_to change {
+          scan_sast.reload.info
+        }
+      end
+
+      context 'with an additional cyclonedx related security finding' do
+        let!(:cyclonedx_finding) do
+          create(
+            :security_finding,
+            :with_finding_data,
+            deduplicated: true,
+            scan: scan_sast,
+            scanner: sbom_scanner
+          )
+        end
+
+        it 'does not generate errors' do
+          expect { worker.perform(project.id) }.not_to change {
+            scan_sast.reload.info
+          }
+        end
+
+        context 'with dependency_scanning_for_pipelines_with_cyclonedx_reports FF disabled' do
+          before do
+            stub_feature_flags(dependency_scanning_for_pipelines_with_cyclonedx_reports: false)
+          end
+
+          it 'generates errors' do
+            expect { worker.perform(project.id) }.to change {
+              scan_sast.reload.info
+            }.from({})
+              .to({ "errors" => [
+                {
+                  "message" => "Ingestion failed for some vulnerabilities",
+                  "type" => "IngestionError"
+                }
+              ] })
+          end
+        end
+      end
+    end
   end
 
   def update_cache(pipeline)
