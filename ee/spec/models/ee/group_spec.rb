@@ -2783,10 +2783,14 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       shared_examples 'enabled group hooks' do
         context 'execution' do
           it 'executes the hook for self and ancestor groups by default' do
-            expect(WebHookService).to receive(:new)
-              .with(group_hook, data, 'member_hooks', idempotency_key: anything).and_call_original
-            expect(WebHookService).to receive(:new)
-              .with(parent_group_hook, data, 'member_hooks', idempotency_key: anything).and_call_original
+            expect(WebHookService)
+              .to receive(:new)
+              .with(group_hook, data, 'member_hooks', idempotency_key: anything)
+              .and_call_original
+            expect(WebHookService)
+              .to receive(:new)
+              .with(parent_group_hook, data, 'member_hooks', idempotency_key: anything)
+              .and_call_original
 
             group.execute_hooks(data, :member_hooks)
           end
@@ -2939,6 +2943,195 @@ RSpec.describe Group, feature_category: :groups_and_projects do
         subgroup.destroy!
 
         expect(WebMock).not_to have_requested(:post, parent_group_hook.url)
+      end
+    end
+  end
+
+  context 'when resource access token hooks for expiry notification' do
+    let(:group) { create(:group) }
+    let(:group_hook) { create(:group_hook, group: group, resource_access_token_events: true) }
+
+    before do
+      stub_licensed_features(group_webhooks: true)
+    end
+
+    context 'when interval is seven days' do
+      let(:data) { { interval: :seven_days } }
+
+      it 'executes webhook' do
+        expect(WebHookService)
+          .to receive(:new)
+          .with(group_hook, data, 'resource_access_token_hooks', idempotency_key: anything)
+          .and_call_original
+
+        group.execute_hooks(data, :resource_access_token_hooks)
+      end
+    end
+
+    context 'when feature flag is disabled' do
+      let(:data) { { interval: :thirty_days } }
+
+      before do
+        stub_feature_flags(extended_expiry_webhook_execution_setting: false)
+      end
+
+      it 'executes the webhook since the setting does not apply' do
+        group.namespace_settings.update!(extended_grat_expiry_webhooks_execute: false)
+
+        expect(WebHookService)
+          .to receive(:new)
+          .with(group_hook, data, 'resource_access_token_hooks', idempotency_key: anything)
+          .and_call_original
+
+        group.execute_hooks(data, :resource_access_token_hooks)
+      end
+    end
+
+    context 'when setting extended_grat_expiry_webhooks_execute is disabled' do
+      before do
+        group.namespace_settings.update!(extended_grat_expiry_webhooks_execute: false)
+      end
+
+      context 'when interval is thirty days' do
+        let(:data) { { interval: :thirty_days } }
+
+        it 'does not execute the hook' do
+          expect(WebHookService).not_to receive(:new)
+
+          group.execute_hooks(data, :resource_access_token_hooks)
+        end
+      end
+
+      context 'when interval is sixty days' do
+        let(:data) { { interval: :sixty_days } }
+
+        it 'does not execute the hook' do
+          expect(WebHookService).not_to receive(:new)
+
+          group.execute_hooks(data, :resource_access_token_hooks)
+        end
+      end
+    end
+
+    context 'when setting extended_grat_expiry_webhooks_execute is enabled' do
+      before do
+        group.namespace_settings.update!(extended_grat_expiry_webhooks_execute: true)
+      end
+
+      context 'when interval is thirty days' do
+        let(:data) { { interval: :thirty_days } }
+
+        it 'executes webhook' do
+          expect(WebHookService)
+            .to receive(:new)
+            .with(group_hook, data, 'resource_access_token_hooks', idempotency_key: anything)
+            .and_call_original
+
+          group.execute_hooks(data, :resource_access_token_hooks)
+        end
+      end
+
+      context 'when interval is sixty days' do
+        let(:data) { { interval: :sixty_days } }
+
+        it 'executes webhook' do
+          expect(WebHookService)
+            .to receive(:new)
+            .with(group_hook, data, 'resource_access_token_hooks', idempotency_key: anything)
+            .and_call_original
+
+          group.execute_hooks(data, :resource_access_token_hooks)
+        end
+      end
+    end
+
+    context 'when group has subgroup with same webhook configured' do
+      let(:subgroup) { create(:group, parent: group) }
+      let(:subgroup_hook) { create(:group_hook, group: subgroup, resource_access_token_events: true) }
+      let(:data) { { interval: :thirty_days } }
+
+      context 'when setting extended_grat_expiry_webhooks_execute is disabled for parent group' do
+        before do
+          group.namespace_settings.update!(extended_grat_expiry_webhooks_execute: false)
+        end
+
+        context 'when subgroup setting is enabled' do
+          before do
+            subgroup.namespace_settings.update!(extended_grat_expiry_webhooks_execute: true)
+          end
+
+          it 'executes webhook for subgroup and not parent group' do
+            expect(WebHookService)
+              .to receive(:new)
+              .with(subgroup_hook, data, 'resource_access_token_hooks', idempotency_key: anything)
+              .and_call_original
+
+            expect(WebHookService)
+              .not_to receive(:new)
+              .with(group_hook, data, 'resource_access_token_hooks', idempotency_key: anything)
+              .and_call_original
+
+            subgroup.execute_hooks(data, :resource_access_token_hooks)
+          end
+        end
+
+        context 'when subgroup setting is disabled' do
+          before do
+            subgroup.namespace_settings.update!(extended_grat_expiry_webhooks_execute: false)
+          end
+
+          it 'does not execute webhook for subgroup and not parent group' do
+            expect(WebHookService).not_to receive(:new)
+
+            subgroup.execute_hooks(data, :resource_access_token_hooks)
+          end
+        end
+      end
+
+      context 'when setting extended_grat_expiry_webhooks_execute is enabled for parent group' do
+        before do
+          group.namespace_settings.update!(extended_grat_expiry_webhooks_execute: true)
+        end
+
+        context 'when subgroup setting is enabled' do
+          before do
+            subgroup.namespace_settings.update!(extended_grat_expiry_webhooks_execute: true)
+          end
+
+          it 'executes webhook both for subgroup and parent group' do
+            expect(WebHookService)
+              .to receive(:new)
+              .with(subgroup_hook, data, 'resource_access_token_hooks', idempotency_key: anything)
+              .and_call_original
+
+            expect(WebHookService)
+              .to receive(:new)
+              .with(group_hook, data, 'resource_access_token_hooks', idempotency_key: anything)
+              .and_call_original
+
+            subgroup.execute_hooks(data, :resource_access_token_hooks)
+          end
+        end
+
+        context 'when subgroup setting is disabled' do
+          before do
+            subgroup.namespace_settings.update!(extended_grat_expiry_webhooks_execute: false)
+          end
+
+          it 'does not execute webhook for subgroup, but does execute for parent group' do
+            expect(WebHookService)
+              .not_to receive(:new)
+              .with(subgroup_hook, data, 'resource_access_token_hooks', idempotency_key: anything)
+              .and_call_original
+
+            expect(WebHookService)
+              .to receive(:new)
+              .with(group_hook, data, 'resource_access_token_hooks', idempotency_key: anything)
+              .and_call_original
+
+            subgroup.execute_hooks(data, :resource_access_token_hooks)
+          end
+        end
       end
     end
   end
@@ -4344,6 +4537,50 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       end
 
       it { is_expected.to eq(expected) }
+    end
+  end
+
+  describe '#extended_grat_expiry_webhooks_execute?' do
+    let(:group) { create(:group) }
+
+    context 'when extended_grat_expiry_webhooks_execute = true' do
+      before do
+        group.extended_grat_expiry_webhooks_execute = true
+      end
+
+      context 'when licensed feature is available' do
+        before do
+          stub_licensed_features(group_webhooks: true)
+        end
+
+        it 'delegates the field to namespace settings and return true' do
+          expect(group.namespace_settings).to receive(:extended_grat_expiry_webhooks_execute?).and_call_original
+
+          expect(group.extended_grat_expiry_webhooks_execute?).to be_truthy
+        end
+      end
+
+      it 'returns false if licensed feature is not available' do
+        expect(group.extended_grat_expiry_webhooks_execute?).to be_truthy
+      end
+    end
+
+    context 'when extended_grat_expiry_webhooks_execute=false' do
+      before do
+        group.extended_grat_expiry_webhooks_execute = false
+      end
+
+      context 'when licensed feature is available' do
+        before do
+          stub_licensed_features(group_webhooks: true)
+        end
+
+        it 'delegates the field to namespace settings and returns false' do
+          expect(group.namespace_settings).to receive(:extended_grat_expiry_webhooks_execute?).and_call_original
+
+          expect(group.extended_grat_expiry_webhooks_execute?).to be_falsey
+        end
+      end
     end
   end
 

@@ -80,6 +80,61 @@ RSpec.describe 'groups/settings/_permissions.html.haml', :saas, feature_category
     end
   end
 
+  context 'for extended token expiry webhook execution setting' do
+    let_it_be(:checkbox_label) { s_('GroupSettings|Add additional webhook triggers for group access token expiration') }
+
+    before do
+      allow(group).to receive(:licensed_feature_available?).and_return(true)
+    end
+
+    context 'when `group_webhooks` licensed feature is not available' do
+      before do
+        allow(group).to receive(:licensed_feature_available?).with(:group_webhooks).and_return(false)
+      end
+
+      it 'renders nothing', :aggregate_failures do
+        render
+
+        expect(rendered).to render_template('groups/settings/_extended_grat_expiry_webhook_execute')
+        expect(rendered).not_to have_content(
+          s_('GroupSettings|Add additional webhook triggers for group access token expiration')
+        )
+      end
+    end
+
+    context 'when `group_webhooks` licensed feature is available' do
+      before do
+        allow(group).to receive(:licensed_feature_available?).with(:group_webhooks).and_return(true)
+      end
+
+      it 'renders checkbox', :aggregate_failures do
+        render
+
+        expect(rendered).to render_template('groups/settings/_extended_grat_expiry_webhook_execute')
+        expect(rendered).to have_content(
+          s_('GroupSettings|Add additional webhook triggers for group access token expiration')
+        )
+        expect(rendered).to have_unchecked_field(checkbox_label, type: 'checkbox')
+      end
+
+      context 'when feature flag is disabled' do
+        before do
+          stub_feature_flags(extended_expiry_webhook_execution_setting: false)
+        end
+
+        it 'renders nothing', :aggregate_failures do
+          render
+
+          expect(rendered).to render_template('groups/settings/_extended_grat_expiry_webhook_execute')
+          expect(rendered).not_to have_content(
+            s_('GroupSettings|Add additional webhook triggers for group access token expiration')
+          )
+          expect(rendered).not_to have_unchecked_field(checkbox_label, type: 'checkbox')
+        end
+      end
+    end
+  end
+
   context 'for extensions marketplace settings' do
     let_it_be(:section_title) { _('Web IDE and workspaces') }
     let_it_be(:checkbox_label) { s_('GroupSettings|Enable extension marketplace') }

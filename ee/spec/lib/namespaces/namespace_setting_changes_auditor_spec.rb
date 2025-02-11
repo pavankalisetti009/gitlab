@@ -123,7 +123,7 @@ RSpec.describe Namespaces::NamespaceSettingChangesAuditor, feature_category: :gr
         lock_duo_features_enabled allow_merge_without_pipeline only_allow_merge_if_pipeline_succeeds
         lock_spp_repository_pipeline_access spp_repository_pipeline_access archived
         resource_access_token_notify_inherited lock_resource_access_token_notify_inherited
-        pipeline_variables_default_role force_pages_access_control]
+        pipeline_variables_default_role extended_grat_expiry_webhooks_execute force_pages_access_control]
 
       columns_to_audit = Namespaces::NamespaceSettingChangesAuditor::EVENT_NAME_PER_COLUMN.keys.map(&:to_s)
 
