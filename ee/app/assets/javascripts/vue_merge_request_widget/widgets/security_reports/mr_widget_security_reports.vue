@@ -406,7 +406,7 @@ export default {
     text: s__(
       'ciReport|GitLab Duo Vulnerability Resolution, an AI feature, can suggest a possible fix.',
     ),
-    learnMorePath: helpPagePath('user/application_security/vulnerabilities/index', {
+    learnMorePath: helpPagePath('user/application_security/vulnerabilities/_index', {
       anchor: 'vulnerability-resolution-in-a-merge-request',
     }),
   },

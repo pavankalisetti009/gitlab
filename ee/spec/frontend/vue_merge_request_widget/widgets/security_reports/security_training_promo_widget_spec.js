@@ -7,7 +7,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 const dismissSpy = jest.fn();
 const trackCTAClickSpy = jest.fn();
 
-const SECURITY_CONFIGURATION_PATH = '/help/user/application_security/index.md';
+const SECURITY_CONFIGURATION_PATH = '/help/user/application_security/_index.md';
 const PROJECT_FULL_PATH = 'namespace/project';
 const MOCK_SLOT_PROPS = {
   buttonText: 'Enable security training',

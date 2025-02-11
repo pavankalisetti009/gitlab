@@ -20,7 +20,7 @@ export default {
       default: false,
     },
   },
-  confidentialMRHelpPagePath: helpPagePath('/user/application_security/vulnerabilities/index', {
+  confidentialMRHelpPagePath: helpPagePath('/user/application_security/vulnerabilities/_index', {
     anchor: 'vulnerability-resolution',
   }),
 };

@@ -40,7 +40,7 @@ import {
 
 export default {
   COMPLIANCE_FRAMEWORK_PATH: helpPagePath('user/group/compliance_frameworks.md'),
-  SCOPE_HELP_PATH: helpPagePath('user/application_security/policies/index.md'),
+  SCOPE_HELP_PATH: helpPagePath('user/application_security/policies/_index.md'),
   PROJECT_SCOPE_TYPE_LISTBOX_ITEMS,
   EXCEPTION_TYPE_LISTBOX_ITEMS,
   i18n: {

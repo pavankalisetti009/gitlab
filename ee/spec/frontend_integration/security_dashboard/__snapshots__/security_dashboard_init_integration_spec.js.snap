@@ -257,7 +257,7 @@ exports[`Security Dashboard error states has unavailable pages 1`] = `
       >
         <a
           class="btn btn-confirm btn-md gl-button gl-mb-3 gl-mx-2"
-          href="/help/user/application_security/configuration/index"
+          href="/help/user/application_security/configuration/_index"
         >
           <span
             class="gl-button-text"

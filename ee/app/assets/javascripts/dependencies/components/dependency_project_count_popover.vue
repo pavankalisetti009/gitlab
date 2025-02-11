@@ -14,7 +14,7 @@ export default {
     targetId: { type: String, required: true },
     targetText: { type: String, required: true },
   },
-  GROUP_LEVEL_DEPENDENCY_LIST_DOC: helpPagePath('user/application_security/dependency_list/index'),
+  GROUP_LEVEL_DEPENDENCY_LIST_DOC: helpPagePath('user/application_security/dependency_list/_index'),
   i18n: {
     description: s__(
       'Dependencies|This group exceeds the maximum number of sub-groups of 600. We cannot accurately display a project list at this time. Please access a sub-group dependency list to view this information or see the %{linkStart}dependency list help %{linkEnd} page to learn more.',

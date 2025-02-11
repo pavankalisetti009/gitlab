@@ -34,7 +34,7 @@ export default () => {
     },
   } = el;
 
-  const corpusHelpPath = helpPagePath('user/application_security/coverage_fuzzing/index', {
+  const corpusHelpPath = helpPagePath('user/application_security/coverage_fuzzing/_index', {
     anchor: 'corpus-registry',
   });
 

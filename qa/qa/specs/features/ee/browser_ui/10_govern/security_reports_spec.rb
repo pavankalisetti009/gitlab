@@ -71,7 +71,7 @@ module QA
           )
           expect(dependency_list).to have_link(
             'More Information',
-            href: %r{/help/user/application_security/dependency_list/index}
+            href: %r{/help/user/application_security/dependency_list/_index}
           )
         end
       end

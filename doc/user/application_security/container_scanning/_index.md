@@ -29,7 +29,7 @@ aspects of inspecting the items your code uses. These items typically include ap
 dependencies that are almost always imported from external sources, rather than sourced from items
 you wrote yourself.
 
-GitLab offers both Container Scanning and [Dependency Scanning](../dependency_scanning/index.md)
+GitLab offers both Container Scanning and [Dependency Scanning](../dependency_scanning/_index.md)
 to ensure coverage for all these dependency types. To cover as much of your risk area as
 possible, we encourage you to use all the security scanners. For a comparison of these features, see
 [Dependency Scanning compared to Container Scanning](../comparison_dependency_and_container_scanning.md).
@@ -68,7 +68,7 @@ GitLab compares the found vulnerabilities between the source and target branches
 | Presentation of Report data in Merge Request and Security tab of the CI pipeline job | **{dotted-circle}** No | **{check-circle}** Yes |
 | [Solutions for vulnerabilities (auto-remediation)](#solutions-for-vulnerabilities-auto-remediation) | **{dotted-circle}** No | **{check-circle}** Yes |
 | Support for the [vulnerability allow list](#vulnerability-allowlisting) | **{dotted-circle}** No | **{check-circle}** Yes |
-| [Access to Dependency List page](../dependency_list/index.md) | **{dotted-circle}** No | **{check-circle}** Yes |
+| [Access to Dependency List page](../dependency_list/_index.md) | **{dotted-circle}** No | **{check-circle}** Yes |
 
 ## Configuration
 
@@ -228,9 +228,9 @@ container_scanning:
     CS_DISABLE_LANGUAGE_VULNERABILITY_SCAN: "false"
 ```
 
-When you enable this feature, you may see [duplicate findings](../terminology/index.md#duplicate-finding)
-in the [Vulnerability Report](../vulnerability_report/index.md)
-if [Dependency Scanning](../dependency_scanning/index.md)
+When you enable this feature, you may see [duplicate findings](../terminology/_index.md#duplicate-finding)
+in the [Vulnerability Report](../vulnerability_report/_index.md)
+if [Dependency Scanning](../dependency_scanning/_index.md)
 is enabled for your project. This happens because GitLab can't automatically deduplicate findings
 across different types of scanning tools. To understand which types of dependencies are likely to be duplicated, see [Dependency Scanning compared to Container Scanning](../comparison_dependency_and_container_scanning.md).
 
@@ -488,7 +488,7 @@ DETAILS:
 
 For instances in an environment with limited, restricted, or intermittent access
 to external resources through the internet, some adjustments are required for the container scanning job to
-successfully run. For more information, see [Offline environments](../offline_deployments/index.md).
+successfully run. For more information, see [Offline environments](../offline_deployments/_index.md).
 
 #### Requirements for offline container scanning
 
@@ -526,7 +526,7 @@ registry.gitlab.com/security-products/container-scanning/trivy:7
 The process for importing Docker images into a local offline Docker registry depends on
 **your network security policy**. Consult your IT staff to find an accepted and approved
 process by which you can import or temporarily access external resources. These scanners
-are [periodically updated](../index.md#vulnerability-scanner-maintenance),
+are [periodically updated](../_index.md#vulnerability-scanner-maintenance),
 and you may be able to make occasional updates on your own.
 
 For more information, see [the specific steps on how to update an image with a pipeline](#automating-container-scanning-vulnerability-database-updates-with-a-pipeline).
@@ -675,7 +675,7 @@ keyword in the CI configuration file.
 
 Once the CI job finishes, the Runner uploads these reports to GitLab, which are then available in
 the CI Job artifacts. In GitLab Ultimate, these reports can be viewed in the corresponding [pipeline](../vulnerability_report/pipeline.md)
-and become part of the [Vulnerability Report](../vulnerability_report/index.md).
+and become part of the [Vulnerability Report](../vulnerability_report/_index.md).
 
 These reports must follow a format defined in the
 [security report schemas](https://gitlab.com/gitlab-org/security-products/security-report-schemas/). See:
@@ -691,7 +691,7 @@ For more information, see [Security scanner integration](../../../development/in
 
 In addition to the [JSON report file](#reports-json-format), the [Container Scanning](https://gitlab.com/gitlab-org/security-products/analyzers/container-scanning) tool outputs a [CycloneDX](https://cyclonedx.org/) Software Bill of Materials (SBOM) for the scanned image. This CycloneDX SBOM is named `gl-sbom-report.cdx.json` and is saved in the same directory as the `JSON report file`. This feature is only supported when the `Trivy` analyzer is used.
 
-This report can be viewed in the [Dependency List](../dependency_list/index.md).
+This report can be viewed in the [Dependency List](../dependency_list/_index.md).
 
 You can download CycloneDX SBOMs [the same way as other job artifacts](../../../ci/jobs/job_artifacts.md#download-job-artifacts).
 
@@ -707,12 +707,12 @@ DETAILS:
 
 When a container image is pushed with the `latest` tag, a container scanning job is automatically triggered by the security policy bot in a new pipeline against the default branch.
 
-Unlike regular container scanning, the scan results do not include a security report. Instead, Container Scanning for Registry relies on [Continuous Vulnerability Scanning](../continuous_vulnerability_scanning/index.md) to inspect the components detected by the scan.
+Unlike regular container scanning, the scan results do not include a security report. Instead, Container Scanning for Registry relies on [Continuous Vulnerability Scanning](../continuous_vulnerability_scanning/_index.md) to inspect the components detected by the scan.
 
-When security findings are identified, GitLab populates the [Vulnerability Report](../vulnerability_report/index.md) with these findings. Vulnerabilities can be viewed under the **Container registry vulnerabilities** tab of the Vulnerability Report page.
+When security findings are identified, GitLab populates the [Vulnerability Report](../vulnerability_report/_index.md) with these findings. Vulnerabilities can be viewed under the **Container registry vulnerabilities** tab of the Vulnerability Report page.
 
 NOTE:
-Container Scanning for Registry populates the Vulnerability Report only when a new advisory is published to the [GitLab Advisory Database](../gitlab_advisory_database/index.md). Support for populating the Vulnerability Report with all present advisory data, instead of only newly-detected data, is proposed in [epic 8026](https://gitlab.com/groups/gitlab-org/-/epics/8026).
+Container Scanning for Registry populates the Vulnerability Report only when a new advisory is published to the [GitLab Advisory Database](../gitlab_advisory_database/_index.md). Support for populating the Vulnerability Report with all present advisory data, instead of only newly-detected data, is proposed in [epic 8026](https://gitlab.com/groups/gitlab-org/-/epics/8026).
 
 ### Prerequisites
 
@@ -760,7 +760,7 @@ In addition to the sources provided by these scanners, GitLab maintains the foll
 In the GitLab Ultimate tier, the data from the [GitLab Advisory Database](https://gitlab.com/gitlab-org/security-products/gemnasium-db) is merged in to augment the data from the external sources. In the GitLab Premium and Free tiers, the data from the [GitLab Advisory Database (Open Source Edition)](https://gitlab.com/gitlab-org/advisories-community) is merged in to augment the data from the external sources. This augmentation currently only applies to the analyzer images for the Trivy scanner.
 
 Database update information for other analyzers is available in the
-[maintenance table](../index.md#vulnerability-scanner-maintenance).
+[maintenance table](../_index.md#vulnerability-scanner-maintenance).
 
 ## Solutions for vulnerabilities (auto-remediation)
 
@@ -778,7 +778,7 @@ file, it's necessary to set [`GIT_STRATEGY: fetch`](../../../ci/runners/configur
 your `.gitlab-ci.yml` file by following the instructions described in this document's
 [overriding the container scanning template](#overriding-the-container-scanning-template) section.
 
-Read more about the [solutions for vulnerabilities](../vulnerabilities/index.md#resolve-a-vulnerability).
+Read more about the [solutions for vulnerabilities](../vulnerabilities/_index.md#resolve-a-vulnerability).
 
 ## Troubleshooting
 

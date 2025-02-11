@@ -104,7 +104,7 @@ Every IaC scanning rule is contained in a `ruleset` section, which contains:
   - Find it in the [JSON report artifact](#reports-json-format).
   - Search for the rule name in the [list of KICS queries](https://docs.kics.io/latest/queries/all-queries/)
     and copy the alphanumeric identifier that's shown. The rule name is shown on the
-    [Vulnerability Page](../vulnerabilities/index.md) when a rule violation is detected.
+    [Vulnerability Page](../vulnerabilities/_index.md) when a rule violation is detected.
 
 ### Disable rules
 
@@ -191,7 +191,7 @@ DETAILS:
 An offline environment has limited, restricted, or intermittent access to external resources through
 the internet. For instances in such an environment, IaC requires
 some configuration changes. The instructions in this section must be completed together with the
-instructions detailed in [offline environments](../offline_deployments/index.md).
+instructions detailed in [offline environments](../offline_deployments/_index.md).
 
 #### Configure GitLab Runner
 
@@ -221,7 +221,7 @@ Prerequisites:
    registry.gitlab.com/security-products/kics:5
    ```
 
-   The IaC analyzer's image is [periodically updated](../index.md#vulnerability-scanner-maintenance)
+   The IaC analyzer's image is [periodically updated](../_index.md#vulnerability-scanner-maintenance)
    so you should periodically update the local copy.
 
 1. Set the CI/CD variable `SECURE_ANALYZERS_PREFIX` to the local Docker container registry.
@@ -299,7 +299,7 @@ include:
 > - [Generally available](https://gitlab.com/gitlab-org/gitlab/-/issues/375128) in GitLab 16.2. Feature flag `sec_mark_dropped_findings_as_resolved` removed.
 
 To help you focus on the vulnerabilities that are still relevant, IaC scanning automatically
-[resolves](../vulnerabilities/index.md#vulnerability-status-values) vulnerabilities when:
+[resolves](../vulnerabilities/_index.md#vulnerability-status-values) vulnerabilities when:
 
 - You [disable a predefined rule](#disable-rules).
 - We remove a rule from the default ruleset.

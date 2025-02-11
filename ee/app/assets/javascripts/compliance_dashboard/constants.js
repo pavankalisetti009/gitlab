@@ -74,7 +74,7 @@ export const i18n = {
   violationsTab: s__('Compliance Center|Violations'),
 };
 
-export const POLICY_SCOPES_DOCS_URL = `${DOCS_URL_IN_EE_DIR}/user/application_security/policies/index.html#scope`;
+export const POLICY_SCOPES_DOCS_URL = `${DOCS_URL_IN_EE_DIR}/user/application_security/policies/_index.html#scope`;
 
 export const CREATE_FRAMEWORKS_DOCS_URL = `${DOCS_URL_IN_EE_DIR}/user/group/compliance_frameworks.html#prerequisites`;
 

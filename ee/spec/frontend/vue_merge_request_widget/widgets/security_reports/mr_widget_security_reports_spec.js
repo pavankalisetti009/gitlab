@@ -31,12 +31,12 @@ describe('MR Widget Security Reports', () => {
   let wrapper;
   let mockAxios;
 
-  const securityConfigurationPath = '/help/user/application_security/index.md';
+  const securityConfigurationPath = '/help/user/application_security/_index.md';
   const sourceProjectFullPath = 'namespace/project';
   const sourceBranch = 'feature-branch';
 
-  const sastHelp = '/help/user/application_security/sast/index';
-  const dastHelp = '/help/user/application_security/dast/index';
+  const sastHelp = '/help/user/application_security/sast/_index';
+  const dastHelp = '/help/user/application_security/dast/_index';
   const coverageFuzzingHelp = '/help/user/application_security/coverage-fuzzing/index';
   const secretDetectionHelp = '/help/user/application_security/secret-detection/index';
   const apiFuzzingHelp = '/help/user/application_security/api-fuzzing/index';

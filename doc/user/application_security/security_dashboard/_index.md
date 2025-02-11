@@ -12,7 +12,7 @@ DETAILS:
 ## Security Dashboards
 
 Security Dashboards are used to assess the security posture of your applications. GitLab provides
-you with a collection of metrics, ratings, and charts for the vulnerabilities detected by the [security scanners](../detect/index.md) run on your project. The security dashboard provides data such as:
+you with a collection of metrics, ratings, and charts for the vulnerabilities detected by the [security scanners](../detect/_index.md) run on your project. The security dashboard provides data such as:
 
 - Vulnerability trends over a 30, 60, or 90-day time-frame for all projects in a group
 - A letter grade rating for each project based on vulnerability severity
@@ -34,7 +34,7 @@ You can view vulnerability metrics also in the [Value Streams Dashboard](../../a
 To view the Security Dashboards, the following is required:
 
 - You must have the Developer role for the group or project.
-- At least one [security scanner](../detect/index.md) configured in your project.
+- At least one [security scanner](../detect/_index.md) configured in your project.
 - A successful security scan performed on the [default branch](../../project/repository/branches/default.md) of your project.
 - At least 1 detected vulnerability in the project.
 
@@ -118,7 +118,7 @@ shown in the first 100 projects.
 The Security Center includes:
 
 - The group Security Dashboard
-- A [vulnerability report](../vulnerability_report/index.md)
+- A [vulnerability report](../vulnerability_report/_index.md)
 - A settings area to configure which projects to display
 
 ### Viewing the Security Center
@@ -159,5 +159,5 @@ After you remove projects, the security dashboard and vulnerability report no lo
 
 ## Related topics
 
-- [Vulnerability reports](../vulnerability_report/index.md)
-- [Vulnerability Page](../vulnerabilities/index.md)
+- [Vulnerability reports](../vulnerability_report/_index.md)
+- [Vulnerability Page](../vulnerabilities/_index.md)

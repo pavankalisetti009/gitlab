@@ -60,7 +60,7 @@ describe('Project Security Dashboard component', () => {
       'Historical view of open vulnerabilities in the default branch. Excludes vulnerabilities that were resolved or dismissed. Learn more.',
     );
     expect(wrapper.findComponent(GlLink).attributes('href')).toBe(
-      '/help/user/application_security/security_dashboard/index#project-security-dashboard',
+      '/help/user/application_security/security_dashboard/_index#project-security-dashboard',
     );
   });
 

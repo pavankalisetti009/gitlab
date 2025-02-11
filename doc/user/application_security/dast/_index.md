@@ -42,11 +42,11 @@ coverage for modern-day web applications and APIs.
 Use the DAST analyzers according to your needs:
 
 - To scan web-based applications, including single page web applications, for known vulnerabilities,
-  use the [DAST](browser/index.md) analyzer.
-- To scan APIs for known vulnerabilities, use the [API security](../api_security_testing/index.md)
+  use the [DAST](browser/_index.md) analyzer.
+- To scan APIs for known vulnerabilities, use the [API security](../api_security_testing/_index.md)
   analyzer. Technologies such as GraphQL, REST, and SOAP are supported.
 
-Analyzers follow the architectural patterns described in [Secure your application](../index.md).
+Analyzers follow the architectural patterns described in [Secure your application](../_index.md).
 Each analyzer can be configured in the pipeline by using a CI/CD template and runs the scan in a
 Docker container. Scans output a
 [DAST report artifact](../../../ci/yaml/artifacts_reports.md#artifactsreportsdast) which GitLab uses
@@ -56,7 +56,7 @@ target branches.
 ## View scan results
 
 Detected vulnerabilities appear in [merge requests](../detect/security_scan_results.md#merge-request), the [pipeline security tab](../vulnerability_report/pipeline.md),
-and the [vulnerability report](../vulnerability_report/index.md).
+and the [vulnerability report](../vulnerability_report/_index.md).
 
 NOTE:
 A pipeline may consist of multiple jobs, including SAST and DAST scanning. If any job

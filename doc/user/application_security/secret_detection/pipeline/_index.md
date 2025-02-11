@@ -18,11 +18,11 @@ You can run scans and view [pipeline secret detection JSON report artifacts](../
 
 With GitLab Ultimate, pipeline secret detection results are also processed so you can:
 
-- See them in the [merge request widget](../../detect/security_scan_results.md#merge-request), [pipeline security report](../../vulnerability_report/pipeline.md), and [vulnerability report](../../vulnerability_report/index.md) UIs.
+- See them in the [merge request widget](../../detect/security_scan_results.md#merge-request), [pipeline security report](../../vulnerability_report/pipeline.md), and [vulnerability report](../../vulnerability_report/_index.md) UIs.
 - Use them in approval workflows.
 - Review them in the security dashboard.
 - [Automatically respond](../automatic_response.md) to leaks in public repositories.
-- Enforce consistent secret detection rules across projects using [security policies](../../policies/index.md).
+- Enforce consistent secret detection rules across projects using [security policies](../../policies/_index.md).
 
 <i class="fa fa-youtube-play youtube" aria-hidden="true"></i> For an interactive reading and how-to demo of this pipeline secret detection documentation see:
 
@@ -109,7 +109,7 @@ DETAILS:
 
 > - [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/434096) in GitLab 17.0.
 
-When developers make changes to a file with identified secrets, it's likely that the positions of these secrets will also change. Pipeline secret detection may have already flagged these secrets as vulnerabilities, tracked in the [Vulnerability Report](../../vulnerability_report/index.md). These vulnerabilities are associated with specific secrets for easy identification and action. However, if the detected secrets aren't accurately tracked as they shift, managing vulnerabilities becomes challenging, potentially resulting in duplicate vulnerability reports.
+When developers make changes to a file with identified secrets, it's likely that the positions of these secrets will also change. Pipeline secret detection may have already flagged these secrets as vulnerabilities, tracked in the [Vulnerability Report](../../vulnerability_report/_index.md). These vulnerabilities are associated with specific secrets for easy identification and action. However, if the detected secrets aren't accurately tracked as they shift, managing vulnerabilities becomes challenging, potentially resulting in duplicate vulnerability reports.
 
 Pipeline secret detection uses an advanced vulnerability tracking algorithm to more accurately identify when the same secret has moved within a file due to refactoring or unrelated changes.
 
@@ -152,10 +152,10 @@ Different features are available in different [GitLab tiers](https://about.gitla
 | Download [output](#output)                                                                           | **{check-circle}** Yes | **{check-circle}** Yes |
 | See new findings in the merge request widget                                                         | **{dotted-circle}** No | **{check-circle}** Yes |
 | View identified secrets in the pipelines' **Security** tab                                           | **{dotted-circle}** No | **{check-circle}** Yes |
-| [Manage vulnerabilities](../../vulnerability_report/index.md)                                        | **{dotted-circle}** No | **{check-circle}** Yes |
-| [Access the Security Dashboard](../../security_dashboard/index.md)                                   | **{dotted-circle}** No | **{check-circle}** Yes |
+| [Manage vulnerabilities](../../vulnerability_report/_index.md)                                        | **{dotted-circle}** No | **{check-circle}** Yes |
+| [Access the Security Dashboard](../../security_dashboard/_index.md)                                   | **{dotted-circle}** No | **{check-circle}** Yes |
 | [Customize analyzer rulesets](#customize-analyzer-rulesets)                                          | **{dotted-circle}** No | **{check-circle}** Yes |
-| [Enable security policies](../../policies/index.md)                                                  | **{dotted-circle}** No | **{check-circle}** Yes |
+| [Enable security policies](../../policies/_index.md)                                                  | **{dotted-circle}** No | **{check-circle}** Yes |
 
 ### Enable the analyzer
 
@@ -816,7 +816,7 @@ DETAILS:
 An offline environment has limited, restricted, or intermittent access to external resources through
 the internet. For instances in such an environment, pipeline secret detection requires
 some configuration changes. The instructions in this section must be completed together with the
-instructions detailed in [offline environments](../../offline_deployments/index.md).
+instructions detailed in [offline environments](../../offline_deployments/_index.md).
 
 #### Configure GitLab Runner
 
@@ -846,7 +846,7 @@ Prerequisites:
    registry.gitlab.com/security-products/secrets:6
    ```
 
-   The pipeline secret detection analyzer's image is [periodically updated](../../index.md#vulnerability-scanner-maintenance)
+   The pipeline secret detection analyzer's image is [periodically updated](../../_index.md#vulnerability-scanner-maintenance)
    so you should periodically update the local copy.
 
 1. Set the CI/CD variable `SECURE_ANALYZERS_PREFIX` to the local Docker container registry.

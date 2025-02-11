@@ -45,31 +45,31 @@ Select **Configuration history** to see the `.gitlab-ci.yml` file's history.
 
 You can configure the following security controls:
 
-- [Static Application Security Testing](../sast/index.md) (SAST)
+- [Static Application Security Testing](../sast/_index.md) (SAST)
   - Select **Enable SAST** to configure SAST for the current project.
-    For more details, read [Configure SAST in the UI](../sast/index.md#configure-sast-by-using-the-ui).
-- [Dynamic Application Security Testing](../dast/index.md) (DAST)
+    For more details, read [Configure SAST in the UI](../sast/_index.md#configure-sast-by-using-the-ui).
+- [Dynamic Application Security Testing](../dast/_index.md) (DAST)
   - Select **Enable DAST** to configure DAST for the current project.
   - Select **Manage scans** to manage the saved DAST scans, site profiles, and scanner profiles.
     For more details, read [DAST on-demand scans](../dast/on-demand_scan.md).
-- [Dependency Scanning](../dependency_scanning/index.md)
+- [Dependency Scanning](../dependency_scanning/_index.md)
   - Select **Configure with a merge request** to create a merge request with the changes required to
-    enable Dependency Scanning. For more information, see [Use a preconfigured merge request](../dependency_scanning/index.md#use-a-preconfigured-merge-request).
-- [Container Scanning](../container_scanning/index.md)
+    enable Dependency Scanning. For more information, see [Use a preconfigured merge request](../dependency_scanning/_index.md#use-a-preconfigured-merge-request).
+- [Container Scanning](../container_scanning/_index.md)
   - Select **Configure with a merge request** to create a merge request with the changes required to
     enable Container Scanning. For more details, see
-    [Enable Container Scanning through an automatic merge request](../container_scanning/index.md#use-a-preconfigured-merge-request).
-- [Container Scanning For Registry](../container_scanning/index.md#container-scanning-for-registry)
+    [Enable Container Scanning through an automatic merge request](../container_scanning/_index.md#use-a-preconfigured-merge-request).
+- [Container Scanning For Registry](../container_scanning/_index.md#container-scanning-for-registry)
   - Enable toggle to configure **Container Scanning For Registry** for the current project.
 - [Operational Container Scanning](../../clusters/agent/vulnerabilities.md)
   - Can be configured by adding a configuration block to your agent configuration. For more details, read [Operational Container Scanning](../../clusters/agent/vulnerabilities.md#enable-operational-container-scanning).
-- [Secret Detection](../secret_detection/pipeline/index.md)
+- [Secret Detection](../secret_detection/pipeline/_index.md)
   - Select **Configure with a merge request** to create a merge request with the changes required to
-    enable Secret Detection. For more details, read [Use an automatically configured merge request](../secret_detection/pipeline/index.md#use-an-automatically-configured-merge-request).
-- [API Fuzzing](../api_fuzzing/index.md)
+    enable Secret Detection. For more details, read [Use an automatically configured merge request](../secret_detection/pipeline/_index.md#use-an-automatically-configured-merge-request).
+- [API Fuzzing](../api_fuzzing/_index.md)
   - Select **Enable API Fuzzing** to use API Fuzzing for the current project. For more details, read [API Fuzzing](../api_fuzzing/configuration/enabling_the_analyzer.md).
-- [Coverage Fuzzing](../coverage_fuzzing/index.md)
-  - Can be configured with `.gitlab-ci.yml`. For more details, read [Coverage Fuzzing](../coverage_fuzzing/index.md#enable-coverage-guided-fuzz-testing).
+- [Coverage Fuzzing](../coverage_fuzzing/_index.md)
+  - Can be configured with `.gitlab-ci.yml`. For more details, read [Coverage Fuzzing](../coverage_fuzzing/_index.md#enable-coverage-guided-fuzz-testing).
 
 ## Compliance
 
@@ -79,5 +79,5 @@ DETAILS:
 
 You can configure the following security controls:
 
-- [Security Training](../vulnerabilities/index.md#enable-security-training-for-vulnerabilities)
-  - Enable **Security training** for the current project. For more details, read [security training](../vulnerabilities/index.md#enable-security-training-for-vulnerabilities).
+- [Security Training](../vulnerabilities/_index.md#enable-security-training-for-vulnerabilities)
+  - Enable **Security training** for the current project. For more details, read [security training](../vulnerabilities/_index.md#enable-security-training-for-vulnerabilities).

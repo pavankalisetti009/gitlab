@@ -65,15 +65,15 @@ export const COLLAPSE_SECURITY_REPORTS_SUMMARY_LOCAL_STORAGE_KEY =
 export const DEFAULT_SCANNER = 'GitLab';
 export const SCANNER_ID_PREFIX = 'gid://gitlab/Vulnerabilities::Scanner/';
 
-export const DOC_PATH_APPLICATION_SECURITY = helpPagePath('user/application_security/index');
+export const DOC_PATH_APPLICATION_SECURITY = helpPagePath('user/application_security/_index');
 export const DOC_PATH_VULNERABILITY_DETAILS = helpPagePath(
-  'user/application_security/vulnerabilities/index',
+  'user/application_security/vulnerabilities/_index',
 );
 export const DOC_PATH_VULNERABILITY_REPORT = helpPagePath(
-  'user/application_security/vulnerability_report/index',
+  'user/application_security/vulnerability_report/_index',
 );
 export const DOC_PATH_SECURITY_CONFIGURATION = helpPagePath(
-  'user/application_security/configuration/index',
+  'user/application_security/configuration/_index',
 );
 export const DOC_PATH_SECURITY_SCANNER_INTEGRATION_REPORT = helpPagePath(
   'development/integrations/secure',
@@ -85,7 +85,7 @@ export const DOC_PATH_SECURITY_SCANNER_INTEGRATION_RETENTION_PERIOD = helpPagePa
 );
 
 export const DOC_PATH_PROJECT_SECURITY_DASHBOARD = helpPagePath(
-  'user/application_security/security_dashboard/index',
+  'user/application_security/security_dashboard/_index',
   { anchor: 'project-security-dashboard' },
 );
 

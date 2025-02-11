@@ -27,14 +27,14 @@ Secret detection monitors your activity to both:
 
 You should take a multi-layered security approach and enable all available secret detection methods:
 
-- [Secret push protection](secret_push_protection/index.md) scans commits for secrets when you
+- [Secret push protection](secret_push_protection/_index.md) scans commits for secrets when you
   push changes to GitLab. The push is blocked if secrets are detected, unless you skip secret push protection.
   This method reduces the risk of secrets being leaked.
-- [Pipeline secret detection](pipeline/index.md) runs as part of a project's CI/CD pipeline. Commits
+- [Pipeline secret detection](pipeline/_index.md) runs as part of a project's CI/CD pipeline. Commits
   to the repository's default branch are scanned for secrets. If pipeline secret detection is
   enabled in merge request pipelines, commits to the development branch are scanned for secrets,
   enabling you to respond before they're committed to the default branch.
-- [Client-side secret detection](client/index.md) scans descriptions and comments in both issues and
+- [Client-side secret detection](client/_index.md) scans descriptions and comments in both issues and
   merge requests for secrets before they're saved to GitLab. When a secret is detected you can
   choose to edit the input and remove the secret or, if it's a false positive, save the description
   or comment.
@@ -47,6 +47,6 @@ replace exposed secrets as soon as possible.
 ## Related topics
 
 - [Secret detection exclusions](exclusions.md)
-- [Vulnerability Report](../vulnerability_report/index.md)
+- [Vulnerability Report](../vulnerability_report/_index.md)
 - [Automatic response to leaked secrets](automatic_response.md)
 - [Push rules](../../project/repository/push_rules.md)
