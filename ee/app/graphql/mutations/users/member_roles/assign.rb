@@ -35,7 +35,12 @@ module Mutations
 
         def resolve(**args)
           user = ::Gitlab::Graphql::Lazy.force(find_object(id: args[:user_id]))
+
+          raise_resource_not_available_error! unless user
+
           member_role = ::Gitlab::Graphql::Lazy.force(find_object(id: args[:member_role_id]))
+
+          raise_resource_not_available_error! if args[:member_role_id] && !member_role
 
           params = { user: user, member_role: member_role }
 
