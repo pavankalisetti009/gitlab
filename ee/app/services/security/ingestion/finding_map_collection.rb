@@ -22,7 +22,7 @@ module Security
 
       attr_reader :pipeline, :security_scan
 
-      delegate :findings, :report_findings, to: :security_scan, private: true
+      delegate :findings, :report_findings, :project, to: :security_scan, private: true
 
       def create_finding_map_for(security_finding)
         # For SAST findings, we override the finding UUID with an existing finding UUID
@@ -41,9 +41,20 @@ module Security
       # We are also sorting by `uuid` to prevent having deadlock errors while
       # ingesting the findings.
       def deduplicated_findings
-        @deduplicated_findings ||= findings.deduplicated.sort do |a, b|
-          [b.overridden_uuid.to_s, b.uuid] <=> [a.overridden_uuid.to_s, a.uuid]
-        end
+        @deduplicated_findings ||= if ::Feature.enabled?(:dependency_scanning_for_pipelines_with_cyclonedx_reports,
+          project)
+                                     findings.deduplicated.except_scanners(sbom_scanner).sort do |a, b|
+                                       [b.overridden_uuid.to_s, b.uuid] <=> [a.overridden_uuid.to_s, a.uuid]
+                                     end
+                                   else
+                                     findings.deduplicated.sort do |a, b|
+                                       [b.overridden_uuid.to_s, b.uuid] <=> [a.overridden_uuid.to_s, a.uuid]
+                                     end
+                                   end
+      end
+
+      def sbom_scanner
+        @sbom_scanner ||= Vulnerabilities::Scanner.sbom_scanner(project_id: project.id)
       end
     end
   end

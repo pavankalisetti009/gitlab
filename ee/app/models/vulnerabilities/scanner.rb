@@ -29,6 +29,10 @@ module Vulnerabilities
         .order('"vulnerability_scanners"."external_id" ASC, "report_types"."report_type" ASC')
     end
 
+    def self.sbom_scanner(project_id:)
+      find_by(external_id:  Gitlab::VulnerabilityScanning::SecurityScanner::EXTERNAL_ID, project_id: project_id)
+    end
+
     def report_type
       self[:report_type] || scan_type
     end

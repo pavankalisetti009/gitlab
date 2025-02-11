@@ -43,6 +43,48 @@ RSpec.describe Security::Ingestion::FindingMapCollection, feature_category: :vul
         expect(finding_maps).to have_received(:concat).exactly(3).times
         expect(finding_pairs).to eq(expected_finding_pairs)
       end
+
+      context 'with a cyclonedx related security finding' do
+        let_it_be(:sbom_scanner) { create(:vulnerabilities_scanner, :sbom_scanner, project: security_scan.project) }
+        let_it_be(:cyclonedx_finding) do
+          create(
+            :security_finding,
+            :with_finding_data,
+            deduplicated: true,
+            scan: security_scan,
+            scanner: sbom_scanner
+          )
+        end
+
+        it 'does not include cyclonedx related security findings' do
+          run_each_slice
+
+          expect(finding_maps).to have_received(:concat).exactly(3).times
+          expect(finding_pairs).to eq(expected_finding_pairs)
+        end
+
+        context 'with dependency_scanning_for_pipelines_with_cyclonedx_reports FF disabled' do
+          let(:expected_finding_pairs) do
+            [
+              [security_finding_3, report_findings[2]],
+              [security_finding_1, report_findings[0]],
+              [security_finding_2, report_findings[1]],
+              [cyclonedx_finding, nil]
+            ]
+          end
+
+          before do
+            stub_feature_flags(dependency_scanning_for_pipelines_with_cyclonedx_reports: false)
+          end
+
+          it 'includes cyclonedx related security findings' do
+            run_each_slice
+
+            expect(finding_maps).to have_received(:concat).exactly(4).times
+            expect(finding_pairs).to match_array(expected_finding_pairs)
+          end
+        end
+      end
     end
   end
 end

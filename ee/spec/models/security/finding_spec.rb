@@ -411,6 +411,12 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
     end
   end
 
+  describe '.except_scanners' do
+    it 'returns findings except the ones associated to scanners as parameter' do
+      expect(described_class.except_scanners(finding_1.scanner)).to contain_exactly(finding_2)
+    end
+  end
+
   describe '#state' do
     subject { finding_1.state }
 
