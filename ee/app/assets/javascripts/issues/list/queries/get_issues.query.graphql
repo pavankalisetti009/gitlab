@@ -5,6 +5,7 @@ query getIssuesEE(
   $hideUsers: Boolean = false
   $isProject: Boolean = false
   $isSignedIn: Boolean = false
+  $searchByEpic: Boolean = false
   $fullPath: ID!
   $iid: String
   $search: String
@@ -96,7 +97,7 @@ query getIssuesEE(
         blockingCount
         healthStatus
         weight
-        epic {
+        epic @include(if: $searchByEpic) {
           id
         }
       }
@@ -154,7 +155,7 @@ query getIssuesEE(
         blockingCount
         healthStatus
         weight
-        epic {
+        epic @include(if: $searchByEpic) {
           id
         }
       }
