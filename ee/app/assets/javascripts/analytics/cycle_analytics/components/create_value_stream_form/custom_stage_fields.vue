@@ -71,6 +71,9 @@ export default {
     },
   },
   methods: {
+    onSelectEvent(field, value = null) {
+      this.$emit('input', { field, value });
+    },
     onSelectLabel(field, event) {
       const { id: value = null } = event;
       this.$emit('input', { field, value });
@@ -122,7 +125,7 @@ export default {
             :events-list="startEvents"
             :identifier-error="fieldErrorMessage('startEventIdentifier')"
             :is-identifier-valid="isFieldValid('startEventIdentifier')"
-            @update-identifier="$emit('input', { field: 'startEventIdentifier', value: $event })"
+            @update-identifier="onSelectEvent('startEventIdentifier', $event)"
           />
           <custom-stage-event-label-field
             event-type="start-event"
@@ -136,18 +139,21 @@ export default {
             @error="setFormError"
           />
         </div>
-        <div class="gl-justify-content-between gl-flex">
+        <div
+          v-if="hasStartEvent"
+          class="gl-justify-content-between gl-flex"
+          :data-testid="`custom-stage-fields-container-end-event-${index}`"
+        >
           <custom-stage-event-field
             event-type="end-event"
             :index="index"
-            :disabled="!hasStartEvent"
             :field-label="$options.i18n.FORM_FIELD_END_EVENT"
             :default-dropdown-text="$options.i18n.SELECT_END_EVENT"
             :initial-value="stage.endEventIdentifier"
             :events-list="endEvents"
             :identifier-error="fieldErrorMessage('endEventIdentifier')"
             :is-identifier-valid="isFieldValid('endEventIdentifier')"
-            @update-identifier="$emit('input', { field: 'endEventIdentifier', value: $event })"
+            @update-identifier="onSelectEvent('endEventIdentifier', $event)"
           />
           <custom-stage-event-label-field
             event-type="end-event"

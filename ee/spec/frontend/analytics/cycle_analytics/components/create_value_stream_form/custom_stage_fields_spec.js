@@ -19,9 +19,7 @@ const formatStartEventOpts = (_events) =>
     .map(({ name: text, identifier: value }) => ({ text, value }));
 
 const formatEndEventOpts = (_events) =>
-  _events
-    .filter((ev) => !ev.canBeStartEvent)
-    .map(({ name: text, identifier: value }) => ({ text, value }));
+  _events.map(({ name: text, identifier: value }) => ({ text, value }));
 
 const startEventOptions = formatStartEventOpts(stageEvents);
 const endEventOptions = formatEndEventOpts(stageEvents);
@@ -51,11 +49,11 @@ describe('CustomStageFields', () => {
   const findFormError = () => wrapper.findComponent(GlAlert);
   const findStartEventLabel = (index = 0) =>
     wrapper.findByTestId(`custom-stage-start-event-label-${index}`);
-  const findEndEventLabel = (index = 0) =>
-    wrapper.findByTestId(`custom-stage-end-event-label-${index}`);
   const findNameField = () => findName().findComponent(GlFormInput);
   const findStartEventField = () => wrapper.findAllComponents(CustomStageEventField).at(0);
-  const findEndEventField = () => wrapper.findAllComponents(CustomStageEventField).at(1);
+  const findEndEventContainer = (index = 0) =>
+    wrapper.findByTestId(`custom-stage-fields-container-end-event-${index}`);
+  const findEndEventField = () => findEndEventContainer().findComponent(CustomStageEventField);
   const findStartEventLabelField = () =>
     wrapper.findAllComponents(CustomStageEventLabelField).at(0);
   const findEndEventLabelField = () => wrapper.findAllComponents(CustomStageEventLabelField).at(1);
@@ -65,36 +63,17 @@ describe('CustomStageFields', () => {
     createComponent();
   });
 
-  describe.each([
-    ['Name', findNameField, undefined, 'value', undefined],
-    ['Start event', findStartEventField, undefined, 'defaultdropdowntext', 'Select start event'],
-    ['End event', findEndEventField, 'true', 'defaultdropdowntext', 'Select end event'],
-    // eslint-disable-next-line max-params
-  ])('Default state', (field, finder, fieldDisabledValue, valueAttribute, value) => {
-    it(`field '${field}' is disabled ${fieldDisabledValue ? 'true' : 'false'}`, () => {
-      const $el = finder();
-      expect($el.exists()).toBe(true);
-      expect($el.attributes().disabled).toBe(fieldDisabledValue);
-      expect($el.attributes(valueAttribute)).toBe(value);
-    });
-  });
-
-  describe.each([
-    ['Start event label', findStartEventLabel],
-    ['End event label', findEndEventLabel],
-    ['Form error alert', findFormError],
-  ])('Default state', (field, finder) => {
-    it(`field '${field}' is hidden by default`, () => {
+  describe('Default state', () => {
+    it.each`
+      element                  | finder
+      ${'Start event label'}   | ${findStartEventLabel}
+      ${'End event container'} | ${findEndEventContainer}
+    `(`'$element' is hidden by default`, ({ finder }) => {
       expect(finder().exists()).toBe(false);
     });
-  });
 
-  describe('Fields', () => {
-    it('emit input event when a field is changed', () => {
-      expect(wrapper.emitted('input')).toBeUndefined();
-      findNameField().vm.$emit('input', 'Cool new stage');
-
-      expect(wrapper.emitted('input')[0]).toEqual([{ field: 'name', value: 'Cool new stage' }]);
+    it('should not display form error alert', () => {
+      expect(findFormError().exists()).toBe(false);
     });
   });
 
@@ -103,6 +82,15 @@ describe('CustomStageFields', () => {
       expect(findName().attributes('state')).toBe('true');
       expect(findName().attributes('invalid-feedback')).toBeUndefined();
       expect(findNameField().attributes('state')).toBe('true');
+      expect(findNameField().attributes('value')).toBeUndefined();
+    });
+
+    it('emits input event when name field is changed', () => {
+      expect(wrapper.emitted('input')).toBeUndefined();
+
+      findNameField().vm.$emit('input', 'Cool new stage');
+
+      expect(wrapper.emitted('input')[0]).toEqual([{ field: 'name', value: 'Cool new stage' }]);
     });
 
     describe('invalid state', () => {
@@ -116,12 +104,11 @@ describe('CustomStageFields', () => {
         expect(findName().attributes('invalid-feedback')).toBe('Please enter a name');
       });
 
-      it.each`
-        field            | finder                 | expectedProps
-        ${'Start event'} | ${findStartEventField} | ${{ identifierError: '', isIdentifierValid: true }}
-        ${'End event'}   | ${findEndEventField}   | ${{ identifierError: '', isIdentifierValid: true }}
-      `('will display $field in a valid state', ({ finder, expectedProps }) => {
-        expect(finder().props()).toMatchObject(expectedProps);
+      it('will display start event field in a valid state', () => {
+        expect(findStartEventField().props()).toMatchObject({
+          identifierError: '',
+          isIdentifierValid: true,
+        });
       });
     });
   });
@@ -136,6 +123,7 @@ describe('CustomStageFields', () => {
         identifierError: '',
         isIdentifierValid: true,
       });
+      expect(findStartEventField().attributes('defaultdropdowntext')).toBe('Select start event');
     });
 
     it('selects the correct start events for the start events dropdown', () => {
@@ -144,6 +132,18 @@ describe('CustomStageFields', () => {
 
     it('does not select end events for the start events dropdown', () => {
       expect(findStartEventField().props('eventsList')).not.toEqual(endEventOptions);
+    });
+
+    it('will emit the `input` event when start event is selected', () => {
+      const [mockStartEvent] = startEventOptions;
+
+      expect(wrapper.emitted('input')).toBeUndefined();
+
+      findStartEventField().vm.$emit('update-identifier', mockStartEvent.value);
+
+      expect(wrapper.emitted('input')[0]).toEqual([
+        { field: 'startEventIdentifier', value: mockStartEvent.value },
+      ]);
     });
 
     describe('invalid state', () => {
@@ -162,13 +162,6 @@ describe('CustomStageFields', () => {
         expect(findName().attributes('state')).toBe('true');
         expect(findName().attributes('invalid-feedback')).toBeUndefined();
         expect(findNameField().attributes('state')).toBe('true');
-      });
-
-      it('will display end event in a valid state', () => {
-        expect(findEndEventField().props()).toMatchObject({
-          identifierError: '',
-          isIdentifierValid: true,
-        });
       });
     });
 
@@ -248,7 +241,11 @@ describe('CustomStageFields', () => {
     const allowedEndEventOpts = formatEndEventOpts(possibleEndEvents);
 
     beforeEach(() => {
-      createComponent();
+      createComponent({
+        stage: {
+          startEventIdentifier: labelStartEvent.identifier,
+        },
+      });
     });
 
     it('will display end event in a valid state', () => {
@@ -266,9 +263,26 @@ describe('CustomStageFields', () => {
       expect(findEndEventField().props('eventsList')).not.toEqual(startEventOptions);
     });
 
+    it('will emit the `input` event when end event is selected', () => {
+      const [mockEndEvent] = allowedEndEventOpts;
+
+      expect(wrapper.emitted('input')).toBeUndefined();
+
+      findEndEventField().vm.$emit('update-identifier', mockEndEvent.value);
+
+      expect(wrapper.emitted('input')[0]).toEqual([
+        { field: 'endEventIdentifier', value: mockEndEvent.value },
+      ]);
+    });
+
     describe('invalid state', () => {
       beforeEach(() => {
-        createComponent({ errors: { endEventIdentifier: ['Select a start event first'] } });
+        createComponent({
+          stage: {
+            startEventIdentifier: labelStartEvent.identifier,
+          },
+          errors: { endEventIdentifier: ['Select a start event first'] },
+        });
       });
 
       it('will display end event in an invalid state', () => {
