@@ -321,8 +321,8 @@ describe('init markdown', () => {
 
         it.each`
           text                                                       | add_at | expected
-          ${'1. one\n2. two\n3. three'}                              | ${13}  | ${'1. one\n2. two\n2. \n3. three'}
-          ${'108. item\n     5. second\n     6. six\n     7. seven'} | ${36}  | ${'108. item\n     5. second\n     6. six\n     6. \n     7. seven'}
+          ${'1. one\n2. two\n3. three'}                              | ${13}  | ${'1. one\n2. two\n3. \n4. three'}
+          ${'108. item\n     5. second\n     6. six\n     7. seven'} | ${36}  | ${'108. item\n     5. second\n     6. six\n     7. \n     8. seven'}
         `(
           'adds correct numbered continuation characters when in middle of list',
           ({ text, add_at, expected }) => {
@@ -332,6 +332,26 @@ describe('init markdown', () => {
             textArea.dispatchEvent(enterEvent);
 
             expect(textArea.value).toEqual(expected);
+          },
+        );
+
+        // As the enter does not actually get propagated the line does not get deleted in the test.
+        // Check that the selection start and end is on the part which gets removed when the Enter gets propagated.
+        it.each`
+          text                                                            | addAt | expectedSelectionStart | expected
+          ${'1. one\n2. \n3. one\n4. two'}                                | ${10} | ${7}                   | ${'1. one\n2. \n1. one\n2. two'}
+          ${'108. item\n     1. one\n     2. \n     3. one\n     4. two'} | ${30} | ${22}                  | ${'108. item\n     1. one\n     2. \n     1. one\n     2. two'}
+        `(
+          'updates correct numbered continuation characters when breaking up existing list',
+          ({ text, addAt, expectedSelectionStart, expected }) => {
+            textArea.value = text;
+            textArea.setSelectionRange(addAt, addAt);
+
+            textArea.dispatchEvent(enterEvent);
+
+            expect(textArea.value).toEqual(expected);
+            expect(textArea.selectionStart).toEqual(expectedSelectionStart);
+            expect(textArea.selectionEnd).toEqual(addAt);
           },
         );
 
