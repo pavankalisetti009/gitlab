@@ -81,7 +81,7 @@ export const AI_IMPACT_OVER_TIME_METRICS_TOOLTIPS = {
     description: s__(
       'AiImpactAnalytics|%{duoChatContributorsCount} out of %{duoAssignedUsersCount} GitLab Duo users interacted with Duo Chat in the last 30 days. %{linkStart}Learn more%{linkEnd}.',
     ),
-    descriptionLink: helpPagePath('user/gitlab_duo_chat/index'),
+    descriptionLink: helpPagePath('user/gitlab_duo_chat/_index'),
   },
   [AI_METRICS.DUO_USAGE_RATE]: {
     description: s__(

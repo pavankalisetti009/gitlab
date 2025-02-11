@@ -12,7 +12,7 @@ export const i18n = {
   heading: s__('Workspaces|Workspaces'),
 };
 
-const workspacesHelpPath = helpPagePath('user/workspace/index.md');
+const workspacesHelpPath = helpPagePath('user/workspace/_index.md');
 
 export default {
   components: {

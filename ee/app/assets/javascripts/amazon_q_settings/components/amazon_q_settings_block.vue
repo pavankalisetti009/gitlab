@@ -66,7 +66,7 @@ export default {
       this.availability = value;
     },
   },
-  helpPath: helpPagePath('user/duo_amazon_q/index.md'),
+  helpPath: helpPagePath('user/duo_amazon_q/_index.md'),
 };
 </script>
 <template>

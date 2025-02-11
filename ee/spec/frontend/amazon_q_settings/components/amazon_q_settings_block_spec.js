@@ -50,7 +50,7 @@ describe('ee/amazon_q_settings/components/amazon_q_settings_block.vue', () => {
       );
       expect(findSettingsBlockDescriptionLink().text()).toEqual('Learn more');
       expect(findSettingsBlockDescriptionLink().attributes('href')).toEqual(
-        '/help/user/duo_amazon_q/index.md',
+        '/help/user/duo_amazon_q/_index.md',
       );
     });
 

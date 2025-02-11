@@ -266,7 +266,7 @@ describe('workspaces/user/pages/list.vue', () => {
     });
 
     it('displays a link that navigates to the workspaces help page', () => {
-      expect(findHelpLink().attributes().href).toContain('user/workspace/index.md');
+      expect(findHelpLink().attributes().href).toContain('user/workspace/_index.md');
     });
   });
 
