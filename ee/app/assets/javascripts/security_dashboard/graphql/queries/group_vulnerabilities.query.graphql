@@ -14,6 +14,7 @@ query groupVulnerabilities(
   $scannerId: [VulnerabilitiesScannerID!]
   $state: [VulnerabilityState!]
   $dismissalReason: [VulnerabilityDismissalReason!]
+  $identifierName: String
   $sort: VulnerabilitySort
   $hasIssues: Boolean
   $hasResolution: Boolean
@@ -46,6 +47,7 @@ query groupVulnerabilities(
       hasAiResolution: $hasAiResolution
       clusterAgentId: $clusterAgentId
       owaspTopTen: $owaspTopTen
+      identifierName: $identifierName
     ) {
       nodes {
         ...VulnerabilityFragment

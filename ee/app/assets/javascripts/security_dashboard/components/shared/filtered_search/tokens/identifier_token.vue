@@ -2,7 +2,8 @@
 import { GlFilteredSearchToken, GlLoadingIcon } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
-import identifiersQuery from 'ee/security_dashboard/graphql/queries/project_identifiers.query.graphql';
+import projectIdentifiersQuery from 'ee/security_dashboard/graphql/queries/project_identifiers.query.graphql';
+import groupIdentifiersQuery from 'ee/security_dashboard/graphql/queries/group_identifiers.query.graphql';
 import SearchSuggestion from '../components/search_suggestion.vue';
 import QuerystringSync from '../../filters/querystring_sync.vue';
 import eventHub from '../event_hub';
@@ -16,7 +17,14 @@ export default {
     QuerystringSync,
     SearchSuggestion,
   },
-  inject: ['projectFullPath'],
+  inject: {
+    projectFullPath: {
+      default: '',
+    },
+    groupFullPath: {
+      default: '',
+    },
+  },
   props: {
     config: {
       type: Object,
@@ -34,16 +42,18 @@ export default {
   },
   apollo: {
     identifiers: {
-      query: identifiersQuery,
+      query() {
+        return this.queryConfig.query || '';
+      },
       debounce: 300,
       variables() {
         return {
           searchTerm: this.searchTerm,
-          fullPath: this.projectFullPath,
+          fullPath: this.queryConfig.fullPath || '',
         };
       },
       update(data) {
-        return data.project?.vulnerabilityIdentifierSearch || [];
+        return data?.[this.queryConfig?.dataPath].vulnerabilityIdentifierSearch || [];
       },
       result() {
         this.isLoadingIdentifiers = false;
@@ -71,6 +81,24 @@ export default {
     };
   },
   computed: {
+    queryConfig() {
+      const namespaceType = this.groupFullPath ? 'group' : 'project';
+
+      const queryTypes = {
+        group: {
+          query: groupIdentifiersQuery,
+          fullPath: this.groupFullPath,
+          dataPath: 'group',
+        },
+        project: {
+          query: projectIdentifiersQuery,
+          fullPath: this.projectFullPath,
+          dataPath: 'project',
+        },
+      };
+
+      return queryTypes[namespaceType];
+    },
     queryStringValue() {
       return this.selectedIdentifier ? [this.selectedIdentifier] : [];
     },

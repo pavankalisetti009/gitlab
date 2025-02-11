@@ -5,14 +5,16 @@ import VueApollo from 'vue-apollo';
 import IdentifierToken from 'ee/security_dashboard/components/shared/filtered_search/tokens/identifier_token.vue';
 import QuerystringSync from 'ee/security_dashboard/components/shared/filters/querystring_sync.vue';
 import eventHub from 'ee/security_dashboard/components/shared/filtered_search/event_hub';
-import identifierSearch from 'ee/security_dashboard/graphql/queries/project_identifiers.query.graphql';
+import projectIdentifierSearch from 'ee/security_dashboard/graphql/queries/project_identifiers.query.graphql';
+import groupIdentifierSearch from 'ee/security_dashboard/graphql/queries/group_identifiers.query.graphql';
 import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_search/components/search_suggestion.vue';
+import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
 import { OPERATORS_IS } from '~/vue_shared/components/filtered_search_bar/constants';
+import { createAlert } from '~/alert';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { stubComponent } from 'helpers/stub_component';
-import { createAlert } from '~/alert';
 
 Vue.use(VueApollo);
 Vue.use(VueRouter);
@@ -30,21 +32,23 @@ describe('Identifier Token component', () => {
     operators: OPERATORS_IS,
   };
 
-  const createMockApolloProvider = ({ handlers = {} } = {}) => {
+  const createMockApolloProvider = ({ handlers = {}, namespace, query } = {}) => {
+    const capitalized = capitalizeFirstCharacter(namespace);
+
     const defaultHandlers = {
       identifierSearch: jest.fn().mockResolvedValue({
         data: {
-          project: {
-            id: 'gid://gitlab/Project/19',
+          [namespace]: {
+            id: `gid://gitlab/${capitalized}/19`,
             vulnerabilityIdentifierSearch: ['CVE-2018-3741'],
-            __typename: 'Project',
+            __typename: capitalized,
           },
         },
       }),
     };
 
     const handlerMocks = { ...defaultHandlers, ...handlers };
-    const requestHandlers = [[identifierSearch, handlerMocks.identifierSearch]];
+    const requestHandlers = [[query, handlerMocks.identifierSearch]];
 
     return createMockApollo(requestHandlers);
   };
@@ -55,6 +59,8 @@ describe('Identifier Token component', () => {
     stubs,
     provide = {},
     handlers = {},
+    namespace = 'project',
+    query = projectIdentifierSearch,
     mountFn = shallowMountExtended,
   } = {}) => {
     router = new VueRouter({ mode: 'history' });
@@ -89,7 +95,9 @@ describe('Identifier Token component', () => {
         ...stubs,
       },
       apolloProvider: createMockApolloProvider({
+        namespace,
         handlers,
+        query,
       }),
     });
   };
@@ -222,6 +230,42 @@ describe('Identifier Token component', () => {
       await searchTerm('cve');
       await waitForPromises();
       expect(wrapper.text()).toContain(notFoundText);
+    });
+  });
+
+  describe('group level', () => {
+    beforeEach(() => {
+      createWrapper({
+        provide: {
+          projectFullPath: '',
+          groupFullPath: 'my-group',
+        },
+        query: groupIdentifierSearch,
+        namespace: 'group',
+      });
+    });
+
+    it('handles fuzzy search', async () => {
+      const CVE = 'CVE-2018-3741';
+
+      eventSpy = jest.fn();
+      eventHub.$on('filters-changed', eventSpy);
+
+      await searchTerm('CVE-2018');
+      await waitForPromises();
+
+      expect(wrapper.findByTestId(`suggestion-${CVE}`).exists()).toBe(true);
+
+      // The alert should not be called on succesful calls
+      expect(createAlert).not.toHaveBeenCalled();
+
+      await selectOption(CVE);
+
+      expect(eventSpy).toHaveBeenCalledWith({
+        identifierName: CVE,
+      });
+
+      expect(eventSpy).toHaveBeenCalledTimes(1);
     });
   });
 
