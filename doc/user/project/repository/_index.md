@@ -130,11 +130,11 @@ For more information, see [Contributor analytics](../../analytics/contributor_an
 ## Repository history graph
 
 A repository graph displays a visual history of the repository network, including branches and merges.
-This graph can help you visualize the Git flow strategy used in the repository.
+This graph helps you see the flow of changes in the repository.
 
 To view the repository history graph, go to your project's **Code > Repository graph**.
 
-![repository Git flow](img/repo_graph_v9_4.png)
+![A graph showing the flow of commits in a repository.](img/repo_graph_v17_9.png)
 
 ## Repository path changes
 
