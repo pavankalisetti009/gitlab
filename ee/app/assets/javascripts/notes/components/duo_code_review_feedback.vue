@@ -18,7 +18,7 @@ export default {
       class="gl-inline-block !gl-pt-0"
     />
     <span class="gl-mx-2">&middot;</span>
-    <gl-button variant="link" href="https://gitlab.com/gitlab-org/gitlab/-/issues/493890">
+    <gl-button variant="link" href="https://gitlab.com/gitlab-org/gitlab/-/issues/517386">
       {{ __('Leave feedback') }}
     </gl-button>
   </div>
