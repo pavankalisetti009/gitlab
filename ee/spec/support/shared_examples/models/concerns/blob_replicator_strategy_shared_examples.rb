@@ -415,6 +415,12 @@ RSpec.shared_examples 'a blob replicator' do
       expect(::Geo::EventLog.last.event).to be_present
     end
 
+    it 'passes a valid JSON parameter to BatchEventCreateWorker' do
+      expect(Geo::BatchEventCreateWorker).to receive(:perform_async).with(param_containing_valid_native_json_types)
+
+      inherited_replicator_class.bulk_create_delete_events_async(upload_deleted_details)
+    end
+
     it 'raises error when model_record_id is nil' do
       expect do
         inherited_replicator_class.bulk_create_delete_events_async([{}])

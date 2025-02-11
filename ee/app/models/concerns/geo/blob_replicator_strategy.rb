@@ -48,11 +48,11 @@ module Geo
             event_name: EVENT_DELETED,
             payload: {
               model_record_id: record[:model_record_id],
-              blob_path: record[:blob_path],
+              blob_path: record[:blob_path].to_s,
               uploader_class: record[:uploader_class]
             },
-            created_at: Time.current
-          }
+            created_at: Time.current.to_s
+          }.deep_transform_keys(&:to_s)
         end
 
         log_info('Bulk delete of: ', details: deleted_record_details)
