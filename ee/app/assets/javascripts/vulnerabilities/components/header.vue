@@ -16,7 +16,8 @@ import { convertObjectPropsToSnakeCase } from '~/lib/utils/common_utils';
 import download from '~/lib/utils/downloader';
 import { visitUrl } from '~/lib/utils/url_utility';
 import UsersCache from '~/lib/utils/users_cache';
-import { s__ } from '~/locale';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import { sprintf, s__ } from '~/locale';
 import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
 import aiResolveVulnerability from '../graphql/ai_resolve_vulnerability.mutation.graphql';
 import { VULNERABILITY_STATE_OBJECTS, FEEDBACK_TYPES } from '../constants';
@@ -244,7 +245,9 @@ export default {
       try {
         const {
           data: {
-            vulnerabilitiesSeverityOverride: { vulnerabilities },
+            vulnerabilitiesSeverityOverride: {
+              vulnerabilities: [{ severity }],
+            },
           },
         } = await this.$apollo.mutate({
           mutation: vulnerabilitiesSeverityOverrideMutation,
@@ -257,9 +260,15 @@ export default {
 
         this.$emit('vulnerability-severity-change', {
           ...this.vulnerability,
-          severity: vulnerabilities[0].severity.toLowerCase(),
+          severity: severity.toLowerCase(),
         });
+        this.$toast.show(
+          sprintf(s__('VulnerabilityManagement|Vulnerability set to %{severity} severity'), {
+            severity: severity.toLowerCase(),
+          }),
+        );
       } catch (error) {
+        Sentry.captureException(error);
         createAlert({
           error,
           captureError: true,

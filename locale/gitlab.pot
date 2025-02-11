@@ -63621,6 +63621,9 @@ msgstr ""
 msgid "VulnerabilityManagement|Vulnerability name or type. Ex: Cross-site scripting"
 msgstr ""
 
+msgid "VulnerabilityManagement|Vulnerability set to %{severity} severity"
+msgstr ""
+
 msgid "VulnerabilityManagement|Will not fix or a false-positive"
 msgstr ""
 

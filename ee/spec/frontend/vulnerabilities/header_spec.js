@@ -10,6 +10,7 @@ import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completio
 import aiResolveVulnerability from 'ee/vulnerabilities/graphql/ai_resolve_vulnerability.mutation.graphql';
 import Api from 'ee/api';
 import { BV_SHOW_MODAL } from '~/lib/utils/constants';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import vulnerabilityStateMutations from 'ee/security_dashboard/graphql/mutate_vulnerability_state';
 import vulnerabilitiesSeverityOverrideMutation from 'ee/security_dashboard/graphql/mutations/vulnerabilities_severity_override.mutation.graphql';
 import VulnerabilityActionsDropdown from 'ee/vulnerabilities/components/vulnerability_actions_dropdown.vue';
@@ -61,6 +62,9 @@ jest.spyOn(aiUtils, 'sendDuoChatCommand');
 
 describe('Vulnerability Header', () => {
   let wrapper;
+  const $toast = {
+    show: jest.fn(),
+  };
 
   const defaultVulnerability = {
     id: 1,
@@ -172,6 +176,9 @@ describe('Vulnerability Header', () => {
       },
       stubs: {
         GlDisclosureDropdown,
+      },
+      mocks: {
+        $toast,
       },
     });
   };
@@ -345,7 +352,7 @@ describe('Vulnerability Header', () => {
           expect(findEditVulnerabilityDropdown().props('loading')).toBe(true);
         });
 
-        it(`emits the updated vulnerability`, async () => {
+        it(`emits the updated vulnerability, shows a toast`, async () => {
           await changeSeverity({ severity: 'high' });
           await waitForPromises();
 
@@ -353,6 +360,7 @@ describe('Vulnerability Header', () => {
             ...getVulnerability(),
             severity: 'high',
           });
+          expect($toast.show).toHaveBeenCalledWith('Vulnerability set to high severity');
         });
 
         it('dropdown is not loading after GraphQL call', async () => {
@@ -380,10 +388,13 @@ describe('Vulnerability Header', () => {
           createWrapper({ apolloProvider, ...featureFlags });
         });
 
-        it('shows an error message', async () => {
+        it('shows an error message, sends the error to sentry', async () => {
+          const sentryCaptureException = jest.spyOn(Sentry, 'captureException');
           await changeSeverity({ severity: 'high' });
 
           await waitForPromises();
+
+          expect(sentryCaptureException).toHaveBeenCalledWith(expect.any(Error));
           expect(createAlert).toHaveBeenCalledTimes(1);
         });
       });
