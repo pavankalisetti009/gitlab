@@ -132,7 +132,12 @@ module Gitlab
           def create_pipeline(policy, partition_id)
             with_policy_context(policy) do
               ::Ci::CreatePipelineService
-                .new(project, command.current_user, ref: command.ref, partition_id: partition_id,
+                .new(project, command.current_user,
+                  ref: command.ref,
+                  source_sha: command.source_sha,
+                  checkout_sha: command.checkout_sha,
+                  target_sha: command.target_sha,
+                  partition_id: partition_id,
                   variables_attributes: command.variables_attributes)
                 .execute(command.source,
                   content: policy.content,
