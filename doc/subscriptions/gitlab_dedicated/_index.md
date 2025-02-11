@@ -242,9 +242,9 @@ To migrate your data to GitLab Dedicated:
   - Use [direct transfer](../../user/group/import/_index.md).
   - Use the [direct transfer API](../../api/bulk_imports.md).
 - From third-party services:
-  - Use [the import sources](../../user/project/import/index.md#supported-import-sources).
+  - Use [the import sources](../../user/project/import/_index.md#supported-import-sources).
 - For complex migrations:
-  - Engage [Professional Services](../../user/project/import/index.md#migrate-by-engaging-professional-services).
+  - Engage [Professional Services](../../user/project/import/_index.md#migrate-by-engaging-professional-services).
 
 ## Get started
 

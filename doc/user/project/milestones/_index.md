@@ -31,7 +31,7 @@ milestones with the [Releases feature](../releases/index.md#associate-milestones
 
 ## Project milestones and group milestones
 
-A milestone can belong to [project](../index.md) or [group](../../group/_index.md).
+A milestone can belong to [project](../_index.md) or [group](../../group/_index.md).
 
 You can assign **project milestones** to issues or merge requests in that project only.
 You can assign **group milestones** to any issue or merge request of any project in that group.

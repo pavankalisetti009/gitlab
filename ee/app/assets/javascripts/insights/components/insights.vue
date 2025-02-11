@@ -133,7 +133,7 @@ export default {
     insightsConfigurationText: INSIGHTS_CONFIGURATION_TEXT,
     insightsPageFilteredOut: INSIGHTS_PAGE_FILTERED_OUT,
   },
-  insightsDocumentationLink: helpPagePath('user/project/insights/index'),
+  insightsDocumentationLink: helpPagePath('user/project/insights/_index'),
 };
 </script>
 <template>

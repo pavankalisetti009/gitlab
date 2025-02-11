@@ -22,7 +22,7 @@ module EE
     override :import_svn_message
     def import_svn_message(ci_cd_only)
       if ci_cd_only
-        svn_link = link_to _('this document'), help_page_path('user/project/import/index.md', anchor: 'import-repositories-from-subversion')
+        svn_link = link_to _('this document'), help_page_path('user/project/import/_index.md', anchor: 'import-repositories-from-subversion')
         safe_format(_('To connect an SVN repository, check out %{svn_link}.'), svn_link: svn_link)
       else
         super

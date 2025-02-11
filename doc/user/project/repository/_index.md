@@ -12,20 +12,20 @@ DETAILS:
 
 A [repository](https://git-scm.com/book/en/v2/Git-Basics-Getting-a-Git-Repository)
 is where you store your code, make changes, and track changes using version control.
-Each [project](../index.md) contains a repository and a repository cannot exist without a project.
+Each [project](../_index.md) contains a repository and a repository cannot exist without a project.
 
 ## Create a repository
 
 To create a repository:
 
-- [Create a project](../index.md) or
+- [Create a project](../_index.md) or
 - [Fork an existing project](forking_workflow.md).
 
 ## Add files to a repository
 
 You can add files to a repository:
 
-- When you [create a project](../index.md), or
+- When you [create a project](../_index.md), or
 - After you create a project, using the following options:
   - [Web editor](web_editor.md#upload-a-file).
   - [User Interface (UI)](#add-a-file-from-the-ui).

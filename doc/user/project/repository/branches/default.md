@@ -10,7 +10,7 @@ DETAILS:
 **Tier:** Free, Premium, Ultimate
 **Offering:** GitLab.com, GitLab Self-Managed, GitLab Dedicated
 
-When you create a new [project](../../index.md), GitLab creates a default branch
+When you create a new [project](../../_index.md), GitLab creates a default branch
 in the repository. A default branch has special configuration options not shared
 by other branches:
 
@@ -21,7 +21,7 @@ by other branches:
   [issue closing pattern](../../issues/managing_issues.md#closing-issues-automatically)
   to close an issue, the work is merged into this branch.
 
-The name of your [new project's](../../index.md) default branch depends on any
+The name of your [new project's](../../_index.md) default branch depends on any
 instance-level or group-level configuration changes made by your GitLab administrator.
 GitLab checks first for specific customizations, then checks at a broader level,
 using the GitLab default only if no customizations are set:
@@ -41,7 +41,7 @@ Prerequisites:
 
 - You have the Owner or Maintainer role for the project.
 
-To update the default branch for an individual [project](../../index.md):
+To update the default branch for an individual [project](../../_index.md):
 
 1. On the left sidebar, select **Search or go to** and find your project.
 1. Select **Settings > Repository**.
