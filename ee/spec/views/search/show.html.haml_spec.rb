@@ -52,18 +52,6 @@ RSpec.describe 'search/show', feature_category: :global_search do
           locals: { groups_requiring_saml_reauth: groups_requiring_reauth })
       end
 
-      context 'when search_global_sso_redirect is false' do
-        before do
-          stub_feature_flags(search_global_sso_redirect: false)
-        end
-
-        it 'does not render the saml reauth notice when no groups require reauth' do
-          render
-
-          expect(view).not_to have_rendered(partial: 'shared/dashboard/saml_reauth_notice')
-        end
-      end
-
       it 'does not render the saml reauth notice when no groups require reauth' do
         allow(view).to receive(:user_groups_requiring_reauth).and_return([])
 
