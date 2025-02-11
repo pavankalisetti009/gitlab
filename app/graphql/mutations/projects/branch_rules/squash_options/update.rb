@@ -44,11 +44,12 @@ module Mutations
           private
 
           def feature_disabled?(project)
-            Feature.disabled?(:branch_rule_squash_settings, project) ||
-              !project.licensed_feature_available?(:branch_rule_squash_options)
+            Feature.disabled?(:branch_rule_squash_settings, project)
           end
         end
       end
     end
   end
 end
+
+Mutations::Projects::BranchRules::SquashOptions::Update.prepend_mod
