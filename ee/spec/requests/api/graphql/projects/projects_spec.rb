@@ -56,4 +56,51 @@ RSpec.describe 'getting a collection of projects', feature_category: :groups_and
       expect(returned_marked_for_deletion_on).to contain_exactly(marked_for_deletion_on.iso8601)
     end
   end
+
+  context 'when requesting user permissions' do
+    let(:query) do
+      <<~QUERY
+        query($first: Int!) {
+          projects(membership: true, first: $first) {
+            nodes {
+              id
+              userPermissions {
+                readProject
+                removeProject
+              }
+            }
+          }
+        }
+      QUERY
+    end
+
+    before do
+      stub_licensed_features(custom_roles: true)
+    end
+
+    it_behaves_like 'a working graphql query that returns data' do
+      before do
+        post_graphql(query, current_user: current_user, variables: { first: 1 })
+      end
+
+      it 'returns data', :aggregate_failures do
+        expect(graphql_errors).to be_nil
+
+        expect(graphql_data_at(:projects, :nodes, 0, :user_permissions)).to eq({
+          'readProject' => true,
+          'removeProject' => false
+        })
+      end
+    end
+
+    it 'avoids N+1 queries', :request_store do
+      control = ActiveRecord::QueryRecorder.new do
+        post_graphql(query, current_user: current_user, variables: { first: 1 })
+      end
+
+      expect do
+        post_graphql(query, current_user: current_user, variables: { first: 5 })
+      end.not_to exceed_query_limit(control)
+    end
+  end
 end
