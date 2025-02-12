@@ -10,6 +10,7 @@ RSpec.describe 'Every metric definition', feature_category: :service_ping do
     allow(::Gitlab::CurrentSettings).to receive(:current_application_settings).and_return(settings)
 
     stub_saas_features(google_cloud_support: true)
+    stub_request(:get, "https://snowplowstg.trx.gitlab.net/test_connectivity/")
   end
 
   include_examples "every metric definition"
