@@ -4,6 +4,30 @@ module MergeRequests
   class ApprovalRule < ApplicationRecord
     self.table_name = 'merge_requests_approval_rules'
 
+    # If we allow overriding in subgroups there can be multiple groups
+    has_many :approval_rules_groups
+    has_many :groups, through: :approval_rules_groups
+
+    # When this originated from group there is only one group
+    has_one :approval_rules_group, inverse_of: :approval_rule
+    has_one :group, through: :approval_rules_group
+
+    # When this originated from group there are multiple projects
+    has_many :approval_rules_projects
+    has_many :projects, through: :approval_rules_projects
+
+    # When this originated from project there is only one project
+    has_one :approval_rules_project
+    has_one :project, through: :approval_rules_project
+
+    # When this originated from group or project there are multiple merge_requests
+    has_many :approval_rules_merge_requests
+    has_many :merge_requests, through: :approval_rules_merge_requests
+
+    # When this originated from merge_request there is only one merge_request
+    has_one :approval_rules_merge_request, inverse_of: :approval_rule
+    has_one :merge_request, through: :approval_rules_merge_request
+
     validate :ensure_single_sharding_key
 
     with_options validate: true do

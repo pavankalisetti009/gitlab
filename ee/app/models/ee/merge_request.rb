@@ -101,6 +101,12 @@ module EE
 
       has_many :merge_request_stage_events, class_name: 'Analytics::CycleAnalytics::MergeRequestStageEvent'
 
+      # WIP v2 approval rules as part of https://gitlab.com/groups/gitlab-org/-/epics/12955
+      has_many :v2_approval_rules_merge_requests, class_name: 'MergeRequests::ApprovalRulesMergeRequest',
+        inverse_of: :merge_request
+      has_many :v2_approval_rules, through: :v2_approval_rules_merge_requests,
+        class_name: 'MergeRequests::ApprovalRule', source: :approval_rule
+
       delegate :sha, to: :head_pipeline, prefix: :head_pipeline, allow_nil: true
       delegate :sha, to: :base_pipeline, prefix: :base_pipeline, allow_nil: true
       delegate :wrapped_approval_rules, :invalid_approvers_rules, to: :approval_state

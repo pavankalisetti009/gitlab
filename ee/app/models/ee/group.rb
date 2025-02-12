@@ -99,6 +99,10 @@ module EE
 
       has_many :security_exclusions, class_name: 'Security::GroupSecurityExclusion'
 
+      # WIP v2 approval rules as part of https://gitlab.com/groups/gitlab-org/-/epics/12955
+      has_many :v2_approval_rules_groups, class_name: 'MergeRequests::ApprovalRulesGroup', inverse_of: :group
+      has_many :v2_approval_rules, through: :v2_approval_rules_groups, class_name: 'MergeRequests::ApprovalRule', source: :approval_rule
+
       delegate :deleting_user, :marked_for_deletion_on, to: :deletion_schedule, allow_nil: true
 
       delegate :repository_read_only,
