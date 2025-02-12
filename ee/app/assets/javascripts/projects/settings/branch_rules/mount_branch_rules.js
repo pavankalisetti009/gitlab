@@ -25,5 +25,5 @@ export default function mountBranchRules(el) {
     targetBranch: getParameterByName('branch'),
   });
 
-  mount(el, store);
+  mount(el, store, true);
 }
