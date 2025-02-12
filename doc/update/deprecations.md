@@ -339,6 +339,30 @@ This is one small step towards moving away from CI/CD templates in preference of
 </div>
 </div>
 
+<div class="milestone-wrapper" data-milestone="18.3">
+
+## GitLab 18.3
+
+<div class="deprecation breaking-change" data-milestone="18.3">
+
+### Linux packages for Ubuntu 20.04
+
+<div class="deprecation-notes">
+
+- Announced in GitLab <span class="milestone">17.9</span>
+- Removal in GitLab <span class="milestone">18.3</span> ([breaking change](https://docs.gitlab.com/ee/update/terminology.html#breaking-change))
+- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/omnibus-gitlab/-/issues/8915).
+
+</div>
+
+Standard support for Ubuntu 20.04 [ends in April 2024](https://wiki.ubuntu.com/Releases).
+
+Therefore, we will longer support the Ubuntu 20.04 distribution for Linux package installs.
+Users should upgrade to Ubuntu 22.04 for continued support.
+
+</div>
+</div>
+
 <div class="milestone-wrapper" data-milestone="18.0">
 
 ## GitLab 18.0
