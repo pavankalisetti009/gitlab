@@ -3473,6 +3473,30 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             end
           end
         end
+
+        context 'and user is a ci pipelines bot' do
+          let(:current_user) { create(:user, user_type: :ci_pipeline_bot) }
+
+          it { is_expected.not_to be_allowed(:create_bot_pipeline) }
+
+          context 'and user is a member of the project' do
+            context 'with reporter permissions' do
+              before do
+                project.add_reporter(current_user)
+              end
+
+              it { is_expected.not_to be_allowed(:create_bot_pipeline) }
+            end
+
+            context 'with developer permissions' do
+              before do
+                project.add_developer(current_user)
+              end
+
+              it { is_expected.to be_allowed(:create_bot_pipeline) }
+            end
+          end
+        end
       end
     end
 
@@ -4639,6 +4663,31 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       where(:role, :allowed) do
         :guest      | false
+        :reporter   | false
+        :developer  | false
+        :maintainer | true
+        :auditor    | false
+        :owner      | true
+        :admin      | true
+      end
+
+      with_them do
+        let(:current_user) { public_send(role) }
+
+        before do
+          enable_admin_mode!(current_user) if role == :admin
+        end
+
+        it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
+      end
+    end
+
+    describe 'admin_ci_pipeline_bots' do
+      let(:policy) { :admin_ci_pipeline_bots }
+
+      where(:role, :allowed) do
+        :guest      | false
+        :planner    | false
         :reporter   | false
         :developer  | false
         :maintainer | true

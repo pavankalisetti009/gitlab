@@ -187,6 +187,7 @@ module GitlabSubscriptions
       default_roles_assignees
       ci_component_usages_in_projects
       branch_rule_squash_options
+      ci_pipeline_bots
     ].freeze
 
     ULTIMATE_FEATURES = %i[

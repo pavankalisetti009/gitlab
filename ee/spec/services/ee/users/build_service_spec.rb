@@ -86,6 +86,18 @@ RSpec.describe Users::BuildService, feature_category: :user_management do
         end
       end
 
+      context 'with a pipeline_bot user type' do
+        before do
+          params.merge!(user_type: :ci_pipeline_bot)
+        end
+
+        it 'allows provisioned by group id to be set' do
+          user = service.execute
+
+          expect(user.user_type).to eq('ci_pipeline_bot')
+        end
+      end
+
       context 'with composite_identity_enforced as allowed params' do
         let(:params) { super().merge(composite_identity_enforced: true) }
 
