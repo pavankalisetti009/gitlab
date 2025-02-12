@@ -63,6 +63,21 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
 
           expect { duo_settings.reload }.to change { duo_settings.ai_gateway_url }.to("http://new-ai-gateway-url")
         end
+
+        context 'when ai_gateway_url arg is a blank string' do
+          let(:mutation_params) { { ai_gateway_url: "" } }
+
+          it 'coerces it to nil' do # an empty string will cause the Duo healthcheck to error
+            request
+
+            result = json_response['data']['duoSettingsUpdate']
+
+            expect(result).to include("aiGatewayUrl" => nil)
+            expect(result['errors']).to eq([])
+
+            expect { duo_settings.reload }.to change { duo_settings.ai_gateway_url }.to(nil)
+          end
+        end
       end
     end
   end
