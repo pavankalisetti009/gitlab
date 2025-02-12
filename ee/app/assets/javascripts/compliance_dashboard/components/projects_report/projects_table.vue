@@ -48,6 +48,7 @@ export default {
     GlSprintf,
   },
   mixins: [InternalEvents.mixin()],
+  inject: ['canAdminComplianceFrameworks'],
   props: {
     projects: {
       type: Array,
@@ -60,6 +61,11 @@ export default {
     groupPath: {
       type: String,
       required: true,
+    },
+    projectPath: {
+      type: String,
+      required: false,
+      default: null,
     },
     rootAncestor: {
       type: Object,
@@ -78,7 +84,7 @@ export default {
         return { fullPath: this.groupPath };
       },
       update(data) {
-        return data.namespace.complianceFrameworks.nodes || [];
+        return data.namespace.complianceFrameworks?.nodes || [];
       },
       error(error) {
         createAlert({
@@ -102,7 +108,9 @@ export default {
   },
   computed: {
     isFrameworkEditingEnabled() {
-      return isTopLevelGroup(this.groupPath, this.rootAncestor.path);
+      return (
+        isTopLevelGroup(this.groupPath, this.rootAncestor.path) && this.canAdminComplianceFrameworks
+      );
     },
 
     tableFields() {
@@ -112,7 +120,10 @@ export default {
         thClass: '!gl-align-middle',
         tdClass: '!gl-align-middle',
       };
-      return [...(this.isEditingEnabled ? [selectionField] : []), ...this.$options.fields];
+
+      const shouldIncludeSelection = this.canAdminComplianceFrameworks && !this.projectPath;
+
+      return [...(shouldIncludeSelection ? [selectionField] : []), ...this.$options.fields];
     },
 
     hasProjects() {
@@ -132,7 +143,13 @@ export default {
         : this.$options.i18n.noProjectsFound;
     },
     showNoFrameworksAlert() {
-      return !this.frameworks.length && !this.isLoading && !this.isFrameworkEditingEnabled;
+      return (
+        !this.projectPath &&
+        !this.frameworks.length &&
+        !this.isLoading &&
+        !isTopLevelGroup(this.groupPath, this.rootAncestor.path) &&
+        this.canAdminComplianceFrameworks
+      );
     },
     isFrameworkSelectionAvailable() {
       return this.isFrameworkEditingEnabled || this.frameworks.length;
@@ -269,12 +286,6 @@ export default {
   },
   fields: [
     {
-      key: 'selected',
-      sortable: false,
-      thClass: '!gl-align-middle',
-      tdClass: '!gl-align-middle',
-    },
-    {
       key: 'projectName',
       label: __('Project name'),
       thClass: '!gl-align-middle',
@@ -302,6 +313,7 @@ export default {
       thAlignRight: true,
       thClass: '!gl-align-middle',
       tdClass: '!gl-text-right',
+      sortable: false,
     },
   ],
   i18n: {
@@ -363,6 +375,7 @@ export default {
       >
     </gl-alert>
     <selection-operations
+      v-if="!projectPath"
       :selection="selectedRows"
       :group-path="groupPath"
       :is-apply-in-progress="isApplyInProgress"
@@ -372,7 +385,7 @@ export default {
       @create="createComplianceFramework($options.BULK_FRAMEWORK_ID)"
     />
     <gl-table
-      :fields="$options.fields"
+      :fields="tableFields"
       :busy="isLoading"
       :items="projects"
       no-local-sorting
@@ -380,7 +393,7 @@ export default {
       stacked="lg"
       hover
       :tbody-tr-attr="qaRowAttributes"
-      selectable
+      :selectable="!projectPath"
       select-mode="multi"
       selected-variant="primary"
       @row-selected="updateSelectedRows"
@@ -417,7 +430,7 @@ export default {
         <framework-badge
           v-for="framework in complianceFrameworks"
           :key="framework.id"
-          closeable
+          :closeable="canAdminComplianceFrameworks"
           :popover-mode="isFrameworkEditingEnabled ? 'edit' : 'details'"
           class="gl-my-2 gl-mr-2 gl-inline-block"
           :framework="framework"
@@ -432,7 +445,7 @@ export default {
       </template>
       <template #cell(action)="{ item: { id, complianceFrameworks } }">
         <framework-selection-box
-          v-if="isFrameworkSelectionAvailable"
+          v-if="canAdminComplianceFrameworks && isFrameworkSelectionAvailable"
           :is-framework-creating-enabled="isFrameworkEditingEnabled"
           :selected="complianceFrameworks.map((f) => f.id)"
           :group-path="groupPath"

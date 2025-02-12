@@ -1877,7 +1877,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
     end
 
-    describe ':compliance_framework_available' do
+    describe 'project level admin_compliance_framework check delegates to group', :eager_load do
+      let(:project)  { public_project_in_group }
       let(:policy) { :admin_compliance_framework }
 
       where(:role, :feature_enabled, :admin_mode, :allowed) do
@@ -1899,10 +1900,11 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
 
       with_them do
-        let(:current_user) { public_send(role) }
+        let(:current_user) { role == :admin ? admin : owner }
 
         before do
-          stub_licensed_features(compliance_framework: feature_enabled)
+          project.group.public_send("add_#{role}", current_user) unless role == :admin
+          stub_licensed_features(compliance_framework: feature_enabled, custom_compliance_frameworks: feature_enabled)
           enable_admin_mode!(current_user) if admin_mode
         end
 

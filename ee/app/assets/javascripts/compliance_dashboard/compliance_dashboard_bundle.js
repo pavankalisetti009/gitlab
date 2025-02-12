@@ -16,13 +16,18 @@ export default () => {
 
   const {
     basePath,
+    canAdminComplianceFrameworks,
     mergeCommitsCsvExportPath,
     violationsCsvExportPath,
     projectFrameworksCsvExportPath,
     adherencesCsvExportPath,
     frameworksCsvExportPath,
     groupPath,
+    groupComplianceCenterPath,
+    groupName,
     projectPath,
+    projectName,
+    projectId,
     rootAncestorPath,
     rootAncestorName,
     rootAncestorComplianceCenterPath,
@@ -55,7 +60,11 @@ export default () => {
   const router = createRouter(basePath, {
     mergeCommitsCsvExportPath,
     projectPath,
+    projectId,
     groupPath,
+    groupName,
+    groupComplianceCenterPath,
+    projectName,
     rootAncestorPath,
     rootAncestorName,
     rootAncestorComplianceCenterPath,
@@ -73,6 +82,7 @@ export default () => {
     router,
     provide: {
       namespaceType: projectPath ? 'project' : 'group',
+      canAdminComplianceFrameworks: parseBoolean(canAdminComplianceFrameworks),
       groupPath,
       rootAncestorPath,
       pipelineConfigurationFullPathEnabled: parseBoolean(pipelineConfigurationFullPathEnabled),

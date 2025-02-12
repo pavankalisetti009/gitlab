@@ -3911,6 +3911,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       context 'when compliance framework feature is available' do
         let(:licensed_features) do
           {
+            compliance_framework: true,
             custom_compliance_frameworks: true,
             evaluate_group_level_compliance_pipeline: true,
             group_level_compliance_dashboard: true,

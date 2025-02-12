@@ -1,7 +1,9 @@
 <script>
-import { GlAlert } from '@gitlab/ui';
+import { GlAlert, GlLink, GlSprintf } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { fetchPolicies } from '~/lib/graphql';
+import { convertToGraphQLId } from '~/graphql_shared/utils';
+import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import { s__ } from '~/locale';
 
 import {
@@ -24,6 +26,8 @@ export default {
   components: {
     Filters,
     GlAlert,
+    GlLink,
+    GlSprintf,
     Pagination,
     ProjectsTable,
   },
@@ -31,6 +35,30 @@ export default {
     groupPath: {
       type: String,
       required: true,
+    },
+    groupName: {
+      type: String,
+      required: true,
+    },
+    groupComplianceCenterPath: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    projectId: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    projectPath: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    projectName: {
+      type: String,
+      required: false,
+      default: null,
     },
     rootAncestor: {
       type: Object,
@@ -55,11 +83,17 @@ export default {
       // why we need nextFetchPolicy
       nextFetchPolicy: fetchPolicies.CACHE_FIRST,
       variables() {
-        return {
+        const baseVariables = {
           groupPath: this.groupPath,
           ...this.paginationCursors,
           ...this.filterParams,
         };
+
+        if (this.projectId) {
+          baseVariables.ids = [convertToGraphQLId(TYPENAME_PROJECT, this.projectId)];
+        }
+
+        return baseVariables;
       },
       update(data) {
         const { nodes, pageInfo } = data?.group?.projects || {};
@@ -197,6 +231,9 @@ export default {
     queryError: s__(
       'ComplianceReport|Unable to load the compliance framework projects report. Refresh the page and try again.',
     ),
+    projectComplianceCenterInfoContent: s__(
+      'ComplianceReport|You are viewing the compliance centre for %{project}. To see information for all projects, go to %{linkStart}group%{linkEnd}.',
+    ),
   },
 };
 </script>
@@ -204,6 +241,7 @@ export default {
 <template>
   <section>
     <filters
+      v-if="!projectPath"
       :value="filters"
       :group-path="groupPath"
       :error="hasQueryError"
@@ -223,24 +261,35 @@ export default {
       {{ $options.i18n.queryError }}
     </gl-alert>
 
-    <projects-table
-      v-else
-      :is-loading="isLoading"
-      :projects="projects.list"
-      :root-ancestor="rootAncestor"
-      :group-path="groupPath"
-      :has-filters="hasFilters"
-      @updated="showUpdatePopoverIfNeeded"
-    />
+    <template v-else>
+      <gl-alert v-if="projectPath" variant="info" :dismissible="false">
+        <gl-sprintf :message="$options.i18n.projectComplianceCenterInfoContent">
+          <template #project>{{ projectName }}</template>
+          <template #link>
+            <gl-link :href="groupComplianceCenterPath">{{ groupName }}</gl-link>
+          </template>
+        </gl-sprintf>
+      </gl-alert>
 
-    <pagination
-      v-if="showPagination"
-      :is-loading="isLoading"
-      :page-info="projects.pageInfo"
-      :per-page="perPage"
-      @prev="loadPrevPage"
-      @next="loadNextPage"
-      @page-size-change="onPageSizeChange"
-    />
+      <projects-table
+        :is-loading="isLoading"
+        :projects="projects.list"
+        :root-ancestor="rootAncestor"
+        :project-path="projectPath"
+        :group-path="groupPath"
+        :has-filters="hasFilters"
+        @updated="showUpdatePopoverIfNeeded"
+      />
+
+      <pagination
+        v-if="showPagination"
+        :is-loading="isLoading"
+        :page-info="projects.pageInfo"
+        :per-page="perPage"
+        @prev="loadPrevPage"
+        @next="loadNextPage"
+        @page-size-change="onPageSizeChange"
+      />
+    </template>
   </section>
 </template>

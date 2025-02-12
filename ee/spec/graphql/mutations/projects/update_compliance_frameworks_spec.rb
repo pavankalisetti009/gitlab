@@ -38,7 +38,7 @@ RSpec.describe Mutations::Projects::UpdateComplianceFrameworks, feature_category
   describe '#resolve' do
     context 'when feature is licensed' do
       before do
-        stub_licensed_features(compliance_framework: true)
+        stub_licensed_features(compliance_framework: true, custom_compliance_frameworks: true)
       end
 
       context 'when current_user is a project maintainer' do

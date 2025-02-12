@@ -5,31 +5,13 @@ module EE
     def compliance_center_app_data(container)
       return unless container
 
-      project = container.is_a?(Project) ? container : nil
       group = container.is_a?(Group) ? container : container.group
-
       adherence_report = can?(current_user, :read_compliance_adherence_report, container)
       violations_report = can?(current_user, :read_compliance_violations_report, container)
 
-      general_app_data = {
-        base_path: base_path(container),
-        root_ancestor_path: group.root_ancestor.full_path,
-        root_ancestor_name: group.root_ancestor.name,
-        root_ancestor_compliance_center_path: group_security_compliance_dashboard_path(group.root_ancestor,
-          vueroute: 'frameworks'),
-
-        feature_adherence_report_enabled: adherence_report.to_s,
-        feature_violations_report_enabled: violations_report.to_s,
-
-        active_compliance_frameworks: group.active_compliance_frameworks?.to_s
-      }
-
       if container.is_a?(Group)
         {
-          group_path: group.full_path,
-
           feature_frameworks_report_enabled: true.to_s,
-          feature_projects_report_enabled: true.to_s,
           feature_security_policies_enabled: can?(current_user, :read_security_orchestration_policies, group).to_s,
           adherence_v2_enabled: ::Feature.enabled?(:enable_standards_adherence_dashboard_v2, group).to_s,
 
@@ -50,15 +32,42 @@ module EE
           pipeline_execution_policy_path: new_group_security_policy_url(group, type: :pipeline_execution_policy),
           group_security_policies_path: group_security_policies_path(group),
           disable_scan_policy_update: !can_modify_security_policy?(group).to_s
-        }.merge(general_app_data)
+        }.merge(general_app_data(container))
       else
-        {
-          project_path: project.full_path
-        }.merge(general_app_data)
+        general_app_data(container)
       end
     end
 
     private
+
+    def general_app_data(container)
+      project = container.is_a?(Project) ? container : nil
+      group = container.is_a?(Group) ? container : container.group
+
+      can_admin_compliance_frameworks = can?(current_user, :admin_compliance_framework, container)
+      adherence_report = can?(current_user, :read_compliance_adherence_report, container)
+      violations_report = can?(current_user, :read_compliance_violations_report, container)
+
+      {
+        base_path: base_path(container),
+        project_id: project&.id,
+        project_path: project&.full_path,
+        project_name: project&.name,
+        group_path: group.full_path,
+        group_compliance_center_path: group_security_compliance_dashboard_path(group, vueroute: 'projects'),
+        group_name: group.name,
+        root_ancestor_path: group.root_ancestor.full_path,
+        root_ancestor_name: group.root_ancestor.name,
+        root_ancestor_compliance_center_path: group_security_compliance_dashboard_path(group.root_ancestor,
+          vueroute: 'frameworks'),
+
+        feature_adherence_report_enabled: adherence_report.to_s,
+        feature_violations_report_enabled: violations_report.to_s,
+        active_compliance_frameworks: group.active_compliance_frameworks?.to_s,
+        feature_projects_report_enabled: true.to_s,
+        can_admin_compliance_frameworks: can_admin_compliance_frameworks.to_s
+      }
+    end
 
     def base_path(container)
       if container.is_a?(Group)

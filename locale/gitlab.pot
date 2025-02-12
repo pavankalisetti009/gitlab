@@ -14948,6 +14948,9 @@ msgstr ""
 msgid "ComplianceReport|View the framework details"
 msgstr ""
 
+msgid "ComplianceReport|You are viewing the compliance centre for %{project}. To see information for all projects, go to %{linkStart}group%{linkEnd}."
+msgstr ""
+
 msgid "ComplianceReport|and %{count} more"
 msgstr ""
 

@@ -26,25 +26,6 @@ import {
 
 import ReportsExport from './shared/export_disclosure_dropdown.vue';
 
-const tabConfigs = {
-  [ROUTE_STANDARDS_ADHERENCE]: {
-    testId: 'standards-adherence-tab',
-    title: i18n.standardsAdherenceTab,
-  },
-  [ROUTE_VIOLATIONS]: {
-    testId: 'violations-tab',
-    title: i18n.violationsTab,
-  },
-  [ROUTE_FRAMEWORKS]: {
-    testId: 'frameworks-tab',
-    title: i18n.frameworksTab,
-  },
-  [ROUTE_PROJECTS]: {
-    testId: 'projects-tab',
-    title: i18n.projectsTab,
-  },
-};
-
 export default {
   name: 'ComplianceReportsApp',
   components: {
@@ -73,6 +54,11 @@ export default {
       type: Array,
       required: true,
     },
+    projectPath: {
+      type: String,
+      required: false,
+      default: null,
+    },
     groupPath: {
       type: String,
       required: false,
@@ -97,6 +83,25 @@ export default {
       );
     },
     tabs() {
+      const tabConfigs = {
+        [ROUTE_STANDARDS_ADHERENCE]: {
+          testId: 'standards-adherence-tab',
+          title: i18n.standardsAdherenceTab,
+        },
+        [ROUTE_VIOLATIONS]: {
+          testId: 'violations-tab',
+          title: i18n.violationsTab,
+        },
+        [ROUTE_FRAMEWORKS]: {
+          testId: 'frameworks-tab',
+          title: i18n.frameworksTab,
+        },
+        [ROUTE_PROJECTS]: {
+          testId: 'projects-tab',
+          title: this.projectPath ? i18n.projectTab : i18n.projectsTab,
+        },
+      };
+
       return this.availableTabs.map((tabName) => {
         const tabConfig = tabConfigs[tabName];
         return {
