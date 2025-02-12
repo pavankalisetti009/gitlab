@@ -46,14 +46,11 @@ module MergeRequests
             ::Gitlab::Llm::AiMessage::ROLE_USER
           end
 
-        # For non-diff notes, we want to include the MR context by leveraging Duo Chat's
-        # merge_request_reader tool. We set the resource as the noteable so that when
-        # MergeRequestReader uses the identifier type "current", it can use the MR object,
-        # not the note object. For now, this change is isolated to non-diff notes only.
-        resource = note.diff_note? ? note : note.noteable
         content = build_note_content(note, index == notes.size - 1)
 
-        prompt_message = save_prompt_message(author, role, resource, content, thread)
+        # We set the MR object as the resource so that it's accessible if Duo Chat decides
+        # to utilize the merge_request_reader tool with identifier type "current".
+        prompt_message = save_prompt_message(author, role, note.noteable, content, thread)
       end
 
       prompt_message
@@ -101,7 +98,7 @@ module MergeRequests
         .execute
     end
 
-    # As referenced above, for non-diff notes, we want to leverage Duo Chat's merge_request_reader tool
+    # For non-diff notes, we want to leverage Duo Chat's merge_request_reader tool
     # to provide the MR context. In case the LLM decides not to use the "current" resource identifier,
     # we provide the MR's iid in a string format recognized by MergeRequestReader::Executor::SYSTEM_PROMPT.
     # This way it has the option to use the `iid` or `reference` identifier type instead.

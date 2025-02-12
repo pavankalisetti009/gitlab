@@ -80,7 +80,7 @@ RSpec.describe MergeRequests::DuoCodeReviewChatWorker, feature_category: :code_r
           .with(
             chat_message_params(
               ::Gitlab::Llm::AiMessage::ROLE_ASSISTANT,
-              try(:resource) || first_discussion_note,
+              merge_request,
               first_discussion_note.note
             )
           )
@@ -91,7 +91,7 @@ RSpec.describe MergeRequests::DuoCodeReviewChatWorker, feature_category: :code_r
           .with(
             chat_message_params(
               ::Gitlab::Llm::AiMessage::ROLE_USER,
-              try(:resource) || excluded_note,
+              merge_request,
               excluded_note.note
             )
           )
@@ -101,7 +101,7 @@ RSpec.describe MergeRequests::DuoCodeReviewChatWorker, feature_category: :code_r
           .with(
             chat_message_params(
               ::Gitlab::Llm::AiMessage::ROLE_USER,
-              try(:resource) || note,
+              merge_request,
               expected_note_content
             )
           )
@@ -204,7 +204,6 @@ RSpec.describe MergeRequests::DuoCodeReviewChatWorker, feature_category: :code_r
     context 'when the note is not a diff note' do
       let(:expected_note_content) { note.note }
       let(:note_type) { :discussion_note_on_merge_request }
-      let(:resource) { merge_request }
       let(:additional_context) do
         {
           id: 'reference',
