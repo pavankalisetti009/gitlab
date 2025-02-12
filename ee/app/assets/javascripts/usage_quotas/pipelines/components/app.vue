@@ -240,11 +240,20 @@ export default {
 
 <template>
   <div>
+    <gl-alert
+      v-if="!ciMinutesAnyProjectEnabled"
+      variant="info"
+      :dismissible="false"
+      class="gl-my-2"
+      data-testid="instance-runners-disabled-alert"
+    >
+      {{ s__('UsageQuota|Instance runners are disabled in all projects in this namespace.') }}
+    </gl-alert>
     <h2 class="gl-heading-2 gl-my-3" data-testid="overview-subtitle">{{ __('Pipelines') }}</h2>
     <p class="gl-mb-0 gl-text-subtle" data-testid="pipelines-description">
       {{
         s__(
-          'UsageQuota|Compute units usage is calculated based on shared runners duration with cost factors applied.',
+          'UsageQuota|Compute units usage is calculated based on instance runners duration with cost factors applied.',
         )
       }}
       <help-page-link href="ci/pipelines/compute_minutes" anchor="compute-usage-calculation">{{
@@ -315,7 +324,7 @@ export default {
       </gl-form-group>
     </div>
 
-    <gl-alert v-if="error" variant="danger" @dismiss="clearError">
+    <gl-alert v-if="error" variant="danger" data-testid="error-alert" @dismiss="clearError">
       {{ error }}
     </gl-alert>
 

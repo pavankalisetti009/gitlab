@@ -1,6 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlAlert, GlButton } from '@gitlab/ui';
+import { GlButton } from '@gitlab/ui';
 import MinutesUsagePerMonth from 'ee/usage_quotas/pipelines/components/minutes_usage_per_month.vue';
 import MonthlyUnitsUsageSummary from 'ee/usage_quotas/pipelines/components/cards/monthly_units_usage_summary.vue';
 import AdditionalUnitsUsageSummary from 'ee/usage_quotas/pipelines/components/cards/additional_units_usage_summary.vue';
@@ -38,7 +38,9 @@ describe('PipelineUsageApp', () => {
   let wrapper;
 
   const findDescription = () => wrapper.findByTestId('pipelines-description');
-  const findAlert = () => wrapper.findComponent(GlAlert);
+  const findDisabledStateAlert = () =>
+    wrapper.findComponentByTestId('instance-runners-disabled-alert');
+  const findErrorAlert = () => wrapper.findComponentByTestId('error-alert');
   const findProjectList = () => wrapper.findComponent(ProjectList);
   const findBuyAdditionalMinutesButton = () => wrapper.findComponent(GlButton);
   const findMonthlyUsageOverview = () => wrapper.findComponent(MonthlyUnitsUsageSummary);
@@ -105,11 +107,18 @@ describe('PipelineUsageApp', () => {
   });
 
   describe('rendering', () => {
+    it('renders an alert if instance runners are disabled', () => {
+      createComponent({ provide: { ciMinutesAnyProjectEnabled: false } });
+
+      const alert = findDisabledStateAlert();
+      expect(alert.exists()).toBe(true);
+    });
+
     it('renders description with a help link', () => {
       createComponent();
 
       expect(findDescription().text()).toContain(
-        'Compute units usage is calculated based on shared runners duration with cost factors applied.',
+        'Compute units usage is calculated based on instance runners duration with cost factors applied.',
       );
 
       expect(findDescription().findComponent(HelpPageLink).attributes()).toMatchObject({
@@ -256,7 +265,7 @@ describe('PipelineUsageApp', () => {
     });
 
     it('renders failed request error message', () => {
-      expect(findAlert().text()).toBe(ERROR_MESSAGE);
+      expect(findErrorAlert().text()).toBe(ERROR_MESSAGE);
     });
 
     it('captures the exception in Sentry', async () => {
