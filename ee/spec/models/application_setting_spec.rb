@@ -55,9 +55,6 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
   end
 
   describe 'validations' do
-    it { expect(described_class).to validate_jsonb_schema(['application_setting_cluster_agents']) }
-    it { expect(described_class).to validate_jsonb_schema(['identity_verification_settings']) }
-
     describe 'mirror', feature_category: :source_code_management do
       it { is_expected.to validate_numericality_of(:mirror_max_delay).only_integer }
       it { is_expected.not_to allow_value(nil).for(:mirror_max_delay) }
@@ -148,8 +145,6 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
                          .is_greater_than_or_equal_to(5)
                          .is_less_than_or_equal_to(::Security::ScanResultPolicy::POLICIES_LIMIT)
       end
-
-      it { expect(described_class).to validate_jsonb_schema(['application_setting_security_policies']) }
     end
 
     describe 'future_subscriptions', feature_category: :subscription_management do
@@ -265,8 +260,6 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     end
 
     describe 'user_seat_management', feature_category: :seat_cost_management do
-      it { expect(described_class).to validate_jsonb_schema(['application_setting_user_seat_management']) }
-
       context 'for seat_control' do
         it 'allows update to user cap' do
           expect { setting.update!(seat_control: described_class::SEAT_CONTROL_USER_CAP, new_user_signups_cap: 1) }
@@ -826,16 +819,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       it { is_expected.not_to allow_value(nil).for(:instance_level_ai_beta_features_enabled) }
     end
 
-    describe 'search settings', feature_category: :global_search do
-      it { expect(described_class).to validate_jsonb_schema(['application_setting_search']) }
-    end
-
-    describe 'zoekt settings', feature_category: :global_search do
-      it { expect(described_class).to validate_jsonb_schema(['application_setting_zoekt_settings']) }
-    end
-
     describe 'integrations settings', feature_category: :integrations do
-      it { expect(described_class).to validate_jsonb_schema(['application_setting_integrations']) }
       it { is_expected.to allow_values(%w[jira jenkins beyond_identity]).for(:allowed_integrations) }
       it { is_expected.not_to allow_values(['unknown_integration']).for(:allowed_integrations) }
 
