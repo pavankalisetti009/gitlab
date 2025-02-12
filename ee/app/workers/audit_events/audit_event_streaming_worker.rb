@@ -13,6 +13,7 @@ module AuditEvents
     loggable_arguments 0, 1
 
     def perform(audit_operation, audit_event_id, audit_event_json = nil)
+      return if ::Gitlab::SilentMode.enabled?
       raise ArgumentError, 'audit_event_id and audit_event_json cannot be passed together' if audit_event_id.present? && audit_event_json.present?
 
       audit_event = audit_event(audit_event_id, audit_event_json)

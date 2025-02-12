@@ -130,6 +130,21 @@ RSpec.describe AuditEvent, type: :model, feature_category: :audit_events do
           event.stream_to_external_destinations
         end
       end
+
+      context 'when silent mode is enabled' do
+        let_it_be(:event) { create(:user_audit_event) }
+
+        before do
+          stub_application_setting(silent_mode_enabled: true)
+        end
+
+        it 'does not enqueue worker' do
+          expect(AuditEvents::AuditEventStreamingWorker).not_to receive(:perform_async)
+          expect(Gitlab::HTTP).not_to receive(:post)
+
+          event.stream_to_external_destinations
+        end
+      end
     end
 
     context 'feature is unlicensed' do

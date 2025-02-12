@@ -218,6 +218,17 @@ RSpec.describe AuditEvents::AuditEventStreamingWorker, feature_category: :audit_
         end
       end
     end
+
+    context 'when silent mode is enabled' do
+      before do
+        stub_application_setting(silent_mode_enabled: true)
+      end
+
+      it 'returns nil without processing the audit event' do
+        expect(worker.perform('audit_operation', nil, audit_event.to_json)).to be_nil
+        expect(Gitlab::HTTP).not_to receive(:post)
+      end
+    end
   end
 
   shared_context 'http post error' do
