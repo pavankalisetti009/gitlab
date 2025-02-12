@@ -345,6 +345,28 @@ This is one small step towards moving away from CI/CD templates in preference of
 
 <div class="deprecation breaking-change" data-milestone="18.0">
 
+### API Discovery will use branch pipelines by default
+
+<div class="deprecation-notes">
+
+- Announced in GitLab <span class="milestone">17.9</span>
+- Removal in GitLab <span class="milestone">18.0</span> ([breaking change](https://docs.gitlab.com/ee/update/terminology.html#breaking-change))
+- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/gitlab/-/issues/515487).
+
+</div>
+
+In GitLab 18.0, we'll update the default behavior of the CI/CD template for API Discovery (`API-Discovery.gitlab-ci.yml`).
+
+Before GitLab 18.0, this template configures jobs to run in [merge request (MR) pipelines](https://docs.gitlab.com/ee/ci/pipelines/merge_request_pipelines.html) by default when an MR is open.
+Starting in GitLab 18.0, we'll align this template's behavior with the behavior of the [Stable template editions](https://docs.gitlab.com/ee/user/application_security/detect/roll_out_security_scanning.html#template-editions) for other AST scanners:
+
+- By default, the template will run scan jobs in branch pipelines.
+- You'll be able to set the CI/CD variable `AST_ENABLE_MR_PIPELINES: true` to use MR pipelines instead when an MR is open. The implementation of this new variable is tracked in [issue 410880](https://gitlab.com/gitlab-org/gitlab/-/issues/410880).
+
+</div>
+
+<div class="deprecation breaking-change" data-milestone="18.0">
+
 ### Amazon S3 Signature Version 2
 
 <div class="deprecation-notes">

@@ -68,7 +68,7 @@ RSpec.describe 'getting squash options for a branch rule', feature_category: :so
             "squashOption" => {
               "option" => "Allow",
               "helpText" =>
-              "Squashing is always performed. Checkbox is visible and selected, and users cannot change it."
+              "Checkbox is visible and unselected by default."
             }
           }),
           a_hash_including({
@@ -95,18 +95,14 @@ RSpec.describe 'getting squash options for a branch rule', feature_category: :so
             "squashOption" =>
              { "option" => "Allow",
                "helpText" =>
-               "Squashing is always performed. Checkbox is visible and selected, and users cannot change it." }),
+               "Checkbox is visible and unselected by default." }),
           a_hash_including(
             "name" => protected_branch.name,
             "squashOption" =>
               { "option" => "Allow",
                 "helpText" =>
-                "Squashing is always performed. Checkbox is visible and selected, and users cannot change it." })
+                "Checkbox is visible and unselected by default." })
         )
-        attributes = branch_rules_data.dig(0, 'squashOption')
-        expect(attributes['option']).to eq('Allow')
-        expect(attributes['helpText']).to eq('Squashing is always performed. Checkbox is visible and ' \
-          'selected, and users cannot change it.')
       end
     end
 
