@@ -18,6 +18,11 @@ export const validateCodeownerFile = {
       __typename: 'RepositoryCodeownerError',
     },
     {
+      code: 'malformed_entry_owner',
+      lines: [9],
+      __typename: 'RepositoryCodeownerError',
+    },
+    {
       code: 'invalid_section_format',
       lines: [36],
       __typename: 'RepositoryCodeownerError',

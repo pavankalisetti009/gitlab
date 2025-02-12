@@ -115,7 +115,7 @@ describe('codeowners validation', () => {
     it('renders links to line with error', () => {
       const firstErrorLink = linksToErrors().at(0);
 
-      expect(linksToErrors()).toHaveLength(6);
+      expect(linksToErrors()).toHaveLength(7);
       expect(firstErrorLink.text()).toBe('Line 2');
       expect(firstErrorLink.attributes('href')).toBe('#L2');
     });
