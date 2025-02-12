@@ -7,7 +7,7 @@ RSpec.describe Gitlab::CodeOwners::File, feature_category: :source_code_manageme
 
   # 'project' is required for the #fake_blob helper
   #
-  let(:project) { build(:project) }
+  let_it_be_with_reload(:project) { create(:project, :in_group) }
   let(:blob) { fake_blob(path: 'CODEOWNERS', data: file_content) }
 
   let(:file_content) do
@@ -556,14 +556,7 @@ RSpec.describe Gitlab::CodeOwners::File, feature_category: :source_code_manageme
   end
 
   describe '#valid?' do
-    context 'when codeowners file is correct' do
-      it 'does not detect errors' do
-        expect(file.valid?).to eq(true)
-        expect(file.errors).to be_empty
-      end
-    end
-
-    context 'when codeowners file has errors' do
+    context 'when codeowners file has syntax errors' do
       let(:file_content) do
         <<~CONTENT
         *.rb
@@ -594,6 +587,48 @@ RSpec.describe Gitlab::CodeOwners::File, feature_category: :source_code_manageme
             Gitlab::CodeOwners::Error.new(message: :invalid_entry_owner_format, line_number: 12, path: 'CODEOWNERS')
           ]
         )
+      end
+
+      it 'does not call UserPermissionCheck' do
+        expect(Gitlab::CodeOwners::UserPermissionCheck).not_to receive(:new)
+
+        file.valid?
+      end
+    end
+
+    context 'when the codeowners file does not have syntax errors' do
+      let(:file_content) do
+        <<~CONTENT
+          file1 @reference
+
+          README.md @other_reference
+
+        CONTENT
+      end
+
+      it 'calls UserPermissionCheck' do
+        expect(Gitlab::CodeOwners::UserPermissionCheck).to receive(:new).with(
+          project,
+          [
+            a_kind_of(Gitlab::CodeOwners::Entry),
+            a_kind_of(Gitlab::CodeOwners::Entry)
+          ],
+          limit: described_class::MAX_REFERENCES
+        ).and_return(instance_double(Gitlab::CodeOwners::UserPermissionCheck, errors: []))
+
+        file.valid?
+      end
+
+      context 'when the validate_codeowner_users feature flag is not enabled' do
+        before do
+          stub_feature_flags(validate_codeowner_users: false)
+        end
+
+        it 'does not call UserPermissionCheck' do
+          expect(Gitlab::CodeOwners::UserPermissionCheck).not_to receive(:new)
+
+          file.valid?
+        end
       end
     end
   end

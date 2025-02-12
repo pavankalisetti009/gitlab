@@ -5,20 +5,18 @@ module Gitlab
     class Entry
       include ::Gitlab::Utils::StrongMemoize
 
-      Data = Struct.new(:pattern, :owner_line, :section, :optional, :approvals_required, :exclusion)
+      Data = Struct.new(:pattern, :owner_line, :section, :optional, :approvals_required, :exclusion, :line_number)
 
       attr_reader :data
       protected :data
 
-      delegate :pattern, :hash, :owner_line, :section, :approvals_required, :exclusion, to: :data
+      delegate :pattern, :hash, :owner_line, :section, :approvals_required, :exclusion, :line_number, to: :data
 
-      # rubocop:disable Metrics/ParameterLists -- TODO: Reduce number of parameters in this method
       def initialize(
-        pattern, owner_line, section = Section::DEFAULT, optional = false, approvals_required = 0,
-        exclusion = false)
-        @data = Data.new(pattern, owner_line, section, optional, approvals_required, exclusion)
+        pattern, owner_line, section: Section::DEFAULT, optional: false, approvals_required: 0,
+        line_number: nil, exclusion: false)
+        @data = Data.new(pattern, owner_line, section, optional, approvals_required, exclusion, line_number)
       end
-      # rubocop:enable Metrics/ParameterLists
 
       def all_users(project)
         strong_memoize(:all_users) do

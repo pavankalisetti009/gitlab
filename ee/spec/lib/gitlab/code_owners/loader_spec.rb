@@ -39,7 +39,11 @@ RSpec.describe Gitlab::CodeOwners::Loader, feature_category: :source_code_manage
   end
 
   describe '#entries' do
-    let(:expected_entry) { Gitlab::CodeOwners::Entry.new('docs/CODEOWNERS', '@owner-1 owner2@gitlab.org @owner-3 @documentation-owner') }
+    let(:expected_entry) { Gitlab::CodeOwners::Entry.new('docs/CODEOWNERS', '@owner-1 owner2@gitlab.org @owner-3 @documentation-owner', line_number: 2) }
+    let(:spec_entry) do
+      Gitlab::CodeOwners::Entry.new('spec/*', '@test-owner @test-group @test-group/nested-group', line_number: 3)
+    end
+
     let(:first_entry) { loader.entries.first }
 
     it 'returns entries for the matched line' do
@@ -71,9 +75,7 @@ RSpec.describe Gitlab::CodeOwners::Loader, feature_category: :source_code_manage
       let(:paths) { ['docs/CODEOWNERS', 'spec/loader_spec.rb', 'spec/entry_spec.rb'] }
 
       it 'loads 2 entries' do
-        other_entry = Gitlab::CodeOwners::Entry.new('spec/*', '@test-owner @test-group @test-group/nested-group')
-
-        expect(loader.entries).to contain_exactly(expected_entry, other_entry)
+        expect(loader.entries).to contain_exactly(expected_entry, spec_entry)
       end
 
       it 'performs 10 queries for users and groups' do
@@ -100,7 +102,6 @@ RSpec.describe Gitlab::CodeOwners::Loader, feature_category: :source_code_manage
 
     context 'group as a code owner' do
       let(:paths) { ['spec/loader_spec.rb'] }
-      let(:expected_entry) { Gitlab::CodeOwners::Entry.new('spec/*', '@test-owner @test-group @test-group/nested-group') }
 
       it 'loads group members as code owners' do
         test_group = create(:group, path: 'test-group')
@@ -111,7 +112,7 @@ RSpec.describe Gitlab::CodeOwners::Loader, feature_category: :source_code_manage
         test_group.add_developer(group_user)
         test_group.add_developer(test_owner)
 
-        expect(loader.entries).to contain_exactly(expected_entry)
+        expect(loader.entries).to contain_exactly(spec_entry)
         expect(loader.members).to contain_exactly(group_user, test_owner)
 
         entry = loader.entries.first
@@ -121,7 +122,7 @@ RSpec.describe Gitlab::CodeOwners::Loader, feature_category: :source_code_manage
 
     context 'role as a code owner' do
       let(:paths) { ['app/accounts_helper.rb'] }
-      let(:expected_entry) { Gitlab::CodeOwners::Entry.new('app/*', '@@developer') }
+      let(:expected_entry) { Gitlab::CodeOwners::Entry.new('app/*', '@@developer', line_number: 4) }
 
       it 'loads users with developer role as code owners' do
         expect(loader.entries).to contain_exactly(expected_entry)
@@ -135,12 +136,12 @@ RSpec.describe Gitlab::CodeOwners::Loader, feature_category: :source_code_manage
 
       context 'for multiple paths' do
         let(:paths) { ['app/accounts_helper.rb', 'spec/entry_spec.rb', 'config/boot.rb'] }
+        let(:other_entry_2) do
+          Gitlab::CodeOwners::Entry.new('config/*', '@@maintainers', line_number: 5)
+        end
 
         it 'loads 3 entries' do
-          other_entry_1 = Gitlab::CodeOwners::Entry.new('spec/*', '@test-owner @test-group @test-group/nested-group')
-          other_entry_2 = Gitlab::CodeOwners::Entry.new('config/*', '@@maintainers')
-
-          expect(loader.entries).to contain_exactly(expected_entry, other_entry_1, other_entry_2)
+          expect(loader.entries).to contain_exactly(expected_entry, spec_entry, other_entry_2)
         end
       end
     end
@@ -293,10 +294,24 @@ RSpec.describe Gitlab::CodeOwners::Loader, feature_category: :source_code_manage
     subject { loader.track_file_validation }
 
     context 'when file has no linting error' do
-      it 'sends no snowplow event' do
+      context 'when the validate_codeowner_users flag is not enabled' do
+        before do
+          stub_feature_flags(validate_codeowner_users: false)
+        end
+
+        it 'sends no snowplow event' do
+          subject
+
+          expect_no_snowplow_event(category: described_class.name)
+        end
+      end
+
+      it 'sends errors for invalid user references' do
         subject
 
-        expect_no_snowplow_event(category: described_class.name)
+        expect_snowplow_event(category: described_class.name, action: 'file_validation', label: 'owner_without_permission', project: project, extra: { file_path: "CODEOWNERS", line_number: 2 })
+        expect_snowplow_event(category: described_class.name, action: 'file_validation', label: 'owner_without_permission', project: project, extra: { file_path: "CODEOWNERS", line_number: 3 })
+        expect_snowplow_event(category: described_class.name, action: 'file_validation', label: 'owner_without_permission', project: project, extra: { file_path: "CODEOWNERS", line_number: 3 })
       end
     end
 

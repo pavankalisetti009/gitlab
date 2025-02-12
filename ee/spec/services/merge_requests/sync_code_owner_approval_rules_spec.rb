@@ -28,7 +28,8 @@ RSpec.describe MergeRequests::SyncCodeOwnerApprovalRules, feature_category: :cod
 
   def build_entry(pattern, users, groups, roles, section = Gitlab::CodeOwners::Section::DEFAULT, approvals_required = 0)
     text = "#{(users + groups).map(&:to_reference).join(' ')} #{roles}"
-    entry = Gitlab::CodeOwners::Entry.new(pattern, text, section, false, approvals_required)
+    entry = Gitlab::CodeOwners::Entry.new(pattern, text, section: section, optional: false,
+      approvals_required: approvals_required)
 
     entry.add_matching_users_from(users)
     entry.add_matching_groups_from(groups)

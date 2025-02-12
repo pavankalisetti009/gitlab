@@ -9,6 +9,10 @@ module Gitlab
       # `FNM_PATHNAME` makes sure ** matches path separators
       FNMATCH_FLAGS = (::File::FNM_DOTMATCH | ::File::FNM_PATHNAME).freeze
 
+      # Maxmimum number of references to validate
+      # This maximum is currently not based on any benchmark
+      MAX_REFERENCES = 200
+
       def initialize(blob)
         @blob = blob
         @errors = []
@@ -61,7 +65,7 @@ module Gitlab
         matches = []
 
         parsed_data.each do |_, section_entries|
-          if Feature.enabled?(:codeowners_file_exclusions, @blob.repository.project)
+          if Feature.enabled?(:codeowners_file_exclusions, project)
             matching_patterns = section_entries.keys.reverse.select { |pattern| path_matches?(pattern, path) }
             matching_entries = matching_patterns.map { |pattern| section_entries[pattern] }
 
@@ -82,11 +86,29 @@ module Gitlab
 
       def valid?
         parsed_data
+        validate_users
 
         errors.none?
       end
 
       private
+
+      def project
+        @blob&.repository&.project
+      end
+
+      def validate_users
+        # Avoids querying the database for users if there are still syntax errors
+        return if errors.present?
+
+        return unless project && Feature.enabled?(:validate_codeowner_users, project)
+
+        entries = parsed_data.values.flat_map(&:values)
+        validation_errors = UserPermissionCheck.new(project, entries, limit: MAX_REFERENCES).errors
+        validation_errors.each do |e|
+          add_error(e[:error], e[:line_number])
+        end
+      end
 
       def data
         return "" if @blob.nil? || @blob.binary?
@@ -130,7 +152,7 @@ module Gitlab
       def parse_entry(line, parsed, section, line_number)
         pattern, _separator, entry_owners = line.partition(/(?<!\\)\s+/)
 
-        if Feature.enabled?(:codeowners_file_exclusions, @blob.repository.project)
+        if Feature.enabled?(:codeowners_file_exclusions, project)
           is_exclusion = pattern.start_with?('!')
           pattern = pattern[1..] if is_exclusion
         end
@@ -145,17 +167,15 @@ module Gitlab
 
         add_error(Error::MISSING_ENTRY_OWNER, line_number) if owners.blank?
 
-        entry_args = [
+        parsed[section.name][normalized_pattern] = Entry.new(
           pattern,
           owners,
-          section.name,
-          section.optional,
-          section.approvals
-        ]
-
-        entry_args << is_exclusion if Feature.enabled?(:codeowners_file_exclusions, @blob.repository.project)
-
-        parsed[section.name][normalized_pattern] = Entry.new(*entry_args)
+          section: section.name,
+          optional: section.optional,
+          approvals_required: section.approvals,
+          exclusion: Feature.enabled?(:codeowners_file_exclusions, project) && is_exclusion,
+          line_number: line_number
+        )
       end
 
       def skip?(line)

@@ -203,12 +203,19 @@ RSpec.describe 'Validate code owner file', feature_category: :source_code_manage
 
   context 'when code owners file is correct' do
     let_it_be(:ref) { 'good-branch' }
+    let_it_be(:documentation_owner) { create(:user, developer_of: project) }
+    let_it_be(:nested_group) { create(:group, :nested) }
+    let_it_be(:test_owner) { create(:user, developer_of: project) }
+    let_it_be(:owner) { create(:user, developer_of: project) }
+    let_it_be(:owner2) { create(:user, developer_of: project) }
 
+    let!(:project_group_link) { create(:project_group_link, project: project, group: nested_group.parent) }
+    let!(:project_group_link2) { create(:project_group_link, project: project, group: nested_group) }
     let_it_be(:code_owners_content) do
       <<~CODEOWNERS
-      docs/* @documentation-owner
-      docs/CODEOWNERS @owner-1 owner2@gitlab.org @owner-3 @documentation-owner
-      spec/* @test-owner @test-group @test-group/nested-group
+      docs/* @#{documentation_owner.username}
+      docs/CODEOWNERS @#{owner.username} owner2@gitlab.org @#{owner2.username} @#{documentation_owner.username}
+      spec/* @#{test_owner.username} @#{nested_group.parent.full_path} @#{nested_group.full_path}
       CODEOWNERS
     end
 

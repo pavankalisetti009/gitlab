@@ -260,7 +260,7 @@ RSpec.describe ApprovalMergeRequestRule, factory_default: :keep, feature_categor
         end
 
         context "when the existing rule matches name but not section" do
-          let(:entry) { Gitlab::CodeOwners::Entry.new("*.rb", "@user", "example_section") }
+          let(:entry) { Gitlab::CodeOwners::Entry.new("*.rb", "@user", section: "example_section") }
 
           it "creates a new rule" do
             expect(rule).not_to eq(existing_code_owner_rule)
@@ -273,14 +273,14 @@ RSpec.describe ApprovalMergeRequestRule, factory_default: :keep, feature_categor
           create(:code_owner_rule, name: '*.rb', merge_request: merge_request, approvals_required: 2)
         end
 
-        let(:entry) { Gitlab::CodeOwners::Entry.new("*.rb", "@user", "codeowners", false, 2) }
+        let(:entry) { Gitlab::CodeOwners::Entry.new("*.rb", "@user", section: "codeowners", optional: false, approvals_required: 2) }
 
         it 'finds the existing rule' do
           expect(rule).to eq(existing_code_owner_rule)
         end
 
         context "when the existing rule matches name but not section" do
-          let(:entry) { Gitlab::CodeOwners::Entry.new("*.rb", "@user", "example_section", false, 2) }
+          let(:entry) { Gitlab::CodeOwners::Entry.new("*.rb", "@user", section: "example_section", optional: false, approvals_required: 2) }
 
           it "creates a new rule" do
             expect(rule).not_to eq(existing_code_owner_rule)
@@ -313,7 +313,7 @@ RSpec.describe ApprovalMergeRequestRule, factory_default: :keep, feature_categor
     end
 
     context "when section is present" do
-      let(:entry) { Gitlab::CodeOwners::Entry.new("*.js", "@user", "Test Section") }
+      let(:entry) { Gitlab::CodeOwners::Entry.new("*.js", "@user", section: "Test Section") }
 
       it "creates a new rule and saves section when present" do
         expect(subject.section).to eq(entry.section)
