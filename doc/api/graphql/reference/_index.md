@@ -63,7 +63,7 @@ DETAILS:
 **Introduced** in GitLab 16.3.
 **Status**: Experiment.
 
-Returns [`LabelConnection`](#labelconnection).
+Returns [`AbuseReportLabelConnection`](#abusereportlabelconnection).
 
 This field returns a [connection](#connections). It accepts the
 four standard [pagination arguments](#pagination-arguments):
@@ -12301,6 +12301,30 @@ The edge type for [`AbuseReportDiscussion`](#abusereportdiscussion).
 | <a id="abusereportdiscussionedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
 | <a id="abusereportdiscussionedgenode"></a>`node` | [`AbuseReportDiscussion`](#abusereportdiscussion) | The item at the end of the edge. |
 
+#### `AbuseReportLabelConnection`
+
+The connection type for [`AbuseReportLabel`](#abusereportlabel).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="abusereportlabelconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
+| <a id="abusereportlabelconnectionedges"></a>`edges` | [`[AbuseReportLabelEdge]`](#abusereportlabeledge) | A list of edges. |
+| <a id="abusereportlabelconnectionnodes"></a>`nodes` | [`[AbuseReportLabel]`](#abusereportlabel) | A list of nodes. |
+| <a id="abusereportlabelconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `AbuseReportLabelEdge`
+
+The edge type for [`AbuseReportLabel`](#abusereportlabel).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="abusereportlabeledgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="abusereportlabeledgenode"></a>`node` | [`AbuseReportLabel`](#abusereportlabel) | The item at the end of the edge. |
+
 #### `AbuseReportNoteConnection`
 
 The connection type for [`AbuseReportNote`](#abusereportnote).
@@ -18969,7 +18993,7 @@ An abuse report.
 | ---- | ---- | ----------- |
 | <a id="abusereportdiscussions"></a>`discussions` | [`AbuseReportDiscussionConnection!`](#abusereportdiscussionconnection) | All discussions on the noteable. (see [Connections](#connections)) |
 | <a id="abusereportid"></a>`id` | [`AbuseReportID!`](#abusereportid) | Global ID of the abuse report. |
-| <a id="abusereportlabels"></a>`labels` | [`LabelConnection`](#labelconnection) | Labels of the abuse report. (see [Connections](#connections)) |
+| <a id="abusereportlabels"></a>`labels` | [`AbuseReportLabelConnection`](#abusereportlabelconnection) | Labels of the abuse report. (see [Connections](#connections)) |
 | <a id="abusereportnotes"></a>`notes` | [`AbuseReportNoteConnection!`](#abusereportnoteconnection) | All notes on the noteable. (see [Connections](#connections)) |
 
 ### `AbuseReportDiscussion`
@@ -18998,7 +19022,7 @@ An abuse report.
 | <a id="abusereportlabelcreatedat"></a>`createdAt` | [`Time!`](#time) | When the label was created. |
 | <a id="abusereportlabeldescription"></a>`description` | [`String`](#string) | Description of the label (Markdown rendered as HTML for caching). |
 | <a id="abusereportlabeldescriptionhtml"></a>`descriptionHtml` | [`String`](#string) | GitLab Flavored Markdown rendering of `description`. |
-| <a id="abusereportlabelid"></a>`id` | [`ID!`](#id) | Label ID. |
+| <a id="abusereportlabelid"></a>`id` | [`AntiAbuseReportsLabelID!`](#antiabusereportslabelid) | Global ID of the abuse report label. |
 | <a id="abusereportlabeltextcolor"></a>`textColor` | [`String!`](#string) | Text color of the label. |
 | <a id="abusereportlabeltitle"></a>`title` | [`String!`](#string) | Content of the label. |
 | <a id="abusereportlabelupdatedat"></a>`updatedAt` | [`Time!`](#time) | When the label was last updated. |
@@ -28555,7 +28579,7 @@ Label to apply to associated Kubernetes objects of a workspace.
 | <a id="labelcreatedat"></a>`createdAt` | [`Time!`](#time) | When the label was created. |
 | <a id="labeldescription"></a>`description` | [`String`](#string) | Description of the label (Markdown rendered as HTML for caching). |
 | <a id="labeldescriptionhtml"></a>`descriptionHtml` | [`String`](#string) | GitLab Flavored Markdown rendering of `description`. |
-| <a id="labelid"></a>`id` | [`ID!`](#id) | Label ID. |
+| <a id="labelid"></a>`id` | [`LabelID!`](#labelid) | Global ID of the label. |
 | <a id="labellockonmerge"></a>`lockOnMerge` | [`Boolean!`](#boolean) | Indicates this label is locked for merge requests that have been merged. |
 | <a id="labeltextcolor"></a>`textColor` | [`String!`](#string) | Text color of the label. |
 | <a id="labeltitle"></a>`title` | [`String!`](#string) | Content of the label. |
@@ -43373,6 +43397,12 @@ A `AnalyticsDevopsAdoptionEnabledNamespaceID` is a global ID. It is encoded as a
 
 An example `AnalyticsDevopsAdoptionEnabledNamespaceID` is: `"gid://gitlab/Analytics::DevopsAdoption::EnabledNamespace/1"`.
 
+### `AntiAbuseReportsLabelID`
+
+A `AntiAbuseReportsLabelID` is a global ID. It is encoded as a string.
+
+An example `AntiAbuseReportsLabelID` is: `"gid://gitlab/AntiAbuse::Reports::Label/1"`.
+
 ### `AntiAbuseReportsNoteID`
 
 A `AntiAbuseReportsNoteID` is a global ID. It is encoded as a string.
@@ -44922,7 +44952,6 @@ Implementations:
 | <a id="labelinterfacecolor"></a>`color` | [`String!`](#string) | Background color of the label. |
 | <a id="labelinterfacecreatedat"></a>`createdAt` | [`Time!`](#time) | When the label was created. |
 | <a id="labelinterfacedescription"></a>`description` | [`String`](#string) | Description of the label (Markdown rendered as HTML for caching). |
-| <a id="labelinterfaceid"></a>`id` | [`ID!`](#id) | Label ID. |
 | <a id="labelinterfacetextcolor"></a>`textColor` | [`String!`](#string) | Text color of the label. |
 | <a id="labelinterfacetitle"></a>`title` | [`String!`](#string) | Content of the label. |
 | <a id="labelinterfaceupdatedat"></a>`updatedAt` | [`Time!`](#time) | When the label was last updated. |
