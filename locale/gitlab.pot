@@ -38121,6 +38121,9 @@ msgstr ""
 msgid "No phone number data for matching"
 msgstr ""
 
+msgid "No placeholder users are awaiting reassignment."
+msgstr ""
+
 msgid "No plan"
 msgstr ""
 
