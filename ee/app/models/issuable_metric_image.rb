@@ -10,7 +10,7 @@ class IssuableMetricImage < ApplicationRecord
   end
 
   def uploads_sharding_key
-    { namespace_id: issue&.namespace_id }
+    { namespace_id: namespace_id }
   end
 
   private
