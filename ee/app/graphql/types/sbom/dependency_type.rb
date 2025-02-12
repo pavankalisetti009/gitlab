@@ -28,6 +28,9 @@ module Types
 
       field :reachability, ReachabilityEnum,
         null: true, description: 'Information about reachability of a dependency.'
+
+      field :vulnerability_count, GraphQL::Types::Int,
+        null: false, description: 'Number of vulnerabilities within the dependency.'
     end
   end
 end

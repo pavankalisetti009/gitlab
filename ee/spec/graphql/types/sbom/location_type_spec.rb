@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Types::Sbom::LocationType, feature_category: :dependency_management do
-  let(:fields) { %i[blob_path path] }
+  let(:fields) { %i[blob_path path topLevel] }
 
   it { expect(described_class).to have_graphql_fields(fields) }
 end

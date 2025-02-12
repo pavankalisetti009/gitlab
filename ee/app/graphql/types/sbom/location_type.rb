@@ -11,6 +11,9 @@ module Types
       field :path, GraphQL::Types::String,
         null: true, description: 'Path, relative to the root of the repository, of the file' \
                                  'which was analyzed to detect the dependency.'
+
+      field :top_level, GraphQL::Types::Boolean,
+        null: true, description: 'Is top level dependency.'
     end
   end
 end

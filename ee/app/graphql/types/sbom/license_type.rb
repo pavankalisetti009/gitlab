@@ -8,7 +8,10 @@ module Types
         null: false, description: 'Name of the license.'
 
       field :url, GraphQL::Types::String,
-        null: false, description: 'License URL in relation to SPDX.'
+        null: true, description: 'License URL in relation to SPDX.'
+
+      field :spdx_identifier, GraphQL::Types::String,
+        null: true, description: 'Name of the SPDX identifier.'
     end
   end
 end
