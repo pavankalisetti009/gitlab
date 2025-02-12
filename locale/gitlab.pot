@@ -13954,6 +13954,9 @@ msgstr ""
 msgid "CodeownersValidation|Line"
 msgstr ""
 
+msgid "CodeownersValidation|Malformed owners"
+msgstr ""
+
 msgid "CodeownersValidation|Missing section name"
 msgstr ""
 
