@@ -31,7 +31,7 @@ module EE
           context_hash[:namespace_path] ||= build_traversal_path(context_hash)
 
           basic_attributes = context_hash.slice(*matched_model::PERMITTED_ATTRIBUTES)
-          payload_attributes = context_hash.slice(*matched_model::PAYLOAD_ATTRIBUTES)
+          payload_attributes = context_hash.slice(*matched_model.payload_attributes)
 
           matched_model.new(basic_attributes.merge(payload: payload_attributes))
         end
