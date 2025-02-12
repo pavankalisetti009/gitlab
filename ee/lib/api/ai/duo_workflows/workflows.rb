@@ -100,6 +100,7 @@ module API
                   },
                   duo_workflow_executor: {
                     executor_binary_url: Gitlab::DuoWorkflow::Executor.executor_binary_url,
+                    executor_binary_urls: Gitlab::DuoWorkflow::Executor.executor_binary_urls,
                     version: Gitlab::DuoWorkflow::Executor.version
                   },
                   workflow_metadata: {
