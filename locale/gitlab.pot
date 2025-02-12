@@ -22805,6 +22805,9 @@ msgstr ""
 msgid "Environments|Stop unused environments"
 msgstr ""
 
+msgid "Environments|Stopping environment"
+msgstr ""
+
 msgid "Environments|Synced"
 msgstr ""
 
