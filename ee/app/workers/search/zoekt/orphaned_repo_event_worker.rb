@@ -27,7 +27,6 @@ module Search
 
       def reemit_event(updated_rows:)
         return if updated_rows < BATCH_SIZE
-        return if Feature.disabled?(:zoekt_reemit_events, Feature.current_request)
 
         Gitlab::EventStore.publish(
           Search::Zoekt::OrphanedRepoEvent.new(data: {})

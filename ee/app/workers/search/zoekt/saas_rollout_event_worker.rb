@@ -61,8 +61,6 @@ module Search
       end
 
       def reemit_event
-        return if Feature.disabled?(:zoekt_reemit_events, Feature.current_request)
-
         Gitlab::EventStore.publish(Search::Zoekt::SaasRolloutEvent.new(data: {}))
       end
     end
