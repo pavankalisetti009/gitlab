@@ -16,6 +16,7 @@ const APPROVAL_STATUS_TO_ICON = {
 
 export default {
   name: 'WidgetLicenseCompliance',
+  path: 'license-compliance',
   i18n: {
     label: s__('ciReport|License Compliance'),
     loading: s__('ciReport|License Compliance test metrics results are being parsed'),
@@ -279,5 +280,7 @@ export default {
     :is-collapsible="shouldCollapse"
     :content="licenseComplianceData.expanded"
     :help-popover="$options.widgetHelpPopover"
+    :label="$options.i18n.label"
+    path="license-compliance"
   />
 </template>
