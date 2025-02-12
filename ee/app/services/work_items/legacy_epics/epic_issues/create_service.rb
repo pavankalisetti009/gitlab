@@ -13,23 +13,19 @@ module WorkItems
         end
 
         def execute
-          if ::Feature.enabled?(:epic_issues_through_work_item_service, legacy_epic.group)
-            @existing_epic_issue_ids = EpicIssue.in_epic(legacy_epic.id)
-              .for_issue(referenced_child_work_items.map(&:id)).pluck_primary_key
+          @existing_epic_issue_ids = EpicIssue.in_epic(legacy_epic.id)
+            .for_issue(referenced_child_work_items.map(&:id)).pluck_primary_key
 
-            parent_work_item = legacy_epic.work_item
-            ::WorkItems::UpdateService.new(
-              container: parent_work_item.resource_parent,
-              current_user: user,
-              params: {},
-              widget_params: { hierarchy_widget: { children: referenced_child_work_items } }
-            ).execute(parent_work_item).then do |result|
-              Gitlab::WorkItems::LegacyEpics::TransformServiceResponse.new(result:)
-                .transform(created_references_lambda: -> { created_references },
-                  error_message_lambda: -> { error_message_creator })
-            end
-          else
-            ::EpicIssues::CreateService.new(legacy_epic, user, params).execute
+          parent_work_item = legacy_epic.work_item
+          ::WorkItems::UpdateService.new(
+            container: parent_work_item.resource_parent,
+            current_user: user,
+            params: {},
+            widget_params: { hierarchy_widget: { children: referenced_child_work_items } }
+          ).execute(parent_work_item).then do |result|
+            Gitlab::WorkItems::LegacyEpics::TransformServiceResponse.new(result:)
+              .transform(created_references_lambda: -> { created_references },
+                error_message_lambda: -> { error_message_creator })
           end
         end
 
