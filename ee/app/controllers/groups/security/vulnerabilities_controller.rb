@@ -21,6 +21,7 @@ module Groups
         push_frontend_feature_flag(:vulnerability_filtering_by_identifier_group, @group, type: :beta)
         push_frontend_feature_flag(:enhanced_vulnerability_bulk_actions, @group, type: :wip)
         push_frontend_feature_flag(:vulnerability_severity_override, @group.root_ancestor, type: :wip)
+        push_frontend_feature_flag(:existing_jira_issue_attachment_from_vulnerability_bulk_action, @project, type: :wip)
         push_frontend_ability(ability: :resolve_vulnerability_with_ai, resource: @group, user: current_user)
       end
 
