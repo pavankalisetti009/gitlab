@@ -85,6 +85,7 @@ module GitlabSubscriptions
       ai_chat
       adjourned_deletion_for_projects_and_groups
       admin_audit_log
+      agent_managed_resources
       auditor_user
       blocking_merge_requests
       board_assignee_lists

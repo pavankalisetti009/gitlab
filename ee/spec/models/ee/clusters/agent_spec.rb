@@ -61,5 +61,47 @@ RSpec.describe Clusters::Agent, feature_category: :deployment_management do
           agent_1, agent_2, agent_3, agent_with_remote_development_config_disabled)
       end
     end
+
+    describe '#resource_management_enabled?' do
+      subject { agent_1.resource_management_enabled? }
+
+      context 'when feature flag is disabled' do
+        before do
+          stub_feature_flags(gitlab_managed_cluster_resources: false)
+        end
+
+        context 'when licensed feature is not available' do
+          before do
+            stub_licensed_features(agent_managed_resources: false)
+          end
+
+          it { is_expected.to be_falsey }
+        end
+
+        context 'when licensed feature is available' do
+          before do
+            stub_licensed_features(agent_managed_resources: true)
+          end
+
+          it { is_expected.to be_falsey }
+        end
+      end
+
+      context 'when licensed feature is not available' do
+        before do
+          stub_licensed_features(agent_managed_resources: false)
+        end
+
+        it { is_expected.to be_falsey }
+      end
+
+      context 'when licensed feature is available' do
+        before do
+          stub_licensed_features(agent_managed_resources: true)
+        end
+
+        it { is_expected.to be_truthy }
+      end
+    end
   end
 end
