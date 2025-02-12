@@ -53,7 +53,7 @@ RSpec.describe WebIde::Config::Entry::Global, feature_category: :web_ide do
       context 'when not composed' do
         describe '#schemas_value' do
           it 'returns nil' do
-            expect(global.schemas_value).to be nil
+            expect(global.schemas_value).to be_nil
           end
         end
       end

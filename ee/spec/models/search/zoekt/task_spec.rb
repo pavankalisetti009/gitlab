@@ -75,9 +75,9 @@ RSpec.describe ::Search::Zoekt::Task, feature_category: :global_search do
       end
 
       it 'sets project_identifier' do
-        expect(task.project_identifier).to be nil
+        expect(task.project_identifier).to be_nil
         task.validate!
-        expect(task.project_identifier).not_to be nil
+        expect(task.project_identifier).not_to be_nil
         expect(task.project_identifier).to eq(task.zoekt_repository.project_identifier)
       end
     end

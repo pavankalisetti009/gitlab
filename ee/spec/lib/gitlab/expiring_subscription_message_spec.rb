@@ -66,7 +66,7 @@ RSpec.describe Gitlab::ExpiringSubscriptionMessage, :saas do
             allow(subscribable).to receive(:notify_admins?).and_return(false)
             allow(subscribable).to receive(:notify_users?).and_return(false)
 
-            expect(message).to be nil
+            expect(message).to be_nil
           end
         end
 
@@ -210,7 +210,7 @@ RSpec.describe Gitlab::ExpiringSubscriptionMessage, :saas do
                 end
 
                 it 'returns nil' do
-                  expect(message).to be nil
+                  expect(message).to be_nil
                 end
               end
 
@@ -275,7 +275,7 @@ RSpec.describe Gitlab::ExpiringSubscriptionMessage, :saas do
                   let(:auto_renew) { nil }
 
                   it 'returns nil' do
-                    expect(message).to be nil
+                    expect(message).to be_nil
                   end
                 end
 
@@ -283,7 +283,7 @@ RSpec.describe Gitlab::ExpiringSubscriptionMessage, :saas do
                   let(:auto_renew) { true }
 
                   it 'returns nil' do
-                    expect(message).to be nil
+                    expect(message).to be_nil
                   end
                 end
 

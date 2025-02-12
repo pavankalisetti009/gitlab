@@ -323,7 +323,7 @@ RSpec.describe Gitlab::Audit::Auditor, feature_category: :audit_events do
               it 'does not log audit event to database' do
                 audit!
 
-                expect(AuditEvent.last.ip_address).to be(nil)
+                expect(AuditEvent.last.ip_address).to be_nil
               end
 
               it 'does not log audit events to file' do

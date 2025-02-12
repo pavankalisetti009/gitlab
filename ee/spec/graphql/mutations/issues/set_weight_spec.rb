@@ -31,7 +31,7 @@ RSpec.describe Mutations::Issues::SetWeight do
         let(:weight) { nil }
 
         it 'updates weight to be nil' do
-          expect(mutated_issue.weight).to be nil
+          expect(mutated_issue.weight).to be_nil
         end
       end
     end
