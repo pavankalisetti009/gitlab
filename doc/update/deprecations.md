@@ -1622,7 +1622,7 @@ SLES 15 SP6 for continued support.
 
 </div>
 
-The SpotBugs [SAST analyzer](https://docs.gitlab.com/ee/user/application_security/sast/index.html#supported-languages-and-frameworks)
+The SpotBugs [SAST analyzer](https://docs.gitlab.com/ee/user/application_security/sast/#supported-languages-and-frameworks)
 can perform a build when the artifacts to be scanned aren't present. While this usually works well for simple projects, it can fail on more complex builds.
 
 From GitLab 18.0, to resolve SpotBugs analyzer build failures, you should:
