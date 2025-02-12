@@ -160,6 +160,32 @@ RSpec.describe Ci::PipelineProcessing::AtomicProcessingService, feature_category
           expect(regular_job.reload.status).to eq('pending')
         end
 
+        context 'when .pipeline-policy-pre stage contains jobs with empty needs' do
+          let(:policy_ci_yaml) do
+            <<~YAML
+            policy_job:
+              stage: .pipeline-policy-pre
+              script:
+                -echo 'test'
+            policy_job_with_needs:
+              stage: .pipeline-policy-pre
+              needs: []
+              script:
+                -echo 'test'
+            YAML
+          end
+
+          it 'starts both jobs in .pipeline-policy-pre stage and blocks jobs in other stages' do
+            process_pipeline
+
+            expect(pipeline).to be_persisted
+            expect(find_job('policy_job').status).to eq('pending')
+            expect(find_job('policy_job_with_needs').status).to eq('pending')
+            expect(find_job('regular_job').status).to eq('created')
+            expect(find_job('bridge_dag_job').status).to eq('created')
+          end
+        end
+
         context 'when .pipeline-policy-pre stage contains skipped jobs' do
           let(:policy_ci_yaml) do
             <<~YAML
