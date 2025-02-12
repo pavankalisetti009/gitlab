@@ -69,6 +69,9 @@ module ComplianceManagement
           if response.success?
             audit_success(response.code)
 
+            ComplianceManagement::TimeoutPendingExternalControlsWorker.perform_in(31.minutes,
+              { 'control_id' => control.id, 'project_id' => project.id })
+
             ServiceResponse.success(payload: { control: control })
           else
             audit_error(Rack::Utils::HTTP_STATUS_CODES[response.code], response.code)
