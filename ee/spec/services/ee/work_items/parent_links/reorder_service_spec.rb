@@ -318,9 +318,10 @@ RSpec.describe WorkItems::ParentLinks::ReorderService, feature_category: :portfo
         include_context 'with new parent that has children'
 
         it 'updates work item parent and epic_issue epic' do
-          expect { move_child }.to change { work_item.reload.work_item_parent }.from(parent).to(new_parent)
-                               .and change { work_item.epic_issue.reload.epic }.from(parent.synced_epic)
-                                                                               .to(new_parent.synced_epic)
+          expect { move_child }
+            .to change { work_item.reload.work_item_parent }.from(parent).to(new_parent)
+            .and change { work_item.epic_issue.reload.epic }.from(parent.synced_epic).to(new_parent.synced_epic)
+            .and change { work_item.epic_issue.work_item_parent_link }.from(nil).to(work_item.parent_link)
 
           expect(new_parent.work_item_children_by_relative_position).to eq([new_sibling1, work_item, new_sibling2])
         end
