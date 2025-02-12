@@ -9,6 +9,7 @@ import ApprovalRulesApp from 'ee/approvals/components/approval_rules_app.vue';
 import ProjectRules from 'ee/approvals/project_settings/project_rules.vue';
 import StatusChecks from 'ee/projects/settings/branch_rules/components/view/status_checks/status_checks.vue';
 import branchRulesQuery from 'ee/projects/settings/branch_rules/queries/branch_rules_details.query.graphql';
+import squashOptionQuery from '~/projects/settings/branch_rules/queries/squash_option.query.graphql';
 import * as urlUtility from '~/lib/utils/url_utility';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import { createStoreOptions } from 'ee/approvals/stores';
@@ -24,6 +25,7 @@ import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_
 import {
   deleteBranchRuleMockResponse,
   branchProtectionsMockResponse,
+  squashOptionMockResponse,
   statusChecksRulesMock,
   protectionPropsMock,
   editBranchRuleMockResponse,
@@ -51,6 +53,8 @@ describe('View branch rules in enterprise edition', () => {
   const statusChecksPath = 'status/checks';
   const branchProtectionsMockRequestHandler = (response = branchProtectionsMockResponse) =>
     jest.fn().mockResolvedValue(response);
+  const squashOptionMockRequestHandler = (response = squashOptionMockResponse) =>
+    jest.fn().mockResolvedValue(response);
   const deleteBranchRuleMockRequestHandler = (response = deleteBranchRuleMockResponse) =>
     jest.fn().mockResolvedValue(response);
   const editBranchRuleSuccessHandler = (response = editBranchRuleMockResponse) =>
@@ -72,6 +76,7 @@ describe('View branch rules in enterprise edition', () => {
 
     fakeApollo = createMockApollo([
       [branchRulesQuery, branchProtectionsMockRequestHandler(mockResponse)],
+      [squashOptionQuery, squashOptionMockRequestHandler(mutationMockResponse)],
       [deleteBranchRuleMutation, deleteBranchRuleMockRequestHandler(mutationMockResponse)],
       [editBranchRuleMutation, editBranchRuleSuccessHandler(editMutationMockResponse)],
     ]);

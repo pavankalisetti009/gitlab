@@ -10,10 +10,6 @@ query getBranchRulesDetailsEE($projectPath: ID!, $buildMissing: Boolean = false)
       nodes {
         name
         id
-        squashOption {
-          option
-          helpText
-        }
         branchProtection {
           allowForcePush
           codeOwnerApprovalRequired
