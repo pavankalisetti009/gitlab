@@ -54,10 +54,24 @@ RSpec.describe GitlabSubscriptions::MemberManagement::BlockSeatOverages, feature
     end
 
     context 'when on GitLab.com', :saas do
-      it 'delegates to root namespace' do
-        expect(group).to receive(:seats_available_for?).with(invites.map(&:to_s), access_level, member_role_id)
+      let_it_be_with_refind(:group) { create(:group_with_plan, plan: :premium_plan) }
 
-        seats_available?
+      let(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
+      let(:total_license_seats) { 1 }
+
+      before do
+        allow(License).to receive(:current).and_return(license)
+        allow(license).to receive(:seats).and_return(total_license_seats)
+      end
+
+      before_all do
+        group.gitlab_subscription.update!(seats: 5)
+      end
+
+      it 'returns true if there are enough seats for the group, regardless of the license' do
+        invites = %w[guy1@example.com guy2@example.com]
+
+        expect(described_class.seats_available_for?(group, invites, ::Gitlab::Access::DEVELOPER, nil)).to be true
       end
     end
 
@@ -171,6 +185,148 @@ RSpec.describe GitlabSubscriptions::MemberManagement::BlockSeatOverages, feature
             end
           end
         end
+      end
+    end
+  end
+
+  describe '.seats_available_for_group?' do
+    context 'with a subscription', :saas do
+      let_it_be_with_refind(:group) { create(:group_with_plan, plan: :premium_plan) }
+      let_it_be(:user) { create(:user) }
+
+      before_all do
+        group.gitlab_subscription.update!(seats: 5)
+      end
+
+      it 'returns true if there are enough seats' do
+        user_ids = %w[1 2 3]
+
+        expect(described_class.seats_available_for_group?(group, user_ids, ::Gitlab::Access::DEVELOPER,
+          nil)).to be(true)
+      end
+
+      it 'returns false if there are not enough seats' do
+        user_ids = %w[1 2 3 4 5 6]
+
+        expect(described_class.seats_available_for_group?(group, user_ids, ::Gitlab::Access::DEVELOPER,
+          nil)).to be(false)
+      end
+
+      it 'returns true if there are exactly enough seats remaining' do
+        user_ids = %w[1 2 3 4 5]
+
+        expect(described_class.seats_available_for_group?(group, user_ids, ::Gitlab::Access::DEVELOPER,
+          nil)).to be(true)
+      end
+
+      it 'counts members in subgroups as consuming seats' do
+        subgroup = create(:group, parent: group)
+        subgroup.add_developer(user)
+        invites = %w[a@example.com b@example.com c@example.com d@example.com e@example.com]
+
+        expect(described_class.seats_available_for_group?(group, invites, ::Gitlab::Access::DEVELOPER,
+          nil)).to be(false)
+      end
+
+      it 'considers if users are already consuming a seat' do
+        group.gitlab_subscription.update!(seats: 1)
+        group.add_developer(user)
+
+        expect(described_class.seats_available_for_group?(group, [user.id.to_s], ::Gitlab::Access::DEVELOPER,
+          nil)).to be(true)
+      end
+
+      it 'considers if users are already consuming a seat when the seat count is exceeded' do
+        group.gitlab_subscription.update!(seats: 1)
+        group.add_developer(user)
+        group.add_developer(create(:user))
+
+        expect(described_class.seats_available_for_group?(group, [user.id.to_s], ::Gitlab::Access::MAINTAINER,
+          nil)).to be(true)
+      end
+
+      it 'returns true if passed an empty array' do
+        expect(described_class.seats_available_for_group?(group, [], ::Gitlab::Access::DEVELOPER, nil)).to be(true)
+      end
+
+      it 'returns true if there are no seats remaining and the passed array is empty' do
+        group.gitlab_subscription.update!(seats: 1)
+        group.add_maintainer(user)
+
+        expect(described_class.seats_available_for_group?(group, [], ::Gitlab::Access::DEVELOPER, nil)).to be(true)
+      end
+
+      it 'accepts an array of integers' do
+        user_ids = [1, 2, 3]
+
+        expect(described_class.seats_available_for_group?(group, user_ids, ::Gitlab::Access::DEVELOPER,
+          nil)).to be(true)
+      end
+
+      it 'returns true when the access level is minimal access even if there are not enough seats' do
+        user_ids = %w[1 2 3 4 5 6]
+
+        expect(described_class.seats_available_for_group?(group, user_ids, ::Gitlab::Access::MINIMAL_ACCESS,
+          nil)).to be(true)
+      end
+
+      it 'returns false when the access level is guest if there are not enough seats' do
+        user_ids = %w[1 2 3 4 5 6]
+
+        expect(described_class.seats_available_for_group?(group, user_ids, ::Gitlab::Access::GUEST, nil)).to be(false)
+      end
+    end
+
+    context 'with an ultimate subscription', :saas do
+      let_it_be_with_refind(:group) { create(:group_with_plan, plan: :ultimate_plan) }
+
+      before_all do
+        group.gitlab_subscription.update!(seats: 2)
+      end
+
+      it 'returns true when the access level is guest even if there are not enough seats' do
+        user_ids = %w[1 2 3]
+
+        expect(described_class.seats_available_for_group?(group, user_ids, ::Gitlab::Access::GUEST, nil)).to be(true)
+      end
+
+      it 'returns false when there are not enough seats if the custom role is billable' do
+        custom_role = create(:member_role, :guest, :remove_project)
+        user_ids = %w[1 2 3]
+
+        expect(described_class.seats_available_for_group?(group, user_ids, ::Gitlab::Access::GUEST,
+          custom_role.id)).to be(false)
+      end
+
+      it 'returns true even if there are not enough seats if the custom role is not billable' do
+        custom_role = create(:member_role, :guest, :read_code)
+        user_ids = %w[1 2 3]
+
+        expect(described_class.seats_available_for_group?(group, user_ids, ::Gitlab::Access::GUEST,
+          custom_role.id)).to be(true)
+      end
+
+      it 'returns false when there are not enough seats if the custom role is billable and based on minimal access' do
+        custom_role = create(:member_role, :minimal_access, :remove_project)
+        user_ids = %w[1 2 3]
+
+        expect(described_class.seats_available_for_group?(group, user_ids, ::Gitlab::Access::MINIMAL_ACCESS,
+          custom_role.id)).to be(false)
+      end
+
+      it 'assumes the custom role is billable if given an invalid member role id' do
+        user_ids = %w[1 2 3]
+
+        expect(described_class.seats_available_for_group?(group, user_ids, ::Gitlab::Access::GUEST, 1)).to be(false)
+      end
+    end
+
+    context 'without a subscription' do
+      it 'returns true' do
+        user_ids = %w[1 2 3 4 5 6 7 8 9 10 11 12]
+
+        expect(described_class.seats_available_for_group?(group, user_ids, ::Gitlab::Access::DEVELOPER,
+          nil)).to be(true)
       end
     end
   end

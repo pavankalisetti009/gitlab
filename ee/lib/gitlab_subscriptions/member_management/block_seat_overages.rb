@@ -6,16 +6,16 @@ module GitlabSubscriptions
       class << self
         def block_seat_overages?(source)
           root_namespace = source.root_ancestor
-          return root_namespace.block_seat_overages? if gitlab_com_subscription?
+          return root_namespace.block_seat_overages? if gitlab_com_subscriptions?
 
           block_seat_overages_for_self_managed?
         end
 
         def seats_available_for?(source, invites, access_level, member_role_id)
-          root_namespace = source.root_ancestor
           parsed_invites = process_invites(source, invites)
-          if gitlab_com_subscription?
-            return root_namespace.seats_available_for?(parsed_invites, access_level, member_role_id)
+
+          if gitlab_com_subscriptions?
+            return seats_available_for_group?(source.root_ancestor, parsed_invites, access_level, member_role_id)
           end
 
           seats_available_for_self_managed?(parsed_invites, access_level, member_role_id)
@@ -29,6 +29,20 @@ module GitlabSubscriptions
             access_level == ::Gitlab::Access::MINIMAL_ACCESS ||
               (access_level == ::Gitlab::Access::GUEST && exclude_guests)
           end
+        end
+
+        def seats_available_for_group?(root_group, invites, access_level, member_role_id)
+          return true unless root_group.gitlab_subscription
+
+          return true if non_billable_member?(access_level, member_role_id, root_group.exclude_guests?)
+
+          billable_ids = root_group.billed_user_ids[:user_ids].map(&:to_s)
+
+          new_invites = invites.map(&:to_s) - billable_ids
+
+          return true if new_invites.empty?
+
+          root_group.gitlab_subscription.seats >= (billable_ids.count + new_invites.count)
         end
 
         private
@@ -96,7 +110,7 @@ module GitlabSubscriptions
           ::User.billable.select(:id).map { |user| user.id.to_s }
         end
 
-        def gitlab_com_subscription?
+        def gitlab_com_subscriptions?
           ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
         end
       end

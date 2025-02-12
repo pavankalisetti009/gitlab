@@ -612,21 +612,6 @@ module EE
         namespace_settings.seat_control_block_overages?
     end
 
-    def seats_available_for?(invites, access_level, member_role_id)
-      return true unless gitlab_subscription
-
-      return true if ::GitlabSubscriptions::MemberManagement::BlockSeatOverages.non_billable_member?(
-        access_level, member_role_id, exclude_guests?)
-
-      billable_ids = billed_user_ids[:user_ids].map(&:to_s)
-
-      new_invites = invites.map(&:to_s) - billable_ids
-
-      return true if new_invites.empty?
-
-      gitlab_subscription.seats >= (billable_ids.count + new_invites.count)
-    end
-
     def seat_overage?
       return false unless gitlab_subscription
 
