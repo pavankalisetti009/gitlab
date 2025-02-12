@@ -19,7 +19,7 @@ module Mutations
 
       argument :comment,
         GraphQL::Types::String,
-        required: false,
+        required: true,
         description: "Comment why vulnerability severity was changed (maximum 50,000 characters)."
 
       field :vulnerabilities, [Types::VulnerabilityType],

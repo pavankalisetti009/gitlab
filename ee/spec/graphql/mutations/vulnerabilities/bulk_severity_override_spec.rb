@@ -10,6 +10,7 @@ RSpec.describe Mutations::Vulnerabilities::BulkSeverityOverride, feature_categor
   let_it_be(:vulnerabilities) { create_list(:vulnerability, 2, project: project) }
 
   let(:vulnerability_ids) { vulnerabilities.map(&:to_global_id) }
+  let(:include_comment) { true }
   let(:comment) { 'This is a comment' }
 
   before do
@@ -19,10 +20,11 @@ RSpec.describe Mutations::Vulnerabilities::BulkSeverityOverride, feature_categor
   describe 'vulnerability_ids validations' do
     let(:mutation) do
       <<~GQL
-        mutation($vulnerabilityIds: [VulnerabilityID!]!) {
+        mutation($vulnerabilityIds: [VulnerabilityID!]!, $comment: String!) {
           vulnerabilitiesSeverityOverride(input: {
             severity: LOW,
             vulnerabilityIds: $vulnerabilityIds
+            #{include_comment ? ',comment: $comment' : ''}
           }) {
             errors
           }
@@ -41,11 +43,22 @@ RSpec.describe Mutations::Vulnerabilities::BulkSeverityOverride, feature_categor
         end
       end
 
-      it 'returns a validation error' do
-        result = execute_mutation(variables: { vulnerabilityIds: vulnerability_ids })
+      it 'returns a vulnerabilityIds validation error' do
+        result = execute_mutation(variables: { vulnerabilityIds: vulnerability_ids, comment: comment })
 
         expect(result['errors'].first['message']).to include(
           "vulnerabilityIds is too long (maximum is #{::Vulnerabilities::BulkSeverityOverrideService::MAX_BATCH})")
+      end
+
+      context 'when comment input is missing' do
+        let(:include_comment) { false }
+
+        it 'returns a comment validation error' do
+          result = execute_mutation(variables: { vulnerabilityIds: ['gid://gitlab/Vulnerability/1'] })
+
+          expect(result['errors'].first['message']).to include(
+            "Argument 'comment' on InputObject 'vulnerabilitiesSeverityOverrideInput' is required")
+        end
       end
     end
 
@@ -53,7 +66,7 @@ RSpec.describe Mutations::Vulnerabilities::BulkSeverityOverride, feature_categor
       let(:vulnerability_ids) { [] }
 
       it 'returns a validation error' do
-        result = execute_mutation(variables: { vulnerabilityIds: vulnerability_ids })
+        result = execute_mutation(variables: { vulnerabilityIds: vulnerability_ids, comment: comment })
 
         expect(result['errors'].first['message']).to include('vulnerabilityIds is too short (minimum is 1)')
       end
