@@ -6,6 +6,8 @@ RSpec.describe Sbom::CreateVulnerabilitiesService, feature_category: :software_c
   describe '.execute' do
     let_it_be(:user) { create(:user) }
     let_it_be(:pipeline) { create(:ee_ci_pipeline, user: user) }
+    let_it_be(:project) { pipeline.project }
+    let_it_be(:scanner) { create(:vulnerabilities_scanner, :sbom_scanner, project: project) }
     let(:occurrences_count) { 5 }
     let(:sbom_reports) { pipeline.sbom_reports.reports.select(&:source) }
     let(:pipeline_components) { sbom_reports.flat_map(&:components) }
@@ -19,8 +21,9 @@ RSpec.describe Sbom::CreateVulnerabilitiesService, feature_category: :software_c
 
     let(:sbom_report) { pipeline.sbom_reports.reports.last }
     let(:source) { sbom_report.source }
-    let(:ci_build) { build(:ee_ci_build, :cyclonedx, pipeline: pipeline, project: pipeline.project) }
+    let(:ci_build) { build(:ee_ci_build, :cyclonedx, pipeline: pipeline, project: project) }
     let(:occurrence) { occurrences.first }
+    let(:known_affected_range) { "<9999" }
 
     subject(:result) { described_class.execute(pipeline.id) }
 
@@ -29,12 +32,75 @@ RSpec.describe Sbom::CreateVulnerabilitiesService, feature_category: :software_c
       pipeline.save!
     end
 
-    def higher_version(occurrence)
-      occurrence[:version].gsub(/(\.\d+)+$/, '').to_i + 1
-    end
-
     def sanitized_distro_version(source)
       "#{source.operating_system_name} #{source.operating_system_version&.gsub(/\.\d$/, '')}"
+    end
+
+    shared_examples 'creates vulnerabilities related to occurrences' do
+      it 'creates vulnerabilities for each advisory' do
+        result
+
+        expected_vulnerability_attributes = affected_packages.map do |affected_package|
+          expected_report_type = if Enums::Sbom.dependency_scanning_purl_type?(affected_package.purl_type)
+                                   'dependency_scanning'
+                                 else
+                                   'container_scanning'
+                                 end
+
+          have_attributes(
+            author_id: user.id,
+            project_id: project.id,
+            state: 'detected',
+            report_type: expected_report_type,
+            present_on_default_branch: true,
+            title: affected_package.advisory.title,
+            severity: affected_package.advisory.cvss_v3.severity.downcase,
+            finding_description: affected_package.advisory.description,
+            solution: affected_package.solution)
+        end
+
+        expect(Vulnerability.all).to match_array(expected_vulnerability_attributes)
+      end
+    end
+
+    shared_examples 'when an existing vulnerability is missing from the report' do |report_type|
+      let(:report_type) { report_type }
+
+      context 'when it has a matching report type' do
+        let(:finding) { create(:vulnerabilities_finding, scanner: scanner, project: project) }
+        let(:vulnerability) do
+          create(:vulnerability, findings: [finding], project: project,
+            report_type: report_type)
+        end
+
+        it 'marks vulnerability as no longer detected' do
+          expect { result }.to change { vulnerability.reload.resolved_on_default_branch }.to(true)
+        end
+
+        context 'with mark_resolved_vulnerabilities_with_sbom_scans feature flag disabled' do
+          before do
+            stub_feature_flags(mark_resolved_vulnerabilities_with_sbom_scans: false)
+          end
+
+          it 'does not mark vulnerabilities as no longer detected' do
+            expect(Security::Ingestion::MarkAsResolvedService).not_to receive(:execute)
+
+            expect { result }.not_to change { vulnerability.reload.resolved_on_default_branch }.from(false)
+          end
+        end
+      end
+
+      context 'when it does not have a matching report type' do
+        let(:finding) { create(:vulnerabilities_finding, scanner: scanner, project: project) }
+        let(:vulnerability) do
+          create(:vulnerability, findings: [finding], project: project,
+            report_type: :container_scanning_for_registry)
+        end
+
+        it 'does not mark vulnerability as no longer detected' do
+          expect { result }.not_to change { vulnerability.reload.resolved_on_default_branch }.from(false)
+        end
+      end
     end
 
     it { expect { result }.not_to change { Vulnerability.count } }
@@ -51,67 +117,16 @@ RSpec.describe Sbom::CreateVulnerabilitiesService, feature_category: :software_c
       let!(:affected_packages) do
         occurrences.map do |occurrence|
           create(:pm_affected_package, purl_type: occurrence[:purl_type], package_name: occurrence[:name],
-            affected_range: "<#{higher_version(occurrence)}", distro_version: sanitized_distro_version(source))
+            affected_range: known_affected_range, distro_version: sanitized_distro_version(source))
         end
       end
 
-      shared_examples 'creates vulnerabilities related to occurrences' do
-        it 'creates vulnerabilities to each advisory' do
-          result
-
-          expect(Vulnerability.all).to match_array([
-            have_attributes(
-              author_id: user.id,
-              project_id: pipeline.project.id,
-              state: 'detected',
-              report_type: source.source_type.to_s,
-              present_on_default_branch: true,
-              title: affected_packages[0].advisory.title,
-              severity: affected_packages[0].advisory.cvss_v3.severity.downcase,
-              finding_description: affected_packages[0].advisory.description,
-              solution: affected_packages[0].solution),
-            have_attributes(
-              author_id: user.id,
-              project_id: pipeline.project.id,
-              state: 'detected',
-              report_type: source.source_type.to_s,
-              present_on_default_branch: true,
-              title: affected_packages[1].advisory.title,
-              severity: affected_packages[1].advisory.cvss_v3.severity.downcase,
-              finding_description: affected_packages[1].advisory.description,
-              solution: affected_packages[1].solution),
-            have_attributes(
-              author_id: user.id,
-              project_id: pipeline.project.id,
-              state: 'detected',
-              report_type: source.source_type.to_s,
-              present_on_default_branch: true,
-              title: affected_packages[2].advisory.title,
-              severity: affected_packages[2].advisory.cvss_v3.severity.downcase,
-              finding_description: affected_packages[2].advisory.description,
-              solution: affected_packages[2].solution),
-            have_attributes(
-              author_id: user.id,
-              project_id: pipeline.project.id,
-              state: 'detected',
-              report_type: source.source_type.to_s,
-              present_on_default_branch: true,
-              title: affected_packages[3].advisory.title,
-              severity: affected_packages[3].advisory.cvss_v3.severity.downcase,
-              finding_description: affected_packages[3].advisory.description,
-              solution: affected_packages[3].solution),
-            have_attributes(
-              author_id: user.id,
-              project_id: pipeline.project.id,
-              state: 'detected',
-              report_type: source.source_type.to_s,
-              present_on_default_branch: true,
-              title: affected_packages[4].advisory.title,
-              severity: affected_packages[4].advisory.cvss_v3.severity.downcase,
-              finding_description: affected_packages[4].advisory.description,
-              solution: affected_packages[4].solution)
-          ])
+      context 'with existing vulnerability' do
+        let_it_be_with_reload(:vulnerability) do
+          create(:vulnerability, :with_scanner, scanner: scanner, project: project, report_type: :dependency_scanning)
         end
+
+        it_behaves_like 'when an existing vulnerability is missing from the report', :dependency_scanning
       end
 
       it 'tracks internal metrics with the right parameters', :freeze_time do
@@ -187,6 +202,82 @@ RSpec.describe Sbom::CreateVulnerabilitiesService, feature_category: :software_c
             expect { result }.not_to change { Vulnerability.count }
           end
         end
+      end
+
+      context 'with container scanning and dependency scanning reports' do
+        let(:container_scanning_ci_build) do
+          build(:ee_ci_build, :cyclonedx_container_scanning)
+        end
+
+        let(:dependency_scanning_ci_build) do
+          build(:ee_ci_build, :cyclonedx)
+        end
+
+        let(:pipeline) do
+          create(:ee_ci_pipeline, user: user, builds: [container_scanning_ci_build, dependency_scanning_ci_build])
+        end
+
+        let(:project) { pipeline.project }
+
+        let(:sbom_reports) { pipeline.sbom_reports.reports.select(&:source) }
+
+        let(:container_scanning_sbom_report) do
+          sbom_reports.find { |report| report.source&.source_type == :container_scanning }
+        end
+
+        let(:container_scanning_source) { container_scanning_sbom_report.source }
+
+        let(:dependency_scanning_sbom_report) do
+          sbom_reports.find { |report| report.source&.source_type == :dependency_scanning }
+        end
+
+        let(:container_scanning_components) do
+          sbom_reports
+            .filter { |report| report.source&.source_type == :container_scanning }
+            .flat_map(&:components)
+        end
+
+        let(:dependency_scanning_components) do
+          sbom_reports
+            .filter { |report| report.source&.source_type == :dependency_scanning }
+            .flat_map(&:components)
+        end
+
+        let(:container_scanning_occurrences) do
+          container_scanning_components.take(occurrences_count).map do |component|
+            { purl_type: component.purl.type, name: component.name, version: component.version }
+          end
+        end
+
+        let(:dependency_scanning_occurrences) do
+          dependency_scanning_components.take(occurrences_count).map do |component|
+            { purl_type: component.purl.type, name: component.name, version: component.version,
+              input_file_path: dependency_scanning_sbom_report.source.input_file_path }
+          end
+        end
+
+        let(:container_scanning_affected_packages) do
+          container_scanning_occurrences.map do |occurrence|
+            create(:pm_affected_package, purl_type: occurrence[:purl_type], package_name: occurrence[:name],
+              affected_range: known_affected_range,
+              distro_version: sanitized_distro_version(container_scanning_source))
+          end
+        end
+
+        let(:dependency_scanning_affected_packages) do
+          dependency_scanning_occurrences.map do |occurrence|
+            create(:pm_affected_package, purl_type: occurrence[:purl_type], package_name: occurrence[:name],
+              affected_range: known_affected_range)
+          end
+        end
+
+        let(:scanner) { create(:vulnerabilities_scanner, :sbom_scanner, project: project) }
+
+        let(:affected_packages) { container_scanning_affected_packages + dependency_scanning_affected_packages }
+
+        include_examples 'creates vulnerabilities related to occurrences'
+        include_examples 'when an existing vulnerability is missing from the report', :dependency_scanning
+        include_examples 'when an existing vulnerability is missing from the report', :container_scanning
       end
 
       context 'when any SemverDialect:Error is raised' do
