@@ -9645,9 +9645,6 @@ msgstr ""
 msgid "BlobViewer|View on %{environmentName}"
 msgstr ""
 
-msgid "BlobViewer|You can %{linkStart}download it%{linkEnd}."
-msgstr ""
-
 msgid "BlobViewer|You can either %{rawLinkStart}view the raw file%{rawLinkEnd} or %{downloadLinkStart}download it%{downloadLinkEnd}."
 msgstr ""
 
