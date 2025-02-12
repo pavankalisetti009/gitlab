@@ -388,7 +388,7 @@ If you are not using the default included templates, or have pinned your analyze
 must update your CI/CD job definition to either remove the pinned version or update
 the latest major version.
 
-Users of GitLab 17.0 to GitLab 15.11 will continue to experience analyzer updates until the
+Users of GitLab 17.0 to GitLab 17.11 will continue to experience analyzer updates until the
 release of GitLab 18.0, after which all newly fixed bugs and released features will be
 released only in the new major version of the analyzers.
 
