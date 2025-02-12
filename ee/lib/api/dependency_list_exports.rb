@@ -125,7 +125,7 @@ module API
       authorize! :read_dependency_list_export, dependency_list_export
 
       if dependency_list_export&.finished?
-        present_carrierwave_file!(dependency_list_export.file)
+        present_carrierwave_file!(dependency_list_export.file, content_disposition: :attachment)
       else
         not_found!('DependencyListExport')
       end

@@ -13,6 +13,12 @@ RSpec.describe Ai::DuoChatEvent, feature_category: :value_stream_management do
 
   it_behaves_like 'common ai_usage_event'
 
+  describe '.payload_attributes' do
+    it 'is empty' do
+      expect(described_class.payload_attributes).to be_empty
+    end
+  end
+
   describe 'validations' do
     it { is_expected.to validate_presence_of(:user_id) }
     it { is_expected.to validate_presence_of(:timestamp) }

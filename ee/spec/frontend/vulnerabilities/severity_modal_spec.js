@@ -43,7 +43,7 @@ describe('SeverityModal', () => {
     expect(findSeverity().props('selected')).toBe('high');
   });
 
-  it('emits a severityChange event', () => {
+  it('emits a change event', () => {
     const severity = 'info';
     const comment = 'Not applicable';
 
@@ -51,10 +51,10 @@ describe('SeverityModal', () => {
     findComment().vm.$emit('input', comment);
     saveChange();
 
-    expect(wrapper.emitted('severityChange')).toStrictEqual([
+    expect(wrapper.emitted('change')).toStrictEqual([
       [
         {
-          severity,
+          newSeverity: severity,
           comment,
         },
       ],
@@ -69,14 +69,14 @@ describe('SeverityModal', () => {
 
       expect(validationStateOf(findSeverityFormGroup())).toBe(false);
       expect(findSeverityFormGroup().attributes('invalid-feedback')).toBe('Severity is required.');
-      expect(wrapper.emitted('severityChange')).toBeUndefined();
+      expect(wrapper.emitted('change')).toBeUndefined();
 
       findSeverity().vm.$emit('select', 'high');
       saveChange();
       await nextTick();
 
       expect(validationStateOf(findSeverityFormGroup())).toBe(true);
-      expect(wrapper.emitted('severityChange')).toHaveLength(1);
+      expect(wrapper.emitted('change')).toHaveLength(1);
     });
 
     it('requires a comment', async () => {
@@ -86,14 +86,14 @@ describe('SeverityModal', () => {
 
       expect(validationStateOf(findCommentFormGroup())).toBe(false);
       expect(findCommentFormGroup().attributes('invalid-feedback')).toBe('Comment is required.');
-      expect(wrapper.emitted('severityChange')).toBeUndefined();
+      expect(wrapper.emitted('change')).toBeUndefined();
 
       findComment().vm.$emit('input', 'comment');
       saveChange();
       await nextTick();
 
       expect(validationStateOf(findCommentFormGroup())).toBe(true);
-      expect(wrapper.emitted('severityChange')).toHaveLength(1);
+      expect(wrapper.emitted('change')).toHaveLength(1);
     });
   });
 });

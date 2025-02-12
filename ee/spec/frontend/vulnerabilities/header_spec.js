@@ -10,7 +10,9 @@ import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completio
 import aiResolveVulnerability from 'ee/vulnerabilities/graphql/ai_resolve_vulnerability.mutation.graphql';
 import Api from 'ee/api';
 import { BV_SHOW_MODAL } from '~/lib/utils/constants';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import vulnerabilityStateMutations from 'ee/security_dashboard/graphql/mutate_vulnerability_state';
+import vulnerabilitiesSeverityOverrideMutation from 'ee/security_dashboard/graphql/mutations/vulnerabilities_severity_override.mutation.graphql';
 import VulnerabilityActionsDropdown from 'ee/vulnerabilities/components/vulnerability_actions_dropdown.vue';
 import StatusBadge from 'ee/vue_shared/security_reports/components/status_badge.vue';
 import Header, {
@@ -21,10 +23,12 @@ import Header, {
 import ResolutionAlert from 'ee/vulnerabilities/components/resolution_alert.vue';
 import StatusDescription from 'ee/vulnerabilities/components/status_description.vue';
 import StateModal from 'ee/vulnerabilities/components/state_modal.vue';
+import SeverityModal from 'ee/vulnerabilities/components/severity_modal.vue';
 import { FEEDBACK_TYPES, VULNERABILITY_STATE_OBJECTS } from 'ee/vulnerabilities/constants';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import UsersMockHelper from 'helpers/user_mock_data_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import toast from '~/vue_shared/plugins/global_toast';
 import { createAlert } from '~/alert';
 import axios from '~/lib/utils/axios_utils';
 import { convertObjectPropsToSnakeCase } from '~/lib/utils/common_utils';
@@ -49,6 +53,7 @@ const MOCK_SUBSCRIPTION_RESPONSE = getAiSubscriptionResponse(
 const vulnerabilityStateEntries = Object.entries(VULNERABILITY_STATE_OBJECTS);
 const mockAxios = new MockAdapter(axios);
 jest.mock('~/alert');
+jest.mock('~/vue_shared/plugins/global_toast');
 jest.mock('~/lib/utils/downloader');
 jest.mock('~/lib/utils/url_utility', () => ({
   ...jest.requireActual('~/lib/utils/url_utility'),
@@ -125,12 +130,18 @@ describe('Vulnerability Header', () => {
   const findStatusDescription = () => wrapper.findComponent(StatusDescription);
   const findChangeStatusButton = () => wrapper.findComponent(GlButton);
   const findStateModal = () => wrapper.findComponent(StateModal);
+  const findSeverityModal = () => wrapper.findComponent(SeverityModal);
   const findEditVulnerabilityDropdown = () => wrapper.findComponent(GlDisclosureDropdown);
 
   const changeStatus = async ({ action, dismissalReason, comment }) => {
     wrapper.vm.$emit(BV_SHOW_MODAL, VULNERABILITY_STATE_MODAL_ID);
     await nextTick();
     findStateModal().vm.$emit('change', { action, dismissalReason, comment });
+  };
+  const changeSeverity = async ({ severity }) => {
+    wrapper.vm.$emit(BV_SHOW_MODAL, VULNERABILITY_SEVERITY_MODAL_ID);
+    await nextTick();
+    findSeverityModal().vm.$emit('change', { newSeverity: severity });
   };
 
   const createWrapper = ({
@@ -293,22 +304,96 @@ describe('Vulnerability Header', () => {
       expect(rootWrapper.emitted(BV_SHOW_MODAL)).toStrictEqual([[modal]]);
     });
 
-    it('disables "Change state" when user cannot admin vulnerability', () => {
+    it('is disabled when user cannot admin vulnerability', () => {
       createWrapper({ vulnerability: getVulnerability({ canAdmin: false }) });
 
-      expect(findEditVulnerabilityDropdown().props('items')).toMatchObject([
-        {
-          text: 'Change status',
-          action: expect.any(Function),
-          extraAttrs: {
-            disabled: true,
-          },
-        },
-        {
-          text: 'Change severity',
-          action: expect.any(Function),
-        },
-      ]);
+      expect(findEditVulnerabilityDropdown().props('disabled')).toBe(true);
+    });
+
+    describe('severity change', () => {
+      const featureFlags = {
+        vulnerabilitySeverityOverride: true,
+      };
+
+      describe('when API call is successful', () => {
+        beforeEach(() => {
+          const apolloProvider = createApolloProvider([
+            vulnerabilitiesSeverityOverrideMutation,
+            jest.fn().mockResolvedValue({
+              data: {
+                vulnerabilitiesSeverityOverride: {
+                  errors: [],
+                  vulnerabilities: [
+                    {
+                      id: 1,
+                      severity: 'HIGH',
+                    },
+                  ],
+                },
+              },
+            }),
+          ]);
+
+          createWrapper({
+            vulnerability: getVulnerability({ severity: 'info' }),
+            apolloProvider,
+            ...featureFlags,
+          });
+        });
+
+        it('dropdown is loading during GraphQL call', async () => {
+          await changeSeverity({ severity: 'high' });
+          await nextTick();
+
+          expect(findEditVulnerabilityDropdown().props('loading')).toBe(true);
+        });
+
+        it(`emits the updated vulnerability, shows a toast`, async () => {
+          await changeSeverity({ severity: 'high' });
+          await waitForPromises();
+
+          expect(wrapper.emitted('vulnerability-severity-change')[0][0]).toMatchObject({
+            ...getVulnerability(),
+            severity: 'high',
+          });
+          expect(toast).toHaveBeenCalledWith('Vulnerability set to high severity');
+        });
+
+        it('dropdown is not loading after GraphQL call', async () => {
+          await changeSeverity({ severity: 'high' });
+          await waitForPromises();
+
+          expect(findEditVulnerabilityDropdown().props('loading')).toBe(false);
+        });
+      });
+
+      describe('when API call fails', () => {
+        beforeEach(() => {
+          const apolloProvider = createApolloProvider([
+            vulnerabilitiesSeverityOverrideMutation,
+            jest.fn().mockRejectedValue({
+              data: {
+                vulnerabilitiesSeverityOverride: {
+                  errors: [{ message: 'Something went wrong' }],
+                  vulnerability: {},
+                },
+              },
+            }),
+          ]);
+
+          createWrapper({ apolloProvider, ...featureFlags });
+        });
+
+        it('shows an error message, sends the error to sentry', async () => {
+          const sentryCaptureException = jest.spyOn(Sentry, 'captureException');
+          await changeSeverity({ severity: 'high' });
+
+          await waitForPromises();
+
+          expect(sentryCaptureException).toHaveBeenCalledWith(expect.any(Error));
+          expect(createAlert).toHaveBeenCalledTimes(1);
+        });
+      });
     });
   });
 
@@ -371,7 +456,7 @@ describe('Vulnerability Header', () => {
       ${true}                       | ${findEditVulnerabilityDropdown}
       ${false}                      | ${findStatusBadge}
     `(
-      'when vulnerability_severity_override is %s',
+      'when vulnerability_severity_override is $vulnerabilitySeverityOverride',
       ({ vulnerabilitySeverityOverride, findLoadingElement }) => {
         const featureFlags = {
           vulnerabilitySeverityOverride,

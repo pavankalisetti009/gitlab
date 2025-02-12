@@ -207,7 +207,7 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
         subscription_start_date: starts_at,
         subscription_end_date: expires_at,
         duo_availability: 'default_off',
-        direct_code_suggestions_enabled: 'false',
+        direct_code_suggestions_enabled: 'true',
         experiment_features_enabled: 'true',
         beta_self_hosted_models_enabled: 'true',
         are_experiment_settings_allowed: 'true',
@@ -237,6 +237,16 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
         result = helper.admin_duo_home_app_data
 
         expect(result).to include(duo_add_on_start_date: duo_start_date, duo_add_on_end_date: duo_end_date)
+      end
+    end
+
+    context 'when direct connections is disabled' do
+      before do
+        allow(Gitlab::CurrentSettings).to receive(:disabled_direct_code_suggestions).and_return(true)
+      end
+
+      it 'returns the correct value' do
+        expect(helper.admin_duo_home_app_data[:direct_code_suggestions_enabled]).to eq 'false'
       end
     end
   end

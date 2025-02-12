@@ -11,8 +11,6 @@ module Ai
 
     partitioned_by :timestamp, strategy: :monthly, retain_for: 3.months
 
-    PAYLOAD_ATTRIBUTES = %w[language suggestion_size unique_tracking_id branch_name].freeze
-
     attribute :timestamp, :datetime, default: -> { DateTime.current }
 
     enum event: {
