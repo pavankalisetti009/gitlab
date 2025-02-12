@@ -50,7 +50,13 @@ module Epics
     end
 
     def create_new_entity
-      @new_entity = Epics::CreateService.new(group: parent_group, current_user: current_user, params: params).execute
+      @new_entity = WorkItems::LegacyEpics::CreateService
+                      .new(group: parent_group, current_user: current_user, params: params)
+                      .execute
+
+      return @new_entity if @new_entity.errors.empty?
+
+      raise PromoteError, @new_entity.errors.full_messages.to_sentence
     end
 
     def update_old_entity

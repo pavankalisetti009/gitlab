@@ -10,9 +10,19 @@ FactoryBot.define do
     relative_position { RelativePositioning::START_POSITION }
 
     trait :with_parent_link do
-      work_item_parent_link do
-        association(:parent_link, work_item: WorkItem.find(issue.id), work_item_parent: epic.work_item,
-          relative_position: relative_position)
+      before(:create) do |epic_issue|
+        work_item_epic = epic_issue.epic&.work_item
+
+        unless work_item_epic
+          raise 'Failed to create epic_issue with parent_link. The epic needs to have an associated work item'
+        end
+
+        epic_issue.work_item_parent_link = create(
+          :parent_link,
+          work_item_id: epic_issue.issue_id,
+          relative_position: epic_issue.relative_position,
+          work_item_parent: work_item_epic
+        )
       end
     end
 

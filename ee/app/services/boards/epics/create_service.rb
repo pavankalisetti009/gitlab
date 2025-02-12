@@ -18,7 +18,9 @@ module Boards
           return ServiceResponse.error(message: error)
         end
 
-        epic = ::Epics::CreateService.new(group: group, current_user: current_user, params: params.merge(epic_params)).execute
+        epic = ::WorkItems::LegacyEpics::CreateService
+                 .new(group: group, current_user: current_user, params: params.merge(epic_params))
+                 .execute
 
         return ServiceResponse.success(payload: epic) if epic.persisted?
 

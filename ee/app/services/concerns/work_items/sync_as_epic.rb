@@ -50,6 +50,7 @@ module WorkItems
       if parent_link && parent_link.work_item_parent.synced_epic
         epic_params[:relative_position] = parent_link.relative_position
         epic_params[:parent_id] = parent_link.work_item_parent.synced_epic.id
+        epic_params[:work_item_parent_link_id] = parent_link.id
       end
 
       epic_params

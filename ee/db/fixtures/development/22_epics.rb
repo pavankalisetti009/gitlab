@@ -15,8 +15,8 @@ Gitlab::Seeder.quiet do
       }
       params[:closed_at] = rand(days_ago).days.ago if params[:state] == 'closed'
 
-      epic = ::Epics::CreateService.new(group: group, current_user: group.users.sample, params: params)
-               .execute_without_rate_limiting
+      epic = WorkItems::LegacyEpics::CreateService
+              .new(group: group, current_user: group.users.sample, params: params).execute_without_rate_limiting
 
       print '.' if epic.persisted?
     end

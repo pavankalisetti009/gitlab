@@ -21,6 +21,10 @@ RSpec.describe Epics::IssuePromoteService, :aggregate_failures, feature_category
     )
   end
 
+  let_it_be_with_refind(:parent_epic) do
+    create(:epic, group: group)
+  end
+
   subject { described_class.new(container: issue.project, current_user: user) }
 
   let(:epic) { Epic.last }
@@ -64,24 +68,40 @@ RSpec.describe Epics::IssuePromoteService, :aggregate_failures, feature_category
           end
         end
 
-        it 'publishes an EpicCreatedEvent' do
-          expect { subject.execute(issue) }
-            .to publish_event(Epics::EpicCreatedEvent)
-            .with({ id: an_instance_of(Integer), group_id: group.id })
+        context 'with published event' do
+          it 'publishes an WorkItemCreatedEvent' do
+            expect { subject.execute(issue) }
+              .to publish_event(WorkItems::WorkItemCreatedEvent)
+                    .with({ id: an_instance_of(Integer), namespace_id: group.id })
+          end
+
+          context 'when work_item_epics_ssot feature flag is disabled' do
+            before do
+              stub_feature_flags(work_item_epics_ssot: false)
+            end
+
+            it 'publishes an EpicCreatedEvent' do
+              expect { subject.execute(issue) }
+                .to publish_event(Epics::EpicCreatedEvent)
+                      .with({ id: an_instance_of(Integer), group_id: group.id })
+            end
+          end
         end
 
         it 'counts a usage ping event' do
           expect(::Gitlab::UsageDataCounters::EpicActivityUniqueCounter).to receive(:track_issue_promoted_to_epic)
-            .with(author: user, namespace: group)
+                                                                              .with(author: user, namespace: group)
 
           subject.execute(issue)
         end
 
         context 'when the issue belongs to an epic' do
-          let_it_be(:epic_issue) { create(:epic_issue, issue: issue) }
+          let_it_be(:epic_issue) { create(:epic_issue, :with_parent_link, epic: parent_epic, issue: issue) }
 
           it 'schedules update of cached metadata for the epic' do
-            expect(::Epics::UpdateCachedMetadataWorker).to receive(:perform_async).with([epic_issue.epic_id]).once
+            # first it's scheduled from the newly created epic
+            # then it's scheduled from the original issue (because it changes state to closed)
+            expect(::Epics::UpdateCachedMetadataWorker).to receive(:perform_async).with([epic_issue.epic_id]).twice
 
             subject.execute(issue)
           end
@@ -206,8 +226,9 @@ RSpec.describe Epics::IssuePromoteService, :aggregate_failures, feature_category
         end
 
         context 'when an issue belongs to an epic' do
-          let_it_be(:parent_epic) { create(:epic, group: group) }
-          let_it_be(:epic_issue) { create(:epic_issue, epic: parent_epic, issue: issue) }
+          let_it_be(:epic_issue) do
+            create(:epic_issue, :with_parent_link, epic: parent_epic, issue: issue)
+          end
 
           shared_examples 'successfully promotes issue to epic' do
             it 'creates a new epic with correct attributes' do
@@ -219,36 +240,7 @@ RSpec.describe Epics::IssuePromoteService, :aggregate_failures, feature_category
               expect(epic.author).to eq(user)
               expect(epic.group).to eq(new_group)
               expect(epic.parent).to eq(parent_epic)
-            end
-
-            context 'when subepics are disabled' do
-              before do
-                stub_licensed_features(epics: true, subepics: false)
-              end
-
-              it 'creates a new epic without the parent' do
-                epic = subject.execute(issue, new_group)
-
-                expect(issue.reload.promoted_to_epic_id).to eq(epic.id)
-                expect(epic.title).to eq(issue.title)
-                expect(epic.description).to eq(issue.description)
-                expect(epic.author).to eq(user)
-                expect(epic.group).to eq(new_group)
-                expect(epic.parent).to be_nil
-              end
-            end
-          end
-
-          shared_examples 'fails to promote issue' do
-            it 'does not promote to epic and raises error' do
-              expect { subject.execute(issue, new_group) }
-                .to raise_error(
-                  StandardError,
-                  'Validation failed: Parent This epic cannot be added. An epic must belong to the same group or subgroup as its parent epic.'
-                )
-
-              expect(issue.reload.state).to eq("opened")
-              expect(issue.reload.promoted_to_epic_id).to be_nil
+              expect(epic.work_item.work_item_parent).to eq(parent_epic.work_item)
             end
           end
 
@@ -292,6 +284,7 @@ RSpec.describe Epics::IssuePromoteService, :aggregate_failures, feature_category
             before do
               issue.update_attribute(:confidential, true)
               parent_epic.update_attribute(:confidential, true)
+              parent_epic.work_item.update_attribute(:confidential, true)
             end
 
             it 'promotes issue to epic' do
@@ -300,6 +293,20 @@ RSpec.describe Epics::IssuePromoteService, :aggregate_failures, feature_category
               expect(issue.reload.promoted_to_epic_id).to eq(epic.id)
               expect(epic.confidential).to eq(true)
               expect(epic.parent).to eq(parent_epic)
+            end
+          end
+
+          context 'when subepics are disabled' do
+            before do
+              stub_licensed_features(epics: true, subepics: false)
+            end
+
+            it 'does not promote to epic and raises error' do
+              expect { subject.execute(issue, new_group) }
+                .to raise_error(Epics::IssuePromoteService::PromoteError, /No matching work item found/)
+
+              expect(issue.reload.state).to eq("opened")
+              expect(issue.reload.promoted_to_epic_id).to be_nil
             end
           end
         end
@@ -383,14 +390,35 @@ RSpec.describe Epics::IssuePromoteService, :aggregate_failures, feature_category
         end
 
         context 'for synced work items' do
-          subject { described_class.new(container: issue.project, current_user: user).execute(issue) }
-
-          it_behaves_like 'syncs all data from an epic to a work item' do
-            let(:epic) { Epic.last }
+          let_it_be(:epic_issue) do
+            create(:epic_issue, :with_parent_link, epic: parent_epic, issue: issue)
           end
 
+          subject(:promote_issue) { described_class.new(container: issue.project, current_user: user).execute(issue) }
+
           it 'creates a work item' do
-            expect { subject }.to change { issue.project.group.work_items.count }.by(1)
+            expect { promote_issue }.to change { issue.project.group.work_items.count }.by(1)
+          end
+
+          context 'with synced data' do
+            it 'writes notes and labels to the work item' do
+              # A note "promoted from issue ..." will be added to the epic until
+              # https://gitlab.com/gitlab-org/gitlab/-/issues/497510 is addressed
+              expect { promote_issue }.to change { LabelLink.where(target_type: 'Issue').count }.by(1)
+                .and not_change { LabelLink.where(target_type: 'Epic').count }
+                .and change { Note.where(noteable_type: 'Issue').count }.by(3)
+                .and change { Note.where(noteable_type: 'Epic').count }.by(1)
+            end
+
+            context 'when work_item_epics_ssot feature flag is disabled' do
+              before do
+                stub_feature_flags(work_item_epics_ssot: false)
+              end
+
+              it_behaves_like 'syncs all data from an epic to a work item', notes_on_work_item: true do
+                let(:epic) { Epic.last }
+              end
+            end
           end
         end
       end
