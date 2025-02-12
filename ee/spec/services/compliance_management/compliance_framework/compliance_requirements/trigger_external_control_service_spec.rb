@@ -111,6 +111,13 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
           end
         end
 
+        it 'schedules a timeout worker' do
+          expect(ComplianceManagement::TimeoutPendingExternalControlsWorker).to receive(:perform_in)
+            .with(31.minutes, { 'control_id' => control.id, 'project_id' => project.id })
+
+          service.execute
+        end
+
         it 'creates an audit event for successful request' do
           expect(Gitlab::Audit::Auditor).to receive(:audit).with(
             hash_including(
