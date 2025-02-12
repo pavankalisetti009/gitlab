@@ -580,15 +580,11 @@ describe('mapBranchesToExceptions', () => {
     const { urlParameter } = policyType;
     it('returns policy object as yaml', () => {
       expect(policyToYaml(mockDastScanExecutionObject, urlParameter)).toBe(
-        mockDastScanExecutionManifestWithoutType,
+        mockDastScanExecutionManifestWithoutType(urlParameter),
       );
     });
 
     it('returns policy object as yaml with type wrapper', () => {
-      window.gon.features = {
-        securityPoliciesNewYamlFormat: true,
-      };
-
       expect(policyToYaml(mockDastScanExecutionObject, urlParameter)).toBe(`${urlParameter}:
   - name: Scheduled Dast/SAST scan
     description: This policy enforces pipeline configuration to have a job with DAST scan

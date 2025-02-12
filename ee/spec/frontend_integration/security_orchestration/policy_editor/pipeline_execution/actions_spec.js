@@ -5,11 +5,12 @@ import CodeBlockFilePath from 'ee/security_orchestration/components/policy_edito
 import { OVERRIDE } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/constants';
 import ActionSection from 'ee/security_orchestration/components/policy_editor/pipeline_execution/action/action_section.vue';
 import { DEFAULT_ASSIGNED_POLICY_PROJECT } from 'ee/security_orchestration/constants';
-import { policyBodyToYaml } from 'ee/security_orchestration/components/policy_editor/utils';
-import { fromYaml } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/utils';
 import { DEFAULT_PROVIDE } from '../mocks/mocks';
 import { findYamlPreview, verify } from '../utils';
-import { mockPipelineExecutionActionManifest } from './mocks';
+import {
+  mockPipelineExecutionActionManifest,
+  mockPipelineExecutionOverrideActionManifest,
+} from './mocks';
 import { createMockApolloProvider } from './apollo_util';
 
 describe('Pipeline execution policy actions', () => {
@@ -63,13 +64,8 @@ describe('Pipeline execution policy actions', () => {
 
       await findCodeBlockFilePath().vm.$emit('select-strategy', OVERRIDE);
 
-      const manifest = mockPipelineExecutionActionManifest.replace(
-        'pipeline_config_strategy: inject_policy',
-        'pipeline_config_strategy: override_project_ci',
-      );
-
       await verify({
-        manifest: policyBodyToYaml(fromYaml({ manifest })),
+        manifest: mockPipelineExecutionOverrideActionManifest,
         verifyRuleMode,
         wrapper,
       });

@@ -1,3 +1,5 @@
+$right-sidebar-policies-width: 350px;
+
 .security-policies-alert {
   top: $calc-application-header-height;
   z-index: 1;
@@ -25,17 +27,7 @@
 
 .security-policies {
   grid-template-areas: 'content sidebar';
-  grid-template-columns: 1fr $right-sidebar-width;
-  grid-gap: $gl-spacing-scale-5;
-
-  @include media-breakpoint-up(lg) {
-    grid-gap: 0 $gl-spacing-scale-7;
-  }
-}
-
-.security-policies-new-yaml-format {
-  grid-template-areas: 'content sidebar';
-  grid-template-columns: 1fr 350px;
+  grid-template-columns: 1fr $right-sidebar-policies-width;
   grid-gap: $gl-spacing-scale-5;
 
   @include media-breakpoint-up(lg) {

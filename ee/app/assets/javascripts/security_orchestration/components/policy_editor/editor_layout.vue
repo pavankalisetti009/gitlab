@@ -181,15 +181,12 @@ export default {
     hasNewSplitView() {
       return this.glFeatures.securityPoliciesSplitView;
     },
-    hasNewYamlFormat() {
-      return this.glFeatures.securityPoliciesNewYamlFormat;
-    },
     layoutClass() {
       if (this.hasNewSplitView) {
         return 'security-policies-split-view';
       }
 
-      return this.hasNewYamlFormat ? 'security-policies-new-yaml-format' : 'security-policies';
+      return 'security-policies';
     },
     policyType() {
       return Object.values(POLICY_TYPE_COMPONENT_OPTIONS).find(

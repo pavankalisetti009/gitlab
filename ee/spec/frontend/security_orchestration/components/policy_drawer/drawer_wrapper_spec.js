@@ -2,7 +2,9 @@ import { GlButton, GlDrawer, GlTabs, GlTab } from '@gitlab/ui';
 import DrawerWrapper from 'ee/security_orchestration/components/policy_drawer/drawer_wrapper.vue';
 import ScanExecutionDrawer from 'ee/security_orchestration/components/policy_drawer/scan_execution/details_drawer.vue';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
-import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import YamlEditor from 'ee/security_orchestration/components/yaml_editor.vue';
+import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import {
   mockProjectScanExecutionPolicy,
   mockGroupScanExecutionPolicy,
@@ -23,7 +25,11 @@ describe('DrawerWrapper component', () => {
         open: true,
         ...propsData,
       },
-      provide,
+      provide: {
+        namespaceType: NAMESPACE_TYPES.PROJECT,
+        namespacePath: 'gitlab-org',
+        ...provide,
+      },
       stubs: { YamlEditor: true, ...stubs },
     });
   };
@@ -33,8 +39,7 @@ describe('DrawerWrapper component', () => {
   const findPopover = () => wrapper.findByTestId('edit-button-popover');
   const findAllTabs = () => wrapper.findAllComponents(GlTab);
   const findScanExecutionDrawer = () => wrapper.findComponent(ScanExecutionDrawer);
-  const findDefaultComponentPolicyEditor = () =>
-    wrapper.findByTestId('policy-yaml-editor-default-component');
+  const findDefaultComponentPolicyEditor = () => wrapper.findComponent(YamlEditor);
   const findTabPolicyEditor = () => wrapper.findByTestId('policy-yaml-editor-tab-content');
 
   // Shared assertions
@@ -61,16 +66,20 @@ describe('DrawerWrapper component', () => {
   describe('given a generic policy', () => {
     beforeEach(() => {
       factory({
-        mountFn: mountExtended,
         propsData: {
-          policy: mockProjectScanExecutionPolicy,
+          policyType: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.value,
+          policy: mockProjectScanExecutionPolicyWithWrapper,
+        },
+        stubs: {
+          YamlEditor,
+          GlDrawer,
         },
       });
     });
 
     it('renders policy editor with manifest', () => {
       expect(findDefaultComponentPolicyEditor().attributes('value')).toBe(
-        mockProjectScanExecutionPolicy.yaml,
+        mockProjectScanExecutionPolicyWithWrapper.yaml,
       );
     });
 
@@ -88,10 +97,12 @@ describe('DrawerWrapper component', () => {
       ${false}                | ${true}
     `('renders edit button', ({ disableScanPolicyUpdate, expectedResult }) => {
       factory({
-        mountFn: mountExtended,
         propsData: {
           policy: mockProjectScanExecutionPolicy,
           disableScanPolicyUpdate,
+        },
+        stubs: {
+          GlDrawer,
         },
       });
 
@@ -99,25 +110,12 @@ describe('DrawerWrapper component', () => {
     });
   });
 
-  describe.each`
-    policyType                                           | mock                                         | securityPoliciesNewYamlFormat
-    ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.value} | ${mockProjectScanExecutionPolicy}            | ${false}
-    ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.value} | ${mockProjectScanExecutionPolicyWithWrapper} | ${true}
-  `('given a $policyType policy', ({ policyType, mock, securityPoliciesNewYamlFormat }) => {
+  describe('given a scanExecution policy', () => {
     beforeEach(() => {
-      window.gon.features = {
-        securityPoliciesNewYamlFormat,
-      };
-
       factory({
         propsData: {
-          policy: mock,
-          policyType,
-        },
-        provide: {
-          glFeatures: {
-            securityPoliciesNewYamlFormat,
-          },
+          policy: mockProjectScanExecutionPolicyWithWrapper,
+          policyType: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.value,
         },
         stubs: {
           GlButton,
@@ -127,7 +125,7 @@ describe('DrawerWrapper component', () => {
       });
     });
 
-    it(`renders the ${policyType} component`, () => {
+    it(`renders the scanExecution component`, () => {
       expect(findScanExecutionDrawer().exists()).toBe(true);
     });
 
@@ -136,7 +134,9 @@ describe('DrawerWrapper component', () => {
     });
 
     it('renders the policy editor', () => {
-      expect(findTabPolicyEditor().attributes('value')).toBe(mock.yaml);
+      expect(findTabPolicyEditor().attributes('value')).toBe(
+        mockProjectScanExecutionPolicyWithWrapper.yaml,
+      );
     });
 
     itRendersEditButton();
@@ -145,9 +145,11 @@ describe('DrawerWrapper component', () => {
   describe('inherited policy', () => {
     beforeEach(() => {
       factory({
-        mountFn: mountExtended,
         propsData: {
           policy: mockGroupScanExecutionPolicy,
+        },
+        stubs: {
+          GlDrawer,
         },
       });
     });

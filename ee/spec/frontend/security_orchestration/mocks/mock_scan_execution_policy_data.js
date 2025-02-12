@@ -96,18 +96,18 @@ actions:
 type: scan_execution_policy
 `;
 
-export const mockDastScanExecutionManifestWithoutType = `type: scan_execution_policy
-name: Scheduled Dast/SAST scan
-description: This policy enforces pipeline configuration to have a job with DAST scan
-enabled: false
-rules:
-  - type: pipeline
-    branches:
-      - main
-actions:
-  - scan: dast
-    site_profile: required_site_profile
-    scanner_profile: required_scanner_profile
+export const mockDastScanExecutionManifestWithoutType = (type) => `${type}:
+  - name: Scheduled Dast/SAST scan
+    description: This policy enforces pipeline configuration to have a job with DAST scan
+    enabled: false
+    rules:
+      - type: pipeline
+        branches:
+          - main
+    actions:
+      - scan: dast
+        site_profile: required_site_profile
+        scanner_profile: required_scanner_profile
 `;
 
 export const mockDastScanExecutionObject = {

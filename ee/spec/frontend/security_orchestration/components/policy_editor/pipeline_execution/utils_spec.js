@@ -80,7 +80,10 @@ describe('policyToYaml', () => {
   it('returns policy object as yaml', () => {
     expect(
       policyToYaml(customYamlObject, POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter),
-    ).toBe(customYaml);
+    ).toBe(
+      `pipeline_execution_policy:
+  - ${customYaml}`,
+    );
   });
 });
 
