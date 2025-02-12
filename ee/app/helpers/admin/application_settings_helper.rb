@@ -42,7 +42,7 @@ module Admin
         subscription_start_date: License.current.starts_at,
         subscription_end_date: License.current.expires_at,
         duo_availability: duo_availability,
-        direct_code_suggestions_enabled: ::Gitlab::CurrentSettings.disabled_direct_code_suggestions.to_s,
+        direct_code_suggestions_enabled: direct_code_suggestions_enabled?.to_s,
         experiment_features_enabled: instance_level_ai_beta_features_enabled.to_s,
         beta_self_hosted_models_enabled: ::Ai::TestingTermsAcceptance.has_accepted?.to_s,
         are_experiment_settings_allowed: experiments_settings_allowed?.to_s
@@ -119,6 +119,10 @@ module Admin
 
     def experiments_settings_allowed?
       CloudConnector::AvailableServices.find_by_name(:anthropic_proxy)&.purchased?
+    end
+
+    def direct_code_suggestions_enabled?
+      !::Gitlab::CurrentSettings.disabled_direct_code_suggestions
     end
   end
 end
