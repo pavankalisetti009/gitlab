@@ -27654,6 +27654,7 @@ Returns [`UserMergeRequestInteraction`](#usermergerequestinteraction).
 | ---- | ---- | ----------- |
 | <a id="grouppermissionscreatecustomemoji"></a>`createCustomEmoji` | [`Boolean!`](#boolean) | If `true`, the user can perform `create_custom_emoji` on this resource. |
 | <a id="grouppermissionscreateprojects"></a>`createProjects` | [`Boolean!`](#boolean) | If `true`, the user can perform `create_projects` on this resource. |
+| <a id="grouppermissionsgeneratedescription"></a>`generateDescription` | [`Boolean!`](#boolean) | If `true`, the user can perform `generate_description` on this resource. |
 | <a id="grouppermissionsreadgroup"></a>`readGroup` | [`Boolean!`](#boolean) | If `true`, the user can perform `read_group` on this resource. |
 | <a id="grouppermissionsremovegroup"></a>`removeGroup` | [`Boolean!`](#boolean) | If `true`, the user can perform `remove_group` on this resource. |
 | <a id="grouppermissionsvieweditpage"></a>`viewEditPage` | [`Boolean!`](#boolean) | If `true`, the user can perform `view_edit_page` on this resource. |
@@ -31131,6 +31132,7 @@ Product analytics events for a specific month and year.
 | <a id="namespacetimelogcategories"></a>`timelogCategories` **{warning-solid}** | [`TimeTrackingTimelogCategoryConnection`](#timetrackingtimelogcategoryconnection) | **Introduced** in GitLab 15.3. **Status**: Experiment. Timelog categories for the namespace. |
 | <a id="namespacetotalrepositorysize"></a>`totalRepositorySize` | [`Float`](#float) | Total repository size of all projects in the root namespace in bytes. |
 | <a id="namespacetotalrepositorysizeexcess"></a>`totalRepositorySizeExcess` | [`Float`](#float) | Total excess repository size of all projects in the root namespace in bytes. This only applies to namespaces under Project limit enforcement. |
+| <a id="namespaceuserpermissions"></a>`userPermissions` | [`NamespacePermissions!`](#namespacepermissions) | Permissions for the current user on the resource. |
 | <a id="namespacevisibility"></a>`visibility` | [`String`](#string) | Visibility of the namespace. |
 | <a id="namespaceweburl"></a>`webUrl` | [`String`](#string) | URL of this object. |
 
@@ -31504,6 +31506,15 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="namespacecommitemailid"></a>`id` | [`ID!`](#id) | Internal ID of the namespace commit email. |
 | <a id="namespacecommitemailnamespace"></a>`namespace` | [`Namespace!`](#namespace) | Namespace. |
 | <a id="namespacecommitemailupdatedat"></a>`updatedAt` | [`Time!`](#time) | Timestamp the namespace commit email was last updated. |
+
+### `NamespacePermissions`
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="namespacepermissionsgeneratedescription"></a>`generateDescription` | [`Boolean!`](#boolean) | If `true`, the user can perform `generate_description` on this resource. |
+| <a id="namespacepermissionsreadnamespace"></a>`readNamespace` | [`Boolean!`](#boolean) | If `true`, the user can perform `read_namespace` on this resource. |
 
 ### `NamespaceSidebar`
 
@@ -35178,6 +35189,7 @@ Returns [`UserMergeRequestInteraction`](#usermergerequestinteraction).
 | <a id="projectpermissionsdownloadcode"></a>`downloadCode` | [`Boolean!`](#boolean) | If `true`, the user can perform `download_code` on this resource. |
 | <a id="projectpermissionsdownloadwikicode"></a>`downloadWikiCode` | [`Boolean!`](#boolean) | If `true`, the user can perform `download_wiki_code` on this resource. |
 | <a id="projectpermissionsforkproject"></a>`forkProject` | [`Boolean!`](#boolean) | If `true`, the user can perform `fork_project` on this resource. |
+| <a id="projectpermissionsgeneratedescription"></a>`generateDescription` | [`Boolean!`](#boolean) | If `true`, the user can perform `generate_description` on this resource. |
 | <a id="projectpermissionsmovedesign"></a>`moveDesign` | [`Boolean!`](#boolean) | If `true`, the user can perform `move_design` on this resource. |
 | <a id="projectpermissionspushcode"></a>`pushCode` | [`Boolean!`](#boolean) | If `true`, the user can perform `push_code` on this resource. |
 | <a id="projectpermissionspushtodeleteprotectedbranch"></a>`pushToDeleteProtectedBranch` | [`Boolean!`](#boolean) | If `true`, the user can perform `push_to_delete_protected_branch` on this resource. |
