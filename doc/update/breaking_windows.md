@@ -45,6 +45,7 @@ This window takes place on April 21 - 23, 2025 from 09:00 UTC to 22:00 UTC.
 | [Workspaces `editor` GraphQL field is deprecated](https://gitlab.com/gitlab-org/gitlab/-/issues/508155) | Low | Create | Project |
 | [Enforce keyset pagination on audit event API](https://gitlab.com/gitlab-org/gitlab/-/issues/382338) | Low | Software supply chain security | Instance, group, project |
 | [Fix typo in user profile visibility updated audit event type](https://gitlab.com/gitlab-org/gitlab/-/issues/474386) | Low | Software supply chain security | Instance |
+| [API Discovery will use branch pipelines by default](https://gitlab.com/gitlab-org/gitlab/-/issues/515487) | Low | Application_security_testing | Project |
 | [Container Scanning default severity threshold set to `medium`](https://gitlab.com/gitlab-org/gitlab/-/issues/515358) | Low | Application security testing | Project |
 | [Subscription related API endpoints in the public API are deprecated](https://gitlab.com/gitlab-org/gitlab/-/issues/515371#note_2319368251) | Low | Fulfillment | Instance |
 | [`maxHoursBeforeTermination` GraphQL field is deprecated](https://gitlab.com/gitlab-org/gitlab/-/issues/509787) | Low | Create | Project |
