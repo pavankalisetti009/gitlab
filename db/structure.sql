@@ -18709,7 +18709,7 @@ CREATE TABLE plan_limits (
     file_size_limit_mb double precision DEFAULT 100.0 NOT NULL,
     audit_events_amazon_s3_configurations integer DEFAULT 5 NOT NULL,
     ci_max_artifact_size_repository_xray bigint DEFAULT 1073741824 NOT NULL,
-    active_versioned_pages_deployments_limit_by_namespace integer DEFAULT 0 NOT NULL,
+    active_versioned_pages_deployments_limit_by_namespace integer DEFAULT 1000 NOT NULL,
     ci_max_artifact_size_jacoco bigint DEFAULT 0 NOT NULL,
     import_placeholder_user_limit_tier_1 integer DEFAULT 0 NOT NULL,
     import_placeholder_user_limit_tier_2 integer DEFAULT 0 NOT NULL,
