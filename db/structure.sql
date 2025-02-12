@@ -31110,6 +31110,10 @@ CREATE INDEX idx_pipeline_execution_schedules_security_policy_id_and_id ON secur
 
 CREATE INDEX idx_pkgs_conan_file_metadata_on_pkg_file_id_when_recipe_file ON packages_conan_file_metadata USING btree (package_file_id) WHERE (conan_file_type = 1);
 
+CREATE INDEX idx_pkgs_conan_metadata_on_pkg_file_id_when_null_rec_rev ON packages_conan_file_metadata USING btree (package_file_id) WHERE (recipe_revision_id IS NULL);
+
+CREATE INDEX idx_pkgs_conan_recipe_rev_on_id_and_revision ON packages_conan_recipe_revisions USING btree (id, revision);
+
 CREATE INDEX idx_pkgs_debian_group_distribution_keys_on_distribution_id ON packages_debian_group_distribution_keys USING btree (distribution_id);
 
 CREATE INDEX idx_pkgs_debian_project_distribution_keys_on_distribution_id ON packages_debian_project_distribution_keys USING btree (distribution_id);
