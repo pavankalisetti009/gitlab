@@ -29,7 +29,7 @@ RSpec.describe API::Manage::Groups, feature_category: :system_access do
     end
   end
 
-  shared_examples 'paginated data for enterprise users' do
+  shared_examples 'paginated personal access token data for enterprise users' do
     it 'returns paginated success response' do
       get api(path, personal_access_token: current_user_token)
 
@@ -40,13 +40,7 @@ RSpec.describe API::Manage::Groups, feature_category: :system_access do
     end
   end
 
-  describe 'GET /groups/:id/manage/personal_access_tokens' do
-    using RSpec::Parameterized::TableSyntax
-
-    let_it_be(:user) { create(:enterprise_user, enterprise_group: group) }
-    let_it_be(:user_token) { create(:personal_access_token, user: user, scopes: [:api]) }
-    let_it_be(:path) { "/groups/#{group.id}/manage/personal_access_tokens" }
-
+  shared_examples 'checks for proper authorisation' do
     context "when feature flag is disabled" do
       before do
         stub_feature_flags(manage_pat_by_group_owners_ready: false)
@@ -59,31 +53,6 @@ RSpec.describe API::Manage::Groups, feature_category: :system_access do
       end
     end
 
-    context 'when group has non enterprise users as well' do
-      let_it_be(:non_enterprise_user) { create(:user) }
-
-      before_all do
-        group.add_reporter(user)
-        create(:personal_access_token, user: non_enterprise_user, scopes: [:api])
-      end
-
-      it_behaves_like 'paginated data for enterprise users'
-
-      it "does not return data for non enterprise users" do
-        get api(path, personal_access_token: current_user_token)
-
-        expect(map_id(json_response)).not_to include(non_enterprise_user.id)
-      end
-    end
-
-    it_behaves_like 'paginated data for enterprise users'
-
-    it 'returns 404 for non-existing group' do
-      get api("/groups/non-existing/manage/personal_access_tokens", personal_access_token: current_user_token)
-
-      expect(response).to have_gitlab_http_status(:not_found)
-    end
-
     it 'returns 403 for unauthorized user' do
       unauthorized_user = create(:user)
       token = create(:personal_access_token, user: unauthorized_user, scopes: [:api])
@@ -92,6 +61,50 @@ RSpec.describe API::Manage::Groups, feature_category: :system_access do
 
       expect(response).to have_gitlab_http_status(:forbidden)
     end
+  end
+
+  describe 'GET /groups/:id/manage/personal_access_tokens' do
+    using RSpec::Parameterized::TableSyntax
+
+    let_it_be(:user) { create(:enterprise_user, enterprise_group: group) }
+    let_it_be(:user_token) { create(:personal_access_token, user: user, scopes: [:api]) }
+    let_it_be(:path) { "/groups/#{group.id}/manage/personal_access_tokens" }
+
+    context 'when group has non enterprise users as well' do
+      let_it_be(:non_enterprise_user) { create(:user) }
+
+      before_all do
+        group.add_reporter(user)
+        create(:personal_access_token, user: non_enterprise_user, scopes: [:api])
+      end
+
+      it_behaves_like 'paginated personal access token data for enterprise users'
+
+      it "does not return data for non enterprise users" do
+        get api(path, personal_access_token: current_user_token)
+
+        expect(map_id(json_response)).not_to include(non_enterprise_user.id)
+      end
+
+      it 'avoids N+1 queries' do
+        get api(path, personal_access_token: current_user_token)
+
+        control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
+          get api(path, personal_access_token: current_user_token)
+        end
+
+        user2 = create(:enterprise_user, enterprise_group: group)
+        create(:personal_access_token, user: user2, scopes: [:api])
+
+        expect do
+          get api(path, personal_access_token: current_user_token)
+        end.not_to exceed_all_query_limit(control)
+      end
+    end
+
+    it_behaves_like 'paginated personal access token data for enterprise users'
+
+    it_behaves_like 'checks for proper authorisation'
 
     context 'when filter with active parameter' do
       let_it_be(:inactive_token1) { create(:personal_access_token, user: user, revoked: true) }
@@ -283,6 +296,127 @@ RSpec.describe API::Manage::Groups, feature_category: :system_access do
           expect(response).to have_gitlab_http_status(status)
 
           expect(json_response.pluck('id')).to include(*result) if status == :ok && !result.empty?
+        end
+      end
+    end
+  end
+
+  describe 'GET /groups/:id/manage/ssh_keys' do
+    using RSpec::Parameterized::TableSyntax
+
+    let_it_be(:path) { "/groups/#{group.id}/manage/ssh_keys" }
+
+    it 'throws not found error for a non existent group' do
+      get api("/groups/#{non_existing_record_id}/manage/ssh_keys")
+
+      expect(response).to have_gitlab_http_status(:not_found)
+    end
+
+    it_behaves_like "checks for proper authorisation"
+
+    context 'when group has no enterprise user associated' do
+      let_it_be(:user) { create(:user) }
+      let_it_be(:ssh_key) { create(:personal_key, user: user) }
+
+      it 'returns empty response for group which has no enterprise user associated' do
+        group.add_developer(user)
+
+        get api(path, personal_access_token: current_user_token)
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response).to eq([])
+      end
+    end
+
+    context 'when group has enterprise_user associated' do
+      let_it_be(:user) { create(:enterprise_user, enterprise_group: group) }
+
+      it "returns the ssh_keys for the group" do
+        ssh_key = create(:personal_key, user: user)
+
+        get api(path, personal_access_token: current_user_token)
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect_paginated_array_response_contain_exactly(ssh_key.id)
+        expect(json_response[0]['user_id']).to eq(user.id)
+      end
+
+      it 'avoids N+1 queries' do
+        control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
+          get api(path, personal_access_token: current_user_token)
+        end
+
+        user2 = create(:enterprise_user, enterprise_group: group)
+        create(:personal_key, user: user2)
+
+        expect do
+          get api(path, personal_access_token: current_user_token)
+        end.not_to exceed_all_query_limit(control)
+      end
+
+      context 'with filter params', :freeze_time do
+        subject(:get_request) { get api(path, personal_access_token: current_user_token), params: params }
+
+        let(:params) { {} }
+
+        context 'when created_at date filters' do
+          let_it_be(:ssh_key_created_1_day_ago) { create(:personal_key, user: user, created_at: 1.day.ago.to_date) }
+          let_it_be(:ssh_key_created_2_day_ago) { create(:personal_key, user: user, created_at: 2.days.ago.to_date) }
+          let_it_be(:ssh_key_created_3_day_ago) { create(:personal_key, user: user, created_at: 3.days.ago.to_date) }
+
+          it "returns keys filtered with created_before the params value" do
+            params[:created_before] = 2.days.ago.to_date
+
+            get_request
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect_paginated_array_response([ssh_key_created_2_day_ago.id, ssh_key_created_3_day_ago.id])
+            expect(json_response.count).to eq(2)
+          end
+
+          it "returns keys filtered with created_after the params value" do
+            params[:created_after] = 2.days.ago.to_date
+
+            get_request
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect_paginated_array_response([ssh_key_created_1_day_ago.id, ssh_key_created_2_day_ago.id])
+            expect(json_response.count).to eq(2)
+          end
+        end
+
+        context 'when expires_at date filters' do
+          let_it_be(:ssh_key_expiring_in_1_day) do
+            create(:personal_key, user: user, expires_at: 1.day.from_now.to_date)
+          end
+
+          let_it_be(:ssh_key_expiring_in_2_day) do
+            create(:personal_key, user: user, expires_at: 2.days.from_now.to_date)
+          end
+
+          let_it_be(:ssh_key_expiring_in_3_day) do
+            create(:personal_key, user: user, expires_at: 3.days.from_now.to_date)
+          end
+
+          it "returns keys filtered with expires_before the params value" do
+            params[:expires_before] = 2.days.from_now.to_date
+
+            get_request
+
+            expect(response).to have_gitlab_http_status(status)
+            expect_paginated_array_response([ssh_key_expiring_in_1_day.id, ssh_key_expiring_in_2_day.id])
+            expect(json_response.count).to eq(2)
+          end
+
+          it "returns keys filtered with expires_after the params value" do
+            params[:expires_after] = 2.days.from_now.to_date
+
+            get_request
+
+            expect(response).to have_gitlab_http_status(status)
+            expect_paginated_array_response([ssh_key_expiring_in_2_day.id, ssh_key_expiring_in_3_day.id])
+            expect(json_response.count).to eq(2)
+          end
         end
       end
     end
