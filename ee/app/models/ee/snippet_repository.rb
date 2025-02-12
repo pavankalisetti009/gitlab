@@ -14,6 +14,12 @@ module EE
       include ::Gitlab::SQL::Pattern
 
       with_replicator ::Geo::SnippetRepositoryReplicator
+
+      has_one :snippet_repository_state,
+        autosave: false,
+        inverse_of: :snippet_repository,
+        foreign_key: :snippet_repository_id,
+        class_name: '::Geo::SnippetRepositoryState'
     end
 
     class_methods do

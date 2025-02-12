@@ -11,6 +11,15 @@ RSpec.describe SnippetRepository, :geo, type: :model, feature_category: :geo_rep
     stub_current_geo_node(secondary)
   end
 
+  describe 'associations' do
+    it do
+      is_expected.to have_one(:snippet_repository_state)
+                          .class_name('Geo::SnippetRepositoryState')
+                          .with_foreign_key(:snippet_repository_id)
+                          .inverse_of(:snippet_repository)
+    end
+  end
+
   context 'with 3 groups, 2 projects, and 5 snippets' do
     let(:group_1) { create(:group) }
     let(:group_2) { create(:group) }
