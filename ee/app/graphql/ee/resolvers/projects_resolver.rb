@@ -16,6 +16,14 @@ module EE
         argument :marked_for_deletion_on, ::Types::DateType,
           required: false,
           description: 'Date when the project was marked for deletion.'
+
+        before_connection_authorization do |projects, current_user|
+          ::Preloaders::UserMaxAccessLevelInProjectsPreloader.new(projects, current_user).execute
+
+          if ::Feature.enabled?(:preload_member_roles, current_user)
+            ::Preloaders::UserMemberRolesInProjectsPreloader.new(projects: projects, user: current_user).execute
+          end
+        end
       end
 
       private
