@@ -10,6 +10,7 @@ module Search
       PARTITION_DURATION = 1.day
       PARTITION_CLEANUP_THRESHOLD = 7.days
       PROCESSING_BATCH_SIZE = 100
+      RETRY_DELAY = 5.minutes
 
       self.table_name = 'zoekt_tasks'
       self.primary_key = :id
