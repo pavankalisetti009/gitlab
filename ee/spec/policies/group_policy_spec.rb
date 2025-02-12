@@ -4446,4 +4446,42 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       end
     end
   end
+
+  describe 'generate_description' do
+    context "when feature is authorized" do
+      before do
+        stub_licensed_features(epics: true)
+
+        allow_next_instance_of(::Gitlab::Llm::FeatureAuthorizer) do |instance|
+          allow(instance).to receive(:allowed?).and_return(true)
+        end
+      end
+
+      context 'with planner+' do
+        let(:current_user) { planner }
+
+        context 'when user can create issue' do
+          it { is_expected.to be_allowed(:generate_description) }
+        end
+      end
+
+      context 'with guest' do
+        let(:current_user) { guest }
+
+        it { is_expected.to be_disallowed(:generate_description) }
+      end
+    end
+
+    context "when feature is not authorized" do
+      let(:current_user) { owner }
+
+      before do
+        allow_next_instance_of(::Gitlab::Llm::FeatureAuthorizer) do |instance|
+          allow(instance).to receive(:allowed?).and_return(false)
+        end
+      end
+
+      it { is_expected.to be_disallowed(:generate_description) }
+    end
+  end
 end

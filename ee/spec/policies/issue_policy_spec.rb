@@ -45,7 +45,7 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
         allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:new).and_return(authorizer)
       end
 
-      it { is_expected.to be_disallowed(:summarize_comments) }
+      it { is_expected.to be_disallowed(:summarize_comments, :generate_description) }
     end
 
     context 'when user is logged in' do
@@ -76,6 +76,18 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
 
         context 'when user cannot read issue' do
           it { is_expected.to be_disallowed(:summarize_comments) }
+
+          context 'with confidential issue' do
+            let_it_be(:confidential_issue) { create(:issue, :confidential, project: project) }
+
+            it 'does not allow guest to summarize issue' do
+              project.add_guest(guest)
+              project.add_planner(planner)
+
+              expect(permissions(guest, confidential_issue)).to be_disallowed(:read_issue, :summarize_comments)
+              expect(permissions(planner, confidential_issue)).to be_allowed(:read_issue, :summarize_comments)
+            end
+          end
         end
       end
 

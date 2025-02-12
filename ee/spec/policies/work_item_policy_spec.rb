@@ -25,9 +25,15 @@ RSpec.describe WorkItemPolicy, feature_category: :team_planning do
 
   context 'when work item has a synced epic' do
     let_it_be_with_reload(:work_item) { create(:epic, :with_synced_work_item, group: group).work_item }
+    let_it_be_with_reload(:confidential_work_item) do
+      create(:epic, :with_synced_work_item, confidential: true, group: group).work_item
+    end
 
     before do
       stub_licensed_features(issuable_resource_links: true, epics: true)
+      allow_next_instance_of(::Gitlab::Llm::FeatureAuthorizer) do |instance|
+        allow(instance).to receive(:allowed?).and_return(false)
+      end
     end
 
     it 'does allow' do
@@ -58,8 +64,28 @@ RSpec.describe WorkItemPolicy, feature_category: :team_planning do
         :read_issuable_resource_link, :read_issue_iid, :read_design,
         :create_requirement_test_report,
         :reposition_note, :create_design, :update_design, :destroy_design, :move_design,
-        :admin_issuable_resource_link, :admin_timelog, :admin_issue_metrics, :admin_issue_metrics_list
+        :admin_issuable_resource_link, :admin_timelog, :admin_issue_metrics, :admin_issue_metrics_list,
+        :summarize_comments
       )
+
+      expect(permissions(owner, confidential_work_item)).to be_disallowed(:summarize_comments)
+    end
+
+    context 'when summarize_comments is authorized' do
+      before do
+        allow_next_instance_of(::Gitlab::Llm::FeatureAuthorizer) do |instance|
+          allow(instance).to receive(:allowed?).and_return(true)
+        end
+      end
+
+      it 'checks the ability to summarize_comments' do
+        expect(permissions(guest, work_item)).to be_allowed(:read_issue, :read_work_item, :summarize_comments)
+        expect(permissions(guest, confidential_work_item)).to be_disallowed(
+          :read_issue, :read_work_item, :summarize_comments
+        )
+
+        expect(permissions(owner, confidential_work_item)).to be_allowed(:summarize_comments)
+      end
     end
 
     context 'when user is support bot and service desk is enabled' do

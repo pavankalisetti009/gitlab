@@ -17,17 +17,6 @@ module EE
     end
 
     prepended do
-      with_scope :subject
-      condition(:summarize_notes_allowed) do
-        next false unless @user
-
-        ::Gitlab::Llm::FeatureAuthorizer.new(
-          container: subject_container,
-          feature_name: :summarize_comments,
-          user: @user
-        ).allowed?
-      end
-
       condition(:relations_for_non_members_available) do
         scope = group_issue? ? subject_container : subject_container.group
 
@@ -42,14 +31,15 @@ module EE
         enable :promote_to_epic
       end
 
-      rule do
-        summarize_notes_allowed & can?(:read_issue)
-      end.enable :summarize_comments
-
       rule { relations_for_non_members_available & ~member_or_support_bot }.policy do
         prevent :admin_issue_relation
       end
 
+      # summarize comments is enabled at namespace(project or group) level, however if issue is confidential
+      # and user(e.g. guest cannot read issue) we do not allow summarize comments
+      rule { ~can?(:read_issue) }.policy do
+        prevent :summarize_comments
+      end
       # This rule is already defined in FOSS IssuePolicy, but EE::IssuePolicy may be adding EE specific abilities
       # that would be captured here, e.g. `summarize_comments`, `promote_to_epic`, etc
       rule { group_issue & ~group_level_issues_license_available }.policy do

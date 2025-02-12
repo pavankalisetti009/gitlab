@@ -4,11 +4,13 @@ module CloudConnector
   module SelfManaged
     class AccessDataReader
       include ::CloudConnector::Utils
+      include Gitlab::Utils::StrongMemoize
 
       def read_available_services
         service_descriptors = access_record_data&.[]('available_services') || []
         service_descriptors.map { |access_data| build_available_service_data(access_data) }.index_by(&:name)
       end
+      strong_memoize_attr :read_available_services
 
       private
 

@@ -280,6 +280,17 @@ module EE
       end
 
       with_scope :subject
+      condition(:summarize_notes_allowed) do
+        next false unless @user
+
+        ::Gitlab::Llm::FeatureAuthorizer.new(
+          container: subject,
+          feature_name: :summarize_comments,
+          user: @user
+        ).allowed?
+      end
+
+      with_scope :subject
       condition(:target_branch_rules_available) { subject.licensed_feature_available?(:target_branch_rules) }
 
       condition(:pages_multiple_versions_available) do
@@ -1035,6 +1046,10 @@ module EE
       rule do
         generate_description_enabled & can?(:create_issue)
       end.enable :generate_description
+
+      rule do
+        summarize_notes_allowed & can?(:read_issue)
+      end.enable :summarize_comments
 
       rule { target_branch_rules_available & maintainer }.policy do
         enable :admin_target_branch_rule
