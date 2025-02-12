@@ -290,8 +290,15 @@ RSpec.describe WorkItems::ParentLinks::ReorderService, feature_category: :portfo
 
       let_it_be_with_reload(:work_item) { create(:work_item, :issue, namespace: group) }
 
+      let_it_be_with_reload(:work_item_link) do
+        create(:parent_link, work_item: work_item, work_item_parent: parent, relative_position: 40)
+      end
+
       let_it_be(:epic_issue) do
-        create(:epic_issue, epic: parent.synced_epic, issue: Issue.find(work_item.id), relative_position: 40)
+        create(
+          :epic_issue, epic: parent.synced_epic,
+          issue: Issue.find(work_item.id), relative_position: 40, work_item_parent_link: work_item_link
+        )
       end
 
       let_it_be_with_reload(:top_adjacent_link) do
@@ -300,10 +307,6 @@ RSpec.describe WorkItems::ParentLinks::ReorderService, feature_category: :portfo
 
       let_it_be_with_reload(:last_adjacent_link) do
         create(:parent_link, work_item: last_adjacent, work_item_parent: parent, relative_position: 30)
-      end
-
-      let_it_be_with_reload(:work_item_link) do
-        create(:parent_link, work_item: work_item, work_item_parent: parent, relative_position: 40)
       end
 
       before do
@@ -321,9 +324,9 @@ RSpec.describe WorkItems::ParentLinks::ReorderService, feature_category: :portfo
           expect { move_child }
             .to change { work_item.reload.work_item_parent }.from(parent).to(new_parent)
             .and change { work_item.epic_issue.reload.epic }.from(parent.synced_epic).to(new_parent.synced_epic)
-            .and change { work_item.epic_issue.work_item_parent_link }.from(nil).to(work_item.parent_link)
 
           expect(new_parent.work_item_children_by_relative_position).to eq([new_sibling1, work_item, new_sibling2])
+          expect(work_item.epic_issue.work_item_parent_link).to eq(work_item.parent_link)
         end
 
         context 'without group level work items license' do
