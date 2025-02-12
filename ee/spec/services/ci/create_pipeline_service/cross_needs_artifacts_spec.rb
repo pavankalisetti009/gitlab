@@ -181,7 +181,7 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :job_artifacts do
     end
 
     it 'has errors' do
-      expect(subject.payload.yaml_errors)
+      expect(subject.payload.error_messages[0].content)
         .to include('jobs:build_job:needs:need ref should be a string')
     end
   end

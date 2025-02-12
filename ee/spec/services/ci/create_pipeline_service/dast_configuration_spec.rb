@@ -95,7 +95,7 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :dynamic_application
 
       shared_examples 'a missing profile' do
         it 'communicates failure' do
-          expect(subject.yaml_errors).to include("DAST profile not found: #{profile.name}")
+          expect(subject.error_messages[0].content).to include("DAST profile not found: #{profile.name}")
         end
       end
 
