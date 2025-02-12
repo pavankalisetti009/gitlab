@@ -5,7 +5,7 @@ export default {
   title: 'ee/insights/components/insights_chart_error.vue',
 };
 
-const createStory = ({ ...options }) => {
+const createStory = ({ ...options } = {}) => {
   return (_, { argTypes }) => {
     return {
       components: { InsightsChartError },

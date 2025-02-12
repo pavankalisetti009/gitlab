@@ -6,7 +6,7 @@ export default {
   title: 'ee/insights/components/insights_chart.vue',
 };
 
-const createStory = ({ ...options }) => {
+const createStory = ({ ...options } = {}) => {
   return (_, { argTypes }) => {
     return {
       components: { InsightsChart },
