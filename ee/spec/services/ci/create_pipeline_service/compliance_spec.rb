@@ -69,7 +69,7 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :continuous_integrat
 
   context 'when user does not have access to compliance project' do
     it 'includes access denied error' do
-      expect(execute.payload.yaml_errors).to eq "Project `#{compliance_project.full_path}` not found or access denied! Make sure any includes in the pipeline configuration are correctly defined."
+      expect(execute.payload.error_messages[0].content).to eq "Project `#{compliance_project.full_path}` not found or access denied! Make sure any includes in the pipeline configuration are correctly defined."
     end
 
     it 'does not persist jobs' do
