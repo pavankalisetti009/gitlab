@@ -16,7 +16,10 @@ describe('SecretsApp', () => {
   const findRouterView = () => wrapper.findComponent({ ref: 'router-view' });
 
   const createComponent = (props) => {
-    wrapper = shallowMountExtended(SecretsApp, { propsData: { ...props } });
+    wrapper = shallowMountExtended(SecretsApp, {
+      propsData: { ...props },
+      stubs: { RouterView: true },
+    });
   };
 
   describe.each`
