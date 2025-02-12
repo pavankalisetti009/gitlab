@@ -800,6 +800,11 @@ msgstr ""
 msgid "%{count} total weight"
 msgstr ""
 
+msgid "%{count} vulnerability set to %{severity} severity"
+msgid_plural "%{count} vulnerabilities set to %{severity} severity"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "%{days} days until tags are automatically removed"
 msgstr ""
 
@@ -38119,6 +38124,9 @@ msgid "No parent group"
 msgstr ""
 
 msgid "No phone number data for matching"
+msgstr ""
+
+msgid "No placeholder users are awaiting reassignment."
 msgstr ""
 
 msgid "No plan"

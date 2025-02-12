@@ -119,6 +119,7 @@ RSpec.describe BulkImports::Projects::Pipelines::IssuesPipeline, feature_categor
         expect(project.issues.first.epic).to eq(epic)
         expect(project.issues.count).to eq(1)
         expect(project.issues.first.epic_issue.relative_position).not_to be_nil
+        expect(project.issues.first.epic_issue.work_item_parent_link_id).to eq(project.work_items.first.parent_link.id)
         expect(project.work_items.first.parent_link.work_item_parent_id).to eq(epic.issue_id)
 
         group.epics.each do |epic|

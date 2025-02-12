@@ -222,6 +222,7 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
               .and not_change { parent_epic.reload.own_notes.count }
 
             expect(child_issue.epic_issue.relative_position).to eq(child_work_item.parent_link.relative_position)
+            expect(child_issue.epic_issue.work_item_parent_link_id).to eq(child_work_item.parent_link.id)
 
             expect(parent_work_item.reload.notes.last.note)
               .to eq("added #{child_work_item.to_reference(full: true)} as child issue")

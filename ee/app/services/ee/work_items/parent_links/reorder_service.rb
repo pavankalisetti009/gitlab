@@ -97,7 +97,7 @@ module EE
             case synced_moving_object
             when ::EpicIssue
               # set work_item_syncing to skip the validation EpicIssue#check_existing_parent_link
-              { epic: link.work_item_parent.synced_epic, work_item_syncing: true }
+              { epic: link.work_item_parent.synced_epic, work_item_parent_link: link, work_item_syncing: true }
             when ::Epic
               { parent: link.work_item_parent.synced_epic, work_item_parent_link: link }
             end

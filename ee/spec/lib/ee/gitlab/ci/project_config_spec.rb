@@ -245,6 +245,16 @@ RSpec.describe Gitlab::Ci::ProjectConfig, feature_category: :pipeline_compositio
 
               it_behaves_like 'includes security policies default pipeline configuration content'
             end
+
+            context 'when source is passed as string' do
+              %w[push merge_request_event].each do |source|
+                context "when source is #{source}" do
+                  let(:source) { source }
+
+                  it_behaves_like 'includes security policies default pipeline configuration content'
+                end
+              end
+            end
           end
         end
       end
@@ -335,6 +345,12 @@ RSpec.describe Gitlab::Ci::ProjectConfig, feature_category: :pipeline_compositio
 
               it_behaves_like 'does not include security policies default pipeline configuration content'
             end
+          end
+
+          context 'when pipeline source is nil' do
+            let(:source) { nil }
+
+            it_behaves_like 'does not include security policies default pipeline configuration content'
           end
         end
       end
