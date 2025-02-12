@@ -19,6 +19,7 @@ module Sbom
 
     def execute
       start_time = Time.current.iso8601
+      ingested_ids_by_report_type = Hash.new([])
 
       valid_sbom_reports.each do |sbom_report|
         next unless sbom_report.source.present?
@@ -55,9 +56,13 @@ module Sbom
                 scanner: scanner)
             end
 
-            create_vulnerabilities(finding_maps)
+            ingested_ids_by_report_type[sbom_report.source.source_type] += create_vulnerabilities(finding_maps)
           end
         end
+      end
+
+      if Feature.enabled?(:mark_resolved_vulnerabilities_with_sbom_scans, project)
+        mark_resolved_vulnerabilities(ingested_ids_by_report_type)
       end
 
       track_internal_event(
@@ -125,5 +130,17 @@ module Sbom
       ::Gitlab::VulnerabilityScanning::SecurityScanner.fabricate
     end
     strong_memoize_attr :scanner
+
+    def mark_resolved_vulnerabilities(ingested_ids_by_report_type)
+      # MarkAsResolvedService expects a persisted scanner record.
+      scanner = Vulnerabilities::Scanner.sbom_scanner(project_id: project.id)
+
+      ingested_ids_by_report_type.each do |report_type, ingested_ids|
+        # TODO: The ingested ids can be duplicated when returned from create_vulnerabilities, so we
+        # remove duplicates here to avoid iterating through the same ids.
+        # See https://gitlab.com/gitlab-org/gitlab/-/issues/519156 for more details.
+        ::Security::Ingestion::MarkAsResolvedService.execute(pipeline, scanner, ingested_ids.uniq, report_type)
+      end
+    end
   end
 end

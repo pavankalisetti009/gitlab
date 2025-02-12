@@ -1,0 +1,9 @@
+---
+name: mark_resolved_vulnerabilities_with_sbom_scans
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/498726
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/179119
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/515627
+milestone: '17.9'
+group: group::composition analysis
+type: gitlab_com_derisk
+default_enabled: false
