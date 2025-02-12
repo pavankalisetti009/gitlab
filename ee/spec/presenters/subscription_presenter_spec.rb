@@ -49,7 +49,7 @@ RSpec.describe SubscriptionPresenter, :saas do
       it 'is nil' do
         allow(subscription).to receive(:end_date).and_return(nil)
 
-        expect(subject).to be nil
+        expect(subject).to be_nil
       end
     end
   end
@@ -126,7 +126,7 @@ RSpec.describe SubscriptionPresenter, :saas do
     it 'is nil when end_date is nil' do
       allow(subscription).to receive(:end_date).and_return(nil)
 
-      expect(subject).to be nil
+      expect(subject).to be_nil
     end
 
     it 'returns the number of days between end_date and today' do

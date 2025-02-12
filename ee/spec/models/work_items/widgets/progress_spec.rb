@@ -14,7 +14,7 @@ RSpec.describe WorkItems::Widgets::Progress, feature_category: :team_planning do
 
     context 'when progress object is not present for work item' do
       it 'returns nil' do
-        expect(described_class.new(work_item_1).send(attribute)).to be(nil)
+        expect(described_class.new(work_item_1).send(attribute)).to be_nil
       end
     end
   end

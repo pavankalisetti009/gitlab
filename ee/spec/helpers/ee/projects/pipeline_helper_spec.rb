@@ -99,7 +99,7 @@ RSpec.describe Projects::PipelineHelper, feature_category: :pipeline_composition
       end
 
       it 'returns nil' do
-        is_expected.to be(nil)
+        is_expected.to be_nil
       end
     end
 
@@ -114,7 +114,7 @@ RSpec.describe Projects::PipelineHelper, feature_category: :pipeline_composition
         end
 
         it 'returns the downloadable path for `codequality`' do
-          is_expected.not_to be(nil)
+          is_expected.not_to be_nil
           is_expected.to eq(project_path(project, pipeline))
         end
       end
@@ -134,7 +134,7 @@ RSpec.describe Projects::PipelineHelper, feature_category: :pipeline_composition
       end
 
       it 'returns nil' do
-        is_expected.to be(nil)
+        is_expected.to be_nil
       end
     end
 
@@ -149,7 +149,7 @@ RSpec.describe Projects::PipelineHelper, feature_category: :pipeline_composition
         end
 
         it 'returns the downloadable path for `codequality`' do
-          is_expected.not_to be(nil)
+          is_expected.not_to be_nil
           is_expected.to eq(project_blob_path(project, pipeline))
         end
       end
@@ -169,7 +169,7 @@ RSpec.describe Projects::PipelineHelper, feature_category: :pipeline_composition
       end
 
       it 'returns nil' do
-        is_expected.to be(nil)
+        is_expected.to be_nil
       end
     end
 
@@ -180,7 +180,7 @@ RSpec.describe Projects::PipelineHelper, feature_category: :pipeline_composition
 
       describe 'and there is no artefact for codequality' do
         it 'returns nil for `codequality`' do
-          is_expected.to be(nil)
+          is_expected.to be_nil
         end
       end
 
@@ -190,7 +190,7 @@ RSpec.describe Projects::PipelineHelper, feature_category: :pipeline_composition
         end
 
         it 'returns the downloadable path for `codequality`' do
-          is_expected.not_to be(nil)
+          is_expected.not_to be_nil
           is_expected.to eq(pipeline.downloadable_path_for_report_type(:codequality))
         end
       end
@@ -210,7 +210,7 @@ RSpec.describe Projects::PipelineHelper, feature_category: :pipeline_composition
       end
 
       it 'returns nil' do
-        is_expected.to be(nil)
+        is_expected.to be_nil
       end
     end
 

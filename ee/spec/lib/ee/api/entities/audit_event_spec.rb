@@ -30,7 +30,7 @@ RSpec.describe ::EE::API::Entities::AuditEvent, feature_category: :audit_events 
     let(:entity) { described_class.new(audit_event).as_json }
 
     it 'returns nil in details' do
-      expect(entity[:event_name]).to be nil
+      expect(entity[:event_name]).to be_nil
     end
   end
 end

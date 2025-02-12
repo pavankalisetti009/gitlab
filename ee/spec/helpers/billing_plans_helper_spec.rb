@@ -163,7 +163,7 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
       end
 
       context 'when no last_seat_refresh_at is available' do
-        it { is_expected.to be nil }
+        it { is_expected.to be_nil }
       end
     end
   end
