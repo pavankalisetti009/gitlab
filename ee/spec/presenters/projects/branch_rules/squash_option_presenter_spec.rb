@@ -10,9 +10,9 @@ RSpec.describe Projects::BranchRules::SquashOptionPresenter, feature_category: :
 
     where(:option, :expected_help_text) do
       'never'       | 'Squashing is never performed and the checkbox is hidden.'
-      'always'      | 'Checkbox is visible and unselected by default.'
+      'always'      | 'Squashing is always performed. Checkbox is visible and selected, and users cannot change it.'
       'default_on'  | 'Checkbox is visible and selected by default.'
-      'default_off' | 'Squashing is always performed. Checkbox is visible and selected, and users cannot change it.'
+      'default_off' | 'Checkbox is visible and unselected by default.'
     end
 
     with_them do
