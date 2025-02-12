@@ -24,8 +24,7 @@ module Elastic
         "elastic:incremental:updates:#{shard_number}:score"
       end
 
-      # Add some records to the processing queue. Items must be serializable to
-      # a Search::Elastic::Reference
+      # Add some records to the processing queue. Items must be serializable to a Search::Elastic::Reference
       def track!(*items)
         return true if items.empty?
 
@@ -43,7 +42,7 @@ module Elastic
 
             (min..max).zip(shard_items).each_slice(1000) do |group|
               logger.debug(
-                'class' => self.name,
+                'class' => name,
                 'message' => 'track_items',
                 'meta.indexing.redis_set' => set_key,
                 'meta.indexing.count' => group.count,
@@ -79,7 +78,7 @@ module Elastic
       def clear_tracking!
         with_redis do |redis|
           Gitlab::Instrumentation::RedisClusterValidator.allow_cross_slot_commands do
-            keys = SHARDS.map { |m| [redis_set_key(m), redis_score_key(m)] }.flatten
+            keys = SHARDS.flat_map { |m| [redis_set_key(m), redis_score_key(m)] }
 
             if Gitlab::Redis::ClusterUtil.cluster?(redis)
               Gitlab::Redis::ClusterUtil.batch_unlink(keys, redis)
