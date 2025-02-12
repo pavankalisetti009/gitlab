@@ -94,14 +94,11 @@ export default {
             data.namespace.securityPolicyProject?.repository?.blobs?.nodes?.[0]?.rawBlob;
           if (policyBlob) {
             const id = getIdFromGraphQLId(this.graphqlId);
-            const contents = fromYaml({ manifest: policyBlob });
+            const policy = fromYaml({ manifest: policyBlob });
+
             this.hasMigratedPipeline = Boolean(
-              contents?.pipeline_execution_policy?.find((policy) => {
-                return (
-                  policy?.policy_scope?.compliance_frameworks?.find((f) => f.id === id) &&
-                  policy?.metadata?.compliance_pipeline_migration
-                );
-              }),
+              policy?.policy_scope?.compliance_frameworks?.find((f) => f.id === id) &&
+                policy?.metadata?.compliance_pipeline_migration,
             );
           }
         } else {

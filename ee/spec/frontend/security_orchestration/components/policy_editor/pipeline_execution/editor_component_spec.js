@@ -9,11 +9,13 @@ import EditorLayout from 'ee/security_orchestration/components/policy_editor/edi
 import SkipCiSelector from 'ee/security_orchestration/components/policy_editor/skip_ci_selector.vue';
 import {
   DEFAULT_PIPELINE_EXECUTION_POLICY,
-  DEFAULT_PIPELINE_EXECUTION_POLICY_NEW_FORMAT,
   SUFFIX_NEVER,
   SUFFIX_ON_CONFLICT,
 } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/constants';
-import { doesFileExist } from 'ee/security_orchestration/components/policy_editor/utils';
+import {
+  doesFileExist,
+  policyBodyToYaml,
+} from 'ee/security_orchestration/components/policy_editor/utils';
 import { SECURITY_POLICY_ACTIONS } from 'ee/security_orchestration/components/policy_editor/constants';
 
 import { ASSIGNED_POLICY_PROJECT } from 'ee_jest/security_orchestration/mocks/mock_data';
@@ -24,6 +26,7 @@ import {
   mockInvalidPipelineExecutionObject,
   customYamlUrlParams,
 } from 'ee_jest/security_orchestration/mocks/mock_pipeline_execution_policy_data';
+import { fromYaml } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/utils';
 import { goToYamlMode } from '../policy_editor_helper';
 
 jest.mock('ee/security_orchestration/components/policy_editor/utils', () => ({
@@ -212,7 +215,7 @@ describe('EditorComponent', () => {
   describe('modifying a policy', () => {
     it.each`
       status                           | action                            | event              | factoryFn                    | yamlEditorValue
-      ${'creating a new policy'}       | ${undefined}                      | ${'save-policy'}   | ${factory}                   | ${DEFAULT_PIPELINE_EXECUTION_POLICY}
+      ${'creating a new policy'}       | ${undefined}                      | ${'save-policy'}   | ${factory}                   | ${policyBodyToYaml(fromYaml({ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY }))}
       ${'updating an existing policy'} | ${undefined}                      | ${'save-policy'}   | ${factoryWithExistingPolicy} | ${mockWithoutRefPipelineExecutionManifest}
       ${'deleting an existing policy'} | ${SECURITY_POLICY_ACTIONS.REMOVE} | ${'remove-policy'} | ${factoryWithExistingPolicy} | ${mockWithoutRefPipelineExecutionManifest}
     `('emits "save" when $status', async ({ action, event, factoryFn, yamlEditorValue }) => {
@@ -331,22 +334,12 @@ describe('EditorComponent', () => {
 
   describe('new yaml format with type as a wrapper', () => {
     beforeEach(() => {
-      window.gon.features = {
-        securityPoliciesNewYamlFormat: true,
-      };
-
-      factory({
-        provide: {
-          glFeatures: {
-            securityPoliciesNewYamlFormat: true,
-          },
-        },
-      });
+      factory();
     });
 
     it('renders default yaml in new format', () => {
       expect(findPolicyEditorLayout().props('yamlEditorValue')).toBe(
-        DEFAULT_PIPELINE_EXECUTION_POLICY_NEW_FORMAT,
+        DEFAULT_PIPELINE_EXECUTION_POLICY,
       );
     });
 

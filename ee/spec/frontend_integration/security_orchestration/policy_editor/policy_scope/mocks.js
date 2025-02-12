@@ -27,12 +27,6 @@ const FALLBACK = `fallback_behavior:
 const TYPE = `type: approval_policy
 `;
 
-const BASE_POLICY = (type) => `type: ${type}
-name: ''
-description: ''
-enabled: true
-`;
-
 export const mockScanExecutionActionManifest = `name: ''
 description: ''
 enabled: true
@@ -53,16 +47,19 @@ export const mockScanExecutionActionProjectManifest = putPolicyScopeComplianceFr
   mockScanExecutionActionManifest,
 );
 
-export const mockPipelineExecutionActionManifest = BASE_POLICY('pipeline_execution_policy')
-  .concat(`pipeline_config_strategy: inject_policy
+export const mockPipelineExecutionActionManifest = `name: ''
+description: ''
+enabled: true
+pipeline_config_strategy: inject_policy
 content:
   include:
     - project: ''
+type: pipeline_execution_policy
 policy_scope:
   compliance_frameworks:
     - id: 1
     - id: 2
-`);
+`;
 
 export const mockApprovalActionGroupManifest = `name: ''
 description: ''
@@ -104,8 +101,10 @@ actions:
   - scan: secret_detection
 type: scan_execution_policy
 `,
-  PIPELINE_EXECUTION: BASE_POLICY('pipeline_execution_policy')
-    .concat(`pipeline_config_strategy: inject_policy
+  PIPELINE_EXECUTION: `name: ''
+description: ''
+enabled: true
+pipeline_config_strategy: inject_policy
 content:
   include:
     - project: ''
@@ -114,7 +113,8 @@ policy_scope:
     excluding:
       - id: 1
       - id: 2
-`),
+type: pipeline_execution_policy
+`,
   APPROVAL_POLICY: `name: ''
 description: ''
 enabled: true
@@ -185,11 +185,14 @@ actions:
   - scan: secret_detection
 type: scan_execution_policy
 `,
-  PIPELINE_EXECUTION: BASE_POLICY(`pipeline_execution_policy`)
-    .concat(`pipeline_config_strategy: inject_policy
+  PIPELINE_EXECUTION: `name: ''
+description: ''
+enabled: true
+pipeline_config_strategy: inject_policy
 content:
   include:
     - project: ''
+type: pipeline_execution_policy
 policy_scope:
   groups:
     including:
@@ -197,7 +200,7 @@ policy_scope:
       - id: 2
   projects:
     excluding: []
-`),
+`,
   APPROVAL_POLICY: `name: ''
 description: ''
 enabled: true
@@ -228,3 +231,22 @@ export const INCLUDING_GROUPS_MOCKS = {
   ),
   APPROVAL_POLICY: removeExcludingProjects(INCLUDING_GROUPS_WITH_EXCEPTIONS_MOCKS.APPROVAL_POLICY),
 };
+
+export const EXCLUDING_PROJECTS_ON_PROJECT_LEVEL = `name: ''
+description: ''
+enabled: true
+pipeline_config_strategy: inject_policy
+content:
+  include:
+    - project: ''
+type: pipeline_execution_policy
+policy_scope:
+  projects:
+    excluding:
+      - id: 1
+      - id: 2
+`;
+
+export const INCLUDING_PROJECTS_ON_PROJECT_LEVEL = replaceProjectKey(
+  EXCLUDING_PROJECTS_ON_PROJECT_LEVEL,
+);

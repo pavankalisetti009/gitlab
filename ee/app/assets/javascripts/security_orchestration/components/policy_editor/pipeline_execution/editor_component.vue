@@ -22,11 +22,7 @@ import DisabledSection from '../disabled_section.vue';
 import ActionSection from './action/action_section.vue';
 import RuleSection from './rule/rule_section.vue';
 import { createPolicyObject, getInitialPolicy } from './utils';
-import {
-  CONDITIONS_LABEL,
-  DEFAULT_PIPELINE_EXECUTION_POLICY,
-  DEFAULT_PIPELINE_EXECUTION_POLICY_NEW_FORMAT,
-} from './constants';
+import { CONDITIONS_LABEL, DEFAULT_PIPELINE_EXECUTION_POLICY } from './constants';
 
 export default {
   ACTION: 'actions',
@@ -89,11 +85,10 @@ export default {
         POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter,
       );
     } else {
-      const manifest = this.glFeatures.securityPoliciesNewYamlFormat
-        ? DEFAULT_PIPELINE_EXECUTION_POLICY_NEW_FORMAT
-        : DEFAULT_PIPELINE_EXECUTION_POLICY;
-
-      yamlEditorValue = getInitialPolicy(manifest, queryToObject(window.location.search));
+      yamlEditorValue = getInitialPolicy(
+        DEFAULT_PIPELINE_EXECUTION_POLICY,
+        queryToObject(window.location.search),
+      );
     }
 
     const { policy, parsingError } = createPolicyObject(yamlEditorValue);
@@ -157,11 +152,7 @@ export default {
       const type = POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter;
       const policy = extractPolicyContent({ manifest: this.yamlEditorValue, type, withType: true });
 
-      const payload = this.glFeatures.securityPoliciesNewYamlFormat
-        ? policyBodyToYaml(policy)
-        : this.yamlEditorValue;
-
-      this.$emit('save', { action, extraMergeRequestInput, policy: payload });
+      this.$emit('save', { action, extraMergeRequestInput, policy: policyBodyToYaml(policy) });
     },
     async doesFileExist(value) {
       const { project, ref = null, file } = value?.include?.[0] || {};

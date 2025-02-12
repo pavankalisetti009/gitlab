@@ -1,4 +1,4 @@
-import { safeDump, safeLoad } from 'js-yaml';
+import { safeDump } from 'js-yaml';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 import { extractPolicyContent } from 'ee/security_orchestration/components/utils';
 import { hasInvalidKey } from '../utils';
@@ -12,15 +12,11 @@ import { hasInvalidKey } from '../utils';
 
 export const fromYaml = ({ manifest }) => {
   try {
-    const { securityPoliciesNewYamlFormat = false } = window.gon?.features || {};
-
-    return securityPoliciesNewYamlFormat
-      ? extractPolicyContent({
-          manifest,
-          type: POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter,
-          withType: true,
-        })
-      : safeLoad(manifest, { json: true });
+    return extractPolicyContent({
+      manifest,
+      type: POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter,
+      withType: true,
+    });
   } catch {
     /**
      * Catch parsing error of safeLoad
