@@ -54,7 +54,6 @@ module EE
 
       before_action only: :show do
         push_frontend_feature_flag(:zoekt_multimatch_frontend, current_user)
-        push_frontend_feature_flag(:search_mr_filter_source_branch, current_user)
       end
 
       before_action :sso_enforcement_redirect, only: [:show]
