@@ -4,9 +4,7 @@ import { stripTimezoneFromISODate } from '~/lib/utils/datetime/date_format_utili
 
 export const HELP_PAGE_PATH = helpPagePath('user/application_security/dast/on-demand_scan');
 
-export const HELP_PAGE_AUDITOR_ROLE_PATH = helpPagePath('administration/auditor_users.html', {
-  anchor: 'auditor-users',
-});
+export const HELP_PAGE_AUDITOR_ROLE_PATH = helpPagePath('administration/auditor_users.html');
 
 export const HELP_PAGE_RUNNER_TAGS_PATH = helpPagePath('ci/runners/configure_runners', {
   anchor: 'control-jobs-that-a-runner-can-run',
