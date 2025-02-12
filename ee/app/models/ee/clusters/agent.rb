@@ -55,6 +55,11 @@ module EE
             unversioned_latest_workspaces_agent_config: { enabled: true }
           )
         end
+
+        def resource_management_enabled?
+          ::Feature.enabled?(:gitlab_managed_cluster_resources, project) &&
+            project.licensed_feature_available?(:agent_managed_resources)
+        end
       end
     end
   end
