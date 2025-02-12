@@ -22,7 +22,7 @@ module Types
 
       field :last_duo_activity_on, # rubocop:disable GraphQL/ExtractType -- suggestion doesn't make any sense
         type: Types::DateType,
-        description: 'Date of the last Duo activity of the user. Refreshed on Duo Chat and Code Suggestions activity.'
+        description: 'Date of the last Duo activity of the user. Refreshed on any GitLab Duo activity.'
 
       def last_duo_activity_on
         lazy_ai_user_metrics = BatchLoader::GraphQL.for(object.id).batch do |user_ids, loader|

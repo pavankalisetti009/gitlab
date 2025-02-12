@@ -66,5 +66,11 @@ RSpec.describe Llm::GitCommandService, feature_category: :source_code_management
 
       expect(subject.execute).to be_error
     end
+
+    it 'tracks user AI feature utilization' do
+      expect(Gitlab::Tracking::AiTracking).to receive(:track_user_activity).with(user)
+
+      subject.execute
+    end
   end
 end

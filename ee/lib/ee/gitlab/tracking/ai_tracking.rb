@@ -20,6 +20,10 @@ module EE
           Ai::UserMetrics.refresh_last_activity_on(context_hash[:user])
         end
 
+        def track_user_activity(user)
+          Ai::UserMetrics.refresh_last_activity_on(user)
+        end
+
         private
 
         def build_event_model(event_name, context_hash = {})
