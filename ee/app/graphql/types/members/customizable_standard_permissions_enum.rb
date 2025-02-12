@@ -6,8 +6,10 @@ module Types
       graphql_name 'MemberRoleStandardPermission'
       description 'Member role standard permission'
 
+      include CustomizablePermission
+
       MemberRole.all_customizable_standard_permissions.each_pair do |key, value|
-        value key.upcase, value: key, description: value[:description]
+        define_permission(key, value)
       end
     end
   end
