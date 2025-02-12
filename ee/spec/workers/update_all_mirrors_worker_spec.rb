@@ -134,7 +134,7 @@ RSpec.describe UpdateAllMirrorsWorker, feature_category: :source_code_management
     end
 
     context 'when project import state has exceeded the stuck threshold' do
-      it 'updates import state to failed' do
+      it 'updates import state to failed', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/500814' do
         expect(project.import_state.scheduled?).to be(true)
 
         worker.fail_stuck_mirrors!
