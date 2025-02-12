@@ -6,7 +6,7 @@ RSpec.describe Gitlab::CodeOwners::Entry, feature_category: :source_code_managem
     described_class.new(
       "/**/file",
       "@user jane@gitlab.org @group @group/nested-group @@maintainer @@developers @@maintainer",
-      "Documentation"
+      section: "Documentation"
     )
   end
 
@@ -155,9 +155,9 @@ RSpec.describe Gitlab::CodeOwners::Entry, feature_category: :source_code_managem
         described_class.new(
           "/**/file",
           "@user jane@gitlab.org @group @group/nested-group",
-          "Documentation",
-          false,
-          2)
+          section: "Documentation",
+          optional: false,
+          approvals_required: 2)
       end
 
       it 'returns 2' do
@@ -170,7 +170,7 @@ RSpec.describe Gitlab::CodeOwners::Entry, feature_category: :source_code_managem
         described_class.new(
           "/**/file",
           "@user jane@gitlab.org @group @group/nested-group",
-          "Documentation")
+          section: "Documentation")
       end
 
       it 'returns 0' do

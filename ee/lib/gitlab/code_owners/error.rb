@@ -9,6 +9,7 @@ module Gitlab
       MISSING_SECTION_NAME = :missing_section_name
       INVALID_APPROVAL_REQUIREMENT = :invalid_approval_requirement
       INVALID_SECTION_FORMAT = :invalid_section_format
+      OWNER_WITHOUT_PERMISSION = :owner_without_permission
 
       def initialize(message:, line_number:, path:)
         @message = message
