@@ -53542,6 +53542,33 @@ msgstr ""
 msgid "Service accounts"
 msgstr ""
 
+msgid "ServiceAccounts|Add Service Account"
+msgstr ""
+
+msgid "ServiceAccounts|An error occurred while fetching the service accounts."
+msgstr ""
+
+msgid "ServiceAccounts|Delete Account"
+msgstr ""
+
+msgid "ServiceAccounts|Delete Account and Contributions"
+msgstr ""
+
+msgid "ServiceAccounts|Edit"
+msgstr ""
+
+msgid "ServiceAccounts|Manage Access Tokens"
+msgstr ""
+
+msgid "ServiceAccounts|Name"
+msgstr ""
+
+msgid "ServiceAccounts|Service Accounts"
+msgstr ""
+
+msgid "ServiceAccounts|Service accounts are non-human accounts that allow interactions between software applications, systems, or services. %{learnMore}"
+msgstr ""
+
 msgid "ServiceAccount|No more seats are available to create Service Account User"
 msgstr ""
 

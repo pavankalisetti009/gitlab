@@ -4,9 +4,6 @@ import createRouter from './router';
 
 import app from './service_accounts_app.vue';
 
-import { useServiceAccounts } from './stores/service_accounts';
-import { useAccesssTokens } from './stores/access_tokens';
-
 Vue.use(PiniaVuePlugin);
 
 export default (el) => {
@@ -14,21 +11,20 @@ export default (el) => {
     return null;
   }
 
-  const { basePath } = el.dataset;
+  const { basePath, serviceAccountsPath, serviceAccountsDocsPath } = el.dataset;
 
   const pinia = createPinia();
   const router = createRouter(basePath);
-
-  const serviceAccountsStore = useServiceAccounts(pinia);
-  const accessTokensStore = useAccesssTokens(pinia);
 
   return new Vue({
     el,
     name: 'ServiceAccountsRoot',
     router,
     pinia,
-    serviceAccountsStore,
-    accessTokensStore,
+    provide: {
+      serviceAccountsPath,
+      serviceAccountsDocsPath,
+    },
     render(createElement) {
       return createElement(app);
     },

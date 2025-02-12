@@ -1,4 +1,4 @@
 - page_title _('Service Accounts')
 
-#js-service-accounts{ data: { base_path: admin_application_settings_service_accounts_path } }
+#js-service-accounts{ data: { base_path: admin_application_settings_service_accounts_path, service_accounts: { path: expose_url(api_v4_service_accounts_path), docs_path: help_page_path('user/profile/service_accounts.md') } } }
   = gl_loading_icon(css_class: 'gl-my-5', size: 'md')
