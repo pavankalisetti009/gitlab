@@ -28,6 +28,12 @@ module Gitlab
 
             return [] if messages.blank?
 
+            # DCR doesn't set request_id in messages, hence the messages return the full list
+            #   without excluding the last user role message.
+            # Since the last user message is appended in `ReactExecutor`, we exclude it here.
+            # See https://gitlab.com/gitlab-org/gitlab/-/issues/501150#note_2336430176 for more info.
+            messages.pop if messages.last.role == Gitlab::Llm::AiMessage::ROLE_USER
+
             messages.last(last_n).map do |message, _|
               { role: message.role.to_sym, content: message.content,
                 additional_context: message.extras['additional_context'],
