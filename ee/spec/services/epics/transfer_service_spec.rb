@@ -49,9 +49,23 @@ RSpec.describe Epics::TransferService, feature_category: :portfolio_management d
           expect(new_epic.confidential).to eq(epic.confidential)
         end
 
-        it 'publishes events for the new epics' do
-          expect { service.execute }
-            .to publish_event(Epics::EpicCreatedEvent).with({ id: an_instance_of(Integer), group_id: new_group.id })
+        context 'for published event' do
+          it 'publishes work item event for the new epics' do
+            expect { service.execute }
+              .to publish_event(WorkItems::WorkItemCreatedEvent)
+                    .with({ id: an_instance_of(Integer), namespace_id: new_group.id })
+          end
+
+          context 'when work_item_epics_ssot feature flag is disabled' do
+            before do
+              stub_feature_flags(work_item_epics_ssot: false)
+            end
+
+            it 'publishes en epic event for the new epics' do
+              expect { service.execute }
+                .to publish_event(Epics::EpicCreatedEvent).with({ id: an_instance_of(Integer), group_id: new_group.id })
+            end
+          end
         end
 
         it 'does not recreate missing epics that are not applied to issues' do
@@ -93,7 +107,7 @@ RSpec.describe Epics::TransferService, feature_category: :portfolio_management d
 
         context 'when create_epic returns nil' do
           before do
-            allow_next_instance_of(Epics::CreateService) do |instance|
+            allow_next_instance_of(WorkItems::LegacyEpics::CreateService) do |instance|
               allow(instance).to receive(:execute).and_return(nil)
             end
           end

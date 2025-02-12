@@ -37,7 +37,7 @@ RSpec.describe 'Issue actions', :js, feature_category: :team_planning do
         visit project_issue_path(project, issue)
         # TODO: restore threshold after epic-work item sync
         # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
-        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(115)
+        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(119)
       end
 
       it 'clicking "Promote to epic" creates and redirects user to epic' do

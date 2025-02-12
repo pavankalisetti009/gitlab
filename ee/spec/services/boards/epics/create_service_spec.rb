@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Boards::Epics::CreateService do
+RSpec.describe Boards::Epics::CreateService, feature_category: :team_planning do
   let_it_be(:user) { create(:user) }
   let_it_be(:parent_group) { create(:group) }
   let_it_be(:group) { create(:group, parent: parent_group) }
@@ -78,6 +78,14 @@ RSpec.describe Boards::Epics::CreateService do
 
           it_behaves_like 'epic creation error', /Board not found/
         end
+      end
+
+      context 'when work_item_epics_ssot feature flag is disabled' do
+        before do
+          stub_feature_flags(work_item_epics_ssot: false)
+        end
+
+        it_behaves_like 'success epic creation'
       end
     end
 
