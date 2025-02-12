@@ -15,7 +15,8 @@ module EE
         # So we pass DEVELOPER and nil here, meaning we assume that all members will be billable.
         # See https://gitlab.com/gitlab-org/gitlab/-/issues/485631
         return unless root_namespace.block_seat_overages? &&
-          !root_namespace.seats_available_for?(invited_user_ids, ::Gitlab::Access::DEVELOPER, nil)
+          !::GitlabSubscriptions::MemberManagement::BlockSeatOverages.seats_available_for_group?(root_namespace,
+            invited_user_ids, ::Gitlab::Access::DEVELOPER, nil)
 
         raise ::Members::ImportProjectTeamService::SeatLimitExceededError, error_message
       end
