@@ -61,11 +61,13 @@ module EE
           end
 
           def triggered_for_mr_pipelines?
-            pipeline_source == :merge_request_event
+            pipeline_source&.to_sym == :merge_request_event
           end
 
           def valid_pipeline_source?
-            ::Enums::Ci::Pipeline.ci_and_security_orchestration_sources.key?(pipeline_source)
+            return false if pipeline_source.blank?
+
+            ::Enums::Ci::Pipeline.ci_and_security_orchestration_sources.key?(pipeline_source.to_sym)
           end
 
           def security_policies_available?
