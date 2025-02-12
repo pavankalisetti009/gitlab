@@ -63717,6 +63717,9 @@ msgstr ""
 msgid "VulnerabilityManagement|Something went wrong, could not get user."
 msgstr ""
 
+msgid "VulnerabilityManagement|Something went wrong, could not update vulnerability severity."
+msgstr ""
+
 msgid "VulnerabilityManagement|Something went wrong, could not update vulnerability state."
 msgstr ""
 
@@ -63733,6 +63736,9 @@ msgid "VulnerabilityManagement|Verified as fixed or mitigated"
 msgstr ""
 
 msgid "VulnerabilityManagement|Vulnerability name or type. Ex: Cross-site scripting"
+msgstr ""
+
+msgid "VulnerabilityManagement|Vulnerability set to %{severity} severity"
 msgstr ""
 
 msgid "VulnerabilityManagement|Will not fix or a false-positive"

@@ -36,9 +36,9 @@ export default {
   },
   computed: {
     severityOptions() {
-      return Object.keys(SEVERITY_LEVELS).map((key) => ({
-        value: key,
-        text: SEVERITY_LEVELS[key],
+      return Object.entries(SEVERITY_LEVELS).map(([value, text]) => ({
+        value,
+        text,
       }));
     },
   },
@@ -59,8 +59,8 @@ export default {
         return;
       }
 
-      this.$emit('severityChange', {
-        severity: this.severity,
+      this.$emit('change', {
+        newSeverity: this.severity,
         comment: this.comment,
       });
       this.resetForm();
