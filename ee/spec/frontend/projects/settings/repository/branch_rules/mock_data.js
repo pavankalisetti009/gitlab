@@ -37,10 +37,6 @@ export const branchRulesMockResponse = {
             id: 'gid://gitlab/Projects/BranchRule/1',
             isDefault: true,
             matchingBranchesCount: 1,
-            squashOption: {
-              option: 'Allow',
-              helpText: 'Checkbox is visible and unselected by default.',
-            },
             branchProtection: {
               allowForcePush: true,
               codeOwnerApprovalRequired: true,
@@ -68,7 +64,6 @@ export const branchRulesMockResponse = {
             id: 'gid://gitlab/Projects/BranchRule/2',
             isDefault: false,
             matchingBranchesCount: 2,
-            squashOption: null,
             branchProtection: {
               allowForcePush: false,
               codeOwnerApprovalRequired: false,
@@ -111,7 +106,6 @@ export const predefinedBranchRulesMockResponse = {
             isDefault: false,
             matchingBranchesCount: 12,
             branchProtection: null,
-            squashOption: null,
             externalStatusChecks: {
               nodes: [],
               __typename: 'ExternalStatusCheckConnection',
@@ -137,7 +131,6 @@ export const predefinedBranchRulesMockResponse = {
             isDefault: false,
             matchingBranchesCount: 14,
             branchProtection: null,
-            squashOption: null,
             externalStatusChecks: {
               nodes: [],
               __typename: 'ExternalStatusCheckConnection',
@@ -198,6 +191,7 @@ export const branchRulePropsMock = {
   },
   approvalRulesTotal: 1,
   statusChecksTotal: 2,
+  projectPath: 'some/project/path',
 };
 
 export const protectableBranches = ['make-release-umd-bundle', 'main', 'v2.x'];
