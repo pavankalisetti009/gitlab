@@ -72,22 +72,26 @@ module BulkImports
         epic.save(touch: false)
       end
 
-      def handle_epic_issue(relation_object)
-        issue_as_work_item = WorkItem.id_in(relation_object.id).first
-        return unless issue_as_work_item
+      def handle_epic_issue(issue)
+        issue_as_work_item = WorkItem.id_in(issue.id).first
 
-        if issue_as_work_item.epic && issue_as_work_item.epic.work_item
-          work_item_parent_link = issue_as_work_item.epic.work_item.child_links.for_children(issue_as_work_item)
+        if issue_as_work_item&.epic&.work_item
+          existing_parent_link = issue_as_work_item.epic.work_item.child_links.for_children(issue_as_work_item)
+          return if existing_parent_link.present?
 
-          unless work_item_parent_link.present?
-            ::WorkItems::ParentLinks::CreateService.new(
-              issue_as_work_item.epic.work_item, current_user,
-              { target_issuable: issue_as_work_item, synced_work_item: true }
-            ).execute
-          end
+          create_parent_link = ::WorkItems::ParentLinks::CreateService.new(
+            issue_as_work_item.epic.work_item, current_user,
+            { target_issuable: issue_as_work_item, synced_work_item: true }
+          ).execute
+
+          return unless create_parent_link[:status] == :success
+
+          legacy_epic_issue_link = issue.epic_issue
+          legacy_epic_issue_link.work_item_parent_link_id = create_parent_link[:created_references].first.id
+          legacy_epic_issue_link.save(touch: false)
         end
 
-        relation_object
+        issue
       end
     end
   end
