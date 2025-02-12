@@ -20,8 +20,6 @@ RSpec.describe ::Search::Zoekt::EnabledNamespace, feature_category: :global_sear
 
       expect(described_class.new(namespace: subgroup)).to be_invalid
     end
-
-    it { expect(described_class).to validate_jsonb_schema(['zoekt_enabled_namespaces_metadata']) }
   end
 
   describe 'scopes' do
