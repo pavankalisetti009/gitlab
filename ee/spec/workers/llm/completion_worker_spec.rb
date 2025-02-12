@@ -60,6 +60,14 @@ RSpec.describe Llm::CompletionWorker, feature_category: :ai_abstraction_layer do
       )
     end
 
+    it 'tracks user AI feature utilization' do
+      expect_completion_service_call
+      expect(worker).to receive(:log_extra_metadata_on_done).with(:ai_action, ai_action_name)
+      expect(Gitlab::Tracking::AiTracking).to receive(:track_user_activity).with(user)
+
+      subject
+    end
+
     context 'when warden.user.user.key is nil' do
       it 'simulates it' do
         expect_completion_service_call

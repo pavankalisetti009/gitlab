@@ -19206,7 +19206,7 @@ A user with add-on data.
 | <a id="addonuseride"></a>`ide` | [`Ide`](#ide) | IDE settings. |
 | <a id="addonuserjobtitle"></a>`jobTitle` | [`String`](#string) | Job title of the user. |
 | <a id="addonuserlastactivityon"></a>`lastActivityOn` | [`Date`](#date) | Date the user last performed any actions. |
-| <a id="addonuserlastduoactivityon"></a>`lastDuoActivityOn` | [`Date`](#date) | Date of the last Duo activity of the user. Refreshed on Duo Chat and Code Suggestions activity. |
+| <a id="addonuserlastduoactivityon"></a>`lastDuoActivityOn` | [`Date`](#date) | Date of the last Duo activity of the user. Refreshed on any GitLab Duo activity. |
 | <a id="addonuserlastloginat"></a>`lastLoginAt` | [`Time`](#time) | Timestamp of the last sign in. |
 | <a id="addonuserlinkedin"></a>`linkedin` | [`String`](#string) | LinkedIn profile name of the user. |
 | <a id="addonuserlocation"></a>`location` | [`String`](#string) | Location of the user. |

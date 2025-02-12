@@ -25,6 +25,7 @@ module Llm
         )
 
       response_modifier = ::Gitlab::Llm::AiGateway::ResponseModifiers::GitCommand.new(Gitlab::Json.parse(response.body))
+      Gitlab::Tracking::AiTracking.track_user_activity(user)
 
       success(response_modifier.response_body)
     end

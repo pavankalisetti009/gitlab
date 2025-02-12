@@ -69,6 +69,7 @@ module Llm
       Gitlab::Llm::Tracking.event_for_ai_message(
         self.class.to_s, "perform_completion_worker", ai_message: ai_prompt_message
       )
+      Gitlab::Tracking::AiTracking.track_user_activity(ai_prompt_message.user)
 
       Internal::CompletionService.new(ai_prompt_message, options).execute
     ensure
