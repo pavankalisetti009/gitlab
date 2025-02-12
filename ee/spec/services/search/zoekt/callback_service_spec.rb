@@ -36,7 +36,7 @@ RSpec.describe Search::Zoekt::CallbackService, feature_category: :global_search 
       let(:task_type) { 'index' }
 
       it 'does not performs anything' do
-        expect(execute).to be nil
+        expect(execute).to be_nil
       end
     end
 
@@ -112,7 +112,7 @@ RSpec.describe Search::Zoekt::CallbackService, feature_category: :global_search 
 
         it 'deletes the zoekt_repository' do
           expect { execute }.to change { delete_zoekt_task.reload.state }.to('done')
-          expect(delete_zoekt_task.zoekt_repository).to be nil
+          expect(delete_zoekt_task.zoekt_repository).to be_nil
         end
 
         context 'when repository is already deleted' do
@@ -131,17 +131,30 @@ RSpec.describe Search::Zoekt::CallbackService, feature_category: :global_search 
       let(:task_type) { 'delete' }
       let(:task_id) { zoekt_task.id }
       let(:success) { false }
+      let(:jitter) { base_delay * 0.5 }
 
-      context 'when retries left' do
-        let(:zoekt_task) { create(:zoekt_task, node: node) }
+      context 'for first failure', :freeze_time do
+        let_it_be(:zoekt_task) { create(:zoekt_task, node: node) }
+        let(:base_delay) { Search::Zoekt::Task::RETRY_DELAY }
 
-        it 'does not updates the task state' do
+        it 'updates retries_left and perform_at without updating the task state' do
           expect { execute }.to change { zoekt_task.reload.retries_left }.by(-1).and not_change { zoekt_task.state }
+          expect(zoekt_task.perform_at).to be_within(jitter).of(base_delay.from_now)
+        end
+      end
+
+      context 'for second failure', :freeze_time do
+        let_it_be(:zoekt_task) { create(:zoekt_task, node: node, retries_left: 2) }
+        let(:base_delay) { Search::Zoekt::Task::RETRY_DELAY * 2 }
+
+        it 'updates retries_left and perform_at without updating the task state' do
+          expect { execute }.to change { zoekt_task.reload.retries_left }.by(-1).and not_change { zoekt_task.state }
+          expect(zoekt_task.perform_at).to be_within(jitter).of(base_delay.from_now)
         end
       end
 
       context 'when no retries left' do
-        let(:zoekt_task) { create(:zoekt_task, node: node, retries_left: 1) }
+        let_it_be(:zoekt_task) { create(:zoekt_task, node: node, retries_left: 1) }
 
         it 'updates the task state to failed' do
           expect { execute }.to change { zoekt_task.reload.retries_left }.from(1).to(0)

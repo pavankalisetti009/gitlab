@@ -61,10 +61,21 @@ module Search
 
       def process_failure
         return if task.failed?
-        return task.update!(retries_left: task.retries_left.pred) if task.retries_left > 1
+
+        # Add a delay in retry to increase the probability of processing task successfully
+        return task.update!(retries_left: task.retries_left.pred, perform_at: retry_at(task)) if task.retries_left > 1
 
         task.update!(state: :failed, retries_left: 0)
         publish_task_failed_event_for(task)
+      end
+
+      def retry_at(task)
+        attempt = Task.column_defaults['retries_left'] - task.retries_left
+        base_delay = Task::RETRY_DELAY * (2**attempt)
+
+        # Add a random jitter up to 50% of the base delay
+        jitter = rand(0..(base_delay / 2))
+        (base_delay + jitter).from_now
       end
 
       def publish_task_failed_event_for(task)
