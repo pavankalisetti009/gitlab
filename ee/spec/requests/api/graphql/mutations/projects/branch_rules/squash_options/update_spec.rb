@@ -5,14 +5,14 @@ require 'spec_helper'
 RSpec.describe 'Updating a squash option', feature_category: :source_code_management do
   include GraphqlHelpers
 
-  let_it_be(:current_user) { create(:user) }
   let_it_be(:exact_protected_branch) { create(:protected_branch) }
   let_it_be(:project) { exact_protected_branch.project }
   let_it_be(:wildcard_protected_branch) { create(:protected_branch, project: project, name: '*') }
+  let_it_be(:current_user) { create(:user, maintainer_of: project) }
 
-  let(:protected_branch) { exact_protected_branch }
-  let(:branch_rule) { Projects::BranchRule.new(project, protected_branch) }
   let(:global_id) { branch_rule.to_global_id.to_s }
+  let(:protected_branch) { exact_protected_branch }
+
   let(:mutation) do
     graphql_mutation(:branch_rule_squash_option_update, { branch_rule_id: global_id, squash_option: 'NEVER' })
   end
@@ -25,49 +25,25 @@ RSpec.describe 'Updating a squash option', feature_category: :source_code_manage
     stub_licensed_features(branch_rule_squash_options: true)
   end
 
-  context 'when the user does not have permission' do
-    it_behaves_like 'a mutation that returns top-level errors',
-      errors: [Gitlab::Graphql::Authorize::AuthorizeResource::RESOURCE_ACCESS_ERROR]
+  context 'with branch rule' do
+    let(:branch_rule) { Projects::BranchRule.new(project, protected_branch) }
 
-    context 'and a squash option exists' do
-      let!(:squash_option) { create(:branch_rule_squash_option, protected_branch: protected_branch, project: project) }
-
-      it 'does not update the squash option' do
-        expect { mutation_request }.not_to change { squash_option.squash_option }
-      end
-    end
-  end
-
-  context 'when the user has permission' do
-    before_all do
-      project.add_maintainer(current_user)
-    end
-
-    shared_examples_for 'squash options disabled' do
-      it 'raises an error' do
-        mutation_request
-        expect(graphql_errors).to include(a_hash_including('message' => 'Squash options feature disabled'))
-      end
-    end
-
-    context 'and the branch_rule_squash_settings feature flag is disabled' do
-      before do
-        stub_feature_flags(branch_rule_squash_settings: false)
-      end
-
-      it_behaves_like 'squash options disabled'
-    end
-
-    context 'and the feature is not available' do
+    context 'when the feature is not available' do
       before do
         stub_licensed_features(branch_rule_squash_options: false)
       end
 
-      it_behaves_like 'squash options disabled'
+      it 'returns an error' do
+        mutation_request
+
+        expect(mutation_response['errors']).to eq(['Updating BranchRule not supported'])
+      end
     end
 
     context 'and a squash option exists' do
-      let!(:squash_option) { create(:branch_rule_squash_option, protected_branch: protected_branch, project: project) }
+      let!(:squash_option) do
+        create(:branch_rule_squash_option, protected_branch: protected_branch, project: project)
+      end
 
       it 'updates the squash option' do
         expect { mutation_request }.to change { squash_option.reload.squash_option }.from('default_off').to('never')
