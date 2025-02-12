@@ -217,6 +217,10 @@ module EE
       has_many :project_control_compliance_statuses,
         class_name: 'ComplianceManagement::ComplianceFramework::ProjectControlComplianceStatus'
 
+      # WIP v2 approval rules as part of https://gitlab.com/groups/gitlab-org/-/epics/12955
+      has_many :v2_approval_rules_projects, class_name: 'MergeRequests::ApprovalRulesProject', inverse_of: :project
+      has_many :v2_approval_rules, through: :v2_approval_rules_projects, class_name: 'MergeRequests::ApprovalRule', source: :approval_rule
+
       elastic_index_dependant_association :issues, on_change: :visibility_level
       elastic_index_dependant_association :issues, on_change: :archived
       elastic_index_dependant_association :work_items, on_change: :visibility_level
