@@ -26743,6 +26743,9 @@ msgstr ""
 msgid "GlobalSearch|Projects"
 msgstr ""
 
+msgid "GlobalSearch|Projects not indexed"
+msgstr ""
+
 msgid "GlobalSearch|Recent epics"
 msgstr ""
 
@@ -26903,9 +26906,6 @@ msgid "GlobalSearch|all GitLab"
 msgstr ""
 
 msgid "GlobalSearch|in %{scope}"
-msgstr ""
-
-msgid "GlobalSearch|projects not indexed"
 msgstr ""
 
 msgid "GlobalShortcuts|Copied reference to clipboard."
@@ -33547,7 +33547,7 @@ msgstr ""
 msgid "Learn more about seats owed"
 msgstr ""
 
-msgid "Learn more about shards and replicas in the %{configuration_link_start}Advanced Search configuration%{configuration_link_end} documentation. Changes don't take place until you %{recreated_link_start}recreate%{recreated_link_end} the index."
+msgid "Learn more about shards and replicas in the %{configuration_link_start}advanced search configuration%{configuration_link_end} documentation. Changes don't take place until you %{recreated_link_start}recreate%{recreated_link_end} the index."
 msgstr ""
 
 msgid "Learn more."
@@ -39051,7 +39051,7 @@ msgstr ""
 msgid "Now, personalize your GitLab experience"
 msgstr ""
 
-msgid "Number of Elasticsearch shards and replicas per index:"
+msgid "Number of Elasticsearch shards and replicas per index"
 msgstr ""
 
 msgid "Number of Git pushes after which Gitaly is asked to optimize a repository."
