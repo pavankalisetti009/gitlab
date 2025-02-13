@@ -138,26 +138,10 @@ RSpec.shared_examples 'code generation AI Gateway request params' do
       context 'when using claude_3_5_sonnet_20241022_for_code_gen' do
         let(:expected_saas) { true }
         let(:expected_prompt_id) { "code_suggestions/generations" }
-        let(:expected_prompt_version) { "1.0.1-dev" }
-
-        before do
-          stub_feature_flags(incident_fail_over_generation_provider: false)
-          stub_feature_flags(claude_3_5_sonnet_20241022_for_code_gen: true)
-        end
-
-        it 'returns expected request params' do
-          expect(subject.request_params).to eq(expected_request_params)
-        end
-      end
-
-      context 'when using claude_3_5_sonnet_20240620_for_code_gen' do
-        let(:expected_saas) { true }
-        let(:expected_prompt_id) { "code_suggestions/generations" }
         let(:expected_prompt_version) { "^1.0.0" }
 
         before do
           stub_feature_flags(incident_fail_over_generation_provider: false)
-          stub_feature_flags(claude_3_5_sonnet_20241022_for_code_gen: false)
         end
 
         it 'returns expected request params' do
