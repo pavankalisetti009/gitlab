@@ -7,6 +7,7 @@ RSpec.describe Gitlab::Llm::AiMessage, feature_category: :duo_chat do
 
   let(:content) { 'response' }
   let(:user) { build_stubbed(:user) }
+  let(:thread) { build_stubbed(:ai_conversation_thread) }
   let(:data) do
     {
       timestamp: timestamp,
@@ -20,6 +21,7 @@ RSpec.describe Gitlab::Llm::AiMessage, feature_category: :duo_chat do
       client_subscription_id: 'client_subscription_id',
       user: user,
       chunk_id: 1,
+      thread: thread,
       type: 'tool',
       context: Gitlab::Llm::AiMessageContext.new(resource: user),
       agent_version_id: 1,

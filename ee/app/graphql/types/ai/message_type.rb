@@ -73,8 +73,18 @@ module Types
         scopes: [:api, :read_api, :ai_features],
         description: 'Global ID of the agent version to answer the message.'
 
+      field :thread_id,
+        ::Types::GlobalIDType[::Ai::Conversation::Thread],
+        null: true,
+        scopes: [:api, :read_api, :ai_features],
+        description: 'Global ID of the existing thread for the Chat conversation.'
+
       def id
         object['id']
+      end
+
+      def thread_id
+        object['thread']&.id
       end
 
       def content_html

@@ -11,7 +11,7 @@ RSpec.describe GitlabSchema.types['AiMessage'], feature_category: :duo_chat do
 
   it 'has the expected fields' do
     expected_fields = %w[
-      id request_id content content_html role timestamp errors type chunk_id agent_version_id
+      id request_id content content_html role timestamp errors type chunk_id agent_version_id thread_id
     ]
 
     expect(described_class).to include_graphql_fields(*expected_fields)
@@ -25,6 +25,18 @@ RSpec.describe GitlabSchema.types['AiMessage'], feature_category: :duo_chat do
       resolved_field = resolve_field(:id, message.to_h, current_user: current_user)
 
       expect(resolved_field).to eq(expected_id)
+    end
+  end
+
+  describe '#thread_id' do
+    let(:thread) { build_stubbed(:ai_conversation_thread, user: current_user) }
+    let(:expected_value) { thread.id }
+    let(:message) { build(:ai_message, thread: thread) }
+
+    it 'returns thread id' do
+      resolved_field = resolve_field(:thread_id, message.to_h, current_user: current_user)
+
+      expect(resolved_field).to eq(expected_value)
     end
   end
 

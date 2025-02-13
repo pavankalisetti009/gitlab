@@ -17,6 +17,8 @@ RSpec.describe 'Subscriptions::AiCompletionResponse', feature_category: :duo_cha
     project_issue_url(external_issue.project, external_issue)
   end
 
+  let_it_be(:thread) { create(:ai_conversation_thread) }
+
   let(:current_user) { nil }
   let(:requested_user) { current_user }
   let(:ai_completion_response) { graphql_dig_at(graphql_data(response[:result]), :ai_completion_response) }
@@ -47,6 +49,7 @@ RSpec.describe 'Subscriptions::AiCompletionResponse', feature_category: :duo_cha
           requestId
           errors
           chunkId
+          threadId
           extras {
             sources
           }
@@ -81,6 +84,7 @@ RSpec.describe 'Subscriptions::AiCompletionResponse', feature_category: :duo_cha
         role: ::Gitlab::Llm::AiMessage::ROLE_ASSISTANT,
         errors: [],
         extras: extras,
+        thread: thread,
         chunk_id: nil
       }.with_indifferent_access
 
@@ -95,7 +99,8 @@ RSpec.describe 'Subscriptions::AiCompletionResponse', feature_category: :duo_cha
       expect(ai_completion_response['role']).to eq('ASSISTANT')
       expect(ai_completion_response['requestId']).to eq(request_id)
       expect(ai_completion_response['errors']).to eq([])
-      expect(ai_completion_response['chunk_id']).to eq(nil)
+      expect(ai_completion_response['chunkId']).to eq(nil)
+      expect(ai_completion_response['threadId']).to eq(thread.to_global_id.to_s)
       expect(ai_completion_response['extras']).to eq(extras)
     end
   end

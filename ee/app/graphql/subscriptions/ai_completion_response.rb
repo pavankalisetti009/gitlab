@@ -23,7 +23,7 @@ module Subscriptions
 
     argument :ai_action, ::Types::Ai::ActionEnum,
       required: false,
-      description: 'Name of the Ai action performed as part of the mutaton.'
+      description: 'Name of the AI action performed as part of the mutation.'
 
     def authorized?(args)
       unauthorized! if current_user.nil? || args[:user_id] != current_user.to_global_id
