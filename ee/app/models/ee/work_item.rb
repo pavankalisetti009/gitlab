@@ -33,10 +33,18 @@ module EE
       scope :grouped_by_work_item, -> { group(:id) }
 
       scope :preload_indexing_data, -> do
-        preloaded_data = includes(:namespace,
+        preloaded_data = includes(
+          :dates_source,
+          :author,
           :sync_object,
           ::Gitlab::Issues::TypeAssociationGetter.call,
-          project: :project_feature)
+          :assignees,
+          :labels,
+          :namespace,
+          project: :project_feature
+        )
+
+        ::Preloaders::NamespaceRootAncestorPreloader.new(preloaded_data.map(&:namespace)).execute
 
         if ::Feature.enabled?(:search_work_items_index_notes, ::Feature.current_request)
           preloaded_data = preloaded_data.includes(:notes)
