@@ -6,6 +6,7 @@ describe('validateStrategyValues', () => {
     input                              | expected
     ${CUSTOM_STRATEGY_OPTIONS_KEYS[0]} | ${true}
     ${CUSTOM_STRATEGY_OPTIONS_KEYS[1]} | ${true}
+    ${CUSTOM_STRATEGY_OPTIONS_KEYS[2]} | ${true}
     ${'other string'}                  | ${false}
   `('validates correctly for $input', ({ input, expected }) => {
     expect(validateStrategyValues(input)).toBe(expected);

@@ -1,8 +1,10 @@
 import { shallowMount } from '@vue/test-utils';
 import { GlCollapsibleListbox } from '@gitlab/ui';
 import CodeBlockStrategySelector from 'ee/security_orchestration/components/policy_editor/pipeline_execution/action/code_block_strategy_selector.vue';
+import CodeBlockDeprecatedStrategyBadge from 'ee/security_orchestration/components/policy_editor/pipeline_execution/action/code_block_deprecated_strategy_badge.vue';
 import {
   INJECT,
+  DEPRECATED_INJECT,
   OVERRIDE,
   CUSTOM_STRATEGY_OPTIONS,
 } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/constants';
@@ -13,16 +15,22 @@ describe('CodeBlockStrategySelector', () => {
   const createComponent = ({ propsData = {} } = {}) => {
     wrapper = shallowMount(CodeBlockStrategySelector, {
       propsData,
+      stubs: {
+        GlCollapsibleListbox,
+      },
     });
   };
 
   const findListBox = () => wrapper.findComponent(GlCollapsibleListbox);
+  const findDeprecatedBadge = () => wrapper.findComponent(CodeBlockDeprecatedStrategyBadge);
 
   it('selects action type', () => {
     createComponent();
     expect(findListBox().props('selected')).toBe(INJECT);
-    findListBox().vm.$emit('select', INJECT);
-    expect(wrapper.emitted('select')).toEqual([[INJECT]]);
+
+    findListBox().vm.$emit('select', DEPRECATED_INJECT);
+    expect(wrapper.emitted('select')).toEqual([[DEPRECATED_INJECT]]);
+
     findListBox().vm.$emit('select', OVERRIDE);
     expect(wrapper.emitted('select')[1]).toEqual([OVERRIDE]);
   });
@@ -36,5 +44,64 @@ describe('CodeBlockStrategySelector', () => {
 
     expect(findListBox().props('selected')).toBe(strategy);
     expect(findListBox().props('toggleText')).toBe(CUSTOM_STRATEGY_OPTIONS[strategy]);
+  });
+
+  describe('deprecated strategy', () => {
+    it('renders deprecated "inject_ci" strategy in the listbox items when it is active', () => {
+      createComponent({
+        propsData: {
+          strategy: DEPRECATED_INJECT,
+        },
+      });
+
+      expect(findListBox().props('items')).toEqual([
+        {
+          text: 'Inject',
+          value: INJECT,
+        },
+        {
+          text: 'Override',
+          value: OVERRIDE,
+        },
+        {
+          text: 'Inject without custom stages',
+          value: DEPRECATED_INJECT,
+        },
+      ]);
+    });
+
+    it('does not render deprecated "inject_ci" strategy in the listbox items when it is not active', () => {
+      createComponent({
+        propsData: {
+          strategy: INJECT,
+        },
+      });
+
+      expect(findListBox().props('items')).toEqual([
+        {
+          text: 'Inject',
+          value: INJECT,
+        },
+        {
+          text: 'Override',
+          value: OVERRIDE,
+        },
+      ]);
+    });
+
+    it.each`
+      strategy             | expectedExists
+      ${INJECT}            | ${false}
+      ${DEPRECATED_INJECT} | ${true}
+      ${OVERRIDE}          | ${false}
+    `('renders deprecated badge for $strategy', ({ strategy, expectedExists }) => {
+      createComponent({
+        propsData: {
+          strategy,
+        },
+      });
+
+      expect(findDeprecatedBadge().exists()).toBe(expectedExists);
+    });
   });
 });

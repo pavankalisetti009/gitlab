@@ -2,7 +2,7 @@ export const mockPipelineExecutionActionManifest = `type: pipeline_execution_pol
 name: ''
 description: ''
 enabled: true
-pipeline_config_strategy: inject_ci
+pipeline_config_strategy: inject_policy
 content:
   include:
     - project: ''

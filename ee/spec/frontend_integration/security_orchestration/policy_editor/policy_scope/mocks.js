@@ -48,7 +48,7 @@ export const mockScanExecutionActionProjectManifest = putPolicyScopeComplianceFr
 );
 
 export const mockPipelineExecutionActionManifest = BASE_POLICY('pipeline_execution_policy')
-  .concat(`pipeline_config_strategy: inject_ci
+  .concat(`pipeline_config_strategy: inject_policy
 content:
   include:
     - project: ''
@@ -94,7 +94,7 @@ actions:
   - scan: secret_detection
 `),
   PIPELINE_EXECUTION: BASE_POLICY('pipeline_execution_policy')
-    .concat(`pipeline_config_strategy: inject_ci
+    .concat(`pipeline_config_strategy: inject_policy
 content:
   include:
     - project: ''
@@ -172,7 +172,7 @@ actions:
   - scan: secret_detection
 `),
   PIPELINE_EXECUTION: BASE_POLICY(`pipeline_execution_policy`)
-    .concat(`pipeline_config_strategy: inject_ci
+    .concat(`pipeline_config_strategy: inject_policy
 content:
   include:
     - project: ''

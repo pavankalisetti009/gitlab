@@ -24,6 +24,15 @@ export const mockPipelineExecutionObject = {
   description: '',
   enabled: true,
   name: '',
+  pipeline_config_strategy: 'inject_policy',
+  type: 'pipeline_execution_policy',
+};
+
+export const mockWithInjectCiPipelineExecutionObject = {
+  content: { include: [{ project: '' }] },
+  description: '',
+  enabled: true,
+  name: '',
   pipeline_config_strategy: 'inject_ci',
   type: 'pipeline_execution_policy',
 };
@@ -68,7 +77,7 @@ export const mockWithoutRefPipelineExecutionManifest = `type: pipeline_execution
 name: Ci config file
 description: triggers all protected branches except main
 enabled: true
-pipeline_config_strategy: inject_ci
+pipeline_config_strategy: inject_policy
 content:
   include:
     - project: GitLab.org/GitLab
@@ -104,7 +113,7 @@ content:
 export const mockPipelineExecutionManifest = `type: pipeline_execution_policy
 name: Include external file
 description: This policy enforces pipeline execution with configuration from external file
-pipeline_config_strategy: inject_ci
+pipeline_config_strategy: inject_policy
 enabled: false
 content:
    include:
@@ -116,7 +125,7 @@ content:
 export const mockPipelineExecutionWithConfigurationManifest = `type: pipeline_execution_policy
 name: Include external file
 description: This policy enforces pipeline execution with configuration from external file
-pipeline_config_strategy: inject_ci
+pipeline_config_strategy: inject_policy
 enabled: false
 skip_ci:
    allowed: true

@@ -5,6 +5,16 @@ export const DEFAULT_PIPELINE_EXECUTION_POLICY = `type: pipeline_execution_polic
 name: ''
 description: ''
 enabled: true
+pipeline_config_strategy: inject_policy
+content:
+  include:
+    - project: ''
+`;
+
+export const INJECT_CI_PIPELINE_EXECUTION_POLICY = `type: pipeline_execution_policy
+name: ''
+description: ''
+enabled: true
 pipeline_config_strategy: inject_ci
 content:
   include:
@@ -35,7 +45,7 @@ export const DEFAULT_PIPELINE_EXECUTION_POLICY_NEW_FORMAT = `pipeline_execution_
 - name: ''
   description: ''
   enabled: true
-  pipeline_config_strategy: inject_ci
+  pipeline_config_strategy: inject_policy
   content:
     include:
       - project: ''
@@ -45,7 +55,7 @@ export const DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_SCOPE = `type: pipeline_exec
 name: ''
 description: ''
 enabled: true
-pipeline_config_strategy: inject_ci
+pipeline_config_strategy: inject_policy
 policy_scope:
   projects:
     excluding: []
@@ -58,7 +68,7 @@ export const DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_SUFFIX = `type: pipeline_exe
 name: ''
 description: ''
 enabled: true
-pipeline_config_strategy: inject_ci
+pipeline_config_strategy: inject_policy
 suffix: on_conflict
 content:
   include:
@@ -67,7 +77,8 @@ content:
 
 export const CONDITIONS_LABEL = s__('ScanExecutionPolicy|Conditions');
 
-export const INJECT = 'inject_ci';
+export const DEPRECATED_INJECT = 'inject_ci';
+export const INJECT = 'inject_policy';
 export const OVERRIDE = 'override_project_ci';
 
 export const CUSTOM_STRATEGY_OPTIONS = {
@@ -75,8 +86,16 @@ export const CUSTOM_STRATEGY_OPTIONS = {
   [OVERRIDE]: s__('ScanExecutionPolicy|Override'),
 };
 
-export const CUSTOM_STRATEGY_OPTIONS_KEYS = Object.keys(CUSTOM_STRATEGY_OPTIONS);
+export const CUSTOM_STRATEGY_OPTIONS_WITH_DEPRECATED = {
+  ...CUSTOM_STRATEGY_OPTIONS,
+  [DEPRECATED_INJECT]: s__('ScanExecutionPolicy|Inject without custom stages'),
+};
+
+export const CUSTOM_STRATEGY_OPTIONS_KEYS = Object.keys(CUSTOM_STRATEGY_OPTIONS_WITH_DEPRECATED);
 export const CUSTOM_STRATEGY_OPTIONS_LISTBOX_ITEMS = mapToListboxItems(CUSTOM_STRATEGY_OPTIONS);
+export const CUSTOM_STRATEGY_OPTIONS_WITH_DEPRECATED_LISTBOX_ITEMS = mapToListboxItems(
+  CUSTOM_STRATEGY_OPTIONS_WITH_DEPRECATED,
+);
 
 export const SUFFIX_ON_CONFLICT = 'on_conflict';
 export const SUFFIX_NEVER = 'never';
