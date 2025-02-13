@@ -519,27 +519,6 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
 
         agent.execute
       end
-
-      context "with feature flag disabled" do
-        before do
-          stub_feature_flags(current_page_context_prompt_in_aigw: false)
-        end
-
-        it "pass current page description" do
-          params = step_params
-          params[:messages].first[:context] = {
-            type: issue_resource.current_page_type,
-            content: issue_resource.current_page_short_description
-          }
-
-          expect_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
-            expect(react_agent).to receive(:step).with(params)
-                                                 .and_yield(action_event).and_return([action_event])
-          end
-
-          agent.execute
-        end
-      end
     end
 
     context 'when Duo chat is self-hosted' do
