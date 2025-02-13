@@ -15,7 +15,7 @@ module GitlabSubscriptions
                   @namespace = find_namespace(params[:id])
 
                   not_found!('Namespace') unless @namespace
-                  bad_request!('Must be root namespace!') unless @namespace.root?
+                  bad_request!('Must be root namespace') unless @namespace.root?
                 end
 
                 helpers do
@@ -38,7 +38,7 @@ module GitlabSubscriptions
 
                   params :storage do
                     optional :additional_purchased_storage_size, type: Integer, desc: 'Additional storage size'
-                    optional :additional_purchased_storage_ends_on, type: Date, desc: 'Storage end date'
+                    optional :additional_purchased_storage_ends_on, type: Date, desc: 'Additional storage end date'
                   end
 
                   params :add_on do
