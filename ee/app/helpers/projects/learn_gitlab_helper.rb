@@ -6,7 +6,6 @@ module Projects
     IMAGE_PATH_PLAN = "learn_gitlab/section_plan.svg"
     IMAGE_PATH_DEPLOY = "learn_gitlab/section_deploy.svg"
     IMAGE_PATH_WORKSPACE = "learn_gitlab/section_workspace.svg"
-    LICENSE_SCANNING_RUN_PATH = 'user/compliance/license_scanning_of_cyclonedx_files/_index'
     GITLAB_COM = 'gitlab.com'
     ONBOARDING_START_TRIAL = 'onboarding-start-trial'
     ONBOARDING_REQUIRE_MR_APPROVALS = 'onboarding-require-merge-approvals'
@@ -116,7 +115,7 @@ module Projects
 
     def deploy_section_action_urls(project)
       {
-        license_scanning_run: help_page_path(LICENSE_SCANNING_RUN_PATH),
+        license_scanning_run: help_page_path('user/compliance/license_scanning_of_cyclonedx_files/_index.md'),
         secure_dependency_scanning_run: project_security_configuration_path(project, anchor: 'dependency-scanning'),
         secure_dast_run: project_security_configuration_path(project, anchor: 'dast')
       }
