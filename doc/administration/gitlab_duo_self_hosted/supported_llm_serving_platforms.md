@@ -118,7 +118,7 @@ Examples:
      --served_model_name <choose-a-name-for-the-model> \
      --tokenizer_mode mistral \
      --load_format safetensors \
-     --tokenizer <path-to-model>/Mixtral-8x7B-Instruct-v0.1/
+     --tokenizer <path-to-model>/Mixtral-8x7B-Instruct-v0.1
    ```
 
 ## For cloud-hosted model deployments
