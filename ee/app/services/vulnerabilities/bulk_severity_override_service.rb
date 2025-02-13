@@ -20,6 +20,11 @@ module Vulnerabilities
         update_support_tables(vulnerabilities, db_attributes)
         vulnerabilities.update_all(db_attributes[:vulnerabilities])
       end
+
+      Note.transaction do
+        notes_ids = Note.insert_all!(db_attributes[:system_notes], returning: %w[id])
+        SystemNoteMetadata.insert_all!(system_note_metadata_attributes_for(notes_ids))
+      end
     end
 
     def authorized_for_project(project)
@@ -43,7 +48,8 @@ module Vulnerabilities
     def db_attributes_for(vulnerability_attrs)
       {
         vulnerabilities: vulnerabilities_update_attributes,
-        severity_overrides: severity_overrides_attributes_for(vulnerability_attrs)
+        severity_overrides: severity_overrides_attributes_for(vulnerability_attrs),
+        system_notes: system_note_attributes_for(vulnerability_attrs)
       }
     end
 
@@ -69,6 +75,49 @@ module Vulnerabilities
         severity: @new_severity,
         updated_at: now
       }
+    end
+
+    def system_note_metadata_action
+      "vulnerability_severity_changed"
+    end
+
+    def system_note_attributes_for(vulnerability_attrs)
+      vulnerability_attrs.map do |id, severity, project_id, namespace_id|
+        {
+          noteable_type: "Vulnerability",
+          noteable_id: id,
+          project_id: project_id,
+          namespace_id: namespace_id,
+          system: true,
+          note: ::SystemNotes::VulnerabilitiesService.formatted_note(
+            'changed',
+            @new_severity,
+            nil,
+            comment,
+            'severity',
+            severity
+          ),
+          author_id: user.id,
+          created_at: now,
+          updated_at: now,
+          discussion_id: Discussion.discussion_id(Note.new({
+            noteable_id: id,
+            noteable_type: "Vulnerability"
+          }))
+        }
+      end
+    end
+
+    def system_note_metadata_attributes_for(results)
+      results.map do |row|
+        id = row['id']
+        {
+          note_id: id,
+          action: system_note_metadata_action,
+          created_at: now,
+          updated_at: now
+        }
+      end
     end
   end
 end

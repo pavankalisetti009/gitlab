@@ -58,7 +58,7 @@ RSpec.describe Vulnerabilities::BulkSeverityOverrideService, feature_category: :
       end
 
       it 'inserts a severity override record for each vulnerability' do
-        service.execute
+        expect { service.execute }.to change { Vulnerabilities::SeverityOverride.count }.by(vulnerability_ids.count)
 
         vulnerability.reload
         last_override = Vulnerabilities::SeverityOverride.last
@@ -66,6 +66,24 @@ RSpec.describe Vulnerabilities::BulkSeverityOverrideService, feature_category: :
         expect(last_override.original_severity).to eq('high')
         expect(last_override.new_severity).to eq(new_severity)
         expect(last_override.author).to eq(user)
+      end
+
+      it 'inserts a system note for each vulnerability' do
+        expect { service.execute }.to change { Note.count }.by(vulnerability_ids.count)
+
+        last_note = Note.last
+        expect(last_note.noteable).to eq(vulnerability)
+        expect(last_note.author).to eq(user)
+        expect(last_note.project).to eq(project)
+        expect(last_note.namespace_id).to eq(project.project_namespace_id)
+        expect(last_note.note).to eq(
+          "changed vulnerability severity from High to #{new_severity.titleize} " \
+            "with the following comment: \"#{comment}\"")
+        expect(last_note).to be_system
+
+        last_system_note_metadata = SystemNoteMetadata.last
+        expect(last_system_note_metadata.note_id).to eq(last_note.id)
+        expect(last_system_note_metadata.action).to eq("vulnerability_severity_changed")
       end
 
       it 'returns a service response' do
@@ -95,6 +113,14 @@ RSpec.describe Vulnerabilities::BulkSeverityOverrideService, feature_category: :
           allow_next_instance_of(described_class) do |instance|
             allow(instance).to receive(:authorized_and_ff_enabled_for_all_projects?).and_return(true)
           end
+        end
+
+        it 'inserts a severity override record for each vulnerability' do
+          expect { service.execute }.to change { Vulnerabilities::SeverityOverride.count }.by(vulnerability_ids.count)
+        end
+
+        it 'inserts a system note for the vulnerability' do
+          expect { service.execute }.to change { Note.count }.by(vulnerability_ids.count)
         end
 
         it 'does not introduce N+1 queries' do
