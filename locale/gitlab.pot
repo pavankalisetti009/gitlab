@@ -44473,6 +44473,9 @@ msgstr ""
 msgid "Profiles|Your email address was automatically set based on your %{provider_label} account"
 msgstr ""
 
+msgid "Profiles|Your job title was automatically set based on your %{provider_label} account"
+msgstr ""
+
 msgid "Profiles|Your location was automatically set based on your %{provider_label} account"
 msgstr ""
 
@@ -44480,6 +44483,9 @@ msgid "Profiles|Your name was automatically set based on your %{provider_label} 
 msgstr ""
 
 msgid "Profiles|Your name was automatically set based on your %{provider_label} account, so people you know can recognize you."
+msgstr ""
+
+msgid "Profiles|Your organization was automatically set based on your %{provider_label} account"
 msgstr ""
 
 msgid "Profiles|https://website.com"
