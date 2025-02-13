@@ -421,6 +421,38 @@ export const GET_DOT_DEVFILE_FOLDER_RESULT = {
   },
 };
 
+export const GET_DOT_DEVFILE_FOLDER_RESULT_SECOND_CALL = {
+  data: {
+    project: {
+      id: 'gid://gitlab/Project/1',
+      __typename: 'Project',
+      repository: {
+        __typename: 'Repository',
+        tree: {
+          __typename: 'Tree',
+          blobs: {
+            __typename: 'BlobConnection',
+            edges: [
+              {
+                __typename: 'BlobEdge',
+                node: {
+                  id: 4,
+                  __typename: 'Blob',
+                  path: '.devfile/.devfile.aa.yaml',
+                },
+              },
+            ],
+            pageInfo: {
+              hasNextPage: true,
+              endCursor: 'MTc',
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
 export const GET_DOT_DEVFILE_FOLDER_WITH_NO_RETURN_RESULT = {
   data: {
     project: {

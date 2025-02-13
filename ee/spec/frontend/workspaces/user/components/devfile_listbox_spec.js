@@ -13,6 +13,7 @@ import {
   GET_DOT_DEVFILE_YAML_RESULT_WITH_NO_RETURN_RESULT,
   GET_DOT_DEVFILE_FOLDER_RESULT,
   GET_DOT_DEVFILE_FOLDER_WITH_NO_RETURN_RESULT,
+  GET_DOT_DEVFILE_FOLDER_RESULT_SECOND_CALL,
 } from '../../mock_data';
 
 Vue.use(VueApollo);
@@ -26,11 +27,16 @@ describe('workspaces/user/components/devfile_listbox', () => {
   const buildMockApollo = (
     yamlResult = GET_DOT_DEVFILE_YAML_RESULT,
     folderResult = GET_DOT_DEVFILE_FOLDER_RESULT,
+    secondFolderResult = null,
   ) => {
     getDotDevfileYamlQueryHandler = jest.fn();
     getDotDevfileYamlQueryHandler.mockResolvedValue(yamlResult);
+
     getDotDevfileFolderQueryHandler = jest.fn();
-    getDotDevfileFolderQueryHandler.mockResolvedValue(folderResult);
+    getDotDevfileFolderQueryHandler.mockResolvedValueOnce(folderResult);
+    if (secondFolderResult !== null) {
+      getDotDevfileFolderQueryHandler.mockResolvedValueOnce(secondFolderResult);
+    }
 
     mockApollo = createMockApollo([
       [getDotDevfileYamlQuery, getDotDevfileYamlQueryHandler],
@@ -119,6 +125,14 @@ describe('workspaces/user/components/devfile_listbox', () => {
     });
 
     it('calls onBottomReached and loads more devfiles', async () => {
+      buildMockApollo(
+        GET_DOT_DEVFILE_YAML_RESULT,
+        GET_DOT_DEVFILE_FOLDER_RESULT,
+        GET_DOT_DEVFILE_FOLDER_RESULT_SECOND_CALL,
+      );
+      buildWrapper();
+      await waitForPromises();
+
       await findCollapsibleListbox().vm.$emit('bottom-reached');
       await nextTick();
 
@@ -126,9 +140,7 @@ describe('workspaces/user/components/devfile_listbox', () => {
     });
 
     it('selects first available user devfile by default', () => {
-      expect(wrapper.vm.selectedDevfilePath).toBe(
-        wrapper.vm.userDevfilePathsWithGroup.options[0].value,
-      );
+      expect(findCollapsibleListbox().props('selected')).toBe('.devfile.yaml');
     });
 
     it('falls back to default devfile when no user devfiles exist', async () => {
