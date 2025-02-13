@@ -7,6 +7,7 @@ import ImageToken from './image_token.vue';
 import ClusterToken from './cluster_token.vue';
 import ProjectToken from './project_token.vue';
 import IdentifierToken from './identifier_token.vue';
+import ScannerToken from './scanner_token.vue';
 
 export const STATUS_TOKEN_DEFINITION = {
   type: 'state',
@@ -41,6 +42,15 @@ export const TOOL_VENDOR_TOKEN_DEFINITION = {
   multiSelect: true,
   unique: true,
   token: ToolToken,
+  operators: OPERATORS_OR,
+};
+
+export const SCANNER_TOKEN_DEFINITION = {
+  type: 'scanner',
+  title: ScannerToken.i18n.label,
+  multiSelect: true,
+  unique: true,
+  token: ScannerToken,
   operators: OPERATORS_OR,
 };
 
