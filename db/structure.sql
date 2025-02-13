@@ -17825,6 +17825,7 @@ CREATE TABLE packages_debian_group_architectures (
     distribution_id bigint NOT NULL,
     name text NOT NULL,
     group_id bigint,
+    CONSTRAINT check_7a087a5b9f CHECK ((group_id IS NOT NULL)),
     CONSTRAINT check_ddb220164a CHECK ((char_length(name) <= 255))
 );
 
