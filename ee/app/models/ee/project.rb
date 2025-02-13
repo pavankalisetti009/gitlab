@@ -1483,7 +1483,7 @@ module EE
     strong_memoize_attr :pages_parallel_deployments_limit
 
     def pages_parallel_deployments_count
-      ::PagesDeployment.count_versioned_deployments_for(self, pages_parallel_deployments_limit)
+      ::PagesDeployment.count_versioned_deployments_for(self, pages_parallel_deployments_limit + 1)
     end
     strong_memoize_attr :pages_parallel_deployments_count
 
@@ -1492,7 +1492,7 @@ module EE
 
       ::PagesDeployment.count_versioned_deployments_for(
         root_ancestor.all_projects.with_namespace_domain_pages,
-        pages_parallel_deployments_limit
+        pages_parallel_deployments_limit + 1
       )
     end
     strong_memoize_attr :pages_domain_level_parallel_deployments_count
