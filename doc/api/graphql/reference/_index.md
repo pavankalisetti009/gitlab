@@ -43078,6 +43078,7 @@ Stage event identifiers.
 | <a id="valuestreamstageeventmerge_request_first_deployed_to_production"></a>`MERGE_REQUEST_FIRST_DEPLOYED_TO_PRODUCTION` | Merge request first deployed to production event. |
 | <a id="valuestreamstageeventmerge_request_label_added"></a>`MERGE_REQUEST_LABEL_ADDED` | Merge request label added event. |
 | <a id="valuestreamstageeventmerge_request_label_removed"></a>`MERGE_REQUEST_LABEL_REMOVED` | Merge request label removed event. |
+| <a id="valuestreamstageeventmerge_request_last_approved_at"></a>`MERGE_REQUEST_LAST_APPROVED_AT` | Merge request last approved at event. |
 | <a id="valuestreamstageeventmerge_request_last_build_finished"></a>`MERGE_REQUEST_LAST_BUILD_FINISHED` | Merge request last build finished event. |
 | <a id="valuestreamstageeventmerge_request_last_build_started"></a>`MERGE_REQUEST_LAST_BUILD_STARTED` | Merge request last build started event. |
 | <a id="valuestreamstageeventmerge_request_last_edited"></a>`MERGE_REQUEST_LAST_EDITED` | Merge request last edited event. |

@@ -140,6 +140,7 @@ export const formEvents = [
       'merge_request_label_added',
       'merge_request_label_removed',
       'merge_request_first_assigned_at',
+      'merge_request_last_approved_at',
     ],
   },
 ];
