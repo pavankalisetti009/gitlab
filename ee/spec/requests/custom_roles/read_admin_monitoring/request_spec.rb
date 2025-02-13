@@ -61,7 +61,7 @@ RSpec.describe 'User with read_admin_monitoring', feature_category: :audit_event
   end
 
   describe Admin::SystemInfoController do
-    it "GET #show", pending: "🚧 Under Construction" do
+    it "GET #show" do
       get admin_system_info_path
 
       expect(response).to have_gitlab_http_status(:ok)

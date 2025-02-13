@@ -35,7 +35,7 @@ RSpec.describe Sidebars::Admin::Menus::MonitoringMenu, feature_category: :naviga
         stub_licensed_features(admin_audit_log: true, custom_roles: true)
       end
 
-      it { is_expected.to contain_exactly(_('Audit events')) }
+      it { is_expected.to contain_exactly(_('Audit events'), _('System information')) }
     end
   end
 end
