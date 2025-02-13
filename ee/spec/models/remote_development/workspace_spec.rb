@@ -563,6 +563,26 @@ existing workspaces for the given agent with a total quota of \"3\" workspaces"
 
   describe 'helper_methods' do
     describe 'scopes' do
+      context 'on desired_state_not_terminated' do
+        context 'when workspace desired_state is not terminated' do
+          let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
+
+          it 'returns workspace' do
+            workspace.save!
+            expect(described_class.desired_state_not_terminated).to include(workspace)
+          end
+        end
+
+        context 'when workspace desired_state is terminated' do
+          let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::TERMINATED }
+
+          it 'returns workspace' do
+            workspace.save!
+            expect(described_class.desired_state_not_terminated).not_to include(workspace)
+          end
+        end
+      end
+
       context 'on actual_state_not_terminated' do
         context 'when workspace actual_state is not terminated' do
           let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
