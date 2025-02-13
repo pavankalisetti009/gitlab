@@ -526,6 +526,51 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
     end
   end
 
+  describe '#refresh_storage_bytes!' do
+    let_it_be(:zoekt_index) { create(:zoekt_index) }
+    let(:repository_size) { 100.megabytes }
+
+    before do
+      travel_to Time.current
+    end
+
+    context 'when there are repositories with size_bytes' do
+      before do
+        create_list(:zoekt_repository, 3, zoekt_index: zoekt_index, size_bytes: repository_size)
+      end
+
+      it 'updates used_storage_bytes to the sum of repository sizes' do
+        expect { zoekt_index.refresh_storage_bytes! }.to change {
+          zoekt_index.reload.used_storage_bytes
+        }.to(repository_size * 3)
+      end
+
+      it 'updates used_storage_bytes_updated_at to current time' do
+        expect { zoekt_index.refresh_storage_bytes! }.to change {
+          zoekt_index.reload.used_storage_bytes_updated_at
+        }.to(be_like_time(Time.current))
+      end
+    end
+
+    context 'when there are no repositories or all repositories have zero size' do
+      before do
+        create_list(:zoekt_repository, 3, zoekt_index: zoekt_index, size_bytes: 0)
+      end
+
+      it 'sets used_storage_bytes to DEFAULT_USED_STORAGE_BYTES' do
+        expect { zoekt_index.refresh_storage_bytes! }.to change {
+          zoekt_index.reload.used_storage_bytes
+        }.to(described_class::DEFAULT_USED_STORAGE_BYTES)
+      end
+
+      it 'updates used_storage_bytes_updated_at to current time' do
+        expect { zoekt_index.refresh_storage_bytes! }.to change {
+          zoekt_index.reload.used_storage_bytes_updated_at
+        }.to(be_like_time(Time.current))
+      end
+    end
+  end
+
   describe '#should_be_deleted?' do
     it 'returns true if the index state is orphaned or pending_deletion' do
       expect(zoekt_index).not_to be_should_be_deleted

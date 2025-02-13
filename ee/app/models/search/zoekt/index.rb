@@ -110,6 +110,13 @@ module Search
         SQL
       end
 
+      def refresh_storage_bytes!
+        sum_for_index = zoekt_repositories.sum(:size_bytes)
+        used_storage_bytes = sum_for_index == 0 ? DEFAULT_USED_STORAGE_BYTES : sum_for_index
+
+        update!(used_storage_bytes: used_storage_bytes, used_storage_bytes_updated_at: Time.zone.now)
+      end
+
       def update_reserved_storage_bytes!
         # This number of bytes will put the index as the ideal storage utilization
         ideal_reserved_storage_bytes = used_storage_bytes / STORAGE_IDEAL_PERCENT_USED
