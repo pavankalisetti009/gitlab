@@ -15,7 +15,7 @@ module RemoteDevelopment
           context => {
             processed_devfile: Hash => processed_devfile,
             tools_dir: String => tools_dir,
-            vscode_extensions_gallery_metadata: Hash => vscode_extensions_gallery_metadata
+            vscode_extension_marketplace_metadata: Hash => vscode_extension_marketplace_metadata
           }
 
           # NOTE: We will always have exactly one main_component found, because we have already
@@ -32,7 +32,7 @@ module RemoteDevelopment
             tools_dir: tools_dir,
             editor_port: WORKSPACE_EDITOR_PORT,
             ssh_port: WORKSPACE_SSH_PORT,
-            enable_marketplace: vscode_extensions_gallery_metadata.fetch(:enabled)
+            enable_marketplace: vscode_extension_marketplace_metadata.fetch(:enabled)
           )
 
           update_endpoints(

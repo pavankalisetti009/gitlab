@@ -164,7 +164,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariab
       user_name: user_name,
       user_email: user_email,
       workspace_id: workspace_id,
-      vscode_extensions_gallery: {
+      vscode_extension_marketplace: {
         service_url: vscode_extensions_gallery_service_url,
         item_url: vscode_extensions_gallery_item_url,
         resource_url_template: vscode_extensions_gallery_resource_url_template

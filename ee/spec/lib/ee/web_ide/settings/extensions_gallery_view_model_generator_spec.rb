@@ -8,15 +8,15 @@ RSpec.describe WebIde::Settings::ExtensionsGalleryViewModelGenerator, feature_ca
   let(:user) { user_class.new }
   let(:group) { group_class.new }
   let(:requested_setting_names) { [:vscode_extensions_gallery_view_model] }
-  let(:vscode_extensions_gallery) { { item_url: 'https://example.com/vscode/is/cooler/than/rubymine' } }
-  let(:vscode_extensions_gallery_metadata) { { enabled: true } }
+  let(:vscode_extension_marketplace) { { item_url: 'https://example.com/vscode/is/cooler/than/rubymine' } }
+  let(:vscode_extension_marketplace_metadata) { { enabled: true } }
 
   let(:context) do
     {
       requested_setting_names: requested_setting_names,
       settings: {
-        vscode_extensions_gallery: vscode_extensions_gallery,
-        vscode_extensions_gallery_metadata: vscode_extensions_gallery_metadata
+        vscode_extension_marketplace: vscode_extension_marketplace,
+        vscode_extension_marketplace_metadata: vscode_extension_marketplace_metadata
       },
       options: {
         user: user
@@ -54,7 +54,7 @@ RSpec.describe WebIde::Settings::ExtensionsGalleryViewModelGenerator, feature_ca
     end
 
     context 'when metadata is disabled for instance_disabled' do
-      let(:vscode_extensions_gallery_metadata) { { enabled: false, disabled_reason: :instance_disabled } }
+      let(:vscode_extension_marketplace_metadata) { { enabled: false, disabled_reason: :instance_disabled } }
 
       it 'does not include group info in the setting' do
         expect(settings_result).not_to include(:enterprise_group_name, :enterprise_group_url)
@@ -67,7 +67,7 @@ RSpec.describe WebIde::Settings::ExtensionsGalleryViewModelGenerator, feature_ca
     end
 
     context 'when metadata is disabled for enterprise_group_disabled' do
-      let(:vscode_extensions_gallery_metadata) { { enabled: false, disabled_reason: :enterprise_group_disabled } }
+      let(:vscode_extension_marketplace_metadata) { { enabled: false, disabled_reason: :enterprise_group_disabled } }
 
       it 'includes group info in the setting' do
         expect(settings_result).to match({

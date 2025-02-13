@@ -85,8 +85,8 @@ RSpec.describe 'Creating a workspace', feature_category: :workspaces do
       domain_main_class_args: {
         user: current_user,
         params: params,
-        vscode_extensions_gallery_metadata: { enabled: true },
-        vscode_extensions_gallery: { some_gallery_setting: "some-value" }
+        vscode_extension_marketplace_metadata: { enabled: true },
+        vscode_extension_marketplace: { some_setting: "some-value" }
       },
       auth_ability: :create_workspace,
       auth_subject: workspace_project,
@@ -108,13 +108,13 @@ RSpec.describe 'Creating a workspace', feature_category: :workspaces do
 
     allow(WebIde::Settings)
       .to receive(:get).with(
-        [:vscode_extensions_gallery_metadata, :vscode_extensions_gallery],
+        [:vscode_extension_marketplace_metadata, :vscode_extension_marketplace],
         user: current_user,
-        vscode_extensions_marketplace_feature_flag_enabled: true
+        vscode_extension_marketplace_feature_flag_enabled: true
       ).and_return(
         {
-          vscode_extensions_gallery_metadata: { enabled: true },
-          vscode_extensions_gallery: { some_gallery_setting: "some-value" }
+          vscode_extension_marketplace_metadata: { enabled: true },
+          vscode_extension_marketplace: { some_setting: "some-value" }
         }
       )
 

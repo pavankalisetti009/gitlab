@@ -13,7 +13,7 @@ module RemoteDevelopment
             workspace: RemoteDevelopment::Workspace => workspace,
             personal_access_token: PersonalAccessToken => personal_access_token,
             user: User => user,
-            vscode_extensions_gallery: Hash => vscode_extensions_gallery,
+            vscode_extension_marketplace: Hash => vscode_extension_marketplace,
             params: Hash => params
           }
           params => {
@@ -29,7 +29,7 @@ module RemoteDevelopment
             user_name: user.name,
             user_email: user.email,
             workspace_id: workspace.id,
-            vscode_extensions_gallery: vscode_extensions_gallery,
+            vscode_extension_marketplace: vscode_extension_marketplace,
             variables: variables
           )
 

@@ -8,11 +8,11 @@ RSpec.describe ::WebIde::Settings, feature_category: :web_ide do # rubocop:disab
   let_it_be(:options) do
     {
       user: user,
-      vscode_extensions_marketplace_feature_flag_enabled: true
+      vscode_extension_marketplace_feature_flag_enabled: true
     }
   end
 
-  subject(:settings) { described_class.get([:vscode_extensions_gallery_metadata], options) }
+  subject(:settings) { described_class.get([:vscode_extension_marketplace_metadata], options) }
 
   before do
     stub_feature_flags(vscode_web_ide: true, web_ide_extensions_marketplace: true)
@@ -22,7 +22,7 @@ RSpec.describe ::WebIde::Settings, feature_category: :web_ide do # rubocop:disab
 
   describe "default - enterprise group has extensions marketplace disabled" do
     it do
-      is_expected.to include(vscode_extensions_gallery_metadata: {
+      is_expected.to include(vscode_extension_marketplace_metadata: {
         disabled_reason: :enterprise_group_disabled,
         enabled: false
       })
@@ -35,7 +35,7 @@ RSpec.describe ::WebIde::Settings, feature_category: :web_ide do # rubocop:disab
     end
 
     it do
-      is_expected.to include(vscode_extensions_gallery_metadata: {
+      is_expected.to include(vscode_extension_marketplace_metadata: {
         enabled: true
       })
     end
