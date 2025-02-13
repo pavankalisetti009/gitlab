@@ -26,6 +26,11 @@ module EE
           argument :color_widget, ::Types::WorkItems::Widgets::ColorInputType,
             required: false,
             description: 'Input for color widget.'
+
+          argument :vulnerability_id, ::Types::GlobalIDType[::Vulnerability],
+            required: false,
+            description: 'Input for linking an existing vulnerability to created work item.',
+            experiment: { milestone: '17.9' }
         end
 
         override :raise_feature_not_available_error!
