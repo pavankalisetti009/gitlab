@@ -355,10 +355,11 @@ This is one small step towards moving away from CI/CD templates in preference of
 
 </div>
 
-Standard support for Ubuntu 20.04 [ends in April 2024](https://wiki.ubuntu.com/Releases).
+Ubuntu standard support for Ubuntu 20.04 [ends in May 2025](https://wiki.ubuntu.com/Releases).
 
-Therefore, we will longer support the Ubuntu 20.04 distribution for Linux package installs.
-Users should upgrade to Ubuntu 22.04 for continued support.
+Therefore, from GitLab 18.3, we will no longer provide packages for the Ubuntu 20.04 distribution for Linux package installs.
+GitLab 18.2 will be the last GitLab version with Linux packages for Ubuntu 20.04.
+You should upgrade to Ubuntu 22.04 for continued support.
 
 </div>
 </div>
