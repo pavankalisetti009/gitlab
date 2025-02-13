@@ -26,33 +26,17 @@ RSpec.describe Search::Zoekt::OrphanedRepoEventWorker, :zoekt_settings_enabled, 
         stub_const("#{described_class}::BATCH_SIZE", 2)
       end
 
-      context 'when zoekt_reemit_events feature flag is enabled' do
-        it 'processes only up to the batch size and schedules another event' do
-          expect(Gitlab::EventStore).to receive(:publish).with(
-            an_object_having_attributes(
-              class: Search::Zoekt::OrphanedRepoEvent,
-              data: {}
-            )
+      it 'processes only up to the batch size and schedules another event' do
+        expect(Gitlab::EventStore).to receive(:publish).with(
+          an_object_having_attributes(
+            class: Search::Zoekt::OrphanedRepoEvent,
+            data: {}
           )
+        )
 
-          expect do
-            consume_event(subscriber: described_class, event: event)
-          end.to change { Search::Zoekt::Repository.orphaned.count }.by(2)
-        end
-      end
-
-      context 'when zoekt_reemit_events feature flag is disabled' do
-        before do
-          stub_feature_flags(zoekt_reemit_events: false)
-        end
-
-        it 'processes only up to the batch size without scheduling another event' do
-          expect(Gitlab::EventStore).not_to receive(:publish)
-
-          expect do
-            consume_event(subscriber: described_class, event: event)
-          end.to change { Search::Zoekt::Repository.orphaned.count }.by(2)
-        end
+        expect do
+          consume_event(subscriber: described_class, event: event)
+        end.to change { Search::Zoekt::Repository.orphaned.count }.by(2)
       end
     end
   end

@@ -59,28 +59,13 @@ RSpec.describe Search::Zoekt::SaasRolloutEventWorker, feature_category: :global_
           stub_const("#{described_class}::BATCH_SIZE", 1)
         end
 
-        context 'when zoekt_reemit_events feature flag is enabled' do
-          it 'processes only up to the batch size and schedules another event' do
-            expect(Gitlab::EventStore).to receive(:publish).with(
-              an_object_having_attributes(class: Search::Zoekt::SaasRolloutEvent, data: {})
-            )
+        it 'processes only up to the batch size and schedules another event' do
+          expect(Gitlab::EventStore).to receive(:publish).with(
+            an_object_having_attributes(class: Search::Zoekt::SaasRolloutEvent, data: {})
+          )
 
-            expect { consume_event(subscriber: described_class, event: event) }
-              .to change { Search::Zoekt::EnabledNamespace.count }.by(1)
-          end
-        end
-
-        context 'when zoekt_reemit_events feature flag is disabled' do
-          before do
-            stub_feature_flags(zoekt_reemit_events: false)
-          end
-
-          it 'processes only up to the batch size without scheduling another event' do
-            expect(Gitlab::EventStore).not_to receive(:publish)
-
-            expect { consume_event(subscriber: described_class, event: event) }
-              .to change { Search::Zoekt::EnabledNamespace.count }.by(1)
-          end
+          expect { consume_event(subscriber: described_class, event: event) }
+            .to change { Search::Zoekt::EnabledNamespace.count }.by(1)
         end
       end
     end

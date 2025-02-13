@@ -45,33 +45,17 @@ RSpec.describe Search::Zoekt::RepoToIndexEventWorker, feature_category: :global_
           create_list(:zoekt_repository, 5, state: :pending)
         end
 
-        context 'when zoekt_reemit_events feature flag is enabled' do
-          it 'processes batch size and schedules another event' do
-            expect(Gitlab::EventStore).to receive(:publish).with(
-              an_object_having_attributes(
-                class: Search::Zoekt::RepoToIndexEvent,
-                data: {}
-              )
+        it 'processes batch size and schedules another event' do
+          expect(Gitlab::EventStore).to receive(:publish).with(
+            an_object_having_attributes(
+              class: Search::Zoekt::RepoToIndexEvent,
+              data: {}
             )
+          )
 
-            expect do
-              consume_event(subscriber: described_class, event: event)
-            end.to change { Search::Zoekt::Task.count }.by(2)
-          end
-        end
-
-        context 'when zoekt_reemit_events feature flag is disabled' do
-          before do
-            stub_feature_flags(zoekt_reemit_events: false)
-          end
-
-          it 'processes batch size without scheduling another event' do
-            expect(Gitlab::EventStore).not_to receive(:publish)
-
-            expect do
-              consume_event(subscriber: described_class, event: event)
-            end.to change { Search::Zoekt::Task.count }.by(2)
-          end
+          expect do
+            consume_event(subscriber: described_class, event: event)
+          end.to change { Search::Zoekt::Task.count }.by(2)
         end
       end
     end

@@ -31,7 +31,6 @@ module Search
       private
 
       def reemit_event
-        return if Feature.disabled?(:zoekt_reemit_events, Feature.current_request)
         return unless Index.with_stale_used_storage_bytes_updated_at.exists?
 
         Gitlab::EventStore.publish(Search::Zoekt::UpdateIndexUsedStorageBytesEvent.new(data: {}))

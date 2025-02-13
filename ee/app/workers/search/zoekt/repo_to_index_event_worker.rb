@@ -24,7 +24,6 @@ module Search
       private
 
       def reemit_event
-        return if Feature.disabled?(:zoekt_reemit_events, Feature.current_request)
         return unless Repository.pending.exists?
 
         Gitlab::EventStore.publish(
