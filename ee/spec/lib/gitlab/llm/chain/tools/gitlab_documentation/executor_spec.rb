@@ -38,10 +38,25 @@ RSpec.describe Gitlab::Llm::Chain::Tools::GitlabDocumentation::Executor, :saas, 
       end
 
       let(:expected_params) do
-        { current_user: user, question: options[:input], tracking_context: { action: 'chat_documentation' } }
+        {
+          current_user: user,
+          question: options[:input],
+          search_documents: search_documents,
+          tracking_context: { action: 'chat_documentation' }
+        }
+      end
+
+      let(:docs_search_response) do
+        {
+          'response' => { 'results' => search_documents }
+        }
       end
 
       it 'responds with the message from TanukiBot' do
+        expect_next_instance_of(::Gitlab::Llm::AiGateway::DocsClient, user) do |instance|
+          expect(instance).to receive(:search).with(query: options[:input]).and_return(docs_search_response)
+        end
+
         expect_next_instance_of(::Gitlab::Llm::Chain::Tools::EmbeddingsCompletion, **expected_params) do |instance|
           expect(instance).to receive(:execute).and_return(response).and_yield('In').and_yield('your')
         end
@@ -64,6 +79,10 @@ RSpec.describe Gitlab::Llm::Chain::Tools::GitlabDocumentation::Executor, :saas, 
         end
 
         it 'calls the stream_response_handler with the chunks' do
+          expect_next_instance_of(::Gitlab::Llm::AiGateway::DocsClient, user) do |instance|
+            expect(instance).to receive(:search).with(query: options[:input]).and_return(docs_search_response)
+          end
+
           expect_next_instance_of(::Gitlab::Llm::Chain::Tools::EmbeddingsCompletion, **expected_params) do |instance|
             expect(instance).to receive(:execute).and_return(response).and_yield('In').and_yield('your')
           end
@@ -81,16 +100,35 @@ RSpec.describe Gitlab::Llm::Chain::Tools::GitlabDocumentation::Executor, :saas, 
         end
       end
 
-      context 'when response is empty' do
-        let(:message) { "some message" }
-        let(:response) { Gitlab::Llm::ResponseModifiers::EmptyResponseModifier.new(message) }
+      context 'when the question is not provided' do
+        let(:options) { { input: "" } }
 
-        it 'responds with the message from TanukiBot' do
-          expect_next_instance_of(::Gitlab::Llm::Chain::Tools::EmbeddingsCompletion, expected_params) do |instance|
-            expect(instance).to receive(:execute).and_return(response)
+        it 'returns an empty response message' do
+          response = "I'm sorry, I couldn't find any documentation to answer your question."
+
+          expect(result.content).to eq(response)
+          expect(result.error_code).to eq("M2000")
+          expect(result.extras).to eq(nil)
+        end
+      end
+
+      context 'when no documents are found' do
+        let(:docs_search_response) do
+          {
+            'response' => { 'results' => [] }
+          }
+        end
+
+        it 'returns an empty response message' do
+          expect_next_instance_of(::Gitlab::Llm::AiGateway::DocsClient, user) do |instance|
+            expect(instance).to receive(:search).with(query: options[:input]).and_return(docs_search_response)
           end
 
-          expect(tool.execute.content).to eq(message)
+          response = "I'm sorry, I couldn't find any documentation to answer your question."
+
+          expect(result.content).to eq(response)
+          expect(result.error_code).to eq("M2000")
+          expect(result.extras).to eq(nil)
         end
       end
     end
