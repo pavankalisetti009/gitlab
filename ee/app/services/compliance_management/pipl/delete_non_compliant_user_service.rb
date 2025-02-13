@@ -18,7 +18,7 @@ module ComplianceManagement
         return validation_result if validation_result
 
         pipl_user.user.delete_async(deleted_by: current_user,
-          params: { hard_delete: true, skip_authorization: true }.stringify_keys)
+          params: { hard_delete: false, skip_authorization: true }.stringify_keys)
 
         ServiceResponse.success
       end

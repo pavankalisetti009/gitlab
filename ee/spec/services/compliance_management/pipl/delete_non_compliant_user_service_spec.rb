@@ -12,7 +12,7 @@ RSpec.describe ComplianceManagement::Pipl::DeleteNonCompliantUserService,
   let(:deleting_user) { Users::Internal.admin_bot }
 
   shared_examples 'does not delete the user' do
-    it 'does schedule a deletion migration' do
+    it 'does not schedule a deletion migration' do
       expect { execute }.not_to change { user.reload.ghost_user_migration.present? }
     end
   end
@@ -85,6 +85,7 @@ RSpec.describe ComplianceManagement::Pipl::DeleteNonCompliantUserService,
 
           expect(result.error?).to be(false)
           expect(pipl_user.user.reload.ghost_user_migration.present?).to be(true)
+          expect(pipl_user.user.reload.ghost_user_migration.hard_delete?).to be(false)
         end
       end
     end
