@@ -62,38 +62,4 @@ RSpec.describe EE::RegistrationsHelper, feature_category: :user_management do
       end
     end
   end
-
-  describe '#display_password_requirements?' do
-    subject(:display_password_requirements?) { helper.display_password_requirements? }
-
-    context 'when password complexity feature is not available' do
-      it { is_expected.to be(false) }
-    end
-
-    context 'when password complexity feature is available' do
-      before do
-        stub_licensed_features(password_complexity: true)
-      end
-
-      it { is_expected.to be(true) }
-    end
-
-    context 'when display_password_requirements is disabled' do
-      before do
-        stub_feature_flags(display_password_requirements: false)
-      end
-
-      context 'when password complexity feature is not available' do
-        it { is_expected.to be(false) }
-      end
-
-      context 'when password complexity feature is available' do
-        before do
-          stub_licensed_features(password_complexity: true)
-        end
-
-        it { is_expected.to be(false) }
-      end
-    end
-  end
 end

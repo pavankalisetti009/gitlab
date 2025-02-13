@@ -12,6 +12,7 @@ import {
   INVALID_INPUT_CLASS,
   INVALID_FORM_CLASS,
   I18N,
+  LENGTH,
   COMMON,
   USER_INFO,
 } from 'ee/password/constants';
@@ -35,13 +36,11 @@ describe('Password requirement list component', () => {
     mockAxios.restore();
   });
 
-  const FIRST_NAME_INPUT_ID = 'new_user_first_name';
   const PASSWORD_INPUT_CLASS = 'js-password-complexity-validation';
   const findStatusIcon = (ruleType) => wrapper.findByTestId(`password-${ruleType}-status-icon`);
   const findGlIcon = (statusIcon) => findStatusIcon(statusIcon).findComponent(GlIcon);
   const findRuleTextsByClass = (colorClassName) =>
     wrapper.findAllByTestId('password-rule-text').filter((c) => c.classes(colorClassName));
-  const findFirstNameInputElement = () => document.querySelector(`#${FIRST_NAME_INPUT_ID}`);
   const findPasswordInputElement = () => document.querySelector(`.${PASSWORD_INPUT_CLASS}`);
   const findForm = () => findPasswordInputElement().form;
   const findSubmitButton = () => findForm().querySelector('[type="submit"]');
@@ -64,7 +63,7 @@ describe('Password requirement list component', () => {
   beforeEach(() => {
     setHTMLFixture(`
       <form>
-        <input id="${FIRST_NAME_INPUT_ID}" name="new_user[first_name]" type="text">
+        <input id="new_user_first_name" name="new_user[first_name]" type="text">
         <input autocomplete="new-password" class="form-control gl-form-input ${PASSWORD_INPUT_CLASS}" type="password" name="new_user[password]" id="new_user_password">
         <input type="submit" name="commit" value="Submit">
       </form>
@@ -73,17 +72,6 @@ describe('Password requirement list component', () => {
 
   afterEach(() => {
     resetHTMLFixture();
-  });
-
-  it('does not throw errors on name change', () => {
-    createComponent();
-
-    const firstNameInputElement = findFirstNameInputElement();
-
-    expect(() => {
-      firstNameInputElement.value = 'Name';
-      firstNameInputElement.dispatchEvent(new Event('input'));
-    }).not.toThrow();
   });
 
   describe('when empty password is not allowed', () => {
@@ -205,10 +193,8 @@ describe('Password requirement list component', () => {
   );
 
   describe('password complexity rules', () => {
-    const password = '11111111';
-
     beforeEach(() => {
-      createComponent({ props: { ruleTypes: [COMMON, USER_INFO] } });
+      createComponent({ props: { ruleTypes: [LENGTH, COMMON, USER_INFO] } });
     });
 
     it('shows the list as secondary text', () => {
@@ -217,18 +203,9 @@ describe('Password requirement list component', () => {
       ).toBe(true);
     });
 
-    it('does not throw errors on name change', () => {
-      createComponent();
-
-      const firstNameInputElement = findFirstNameInputElement();
-
-      expect(() => {
-        firstNameInputElement.value = 'Name';
-        firstNameInputElement.dispatchEvent(new Event('input'));
-      }).not.toThrow();
-    });
-
     describe('when there are errors', () => {
+      const password = '1111111';
+
       beforeEach(() => {
         mockAxios
           .onPost(PASSWORD_COMPLEXITY_PATH, { user: { password, first_name: '' } })
@@ -250,9 +227,10 @@ describe('Password requirement list component', () => {
 
         const errorRules = findRuleTextsByClass(RED_TEXT_CLASS);
 
-        expect(errorRules.length).toBe(2);
-        expect(errorRules.at(0).text()).toBe('Cannot use common phrases (e.g. "password")');
-        expect(errorRules.at(1).text()).toBe('Cannot include your name, username, or email');
+        expect(errorRules.length).toBe(3);
+        expect(errorRules.at(0).text()).toBe('Must be between 8-128 characters');
+        expect(errorRules.at(1).text()).toBe('Cannot use common phrases (e.g. "password")');
+        expect(errorRules.at(2).text()).toBe('Cannot include your name, username, or email');
         expect(findRuleTextsByClass(GREEN_TEXT_CLASS).length).toBe(0);
         expect(findForm().classList.contains(INVALID_FORM_CLASS)).toBe(true);
         expect(passwordInputElement.classList.contains(INVALID_INPUT_CLASS)).toBe(true);
@@ -260,6 +238,8 @@ describe('Password requirement list component', () => {
     });
 
     describe('when there are no errors', () => {
+      const password = '11111111';
+
       beforeEach(() => {
         mockAxios
           .onPost(PASSWORD_COMPLEXITY_PATH, { user: { password, first_name: '' } })
@@ -277,15 +257,18 @@ describe('Password requirement list component', () => {
 
         const validRules = findRuleTextsByClass(GREEN_TEXT_CLASS);
 
-        expect(validRules.length).toBe(2);
-        expect(validRules.at(0).text()).toBe('Cannot use common phrases (e.g. "password")');
-        expect(validRules.at(1).text()).toBe('Cannot include your name, username, or email');
+        expect(validRules.length).toBe(3);
+        expect(validRules.at(0).text()).toBe('Must be between 8-128 characters');
+        expect(validRules.at(1).text()).toBe('Cannot use common phrases (e.g. "password")');
+        expect(validRules.at(2).text()).toBe('Cannot include your name, username, or email');
         expect(findRuleTextsByClass(RED_TEXT_CLASS).length).toBe(0);
         expect(passwordInputElement.classList.contains(INVALID_INPUT_CLASS)).toBe(false);
       });
     });
 
     describe('when password complexity validation failed', () => {
+      const password = '11111111';
+
       beforeEach(() => {
         mockAxios.onPost(PASSWORD_COMPLEXITY_PATH).reply(HTTP_STATUS_INTERNAL_SERVER_ERROR);
       });
