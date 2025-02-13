@@ -25,7 +25,13 @@ module SoftwareLicensePolicies
         software_license = SoftwareLicense.find_by_name(params[:name])
 
         # also creates a custom license to allow enabling and disabling the feature flag as needed
-        custom_software_license = software_license ? nil : find_or_create_custom_software_license
+        # if the software license is in the database but without spdx identifier we should also link a custom license
+        # to software license policy
+        custom_software_license = if license_with_spdx_identifier?(software_license)
+                                    nil
+                                  else
+                                    find_or_create_custom_software_license
+                                  end
 
         SoftwareLicense.unsafe_create_policy_for!(
           project: project,
@@ -36,6 +42,10 @@ module SoftwareLicensePolicies
           custom_software_license: custom_software_license
         )
       end
+    end
+
+    def license_with_spdx_identifier?(software_license)
+      software_license&.spdx_identifier.present?
     end
 
     def insert_software_license_policy
