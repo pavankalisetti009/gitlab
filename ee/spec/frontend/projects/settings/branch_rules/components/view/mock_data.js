@@ -192,6 +192,20 @@ export const squashOptionMockResponse = {
   },
 };
 
+export const editSquashOptionMockResponse = {
+  data: {
+    branchRuleSquashOptionUpdate: {
+      errors: [],
+      squashOption: {
+        option: 'Encourage',
+        helpText: 'Checkbox is visible and selected by default.',
+        __typename: 'SquashOption',
+      },
+      __typename: 'BranchRuleSquashOptionUpdatePayload',
+    },
+  },
+};
+
 export const branchProtectionsMockResponse = {
   data: {
     project: {
