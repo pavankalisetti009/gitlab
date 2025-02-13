@@ -71,6 +71,11 @@ RSpec.describe Mutations::Security::Finding::SeverityOverride, feature_category:
             expect(resolve[:errors]).to be_empty
           end
 
+          it 'returns the updated severity' do
+            expect(mutated_finding.severity).to eq(new_severity)
+            expect(resolve[:security_finding].severity).to eq(new_severity)
+          end
+
           it 'updates the severity property for the security_finding matching vulnerability record' do
             expect(mutated_finding.severity).to eq(new_severity)
             expect(Vulnerability.last.severity).to eq(new_severity)
