@@ -49,7 +49,9 @@ export default {
     },
   },
   mounted() {
-    this.trackEvent('render_root_cause_analysis');
+    if (this.shouldDisplayButton) {
+      this.trackEvent('render_root_cause_analysis');
+    }
   },
   methods: {
     callDuo() {

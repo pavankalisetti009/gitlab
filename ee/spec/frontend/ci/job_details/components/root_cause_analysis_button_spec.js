@@ -92,5 +92,15 @@ describe('Root cause analysis button', () => {
 
       expect(trackEventSpy).toHaveBeenCalledWith('click_root_cause_analysis', {}, undefined);
     });
+
+    describe('when no failure is detected', () => {
+      it('does not track button render', () => {
+        createComponent({ jobStatusGroup: 'canceled' });
+
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+        expect(trackEventSpy).not.toHaveBeenCalled();
+      });
+    });
   });
 });
