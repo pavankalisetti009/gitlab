@@ -36558,6 +36558,9 @@ msgstr ""
 msgid "MlModelRegistry|Failed to delete model with error: %{message}"
 msgstr ""
 
+msgid "MlModelRegistry|Failed to load experiments with error: %{error}"
+msgstr ""
+
 msgid "MlModelRegistry|Failed to load model runs with error: %{message}"
 msgstr ""
 
