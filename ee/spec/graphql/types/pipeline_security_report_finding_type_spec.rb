@@ -28,6 +28,7 @@ RSpec.describe GitlabSchema.types['PipelineSecurityReportFinding'], feature_cate
     %i[report_type
       title
       severity
+      severity_overrides
       scanner
       identifiers
       links
@@ -597,6 +598,56 @@ RSpec.describe GitlabSchema.types['PipelineSecurityReportFinding'], feature_cate
       it 'returns the severity of the vulnerability for the security finding' do
         expect(severity.capitalize).to eq(vulnerability.severity.capitalize)
         expect(sast_findings.first.severity).not_to eq(vulnerability.severity) # verify the actual values are different
+      end
+    end
+  end
+
+  describe 'severity_overrides' do
+    let(:query_for_test) do
+      %(
+        uuid
+        severityOverrides {
+          nodes {
+            originalSeverity
+            newSeverity
+            createdAt
+            author {
+              name
+            }
+          }
+        }
+      )
+    end
+
+    it 'returns no records for the security findings when no vulnerability exists' do
+      expect(get_findings_from_response(subject).first['severityOverrides']).to be_nil
+    end
+
+    context 'when the security finding has a related vulnerability without severity overrides' do
+      let_it_be(:vulnerability) { create(:vulnerability, project: project) }
+      let_it_be(:vulnerability_finding) do
+        create(:vulnerabilities_finding, project: project, vulnerability: vulnerability, uuid: sast_findings.first.uuid)
+      end
+
+      let(:severity_overrides) { get_findings_from_response(subject).first['severityOverrides']['nodes'] }
+
+      it 'returns no severity overrides' do
+        expect(severity_overrides).to be_empty
+      end
+    end
+
+    context 'when the security finding has a related vulnerability with severity overrides' do
+      let_it_be(:vulnerability) { create(:vulnerability, :with_severity_override, project: project) }
+      let_it_be(:vulnerability_finding) do
+        create(:vulnerabilities_finding, project: project, vulnerability: vulnerability, uuid: sast_findings.first.uuid)
+      end
+
+      let(:severity_override) { get_findings_from_response(subject).first['severityOverrides']['nodes'].first }
+
+      it 'returns severity overrides' do
+        expect(severity_override['newSeverity'].capitalize).to eq("Medium")
+        expect(severity_override['originalSeverity'].capitalize).to eq(vulnerability.severity.capitalize)
+        expect(severity_override['createdAt']).to eq(vulnerability.severity_overrides[0].created_at.utc.iso8601)
       end
     end
   end
