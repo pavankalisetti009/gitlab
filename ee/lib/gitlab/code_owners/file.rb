@@ -159,8 +159,8 @@ module Gitlab
 
         normalized_pattern = normalize_pattern(pattern)
 
-        if entry_owners.present? && ReferenceExtractor.new(entry_owners).references.blank?
-          add_error(Error::INVALID_ENTRY_OWNER_FORMAT, line_number)
+        if entry_owners.split.any? { |owner| invalid_owner?(owner) }
+          add_error(Error::MALFORMED_ENTRY_OWNER, line_number)
         end
 
         owners = entry_owners.presence || section.default_owners
@@ -176,6 +176,10 @@ module Gitlab
           exclusion: Feature.enabled?(:codeowners_file_exclusions, project) && is_exclusion,
           line_number: line_number
         )
+      end
+
+      def invalid_owner?(owner)
+        ReferenceExtractor.new(owner).references.blank?
       end
 
       def skip?(line)

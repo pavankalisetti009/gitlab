@@ -570,7 +570,6 @@ RSpec.describe Gitlab::CodeOwners::File, feature_category: :source_code_manageme
         [Invalid section
 
         [OK section header]
-        some_entry not_a_user_not_an_email
         CONTENT
       end
 
@@ -583,8 +582,7 @@ RSpec.describe Gitlab::CodeOwners::File, feature_category: :source_code_manageme
             Gitlab::CodeOwners::Error.new(message: :missing_section_name, line_number: 3, path: 'CODEOWNERS'),
             Gitlab::CodeOwners::Error.new(message: :invalid_approval_requirement, line_number: 6, path: 'CODEOWNERS'),
             Gitlab::CodeOwners::Error.new(message: :invalid_section_format, line_number: 9, path: 'CODEOWNERS'),
-            Gitlab::CodeOwners::Error.new(message: :invalid_entry_owner_format, line_number: 9, path: 'CODEOWNERS'),
-            Gitlab::CodeOwners::Error.new(message: :invalid_entry_owner_format, line_number: 12, path: 'CODEOWNERS')
+            Gitlab::CodeOwners::Error.new(message: :malformed_entry_owner, line_number: 9, path: 'CODEOWNERS')
           ]
         )
       end
@@ -593,6 +591,52 @@ RSpec.describe Gitlab::CodeOwners::File, feature_category: :source_code_manageme
         expect(Gitlab::CodeOwners::UserPermissionCheck).not_to receive(:new)
 
         file.valid?
+      end
+
+      context 'with malformed owners' do
+        context 'when entry owner is invalid' do
+          let(:file_content) do
+            <<~CONTENT
+            # Regular owner
+            *.rb @valid-user
+
+            # Just invalid owners
+            *.js not_a_user_not_an_email
+            CONTENT
+          end
+
+          it 'detects the invalid owner' do
+            expect(file.valid?).to eq(false)
+
+            expect(file.errors).to match_array(
+              [
+                Gitlab::CodeOwners::Error.new(message: :malformed_entry_owner, line_number: 5, path: 'CODEOWNERS')
+              ]
+            )
+          end
+        end
+
+        context 'when entry owner is a mix of invalid and valid owners' do
+          let(:file_content) do
+            <<~CONTENT
+              # Regular owner
+              *.rb @valid-user
+
+              # Mixed valid and invalid owners
+              *.js malformed @valid-user @valid-group another_malformed
+            CONTENT
+          end
+
+          it 'detects any invalid owner' do
+            expect(file.valid?).to eq(false)
+
+            expect(file.errors).to match_array(
+              [
+                Gitlab::CodeOwners::Error.new(message: :malformed_entry_owner, line_number: 5, path: 'CODEOWNERS')
+              ]
+            )
+          end
+        end
       end
     end
 
