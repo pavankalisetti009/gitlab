@@ -34,7 +34,8 @@ module EE
             event(:merge_request_label_removed) => 108,
             event(:merge_request_first_commit_at) => 109,
             event(:merge_request_first_assigned_at) => 110,
-            event(:merge_request_reviewer_first_assigned_at) => 111
+            event(:merge_request_reviewer_first_assigned_at) => 111,
+            event(:merge_request_last_approved_at) => 112
           }.freeze
 
           EE_EVENTS = EE_ENUM_MAPPING.keys.freeze
@@ -128,7 +129,8 @@ module EE
               :merge_request_label_removed,
               :merge_request_merged,
               :merge_request_first_assigned_at,
-              :merge_request_reviewer_first_assigned_at
+              :merge_request_reviewer_first_assigned_at,
+              :merge_request_last_approved_at
             ),
             event(:merge_request_created) => events(
               :merge_request_closed,
@@ -139,7 +141,8 @@ module EE
               :merge_request_label_added,
               :merge_request_label_removed,
               :merge_request_first_assigned_at,
-              :merge_request_reviewer_first_assigned_at
+              :merge_request_reviewer_first_assigned_at,
+              :merge_request_last_approved_at
             ),
             event(:merge_request_closed) => events(
               :merge_request_first_deployed_to_production,
@@ -203,7 +206,8 @@ module EE
               :merge_request_merged,
               :merge_request_label_added,
               :merge_request_label_removed,
-              :merge_request_reviewer_first_assigned_at
+              :merge_request_reviewer_first_assigned_at,
+              :merge_request_last_approved_at
             ),
             event(:merge_request_reviewer_first_assigned_at) => events(
               :merge_request_closed,
@@ -211,6 +215,14 @@ module EE
               :merge_request_first_deployed_to_production,
               :merge_request_last_edited,
               :merge_request_merged,
+              :merge_request_label_added,
+              :merge_request_label_removed,
+              :merge_request_last_approved_at
+            ),
+            event(:merge_request_last_approved_at) => events(
+              :merge_request_merged,
+              :merge_request_closed,
+              :merge_request_last_edited,
               :merge_request_label_added,
               :merge_request_label_removed
             )

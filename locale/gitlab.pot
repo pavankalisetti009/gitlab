@@ -17711,6 +17711,9 @@ msgstr ""
 msgid "CycleAnalyticsEvent|Merge request reviewer first assigned"
 msgstr ""
 
+msgid "CycleAnalyticsEvent|Merge request was last approved at"
+msgstr ""
+
 msgid "CycleAnalyticsStage|Code"
 msgstr ""
 

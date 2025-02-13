@@ -674,6 +674,23 @@ RSpec.describe Gitlab::Analytics::CycleAnalytics::DataCollector, feature_categor
 
         it_behaves_like 'custom Value Stream Analytics Stage'
       end
+
+      context 'between MR created and MR last approved time' do
+        let(:start_event_identifier) { :merge_request_created }
+        let(:end_event_identifier) { :merge_request_last_approved_at }
+
+        def create_data_for_start_event(example_class)
+          create(:merge_request,
+            source_project: example_class.project,
+            allow_broken: true)
+        end
+
+        def create_data_for_end_event(mr, _example_class)
+          create(:merge_request_approval_metrics, merge_request: mr)
+        end
+
+        it_behaves_like 'custom Value Stream Analytics Stage'
+      end
     end
   end
 
