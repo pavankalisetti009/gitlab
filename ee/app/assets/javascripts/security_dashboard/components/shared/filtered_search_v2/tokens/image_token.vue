@@ -6,15 +6,12 @@ import { createAlert } from '~/alert';
 import agentImagesQuery from 'ee/security_dashboard/graphql/queries/agent_images.query.graphql';
 import projectImagesQuery from 'ee/security_dashboard/graphql/queries/project_images.query.graphql';
 import SearchSuggestion from '../components/search_suggestion.vue';
-import QuerystringSync from '../../filters/querystring_sync.vue';
 import { ALL_ID as ALL_IMAGES_VALUE } from '../../filters/constants';
-import eventHub from '../event_hub';
 
 export default {
   components: {
     GlFilteredSearchToken,
     GlLoadingIcon,
-    QuerystringSync,
     SearchSuggestion,
   },
   inject: {
@@ -94,25 +91,8 @@ export default {
     },
   },
   methods: {
-    emitFiltersChanged() {
-      eventHub.$emit('filters-changed', {
-        image: this.selectedImages.filter((value) => value !== ALL_IMAGES_VALUE),
-      });
-    },
     resetSelected() {
       this.selectedImages = [ALL_IMAGES_VALUE];
-      this.emitFiltersChanged();
-    },
-    updateSelectedFromQS(values) {
-      // This happens when we clear the token and re-select `Images`
-      // to open the dropdown. At that stage we simply want to wait
-      // for the user to select new images.
-      if (!values.length) {
-        return;
-      }
-
-      this.selectedImages = values;
-      this.emitFiltersChanged();
     },
     toggleSelected(selectedValue) {
       const allImagesSelected = selectedValue === ALL_IMAGES_VALUE;
@@ -140,33 +120,30 @@ export default {
 </script>
 
 <template>
-  <querystring-sync querystring-key="image" :value="selectedImages" @input="updateSelectedFromQS">
-    <gl-filtered-search-token
-      :config="config"
-      v-bind="{ ...$props, ...$attrs }"
-      :multi-select-values="selectedImages"
-      :value="tokenValue"
-      v-on="$listeners"
-      @select="toggleSelected"
-      @destroy="resetSelected"
-      @complete="emitFiltersChanged"
-    >
-      <template #view>
-        {{ toggleText }}
-      </template>
-      <template #suggestions>
-        <gl-loading-icon v-if="isLoading" size="sm" />
-        <search-suggestion
-          v-for="image in items"
-          v-else
-          :key="image.value"
-          :value="image.value"
-          :text="image.text"
-          :selected="isImageSelected(image.value)"
-          :data-testid="`suggestion-${image.value}`"
-          truncate
-        />
-      </template>
-    </gl-filtered-search-token>
-  </querystring-sync>
+  <gl-filtered-search-token
+    :config="config"
+    v-bind="{ ...$props, ...$attrs }"
+    :multi-select-values="selectedImages"
+    :value="tokenValue"
+    v-on="$listeners"
+    @select="toggleSelected"
+    @destroy="resetSelected"
+  >
+    <template #view>
+      {{ toggleText }}
+    </template>
+    <template #suggestions>
+      <gl-loading-icon v-if="isLoading" size="sm" />
+      <search-suggestion
+        v-for="image in items"
+        v-else
+        :key="image.value"
+        :value="image.value"
+        :text="image.text"
+        :selected="isImageSelected(image.value)"
+        :data-testid="`suggestion-${image.value}`"
+        truncate
+      />
+    </template>
+  </gl-filtered-search-token>
 </template>
