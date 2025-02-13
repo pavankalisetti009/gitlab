@@ -917,6 +917,7 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
         read_admin_audit_log
         read_admin_background_migrations
         read_admin_gitaly_servers
+        read_admin_health_check
         read_admin_system_information
       ]
       :read_admin_subscription | %i[read_admin_subscription read_billable_member read_licenses]
