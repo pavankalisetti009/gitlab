@@ -2,7 +2,8 @@
 
 require 'spec_helper'
 
-RSpec.describe Namespaces::Storage::Enforcement, :saas, feature_category: :consumables_cost_management do
+RSpec.describe Namespaces::Storage::NamespaceLimit::Enforcement, :saas,
+  feature_category: :consumables_cost_management do
   include NamespaceStorageHelpers
   using RSpec::Parameterized::TableSyntax
 
@@ -105,12 +106,12 @@ RSpec.describe Namespaces::Storage::Enforcement, :saas, feature_category: :consu
         end
 
         it 'returns the expected result' do
-          expect(enforce_limit?).to eq result
+          expect(enforce_limit?).to be result
         end
 
         context 'with a subgroup' do
           it 'returns the expected result' do
-            expect(described_class.enforce_limit?(subgroup)).to eq result
+            expect(described_class.enforce_limit?(subgroup)).to be result
           end
         end
 
@@ -118,19 +119,19 @@ RSpec.describe Namespaces::Storage::Enforcement, :saas, feature_category: :consu
           it 'returns false when the namespace_storage_limit feature flag is disabled' do
             stub_feature_flags(namespace_storage_limit: false)
 
-            expect(enforce_limit?).to eq(false)
+            expect(enforce_limit?).to be false
           end
 
           it 'returns false when the enforce_namespace_storage_limit application setting is disabled' do
             stub_application_setting(enforce_namespace_storage_limit: false)
 
-            expect(enforce_limit?).to eq(false)
+            expect(enforce_limit?).to be false
           end
 
           it 'returns false when the automatic_purchased_storage_allocation application setting is disabled' do
             stub_application_setting(automatic_purchased_storage_allocation: false)
 
-            expect(enforce_limit?).to eq(false)
+            expect(enforce_limit?).to be false
           end
         end
       end
@@ -198,7 +199,7 @@ RSpec.describe Namespaces::Storage::Enforcement, :saas, feature_category: :consu
         end
 
         it 'returns the expected result' do
-          expect(show_pre_enforcement_alert?).to eq(expected_result)
+          expect(show_pre_enforcement_alert?).to be expected_result
         end
       end
     end
@@ -226,7 +227,7 @@ RSpec.describe Namespaces::Storage::Enforcement, :saas, feature_category: :consu
           namespace_limit.reload
 
           expect(namespace_limit.pre_enforcement_notification_at).to be_like_time(Time.current)
-          expect(Rails.cache.read(['namespaces', group.id, 'pre_enforcement_tracking'])).to eq(true)
+          expect(Rails.cache.read(['namespaces', group.id, 'pre_enforcement_tracking'])).to be true
         end
 
         context 'when cache exists' do
@@ -313,7 +314,7 @@ RSpec.describe Namespaces::Storage::Enforcement, :saas, feature_category: :consu
         end
 
         it 'returns expected_result' do
-          expect(over_pre_enforcement_notification_limit?).to eq(expected_result)
+          expect(over_pre_enforcement_notification_limit?).to be expected_result
         end
       end
     end
@@ -349,15 +350,15 @@ RSpec.describe Namespaces::Storage::Enforcement, :saas, feature_category: :consu
 
     with_them do
       before do
-        allow(described_class).to receive(:enforce_limit?).and_return(enforce_limit)
-        allow(described_class).to receive(:dashboard_limit_applicable?).and_return(dashboard_limit_applicable)
+        allow(described_class).to receive_messages(enforce_limit?: enforce_limit)
+        allow(described_class).to receive_messages(dashboard_limit_applicable?: dashboard_limit_applicable)
         set_dashboard_limit(root_namespace, megabytes: storage_size_limit)
         set_enforcement_limit(root_namespace, megabytes: enforcement_limit)
 
         allow(root_namespace).to receive(:storage_limit_exclusion).and_return(storage_limit_exclusion)
       end
 
-      it { is_expected.to eq(result) }
+      it { is_expected.to be result }
     end
   end
 end

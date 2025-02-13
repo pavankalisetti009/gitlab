@@ -180,7 +180,7 @@ RSpec.describe Namespaces::Storage::NamespaceLimit::AlertComponent, :saas, type:
       before do
         stub_saas_features(namespaces_storage_limit: namespaces_storage_limit)
 
-        allow(::Namespaces::Storage::Enforcement).to receive_messages(
+        allow(::Namespaces::Storage::NamespaceLimit::Enforcement).to receive_messages(
           in_enforcement_rollout?: in_enforcement_rollout,
           enforce_limit?: enforce_limit
         )

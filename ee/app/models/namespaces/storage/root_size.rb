@@ -58,7 +58,7 @@ module Namespaces
       end
 
       def enforce_limit?
-        ::Namespaces::Storage::Enforcement.enforce_limit?(root_namespace)
+        ::Namespaces::Storage::NamespaceLimit::Enforcement.enforce_limit?(root_namespace)
       end
 
       alias_method :enabled?, :enforce_limit?
@@ -120,7 +120,7 @@ module Namespaces
       end
 
       def enforceable_storage_limit
-        ::Namespaces::Storage::Enforcement.enforceable_storage_limit(root_namespace)
+        ::Namespaces::Storage::NamespaceLimit::Enforcement.enforceable_storage_limit(root_namespace)
       end
 
       def limit_cache_name

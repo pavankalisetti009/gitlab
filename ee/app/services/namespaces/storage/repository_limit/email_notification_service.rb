@@ -16,7 +16,7 @@ module Namespaces
         end
 
         def execute
-          return if ::Namespaces::Storage::Enforcement.enforce_limit?(root_ancestor)
+          return if ::Namespaces::Storage::NamespaceLimit::Enforcement.enforce_limit?(root_ancestor)
           return unless root_ancestor.root_storage_size.subject_to_high_limit?
 
           if notification_level == :error

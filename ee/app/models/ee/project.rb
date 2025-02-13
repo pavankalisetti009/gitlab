@@ -1015,7 +1015,7 @@ module EE
       strong_memoize(:repository_size_checker) do
         root_namespace = namespace.root_ancestor
 
-        if ::Namespaces::Storage::Enforcement.enforce_limit?(root_namespace)
+        if ::Namespaces::Storage::NamespaceLimit::Enforcement.enforce_limit?(root_namespace)
           ::Namespaces::Storage::RootSize.new(root_namespace)
         else
           ::Gitlab::RepositorySizeChecker.new(
