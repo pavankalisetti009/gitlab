@@ -15,9 +15,6 @@ RSpec.describe 'Query.member_role_permissions', feature_category: :permissions d
         value
         enabledForGroupAccessLevels
         enabledForProjectAccessLevels
-        availableFromAccessLevel {
-          integerValue
-        }
       }
     QUERY
   end
@@ -28,7 +25,6 @@ RSpec.describe 'Query.member_role_permissions', feature_category: :permissions d
         title: 'Admin something',
         description: 'Allows admin access to do something.',
         project_ability: true,
-        available_from_access_level: 50,
         enabled_for_project_access_levels: [50]
       },
       admin_ability_two: {
@@ -93,16 +89,14 @@ RSpec.describe 'Query.member_role_permissions', feature_category: :permissions d
     expected_result = [
       { 'availableFor' => ['project'], 'description' => 'Allows admin access to do something.',
         'name' => 'Admin something', 'requirements' => nil, 'value' => 'ADMIN_ABILITY_ONE',
-        'availableFromAccessLevel' => { 'integerValue' => 50 }, 'enabledForGroupAccessLevels' => nil,
-        'enabledForProjectAccessLevels' => ['OWNER'] },
+        'enabledForGroupAccessLevels' => nil, 'enabledForProjectAccessLevels' => ['OWNER'] },
       { 'availableFor' => %w[project group], 'description' => 'Allows read access to do something else.',
         'name' => 'Read something else', 'requirements' => nil, 'value' => 'READ_ABILITY_TWO',
-        'availableFromAccessLevel' => nil, 'enabledForGroupAccessLevels' => %w[REPORTER DEVELOPER MAINTAINER OWNER],
+        'enabledForGroupAccessLevels' => %w[REPORTER DEVELOPER MAINTAINER OWNER],
         'enabledForProjectAccessLevels' => %w[REPORTER DEVELOPER MAINTAINER OWNER] },
       { 'availableFor' => ['group'], 'description' => "Allows admin access to do something else.",
         'requirements' => ['READ_ABILITY_TWO'], 'name' => 'Admin something else', 'value' => 'ADMIN_ABILITY_TWO',
-        'availableFromAccessLevel' => nil, 'enabledForGroupAccessLevels' => %w[MAINTAINER OWNER],
-        'enabledForProjectAccessLevels' => nil }
+        'enabledForGroupAccessLevels' => %w[MAINTAINER OWNER], 'enabledForProjectAccessLevels' => nil }
     ]
 
     expect(subject).to match_array(expected_result)
