@@ -38,6 +38,24 @@ RSpec.describe SoftwareLicensePolicies::CreateService, feature_category: :securi
       end
     end
 
+    shared_examples_for 'find or creates a custom software license' do
+      it 'calls CustomSoftwareLicense::FindOrCreateService' do
+        expect_next_instance_of(Security::CustomSoftwareLicenses::FindOrCreateService, project: project,
+          params: params) do |service|
+          expect(service).to receive(:execute).and_call_original
+        end
+
+        result
+      end
+
+      it 'sets both the software license and custom software license' do
+        result
+
+        expect(result[:software_license_policy].software_license.name).to eq(license_name)
+        expect(result[:software_license_policy].custom_software_license.name).to eq(license_name)
+      end
+    end
+
     context 'when valid parameters are specified' do
       context 'when custom_software_license feature flag is disabled' do
         let(:license_name) { 'MIT License' }
@@ -75,45 +93,41 @@ RSpec.describe SoftwareLicensePolicies::CreateService, feature_category: :securi
         end
 
         context 'when a software license with the given name exists' do
+          let(:license_name) { 'License' }
+
           before do
-            create(:software_license, name: license_name)
+            create(:software_license, name: license_name, spdx_identifier: spdx_identifier)
           end
 
-          it 'does not call CustomSoftwareLicense::FindOrCreateService' do
-            expect(Security::CustomSoftwareLicenses::FindOrCreateService).not_to receive(:new)
+          context 'when the license has a spdx_identifier set' do
+            let(:spdx_identifier) { 'SPDX' }
 
-            result
+            it 'does not call CustomSoftwareLicense::FindOrCreateService' do
+              expect(Security::CustomSoftwareLicenses::FindOrCreateService).not_to receive(:new)
+
+              result
+            end
+
+            it 'sets the expected attributes' do
+              result
+
+              expect(result[:software_license_policy].software_license.name).to eq(license_name)
+              expect(result[:software_license_policy].spdx_identifier).to eq(spdx_identifier)
+              expect(result[:software_license_policy].custom_software_license).to be_nil
+            end
           end
 
-          it 'sets the software license and does not set the custom software license' do
-            result
+          context 'when the license does not have a spdx_identifier set' do
+            let(:spdx_identifier) { nil }
 
-            expect(result[:software_license_policy].software_license.name).to eq(license_name)
-            expect(result[:software_license_policy].spdx_identifier).to eq(license_spdx_identifier)
-            expect(result[:software_license_policy].custom_software_license).to be_nil
+            it_behaves_like 'find or creates a custom software license'
           end
         end
 
         context 'when the software license does not exists' do
           let(:license_name) { 'Custom License' }
 
-          it 'calls CustomSoftwareLicense::FindOrCreateService' do
-            expect_next_instance_of(Security::CustomSoftwareLicenses::FindOrCreateService, project: project,
-              params: params) do |service|
-              expect(service).to receive(:execute).and_call_original
-            end
-
-            result
-          end
-
-          it 'sets the expected attributes' do
-            result
-
-            expect(result[:software_license_policy].software_license.name).to eq(license_name)
-            expect(result[:software_license_policy].custom_software_license.name).to eq(license_name)
-            expect(result[:software_license_policy].spdx_identifier).to be_nil
-          end
-
+          it_behaves_like 'find or creates a custom software license'
           it_behaves_like 'when an error occurs during the software license creation'
         end
       end
