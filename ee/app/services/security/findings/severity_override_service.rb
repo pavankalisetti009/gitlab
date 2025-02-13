@@ -62,6 +62,8 @@ module Security
       end
 
       def service_success
+        # Reset cached associations to later use the updated vulnerability severity
+        @security_finding.reset
         @security_finding.severity = @severity # for the return finding to have the correct severity
         ServiceResponse.success(payload: { security_finding: @security_finding })
       end
