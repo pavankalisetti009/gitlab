@@ -34308,6 +34308,9 @@ msgstr ""
 msgid "Manage configuration"
 msgstr ""
 
+msgid "Manage deployments"
+msgstr ""
+
 msgid "Manage framework"
 msgstr ""
 
@@ -66238,6 +66241,9 @@ msgstr ""
 msgid "You are about to transfer %{code_start}%{project_full_name}%{code_end} to another namespace. This action changes the %{link_to_namespace_change_doc} and can lead to %{link_to_data_loss_doc}."
 msgstr ""
 
+msgid "You are almost out of Pages parallel deployments. Delete some deployments or you will be unable to create new ones soon. %{link}."
+msgstr ""
+
 msgid "You are already a member of this %{member_source}."
 msgstr ""
 
@@ -66314,6 +66320,9 @@ msgid "You are now impersonating %{username}"
 msgstr ""
 
 msgid "You are on a read-only GitLab instance."
+msgstr ""
+
+msgid "You are out of Pages parallel deployments. Delete some existing deployments to be able to create new ones. %{link}."
 msgstr ""
 
 msgid "You are receiving this email because you are an Owner of the Group."

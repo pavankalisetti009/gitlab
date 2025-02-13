@@ -194,4 +194,110 @@ RSpec.describe 'Project show page', :feature, feature_category: :groups_and_proj
       end
     end
   end
+
+  describe 'pages deployments limit alert' do
+    let_it_be_with_refind(:group) { create(:group) }
+    let_it_be_with_reload(:project) { create(:project, :public, :repository, namespace: group) }
+    let(:user) { create(:user) }
+    let(:limit) { 10 }
+
+    before do
+      allow(License).to receive(:feature_available?).and_return(true)
+      stub_pages_setting(enabled: true)
+      group.add_member(user, role)
+      sign_in(user)
+      project.actual_limits.update!(active_versioned_pages_deployments_limit_by_namespace: limit)
+      project.project_setting.update!(pages_unique_domain_enabled: false)
+      deployments.times do |n|
+        create(:pages_deployment, project: project, path_prefix: "foo_#{n}")
+      end
+    end
+
+    context 'when the user can edit pages deployments' do
+      let(:role) { :maintainer }
+
+      context 'when there are fewer deployments than 80% of the limit' do
+        let(:deployments) { 1 }
+
+        it 'does not display any warning' do
+          visit project_path(project)
+
+          expect(page).not_to have_text "You are almost out of Pages parallel deployments"
+          expect(page).not_to have_text "You are out of Pages parallel deployments"
+        end
+      end
+
+      context 'when there are more deployments than 80% of the limit' do
+        let(:deployments) { 9 }
+
+        it 'does display the 80% warning' do
+          visit project_path(project)
+
+          expect(page).to have_text "You are almost out of Pages parallel deployments"
+          expect(page).not_to have_text "You are out of Pages parallel deployments"
+        end
+      end
+
+      context 'when there are as many deployments as the limit' do
+        let(:deployments) { 10 }
+
+        it 'does display the "out of deployments" warning' do
+          visit project_path(project)
+
+          expect(page).not_to have_text "You are almost out of Pages parallel deployments"
+          expect(page).to have_text "You are out of Pages parallel deployments"
+        end
+      end
+
+      context 'when there are more deployments than the limit' do
+        let(:deployments) { 11 }
+
+        it 'does display the "out of deployments" warning' do
+          visit project_path(project)
+
+          expect(page).not_to have_text "You are almost out of Pages parallel deployments"
+          expect(page).to have_text "You are out of Pages parallel deployments"
+        end
+      end
+
+      context 'when the limit is 0' do
+        let(:limit) { 0 }
+        let(:deployments) { 0 }
+
+        it 'does not display any warning' do
+          visit project_path(project)
+
+          expect(page).not_to have_text "You are almost out of Pages parallel deployments"
+          expect(page).not_to have_text "You are out of Pages parallel deployments"
+        end
+      end
+    end
+
+    context 'when the user cannot edit pages deployments' do
+      let(:role) { :guest }
+      let(:limit) { 10 }
+
+      context 'when there are more deployments than 80% of the limit' do
+        let(:deployments) { 9 }
+
+        it 'does not display any warning' do
+          visit project_path(project)
+
+          expect(page).not_to have_text "You are almost out of Pages parallel deployments"
+          expect(page).not_to have_text "You are out of Pages parallel deployments"
+        end
+      end
+
+      context 'when there are as many deployments as the limit' do
+        let(:deployments) { 10 }
+
+        it 'does not display any warning' do
+          visit project_path(project)
+
+          expect(page).not_to have_text "You are almost out of Pages parallel deployments"
+          expect(page).not_to have_text "You are out of Pages parallel deployments"
+        end
+      end
+    end
+  end
 end

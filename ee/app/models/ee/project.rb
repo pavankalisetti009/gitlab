@@ -1477,6 +1477,26 @@ module EE
       !::Integrations::JiraCloudApp.blocked_by_settings? && super
     end
 
+    def pages_parallel_deployments_limit
+      actual_limits.active_versioned_pages_deployments_limit_by_namespace
+    end
+    strong_memoize_attr :pages_parallel_deployments_limit
+
+    def pages_parallel_deployments_count
+      ::PagesDeployment.count_versioned_deployments_for(self, pages_parallel_deployments_limit)
+    end
+    strong_memoize_attr :pages_parallel_deployments_count
+
+    def pages_domain_level_parallel_deployments_count
+      return pages_parallel_deployments_count if pages_unique_domain_enabled?
+
+      ::PagesDeployment.count_versioned_deployments_for(
+        root_ancestor.all_projects.with_namespace_domain_pages,
+        pages_parallel_deployments_limit
+      )
+    end
+    strong_memoize_attr :pages_domain_level_parallel_deployments_count
+
     private
 
     def path_locks_changed_epoch_cache_key
