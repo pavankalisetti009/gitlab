@@ -1,4 +1,4 @@
-import { GlCollapsibleListbox, GlBadge } from '@gitlab/ui';
+import { GlDisclosureDropdown, GlBadge } from '@gitlab/ui';
 import SectionLayout from 'ee/security_orchestration/components/policy_editor/section_layout.vue';
 import ScanFilterSelector from 'ee/security_orchestration/components/policy_editor/scan_filter_selector.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -16,29 +16,31 @@ describe('ScanFilterSelector', () => {
       },
       stubs: {
         SectionLayout,
-        GlCollapsibleListbox,
+        GlDisclosureDropdown,
       },
     });
   };
 
-  const findListbox = () => wrapper.findComponent(GlCollapsibleListbox);
+  const findDropdown = () => wrapper.findComponent(GlDisclosureDropdown);
   const findDisabledBadge = () => wrapper.findComponent(GlBadge);
 
   describe('default', () => {
     it('renders options', () => {
       createComponent();
-      expect(findListbox().props('items')).toEqual([FILTERS[0]]);
+      expect(findDropdown().props('items')).toEqual([
+        { ...FILTERS[0], extraAttrs: { disabled: false } },
+      ]);
     });
 
     it('can have disabled state', () => {
       createComponent({ disabled: true });
-      expect(findListbox().props('disabled')).toBe(true);
+      expect(findDropdown().props('disabled')).toBe(true);
     });
 
     it('can have custom tooltip text', () => {
       const tooltipTitle = 'Custom tooltip';
       createComponent({ tooltipTitle });
-      expect(findListbox().attributes('title')).toBe(tooltipTitle);
+      expect(findDropdown().attributes('title')).toBe(tooltipTitle);
     });
 
     it('can render custom filter tooltip based on callback', () => {
@@ -65,7 +67,7 @@ describe('ScanFilterSelector', () => {
 
     it('emits the "select" event when it has been selected', async () => {
       expect(wrapper.emitted('select')).toBeUndefined();
-      await findListbox().vm.$emit('select', GOOD_FILTER);
+      await findDropdown().vm.$emit('action', FILTERS[0]);
       expect(wrapper.emitted('select')).toEqual([[GOOD_FILTER]]);
     });
   });
@@ -77,11 +79,9 @@ describe('ScanFilterSelector', () => {
 
     it('disables the filter', () => {
       expect(findDisabledBadge().exists()).toBe(true);
-    });
-
-    it('does not emit the "select" even when it has been selected', async () => {
-      await findListbox().vm.$emit('select', GOOD_FILTER);
-      expect(wrapper.emitted('select')).toBeUndefined();
+      expect(findDropdown().props('items')).toEqual([
+        { ...FILTERS[0], extraAttrs: { disabled: true } },
+      ]);
     });
   });
 
@@ -89,16 +89,14 @@ describe('ScanFilterSelector', () => {
     it('should render default button text', () => {
       createComponent();
 
-      expect(findListbox().props('toggleText')).toBe('Add new criteria');
+      expect(findDropdown().props('toggleText')).toBe('Add new criteria');
     });
 
     it('should render custom button text', () => {
       const buttonText = 'add custom variable';
-      createComponent({
-        buttonText,
-      });
+      createComponent({ buttonText });
 
-      expect(findListbox().props('toggleText')).toBe(buttonText);
+      expect(findDropdown().props('toggleText')).toBe(buttonText);
     });
   });
 
@@ -106,16 +104,14 @@ describe('ScanFilterSelector', () => {
     it('should render default header text', () => {
       createComponent();
 
-      expect(findListbox().props('headerText')).toBe('Choose criteria type');
+      expect(findDropdown().text()).toContain('Choose criteria type');
     });
 
     it('should render custom header text', () => {
       const header = 'add custom variable';
-      createComponent({
-        header,
-      });
+      createComponent({ header });
 
-      expect(findListbox().props('headerText')).toBe(header);
+      expect(findDropdown().text()).toContain(header);
     });
   });
 });

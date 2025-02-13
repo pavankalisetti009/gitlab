@@ -1,5 +1,5 @@
 <script>
-import { GlCollapsibleListbox, GlBadge, GlTooltipDirective } from '@gitlab/ui';
+import { GlDisclosureDropdown, GlBadge, GlTooltipDirective } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
 import SectionLayout from './section_layout.vue';
 
@@ -13,7 +13,7 @@ export default {
   },
   components: {
     SectionLayout,
-    GlCollapsibleListbox,
+    GlDisclosureDropdown,
     GlBadge,
   },
   props: {
@@ -58,16 +58,22 @@ export default {
       default: () => null,
     },
   },
+  computed: {
+    filtersWithExtraAttributes() {
+      return this.filters.map((filter) => {
+        return {
+          ...filter,
+          extraAttrs: { disabled: this.filterDisabled(filter.value) },
+        };
+      });
+    },
+  },
   methods: {
     filterDisabled(value) {
       return this.shouldDisableFilter(value) || Boolean(this.selected[value]);
     },
-    selectFilter(filter) {
-      if (this.filterDisabled(filter)) {
-        return;
-      }
-
-      this.$emit('select', filter);
+    selectFilter({ value }) {
+      this.$emit('select', value);
     },
     filterTooltip(filter) {
       return this.customFilterTooltip(filter) || filter.tooltip;
@@ -79,18 +85,20 @@ export default {
 <template>
   <section-layout :show-remove-button="false">
     <template #content>
-      <gl-collapsible-listbox
+      <gl-disclosure-dropdown
         v-gl-tooltip.right.viewport
         :disabled="disabled"
         fluid-width
-        :header-text="header"
-        :items="filters"
+        :items="filtersWithExtraAttributes"
         :toggle-text="buttonText"
         :title="tooltipTitle"
-        selected="selected"
         variant="link"
-        @select="selectFilter"
+        @action="selectFilter"
       >
+        <template #header>
+          <strong class="gl-border-b gl-py-3 gl-pl-3">{{ header }}</strong>
+        </template>
+
         <template #list-item="{ item }">
           <div class="gl-flex">
             <span
@@ -111,7 +119,7 @@ export default {
             </gl-badge>
           </div>
         </template>
-      </gl-collapsible-listbox>
+      </gl-disclosure-dropdown>
     </template>
   </section-layout>
 </template>

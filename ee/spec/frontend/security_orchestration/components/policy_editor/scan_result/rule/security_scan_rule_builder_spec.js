@@ -1,5 +1,4 @@
 import { nextTick } from 'vue';
-import { GlBadge } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import Api from 'ee/api';
 import BranchExceptionSelector from 'ee/security_orchestration/components/policy_editor/branch_exception_selector.vue';
@@ -68,6 +67,7 @@ describe('SecurityScanRuleBuilder', () => {
       },
       stubs: {
         BranchSelection: true,
+        ScanFilterSelector: true,
       },
     });
   };
@@ -87,7 +87,6 @@ describe('SecurityScanRuleBuilder', () => {
   const findAttributeFilters = () => wrapper.findComponent(AttributeFilters);
   const findScanTypeSelect = () => wrapper.findComponent(ScanTypeSelect);
   const findAgeFilter = () => wrapper.findComponent(AgeFilter);
-  const findScanFilterSelectorBadge = () => findScanFilterSelector().findComponent(GlBadge);
   const findBranchExceptionSelector = () => wrapper.findComponent(BranchExceptionSelector);
 
   beforeEach(() => {
@@ -426,28 +425,48 @@ describe('SecurityScanRuleBuilder', () => {
     it('shows badge on scan filter selector with no previously existing filter', () => {
       factory({ initRule: securityScanBuildRule() });
 
-      expect(findScanFilterSelectorBadge().attributes('title')).toEqual(
-        'Age criteria can only be added for pre-existing vulnerabilities',
-      );
+      expect(
+        findScanFilterSelector().props('customFilterTooltip')(
+          findScanFilterSelector()
+            .props('filters')
+            .find(({ value }) => value === 'age'),
+        ),
+      ).toEqual('Age criteria can only be added for pre-existing vulnerabilities');
     });
 
-    it('has no the badge on scan filter selector with previously existing filter', async () => {
-      factory({ initRule: { ...securityScanBuildRule(), vulnerability_states: ['detected'] } });
-
-      expect(findScanFilterSelectorBadge().exists()).toBe(false);
-
-      await findScanFilterSelector().vm.$emit('select', AGE);
-
-      expect(findScanFilterSelectorBadge().attributes('title')).toEqual(
-        'Only 1 age criteria is allowed',
-      );
-
-      await findAgeFilter().vm.$emit('input', {
-        operator: GREATER_THAN_OPERATOR,
-        value: 1,
-        interval: AGE_DAY,
+    it('has no the badge on scan filter selector with previously existing filter and no age criteria', () => {
+      factory({
+        initRule: {
+          ...securityScanBuildRule(),
+          vulnerability_states: ['detected'],
+        },
       });
-      expect(wrapper.emitted('changed')).toHaveLength(1);
+
+      expect(
+        findScanFilterSelector().props('shouldDisableFilter')(
+          findScanFilterSelector()
+            .props('filters')
+            .find(({ value }) => value === 'age'),
+        ),
+      ).toEqual(false);
+    });
+
+    it('limits age criteria to one for previously existing vulnerabilities', () => {
+      factory({
+        initRule: {
+          ...securityScanBuildRule(),
+          vulnerability_states: ['detected'],
+          vulnerability_age: {},
+        },
+      });
+
+      expect(
+        findScanFilterSelector().props('customFilterTooltip')(
+          findScanFilterSelector()
+            .props('filters')
+            .find(({ value }) => value === 'age'),
+        ),
+      ).toEqual('Only 1 age criteria is allowed');
     });
 
     it('removes age filter when there is no previously existing filter', async () => {
