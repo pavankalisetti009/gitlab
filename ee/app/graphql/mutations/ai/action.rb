@@ -92,8 +92,8 @@ module Mutations
 
         resource = find_resource(GlobalID.parse(resource_id), options[:project_id])
 
-        options[:referer_url] = context[:request].headers["Referer"] if method == :chat
-        options[:user_agent] = context[:request].headers["User-Agent"]
+        update_option_by_request_headers(method, options)
+
         thread = find_thread(options.delete(:thread_id)) || create_thread(options.delete(:conversation_type))
         options[:thread] = thread if thread
         options[:started_at] = started_at
@@ -112,6 +112,15 @@ module Mutations
       end
 
       private
+
+      def update_option_by_request_headers(method, options)
+        options[:referer_url] = context[:request].headers["Referer"] if method == :chat
+        options[:user_agent] = context[:request].headers["User-Agent"]
+        options[:x_gitlab_client_type] = context[:request].headers['X-Gitlab-Client-Type']
+        options[:x_gitlab_client_version] = context[:request].headers['X-Gitlab-Client-Version']
+        options[:x_gitlab_client_name] = context[:request].headers['X-Gitlab-Client-Name']
+        options[:x_gitlab_interface] = context[:request].headers['X-Gitlab-Interface']
+      end
 
       def find_resource(resource_id, project_id)
         return unless resource_id

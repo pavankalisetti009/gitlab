@@ -17,6 +17,8 @@ module Llm
       def execute
         return unless ai_action_enabled?(prompt_message)
 
+        set_current_context_for_ai_gateway
+
         with_tracking(prompt_message.ai_action) do
           prompt_message.context.assign_attributes(resource: nil) unless resource_authorized?(prompt_message)
 
@@ -37,6 +39,13 @@ module Llm
       end
 
       private
+
+      def set_current_context_for_ai_gateway
+        Gitlab::AiGateway.current_context[:x_gitlab_client_type] = options['x_gitlab_client_type']
+        Gitlab::AiGateway.current_context[:x_gitlab_client_version] = options['x_gitlab_client_version']
+        Gitlab::AiGateway.current_context[:x_gitlab_client_name] = options['x_gitlab_client_name']
+        Gitlab::AiGateway.current_context[:x_gitlab_interface] = options['x_gitlab_interface']
+      end
 
       def with_tracking(ai_action)
         start_time = options[:start_time] || ::Gitlab::Metrics::System.monotonic_time

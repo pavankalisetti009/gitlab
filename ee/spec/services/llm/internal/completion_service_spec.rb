@@ -104,6 +104,39 @@ RSpec.describe Llm::Internal::CompletionService, :saas, feature_category: :ai_ab
         execute
       end
 
+      context 'when a start_time option is provided', :request_store do
+        let(:options) do
+          {
+            'x_gitlab_client_type' => 'ide',
+            'x_gitlab_client_version' => '1.0',
+            'x_gitlab_client_name' => 'gitlab-extension',
+            'x_gitlab_interface' => 'vscode'
+          }
+        end
+
+        it 'sets the value to AI Gateway context' do
+          expect(Gitlab::Llm::CompletionsFactory)
+            .to receive(:completion!)
+            .with(an_object_having_attributes(
+              user: user,
+              resource: resource,
+              request_id: 'uuid',
+              ai_action: ai_action_name
+            ),
+              options.symbolize_keys.merge(extra_resource: extra_resource))
+            .and_return(completion)
+
+          expect(completion).to receive(:execute)
+
+          execute
+
+          expect(::Gitlab::AiGateway.current_context[:x_gitlab_client_type]).to eq('ide')
+          expect(::Gitlab::AiGateway.current_context[:x_gitlab_client_version]).to eq('1.0')
+          expect(::Gitlab::AiGateway.current_context[:x_gitlab_client_name]).to eq('gitlab-extension')
+          expect(::Gitlab::AiGateway.current_context[:x_gitlab_interface]).to eq('vscode')
+        end
+      end
+
       context 'when a start_time option is provided', :freeze_time do
         let(:start_time) { ::Gitlab::Metrics::System.monotonic_time - 20 }
         let(:options) { { start_time: start_time } }

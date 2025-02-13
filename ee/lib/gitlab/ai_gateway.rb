@@ -7,6 +7,7 @@ module Gitlab
     ServerError = Class.new(StandardError)
 
     FEATURE_FLAG_CACHE_KEY = "gitlab_ai_gateway_feature_flags"
+    CURRENT_CONTEXT_CACHE_KEY = "gitlab_ai_gateway_current_context"
 
     def self.url
       self_hosted_url || cloud_connector_url
@@ -39,6 +40,10 @@ module Gitlab
       enabled_feature_flags.append(name)
     end
 
+    def self.current_context
+      Gitlab::SafeRequestStore.fetch(CURRENT_CONTEXT_CACHE_KEY) { {} }
+    end
+
     # Appended feature flags to the current context.
     # We use SafeRequestStore for the context management which refresh the cache per API request or Sidekiq job run.
     # See https://gitlab.com/gitlab-org/gitlab/-/blob/master/gems/gitlab-safe_request_store/README.md
@@ -59,6 +64,19 @@ module Gitlab
       }.merge(public_headers(user: user, service_name: service.name))
         .tap do |result|
           result['User-Agent'] = agent if agent # Forward the User-Agent on to the model gateway
+          if current_context[:x_gitlab_client_type]
+            result['X-Gitlab-Client-Type'] = current_context[:x_gitlab_client_type]
+          end
+
+          if current_context[:x_gitlab_client_version]
+            result['X-Gitlab-Client-Version'] = current_context[:x_gitlab_client_version]
+          end
+
+          if current_context[:x_gitlab_client_name]
+            result['X-Gitlab-Client-Name'] = current_context[:x_gitlab_client_name]
+          end
+
+          result['X-Gitlab-Interface'] = current_context[:x_gitlab_interface] if current_context[:x_gitlab_interface]
 
           if lsp_version
             # Forward the X-Gitlab-Language-Server-Version on to the model gateway
