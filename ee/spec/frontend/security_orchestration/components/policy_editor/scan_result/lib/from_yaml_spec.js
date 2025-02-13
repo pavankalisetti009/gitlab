@@ -29,7 +29,7 @@ describe('fromYaml', () => {
   it.each`
     title                                                                     | input                                    | output
     ${'returns the policy object for a supported manifest'}                   | ${mockDefaultBranchesScanResultManifest} | ${mockDefaultBranchesScanResultObject}
-    ${'returns the policy object for a policy with an unsupported attribute'} | ${unsupportedManifest}                   | ${unsupportedManifestObject}
+    ${'returns the policy object for a policy with an unsupported attribute'} | ${unsupportedManifest}                   | ${{ ...unsupportedManifestObject, type: 'approval_policy' }}
     ${'returns empty object for a policy with an invalid yaml'}               | ${invalidYaml}                           | ${{}}
   `('$title', ({ input, output }) => {
     expect(fromYaml({ manifest: input })).toStrictEqual(output);
@@ -39,7 +39,7 @@ describe('createPolicyObject', () => {
   it.each`
     title                                                                           | input                                    | output
     ${'returns the policy object and no errors for a supported manifest'}           | ${mockDefaultBranchesScanResultManifest} | ${{ policy: mockDefaultBranchesScanResultObject, parsingError: {} }}
-    ${'returns the error policy object and the error for an unsupported manifest'}  | ${unsupportedManifest}                   | ${{ policy: unsupportedManifestObject, parsingError: {} }}
+    ${'returns the error policy object and the error for an unsupported manifest'}  | ${unsupportedManifest}                   | ${{ policy: { ...unsupportedManifestObject, type: 'approval_policy' }, parsingError: {} }}
     ${'returns the error policy object and the error for an invalid strategy name'} | ${invalidYaml}                           | ${{ policy: {}, parsingError: { actions: true, fallback: true, rules: true, settings: true } }}
   `('$title', ({ input, output }) => {
     expect(createPolicyObject(input)).toStrictEqual(output);

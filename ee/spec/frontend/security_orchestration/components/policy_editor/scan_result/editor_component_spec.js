@@ -28,8 +28,8 @@ import {
   getInvalidBranches,
   REQUIRE_APPROVAL_TYPE,
   DEFAULT_SCAN_RESULT_POLICY,
-  DEFAULT_SCAN_RESULT_POLICY_NEW_FORMAT,
   DEFAULT_SCAN_RESULT_POLICY_WITH_SCOPE_WITH_GROUP_SETTINGS,
+  fromYaml,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
 import EditorComponent from 'ee/security_orchestration/components/policy_editor/scan_result/editor_component.vue';
 import {
@@ -46,6 +46,7 @@ import {
   mockDeprecatedScanResultObject,
   mockWarnActionScanResultObject,
   mockFallbackInvalidScanResultManifest,
+  mockDefaultBranchesScanResultManifestNewFormat,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_result_policy_data';
 import {
   APPROVAL_POLICY_DEFAULT_POLICY,
@@ -62,7 +63,10 @@ import {
   REMOVE_APPROVALS_WITH_NEW_COMMIT,
   REQUIRE_PASSWORD_TO_APPROVE,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib/settings';
-import { removeIdsFromPolicy } from 'ee/security_orchestration/components/policy_editor/utils';
+import {
+  policyBodyToYaml,
+  removeIdsFromPolicy,
+} from 'ee/security_orchestration/components/policy_editor/utils';
 import { SECURITY_POLICY_ACTIONS } from 'ee/security_orchestration/components/policy_editor/constants';
 import ActionSection from 'ee/security_orchestration/components/policy_editor/scan_result/action/action_section.vue';
 import RuleSection from 'ee/security_orchestration/components/policy_editor/scan_result/rule/rule_section.vue';
@@ -643,9 +647,9 @@ describe('EditorComponent', () => {
   describe('modifying a policy', () => {
     it.each`
       status                           | action                            | event              | factoryFn                    | yamlEditorValue
-      ${'creating a new policy'}       | ${undefined}                      | ${'save-policy'}   | ${factory}                   | ${DEFAULT_SCAN_RESULT_POLICY}
-      ${'updating an existing policy'} | ${undefined}                      | ${'save-policy'}   | ${factoryWithExistingPolicy} | ${mockDefaultBranchesScanResultManifest}
-      ${'deleting an existing policy'} | ${SECURITY_POLICY_ACTIONS.REMOVE} | ${'remove-policy'} | ${factoryWithExistingPolicy} | ${mockDefaultBranchesScanResultManifest}
+      ${'creating a new policy'}       | ${undefined}                      | ${'save-policy'}   | ${factory}                   | ${policyBodyToYaml(fromYaml({ manifest: DEFAULT_SCAN_RESULT_POLICY }))}
+      ${'updating an existing policy'} | ${undefined}                      | ${'save-policy'}   | ${factoryWithExistingPolicy} | ${mockDefaultBranchesScanResultManifestNewFormat}
+      ${'deleting an existing policy'} | ${SECURITY_POLICY_ACTIONS.REMOVE} | ${'remove-policy'} | ${factoryWithExistingPolicy} | ${mockDefaultBranchesScanResultManifestNewFormat}
     `('emits "save" when $status', async ({ action, event, factoryFn, yamlEditorValue }) => {
       factoryFn();
       findPolicyEditorLayout().vm.$emit(event);
@@ -972,23 +976,11 @@ describe('EditorComponent', () => {
 
   describe('new yaml format with type as a wrapper', () => {
     beforeEach(() => {
-      factory({
-        provide: {
-          glFeatures: {
-            securityPoliciesNewYamlFormat: true,
-          },
-        },
-      });
-
-      window.gon.features = {
-        securityPoliciesNewYamlFormat: true,
-      };
+      factory();
     });
 
     it('renders default yaml in new format', () => {
-      expect(findPolicyEditorLayout().props('yamlEditorValue')).toBe(
-        DEFAULT_SCAN_RESULT_POLICY_NEW_FORMAT,
-      );
+      expect(findPolicyEditorLayout().props('yamlEditorValue')).toBe(DEFAULT_SCAN_RESULT_POLICY);
     });
 
     it('converts new policy format to old policy format when saved', async () => {

@@ -1,4 +1,3 @@
-import { safeLoad } from 'js-yaml';
 import { isBoolean, isEmpty, isEqual } from 'lodash';
 import { extractPolicyContent } from 'ee/security_orchestration/components/utils';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
@@ -24,14 +23,11 @@ import {
  */
 export const fromYaml = ({ manifest }) => {
   try {
-    const { securityPoliciesNewYamlFormat = false } = window.gon?.features || {};
-    const payload = securityPoliciesNewYamlFormat
-      ? extractPolicyContent({
-          manifest,
-          type: POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter,
-          withType: true,
-        })
-      : safeLoad(manifest, { json: true });
+    const payload = extractPolicyContent({
+      manifest,
+      type: POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter,
+      withType: true,
+    });
 
     return addIdsToPolicy(payload);
   } catch {
