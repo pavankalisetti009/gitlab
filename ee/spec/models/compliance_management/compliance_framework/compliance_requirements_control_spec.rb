@@ -94,6 +94,36 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
     end
   end
 
+  describe '#expression_as_hash' do
+    let_it_be(:expression_hash) do
+      {
+        'operator' => '=',
+        'field' => 'minimum_approvals_required',
+        'value' => 2
+      }
+    end
+
+    let_it_be(:control) do
+      create(:compliance_requirements_control,
+        name: 'minimum_approvals_required_2',
+        expression: expression_hash.to_json)
+    end
+
+    it 'returns parsed hash with string keys without param symbolize_names' do
+      expect(control.expression_as_hash).to eq(expression_hash)
+    end
+
+    it 'returns parsed hash with symbol keys when symbolize_names is true' do
+      expected_hash = {
+        operator: '=',
+        field: 'minimum_approvals_required',
+        value: 2
+      }
+
+      expect(control.expression_as_hash(symbolize_names: true)).to eq(expected_hash)
+    end
+  end
+
   describe 'external_url validation' do
     let_it_be(:compliance_requirement) { create :compliance_requirement }
     let(:control) do

@@ -49,8 +49,8 @@ module ComplianceManagement
       validates :name, uniqueness: { scope: :compliance_requirement_id }, if: :internal?
       validates :secret_token, presence: true, if: :external?
 
-      def expression_as_hash
-        ::Gitlab::Json.parse(expression)
+      def expression_as_hash(symbolize_names: false)
+        ::Gitlab::Json.parse(expression, symbolize_names: symbolize_names)
       rescue JSON::ParserError
         errors.add(:expression, _('should be a valid json object.'))
 
