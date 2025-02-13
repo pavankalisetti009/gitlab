@@ -1386,10 +1386,10 @@
     vue-resizable "1.3.4"
     vue-runtime-helpers "^1.1.2"
 
-"@gitlab/eslint-plugin@20.6.0":
-  version "20.6.0"
-  resolved "https://registry.yarnpkg.com/@gitlab/eslint-plugin/-/eslint-plugin-20.6.0.tgz#ff3b5cda779b4d9984796bf81286f70bfe7d5915"
-  integrity sha512-9y/slEJ+aWXUnK1UcaG+EzB/JjCrK10sHCzxOcEEuML5DUpRqH7axGFYBmug7sR65w66pZZf/IDXe1nUEk/quQ==
+"@gitlab/eslint-plugin@20.7.1":
+  version "20.7.1"
+  resolved "https://registry.yarnpkg.com/@gitlab/eslint-plugin/-/eslint-plugin-20.7.1.tgz#89dfb95bf6ffec50bd7d9bace42622634a529cf0"
+  integrity sha512-BSB5SC86ITaauEab0HMWLTiaA1QgFlwz5keoO8YQ0JSjPaKusVOGDYDoxQHtZVuRBVfYQi0Cwf5dSWiHJWAeEw==
   dependencies:
     "@typescript-eslint/eslint-plugin" "^7.14.1"
     eslint-config-airbnb-base "^15.0.0"
