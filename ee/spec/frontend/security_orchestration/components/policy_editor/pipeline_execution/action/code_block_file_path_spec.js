@@ -17,6 +17,7 @@ import {
   OVERRIDE,
   SUFFIX_ON_CONFLICT,
   SUFFIX_NEVER,
+  DEPRECATED_INJECT,
 } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/constants';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 
@@ -77,28 +78,42 @@ describe('CodeBlockFilePath', () => {
     });
   });
 
-  it('renders message for "inject"', () => {
+  it('renders message for "inject_policy"', () => {
     createComponent({ includeStubs: false });
     expect(findGlSprintf().attributes('message')).toBe(
       '%{strategySelector}into the %{boldStart}.gitlab-ci.yml%{boldEnd} with the following %{boldStart}pipeline execution file%{boldEnd} from %{projectSelector}',
     );
   });
 
-  it('renders message for "override"', () => {
+  it('renders message for "inject_ci"', () => {
+    createComponent({ propsData: { strategy: DEPRECATED_INJECT }, includeStubs: false });
+    expect(findGlSprintf().attributes('message')).toBe(
+      '%{strategySelector}into the %{boldStart}.gitlab-ci.yml%{boldEnd} with the following %{boldStart}pipeline execution file%{boldEnd} from %{projectSelector}',
+    );
+  });
+
+  it('renders message for "override_project_ci"', () => {
     createComponent({ propsData: { strategy: OVERRIDE }, includeStubs: false });
     expect(findGlSprintf().attributes('message')).toBe(
       '%{strategySelector}the %{boldStart}.gitlab-ci.yml%{boldEnd} with the following %{boldStart}pipeline execution file%{boldEnd} from %{projectSelector}',
     );
   });
 
-  it('renders icon tooltip message for inject', () => {
+  it('renders icon tooltip message for "inject_policy"', () => {
     createComponent();
     expect(findIcon().attributes('title')).toBe(
       'The content of this pipeline execution YAML file is injected into the .gitlab-ci.yml file of the target project. All GitLab CI/CD features are supported.',
     );
   });
 
-  it('renders icon tooltip message for override', () => {
+  it('renders icon tooltip message for "inject_ci"', () => {
+    createComponent({ propsData: { strategy: DEPRECATED_INJECT } });
+    expect(findIcon().attributes('title')).toBe(
+      'The content of this pipeline execution YAML file is injected into the .gitlab-ci.yml file of the target project. Custom stages used in the pipeline execution YAML are ignored, unless they are defined in the `.gitlab-ci.yml` file of the target project. All GitLab CI/CD features are supported.',
+    );
+  });
+
+  it('renders icon tooltip message for "override_project_ci"', () => {
     createComponent({ propsData: { strategy: OVERRIDE } });
     expect(findIcon().attributes('title')).toBe(
       'The content of this pipeline execution YAML file overrides the .gitlab-ci.yml file of the target project. All GitLab CI/CD features are supported.',

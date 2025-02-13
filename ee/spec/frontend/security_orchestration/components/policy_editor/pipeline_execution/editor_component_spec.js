@@ -362,7 +362,7 @@ describe('EditorComponent', () => {
             policy: `name: ''
 description: ''
 enabled: true
-pipeline_config_strategy: inject_ci
+pipeline_config_strategy: inject_policy
 content:
   include:
     - project: ''

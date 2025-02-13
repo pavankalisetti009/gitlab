@@ -6,6 +6,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import ActionSection from 'ee/security_orchestration/components/policy_editor/pipeline_execution/action/action_section.vue';
 import CodeBlockFilePath from 'ee/security_orchestration/components/policy_editor/pipeline_execution/action/code_block_file_path.vue';
 import {
+  DEPRECATED_INJECT,
   INJECT,
   OVERRIDE,
   SUFFIX_NEVER,
@@ -139,10 +140,13 @@ describe('ActionSection', () => {
       ]);
     });
 
-    it.each([OVERRIDE, INJECT])('updates strategy when the value is %o', async ({ strategy }) => {
-      await findCodeBlockFilePath().vm.$emit('select-strategy', strategy);
-      expect(wrapper.emitted('changed')).toEqual([['pipeline_config_strategy', strategy]]);
-    });
+    it.each([OVERRIDE, DEPRECATED_INJECT, INJECT])(
+      'updates strategy when the value is %o',
+      async ({ strategy }) => {
+        await findCodeBlockFilePath().vm.$emit('select-strategy', strategy);
+        expect(wrapper.emitted('changed')).toEqual([['pipeline_config_strategy', strategy]]);
+      },
+    );
 
     it('clears project on deselect', async () => {
       findCodeBlockFilePath().vm.$emit('select-project', undefined);

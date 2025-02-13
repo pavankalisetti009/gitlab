@@ -63,7 +63,7 @@ describe('Pipeline execution policy actions', () => {
 
       await verify({
         manifest: mockPipelineExecutionActionManifest.replace(
-          'pipeline_config_strategy: inject_ci',
+          'pipeline_config_strategy: inject_policy',
           'pipeline_config_strategy: override_project_ci',
         ),
         verifyRuleMode,

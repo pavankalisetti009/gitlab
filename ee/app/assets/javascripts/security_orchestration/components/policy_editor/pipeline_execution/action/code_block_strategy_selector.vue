@@ -1,16 +1,19 @@
 <script>
 import { GlCollapsibleListbox } from '@gitlab/ui';
+import CodeBlockDeprecatedStrategyBadge from 'ee/security_orchestration/components/policy_editor/pipeline_execution/action/code_block_deprecated_strategy_badge.vue';
 import {
   CUSTOM_STRATEGY_OPTIONS,
   CUSTOM_STRATEGY_OPTIONS_LISTBOX_ITEMS,
+  CUSTOM_STRATEGY_OPTIONS_WITH_DEPRECATED_LISTBOX_ITEMS,
+  DEPRECATED_INJECT,
   INJECT,
 } from '../constants';
 import { validateStrategyValues } from './utils';
 
 export default {
-  CUSTOM_STRATEGY_OPTIONS_LISTBOX_ITEMS,
   name: 'CodeBlockStrategySelector',
   components: {
+    CodeBlockDeprecatedStrategyBadge,
     GlCollapsibleListbox,
   },
   props: {
@@ -22,8 +25,21 @@ export default {
     },
   },
   computed: {
+    showDeprecatedInjectStrategy() {
+      return this.strategy === DEPRECATED_INJECT;
+    },
+    items() {
+      return this.showDeprecatedInjectStrategy
+        ? CUSTOM_STRATEGY_OPTIONS_WITH_DEPRECATED_LISTBOX_ITEMS
+        : CUSTOM_STRATEGY_OPTIONS_LISTBOX_ITEMS;
+    },
     toggleText() {
       return CUSTOM_STRATEGY_OPTIONS[this.strategy];
+    },
+  },
+  methods: {
+    showDeprecatedBadge(value) {
+      return value === DEPRECATED_INJECT;
     },
   },
 };
@@ -31,11 +47,20 @@ export default {
 
 <template>
   <gl-collapsible-listbox
+    id="strategy-selector-dropdown"
     label-for="file-path"
+    fluid-width
     data-testid="strategy-selector-dropdown"
-    :items="$options.CUSTOM_STRATEGY_OPTIONS_LISTBOX_ITEMS"
+    :items="items"
     :toggle-text="toggleText"
     :selected="strategy"
     @select="$emit('select', $event)"
-  />
+  >
+    <template #list-item="{ item: { value, text } }">
+      <div class="gl-flex gl-items-center">
+        <div>{{ text }}</div>
+        <code-block-deprecated-strategy-badge v-if="showDeprecatedBadge(value)" class="gl-ml-2" />
+      </div>
+    </template>
+  </gl-collapsible-listbox>
 </template>

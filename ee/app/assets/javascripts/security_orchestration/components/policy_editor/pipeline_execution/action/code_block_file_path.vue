@@ -15,7 +15,7 @@ import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import RefSelector from '~/ref/components/ref_selector.vue';
 import GroupProjectsDropdown from 'ee/security_orchestration/components/shared/group_projects_dropdown.vue';
 import { isGroup } from 'ee/security_orchestration/components/utils';
-import { INJECT, OVERRIDE, SUFFIX_ON_CONFLICT } from '../constants';
+import { DEPRECATED_INJECT, INJECT, OVERRIDE, SUFFIX_ON_CONFLICT } from '../constants';
 import SuffixSelector from '../suffix_selector.vue';
 import { validateStrategyValues } from './utils';
 import CodeBlockStrategySelector from './code_block_strategy_selector.vue';
@@ -24,6 +24,9 @@ export default {
   i18n: {
     filePathInputCopy: s__('ScanExecutionPolicy|%{labelStart}File path:%{labelEnd} %{filePath}'),
     pipelineFilePathCopy: {
+      [DEPRECATED_INJECT]: s__(
+        'ScanExecutionPolicy|%{strategySelector}into the %{boldStart}.gitlab-ci.yml%{boldEnd} with the following %{boldStart}pipeline execution file%{boldEnd} from %{projectSelector}',
+      ),
       [INJECT]: s__(
         'ScanExecutionPolicy|%{strategySelector}into the %{boldStart}.gitlab-ci.yml%{boldEnd} with the following %{boldStart}pipeline execution file%{boldEnd} from %{projectSelector}',
       ),
@@ -43,6 +46,9 @@ export default {
     selectedProjectInformation: {
       [INJECT]: s__(
         'ScanExecutionPolicy|The content of this pipeline execution YAML file is injected into the .gitlab-ci.yml file of the target project. All GitLab CI/CD features are supported.',
+      ),
+      [DEPRECATED_INJECT]: s__(
+        'ScanExecutionPolicy|The content of this pipeline execution YAML file is injected into the .gitlab-ci.yml file of the target project. Custom stages used in the pipeline execution YAML are ignored, unless they are defined in the `.gitlab-ci.yml` file of the target project. All GitLab CI/CD features are supported.',
       ),
       [OVERRIDE]: s__(
         'ScanExecutionPolicy|The content of this pipeline execution YAML file overrides the .gitlab-ci.yml file of the target project. All GitLab CI/CD features are supported.',
