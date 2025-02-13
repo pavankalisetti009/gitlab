@@ -459,22 +459,40 @@ RSpec.describe Elastic::ProcessBookkeepingService,
         expect { described_class.new.execute }.not_to exceed_all_query_limit(control)
       end
 
-      it 'does not have N+1 queries for work_items' do
-        project = create(:project)
-        work_items = [create(:work_item), create(:work_item, project: project),
-          create(:work_item, namespace: create(:group))]
+      context 'when search work items index notes is disabled' do
+        before do
+          stub_feature_flags(search_work_items_index_notes: false)
+        end
 
-        described_class.track!(*work_items)
+        it 'does not have N+1 queries for work_items' do
+          project = create(:project)
+          parent_group = create(:group)
+          nested_group = create(:group, parent: parent_group)
+          work_items = [
+            create(:work_item),
+            create(:work_item, project: project),
+            create(:work_item, namespace: create(:group)),
+            create(:work_item, namespace: nested_group)
+          ]
 
-        control = ActiveRecord::QueryRecorder.new(skip_cached: false) { described_class.new.execute }
+          described_class.track!(*work_items)
 
-        project = create(:project)
-        work_items = [create(:work_item), create(:work_item, project: project),
-          create(:work_item, namespace: create(:group))]
+          control = ActiveRecord::QueryRecorder.new(skip_cached: false) { described_class.new.execute }
 
-        described_class.track!(*work_items)
+          project = create(:project)
+          parent_group = create(:group)
+          nested_group = create(:group, parent: parent_group)
+          work_items += [
+            create(:work_item),
+            create(:work_item, project: project),
+            create(:work_item, namespace: create(:group)),
+            create(:work_item, namespace: nested_group)
+          ]
 
-        expect { described_class.new.execute }.not_to exceed_all_query_limit(control)
+          described_class.track!(*work_items)
+
+          expect { described_class.new.execute }.not_to exceed_all_query_limit(control)
+        end
       end
 
       it 'does not have N+1 queries for notes' do
