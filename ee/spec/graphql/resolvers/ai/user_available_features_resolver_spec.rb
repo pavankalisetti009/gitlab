@@ -74,13 +74,14 @@ RSpec.describe Resolvers::Ai::UserAvailableFeaturesResolver, feature_category: :
           context 'when testing each context category individually' do
             feature_flags =
               {
-                duo_include_context_file: 'include_file_context',
                 duo_include_context_snippet: 'include_snippet_context',
                 duo_include_context_merge_request: 'include_merge_request_context',
                 duo_include_context_issue: 'include_issue_context',
                 duo_include_context_dependency: 'include_dependency_context',
                 duo_include_context_local_git: 'include_local_git_context'
               }
+
+            already_enabled_context = %w[include_file_context].freeze
 
             feature_flags.each do |flag, feature|
               context "when only #{flag} is enabled" do
@@ -89,9 +90,9 @@ RSpec.describe Resolvers::Ai::UserAvailableFeaturesResolver, feature_category: :
                   stub_feature_flags(flag => true)
                 end
 
-                it "returns only #{feature}" do
+                it "returns #{feature} and all already enabled features" do
                   expect(Feature.enabled?(flag, current_user, type: :gitlab_com_derisk)).to be(true)
-                  expect(resolver).to contain_exactly(feature)
+                  expect(resolver).to contain_exactly(feature, *already_enabled_context)
                 end
               end
             end
