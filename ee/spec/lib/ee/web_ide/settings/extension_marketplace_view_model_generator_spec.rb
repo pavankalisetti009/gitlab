@@ -2,12 +2,12 @@
 
 require "fast_spec_helper"
 
-RSpec.describe WebIde::Settings::ExtensionsGalleryViewModelGenerator, feature_category: :web_ide do
+RSpec.describe WebIde::Settings::ExtensionMarketplaceViewModelGenerator, feature_category: :web_ide do
   let(:user_class) { stub_const('User', Class.new) }
   let(:group_class) { stub_const('Group', Class.new) }
   let(:user) { user_class.new }
   let(:group) { group_class.new }
-  let(:requested_setting_names) { [:vscode_extensions_gallery_view_model] }
+  let(:requested_setting_names) { [:vscode_extension_marketplace_view_model] }
   let(:vscode_extension_marketplace) { { item_url: 'https://example.com/vscode/is/cooler/than/rubymine' } }
   let(:vscode_extension_marketplace_metadata) { { enabled: true } }
 
@@ -34,7 +34,7 @@ RSpec.describe WebIde::Settings::ExtensionsGalleryViewModelGenerator, feature_ca
     )
 
     # why: Stubs necessary for fast_spec_helper. See https://gitlab.com/gitlab-org/gitlab/-/merge_requests/167495#note_2290309350
-    # The `spec/lib/web_ide/extensions_marketplace_spec.rb` covers everything in integration, so we should be good.
+    # The `spec/lib/web_ide/extension_marketplace_spec.rb` covers everything in integration, so we should be good.
     allow(::Gitlab::Routing).to receive_message_chain(:url_helpers, :profile_preferences_url)
       .with(anchor: 'integrations')
       .and_return('http://gdk.test/profile_preferences_url#integrations')
@@ -50,7 +50,7 @@ RSpec.describe WebIde::Settings::ExtensionsGalleryViewModelGenerator, feature_ca
 
   describe '.generate' do
     subject(:settings_result) do
-      described_class.generate(context).dig(:settings, :vscode_extensions_gallery_view_model)
+      described_class.generate(context).dig(:settings, :vscode_extension_marketplace_view_model)
     end
 
     context 'when metadata is disabled for instance_disabled' do
