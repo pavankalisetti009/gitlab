@@ -6,7 +6,7 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
   let_it_be(:user) { create(:user) }
   let_it_be(:project) { create(:project, :repository, :public) }
   let_it_be(:pipeline) { create(:ci_pipeline, :success, project: project) }
-  let_it_be(:finding) { create(:vulnerabilities_finding, :with_pipeline, :with_cve, project: project, severity: :high) }
+  let_it_be_with_refind(:finding) { create(:vulnerabilities_finding, :with_pipeline, :with_cve, project: project, severity: :high) }
   let_it_be(:advisory) { create(:pm_advisory, cve: finding.cve_value) }
   let_it_be(:cve_enrichment_object) { create(:pm_cve_enrichment, cve: finding.cve_value) }
 
@@ -123,7 +123,7 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
       allow(helper).to receive(:can?).and_return(true)
     end
 
-    subject { helper.vulnerability_details(vulnerability, pipeline) }
+    subject(:vulnerability_details) { helper.vulnerability_details(vulnerability, pipeline) }
 
     describe '[:can_modify_related_issues]' do
       context 'with security dashboard feature enabled' do
@@ -216,6 +216,37 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
         Gitlab::I18n.with_locale(:zh_CN) do
           expect(subject[:dismissal_descriptions].keys).to eq(expected_descriptions.keys)
           expect(subject[:dismissal_descriptions].values).to eq(translated_descriptions)
+        end
+      end
+    end
+
+    describe '[:severity_override]' do
+      subject(:severity_override) { vulnerability_details[:severity_override] }
+
+      context 'when there is no severity override for the vulnerability' do
+        it { is_expected.to be_nil }
+      end
+
+      context 'when there are severity overrides for the vulnerability' do
+        let!(:author) { create(:user) }
+        let!(:old_severity_override) do
+          create(:vulnerability_severity_override, vulnerability: vulnerability, author: author)
+        end
+
+        let!(:most_recent_severity_override) do
+          create(:vulnerability_severity_override, vulnerability: vulnerability, author: author)
+        end
+
+        it 'contains the information from the most recent severity override record' do
+          expect(severity_override).to include(
+            id: most_recent_severity_override.id,
+            new_severity: 'critical',
+            original_severity: 'low',
+            author: {
+              name: author.name,
+              web_url: user_path(author)
+            }
+          )
         end
       end
     end

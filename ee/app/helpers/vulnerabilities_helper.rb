@@ -37,7 +37,8 @@ module VulnerabilitiesHelper
       issue_tracking_help_path: help_page_path('user/project/issues/_index.md'),
       permissions_help_path: help_page_path('user/permissions.md', anchor: 'project-members-permissions'),
       dismissal_descriptions: dismissal_descriptions,
-      representation_information: format_vulnerability_representation_information(vulnerability.representation_information)
+      representation_information: format_vulnerability_representation_information(vulnerability.representation_information),
+      severity_override: severity_override_data(vulnerability)
     }
 
     result.merge(vulnerability_data(vulnerability), vulnerability_finding_data(vulnerability))
@@ -45,6 +46,21 @@ module VulnerabilitiesHelper
 
   def dismissal_descriptions
     Vulnerabilities::DismissalReasonEnum.translated_descriptions
+  end
+
+  def severity_override_data(vulnerability)
+    severity_override = vulnerability.severity_overrides.last
+    return unless severity_override
+
+    {
+      id: severity_override.id,
+      original_severity: severity_override.original_severity,
+      new_severity: severity_override.new_severity,
+      author: {
+        name: severity_override.author.name,
+        web_url: user_path(severity_override.author)
+      }
+    }
   end
 
   def new_issue_url_for(vulnerability)
