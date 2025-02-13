@@ -105,8 +105,11 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
     let(:setup_for_company) { 'false' }
     let(:joining_project) { 'false' }
     let(:role) { 'software_developer' }
+
+    let(:onboarding_status_setup_for_company) { 'false' }
     let(:onboarding_status_role) { nil }
     let(:onboarding_status_registration_objective) { nil }
+
     let(:extra_params) { {} }
     let(:update_params) do
       {
@@ -116,6 +119,7 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
           registration_objective: 'code_storage',
           onboarding_status_joining_project: joining_project,
           onboarding_status_role: onboarding_status_role,
+          onboarding_status_setup_for_company: onboarding_status_setup_for_company,
           onboarding_status_registration_objective: onboarding_status_registration_objective
         },
         jobs_to_be_done_other: '_jobs_to_be_done_other_',
@@ -198,6 +202,32 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
           it 'sets onboarding_status_registration_objective and registration_objective' do
             expect(user.registration_objective).to eq('code_storage')
             expect(user.onboarding_status_registration_objective).to eq('code_storage')
+          end
+        end
+      end
+
+      context 'with setup_for_company updates' do
+        using RSpec::Parameterized::TableSyntax
+
+        where(:setup_for_company, :onboarding_status_setup_for_company,
+          :expected_setup_value, :expected_status_value) do
+          'true'  | nil     | true  | true
+          'false' | nil     | false | false
+          nil     | 'true'  | true  | true
+          nil     | 'false' | false | false
+          'true'  | 'false' | true  | true
+          'false' | 'true'  | false | false
+        end
+
+        with_them do
+          before do
+            patch_update
+            user.reset
+          end
+
+          it 'sets the expected values for setup_for_company fields' do
+            expect(user.setup_for_company).to be expected_setup_value
+            expect(user.onboarding_status_setup_for_company).to be expected_status_value
           end
         end
       end

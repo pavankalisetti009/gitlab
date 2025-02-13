@@ -12,8 +12,8 @@ module EE
 
       attribute :onboarding_status, ::Gitlab::Database::Type::IndifferentJsonb.new
       store_accessor(
-        :onboarding_status, :step_url, :email_opt_in,
-        :initial_registration_type, :registration_type, :registration_objective,
+        :onboarding_status, :step_url, :email_opt_in, :initial_registration_type,
+        :registration_type, :registration_objective, :setup_for_company,
         :glm_content, :glm_source, :joining_project, :role, prefix: true
       )
 

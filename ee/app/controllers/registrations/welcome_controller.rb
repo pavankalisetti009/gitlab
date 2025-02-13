@@ -75,6 +75,7 @@ module Registrations
                         :registration_objective,
                         :onboarding_status_joining_project,
                         :onboarding_status_role,
+                        :onboarding_status_setup_for_company,
                         :onboarding_status_registration_objective
                       )
                       .merge(params.permit(:jobs_to_be_done_other))
@@ -101,6 +102,7 @@ module Registrations
         base_params[:registration_objective] = base_params[:onboarding_status_registration_objective]
       end
 
+      sync_setup_for_company_params(base_params)
       base_params
     end
 
@@ -114,6 +116,18 @@ module Registrations
 
     def passed_through_params
       update_params.slice(*::Onboarding::StatusPresenter::PASSED_THROUGH_PARAMS)
+    end
+
+    def sync_setup_for_company_params(base_params)
+      # Dup setup_for_company for setup_for_company and onboarding_status_setup_for_company fields
+      setup_for_company_param = base_params[:setup_for_company].presence ||
+        base_params[:onboarding_status_setup_for_company].presence
+
+      return unless setup_for_company_param.present?
+
+      setup_for_company_value = ::Gitlab::Utils.to_boolean(setup_for_company_param)
+      base_params[:setup_for_company] = setup_for_company_value
+      base_params[:onboarding_status_setup_for_company] = setup_for_company_value
     end
 
     def update_success_path
