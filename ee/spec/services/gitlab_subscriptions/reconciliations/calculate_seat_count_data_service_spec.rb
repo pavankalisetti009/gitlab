@@ -29,7 +29,7 @@ RSpec.describe GitlabSubscriptions::Reconciliations::CalculateSeatCountDataServi
         root_ancestor.add_owner(user)
       end
 
-      it { is_expected.to be nil }
+      it { is_expected.to be_nil }
     end
 
     context 'when the max_seats_used has not been updated on the subscription' do
@@ -105,14 +105,14 @@ RSpec.describe GitlabSubscriptions::Reconciliations::CalculateSeatCountDataServi
           root_ancestor.add_owner(user)
         end
 
-        it { is_expected.to be nil }
+        it { is_expected.to be_nil }
       end
 
       context 'when namespace is not a group' do
         let(:alert_user_overage) { true }
         let(:root_ancestor) { create(:namespace, :with_namespace_settings) }
 
-        it { is_expected.to be nil }
+        it { is_expected.to be_nil }
       end
 
       context 'when the alert was dismissed' do
@@ -124,7 +124,7 @@ RSpec.describe GitlabSubscriptions::Reconciliations::CalculateSeatCountDataServi
           root_ancestor.add_owner(user)
         end
 
-        it { is_expected.to be nil }
+        it { is_expected.to be_nil }
       end
 
       context 'when the user does not have admin rights to the group' do
@@ -135,7 +135,7 @@ RSpec.describe GitlabSubscriptions::Reconciliations::CalculateSeatCountDataServi
           root_ancestor.add_developer(user)
         end
 
-        it { is_expected.to be nil }
+        it { is_expected.to be_nil }
       end
 
       context 'when the subscription is not eligible for usage alerts' do
@@ -146,7 +146,7 @@ RSpec.describe GitlabSubscriptions::Reconciliations::CalculateSeatCountDataServi
           root_ancestor.add_owner(user)
         end
 
-        it { is_expected.to be nil }
+        it { is_expected.to be_nil }
       end
 
       context 'when max seats used are more than the subscription seats' do
@@ -158,7 +158,7 @@ RSpec.describe GitlabSubscriptions::Reconciliations::CalculateSeatCountDataServi
           root_ancestor.add_owner(user)
         end
 
-        it { is_expected.to be nil }
+        it { is_expected.to be_nil }
       end
     end
 
@@ -189,7 +189,7 @@ RSpec.describe GitlabSubscriptions::Reconciliations::CalculateSeatCountDataServi
         end
 
         with_them do
-          it { is_expected.to be nil }
+          it { is_expected.to be_nil }
         end
       end
 

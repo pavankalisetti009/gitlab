@@ -90,7 +90,7 @@ module QA
       it 'requires approval when license findings violate scan result policy',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/426073' do
         expect(scan_result_policy_commit.api_response).to have_key(:branch)
-        expect(scan_result_policy_commit.api_response[:branch]).not_to be nil
+        expect(scan_result_policy_commit.api_response[:branch]).not_to be_nil
 
         create_scan_result_policy
         # Create MR after creating the scan result policy
