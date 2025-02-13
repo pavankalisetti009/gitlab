@@ -21,6 +21,9 @@ const FALLBACK = `fallback_behavior:
   fail: closed
 `;
 
+const TYPE = `type: approval_policy
+`;
+
 export const USER = {
   id: 2,
   name: 'Name 1',
@@ -38,8 +41,7 @@ export const GROUP = {
   type: GROUP_TYPE,
 };
 
-export const mockRoleApproversApprovalManifest = `type: approval_policy
-name: ''
+export const mockRoleApproversApprovalManifest = `name: ''
 description: ''
 enabled: true
 rules:
@@ -52,10 +54,10 @@ actions:
 `
   .concat(BOT_ACTION)
   .concat(PROJECT_SETTINGS)
-  .concat(FALLBACK);
+  .concat(FALLBACK)
+  .concat(TYPE);
 
-export const mockUserApproversApprovalManifest = `type: approval_policy
-name: ''
+export const mockUserApproversApprovalManifest = `name: ''
 description: ''
 enabled: true
 rules:
@@ -68,10 +70,10 @@ actions:
 `
   .concat(BOT_ACTION)
   .concat(PROJECT_SETTINGS)
-  .concat(FALLBACK);
+  .concat(FALLBACK)
+  .concat(TYPE);
 
-export const mockGroupApproversApprovalManifest = `type: approval_policy
-name: ''
+export const mockGroupApproversApprovalManifest = `name: ''
 description: ''
 enabled: true
 policy_scope:
@@ -87,10 +89,10 @@ actions:
 `
   .concat(BOT_ACTION)
   .concat(GROUP_SETTINGS)
-  .concat(FALLBACK);
+  .concat(FALLBACK)
+  .concat(TYPE);
 
-export const mockLicenseApprovalManifest = `type: approval_policy
-name: ''
+export const mockLicenseApprovalManifest = `name: ''
 description: ''
 enabled: true
 rules:
@@ -105,10 +107,10 @@ actions:
 `
   .concat(BOT_ACTION)
   .concat(PROJECT_SETTINGS)
-  .concat(FALLBACK);
+  .concat(FALLBACK)
+  .concat(TYPE);
 
-export const mockSecurityApprovalManifest = `type: approval_policy
-name: ''
+export const mockSecurityApprovalManifest = `name: ''
 description: ''
 enabled: true
 rules:
@@ -124,10 +126,10 @@ actions:
 `
   .concat(BOT_ACTION)
   .concat(PROJECT_SETTINGS)
-  .concat(FALLBACK);
+  .concat(FALLBACK)
+  .concat(TYPE);
 
-export const mockAnyMergeRequestApprovalManifest = `type: approval_policy
-name: ''
+export const mockAnyMergeRequestApprovalManifest = `name: ''
 description: ''
 enabled: true
 rules:
@@ -140,4 +142,5 @@ actions:
 `
   .concat(BOT_ACTION)
   .concat(PROJECT_SETTINGS)
-  .concat(FALLBACK);
+  .concat(FALLBACK)
+  .concat(TYPE);

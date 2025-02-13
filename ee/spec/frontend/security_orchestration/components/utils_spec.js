@@ -295,10 +295,7 @@ describe('checkForPerformanceRisk', () => {
   );
 
   describe('extractPolicyContent', () => {
-    const defaultPayload = {
-      policy: {},
-      parsingError: { hasParsingError: true, actions: true, rules: true },
-    };
+    const defaultPayload = {};
     const extractedPolicyContent = {
       actions: [{ scan: 'secret_detection' }],
       description: '',

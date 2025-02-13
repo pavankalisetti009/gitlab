@@ -227,10 +227,7 @@ const isValidPolicyType = (type) => {
  * @returns {*|{policy: {}}}
  */
 export const extractPolicyContent = ({ manifest, type, withType = false }) => {
-  const defaultPayload = {
-    policy: {},
-    parsingError: { hasParsingError: true, actions: true, rules: true },
-  };
+  const defaultPayload = {};
 
   try {
     if (!isValidPolicyType(type)) {

@@ -77,6 +77,7 @@ describe('security orchestration actions', () => {
             { users: [{ id: 2, name: 'username2' }], allGroups: [] },
           ],
           source: { project: { fullPath: 'path/policy' } },
+          type: 'approval_policy',
         },
       ];
       const queryResponse = { data: { namespace: { scanResultPolicies: { nodes: policies } } } };

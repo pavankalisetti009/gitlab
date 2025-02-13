@@ -34,6 +34,28 @@ actions:
     enabled: true
 `;
 
+export const mockNoFallbackScanResultManifestNewFormat = `name: critical vulnerability CS approvals
+description: This policy enforces critical vulnerability CS approvals
+enabled: true
+rules:
+  - type: scan_finding
+    branches: []
+    scanners:
+      - container_scanning
+    vulnerabilities_allowed: 1
+    severity_levels:
+      - critical
+    vulnerability_states:
+      - newly_detected
+actions:
+  - type: require_approval
+    approvals_required: 1
+    user_approvers:
+      - the.one
+  - type: send_bot_message
+    enabled: true
+`;
+
 export const mockAllApprovalTypesManifest = `type: approval_policy
 name: critical vulnerability CS approvals
 description: This policy enforces critical vulnerability CS approvals
@@ -64,6 +86,12 @@ actions:
 export const mockDefaultBranchesScanResultManifest =
   mockNoFallbackScanResultManifest.concat(`fallback_behavior:
   fail: open
+`);
+
+export const mockDefaultBranchesScanResultManifestNewFormat =
+  mockNoFallbackScanResultManifestNewFormat.concat(`fallback_behavior:
+  fail: open
+`).concat(`type: approval_policy
 `);
 
 export const mockDefaultBranchesScanResultObject = {

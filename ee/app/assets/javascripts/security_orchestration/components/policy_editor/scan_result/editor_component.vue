@@ -179,7 +179,6 @@ export default {
   data() {
     const newPolicyYaml = getPolicyYaml({
       isGroup: isGroup(this.namespaceType),
-      newYamlFormat: this.glFeatures.securityPoliciesNewYamlFormat,
     });
 
     const yamlEditorValue = this.existingPolicy
@@ -452,13 +451,9 @@ export default {
       const type = POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter;
       const policy = extractPolicyContent({ manifest: this.yamlEditorValue, type, withType: true });
 
-      const payload = this.glFeatures.securityPoliciesNewYamlFormat
-        ? policyBodyToYaml(policy)
-        : this.yamlEditorValue;
-
       this.$emit('save', {
         action,
-        policy: payload,
+        policy: policyBodyToYaml(policy),
         isRuleMode: this.isRuleMode,
       });
     },

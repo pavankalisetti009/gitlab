@@ -24,6 +24,9 @@ const FALLBACK = `fallback_behavior:
   fail: closed
 `;
 
+const TYPE = `type: approval_policy
+`;
+
 const BASE_POLICY = (type) => `type: ${type}
 name: ''
 description: ''
@@ -58,9 +61,10 @@ policy_scope:
     - id: 2
 `);
 
-export const mockApprovalActionGroupManifest = BASE_POLICY('approval_policy')
-  .concat(
-    `policy_scope:
+export const mockApprovalActionGroupManifest = `name: ''
+description: ''
+enabled: true
+policy_scope:
   compliance_frameworks:
     - id: 1
     - id: 2
@@ -71,10 +75,10 @@ actions:
     approvals_required: 1
   - type: send_bot_message
     enabled: true
-`,
-  )
+`
   .concat(GROUP_SETTINGS)
-  .concat(FALLBACK);
+  .concat(FALLBACK)
+  .concat(TYPE);
 
 export const mockApprovalActionProjectManifest = removeGroupSetting(
   putPolicyScopeComplianceFrameworksToEndOfYaml(mockApprovalActionGroupManifest),
@@ -104,9 +108,10 @@ policy_scope:
       - id: 1
       - id: 2
 `),
-  APPROVAL_POLICY: BASE_POLICY('approval_policy')
-    .concat(
-      `policy_scope:
+  APPROVAL_POLICY: `name: ''
+description: ''
+enabled: true
+policy_scope:
   projects:
     excluding:
       - id: 1
@@ -118,10 +123,10 @@ actions:
     approvals_required: 1
   - type: send_bot_message
     enabled: true
-`,
-    )
+`
     .concat(GROUP_SETTINGS)
-    .concat(FALLBACK),
+    .concat(FALLBACK)
+    .concat(TYPE),
 };
 
 export const EXCLUDING_PROJECTS_PROJECTS_LEVEL_MOCKS = {
@@ -186,9 +191,10 @@ policy_scope:
       - id: 1
       - id: 2
 `),
-  APPROVAL_POLICY: BASE_POLICY('approval_policy')
-    .concat(
-      `policy_scope:
+  APPROVAL_POLICY: `name: ''
+description: ''
+enabled: true
+policy_scope:
   groups:
     including:
       - id: 1
@@ -204,10 +210,10 @@ actions:
     approvals_required: 1
   - type: send_bot_message
     enabled: true
-`,
-    )
+`
     .concat(GROUP_SETTINGS)
-    .concat(FALLBACK),
+    .concat(FALLBACK)
+    .concat(TYPE),
 };
 
 export const INCLUDING_GROUPS_MOCKS = {
