@@ -1,5 +1,6 @@
 <script>
 import { GlTooltip, GlIcon, GlSprintf, GlTooltipDirective } from '@gitlab/ui';
+import { uniqueId } from 'lodash';
 import { SEVERITY_LEVELS } from 'ee/security_dashboard/constants';
 import { __, sprintf } from '~/locale';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
@@ -37,6 +38,11 @@ export default {
       '%{user_name} changed the severity from %{original_severity} to %{new_severity} %{changed_at}.',
     ),
   },
+  data() {
+    return {
+      tooltipId: uniqueId('tooltip-severity-changed-'),
+    };
+  },
   computed: {
     getLastSeverityOverride() {
       return Object.keys(this.severityOverrides).length > 0 &&
@@ -51,8 +57,10 @@ export default {
       if (this.shouldShowSeverityOverrides) {
         return {
           ...this.getLastSeverityOverride,
-          original_severity: this.getLastSeverityOverride.original_severity?.toLowerCase(),
-          new_severity: this.getLastSeverityOverride.new_severity?.toLowerCase(),
+          author: this.getLastSeverityOverride.author?.name,
+          createdAt: this.getLastSeverityOverride.createdAt,
+          originalSeverity: this.getLastSeverityOverride.originalSeverity?.toLowerCase(),
+          newSeverity: this.getLastSeverityOverride.newSeverity?.toLowerCase(),
         };
       }
       return {};
@@ -97,26 +105,20 @@ export default {
       class="gl-text-orange-300"
       data-testid="severity-override"
     >
-      <gl-icon
-        id="tooltip-severity-changed"
-        v-gl-tooltip
-        name="file-modified"
-        class="gl-ml-3"
-        :size="16"
-      />
-      <gl-tooltip placement="top" target="tooltip-severity-changed">
+      <gl-icon :id="tooltipId" v-gl-tooltip name="file-modified" class="gl-ml-3" :size="16" />
+      <gl-tooltip placement="top" :target="tooltipId">
         <gl-sprintf :message="severityOverridesTooltipChangesSection">
           <template #user_name>
-            <strong>{{ severityOverridesObj.changed_by }}</strong>
+            <strong>{{ severityOverridesObj.author }}</strong>
           </template>
           <template #original_severity>
-            <strong>{{ severityOverridesObj.original_severity }}</strong>
+            <strong>{{ severityOverridesObj.originalSeverity }}</strong>
           </template>
           <template #new_severity>
-            <strong>{{ severityOverridesObj.new_severity }}</strong>
+            <strong>{{ severityOverridesObj.newSeverity }}</strong>
           </template>
           <template #changed_at>
-            <time-ago-tooltip ref="timeAgo" :time="severityOverridesObj.changed_at" />
+            <time-ago-tooltip ref="timeAgo" :time="severityOverridesObj.createdAt" />
           </template>
         </gl-sprintf>
         <br />

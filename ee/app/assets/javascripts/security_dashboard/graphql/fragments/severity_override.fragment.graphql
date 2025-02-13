@@ -1,0 +1,8 @@
+fragment SeverityOverrideFragment on SeverityOverride {
+  originalSeverity
+  newSeverity
+  author {
+    name
+  }
+  createdAt
+}

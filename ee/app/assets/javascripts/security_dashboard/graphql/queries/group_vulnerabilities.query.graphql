@@ -24,6 +24,7 @@ query groupVulnerabilities(
   $vetEnabled: Boolean = false
   $clusterAgentId: [ClustersAgentID!]
   $owaspTopTen: [VulnerabilityOwaspTop10!]
+  $includeSeverityOverrides: Boolean = false
 ) {
   group(fullPath: $fullPath) {
     id
