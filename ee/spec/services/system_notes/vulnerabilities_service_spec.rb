@@ -105,4 +105,30 @@ RSpec.describe SystemNotes::VulnerabilitiesService, feature_category: :vulnerabi
       end
     end
   end
+
+  describe '#formatted_note for severity override' do
+    subject(:formatted_note) do
+      described_class.formatted_note('changed', to_severity, nil, comment, 'severity', from_severity)
+    end
+
+    let(:from_severity) { 'low' }
+    let(:to_severity) { 'critical' }
+    let(:comment) { nil }
+
+    context 'when no comment is passed' do
+      it 'returns the note text correctly' do
+        expect(formatted_note).to eq("changed vulnerability severity from #{from_severity.titleize} " \
+          "to #{to_severity.titleize}")
+      end
+    end
+
+    context 'when comment is passed' do
+      let(:comment) { 'Test comment' }
+
+      it 'returns the note text correctly' do
+        expect(formatted_note).to eq("changed vulnerability severity from #{from_severity.titleize} " \
+          "to #{to_severity.titleize} with the following comment: \"Test comment\"")
+      end
+    end
+  end
 end

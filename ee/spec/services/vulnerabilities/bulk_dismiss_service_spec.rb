@@ -68,6 +68,10 @@ RSpec.describe Vulnerabilities::BulkDismissService, feature_category: :vulnerabi
           "changed vulnerability status to Dismissed: Used In Tests with the following comment: \"#{comment}\""
         )
         expect(last_note).to be_system
+
+        last_system_note_metadata = SystemNoteMetadata.last
+        expect(last_system_note_metadata.note_id).to eq(last_note.id)
+        expect(last_system_note_metadata.action).to eq("vulnerability_dismissed")
       end
 
       it 'updates the dismissal reason for each vulnerability read record' do

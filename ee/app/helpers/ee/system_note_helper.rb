@@ -22,6 +22,7 @@ module EE
       'vulnerability_confirmed' => 'shield',
       'vulnerability_dismissed' => 'cancel',
       'vulnerability_resolved' => 'status_closed',
+      'vulnerability_severity_changed' => 'file-modified',
       'published' => 'bullhorn',
       'paging_started' => 'mobile',
       'progress' => 'progress',

@@ -14,29 +14,37 @@ module SystemNotes
     end
 
     class << self
-      def formatted_note(from_state, to_state, dismissal_reason, comment)
+      def formatted_note(transition, to_value, reason, comment, attribute = "status", from_value = nil)
         format(
-          "%{from_state} vulnerability status to %{to_state}%{reason}%{comment}",
-          from_state: from_state,
-          to_state: to_state.to_s.titleize,
+          "%{transition} vulnerability %{attribute}%{from} to %{to_value}%{reason}%{comment}",
+          transition: transition,
+          attribute: attribute,
+          from: formatted_from(from_value),
+          to_value: to_value.to_s.titleize,
           comment: formatted_comment(comment),
-          reason: formatted_reason(dismissal_reason, to_state)
+          reason: formatted_reason(reason, to_value)
         )
       end
 
       private
 
-      def formatted_reason(dismissal_reason, to_state)
-        return if to_state.to_sym != :dismissed
-        return if dismissal_reason.blank?
+      def formatted_reason(reason, to_value)
+        return if to_value.to_sym != :dismissed
+        return if reason.blank?
 
-        ": #{dismissal_reason.titleize}"
+        ": #{reason.titleize}"
       end
 
       def formatted_comment(comment)
         return unless comment.present?
 
         format(' with the following comment: "%{comment}"', comment: comment)
+      end
+
+      def formatted_from(from_value)
+        return unless from_value.present?
+
+        format(' from %{from_value}', from_value: from_value.to_s.titleize)
       end
     end
 
@@ -45,7 +53,7 @@ module SystemNotes
     def state_change_body
       if state_transition.present?
         self.class.formatted_note(
-          from_status,
+          transition_name,
           to_state,
           state_transition.dismissal_reason,
           state_transition.comment
@@ -55,7 +63,7 @@ module SystemNotes
       end
     end
 
-    def from_status
+    def transition_name
       state_transition.to_state_detected? ? 'reverted' : 'changed'
     end
 
