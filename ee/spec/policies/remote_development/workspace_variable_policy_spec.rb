@@ -86,7 +86,7 @@ RSpec.describe RemoteDevelopment::WorkspaceVariablePolicy, feature_category: :wo
 
       it_behaves_like 'fixture sanity checks'
 
-      it { is_expected.to(allowed ? be_allowed(:read_workspace_variable) : be_disallowed(:read_workspace_variable)) }
+      it { is_expected.to(allowed ? be_allowed(ability) : be_disallowed(ability)) }
     end
   end
 
@@ -94,13 +94,13 @@ RSpec.describe RemoteDevelopment::WorkspaceVariablePolicy, feature_category: :wo
   #       https://docs.gitlab.com/ee/development/permissions/custom_roles.html#refactoring-abilities
   # This may be generalized in the future for use across all policy specs
   # Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/463453
-  def debug_policies(user, workspace, policy_class, ability)
+  def debug_policies(user, workspace_variable, policy_class, ability)
     puts "\n\nPolicy debug for #{policy_class} policy:\n"
     puts "user: #{user.username} (id: #{user.id}, admin: #{user.admin?}, " \
       "admin_mode: #{user && Gitlab::Auth::CurrentUserMode.new(user).admin_mode?}" \
       ")\n"
 
-    policy = policy_class.new(user, workspace)
+    policy = policy_class.new(user, workspace_variable)
     puts "debugging :#{ability} ability:\n\n"
     pp policy.debug(ability)
     puts "\n\n"
