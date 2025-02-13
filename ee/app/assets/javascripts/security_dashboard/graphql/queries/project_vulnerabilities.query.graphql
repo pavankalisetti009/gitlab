@@ -25,6 +25,7 @@ query projectVulnerabilities(
   $clusterAgentId: [ClustersAgentID!]
   $image: [String!]
   $owaspTopTen: [VulnerabilityOwaspTop10!]
+  $includeSeverityOverrides: Boolean = false
 ) {
   project(fullPath: $fullPath) {
     id

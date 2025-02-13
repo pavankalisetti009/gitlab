@@ -8,13 +8,15 @@ import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
+jest.mock('lodash/uniqueId', () => (input) => `${input}UNIQUE-ID`);
+
 describe('Severity Badge', () => {
   const SEVERITY_LEVELS = ['critical', 'high', 'medium', 'low', 'info', 'unknown'];
   const MOCK_LAST_SEVERITY_OVERRIDE = {
-    changed_by: 'Security Research User',
-    new_severity: 'high',
-    original_severity: 'medium',
-    changed_at: new Date().toISOString(),
+    author: { name: 'Security Research User' },
+    newSeverity: 'high',
+    originalSeverity: 'medium',
+    createdAt: new Date().toISOString(),
   };
 
   let wrapper;
@@ -36,7 +38,8 @@ describe('Severity Badge', () => {
   const findSeverityOverridesTooltip = () => wrapper.findComponent(GlTooltip);
   const findTimeAgoTooltip = () => wrapper.findComponent(TimeAgoTooltip);
   const findGlSprintf = () => wrapper.findComponent(GlSprintf);
-  const findSeverityOverridesText = () => wrapper.findByTestId('severity-override');
+  const findSeverityOverrides = () => wrapper.findByTestId('severity-override');
+  const findSeverityOverridesIcon = () => findSeverityOverrides().findComponent(GlIcon);
 
   describe.each(SEVERITY_LEVELS)('given a valid severity "%s"', (severity) => {
     beforeEach(() => {
@@ -88,14 +91,23 @@ describe('Severity Badge', () => {
       );
     });
 
-    it('renders the changed severity icon and tooltip', () => {
-      expect(findSeverityOverridesText().exists()).toBe(true);
-      expect(findSeverityOverridesTooltip().exists()).toBe(true);
+    it('renders the updated severity icon and tooltip correctly', () => {
+      const uniqueId = 'tooltip-severity-changed-UNIQUE-ID';
+
+      const severityTooltip = findSeverityOverridesTooltip();
+      const severityIcon = findSeverityOverridesIcon();
+
+      expect(severityTooltip.exists()).toBe(true);
+      expect(severityIcon.exists()).toBe(true);
+
+      expect(severityTooltip.attributes('target')).toBe(uniqueId);
+      expect(severityIcon.attributes('id')).toBe(uniqueId);
     });
 
     it('renders the changes severity text in the tooltip', () => {
-      expect(findSeverityOverridesText().text()).toMatchInterpolatedText(
-        `${MOCK_LAST_SEVERITY_OVERRIDE.changed_by} changed the severity from ${MOCK_LAST_SEVERITY_OVERRIDE.original_severity} to ${MOCK_LAST_SEVERITY_OVERRIDE.new_severity} just now.`,
+      expect(findSeverityOverrides().exists()).toBe(true);
+      expect(findSeverityOverrides().text()).toMatchInterpolatedText(
+        `${MOCK_LAST_SEVERITY_OVERRIDE.author.name} changed the severity from ${MOCK_LAST_SEVERITY_OVERRIDE.originalSeverity} to ${MOCK_LAST_SEVERITY_OVERRIDE.newSeverity} just now.`,
       );
     });
 
@@ -108,7 +120,7 @@ describe('Severity Badge', () => {
         },
         { GlSprintf },
       );
-      expect(findTimeAgoTooltip().props('time')).toBe(MOCK_LAST_SEVERITY_OVERRIDE.changed_at);
+      expect(findTimeAgoTooltip().props('time')).toBe(MOCK_LAST_SEVERITY_OVERRIDE.createdAt);
     });
   });
 
@@ -122,7 +134,9 @@ describe('Severity Badge', () => {
     });
 
     it('does not renders the changed severity icon and tooltip', () => {
-      expect(findSeverityOverridesText().exists()).toBe(false);
+      expect(findSeverityOverrides().exists()).toBe(false);
+      expect(findSeverityOverridesTooltip().exists()).toBe(false);
+
       expect(findSeverityOverridesTooltip().exists()).toBe(false);
       expect(findGlSprintf().exists()).toBe(false);
     });
