@@ -3,6 +3,8 @@
 module Ai
   module SelfHostedModels
     class UpdateService
+      include Gitlab::InternalEventsTracking
+
       def initialize(self_hosted_model, user, update_params)
         @self_hosted_model = self_hosted_model
         @user = user
@@ -12,6 +14,7 @@ module Ai
       def execute
         if self_hosted_model.update(params)
           record_audit_event
+          track_update_event
 
           ServiceResponse.success(payload: self_hosted_model)
         else
@@ -34,6 +37,17 @@ module Ai
         }
 
         ::Gitlab::Audit::Auditor.audit(audit_context)
+      end
+
+      def track_update_event
+        track_internal_event(
+          'update_ai_self_hosted_model',
+          user: user,
+          additional_properties: {
+            label: self_hosted_model.model,
+            property: self_hosted_model.identifier
+          }
+        )
       end
     end
   end

@@ -37,6 +37,19 @@ RSpec.describe ::Ai::SelfHostedModels::UpdateService, feature_category: :"self-h
         expect(result).to be_success
         expect(result.payload).to eq(self_hosted_model)
       end
+
+      it_behaves_like 'internal event tracking' do
+        let(:event) { 'update_ai_self_hosted_model' }
+        let(:category) { described_class.name }
+        let(:additional_properties) do
+          {
+            label: self_hosted_model.model,
+            property: self_hosted_model.identifier
+          }
+        end
+
+        subject(:service_action) { result }
+      end
     end
 
     context 'when the model fails to be updated' do
@@ -47,6 +60,10 @@ RSpec.describe ::Ai::SelfHostedModels::UpdateService, feature_category: :"self-h
 
         expect(result).to be_error
         expect(result.message).to eq("Endpoint can't be blank, Endpoint must be a valid URL")
+      end
+
+      it 'does not track the event' do
+        expect { result }.not_to trigger_internal_events('update_ai_self_hosted_model')
       end
     end
   end

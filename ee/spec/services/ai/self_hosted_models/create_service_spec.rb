@@ -9,7 +9,8 @@ RSpec.describe ::Ai::SelfHostedModels::CreateService, feature_category: :"self-h
       name: 'Test Model',
       model: 'codestral',
       endpoint: 'https://api.example.com',
-      api_token: 'test_token'
+      api_token: 'test_token',
+      identifier: 'custom_openai/codestral-test-model'
     }
   end
 
@@ -45,6 +46,19 @@ RSpec.describe ::Ai::SelfHostedModels::CreateService, feature_category: :"self-h
         expect(model.api_token).to eq('test_token')
 
         expect(Gitlab::Audit::Auditor).to have_received(:audit).with(audit_event)
+      end
+
+      it_behaves_like 'internal event tracking' do
+        let(:event) { 'create_ai_self_hosted_model' }
+        let(:category) { described_class.name }
+        let(:additional_properties) do
+          {
+            label: base_params[:model],
+            property: base_params[:identifier]
+          }
+        end
+
+        subject(:service_action) { result }
       end
     end
 
