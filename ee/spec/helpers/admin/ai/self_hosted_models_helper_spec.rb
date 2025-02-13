@@ -18,7 +18,7 @@ RSpec.describe Admin::Ai::SelfHostedModelsHelper, feature_category: :"self-hoste
         { modelValue: "LLAMA3", modelName: "Llama 3", releaseState: "BETA" },
         { modelValue: "MISTRAL", modelName: "Mistral", releaseState: "GA" },
         { modelValue: "CODESTRAL", modelName: "Mistral Codestral", releaseState: "GA" },
-        { modelValue: "MIXTRAL", modelName: "Mixtral", releaseState: "BETA" }
+        { modelValue: "MIXTRAL", modelName: "Mixtral", releaseState: "GA" }
       ]
 
       expect(helper.model_choices_as_options).to eq(expected_result)
@@ -43,7 +43,8 @@ RSpec.describe Admin::Ai::SelfHostedModelsHelper, feature_category: :"self-hoste
         { modelValue: "CLAUDE_3", modelName: "Claude 3", releaseState: "GA" },
         { modelValue: "GPT", modelName: "GPT", releaseState: "GA" },
         { modelValue: "MISTRAL", modelName: "Mistral", releaseState: "GA" },
-        { modelValue: "CODESTRAL", modelName: "Mistral Codestral", releaseState: "GA" }
+        { modelValue: "CODESTRAL", modelName: "Mistral Codestral", releaseState: "GA" },
+        { modelValue: "MIXTRAL", modelName: "Mixtral", releaseState: "GA" }
       ])
     end
   end

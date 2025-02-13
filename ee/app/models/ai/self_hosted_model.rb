@@ -17,7 +17,7 @@ module Ai
       deepseekcoder: RELEASE_STATE_BETA,
       claude_3: RELEASE_STATE_GA,
       gpt: RELEASE_STATE_GA,
-      mixtral: RELEASE_STATE_BETA
+      mixtral: RELEASE_STATE_GA
     }.freeze
 
     validates :model, presence: true
