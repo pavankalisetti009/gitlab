@@ -404,25 +404,37 @@ module EE
     end
 
     def pages_deployments_usage_quota_data(project)
-      limit = project.actual_limits.active_versioned_pages_deployments_limit_by_namespace
-      project_deployments_count = ::PagesDeployment.count_versioned_deployments_for(project, limit)
-      deployments_count = if project.pages_unique_domain_enabled?
-                            project_deployments_count
-                          else
-                            ::PagesDeployment.count_versioned_deployments_for(
-                              project.root_ancestor.all_projects.with_namespace_domain_pages,
-                              limit
-                            )
-                          end
-
       {
         full_path: project.full_path,
-        deployments_count: deployments_count,
-        deployments_limit: limit,
+        deployments_count: project.pages_domain_level_parallel_deployments_count,
+        deployments_limit: project.pages_parallel_deployments_limit,
         uses_namespace_domain: (!project.pages_unique_domain_enabled?).to_s,
-        project_deployments_count: project_deployments_count,
+        project_deployments_count: project.pages_parallel_deployments_count,
         domain: ::Gitlab::Pages::UrlBuilder.new(project).hostname
       }
+    end
+
+    def can_use_pages_parallel_deployments?(project)
+      current_user.can?(:update_pages, project) &&
+        License.feature_available?(:pages_multiple_versions) &&
+        project.pages_parallel_deployments_limit > 0 &&
+        project.pages_parallel_deployments_count > 0
+    end
+
+    def show_pages_parallel_deployments_warning?(project)
+      return false unless can_use_pages_parallel_deployments?(project)
+
+      project.pages_domain_level_parallel_deployments_count >= (project.pages_parallel_deployments_limit * 0.8)
+    end
+
+    def show_pages_parallel_deployments_error?(project)
+      return false unless can_use_pages_parallel_deployments?(project)
+
+      project.pages_domain_level_parallel_deployments_count >= project.pages_parallel_deployments_limit
+    end
+
+    def pages_usage_quotas_link(project)
+      "#{project_usage_quotas_path(project)}#pages-deployments-usage-tab"
     end
 
     private
