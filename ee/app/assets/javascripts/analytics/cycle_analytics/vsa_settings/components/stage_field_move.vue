@@ -1,6 +1,6 @@
 <script>
 import { GlButton, GlButtonGroup } from '@gitlab/ui';
-import { __ } from '~/locale';
+import { __, s__, sprintf } from '~/locale';
 import { STAGE_SORT_DIRECTION } from '../constants';
 
 export default {
@@ -33,6 +33,18 @@ export default {
     isLastActiveStage() {
       return this.index === this.lastStageIndex;
     },
+    moveDownAriaLabel() {
+      return sprintf(s__('CreateValueStreamForm|%{action} stage %{index}'), {
+        action: this.$options.i18n.moveDownLabel,
+        index: this.index + 1,
+      });
+    },
+    moveUpAriaLabel() {
+      return sprintf(s__('CreateValueStreamForm|%{action} stage %{index}'), {
+        action: this.$options.i18n.moveUpLabel,
+        index: this.index + 1,
+      });
+    },
   },
   STAGE_SORT_DIRECTION,
 };
@@ -46,7 +58,7 @@ export default {
         :disabled="isFirstActiveStage"
         icon="chevron-up"
         :title="$options.i18n.moveUpLabel"
-        :aria-label="$options.i18n.moveUpLabel"
+        :aria-label="moveUpAriaLabel"
         @click="$emit('move', { index, direction: $options.STAGE_SORT_DIRECTION.UP })"
       />
       <gl-button
@@ -55,7 +67,7 @@ export default {
         :disabled="isLastActiveStage"
         icon="chevron-down"
         :title="$options.i18n.moveDownLabel"
-        :aria-label="$options.i18n.moveDownLabel"
+        :aria-label="moveDownAriaLabel"
         @click="$emit('move', { index, direction: $options.STAGE_SORT_DIRECTION.DOWN })"
       />
     </gl-button-group>
