@@ -48,7 +48,7 @@ GitLab Duo Chat is your personal AI-powered assistant for boosting productivity.
 
 Ask follow-up questions to dig deeper into or expand on the conversation with GitLab Duo. If you want to switch topics, type `/reset` and you might get better results.
 
-Use GitLab Duo Chat in your IDE to explain, create, or refactor code, or to generate tests. After [you set up Chat in your IDE](#{::Gitlab::Routing.url_helpers.help_page_url('user/gitlab_duo_chat.md', anchor: 'use-gitlab-duo-chat-in-the-web-ide')}) type `/help` in the IDE to learn how to use it.
+Use GitLab Duo Chat in your IDE to explain, create, or refactor code, or to generate tests. After [you set up Chat in your IDE](#{::Gitlab::Routing.url_helpers.help_page_url('user/gitlab_duo_chat/_index.md', anchor: 'use-gitlab-duo-chat-in-the-web-ide')}) type `/help` in the IDE to learn how to use it.
 
 Learn more about GitLab Duo Chat in the [documentation](#{::Gitlab::Routing.url_helpers.help_page_url('user/gitlab_duo_chat/examples.md')}).
             COPY
