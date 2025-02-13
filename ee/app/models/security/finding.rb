@@ -46,6 +46,7 @@ module Security
     has_many :issue_links, through: :vulnerability
     has_many :external_issue_links, through: :vulnerability
     has_many :merge_request_links, through: :vulnerability
+    has_many :severity_overrides, through: :vulnerability
 
     has_many :feedbacks,
       class_name: 'Vulnerabilities::Feedback',
@@ -120,6 +121,7 @@ module Security
     scope :with_feedbacks, -> { includes(:feedbacks) }
     scope :with_vulnerability, -> { includes(:vulnerability) }
     scope :with_state_transitions, -> { with_vulnerability.includes(:state_transitions) }
+    scope :with_severity_overrides, -> { with_vulnerability.includes(:severity_overrides) }
     scope :with_issue_links, -> { with_vulnerability.includes(:issue_links) }
     scope :with_external_issue_links, -> { with_vulnerability.includes(:external_issue_links) }
     scope :with_merge_request_links, -> { with_vulnerability.includes(:merge_request_links) }

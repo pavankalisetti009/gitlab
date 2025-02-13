@@ -252,4 +252,16 @@ FactoryBot.define do
       end
     end
   end
+
+  trait :with_severity_override do
+    after(:create) do |vulnerability|
+      create(
+        :vulnerability_severity_override,
+        vulnerability: vulnerability,
+        project: vulnerability.project,
+        original_severity: vulnerability.severity,
+        new_severity: :medium
+      )
+    end
+  end
 end

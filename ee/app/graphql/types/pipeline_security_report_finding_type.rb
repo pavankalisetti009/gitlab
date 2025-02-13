@@ -56,6 +56,11 @@ module Types
       null: true,
       description: 'Severity of the vulnerability finding.'
 
+    field :severity_overrides,
+      ::Types::Vulnerabilities::SeverityOverrideType.connection_type,
+      resolver: Resolvers::SecurityReport::SeverityOverridesResolver,
+      null: true, description: "List of severity changes for the vulnerability finding."
+
     field :false_positive,
       type: GraphQL::Types::Boolean,
       null: true,

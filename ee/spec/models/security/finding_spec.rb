@@ -18,6 +18,7 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
     it { is_expected.to have_many(:issue_links).through(:vulnerability) }
     it { is_expected.to have_many(:external_issue_links).through(:vulnerability) }
     it { is_expected.to have_many(:merge_request_links).through(:vulnerability) }
+    it { is_expected.to have_many(:severity_overrides).through(:vulnerability) }
 
     it do
       is_expected.to have_many(:feedbacks)
