@@ -35,6 +35,7 @@ RSpec.describe Sidebars::Admin::Menus::AdminOverviewMenu, feature_category: :nav
 
     where(:permissions, :expected_menu_items) do
       [:read_admin_dashboard] | [_('Dashboard')]
+      [:read_admin_monitoring] | [_('Gitaly servers')]
       [:read_admin_users] | [_('Users')]
       [:read_admin_dashboard, :read_admin_users] | [_('Dashboard'), _('Users')]
     end

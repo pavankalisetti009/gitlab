@@ -45,7 +45,7 @@ RSpec.describe 'User with read_admin_monitoring', feature_category: :audit_event
   end
 
   describe Admin::GitalyServersController do
-    it "GET #index", pending: "🚧 Under Construction" do
+    it "GET #index" do
       get admin_gitaly_servers_path
 
       expect(response).to have_gitlab_http_status(:ok)
