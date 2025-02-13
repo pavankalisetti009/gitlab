@@ -18,6 +18,7 @@ module GitlabSubscriptions
         mount ::GitlabSubscriptions::API::Internal::ComputeMinutes
         mount ::GitlabSubscriptions::API::Internal::Members
         mount ::GitlabSubscriptions::API::Internal::Namespaces
+        mount ::GitlabSubscriptions::API::Internal::Namespaces::Provision
         mount ::GitlabSubscriptions::API::Internal::Subscriptions
         mount ::GitlabSubscriptions::API::Internal::UpcomingReconciliations
         mount ::GitlabSubscriptions::API::Internal::Users
