@@ -1,0 +1,37 @@
+# frozen_string_literal: true
+
+module ComplianceManagement
+  module ComplianceRequirements
+    class ExpressionEvaluator
+      include Gitlab::Utils::StrongMemoize
+
+      def initialize(control, project)
+        @control = control
+        @project = project
+      end
+
+      def evaluate
+        return if parsed_expression.nil?
+
+        ComparisonOperator.compare(
+          fetch_field_value,
+          parsed_expression[:value],
+          parsed_expression[:operator]
+        )
+      end
+
+      private
+
+      attr_reader :control, :project
+
+      def parsed_expression
+        control.expression_as_hash(symbolize_names: true)
+      end
+      strong_memoize_attr :parsed_expression
+
+      def fetch_field_value
+        ProjectFields.map_field(project, parsed_expression[:field])
+      end
+    end
+  end
+end
