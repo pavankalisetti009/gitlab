@@ -9,6 +9,7 @@ module EE
 
           RESTRICTED_ADMIN_PERMISSIONS = {
             read_admin_dashboard: :dashboard_menu_item,
+            read_admin_gitaly_servers: :gitaly_servers_menu_item,
             read_admin_users: :users_menu_item
           }.freeze
 
