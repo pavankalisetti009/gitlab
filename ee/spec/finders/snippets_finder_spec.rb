@@ -245,4 +245,53 @@ RSpec.describe SnippetsFinder do
       end
     end
   end
+
+  context 'filter by restricted IPs' do
+    subject { described_class.new(guest, author: owner).execute }
+
+    let_it_be(:private_group) { create(:group, :private) }
+    let_it_be(:group_without_ip_restriction) { create(:group, :private) }
+    let_it_be(:owner) { create(:user, owner_of: private_group) }
+    let_it_be(:guest) { create(:user, guest_of: private_group) }
+    let_it_be(:restricted_group_ip) { '10.0.0.0/8' }
+    let_it_be(:ip_restriction) { create(:ip_restriction, group: private_group, range: restricted_group_ip) }
+    let_it_be(:snippet_with_ip_restriction) do
+      create(:project_snippet, project: create(:project, group: private_group), author: owner)
+    end
+
+    let_it_be(:snippet_without_ip_restriction) do
+      create(:project_snippet, project: create(:project, group: group_without_ip_restriction), author: owner)
+    end
+
+    let(:user_ip) { '10.0.0.0/8' }
+
+    before do
+      stub_licensed_features(group_ip_restriction: true)
+      allow(Gitlab::IpAddressState).to receive(:current).and_return(user_ip)
+      stub_application_setting(globally_allowed_ips: "")
+      group_without_ip_restriction.add_guest(guest)
+    end
+
+    it 'returns all snippets' do
+      expect(subject).to contain_exactly(snippet_with_ip_restriction, snippet_without_ip_restriction)
+    end
+
+    context 'when the user has no access to the group because of the restricted IP rules' do
+      let(:user_ip) { '127.0.0.1' }
+
+      it 'returns only the accessible snippets' do
+        expect(subject).to contain_exactly(snippet_without_ip_restriction)
+      end
+    end
+
+    context 'when feature flag "snippet_ip_restrictions" is disabled' do
+      before do
+        stub_feature_flags(snippet_ip_restrictions: false)
+      end
+
+      it 'returns all snippets' do
+        expect(subject).to contain_exactly(snippet_with_ip_restriction, snippet_without_ip_restriction)
+      end
+    end
+  end
 end

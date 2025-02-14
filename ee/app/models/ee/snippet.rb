@@ -13,6 +13,24 @@ module EE
       scope :by_repository_storage, ->(storage) do
         joins(snippet_repository: :shard).where(shards: { name: storage })
       end
+
+      scope :with_ip_restrictions, -> do
+        only_project_snippets.joins(project: { group: :ip_restrictions })
+      end
+
+      scope :allowed_for_ip, ->(current_ip) do
+        out_of_ip_range = <<-SQL.squish
+          NOT EXISTS (
+            SELECT 1
+            FROM ip_restrictions
+            WHERE group_id = namespaces.id
+            AND inet(?) <<= range::inet
+          )
+        SQL
+
+        restricted_group_snippets = with_ip_restrictions.where(out_of_ip_range, current_ip)
+        where.not(id: restricted_group_snippets.select(:id))
+      end
     end
 
     override :repository_size_checker
