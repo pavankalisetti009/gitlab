@@ -440,6 +440,30 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
 
       it { is_expected.to eq(expected_result) }
     end
+
+    context 'with an admin permission' do
+      let(:ability) { :read_admin_dashboard }
+
+      before do
+        allow(described_class).to receive_messages(
+          all_customizable_permissions: {
+            read_code: { description: 'Test permission' },
+            read_admin_dashboard: { description: 'Test admin permission' }
+          },
+          all_customizable_admin_permissions: { read_admin_dashboard: { description: 'Test admin permission' } }
+        )
+      end
+
+      it { is_expected.to be true }
+
+      context 'when the custom_admin_roles feature flag is disabled' do
+        before do
+          stub_feature_flags(custom_admin_roles: false)
+        end
+
+        it { is_expected.to be false }
+      end
+    end
   end
 
   describe '#enabled_permission_items' do

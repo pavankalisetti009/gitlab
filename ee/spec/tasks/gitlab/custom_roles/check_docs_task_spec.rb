@@ -9,8 +9,9 @@ RSpec.describe Tasks::Gitlab::CustomRoles::CheckDocsTask, feature_category: :per
   let(:docs_path) { Rails.root.join(docs_dir, 'abilities.md') }
   let(:template_erb_path) { Rails.root.join("tooling/custom_roles/docs/templates/custom_abilities.md.erb") }
 
+  # TODO convert to all_customizable_permissions when custom_admin_roles feature flag is removed
   let(:stub_definitions) do
-    expect(::MemberRole).to receive(:all_customizable_permissions).and_return(updated_definitions)
+    expect(::MemberRole).to receive(:all_customizable_standard_permissions).and_return(updated_definitions)
   end
 
   describe '#run' do
@@ -26,10 +27,10 @@ RSpec.describe Tasks::Gitlab::CustomRoles::CheckDocsTask, feature_category: :per
       } }
     end
 
-    let(:added_definition) { MemberRole.all_customizable_permissions.merge(new_ability) }
-    let(:removed_definition) { MemberRole.all_customizable_permissions.except(:admin_terraform_state) }
+    let(:added_definition) { MemberRole.all_customizable_standard_permissions.merge(new_ability) }
+    let(:removed_definition) { MemberRole.all_customizable_standard_permissions.except(:admin_terraform_state) }
     let(:updated_definition) do
-      definitions = MemberRole.all_customizable_permissions
+      definitions = MemberRole.all_customizable_standard_permissions
       definitions[:read_code][:milestone] = '12.0'
 
       definitions
