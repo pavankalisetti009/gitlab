@@ -36,6 +36,4 @@ You can read more about the format and policies schema in the [documentation](<%
 ## Default branch protection settings
 
 This project is preconfigured with the default branch set as a protected branch, and only maintainers/owners of
-[<%= @container.name %>](<%= @container.web_url %>) have permission to merge into that branch. This overrides any default branch protection both at the
-[group level](<%= group_level_branch_protection_docs_link %>) and at the
-[instance level](<%= instance_level_branch_protection_docs_link %>).
+[<%= @container.name %>](<%= @container.web_url %>) have permission to merge into that branch. This overrides any default branch protection both [for the group](<%= group_level_branch_protection_docs_link %>) and [for the instance](<%= instance_level_branch_protection_docs_link %>).

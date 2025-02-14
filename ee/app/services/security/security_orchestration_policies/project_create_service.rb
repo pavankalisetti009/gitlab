@@ -109,7 +109,7 @@ module Security
 
       def instance_level_branch_protection_docs_link
         url_helpers.help_page_url('user/project/repository/branches/default.md',
-          anchor: 'instance-level-default-branch-protection')
+          anchor: 'for-all-projects-in-an-instance')
       end
 
       def can_create_projects_in_container?
