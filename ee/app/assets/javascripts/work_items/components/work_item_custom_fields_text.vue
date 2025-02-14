@@ -49,16 +49,12 @@ export default {
       isEditing: false,
       isUpdating: false,
       clickingClearButton: false,
-      workItem: {},
       value: this.customField.value,
       charsLeft: null,
       displayCharsLeft: false,
     };
   },
   computed: {
-    id() {
-      return this.customField.customField?.id;
-    },
     label() {
       return this.customField.customField?.name;
     },
@@ -82,14 +78,14 @@ export default {
     },
   },
   watch: {
-    value(newValue) {
-      this.checkDisplayCharsLeft(newValue);
+    value: {
+      immediate: true,
+      handler() {
+        if (this.isValueValid) {
+          this.checkDisplayCharsLeft();
+        }
+      },
     },
-  },
-  mounted() {
-    if (this.isValueValid) {
-      this.checkDisplayCharsLeft();
-    }
   },
   methods: {
     blurInput() {
@@ -177,21 +173,6 @@ export default {
           @blur="updateTextFromInput"
           @focus="handleFocus"
           @keydown.exact.esc.stop="blurInput"
-        />
-        <gl-button
-          v-if="showRemoveValue"
-          v-gl-tooltip
-          variant="default"
-          category="tertiary"
-          size="small"
-          name="clear"
-          icon="clear"
-          class="gl-clear-icon-button"
-          :title="__('Remove value')"
-          :aria-label="__('Remove value')"
-          @mousedown="clickingClearButton = true"
-          @mouseup="clickingClearButton = false"
-          @click="updateText(null)"
         />
       </div>
       <span v-if="displayCharsLeft" class="gl-text-subtle">{{
