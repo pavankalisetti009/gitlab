@@ -11,24 +11,11 @@ module QA
 
       before do
         enable_secret_protection unless Runtime::Env.running_on_dot_com?
+        enable_project_secret_protection
       end
 
       it 'blocks commit when enabled when token is detected',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/468475' do
-        Flow::Login.sign_in
-
-        project.visit!
-
-        Page::Project::Menu.perform(&:go_to_security_configuration)
-
-        Page::Project::Secure::ConfigurationForm.perform do |config_form|
-          expect(config_form).to have_false_secret_detection_status
-
-          config_form.enable_secret_detection
-
-          expect(config_form).to have_true_secret_detection_status
-        end
-
         Git::Repository.perform do |repository|
           repository.uri = project.repository_http_location.uri
           repository.use_default_credentials
@@ -42,11 +29,59 @@ module QA
         end
       end
 
+      context 'when secret added in the Web IDE' do
+        include_context 'Web IDE test prep'
+
+        before do
+          # add file to the project
+          Resource::Repository::ProjectPush.fabricate! do |push|
+            push.project = project
+            push.file_name = file_name
+            push.commit_message = 'Add newfile'
+            push.branch_name = 'main'
+            push.new_branch = false
+          end
+        end
+
+        let(:file_name) { 'new_file.text' }
+
+        it 'blocks commit when enabled and token is detected',
+          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/518712' do
+          Flow::Login.sign_in
+          project.visit!
+
+          # Open Web IDE
+          load_web_ide
+
+          # Create a new file with the test token
+          Page::Project::WebIDE::VSCode.perform do |ide|
+            ide.wait_for_ide_to_load
+            ide.add_text_to_a_file(file_name, "Secret token: #{test_token}")
+
+            expect(ide.commit_blocked_by_secret_detection(file_name)).to be true
+          end
+        end
+      end
+
       def enable_secret_protection
         Flow::Login.while_signed_in_as_admin do
           Page::Main::Menu.perform(&:go_to_admin_area)
           Page::Admin::Menu.perform(&:go_to_security_and_compliance_settings)
           EE::Page::Admin::Settings::Securityandcompliance.perform(&:click_secret_protection_setting_checkbox)
+        end
+      end
+
+      def enable_project_secret_protection
+        Flow::Login.while_signed_in do
+          project.visit!
+          Page::Project::Menu.perform(&:go_to_security_configuration)
+          Page::Project::Secure::ConfigurationForm.perform do |config_form|
+            expect(config_form).to have_false_secret_detection_status
+
+            config_form.enable_secret_detection
+
+            expect(config_form).to have_true_secret_detection_status
+          end
         end
       end
 
