@@ -296,16 +296,25 @@ module Gitlab
         attr_reader :stream_response_handler
 
         def model_metadata_params
-          return unless chat_feature_setting&.self_hosted?
+          if chat_feature_setting&.self_hosted?
 
-          self_hosted_model = chat_feature_setting.self_hosted_model
+            self_hosted_model = chat_feature_setting.self_hosted_model
+
+            return {
+              provider: :openai, # for self-hosted models we support Messages API format at the moment
+              name: self_hosted_model.model,
+              endpoint: self_hosted_model.endpoint,
+              api_key: self_hosted_model.api_token,
+              identifier: self_hosted_model.identifier
+            }
+          end
+
+          return unless ::Ai::AmazonQ.connected?
 
           {
-            provider: :openai, # for self-hosted models we support Messages API format at the moment
-            name: self_hosted_model.model,
-            endpoint: self_hosted_model.endpoint,
-            api_key: self_hosted_model.api_token,
-            identifier: self_hosted_model.identifier
+            provider: :amazon_q,
+            name: :amazon_q,
+            role_arn: ::Ai::Setting.instance.amazon_q_role_arn
           }
         end
 

@@ -544,6 +544,29 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
       end
     end
 
+    context 'when amazon q is connected' do
+      before do
+        stub_licensed_features(amazon_q: true)
+        Ai::Setting.instance.update!(amazon_q_ready: true, amazon_q_role_arn: 'role-arn')
+      end
+
+      it 'sends the amazon q model metadata' do
+        params = step_params
+        params[:model_metadata] = {
+          provider: :amazon_q,
+          name: :amazon_q,
+          role_arn: 'role-arn'
+        }
+
+        expect_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
+          expect(react_agent).to receive(:step).with(params)
+            .and_yield(action_event).and_return([action_event])
+        end
+
+        agent.execute
+      end
+    end
+
     context "when times out error is raised" do
       let(:error) { Net::ReadTimeout.new }
 

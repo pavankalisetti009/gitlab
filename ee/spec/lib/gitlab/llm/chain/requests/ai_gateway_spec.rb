@@ -59,6 +59,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
     let(:user_prompt) { "some user request" }
     let(:options) { { model: model } }
     let(:prompt) { { prompt: user_prompt, options: options } }
+    let(:unit_primitive) { nil }
     let(:payload) do
       {
         content: user_prompt,
@@ -84,7 +85,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
 
     let(:response) { 'Hello World' }
 
-    subject(:request) { instance.request(prompt) }
+    subject(:request) { instance.request(prompt, unit_primitive: unit_primitive) }
 
     before do
       allow(Gitlab::Llm::Logger).to receive(:build).and_return(logger)
@@ -147,8 +148,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
 
     context 'when unit primitive is passed with no corresponding feature setting' do
       let(:endpoint) { "#{described_class::BASE_ENDPOINT}/test" }
-
-      subject(:request) { instance.request(prompt, unit_primitive: :test) }
+      let(:unit_primitive) { :test }
 
       it_behaves_like 'performing request to the AI Gateway'
     end
@@ -274,6 +274,38 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
       it_behaves_like 'performing request to the AI Gateway'
     end
 
+    context 'when user amazon q is connected' do
+      let(:unit_primitive) { :explain_code }
+      let(:endpoint) { "#{described_class::BASE_PROMPTS_CHAT_ENDPOINT}/#{unit_primitive}" }
+      let(:inputs) { { field: :test_field } }
+
+      let(:options) do
+        {
+          use_ai_gateway_agent_prompt: true,
+          inputs: inputs
+        }
+      end
+
+      let(:body) do
+        {
+          stream: true,
+          inputs: inputs,
+          model_metadata: {
+            provider: :amazon_q,
+            name: :amazon_q,
+            role_arn: 'role-arn'
+          }
+        }
+      end
+
+      before do
+        stub_licensed_features(amazon_q: true)
+        Ai::Setting.instance.update!(amazon_q_ready: true, amazon_q_role_arn: 'role-arn')
+      end
+
+      it_behaves_like 'performing request to the AI Gateway'
+    end
+
     context 'when request is sent to chat tools implemented via agents' do
       let_it_be(:feature_setting) { create(:ai_feature_setting, feature: :duo_chat, provider: :self_hosted) }
 
@@ -303,8 +335,6 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
         let(:unit_primitive) { :test }
         let(:endpoint) { "#{described_class::BASE_PROMPTS_CHAT_ENDPOINT}/#{unit_primitive}" }
 
-        subject(:request) { instance.request(prompt, unit_primitive: unit_primitive) }
-
         it_behaves_like 'performing request to the AI Gateway'
       end
 
@@ -329,8 +359,6 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
         let(:unit_primitive) { :explain_code }
 
         let(:endpoint) { "#{described_class::BASE_PROMPTS_CHAT_ENDPOINT}/#{unit_primitive}" }
-
-        subject(:request) { instance.request(prompt, unit_primitive: unit_primitive) }
 
         context 'when ai_duo_chat_sub_features_settings feature is disabled' do
           before do
