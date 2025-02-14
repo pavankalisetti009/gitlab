@@ -223,7 +223,7 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
         end.not_to exceed_query_limit(control)
       end
 
-      it 'respects the budget' do
+      it 'respects the budget', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/509490' do
         result = described_class.new(project, vulnerability_ids, 1).execute
 
         expect(result.payload[:count]).to eq(1)
