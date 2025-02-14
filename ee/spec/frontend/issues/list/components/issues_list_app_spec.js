@@ -11,6 +11,7 @@ import { getIssuesCountsQueryResponse, getIssuesQueryResponse } from 'jest/issue
 import { TYPENAME_USER } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import IssuableList from '~/vue_shared/issuable/list/components/issuable_list_root.vue';
+import IssuesListAppCE from '~/issues/list/components/issues_list_app.vue';
 import { CREATED_DESC } from '~/issues/list/constants';
 import {
   TOKEN_TYPE_ASSIGNEE,
@@ -94,6 +95,7 @@ describe('EE IssuesListApp component', () => {
   const findIssuableList = () => wrapper.findComponent(IssuableList);
   const findNewIssueDropdown = () => wrapper.findComponent(NewIssueDropdown);
   const findChildEpicIssueIndicator = () => wrapper.findComponent(ChildEpicIssueIndicator);
+  const findIssuesListAppCE = () => wrapper.findComponent(IssuesListAppCE);
 
   const mountComponent = ({
     provide = {},
@@ -253,5 +255,36 @@ describe('EE IssuesListApp component', () => {
 
       expect(findChildEpicIssueIndicator().exists()).toBe(false);
     });
+  });
+
+  describe('when searched by epics', () => {
+    it.each`
+      context                   | location                                                                | searchedByEpic
+      ${'has epicId'}           | ${'http://127.0.0.1:3000/gitlab-org/gitlab-test/-/issues/?&epic_id=12'} | ${true}
+      ${'does not have epicId'} | ${'http://127.0.0.1:3000/gitlab-org/gitlab-test/-/issues/?&state=open'} | ${false}
+    `(
+      'pass `searchedByEpic` as $searchedByEpic to the `IssuesListAppCE` in case URL $context',
+      async ({ location, searchedByEpic }) => {
+        setWindowLocation(location);
+        wrapper = await mountComponent();
+
+        expect(findIssuesListAppCE().props('searchedByEpic')).toEqual(searchedByEpic);
+      },
+    );
+
+    it.each`
+      context                   | params               | searchedByEpic
+      ${'has epicId'}           | ${{ epicId: 12 }}    | ${true}
+      ${'does not have epicId'} | ${{ state: 'open' }} | ${false}
+    `(
+      'pass `searchedByEpic` as $searchedByEpic to the `IssuesListAppCE` in case filter params $context',
+      async ({ params, searchedByEpic }) => {
+        wrapper = await mountComponent();
+
+        await findIssuesListAppCE().vm.$emit('updateFilterParams', params);
+
+        expect(findIssuesListAppCE().props('searchedByEpic')).toEqual(searchedByEpic);
+      },
+    );
   });
 });
