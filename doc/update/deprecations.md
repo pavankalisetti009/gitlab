@@ -595,6 +595,24 @@ To continue showing these findings, you must configure the `CS_SEVERITY_THRESHOL
 
 </div>
 
+<div class="deprecation " data-milestone="18.0">
+
+### DAST `dast_crawl_extract_element_timeout` and `dast_crawl_search_element_timeout` variables are deprecated
+
+<div class="deprecation-notes">
+
+- Announced in GitLab <span class="milestone">17.9</span>
+- Removal in GitLab <span class="milestone">18.0</span>
+- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/gitlab/-/issues/517250).
+
+</div>
+
+The DAST variables `DAST_CRAWL_EXTRACT_ELEMENT_TIMEOUT` and `DAST_CRAWL_SEARCH_ELEMENT_TIMEOUT` are deprecated and will be removed in GitLab 18.0.
+When they were introduced, the variables provided granular timeout controls for specific browser interactions. These interactions are now governed by a common timeout value, which makes the variables unnecessary. In addition, because of an underlying implementation issue, the variables haven't been functional since the introduction of the DAST browser-based analyzer.
+Removing these two variables will simplify DAST configuration, and provide a better onboarding experience for users.
+
+</div>
+
 <div class="deprecation breaking-change" data-milestone="18.0">
 
 ### DAST `dast_devtools_api_timeout` will have a lower default value
