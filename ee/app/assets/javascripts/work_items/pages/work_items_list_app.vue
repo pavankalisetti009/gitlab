@@ -7,7 +7,11 @@ import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_LABEL } from '~/graphql_shared/constants';
 import EmptyStateWithAnyIssues from '~/issues/list/components/empty_state_with_any_issues.vue';
 import EmptyStateWithoutAnyIssues from '~/issues/list/components/empty_state_without_any_issues.vue';
-import { WORK_ITEM_TYPE_ENUM_EPIC, WORK_ITEM_TYPE_ENUM_ISSUE } from '~/work_items/constants';
+import {
+  WORK_ITEM_TYPE_ENUM_EPIC,
+  WORK_ITEM_TYPE_ENUM_ISSUE,
+  BASE_ALLOWED_CREATE_TYPES,
+} from '~/work_items/constants';
 import WorkItemsListApp from '~/work_items/pages/work_items_list_app.vue';
 import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.vue';
 import EpicsListBulkEditSidebar from 'ee/epics_list/components/epics_list_bulk_edit_sidebar.vue';
@@ -72,6 +76,13 @@ export default {
     },
   },
   computed: {
+    allowedWorkItemTypes() {
+      if (this.workItemTypeName === WORK_ITEM_TYPE_ENUM_ISSUE) {
+        return BASE_ALLOWED_CREATE_TYPES;
+      }
+
+      return [];
+    },
     allowEpicBulkEditing() {
       return (
         this.hasEpicsFeature &&
@@ -163,6 +174,7 @@ export default {
           class="gl-grow"
           :work-item-type-name="workItemTypeName"
           :always-show-work-item-type-select="showNewIssueLink"
+          :allowed-work-item-types="allowedWorkItemTypes"
           @workItemCreated="incrementUpdateCount"
         />
       </div>

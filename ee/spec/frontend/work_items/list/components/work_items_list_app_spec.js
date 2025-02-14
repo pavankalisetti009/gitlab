@@ -8,7 +8,11 @@ import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.
 import WorkItemsListApp from '~/work_items/pages/work_items_list_app.vue';
 import EEWorkItemsListApp from 'ee/work_items/pages/work_items_list_app.vue';
 import { CREATED_DESC } from '~/issues/list/constants';
-import { WORK_ITEM_TYPE_ENUM_EPIC, WORK_ITEM_TYPE_ENUM_ISSUE } from '~/work_items/constants';
+import {
+  WORK_ITEM_TYPE_ENUM_EPIC,
+  WORK_ITEM_TYPE_ENUM_ISSUE,
+  BASE_ALLOWED_CREATE_TYPES,
+} from '~/work_items/constants';
 import getWorkItemsQuery from '~/work_items/graphql/list/get_work_items.query.graphql';
 import workItemBulkUpdateMutation from '~/work_items/graphql/work_item_bulk_update.mutation.graphql';
 import workItemParent from 'ee/work_items/graphql/list/work_item_parent.query.graphql';
@@ -164,7 +168,24 @@ describeSkipVue3(skipReason, () => {
       expect(findCreateWorkItemModal().props()).toMatchObject({
         isGroup: false,
         alwaysShowWorkItemTypeSelect: true,
+        allowedWorkItemTypes: BASE_ALLOWED_CREATE_TYPES,
         workItemTypeName: WORK_ITEM_TYPE_ENUM_ISSUE,
+      });
+    });
+
+    it('does not pass the `allowedWorkItemTypes` props for group level', () => {
+      mountComponent({
+        hasEpicsFeature: true,
+        showNewIssueLink: true,
+        isGroup: true,
+        workItemType: WORK_ITEM_TYPE_ENUM_EPIC,
+      });
+
+      expect(findCreateWorkItemModal().exists()).toBe(true);
+      expect(findCreateWorkItemModal().props()).toMatchObject({
+        isGroup: true,
+        allowedWorkItemTypes: [],
+        workItemTypeName: WORK_ITEM_TYPE_ENUM_EPIC,
       });
     });
 
