@@ -1480,6 +1480,31 @@ This change is a breaking change. You should [create a runner in the UI](https:/
 
 <div class="deprecation breaking-change" data-milestone="18.0">
 
+### Reject container image pull policies not in `allowed_pull_policies`
+
+<div class="deprecation-notes">
+
+- Announced in GitLab <span class="milestone">17.9</span>
+- Removal in GitLab <span class="milestone">18.0</span> ([breaking change](https://docs.gitlab.com/ee/update/terminology.html#breaking-change))
+- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/gitlab/-/issues/516107).
+
+</div>
+
+All configured pull-policies should be present in the
+[`allowed_pull_policies` configuration](https://docs.gitlab.com/runner/executors/docker.html#allow-docker-pull-policies)
+specified in the runner's `config.toml` file. If they are not, the job should fail with an `incompatible pull policy` error.
+
+In the current implementation, when multiple pull policies are defined, jobs pass if at least one pull policy
+matches those in `allowed-pull-policies`, even if other policies are not included.
+
+In GitLab 18.0, jobs will fail only if none of the pull policies match those in `allowed-pull-policies`.
+However, unlike the current behavior, jobs will use only the pull policies listed in `allowed-pull-policies`.
+This distinction can cause jobs that currently pass to fail in GitLab 18.0.
+
+</div>
+
+<div class="deprecation breaking-change" data-milestone="18.0">
+
 ### Removal of `migrationState` field in `ContainerRepository` GraphQL API
 
 <div class="deprecation-notes">
