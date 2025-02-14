@@ -6,7 +6,8 @@ import { getIdFromGraphQLId, getNodesOrDefault } from '~/graphql_shared/utils';
 import { convertObjectPropsToCamelCase, isScopedLabel } from '~/lib/utils/common_utils';
 import { queryToObject, updateHistory } from '~/lib/utils/url_utility';
 import { __, n__ } from '~/locale';
-import IssuableBlockedIcon from '~/vue_shared/components/issuable_blocked_icon/issuable_blocked_icon.vue';
+import { LINKED_CATEGORIES_MAP, STATE_CLOSED } from '~/work_items/constants';
+import WorkItemRelationshipIcons from '~/work_items/components/shared/work_item_relationship_icons.vue';
 import { EPIC_LEVEL_MARGIN, UNSUPPORTED_ROADMAP_PARAMS } from '../constants';
 import updateLocalRoadmapSettingsMutation from '../queries/update_local_roadmap_settings.mutation.graphql';
 
@@ -16,8 +17,9 @@ export default {
     GlIcon,
     GlLabel,
     GlTooltip,
-    IssuableBlockedIcon,
+    WorkItemRelationshipIcons,
   },
+  epicSymbol: '&',
   inject: ['allowSubEpics', 'allowScopedLabels', 'currentGroupId'],
   props: {
     epic: {
@@ -66,8 +68,19 @@ export default {
     itemId() {
       return this.epic.id;
     },
+    epicIid() {
+      return this.epic.iid;
+    },
     epicGroupId() {
       return getIdFromGraphQLId(this.epic.group.id);
+    },
+    epicWebUrl() {
+      return this.epic.webUrl || this.epic.webPath;
+    },
+    workItemFullPath() {
+      return (
+        this.epic.namespace?.fullPath || this.epic.reference?.split(this.$options.epicSymbol)[0]
+      );
     },
     isEpicGroupDifferent() {
       return this.currentGroupId !== this.epicGroupId;
@@ -93,9 +106,6 @@ export default {
       }
       return this.isExpanded ? __('Collapse') : __('Expand');
     },
-    childrenFetchInProgress() {
-      return this.epic.hasChildren && this.isFetchingChildren;
-    },
     childEpicsCount() {
       const { openedEpics = 0, closedEpics = 0 } = this.epic.descendantCounts;
       return openedEpics + closedEpics;
@@ -116,6 +126,14 @@ export default {
     },
     hasLabels() {
       return this.epicLabels.length > 0;
+    },
+    filteredLinkedItems() {
+      const linkedItems = this.epic.linkedWorkItems?.nodes || [];
+      return linkedItems.filter((item) => {
+        return (
+          item.linkType !== LINKED_CATEGORIES_MAP.RELATES_TO && item.workItemState !== STATE_CLOSED
+        );
+      });
     },
   },
   methods: {
@@ -198,24 +216,15 @@ export default {
         {{ expandIconLabel }}
       </gl-tooltip>
       <div class="flex-grow-1 mx-1 gl-w-13">
-        <div class="gl-mt-1 gl-flex">
-          <issuable-blocked-icon
-            v-if="epic.blocked"
-            :item="epic"
-            :unique-id="epic.id"
-            issuable-type="epic"
-            data-testid="blocked-icon"
-          />
-          <a
-            :href="epic.webUrl"
-            :title="epic.title"
-            class="epic-title gl-font-bold gl-text-default"
-            data-testid="epic-title"
-          >
-            {{ epic.title }}
-          </a>
-        </div>
-        <div class="epic-group-timeframe gl-flex gl-text-subtle">
+        <a
+          :href="epic.webUrl"
+          :title="epic.title"
+          class="epic-title gl-mt-1 gl-font-bold gl-text-default"
+          data-testid="epic-title"
+        >
+          {{ epic.title }}
+        </a>
+        <div class="epic-group-timeframe gl-mt-2 gl-flex gl-text-subtle">
           <span
             v-if="isEpicGroupDifferent && !epic.hasParent"
             :title="epic.group.fullName"
@@ -243,24 +252,34 @@ export default {
           />
         </div>
       </div>
-      <template v-if="allowSubEpics">
-        <div
-          ref="childEpicsCount"
-          class="text-nowrap gl-mt-1 gl-flex gl-text-subtle"
-          data-testid="child-epics-count"
-        >
-          <gl-icon name="epic" class="align-text-bottom mr-1" />
-          <p class="m-0" :aria-label="childEpicsCountText">{{ childEpicsCount }}</p>
+      <div class="gl-flex gl-flex-col gl-items-end gl-text-subtle">
+        <div v-if="allowSubEpics">
+          <div
+            ref="childEpicsCount"
+            class="text-nowrap gl-mb-2 gl-flex gl-justify-end"
+            data-testid="child-epics-count"
+          >
+            <gl-icon name="epic" class="align-text-bottom mr-1" />
+            <p class="m-0" :aria-label="childEpicsCountText">{{ childEpicsCount }}</p>
+          </div>
+          <gl-tooltip
+            ref="childEpicsCountTooltip"
+            :target="() => $refs.childEpicsCount"
+            data-testid="child-epics-count-tooltip"
+          >
+            <span :class="{ 'gl-font-bold': hasFiltersApplied }">{{ childEpicsCountText }}</span>
+            <span v-if="hasFiltersApplied" class="gl-block">{{ childEpicsSearchText }}</span>
+          </gl-tooltip>
         </div>
-        <gl-tooltip
-          ref="childEpicsCountTooltip"
-          :target="() => $refs.childEpicsCount"
-          data-testid="child-epics-count-tooltip"
-        >
-          <span :class="{ 'gl-font-bold': hasFiltersApplied }">{{ childEpicsCountText }}</span>
-          <span v-if="hasFiltersApplied" class="gl-block">{{ childEpicsSearchText }}</span>
-        </gl-tooltip>
-      </template>
+        <work-item-relationship-icons
+          v-if="filteredLinkedItems.length"
+          work-item-type="epic"
+          :linked-work-items="filteredLinkedItems"
+          :work-item-full-path="workItemFullPath"
+          :work-item-iid="epicIid"
+          :work-item-web-url="epicWebUrl"
+        />
+      </div>
     </div>
   </div>
 </template>

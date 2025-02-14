@@ -43,4 +43,12 @@ fragment BaseEpic on Epic {
       id
     }
   }
+  linkedWorkItems {
+    nodes {
+      linkId
+      linkType
+      workItemState
+    }
+  }
+  reference(full: true)
 }
