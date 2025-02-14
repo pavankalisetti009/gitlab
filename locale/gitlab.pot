@@ -52779,6 +52779,18 @@ msgstr ""
 msgid "SecurityReports|%{firstProject}, %{secondProject}, and %{rest}"
 msgstr ""
 
+msgid "SecurityReports|%{nrVulnerabilities} vulnerabilities attached to %{nrIssues} issues"
+msgstr ""
+
+msgid "SecurityReports|%{nrVulnerabilities} vulnerabilities attached to 1 issue"
+msgstr ""
+
+msgid "SecurityReports|1 vulnerability attached to %{nrIssues} issues"
+msgstr ""
+
+msgid "SecurityReports|1 vulnerability attached to 1 issue"
+msgstr ""
+
 msgid "SecurityReports|A comment is required when changing the severity."
 msgstr ""
 
