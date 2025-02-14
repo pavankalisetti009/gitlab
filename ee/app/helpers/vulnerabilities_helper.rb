@@ -59,7 +59,8 @@ module VulnerabilitiesHelper
       author: {
         name: severity_override.author.name,
         web_url: user_path(severity_override.author)
-      }
+      },
+      created_at: severity_override.created_at
     }
   end
 

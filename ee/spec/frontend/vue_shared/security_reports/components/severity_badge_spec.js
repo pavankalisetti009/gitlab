@@ -27,6 +27,11 @@ describe('Severity Badge', () => {
       directives: {
         GlTooltip: createMockDirective('gl-tooltip'),
       },
+      provide: {
+        glFeatures: {
+          vulnerabilitySeverityOverride: true,
+        },
+      },
       stubs: {
         ...stubs,
       },
@@ -39,7 +44,7 @@ describe('Severity Badge', () => {
   const findTimeAgoTooltip = () => wrapper.findComponent(TimeAgoTooltip);
   const findGlSprintf = () => wrapper.findComponent(GlSprintf);
   const findSeverityOverrides = () => wrapper.findByTestId('severity-override');
-  const findSeverityOverridesIcon = () => findSeverityOverrides().findComponent(GlIcon);
+  const findSeverityOverridesIcon = () => wrapper.findByTestId('severity-override-icon');
 
   describe.each(SEVERITY_LEVELS)('given a valid severity "%s"', (severity) => {
     beforeEach(() => {
@@ -81,7 +86,7 @@ describe('Severity Badge', () => {
       createWrapper(
         {
           severity: 'medium',
-          severityOverrides: { nodes: [MOCK_LAST_SEVERITY_OVERRIDE] },
+          severityOverride: MOCK_LAST_SEVERITY_OVERRIDE,
           showSeverityOverrides: true,
         },
         {
@@ -115,7 +120,7 @@ describe('Severity Badge', () => {
       createWrapper(
         {
           severity: 'medium',
-          severityOverrides: { nodes: [MOCK_LAST_SEVERITY_OVERRIDE] },
+          severityOverride: MOCK_LAST_SEVERITY_OVERRIDE,
           showSeverityOverrides: true,
         },
         { GlSprintf },
@@ -128,7 +133,7 @@ describe('Severity Badge', () => {
     beforeEach(() => {
       createWrapper({
         severity: 'medium',
-        severityOverrides: { nodes: [MOCK_LAST_SEVERITY_OVERRIDE] },
+        severityOverride: MOCK_LAST_SEVERITY_OVERRIDE,
         showSeverityOverrides: false,
       });
     });

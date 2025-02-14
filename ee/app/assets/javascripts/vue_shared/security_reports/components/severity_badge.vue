@@ -1,9 +1,10 @@
 <script>
 import { GlTooltip, GlIcon, GlSprintf, GlTooltipDirective } from '@gitlab/ui';
-import { uniqueId } from 'lodash';
+import { uniqueId, isEmpty } from 'lodash';
 import { SEVERITY_LEVELS } from 'ee/security_dashboard/constants';
 import { __, sprintf } from '~/locale';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { SEVERITY_CLASS_NAME_MAP, SEVERITY_TOOLTIP_TITLE_MAP } from './constants';
 
 export default {
@@ -17,12 +18,13 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
+  mixins: [glFeatureFlagMixin()],
   props: {
     severity: {
       type: String,
       required: true,
     },
-    severityOverrides: {
+    severityOverride: {
       type: Object,
       required: false,
       default: () => ({}),
@@ -44,26 +46,12 @@ export default {
     };
   },
   computed: {
-    getLastSeverityOverride() {
-      return Object.keys(this.severityOverrides).length > 0 &&
-        this.severityOverrides.nodes.length > 0
-        ? this.severityOverrides.nodes.at(-1)
-        : {};
-    },
     shouldShowSeverityOverrides() {
-      return this.showSeverityOverrides && Object.keys(this.getLastSeverityOverride).length > 0;
-    },
-    severityOverridesObj() {
-      if (this.shouldShowSeverityOverrides) {
-        return {
-          ...this.getLastSeverityOverride,
-          author: this.getLastSeverityOverride.author?.name,
-          createdAt: this.getLastSeverityOverride.createdAt,
-          originalSeverity: this.getLastSeverityOverride.originalSeverity?.toLowerCase(),
-          newSeverity: this.getLastSeverityOverride.newSeverity?.toLowerCase(),
-        };
-      }
-      return {};
+      return (
+        this.glFeatures.vulnerabilitySeverityOverride &&
+        this.showSeverityOverrides &&
+        !isEmpty(this.severityOverride)
+      );
     },
     hasSeverityBadge() {
       return Object.keys(SEVERITY_CLASS_NAME_MAP).includes(this.severityKey);
@@ -105,20 +93,27 @@ export default {
       class="gl-text-orange-300"
       data-testid="severity-override"
     >
-      <gl-icon :id="tooltipId" v-gl-tooltip name="file-modified" class="gl-ml-3" :size="16" />
+      <gl-icon
+        :id="tooltipId"
+        v-gl-tooltip
+        data-testid="severity-override-icon"
+        name="file-modified"
+        class="gl-ml-3"
+        :size="16"
+      />
       <gl-tooltip placement="top" :target="tooltipId">
         <gl-sprintf :message="severityOverridesTooltipChangesSection">
           <template #user_name>
-            <strong>{{ severityOverridesObj.author }}</strong>
+            <strong>{{ severityOverride.author.name }}</strong>
           </template>
           <template #original_severity>
-            <strong>{{ severityOverridesObj.originalSeverity }}</strong>
+            <strong>{{ severityOverride.originalSeverity.toLowerCase() }}</strong>
           </template>
           <template #new_severity>
-            <strong>{{ severityOverridesObj.newSeverity }}</strong>
+            <strong>{{ severityOverride.newSeverity.toLowerCase() }}</strong>
           </template>
           <template #changed_at>
-            <time-ago-tooltip ref="timeAgo" :time="severityOverridesObj.createdAt" />
+            <time-ago-tooltip ref="timeAgo" :time="severityOverride.createdAt" />
           </template>
         </gl-sprintf>
         <br />

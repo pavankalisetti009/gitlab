@@ -56,7 +56,7 @@ export default {
       default: null,
     },
     projectPath: {
-      type: Number,
+      type: String,
       required: false,
       default: null,
     },
