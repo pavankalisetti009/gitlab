@@ -3,7 +3,7 @@
 module EE
   module API
     module Entities
-      module ProjectIntegrationBasic
+      module IntegrationBasic
         extend ActiveSupport::Concern
 
         prepended do
