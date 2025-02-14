@@ -9,7 +9,7 @@ module Types
       include CustomizablePermission
 
       MemberRole.all_customizable_admin_permissions.each_pair do |key, value|
-        define_permission(key, value)
+        define_permission(key, value, feature_flag: :custom_admin_roles)
       end
     end
   end
