@@ -189,7 +189,6 @@ module EE
         mount_mutation ::Mutations::AuditEvents::Instance::AmazonS3Configurations::Delete
         mount_mutation ::Mutations::AuditEvents::Instance::AmazonS3Configurations::Update
         mount_mutation ::Mutations::AuditEvents::Instance::GoogleCloudLoggingConfigurations::Create
-        mount_mutation ::Mutations::Forecasting::BuildForecast, experiment: { milestone: '16.0' }
         mount_mutation ::Mutations::AuditEvents::Streaming::InstanceHeaders::Create
         mount_mutation ::Mutations::AuditEvents::Streaming::InstanceHeaders::Update
         mount_mutation ::Mutations::AuditEvents::Streaming::InstanceHeaders::Destroy
