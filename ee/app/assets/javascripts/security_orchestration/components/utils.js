@@ -223,7 +223,7 @@ const isValidPolicyType = (type) => {
  * a wrapper
  * @param manifest policy in yaml format
  * @param type policy type
- * @param withType wheather include or not include type property in a policy body
+ * @param withType whether include or not include type property in a policy body
  * @returns {*|{policy: {}}}
  */
 export const extractPolicyContent = ({ manifest, type, withType = false }) => {

@@ -146,9 +146,7 @@ describe('DetailsDrawer component', () => {
       });
 
       expect(findConfigurationRow().exists()).toBe(true);
-      expect(findSkipCiConfiguration().props('configuration')).toEqual(
-        DEFAULT_SKIP_SI_CONFIGURATION,
-      );
+      expect(findSkipCiConfiguration().props('configuration')).toEqual({ allowed: true });
     });
   });
 });

@@ -103,7 +103,7 @@ describe('Scan execution policy actions', () => {
       await findScanTypeSelector().vm.$emit('select', scanType);
 
       await verify({
-        manifest: createScanActionScanExecutionManifest(scanType),
+        manifest: createScanActionScanExecutionManifest(scanType, true),
         verifyRuleMode,
         wrapper,
       });

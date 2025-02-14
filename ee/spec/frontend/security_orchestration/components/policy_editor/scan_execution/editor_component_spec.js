@@ -22,7 +22,6 @@ import {
   buildScannerAction,
   buildDefaultScheduleRule,
   fromYaml,
-  DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE_NEW_FORMAT,
 } from 'ee/security_orchestration/components/policy_editor/scan_execution/lib';
 import {
   DEFAULT_ASSIGNED_POLICY_PROJECT,
@@ -50,6 +49,7 @@ import {
 } from 'ee/security_orchestration/components/policy_editor/scan_execution/constants';
 import { RULE_KEY_MAP } from 'ee/security_orchestration/components/policy_editor/scan_execution/lib/rules';
 import { DEFAULT_SKIP_SI_CONFIGURATION } from 'ee/security_orchestration/components/constants';
+import { policyBodyToYaml } from 'ee/security_orchestration/components/policy_editor/utils';
 import { goToYamlMode } from '../policy_editor_helper';
 
 jest.mock('lodash/uniqueId');
@@ -166,7 +166,7 @@ describe('EditorComponent', () => {
   describe('modifying a policy', () => {
     it.each`
       status                           | action                            | event              | factoryFn                    | yamlEditorValue
-      ${'creating a new policy'}       | ${undefined}                      | ${'save-policy'}   | ${factory}                   | ${DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE}
+      ${'creating a new policy'}       | ${undefined}                      | ${'save-policy'}   | ${factory}                   | ${policyBodyToYaml(fromYaml({ manifest: DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE }))}
       ${'updating an existing policy'} | ${undefined}                      | ${'save-policy'}   | ${factoryWithExistingPolicy} | ${mockDastScanExecutionManifest}
       ${'deleting an existing policy'} | ${SECURITY_POLICY_ACTIONS.REMOVE} | ${'remove-policy'} | ${factoryWithExistingPolicy} | ${mockDastScanExecutionManifest}
     `('emits "save" when $status', async ({ action, event, factoryFn, yamlEditorValue }) => {
@@ -702,21 +702,13 @@ enabled: true`;
 
   describe('new yaml format with type as a wrapper', () => {
     beforeEach(() => {
-      factory({
-        provide: {
-          glFeatures: {
-            securityPoliciesNewYamlFormat: true,
-          },
-        },
-      });
+      factory();
     });
 
     it('renders default yaml in new format', () => {
-      expect(findPolicyEditorLayout().props()).toMatchObject({
-        parsingError: '',
-        policy: fromYaml({ manifest: DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE_NEW_FORMAT }),
-        yamlEditorValue: DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE_NEW_FORMAT,
-      });
+      expect(findPolicyEditorLayout().props('yamlEditorValue')).toBe(
+        DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE,
+      );
     });
 
     it('converts new policy format to old policy format when saved', async () => {

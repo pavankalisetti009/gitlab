@@ -1,4 +1,4 @@
-import { safeLoad } from 'js-yaml';
+import { isEmpty } from 'lodash';
 import {
   DEFAULT_TEMPLATE,
   LATEST_TEMPLATE,
@@ -59,16 +59,12 @@ export const hasInvalidScanners = (actions = []) => {
  * @returns {Object} security policy as JS object
  */
 export const fromYaml = ({ manifest }) => {
-  const { securityPoliciesNewYamlFormat = false } = window.gon?.features || {};
-
   try {
-    const payload = securityPoliciesNewYamlFormat
-      ? extractPolicyContent({
-          manifest,
-          type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
-          withType: true,
-        })
-      : safeLoad(manifest, { json: true });
+    const payload = extractPolicyContent({
+      manifest,
+      type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
+      withType: true,
+    });
 
     return addIdsToPolicy(payload);
   } catch {
@@ -85,6 +81,13 @@ export const fromYaml = ({ manifest }) => {
  * @returns {Object} errors object. If empty, policy is valid.
  */
 export const validatePolicy = (policy) => {
+  if (isEmpty(policy)) {
+    return {
+      actions: true,
+      rules: true,
+    };
+  }
+
   const error = {};
   if (
     hasConflictingKeys(policy.rules) ||

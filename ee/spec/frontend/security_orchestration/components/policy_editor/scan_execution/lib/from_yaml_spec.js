@@ -9,8 +9,8 @@ import {
   invalidPolicyActions,
   invalidPolicyRules,
   unsupportedManifest,
-  unsupportedManifestObject,
   invalidYaml,
+  unsupportedManifestObjectScanExecution,
 } from 'ee_jest/security_orchestration/mocks/mock_data';
 import {
   mockDastScanExecutionManifest,
@@ -19,7 +19,6 @@ import {
   mockInvalidCadenceScanExecutionManifest,
   mockBranchExceptionsScanExecutionObject,
   mockBranchExceptionsExecutionManifest,
-  mockTemplateScanExecutionManifest,
   mockTemplateScanExecutionObject,
   mockInvalidTemplateScanExecutionManifest,
   mockInvalidTemplateScanExecutionObject,
@@ -31,24 +30,24 @@ jest.mock('lodash/uniqueId', () => jest.fn((prefix) => `${prefix}0`));
 
 describe('fromYaml', () => {
   it.each`
-    title                                                              | manifest                                    | output
-    ${'policy object for an unsupported attribute'}                    | ${unsupportedManifest}                      | ${unsupportedManifestObject}
-    ${'policy object for an invalid yaml'}                             | ${invalidYaml}                              | ${{}}
-    ${'policy object for a branch exceptions'}                         | ${mockBranchExceptionsExecutionManifest}    | ${mockBranchExceptionsScanExecutionObject}
-    ${'policy object for a valid template value'}                      | ${mockTemplateScanExecutionManifest}        | ${mockTemplateScanExecutionObject}
-    ${'policy object with an error for an invalid template value'}     | ${mockInvalidTemplateScanExecutionManifest} | ${mockInvalidTemplateScanExecutionObject}
-    ${'policy object with an error for an invalid cadence cron value'} | ${mockInvalidCadenceScanExecutionManifest}  | ${mockInvalidCadenceScanExecutionObject}
-    ${'policy object for a manifest with settings'}                    | ${mockScanSettingsScanExecutionManifest}    | ${mockScanSettingsScanExecutionObject}
+    title                                                              | manifest                                   | output
+    ${'policy object for an unsupported attribute'}                    | ${unsupportedManifest}                     | ${unsupportedManifestObjectScanExecution}
+    ${'policy object for an invalid yaml'}                             | ${invalidYaml}                             | ${{}}
+    ${'policy object for a branch exceptions'}                         | ${mockBranchExceptionsExecutionManifest}   | ${mockBranchExceptionsScanExecutionObject}
+    ${'policy object with an error for an invalid cadence cron value'} | ${mockInvalidCadenceScanExecutionManifest} | ${mockInvalidCadenceScanExecutionObject}
+    ${'policy object for a manifest with settings'}                    | ${mockScanSettingsScanExecutionManifest}   | ${mockScanSettingsScanExecutionObject}
   `('returns the $title', ({ manifest, output }) => {
     expect(fromYaml({ manifest })).toStrictEqual(output);
   });
 
   describe('validatePolicy', () => {
     it.each`
-      title                                      | policy                         | output
-      ${'a valid policy'}                        | ${mockDastScanExecutionObject} | ${{}}
-      ${'a invalid policy with invalid actions'} | ${invalidPolicyActions}        | ${{ actions: true }}
-      ${'a invalid policy with invalid rules'}   | ${invalidPolicyRules}          | ${{ rules: true }}
+      title                                             | policy                                    | output
+      ${'a valid policy'}                               | ${mockDastScanExecutionObject}            | ${{}}
+      ${'policy object with a valid template value'}    | ${mockTemplateScanExecutionObject}        | ${{}}
+      ${'policy object with an invalid template value'} | ${mockInvalidTemplateScanExecutionObject} | ${{ actions: true }}
+      ${'a invalid policy with invalid actions'}        | ${invalidPolicyActions}                   | ${{ actions: true }}
+      ${'a invalid policy with invalid rules'}          | ${invalidPolicyRules}                     | ${{ rules: true }}
     `('returns the error object for $title', ({ policy, output }) => {
       expect(validatePolicy(policy)).toStrictEqual(output);
     });
@@ -59,9 +58,9 @@ describe('createPolicyObject', () => {
   it.each`
     title                                                                          | input                                         | output
     ${'returns the policy object and no errors for a supported manifest'}          | ${[mockDastScanExecutionManifest]}            | ${{ parsingError: {}, policy: mockDastScanExecutionObject }}
-    ${'returns the error policy object and the error for an unsupported manifest'} | ${[mockInvalidTemplateScanExecutionManifest]} | ${{ parsingError: { actions: true }, policy: mockInvalidTemplateScanExecutionObject }}
+    ${'returns the error policy object and the error for an unsupported manifest'} | ${[mockInvalidTemplateScanExecutionManifest]} | ${{ parsingError: { actions: true, rules: true }, policy: {} }}
   `('$title', ({ input, output }) => {
-    expect(createPolicyObject(...input)).toStrictEqual(output);
+    expect(createPolicyObject(input)).toStrictEqual(output);
   });
 });
 

@@ -38,10 +38,7 @@ import {
   buildScannerAction,
   buildDefaultPipeLineRule,
   createPolicyObject,
-  DEFAULT_SCAN_EXECUTION_POLICY,
-  DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE,
-  DEFAULT_SCAN_EXECUTION_POLICY_NEW_FORMAT,
-  DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE_NEW_FORMAT,
+  getPolicyYaml,
 } from './lib';
 import {
   DEFAULT_SCANNER,
@@ -143,20 +140,9 @@ export default {
     },
   },
   data() {
-    const { securityPoliciesNewYamlFormat } = this.glFeatures;
-
-    const defaultPolicy = securityPoliciesNewYamlFormat
-      ? DEFAULT_SCAN_EXECUTION_POLICY_NEW_FORMAT
-      : DEFAULT_SCAN_EXECUTION_POLICY;
-    const defaultPolicyWithScope = securityPoliciesNewYamlFormat
-      ? DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE_NEW_FORMAT
-      : DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE;
-
-    const newPolicyYaml = isGroup(this.namespaceType) ? defaultPolicyWithScope : defaultPolicy;
-
     const yamlEditorValue = this.existingPolicy
       ? policyToYaml(this.existingPolicy, POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter)
-      : newPolicyYaml;
+      : getPolicyYaml({ isGroup: isGroup(this.namespaceType) });
 
     const { policy, parsingError } = createPolicyObject(yamlEditorValue);
 
@@ -299,11 +285,7 @@ export default {
       const type = POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter;
       const policy = extractPolicyContent({ manifest: this.yamlEditorValue, type, withType: true });
 
-      const payload = this.glFeatures.securityPoliciesNewYamlFormat
-        ? policyBodyToYaml(policy)
-        : this.yamlEditorValue;
-
-      this.$emit('save', { action, policy: payload });
+      this.$emit('save', { action, policy: policyBodyToYaml(policy) });
     },
     updateYaml(manifest) {
       const { policy, parsingError } = createPolicyObject(manifest);

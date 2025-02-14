@@ -33,8 +33,10 @@ description: ''
 enabled: true
 `;
 
-export const mockScanExecutionActionManifest = BASE_POLICY('scan_execution_policy')
-  .concat(`policy_scope:
+export const mockScanExecutionActionManifest = `name: ''
+description: ''
+enabled: true
+policy_scope:
   compliance_frameworks:
     - id: 1
     - id: 2
@@ -44,7 +46,8 @@ rules:
       - '*'
 actions:
   - scan: secret_detection
-`);
+type: scan_execution_policy
+`;
 
 export const mockScanExecutionActionProjectManifest = putPolicyScopeComplianceFrameworksToEndOfYaml(
   mockScanExecutionActionManifest,
@@ -85,7 +88,10 @@ export const mockApprovalActionProjectManifest = removeGroupSetting(
 );
 
 export const EXCLUDING_PROJECTS_MOCKS = {
-  SCAN_EXECUTION: BASE_POLICY('scan_execution_policy').concat(`policy_scope:
+  SCAN_EXECUTION: `name: ''
+description: ''
+enabled: true
+policy_scope:
   projects:
     excluding:
       - id: 1
@@ -96,7 +102,8 @@ rules:
       - '*'
 actions:
   - scan: secret_detection
-`),
+type: scan_execution_policy
+`,
   PIPELINE_EXECUTION: BASE_POLICY('pipeline_execution_policy')
     .concat(`pipeline_config_strategy: inject_policy
 content:
@@ -160,7 +167,10 @@ const removeExcludingProjects = (value) =>
   );
 
 export const INCLUDING_GROUPS_WITH_EXCEPTIONS_MOCKS = {
-  SCAN_EXECUTION: BASE_POLICY('scan_execution_policy').concat(`policy_scope:
+  SCAN_EXECUTION: `name: ''
+description: ''
+enabled: true
+policy_scope:
   groups:
     including:
       - id: 1
@@ -175,7 +185,8 @@ rules:
       - '*'
 actions:
   - scan: secret_detection
-`),
+type: scan_execution_policy
+`,
   PIPELINE_EXECUTION: BASE_POLICY(`pipeline_execution_policy`)
     .concat(`pipeline_config_strategy: inject_policy
 content:

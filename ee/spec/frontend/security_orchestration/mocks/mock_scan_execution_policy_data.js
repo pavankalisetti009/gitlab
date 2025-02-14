@@ -82,7 +82,9 @@ export const mockScheduleScanExecutionObject = {
   ],
 };
 
-export const mockDastScanExecutionManifest = defaultMockScanExecutionManifest.concat(`
+export const mockDastScanExecutionManifest = `name: Scheduled Dast/SAST scan
+description: This policy enforces pipeline configuration to have a job with DAST scan
+enabled: false
 rules:
   - type: pipeline
     branches:
@@ -91,7 +93,22 @@ actions:
   - scan: dast
     site_profile: required_site_profile
     scanner_profile: required_scanner_profile
-`);
+type: scan_execution_policy
+`;
+
+export const mockDastScanExecutionManifestWithoutType = `type: scan_execution_policy
+name: Scheduled Dast/SAST scan
+description: This policy enforces pipeline configuration to have a job with DAST scan
+enabled: false
+rules:
+  - type: pipeline
+    branches:
+      - main
+actions:
+  - scan: dast
+    site_profile: required_site_profile
+    scanner_profile: required_scanner_profile
+`;
 
 export const mockDastScanExecutionObject = {
   ...mockScheduleScanExecutionObject,
@@ -308,16 +325,27 @@ export const mockPolicyScopeScanExecutionObject = {
 };
 
 export const mockTemplateScanExecutionManifest =
-  mockDastScanExecutionManifest.concat(`    template: default\n`);
+  mockDastScanExecutionManifest.concat(`template: default\n`);
 
 export const mockTemplateScanExecutionObject = {
   ...mockDastScanExecutionObject,
   actions: [{ ...mockDastScanExecutionObject.actions[0], template: 'default' }],
 };
 
-export const mockInvalidTemplateScanExecutionManifest = mockDastScanExecutionManifest.concat(
-  `    template: not-valid-value\n`,
-);
+export const mockInvalidTemplateScanExecutionManifest = `scan_execution_policy:
+name: Scheduled Dast/SAST scan
+description: This policy enforces pipeline configuration to have a job with DAST scan
+enabled: false
+rules:
+  - type: pipeline
+    branches:
+      - main
+actions:
+  - scan: dast
+    site_profile: required_site_profile
+    scanner_profile: required_scanner_profile
+    template: not-valid-value
+`;
 
 export const mockInvalidActionScanExecutionObject = {
   ...mockDastScanExecutionObject,
