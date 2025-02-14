@@ -3,12 +3,12 @@
 import { mapGetters, mapState } from 'vuex';
 import { GlAlert, GlIcon, GlTooltip } from '@gitlab/ui';
 import SafeHtml from '~/vue_shared/directives/safe_html';
-import { generateFilterTextDescription } from '../utils';
-import { formattedDate } from '../../shared/utils';
-import { TASKS_BY_TYPE_SUBJECT_FILTER_OPTIONS, TASKS_BY_TYPE_SUBJECT_ISSUE } from '../constants';
-import TasksByTypeChart from './tasks_by_type/chart.vue';
-import TasksByTypeFilters from './tasks_by_type/filters.vue';
-import NoDataAvailableState from './no_data_available_state.vue';
+import { generateFilterTextDescription } from '../../utils';
+import { formattedDate } from '../../../shared/utils';
+import { TASKS_BY_TYPE_SUBJECT_FILTER_OPTIONS, TASKS_BY_TYPE_SUBJECT_ISSUE } from '../../constants';
+import NoDataAvailableState from '../no_data_available_state.vue';
+import TasksByTypeChart from './chart.vue';
+import TasksByTypeFilters from './filters.vue';
 
 export default {
   name: 'TypeOfWorkCharts',

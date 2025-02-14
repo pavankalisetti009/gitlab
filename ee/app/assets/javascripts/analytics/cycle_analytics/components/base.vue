@@ -16,7 +16,7 @@ import { OVERVIEW_STAGE_ID } from '~/analytics/cycle_analytics/constants';
 import UrlSync from '~/vue_shared/components/url_sync.vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import DurationChartLoader from './duration_charts/duration_chart_loader.vue';
-import TypeOfWorkChartsLoader from './type_of_work_charts_loader.vue';
+import TypeOfWorkChartsLoader from './tasks_by_type/type_of_work_charts_loader.vue';
 import ValueStreamAggregationStatus from './value_stream_aggregation_status.vue';
 import ValueStreamAggregatingWarning from './value_stream_aggregating_warning.vue';
 import ValueStreamEmptyState from './value_stream_empty_state.vue';
