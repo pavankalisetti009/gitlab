@@ -12,6 +12,8 @@ import { NAMESPACE_GROUP, NAMESPACE_PROJECT } from 'ee/dependencies/constants';
 import groupComponentsQuery from 'ee/dependencies/graphql/group_components.query.graphql';
 import projectComponentsQuery from 'ee/dependencies/graphql/project_components.query.graphql';
 
+const MIN_CHARS = 3;
+
 export default {
   components: {
     GlIcon,
@@ -40,12 +42,18 @@ export default {
       searchTerm: '',
       components: [],
       selectedComponents: [],
+      /**
+       * Not using apollo.loading because debounce causes a UX issue where "noResult" state
+       * shows during the debounce period. Manual setting the loading state allows to show
+       * loading during the debounce period.
+       *
+       * More info here:
+       * https://gitlab.com/gitlab-org/gitlab/-/merge_requests/181132#note_2342436669
+       */
+      isLoadingComponents: false,
     };
   },
   computed: {
-    isLoadingComponents() {
-      return this.$apollo.queries.components.loading;
-    },
     filteredComponents() {
       if (!this.searchTerm) {
         return this.components;
@@ -93,6 +101,12 @@ export default {
         { namespaceType: this.namespaceType },
       );
     },
+    isSearchTermTooShort() {
+      return this.searchTerm.length < MIN_CHARS;
+    },
+    shouldShowPlaceholder() {
+      return this.isSearchTermTooShort && !this.components.length;
+    },
   },
   apollo: {
     components: {
@@ -110,13 +124,18 @@ export default {
         // Remove __typename
         return data[this.namespaceType]?.components?.map(({ id, name }) => ({ name, id }));
       },
+      result() {
+        this.isLoadingComponents = false;
+      },
       error() {
+        this.isLoadingComponents = false;
+
         createAlert({
           message: this.fetchErrorMessage,
         });
       },
       skip() {
-        return this.searchTerm === '';
+        return this.isSearchTermTooShort;
       },
     },
   },
@@ -135,8 +154,13 @@ export default {
       // the data can be either a string or an array, in which case we don't want to perform the search
       if (typeof token.data === 'string') {
         this.searchTerm = token.data.toLowerCase();
+        this.isLoadingComponents = token.data.length >= MIN_CHARS;
       }
     },
+  },
+  i18n: {
+    placeholder: s__('Dependencies|Enter at least 3 characters to view available components.'),
+    noResult: s__('Dependencies|No components found.'),
   },
 };
 </script>
@@ -180,6 +204,12 @@ export default {
             {{ component.name }}
           </div>
         </gl-filtered-search-suggestion>
+        <div v-if="shouldShowPlaceholder" class="gl-p-2 gl-text-secondary">
+          {{ $options.i18n.placeholder }}
+        </div>
+        <div v-else-if="!components.length" class="gl-p-2 gl-text-secondary">
+          {{ $options.i18n.noResult }}
+        </div>
       </template>
     </template>
   </gl-filtered-search-token>
