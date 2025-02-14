@@ -597,6 +597,23 @@ To continue showing these findings, you must configure the `CS_SEVERITY_THRESHOL
 
 <div class="deprecation breaking-change" data-milestone="18.0">
 
+### DAST `dast_devtools_api_timeout` will have a lower default value
+
+<div class="deprecation-notes">
+
+- Announced in GitLab <span class="milestone">17.9</span>
+- Removal in GitLab <span class="milestone">18.0</span> ([breaking change](https://docs.gitlab.com/ee/update/terminology.html#breaking-change))
+- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/gitlab/-/issues/517254).
+
+</div>
+
+The `DAST_DEVTOOLS_API_TIMEOUT` environment variable determines how long a DAST scan waits for a response from the browser. Before GitLab 18.0, the variable has a static value of 45 seconds. After GitLab 18.0, `DAST_DEVTOOLS_API_TIMEOUT` environment variable has a dynamic value, which is calculated based on other timeout configurations.
+In most cases, the 45-second value was higher than the timeout value of many scanner functions. The dynamically calculated value makes the `DAST_DEVTOOLS_API_TIMEOUT` variable more useful by increasing the number of cases it applies to.
+
+</div>
+
+<div class="deprecation breaking-change" data-milestone="18.0">
+
 ### Dependency Proxy token scope enforcement
 
 <div class="deprecation-notes">
