@@ -34,11 +34,11 @@ module SubscriptionPortalHelpers
 
   def stub_subscription_request_seat_usage(eligible)
     stub_full_request(graphql_url, method: :post)
-      .with(body: /eligibleForSeatUsageAlerts/)
+      .with(body: /isEligibleForSeatUsageAlerts/)
     .to_return(status: 200, body: {
       data: {
         subscription: {
-          eligibleForSeatUsageAlerts: eligible
+          isEligibleForSeatUsageAlerts: eligible
         }
       }
     }.to_json, headers: { 'Content-Type' => 'application/json' })

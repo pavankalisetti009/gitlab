@@ -93,7 +93,7 @@ module Gitlab
             query = <<~GQL
               query($namespaceId: ID!) {
                 subscription(namespaceId: $namespaceId) {
-                  eligibleForSeatUsageAlerts
+                  isEligibleForSeatUsageAlerts
                 }
               }
             GQL
@@ -104,7 +104,7 @@ module Gitlab
               {
                 success: true,
                 eligible_for_seat_usage_alerts: response.dig(:data, 'data', 'subscription',
-                  'eligibleForSeatUsageAlerts')
+                  'isEligibleForSeatUsageAlerts')
               }
             else
               error(response.dig(:data, :errors))
