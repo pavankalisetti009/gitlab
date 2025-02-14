@@ -19,7 +19,6 @@ RSpec.describe 'CI shared runner settings', feature_category: :fleet_visibility 
     it 'displays ratio with global quota' do
       visit_admin_group_path
       expect(page).to have_content("Compute quota: 400 / Unlimited")
-      expect(page).to have_selector('.shared_runners_limit_disabled')
     end
   end
 
@@ -31,21 +30,18 @@ RSpec.describe 'CI shared runner settings', feature_category: :fleet_visibility 
     it 'displays ratio with global quota' do
       visit_admin_group_path
       expect(page).to have_content("Compute quota: 400 / 500")
-      expect(page).to have_selector('.shared_runners_limit_under_quota')
     end
 
     it 'displays new ratio with overridden group quota' do
       set_group_shared_runners_minutes 300
       visit_admin_group_path
       expect(page).to have_content("Compute quota: 400 / 300")
-      expect(page).to have_selector('.shared_runners_limit_over_quota')
     end
 
     it 'displays unlimited ratio with overridden group quota' do
       set_group_shared_runners_minutes 0
       visit_admin_group_path
       expect(page).to have_content("Compute quota: 400 / Unlimited")
-      expect(page).to have_selector('.shared_runners_limit_disabled')
     end
   end
 

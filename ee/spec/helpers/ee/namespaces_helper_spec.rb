@@ -20,86 +20,6 @@ RSpec.describe EE::NamespacesHelper, feature_category: :groups_and_projects do
 
   let(:ci_minutes_used) { 100 }
 
-  describe '#ci_minutes_report', feature_category: :hosted_runners do
-    let(:usage) { Ci::Minutes::Usage.new(user_group) }
-    let(:usage_presenter) { Ci::Minutes::UsagePresenter.new(usage) }
-
-    describe 'rendering monthly minutes report' do
-      let(:report) { usage_presenter.monthly_minutes_report }
-
-      context "when compute minutes usage is not enabled" do
-        before do
-          user_group.update!(shared_runners_minutes_limit: 0)
-        end
-
-        context 'and the namespace is eligible for unlimited' do
-          before do
-            allow(user_group).to receive(:root?).and_return(true)
-            allow(user_group).to receive(:any_project_with_shared_runners_enabled?).and_return(true)
-          end
-
-          it 'returns Unlimited for the limit section' do
-            expect(helper.ci_minutes_report(report)).to match(%r{\b100 / Unlimited})
-          end
-        end
-
-        context 'and the namespace is not eligible for unlimited' do
-          before do
-            allow(user_group).to receive(:root?).and_return(false)
-          end
-
-          it 'returns Not supported for the limit section' do
-            expect(helper.ci_minutes_report(report)).to match(%r{\b100 / Not supported})
-          end
-        end
-      end
-
-      context "when it's limited" do
-        before do
-          allow(user_group).to receive(:any_project_with_shared_runners_enabled?).and_return(true)
-
-          user_group.update!(shared_runners_minutes_limit: 500)
-        end
-
-        it 'returns the proper values for used and limit sections' do
-          expect(helper.ci_minutes_report(report)).to match(%r{\b100 / 500\b})
-        end
-      end
-    end
-
-    describe 'rendering purchased minutes report' do
-      let(:report) { usage_presenter.purchased_minutes_report }
-
-      context 'when extra minutes are assigned' do
-        before do
-          user_group.update!(extra_shared_runners_minutes_limit: 100)
-        end
-
-        context 'when minutes used is higher than monthly minutes limit' do
-          let(:ci_minutes_used) { 550 }
-
-          it 'returns the proper values for used and limit sections' do
-            expect(helper.ci_minutes_report(report)).to match(%r{\b50 / 100\b})
-          end
-        end
-
-        context 'when minutes used is lower than monthly minutes limit' do
-          let(:ci_minutes_used) { 400 }
-
-          it 'returns the proper values for used and limit sections' do
-            expect(helper.ci_minutes_report(report)).to match(%r{\b0 / 100\b})
-          end
-        end
-      end
-
-      context 'when extra minutes are not assigned' do
-        it 'returns the proper values for used and limit sections' do
-          expect(helper.ci_minutes_report(report)).to match(%r{\b0 / 0\b})
-        end
-      end
-    end
-  end
-
   describe '#buy_additional_minutes_path', feature_category: :consumables_cost_management do
     let(:namespace) { build_stubbed(:group) }
 
@@ -267,12 +187,12 @@ RSpec.describe EE::NamespacesHelper, feature_category: :groups_and_projects do
             any_project_enabled: minutes_usage_presenter.any_project_enabled?.to_s,
             last_reset_date: minutes_usage.reset_date,
             display_minutes_available_data: minutes_usage_presenter.display_minutes_available_data?.to_s,
-            monthly_minutes_used: minutes_usage_presenter.monthly_minutes_report.used,
+            monthly_minutes_used: minutes_usage_presenter.monthly_minutes_used,
             monthly_minutes_used_percentage: minutes_usage_presenter.monthly_percent_used,
-            monthly_minutes_limit: minutes_usage_presenter.monthly_minutes_report.limit,
-            purchased_minutes_used: minutes_usage_presenter.purchased_minutes_report.used,
+            monthly_minutes_limit: minutes_usage_presenter.monthly_minutes_limit_text,
+            purchased_minutes_used: minutes_usage_presenter.purchased_minutes_used,
             purchased_minutes_used_percentage: minutes_usage_presenter.purchased_percent_used,
-            purchased_minutes_limit: minutes_usage_presenter.purchased_minutes_report.limit
+            purchased_minutes_limit: minutes_usage_presenter.purchased_minutes_limit
           },
           buy_additional_minutes_path: more_minutes_url,
           buy_additional_minutes_target: '_blank'
@@ -291,9 +211,9 @@ RSpec.describe EE::NamespacesHelper, feature_category: :groups_and_projects do
             any_project_enabled: minutes_usage_presenter.any_project_enabled?.to_s,
             last_reset_date: minutes_usage.reset_date,
             display_minutes_available_data: minutes_usage_presenter.display_minutes_available_data?.to_s,
-            monthly_minutes_used: minutes_usage_presenter.monthly_minutes_report.used,
+            monthly_minutes_used: minutes_usage_presenter.monthly_minutes_used,
             monthly_minutes_used_percentage: minutes_usage_presenter.monthly_percent_used,
-            monthly_minutes_limit: minutes_usage_presenter.monthly_minutes_report.limit
+            monthly_minutes_limit: minutes_usage_presenter.monthly_minutes_limit_text
           }
         })
       end

@@ -7,11 +7,25 @@ module Ci
 
       presents Usage, as: :usage
 
-      Report = Struct.new(:used, :limit, :status)
+      Label = Struct.new(:text, :css_class)
 
       # Status of the monthly allowance being used.
-      def monthly_minutes_report
-        Report.new(usage.monthly_minutes_used, minutes_limit, report_status)
+      def monthly_minutes_label
+        text = "#{monthly_minutes_used} / #{monthly_minutes_limit_text}"
+        css_class = monthly_minutes_label_css_class
+
+        Label.new(text, css_class)
+      end
+
+      def monthly_minutes_used
+        usage.monthly_minutes_used
+      end
+
+      def monthly_minutes_limit_text
+        return _('Not supported') unless display_shared_runners_data?
+        return _('Unlimited') unless display_minutes_available_data?
+
+        usage.quota.monthly
       end
 
       def monthly_percent_used
@@ -22,9 +36,19 @@ module Ci
       end
 
       # Status of any purchased minutes used.
-      def purchased_minutes_report
-        status = usage.purchased_minutes_used_up? ? :over_quota : :under_quota
-        Report.new(usage.purchased_minutes_used, usage.quota.purchased, status)
+      def purchased_minutes_label
+        text = "#{purchased_minutes_used} / #{purchased_minutes_limit}"
+        css_class = purchased_minutes_label_css_class
+
+        Label.new(text, css_class)
+      end
+
+      def purchased_minutes_used
+        usage.purchased_minutes_used
+      end
+
+      def purchased_minutes_limit
+        usage.quota.purchased
       end
 
       def purchased_percent_used
@@ -50,20 +74,14 @@ module Ci
 
       private
 
-      def report_status
-        return :disabled unless usage.quota_enabled?
+      def monthly_minutes_label_css_class
+        return '' unless usage.quota_enabled?
 
-        usage.monthly_minutes_used_up? ? :over_quota : :under_quota
+        usage.monthly_minutes_used_up? ? 'gl-text-danger' : 'gl-text-success'
       end
 
-      def minutes_limit
-        return _('Not supported') unless display_shared_runners_data?
-
-        if display_minutes_available_data?
-          usage.quota.monthly
-        else
-          _('Unlimited')
-        end
+      def purchased_minutes_label_css_class
+        usage.purchased_minutes_used_up? ? 'gl-text-danger' : 'gl-text-success'
       end
     end
   end
