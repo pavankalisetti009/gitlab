@@ -247,6 +247,7 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
               web_url: user_path(author)
             }
           )
+          expect(severity_override[:created_at]).to be_present
         end
       end
     end
