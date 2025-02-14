@@ -132,7 +132,7 @@ RSpec.describe Elastic::Latest::IssueClassProxy, :elastic, feature_category: :gl
             it 'includes the correct base query name' do
               result.response
 
-              assert_named_queries('issue:multi_match:or:search_terms', 'issue:multi_match:and:search_terms',
+              assert_named_queries('issue:multi_match:and:search_terms',
                 'issue:multi_match_phrase:search_terms')
             end
           end

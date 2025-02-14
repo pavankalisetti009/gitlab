@@ -22,7 +22,6 @@ RSpec.describe ::Search::Elastic::MergeRequestQueryBuilder, :elastic_helpers, fe
 
   it 'contains all expected filters' do
     assert_names_in_query(build, with: %w[
-      merge_request:multi_match:or:search_terms
       merge_request:multi_match:and:search_terms
       merge_request:multi_match_phrase:search_terms
       filters:not_hidden
@@ -42,9 +41,10 @@ RSpec.describe ::Search::Elastic::MergeRequestQueryBuilder, :elastic_helpers, fe
     context 'when query is text' do
       it 'returns the expected query' do
         assert_names_in_query(build,
-          with: %w[merge_request:multi_match:or:search_terms
+          with: %w[
             merge_request:multi_match:and:search_terms
-            merge_request:multi_match_phrase:search_terms],
+            merge_request:multi_match_phrase:search_terms
+          ],
           without: %w[merge_request:match:search_terms])
       end
 
@@ -64,9 +64,10 @@ RSpec.describe ::Search::Elastic::MergeRequestQueryBuilder, :elastic_helpers, fe
         it 'returns the expected query' do
           assert_names_in_query(build,
             with: %w[merge_request:match:search_terms],
-            without: %w[merge_request:multi_match:or:search_terms
+            without: %w[
               merge_request:multi_match:and:search_terms
-              merge_request:multi_match_phrase:search_terms])
+              merge_request:multi_match_phrase:search_terms
+            ])
         end
       end
     end
@@ -76,9 +77,10 @@ RSpec.describe ::Search::Elastic::MergeRequestQueryBuilder, :elastic_helpers, fe
 
       it 'returns the expected query' do
         assert_names_in_query(build,
-          with: %w[merge_request:multi_match:or:search_terms
+          with: %w[
             merge_request:multi_match:and:search_terms
-            merge_request:multi_match_phrase:search_terms],
+            merge_request:multi_match_phrase:search_terms
+          ],
           without: %w[merge_request:match:search_terms])
         assert_fields_in_query(build, with: %w[title])
       end

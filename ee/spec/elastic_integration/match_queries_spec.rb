@@ -25,7 +25,6 @@ RSpec.describe 'Match Queries', feature_category: :global_search do
         assert_named_queries(
           'filters:doc:is_a:project',
           'project:multi_match_phrase:search_terms',
-          'project:multi_match:or:search_terms',
           'project:multi_match:and:search_terms', without: ['project:match:search_terms']
         )
       end
@@ -38,7 +37,6 @@ RSpec.describe 'Match Queries', feature_category: :global_search do
           assert_named_queries(
             'filters:doc:is_a:project',
             'project:multi_match_phrase:search_terms',
-            'project:multi_match:or:search_terms',
             'project:multi_match:and:search_terms',
             without: ['project:match:search_terms']
           )
@@ -54,7 +52,6 @@ RSpec.describe 'Match Queries', feature_category: :global_search do
 
         assert_named_queries('filters:doc:is_a:project', 'project:match:search_terms', without:
           %w[project:multi_match_phrase:search_terms
-            project:multi_match:or:search_terms
             project:multi_match:and:search_terms])
       end
 
@@ -66,7 +63,6 @@ RSpec.describe 'Match Queries', feature_category: :global_search do
 
           assert_named_queries('filters:doc:is_a:project', 'project:match:search_terms', without:
             %w[project:multi_match_phrase:search_terms
-              project:multi_match:or:search_terms
               project:multi_match:and:search_terms])
         end
       end
@@ -87,7 +83,6 @@ RSpec.describe 'Match Queries', feature_category: :global_search do
 
         assert_named_queries('filters:doc:is_a:project', 'project:match:search_terms', without:
           %w[project:multi_match_phrase:search_terms
-            project:multi_match:or:search_terms
             project:multi_match:and:search_terms])
       end
 
@@ -109,7 +104,6 @@ RSpec.describe 'Match Queries', feature_category: :global_search do
         elastic_search.response
 
         assert_named_queries('filters:doc:is_a:project', without: %w[project:multi_match_phrase:search_terms
-          project:multi_match:or:search_terms
           project:multi_match:and:search_terms])
       end
 

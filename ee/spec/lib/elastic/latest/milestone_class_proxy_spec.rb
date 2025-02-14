@@ -61,11 +61,12 @@ RSpec.describe Elastic::Latest::MilestoneClassProxy, :elastic, :sidekiq_inline, 
       it 'has the correct named queries' do
         result.response
 
-        expected_queries = %w[milestone:multi_match:or:search_terms
+        expected_queries = %w[
           milestone:multi_match:and:search_terms
           milestone:multi_match_phrase:search_terms
           filters:project
-          filters:doc:is_a:milestone]
+          filters:doc:is_a:milestone
+        ]
 
         expected_queries.concat(%w[filters:non_archived]) if search_level != 'project'
 

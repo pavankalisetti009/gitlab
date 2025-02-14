@@ -57,7 +57,6 @@ module Search
             end
 
             multi_match_bool = ::Search::Elastic::BoolExpr.new
-            multi_match_bool.should << multi_match_query(fields, query, options.merge(operator: :or))
             multi_match_bool.should << multi_match_query(fields, query, options.merge(operator: :and))
             multi_match_bool.should << multi_match_phrase_query(fields, query, options)
             multi_match_bool.minimum_should_match = 1

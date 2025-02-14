@@ -22,7 +22,6 @@ RSpec.describe ::Search::Elastic::MilestoneQueryBuilder, :elastic_helpers, featu
 
   it 'contains all expected filters' do
     assert_names_in_query(build, with: %w[
-      milestone:multi_match:or:search_terms
       milestone:multi_match:and:search_terms
       milestone:multi_match_phrase:search_terms
       filters:doc:is_a:milestone
