@@ -21,7 +21,7 @@ module EE
         # ensure jobs can not circumvent enforces security checks.
         def calculate_status_based_on_policy_pre_stage(status, job)
           return status unless ensure_pipeline_policy_pre_stage_complete_enabled?
-          return status unless policy_pre_stage || job_on_policy_pre_stage?(job)
+          return status if !policy_pre_stage || job_on_policy_pre_stage?(job)
 
           policy_pre_stage_completed? ? status : 'running'
         end
