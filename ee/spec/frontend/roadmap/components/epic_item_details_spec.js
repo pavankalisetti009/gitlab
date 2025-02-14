@@ -4,9 +4,11 @@ import VueApollo from 'vue-apollo';
 import { GlButton, GlLabel } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
+import waitForPromises from 'helpers/wait_for_promises';
 
 import { updateHistory } from '~/lib/utils/url_utility';
 import EpicItemDetails from 'ee/roadmap/components/epic_item_details.vue';
+import WorkItemRelationshipIcons from '~/work_items/components/shared/work_item_relationship_icons.vue';
 import {
   mockGroupId,
   mockFormattedEpic,
@@ -70,11 +72,11 @@ describe('EpicItemDetails', () => {
   const getExpandIconTooltip = () => wrapper.findByTestId('expand-icon-tooltip');
   const getChildEpicsCount = () => wrapper.findByTestId('child-epics-count');
   const getChildEpicsCountTooltip = () => wrapper.findByTestId('child-epics-count-tooltip');
-  const getBlockedIcon = () => wrapper.findByTestId('blocked-icon');
   const findLabelsContainer = () => wrapper.findByTestId('epic-labels');
   const findAllLabels = () => wrapper.findAllComponents(GlLabel);
   const findRegularLabel = () => findAllLabels().at(0);
   const findScopedLabel = () => findAllLabels().at(1);
+  const findRelationshipIcons = () => wrapper.findComponent(WorkItemRelationshipIcons);
 
   const getExpandButtonData = () => ({
     icon: wrapper.findComponent(GlButton).attributes('icon'),
@@ -96,6 +98,11 @@ describe('EpicItemDetails', () => {
     ...mockFormattedEpic,
     ...epic,
   });
+
+  const epicWithNoLinkedItems = {
+    ...mockFormattedEpic,
+    linkedWorkItems: { ...mockFormattedEpic.linkedWorkItems, nodes: [] },
+  };
 
   describe('epic title', () => {
     beforeEach(() => {
@@ -289,24 +296,6 @@ describe('EpicItemDetails', () => {
             expect(getChildEpicsCount().text()).toBe('2');
           });
         });
-
-        describe('blocked icon', () => {
-          it.each`
-            blocked  | showsBlocked
-            ${true}  | ${true}
-            ${false} | ${false}
-          `(
-            'if epic.blocked is $blocked then blocked is shown $showsBlocked',
-            ({ blocked, showsBlocked }) => {
-              epic = createMockEpic({
-                blocked,
-              });
-              createWrapper({ epic });
-
-              expect(getBlockedIcon().exists()).toBe(showsBlocked);
-            },
-          );
-        });
       });
     });
   });
@@ -401,6 +390,19 @@ describe('EpicItemDetails', () => {
           expect(updateLocalSettingsMutationMock).not.toHaveBeenCalled();
         });
       });
+    });
+  });
+
+  describe('epic relationships', () => {
+    it.each`
+      state                            | assertion | epic
+      ${'rendered if epic has'}        | ${true}   | ${mockFormattedEpic}
+      ${'not rendered if epic has no'} | ${false}  | ${epicWithNoLinkedItems}
+    `('relationship icons are $state linked work items', async ({ assertion, epic }) => {
+      createWrapper({ epic });
+      await waitForPromises();
+
+      expect(findRelationshipIcons().exists()).toBe(assertion);
     });
   });
 });

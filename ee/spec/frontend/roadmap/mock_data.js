@@ -331,6 +331,17 @@ export const mockFormattedEpic = {
   endDateOutOfRange: false,
   confidential: false,
   isChildEpic: false,
+  linkedWorkItems: {
+    __typename: 'LinkedWorkItemTypeConnection',
+    nodes: [
+      {
+        linkId: 'gid://gitlab/WorkItems::RelatedWorkItemLink/103',
+        linkType: 'blocks',
+        workItemState: 'OPEN',
+        __typename: 'LinkedWorkItemType',
+      },
+    ],
+  },
 };
 
 export const mockFormattedEpic2 = {
@@ -713,6 +724,18 @@ export const mockEpicNode1 = {
     __typename: 'EpicConnection',
   },
   group: mockGroup1,
+  linkedWorkItems: {
+    __typename: 'LinkedWorkItemTypeConnection',
+    nodes: [
+      {
+        linkId: 'gid://gitlab/WorkItems::RelatedWorkItemLink/103',
+        linkType: 'blocks',
+        workItemState: 'OPEN',
+        __typename: 'LinkedWorkItemType',
+      },
+    ],
+  },
+  reference: 'group&1',
 };
 
 export const mockEpicNode2 = {
@@ -752,6 +775,18 @@ export const mockEpicNode2 = {
     __typename: 'EpicConnection',
   },
   group: mockGroup1,
+  linkedWorkItems: {
+    __typename: 'LinkedWorkItemTypeConnection',
+    nodes: [
+      {
+        linkId: 'gid://gitlab/WorkItems::RelatedWorkItemLink/103',
+        linkType: 'blocks',
+        workItemState: 'OPEN',
+        __typename: 'LinkedWorkItemType',
+      },
+    ],
+  },
+  reference: 'group&1',
 };
 
 export const mockGroupEpics = [mockEpicNode1, mockEpicNode2];
@@ -837,6 +872,18 @@ export const mockChildEpicNode1 = {
   },
   color: null,
   textColor: null,
+  linkedWorkItems: {
+    __typename: 'LinkedWorkItemTypeConnection',
+    nodes: [
+      {
+        linkId: 'gid://gitlab/WorkItems::RelatedWorkItemLink/103',
+        linkType: 'blocks',
+        workItemState: 'OPEN',
+        __typename: 'LinkedWorkItemType',
+      },
+    ],
+  },
+  reference: 'group&1',
 };
 
 export const mockEpicChildEpicsQueryResponse = {
