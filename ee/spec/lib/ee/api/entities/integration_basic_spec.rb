@@ -2,11 +2,11 @@
 
 require 'spec_helper'
 
-RSpec.describe ::EE::API::Entities::ProjectIntegrationBasic, feature_category: :integrations do
+RSpec.describe ::EE::API::Entities::IntegrationBasic, feature_category: :integrations do
   let_it_be(:integration) { create(:jenkins_integration) }
 
   let(:entity) do
-    API::Entities::ProjectIntegrationBasic.new(integration)
+    API::Entities::IntegrationBasic.new(integration)
   end
 
   subject(:representation) { entity.as_json }

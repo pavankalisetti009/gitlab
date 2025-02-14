@@ -96,19 +96,31 @@ RSpec.describe API::Integrations, feature_category: :integrations do
       integration = params[:integration]
 
       describe "PUT /projects/:id/#{endpoint}/#{integration.dasherize}" do
-        it_behaves_like 'set up an integration', endpoint: endpoint, integration: integration do
+        it_behaves_like 'set up an integration', endpoint: endpoint, integration: integration,
+          parent_resource_name: 'project' do
+          let(:parent_resource) { project }
+          let(:integrations_map) { project_integrations_map }
+
           it_behaves_like 'observes allow list settings', allowed_status: :ok, blocked_status: :bad_request
         end
       end
 
       describe "DELETE /projects/:id/#{endpoint}/#{integration.dasherize}" do
-        it_behaves_like 'disable an integration', endpoint: endpoint, integration: integration do
+        it_behaves_like 'disable an integration', endpoint: endpoint, integration: integration,
+          parent_resource_name: 'project' do
+          let(:parent_resource) { project }
+          let(:integrations_map) { project_integrations_map }
+
           it_behaves_like 'observes allow list settings', allowed_status: :no_content, blocked_status: :not_found
         end
       end
 
       describe "GET /projects/:id/#{endpoint}/#{integration.dasherize}" do
-        it_behaves_like 'get an integration settings', endpoint: endpoint, integration: integration do
+        it_behaves_like 'get an integration settings', endpoint: endpoint, integration: integration,
+          parent_resource_name: 'project' do
+          let(:parent_resource) { project }
+          let(:integrations_map) { project_integrations_map }
+
           it_behaves_like 'observes allow list settings', allowed_status: :ok, blocked_status: :not_found
         end
       end
