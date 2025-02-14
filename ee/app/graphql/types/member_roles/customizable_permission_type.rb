@@ -8,11 +8,6 @@ module Types
 
       include Gitlab::Utils::StrongMemoize
 
-      field :available_for,
-        type: [GraphQL::Types::String],
-        null: false,
-        description: 'Objects the permission is available for.'
-
       field :description,
         type: GraphQL::Types::String,
         null: true,
@@ -34,24 +29,6 @@ module Types
         description: 'Value of the permission.',
         method: :itself
 
-      field :enabled_for_group_access_levels,
-        type: [Types::AccessLevelEnum],
-        null: true,
-        description: 'Group access levels from which the permission is allowed.'
-
-      field :enabled_for_project_access_levels,
-        type: [Types::AccessLevelEnum],
-        null: true,
-        description: 'Project access levels from which the permission is allowed.'
-
-      def available_for
-        result = []
-        result << :project if MemberRole.all_customizable_project_permissions.include?(object)
-        result << :group if MemberRole.all_customizable_group_permissions.include?(object)
-
-        result
-      end
-
       def description
         _(permission[:description])
       end
@@ -62,14 +39,6 @@ module Types
 
       def requirements
         permission[:requirements].presence&.map(&:to_sym)
-      end
-
-      def enabled_for_group_access_levels
-        permission[:enabled_for_group_access_levels]
-      end
-
-      def enabled_for_project_access_levels
-        permission[:enabled_for_project_access_levels]
       end
 
       def permission

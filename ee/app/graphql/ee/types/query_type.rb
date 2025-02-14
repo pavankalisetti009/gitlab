@@ -152,10 +152,14 @@ module EE
           description: 'Instance level google cloud logging configurations.',
           resolver: ::Resolvers::AuditEvents::Instance::GoogleCloudLoggingConfigurationsResolver
         field :member_role_permissions,
-          ::Types::MemberRoles::CustomizablePermissionType.connection_type,
+          ::Types::Members::CustomizableStandardPermissionType.connection_type,
           null: true,
-          description: 'List of all customizable permissions.',
+          description: 'List of all standard customizable permissions.',
           experiment: { milestone: '16.4' }
+        field :admin_member_role_permissions,
+          ::Types::Members::CustomizableAdminPermissionType.connection_type,
+          description: 'List of all admin customizable permissions.',
+          experiment: { milestone: '17.9' }
         field :member_role, ::Types::MemberRoles::MemberRoleType,
           null: true, description: 'Finds a single custom role for the instance. Available only for self-managed.',
           resolver: ::Resolvers::MemberRoles::RolesResolver.single,
@@ -296,12 +300,18 @@ module EE
       end
 
       def member_role_permissions
-        MemberRole.all_customizable_permissions.keys.filter do |permission|
-          ::MemberRole.permission_enabled?(permission, current_user)
-        end
+        get_enabled_permissions(MemberRole.all_customizable_standard_permissions.keys)
+      end
+
+      def admin_member_role_permissions
+        get_enabled_permissions(MemberRole.all_customizable_admin_permission_keys)
       end
 
       private
+
+      def get_enabled_permissions(permission_keys)
+        permission_keys.select { |key| ::MemberRole.permission_enabled?(key, current_user) }
+      end
 
       def find_root_namespace(namespace_id)
         return current_user&.namespace unless namespace_id

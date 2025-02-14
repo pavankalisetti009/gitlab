@@ -16,13 +16,10 @@ RSpec.describe GitlabSchema.types['CustomizableAdminPermission'], feature_catego
 
   it 'has the expected fields' do
     expected_fields = %i[
-      available_for
       description
       name
       requirements
       value
-      enabled_for_group_access_levels
-      enabled_for_project_access_levels
     ]
 
     expect(described_class).to have_graphql_fields(*expected_fields)
