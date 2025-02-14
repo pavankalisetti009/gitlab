@@ -15,7 +15,7 @@ RSpec.shared_examples 'language detection' do
     'Javascript package-lock.json'   | { 'package-lock.json' => '' }             | %w[gemnasium-dependency_scanning]
     'Javascript yarn.lock'           | { 'yarn.lock' => '' }                     | %w[gemnasium-dependency_scanning]
     'Javascript npm-shrinkwrap.json' | { 'npm-shrinkwrap.json' => '' }           | %w[gemnasium-dependency_scanning]
-    'Multiple languages'             | { 'pom.xml' => '', 'package-lock.json' => '', 'Podfile.lock' => '' } | %w[dependency-scanning gemnasium-maven-dependency_scanning gemnasium-dependency_scanning]
+    'Multiple languages'             | { 'pom.xml' => '', 'package-lock.json' => '' } | %w[gemnasium-maven-dependency_scanning gemnasium-dependency_scanning]
     'NuGet'                          | { 'packages.lock.json' => '' }            | %w[gemnasium-dependency_scanning]
     'Conan'                          | { 'conan.lock' => '' }                    | %w[gemnasium-dependency_scanning]
     'PHP'                            | { 'composer.lock' => '' }                 | %w[gemnasium-dependency_scanning]
@@ -28,10 +28,6 @@ RSpec.shared_examples 'language detection' do
     'Ruby Gemfile.lock'              | { 'Gemfile.lock' => '' }                  | %w[gemnasium-dependency_scanning]
     'Ruby gems.locked'               | { 'gems.locked' => '' }                   | %w[gemnasium-dependency_scanning]
     'Scala'                          | { 'build.sbt' => '' }                     | %w[gemnasium-maven-dependency_scanning]
-    'Objective-C Cocoapods'          | { 'Podfile.lock' => '' }                  | %w[dependency-scanning]
-    'Conda'                          | { 'conda-lock.yml' => '' }                | %w[dependency-scanning]
-    'Rust Cargo'                     | { 'Cargo.lock' => '' }                    | %w[dependency-scanning]
-    'Swift'                          | { 'Package.resolved' => '' }              | %w[dependency-scanning]
   end
 
   with_them do
@@ -130,9 +126,6 @@ end
 RSpec.shared_examples 'predefined image suffix' do
   it 'sets the image suffix as expected' do
     pipeline.builds.each do |build|
-      # The new DS analyzer has a different image naming scheme
-      next if build.name == 'dependency-scanning'
-
       expect(build.image.name).to end_with('$DS_IMAGE_SUFFIX')
       expect(String(build.variables.to_hash['DS_IMAGE_SUFFIX'])).to eql(expected_image_suffix)
     end
@@ -186,7 +179,7 @@ RSpec.describe 'Dependency-Scanning.latest.gitlab-ci.yml', feature_category: :co
 
     context 'when project has Ultimate license' do
       let(:license) { build(:license, plan: License::ULTIMATE_PLAN) }
-      let(:files) { { 'conan.lock' => '', 'Gemfile.lock' => '', 'package.json' => '', 'pom.xml' => '', 'Pipfile' => '', 'Podfile.lock' => '' } }
+      let(:files) { { 'conan.lock' => '', 'Gemfile.lock' => '', 'package.json' => '', 'pom.xml' => '', 'Pipfile' => '' } }
 
       before do
         allow(License).to receive(:current).and_return(license)
@@ -230,14 +223,13 @@ RSpec.describe 'Dependency-Scanning.latest.gitlab-ci.yml', feature_category: :co
           using RSpec::Parameterized::TableSyntax
 
           where(:case_name, :excluded_analyzers, :included_build_names) do
-            'nothing'              | []                             | %w[dependency-scanning gemnasium-dependency_scanning gemnasium-maven-dependency_scanning gemnasium-python-dependency_scanning]
-            'gemnasium'            | %w[gemnasium]                  | %w[dependency-scanning gemnasium-maven-dependency_scanning gemnasium-python-dependency_scanning]
-            'gemnasium-maven'      | %w[gemnasium-maven]            | %w[dependency-scanning gemnasium-dependency_scanning gemnasium-python-dependency_scanning]
-            'gemnasium-python'     | %w[gemnasium-python]           | %w[dependency-scanning gemnasium-dependency_scanning gemnasium-maven-dependency_scanning]
-            'dependency-scanning'  | %w[dependency-scanning]        | %w[gemnasium-dependency_scanning gemnasium-maven-dependency_scanning]
-            'two'                  | %w[gemnasium]                  | %w[dependency-scanning gemnasium-maven-dependency_scanning gemnasium-python-dependency_scanning]
-            'three'                | %w[gemnasium-maven gemnasium]  | %w[dependency-scanning gemnasium-python-dependency_scanning]
-            'four'                 | %w[gemnasium-maven gemnasium]  | %w[dependency-scanning gemnasium-python-dependency_scanning]
+            'nothing'          | []                            | %w[gemnasium-dependency_scanning gemnasium-maven-dependency_scanning gemnasium-python-dependency_scanning]
+            'gemnasium'        | %w[gemnasium]                 | %w[gemnasium-maven-dependency_scanning gemnasium-python-dependency_scanning]
+            'gemnasium-maven'  | %w[gemnasium-maven]           | %w[gemnasium-dependency_scanning gemnasium-python-dependency_scanning]
+            'gemnasium-python' | %w[gemnasium-python]          | %w[gemnasium-dependency_scanning gemnasium-maven-dependency_scanning]
+            'two'              | %w[gemnasium]                 | %w[gemnasium-maven-dependency_scanning gemnasium-python-dependency_scanning]
+            'three'            | %w[gemnasium-maven gemnasium] | %w[gemnasium-python-dependency_scanning]
+            'four'             | %w[gemnasium-maven gemnasium] | %w[gemnasium-python-dependency_scanning]
           end
 
           with_them do
@@ -252,7 +244,7 @@ RSpec.describe 'Dependency-Scanning.latest.gitlab-ci.yml', feature_category: :co
 
           context 'when all analyzers excluded' do
             before do
-              create(:ci_variable, project: project, key: 'DS_EXCLUDED_ANALYZERS', value: 'gemnasium-maven, gemnasium-python, gemnasium, dependency-scanning')
+              create(:ci_variable, project: project, key: 'DS_EXCLUDED_ANALYZERS', value: 'gemnasium-maven, gemnasium-python, gemnasium')
             end
 
             it 'creates a pipeline excluding jobs from specified analyzers' do
@@ -260,40 +252,6 @@ RSpec.describe 'Dependency-Scanning.latest.gitlab-ci.yml', feature_category: :co
               expect(pipeline.errors.full_messages).to match_array([sanitize_message(Ci::Pipeline.rules_failure_message)])
             end
           end
-        end
-      end
-
-      context 'when DS_ENFORCE_NEW_ANALYZER is set to false (default)' do
-        let(:files) { { 'conan.lock' => '', 'Gemfile.lock' => '', 'package.json' => '', 'pom.xml' => '', 'Pipfile' => '', 'Podfile.lock' => '' } }
-
-        before do
-          create(:ci_variable, project: project, key: 'DS_ENFORCE_NEW_ANALYZER', value: 'false')
-        end
-
-        it "creates pipeline with all compatible analyzers, including the new DS analyzer" do
-          expect(build_names).to match_array(%w[dependency-scanning gemnasium-dependency_scanning gemnasium-maven-dependency_scanning gemnasium-python-dependency_scanning])
-        end
-
-        it "the DS analyzer only scans the newly supported files and ignore these already supported by Gemnasium" do
-          new_ds_build = pipeline.builds.find { |b| b.name == 'dependency-scanning' }
-          expect(String(new_ds_build.variables.to_hash['DS_EXCLUDED_PATHS'])).to eql('spec, test, tests, tmp, **/build.gradle, **/build.gradle.kts, **/build.sbt, **/pom.xml, **/requirements.txt, **/requirements.pip, **/Pipfile, **/Pipfile.lock, **/requires.txt, **/setup.py, **/poetry.lock, **/uv.lock, **/packages.lock.json, **/conan.lock, **/package-lock.json, **/npm-shrinkwrap.json, **/pnpm-lock.yaml, **/yarn.lock, **/composer.lock, **/Gemfile.lock, **/gems.locked, **/go.graph, **/ivy-report.xml, **/maven.graph.json, **/dependencies.lock, **/pipdeptree.json, **/pipenv.graph.json, **/dependencies-compile.dot')
-        end
-      end
-
-      context 'when DS_ENFORCE_NEW_ANALYZER is set to true' do
-        let(:files) { { 'conan.lock' => '', 'Gemfile.lock' => '', 'package.json' => '', 'pom.xml' => '', 'Pipfile' => '', 'Podfile.lock' => '' } }
-
-        before do
-          create(:ci_variable, project: project, key: 'DS_ENFORCE_NEW_ANALYZER', value: 'true')
-        end
-
-        it "creates pipeline with only the new DS analyzer" do
-          expect(build_names).to eq(['dependency-scanning'])
-        end
-
-        it "the DS analyzer scans all compatible files" do
-          build = pipeline.builds.first
-          expect(String(build.variables.to_hash['DS_EXCLUDED_PATHS'])).to eql('spec, test, tests, tmp')
         end
       end
 
