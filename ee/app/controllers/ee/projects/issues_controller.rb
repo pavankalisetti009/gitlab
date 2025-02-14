@@ -48,12 +48,12 @@ module EE
         before_action :redirect_if_test_case, only: [:show]
 
         before_action only: [:index, :show] do
-          push_force_frontend_feature_flag(:okrs_mvc, project&.okrs_mvc_feature_flag_enabled?)
+          push_force_frontend_feature_flag(:okrs_mvc, !!project&.okrs_mvc_feature_flag_enabled?)
           push_licensed_feature(:okrs, project)
         end
 
         before_action do
-          push_force_frontend_feature_flag(:work_item_epics, project&.group&.work_item_epics_enabled?)
+          push_force_frontend_feature_flag(:work_item_epics, !!project&.group&.work_item_epics_enabled?)
         end
 
         before_action only: %i[show index] do
