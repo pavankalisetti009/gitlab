@@ -157,7 +157,7 @@ RSpec.describe 'New project', :js, feature_category: :importers do
         fill_in 'personal_access_token', with: 'unauthorized-fake-token'
         click_button 'Authenticate'
 
-        expect(page).to have_text('Access denied to your GitHub account.')
+        expect(page).to have_text('Wrong credentials')
         expect(page).to have_current_path(new_import_github_path(ci_cd_only: true))
       end
     end
