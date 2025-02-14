@@ -39279,6 +39279,17 @@ Represents email participants widget.
 | <a id="workitemwidgetemailparticipantsemailparticipants"></a>`emailParticipants` | [`EmailParticipantTypeConnection`](#emailparticipanttypeconnection) | Collection of email participants associated with the work item. (see [Connections](#connections)) |
 | <a id="workitemwidgetemailparticipantstype"></a>`type` | [`WorkItemWidgetType`](#workitemwidgettype) | Widget type. |
 
+### `WorkItemWidgetErrorTracking`
+
+Represents the error tracking widget.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="workitemwidgeterrortrackingidentifier"></a>`identifier` | [`BigInt`](#bigint) | Error tracking issue id. |
+| <a id="workitemwidgeterrortrackingtype"></a>`type` | [`WorkItemWidgetType`](#workitemwidgettype) | Widget type. |
+
 ### `WorkItemWidgetHealthStatus`
 
 Represents a health status widget.
@@ -43396,6 +43407,7 @@ Type of a work item widget.
 | <a id="workitemwidgettypedesigns"></a>`DESIGNS` | Designs widget. |
 | <a id="workitemwidgettypedevelopment"></a>`DEVELOPMENT` | Development widget. |
 | <a id="workitemwidgettypeemail_participants"></a>`EMAIL_PARTICIPANTS` | Email Participants widget. |
+| <a id="workitemwidgettypeerror_tracking"></a>`ERROR_TRACKING` | Error Tracking widget. |
 | <a id="workitemwidgettypehealth_status"></a>`HEALTH_STATUS` | Health Status widget. |
 | <a id="workitemwidgettypehierarchy"></a>`HIERARCHY` | Hierarchy widget. |
 | <a id="workitemwidgettypeiteration"></a>`ITERATION` | Iteration widget. |
@@ -45791,6 +45803,7 @@ Implementations:
 - [`WorkItemWidgetDesigns`](#workitemwidgetdesigns)
 - [`WorkItemWidgetDevelopment`](#workitemwidgetdevelopment)
 - [`WorkItemWidgetEmailParticipants`](#workitemwidgetemailparticipants)
+- [`WorkItemWidgetErrorTracking`](#workitemwidgeterrortracking)
 - [`WorkItemWidgetHealthStatus`](#workitemwidgethealthstatus)
 - [`WorkItemWidgetHierarchy`](#workitemwidgethierarchy)
 - [`WorkItemWidgetIteration`](#workitemwidgetiteration)
