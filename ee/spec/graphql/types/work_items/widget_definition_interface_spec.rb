@@ -4,12 +4,19 @@ require 'spec_helper'
 
 RSpec.describe Types::WorkItems::WidgetDefinitionInterface, feature_category: :team_planning do
   describe '.resolve_type' do
+    using RSpec::Parameterized::TableSyntax
+
+    where(:widget_type, :widget_definition_type_class) do
+      'labels'        | Types::WorkItems::WidgetDefinitions::LabelsType
+      'custom_fields' | Types::WorkItems::WidgetDefinitions::CustomFieldsType
+    end
+
     subject { described_class.resolve_type(object, {}) }
 
-    context 'for labels widget' do
-      let(:object) { build(:widget_definition, widget_type: 'labels') }
+    let(:object) { build(:widget_definition, widget_type: widget_type) }
 
-      it { is_expected.to eq(Types::WorkItems::WidgetDefinitions::LabelsType) }
+    with_them do
+      it { is_expected.to eq(widget_definition_type_class) }
     end
   end
 end
