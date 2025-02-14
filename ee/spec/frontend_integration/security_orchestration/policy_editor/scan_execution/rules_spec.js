@@ -7,7 +7,7 @@ import ScheduleRuleComponent from 'ee/security_orchestration/components/policy_e
 import { SCAN_EXECUTION_SCHEDULE_RULE } from 'ee/security_orchestration/components/policy_editor/scan_execution/constants';
 import { DEFAULT_PROVIDE } from '../mocks/mocks';
 import { verify } from '../utils';
-import { mockPipelineScanExecutionManifest, mockScheduleScanExecutionManifest } from './mocks';
+import { mockScheduleScanExecutionManifest, mockScanExecutionManifest } from './mocks';
 
 describe('Scan execution policy rules', () => {
   let wrapper;
@@ -55,7 +55,7 @@ describe('Scan execution policy rules', () => {
       };
 
       await verify({
-        manifest: mockPipelineScanExecutionManifest,
+        manifest: mockScanExecutionManifest,
         verifyRuleMode,
         wrapper,
       });

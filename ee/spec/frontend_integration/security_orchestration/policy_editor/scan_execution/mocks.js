@@ -1,5 +1,16 @@
-const mockScanExecutionManifest = `type: scan_execution_policy
-name: ''
+export const mockScanExecutionManifest = `scan_execution_policy:
+- name: ''
+  description: ''
+  enabled: true
+  rules:
+  - type: pipeline
+    branches:
+      - '*'
+  actions:
+    - scan: secret_detection
+`;
+
+const mockScanExecutionManifestParsed = `name: ''
 description: ''
 enabled: true
 rules:
@@ -8,10 +19,10 @@ rules:
       - '*'
 actions:
   - scan: secret_detection
+type: scan_execution_policy
 `;
 
-export const mockDastActionScanExecutionManifest = `type: scan_execution_policy
-name: ''
+export const mockDastActionScanExecutionManifest = `name: ''
 description: ''
 enabled: true
 rules:
@@ -22,10 +33,10 @@ actions:
   - scan: dast
     site_profile: ''
     scanner_profile: ''
+type: scan_execution_policy
 `;
 
-export const mockGroupDastActionScanExecutionManifest = `type: scan_execution_policy
-name: ''
+export const mockGroupDastActionScanExecutionManifest = `name: ''
 description: ''
 enabled: true
 policy_scope:
@@ -39,10 +50,10 @@ actions:
   - scan: dast
     site_profile: ''
     scanner_profile: ''
+type: scan_execution_policy
 `;
 
-export const mockActionsVariablesScanExecutionManifest = `type: scan_execution_policy
-name: ''
+export const mockActionsVariablesScanExecutionManifest = `name: ''
 description: ''
 enabled: true
 rules:
@@ -53,25 +64,15 @@ actions:
   - scan: secret_detection
     variables:
       '': ''
+type: scan_execution_policy
 `;
 
-export const createScanActionScanExecutionManifest = (scanType) =>
-  mockScanExecutionManifest.replace('scan: secret_detection', `scan: ${scanType}`);
+export const createScanActionScanExecutionManifest = (scanType, parsed = false) => {
+  const parser = parsed ? mockScanExecutionManifestParsed : mockScanExecutionManifest;
+  return parser.replace('scan: secret_detection', `scan: ${scanType}`);
+};
 
-export const mockPipelineScanExecutionManifest = `type: scan_execution_policy
-name: ''
-description: ''
-enabled: true
-rules:
-  - type: pipeline
-    branches:
-      - '*'
-actions:
-  - scan: secret_detection
-`;
-
-export const mockScheduleScanExecutionManifest = `type: scan_execution_policy
-name: ''
+export const mockScheduleScanExecutionManifest = `name: ''
 description: ''
 enabled: true
 rules:
@@ -80,4 +81,5 @@ rules:
     cadence: 0 0 * * *
 actions:
   - scan: secret_detection
+type: scan_execution_policy
 `;

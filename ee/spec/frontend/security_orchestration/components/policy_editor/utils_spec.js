@@ -40,7 +40,7 @@ import { gqClient } from 'ee/security_orchestration/utils';
 import createMergeRequestMutation from '~/graphql_shared/mutations/create_merge_request.mutation.graphql';
 import { visitUrl } from '~/lib/utils/url_utility';
 import {
-  mockDastScanExecutionManifest,
+  mockDastScanExecutionManifestWithoutType,
   mockDastScanExecutionObject,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_execution_policy_data';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
@@ -581,7 +581,7 @@ describe('mapBranchesToExceptions', () => {
     const { urlParameter } = policyType;
     it('returns policy object as yaml', () => {
       expect(policyToYaml(mockDastScanExecutionObject, urlParameter)).toBe(
-        mockDastScanExecutionManifest,
+        mockDastScanExecutionManifestWithoutType,
       );
     });
 

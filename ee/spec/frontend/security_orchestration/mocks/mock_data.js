@@ -26,6 +26,15 @@ export const unsupportedManifestObject = {
   actions: [{ scan: 'sast', id: actionId }],
 };
 
+export const unsupportedManifestObjectScanExecution = {
+  name: 'This policy has an unsupported attribute',
+  enabled: false,
+  UNSUPPORTED: 'ATTRIBUTE',
+  rules: [{ type: 'pipeline', branches: ['main'], id: ruleId }],
+  actions: [{ scan: 'sast', id: actionId }],
+  type: 'scan_execution_policy',
+};
+
 export const invalidPolicyRules = {
   name: 'This policy has invalid properties',
   enabled: true,
