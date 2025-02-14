@@ -33558,6 +33558,9 @@ msgstr ""
 msgid "Learn more about groups."
 msgstr ""
 
+msgid "Learn more about importing GitLab projects"
+msgstr ""
+
 msgid "Learn more about issues."
 msgstr ""
 
@@ -63288,6 +63291,9 @@ msgstr ""
 msgid "Versions"
 msgstr ""
 
+msgid "View %{project} project"
+msgstr ""
+
 msgid "View File Metadata"
 msgstr ""
 
@@ -63328,6 +63334,12 @@ msgid "View card matches"
 msgstr ""
 
 msgid "View changed file"
+msgstr ""
+
+msgid "View commit %{commit_id}"
+msgstr ""
+
+msgid "View commits for tag %{tag}"
 msgstr ""
 
 msgid "View dependency details for your project"
