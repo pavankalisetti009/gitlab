@@ -61,9 +61,7 @@ module Sbom
         end
       end
 
-      if Feature.enabled?(:mark_resolved_vulnerabilities_with_sbom_scans, project)
-        mark_resolved_vulnerabilities(ingested_ids_by_report_type)
-      end
+      mark_resolved_vulnerabilities(ingested_ids_by_report_type)
 
       track_internal_event(
         'cvs_on_sbom_change',
