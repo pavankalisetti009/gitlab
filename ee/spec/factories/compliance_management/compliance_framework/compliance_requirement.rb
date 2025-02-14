@@ -6,13 +6,5 @@ FactoryBot.define do
     namespace_id { framework.namespace_id }
     name { 'Merge Request Controls' }
     description { 'Requirement for adding checks related to merge request controls' }
-    requirement_type { 'internal' }
-    control_expression do
-      {
-        operator: "=",
-        field: "minimum_approvals_required",
-        value: 2
-      }.to_json
-    end
   end
 end

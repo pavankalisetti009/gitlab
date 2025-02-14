@@ -67,13 +67,10 @@ describe('Edit Framework Form', () => {
     {
       name: 'SOC2',
       description: 'Controls for SOC2',
-      controlExpression: null,
     },
     {
       name: 'GitLab',
       description: 'Controls used by GitLab',
-      controlExpression:
-        '{"operator":"AND","conditions":[{"id":"minimum_approvals_required"},{"id":"scanner_sast_running"}]}',
     },
   ];
 
@@ -543,7 +540,6 @@ describe('Edit Framework Form', () => {
               params: {
                 name: requirement.name,
                 description: requirement.description,
-                controlExpression: requirement.controlExpression,
               },
             },
           }),
@@ -643,7 +639,6 @@ describe('Edit Framework Form', () => {
             params: {
               name: updatedRequirement.name,
               description: updatedRequirement.description,
-              controlExpression: updatedRequirement.controlExpression,
             },
           },
         }),
@@ -706,8 +701,6 @@ describe('Edit Framework Form', () => {
               id: 'gid://gitlab/ComplianceManagement::Requirement/2',
               name: 'GitLab',
               description: 'Controls used by GitLab',
-              controlExpression:
-                '{"operator":"AND","conditions":[{"id":"minimum_approvals_required"},{"id":"scanner_sast_running"}]}',
               __typename: 'ComplianceManagement::Requirement',
             },
             errors: [],
@@ -752,16 +745,13 @@ describe('Edit Framework Form', () => {
 
         await nextTick();
 
-        expect(requirementsSection.props('requirements')).toEqual([
-          requirementsData[0],
-          requirementsData[2],
-        ]);
+        expect(requirementsSection.props('requirements')).toEqual([requirementsData[0]]);
 
         clickToastAction();
 
         expect(hideMock).toHaveBeenCalledTimes(1);
 
-        expect(requirementsSection.props('requirements')).toMatchObject(requirementsData);
+        expect(requirementsSection.props('requirements')).toEqual(requirementsData);
       });
     });
 
@@ -816,7 +806,6 @@ describe('Edit Framework Form', () => {
               params: {
                 name: mockRequirements[1].name,
                 description: mockRequirements[1].description,
-                controlExpression: mockRequirements[1].controlExpression,
               },
             },
           }),

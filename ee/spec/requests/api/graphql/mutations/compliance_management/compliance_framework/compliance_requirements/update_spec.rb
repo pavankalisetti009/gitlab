@@ -8,7 +8,7 @@ RSpec.describe 'Update a compliance requirement', feature_category: :compliance_
   let_it_be(:namespace) { create(:group) }
   let_it_be(:framework) { create(:compliance_framework, namespace: namespace) }
   let_it_be(:requirement) do
-    create(:compliance_requirement, framework: framework, control_expression: old_control_expression)
+    create(:compliance_requirement, framework: framework)
   end
 
   let_it_be(:owner) { create(:user) }
@@ -24,8 +24,7 @@ RSpec.describe 'Update a compliance requirement', feature_category: :compliance_
     {
       params: {
         name: 'New Name',
-        description: 'New Description',
-        control_expression: control_expression
+        description: 'New Description'
       }
     }
   end
@@ -42,9 +41,6 @@ RSpec.describe 'Update a compliance requirement', feature_category: :compliance_
                                                              .and change {
                                                                requirement.reload.description
                                                              }.to('New Description')
-                                                              .and change {
-                                                                requirement.reload.control_expression
-                                                              }.to(control_expression)
     end
 
     it 'returns the updated requirement', :aggregate_failures do
@@ -52,7 +48,6 @@ RSpec.describe 'Update a compliance requirement', feature_category: :compliance_
 
       expect(mutation_response['requirement']['name']).to eq 'New Name'
       expect(mutation_response['requirement']['description']).to eq 'New Description'
-      expect(mutation_response['requirement']['controlExpression']).to eq control_expression
     end
 
     it 'returns an empty array of errors' do
@@ -138,21 +133,5 @@ RSpec.describe 'Update a compliance requirement', feature_category: :compliance_
 
       it_behaves_like 'a mutation that returns unauthorized error'
     end
-  end
-
-  def control_expression
-    {
-      operator: "=",
-      field: "minimum_approvals_required",
-      value: 2
-    }.to_json
-  end
-
-  def old_control_expression
-    {
-      operator: "=",
-      field: "minimum_approvals_required",
-      value: 4
-    }.to_json
   end
 end

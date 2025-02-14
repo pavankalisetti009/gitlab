@@ -20,14 +20,6 @@ module Types
         null: false,
         description: 'Description of the compliance requirement.'
 
-      field :control_expression, GraphQL::Types::String,
-        null: true,
-        description: 'Control expression of the compliance requirement.'
-
-      field :requirement_type, GraphQL::Types::String,
-        null: false,
-        description: 'Type of the compliance requirement.'
-
       field :compliance_requirements_controls,
         ::Types::ComplianceManagement::ComplianceRequirementsControlType.connection_type,
         null: true,
