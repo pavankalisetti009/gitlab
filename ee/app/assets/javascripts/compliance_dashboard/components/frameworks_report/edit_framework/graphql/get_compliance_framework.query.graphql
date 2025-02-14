@@ -42,7 +42,6 @@ query getComplianceFrameworkWithPolicies(
             id
             name
             description
-            controlExpression
           }
         }
         projects {

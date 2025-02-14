@@ -4,7 +4,6 @@ mutation updateComplianceRequirement($input: UpdateComplianceRequirementInput!) 
       id
       name
       description
-      controlExpression
     }
     errors
   }

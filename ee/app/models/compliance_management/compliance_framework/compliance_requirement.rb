@@ -5,12 +5,10 @@ module ComplianceManagement
     class ComplianceRequirement < ApplicationRecord
       self.table_name = 'compliance_requirements'
 
+      ignore_column :control_expression, remove_with: '17.11', remove_after: '2025-03-22'
+      ignore_column :requirement_type, remove_with: '17.11', remove_after: '2025-03-22'
+
       MAX_COMPLIANCE_REQUIREMENTS_PER_FRAMEWORK_COUNT = 50
-
-      CONTROL_EXPRESSION_SCHEMA_PATH = 'ee/app/validators/json_schemas/compliance_requirement_expression.json'
-      CONTROL_EXPRESSION_SCHEMA = JSONSchemer.schema(Rails.root.join(CONTROL_EXPRESSION_SCHEMA_PATH))
-
-      enum requirement_type: { internal: 0 }
 
       belongs_to :framework, class_name: 'ComplianceManagement::Framework', optional: false
       belongs_to :namespace, optional: false
@@ -19,8 +17,6 @@ module ComplianceManagement
       validates :name, uniqueness: { scope: :framework_id }
       validate :requirements_count_per_framework
       validates :name, :description, length: { maximum: 255 }
-      validates :control_expression, length: { maximum: 2048 }
-      validate :validate_internal_expression
 
       has_many :security_policy_requirements,
         class_name: 'ComplianceManagement::ComplianceFramework::SecurityPolicyRequirement'
@@ -43,20 +39,6 @@ module ComplianceManagement
 
         errors.add(:framework, format(_("cannot have more than %{count} requirements"),
           count: MAX_COMPLIANCE_REQUIREMENTS_PER_FRAMEWORK_COUNT))
-      end
-
-      def validate_internal_expression
-        return unless requirement_type == 'internal'
-        return if control_expression.blank?
-
-        expression_schema_errors = CONTROL_EXPRESSION_SCHEMA.validate(Gitlab::Json.parse(control_expression)).to_a
-        return if expression_schema_errors.blank?
-
-        expression_schema_errors.each do |error|
-          errors.add(:expression, JSONSchemer::Errors.pretty(error))
-        end
-      rescue JSON::ParserError
-        errors.add(:expression, _('should be a valid json object.'))
       end
     end
   end

@@ -9,8 +9,6 @@ RSpec.describe GitlabSchema.types['ComplianceRequirement'], feature_category: :c
     id
     name
     description
-    controlExpression
-    requirementType
     complianceRequirementsControls
   ]
 

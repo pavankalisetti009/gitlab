@@ -7,7 +7,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
   let_it_be_with_refind(:namespace) { create(:group) }
   let_it_be_with_refind(:framework) { create(:compliance_framework, namespace: namespace) }
   let_it_be_with_refind(:requirement) do
-    create(:compliance_requirement, framework: framework, control_expression: old_control_expression)
+    create(:compliance_requirement, framework: framework)
   end
 
   let_it_be(:owner) { create(:user, owner_of: namespace) }
@@ -16,7 +16,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
   let_it_be(:guest) { create(:user) }
   let_it_be(:non_member) { create(:user) }
 
-  let(:params) { { description: 'New Description', name: 'New Name', control_expression: control_expression } }
+  let(:params) { { description: 'New Description', name: 'New Name' } }
 
   before_all do
     namespace.add_maintainer(maintainer)
@@ -95,9 +95,6 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
                                                                           .and change {
                                                                             requirement.reload.description
                                                                           }.to('New Description')
-                                                                           .and change {
-                                                                             requirement.reload.control_expression
-                                                                           }.to(control_expression)
         end
 
         it 'is successful' do
@@ -110,19 +107,17 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
         it 'audits the changes' do
           old_values = {
             name: requirement.name,
-            description: requirement.description,
-            control_expression: requirement.control_expression
+            description: requirement.description
           }
 
           new_values = {
             name: 'New Name',
-            description: 'New Description',
-            control_expression: control_expression
+            description: 'New Description'
           }
 
           service.execute
 
-          expect(::Gitlab::Audit::Auditor).to have_received(:audit).exactly(3).times
+          expect(::Gitlab::Audit::Auditor).to have_received(:audit).exactly(2).times
 
           old_values.each do |attribute, old_value|
             expect(::Gitlab::Audit::Auditor).to have_received(:audit).with(
@@ -137,7 +132,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
       end
 
       context 'with invalid params' do
-        let(:params) { { name: '', control_expression: 'invalid_json' } }
+        let(:params) { { name: '' } }
 
         it_behaves_like 'unsuccessful update', 'Failed to update compliance requirement'
 
@@ -145,7 +140,6 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
           result = service.execute
 
           expect(result.payload.full_messages).to include("Name can't be blank")
-          expect(result.payload.full_messages).to include("Expression should be a valid json object.")
         end
       end
     end
@@ -173,21 +167,5 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
 
       it_behaves_like 'unsuccessful update', 'Not permitted to update requirement'
     end
-  end
-
-  def old_control_expression
-    {
-      operator: "=",
-      field: "minimum_approvals_required",
-      value: 2
-    }.to_json
-  end
-
-  def control_expression
-    {
-      operator: "=",
-      field: "minimum_approvals_required",
-      value: 4
-    }.to_json
   end
 end

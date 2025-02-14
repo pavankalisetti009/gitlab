@@ -9,7 +9,7 @@ RSpec.describe Mutations::ComplianceManagement::ComplianceFramework::ComplianceR
   let_it_be(:namespace) { create(:group) }
   let_it_be(:framework) { create(:compliance_framework, namespace: namespace) }
   let_it_be(:requirement) do
-    create(:compliance_requirement, framework: framework, control_expression: old_control_expression)
+    create(:compliance_requirement, framework: framework)
   end
 
   let_it_be(:owner) { create(:user) }
@@ -21,8 +21,7 @@ RSpec.describe Mutations::ComplianceManagement::ComplianceFramework::ComplianceR
   let(:params) do
     {
       name: 'New Name',
-      description: 'New Description',
-      control_expression: control_expression
+      description: 'New Description'
     }
   end
 
@@ -49,9 +48,6 @@ RSpec.describe Mutations::ComplianceManagement::ComplianceFramework::ComplianceR
                                                                  .and change {
                                                                    requirement.reload.description
                                                                  }.to('New Description')
-                                                                  .and change {
-                                                                    requirement.reload.control_expression
-                                                                  }.to(control_expression)
         end
 
         it 'returns the updated object' do
@@ -59,7 +55,6 @@ RSpec.describe Mutations::ComplianceManagement::ComplianceFramework::ComplianceR
 
           expect(response.name).to eq('New Name')
           expect(response.description).to eq('New Description')
-          expect(response.control_expression).to eq(control_expression)
         end
 
         it 'returns no errors' do
@@ -121,21 +116,5 @@ RSpec.describe Mutations::ComplianceManagement::ComplianceFramework::ComplianceR
     it 'raises an error' do
       expect { mutate }.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)
     end
-  end
-
-  def control_expression
-    {
-      operator: "=",
-      field: "minimum_approvals_required",
-      value: 2
-    }.to_json
-  end
-
-  def old_control_expression
-    {
-      operator: "=",
-      field: "minimum_approvals_required",
-      value: 4
-    }.to_json
   end
 end

@@ -93,7 +93,7 @@ describe('Requirements section', () => {
     it.each`
       idx  | expectedRequirement    | expectedControls
       ${0} | ${mockRequirements[0]} | ${[]}
-      ${1} | ${mockRequirements[1]} | ${[mockRequirementControls[1], mockRequirementControls[0]]}
+      ${1} | ${mockRequirements[1]} | ${[]}
     `(
       'passes the correct items prop to the table at index $idx',
       async ({ idx, expectedRequirement, expectedControls }) => {
@@ -109,7 +109,7 @@ describe('Requirements section', () => {
     it.each`
       idx  | name        | description                  | controls
       ${0} | ${'SOC2'}   | ${'Controls for SOC2'}       | ${[]}
-      ${1} | ${'GitLab'} | ${'Controls used by GitLab'} | ${['Minimum approvals required', 'SAST Running']}
+      ${1} | ${'GitLab'} | ${'Controls used by GitLab'} | ${[]}
     `('has the correct data for row $idx', ({ idx, name, description, controls }) => {
       const frameworkRequirements = findTableRowData(idx);
 

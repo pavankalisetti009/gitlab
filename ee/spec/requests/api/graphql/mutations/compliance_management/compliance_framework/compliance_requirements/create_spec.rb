@@ -15,8 +15,7 @@ RSpec.describe 'Create a Compliance Requirement', feature_category: :compliance_
       compliance_framework_id: framework.to_gid,
       params: {
         name: 'Custom framework requirement',
-        description: 'Example Description',
-        control_expression: control_expression
+        description: 'Example Description'
       }
     )
   end
@@ -37,7 +36,6 @@ RSpec.describe 'Create a Compliance Requirement', feature_category: :compliance_
 
       expect(mutation_response['requirement']['name']).to eq 'Custom framework requirement'
       expect(mutation_response['requirement']['description']).to eq 'Example Description'
-      expect(mutation_response['requirement']['controlExpression']).to eq control_expression
     end
   end
 
@@ -76,13 +74,5 @@ RSpec.describe 'Create a Compliance Requirement', feature_category: :compliance_
         it_behaves_like 'a mutation that returns a top-level access error'
       end
     end
-  end
-
-  def control_expression
-    {
-      operator: "=",
-      field: "minimum_approvals_required",
-      value: 2
-    }.to_json
   end
 end
