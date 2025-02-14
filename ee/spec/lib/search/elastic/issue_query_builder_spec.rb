@@ -22,7 +22,6 @@ RSpec.describe ::Search::Elastic::IssueQueryBuilder, :elastic_helpers, feature_c
 
   it 'contains all expected filters' do
     assert_names_in_query(build, with: %w[
-      issue:multi_match:or:search_terms
       issue:multi_match:and:search_terms
       issue:multi_match_phrase:search_terms
       filters:not_hidden
@@ -47,9 +46,10 @@ RSpec.describe ::Search::Elastic::IssueQueryBuilder, :elastic_helpers, feature_c
     context 'when query is text' do
       it 'returns the expected query' do
         assert_names_in_query(build,
-          with: %w[issue:multi_match:or:search_terms
+          with: %w[
             issue:multi_match:and:search_terms
-            issue:multi_match_phrase:search_terms],
+            issue:multi_match_phrase:search_terms
+          ],
           without: %w[issue:match:search_terms])
       end
 
@@ -59,9 +59,10 @@ RSpec.describe ::Search::Elastic::IssueQueryBuilder, :elastic_helpers, feature_c
         it 'returns the expected query' do
           assert_names_in_query(build,
             with: %w[issue:match:search_terms],
-            without: %w[issue:multi_match:or:search_terms
+            without: %w[
               issue:multi_match:and:search_terms
-              issue:multi_match_phrase:search_terms])
+              issue:multi_match_phrase:search_terms
+            ])
         end
       end
 
@@ -73,9 +74,10 @@ RSpec.describe ::Search::Elastic::IssueQueryBuilder, :elastic_helpers, feature_c
         it 'returns the expected query' do
           assert_names_in_query(build,
             with: %w[issue:match:search_terms],
-            without: %w[issue:multi_match:or:search_terms
+            without: %w[
               issue:multi_match:and:search_terms
-              issue:multi_match_phrase:search_terms])
+              issue:multi_match_phrase:search_terms
+            ])
         end
       end
     end

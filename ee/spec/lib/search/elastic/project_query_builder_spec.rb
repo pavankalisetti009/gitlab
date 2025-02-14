@@ -37,7 +37,6 @@ RSpec.describe ::Search::Elastic::ProjectQueryBuilder, :elastic_helpers, feature
     it 'contains all expected filters' do
       assert_names_in_query(build,
         with: %w[project:multi_match_phrase:search_terms
-          project:multi_match:or:search_terms
           project:multi_match:and:search_terms
           filters:doc:is_a:project
           filters:non_archived],
@@ -53,7 +52,6 @@ RSpec.describe ::Search::Elastic::ProjectQueryBuilder, :elastic_helpers, feature
             filters:doc:is_a:project
             filters:non_archived],
           without: %w[project:multi_match_phrase:search_terms
-            project:multi_match:or:search_terms
             project:multi_match:and:search_terms])
       end
     end
@@ -69,7 +67,6 @@ RSpec.describe ::Search::Elastic::ProjectQueryBuilder, :elastic_helpers, feature
             filters:doc:is_a:project
             filters:non_archived],
           without: %w[project:multi_match_phrase:search_terms
-            project:multi_match:or:search_terms
             project:multi_match:and:search_terms])
       end
     end

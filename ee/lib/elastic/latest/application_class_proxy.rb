@@ -160,7 +160,6 @@ module Elastic
             _name: context.name(:count, es_type, :using_match_queries),
             minimum_should_match: 1,
             should: [
-              build_multi_match_query(options, :or),
               build_multi_match_query(options, :and),
               build_match_phrase_query(options)
             ]
@@ -168,7 +167,7 @@ module Elastic
         elsif options[:count_only]
           filter << simple_query_string
         elsif use_match_queries
-          should.push(build_multi_match_query(options, :or), build_multi_match_query(options, :and),
+          should.push(build_multi_match_query(options, :and),
             build_match_phrase_query(options))
         else
           must << simple_query_string

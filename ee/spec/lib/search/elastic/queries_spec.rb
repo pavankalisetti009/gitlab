@@ -183,9 +183,6 @@ RSpec.describe ::Search::Elastic::Queries, feature_category: :global_search do
       it 'applies custom analyzer fields to multi_match_query' do
         expected_must = [{ bool: {
           should: [
-            { multi_match: { _name: 'my_type:multi_match:or:search_terms',
-                             fields: %w[iid^3 title^2 description title.smartcn description.smartcn],
-                             query: 'foo bar', operator: :or, lenient: true } },
             { multi_match: { _name: 'my_type:multi_match:and:search_terms',
                              fields: %w[iid^3 title^2 description title.smartcn description.smartcn],
                              query: 'foo bar', operator: :and, lenient: true } },
@@ -211,9 +208,6 @@ RSpec.describe ::Search::Elastic::Queries, feature_category: :global_search do
       it 'returns a by_multi_match_query query as a should and adds doc type as a filter' do
         expected_must = [{ bool: {
           should: [
-            { multi_match: { _name: 'my_type:multi_match:or:search_terms',
-                             fields: %w[iid^3 title^2 description],
-                             query: 'foo bar', operator: :or, lenient: true } },
             { multi_match: { _name: 'my_type:multi_match:and:search_terms',
                              fields: %w[iid^3 title^2 description],
                              query: 'foo bar', operator: :and, lenient: true } },
@@ -256,9 +250,6 @@ RSpec.describe ::Search::Elastic::Queries, feature_category: :global_search do
         expected_should = [
           { bool: {
             should: [
-              { multi_match: { _name: 'my_type:multi_match:or:search_terms',
-                               fields: %w[iid^3 title^2 description],
-                               query: 'foo bar', operator: :or, lenient: true } },
               { multi_match: { _name: 'my_type:multi_match:and:search_terms',
                                fields: %w[iid^3 title^2 description],
                                query: 'foo bar', operator: :and, lenient: true } },
@@ -292,9 +283,6 @@ RSpec.describe ::Search::Elastic::Queries, feature_category: :global_search do
           { term: { type: { _name: 'doc:is_a:my_type', value: 'my_type' } } },
           { bool: {
             should: [
-              { multi_match: { _name: 'my_type:multi_match:or:search_terms',
-                               fields: %w[iid title description],
-                               query: 'foo bar', operator: :or, lenient: true } },
               { multi_match: { _name: 'my_type:multi_match:and:search_terms',
                                fields: %w[iid title description],
                                query: 'foo bar', operator: :and, lenient: true } },

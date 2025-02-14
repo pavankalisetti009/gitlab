@@ -25,7 +25,6 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
 
   it 'contains all expected filters' do
     assert_names_in_query(build, with: %w[
-      work_item:multi_match:or:search_terms
       work_item:multi_match:and:search_terms
       work_item:multi_match_phrase:search_terms
       filters:permissions:global
@@ -52,8 +51,7 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
     context 'when query is text' do
       it 'returns the expected query' do
         assert_names_in_query(build,
-          with: %w[work_item:multi_match:or:search_terms
-            work_item:multi_match:and:search_terms
+          with: %w[work_item:multi_match:and:search_terms
             work_item:multi_match_phrase:search_terms],
           without: %w[work_item:match:search_terms])
       end
@@ -64,8 +62,7 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
         it 'returns the expected query' do
           assert_names_in_query(build,
             with: %w[work_item:match:search_terms],
-            without: %w[work_item:multi_match:or:search_terms
-              work_item:multi_match:and:search_terms
+            without: %w[work_item:multi_match:and:search_terms
               work_item:multi_match_phrase:search_terms])
         end
       end
@@ -78,8 +75,7 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
         it 'returns the expected query' do
           assert_names_in_query(build,
             with: %w[work_item:match:search_terms],
-            without: %w[work_item:multi_match:or:search_terms
-              work_item:multi_match:and:search_terms
+            without: %w[work_item:multi_match:and:search_terms
               work_item:multi_match_phrase:search_terms])
         end
       end
@@ -269,8 +265,7 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
 
       it 'returns the expected query' do
         assert_names_in_query(build,
-          with: %w[work_item:multi_match:or:search_terms
-            work_item:multi_match:and:search_terms
+          with: %w[work_item:multi_match:and:search_terms
             work_item:multi_match_phrase:search_terms],
           without: %w[work_item:match:search_terms])
         assert_fields_in_query(build, with: %w[title])
