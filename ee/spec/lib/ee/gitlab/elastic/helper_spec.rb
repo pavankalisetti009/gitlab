@@ -293,23 +293,35 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
       end
     end
 
-    context 'when there is an alias' do
-      include_context 'with an existing index and alias'
+    context 'when the index exists' do
+      before do
+        allow(helper).to receive(:index_exists?).with(index_name: 'test-name').and_return(true)
+      end
 
       it 'raises an error' do
-        expect { helper.create_empty_index }.to raise_error(/Index under '.+' already exists/)
+        options = { index_name: 'test-name' }
+        expect { helper.create_empty_index(options: options) }.to raise_error(/Index under '.+' already exists/)
       end
 
       it 'does not raise error with skip_if_exists option' do
-        expect { helper.create_empty_index(options: { skip_if_exists: true }) }.not_to raise_error
+        options = { index_name: 'test-name', skip_if_exists: true }
+        expect { helper.create_empty_index(options: options) }.not_to raise_error
       end
     end
 
-    context 'when there is a legacy index' do
-      include_context 'with a legacy index'
+    context 'when the index does not exist, but the alias exists' do
+      before do
+        allow(helper).to receive(:index_exists?).and_return(false)
+        allow(helper).to receive(:index_exists?).with(index_name: helper.target_name).and_return(true)
+      end
 
       it 'raises an error' do
         expect { helper.create_empty_index }.to raise_error(/Index or alias under '.+' already exists/)
+      end
+
+      it 'does not raise error with skip_if_exists option' do
+        options = { index_name: 'test-name', skip_if_exists: true }
+        expect { helper.create_empty_index(options: options) }.not_to raise_error
       end
     end
   end
