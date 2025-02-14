@@ -309,30 +309,8 @@ describe('EE WorkItemAttributesWrapper component', () => {
   });
 
   describe('custom fields widget', () => {
-    it.each`
-      description                                                    | customFieldsFeature | hasWidgetData | exists
-      ${'renders when widget flag is enabled and has data'}          | ${true}             | ${true}       | ${true}
-      ${'does not render when flag is disabled'}                     | ${false}            | ${true}       | ${false}
-      ${'does not render when flag is enabled but there is no data'} | ${true}             | ${false}      | ${false}
-    `('$description', async ({ customFieldsFeature, hasWidgetData, exists }) => {
-      const response = workItemResponseFactory({
-        customFieldsWidgetPresent: hasWidgetData,
-      });
-
-      createComponent({ workItem: response.data.workItem, featureFlags: { customFieldsFeature } });
-      await waitForPromises();
-
-      expect(findWorkItemCustomFields().exists()).toBe(exists);
-    });
-
-    it('renders if group is local `flightjs`', async () => {
-      const response = workItemResponseFactory({
-        customFieldsWidgetPresent: true,
-      });
-
+    it('renders when flag `customFieldsFeature` is enabled', async () => {
       createComponent({
-        workItem: response.data.workItem,
-        groupPath: 'flightjs',
         featureFlags: { customFieldsFeature: true },
       });
       await waitForPromises();
@@ -340,30 +318,9 @@ describe('EE WorkItemAttributesWrapper component', () => {
       expect(findWorkItemCustomFields().exists()).toBe(true);
     });
 
-    it('renders if group is production `gitlab-org`', async () => {
-      const response = workItemResponseFactory({
-        customFieldsWidgetPresent: true,
-      });
-
+    it('does not render when flag `customFieldsFeature` is disabled', async () => {
       createComponent({
-        workItem: response.data.workItem,
-        groupPath: 'gitlab-org',
-        featureFlags: { customFieldsFeature: true },
-      });
-      await waitForPromises();
-
-      expect(findWorkItemCustomFields().exists()).toBe(true);
-    });
-
-    it('does not render if group is not valid', async () => {
-      const response = workItemResponseFactory({
-        customFieldsWidgetPresent: true,
-      });
-
-      createComponent({
-        workItem: response.data.workItem,
-        groupPath: 'toolbox',
-        featureFlags: { customFieldsFeature: true },
+        featureFlags: { customFieldsFeature: false },
       });
       await waitForPromises();
 

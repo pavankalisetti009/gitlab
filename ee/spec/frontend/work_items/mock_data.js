@@ -29,7 +29,6 @@ export const createWorkItemMutationResponse = {
           deleteWorkItem: false,
           updateWorkItem: false,
         },
-        mockWidgets: [],
         widgets: [],
       },
       errors: [],

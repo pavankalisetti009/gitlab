@@ -1,0 +1,33 @@
+query workItemCustomFields($id: WorkItemID!) {
+  workItem(id: $id) {
+    id
+    widgets {
+      ... on WorkItemWidgetCustomFields {
+        type
+        customFieldValues {
+          customField {
+            id
+            name
+            fieldType
+            selectOptions {
+              id
+              value
+            }
+          }
+          ... on WorkItemNumberFieldValue {
+            value
+          }
+          ... on WorkItemTextFieldValue {
+            value
+          }
+          ... on WorkItemSelectFieldValue {
+            selectedOptions {
+              id
+              value
+            }
+          }
+        }
+      }
+    }
+  }
+}
