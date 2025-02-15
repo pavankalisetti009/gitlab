@@ -21,7 +21,7 @@
   data: {
     full_path: @group.full_path,
     start_date: @start_date.to_date.iso8601,
-    end_date: Date.today.iso8601,
+    end_date: Time.zone.today.iso8601,
     data_source_clickhouse: @data_source_clickhouse.to_s
   }
 }
