@@ -5,7 +5,7 @@
   %p
     = assignees_label(@work_item)
 %p
-  = sprintf(s_('OKRs|An update is due on: %{update_due_date}'), { update_due_date: Date.today.to_fs(:medium) }).html_safe
+  = sprintf(s_('OKRs|An update is due on: %{update_due_date}'), { update_due_date: Time.zone.today.to_fs(:medium) }).html_safe
 
 - if @work_item.description
   .md
