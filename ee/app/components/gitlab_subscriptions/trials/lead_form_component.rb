@@ -81,3 +81,5 @@ module GitlabSubscriptions
     end
   end
 end
+
+GitlabSubscriptions::Trials::LeadFormComponent.prepend_mod
