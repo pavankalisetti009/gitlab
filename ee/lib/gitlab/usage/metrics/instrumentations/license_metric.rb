@@ -35,7 +35,7 @@ module Gitlab
           def value
             return ::License.trial_ends_on if license_attribute == "trial_ends_on"
 
-            return if ::License.current.nil?
+            return unless ::License.current&.license?
 
             return ::License.current.seats if license_attribute == "user_count"
 

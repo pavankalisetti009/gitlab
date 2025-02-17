@@ -6,7 +6,7 @@ module Gitlab
       module Instrumentations
         class HistoricalMaxUsersMetric < ::Gitlab::Usage::Metrics::Instrumentations::GenericMetric
           value do
-            ::License.current.historical_max
+            ::License.current.historical_max if ::License.current&.license?
           end
         end
       end
