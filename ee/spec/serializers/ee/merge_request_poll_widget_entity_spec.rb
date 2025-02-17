@@ -2,100 +2,71 @@
 
 require 'spec_helper'
 
-RSpec.describe MergeRequestPollCachedWidgetEntity, feature_category: :merge_trains do
+RSpec.describe MergeRequestPollWidgetEntity, feature_category: :merge_trains do
+  include ProjectForksHelper
   using RSpec::Parameterized::TableSyntax
 
-  let_it_be_with_refind(:project) { create(:project, :repository) }
   let_it_be(:user) { create(:user) }
   let_it_be(:target_branch) { 'feature' }
 
-  let(:request) { double('request', current_user: user, project: project) }
-  let(:title) { 'MR title' }
-  let(:description) { 'MR description' }
+  let(:project) { create(:project, :repository, developers: user) }
+  let(:request) { double('request', current_user: user) }
   let(:merge_request) do
-    create(
-      :merge_request,
-      source_project: project,
-      target_project: project,
-      target_branch: target_branch,
-      title: title,
-      description: description
-    )
+    create(:merge_request, source_project: project, target_project: project, target_branch: target_branch)
   end
 
-  subject(:entity) { described_class.new(merge_request, request: request).as_json }
-
-  it 'includes policy violation status' do
-    is_expected.to include(:policy_violation)
+  subject(:entity) do
+    described_class.new(merge_request, current_user: user, request: request).as_json
   end
 
-  describe 'jira_associations' do
-    context 'when feature is available' do
-      let_it_be(:jira_integration) { create(:jira_integration, project: project, active: true) }
+  describe 'Merge Trains' do
+    let!(:merge_train) { create(:merge_train_car, merge_request: merge_request) }
 
+    before do
+      stub_licensed_features(merge_pipelines: true, merge_trains: true)
+      project.update!(merge_pipelines_enabled: true, merge_trains_enabled: true)
+    end
+
+    it 'has merge train entity' do
+      expect(entity).to include(:merge_trains_skip_train_allowed)
+    end
+  end
+
+  describe 'auto merge' do
+    context 'when head pipeline is running' do
       before do
-        stub_licensed_features(jira_issues_integration: true, jira_issue_association_enforcement: true)
+        create(
+          :ci_pipeline, :running,
+          project: project,
+          ref: merge_request.source_branch,
+          sha: merge_request.diff_head_sha
+        )
+        merge_request.update_head_pipeline
       end
 
-      it { is_expected.to include(:jira_associations) }
-
-      shared_examples 'contains the issue key specified in MR title / description' do
-        context 'when Jira issue is provided in MR title' do
-          let(:issue_key) { 'SIGNUP-1234' }
-          let(:title) { "Fixes sign up issue #{issue_key}" }
-
-          it { expect(entity[:jira_associations][:issue_keys]).to contain_exactly(issue_key) }
-        end
-
-        context 'when Jira issue is provided in MR description' do
-          let(:issue_key) { 'SECURITY-1234' }
-          let(:description) { "Related to #{issue_key}" }
-
-          it { expect(entity[:jira_associations][:issue_keys]).to contain_exactly(issue_key) }
-        end
-      end
-
-      shared_examples 'when issue key is NOT specified in MR title / description' do
-        let(:title) { "Fixes sign up issue" }
-        let(:description) { "Prevent spam sign ups by adding a rate limiter" }
-
-        it { expect(entity[:jira_associations][:issue_keys]).to be_empty }
-      end
-
-      context 'when jira issue is required for merge' do
-        before do
-          project.create_project_setting(prevent_merge_without_jira_issue: true)
-        end
-
-        it { expect(entity[:jira_associations][:enforced]).to be_truthy }
-
-        it_behaves_like 'contains the issue key specified in MR title / description'
-        it_behaves_like 'when issue key is NOT specified in MR title / description'
-      end
-
-      context 'when jira issue is NOT required for merge' do
-        before do
-          project.create_project_setting(prevent_merge_without_jira_issue: false)
-        end
-
-        it { expect(entity[:jira_associations][:enforced]).to be_falsey }
-
-        it_behaves_like 'contains the issue key specified in MR title / description'
-        it_behaves_like 'when issue key is NOT specified in MR title / description'
+      it 'returns available auto merge strategies' do
+        expect(entity[:available_auto_merge_strategies]).to(
+          eq(%w[merge_when_checks_pass])
+        )
       end
     end
 
-    context 'when feature is NOT available' do
-      using RSpec::Parameterized::TableSyntax
+    context 'when head pipeline is finished and approvals are pending' do
+      before do
+        create(:approval_merge_request_rule, merge_request: merge_request, approvals_required: 1, users: [user])
+        create(
+          :ci_pipeline, :success,
+          project: project,
+          ref: merge_request.source_branch,
+          sha: merge_request.diff_head_sha
+        )
+        merge_request.update_head_pipeline
+      end
 
-      where(licensed: [true, false])
-
-      with_them do
-        before do
-          stub_licensed_features(jira_issue_association_enforcement: licensed)
-        end
-
-        it { is_expected.not_to include(:jira_associations) }
+      it 'returns available auto merge strategies' do
+        expect(entity[:available_auto_merge_strategies]).to(
+          eq(%w[merge_when_checks_pass])
+        )
       end
     end
   end
@@ -107,8 +78,8 @@ RSpec.describe MergeRequestPollCachedWidgetEntity, feature_category: :merge_trai
       end
 
       context 'when branch rule squash option is defined for target branch' do
-        let_it_be(:protected_branch) { create(:protected_branch, name: target_branch, project: project) }
-        let_it_be(:branch_rule_squash_option) do
+        let(:protected_branch) { create(:protected_branch, name: target_branch, project: project) }
+        let(:branch_rule_squash_option) do
           create(:branch_rule_squash_option, project: project, protected_branch: protected_branch)
         end
 
@@ -161,8 +132,8 @@ RSpec.describe MergeRequestPollCachedWidgetEntity, feature_category: :merge_trai
       end
 
       describe 'squash defaults for projects' do
-        let_it_be(:protected_branch) { create(:protected_branch, name: target_branch, project: project) }
-        let_it_be(:branch_rule_squash_option) do
+        let(:protected_branch) { create(:protected_branch, name: target_branch, project: project) }
+        let(:branch_rule_squash_option) do
           create(:branch_rule_squash_option, project: project, protected_branch: protected_branch)
         end
 
