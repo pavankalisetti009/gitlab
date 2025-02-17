@@ -1,15 +1,18 @@
-import { GlTabs } from '@gitlab/ui';
+import { GlTabs, GlTab } from '@gitlab/ui';
+import { nextTick } from 'vue';
 import Api from '~/api';
 import { makeMockUserCalloutDismisser } from 'helpers/mock_user_callout_dismisser';
-import { mountExtended } from 'helpers/vue_test_utils_helper';
+import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import SecurityConfigurationApp from '~/security_configuration/components/app.vue';
 import UpgradeBanner from 'ee/security_configuration/components/upgrade_banner.vue';
+import VulnerabilityArchives from 'ee/security_configuration/components/vulnerability_archives.vue';
 import { securityFeaturesMock, provideMock } from 'jest/security_configuration/mock_data';
 import { SERVICE_PING_SECURITY_CONFIGURATION_THREAT_MANAGEMENT_VISIT } from '~/tracking/constants';
 import { TAB_VULNERABILITY_MANAGEMENT_INDEX } from '~/security_configuration/constants';
 import { REPORT_TYPE_CONTAINER_SCANNING_FOR_REGISTRY } from '~/vue_shared/security_reports/constants';
 import FeatureCard from '~/security_configuration/components/feature_card.vue';
 import ContainerScanningForRegistryFeatureCard from 'ee_component/security_configuration/components/container_scanning_for_registry_feature_card.vue';
+import { stubComponent } from 'helpers/stub_component';
 
 jest.mock('~/api.js');
 
@@ -17,28 +20,36 @@ describe('~/security_configuration/components/app', () => {
   let wrapper;
   let userCalloutDismissSpy;
 
-  const createComponent = ({ shouldShowCallout = true, ...propsData } = {}) => {
+  const createComponent = ({
+    props: { shouldShowCallout = true, ...propsData } = {},
+    provide = {},
+    mountFn = mountExtended,
+    stubs,
+  } = {}) => {
     userCalloutDismissSpy = jest.fn();
 
-    wrapper = mountExtended(SecurityConfigurationApp, {
+    wrapper = mountFn(SecurityConfigurationApp, {
       propsData: {
         augmentedSecurityFeatures: securityFeaturesMock,
         securityTrainingEnabled: true,
         ...propsData,
       },
-      provide: { ...provideMock, userIsProjectAdmin: true },
+      provide: { ...provideMock, userIsProjectAdmin: true, ...provide },
       stubs: {
         UserCalloutDismisser: makeMockUserCalloutDismisser({
           dismiss: userCalloutDismissSpy,
           shouldShowCallout,
         }),
         UpgradeBanner: false,
+        ...stubs,
       },
     });
   };
 
+  const findVulnerabilityArchives = () => wrapper.findComponent(VulnerabilityArchives);
   const findUpgradeBanner = () => wrapper.findComponent(UpgradeBanner);
   const findTabsComponent = () => wrapper.findComponent(GlTabs);
+  const findTabAtIndex = (i) => wrapper.findAllComponents(GlTab).at(i);
   const findFeatureCards = () => wrapper.findAllComponents(FeatureCard);
   const findContainerScanningForRegistry = () =>
     wrapper.findComponent(ContainerScanningForRegistryFeatureCard);
@@ -49,12 +60,14 @@ describe('~/security_configuration/components/app', () => {
     describe('given at least one unavailable feature', () => {
       beforeEach(() => {
         createComponent({
-          augmentedSecurityFeatures: [
-            {
-              ...securityFeaturesMock[0],
-              available: false,
-            },
-          ],
+          props: {
+            augmentedSecurityFeatures: [
+              {
+                ...securityFeaturesMock[0],
+                available: false,
+              },
+            ],
+          },
         });
       });
 
@@ -74,7 +87,9 @@ describe('~/security_configuration/components/app', () => {
     describe('given at least one unavailable feature, but banner is already dismissed', () => {
       beforeEach(() => {
         createComponent({
-          shouldShowCallout: false,
+          props: {
+            shouldShowCallout: false,
+          },
         });
       });
 
@@ -86,7 +101,9 @@ describe('~/security_configuration/components/app', () => {
     describe('given all features are available', () => {
       beforeEach(() => {
         createComponent({
-          augmentedSecurityFeatures: securityFeaturesMock.map(makeAvailable(true)),
+          props: {
+            augmentedSecurityFeatures: securityFeaturesMock.map(makeAvailable(true)),
+          },
         });
       });
 
@@ -99,6 +116,11 @@ describe('~/security_configuration/components/app', () => {
   describe('tab change', () => {
     beforeEach(() => {
       createComponent();
+    });
+
+    it('renders two tabs', () => {
+      expect(findTabAtIndex(0).exists()).toBe(true);
+      expect(findTabAtIndex(1).exists()).toBe(true);
     });
 
     it('tracks "users_visiting_security_configuration_threat_management" when threat management tab is selected', () => {
@@ -120,11 +142,13 @@ describe('~/security_configuration/components/app', () => {
   describe('with container scanning for registry', () => {
     beforeEach(() => {
       createComponent({
-        augmentedSecurityFeatures: [
-          {
-            type: REPORT_TYPE_CONTAINER_SCANNING_FOR_REGISTRY,
-          },
-        ],
+        props: {
+          augmentedSecurityFeatures: [
+            {
+              type: REPORT_TYPE_CONTAINER_SCANNING_FOR_REGISTRY,
+            },
+          ],
+        },
       });
     });
 
@@ -137,6 +161,33 @@ describe('~/security_configuration/components/app', () => {
       expect(findContainerScanningForRegistry().props('feature')).toEqual({
         type: REPORT_TYPE_CONTAINER_SCANNING_FOR_REGISTRY,
       });
+    });
+  });
+
+  describe('Vulnerability archives', () => {
+    it.each`
+      featureFlag
+      ${true}
+      ${false}
+    `('does not render archives if flag is $featureFlag', async ({ featureFlag }) => {
+      await createComponent({
+        provide: { glFeatures: { vulnerabilityArchival: featureFlag } },
+        mountFn: shallowMountExtended,
+        stubs: {
+          GlTab: stubComponent(GlTab, {
+            template: `
+              <li>
+                <slot name="title"></slot>
+                <slot></slot>
+              </li>
+            `,
+          }),
+        },
+      });
+
+      await nextTick();
+
+      expect(findVulnerabilityArchives().exists()).toBe(featureFlag);
     });
   });
 });
