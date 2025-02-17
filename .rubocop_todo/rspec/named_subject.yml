@@ -1575,7 +1575,6 @@ RSpec/NamedSubject:
     - 'spec/lib/container_registry/gitlab_api_client_spec.rb'
     - 'spec/lib/container_registry/path_spec.rb'
     - 'spec/lib/container_registry/registry_spec.rb'
-    - 'spec/lib/container_registry/tag_spec.rb'
     - 'spec/lib/error_tracking/sentry_client/event_spec.rb'
     - 'spec/lib/error_tracking/sentry_client/issue_spec.rb'
     - 'spec/lib/error_tracking/sentry_client/projects_spec.rb'
