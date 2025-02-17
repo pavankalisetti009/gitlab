@@ -156,11 +156,28 @@ RSpec.describe Security::Orchestration::UnassignService, :sidekiq_inline, featur
           end
         end
 
-        it 'unassigns policy project and enqueues the bot removal for all projects', :aggregate_failures do
-          namespace_projects.each do |project|
-            expect(Security::OrchestrationConfigurationRemoveBotWorker).to receive(:perform_async)
-                                                                             .with(project.id, current_user.id)
+        context 'when the `security_policy_bot_worker` feature flag is disabled' do
+          before do
+            stub_feature_flags(security_policy_bot_worker: false)
           end
+
+          it 'unassigns policy project and enqueues the bot removal for all projects', :aggregate_failures do
+            namespace_projects.each do |project|
+              expect(Security::OrchestrationConfigurationRemoveBotWorker).to receive(:perform_async)
+                                                                               .with(project.id, current_user.id)
+            end
+            expect(result).to be_success
+            exists = Security::OrchestrationPolicyConfiguration.exists?(
+              container.security_orchestration_policy_configuration.id)
+            expect(exists).to be(false)
+          end
+        end
+
+        it 'unassigns policy project and enqueues OrchestrationConfigurationRemoveBotForNamespaceWorker',
+          :aggregate_failures do
+          expect(Security::OrchestrationConfigurationRemoveBotForNamespaceWorker).to receive(:perform_async).with(
+            container.id, current_user.id)
+
           expect(result).to be_success
           exists = Security::OrchestrationPolicyConfiguration.exists?(
             container.security_orchestration_policy_configuration.id)

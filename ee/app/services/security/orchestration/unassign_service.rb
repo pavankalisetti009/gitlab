@@ -36,6 +36,14 @@ module Security
         if container.is_a?(Project)
           Security::OrchestrationConfigurationRemoveBotWorker.perform_async(container.id, current_user.id)
         else
+          remove_bot_for_namespace(security_orchestration_policy_configuration)
+        end
+      end
+
+      def remove_bot_for_namespace(security_orchestration_policy_configuration)
+        if Feature.enabled?(:security_policy_bot_worker, container)
+          Security::OrchestrationConfigurationRemoveBotForNamespaceWorker.perform_async(container.id, current_user.id)
+        else
           security_orchestration_policy_configuration.all_project_ids.each do |project_id|
             Security::OrchestrationConfigurationRemoveBotWorker.perform_async(project_id, current_user.id)
           end
