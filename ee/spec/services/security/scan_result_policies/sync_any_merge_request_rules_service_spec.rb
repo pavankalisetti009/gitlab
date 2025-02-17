@@ -111,6 +111,53 @@ RSpec.describe Security::ScanResultPolicies::SyncAnyMergeRequestRulesService, fe
           allow(merge_request).to receive(:commits).and_return(merge_request_commits)
         end
 
+        describe 'branch exceptions' do
+          let_it_be(:policy_configuration) do
+            create(:security_orchestration_policy_configuration, project: project)
+          end
+
+          let(:scan_result_policy) do
+            build(:scan_result_policy,
+              rules: [{
+                type: Security::ScanResultPolicy::ANY_MERGE_REQUEST,
+                branches: ['protected'],
+                branch_exceptions: branch_exceptions,
+                commits: 'any'
+              }])
+          end
+
+          let(:policy_yaml) do
+            build(:orchestration_policy_yaml, scan_result_policy: [scan_result_policy])
+          end
+
+          subject(:violation_exists?) do
+            Security::ScanResultPolicyViolation
+              .exists?(merge_request_id: merge_request.id, scan_result_policy_id: scan_result_policy_read.id)
+          end
+
+          before do
+            scan_result_policy_read.update!(rule_idx: 0)
+
+            allow_next_instance_of(Repository) do |repository|
+              allow(repository).to receive(:blob_data_at).and_return(policy_yaml)
+            end
+
+            execute
+          end
+
+          where(:branch_exceptions, :violated?) do
+            [lazy { merge_request.target_branch }]                                                         | false
+            [lazy { merge_request.target_branch.reverse }]                                                 | true
+            [lazy { { name: merge_request.target_branch,         full_path: project.full_path } }]         | false
+            [lazy { { name: merge_request.target_branch.reverse, full_path: project.full_path } }]         | true
+            [lazy { { name: merge_request.target_branch,         full_path: project.full_path.reverse } }] | true
+          end
+
+          with_them do
+            it { is_expected.to be(violated?) }
+          end
+        end
+
         context 'when approvals are optional' do
           let(:approvals_required) { 0 }
 
