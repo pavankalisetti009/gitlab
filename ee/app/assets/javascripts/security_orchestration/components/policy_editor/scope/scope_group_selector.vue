@@ -12,7 +12,7 @@ import {
   EXCEPTION_TYPE_LISTBOX_ITEMS,
 } from 'ee/security_orchestration/components/policy_editor/scope/constants';
 import PolicyPopover from 'ee/security_orchestration/components/policy_popover.vue';
-import GroupProjectsDropdown from '../../shared/group_projects_dropdown.vue';
+import MultipleGroupsProjectsDropdown from '../../shared/multiple_groups_projects_dropdown.vue';
 import LinkedItemsDropdown from '../../shared/linked_items_dropdown.vue';
 
 export default {
@@ -30,9 +30,9 @@ export default {
   name: 'ScopeGroupSelector',
   components: {
     GlCollapsibleListbox,
-    GroupProjectsDropdown,
     LinkedItemsDropdown,
     PolicyPopover,
+    MultipleGroupsProjectsDropdown,
   },
   props: {
     disabled: {
@@ -77,11 +77,14 @@ export default {
     };
   },
   computed: {
+    exceptionTypeDisabled() {
+      return this.disabled || this.groupsIds.length === 0;
+    },
     selectedExceptionTypeText() {
       return GROUP_EXCEPTION_TYPE_TEXTS[this.exceptionType];
     },
     showGroupProjectsDropdown() {
-      return this.exceptionType === EXCEPT_PROJECTS && this.groupsIds.length > 0;
+      return this.exceptionType === EXCEPT_PROJECTS;
     },
     groupsIds() {
       return this.groups?.including?.map(({ id }) => convertToGraphQLId(TYPENAME_GROUP, id)) || [];
@@ -139,6 +142,11 @@ export default {
     },
     setSelectedGroups(groups) {
       const projectIds = groups?.length > 0 ? this.mappedProjectIds : [];
+
+      if (groups.length === 0) {
+        this.selectExceptionType(WITHOUT_EXCEPTIONS);
+      }
+
       this.$emit(
         'changed',
         this.buildPayload({
@@ -180,21 +188,20 @@ export default {
     <gl-collapsible-listbox
       v-if="showExceptionListbox"
       data-testid="exception-type"
-      :disabled="disabled"
+      :disabled="exceptionTypeDisabled"
       :items="$options.EXCEPTION_TYPE_LISTBOX_ITEMS"
       :toggle-text="selectedExceptionTypeText"
       :selected="exceptionType"
       @select="selectExceptionType"
     />
 
-    <group-projects-dropdown
+    <multiple-groups-projects-dropdown
       v-if="showGroupProjectsDropdown"
       data-testid="projects-dropdown"
-      load-all-projects
       :disabled="disabled"
-      :group-full-path="groupFullPath"
+      :group-ids="groupsIds"
       :selected="projectIds"
-      :state="true"
+      :has-error="false"
       @projects-query-error="emitError($options.i18n.projectErrorDescription)"
       @select="setSelectedProjects"
     />

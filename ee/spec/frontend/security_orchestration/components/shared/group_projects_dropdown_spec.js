@@ -6,7 +6,6 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import getGroups from 'ee/security_orchestration/graphql/queries/get_groups_for_policies.query.graphql';
 import getGroupProjects from 'ee/security_orchestration/graphql/queries/get_group_projects.query.graphql';
-import getProjects from 'ee/security_orchestration/graphql/queries/get_projects.query.graphql';
 import BaseItemsDropdown from 'ee/security_orchestration/components/shared/base_items_dropdown.vue';
 import GroupProjectsDropdown from 'ee/security_orchestration/components/shared/group_projects_dropdown.vue';
 import {
@@ -51,14 +50,6 @@ describe('GroupProjectsDropdown', () => {
           },
         },
       }),
-      getProjects: jest.fn().mockResolvedValue({
-        data: {
-          projects: {
-            nodes,
-            pageInfo: { ...defaultPageInfo, hasNextPage },
-          },
-        },
-      }),
       getGroupProjects: jest.fn().mockResolvedValue({
         data: {
           id: 1,
@@ -81,7 +72,6 @@ describe('GroupProjectsDropdown', () => {
     return createMockApollo([
       [getGroupProjects, requestHandlers.getGroupProjects],
       [getGroups, requestHandlers.getGroups],
-      [getProjects, requestHandlers.getProjects],
     ]);
   };
 
@@ -251,36 +241,6 @@ describe('GroupProjectsDropdown', () => {
           findDropdown().vm.$emit('bottom-reached');
           expect(requestHandlers.getGroupProjects).toHaveBeenCalledTimes(2);
           expect(requestHandlers.getGroups).toHaveBeenCalledTimes(0);
-        });
-
-        it('loads all projects when property is set to true', async () => {
-          createComponent({
-            propsData: { loadAllProjects: true },
-          });
-          await waitForPromises();
-
-          expect(requestHandlers.getGroupProjects).toHaveBeenCalledTimes(0);
-          expect(requestHandlers.getProjects).toHaveBeenCalledWith({
-            projectIds: null,
-            search: '',
-          });
-        });
-
-        it('loads more projects when bottom is reached', async () => {
-          createComponent({
-            propsData: { loadAllProjects: true },
-            handlers: mockApolloHandlers({ hasNextPage: true }),
-          });
-          await waitForPromises();
-
-          findDropdown().vm.$emit('bottom-reached');
-          expect(requestHandlers.getGroupProjects).toHaveBeenCalledTimes(0);
-          expect(requestHandlers.getProjects).toHaveBeenCalledTimes(2);
-          expect(requestHandlers.getProjects).toHaveBeenNthCalledWith(2, {
-            after: undefined,
-            projectIds: null,
-            search: '',
-          });
         });
       });
 
@@ -486,18 +446,17 @@ describe('GroupProjectsDropdown', () => {
     });
 
     it('should search projects by fullPath', async () => {
-      createComponent({
-        propsData: { loadAllProjects: true },
-      });
+      createComponent();
       await waitForPromises();
 
       findDropdown().vm.$emit('search', 'project-1-full-path');
       await waitForPromises();
 
       expect(findDropdown().props('items')).toEqual(mapItems([defaultNodes[0]]));
-      expect(requestHandlers.getProjects).toHaveBeenCalledWith({
+      expect(requestHandlers.getGroupProjects).toHaveBeenCalledWith({
         projectIds: null,
         search: 'project-1-full-path',
+        fullPath: GROUP_FULL_PATH,
       });
     });
   });

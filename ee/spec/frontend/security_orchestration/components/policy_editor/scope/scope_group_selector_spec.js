@@ -51,14 +51,12 @@ describe('ScopeGroupSelector', () => {
       expect(findExceptionTypeSelector().exists()).toBe(true);
       expect(findGroupsDropdown().exists()).toBe(true);
       expect(findProjectSelector().exists()).toBe(true);
-      expect(findProjectSelector().props('loadAllProjects')).toBe(true);
     });
 
     it('does not render project selector when no groups were selected', () => {
-      createComponent({
-        exceptionType: EXCEPT_PROJECTS,
-      });
+      createComponent();
 
+      expect(findExceptionTypeSelector().props('disabled')).toBe(true);
       expect(findProjectSelector().exists()).toBe(false);
     });
 
@@ -89,6 +87,13 @@ describe('ScopeGroupSelector', () => {
           },
         ],
       ]);
+    });
+
+    it('should select without exceptions type when there are groups', async () => {
+      createComponent();
+      await findGroupsDropdown().vm.$emit('select', []);
+
+      expect(wrapper.emitted('select-exception-type')).toEqual([[WITHOUT_EXCEPTIONS]]);
     });
 
     it('should select groups and projects', () => {
@@ -146,7 +151,7 @@ describe('ScopeGroupSelector', () => {
       });
 
       expect(findGroupsDropdown().props('selected')).toEqual([]);
-      expect(findProjectSelector().exists()).toBe(false);
+      expect(findProjectSelector().exists()).toBe(true);
     });
   });
 

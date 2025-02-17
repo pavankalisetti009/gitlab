@@ -4,7 +4,6 @@ import produce from 'immer';
 import { __ } from '~/locale';
 import getGroups from 'ee/security_orchestration/graphql/queries/get_groups_for_policies.query.graphql';
 import getGroupProjects from 'ee/security_orchestration/graphql/queries/get_group_projects.query.graphql';
-import getProjects from 'ee/security_orchestration/graphql/queries/get_projects.query.graphql';
 import { searchInItemsProperties } from '~/lib/utils/search_utils';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import BaseItemsDropdown from './base_items_dropdown.vue';
@@ -46,7 +45,7 @@ export default {
     },
     projects: {
       query() {
-        return this.loadAllProjects ? getProjects : getGroupProjects;
+        return getGroupProjects;
       },
       variables() {
         return {
@@ -60,12 +59,10 @@ export default {
          * otherwise after performing backend search and selecting found item
          * selection is overwritten
          */
-        const payload = this.loadAllProjects ? data.projects.nodes : data.group.projects.nodes;
-        return uniqBy([...this.projects, ...payload], 'id');
+        return uniqBy([...this.projects, ...data.group.projects.nodes], 'id');
       },
       result({ data }) {
-        const payload = this.loadAllProjects ? data?.projects : data?.group?.projects;
-        this.pageInfo = payload?.pageInfo || {};
+        this.pageInfo = data?.group?.projects.pageInfo || {};
       },
       error() {
         this.$emit('projects-query-error');
@@ -114,11 +111,6 @@ export default {
       type: Array,
       required: false,
       default: () => [],
-    },
-    loadAllProjects: {
-      type: Boolean,
-      required: false,
-      default: false,
     },
     isGroup: {
       type: Boolean,
@@ -181,6 +173,7 @@ export default {
         value: id,
         fullPath,
       }));
+
       return searchInItemsProperties({
         items,
         properties: ['text', 'fullPath'],
@@ -197,9 +190,7 @@ export default {
       return this.state ? 'default' : 'danger';
     },
     pathVariable() {
-      return {
-        ...(this.loadAllProjects ? {} : { fullPath: this.groupFullPath }),
-      };
+      return { fullPath: this.groupFullPath };
     },
   },
   created() {
@@ -210,7 +201,7 @@ export default {
   },
   methods: {
     fetchMoreItems() {
-      const { groupsOnly, loadAllProjects } = this;
+      const { groupsOnly } = this;
       const variables = {
         after: this.pageInfo.endCursor,
         ...this.pathVariable,
@@ -225,8 +216,7 @@ export default {
                 draftData.group.nodes = [...previousResult.group.nodes, ...draftData.group.nodes];
               } else {
                 const getSourceObject = (source) => {
-                  const path = loadAllProjects ? 'projects' : 'group.projects';
-                  return get(source, path);
+                  return get(source, 'group.projects');
                 };
 
                 getSourceObject(draftData).nodes = [
