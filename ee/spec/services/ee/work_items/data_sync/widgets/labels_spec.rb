@@ -18,7 +18,7 @@ RSpec.describe WorkItems::DataSync::Widgets::Labels, feature_category: :team_pla
     group.add_developer(current_user)
   end
 
-  describe '#after_save_commit' do
+  describe '#after_create' do
     context 'when target work item has labels widget' do
       context 'with group level work item(epic)' do
         let_it_be(:another_group) { create(:group) }
@@ -43,7 +43,7 @@ RSpec.describe WorkItems::DataSync::Widgets::Labels, feature_category: :team_pla
 
           # 2 labels from group removed,
           # 2 labels from group replaced by labels in another group => 2 removed + 2 added => 4
-          expect { callback.after_save_commit }.to change { ::ResourceLabelEvent.count }.by(6)
+          expect { callback.after_create }.to change { ::ResourceLabelEvent.count }.by(6)
 
           expect(target_work_item.reload.labels.pluck(:title)).to match_array([labels[0], labels[1]].pluck(:title))
           # both labels from legacy epic and epic work item are assigned to new epic work item
