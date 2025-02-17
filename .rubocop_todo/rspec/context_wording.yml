@@ -1422,7 +1422,6 @@ RSpec/ContextWording:
     - 'spec/lib/constraints/project_url_constrainer_spec.rb'
     - 'spec/lib/constraints/user_url_constrainer_spec.rb'
     - 'spec/lib/container_registry/registry_spec.rb'
-    - 'spec/lib/container_registry/tag_spec.rb'
     - 'spec/lib/error_tracking/sentry_client/projects_spec.rb'
     - 'spec/lib/expand_variables_spec.rb'
     - 'spec/lib/extracts_path_spec.rb'
