@@ -76,18 +76,6 @@ RSpec.describe Sbom::CreateVulnerabilitiesService, feature_category: :software_c
         it 'marks vulnerability as no longer detected' do
           expect { result }.to change { vulnerability.reload.resolved_on_default_branch }.to(true)
         end
-
-        context 'with mark_resolved_vulnerabilities_with_sbom_scans feature flag disabled' do
-          before do
-            stub_feature_flags(mark_resolved_vulnerabilities_with_sbom_scans: false)
-          end
-
-          it 'does not mark vulnerabilities as no longer detected' do
-            expect(Security::Ingestion::MarkAsResolvedService).not_to receive(:execute)
-
-            expect { result }.not_to change { vulnerability.reload.resolved_on_default_branch }.from(false)
-          end
-        end
       end
 
       context 'when it does not have a matching report type' do
