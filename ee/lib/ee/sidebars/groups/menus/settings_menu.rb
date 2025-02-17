@@ -33,6 +33,7 @@ module EE
                 :manage_merge_request_settings])
               add_menu_item_for_abilities(integrations_menu_item, :admin_integrations)
               add_menu_item_for_abilities(access_tokens_menu_item, :read_resource_access_tokens)
+              add_item(group_work_items_menu_item)
               add_menu_item_for_abilities(repository_menu_item, [:admin_push_rules, :manage_deploy_tokens])
               add_menu_item_for_abilities(ci_cd_menu_item, [:admin_cicd_variables,
                 :admin_protected_environments, :admin_runner])

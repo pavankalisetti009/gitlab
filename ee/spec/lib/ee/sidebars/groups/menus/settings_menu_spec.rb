@@ -345,6 +345,12 @@ RSpec.describe Sidebars::Groups::Menus::SettingsMenu, feature_category: :navigat
           it { is_expected.not_to be_present }
         end
       end
+    end
+
+    context 'for maintainer user' do
+      let(:user) { maintainer }
+
+      subject { menu.renderable_items.find { |e| e.item_id == item_id } }
 
       describe 'Issues menu item' do
         let(:item_id) { :group_work_items }
