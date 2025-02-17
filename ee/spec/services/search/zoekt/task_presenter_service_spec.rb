@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe ::Search::Zoekt::TaskPresenterService, feature_category: :global_search do
   let_it_be(:node) { create(:zoekt_node) }
-  let_it_be(:task) { create(:zoekt_task, node: node) }
+  let_it_be(:task) { create(:zoekt_task, node: node, project: create(:project, :repository)) }
   let_it_be(:delete_task) { create(:zoekt_task, node: node, task_type: :delete_repo) }
 
   let(:service) { described_class.new(node) }

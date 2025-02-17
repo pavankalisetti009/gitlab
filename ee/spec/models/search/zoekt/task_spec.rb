@@ -95,20 +95,22 @@ RSpec.describe ::Search::Zoekt::Task, feature_category: :global_search do
   end
 
   describe '.each_task_for_processing' do
+    let_it_be(:project_with_repo_1) { create(:project, :repository) }
+    let_it_be(:project_with_repo_2) { create(:project, :repository) }
+    let_it_be(:project_with_repo_3) { create(:project, :repository) }
+
     it 'returns tasks sorted by performed_at and unique by project and moves the task to processing' do
-      task_1 = create(:zoekt_task, perform_at: 1.minute.ago)
-      task_2 = create(:zoekt_task, perform_at: 3.minutes.ago)
-      task_3 = create(:zoekt_task, perform_at: 2.minutes.ago)
-      task_with_same_project = create(:zoekt_task, perform_at: 5.minutes.ago,
-        zoekt_repository_id: task_2.zoekt_repository_id, project_identifier: task_2.project_identifier)
-      task_in_future = create(:zoekt_task, perform_at: 3.minutes.from_now)
+      task_1 = create(:zoekt_task, project: project_with_repo_1, perform_at: 1.minute.ago)
+      task_2 = create(:zoekt_task, project: project_with_repo_2, perform_at: 3.minutes.ago)
+      task_with_same_project = create(:zoekt_task, project: project_with_repo_2, perform_at: 5.minutes.ago)
+      task_in_future = create(:zoekt_task, project: project_with_repo_3, perform_at: 3.minutes.from_now)
 
       tasks = []
       described_class.each_task_for_processing(limit: 10) { |task| tasks << task }
 
       expect(tasks.all? { |task| task.reload.processing? }).to be true
       expect(tasks).not_to include(task_2, task_in_future)
-      expect(tasks).to eq([task_with_same_project, task_3, task_1])
+      expect(tasks).to contain_exactly(task_with_same_project, task_1)
     end
 
     context 'with orphaned task' do
@@ -129,8 +131,8 @@ RSpec.describe ::Search::Zoekt::Task, feature_category: :global_search do
     end
 
     context 'with failed repo task' do
-      let_it_be(:failed_repo_indexing_task) { create(:zoekt_task) }
-      let_it_be(:failed_repo_delete_task) { create(:zoekt_task, task_type: :delete_repo) }
+      let_it_be(:failed_repo_indexing_task) { create(:zoekt_task, project: project_with_repo_1) }
+      let_it_be(:failed_repo_delete_task) { create(:zoekt_task, task_type: :delete_repo, project: project_with_repo_2) }
 
       before do
         failed_repo_indexing_task.zoekt_repository.failed!
@@ -142,6 +144,36 @@ RSpec.describe ::Search::Zoekt::Task, feature_category: :global_search do
           described_class.each_task_for_processing(limit: 10) { |t| t }
         end.to change { failed_repo_indexing_task.reload.state }.from('pending').to('skipped')
         expect(failed_repo_delete_task.reload).to be_processing
+      end
+    end
+
+    context 'with missing gitaly repo' do
+      let_it_be(:project_without_repo) { create(:project) }
+      let_it_be(:task_with_invalid_repo) { create(:zoekt_task, project: project_without_repo) }
+      let_it_be(:delete_task_with_invalid_repo) do
+        create(:zoekt_task, task_type: :delete_repo, project: project_without_repo)
+      end
+
+      it 'marks indexing tasks as orphaned and processes delete tasks' do
+        expect do
+          described_class.each_task_for_processing(limit: 10) { |t| t }
+        end.to change { task_with_invalid_repo.reload.state }.from('pending').to('orphaned')
+        expect(delete_task_with_invalid_repo.reload).to be_processing
+      end
+    end
+
+    context 'with pending delete project' do
+      let_it_be(:project_pending_delete) { create(:project, :repository, pending_delete: true) }
+      let_it_be(:task_with_pending_delete) { create(:zoekt_task, project: project_pending_delete) }
+      let_it_be(:delete_task_with_pending_delete) do
+        create(:zoekt_task, task_type: :delete_repo, project: project_pending_delete)
+      end
+
+      it 'marks indexing tasks as skipped and processes delete tasks' do
+        expect do
+          described_class.each_task_for_processing(limit: 10) { |t| t }
+        end.to change { task_with_pending_delete.reload.state }.from('pending').to('skipped')
+        expect(delete_task_with_pending_delete.reload).to be_processing
       end
     end
   end
