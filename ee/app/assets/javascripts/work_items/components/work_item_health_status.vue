@@ -87,8 +87,8 @@ export default {
         ? newWorkItemFullPath(this.fullPath, this.workItemType)
         : this.fullPath;
     },
-    canUpdate() {
-      return this.workItem?.userPermissions?.updateWorkItem;
+    canUpdateMetadata() {
+      return this.workItem?.userPermissions?.setWorkItemMetadata;
     },
   },
   apollo: {
@@ -114,7 +114,7 @@ export default {
   },
   methods: {
     updateHealthStatus(healthStatus) {
-      if (!this.canUpdate) {
+      if (!this.canUpdateMetadata) {
         return;
       }
 
@@ -171,7 +171,7 @@ export default {
   <div v-if="hasIssuableHealthStatusFeature">
     <work-item-sidebar-dropdown-widget
       :dropdown-label="$options.HEALTH_STATUS_I18N_HEALTH_STATUS"
-      :can-update="canUpdate"
+      :can-update="canUpdateMetadata"
       dropdown-name="health-status"
       :list-items="$options.healthStatusDropdownOptions"
       :item-value="selectedHealthStatus"
