@@ -28286,19 +28286,28 @@ msgstr ""
 msgid "GroupsEmptyState|No public or internal groups"
 msgstr ""
 
+msgid "GroupsEmptyState|Other groups this group has been %{linkStart}invited to%{linkEnd} will appear here."
+msgstr ""
+
 msgid "GroupsEmptyState|Projects are where you can store your code, access issues, wiki, and other features of GitLab."
 msgstr ""
 
 msgid "GroupsEmptyState|Projects that are no longer used are displayed here."
 msgstr ""
 
+msgid "GroupsEmptyState|Projects this group has been %{linkStart}invited to%{linkEnd} will appear here."
+msgstr ""
+
 msgid "GroupsEmptyState|There are no inactive projects in this group"
 msgstr ""
 
-msgid "GroupsEmptyState|There are no shared projects in this group"
+msgid "GroupsEmptyState|There are no subgroups or projects in this group"
 msgstr ""
 
-msgid "GroupsEmptyState|There are no subgroups or projects in this group"
+msgid "GroupsEmptyState|This group has not been invited to any other groups."
+msgstr ""
+
+msgid "GroupsEmptyState|This group has not been invited to any other projects."
 msgstr ""
 
 msgid "GroupsEmptyState|Use groups to manage multiple projects and members."
@@ -28308,9 +28317,6 @@ msgid "GroupsEmptyState|Use projects to store and access issues, wiki pages, and
 msgstr ""
 
 msgid "GroupsEmptyState|You do not have necessary permissions to create a subgroup or project in this group. Please contact an owner of this group to create a new subgroup or project."
-msgstr ""
-
-msgid "GroupsEmptyState|You will see here all the projects shared with other groups and projects."
 msgstr ""
 
 msgid "GroupsNew|%{groupsLinkStart}Groups%{groupsLinkEnd} and %{subgroupsLinkStart}subgroups%{subgroupsLinkEnd} allow you to manage and collaborate across multiple projects. Members of a group have access to all of its projects."
@@ -54258,6 +54264,9 @@ msgid "Share"
 msgstr ""
 
 msgid "Share the %{strong_open}GitLab single sign-on URL%{strong_close} with members so they can sign in to your group through your identity provider"
+msgstr ""
+
+msgid "Shared groups"
 msgstr ""
 
 msgid "Shared projects"
