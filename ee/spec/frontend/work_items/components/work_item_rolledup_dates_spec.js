@@ -150,6 +150,34 @@ describe('WorkItemRolledupDates component', () => {
     });
   });
 
+  describe('rollupType updates', () => {
+    describe('when isFixed prop changes', () => {
+      it('updates rollupType from inherited to fixed', async () => {
+        createComponent({ isFixed: false });
+        await nextTick();
+
+        expect(findInheritedRadioButton().props('checked')).toBe('inherited');
+
+        await wrapper.setProps({ isFixed: true });
+        await nextTick();
+
+        expect(findFixedRadioButton().props('checked')).toBe('fixed');
+      });
+
+      it('updates rollupType from fixed to inherited', async () => {
+        createComponent({ isFixed: true });
+        await nextTick();
+
+        expect(findFixedRadioButton().props('checked')).toBe('fixed');
+
+        await wrapper.setProps({ isFixed: false });
+        await nextTick();
+
+        expect(findInheritedRadioButton().props('checked')).toBe('inherited');
+      });
+    });
+  });
+
   describe.each`
     radioType      | findRadioButton             | isFixed
     ${'fixed'}     | ${findFixedRadioButton}     | ${true}

@@ -164,10 +164,15 @@ export default {
       },
       immediate: true,
     },
+    isFixed: {
+      handler(isFixed) {
+        this.rollupType = isFixed ? ROLLUP_TYPE_FIXED : ROLLUP_TYPE_INHERITED;
+      },
+      immediate: true,
+    },
   },
   mounted() {
     Mousetrap.bind(keysFor(SIDEBAR_CLOSE_WIDGET), this.collapseWidget);
-    this.rollupType = this.isFixed ? ROLLUP_TYPE_FIXED : ROLLUP_TYPE_INHERITED;
   },
   beforeDestroy() {
     Mousetrap.unbind(keysFor(SIDEBAR_CLOSE_WIDGET));
