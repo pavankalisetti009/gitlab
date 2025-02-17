@@ -308,6 +308,7 @@ export default {
         <div class="gl-text-subtle">{{ selectOptionsText(item) }}</div>
       </template>
       <template #cell(usage)="{ item }">
+        <div v-if="item.workItemTypes.length === 0">{{ __('Not in use') }}</div>
         <gl-intersperse>
           <span v-for="workItemType in item.workItemTypes" :key="workItemType.id">{{
             workItemType.name

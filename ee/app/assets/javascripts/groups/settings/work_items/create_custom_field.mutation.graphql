@@ -3,6 +3,7 @@ mutation createCustomField(
   $fieldType: CustomFieldType!
   $name: String!
   $selectOptions: [CustomFieldSelectOptionInput!]
+  $workItemTypeIds: [WorkItemsTypeID!]
 ) {
   customFieldCreate(
     input: {
@@ -10,6 +11,7 @@ mutation createCustomField(
       fieldType: $fieldType
       name: $name
       selectOptions: $selectOptions
+      workItemTypeIds: $workItemTypeIds
     }
   ) {
     customField {

@@ -1,6 +1,7 @@
 <script>
 import {
   GlButton,
+  GlCollapsibleListbox,
   GlFormGroup,
   GlFormInput,
   GlFormSelect,
@@ -15,6 +16,7 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import createCustomFieldMutation from './create_custom_field.mutation.graphql';
 import updateCustomFieldMutation from './update_custom_field.mutation.graphql';
 import groupCustomFieldQuery from './group_custom_field.query.graphql';
+import namespaceWorkItemTypesQuery from './group_work_item_types_for_select.query.graphql';
 
 export const FIELD_TYPE_OPTIONS = [
   { value: 'SINGLE_SELECT', text: s__('WorkItem|Single select') },
@@ -26,6 +28,7 @@ export const FIELD_TYPE_OPTIONS = [
 export default {
   components: {
     GlButton,
+    GlCollapsibleListbox,
     GlFormGroup,
     GlFormInput,
     GlFormSelect,
@@ -57,6 +60,7 @@ export default {
       formData: {
         fieldType: FIELD_TYPE_OPTIONS[0].value,
         fieldName: '',
+        workItemTypes: [],
         selectOptions: [{ value: '' }],
       },
       formState: {
@@ -64,7 +68,25 @@ export default {
         selectOptions: null,
       },
       mutationError: '',
+      workItemTypes: [],
     };
+  },
+  apollo: {
+    workItemTypes: {
+      query: namespaceWorkItemTypesQuery,
+      variables() {
+        return {
+          fullPath: this.fullPath,
+        };
+      },
+      update(data) {
+        return data.workspace?.workItemTypes?.nodes || [];
+      },
+      error(error) {
+        Sentry.captureException(error);
+        this.mutationError = s__('WorkItem|Error loading work item types');
+      },
+    },
   },
   computed: {
     isSelect() {
@@ -86,6 +108,31 @@ export default {
     saveButtonText() {
       return this.isEditing ? __('Update') : __('Save');
     },
+    dropdownToggleText() {
+      if (this.formData.workItemTypes.length === 0) {
+        return s__('WorkItem|Select types');
+      }
+
+      return this.formData.workItemTypes
+        .filter((id) => {
+          // Prob unnecessary. or should log error?
+          // this maybe only happens if the work item type is deleted
+          // or if an ID is malformed
+          return Boolean(this.workItemTypes.find((type) => type.id === id));
+        })
+        .map((id) => {
+          const { name } = this.workItemTypes.find((type) => type.id === id);
+          return name;
+        })
+        .join(', ');
+    },
+    workItemTypesForListbox() {
+      return this.workItemTypes.map((type) => ({
+        value: type.id,
+        text: type.name,
+        name: type.name,
+      }));
+    },
   },
   methods: {
     async addSelectOption() {
@@ -97,8 +144,11 @@ export default {
       this.formData.selectOptions.splice(index, 1);
       this.validateSelectOptions();
     },
+    workItemTypeSelected(selected) {
+      this.formData.workItemTypes = selected;
+    },
     focusNameInput() {
-      this.$refs.nameInput.$el.focus();
+      this.$refs.nameInput?.$el.focus();
     },
     validateForm() {
       this.validateFieldName();
@@ -139,12 +189,14 @@ export default {
                     value: opt.value,
                   }))
                 : undefined,
+              workItemTypeIds: this.formData.workItemTypes,
             }
           : {
               groupPath: this.fullPath,
               name: this.formData.fieldName,
               fieldType: this.formData.fieldType,
               selectOptions: this.isSelect ? this.formData.selectOptions : undefined,
+              workItemTypeIds: this.formData.workItemTypes,
             };
 
         const { data } = await this.$apollo.mutate({
@@ -162,8 +214,7 @@ export default {
       } catch (error) {
         Sentry.captureException(error);
         this.mutationError =
-          error.message ||
-          s__('WorkItemCustomField|An error occurred while saving the custom field');
+          error.message || s__('WorkItem|An error occurred while saving the custom field.');
       } finally {
         this.loading = false;
       }
@@ -183,10 +234,11 @@ export default {
 
         const customField = data?.group?.customField;
         if (customField) {
-          const { name, fieldType, selectOptions } = customField;
+          const { name, fieldType, selectOptions, workItemTypes } = customField;
           this.formData = {
             fieldName: name,
             fieldType,
+            workItemTypes: workItemTypes.map((type) => type.id),
             selectOptions:
               selectOptions.length > 0
                 ? JSON.parse(JSON.stringify(selectOptions))
@@ -262,7 +314,24 @@ export default {
             @input="validateFieldName"
           />
         </gl-form-group>
-
+        <gl-form-group
+          :label="s__('WorkItemCustomField|Use on')"
+          label-for="field-use-on"
+          data-testid="custom-field-use-on"
+        >
+          <gl-collapsible-listbox
+            id="field-use-on"
+            ref="workItemTypeListbox"
+            :items="workItemTypesForListbox"
+            :loading="$apollo.queries.workItemTypes.loading"
+            :selected="formData.workItemTypes"
+            :toggle-text="dropdownToggleText"
+            toggle-class="gl-form-input-md"
+            block
+            multiple
+            @select="workItemTypeSelected"
+          />
+        </gl-form-group>
         <gl-form-group
           v-if="isSelect"
           :label="s__('WorkItemCustomField|Options')"

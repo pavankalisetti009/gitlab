@@ -1,11 +1,12 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlModal } from '@gitlab/ui';
+import { GlCollapsibleListbox, GlModal } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import CustomFieldForm from 'ee/groups/settings/work_items/custom_field_form.vue';
 import createCustomFieldMutation from 'ee/groups/settings/work_items/create_custom_field.mutation.graphql';
 import updateCustomFieldMutation from 'ee/groups/settings/work_items/update_custom_field.mutation.graphql';
 import groupCustomFieldQuery from 'ee/groups/settings/work_items/group_custom_field.query.graphql';
+import namespaceWorkItemTypesQuery from 'ee/groups/settings/work_items/group_work_item_types_for_select.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -23,6 +24,13 @@ describe('CustomFieldForm', () => {
   const findFieldTypeSelect = () => wrapper.find('#field-type');
   const findFieldNameFormGroup = () => wrapper.find('[label-for="field-name"]');
   const findFieldNameInput = () => wrapper.find('#field-name');
+  const findWorkItemTypeListbox = () => wrapper.findComponent(GlCollapsibleListbox);
+
+  const mockWorkItemTypes = [
+    { id: 'gid://gitlab/WorkItems::Type/1', name: 'Issue' },
+    { id: 'gid://gitlab/WorkItems::Type/2', name: 'Incident' },
+    { id: 'gid://gitlab/WorkItems::Type/3', name: 'Task' },
+  ];
 
   const findCustomFieldOptionsFormGroup = () =>
     wrapper.find('[data-testid="custom-field-options"]');
@@ -68,7 +76,11 @@ describe('CustomFieldForm', () => {
       { id: '1', value: 'Option 1' },
       { id: '2', value: 'Option 2' },
     ],
-    workItemTypes: [{ id: '1', name: 'Issue' }],
+    workItemTypes: [mockWorkItemTypes[0]],
+  };
+
+  const namespaceWorkItemTypesResponse = {
+    data: { workspace: { id: '1', workItemTypes: { nodes: mockWorkItemTypes } } },
   };
 
   const fullPath = 'group/subgroup';
@@ -81,6 +93,7 @@ describe('CustomFieldForm', () => {
     createFieldHandler = jest.fn().mockResolvedValue(createFieldResponse),
     updateFieldHandler = jest.fn().mockResolvedValue(updateFieldResponse),
     existingFieldHandler = jest.fn().mockResolvedValue(existingFieldResponse),
+    workItemTypesHandler = jest.fn().mockResolvedValue(namespaceWorkItemTypesResponse),
   } = {}) => {
     wrapper = shallowMountExtended(CustomFieldForm, {
       propsData: {
@@ -93,6 +106,7 @@ describe('CustomFieldForm', () => {
         [createCustomFieldMutation, createFieldHandler],
         [updateCustomFieldMutation, updateFieldHandler],
         [groupCustomFieldQuery, existingFieldHandler],
+        [namespaceWorkItemTypesQuery, workItemTypesHandler],
       ]),
       stubs: {
         GlModal,
@@ -166,6 +180,27 @@ describe('CustomFieldForm', () => {
       },
     );
 
+    it('displays "Select types" when no types are selected', () => {
+      expect(findWorkItemTypeListbox().props('toggleText')).toBe('Select types');
+    });
+
+    it('loads work item types', async () => {
+      await waitForPromises();
+
+      mockWorkItemTypes.forEach(({ id, name }) => {
+        expect(findWorkItemTypeListbox().props('items')).toContainEqual(
+          expect.objectContaining({ value: id, text: name, name }),
+        );
+      });
+    });
+
+    it('displays selected type names when types are selected', async () => {
+      await findWorkItemTypeListbox().vm.$emit('select', [mockWorkItemTypes[0].id]);
+      await nextTick();
+
+      expect(findWorkItemTypeListbox().props('toggleText')).toBe('Issue');
+    });
+
     it('adds select option when add button is clicked', async () => {
       await findFieldTypeSelect().vm.$emit('input', 'SINGLE_SELECT');
       await nextTick();
@@ -197,8 +232,9 @@ describe('CustomFieldForm', () => {
 
       await findToggleModalButton().vm.$emit('click');
 
-      await findFieldTypeSelect().vm.$emit('input', 'TEXT');
-      await findFieldNameInput().vm.$emit('input', 'Test Field');
+      findFieldTypeSelect().vm.$emit('input', 'TEXT');
+      findFieldNameInput().vm.$emit('input', 'Test Field');
+      findWorkItemTypeListbox().vm.$emit('select', [mockWorkItemTypes[2].id]);
 
       await nextTick();
 
@@ -213,6 +249,7 @@ describe('CustomFieldForm', () => {
         name: 'Test Field',
         fieldType: 'TEXT',
         selectOptions: undefined,
+        workItemTypeIds: [mockWorkItemTypes[2].id],
       });
     });
 
@@ -232,6 +269,8 @@ describe('CustomFieldForm', () => {
 
       await findFieldNameInput().vm.$emit('input', 'Updated Field');
 
+      await findWorkItemTypeListbox().vm.$emit('select', [mockWorkItemTypes[1].id]);
+
       await nextTick();
 
       findUpdateCustomFieldButton().vm.$emit('click');
@@ -247,6 +286,7 @@ describe('CustomFieldForm', () => {
           { id: '1', value: 'Option 1' },
           { id: '2', value: 'Option 2' },
         ],
+        workItemTypeIds: [mockWorkItemTypes[1].id],
       });
     });
 
