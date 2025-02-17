@@ -176,9 +176,7 @@ policy_scope:
       - id: 1
       - id: 2
   projects:
-    excluding:
-      - id: 1
-      - id: 2
+    excluding: []
 rules:
   - type: pipeline
     branches:
@@ -198,9 +196,7 @@ policy_scope:
       - id: 1
       - id: 2
   projects:
-    excluding:
-      - id: 1
-      - id: 2
+    excluding: []
 `),
   APPROVAL_POLICY: `name: ''
 description: ''
@@ -211,9 +207,7 @@ policy_scope:
       - id: 1
       - id: 2
   projects:
-    excluding:
-      - id: 1
-      - id: 2
+    excluding: []
 rules:
   - type: ''
 actions:
