@@ -78,44 +78,61 @@ module Search
       def self.each_task_for_processing(limit:)
         return unless block_given?
 
-        count = 0
-
-        scope = processing_queue.with_project.order(:perform_at, :id)
-        iterator = Gitlab::Pagination::Keyset::Iterator.new(scope: scope)
-        processed_project_identifiers = Set.new
-        iterator.each_batch(of: PROCESSING_BATCH_SIZE) do |tasks|
-          orphaned_task_ids = []
-          skipped_task_ids = []
-
-          tasks.each do |task|
-            unless task.delete_repo?
-              unless task.zoekt_repository&.project
-                orphaned_task_ids << task.id
-                next
-              end
-
-              if task.zoekt_repository.failed?
-                skipped_task_ids << task.id
-                next
-              end
-            end
-
-            next unless processed_project_identifiers.add?(task.project_identifier)
-
-            yield task
-            count += 1
-            break if count >= limit
-          end
-
-          tasks.where(id: orphaned_task_ids).update_all(state: :orphaned) if orphaned_task_ids.any?
-          tasks.where(id: skipped_task_ids).update_all(state: :skipped) if skipped_task_ids.any?
-          tasks.where.not(state: [:orphaned, :skipped]).update_all(state: :processing)
-
-          break if count >= limit
+        process_tasks(limit) do |task|
+          yield task
         end
       end
 
       private
+
+      def self.process_tasks(limit)
+        count = 0
+        processed_project_identifiers = Set.new
+
+        task_iterator.each_batch(of: PROCESSING_BATCH_SIZE) do |tasks|
+          task_states = tasks.each_with_object(orphaned: [], skipped: []) do |task, states|
+            case handle_invalid_task(task)
+            in [:orphaned, task_id]
+              states[:orphaned] << task_id
+            in [:skipped, task_id]
+              states[:skipped] << task_id
+            in [:valid, nil]
+              next unless processed_project_identifiers.add?(task.project_identifier)
+
+              yield task
+              count += 1
+            end
+
+            break states if count >= limit
+          end
+
+          update_task_states(tasks, orphaned_task_ids: task_states[:orphaned],
+            skipped_task_ids: task_states[:skipped])
+          break if count >= limit
+        end
+      end
+
+      def self.task_iterator
+        scope = processing_queue.with_project.order(:perform_at, :id)
+        Gitlab::Pagination::Keyset::Iterator.new(scope: scope)
+      end
+
+      def self.handle_invalid_task(task)
+        return [:valid, nil] if task.delete_repo?
+
+        project = task.zoekt_repository&.project
+        return [:orphaned, task.id] unless project && project.repo_exists?
+
+        return [:skipped, task.id] if task.zoekt_repository.failed? || project.pending_delete
+
+        [:valid, nil]
+      end
+
+      def self.update_task_states(tasks, orphaned_task_ids:, skipped_task_ids:)
+        tasks.where(id: orphaned_task_ids).update_all(state: :orphaned) if orphaned_task_ids.any?
+        tasks.where(id: skipped_task_ids).update_all(state: :skipped) if skipped_task_ids.any?
+        tasks.where.not(state: [:orphaned, :skipped]).update_all(state: :processing)
+      end
 
       def set_project_identifier
         self.project_identifier ||= zoekt_repository&.project_identifier
