@@ -394,18 +394,6 @@ RSpec.describe Geo::VerificationState, feature_category: :geo_replication do
 
             expect(subject.reload.verification_started?).to be_truthy
           end
-
-          it 'logs none found' do
-            model_record.update!(verification_started_at: (described_class::VERIFICATION_TIMEOUT - 1.minute).ago)
-
-            expect(Gitlab::Geo::Logger).to receive(:debug).with(hash_including(
-              message: 'Did not find any verification timeouts',
-              table: DummyModel.table_name,
-              timeout: described_class::VERIFICATION_TIMEOUT.to_s
-            ))
-
-            DummyModel.fail_verification_timeouts
-          end
         end
 
         context 'when verification has timed out for a record' do
@@ -415,20 +403,23 @@ RSpec.describe Geo::VerificationState, feature_category: :geo_replication do
             DummyModel.fail_verification_timeouts
 
             expect(subject.reload.verification_failed?).to be_truthy
+            expect(subject.reload.verification_failure).to eq("Verification timed out after #{described_class::VERIFICATION_TIMEOUT}")
           end
 
           it 'logs the verification state transition' do
             model_record.update!(verification_started_at: (described_class::VERIFICATION_TIMEOUT + 1.minute).ago)
 
-            expect(Gitlab::Geo::Logger).to receive(:warn).with(hash_including(
-              message: 'Batch verification state transition',
-              table: DummyModel.table_name,
-              count: 1,
-              from: 'verification_started',
-              to: 'verification_failed',
-              method: 'log_fail_verification_timeouts',
-              timeout: described_class::VERIFICATION_TIMEOUT.to_s
-            ))
+            expect(Gitlab::Geo::Logger).to receive(:warn).with(
+              hash_including(
+                message: 'Verification state transition',
+                class: DummyModel.verification_state_table_class.name,
+                id: model_record.id,
+                model_record_id: model_record.id,
+                from: 'verification_started',
+                to: 'verification_failed',
+                result: true
+              )
+            )
 
             DummyModel.fail_verification_timeouts
           end
@@ -646,16 +637,17 @@ RSpec.describe Geo::VerificationState, feature_category: :geo_replication do
         end
 
         it 'logs the verification state transition' do
-          expect(Gitlab::Geo::Logger).to receive(:warn).with(hash_including(
-            message: 'Batch verification state transition',
-            table: TestDummyModelWithSeparateState.verification_state_table_name,
-            count: 1,
-            from: 'verification_started',
-            to: 'verification_failed',
-            method: 'log_fail_verification_timeouts',
-            timeout: described_class::VERIFICATION_TIMEOUT.to_s
-          ))
-
+          expect(Gitlab::Geo::Logger).to receive(:warn).with(
+            hash_including(
+              message: 'Verification state transition',
+              class: TestDummyModelWithSeparateState.verification_state_table_class.name,
+              id: Integer,
+              model_record_id: anything,
+              from: 'verification_started',
+              to: 'verification_failed',
+              result: true
+            )
+          )
           TestDummyModelWithSeparateState.fail_verification_timeouts
         end
       end

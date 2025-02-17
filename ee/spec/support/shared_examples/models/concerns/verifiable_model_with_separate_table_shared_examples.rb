@@ -163,15 +163,18 @@ RSpec.shared_examples 'a verifiable model with a separate table for verification
         verifiable_model_record.verification_started_at = 1.day.ago
         verifiable_model_record.save!
 
-        expect(Gitlab::Geo::Logger).to receive(:warn).with(hash_including(
-          message: 'Batch verification state transition',
-          table: verifiable_model_class.verification_state_table_name,
-          count: 1,
-          from: 'verification_started',
-          to: 'verification_failed',
-          method: 'log_fail_verification_timeouts',
-          timeout: verifiable_model_class::VERIFICATION_TIMEOUT.to_s
-        ))
+        expect(Gitlab::Geo::Logger).to receive(:warn).with(
+          hash_including(
+            class: verifiable_model_class.verification_state_table_class.name,
+            from: 'verification_started',
+            gitlab_host: "localhost",
+            id: Integer,
+            message: 'Verification state transition',
+            model_record_id: anything,
+            result: true,
+            to: 'verification_failed'
+          )
+        )
 
         verifiable_model_class.fail_verification_timeouts
       end
