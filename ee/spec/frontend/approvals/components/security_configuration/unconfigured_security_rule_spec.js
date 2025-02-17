@@ -1,16 +1,10 @@
 import { GlSprintf, GlButton } from '@gitlab/ui';
-import { mount } from '@vue/test-utils';
-import Vue from 'vue';
-// eslint-disable-next-line no-restricted-imports
-import Vuex from 'vuex';
+import { shallowMount } from '@vue/test-utils';
 import UnconfiguredSecurityRule from 'ee/approvals/components/security_configuration/unconfigured_security_rule.vue';
 import { COVERAGE_CHECK_NAME } from 'ee/approvals/constants';
 
-Vue.use(Vuex);
-
 describe('UnconfiguredSecurityRule component', () => {
   let wrapper;
-  let description;
 
   const findDescription = () => wrapper.findComponent(GlSprintf);
   const findButton = () => wrapper.findComponent(GlButton);
@@ -21,12 +15,14 @@ describe('UnconfiguredSecurityRule component', () => {
     docsPath: 'docs/coverage-check',
   };
 
-  const createWrapper = (props = {}, options = {}) => {
-    wrapper = mount(UnconfiguredSecurityRule, {
+  const createWrapper = (props = {}) => {
+    wrapper = shallowMount(UnconfiguredSecurityRule, {
       propsData: {
         ...props,
       },
-      ...options,
+      stubs: {
+        GlSprintf,
+      },
     });
   };
 
@@ -35,20 +31,17 @@ describe('UnconfiguredSecurityRule component', () => {
     ${coverageCheckRule} | ${coverageCheckRule.name} | ${coverageCheckRule.description}
   `('with $ruleName', ({ rule, descriptionText }) => {
     beforeEach(() => {
-      createWrapper({
-        rule: { ...rule },
-      });
-      description = findDescription();
+      createWrapper({ rule: { ...rule } });
     });
 
-    it('should render the row with the enable decription and enable button', () => {
-      expect(description.exists()).toBe(true);
-      expect(description.text()).toBe(descriptionText);
+    it('renders the row with the enable description and enable button', () => {
+      expect(findDescription().exists()).toBe(true);
+      expect(wrapper.text()).toContain(descriptionText);
       expect(findButton().exists()).toBe(true);
     });
 
-    it('should emit the "enable" event when the button is clicked', () => {
-      findButton().trigger('click');
+    it('emits the "enable" event when the button is clicked', () => {
+      findButton().vm.$emit('click');
       expect(wrapper.emitted('enable')).toEqual([[]]);
     });
   });
