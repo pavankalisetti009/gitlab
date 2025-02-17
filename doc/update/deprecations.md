@@ -1954,6 +1954,26 @@ We will be transitioning to a new IID as a result of moving requirements to a [w
 
 <div class="deprecation breaking-change" data-milestone="18.0">
 
+### The `agentk` container registry is moving to Cloud Native GitLab
+
+<div class="deprecation-notes">
+
+- Announced in GitLab <span class="milestone">17.9</span>
+- Removal in GitLab <span class="milestone">18.0</span> ([breaking change](https://docs.gitlab.com/ee/update/terminology.html#breaking-change))
+- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/cluster-integration/gitlab-agent/-/issues/630).
+
+</div>
+
+We are moving the `agentk` container registry from [its project-specific registry](https://gitlab.com/gitlab-org/cluster-integration/gitlab-agent/container_registry/1223205) to [the Cloud Native GitLab registry](https://gitlab.com/gitlab-org/build/CNG/container_registry/8241772).
+From GitLab 18.0, the project-specific registry will not receive `agentk` updates.
+If you mirror the `agentk` container to a local registry, you should change your mirror source to the CNG registry.
+
+If you use the official Helm charts, they will start deploying from the new location seamlessly.
+
+</div>
+
+<div class="deprecation breaking-change" data-milestone="18.0">
+
 ### The `ci_job_token_scope_enabled` projects API attribute is deprecated
 
 <div class="deprecation-notes">
