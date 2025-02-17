@@ -10,6 +10,8 @@ module Security
 
     idempotent!
 
+    concurrency_limit -> { 200 }
+
     def perform(project_id, current_user_id)
       project = Project.find_by_id(project_id)
 
