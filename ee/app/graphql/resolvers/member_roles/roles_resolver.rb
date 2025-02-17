@@ -34,7 +34,7 @@ module Resolvers
         params[:order_by] = order_by.presence || :name
         params[:sort] = sort.present? ? sort.to_sym : :asc
 
-        member_roles = ::MemberRoles::RolesFinder.new(current_user, params).execute
+        member_roles = roles_finder.new(current_user, params).execute
         member_roles = member_roles.with_members_count if selects_field?(:members_count)
         member_roles = member_roles.with_users_count if selects_field?(:users_count)
 
@@ -42,6 +42,10 @@ module Resolvers
       end
 
       private
+
+      def roles_finder
+        ::MemberRoles::RolesFinder
+      end
 
       def selected_fields
         node_selection.selections.map(&:name)

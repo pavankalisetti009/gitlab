@@ -118,10 +118,6 @@ RSpec.describe MemberPresenter, feature_category: :groups_and_projects do
       create(:member_role, :reporter, :instance, name: 'reporter plus (instance-level)')
     end
 
-    let_it_be(:member_role_admin) do
-      create(:member_role, :admin, name: 'admin member role')
-    end
-
     before do
       stub_saas_features(gitlab_com_subscriptions: true)
       stub_licensed_features(custom_roles: true)
@@ -194,14 +190,6 @@ RSpec.describe MemberPresenter, feature_category: :groups_and_projects do
         it 'returns instance-level roles' do
           expect(presenter.valid_member_roles).to match_array(
             [
-              {
-                base_access_level: nil,
-                member_role_id: member_role_admin.id,
-                name: member_role_admin.name,
-                description: nil,
-                occupies_seat: false,
-                permissions: admin_permissions
-              },
               {
                 base_access_level: Gitlab::Access::GUEST,
                 member_role_id: member_role_guest_instance.id,

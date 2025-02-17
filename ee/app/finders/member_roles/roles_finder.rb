@@ -25,7 +25,7 @@ module MemberRoles
 
       validate_arguments!
 
-      items = MemberRole.all
+      items = member_roles
       items = by_parent(items)
       items = by_id(items)
       items = by_type(items)
@@ -35,11 +35,14 @@ module MemberRoles
 
     private
 
+    def member_roles
+      MemberRole.non_admin
+    end
+
     def validate_arguments!
       return unless gitlab_com_subscription?
       return if params[:parent].present?
       return if params[:id].present?
-      return if params[:admin_roles].present?
 
       raise ArgumentError, 'at least one filter param, :parent or :id has to be provided'
     end
@@ -61,12 +64,6 @@ module MemberRoles
       items.by_namespace(allowed_namespace_ids(items))
     end
 
-    def for_admin(items)
-      return items.none unless can_return_admin_roles?
-
-      items.admin
-    end
-
     def sort(items)
       order_by = ALLOWED_SORT_VALUES.include?(params[:order_by]) ? params[:order_by] : DEFAULT_SORT_VALUE
       order_direction = ALLOWED_SORT_DIRECTIONS.include?(params[:sort]) ? params[:sort] : DEFAULT_SORT_DIRECTION
@@ -76,8 +73,6 @@ module MemberRoles
     end
 
     def by_type(items)
-      return for_admin(items) if params[:admin_roles]
-
       return items if gitlab_com_subscription?
 
       return MemberRole.none unless allowed_read_member_role?
@@ -85,6 +80,7 @@ module MemberRoles
       items.for_instance
     end
 
+    # This is used by the AllRolesFinder and AdminRolesFinder subclasses.
     def can_return_admin_roles?
       return false if gitlab_com_subscription?
 

@@ -19,7 +19,7 @@ module EE
       id = params.permit(:id)[:id]
 
       if /\A\d+\z/.match?(id)
-        MemberRoles::RolesFinder.new(current_user, id: id).execute.first
+        ::Members::AllRolesFinder.new(current_user, id: id).execute.first
       else
         access_level = ::Types::MemberAccessLevelEnum.enum[id.downcase]
         name = ::Gitlab::Access.options_with_owner.key(access_level)

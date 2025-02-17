@@ -15,8 +15,6 @@ RSpec.describe MemberRoles::RolesFinder, feature_category: :system_access do
   let_it_be(:member_role_1) { create(:member_role, name: 'Tester', namespace: group) }
   let_it_be(:member_role_2) { create(:member_role, name: 'Manager', namespace: group) }
 
-  let_it_be(:member_role_admin) { create(:member_role, :admin, name: 'Admin role') }
-
   let_it_be(:member_role_another_group) { create(:member_role, name: 'Another role') }
 
   let(:current_user) { user }
@@ -141,43 +139,7 @@ RSpec.describe MemberRoles::RolesFinder, feature_category: :system_access do
       end
 
       it 'returns instance-level member roles' do
-        expect(find_member_roles).to match_array([member_role_admin, member_role_instance])
-      end
-    end
-  end
-
-  context 'when fetching admin custom roles', :enable_admin_mode do
-    let(:current_user) { admin }
-
-    let(:params) { { admin_roles: true } }
-
-    context 'when on SaaS' do
-      before do
-        stub_saas_features(gitlab_com_subscriptions: true)
-      end
-
-      it 'does not return any custom roles' do
-        expect(find_member_roles).to be_empty
-      end
-    end
-
-    context 'when on self-managed' do
-      before do
-        stub_saas_features(gitlab_com_subscriptions: false)
-      end
-
-      context 'for an admin' do
-        it 'returns admin member roles' do
-          expect(find_member_roles).to eq([member_role_admin])
-        end
-      end
-
-      context 'for an non-admin' do
-        let(:current_user) { user }
-
-        it 'does not return any custom roles' do
-          expect(find_member_roles).to be_empty
-        end
+        expect(find_member_roles).to eq([member_role_instance])
       end
     end
   end
@@ -276,7 +238,7 @@ RSpec.describe MemberRoles::RolesFinder, feature_category: :system_access do
         end
 
         it 'returns instance-level member roles' do
-          expect(find_member_roles).to match_array([member_role_admin, member_role_instance])
+          expect(find_member_roles).to match_array([member_role_instance])
         end
       end
 
@@ -302,7 +264,7 @@ RSpec.describe MemberRoles::RolesFinder, feature_category: :system_access do
         end
 
         it 'returns instance-level member roles' do
-          expect(find_member_roles).to match_array([member_role_admin, member_role_instance])
+          expect(find_member_roles).to eq([member_role_instance])
         end
       end
 
