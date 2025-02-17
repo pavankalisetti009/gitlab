@@ -56,24 +56,24 @@ class EpicPresenter < Gitlab::View::Presenter::Delegated
     :due_date_is_fixed?
 
   def start_date
-    start_and_due_date_widget.start_date
+    rollupable_dates.start_date
   end
   alias_method :start_date_fixed, :start_date
 
   def due_date
-    start_and_due_date_widget.due_date
+    rollupable_dates.due_date
   end
   alias_method :due_date_fixed, :due_date
 
   def start_date_is_fixed?
-    start_and_due_date_widget.fixed?
+    rollupable_dates.fixed?
   end
   alias_method :due_date_is_fixed?, :start_date_is_fixed?
 
   private
 
-  def start_and_due_date_widget
-    @start_and_due_date_widget ||= epic.work_item.get_widget(:start_and_due_date)
+  def rollupable_dates
+    @rollupable_dates ||= WorkItems::RollupableDates.new(epic, can_rollup: true)
   end
 
   def initial_data
