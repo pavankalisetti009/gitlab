@@ -1,19 +1,16 @@
 import Vue from 'vue';
-import { createPinia, PiniaVuePlugin } from 'pinia';
+import { pinia } from '~/pinia/instance';
+
 import createRouter from './router';
-
 import app from './service_accounts_app.vue';
-
-Vue.use(PiniaVuePlugin);
 
 export default (el) => {
   if (!el) {
     return null;
   }
 
-  const { basePath, serviceAccountsPath, serviceAccountsDocsPath } = el.dataset;
+  const { basePath, serviceAccountsPath, serviceAccountsDocsPath, accessTokenShow } = el.dataset;
 
-  const pinia = createPinia();
   const router = createRouter(basePath);
 
   return new Vue({
@@ -24,6 +21,7 @@ export default (el) => {
     provide: {
       serviceAccountsPath,
       serviceAccountsDocsPath,
+      accessTokenShow,
     },
     render(createElement) {
       return createElement(app);

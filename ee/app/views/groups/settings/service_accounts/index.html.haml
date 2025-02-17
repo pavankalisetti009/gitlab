@@ -1,4 +1,4 @@
 - page_title _('Service Accounts')
 
-#js-service-accounts{ data: { base_path: group_settings_service_accounts_path(@group), service_accounts: { path: expose_url(api_v4_groups_service_accounts_path(id: @group.id)), docs_path: help_page_path('user/profile/service_accounts.md') } } }
+#js-service-accounts{ data: { base_path: group_settings_service_accounts_path(@group), service_accounts: { path: expose_url(api_v4_groups_service_accounts_path(id: @group.id)), docs_path: help_page_path('user/profile/service_accounts.md') }, access_token: { show: expose_url(api_v4_personal_access_tokens_path) } } }
   = gl_loading_icon(css_class: 'gl-my-5', size: 'md')
