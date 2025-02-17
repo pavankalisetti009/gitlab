@@ -12,7 +12,7 @@ module EE
         super
 
         ActiveRecord::Associations::Preloader.new(records: projects, associations: [:group, :invited_groups]).call
-        ::Preloaders::ProjectRootAncestorPreloader.new(projects, :group, root_ancestor_preloads).execute
+        ::Namespaces::Preloaders::ProjectRootAncestorPreloader.new(projects, :group, root_ancestor_preloads).execute
 
         if ::Feature.enabled?(:preload_member_roles, current_user)
           ::Preloaders::UserMemberRolesInProjectsPreloader.new(projects: projects, user: current_user).execute

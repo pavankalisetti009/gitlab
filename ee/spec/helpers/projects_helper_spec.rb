@@ -181,7 +181,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
 
     it 'preloads the policy requirements' do
       expect(::Preloaders::ProjectPolicyPreloader).to receive(:new).with(kind_of(ActiveRecord::Relation), user).and_call_original
-      expect(::Preloaders::ProjectRootAncestorPreloader).to receive(:new).at_least(:once).and_call_original
+      expect(::Namespaces::Preloaders::ProjectRootAncestorPreloader).to receive(:new).at_least(:once).and_call_original
 
       helper.group_project_templates_count(parent_group.id)
     end

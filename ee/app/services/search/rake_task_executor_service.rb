@@ -544,7 +544,7 @@ module Search
         projects = batch.projects_order_id_asc
 
         if ::Gitlab::CurrentSettings.elasticsearch_limit_indexing?
-          ::Preloaders::ProjectRootAncestorPreloader.new(projects).execute
+          ::Namespaces::Preloaders::ProjectRootAncestorPreloader.new(projects).execute
           projects = projects.select(&:maintaining_elasticsearch?)
         end
 

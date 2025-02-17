@@ -28,7 +28,7 @@ module Preloaders
     def abilities_for_user_grouped_by_project(project_ids)
       @projects_relation = Project.select(:id, :namespace_id).where(id: project_ids)
 
-      ::Preloaders::ProjectRootAncestorPreloader.new(projects_relation, :namespace).execute
+      ::Namespaces::Preloaders::ProjectRootAncestorPreloader.new(projects_relation, :namespace).execute
 
       projects_with_traversal_ids = projects_relation.filter_map do |project|
         next unless custom_roles_enabled_on?(project)

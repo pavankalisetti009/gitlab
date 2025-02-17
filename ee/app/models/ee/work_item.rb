@@ -44,7 +44,7 @@ module EE
           project: :project_feature
         )
 
-        ::Preloaders::NamespaceRootAncestorPreloader.new(preloaded_data.map(&:namespace)).execute
+        ::Namespaces::Preloaders::NamespaceRootAncestorPreloader.new(preloaded_data.map(&:namespace)).execute
 
         if ::Feature.enabled?(:search_work_items_index_notes, ::Feature.current_request)
           preloaded_data = preloaded_data.includes(:notes)

@@ -50,7 +50,7 @@ module SystemAccess
     def group_links_by_root_ancestor
       grouped = {}
       groups = group_links.map(&:group)
-      Preloaders::GroupRootAncestorPreloader.new(groups, [:route]).execute
+      ::Namespaces::Preloaders::GroupRootAncestorPreloader.new(groups, [:route]).execute
 
       group_links.each do |link|
         root_ancestor = link.group.root_ancestor
