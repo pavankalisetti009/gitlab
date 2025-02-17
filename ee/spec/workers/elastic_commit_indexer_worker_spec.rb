@@ -58,7 +58,6 @@ RSpec.describe ElasticCommitIndexerWorker, feature_category: :global_search do
 
       expect(logger_double).to receive(:info).with(
         project_id: project.id,
-        wiki: false,
         search_indexing_duration_s: an_instance_of(Float),
         jid: anything
       )
@@ -86,16 +85,10 @@ RSpec.describe ElasticCommitIndexerWorker, feature_category: :global_search do
         end
       end
 
-      it 'does not log extra metadata on done for code' do
+      it 'does not log extra metadata on done' do
         expect(worker).not_to receive(:log_extra_metadata_on_done)
 
         worker.perform(project.id, false)
-      end
-
-      it 'does not log extra metadata on done for wiki' do
-        expect(worker).not_to receive(:log_extra_metadata_on_done)
-
-        worker.perform(project.id, true)
       end
     end
 
@@ -108,17 +101,11 @@ RSpec.describe ElasticCommitIndexerWorker, feature_category: :global_search do
         end
       end
 
-      it 'logs extra metadata on done when run for code', :aggregate_failures do
+      it 'logs extra metadata on done when run', :aggregate_failures do
         expect(worker).to receive(:log_extra_metadata_on_done).with(:commit_count, 10)
         expect(worker).to receive(:log_extra_metadata_on_done).with(:repository_size, 1)
 
-        worker.perform(project.id, false, { 'force' => true })
-      end
-
-      it 'does not log extra metadata on done when run for wiki' do
-        expect(worker).not_to receive(:log_extra_metadata_on_done)
-
-        worker.perform(project.id, true, { 'force' => true })
+        worker.perform(project.id, nil, { 'force' => true })
       end
     end
 
@@ -146,11 +133,11 @@ RSpec.describe ElasticCommitIndexerWorker, feature_category: :global_search do
       end
     end
 
-    it 'runs indexer in wiki mode if asked to' do
+    it 'runs indexer with the correct parameters' do
       indexer = double
 
       expect(indexer).to receive(:run)
-      expect(Gitlab::Elastic::Indexer).to receive(:new).with(project, wiki: true, force: false).and_return(indexer)
+      expect(Gitlab::Elastic::Indexer).to receive(:new).with(project, force: false).and_return(indexer)
 
       worker.perform(project.id, true)
     end
@@ -158,7 +145,7 @@ RSpec.describe ElasticCommitIndexerWorker, feature_category: :global_search do
     context 'when the indexer is locked' do
       it 'does not run index' do
         expect(worker).to receive(:in_lock) # Mock and don't yield
-          .with("ElasticCommitIndexerWorker/#{project.id}/false",
+          .with("ElasticCommitIndexerWorker/#{project.id}",
             ttl: (Gitlab::Elastic::Indexer::TIMEOUT + 1.minute),
             retries: 2,
             sleep_sec: 1)
@@ -170,7 +157,7 @@ RSpec.describe ElasticCommitIndexerWorker, feature_category: :global_search do
 
       it 'does not log anything' do
         expect(worker).to receive(:in_lock) # Mock and don't yield
-          .with("ElasticCommitIndexerWorker/#{project.id}/false",
+          .with("ElasticCommitIndexerWorker/#{project.id}",
             ttl: (Gitlab::Elastic::Indexer::TIMEOUT + 1.minute),
             retries: 2,
             sleep_sec: 1)
@@ -182,7 +169,7 @@ RSpec.describe ElasticCommitIndexerWorker, feature_category: :global_search do
 
       it 'does not record the apdex SLI' do
         expect(worker).to receive(:in_lock) # Mock and don't yield
-          .with("ElasticCommitIndexerWorker/#{project.id}/false",
+          .with("ElasticCommitIndexerWorker/#{project.id}",
             ttl: (Gitlab::Elastic::Indexer::TIMEOUT + 1.minute),
             retries: 2,
             sleep_sec: 1)
@@ -194,7 +181,7 @@ RSpec.describe ElasticCommitIndexerWorker, feature_category: :global_search do
 
       it 'does not log extra metadata' do
         expect(worker).to receive(:in_lock) # Mock and don't yield
-          .with("ElasticCommitIndexerWorker/#{project.id}/false",
+          .with("ElasticCommitIndexerWorker/#{project.id}",
             ttl: (Gitlab::Elastic::Indexer::TIMEOUT + 1.minute),
             retries: 2,
             sleep_sec: 1)
@@ -206,7 +193,7 @@ RSpec.describe ElasticCommitIndexerWorker, feature_category: :global_search do
 
       it 'skips index and schedules a job' do
         expect(worker).to receive(:in_lock)
-          .with("ElasticCommitIndexerWorker/#{project.id}/false",
+          .with("ElasticCommitIndexerWorker/#{project.id}",
             ttl: (Gitlab::Elastic::Indexer::TIMEOUT + 1.minute),
             retries: 2,
             sleep_sec: 1)
@@ -214,7 +201,7 @@ RSpec.describe ElasticCommitIndexerWorker, feature_category: :global_search do
 
         expect(Gitlab::Elastic::Indexer).not_to receive(:new)
         expect(described_class).to receive(:perform_in)
-          .with(described_class::RETRY_IN_IF_LOCKED, project.id, false, {})
+          .with(described_class::RETRY_IN_IF_LOCKED, project.id, nil, {})
 
         worker.perform(project.id)
       end

@@ -22,11 +22,11 @@ class ElasticCommitIndexerWorker
   # Performs the commits and blobs indexation
   #
   # project_id - The ID of the project to index
-  # wiki - Treat this project as a Wiki
+  # Keep wiki parameter for backwards compatibility. To be removed: https://gitlab.com/gitlab-org/gitlab/-/issues/518705
   # options - Options hash { 'force' => bool } forces to reindex the repository
   #
   # The indexation will cover all commits within INDEXED_SHA..HEAD
-  def perform(project_id, wiki = false, options = {})
+  def perform(project_id, _wiki = nil, options = {})
     return true unless Gitlab::CurrentSettings.elasticsearch_indexing?
 
     @project = Project.find_by_id(project_id)
@@ -39,10 +39,10 @@ class ElasticCommitIndexerWorker
 
     force = !!options['force']
     search_indexing_duration_s = Benchmark.realtime do
-      key = "#{self.class.name}/#{project_id}/#{wiki}"
+      key = "#{self.class.name}/#{project_id}"
       ttl = Gitlab::Elastic::Indexer::TIMEOUT + 1.minute
       @ret = in_lock(key, ttl: ttl, retries: LOCK_RETRIES, sleep_sec: LOCK_SLEEP_SEC) do
-        Gitlab::Elastic::Indexer.new(@project, wiki: wiki, force: force).run
+        Gitlab::Elastic::Indexer.new(@project, force: force).run
       end
     end
 
@@ -52,16 +52,14 @@ class ElasticCommitIndexerWorker
       # we do not want to log anything
       logger.info(
         project_id: project_id,
-        wiki: wiki,
         search_indexing_duration_s: search_indexing_duration_s,
         jid: jid
       )
 
-      document_type = wiki ? 'Wiki' : 'Code'
       Gitlab::Metrics::GlobalSearchIndexingSlis
-        .record_apdex(elapsed: search_indexing_duration_s, document_type: document_type)
+        .record_apdex(elapsed: search_indexing_duration_s, document_type: 'Code')
 
-      if force && !wiki && @project.statistics
+      if force && @project.statistics
         log_extra_metadata_on_done(:commit_count, @project.statistics.commit_count)
         log_extra_metadata_on_done(:repository_size, @project.statistics.repository_size)
       end
@@ -69,6 +67,6 @@ class ElasticCommitIndexerWorker
 
     @ret
   rescue Gitlab::ExclusiveLeaseHelpers::FailedToObtainLockError
-    self.class.perform_in(RETRY_IN_IF_LOCKED, project_id, wiki, options)
+    self.class.perform_in(RETRY_IN_IF_LOCKED, project_id, nil, options)
   end
 end
