@@ -118,10 +118,10 @@ module EE
 
       scope :with_web_entity_associations, -> { preload(:author, group: [:ip_restrictions, :route]) }
       scope :with_api_entity_associations, -> do
-        preload(:author, :sync_object, { work_item: :dates_source }, :labels, :parent, group: [:saml_provider, :route])
+        preload(:author, :sync_object, :labels, :parent, group: [:saml_provider, :route])
       end
       scope :preload_for_indexing, -> do
-        includes(:author, :sync_object, { work_item: :dates_source }, :group, :start_date_sourcing_epic, :due_date_sourcing_epic,
+        includes(:author, :sync_object, :group, :start_date_sourcing_epic, :due_date_sourcing_epic,
           :start_date_sourcing_milestone, :due_date_sourcing_milestone)
       end
       scope :preload_group_and_routables, -> { preload(group: [:route, :ip_restrictions, :saml_provider]) }

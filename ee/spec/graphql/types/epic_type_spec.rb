@@ -89,11 +89,9 @@ RSpec.describe GitlabSchema.types['Epic'], feature_category: :portfolio_manageme
   describe 'use work item logic to present dates' do
     using RSpec::Parameterized::TableSyntax
 
-    let_it_be(:epic) { create(:epic) }
-    let_it_be(:work_items_dates_source) do
-      create(
-        :work_items_dates_source,
-        work_item: epic.work_item,
+    let_it_be(:epic) do
+      build_stubbed(
+        :epic,
         start_date: 1.day.ago,
         start_date_fixed: 2.days.ago,
         start_date_is_fixed: true,
@@ -102,8 +100,6 @@ RSpec.describe GitlabSchema.types['Epic'], feature_category: :portfolio_manageme
         due_date_is_fixed: false
       )
     end
-
-    let(:widget) { epic.work_item.get_widget(:start_and_due_date) }
 
     where(:field, :result) do
       :start_date | 2.days.ago.to_date
