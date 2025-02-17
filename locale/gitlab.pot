@@ -62540,6 +62540,9 @@ msgstr ""
 msgid "UserMapping|Kept as placeholder"
 msgstr ""
 
+msgid "UserMapping|No matching user for provided information."
+msgstr ""
+
 msgid "UserMapping|Notification email could not be sent again."
 msgstr ""
 
@@ -62678,10 +62681,19 @@ msgstr ""
 msgid "UserMapping|The file is being processed and you will receive an email when completed."
 msgstr ""
 
+msgid "UserMapping|The following errors are preventing the sheet from being processed: %{errors}"
+msgstr ""
+
 msgid "UserMapping|The invitation could not be accepted."
 msgstr ""
 
 msgid "UserMapping|The invitation could not be declined."
+msgstr ""
+
+msgid "UserMapping|The provided CSV was not correctly formatted."
+msgstr ""
+
+msgid "UserMapping|The provided spreadsheet contains duplicate email addresses or usernames."
 msgstr ""
 
 msgid "UserMapping|Upload the completed CSV file."
