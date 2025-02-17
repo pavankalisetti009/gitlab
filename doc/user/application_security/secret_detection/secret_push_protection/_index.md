@@ -23,17 +23,23 @@ title: Secret push protection
 
 {{< /history >}}
 
-Secret push protection blocks secrets such as keys and API tokens from being pushed to GitLab. The
-content of each [file or commit](#coverage) is checked for secrets when pushed to GitLab. By
-default, the push is blocked if a secret is found.
-
-Use [pipeline secret detection](../_index.md) together with secret push protection to further strengthen your security.
+Secret push protection blocks secrets such as keys and API tokens from being pushed to GitLab.
 
 <i class="fa fa-youtube-play youtube" aria-hidden="true"></i>
 For an overview, see the playlist [Get Started with Secret Push Protection](https://www.youtube.com/playlist?list=PL05JrBw4t0KoADm-g2vxfyR0m6QLphTv-).
 
-Regardless of the Git client, GitLab prompts a message when a push is
-blocked, including details of:
+Use [pipeline secret detection](../_index.md) together with secret push protection to further strengthen your security.
+
+## Secret push protection workflow
+
+Secret push protection takes place in the pre-receive hook. When you push changes to GitLab,
+push protection checks each [file or commit](#coverage) for secrets. By default, if a secret is detected,
+the push is blocked.
+
+<!-- To edit, import the SVG with draw.io -->
+![A flowchart showing how secret protection can block a push](img/spp_workflow_v17_9.svg)
+
+When a push is blocked, GitLab prompts a message that includes:
 
 - Commit ID containing the secret.
 - Filename and line containing the secret.
