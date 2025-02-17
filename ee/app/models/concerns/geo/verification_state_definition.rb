@@ -107,7 +107,14 @@ module Geo
     end
 
     def verification_transition_details(object, transition)
-      model_record_id = object.respond_to?(:model_record_id) ? object.model_record_id : object&.id
+      model_record_id =
+        if object.respond_to?(:model_record_id)
+          object.model_record_id
+        elsif self.class.respond_to?(:separate_verification_state_table?) # This is a Model class like `Project`, as opposed to `Geo::ProjectState`.
+          object.id
+        else # rubocop:disable Style/EmptyElse -- for clarity!
+          nil
+        end
 
       {
         id: object.id,

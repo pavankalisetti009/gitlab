@@ -191,43 +191,10 @@ module Geo
         verification_state_table_name != table_name
       end
 
-      def verification_timed_out_batch_query
-        return verification_timed_out unless separate_verification_state_table?
-
-        verification_state_table_class.where(self.verification_state_model_key => verification_timed_out)
-      end
-
       # Fail verification for records which started verification a long time ago
       def fail_verification_timeouts
-        num_updated = 0
-
-        verification_timed_out_batch_query.each_batch do |relation|
-          num_updated += relation.update_all(fail_verification_timeouts_attrs)
-        end
-
-        log_fail_verification_timeouts(num_updated)
-      end
-
-      def fail_verification_timeouts_attrs
-        {
-          verification_state: verification_state_value(:verification_failed),
-          verification_failure: "Verification timed out after #{VERIFICATION_TIMEOUT}",
-          verification_checksum: nil,
-          verification_retry_count: 1,
-          verification_retry_at: next_retry_time(1),
-          verified_at: Time.current
-        }
-      end
-
-      def log_fail_verification_timeouts(num_updated)
-        if num_updated > 0
-          log_batch_update(num_updated, __method__.to_s,
-            'verification_started', 'verification_failed',
-            { timeout: VERIFICATION_TIMEOUT.to_s })
-        else
-          log_debug("Did not find any verification timeouts", {
-            table: verification_state_table_name, timeout: VERIFICATION_TIMEOUT.to_s
-          })
+        verification_timed_out.find_each do |record|
+          record.verification_failed_with_message!("Verification timed out after #{VERIFICATION_TIMEOUT}")
         end
       end
 

@@ -19,21 +19,6 @@ module Geo
       def verification_state_model_key
         self::MODEL_FOREIGN_KEY
       end
-
-      # Since verification timeout does bulk SQL updates, we cannot rely on the
-      # state machine transitions and hooks. We must implement those manually.
-      # When a registry record fails verification, it immediately transitions to
-      # sync failed.
-      override :fail_verification_timeouts_attrs
-      def fail_verification_timeouts_attrs
-        timeout = ::Geo::VerificationState::VERIFICATION_TIMEOUT
-
-        super.merge({
-          state: state_value(:failed),
-          last_sync_failure: "Verification failed with: Verification timed out after #{timeout}",
-          retry_count: 1
-        })
-      end
     end
 
     included do
