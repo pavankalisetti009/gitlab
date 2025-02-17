@@ -13,6 +13,9 @@ RSpec.describe Vulnerabilities::Archive, feature_category: :vulnerability_manage
   it { is_expected.to belong_to(:project).required }
   it { is_expected.to have_many(:archived_records) }
 
+  it { is_expected.to delegate_method(:year).to(:date).allow_nil }
+  it { is_expected.to delegate_method(:month).to(:date).allow_nil }
+
   describe 'validations' do
     it { is_expected.to validate_uniqueness_of(:date).scoped_to(:project_id) }
     it { is_expected.to validate_numericality_of(:archived_records_count).only_integer.is_greater_than_or_equal_to(0) }

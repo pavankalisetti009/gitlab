@@ -16,6 +16,12 @@ module EE
           description: 'List of security training providers for the project',
           resolver: ::Resolvers::SecurityTrainingProvidersResolver
 
+        field :vulnerability_archives, [::Types::Vulnerabilities::ArchiveType],
+          null: true,
+          description: 'All vulnerability archives of the project.',
+          experiment: { milestone: '17.9' },
+          resolver: ::Resolvers::Vulnerabilities::ArchivesResolver
+
         field :vulnerabilities, ::Types::VulnerabilityType.connection_type,
           null: true,
           extras: [:lookahead],

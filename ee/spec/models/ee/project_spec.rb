@@ -37,6 +37,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     it { is_expected.to have_one(:dependency_proxy_packages_setting).class_name('DependencyProxy::Packages::Setting').inverse_of(:project) }
 
     it { is_expected.to have_many(:path_locks) }
+    it { is_expected.to have_many(:vulnerability_archives).class_name('Vulnerabilities::Archive') }
     it { is_expected.to have_many(:vulnerability_feedback) }
     it { is_expected.to have_many(:vulnerability_exports) }
     it { is_expected.to have_many(:vulnerability_scanners) }
