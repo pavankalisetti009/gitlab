@@ -111,5 +111,35 @@ RSpec.describe Gitlab::Llm::Chain::Utils::ChatConversation, feature_category: :d
         expect(history).to contain_exactly("question 1", "answer 1", "question 2", "answer 3")
       end
     end
+
+    context "with the last user message" do
+      let(:messages) do
+        [
+          build(:ai_chat_message, :assistant, request_id: nil, content: 'comment 1'),
+          build(:ai_chat_message, request_id: nil, content: "follow up question")
+        ]
+      end
+
+      let(:history) { conversation.pluck(:content) }
+
+      it "does not include the last user message" do
+        expect(history).to contain_exactly("comment 1")
+      end
+    end
+
+    context "with the last assistant message" do
+      let(:messages) do
+        [
+          build(:ai_chat_message, request_id: nil, content: "question 1"),
+          build(:ai_chat_message, :assistant, request_id: nil, content: 'answer 1')
+        ]
+      end
+
+      let(:history) { conversation.pluck(:content) }
+
+      it "does not remove the last assistant message" do
+        expect(history).to contain_exactly("question 1", "answer 1")
+      end
+    end
   end
 end
