@@ -13,8 +13,7 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :cell do
       # below table(s) will get a foreign key after its partitioning backfill finishes,
       # before the application begins using it.
       #
-      'merge_request_diff_commits_b5377a7a34.merge_request_diff_id',
-      'merge_request_diff_files_99208b8fac.merge_request_diff_id'
+      'merge_request_diff_commits_b5377a7a34.merge_request_diff_id'
     ]
   end
 
