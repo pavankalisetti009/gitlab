@@ -45,7 +45,7 @@ describe('EditorWrapper component', () => {
     data: {
       securityPolicyProjectCreated: {
         project: {
-          name: 'New project',
+          name: 'New security policy project',
           fullPath: 'path/to/new-project',
           id: '01',
           branch: {
@@ -169,7 +169,7 @@ describe('EditorWrapper component', () => {
       });
       await waitForPromises();
       expect(findScanExecutionPolicyEditor().props('assignedPolicyProject')).toEqual({
-        name: 'New project',
+        name: 'New security policy project',
         fullPath: 'path/to/new-project',
         id: '01',
         branch: 'main',
@@ -210,6 +210,40 @@ describe('EditorWrapper component', () => {
       expect(alert.props('title')).toBe('error');
       // eslint-disable-next-line jest/no-standalone-expect
       expect(alert.text()).toBe('');
+    });
+
+    it('uses the new security policy project if creating a policy fails the first time', async () => {
+      goToPolicyMR.mockRejectedValueOnce([{}]);
+      factory();
+      await waitForPromises();
+      expect(getSecurityPolicyProjectSubscriptionHandlerMock).toHaveBeenCalledTimes(1);
+      findScanExecutionPolicyEditor().vm.$emit('save', {
+        action: SECURITY_POLICY_ACTIONS.APPEND,
+        policy: mockDastScanExecutionManifest,
+      });
+      await waitForPromises();
+      expect(getSecurityPolicyProjectSubscriptionHandlerMock).toHaveBeenCalledTimes(1);
+      expect(goToPolicyMR).toHaveBeenCalledTimes(1);
+      findScanExecutionPolicyEditor().vm.$emit('save', {
+        action: SECURITY_POLICY_ACTIONS.APPEND,
+        policy: mockDastScanExecutionManifest,
+      });
+      await waitForPromises();
+      expect(getSecurityPolicyProjectSubscriptionHandlerMock).toHaveBeenCalledTimes(1);
+      expect(goToPolicyMR).toHaveBeenCalledTimes(2);
+      expect(goToPolicyMR).toHaveBeenCalledWith({
+        action: SECURITY_POLICY_ACTIONS.APPEND,
+        assignedPolicyProject: {
+          name: 'New security policy project',
+          fullPath: 'path/to/new-project',
+          id: '01',
+          branch: 'main',
+        },
+        extraMergeRequestInput: null,
+        name: mockDastScanExecutionObject.name,
+        namespacePath: defaultProjectPath,
+        yamlEditorValue: mockDastScanExecutionManifest,
+      });
     });
   });
 

@@ -33,7 +33,7 @@ export default {
           }
 
           if (project) {
-            this.currentAssignedPolicyProject = {
+            this.securityPolicyProject = {
               ...project,
               branch: project?.branch?.rootRef,
             };
@@ -70,7 +70,6 @@ export default {
   },
   data() {
     return {
-      currentAssignedPolicyProject: this.assignedPolicyProject,
       isRuleMode: true,
       error: '',
       errorMessages: [],
@@ -80,6 +79,7 @@ export default {
       isDeleting: false,
       policy: null,
       policyModificationAction: null,
+      securityPolicyProject: this.assignedPolicyProject,
     };
   },
   computed: {
@@ -106,7 +106,7 @@ export default {
     },
   },
   watch: {
-    async currentAssignedPolicyProject(project) {
+    async securityPolicyProject(project) {
       await this.createPolicyModification(project);
     },
   },
@@ -149,17 +149,17 @@ export default {
       this.setLoadingFlag(true);
 
       try {
-        if (!this.assignedPolicyProject.fullPath) {
+        if (!this.securityPolicyProject.fullPath) {
           await assignSecurityPolicyProjectAsync(this.namespacePath);
         } else {
-          await this.createPolicyModification(this.assignedPolicyProject);
+          await this.createPolicyModification(this.securityPolicyProject);
         }
       } catch (e) {
         this.handleError(e);
         this.setLoadingFlag(false);
       }
     },
-    async createPolicyModification(assignedPolicyProject) {
+    async createPolicyModification(assignedSecurityPolicyProject) {
       if (!this.policy || !this.policyModificationAction) return;
 
       this.setError('');
@@ -168,7 +168,7 @@ export default {
       try {
         await goToPolicyMR({
           action: this.policyModificationAction,
-          assignedPolicyProject,
+          assignedPolicyProject: assignedSecurityPolicyProject,
           extraMergeRequestInput: this.extraMergeRequestInput,
           name: this.originalName || fromYaml({ manifest: this.policy })?.name,
           namespacePath: this.namespacePath,
@@ -217,7 +217,7 @@ export default {
       :is="policyOptions.component"
       :error-sources="errorSources"
       :existing-policy="existingPolicy"
-      :assigned-policy-project="currentAssignedPolicyProject"
+      :assigned-policy-project="securityPolicyProject"
       :is-creating="isCreating"
       :is-deleting="isDeleting"
       :is-editing="isEditing"
