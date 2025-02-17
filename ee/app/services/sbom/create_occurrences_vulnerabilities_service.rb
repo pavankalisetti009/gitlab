@@ -56,9 +56,6 @@ module Sbom
 
     def filtered_data
       @filtered_data ||= finding_data.filter_map do |data|
-        next if Feature.disabled?(:update_sbom_occurrences_vulnerabilities_on_cvs,
-          Project.actor_from_id(data[:project_id]))
-
         [data[:uuid], data[:purl_type], data[:package_name], data[:package_version], data[:project_id]]
       end
     end

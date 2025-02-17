@@ -35,18 +35,6 @@ RSpec.describe Sbom::CreateOccurrencesVulnerabilitiesService, feature_category: 
   describe '#execute' do
     subject(:service_execute) { described_class.new(findings).execute }
 
-    shared_examples 'with FF enabled only for project' do
-      before do
-        stub_feature_flags(update_sbom_occurrences_vulnerabilities_on_cvs: project)
-      end
-
-      it 'creates DB entries based only for vulnerability and occurrence data related to project' do
-        service_execute
-
-        expect(Sbom::OccurrencesVulnerability.distinct.pluck(:project_id)).to eq([project.id])
-      end
-    end
-
     it 'creates DB entries based on vulnerability and occurrence data' do
       expect { service_execute }.to change { Sbom::OccurrencesVulnerability.count }.by(findings.count)
 
@@ -54,8 +42,6 @@ RSpec.describe Sbom::CreateOccurrencesVulnerabilitiesService, feature_category: 
         have_attributes(sbom_occurrence_id: occurrence.id, vulnerability_id: vulnerability.id)
       )
     end
-
-    it_behaves_like 'with FF enabled only for project'
 
     context 'with no related records' do
       let(:findings) do
@@ -106,8 +92,6 @@ RSpec.describe Sbom::CreateOccurrencesVulnerabilitiesService, feature_category: 
           have_attributes(sbom_occurrence_id: occurrence.id, vulnerability_id: vulnerability_2.id)
         )
       end
-
-      it_behaves_like 'with FF enabled only for project'
     end
 
     context 'with multiple occurrences related to a single vulnerability' do
@@ -140,8 +124,6 @@ RSpec.describe Sbom::CreateOccurrencesVulnerabilitiesService, feature_category: 
           have_attributes(sbom_occurrence_id: occurrence_2.id, vulnerability_id: vulnerability.id)
         )
       end
-
-      it_behaves_like 'with FF enabled only for project'
 
       context 'with an existing record in relation to vulnerability and occurrence ids' do
         before do
