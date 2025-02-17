@@ -32938,6 +32938,7 @@ Project-level settings for product analytics provider.
 | <a id="projectuserpermissions"></a>`userPermissions` | [`ProjectPermissions!`](#projectpermissions) | Permissions for the current user on the resource. |
 | <a id="projectvaluestreamanalytics"></a>`valueStreamAnalytics` | [`ValueStreamAnalytics`](#valuestreamanalytics) | Information about Value Stream Analytics within the project. |
 | <a id="projectvisibility"></a>`visibility` | [`String`](#string) | Visibility of the project. |
+| <a id="projectvulnerabilityarchives"></a>`vulnerabilityArchives` **{warning-solid}** | [`[VulnerabilityArchive!]`](#vulnerabilityarchive) | **Introduced** in GitLab 17.9. **Status**: Experiment. All vulnerability archives of the project. |
 | <a id="projectvulnerabilityimages"></a>`vulnerabilityImages` | [`VulnerabilityContainerImageConnection`](#vulnerabilitycontainerimageconnection) | Container images reported on the project vulnerabilities. (see [Connections](#connections)) |
 | <a id="projectvulnerabilityscanners"></a>`vulnerabilityScanners` | [`VulnerabilityScannerConnection`](#vulnerabilityscannerconnection) | Vulnerability scanners reported on the project vulnerabilities. (see [Connections](#connections)) |
 | <a id="projectweburl"></a>`webUrl` | [`String`](#string) | Web URL of the project. |
@@ -38114,6 +38115,18 @@ four standard [pagination arguments](#pagination-arguments):
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="vulnerabilitynotesfilter"></a>`filter` | [`NotesFilterType`](#notesfiltertype) | Type of notes collection: ALL_NOTES, ONLY_COMMENTS, ONLY_ACTIVITY. |
+
+### `VulnerabilityArchive`
+
+Represents a vulnerability archive.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="vulnerabilityarchivearchivedrecordscount"></a>`archivedRecordsCount` | [`Int!`](#int) | Number of records the archive contains. |
+| <a id="vulnerabilityarchivemonth"></a>`month` | [`Int!`](#int) | Month of the archive, represented as a number from 1 (January) to 12 (December). |
+| <a id="vulnerabilityarchiveyear"></a>`year` | [`Int!`](#int) | Year of the archive. |
 
 ### `VulnerabilityContainerImage`
 

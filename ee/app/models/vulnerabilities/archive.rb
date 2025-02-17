@@ -10,6 +10,8 @@ module Vulnerabilities
     validates :date, presence: true, uniqueness: { scope: :project_id }
     validates :archived_records_count, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
 
+    delegate :year, :month, to: :date, allow_nil: true
+
     def date=(value)
       value = value.beginning_of_month if value
 

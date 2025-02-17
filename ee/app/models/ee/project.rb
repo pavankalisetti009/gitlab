@@ -115,6 +115,7 @@ module EE
       has_many :vulnerability_scanners, class_name: 'Vulnerabilities::Scanner'
       has_many :vulnerability_exports, class_name: 'Vulnerabilities::Export'
       has_many :vulnerability_remediations, class_name: 'Vulnerabilities::Remediation', inverse_of: :project
+      has_many :vulnerability_archives, class_name: 'Vulnerabilities::Archive'
 
       has_many :workspaces, class_name: 'RemoteDevelopment::Workspace', inverse_of: :project
 
