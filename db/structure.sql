@@ -23339,7 +23339,8 @@ CREATE TABLE vulnerability_finding_evidences (
     updated_at timestamp with time zone NOT NULL,
     vulnerability_occurrence_id bigint NOT NULL,
     data jsonb DEFAULT '{}'::jsonb NOT NULL,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_e8f37f70eb CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE vulnerability_finding_evidences_id_seq
@@ -27324,9 +27325,6 @@ ALTER TABLE sprints
 
 ALTER TABLE web_hook_logs
     ADD CONSTRAINT check_df72cb58f5 CHECK ((char_length(url_hash) <= 44)) NOT VALID;
-
-ALTER TABLE vulnerability_finding_evidences
-    ADD CONSTRAINT check_e8f37f70eb CHECK ((project_id IS NOT NULL)) NOT VALID;
 
 ALTER TABLE project_relation_exports
     ADD CONSTRAINT check_f461e3537f CHECK ((project_id IS NOT NULL)) NOT VALID;
