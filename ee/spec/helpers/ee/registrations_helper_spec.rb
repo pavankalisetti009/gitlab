@@ -46,14 +46,6 @@ RSpec.describe EE::RegistrationsHelper, feature_category: :user_management do
       })
     end
 
-    context 'when fetch_arkose_data_exchange_payload feature flag is disabled' do
-      it 'does not include data_exchange_payload_path' do
-        stub_feature_flags(fetch_arkose_data_exchange_payload: false)
-
-        expect(data.keys).not_to include(:data_exchange_payload_path)
-      end
-    end
-
     context 'when data exchange payload is nil' do
       let(:data_exchange_payload) { nil }
 

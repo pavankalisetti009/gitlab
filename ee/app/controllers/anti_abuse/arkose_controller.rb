@@ -7,7 +7,6 @@ module AntiAbuse
     feature_category :instance_resiliency
 
     skip_before_action :authenticate_user!
-    before_action :check_feature_flag
     before_action :require_signed_in_user!
 
     def data_exchange_payload
@@ -15,10 +14,6 @@ module AntiAbuse
     end
 
     private
-
-    def check_feature_flag
-      head :not_found unless ::Feature.enabled?(:fetch_arkose_data_exchange_payload, :instance)
-    end
 
     def use_case
       if @user.arkose_verified?

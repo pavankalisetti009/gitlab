@@ -24,16 +24,6 @@ RSpec.describe AntiAbuse::ArkoseController, :clean_gitlab_redis_sessions, featur
         expect(json_response['payload']).to eq mock_payload
         expect(response).to have_gitlab_http_status(:ok)
       end
-
-      context 'when fetch_arkose_data_exchange_payload is disabled' do
-        it 'returns 404', :aggregate_failures do
-          stub_feature_flags(fetch_arkose_data_exchange_payload: false)
-
-          do_request
-
-          expect(response).to have_gitlab_http_status(:not_found)
-        end
-      end
     end
 
     context 'when user is not arkose_verified?' do

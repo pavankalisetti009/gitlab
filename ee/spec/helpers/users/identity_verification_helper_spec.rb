@@ -125,15 +125,6 @@ RSpec.describe Users::IdentityVerificationHelper, feature_category: :instance_re
           expect(json_result).to eq(expected_data.merge({ phone_number: phone_number_data }).deep_stringify_keys)
         end
       end
-
-      context 'when fetch_arkose_data_exchange_payload feature flag is disabled' do
-        it 'does not include arkose.data_exchange_payload_path' do
-          stub_feature_flags(fetch_arkose_data_exchange_payload: false)
-
-          arkose_data = Gitlab::Json.parse(data[:data])['arkose']
-          expect(arkose_data.keys).not_to include('data_exchange_payload_path')
-        end
-      end
     end
   end
 
