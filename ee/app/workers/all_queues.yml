@@ -2753,16 +2753,6 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
-- :name: search_zoekt_index_over_watermark_event
-  :worker_name: Search::Zoekt::IndexOverWatermarkEventWorker
-  :feature_category: :global_search
-  :has_external_dependencies: false
-  :urgency: :low
-  :resource_boundary: :unknown
-  :weight: 1
-  :idempotent: true
-  :tags: []
-  :queue_namespace:
 - :name: search_zoekt_index_to_evict_event
   :worker_name: Search::Zoekt::IndexToEvictEventWorker
   :feature_category: :global_search
