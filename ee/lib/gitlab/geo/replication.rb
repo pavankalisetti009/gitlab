@@ -15,6 +15,7 @@ module Gitlab
         metric_image
         namespace_file
         personal_file
+        import/placeholder_reassignments
       ].freeze
 
       FILE_NOT_FOUND_GEO_CODE = 'FILE_NOT_FOUND'
