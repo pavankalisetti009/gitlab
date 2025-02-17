@@ -161,15 +161,22 @@ module EE
           description: 'List of all admin customizable permissions.',
           experiment: { milestone: '17.9' }
         field :member_role, ::Types::MemberRoles::MemberRoleType,
-          null: true, description: 'Finds a single custom role for the instance. Available only for self-managed.',
+          null: true,
+          description: 'Finds a single custom role for the instance. Available only for GitLab Self-Managed.',
           resolver: ::Resolvers::MemberRoles::RolesResolver.single,
           experiment: { milestone: '16.6' }
+        field :admin_member_role,
+          ::Types::Members::AdminMemberRoleType,
+          description: 'Finds a single admin custom role for the instance. Available only for GitLab Self-Managed.',
+          resolver: ::Resolvers::Members::AdminRolesResolver.single,
+          experiment: { milestone: '17.10' }
         field :standard_role, ::Types::Members::StandardRoleType,
-          null: true, description: 'Finds a single default role for the instance. Available only for self-managed.',
+          null: true,
+          description: 'Finds a single default role for the instance. Available only for GitLab Self-Managed.',
           resolver: ::Resolvers::Members::StandardRolesResolver.single,
           experiment: { milestone: '17.6' }
         field :standard_roles, ::Types::Members::StandardRoleType.connection_type,
-          null: true, description: 'Default roles available for the instance. Available only for self-managed.',
+          null: true, description: 'Default roles available for the instance. Available only for GitLab Self-Managed.',
           resolver: ::Resolvers::Members::StandardRolesResolver,
           experiment: { milestone: '17.3' }
         field :self_managed_add_on_eligible_users,
@@ -192,9 +199,14 @@ module EE
           description: 'Instance-level Amazon S3 configurations for audit events.',
           resolver: ::Resolvers::AuditEvents::Instance::AmazonS3ConfigurationsResolver
         field :member_roles, ::Types::MemberRoles::MemberRoleType.connection_type,
-          null: true, description: 'Custom roles available for the instance. Available only for self-managed.',
+          null: true, description: 'Custom roles available for the instance. Available only for GitLab Self-Managed.',
           resolver: ::Resolvers::MemberRoles::RolesResolver,
           experiment: { milestone: '16.7' }
+        field :admin_member_roles,
+          ::Types::Members::AdminMemberRoleType.connection_type,
+          description: 'Admin custom roles available for the instance. Available only for GitLab Self-Managed.',
+          resolver: ::Resolvers::Members::AdminRolesResolver,
+          experiment: { milestone: '17.10' }
         field :google_cloud_artifact_registry_repository_artifact,
           ::Types::GoogleCloud::ArtifactRegistry::ArtifactDetailsType,
           null: true,

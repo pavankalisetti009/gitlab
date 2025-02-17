@@ -104,6 +104,25 @@ Returns [`[AddOnPurchase!]`](#addonpurchase).
 | ---- | ---- | ----------- |
 | <a id="queryaddonpurchasesnamespaceid"></a>`namespaceId` | [`NamespaceID`](#namespaceid) | ID of namespace that the add-ons were purchased for. |
 
+### `Query.adminMemberRole`
+
+Finds a single admin custom role for the instance. Available only for GitLab Self-Managed.
+
+DETAILS:
+**Introduced** in GitLab 17.10.
+**Status**: Experiment.
+
+Returns [`AdminMemberRole`](#adminmemberrole).
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="queryadminmemberroleid"></a>`id` | [`MemberRoleID`](#memberroleid) | Global ID of the member role to look up. |
+| <a id="queryadminmemberroleids"></a>`ids` | [`[MemberRoleID!]`](#memberroleid) | Global IDs of the member role to look up. |
+| <a id="queryadminmemberroleorderby"></a>`orderBy` | [`MemberRolesOrderBy`](#memberrolesorderby) | Ordering column. Default is NAME. |
+| <a id="queryadminmemberrolesort"></a>`sort` | [`SortDirectionEnum`](#sortdirectionenum) | Ordering column. Default is ASC. |
+
 ### `Query.adminMemberRolePermissions`
 
 List of all admin customizable permissions.
@@ -117,6 +136,29 @@ Returns [`CustomizableAdminPermissionConnection`](#customizableadminpermissionco
 This field returns a [connection](#connections). It accepts the
 four standard [pagination arguments](#pagination-arguments):
 `before: String`, `after: String`, `first: Int`, and `last: Int`.
+
+### `Query.adminMemberRoles`
+
+Admin custom roles available for the instance. Available only for GitLab Self-Managed.
+
+DETAILS:
+**Introduced** in GitLab 17.10.
+**Status**: Experiment.
+
+Returns [`AdminMemberRoleConnection`](#adminmemberroleconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="queryadminmemberrolesid"></a>`id` | [`MemberRoleID`](#memberroleid) | Global ID of the member role to look up. |
+| <a id="queryadminmemberrolesids"></a>`ids` | [`[MemberRoleID!]`](#memberroleid) | Global IDs of the member role to look up. |
+| <a id="queryadminmemberrolesorderby"></a>`orderBy` | [`MemberRolesOrderBy`](#memberrolesorderby) | Ordering column. Default is NAME. |
+| <a id="queryadminmemberrolessort"></a>`sort` | [`SortDirectionEnum`](#sortdirectionenum) | Ordering column. Default is ASC. |
 
 ### `Query.aiConversationThreads`
 
@@ -805,7 +847,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 ### `Query.memberRole`
 
-Finds a single custom role for the instance. Available only for self-managed.
+Finds a single custom role for the instance. Available only for GitLab Self-Managed.
 
 DETAILS:
 **Introduced** in GitLab 16.6.
@@ -838,7 +880,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 ### `Query.memberRoles`
 
-Custom roles available for the instance. Available only for self-managed.
+Custom roles available for the instance. Available only for GitLab Self-Managed.
 
 DETAILS:
 **Introduced** in GitLab 16.7.
@@ -1255,7 +1297,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 ### `Query.standardRole`
 
-Finds a single default role for the instance. Available only for self-managed.
+Finds a single default role for the instance. Available only for GitLab Self-Managed.
 
 DETAILS:
 **Introduced** in GitLab 17.6.
@@ -1271,7 +1313,7 @@ Returns [`StandardRole`](#standardrole).
 
 ### `Query.standardRoles`
 
-Default roles available for the instance. Available only for self-managed.
+Default roles available for the instance. Available only for GitLab Self-Managed.
 
 DETAILS:
 **Introduced** in GitLab 17.3.
@@ -12456,6 +12498,29 @@ The edge type for [`AddOnUser`](#addonuser).
 | ---- | ---- | ----------- |
 | <a id="addonuseredgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
 | <a id="addonuseredgenode"></a>`node` | [`AddOnUser`](#addonuser) | The item at the end of the edge. |
+
+#### `AdminMemberRoleConnection`
+
+The connection type for [`AdminMemberRole`](#adminmemberrole).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="adminmemberroleconnectionedges"></a>`edges` | [`[AdminMemberRoleEdge]`](#adminmemberroleedge) | A list of edges. |
+| <a id="adminmemberroleconnectionnodes"></a>`nodes` | [`[AdminMemberRole]`](#adminmemberrole) | A list of nodes. |
+| <a id="adminmemberroleconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `AdminMemberRoleEdge`
+
+The edge type for [`AdminMemberRole`](#adminmemberrole).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="adminmemberroleedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="adminmemberroleedgenode"></a>`node` | [`AdminMemberRole`](#adminmemberrole) | The item at the end of the edge. |
 
 #### `AgentConfigurationConnection`
 
