@@ -11,6 +11,7 @@ query getInstanceRoles {
   memberRoles {
     nodes {
       ...Role
+      usersCount
       detailsPath
       dependentSecurityPolicies {
         name

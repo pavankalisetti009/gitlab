@@ -13,6 +13,7 @@ query getGroupRoles($fullPath: ID!) {
     memberRoles {
       nodes {
         ...Role
+        usersCount
         detailsPath
         dependentSecurityPolicies {
           name
