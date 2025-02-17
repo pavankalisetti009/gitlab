@@ -45,7 +45,6 @@ describe('SubscriptionSeatsStatisticsCard', () => {
         activeTrial: false,
         hasLimitedFreePlan: false,
         hasError: false,
-        maxFreeNamespaceSeats: 5,
         namespaceId: 13,
         seatsInSubscription: 13,
         ...initialState,
@@ -68,6 +67,7 @@ describe('SubscriptionSeatsStatisticsCard', () => {
       },
       provide: {
         hasNoSubscription: true,
+        maxFreeNamespaceSeats: 5,
         ...provide,
       },
       store: fakeStore(initialGetters, initialState),
