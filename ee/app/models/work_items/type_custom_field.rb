@@ -5,7 +5,7 @@ module WorkItems
     self.table_name = 'work_item_type_custom_fields'
 
     belongs_to :namespace
-    belongs_to :work_item_type, class_name: 'WorkItems::Type', primary_key: 'correct_id'
+    belongs_to :work_item_type, class_name: 'WorkItems::Type'
     belongs_to :custom_field, class_name: 'Issuables::CustomField'
 
     before_validation :copy_namespace_from_custom_field

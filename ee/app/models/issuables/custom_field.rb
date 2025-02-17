@@ -63,12 +63,7 @@ module Issuables
           .where(work_item_type_custom_field_table[:namespace_id].eq(arel_table[:namespace_id]))
           .where(work_item_type_custom_field_table[:custom_field_id].eq(arel_table[:id]))
 
-        if work_item_type
-          # This can be removed when we move away from the correct_id column
-          # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/499911
-          type_id = work_item_type.try(:correct_id) || work_item_type
-          relation = relation.where(work_item_type_id: type_id)
-        end
+        relation = relation.where(work_item_type_id: work_item_type) if work_item_type
 
         relation
       end

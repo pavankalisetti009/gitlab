@@ -104,7 +104,7 @@ module EE
           :timelogs,
           :assignees,
           :synced_epic,
-          ::Gitlab::Issues::TypeAssociationGetter.call,
+          :work_item_type,
           project: [:route, :namespace, :group]
         )
       end

@@ -23,14 +23,14 @@ module Resolvers
         prepare: ->(global_ids, _ctx) { global_ids.map(&:model_id) }
 
       def resolve_with_lookahead(active: nil, search: nil, work_item_type_ids: nil)
-        correct_work_item_type_ids = work_item_type_ids_from(work_item_type_ids) unless work_item_type_ids.nil?
+        work_item_type_ids = work_item_type_ids_from(work_item_type_ids) unless work_item_type_ids.nil?
 
         custom_fields = ::Issuables::CustomFieldsFinder.new(
           current_user,
           group: object,
           active: active,
           search: search,
-          work_item_type_ids: correct_work_item_type_ids
+          work_item_type_ids: work_item_type_ids
         ).execute
 
         offset_pagination(
@@ -54,7 +54,7 @@ module Resolvers
       private
 
       def work_item_type_ids_from(request_ids)
-        ::WorkItems::Type.with_correct_id_and_fallback(request_ids).map(&:correct_id)
+        ::WorkItems::Type.with_id_and_fallback(request_ids).map(&:id)
       end
     end
   end

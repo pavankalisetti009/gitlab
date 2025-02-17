@@ -17,7 +17,7 @@ module FeatureFlagIssues
 
     override :preload_for_collection
     def preload_for_collection
-      super + [::Gitlab::Issues::TypeAssociationGetter.call, :namespace]
+      super + [:work_item_type, :namespace]
     end
   end
 end
