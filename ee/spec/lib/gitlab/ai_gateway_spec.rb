@@ -95,7 +95,7 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
     end
   end
 
-  describe '.headers' do
+  describe '.headers', :request_store do
     let(:user) { build(:user, id: 1) }
     let(:token) { 'instance token' }
     let(:service_name) { :test }
@@ -126,7 +126,11 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
         'X-Gitlab-Is-Team-Member' => is_team_member.to_s,
         'X-Request-ID' => an_instance_of(String),
         'X-Gitlab-Rails-Send-Start' => an_instance_of(String),
-        'x-gitlab-enabled-feature-flags' => an_instance_of(String)
+        'x-gitlab-enabled-feature-flags' => an_instance_of(String),
+        'X-Gitlab-Client-Type' => 'ide',
+        'X-Gitlab-Client-Version' => '1.0',
+        'X-Gitlab-Client-Name' => 'gitlab-extension',
+        'X-Gitlab-Interface' => 'vscode'
       }.merge(cloud_connector_headers)
     end
 
@@ -140,6 +144,11 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
       )
       allow(::Gitlab::Tracking::StandardContext).to receive(:new).and_return(standard_context)
       allow(standard_context).to receive(:gitlab_team_member?).with(user&.id).and_return(is_team_member)
+
+      described_class.current_context[:x_gitlab_client_type] = 'ide'
+      described_class.current_context[:x_gitlab_client_version] = '1.0'
+      described_class.current_context[:x_gitlab_client_name] = 'gitlab-extension'
+      described_class.current_context[:x_gitlab_interface] = 'vscode'
     end
 
     it { is_expected.to match(expected_headers) }

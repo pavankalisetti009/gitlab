@@ -8,9 +8,28 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
   let_it_be(:resource, reload: true) { create(:issue) }
   let(:resource_id) { resource.to_gid.to_s }
   let(:request_id) { 'uuid' }
-  let(:headers) { { "Referer" => "foobar", "User-Agent" => "user-agent" } }
+  let(:headers) do
+    {
+      "Referer" => "foobar",
+      "User-Agent" => "user-agent",
+      'X-Gitlab-Client-Type' => 'ide',
+      'X-Gitlab-Client-Version' => '1.0',
+      'X-Gitlab-Client-Name' => 'gitlab-extension',
+      'X-Gitlab-Interface' => 'vscode'
+    }
+  end
+
   let(:request) { instance_double(ActionDispatch::Request, headers: headers) }
-  let(:expected_options) { { user_agent: "user-agent" } }
+  let(:expected_options) do
+    {
+      user_agent: "user-agent",
+      x_gitlab_client_type: 'ide',
+      x_gitlab_client_version: '1.0',
+      x_gitlab_client_name: 'gitlab-extension',
+      x_gitlab_interface: 'vscode'
+    }
+  end
+
   let(:current_user) { user }
   let(:started_at) { 1731398657013 }
 
@@ -216,7 +235,17 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
       let_it_be(:issue) { create(:issue, project: project) }
       let(:input) { { chat: { resource_id: resource_id } } }
       let(:expected_method) { :chat }
-      let(:expected_options) { { referer_url: "foobar", user_agent: "user-agent", started_at: started_at } }
+      let(:expected_options) do
+        {
+          referer_url: "foobar",
+          user_agent: "user-agent",
+          x_gitlab_client_type: 'ide',
+          x_gitlab_client_version: '1.0',
+          x_gitlab_client_name: 'gitlab-extension',
+          x_gitlab_interface: 'vscode',
+          started_at: started_at
+        }
+      end
 
       it_behaves_like 'an AI action'
       it_behaves_like 'an AI action when feature flag disabled', :ai_duo_chat_switch
@@ -225,7 +254,16 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
     context 'when summarize_comments input is set' do
       let(:input) { { generate_description: { resource_id: resource_id } } }
       let(:expected_method) { :generate_description }
-      let(:expected_options) { { user_agent: "user-agent", started_at: started_at } }
+      let(:expected_options) do
+        {
+          user_agent: "user-agent",
+          x_gitlab_client_type: 'ide',
+          x_gitlab_client_version: '1.0',
+          x_gitlab_client_name: 'gitlab-extension',
+          x_gitlab_interface: 'vscode',
+          started_at: started_at
+        }
+      end
 
       it_behaves_like 'an AI action'
       it_behaves_like 'an AI action when feature flag disabled'
@@ -234,7 +272,17 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
     context 'when client_subscription_id input is set' do
       let(:input) { { generate_description: { resource_id: resource_id }, client_subscription_id: 'id' } }
       let(:expected_method) { :generate_description }
-      let(:expected_options) { { client_subscription_id: 'id', user_agent: 'user-agent', started_at: started_at } }
+      let(:expected_options) do
+        {
+          client_subscription_id: 'id',
+          user_agent: "user-agent",
+          x_gitlab_client_type: 'ide',
+          x_gitlab_client_version: '1.0',
+          x_gitlab_client_name: 'gitlab-extension',
+          x_gitlab_interface: 'vscode',
+          started_at: started_at
+        }
+      end
 
       it_behaves_like 'an AI action'
       it_behaves_like 'an AI action when feature flag disabled'
@@ -244,7 +292,15 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
       let(:input) { { generate_description: { resource_id: resource_id }, platform_origin: 'vs_code_extension' } }
       let(:expected_method) { :generate_description }
       let(:expected_options) do
-        { user_agent: 'user-agent', platform_origin: 'vs_code_extension', started_at: started_at }
+        {
+          user_agent: "user-agent",
+          platform_origin: 'vs_code_extension',
+          x_gitlab_client_type: 'ide',
+          x_gitlab_client_version: '1.0',
+          x_gitlab_client_name: 'gitlab-extension',
+          x_gitlab_interface: 'vscode',
+          started_at: started_at
+        }
       end
 
       it_behaves_like 'an AI action'
@@ -261,6 +317,10 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
         {
           referer_url: "foobar",
           user_agent: "user-agent",
+          x_gitlab_client_type: 'ide',
+          x_gitlab_client_version: '1.0',
+          x_gitlab_client_name: 'gitlab-extension',
+          x_gitlab_interface: 'vscode',
           thread: instance_of(Ai::Conversation::Thread),
           started_at: started_at
         }
@@ -295,7 +355,16 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
       let(:input) { { chat: { resource_id: resource_id }, thread_id: thread.to_global_id } }
       let(:expected_method) { :chat }
       let(:expected_options) do
-        { referer_url: "foobar", user_agent: "user-agent", thread: thread, started_at: started_at }
+        {
+          referer_url: "foobar",
+          user_agent: "user-agent",
+          thread: thread,
+          x_gitlab_client_type: 'ide',
+          x_gitlab_client_version: '1.0',
+          x_gitlab_client_name: 'gitlab-extension',
+          x_gitlab_interface: 'vscode',
+          started_at: started_at
+        }
       end
 
       let(:expected_thread_id) { thread.to_global_id }
@@ -323,7 +392,17 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
     context 'when input is set for feature in self-managed' do
       let(:input) { { summarize_comments: { resource_id: resource_id }, client_subscription_id: 'id' } }
       let(:expected_method) { :summarize_comments }
-      let(:expected_options) { { client_subscription_id: 'id', user_agent: 'user-agent', started_at: started_at } }
+      let(:expected_options) do
+        {
+          client_subscription_id: 'id',
+          user_agent: "user-agent",
+          x_gitlab_client_type: 'ide',
+          x_gitlab_client_version: '1.0',
+          x_gitlab_client_name: 'gitlab-extension',
+          x_gitlab_interface: 'vscode',
+          started_at: started_at
+        }
+      end
 
       before do
         stub_const(
@@ -347,7 +426,16 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
       let(:expected_method) { :chat }
       let(:project_id) { resource.project.to_gid.to_s }
       let(:expected_options) do
-        { user_agent: "user-agent", project_id: project_id, referer_url: "foobar", started_at: started_at }
+        {
+          user_agent: "user-agent",
+          project_id: project_id,
+          referer_url: "foobar",
+          x_gitlab_client_type: 'ide',
+          x_gitlab_client_version: '1.0',
+          x_gitlab_client_name: 'gitlab-extension',
+          x_gitlab_interface: 'vscode',
+          started_at: started_at
+        }
       end
 
       before do
@@ -376,7 +464,17 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
 
       let(:input) { { explain_vulnerability: { resource_id: resource_id, include_source_code: true } } }
       let(:expected_method) { :explain_vulnerability }
-      let(:expected_options) { { include_source_code: true, user_agent: 'user-agent', started_at: started_at } }
+      let(:expected_options) do
+        {
+          include_source_code: true,
+          user_agent: "user-agent",
+          x_gitlab_client_type: 'ide',
+          x_gitlab_client_version: '1.0',
+          x_gitlab_client_name: 'gitlab-extension',
+          x_gitlab_interface: 'vscode',
+          started_at: started_at
+        }
+      end
 
       it_behaves_like 'an AI action'
     end
