@@ -30,6 +30,7 @@ import {
   TOKEN_TYPE_WEIGHT,
   TOKEN_TYPE_CREATED,
   TOKEN_TYPE_CLOSED,
+  TOKEN_TYPE_SUBSCRIBED,
 } from 'ee/vue_shared/components/filtered_search_bar/constants';
 import BlockingIssuesCount from 'ee/issues/components/blocking_issues_count.vue';
 import IssuesListApp from 'ee/issues/list/components/issues_list_app.vue';
@@ -196,6 +197,7 @@ describe('EE IssuesListApp component', () => {
           { type: TOKEN_TYPE_ORGANIZATION },
           { type: TOKEN_TYPE_RELEASE },
           { type: TOKEN_TYPE_SEARCH_WITHIN },
+          { type: TOKEN_TYPE_SUBSCRIBED },
           { type: TOKEN_TYPE_TYPE },
           { type: TOKEN_TYPE_WEIGHT },
         ]);

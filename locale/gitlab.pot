@@ -23881,6 +23881,12 @@ msgstr ""
 msgid "Explain why you're reporting the user."
 msgstr ""
 
+msgid "Explicitly subscribed"
+msgstr ""
+
+msgid "Explicitly unsubscribed"
+msgstr ""
+
 msgid "Explore"
 msgstr ""
 
