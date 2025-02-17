@@ -99,7 +99,7 @@ RSpec.describe Projects::LearnGitlabHelper, feature_category: :onboarding do
           url: %r{/ci/testing/code_coverage/_index.md#add-a-coverage-check-approval-rule\z}
         ),
         license_scanning_run: a_hash_including(
-          url: help_page_path(described_class::LICENSE_SCANNING_RUN_PATH)
+          url: help_page_path('user/compliance/license_scanning_of_cyclonedx_files/_index.md')
         ),
         secure_dependency_scanning_run: a_hash_including(
           url: project_security_configuration_path(project, anchor: 'dependency-scanning')
