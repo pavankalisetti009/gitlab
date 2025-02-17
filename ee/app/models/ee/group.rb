@@ -1084,7 +1084,7 @@ module EE
     def can_manage_extensions_marketplace_for_enterprise_users?
       root? &&
         licensed_feature_available?(:disable_extensions_marketplace_for_enterprise_users) &&
-        ::WebIde::ExtensionsMarketplace.feature_enabled_for_any_user?
+        ::WebIde::ExtensionMarketplace.feature_enabled_for_any_user?
     end
 
     def enterprise_users_extensions_marketplace_enabled?
