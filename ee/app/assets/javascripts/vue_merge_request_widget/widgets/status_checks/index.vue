@@ -212,5 +212,7 @@ export default {
     :content="expandedData"
     data-testid="info-status-checks"
     is-collapsible
+    :label="$options.i18n.label"
+    path="status-checks"
   />
 </template>

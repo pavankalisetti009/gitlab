@@ -3038,6 +3038,9 @@ msgstr ""
 msgid "AccessTokens|Your static object token authenticates you when repository static objects (such as archives or blobs) are served from an external storage."
 msgstr ""
 
+msgid "Accessibility"
+msgstr ""
+
 msgid "AccessibilityReport|Message: %{message}"
 msgstr ""
 
@@ -37075,9 +37078,6 @@ msgstr ""
 msgid "MrReports|Blockers"
 msgstr ""
 
-msgid "MrReports|Code quality"
-msgstr ""
-
 msgid "MrReports|Reports"
 msgstr ""
 
@@ -57069,6 +57069,9 @@ msgid "Terms of Service and Privacy Policy"
 msgstr ""
 
 msgid "Terms of service"
+msgstr ""
+
+msgid "Terraform"
 msgstr ""
 
 msgid "Terraform Module Registry"

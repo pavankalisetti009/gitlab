@@ -144,5 +144,7 @@ export default {
     :content="content"
     :is-collapsible="shouldCollapse"
     :fetch-collapsed-data="fetchCollapsedData"
+    :label="$options.i18n.label"
+    path="metrics"
   />
 </template>

@@ -203,5 +203,7 @@ export default {
     :summary="summary"
     :content="content"
     multi-polling
+    :label="$options.i18n.label"
+    path="load-performance"
   />
 </template>

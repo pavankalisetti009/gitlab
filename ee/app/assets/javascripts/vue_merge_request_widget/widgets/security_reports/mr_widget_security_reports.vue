@@ -433,6 +433,8 @@ export default {
     :is-collapsible="isCollapsible"
     :help-popover="$options.widgetHelpPopover"
     :action-buttons="actionButtons"
+    :label="$options.i18n.label"
+    path="security-reports"
     multi-polling
     data-testid="vulnerability-report-grouped"
     @is-loading="handleIsLoading"

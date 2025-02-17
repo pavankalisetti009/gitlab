@@ -207,5 +207,7 @@ export default {
     :summary="summary"
     :content="content"
     multi-polling
+    :label="$options.i18n.label"
+    path="browser-performance"
   />
 </template>
