@@ -14,7 +14,7 @@ export default (base) => {
       name: 'access_tokens',
       component: AccessTokens,
       props: ({ params: { id } }) => {
-        return { serviceAccountId: Number(id) };
+        return { id: Number(id) };
       },
     },
   ];
