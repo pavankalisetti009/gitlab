@@ -2,6 +2,7 @@ import { GlLoadingIcon } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
+import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import ApprovalRulesApp from 'ee/approvals/components/approval_rules_app.vue';
@@ -282,6 +283,7 @@ describe('EE Approvals App', () => {
         expect.anything(),
         { targetBranch, resetToDefault: true },
       );
+      await waitForPromises();
       expect(showToast).toHaveBeenCalledWith('Approval rules reset to project defaults', {
         action: {
           text: 'Undo',
