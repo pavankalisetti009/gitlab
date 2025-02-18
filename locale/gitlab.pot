@@ -63698,7 +63698,7 @@ msgstr ""
 msgid "VisibilityLevel|The group and its projects can only be viewed by members."
 msgstr ""
 
-msgid "VisibilityLevel|The group, any public projects, and any of their members, issues, and merge requests can be viewed without authentication. Public groups and projects will be indexed by search engines. Read more about %{free_user_limit_doc_link_start}free user limits%{link_end}, or %{group_billings_link_start}upgrade to a paid tier%{link_end}."
+msgid "VisibilityLevel|The group, any public projects, and any of their members, issues, and merge requests can be viewed without authentication. Public groups and projects will be indexed by search engines. Read more about %{help_link_start}free user limits%{help_link_end}, or %{billing_link_start}upgrade to a paid tier%{billing_link_end}."
 msgstr ""
 
 msgid "VisibilityLevel|The project can be accessed by any logged in user except external users."
