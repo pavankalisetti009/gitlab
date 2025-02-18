@@ -10,13 +10,7 @@ module EE
         EE_SUPPORTED_EVENTS = %w[vulnerability].freeze
 
         ::Integration.prop_accessor(*EE_SUPPORTED_EVENTS.map { |event| "#{event}_channel" })
-
-        override :get_message
-        def get_message(object_kind, data)
-          return ::Integrations::ChatMessage::VulnerabilityMessage.new(data) if object_kind == 'vulnerability'
-
-          super
-        end
+        ::Integrations::Instance::Integration.prop_accessor(*EE_SUPPORTED_EVENTS.map { |event| "#{event}_channel" })
 
         class_methods do
           extend ::Gitlab::Utils::Override
@@ -25,6 +19,13 @@ module EE
           def supported_events
             super + EE_SUPPORTED_EVENTS
           end
+        end
+
+        override :get_message
+        def get_message(object_kind, data)
+          return ::Integrations::ChatMessage::VulnerabilityMessage.new(data) if object_kind == 'vulnerability'
+
+          super
         end
       end
     end
