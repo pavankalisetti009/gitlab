@@ -3,7 +3,6 @@ import {
   HEADER_PAGE_NUMBER,
   HEADER_ITEMS_PER_PAGE,
 } from 'ee/usage_quotas/seats/constants';
-import { PLAN_TYPE, SUBSCRIPTION_TYPE } from 'ee/usage_quotas/seats/graphql/utils';
 
 const subscriptionStartDate = '2023-03-16';
 const subscriptionEndDate = '2024-03-16';
@@ -239,16 +238,36 @@ export const getMockSubscriptionData = ({
   startDate = subscriptionStartDate,
   code,
   name,
+  seatsInSubscription = 0,
+  seatsInUse = 0,
+  maxSeatsUsed = 0,
+  seatsOwed = 0,
+  trialEndsOn = null,
 } = {}) => ({
   subscription: {
     id,
     endDate,
     startDate,
-    __typename: SUBSCRIPTION_TYPE,
+    __typename: 'Subscription',
     plan: {
-      __typename: PLAN_TYPE,
+      __typename: 'Plan',
       code,
       name,
+      trial: false,
+      auto_renew: false,
+      upgradable: false,
+      exclude_guests: false,
+    },
+    usage: {
+      seats_in_subscription: seatsInSubscription,
+      seats_in_use: seatsInUse,
+      max_seats_used: maxSeatsUsed,
+      seats_owed: seatsOwed,
+    },
+    billing: {
+      subscription_start_date: startDate,
+      subscription_end_date: endDate,
+      trial_ends_on: trialEndsOn,
     },
   },
 });

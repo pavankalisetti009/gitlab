@@ -10,8 +10,6 @@ import LimitedAccessModal from 'ee/usage_quotas/components/limited_access_modal.
 import waitForPromises from 'helpers/wait_for_promises';
 import { getSubscriptionPermissionsData } from 'ee/fulfillment/shared_queries/subscription_actions_reason.customer.query.graphql';
 import { createMockClient } from 'helpers/mock_apollo_helper';
-import getGitlabSubscriptionQuery from 'ee/fulfillment/shared_queries/gitlab_subscription.query.graphql';
-import { PLAN_CODE_FREE } from 'ee/usage_quotas/seats/constants';
 
 Vue.use(VueApollo);
 
@@ -29,16 +27,15 @@ describe('StatisticsSeatsCard', () => {
 
   const explorePlansPath = 'https://gitlab.com/explore-plans-path';
   const purchaseButtonLink = 'https://gitlab.com/purchase-more-seats';
-  const subscriptionStartDate = '2023-03-16';
-  const subscriptionEndDate = '2024-03-16';
   const defaultProps = {
+    hasFreePlan: false,
     seatsUsed: 20,
     seatsOwed: 5,
     namespaceId: 4321,
     purchaseButtonLink,
   };
 
-  const createMockApolloProvider = ({ subscriptionPlanData }) => {
+  const createMockApolloProvider = () => {
     const mockCustomersDotClient = createMockClient([
       [getSubscriptionPermissionsData, subscriptionPermissionsQueryHandlerMock],
     ]);
@@ -48,16 +45,12 @@ describe('StatisticsSeatsCard', () => {
       clients: { customersDotClient: mockCustomersDotClient, gitlabClient: mockGitlabClient },
     });
 
-    mockApollo.clients.defaultClient.cache.writeQuery({
-      query: getGitlabSubscriptionQuery,
-      data: subscriptionPlanData,
-    });
     return mockApollo;
   };
 
   const createComponent = (options = {}) => {
-    const { props = {}, subscriptionPlanData = {} } = options;
-    const apolloProvider = createMockApolloProvider({ subscriptionPlanData });
+    const { props = {} } = options;
+    const apolloProvider = createMockApolloProvider({});
 
     wrapper = shallowMountExtended(StatisticsSeatsCard, {
       propsData: { ...defaultProps, ...props },
@@ -242,13 +235,8 @@ describe('StatisticsSeatsCard', () => {
         beforeEach(async () => {
           subscriptionPermissionsQueryHandlerMock = jest.fn().mockResolvedValue({});
           createComponent({
-            subscriptionPlanData: {
-              subscription: {
-                id: '',
-                endDate: subscriptionEndDate,
-                startDate: subscriptionStartDate,
-                plan: { code: PLAN_CODE_FREE, name: 'Free' },
-              },
+            props: {
+              hasFreePlan: true,
             },
           });
 
@@ -303,14 +291,7 @@ describe('StatisticsSeatsCard', () => {
           },
         });
         createComponent({
-          subscriptionPlanData: {
-            subscription: {
-              id: '',
-              endDate: subscriptionEndDate,
-              startDate: subscriptionStartDate,
-              plan: { code: PLAN_CODE_FREE, name: 'Free' },
-            },
-          },
+          props: { hasFreePlan: true },
         });
 
         await waitForPromises();

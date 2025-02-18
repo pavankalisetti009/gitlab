@@ -12,7 +12,7 @@ export const fetchInitialData = ({ commit, dispatch, state }) => {
   }
 
   commit(types.SET_STATE_INITIALIZED);
-  return Promise.all([dispatch('fetchBillableMembersList'), dispatch('fetchGitlabSubscription')]);
+  return Promise.resolve(dispatch('fetchBillableMembersList'));
 };
 
 export const fetchBillableMembersList = ({ commit, dispatch, state }) => {

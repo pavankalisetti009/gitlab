@@ -23,6 +23,11 @@ export default {
       required: false,
       default: 0,
     },
+    hasFreePlan: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
@@ -47,7 +52,7 @@ export default {
     },
   },
   computed: {
-    ...mapGetters(['hasFreePlan', 'isLoading']),
+    ...mapGetters(['isLoading']),
     ...mapState([
       'activeTrial',
       'hasLimitedFreePlan',

@@ -39,7 +39,6 @@ describe('SubscriptionSeatsStatisticsCard', () => {
     new Vuex.Store({
       getters: {
         isLoading: () => false,
-        hasFreePlan: () => false,
         ...initialGetters,
       },
       state: {
@@ -103,8 +102,8 @@ describe('SubscriptionSeatsStatisticsCard', () => {
 
   describe('with a free plan', () => {
     beforeEach(() => {
-      const initialGetters = { hasFreePlan: () => true };
-      createWrapper({ initialGetters });
+      const props = { hasFreePlan: true };
+      createWrapper({ props });
       return waitForPromises();
     });
 
@@ -240,9 +239,9 @@ describe('SubscriptionSeatsStatisticsCard', () => {
 
   describe('with a plan', () => {
     beforeEach(() => {
-      const initialGetters = { hasFreePlan: () => false };
+      const props = { hasFreePlan: false };
       const provide = { hasNoSubscription: false };
-      createWrapper({ initialGetters, provide });
+      createWrapper({ props, provide });
       return waitForPromises();
     });
 

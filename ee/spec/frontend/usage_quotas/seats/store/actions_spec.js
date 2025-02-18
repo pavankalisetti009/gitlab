@@ -34,10 +34,7 @@ describe('Usage Quotas Seats actions', () => {
         payload: null,
         state,
         expectedMutations: [{ type: types.SET_STATE_INITIALIZED }],
-        expectedActions: [
-          { type: 'fetchBillableMembersList' },
-          { type: 'fetchGitlabSubscription' },
-        ],
+        expectedActions: [{ type: 'fetchBillableMembersList' }],
       });
     });
 
