@@ -109,5 +109,35 @@ module EE
         ::Gitlab::Auth::Saml::Config.new(provider).group_sync_enabled?
       end
     end
+
+    def admin_service_accounts_data
+      {
+        base_path: expose_url(admin_application_settings_service_accounts_path),
+        service_accounts: {
+          path: expose_url(api_v4_service_accounts_path),
+          docs_path: help_page_path('user/profile/service_accounts.md')
+        },
+        access_token: {
+          revoke: expose_url(api_v4_personal_access_tokens_path),
+          rotate: expose_url(api_v4_personal_access_tokens_path),
+          show: expose_url(api_v4_personal_access_tokens_path)
+        }
+      }
+    end
+
+    def groups_service_accounts_data(group)
+      {
+        base_path: expose_url(group_settings_service_accounts_path(group)),
+        service_accounts: {
+          path: expose_url(api_v4_groups_service_accounts_path(id: group.id)),
+          docs_path: help_page_path('user/profile/service_accounts.md')
+        },
+        access_token: {
+          revoke: expose_url(api_v4_groups_service_accounts_personal_access_tokens_path(id: group.id, user_id: ':id')),
+          rotate: expose_url(api_v4_groups_service_accounts_personal_access_tokens_path(id: group.id, user_id: ':id')),
+          show: expose_url(api_v4_personal_access_tokens_path)
+        }
+      }
+    end
   end
 end
