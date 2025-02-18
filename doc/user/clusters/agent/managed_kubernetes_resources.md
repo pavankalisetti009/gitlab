@@ -66,14 +66,6 @@ To overwrite the default template, add a template configuration file called `def
 .gitlab/agents/<agent-name>/environment_templates/default.yaml
 ```
 
-To create an environment template, add a template configuration file in the agent directory at:
-
-```plaintext
-.gitlab/agents/<agent-name>/environment_templates/<template-name>.yaml
-```
-
-You can specify which template is included in a CI/CD pipeline. For more information, see [Use templates in CI/CD pipelines](#use-managed-resources-in-cicd-pipelines).
-
 #### Supported Kubernetes resources
 
 The following Kubernetes resources (`kind`) are supported:
@@ -151,21 +143,6 @@ The following variables are available:
 All variables should be referenced using the double curly brace syntax, for example: `{{ .project.id }}`.
 See [`text/template`](https://pkg.go.dev/text/template) documentation for more information on the templating system used.
 
-### Resource lifecycle management
-
-Use the following settings to configure when Kubernetes resources should be applied or removed from an environment:
-
-```yaml
-# Apply resources when environment is started or restarted
-apply_resources: on_start
-
-# Never delete resources
-delete_resources: never
-
-# Delete resources when environment is stopped
-delete_resources: on_stop
-```
-
 ### Managed resource labels and annotations
 
 The resources created by GitLab use a series of labels and annotations for tracking and troubleshooting purposes.
@@ -194,19 +171,6 @@ On every resource created by GitLab, an `agent.gitlab.com/env-<kubernetes_namesp
 | `project_path` | The full GitLab project path. |
 | `project_url` | The link to the GitLab project. |
 | `template_name` | The name of the template used. |
-
-### Use managed resources in CI/CD pipelines
-
-To use managed Kubernetes resources in your CI/CD pipelines, specify the agent and optionally the template name in your environment configuration:
-
-```yaml
-deploy:
-  environment:
-    name: production
-    kubernetes:
-      agent: agent-name
-      template: my-template  # Optional, uses default template if not specified
-```
 
 ## Troubleshooting
 
