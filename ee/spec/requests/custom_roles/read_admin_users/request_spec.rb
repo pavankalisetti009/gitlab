@@ -71,23 +71,5 @@ RSpec.describe 'User with read_admin_users', feature_category: :user_management 
 
       expect(response).to have_gitlab_http_status(:not_found)
     end
-
-    context "with `custom_ability_read_admin_users` feature flag disabled" do
-      before do
-        stub_feature_flags(custom_ability_read_admin_users: false)
-      end
-
-      it "GET #index" do
-        get admin_users_path
-
-        expect(response).to have_gitlab_http_status(:not_found)
-      end
-
-      it "GET #show" do
-        get admin_user_path(other_user)
-
-        expect(response).to have_gitlab_http_status(:not_found)
-      end
-    end
   end
 end
