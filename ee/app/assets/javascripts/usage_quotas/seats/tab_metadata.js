@@ -3,7 +3,6 @@ import Vuex from 'vuex';
 import { __ } from '~/locale';
 import { parseBoolean } from '~/lib/utils/common_utils';
 import apolloProvider from '../shared/provider';
-import { writeDataToApolloCache as writeSeatsDataToApolloCache } from './graphql/utils';
 import initialSeatUsageStore from './store';
 import SeatUsageApp from './components/subscription_seats.vue';
 
@@ -70,7 +69,7 @@ export const getSeatTabMetadata = ({ includeEl = false } = {}) => {
     testid: 'seats-tab',
     component: {
       name: 'SeatUsageTab',
-      apolloProvider: writeSeatsDataToApolloCache(apolloProvider, { subscriptionId: namespaceId }),
+      apolloProvider,
       provide: {
         subscriptionHistoryHref,
         explorePlansPath,

@@ -3,11 +3,9 @@ import { GlLink, GlButton, GlModalDirective, GlSkeletonLoader } from '@gitlab/ui
 import { s__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { getSubscriptionPermissionsData } from 'ee/fulfillment/shared_queries/subscription_actions_reason.customer.query.graphql';
-import getGitlabSubscriptionQuery from 'ee/fulfillment/shared_queries/gitlab_subscription.query.graphql';
 import {
   addSeatsText,
   EXPLORE_PAID_PLANS_CLICKED,
-  PLAN_CODE_FREE,
   seatsOwedHelpText,
   seatsOwedLink,
   seatsOwedText,
@@ -66,10 +64,14 @@ export default {
       type: Number,
       required: true,
     },
+    hasFreePlan: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
-      plan: {},
       subscriptionPermissions: null,
       showLimitedAccessModal: false,
     };
@@ -80,9 +82,6 @@ export default {
         gon.features?.limitedAccessModal && LIMITED_ACCESS_KEYS.includes(this.permissionReason)
       );
     },
-    isFreePlan() {
-      return this.plan.code === PLAN_CODE_FREE;
-    },
     shouldRenderSeatsUsedBlock() {
       return this.seatsUsed !== null;
     },
@@ -90,7 +89,7 @@ export default {
       return this.seatsOwed !== null;
     },
     canAddSeats() {
-      if (this.isFreePlan) {
+      if (this.hasFreePlan) {
         return false;
       }
       return this.subscriptionPermissions?.canAddSeats ?? true;
@@ -111,7 +110,7 @@ export default {
       if (this.isLoading) {
         return false;
       }
-      return this.isFreePlan;
+      return this.hasFreePlan;
     },
     isLoading() {
       return this.$apollo.loading;
@@ -135,20 +134,6 @@ export default {
         if (networkError?.result?.errors.length) {
           networkError?.result?.errors.forEach(({ message }) => Sentry.captureException(message));
         }
-        Sentry.captureException(error);
-      },
-    },
-    plan: {
-      query: getGitlabSubscriptionQuery,
-      variables() {
-        return {
-          namespaceId: this.namespaceId,
-        };
-      },
-      update: (data) => {
-        return data?.subscription?.plan || {};
-      },
-      error: (error) => {
         Sentry.captureException(error);
       },
     },

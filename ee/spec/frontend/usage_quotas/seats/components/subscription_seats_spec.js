@@ -10,10 +10,17 @@ import StatisticsSeatsCard from 'ee/usage_quotas/seats/components/statistics_sea
 import SubscriptionUpgradeInfoCard from 'ee/usage_quotas/seats/components/subscription_upgrade_info_card.vue';
 import SubscriptionSeats from 'ee/usage_quotas/seats/components/subscription_seats.vue';
 import SubscriptionUserList from 'ee/usage_quotas/seats/components/subscription_user_list.vue';
-import { mockDataSeats, mockTableItems } from 'ee_jest/usage_quotas/seats/mock_data';
-import createMockApolloProvider from 'helpers/mock_apollo_helper';
+import {
+  getMockSubscriptionData,
+  mockDataSeats,
+  mockTableItems,
+} from 'ee_jest/usage_quotas/seats/mock_data';
+import { createMockClient } from 'helpers/mock_apollo_helper';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import { createAlert } from '~/alert';
+
+jest.mock('~/alert');
 
 Vue.use(Vuex);
 
@@ -33,15 +40,16 @@ const providedFields = {
 const fakeStore = ({ initialState, initialGetters }) =>
   new Vuex.Store({
     actions: actionSpies,
+    mutations: {
+      RECEIVE_GITLAB_SUBSCRIPTION_SUCCESS: jest.fn(),
+    },
     getters: {
       tableItems: () => mockTableItems,
       isLoading: () => false,
-      hasFreePlan: () => false,
       ...initialGetters,
     },
     state: {
       hasError: false,
-      namespaceId: 1,
       members: [...mockDataSeats.data],
       total: 300,
       page: 1,
@@ -77,11 +85,46 @@ describe('Subscription Seats', () => {
     seatsOwed: 1,
   };
 
-  const createComponent = ({ initialState = {}, initialGetters = {}, provide = {} } = {}) => {
+  const defaultSubscriptionPlanData = getMockSubscriptionData({
+    code: 'ultimate',
+    name: 'Ultimate',
+  }).subscription;
+
+  const freeSubscriptionPlanData = getMockSubscriptionData({
+    id: 2,
+    code: 'free',
+    name: 'Free',
+  }).subscription;
+
+  const createComponent = ({
+    initialState = {},
+    initialGetters = {},
+    provide = {},
+    subscriptionData = defaultSubscriptionPlanData,
+  } = {}) => {
     const { isPublicNamespace = false } = initialState;
 
-    const handlers = [[getBillableMembersCountQuery, defaultBillableMembersCountMockHandler]];
-    const apolloProvider = createMockApolloProvider(handlers);
+    const resolvers = {
+      Query: {
+        subscription: () => subscriptionData,
+      },
+    };
+
+    const createMockApolloProvider = () => {
+      const mockCustomersDotClient = createMockClient();
+      const mockGitlabClient = createMockClient(
+        [[getBillableMembersCountQuery, defaultBillableMembersCountMockHandler]],
+        resolvers,
+      );
+      const mockApollo = new VueApollo({
+        defaultClient: mockGitlabClient,
+        clients: { customersDotClient: mockCustomersDotClient, gitlabClient: mockGitlabClient },
+      });
+
+      return mockApollo;
+    };
+
+    const apolloProvider = createMockApolloProvider();
 
     wrapper = extendedWrapper(
       shallowMount(SubscriptionSeats, {
@@ -92,6 +135,7 @@ describe('Subscription Seats', () => {
           isPublicNamespace,
           explorePlansPath,
           addSeatsHref,
+          namespaceId: 1,
           hasNoSubscription: null,
           ...provide,
         },
@@ -110,29 +154,28 @@ describe('Subscription Seats', () => {
   const findSubscriptionUserList = () => wrapper.findComponent(SubscriptionUserList);
 
   describe('actions', () => {
-    beforeEach(() => {
-      return createComponent();
+    it('dispatches fetchInitialData action', async () => {
+      await createComponent();
+      expect(actionSpies.fetchInitialData).toHaveBeenCalled();
     });
 
-    it('dispatches fetchInitialData action', () => {
-      expect(actionSpies.fetchInitialData).toHaveBeenCalled();
+    it('calls createAlert when gitlab subscription query fails', async () => {
+      createComponent({
+        subscriptionData: {},
+      });
+      await waitForPromises();
+
+      expect(createAlert).toHaveBeenCalled();
     });
   });
 
   describe('when is a public namespace', () => {
     beforeEach(() => {
       return createComponent({
-        initialState: {
-          ...defaultInitialState,
-          hasLimitedFreePlan: false,
-          activeTrial: false,
-          isPublicNamespace: true,
-        },
-        initialGetters: {
-          hasFreePlan: () => true,
-        },
+        subscriptionData: freeSubscriptionPlanData,
         provide: {
           hasNoSubscription: true,
+          isPublicNamespace: true,
         },
       });
     });
@@ -159,8 +202,21 @@ describe('Subscription Seats', () => {
       expect(findSubscriptionUpgradeCard().exists()).toBe(false);
       expect(statisticsSeatsCard.exists()).toBe(true);
       expect(statisticsSeatsCard.props()).toMatchObject({
+        hasFreePlan: false,
         seatsOwed: 1,
         seatsUsed: 3,
+      });
+    });
+
+    describe('when on free namespace', () => {
+      beforeEach(() => {
+        return createComponent({
+          subscriptionData: freeSubscriptionPlanData,
+        });
+      });
+
+      it('renders <statistics-seats-card> with hasFreePlan as true', () => {
+        expect(findStatisticsSeatsCard().props('hasFreePlan')).toBe(true);
       });
     });
 

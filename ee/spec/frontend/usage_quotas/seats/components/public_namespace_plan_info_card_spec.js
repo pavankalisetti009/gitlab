@@ -7,7 +7,6 @@ import SubscriptionUsageStatisticsCard from 'ee/usage_quotas/seats/components/pu
 import { EXPLORE_PAID_PLANS_CLICKED, PLAN_CODE_FREE } from 'ee/usage_quotas/seats/constants';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createMockClient } from 'helpers/mock_apollo_helper';
-import getGitlabSubscriptionQuery from 'ee/fulfillment/shared_queries/gitlab_subscription.query.graphql';
 import { getMockSubscriptionData } from 'ee_jest/usage_quotas/seats/mock_data';
 
 Vue.use(VueApollo);
@@ -22,20 +21,32 @@ describe('PublicNamespacePlanInfoCard', () => {
   const findDescriptionTitle = () => wrapper.findByTestId('title');
   const findFreePlanInfo = () => wrapper.findByTestId('free-plan-info');
 
+  const defaultSubscriptionPlanData = getMockSubscriptionData({
+    code: 'ultimate',
+    name: 'Ultimate',
+  }).subscription;
+
+  const freeSubscriptionPlanData = getMockSubscriptionData({
+    code: PLAN_CODE_FREE,
+    name: 'Free',
+  }).subscription;
+
   const createMockApolloProvider = ({ subscriptionData }) => {
-    const mockGitlabClient = createMockClient();
+    const resolvers = {
+      Query: {
+        subscription: () => subscriptionData,
+      },
+    };
+
+    const mockGitlabClient = createMockClient([], resolvers);
+
     const mockApollo = new VueApollo({
       defaultClient: mockGitlabClient,
-    });
-
-    mockApollo.clients.defaultClient.cache.writeQuery({
-      query: getGitlabSubscriptionQuery,
-      data: subscriptionData,
     });
     return mockApollo;
   };
 
-  const createWrapper = ({ subscriptionData = {}, provide = {} } = {}) => {
+  const createWrapper = ({ subscriptionData = defaultSubscriptionPlanData, provide = {} } = {}) => {
     const apolloProvider = createMockApolloProvider({ subscriptionData });
     wrapper = shallowMountExtended(SubscriptionUsageStatisticsCard, {
       apolloProvider,
@@ -82,7 +93,7 @@ describe('PublicNamespacePlanInfoCard', () => {
 
   describe('when has a free plan', () => {
     beforeEach(() => {
-      const subscriptionData = getMockSubscriptionData({ code: PLAN_CODE_FREE, name: 'Free' });
+      const subscriptionData = freeSubscriptionPlanData;
       return createWrapper({ subscriptionData });
     });
 
@@ -103,8 +114,8 @@ describe('PublicNamespacePlanInfoCard', () => {
 
   describe('when clicking on `Explore paid plans`', () => {
     beforeEach(() => {
-      const subscriptionData = getMockSubscriptionData({ code: PLAN_CODE_FREE, name: 'Free' });
       jest.spyOn(Tracking, 'event');
+      const subscriptionData = freeSubscriptionPlanData;
       return createWrapper({ subscriptionData });
     });
 
