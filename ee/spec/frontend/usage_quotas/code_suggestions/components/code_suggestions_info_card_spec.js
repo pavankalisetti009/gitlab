@@ -1,4 +1,4 @@
-import { GlSprintf, GlButton, GlSkeletonLoader } from '@gitlab/ui';
+import { GlSprintf, GlButton, GlIcon, GlSkeletonLoader } from '@gitlab/ui';
 import VueApollo from 'vue-apollo';
 import Vue, { nextTick } from 'vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -567,6 +567,10 @@ describe('CodeSuggestionsInfoCard', () => {
               // wait for apollo to load
               await waitForPromises();
               expect(findAddSeatsButton().exists()).toBe(true);
+              expect(findAddSeatsButton().text()).toBe('Purchase seats');
+              expect(findAddSeatsButton().findComponent(GlIcon).props('name')).toBe(
+                'external-link',
+              );
             });
 
             describe('when subscriptionPermissions returns error', () => {
@@ -593,6 +597,10 @@ describe('CodeSuggestionsInfoCard', () => {
               it('shows the button', () => {
                 // When clicked the button will redirect a customer and we will handle the error on CustomersPortal side
                 expect(findAddSeatsButton().exists()).toBe(true);
+                expect(findAddSeatsButton().text()).toBe('Purchase seats');
+                expect(findAddSeatsButton().findComponent(GlIcon).props('name')).toBe(
+                  'external-link',
+                );
               });
             });
 
