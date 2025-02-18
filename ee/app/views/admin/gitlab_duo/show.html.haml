@@ -4,7 +4,7 @@
 - breadcrumb_title gitlab_duo_text
 
 - if ::Ai::AmazonQ.feature_available? && !::Ai::AmazonQ.connected?
-  = render Pajamas::BannerComponent.new(close_options: { class: '!gl-hidden'},
+  = render Pajamas::BannerComponent.new(banner_options: { class: 'gl-mt-3'}, close_options: { class: '!gl-hidden'},
     svg_path: 'illustrations/tanuki-ai-sm.svg',
     button_text: s_('AmazonQ|Get started'),
     button_link: admin_ai_amazon_q_settings_path) do |c|
