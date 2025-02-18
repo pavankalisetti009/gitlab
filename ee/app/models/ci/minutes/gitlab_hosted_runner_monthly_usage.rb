@@ -26,7 +26,44 @@ module Ci
       }
       validate :validate_billing_month_format
 
+      scope :instance_aggregate, ->(billing_month, year) do
+        select("TO_CHAR(billing_month, 'FMMonth YYYY') AS billing_month_formatted",
+          'billing_month AS billing_month',
+          'TO_CHAR(DATE_TRUNC(\'month\', billing_month), \'YYYY-MM-DD\') AS billing_month_iso8601',
+          'SUM(compute_minutes_used) AS compute_minutes',
+          'SUM(runner_duration_seconds) AS duration_seconds',
+          'NULL as root_namespace_id')
+        .where(billing_month: billing_month_range(billing_month, year))
+        .group(:billing_month)
+        .order(billing_month: :desc)
+      end
+
+      scope :per_root_namespace, ->(billing_month, year) do
+        where(billing_month: billing_month_range(billing_month, year))
+          .group(:billing_month, :root_namespace_id)
+          .select("TO_CHAR(billing_month, 'FMMonth YYYY') AS billing_month_formatted",
+            'billing_month AS billing_month',
+            'TO_CHAR(DATE_TRUNC(\'month\', billing_month), \'YYYY-MM-DD\') AS billing_month_iso8601',
+            'root_namespace_id',
+            'SUM(compute_minutes_used) AS compute_minutes',
+            'SUM(runner_duration_seconds) AS duration_seconds')
+          .order(billing_month: :desc, root_namespace_id: :asc)
+      end
+
       private
+
+      def self.billing_month_range(billing_month, year)
+        if billing_month.present?
+          start_date = billing_month
+          end_date = start_date.end_of_month
+        else
+          year ||= Time.current.year
+          start_date = Date.new(year, 1, 1)
+          end_date = Date.new(year, 12, 31)
+        end
+
+        start_date..end_date
+      end
 
       def validate_billing_month_format
         return if billing_month.blank?
