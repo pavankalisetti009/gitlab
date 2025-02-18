@@ -1,3 +1,5 @@
+import { fromYaml } from 'ee/security_orchestration/components/policy_editor/scan_execution/lib';
+
 export const mockScanExecutionManifest = `scan_execution_policy:
 - name: ''
   description: ''
@@ -83,3 +85,5 @@ actions:
   - scan: secret_detection
 type: scan_execution_policy
 `;
+
+export const mockScanExecutionObject = fromYaml({ manifest: mockScanExecutionManifest });

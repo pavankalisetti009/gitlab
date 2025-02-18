@@ -111,9 +111,9 @@ describe('EditorLayout component', () => {
       expect(saveButton.text()).toBe('Create policy');
     });
 
-    it('emits properly with the current mode when the save button is clicked', () => {
+    it('emits when the save button is clicked', () => {
       findSavePolicyButton().vm.$emit('click');
-      expect(wrapper.emitted('save-policy')).toStrictEqual([['rule']]);
+      expect(wrapper.emitted('save-policy')).toStrictEqual([[]]);
     });
 
     it('mode changes appropriately when new mode is selected', async () => {
