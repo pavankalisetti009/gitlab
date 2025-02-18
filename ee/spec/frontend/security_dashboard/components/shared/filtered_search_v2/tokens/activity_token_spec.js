@@ -1,10 +1,10 @@
 import { GlFilteredSearchToken, GlDropdownSectionHeader, GlBadge } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueRouter from 'vue-router';
-import ActivityToken from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/activity_token.vue';
+import ActivityToken, {
+  GROUPS,
+} from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/activity_token.vue';
 import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_search_v2/components/search_suggestion.vue';
-import QuerystringSync from 'ee/security_dashboard/components/shared/filters/querystring_sync.vue';
-import eventHub from 'ee/security_dashboard/components/shared/filtered_search_v2/event_hub';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
 import { stubComponent } from 'helpers/stub_component';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -44,14 +44,12 @@ describe('ActivityToken', () => {
         ...provide,
       },
       stubs: {
-        QuerystringSync: true,
         SearchSuggestion,
         ...stubs,
       },
     });
   };
 
-  const findQuerystringSync = () => wrapper.findComponent(QuerystringSync);
   const findFilteredSearchToken = () => wrapper.findComponent(GlFilteredSearchToken);
   const isOptionChecked = (v) => wrapper.findByTestId(`suggestion-${v}`).props('selected') === true;
 
@@ -70,7 +68,7 @@ describe('ActivityToken', () => {
   const allOptionsExcept = (value) => {
     const exempt = Array.isArray(value) ? value : [value];
 
-    return ActivityToken.GROUPS.flatMap((i) => i.options)
+    return GROUPS.flatMap((i) => i.options)
       .map((i) => i.value)
       .filter((i) => !exempt.includes(i));
   };
@@ -208,52 +206,12 @@ describe('ActivityToken', () => {
       });
       expect(isOptionChecked('ALL')).toBe(true);
     });
-
-    it('emits filters-changed event when a filter is selected', async () => {
-      const spy = jest.fn();
-      eventHub.$on('filters-changed', spy);
-
-      await clickDropdownItem('STILL_DETECTED', 'HAS_ISSUE', 'HAS_MERGE_REQUEST', 'HAS_SOLUTION');
-      expect(spy).toHaveBeenCalledWith({
-        hasResolution: false,
-        hasIssues: true,
-        hasMergeRequest: true,
-        hasRemediations: true,
-      });
-
-      await clickDropdownItem(
-        'NO_LONGER_DETECTED',
-        'DOES_NOT_HAVE_ISSUE',
-        'DOES_NOT_HAVE_MERGE_REQUEST',
-        'DOES_NOT_HAVE_SOLUTION',
-      );
-      expect(spy).toHaveBeenCalledWith({
-        hasResolution: true,
-        hasIssues: false,
-        hasMergeRequest: false,
-        hasRemediations: false,
-      });
-    });
   });
 
   describe('on clear', () => {
     beforeEach(async () => {
-      createWrapper({ mountFn: mountExtended, stubs: { QuerystringSync: false } });
+      createWrapper({ mountFn: mountExtended });
       await nextTick();
-    });
-
-    it('emits filters-changed event and clears the query string', () => {
-      const spy = jest.fn();
-      eventHub.$on('filters-changed', spy);
-
-      findFilteredSearchToken().vm.$emit('destroy');
-
-      expect(spy).toHaveBeenCalledWith({
-        hasResolution: undefined,
-        hasIssues: undefined,
-        hasMergeRequest: undefined,
-        hasRemediations: undefined,
-      });
     });
   });
 
@@ -287,56 +245,6 @@ describe('ActivityToken', () => {
     it('shows "All activity" when "All activity" is selected', async () => {
       await clickDropdownItem('ALL');
       expect(findViewSlot().text()).toBe('All activity');
-    });
-  });
-
-  describe('QuerystringSync component', () => {
-    beforeEach(() => {
-      createWrapper({});
-    });
-
-    it('has expected props', () => {
-      expect(findQuerystringSync().props()).toMatchObject({
-        querystringKey: 'activity',
-        defaultValues: ActivityToken.CLEAR_VALUES,
-        value: ActivityToken.DEFAULT_VALUES,
-        validValues: [
-          'ALL',
-          'STILL_DETECTED',
-          'NO_LONGER_DETECTED',
-          'HAS_ISSUE',
-          'DOES_NOT_HAVE_ISSUE',
-          'HAS_MERGE_REQUEST',
-          'DOES_NOT_HAVE_MERGE_REQUEST',
-          'HAS_SOLUTION',
-          'DOES_NOT_HAVE_SOLUTION',
-          'AI_RESOLUTION_AVAILABLE',
-          'AI_RESOLUTION_UNAVAILABLE',
-        ],
-      });
-    });
-
-    it('receives `ALL_ACTIVITY_VALUE` when "All activity" option is clicked', async () => {
-      await clickDropdownItem('ALL');
-
-      expect(findQuerystringSync().props('value')).toEqual(['ALL']);
-    });
-
-    it.each`
-      emitted                                                         | expected
-      ${['HAS_ISSUE', 'HAS_MERGE_REQUEST', 'DOES_NOT_HAVE_SOLUTION']} | ${['HAS_ISSUE', 'HAS_MERGE_REQUEST', 'DOES_NOT_HAVE_SOLUTION']}
-      ${['ALL']}                                                      | ${['ALL']}
-    `('restores selected items - $emitted', async ({ emitted, expected }) => {
-      findQuerystringSync().vm.$emit('input', emitted);
-      await nextTick();
-
-      expected.forEach((item) => {
-        expect(isOptionChecked(item)).toBe(true);
-      });
-
-      allOptionsExcept(expected).forEach((item) => {
-        expect(isOptionChecked(item)).toBe(false);
-      });
     });
   });
 
