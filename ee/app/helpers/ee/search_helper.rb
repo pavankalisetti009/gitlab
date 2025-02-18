@@ -84,6 +84,9 @@ module EE
       text = search_sanitize(search_highlight.dig(issuable.id, 'description').first)
       text.gsub!(::Elastic::Latest::GitClassProxy::HIGHLIGHT_START_TAG, '<mark>')
       text.gsub!(::Elastic::Latest::GitClassProxy::HIGHLIGHT_END_TAG, '</mark>')
+
+      return text if text.blank?
+
       search_truncate(text).html_safe
     end
 

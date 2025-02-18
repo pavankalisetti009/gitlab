@@ -329,6 +329,21 @@ RSpec.describe SearchHelper, feature_category: :global_search do
           expect(highlight_and_truncate).to eq(expected)
         end
       end
+
+      context 'when sanitize returns a blank string' do
+        let(:search_highlight) { { issue_id => { 'description' => ['test'] } } }
+        let(:blank) { '' }
+
+        before do
+          allow(self).to receive(:sanitize).and_return(blank.dup)
+        end
+
+        it 'returns blank and does not raise an error' do
+          expect(self).not_to receive(:search_truncate)
+
+          expect(highlight_and_truncate).to be_blank
+        end
+      end
     end
   end
 
