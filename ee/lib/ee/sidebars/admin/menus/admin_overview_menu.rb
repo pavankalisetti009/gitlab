@@ -6,39 +6,45 @@ module EE
       module Menus
         module AdminOverviewMenu
           extend ::Gitlab::Utils::Override
-
-          RESTRICTED_ADMIN_PERMISSIONS = {
-            read_admin_dashboard: :dashboard_menu_item,
-            read_admin_gitaly_servers: :gitaly_servers_menu_item,
-            read_admin_users: :users_menu_item
-          }.freeze
-
-          override :render?
-          def render?
-            super || restricted_administrator?
-          end
-
           override :configure_menu_items
           def configure_menu_items
+            return false unless current_user
             return super if administrator?
 
-            RESTRICTED_ADMIN_PERMISSIONS.each_pair do |permission, name|
-              add_item(build_menu_item(name)) if can?(context.current_user, permission)
-            end
+            add_item(dashboard_menu_item)
+            add_item(users_menu_item)
+            add_item(gitaly_servers_menu_item)
           end
 
           private
 
-          def build_menu_item(name)
-            method(name).call
+          override :render_with_abilities
+          def render_with_abilities
+            super + %i[read_admin_dashboard read_admin_users]
+          end
+
+          override :dashboard_menu_item
+          def dashboard_menu_item
+            set_menu_item_render(super, :read_admin_dashboard)
+          end
+
+          override :users_menu_item
+          def users_menu_item
+            set_menu_item_render(super, :read_admin_users)
+          end
+
+          override :gitaly_servers_menu_item
+          def gitaly_servers_menu_item
+            set_menu_item_render(super, :read_admin_gitaly_servers)
           end
 
           def administrator?
             can?(current_user, :admin_all_resources)
           end
 
-          def restricted_administrator?
-            can_any?(current_user, RESTRICTED_ADMIN_PERMISSIONS.keys)
+          def set_menu_item_render(menu_item, render_with_ability)
+            menu_item.render = current_user.can?(render_with_ability) unless administrator?
+            menu_item
           end
         end
       end
