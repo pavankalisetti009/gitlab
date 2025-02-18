@@ -35,7 +35,7 @@ describe('fromYaml', () => {
     ${'returns the policy object for a supported manifest'}                   | ${{ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY }}             | ${mockPipelineExecutionObject}
     ${'returns the policy object for a supported manifest with inject_ci'}    | ${{ manifest: INJECT_CI_PIPELINE_EXECUTION_POLICY }}           | ${mockWithInjectCiPipelineExecutionObject}
     ${'returns the policy object for a supported manifest with suffix'}       | ${{ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_SUFFIX }} | ${mockWithSuffixPipelineExecutionObject}
-    ${'returns the policy object for a policy with an unsupported attribute'} | ${{ manifest: customYaml }}                                    | ${customYamlObject}
+    ${'returns the policy object for a policy with an unsupported attribute'} | ${{ manifest: customYaml }}                                    | ${{ type: 'pipeline_execution_policy', ...customYamlObject }}
     ${'returns empty object for a policy with an invalid yaml'}               | ${{ manifest: invalidYaml }}                                   | ${{}}
   `('$title', ({ input, output }) => {
     expect(fromYaml(input)).toStrictEqual(output);
@@ -61,17 +61,17 @@ describe('createPolicyObject', () => {
     enabled: true,
     name: 'Ci config file',
     pipeline_config_strategy: 'this_is_wrong',
+    type: 'pipeline_execution_policy',
   };
 
   it.each`
-    title                                                                                | input                                           | output                                                                                       | securityPoliciesNewYamlFormat
-    ${'returns the policy object and no errors for a supported manifest'}                | ${DEFAULT_PIPELINE_EXECUTION_POLICY}            | ${{ policy: fromYaml({ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY }), parsingError: {} }}   | ${false}
-    ${'returns the policy object and no errors for a supported manifest new format'}     | ${DEFAULT_PIPELINE_EXECUTION_POLICY_NEW_FORMAT} | ${{ policy: fromYaml({ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY }), parsingError: {} }}   | ${true}
-    ${'returns the policy object and no errors for a supported manifest with inject_ci'} | ${INJECT_CI_PIPELINE_EXECUTION_POLICY}          | ${{ policy: fromYaml({ manifest: INJECT_CI_PIPELINE_EXECUTION_POLICY }), parsingError: {} }} | ${true}
-    ${'returns the error policy object and the error for an unsupported manifest'}       | ${customYaml}                                   | ${{ policy: { variable: true }, parsingError: { actions: true } }}                           | ${false}
-    ${'returns the error policy object and the error for an invalid strategy name'}      | ${invalidStrategyManifest}                      | ${{ policy: errorPolicy, parsingError: { actions: true } }}                                  | ${false}
-  `('$title', ({ input, output, securityPoliciesNewYamlFormat }) => {
-    window.gon.features = { securityPoliciesNewYamlFormat };
+    title                                                                                | input                                           | output
+    ${'returns the policy object and no errors for a supported manifest'}                | ${DEFAULT_PIPELINE_EXECUTION_POLICY}            | ${{ policy: fromYaml({ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY }), parsingError: {} }}
+    ${'returns the policy object and no errors for a supported manifest new format'}     | ${DEFAULT_PIPELINE_EXECUTION_POLICY_NEW_FORMAT} | ${{ policy: fromYaml({ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY }), parsingError: {} }}
+    ${'returns the policy object and no errors for a supported manifest with inject_ci'} | ${INJECT_CI_PIPELINE_EXECUTION_POLICY}          | ${{ policy: fromYaml({ manifest: INJECT_CI_PIPELINE_EXECUTION_POLICY }), parsingError: {} }}
+    ${'returns the error policy object and the error for an unsupported manifest'}       | ${customYaml}                                   | ${{ policy: { variable: true, type: 'pipeline_execution_policy' }, parsingError: { actions: true } }}
+    ${'returns the error policy object and the error for an invalid strategy name'}      | ${invalidStrategyManifest}                      | ${{ policy: errorPolicy, parsingError: { actions: true } }}
+  `('$title', ({ input, output }) => {
     expect(createPolicyObject(input)).toStrictEqual(output);
   });
 });

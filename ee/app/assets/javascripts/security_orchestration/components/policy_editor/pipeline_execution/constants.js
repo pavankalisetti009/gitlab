@@ -1,24 +1,24 @@
 import { s__ } from '~/locale';
 import { mapToListboxItems } from 'ee/security_orchestration/utils';
 
-export const DEFAULT_PIPELINE_EXECUTION_POLICY = `type: pipeline_execution_policy
-name: ''
-description: ''
-enabled: true
-pipeline_config_strategy: inject_policy
-content:
-  include:
-    - project: ''
+export const DEFAULT_PIPELINE_EXECUTION_POLICY = `pipeline_execution_policy:
+- name: ''
+  description: ''
+  enabled: true
+  pipeline_config_strategy: inject_policy
+  content:
+    include:
+      - project: ''
 `;
 
-export const INJECT_CI_PIPELINE_EXECUTION_POLICY = `type: pipeline_execution_policy
-name: ''
-description: ''
-enabled: true
-pipeline_config_strategy: inject_ci
-content:
-  include:
-    - project: ''
+export const INJECT_CI_PIPELINE_EXECUTION_POLICY = `pipeline_execution_policy:
+- name: ''
+  description: ''
+  enabled: true
+  pipeline_config_strategy: inject_ci
+  content:
+    include:
+      - project: ''
 `;
 
 export const PIPELINE_EXECUTION_POLICY_INVALID_STRATEGY = `type: pipeline_execution_policy
@@ -49,19 +49,6 @@ export const DEFAULT_PIPELINE_EXECUTION_POLICY_NEW_FORMAT = `pipeline_execution_
   content:
     include:
       - project: ''
-`;
-
-export const DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_SCOPE = `type: pipeline_execution_policy
-name: ''
-description: ''
-enabled: true
-pipeline_config_strategy: inject_policy
-policy_scope:
-  projects:
-    excluding: []
-content:
-  include:
-    - project: ''
 `;
 
 export const DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_SUFFIX = `type: pipeline_execution_policy
@@ -109,7 +96,3 @@ export const SUFFIX_LIST_BOX_ITEMS = Object.keys(SUFFIX_ITEMS).map((key) => ({
   value: key,
   text: SUFFIX_ITEMS[key],
 }));
-
-export const ACTION_SECTION_DISABLE_ERROR = s__(
-  'SecurityOrchestration|The current YAML syntax is invalid so you cannot edit the actions in rule mode. To resolve the issue, switch to YAML mode and fix the syntax.',
-);

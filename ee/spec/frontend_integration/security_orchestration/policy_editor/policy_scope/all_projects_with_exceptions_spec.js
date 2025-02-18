@@ -22,7 +22,11 @@ import {
   createSppLinkedItemsHandler,
   defaultHandlers,
 } from './apollo_utils';
-import { EXCLUDING_PROJECTS_MOCKS, EXCLUDING_PROJECTS_PROJECTS_LEVEL_MOCKS } from './mocks';
+import {
+  EXCLUDING_PROJECTS_MOCKS,
+  EXCLUDING_PROJECTS_ON_PROJECT_LEVEL,
+  EXCLUDING_PROJECTS_PROJECTS_LEVEL_MOCKS,
+} from './mocks';
 
 describe('Policy Scope With Exceptions', () => {
   let wrapper;
@@ -71,7 +75,7 @@ describe('Policy Scope With Exceptions', () => {
     describe.each`
       policyType                   | manifest
       ${SCAN_EXECUTION_POLICY}     | ${EXCLUDING_PROJECTS_MOCKS.SCAN_EXECUTION}
-      ${PIPELINE_EXECUTION_POLICY} | ${EXCLUDING_PROJECTS_MOCKS.PIPELINE_EXECUTION}
+      ${PIPELINE_EXECUTION_POLICY} | ${EXCLUDING_PROJECTS_ON_PROJECT_LEVEL}
       ${APPROVAL_POLICY}           | ${EXCLUDING_PROJECTS_MOCKS.APPROVAL_POLICY}
     `('$policyType', ({ policyType, manifest }) => {
       beforeEach(() => {
