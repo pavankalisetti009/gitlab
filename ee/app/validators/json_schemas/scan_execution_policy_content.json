@@ -117,7 +117,7 @@
               "required": [
                 "site_profile"
               ],
-              "maxProperties": 6
+              "maxProperties": 7
             }
           },
           {
@@ -129,7 +129,7 @@
               }
             },
             "then": {
-              "maxProperties": 4
+              "maxProperties": 5
             }
           },
           {
@@ -141,7 +141,7 @@
               }
             },
             "then": {
-              "maxProperties": 3
+              "maxProperties": 5
             }
           },
           {
@@ -153,7 +153,7 @@
               }
             },
             "then": {
-              "maxProperties": 4
+              "maxProperties": 5
             }
           },
           {
@@ -165,7 +165,7 @@
               }
             },
             "then": {
-              "maxProperties": 4
+              "maxProperties": 5
             }
           }
         ],
