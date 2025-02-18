@@ -15,34 +15,34 @@ const i18n = {
   selectPolicy: s__('SecurityOrchestration|Select policy'),
   scanResultPolicyTitle: s__('SecurityOrchestration|Merge request approval policy'),
   scanResultPolicyDesc: s__(
-    'SecurityOrchestration|Use a merge request approval policy to create rules that check for security vulnerabilities and license compliance before merging a merge request.',
+    'SecurityOrchestration|Use a merge request approval policy to create rules that %{strongStart}check%{strongEnd} for %{strongStart}security vulnerabilities%{strongEnd} and %{strongStart}license compliance%{strongEnd} before %{strongStart}merging a merge request%{strongEnd}.',
   ),
   scanResultPolicyExample: s__(
-    'SecurityOrchestration|If any scanner finds a newly detected critical vulnerability in an open merge request targeting the main branch, then require two approvals from any two members of the application security team.',
+    'SecurityOrchestration|If any scanner finds a %{strongStart}newly detected critical vulnerability%{strongEnd} in an open %{strongStart}merge request%{strongEnd} targeting the main branch, then %{strongStart}require two approvals from any two members%{strongEnd} of the application security team.',
   ),
   scanExecutionPolicyTitle: s__('SecurityOrchestration|Scan execution policy'),
   scanExecutionPolicyDesc: s__(
-    'SecurityOrchestration|Use a scan execution policy to create rules which enforce security scans for particular branches at a certain time. Supported types are SAST, SAST IaC, DAST, Secret detection, Container scanning, and Dependency scanning.',
+    'SecurityOrchestration|Use a scan execution policy to create rules which %{strongStart}enforce security scans%{strongEnd} for %{strongStart}particular branches%{strongEnd} at %{strongStart}certain times%{strongEnd}. Supported types are SAST, SAST IaC, DAST, Secret detection, Container scanning, and Dependency scanning.',
   ),
   scanExecutionPolicyExample: s__(
-    'SecurityOrchestration|Run a DAST scan with Scan Profile A and Site Profile A when a pipeline run against the main branch.',
+    'SecurityOrchestration|%{strongStart}Run a DAST scan%{strongEnd} with Scan Profile A and Site Profile A %{strongStart}when a pipeline runs against the main branch%{strongEnd}.',
   ),
   maximumReachedWarning: s__(
     'SecurityOrchestration|You already have the maximum %{maximumAllowed} %{policyType} %{instance}.',
   ),
   pipelineExecutionPolicyTitle: s__('SecurityOrchestration|Pipeline execution policy'),
   pipelineExecutionPolicyDesc: s__(
-    'SecurityOrchestration|Use a pipeline execution policy to enforce a custom CI/CD configuration to run in project pipelines.',
+    'SecurityOrchestration|Use a pipeline execution policy to %{strongStart}enforce a custom CI/CD configuration%{strongEnd} to run in project pipelines.',
   ),
   pipelineExecutionPolicyExample: s__(
-    'SecurityOrchestration|Run customized Gitlab security templates across my projects.',
+    'SecurityOrchestration|%{strongStart}Run customized GitLab security templates%{strongEnd} across my projects.',
   ),
   vulnerabilityManagementPolicyTitle: s__('SecurityOrchestration|Vulnerability management policy'),
   vulnerabilityManagementPolicyDesc: s__(
-    'SecurityOrchestration|Automate vulnerability management workflows.',
+    'SecurityOrchestration|Automate %{strongStart}vulnerability management%{strongEnd} workflows.',
   ),
   vulnerabilityManagementPolicyExample: s__(
-    'SecurityOrchestration|If any scanner finds a vulnerability that was previously detected but no longer found in a subsequent scan, then automatically set the status to Resolved.',
+    'SecurityOrchestration|If any scanner finds a %{strongStart}vulnerability%{strongEnd} that was %{strongStart}previously detected but no longer found%{strongEnd} in a subsequent scan, then automatically %{strongStart}set the status to Resolved%{strongEnd}.',
   ),
 };
 
@@ -122,7 +122,6 @@ export default {
     },
   },
   i18n,
-  safeHtmlConfig: { ADD_TAGS: ['use'] },
 };
 </script>
 <template>
@@ -141,9 +140,21 @@ export default {
           <div>
             <h4 class="gl-my-0 gl-inline-block">{{ option.title }}</h4>
           </div>
-          <p class="gl-mt-5">{{ option.description }}</p>
+          <div :data-testid="`${option.title}-card`" class="gl-my-5">
+            <gl-sprintf :message="option.description">
+              <template #strong="{ content }">
+                <strong>{{ content }}</strong>
+              </template>
+            </gl-sprintf>
+          </div>
           <h5>{{ $options.i18n.examples }}</h5>
-          <p class="gl-grow">{{ option.example }}</p>
+          <div class="gl-my-5">
+            <gl-sprintf :message="option.example">
+              <template #strong="{ content }">
+                <strong>{{ content }}</strong>
+              </template>
+            </gl-sprintf>
+          </div>
           <div>
             <gl-button
               v-if="!option.hasMax"
