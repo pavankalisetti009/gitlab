@@ -4,6 +4,8 @@ module AuditEvents
   module Streaming
     module Destinations
       class HttpStreamDestination < BaseStreamDestination
+        STREAMING_TOKEN_HEADER_KEY = "X-Gitlab-Event-Streaming-Token"
+
         def stream
           Gitlab::HTTP.post(
             destination.config["url"],
@@ -17,7 +19,7 @@ module AuditEvents
         private
 
         def build_headers
-          headers = @destination.config["headers"] || {}
+          headers = @destination.headers_hash
           headers[EVENT_TYPE_HEADER_KEY] = @event_type if @event_type.present?
           headers
         end
