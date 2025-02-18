@@ -1,5 +1,7 @@
-import { GlModal, GlLink, GlIntersperse } from '@gitlab/ui';
-import { shallowMount, createWrapper } from '@vue/test-utils';
+import { GlModal, GlLink } from '@gitlab/ui';
+import { createWrapper } from '@vue/test-utils';
+import { nextTick } from 'vue';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import DependenciesLicenseLinks from 'ee/dependencies/components/dependency_license_links.vue';
 import { BV_SHOW_MODAL } from '~/lib/utils/constants';
 
@@ -14,10 +16,26 @@ describe('DependencyLicenseLinks component', () => {
 
   // wrapper / factory
   let wrapper;
-  const factory = ({ numLicenses, numLicensesWithUrl = 0, title = 'test-dependency' } = {}) => {
-    const licenses = addUrls(createLicenses(numLicenses), numLicensesWithUrl);
+  const factory = ({
+    numLicenses = 0,
+    numLicensesWithUrl = 0,
+    unknownLicenseName = null,
+    title = 'test-dependency',
+  } = {}) => {
+    const licenses = [];
 
-    wrapper = shallowMount(DependenciesLicenseLinks, {
+    if (unknownLicenseName) {
+      licenses.push({
+        name: unknownLicenseName,
+        spdxIdentifier: 'unknown',
+      });
+    }
+
+    if (numLicenses > 0) {
+      licenses.push(...addUrls(createLicenses(numLicenses), numLicensesWithUrl));
+    }
+
+    wrapper = shallowMountExtended(DependenciesLicenseLinks, {
       propsData: {
         licenses,
         title,
@@ -26,43 +44,44 @@ describe('DependencyLicenseLinks component', () => {
   };
 
   // query helpers
-  const jsTestClassSelector = (name) => `.js-license-links-${name}`;
-  const findLicensesList = () => wrapper.find(jsTestClassSelector('license-list'));
-  const findLicenseListItems = () => wrapper.findAll(jsTestClassSelector('license-list-item'));
-  const findModal = () => wrapper.find(jsTestClassSelector('modal'));
-  const findModalItem = () => wrapper.findAll(jsTestClassSelector('modal-item'));
-  const findModalTrigger = () => wrapper.find(jsTestClassSelector('modal-trigger'));
+  const findLicensesList = () => wrapper.findByTestId('license-list');
+  const findLicenseListItems = () => wrapper.findAllByTestId('license-list-item');
+  const findModal = () => wrapper.findByTestId('modal');
+  const findModalItem = () => wrapper.findAllByTestId('modal-item');
+  const findLicenseBadge = () => wrapper.findByTestId('license-badge');
+  const findBadgeTooltip = () =>
+    findLicenseBadge().exists() ? findLicenseBadge().attributes('title') : null;
+  const findModalItemTexts = () =>
+    wrapper.findAllByTestId('modal-item').wrappers.map((item) => item.text());
 
   it('intersperses the list of licenses correctly', () => {
     factory();
 
-    const intersperseInstance = wrapper.findComponent(GlIntersperse);
+    const intersperseInstance = findLicensesList();
 
     expect(intersperseInstance.exists()).toBe(true);
     expect(intersperseInstance.attributes('lastseparator')).toBe(' and ');
   });
 
-  it.each([3, 5, 8, 13])('limits the number of visible licenses to 2', (numLicenses) => {
+  it.each([1, 2])('limits the number of visible licenses to 1', (numLicenses) => {
     factory({ numLicenses });
 
-    expect(findLicenseListItems()).toHaveLength(2);
+    expect(findLicenseListItems()).toHaveLength(1);
   });
 
   it.each`
     numLicenses | numLicensesWithUrl | expectedNumVisibleLinks | expectedNumModalLinks
-    ${2}        | ${2}               | ${2}                    | ${0}
-    ${3}        | ${2}               | ${2}                    | ${2}
-    ${5}        | ${2}               | ${2}                    | ${2}
-    ${2}        | ${1}               | ${1}                    | ${0}
-    ${3}        | ${1}               | ${1}                    | ${1}
-    ${5}        | ${0}               | ${0}                    | ${0}
+    ${0}        | ${0}               | ${0}                    | ${0}
+    ${1}        | ${1}               | ${1}                    | ${0}
+    ${2}        | ${1}               | ${1}                    | ${1}
+    ${2}        | ${2}               | ${1}                    | ${2}
+    ${3}        | ${2}               | ${1}                    | ${2}
   `(
     'contains the correct number of links given $numLicenses licenses where $numLicensesWithUrl contain a url',
     ({ numLicenses, numLicensesWithUrl, expectedNumVisibleLinks, expectedNumModalLinks }) => {
       factory({ numLicenses, numLicensesWithUrl });
 
       expect(findLicensesList().findAllComponents(GlLink)).toHaveLength(expectedNumVisibleLinks);
-
       expect(findModal().findAllComponents(GlLink)).toHaveLength(expectedNumModalLinks);
     },
   );
@@ -79,15 +98,25 @@ describe('DependencyLicenseLinks component', () => {
 
   it.each`
     numLicenses | expectedNumExceedingLicenses
-    ${3}        | ${1}
-    ${5}        | ${3}
-    ${8}        | ${6}
+    ${0}        | ${0}
+    ${1}        | ${0}
+    ${2}        | ${1}
+    ${3}        | ${2}
   `(
     'shows the number of licenses that are included in the modal',
-    ({ numLicenses, expectedNumExceedingLicenses }) => {
+    async ({ numLicenses, expectedNumExceedingLicenses }) => {
       factory({ numLicenses });
 
-      expect(findModalTrigger().text()).toBe(`${expectedNumExceedingLicenses} more`);
+      await nextTick();
+
+      const badge = findLicenseBadge();
+
+      if (expectedNumExceedingLicenses === 0) {
+        expect(badge.exists()).toBe(false);
+      } else {
+        expect(badge.exists()).toBe(true);
+        expect(badge.text()).toBe(`+${expectedNumExceedingLicenses} more`);
+      }
     },
   );
 
@@ -95,10 +124,7 @@ describe('DependencyLicenseLinks component', () => {
     numLicenses | expectedNumModals
     ${0}        | ${0}
     ${1}        | ${0}
-    ${2}        | ${0}
-    ${3}        | ${1}
-    ${5}        | ${1}
-    ${8}        | ${1}
+    ${2}        | ${1}
   `(
     'contains $expectedNumModals modal when $numLicenses licenses are given',
     ({ numLicenses, expectedNumModals }) => {
@@ -108,10 +134,70 @@ describe('DependencyLicenseLinks component', () => {
     },
   );
 
+  it.each`
+    unknownLicenseName | expectedTooltipText
+    ${'unknown'}       | ${'This package also includes a license which was not identified by the scanner.'}
+    ${'1 unknown'}     | ${'This package also includes a license which was not identified by the scanner.'}
+    ${'2 unknown'}     | ${'This package also includes 2 licenses which were not identified by the scanner.'}
+  `(
+    'displays the correct tooltip text for an unknown license named "$unknownLicenseName"',
+    async ({ unknownLicenseName, expectedTooltipText }) => {
+      factory({ numLicenses: 5, unknownLicenseName });
+
+      await nextTick();
+
+      expect(findLicenseBadge().exists()).toBe(true);
+      expect(findBadgeTooltip()).toBe(expectedTooltipText);
+    },
+  );
+
+  it.each`
+    numLicenses | unknownLicenseName | expectedBadgeText
+    ${0}        | ${null}            | ${null}
+    ${1}        | ${'unknown'}       | ${'+1 more'}
+    ${1}        | ${'1 unknown'}     | ${'+1 more'}
+    ${2}        | ${'2 unknown'}     | ${'+3 more'}
+  `(
+    'correctly calculates total count for $numLicenses known and extracted count from "$unknownLicenseName"',
+    async ({ numLicenses, unknownLicenseName, expectedBadgeText }) => {
+      factory({ numLicenses, unknownLicenseName });
+
+      await nextTick();
+
+      const badge = findLicenseBadge();
+
+      if (expectedBadgeText === null) {
+        expect(badge.exists()).toBe(false);
+      } else {
+        expect(badge.exists()).toBe(true);
+        expect(badge.text()).toBe(expectedBadgeText);
+      }
+    },
+  );
+
+  it('ensures unknown licenses are always listed last', async () => {
+    const licenses = [
+      { name: 'MIT' },
+      { name: '3 unknown', spdxIdentifier: 'unknown' },
+      { name: 'GPL' },
+      { name: 'Apache' },
+    ];
+
+    wrapper = shallowMountExtended(DependenciesLicenseLinks, {
+      propsData: { licenses, title: 'test-dependency' },
+    });
+
+    await nextTick();
+
+    const licenseTexts = findModalItemTexts();
+
+    expect(licenseTexts).toEqual(['Apache', 'GPL', 'MIT', '3 unknown']);
+  });
+
   it('opens the modal when the trigger gets clicked', () => {
-    factory({ numLicenses: 3 });
+    factory({ numLicenses: 2 });
     const modalId = wrapper.findComponent(GlModal).props('modalId');
-    const modalTrigger = findModalTrigger();
+    const modalTrigger = findLicenseBadge();
 
     const rootWrapper = createWrapper(wrapper.vm.$root);
 
@@ -134,13 +220,13 @@ describe('DependencyLicenseLinks component', () => {
 
   it('uses the title as the modal-title', () => {
     const title = 'test-dependency';
-    factory({ numLicenses: 3, title });
+    factory({ numLicenses: 2, title });
 
     expect(wrapper.findComponent(GlModal).attributes('title')).toEqual(title);
   });
 
   it('assigns the correct action button text to the modal', () => {
-    factory({ numLicenses: 3 });
+    factory({ numLicenses: 2 });
 
     expect(wrapper.findComponent(GlModal).attributes('ok-title')).toEqual('Close');
   });
@@ -148,10 +234,8 @@ describe('DependencyLicenseLinks component', () => {
   it.each`
     numLicenses | expectedLicensesInModal
     ${1}        | ${0}
-    ${2}        | ${0}
+    ${2}        | ${2}
     ${3}        | ${3}
-    ${5}        | ${5}
-    ${8}        | ${8}
   `('contains the correct modal content', ({ numLicenses, expectedLicensesInModal }) => {
     factory({ numLicenses });
 

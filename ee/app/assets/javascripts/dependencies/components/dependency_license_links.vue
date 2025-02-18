@@ -1,31 +1,38 @@
 <script>
 import {
-  GlButton,
+  GlBadge,
   GlLink,
   GlModal,
   GlModalDirective,
-  GlIntersperse,
   GlFriendlyWrap,
+  GlTooltipDirective,
+  GlIntersperse,
 } from '@gitlab/ui';
 import { uniqueId } from 'lodash';
 
-import { sprintf, s__ } from '~/locale';
+import { sprintf, s__, n__ } from '~/locale';
 
 // If there are more licenses than this count, a counter will be displayed for the remaining licenses
-// eg.: VISIBLE_LICENSE_COUNT = 2; licenses = ['MIT', 'GNU', 'GPL'] -> 'MIT, GNU and 1 more'
-const VISIBLE_LICENSES_COUNT = 2;
+// e.g.: VISIBLE_LICENSES_COUNT = 1; licenses = ['MIT', 'GNU', 'GPL'] -> 'MIT and +2 more'
+const VISIBLE_LICENSES_COUNT = 1;
 const MODAL_ID_PREFIX = 'dependency-license-link-modal-';
+
+// Constants for unknown license handling
+const UNKNOWN_SPDX_IDENTIFIER = 'unknown';
+const UNKNOWN_LICENSE_NAME = 'unknown';
+const SINGLE_UNKNOWN_LICENSE_NAME = '1 unknown';
 
 export default {
   components: {
-    GlIntersperse,
-    GlButton,
+    GlBadge,
     GlLink,
     GlModal,
     GlFriendlyWrap,
+    GlIntersperse,
   },
   directives: {
     GlModalDirective,
+    GlTooltipDirective,
   },
   props: {
     title: {
@@ -39,19 +46,38 @@ export default {
   },
   computed: {
     allLicenses() {
-      return Array.isArray(this.licenses) ? this.licenses : [];
+      if (!Array.isArray(this.licenses)) return [];
+
+      const knownLicenses = this.licenses
+        .filter((license) => license.spdxIdentifier !== UNKNOWN_SPDX_IDENTIFIER)
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+      return this.unknownLicense ? [...knownLicenses, this.unknownLicense] : knownLicenses;
+    },
+    unknownLicense() {
+      return this.licenses.find((license) => license.spdxIdentifier === UNKNOWN_SPDX_IDENTIFIER);
+    },
+    unknownCount() {
+      if (!this.unknownLicense) return 0;
+
+      // If a license has an 'unknown' SPDX identifier, its name field is formatted as '<count> unknown'.
+      // For more details, refer to: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/179373
+      return Number(this.unknownLicense.name?.split(' ')[0]) || 1;
     },
     visibleLicenses() {
       return this.allLicenses.slice(0, VISIBLE_LICENSES_COUNT);
     },
     remainingLicensesCount() {
-      return this.allLicenses.length - VISIBLE_LICENSES_COUNT;
+      let hiddenLicensesCount = this.allLicenses.length - VISIBLE_LICENSES_COUNT;
+
+      if (this.unknownCount) {
+        hiddenLicensesCount += this.unknownCount - 1;
+      }
+
+      return hiddenLicensesCount < 0 ? 0 : hiddenLicensesCount;
     },
     hasLicensesInModal() {
       return this.remainingLicensesCount > 0;
-    },
-    lastSeparator() {
-      return ` ${s__('SeriesFinalConjunction|and')} `;
     },
     modalId() {
       return uniqueId(MODAL_ID_PREFIX);
@@ -59,11 +85,32 @@ export default {
     modalActionText() {
       return s__('Modal|Close');
     },
-    modalButtonText() {
-      const { remainingLicensesCount } = this;
-      return sprintf(s__('Dependencies|%{remainingLicensesCount} more'), {
-        remainingLicensesCount,
+    modalBadgeText() {
+      return sprintf(s__('Dependencies|+%{remainingLicensesCount} more'), {
+        remainingLicensesCount: this.remainingLicensesCount,
       });
+    },
+    unidentifiedLicensesText() {
+      if (this.unknownCount === 0) return null;
+      return sprintf(
+        n__(
+          'Licenses|This package also includes a license which was not identified by the scanner.',
+          'Licenses|This package also includes %{count} licenses which were not identified by the scanner.',
+          this.unknownCount,
+        ),
+        { count: this.unknownCount },
+      );
+    },
+    lastSeparator() {
+      return ` ${s__('SeriesFinalConjunction|and')} `;
+    },
+  },
+  methods: {
+    formattedLicenseName(license) {
+      return license.spdxIdentifier === UNKNOWN_SPDX_IDENTIFIER &&
+        license.name === SINGLE_UNKNOWN_LICENSE_NAME
+        ? UNKNOWN_LICENSE_NAME
+        : license.name;
     },
   },
 };
@@ -71,24 +118,31 @@ export default {
 
 <template>
   <div>
-    <gl-intersperse :last-separator="lastSeparator" class="js-license-links-license-list">
+    <gl-intersperse :last-separator="lastSeparator" data-testid="license-list">
       <span
         v-for="license in visibleLicenses"
-        :key="license.name"
-        class="js-license-links-license-list-item"
+        :key="license.spdxIdentifier"
+        data-testid="license-list-item"
       >
-        <gl-link v-if="license.url" :href="license.url" target="_blank">{{ license.name }}</gl-link>
-        <gl-friendly-wrap v-else :text="license.name" />
+        <gl-link v-if="license.url" :href="license.url" target="_blank">
+          {{ formattedLicenseName(license) }}
+        </gl-link>
+        <gl-friendly-wrap v-else :text="formattedLicenseName(license)" />
       </span>
-      <gl-button
-        v-if="hasLicensesInModal"
-        v-gl-modal-directive="modalId"
-        variant="link"
-        class="align-baseline js-license-links-modal-trigger"
-        >{{ modalButtonText }}</gl-button
-      >
     </gl-intersperse>
-    <div class="js-license-links-modal">
+    <gl-badge
+      v-if="hasLicensesInModal"
+      v-gl-modal-directive="modalId"
+      v-gl-tooltip-directive.bottom="unidentifiedLicensesText"
+      :title="unidentifiedLicensesText"
+      href="#"
+      variant="muted"
+      class="align-baseline"
+      data-testid="license-badge"
+    >
+      {{ modalBadgeText }}
+    </gl-badge>
+    <div data-testid="modal">
       <gl-modal
         v-if="hasLicensesInModal"
         :title="title"
@@ -99,11 +153,11 @@ export default {
       >
         <h5>{{ __('Licenses') }}</h5>
         <ul class="list-unstyled">
-          <li v-for="license in licenses" :key="license.name" class="js-license-links-modal-item">
-            <gl-link v-if="license.url" :href="license.url" target="_blank">{{
-              license.name
-            }}</gl-link>
-            <span v-else>{{ license.name }}</span>
+          <li v-for="license in allLicenses" :key="license.spdxIdentifier" data-testid="modal-item">
+            <gl-link v-if="license.url" :href="license.url" target="_blank">
+              {{ formattedLicenseName(license) }}
+            </gl-link>
+            <span v-else>{{ formattedLicenseName(license) }}</span>
           </li>
         </ul>
       </gl-modal>
