@@ -27263,6 +27263,9 @@ ALTER TABLE approval_merge_request_rule_sources
 ALTER TABLE projects
     ADD CONSTRAINT check_fa75869cb1 CHECK ((project_namespace_id IS NOT NULL)) NOT VALID;
 
+ALTER TABLE merge_request_reviewers
+    ADD CONSTRAINT check_fb72c99774 CHECK ((project_id IS NOT NULL)) NOT VALID;
+
 ALTER TABLE ONLY ci_build_needs
     ADD CONSTRAINT ci_build_needs_pkey PRIMARY KEY (id);
 
