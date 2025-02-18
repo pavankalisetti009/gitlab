@@ -40,7 +40,7 @@ module QA
           end
 
           def error_text
-            find('.has-error').text
+            find_all('.has-error').map(&:text)
           end
 
           def number_of_messages
