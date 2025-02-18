@@ -1199,7 +1199,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
         project.project_setting.update!(pages_unique_domain_enabled: false)
       end
 
-      it 'returns expected hash' do
+      it 'returns expected hash', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/519558' do
         expect(helper.pages_deployments_usage_quota_data(project)).to match(
           {
             full_path: project.full_path,
