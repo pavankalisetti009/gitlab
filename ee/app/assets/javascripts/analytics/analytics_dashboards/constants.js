@@ -1,6 +1,10 @@
+import { humanizeTimeInterval } from '~/lib/utils/datetime_utility';
 import { __, s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
+import { DORA_METRICS } from '~/analytics/shared/constants';
+import { secondsToDays } from '~/analytics/shared/utils';
 import { DASHBOARD_SCHEMA_VERSION } from '~/vue_shared/components/customizable_dashboard/constants';
+import { formatAsPercentage } from 'ee/dora/components/util';
 
 export const EVENTS_TYPES = ['pageViews', 'linkClickEvents', 'events'];
 
@@ -144,3 +148,36 @@ export const BUILT_IN_VALUE_STREAM_DASHBOARD = 'value_streams_dashboard';
 // The URL for shared analytics dashboards is based on the name of the YAML config
 // YAML configured VSD uses `/value_streams` for the custom file name
 export const CUSTOM_VALUE_STREAM_DASHBOARD = 'value_streams';
+
+export const DORA_METRICS_CHARTS_ADDITIONAL_OPTS = {
+  [DORA_METRICS.DEPLOYMENT_FREQUENCY]: {},
+  [DORA_METRICS.LEAD_TIME_FOR_CHANGES]: {
+    yAxis: {
+      minInterval: 1,
+      axisLabel: {
+        formatter(seconds) {
+          return humanizeTimeInterval(seconds, { abbreviated: true });
+        },
+      },
+    },
+  },
+  [DORA_METRICS.TIME_TO_RESTORE_SERVICE]: {
+    yAxis: {
+      minInterval: 1,
+      axisLabel: {
+        formatter(seconds) {
+          return secondsToDays(seconds);
+        },
+      },
+    },
+  },
+  [DORA_METRICS.CHANGE_FAILURE_RATE]: {
+    yAxis: {
+      axisLabel: {
+        formatter(value) {
+          return formatAsPercentage(value);
+        },
+      },
+    },
+  },
+};

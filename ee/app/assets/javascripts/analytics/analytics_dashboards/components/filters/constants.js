@@ -1,5 +1,6 @@
 import { __, sprintf } from '~/locale';
-import { getCurrentUtcDate, getDateInPast } from '~/lib/utils/datetime_utility';
+import { nDaysBefore, getCurrentUtcDate, getDateInPast } from '~/lib/utils/datetime_utility';
+import { startOfTomorrow } from 'ee/dora/components/static_data/shared';
 
 export const TODAY = getCurrentUtcDate();
 export const SEVEN_DAYS_AGO = getDateInPast(TODAY, 7);
@@ -78,3 +79,12 @@ export const DATE_RANGE_OPTIONS = {
 };
 
 export const DATE_RANGE_OPTION_KEYS = Object.keys(DATE_RANGE_OPTIONS);
+
+export const START_DATES = {
+  [DATE_RANGE_OPTION_TODAY]: nDaysBefore(startOfTomorrow, 1, { utc: true }),
+  [DATE_RANGE_OPTION_LAST_7_DAYS]: nDaysBefore(startOfTomorrow, 7, { utc: true }),
+  [DATE_RANGE_OPTION_LAST_30_DAYS]: nDaysBefore(startOfTomorrow, 30, { utc: true }),
+  [DATE_RANGE_OPTION_LAST_60_DAYS]: nDaysBefore(startOfTomorrow, 60, { utc: true }),
+  [DATE_RANGE_OPTION_LAST_90_DAYS]: nDaysBefore(startOfTomorrow, 90, { utc: true }),
+  [DATE_RANGE_OPTION_LAST_180_DAYS]: nDaysBefore(startOfTomorrow, 180, { utc: true }),
+};
