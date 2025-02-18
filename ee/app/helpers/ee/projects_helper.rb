@@ -410,7 +410,7 @@ module EE
         deployments_limit: project.pages_parallel_deployments_limit,
         uses_namespace_domain: (!project.pages_unique_domain_enabled?).to_s,
         project_deployments_count: project.pages_parallel_deployments_count,
-        domain: ::Gitlab::Pages::UrlBuilder.new(project).hostname
+        domain: project.pages_hostname
       }
     end
 
