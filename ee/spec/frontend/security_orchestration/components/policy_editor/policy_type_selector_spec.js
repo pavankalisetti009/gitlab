@@ -25,6 +25,7 @@ describe('PolicyTypeSelector component', () => {
     });
   };
 
+  const findDescription = (title) => wrapper.findByTestId(`${title}-card`).findComponent(GlSprintf);
   const findPolicyButton = (urlParameter) => wrapper.findByTestId(`select-policy-${urlParameter}`);
   const findMaxAllowedPolicyText = (urlParameter) =>
     wrapper.findByTestId(`max-allowed-text-${urlParameter}`);
@@ -46,7 +47,7 @@ describe('PolicyTypeSelector component', () => {
       });
 
       it(`displays the description`, () => {
-        expect(wrapper.findByText(description).exists()).toBe(true);
+        expect(findDescription(title).attributes('message')).toBe(description);
       });
     });
 
