@@ -299,7 +299,7 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
 
     it_behaves_like 'empty state'
 
-    context 'when `New value stream...` button is selected' do
+    context 'when `New value stream` button is selected' do
       before do
         find_by_testid('create-value-stream-button').click
       end
