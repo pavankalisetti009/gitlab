@@ -7,6 +7,7 @@ import {
   parseBoolean,
 } from '~/lib/utils/common_utils';
 import {
+  START_DATES,
   DATE_RANGE_OPTIONS,
   DATE_RANGE_OPTION_CUSTOM,
   DATE_RANGE_OPTION_KEYS,
@@ -66,3 +67,6 @@ export const filtersToQueryParams = ({ dateRangeOption, startDate, endDate, filt
 export function isDashboardFilterEnabled(filter) {
   return filter?.enabled || false;
 }
+
+export const getStartDate = (option) =>
+  START_DATES[option] ?? START_DATES[DEFAULT_SELECTED_DATE_RANGE_OPTION];
