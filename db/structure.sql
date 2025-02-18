@@ -23484,7 +23484,8 @@ CREATE TABLE vulnerability_merge_request_links (
     merge_request_id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_341035683b CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE vulnerability_merge_request_links_id_seq
