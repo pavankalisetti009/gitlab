@@ -47,7 +47,7 @@ describe('DashboardsListItem', () => {
   const findRedirectLink = () => wrapper.findByTestId('dashboard-redirect-link');
   const findRouterLink = () => wrapper.findByTestId('dashboard-router-link');
   const findDescriptionTruncate = () => wrapper.findComponent(GlTruncateText);
-  const findBetaBadge = () => wrapper.findByTestId('dashboard-beta-badge');
+  const findStatusBadge = () => wrapper.findByTestId('dashboard-status-badge');
   const findErrorsBadge = () => wrapper.findByTestId('dashboard-errors-badge');
   const findDropdown = () => wrapper.findComponent(GlDisclosureDropdown);
   const findDisclosureDropdownItem = (index) =>
@@ -117,8 +117,8 @@ describe('DashboardsListItem', () => {
       expect(findBuiltInBadge().exists()).toBe(false);
     });
 
-    it('does not render the `Beta` badge', () => {
-      expect(findBetaBadge().exists()).toBe(false);
+    it('does not render a status badge', () => {
+      expect(findStatusBadge().exists()).toBe(false);
     });
 
     it('does not render errors badge', () => {
@@ -164,7 +164,17 @@ describe('DashboardsListItem', () => {
     });
 
     it('renders the `Beta` badge', () => {
-      expect(findBetaBadge().exists()).toBe(true);
+      expect(findStatusBadge().text()).toBe('Beta');
+    });
+  });
+
+  describe('with an experiment dashboard', () => {
+    beforeEach(() => {
+      createWrapper({ dashboard: { ...BETA_DASHBOARD, status: 'experiment' } });
+    });
+
+    it('renders the `Experiment` badge', () => {
+      expect(findStatusBadge().text()).toBe('Experiment');
     });
   });
 
