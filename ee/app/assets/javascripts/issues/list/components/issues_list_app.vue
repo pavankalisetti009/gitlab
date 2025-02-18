@@ -47,6 +47,11 @@ export default {
     'hasOkrsFeature',
     'isProject',
   ],
+  data() {
+    return {
+      filterParams: null,
+    };
+  },
   computed: {
     namespace() {
       return this.isProject ? WORKSPACE_PROJECT : WORKSPACE_GROUP;
@@ -107,6 +112,9 @@ export default {
 
       return tokens;
     },
+    searchedByEpic() {
+      return Boolean(this.filterParams?.epicId);
+    },
   },
   methods: {
     refetchIssuables() {
@@ -146,7 +154,13 @@ export default {
 </script>
 
 <template>
-  <issues-list-app ref="issuesListApp" class="js-issues-list-app" :ee-search-tokens="searchTokens">
+  <issues-list-app
+    ref="issuesListApp"
+    class="js-issues-list-app"
+    :ee-search-tokens="searchTokens"
+    :searched-by-epic="searchedByEpic"
+    @updateFilterParams="filterParams = $event"
+  >
     <template v-if="isOkrsEnabled" #new-issuable-button>
       <new-issue-dropdown @workItemCreated="refetchIssuables" />
     </template>
