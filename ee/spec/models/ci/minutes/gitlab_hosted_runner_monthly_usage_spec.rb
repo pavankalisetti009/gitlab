@@ -69,4 +69,59 @@ RSpec.describe Ci::Minutes::GitlabHostedRunnerMonthlyUsage, factory_default: :ke
       end
     end
   end
+
+  describe '.instance_aggregate' do
+    let(:billing_month) { Date.new(2025, 1, 1) }
+
+    subject(:instance_aggregate) { described_class.instance_aggregate(billing_month, nil).to_a }
+
+    it 'returns the correct aggregate data' do
+      create(:ci_hosted_runner_monthly_usage,
+        billing_month: billing_month,
+        compute_minutes_used: 100,
+        runner_duration_seconds: 6000)
+      create(:ci_hosted_runner_monthly_usage,
+        billing_month: billing_month,
+        compute_minutes_used: 200,
+        runner_duration_seconds: 12000)
+
+      expect(instance_aggregate.count).to eq(1)
+      expect(instance_aggregate.first.compute_minutes).to eq(300)
+      expect(instance_aggregate.first.duration_seconds).to eq(18000)
+      expect(instance_aggregate.first.root_namespace_id).to be_nil
+    end
+  end
+
+  describe '.per_root_namespace' do
+    let(:billing_month) { Date.new(2025, 5, 1) }
+    let(:namespace1) { create(:namespace) }
+    let(:namespace2) { create(:namespace) }
+
+    subject(:per_root_namespace) { described_class.per_root_namespace(billing_month, nil).to_a }
+
+    it 'returns the correct data per root namespace' do
+      create(:ci_hosted_runner_monthly_usage,
+        billing_month: billing_month,
+        compute_minutes_used: 100,
+        runner_duration_seconds: 6000,
+        root_namespace: namespace1)
+      create(:ci_hosted_runner_monthly_usage,
+        billing_month: billing_month,
+        compute_minutes_used: 200,
+        runner_duration_seconds: 12000,
+        root_namespace: namespace2)
+
+      expect(per_root_namespace.count).to eq(2)
+      expect(per_root_namespace.map(&:root_namespace_id))
+        .to match_array([namespace1.id, namespace2.id])
+
+      expect(per_root_namespace.find do |usage|
+        usage.root_namespace_id == namespace1.id
+      end.compute_minutes).to eq(100)
+
+      expect(per_root_namespace.find do |usage|
+        usage.root_namespace_id == namespace2.id
+      end.compute_minutes).to eq(200)
+    end
+  end
 end

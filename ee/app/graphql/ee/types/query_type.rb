@@ -33,6 +33,23 @@ module EE
             required: false,
             description: 'Date for which to retrieve the usage data, should be the first day of a month.'
         end
+        field :ci_dedicated_hosted_runner_usage, Types::Ci::Minutes::DedicatedMonthlyUsageType.connection_type,
+          null: true,
+          resolver: EE::Resolvers::Ci::Minutes::DedicatedMonthlyUsageResolver,
+          description: 'Compute usage data for runners across namespaces on GitLab Dedicated. ' \
+                       'Defaults to the current year if no year or billing month is specified. ' \
+                       'Ultimate only.' do
+          argument :billing_month, ::Types::DateType,
+            required: false,
+            description: 'First day of the month to retrieve data for.'
+          argument :year, GraphQL::Types::Int,
+            required: false,
+            description: 'Year to retrieve data for.'
+          argument :grouping,
+            type: EE::Types::Ci::Minutes::GroupingEnum,
+            required: false,
+            description: 'Groups usage data by instance aggregate or root namespace.'
+        end
         field :current_license, ::Types::Admin::CloudLicenses::CurrentLicenseType,
           null: true,
           resolver: ::Resolvers::Admin::CloudLicenses::CurrentLicenseResolver,
