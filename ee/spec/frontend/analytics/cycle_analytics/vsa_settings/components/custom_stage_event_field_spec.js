@@ -1,10 +1,7 @@
 import { GlCollapsibleListbox } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import {
-  i18n,
-  ERRORS,
-} from 'ee/analytics/cycle_analytics/components/create_value_stream_form/constants';
-import CustomStageEventField from 'ee/analytics/cycle_analytics/components/create_value_stream_form/custom_stage_event_field.vue';
+import { i18n, ERRORS } from 'ee/analytics/cycle_analytics/vsa_settings/constants';
+import CustomStageEventField from 'ee/analytics/cycle_analytics/vsa_settings/components/custom_stage_event_field.vue';
 import { customStageEvents as stageEvents } from '../../mock_data';
 
 const formatStartEventOpts = (_events) =>

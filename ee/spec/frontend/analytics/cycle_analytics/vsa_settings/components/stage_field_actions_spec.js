@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import StageFieldActions from 'ee/analytics/cycle_analytics/components/create_value_stream_form/stage_field_actions.vue';
+import StageFieldActions from 'ee/analytics/cycle_analytics/vsa_settings/components/stage_field_actions.vue';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 
 const stageCount = 3;

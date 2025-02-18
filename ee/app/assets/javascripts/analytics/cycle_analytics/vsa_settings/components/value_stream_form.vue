@@ -2,8 +2,8 @@
 import { GlLoadingIcon } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapState, mapActions } from 'vuex';
-import { generateInitialStageData } from 'ee/analytics/cycle_analytics/components/create_value_stream_form/utils';
 import { mergeUrlParams } from '~/lib/utils/url_utility';
+import { generateInitialStageData } from '../utils';
 import ValueStreamFormContent from './value_stream_form_content.vue';
 
 export default {

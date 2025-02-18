@@ -6,7 +6,7 @@ import {
   eventToOption,
   eventsByIdentifier,
   isLabelEvent,
-} from '../../utils';
+} from '../utils';
 import {
   ERRORS,
   NAME_MAX_LENGTH,

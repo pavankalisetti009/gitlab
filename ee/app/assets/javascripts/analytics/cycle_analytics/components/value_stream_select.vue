@@ -13,7 +13,7 @@ import { slugifyWithUnderscore } from '~/lib/utils/text_utility';
 import { sprintf, __, s__ } from '~/locale';
 import Tracking from '~/tracking';
 import { dismissGlobalAlertById } from '~/lib/utils/global_alerts';
-import { VSA_SETTINGS_FORM_SUBMISSION_SUCCESS_ALERT_ID } from 'ee/analytics/cycle_analytics/components/create_value_stream_form/constants';
+import { VSA_SETTINGS_FORM_SUBMISSION_SUCCESS_ALERT_ID } from '../vsa_settings/constants';
 
 const i18n = {
   DELETE_NAME: s__('DeleteValueStream|Delete %{name}'),

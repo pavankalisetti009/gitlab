@@ -6,10 +6,10 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import {
   PRESET_OPTIONS_BLANK,
   PRESET_OPTIONS_DEFAULT,
-} from 'ee/analytics/cycle_analytics/components/create_value_stream_form/constants';
-import CustomStageFields from 'ee/analytics/cycle_analytics/components/create_value_stream_form/custom_stage_fields.vue';
-import CustomStageEventField from 'ee/analytics/cycle_analytics/components/create_value_stream_form/custom_stage_event_field.vue';
-import DefaultStageFields from 'ee/analytics/cycle_analytics/components/create_value_stream_form/default_stage_fields.vue';
+} from 'ee/analytics/cycle_analytics/vsa_settings/constants';
+import CustomStageFields from 'ee/analytics/cycle_analytics/vsa_settings/components/custom_stage_fields.vue';
+import CustomStageEventField from 'ee/analytics/cycle_analytics/vsa_settings/components/custom_stage_event_field.vue';
+import DefaultStageFields from 'ee/analytics/cycle_analytics/vsa_settings/components/default_stage_fields.vue';
 import ValueStreamFormContent from 'ee/analytics/cycle_analytics/vsa_settings/components/value_stream_form_content.vue';
 import { mockTracking, unmockTracking } from 'helpers/tracking_helper';
 import { visitUrlWithAlerts } from '~/lib/utils/url_utility';

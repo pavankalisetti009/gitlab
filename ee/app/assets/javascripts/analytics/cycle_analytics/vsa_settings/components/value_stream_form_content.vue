@@ -8,6 +8,14 @@ import { swapArrayItems } from '~/lib/utils/array_utility';
 import { sprintf } from '~/locale';
 import Tracking from '~/tracking';
 import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
+import { getLabelEventsIdentifiers } from 'ee/analytics/cycle_analytics/utils';
+import {
+  validateValueStreamName,
+  cleanStageName,
+  validateStage,
+  formatStageDataForSubmission,
+  hasDirtyStage,
+} from '../utils';
 import {
   STAGE_SORT_DIRECTION,
   i18n,
@@ -15,18 +23,10 @@ import {
   PRESET_OPTIONS,
   PRESET_OPTIONS_DEFAULT,
   VSA_SETTINGS_FORM_SUBMISSION_SUCCESS_ALERT_ID,
-} from 'ee/analytics/cycle_analytics/components/create_value_stream_form/constants';
-import CustomStageFields from 'ee/analytics/cycle_analytics/components/create_value_stream_form/custom_stage_fields.vue';
-import DefaultStageFields from 'ee/analytics/cycle_analytics/components/create_value_stream_form/default_stage_fields.vue';
-import {
-  validateValueStreamName,
-  cleanStageName,
-  validateStage,
-  formatStageDataForSubmission,
-  hasDirtyStage,
-} from 'ee/analytics/cycle_analytics/components/create_value_stream_form/utils';
-import { getLabelEventsIdentifiers } from 'ee/analytics/cycle_analytics/utils';
+} from '../constants';
 import ValueStreamFormContentActions from './value_stream_form_content_actions.vue';
+import CustomStageFields from './custom_stage_fields.vue';
+import DefaultStageFields from './default_stage_fields.vue';
 
 const initializeStageErrors = (defaultStageConfig, selectedPreset = PRESET_OPTIONS_DEFAULT) =>
   selectedPreset === PRESET_OPTIONS_DEFAULT ? defaultStageConfig.map(() => ({})) : [{}];

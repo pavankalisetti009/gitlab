@@ -1,4 +1,4 @@
-import { groupLabels, labelStartEvent, labelEndEvent } from '../../mock_data';
+import { groupLabels, labelStartEvent, labelEndEvent } from '../mock_data';
 
 export const MERGE_REQUEST_CREATED = 'merge_request_created';
 export const ISSUE_CREATED = 'issue_created';

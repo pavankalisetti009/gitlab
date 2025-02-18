@@ -1,7 +1,7 @@
 import { GlFormGroup, GlFormInput } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
-import DefaultStageFields from 'ee/analytics/cycle_analytics/components/create_value_stream_form/default_stage_fields.vue';
-import StageFieldActions from 'ee/analytics/cycle_analytics/components/create_value_stream_form/stage_field_actions.vue';
+import DefaultStageFields from 'ee/analytics/cycle_analytics/vsa_settings/components/default_stage_fields.vue';
+import StageFieldActions from 'ee/analytics/cycle_analytics/vsa_settings/components/stage_field_actions.vue';
 import { customStageEvents as stageEvents } from '../../mock_data';
 
 let wrapper = null;

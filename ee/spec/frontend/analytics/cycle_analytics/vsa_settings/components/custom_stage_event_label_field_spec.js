@@ -7,11 +7,8 @@ import { GlCollapsibleListbox } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { HTTP_STATUS_NOT_FOUND, HTTP_STATUS_OK } from '~/lib/utils/http_status';
 import waitForPromises from 'helpers/wait_for_promises';
-import {
-  i18n,
-  ERRORS,
-} from 'ee/analytics/cycle_analytics/components/create_value_stream_form/constants';
-import CustomStageEventLabelField from 'ee/analytics/cycle_analytics/components/create_value_stream_form/custom_stage_event_label_field.vue';
+import { i18n, ERRORS } from 'ee/analytics/cycle_analytics/vsa_settings/constants';
+import CustomStageEventLabelField from 'ee/analytics/cycle_analytics/vsa_settings/components/custom_stage_event_label_field.vue';
 import createStore from 'ee/analytics/cycle_analytics/store';
 import { groupLabels as defaultGroupLabels } from '../../mock_data';
 

@@ -1,11 +1,11 @@
 <script>
 import { GlAlert, GlFormGroup, GlFormInput } from '@gitlab/ui';
 import { isLabelEvent, getLabelEventsIdentifiers } from '../../utils';
-import { i18n } from './constants';
+import { i18n } from '../constants';
+import { startEventOptions, endEventOptions } from '../utils';
 import CustomStageEventField from './custom_stage_event_field.vue';
 import CustomStageEventLabelField from './custom_stage_event_label_field.vue';
 import StageFieldActions from './stage_field_actions.vue';
-import { startEventOptions, endEventOptions } from './utils';
 
 export default {
   name: 'CustomStageFields',
