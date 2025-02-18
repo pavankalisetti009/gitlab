@@ -7,7 +7,10 @@ RSpec.describe Security::SecurityOrchestrationPolicies::OnDemandScanPipelineConf
   describe '#execute' do
     let_it_be_with_reload(:project) { create(:project, :repository) }
 
-    let_it_be(:site_profile) { create(:dast_site_profile, project: project) }
+    let_it_be(:website_site_profile) { create(:dast_site_profile, target_type: :website, project: project) }
+    let_it_be(:api_site_profile) { create(:dast_site_profile, target_type: :api, project: project) }
+
+    let(:site_profile) { website_site_profile }
     let_it_be(:scanner_profile) { create(:dast_scanner_profile, project: project) }
 
     let(:service) { described_class.new(project) }
@@ -50,40 +53,87 @@ RSpec.describe Security::SecurityOrchestrationPolicies::OnDemandScanPipelineConf
       pipeline_configuration
     end
 
-    it 'fetches template content using ::TemplateFinder' do
-      expect(::TemplateFinder).to receive(:build).with(:gitlab_ci_ymls, nil, name: 'DAST-On-Demand-Scan').and_call_original
+    context 'when site profile is configured with website type' do
+      let(:site_profile) { website_site_profile }
 
-      pipeline_configuration
+      it 'fetches template content using ::TemplateFinder' do
+        expect(::TemplateFinder).to receive(:build).with(:gitlab_ci_ymls, nil, name: 'DAST-On-Demand-Scan').and_call_original
+
+        pipeline_configuration
+      end
+
+      it 'returns prepared CI configuration with DAST On-Demand scans defined' do
+        expected_configuration = {
+          'dast-on-demand-0': {
+            stage: 'dast',
+            tags: ['runner-tag'],
+            image: { name: '$SECURE_ANALYZERS_PREFIX/dast:$DAST_VERSION$DAST_IMAGE_SUFFIX' },
+            variables: {
+              DAST_VERSION: 5,
+              SECURE_ANALYZERS_PREFIX: '$CI_TEMPLATE_REGISTRY_HOST/security-products',
+              DAST_IMAGE_SUFFIX: '',
+              GIT_STRATEGY: 'none'
+            },
+            allow_failure: true,
+            script: ['/analyze'],
+            artifacts: { access: 'developer', paths: ["gl-dast-*.*"], reports: { dast: 'gl-dast-report.json' }, when: 'always' },
+            dast_configuration: { site_profile: site_profile.name, scanner_profile: scanner_profile.name },
+            rules: [
+              { if: '$CI_GITLAB_FIPS_MODE == "true"', variables: { DAST_IMAGE_SUFFIX: "-fips" } },
+              { when: 'on_success' }
+            ]
+          },
+          'dast-on-demand-1': {
+            script: 'echo "Error during On-Demand Scan execution: Dast site profile was not provided" && false',
+            allow_failure: true
+          }
+        }
+
+        expect(pipeline_configuration).to eq(expected_configuration)
+      end
     end
 
-    it 'returns prepared CI configuration with DAST On-Demand scans defined' do
-      expected_configuration = {
-        'dast-on-demand-0': {
-          stage: 'dast',
-          tags: ['runner-tag'],
-          image: { name: '$SECURE_ANALYZERS_PREFIX/dast:$DAST_VERSION$DAST_IMAGE_SUFFIX' },
-          variables: {
-            DAST_VERSION: 5,
-            SECURE_ANALYZERS_PREFIX: '$CI_TEMPLATE_REGISTRY_HOST/security-products',
-            DAST_IMAGE_SUFFIX: '',
-            GIT_STRATEGY: 'none'
-          },
-          allow_failure: true,
-          script: ['/analyze'],
-          artifacts: { access: 'developer', paths: ["gl-dast-*.*"], reports: { dast: 'gl-dast-report.json' }, when: 'always' },
-          dast_configuration: { site_profile: site_profile.name, scanner_profile: scanner_profile.name },
-          rules: [
-            { if: '$CI_GITLAB_FIPS_MODE == "true"', variables: { DAST_IMAGE_SUFFIX: "-fips" } },
-            { when: 'on_success' }
-          ]
-        },
-        'dast-on-demand-1': {
-          script: 'echo "Error during On-Demand Scan execution: Dast site profile was not provided" && false',
-          allow_failure: true
-        }
-      }
+    context 'when site profile is configured with api type' do
+      let(:site_profile) { api_site_profile }
 
-      expect(pipeline_configuration).to eq(expected_configuration)
+      it 'fetches template content using ::TemplateFinder' do
+        expect(::TemplateFinder).to receive(:build).with(:gitlab_ci_ymls, nil, name: 'DAST-On-Demand-API-Scan').and_call_original
+
+        pipeline_configuration
+      end
+
+      it 'returns prepared CI configuration with DAST On-Demand API scans defined' do
+        expected_configuration = {
+          'dast-on-demand-0': {
+            stage: 'dast',
+            variables: {
+              SECURE_ANALYZERS_PREFIX: '$CI_TEMPLATE_REGISTRY_HOST/security-products',
+              DAST_API_VERSION: '5',
+              DAST_API_IMAGE_SUFFIX: '',
+              DAST_API_IMAGE: 'api-security'
+            },
+            tags: ['runner-tag'],
+            image: '$SECURE_ANALYZERS_PREFIX/$DAST_API_IMAGE:$DAST_API_VERSION$DAST_API_IMAGE_SUFFIX',
+            allow_failure: true,
+            script: ['/peach/analyzer-dast-api'],
+            dast_configuration: { site_profile: site_profile.name, scanner_profile: scanner_profile.name },
+            artifacts: {
+              access: 'developer',
+              when: 'always',
+              paths: ['gl-assets', 'gl-dast-api-report.json', 'gl-*.log'],
+              reports: {
+                dast: 'gl-dast-api-report.json'
+              }
+            }
+          },
+          'dast-on-demand-1': {
+            script: 'echo "Error during On-Demand Scan execution: Dast site profile was not provided" && false',
+            allow_failure: true
+          }
+        }
+
+        expect(pipeline_configuration).to eq(expected_configuration)
+      end
     end
 
     context 'when scan_settings.ignore_default_before_after_script is set' do
