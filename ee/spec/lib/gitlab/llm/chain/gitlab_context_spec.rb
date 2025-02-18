@@ -31,14 +31,6 @@ RSpec.describe Gitlab::Llm::Chain::GitlabContext, :saas, feature_category: :duo_
     group.namespace_settings.update!(experiment_features_enabled: true)
   end
 
-  describe '#current_page_type' do
-    let(:resource) { create(:issue, project: project) }
-
-    it 'delegates to ai resource' do
-      expect(context.current_page_type).to eq("issue")
-    end
-  end
-
   describe '#resource_serialized' do
     let(:content_limit) { 500 }
 
@@ -90,39 +82,20 @@ RSpec.describe Gitlab::Llm::Chain::GitlabContext, :saas, feature_category: :duo_
     end
   end
 
-  describe '#current_page_short_description' do
+  describe '#current_page_params' do
     context 'with an unauthorized resource' do
       let(:resource) { create(:issue) }
 
       it 'returns nil' do
-        expect(context.current_page_short_description).to be_nil
+        expect(context.current_page_params).to be_nil
       end
     end
 
     context 'with an authorized resource' do
       let(:resource) { create(:issue, project: project) }
 
-      it 'returns short description of issue' do
-        expect(context.current_page_short_description).to include("The title of the issue is '#{resource.title}'.")
-      end
-    end
-  end
-
-  describe '#current_page_description' do
-    context 'with an unauthorized resource' do
-      let(:resource) { create(:issue) }
-
-      it 'returns nil' do
-        expect(context.current_page_short_description).to be_nil
-      end
-    end
-
-    context 'with an authorized resource' do
-      let(:resource) { create(:issue, project: project) }
-
-      it 'returns sentence about the resource' do
-        expect(context.current_page_short_description)
-          .to include("The user is currently on a page that displays an issue")
+      it 'returns resource params' do
+        expect(context.current_page_params).to include({ title: resource.title })
       end
     end
   end

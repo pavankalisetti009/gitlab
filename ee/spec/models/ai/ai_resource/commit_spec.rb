@@ -29,22 +29,4 @@ RSpec.describe Ai::AiResource::Commit, feature_category: :duo_chat do
       expect(wrapped_commit.current_page_type).to eq('commit')
     end
   end
-
-  describe '#current_page_short_description' do
-    it 'returns prompt' do
-      expect(wrapped_commit.current_page_short_description)
-        .to include("The title of the commit is '#{commit.title}'.")
-    end
-
-    context 'with mr for chat feature flag disabled' do
-      before do
-        stub_feature_flags(ai_commit_reader_for_chat: false)
-      end
-
-      it 'returns empty string' do
-        expect(wrapped_commit.current_page_short_description)
-          .to eq("")
-      end
-    end
-  end
 end
