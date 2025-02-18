@@ -196,7 +196,6 @@ spec/frontend/ml/model_registry/components/candidate_detail_spec.js
 spec/frontend/ml/model_registry/components/model_edit_spec.js
 spec/frontend/ml/model_registry/components/model_version_create_spec.js
 spec/frontend/notebook/cells/markdown_spec.js
-spec/frontend/notebook/cells/output/html_spec.js
 spec/frontend/notes/components/discussion_notes_spec.js
 spec/frontend/notes/components/notes_app_spec.js
 spec/frontend/organizations/shared/components/new_edit_form_spec.js
