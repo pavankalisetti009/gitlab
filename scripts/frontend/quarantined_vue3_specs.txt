@@ -184,7 +184,6 @@ spec/frontend/members/components/modals/leave_modal_spec.js
 spec/frontend/members/components/table/max_role_spec.js
 spec/frontend/members/components/table/members_pagination_spec.js
 spec/frontend/members/components/table/members_table_spec.js
-spec/frontend/merge_request_dashboard/components/assigned_users_spec.js
 spec/frontend/milestones/components/milestone_combobox_spec.js
 spec/frontend/ml/model_registry/apps/show_ml_model_spec.js
 spec/frontend/ml/model_registry/components/candidate_detail_spec.js
