@@ -14,9 +14,15 @@ title: GitLab-managed Kubernetes resources
 
 {{< history >}}
 
-- [Introduced](https://gitlab.com/groups/gitlab-org/-/epics/16130) in GitLab 17.9
+- [Introduced](https://gitlab.com/groups/gitlab-org/-/epics/16130) in GitLab 17.9 [with a flag](../../../administration/feature_flags.md) named `gitlab_managed_cluster_resources`. Disabled by default.
 
 {{< /history >}}
+
+{{< alert type="flag" >}}
+
+The availability of this feature is controlled by a feature flag. For more information, see the history.
+
+{{< /alert >}}
 
 Use GitLab-managed Kubernetes resources to provision Kubernetes resources with environment templates. An environment template can:
 
