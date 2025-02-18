@@ -20,12 +20,6 @@ module Ai
           "build"
         end
 
-        def current_page_short_description
-          <<~SENTENCE
-          The user is currently on a page that displays a ci build which the user might refer to, for example, as 'current', 'this' or 'that'.
-          SENTENCE
-        end
-
         def current_page_params
           {
             type: current_page_type

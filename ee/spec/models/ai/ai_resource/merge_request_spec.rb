@@ -28,11 +28,4 @@ RSpec.describe Ai::AiResource::MergeRequest, feature_category: :duo_chat do
       expect(wrapped_merge_request.current_page_type).to eq('merge_request')
     end
   end
-
-  describe '#current_page_short_description' do
-    it 'returns prompt' do
-      expect(wrapped_merge_request.current_page_short_description)
-        .to include("The title of the merge request is '#{merge_request.title}'.")
-    end
-  end
 end

@@ -22,14 +22,6 @@ RSpec.describe Ai::AiResource::Issue, feature_category: :duo_chat do
     end
   end
 
-  describe '#current_page_short_description' do
-    it 'returns prompt' do
-      expect(wrapped_issue.current_page_short_description).to include("The title of the issue is '#{issue.title}'.")
-      expect(wrapped_issue.current_page_short_description)
-        .not_to include("utilize it instead of using the 'IssueReader' tool")
-    end
-  end
-
   describe '#current_page_type' do
     it 'returns type' do
       expect(wrapped_issue.current_page_type).to eq('issue')

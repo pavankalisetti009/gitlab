@@ -132,12 +132,4 @@ RSpec.describe Gitlab::Llm::Chain::Utils::Prompt, feature_category: :duo_chat do
       end
     end
   end
-
-  describe "#default_system_prompt" do
-    it 'includes the prompt to explain code directly' do
-      prompt = "You can explain code if the user provided a code snippet and answer directly."
-
-      expect(described_class.default_system_prompt).to include prompt
-    end
-  end
 end
