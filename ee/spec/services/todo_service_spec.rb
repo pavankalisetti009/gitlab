@@ -10,6 +10,7 @@ RSpec.describe TodoService, feature_category: :notifications do
   let_it_be(:admin) { create(:admin, username: 'administrator') }
   let_it_be(:john_doe) { create(:user, username: 'john_doe') }
   let_it_be(:skipped) { create(:user, username: 'skipped') }
+  let(:project) { nil }
 
   let(:skip_users) { [skipped] }
   let(:service) { described_class.new }
@@ -419,6 +420,22 @@ RSpec.describe TodoService, feature_category: :notifications do
 
       should_create_todo(user: users[0], author: merge_request.author, target: merge_request, action: ::Todo::ADDED_APPROVER)
       should_create_todo(user: users[1], author: merge_request.author, target: merge_request, action: ::Todo::ADDED_APPROVER)
+    end
+  end
+
+  describe '#duo_pro_access_granted' do
+    it 'creates a pending todo for the user' do
+      service.duo_pro_access_granted(author)
+
+      should_create_todo(user: author, author: author, target: author, action: Todo::DUO_PRO_ACCESS_GRANTED)
+    end
+  end
+
+  describe '#duo_enterprise_access_granted' do
+    it 'creates a pending todo for the user' do
+      service.duo_enterprise_access_granted(author)
+
+      should_create_todo(user: author, author: author, target: author, action: Todo::DUO_ENTERPRISE_ACCESS_GRANTED)
     end
   end
 

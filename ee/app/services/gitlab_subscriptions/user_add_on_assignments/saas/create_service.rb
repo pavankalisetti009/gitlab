@@ -12,11 +12,7 @@ module GitlabSubscriptions
         def after_success_hook
           super
 
-          create_iterable_trigger if duo_pro_or_enterprise?
-        end
-
-        def duo_pro_or_enterprise?
-          add_on_purchase.add_on.code_suggestions? || add_on_purchase.add_on.duo_enterprise?
+          create_iterable_trigger if duo_pro? || duo_enterprise?
         end
 
         def create_iterable_trigger

@@ -37,6 +37,12 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignments::BaseCreateService, fea
         expect(result).to be_error
         expect(result.message).to eq('NO_SEATS_AVAILABLE')
       end
+
+      it 'does not create related notification todo' do
+        expect { described_class.new(add_on_purchase: add_on_purchase, user: user).execute }.not_to change {
+          user.todos.count
+        }
+      end
     end
 
     context 'when there are available seats' do
@@ -51,6 +57,43 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignments::BaseCreateService, fea
 
         expect(result).to be_success
         expect(add_on_purchase.assigned_users.count).to eq(1)
+      end
+
+      it 'creates related notification todo' do
+        expect { described_class.new(add_on_purchase: add_on_purchase, user: user).execute }.to change {
+          user.todos.count
+        }.by(1)
+
+        expect(user.todos.last.action).to eq(::Todo::DUO_PRO_ACCESS_GRANTED)
+      end
+    end
+
+    context 'when there are available duo enterprise seats' do
+      let_it_be(:add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
+      let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, add_on: add_on) }
+
+      before do
+        allow_next_instance_of(described_class) do |instance|
+          allow(instance).to receive(:eligible_for_gitlab_duo_pro_seat?).and_return(true)
+        end
+      end
+
+      it 'creates related notification todo' do
+        expect { described_class.new(add_on_purchase: add_on_purchase, user: user).execute }.to change {
+          user.todos.count
+        }.by(1)
+
+        expect(user.todos.last.action).to eq(::Todo::DUO_ENTERPRISE_ACCESS_GRANTED)
+      end
+
+      context 'when duo_seat_assignment_todo feature flag is disabled' do
+        it 'does not create related notification todo' do
+          stub_feature_flags(duo_seat_assignment_todo: false)
+
+          expect { described_class.new(add_on_purchase: add_on_purchase, user: user).execute }.not_to change {
+            user.todos.count
+          }
+        end
       end
     end
 
