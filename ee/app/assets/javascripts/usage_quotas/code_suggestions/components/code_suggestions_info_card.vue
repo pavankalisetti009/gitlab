@@ -1,6 +1,7 @@
 <script>
 import {
   GlCard,
+  GlIcon,
   GlLink,
   GlSprintf,
   GlButton,
@@ -15,7 +16,6 @@ import {
   DUO_ENTERPRISE,
   codeSuggestionsLearnMoreLink,
 } from 'ee/usage_quotas/code_suggestions/constants';
-import { addSeatsText } from 'ee/usage_quotas/seats/constants';
 import HandRaiseLeadButton from 'ee/hand_raise_leads/hand_raise_lead/components/hand_raise_lead_button.vue';
 import { InternalEvents } from '~/tracking';
 import { getSubscriptionPermissionsData } from 'ee/fulfillment/shared_queries/subscription_actions_reason.customer.query.graphql';
@@ -38,7 +38,6 @@ export default {
     ),
     subscriptionTitle: s__('CodeSuggestions|Subscription'),
     trialTitle: s__('CodeSuggestions|Trial'),
-    addSeatsText,
     startDateText: __('Start date:'),
     endDateText: __('End date:'),
     notAvailable: __('Not available'),
@@ -48,6 +47,7 @@ export default {
   components: {
     GlButton,
     GlCard,
+    GlIcon,
     GlLink,
     GlSprintf,
     UsageStatistics,
@@ -344,7 +344,7 @@ export default {
               data-testid="purchase-button"
               @click="handleAddSeats"
             >
-              {{ $options.i18n.addSeatsText }}
+              {{ $options.i18n.purchaseSeats }} <gl-icon name="external-link" />
             </gl-button>
           </div>
           <limited-access-modal

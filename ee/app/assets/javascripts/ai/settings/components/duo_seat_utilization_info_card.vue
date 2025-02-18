@@ -1,6 +1,6 @@
 <script>
 import { GlCard, GlButton, GlIcon } from '@gitlab/ui';
-import { s__ } from '~/locale';
+import { s__, __ } from '~/locale';
 import UsageStatistics from 'ee/usage_quotas/components/usage_statistics.vue';
 import {
   DUO_PRO,
@@ -21,7 +21,7 @@ export default {
     duoSubscriptionStartText: s__(`AiPowered|Start date: %{startDate}`),
     duoSubscriptionEndText: s__(`AiPowered|End date: %{endDate}`),
     duoAssignSeatsButtonText: s__('AiPowered|Assign seats'),
-    duoPurchaseSeatsButtonText: s__('AiPowered|Purchase seats'),
+    duoPurchaseSeatsButtonText: __('Purchase seats'),
   },
   components: {
     GlCard,

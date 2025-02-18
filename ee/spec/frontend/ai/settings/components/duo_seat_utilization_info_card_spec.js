@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import { GlCard, GlButton } from '@gitlab/ui';
+import { GlCard, GlIcon, GlButton } from '@gitlab/ui';
 import UsageStatistics from 'ee/usage_quotas/components/usage_statistics.vue';
 import DuoSeatUtilizationInfoCard from 'ee/ai/settings/components/duo_seat_utilization_info_card.vue';
 import {
@@ -110,6 +110,7 @@ describe('DuoSeatUtilizationInfoCard', () => {
       expect(findActionButtons()).toHaveLength(2);
       expect(findActionButtons().at(0).text()).toBe('Assign seats');
       expect(findActionButtons().at(1).text()).toBe('Purchase seats');
+      expect(findActionButtons().at(1).findComponent(GlIcon).props('name')).toBe('external-link');
     });
 
     it('renders only assign seats button for duo enterprise', () => {

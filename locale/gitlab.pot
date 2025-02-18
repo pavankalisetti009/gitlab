@@ -5451,9 +5451,6 @@ msgstr ""
 msgid "AiPowered|Participate in the Early Access Program and help make GitLab better"
 msgstr ""
 
-msgid "AiPowered|Purchase seats"
-msgstr ""
-
 msgid "AiPowered|Seat assignment for GitLab Duo has moved"
 msgstr ""
 
