@@ -17682,7 +17682,8 @@ CREATE TABLE packages_conan_metadata (
     updated_at timestamp with time zone NOT NULL,
     package_username character varying(255) NOT NULL,
     package_channel character varying(255) NOT NULL,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_9cda5a20a8 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE packages_conan_metadata_id_seq
