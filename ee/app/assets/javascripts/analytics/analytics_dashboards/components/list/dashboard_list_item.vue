@@ -1,10 +1,9 @@
 <script>
 import { v4 as uuidv4 } from 'uuid';
-
 import { GlIcon, GlBadge, GlLink, GlTruncateText, GlDisclosureDropdown } from '@gitlab/ui';
+import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
 import { visitUrl, joinPaths } from '~/lib/utils/url_utility';
 import { __ } from '~/locale';
-import { DASHBOARD_STATUS_BETA } from '~/vue_shared/components/customizable_dashboard/constants';
 
 const TRUNCATE_BUTTON_ID = `desc-truncate-btn-${uuidv4()}`;
 
@@ -47,8 +46,8 @@ export default {
     isBuiltInDashboard() {
       return 'userDefined' in this.dashboard && !this.dashboard.userDefined;
     },
-    showBetaBadge() {
-      return this.dashboard?.status === DASHBOARD_STATUS_BETA;
+    statusBadge() {
+      return this.dashboard?.status ? capitalizeFirstCharacter(this.dashboard.status) : null;
     },
     showErrorsBadge() {
       return this.dashboard?.errors?.length > 0;
@@ -104,8 +103,8 @@ export default {
             :to="dashboard.slug"
             >{{ dashboard.title }}</router-link
           >
-          <gl-badge v-if="showBetaBadge" data-testid="dashboard-beta-badge" class="gl-ml-2">
-            {{ __('Beta') }}
+          <gl-badge v-if="statusBadge" data-testid="dashboard-status-badge" class="gl-ml-2">
+            {{ statusBadge }}
           </gl-badge>
           <gl-badge
             v-if="showErrorsBadge"

@@ -1,10 +1,11 @@
 title: Contributions Dashboard
 description: Contribution analytics for issues, merge requests and push events.
 version: '2'
+status: experiment
 filters:
   dateRange:
     enabled: true
-    options: 
+    options:
       - 7d
       - 30d
       - 90d
