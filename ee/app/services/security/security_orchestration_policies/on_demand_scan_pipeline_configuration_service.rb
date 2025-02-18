@@ -15,7 +15,10 @@ module Security
 
       private
 
-      DAST_ON_DEMAND_TEMPLATE_NAME = 'DAST-On-Demand-Scan'
+      TEMPLATES = {
+        scan: 'DAST-On-Demand-Scan',
+        api: 'DAST-On-Demand-API-Scan'
+      }.freeze
 
       attr_reader :project
 
@@ -26,26 +29,37 @@ module Security
       end
 
       def prepare_on_demand_scan_configuration(action)
-        result = prepare_base_configuration(action[:site_profile], action[:scanner_profile])
+        site_profile = dast_site_profile(action[:site_profile])
+        scanner_profile = dast_scanner_profile(action[:scanner_profile])
+
+        result = prepare_base_configuration(site_profile, scanner_profile)
         return error_script(result.message) unless result.success?
 
         action_variables = action[:variables].to_h.stringify_keys
         ci_configuration = YAML.safe_load(result.payload[:ci_configuration])
+        template = site_profile.api? ? dast_on_demand_api_template : dast_on_demand_template
 
-        dast_on_demand_template[:dast]
+        template[:dast]
           .merge(action[:tags] ? { tags: action[:tags] } : {})
           .merge(ignore_default_before_after_script?(action) ? { before_script: [], after_script: [] } : {})
           .deep_merge(
             'stage' => 'dast',
-            'variables' => dast_on_demand_variables(action_variables),
+            'variables' => dast_on_demand_variables(template, action_variables),
             'dast_configuration' => ci_configuration['dast']['dast_configuration']
           )
       end
 
-      def prepare_base_configuration(site_profile_name, scanner_profile_name)
-        site_profile = DastSiteProfilesFinder.new(project_id: project.id, name: site_profile_name).execute.first
-        scanner_profile = DastScannerProfilesFinder.new(project_ids: [project.id], name: scanner_profile_name).execute.first if scanner_profile_name.present?
+      def dast_site_profile(site_profile_name)
+        DastSiteProfilesFinder.new(project_id: project.id, name: site_profile_name).execute.first
+      end
 
+      def dast_scanner_profile(scanner_profile_name)
+        return if scanner_profile_name.blank?
+
+        DastScannerProfilesFinder.new(project_ids: [project.id], name: scanner_profile_name).execute.first
+      end
+
+      def prepare_base_configuration(site_profile, scanner_profile)
         AppSec::Dast::ScanConfigs::BuildService
           .new(container: project, params: { dast_site_profile: site_profile, dast_scanner_profile: scanner_profile })
           .execute
@@ -56,17 +70,25 @@ module Security
       end
 
       def dast_on_demand_template
-        strong_memoize(:dast_on_demand_template) do
-          template = ::TemplateFinder.build(:gitlab_ci_ymls, nil, name: DAST_ON_DEMAND_TEMPLATE_NAME).execute
-          ci_yaml = Gitlab::Ci::Config::Yaml::Loader.new(template.content).load
+        fetch_dast_on_demand_template(:scan)
+      end
+      strong_memoize_attr :dast_on_demand_template
 
-          ci_yaml.content
-        end
+      def dast_on_demand_api_template
+        fetch_dast_on_demand_template(:api)
+      end
+      strong_memoize_attr :dast_on_demand_api_template
+
+      def fetch_dast_on_demand_template(scan_type)
+        template = ::TemplateFinder.build(:gitlab_ci_ymls, nil, name: TEMPLATES[scan_type]).execute
+        ci_yaml = Gitlab::Ci::Config::Yaml::Loader.new(template.content).load
+
+        ci_yaml.content
       end
 
-      def dast_on_demand_variables(action_variables)
-        dast_on_demand_template[:variables]
-          .merge(dast_on_demand_template[:dast][:variables])
+      def dast_on_demand_variables(template, action_variables)
+        template[:variables]
+          .merge(template.dig(:dast, :variables).to_h)
           .merge(action_variables)
       end
 
