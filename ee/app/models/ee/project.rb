@@ -507,7 +507,7 @@ module EE
         compliance_framework_settings
           .joins(:compliance_management_framework)
           .where.not(compliance_management_framework: { pipeline_configuration_full_path: nil })
-          .order(created_at: :asc)
+          .order('project_compliance_framework_settings.created_at' => :asc)
           .pick(:pipeline_configuration_full_path)
       end
 
