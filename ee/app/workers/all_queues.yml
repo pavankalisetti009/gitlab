@@ -115,7 +115,7 @@
   :queue_namespace: :cronjob
 - :name: cronjob:analytics_dump_ai_user_metrics_write_buffer_cron
   :worker_name: Analytics::DumpAiUserMetricsWriteBufferCronWorker
-  :feature_category: :database
+  :feature_category: :value_stream_management
   :has_external_dependencies: false
   :urgency: :low
   :resource_boundary: :unknown

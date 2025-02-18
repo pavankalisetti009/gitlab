@@ -8,7 +8,7 @@ module Analytics
     idempotent!
     queue_namespace :cronjob
     data_consistency :delayed
-    feature_category :database
+    feature_category :value_stream_management
 
     MAX_RUNTIME = 200.seconds
     BATCH_SIZE = 1000
