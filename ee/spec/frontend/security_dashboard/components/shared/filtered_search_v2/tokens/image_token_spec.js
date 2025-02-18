@@ -1,6 +1,5 @@
 import { GlFilteredSearchToken, GlLoadingIcon } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
-import VueRouter from 'vue-router';
 import VueApollo from 'vue-apollo';
 import { createAlert } from '~/alert';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -9,8 +8,6 @@ import agentImagesQuery from 'ee/security_dashboard/graphql/queries/agent_images
 import projectImagesQuery from 'ee/security_dashboard/graphql/queries/project_images.query.graphql';
 import ImageToken from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/image_token.vue';
 import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_search_v2/components/search_suggestion.vue';
-import QuerystringSync from 'ee/security_dashboard/components/shared/filters/querystring_sync.vue';
-import eventHub from 'ee/security_dashboard/components/shared/filtered_search_v2/event_hub';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
 import { stubComponent } from 'helpers/stub_component';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -19,13 +16,11 @@ import {
   projectVulnerabilityImages,
 } from 'ee_jest/security_dashboard/components/mock_data';
 
-Vue.use(VueRouter);
 Vue.use(VueApollo);
 jest.mock('~/alert');
 
 describe('Image Token component', () => {
   let wrapper;
-  let router;
   const projectFullPath = 'test/path';
   const agentProvide = {
     agentName: 'agent-1',
@@ -49,10 +44,7 @@ describe('Image Token component', () => {
     projectQueryResolver = defaultProjectQueryResolver,
     mountFn = shallowMountExtended,
   } = {}) => {
-    router = new VueRouter({ mode: 'history' });
-
     wrapper = mountFn(ImageToken, {
-      router,
       apolloProvider: createMockApollo([
         [agentImagesQuery, agentQueryResolver],
         [projectImagesQuery, projectQueryResolver],
@@ -76,7 +68,6 @@ describe('Image Token component', () => {
     });
   };
 
-  const findQuerystringSync = () => wrapper.findComponent(QuerystringSync);
   const findFilteredSearchToken = () => wrapper.findComponent(GlFilteredSearchToken);
   const isOptionChecked = (v) => wrapper.findByTestId(`suggestion-${v}`).props('selected') === true;
 
@@ -200,18 +191,6 @@ describe('Image Token component', () => {
       expect(isOptionChecked('third-image')).toBe(false);
       expect(isOptionChecked('ALL')).toBe(true);
     });
-
-    it('emits filters-changed event when a filter is selected', async () => {
-      const spy = jest.fn();
-      eventHub.$on('filters-changed', spy);
-
-      // Select 2 states
-      await clickDropdownItem('long-image-name', 'second-long-image-name');
-
-      expect(spy).toHaveBeenCalledWith({
-        image: ['long-image-name', 'second-long-image-name'],
-      });
-    });
   });
 
   describe('toggle text', () => {
@@ -234,36 +213,6 @@ describe('Image Token component', () => {
     it('shows "long-image-name" when only long-image-name is selected', async () => {
       await clickDropdownItem('long-image-name');
       expect(findSlotView().text()).toBe('long-image-name');
-    });
-  });
-
-  describe('QuerystringSync component', () => {
-    beforeEach(() => {
-      createWrapper();
-    });
-
-    it('has expected props', () => {
-      expect(findQuerystringSync().props()).toMatchObject({
-        querystringKey: 'image',
-        value: ['ALL'],
-      });
-    });
-
-    it('receives "ALL" when All images option is clicked', async () => {
-      await clickDropdownItem('ALL');
-
-      expect(findQuerystringSync().props('value')).toEqual(['ALL']);
-    });
-
-    it('restores selected items', async () => {
-      findQuerystringSync().vm.$emit('input', ['long-image-name', 'second-long-image-name']);
-
-      await nextTick();
-
-      expect(isOptionChecked('long-image-name')).toBe(true);
-      expect(isOptionChecked('second-long-image-name')).toBe(true);
-      expect(isOptionChecked('third-image')).toBe(false);
-      expect(isOptionChecked('ALL')).toBe(false);
     });
   });
 });
