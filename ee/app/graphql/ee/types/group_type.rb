@@ -119,7 +119,7 @@ module EE
               description: 'Plan from which to get billable members.'
           end
 
-        field :dora, ::Types::DoraType,
+        field :dora, ::Types::Analytics::Dora::DoraType,
           null: true,
           method: :itself,
           description: "Group's DORA metrics."

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Resolvers::DoraMetricsResolver, time_travel_to: '2021-05-01', feature_category: :dora_metrics do
+RSpec.describe Resolvers::Analytics::Dora::DoraMetricsResolver, time_travel_to: '2021-05-01', feature_category: :dora_metrics do
   include GraphqlHelpers
 
   let_it_be_with_refind(:group) { create(:group) }
@@ -174,7 +174,8 @@ RSpec.describe Resolvers::DoraMetricsResolver, time_travel_to: '2021-05-01', fea
         let(:args) { { start_date: '2020-01-01'.to_datetime, end_date: '2021-05-01'.to_datetime } }
 
         it 'generates an error' do
-          expect_graphql_error_to_be_created(Gitlab::Graphql::Errors::ArgumentError, 'Date range must be shorter than 180 days.') do
+          expect_graphql_error_to_be_created(Gitlab::Graphql::Errors::ArgumentError,
+            'Date range must be shorter than 180 days.') do
             resolve_metrics
           end
         end
@@ -184,7 +185,8 @@ RSpec.describe Resolvers::DoraMetricsResolver, time_travel_to: '2021-05-01', fea
         let(:args) { { start_date: '2021-04-01'.to_datetime, end_date: '2021-03-01'.to_datetime } }
 
         it 'generates an error' do
-          expect_graphql_error_to_be_created(Gitlab::Graphql::Errors::ArgumentError, 'The start date must be earlier than the end date.') do
+          expect_graphql_error_to_be_created(Gitlab::Graphql::Errors::ArgumentError,
+            'The start date must be earlier than the end date.') do
             resolve_metrics
           end
         end
@@ -229,7 +231,8 @@ RSpec.describe Resolvers::DoraMetricsResolver, time_travel_to: '2021-05-01', fea
 
   def resolve_metrics
     context = { current_user: current_user }
-    response = resolve(described_class, obj: obj, lookahead: positive_lookahead, args: args, ctx: context, arg_style: :internal)
+    response = resolve(described_class, obj: obj, lookahead: positive_lookahead, args: args, ctx: context,
+      arg_style: :internal)
     response.each { |row| row.delete('deployment_count') } if response.is_a?(Array) # not used in GraphQL
     response
   end
