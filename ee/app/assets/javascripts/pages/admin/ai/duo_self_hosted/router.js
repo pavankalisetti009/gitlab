@@ -3,7 +3,7 @@ import VueRouter from 'vue-router';
 import { joinPaths } from '~/lib/utils/url_utility';
 import NewSelfHostedModel from '../self_hosted_models/components/new_self_hosted_model.vue';
 import EditSelfHostedModel from '../self_hosted_models/components/edit_self_hosted_model.vue';
-import SelfHostedDuoConfiguration from './self_hosted_duo_configuration.vue';
+import DuoSelfHostedApp from './app.vue';
 import { SELF_HOSTED_DUO_TABS } from './constants';
 
 Vue.use(VueRouter);
@@ -16,7 +16,7 @@ export default function createRouter(base) {
       {
         name: 'index',
         path: '/',
-        component: SelfHostedDuoConfiguration,
+        component: DuoSelfHostedApp,
       },
       {
         name: 'new',
@@ -34,7 +34,7 @@ export default function createRouter(base) {
       {
         name: 'features',
         path: '/features',
-        component: SelfHostedDuoConfiguration,
+        component: DuoSelfHostedApp,
         props: () => ({ tabId: SELF_HOSTED_DUO_TABS.AI_FEATURE_SETTINGS }),
       },
       {
