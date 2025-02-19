@@ -3,6 +3,7 @@
 module EE
   module Epic
     extend ActiveSupport::Concern
+    extend ::Gitlab::Utils::Override
 
     prepended do
       include AtomicInternalId
@@ -23,7 +24,7 @@ module EE
       include EachBatch
       include ::Exportable
       include Epics::MetadataCacheUpdate
-      include ::Search::Elastic::EpicsSearch
+      include ::Elastic::ApplicationVersionedSearch
       include Elastic::UpdateAssociatedEpicsOnDateChange
 
       # we'd need to make sure these override the existing associations so we prepend this.
@@ -560,6 +561,15 @@ module EE
 
     def use_elasticsearch?
       group.use_elasticsearch?
+    end
+
+    def es_parent
+      "group_#{group.root_ancestor.id}"
+    end
+
+    override :elastic_reference
+    def elastic_reference
+      ::Search::Elastic::References::WorkItem.new(issue_id, es_parent).serialize
     end
 
     def issues_readable_by(current_user, preload: nil)

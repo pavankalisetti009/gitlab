@@ -44,6 +44,7 @@ module EE
           project: :project_feature
         )
 
+        preloaded_data.each(&:lazy_labels)
         ::Namespaces::Preloaders::NamespaceRootAncestorPreloader.new(preloaded_data.map(&:namespace)).execute
 
         if ::Feature.enabled?(:search_work_items_index_notes, ::Feature.current_request)

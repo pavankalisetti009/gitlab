@@ -28,11 +28,11 @@ RSpec.describe 'Epic index', :elastic_helpers, feature_category: :global_search 
     context 'when an epic is created' do
       let(:epic) { build(:epic, group: group) }
 
-      it 'tracks the work item' do
+      it 'tracks the epic and work item' do
         expect(::Elastic::ProcessBookkeepingService).to receive(:track!).once do |*tracked_refs|
           expect(tracked_refs.count).to eq(1)
-          expect(tracked_refs[0].class).to eq(Search::Elastic::References::WorkItem)
-          expect(tracked_refs[0].identifier).to eq(epic.issue_id)
+          expect(tracked_refs[0].class).to eq(Epic)
+          expect(tracked_refs[0].id).to eq(epic.id)
         end
         expect(::Elastic::ProcessBookkeepingService).to receive(:track!).once do |*tracked_refs|
           expect(tracked_refs.count).to eq(1)
@@ -48,23 +48,23 @@ RSpec.describe 'Epic index', :elastic_helpers, feature_category: :global_search 
     end
 
     context 'when an epic is updated' do
-      it 'tracks the work item' do
+      it 'tracks the epic' do
         expect(::Elastic::ProcessBookkeepingService).to receive(:track!).once do |*tracked_refs|
           expect(tracked_refs.count).to eq(1)
-          expect(tracked_refs[0]).to be_a_kind_of(Search::Elastic::References::WorkItem)
-          expect(tracked_refs[0].identifier).to eq(epic.issue_id)
+          expect(tracked_refs[0].class).to eq(Epic)
+          expect(tracked_refs[0].id).to eq(epic.id)
         end
         epic.update!(title: 'A new title')
       end
     end
 
     context 'when an epic is deleted' do
-      it 'tracks the work item' do
+      it 'tracks the work item and epic' do
         expect(::Elastic::ProcessBookkeepingService).to receive(:track!).with(*[WorkItem.find(epic.issue_id)]).once
         expect(::Elastic::ProcessBookkeepingService).to receive(:track!).once do |*tracked_refs|
           expect(tracked_refs.count).to eq(1)
-          expect(tracked_refs[0]).to be_a_kind_of(Search::Elastic::References::WorkItem)
-          expect(tracked_refs[0].identifier).to eq(epic.issue_id)
+          expect(tracked_refs[0].class).to eq(Epic)
+          expect(tracked_refs[0].id).to eq(epic.id)
         end
         epic.destroy!
       end
@@ -145,8 +145,8 @@ RSpec.describe 'Epic index', :elastic_helpers, feature_category: :global_search 
       it 'tracks the epic' do
         expect(::Elastic::ProcessBookkeepingService).to receive(:track!).once do |*tracked_refs|
           expect(tracked_refs.count).to eq(1)
-          expect(tracked_refs[0]).to be_a_kind_of(Search::Elastic::References::WorkItem)
-          expect(tracked_refs[0].identifier).to eq(epic.issue_id)
+          expect(tracked_refs[0]).to be_a_kind_of(Epic)
+          expect(tracked_refs[0].id).to eq(epic.id)
         end
         epic.update!(group: parent_group)
       end
