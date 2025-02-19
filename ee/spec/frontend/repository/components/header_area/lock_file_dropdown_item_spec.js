@@ -101,14 +101,14 @@ describe('LockFileDropdownItem component', () => {
     await waitForPromises();
 
     expect(findLockFileDropdownItem().props('item')).toMatchObject({
-      text: 'Lock',
+      text: 'Lock file',
       extraAttrs: { disabled: false },
     });
   });
 
   it('renders the Unlock dropdown item label, when file is locked', () => {
     expect(findLockFileDropdownItem().props('item')).toMatchObject({
-      text: 'Unlock',
+      text: 'Unlock file',
       extraAttrs: { disabled: false },
     });
   });
@@ -153,7 +153,7 @@ describe('LockFileDropdownItem component', () => {
       });
 
       expect(findLockFileDropdownItem().props('item')).toMatchObject({
-        text: 'Unlock',
+        text: 'Unlock file',
         extraAttrs: { disabled: false },
       });
     });

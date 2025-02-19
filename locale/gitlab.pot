@@ -34248,6 +34248,9 @@ msgstr ""
 msgid "Lock discussion"
 msgstr ""
 
+msgid "Lock file"
+msgstr ""
+
 msgid "Lock file?"
 msgstr ""
 
@@ -61593,6 +61596,9 @@ msgid "Unlock account"
 msgstr ""
 
 msgid "Unlock discussion"
+msgstr ""
+
+msgid "Unlock file"
 msgstr ""
 
 msgid "Unlock file?"
