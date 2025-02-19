@@ -4,7 +4,7 @@ import { s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { isNumeric } from '~/lib/utils/number_utils';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import UserSelect from 'ee/security_orchestration/components/policy_editor/scan_result/action/user_select.vue';
+import UserSelect from 'ee/security_orchestration/components/shared/user_select.vue';
 
 export default {
   SKIP_CI_PATH: helpPagePath('ci/pipelines/_index.md', { anchor: 'skip-a-pipeline' }),
