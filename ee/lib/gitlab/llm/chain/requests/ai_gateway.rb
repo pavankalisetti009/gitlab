@@ -153,6 +153,14 @@ module Gitlab
               }
             end
 
+            if ::Ai::AmazonQ.connected?
+              params[:model_metadata] = {
+                provider: :amazon_q,
+                name: :amazon_q,
+                role_arn: ::Ai::Setting.instance.amazon_q_role_arn
+              }
+            end
+
             params
           end
 
