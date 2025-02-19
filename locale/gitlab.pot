@@ -26429,6 +26429,9 @@ msgstr ""
 msgid "GitLabPages|Your project is configured for GitLab Pages and the pipeline is running..."
 msgstr ""
 
+msgid "GitPod"
+msgstr ""
+
 msgid "Gitaly servers"
 msgstr ""
 
@@ -30977,6 +30980,9 @@ msgid "Integrations|can't exceed %{recipients_limit}"
 msgstr ""
 
 msgid "Integration|Branches for which notifications are to be sent"
+msgstr ""
+
+msgid "IntelliJ IDEA"
 msgstr ""
 
 msgid "IntelliJ IDEA (HTTPS)"
@@ -63723,6 +63729,9 @@ msgid "VisibilityLevel|Unknown"
 msgstr ""
 
 msgid "Visit new homepage"
+msgstr ""
+
+msgid "Visual Studio Code"
 msgstr ""
 
 msgid "Visual Studio Code (HTTPS)"
