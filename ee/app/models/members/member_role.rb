@@ -145,7 +145,9 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
     policies = Security::Policy.for_custom_role(id)
     return policies unless gitlab_com_subscription?
 
-    policies.for_policy_configuration(namespace.all_descendant_security_orchestration_policy_configurations)
+    policies.for_policy_configuration(
+      namespace.all_descendant_security_orchestration_policy_configurations(include_invalid: true)
+    )
   end
 
   def admin_related_role?
