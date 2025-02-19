@@ -3,7 +3,7 @@
     id: 'js-required-pipeline-settings',
     expanded: expanded_by_default?) do |c|
     - c.with_description do
-      - config_link = link_to('', help_page_path('administration/settings/continuous_integration.md', anchor: 'required-pipeline-configuration'))
+      - config_link = link_to('', help_page_path('administration/settings/continuous_integration.md', anchor: 'required-pipeline-configuration-deprecated'))
       = safe_format(s_('AdminSettings|Set a CI/CD template as the required pipeline configuration for all projects in the instance. Project CI/CD configuration merges into the required pipeline configuration when the pipeline runs. %{link_start}What is a required pipeline configuration?%{link_end}'), tag_pair(config_link, :link_start, :link_end))
     - c.with_body do
       %p
