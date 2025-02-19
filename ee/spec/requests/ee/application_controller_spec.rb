@@ -1,14 +1,11 @@
 # frozen_string_literal: true
 require 'spec_helper'
-
 RSpec.describe ApplicationController, type: :request, feature_category: :shared do
   include TermsHelper
-
   context 'with redirection due to onboarding', feature_category: :onboarding do
     let(:onboarding_in_progress) { true }
     let(:url) { '_onboarding_step_' }
     let(:onboarding_status_step_url) { url }
-
     let(:user) do
       create(
         :user,
@@ -28,11 +25,84 @@ RSpec.describe ApplicationController, type: :request, feature_category: :shared 
       end
 
       context 'when onboarding is enabled' do
-        context 'when onboarding_status_step_url is set' do
-          it 'redirects to the onboarding step' do
-            get root_path
+        context 'and onboarding step url does not match current request url' do
+          where(:url, :params) do
+            [
+              ["/group/new", {}],
+              ["/?query=param", { test: 456 }],
+              ["http://gitlab.com/next/steps", {}],
+              ["http://gitlab.com/next/steps?test=param", { test: "param" }]
+            ]
+          end
 
-            expect(response).to redirect_to(url)
+          with_them do
+            it 'redirects to onboarding step url' do
+              get root_path, params: params
+
+              expect(response).to redirect_to(url)
+            end
+          end
+        end
+
+        context 'and onboarding step url matches current request url' do
+          where(:url, :params) do
+            [
+              ["/?query=param", { query: "param" }],
+              ["/?q1=1&q2=2", { q1: 1, q2: 2 }],
+              ["#{Gitlab.config.gitlab.url}/", {}],
+              ["#{Gitlab.config.gitlab.url}/?query=param", { query: "param" }]
+            ]
+          end
+
+          with_them do
+            it 'does not redirect to onboarding step url' do
+              get root_path, params: params
+
+              expect(response).not_to be_redirect
+            end
+          end
+        end
+
+        context "when onboarding_step_full_uri feature flag is disabled" do
+          before do
+            stub_feature_flags(onboarding_step_full_uri: false)
+          end
+
+          context 'when onboarding is enabled' do
+            context 'and onboarding step url does not match current request url' do
+              where(:url, :params) do
+                [
+                  ["/group/new", {}],
+                  ["/?query=param", { test: 456 }],
+                  ["#{Gitlab.config.gitlab.url}/", {}] # erroneously redirects
+                ]
+              end
+
+              with_them do
+                it 'redirects to onboading step url' do
+                  get root_path, params: params
+
+                  expect(response).to redirect_to(url)
+                end
+              end
+            end
+
+            context 'and onboarding step url matches current request url' do
+              where(:url, :params) do
+                [
+                  ["/?query=param", { query: "param" }],
+                  ["/?q1=1&q2=2", { q1: 1, q2: 2 }]
+                ]
+              end
+
+              with_them do
+                it 'does not redirect to onboarding step url' do
+                  get root_path, params: params
+
+                  expect(response).not_to be_redirect
+                end
+              end
+            end
           end
         end
 
