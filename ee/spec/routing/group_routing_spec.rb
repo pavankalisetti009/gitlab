@@ -117,4 +117,44 @@ RSpec.describe 'Group routing', "routing" do
       expect(get('/groups/gitlabhq/-/settings/service_accounts/access_tokens')).to route_to('groups/settings/service_accounts#index', group_id: 'gitlabhq', vueroute: 'access_tokens')
     end
   end
+
+  describe 'Compliance Dashboard routing' do
+    it 'routes JSON framework requests to the API controller' do
+      expect(get: '/groups/gitlabhq/-/security/compliance_dashboard/frameworks/123.json').to route_to(
+        controller: 'groups/security/compliance_dashboard/frameworks',
+        action: 'show',
+        group_id: 'gitlabhq',
+        id: '123',
+        format: 'json'
+      )
+    end
+
+    it 'does not route non-numeric IDs for JSON requests' do
+      expect(get: '/groups/gitlabhq/-/security/compliance_dashboard/frameworks/abc.json').to route_to(
+        controller: 'groups/security/compliance_dashboards',
+        action: 'show',
+        group_id: 'gitlabhq',
+        vueroute: 'frameworks/abc',
+        format: 'json'
+      )
+    end
+
+    it 'routes non-JSON framework requests to Vue' do
+      expect(get: '/groups/gitlabhq/-/security/compliance_dashboard/frameworks/123').to route_to(
+        controller: 'groups/security/compliance_dashboards',
+        action: 'show',
+        group_id: 'gitlabhq',
+        vueroute: 'frameworks/123'
+      )
+    end
+
+    it 'routes arbitrary Vue paths correctly' do
+      expect(get: '/groups/gitlabhq/-/security/compliance_dashboard/some/nested/path').to route_to(
+        controller: 'groups/security/compliance_dashboards',
+        action: 'show',
+        group_id: 'gitlabhq',
+        vueroute: 'some/nested/path'
+      )
+    end
+  end
 end
