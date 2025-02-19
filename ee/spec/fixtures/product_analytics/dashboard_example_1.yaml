@@ -7,6 +7,8 @@ filters:
     enabled: true
   dateRange: 
     enabled: true
+  projects:
+    enabled: true
 panels:
   - title: Overall Conversion Rate
     gridAttributes:

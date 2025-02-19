@@ -47,6 +47,7 @@ export default {
   components: {
     DateRangeFilter: () => import('./filters/date_range_filter.vue'),
     AnonUsersFilter: () => import('./filters/anon_users_filter.vue'),
+    ProjectsFilter: () => import('./filters/projects_filter.vue'),
     AnalyticsDashboardPanel,
     CustomizableDashboard,
     ProductAnalyticsFeedbackBanner,
@@ -136,13 +137,18 @@ export default {
       );
     },
     showFilters() {
-      return this.showAnonUserFilter || this.showDateRangeFilter;
+      return [this.showProjectsFilter, this.showAnonUserFilter, this.showDateRangeFilter].some(
+        Boolean,
+      );
     },
     showDateRangeFilter() {
       return isDashboardFilterEnabled(this.dateRangeFilter);
     },
+    showProjectsFilter() {
+      return this.isGroup && isDashboardFilterEnabled(this.currentDashboard?.filters?.projects);
+    },
     dateRangeFilter() {
-      return this.currentDashboard?.filters?.dateRange;
+      return this.currentDashboard?.filters?.dateRange || {};
     },
     dateRangeLimit() {
       return this.dateRangeFilter.numberOfDaysLimit || 0;
@@ -443,6 +449,15 @@ export default {
         this.trackEvent(EVENT_LABEL_EXCLUDE_ANONYMISED_USERS);
       }
     },
+    setProjectsFilter({ projectNamespace, projectId }) {
+      this.filters = {
+        ...this.filters,
+        project: {
+          projectNamespace,
+          projectId,
+        },
+      };
+    },
   },
   troubleshootingUrl: helpPagePath('user/analytics/analytics_dashboards', {
     anchor: '#troubleshooting',
@@ -527,6 +542,11 @@ export default {
         </template>
 
         <template v-if="showFilters" #filters>
+          <projects-filter
+            v-if="showProjectsFilter"
+            :group-namespace="namespaceFullPath"
+            @projectSelected="setProjectsFilter"
+          />
           <date-range-filter
             v-if="showDateRangeFilter"
             :default-option="filters.dateRangeOption"
