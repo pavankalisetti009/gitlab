@@ -1,3 +1,4 @@
+import { GlModal } from '@gitlab/ui';
 import * as urlUtils from '~/lib/utils/url_utility';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -47,6 +48,7 @@ describe('Policy Editor', () => {
     });
   };
 
+  const findDeletePolicyModal = () => wrapper.findAllComponents(GlModal).at(-1);
   const findSavePolicyButton = () => wrapper.findByTestId('save-policy');
 
   describe.each`
@@ -70,6 +72,26 @@ describe('Policy Editor', () => {
       expect(goToPolicyMR).toHaveBeenCalledWith(
         expect.objectContaining({
           action: 'REPLACE',
+          assignedPolicyProject: {
+            name: 'New project',
+            fullPath: 'path/to/new-project',
+            id: '01',
+            branch: 'main',
+          },
+          extraMergeRequestInput: null,
+          namespacePath: DEFAULT_PROVIDE.namespacePath,
+        }),
+      );
+    });
+
+    it('deletes a policy', async () => {
+      await createWrapper({ provide: { ...DEFAULT_PROVIDE, existingPolicy } });
+      await findDeletePolicyModal().vm.$emit('secondary');
+      await waitForPromises();
+      expect(goToPolicyMR).toHaveBeenCalledTimes(1);
+      expect(goToPolicyMR).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'REMOVE',
           assignedPolicyProject: {
             name: 'New project',
             fullPath: 'path/to/new-project',
