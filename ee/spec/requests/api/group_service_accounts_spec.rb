@@ -10,6 +10,8 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
   let(:service_account_user) { create(:user, :service_account) }
 
   before do
+    stub_application_setting_enum('email_confirmation_setting', 'hard')
+
     service_account_user.provisioned_by_group_id = group.id
     service_account_user.save!
   end
@@ -125,24 +127,32 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
     context 'when the group exists' do
       let(:group_id) { group.id }
 
-      it "creates user with service_account user type" do
+      it "creates user and responds with the default values" do
         perform_request
 
         expect(response).to have_gitlab_http_status(:created)
-        expect(json_response.keys).to match_array(%w[id name username])
+        expect(json_response['username']).to start_with("service_account_group_#{group_id}")
+        expect(json_response['name']).to eq('Service account user')
+        expect(json_response['email']).to start_with("service_account_group_#{group_id}")
+        expect(json_response.keys).to match_array(%w[id name username email])
+      end
+
+      it 'creates the user with the correct attributes' do
+        perform_request
 
         user = User.find(json_response['id'])
 
-        expect(user.username).to start_with("service_account_group_#{group_id}")
         expect(user.namespace.organization).to eq(organization)
         expect(user.user_type).to eq('service_account')
+        expect(user).to be_confirmed
       end
 
       context 'when params are provided' do
         let_it_be(:params) do
           {
             name: 'John Doe',
-            username: 'test'
+            username: 'test',
+            email: 'test_service_account@example.com'
           }
         end
 
@@ -152,10 +162,21 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
           expect(response).to have_gitlab_http_status(:created)
           expect(json_response['username']).to eq(params[:username])
           expect(json_response['name']).to eq(params[:name])
-          expect(json_response.keys).to match_array(%w[id name username])
+          expect(json_response['email']).to eq(params[:email])
+          expect(json_response.keys).to match_array(%w[id name username email])
         end
 
-        context 'when user with the username already exists' do
+        it 'creates the user with the correct attributes' do
+          perform_request
+
+          user = User.find(json_response['id'])
+
+          expect(user.namespace.organization).to eq(organization)
+          expect(user.user_type).to eq('service_account')
+          expect(user).not_to be_confirmed
+        end
+
+        context 'when user with the username and email already exists' do
           before do
             post api("/groups/#{group_id}/service_accounts", user), params: params
           end
@@ -165,6 +186,22 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
 
             expect(response).to have_gitlab_http_status(:bad_request)
             expect(json_response['message']).to include('Username has already been taken')
+            expect(json_response['message']).to include('Email has already been taken')
+          end
+        end
+
+        context 'when the group_service_account_custom_email feature flag is disabled' do
+          before do
+            stub_feature_flags(group_service_account_custom_email: false)
+          end
+
+          it 'creates a service account without the custom email' do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:created)
+            expect(json_response['username']).to eq(params[:username])
+            expect(json_response['name']).to eq(params[:name])
+            expect(json_response['email']).to start_with("service_account_group_#{group_id}")
           end
         end
 

@@ -43,18 +43,21 @@ module API
         params do
           optional :name, type: String, desc: 'Name of the user'
           optional :username, type: String, desc: 'Username of the user'
+          optional :email, type: String, desc: 'Custom email address for the user'
         end
 
         post do
           organization_id = user_group.organization_id
           service_params = declared_params.merge({ organization_id: organization_id, namespace_id: params[:id] })
 
+          service_params.delete(:email) unless Feature.enabled?(:group_service_account_custom_email, user_group)
+
           response = ::Namespaces::ServiceAccounts::CreateService
                        .new(current_user, service_params)
                        .execute
 
           if response.status == :success
-            present response.payload[:user], with: Entities::UserSafe, current_user: current_user
+            present response.payload[:user], with: Entities::ServiceAccount, current_user: current_user
           else
             bad_request!(response.message)
           end
@@ -84,7 +87,7 @@ module API
 
           users = users.reorder(params[:order_by] => params[:sort])
 
-          present paginate_with_strategies(users), with: Entities::UserSafe
+          present paginate_with_strategies(users), with: Entities::ServiceAccount, current_user: current_user
         end
         # rubocop: enable CodeReuse/ActiveRecord
 
