@@ -1,26 +1,45 @@
-import { GlBadge, GlDisclosureDropdown, GlIcon, GlTable } from '@gitlab/ui';
+import { GlBadge, GlDisclosureDropdown, GlModal, GlIcon, GlTable } from '@gitlab/ui';
+import { createTestingPinia } from '@pinia/testing';
+import Vue from 'vue';
+import { PiniaVuePlugin } from 'pinia';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
+import { stubComponent } from 'helpers/stub_component';
 import AccessTokenTable from 'ee/service_accounts/components/access_tokens/access_token_table.vue';
+import { useAccessTokens } from 'ee/service_accounts/stores/access_tokens';
+
+Vue.use(PiniaVuePlugin);
 
 describe('AccessTokenTable', () => {
   let wrapper;
+
+  const pinia = createTestingPinia();
+  const store = useAccessTokens();
+
   const defaultToken = {
     active: true,
+    id: 1,
     name: 'My name',
   };
 
   const createComponent = (props = {}) => {
     wrapper = mountExtended(AccessTokenTable, {
+      pinia,
       propsData: {
         busy: false,
         tokens: [defaultToken],
         ...props,
+      },
+      stubs: {
+        GlModal: stubComponent(GlModal),
       },
     });
   };
 
   const findBadge = () => wrapper.findComponent(GlBadge);
   const findDisclosure = () => wrapper.findComponent(GlDisclosureDropdown);
+  const findDisclosureButton = (index) =>
+    findDisclosure().findAll('button.gl-new-dropdown-item-content').at(index);
+  const findModal = () => wrapper.findComponent(GlModal);
   const findIcon = (component) => component.findComponent(GlIcon);
   const findTable = () => wrapper.findComponent(GlTable);
 
@@ -275,6 +294,39 @@ describe('AccessTokenTable', () => {
           expect(findDisclosure().exists()).toBe(false);
         });
       });
+    });
+  });
+
+  describe('when rotating a token', () => {
+    it('makes the modal to appear with correct text', async () => {
+      createComponent();
+      const modal = findModal();
+      expect(modal.props('visible')).toBe(false);
+      await findDisclosureButton(0).trigger('click');
+
+      expect(modal.props()).toMatchObject({
+        visible: true,
+        title: 'Rotate the token "My name"?',
+        actionPrimary: {
+          text: 'Rotate',
+          attributes: { variant: 'danger' },
+        },
+        actionCancel: {
+          text: 'Cancel',
+        },
+      });
+      expect(modal.text()).toBe(
+        'Are you sure you want to rotate the token "My name"? This action cannot be undone. Any tools that rely on this access token will stop working.',
+      );
+    });
+
+    it('confirming the primary action calls the rotateToken method in the store', async () => {
+      const tokens = [{ ...defaultToken, expiresAt: '2025-01-01' }];
+      createComponent({ tokens });
+      findDisclosureButton(0).trigger('click');
+      await findModal().vm.$emit('primary');
+
+      expect(store.rotateToken).toHaveBeenCalledWith(1, '2025-01-01');
     });
   });
 });
