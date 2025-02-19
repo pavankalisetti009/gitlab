@@ -236,6 +236,7 @@ module EE
 
       rule { custom_role_enables_read_admin_monitoring }.policy do
         enable :read_admin_audit_log
+        enable :read_admin_background_migrations
         enable :read_admin_gitaly_servers
         enable :read_admin_system_information
       end

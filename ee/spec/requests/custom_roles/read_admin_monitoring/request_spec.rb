@@ -30,14 +30,14 @@ RSpec.describe 'User with read_admin_monitoring', feature_category: :audit_event
   end
 
   describe Admin::BackgroundMigrationsController do
-    it "GET #index", pending: "🚧 Under Construction" do
+    it "GET #index" do
       get admin_background_migrations_path
 
       expect(response).to have_gitlab_http_status(:ok)
     end
 
-    it "GET #show", pending: "🚧 Under Construction" do
-      migration = create(:background_migration_job)
+    it "GET #show" do
+      migration = create(:batched_background_migration_job)
       get admin_background_migration_path(migration)
 
       expect(response).to have_gitlab_http_status(:ok)
