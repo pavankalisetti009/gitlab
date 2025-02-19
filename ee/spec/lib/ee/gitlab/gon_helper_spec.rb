@@ -14,6 +14,17 @@ RSpec.describe EE::Gitlab::GonHelper do
   end
 
   describe '#add_gon_variables' do
+    shared_examples 'pushes frontend feature flag' do |flag_name|
+      it "pushes #{flag_name} feature flag" do
+        allow(helper).to receive(:push_frontend_feature_flag)
+
+        helper.add_gon_variables
+
+        expect(helper).to have_received(:push_frontend_feature_flag)
+                            .with(flag_name, helper.current_user)
+      end
+    end
+
     let(:gon) { double('gon').as_null_object }
 
     before do
@@ -39,10 +50,26 @@ RSpec.describe EE::Gitlab::GonHelper do
       expect(helper).to have_received(:push_to_gon_attributes).with('ai', 'chat', ai_chat)
     end
 
+    context 'when not on GitLab.com' do
+      before do
+        allow(Gitlab).to receive(:com?).and_return(false)
+      end
+
+      it_behaves_like 'pushes frontend feature flag', :duo_chat_dynamic_dimension
+      it_behaves_like 'pushes frontend feature flag', :duo_chat_multi_thread
+      it_behaves_like 'pushes frontend feature flag', :advanced_context_resolver
+      it_behaves_like 'pushes frontend feature flag', :vulnerability_report_type_scanner_filter
+    end
+
     context 'when GitLab.com' do
       before do
         allow(Gitlab).to receive(:com?).and_return(true)
       end
+
+      it_behaves_like 'pushes frontend feature flag', :duo_chat_dynamic_dimension
+      it_behaves_like 'pushes frontend feature flag', :duo_chat_multi_thread
+      it_behaves_like 'pushes frontend feature flag', :advanced_context_resolver
+      it_behaves_like 'pushes frontend feature flag', :vulnerability_report_type_scanner_filter
 
       it 'includes CustomersDot variables' do
         expect(gon).to receive(:subscriptions_url=).with(::Gitlab::Routing.url_helpers.subscription_portal_url)
