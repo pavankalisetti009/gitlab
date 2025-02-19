@@ -36434,25 +36434,10 @@ msgstr ""
 msgid "MissingSSHKeyWarningLink|You won't be able to pull or push repositories via SSH until you add an SSH key to your profile"
 msgstr ""
 
-msgid "MlExperimentTracking|-"
-msgstr ""
-
 msgid "MlExperimentTracking|Are you sure you would like to delete this model?"
 msgstr ""
 
-msgid "MlExperimentTracking|Artifacts"
-msgstr ""
-
-msgid "MlExperimentTracking|Author"
-msgstr ""
-
-msgid "MlExperimentTracking|CI Job"
-msgstr ""
-
 msgid "MlExperimentTracking|Create an experiment using MLflow"
-msgstr ""
-
-msgid "MlExperimentTracking|Create new runs"
 msgstr ""
 
 msgid "MlExperimentTracking|Created"
@@ -36488,9 +36473,6 @@ msgstr ""
 msgid "MlExperimentTracking|Deleting this run will delete the associated parameters, metrics, and metadata."
 msgstr ""
 
-msgid "MlExperimentTracking|Details"
-msgstr ""
-
 msgid "MlExperimentTracking|Download as CSV"
 msgstr ""
 
@@ -36507,9 +36489,6 @@ msgid "MlExperimentTracking|Experiments keep track of comparable model runs, and
 msgstr ""
 
 msgid "MlExperimentTracking|Failed to load experiment candidates with error: %{message}"
-msgstr ""
-
-msgid "MlExperimentTracking|Filter runs"
 msgstr ""
 
 msgid "MlExperimentTracking|Get started with model experiments!"
@@ -36533,22 +36512,10 @@ msgstr ""
 msgid "MlExperimentTracking|Name"
 msgstr ""
 
-msgid "MlExperimentTracking|No artifacts"
-msgstr ""
-
 msgid "MlExperimentTracking|No candidates associated with this experiment"
 msgstr ""
 
 msgid "MlExperimentTracking|No logged experiment metadata"
-msgstr ""
-
-msgid "MlExperimentTracking|No name"
-msgstr ""
-
-msgid "MlExperimentTracking|No runs"
-msgstr ""
-
-msgid "MlExperimentTracking|No runs logged for the query. Create new runs using the MLflow client."
 msgstr ""
 
 msgid "MlExperimentTracking|Number of runs"
