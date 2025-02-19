@@ -15,6 +15,8 @@ require 'openssl'
 # As discussed in https://github.com/ruby/openssl/pull/730, ignoring these
 # unexpected EOFs should not be done by default, but some GitLab servers
 # have to talk to services that do not close SSL connections properly.
+# This should ONLY be enabled for self-managed customers who need
+# a way to interoperate with legacy services.
 if Gitlab::Utils.to_boolean(ENV['SSL_IGNORE_UNEXPECTED_EOF'])
   OpenSSL::SSL::SSLContext::DEFAULT_PARAMS[:options] |= OpenSSL::SSL::OP_IGNORE_UNEXPECTED_EOF
 end
