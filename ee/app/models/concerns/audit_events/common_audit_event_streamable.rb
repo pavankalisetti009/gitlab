@@ -20,6 +20,7 @@ module AuditEvents
     private
 
     def can_stream_to_external_destination?(event_name)
+      return false if ::Gitlab::SilentMode.enabled?
       return false if entity.nil?
 
       return false unless Feature.enabled?(:stream_audit_events_from_new_tables,
