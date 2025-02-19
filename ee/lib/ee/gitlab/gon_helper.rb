@@ -21,6 +21,8 @@ module EE
           push_to_gon_attributes('ai', 'chat', ai_chat)
         end
 
+        push_frontend_feature_flags
+
         return unless ::Gitlab.com?
 
         gon.subscriptions_url                = ::Gitlab::Routing.url_helpers.subscription_portal_url
@@ -28,6 +30,9 @@ module EE
         gon.billing_accounts_url             = ::Gitlab::Routing.url_helpers.subscription_portal_billing_accounts_url
         gon.payment_form_url                 = ::Gitlab::Routing.url_helpers.subscription_portal_payment_form_url
         gon.payment_validation_form_id       = ::Gitlab::SubscriptionPortal::PAYMENT_VALIDATION_FORM_ID
+      end
+
+      def push_frontend_feature_flags
         push_frontend_feature_flag(:duo_chat_dynamic_dimension, current_user)
         push_frontend_feature_flag(:duo_chat_multi_thread, current_user)
         push_frontend_feature_flag(:advanced_context_resolver, current_user)
