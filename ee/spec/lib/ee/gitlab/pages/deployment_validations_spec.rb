@@ -97,6 +97,9 @@ RSpec.describe Gitlab::Pages::DeploymentValidations, feature_category: :pages do
     let(:path_prefix) { "other_prefix" }
     let(:build_options) { { pages: { path_prefix: path_prefix } } }
     let(:pages_unique_domain_enabled) { false }
+    # project uses memoization on the main methods used here, so we need to use
+    # let instead of let_it_be to avoid state leakage
+    let(:project) { create(:project, :repository, namespace: group, max_pages_size: 250) }
 
     before do
       allow(::Gitlab::Pages)
@@ -142,6 +145,7 @@ RSpec.describe Gitlab::Pages::DeploymentValidations, feature_category: :pages do
 
         namespace = project.root_ancestor
         other_project = create(:project, group: namespace)
+        other_project.project_setting.update!(pages_unique_domain_enabled: false)
         create(:pages_deployment, project: other_project, path_prefix: path_prefix)
       end
 
