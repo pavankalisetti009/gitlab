@@ -5,12 +5,9 @@ module API
     module Packages
       module Maven
         class Endpoints < ::API::Base
-          include ::API::Helpers::Authentication
+          include ::API::Concerns::VirtualRegistries::Packages::Maven::SharedSetup
           include ::API::Concerns::VirtualRegistries::Packages::Endpoint
           include ::API::APIGuard
-
-          feature_category :virtual_registry
-          urgency :low
 
           AUTHENTICATE_REALM_HEADER = 'WWW-Authenticate'
           AUTHENTICATE_REALM_NAME = 'Basic realm="GitLab Virtual Registry"'
@@ -36,10 +33,7 @@ module API
             include ::Gitlab::Utils::StrongMemoize
 
             delegate :group, :upstream, :registry_upstream, to: :registry
-
-            def require_dependency_proxy_enabled!
-              not_found! unless ::Gitlab.config.dependency_proxy.enabled
-            end
+            alias_method :target_group, :group
 
             def registry
               ::VirtualRegistries::Packages::Maven::Registry.find(params[:id])
@@ -69,14 +63,6 @@ module API
                 desc: 'Package path',
                 documentation: { example: 'foo/bar/mypkg/1.0-SNAPSHOT/mypkg-1.0-SNAPSHOT.jar' }
             end
-          end
-
-          after_validation do
-            not_found! unless Feature.enabled?(:virtual_registry_maven, current_user)
-
-            require_dependency_proxy_enabled!
-
-            authenticate!
           end
 
           namespace 'virtual_registries/packages/maven/:id/*path' do
@@ -137,7 +123,7 @@ module API
               require_gitlab_workhorse!
               authorize!(:read_virtual_registry, registry)
 
-              etag, content_type, upstream_gid = request.headers.fetch_values(
+              etag, content_type, upstream_gid = headers.fetch_values(
                 'Etag',
                 ::Gitlab::Workhorse::SEND_DEPENDENCY_CONTENT_TYPE_HEADER,
                 UPSTREAM_GID_HEADER

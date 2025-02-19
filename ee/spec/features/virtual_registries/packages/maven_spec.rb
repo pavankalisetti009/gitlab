@@ -10,6 +10,7 @@ RSpec.describe 'Virtual Registries Packages Maven', :api, :js, feature_category:
   let_it_be(:user) { create(:user, owner_of: group) }
   let_it_be(:personal_access_token) { create(:personal_access_token, user: user) }
   let_it_be(:registry) { create(:virtual_registries_packages_maven_registry, group: group) }
+  let_it_be(:upstream) { create(:virtual_registries_packages_maven_upstream, registry: registry) }
 
   let_it_be(:external_server) do
     handler = ->(env) do
@@ -23,10 +24,6 @@ RSpec.describe 'Virtual Registries Packages Maven', :api, :js, feature_category:
     run_server(handler)
   end
 
-  let_it_be(:upstream) do
-    create(:virtual_registries_packages_maven_upstream, registry: registry)
-  end
-
   let(:api_path) { "/virtual_registries/packages/maven/#{registry.id}/file" }
   let(:url) { capybara_url(api(api_path)) }
   let(:authorization) do
@@ -38,6 +35,7 @@ RSpec.describe 'Virtual Registries Packages Maven', :api, :js, feature_category:
   before do
     upstream.update_column(:url, external_server.base_url) # avoids guard that rejects local urls
     stub_config(dependency_proxy: { enabled: true })
+    stub_licensed_features(packages_virtual_registry: true)
     allow(Gitlab::CurrentSettings).to receive(:allow_local_requests_from_web_hooks_and_services?).and_return(true)
   end
 
