@@ -23,7 +23,7 @@ module Ai
 
         if source.is_a?(MergeRequest)
           data.merge!(merge_request_payload)
-          data.merge!(test_command_payload) if command == 'test'
+          data.merge!(test_command_payload) if command == 'test' && note.is_a?(DiffNote)
         end
 
         data

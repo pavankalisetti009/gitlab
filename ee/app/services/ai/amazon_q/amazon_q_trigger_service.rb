@@ -28,7 +28,7 @@ module Ai
         validate_service_account!
         validate_source!
         validate_command!
-        validate_code_position! if command == 'test'
+        validate_code_position! if command == 'test' && note.is_a?(DiffNote)
 
         add_service_account_to_project
 

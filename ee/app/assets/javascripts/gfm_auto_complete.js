@@ -49,9 +49,6 @@ export const Q_MERGE_REQUEST_SUB_COMMANDS = {
     header: s__('AmazonQ|review'),
     description: s__('AmazonQ|Review merge request for code quality and security issues (Beta)'),
   },
-};
-
-export const Q_MERGE_REQUEST_CAN_SUGGEST_SUB_COMMANDS = {
   test: {
     header: s__('AmazonQ|test'),
     description: s__(
@@ -62,12 +59,7 @@ export const Q_MERGE_REQUEST_CAN_SUGGEST_SUB_COMMANDS = {
 
 const getQSubCommands = ($input) => {
   if ($input.data('noteableType') === MERGE_REQUEST_NOTEABLE_TYPE) {
-    const canSuggest = $input.data('canSuggest');
-
-    return {
-      ...Q_MERGE_REQUEST_SUB_COMMANDS,
-      ...(canSuggest ? Q_MERGE_REQUEST_CAN_SUGGEST_SUB_COMMANDS : {}),
-    };
+    return Q_MERGE_REQUEST_SUB_COMMANDS;
   }
 
   return Q_ISSUE_SUB_COMMANDS;
