@@ -156,10 +156,25 @@ RSpec.describe Security::FindingsFinder, feature_category: :vulnerability_manage
         end
 
         context 'when the `severity_levels` is provided' do
-          let(:severity_levels) { [:medium] }
-          let(:expected_uuids) { Security::Finding.where(severity: 'medium').pluck(:uuid) }
+          context 'when the severity was not overridden' do
+            let(:severity_levels) { [:medium] }
+            let(:expected_uuids) { Security::Finding.where(severity: 'medium').pluck(:uuid) }
 
-          it { is_expected.to match_array(expected_uuids) }
+            it { is_expected.to match_array(expected_uuids) }
+          end
+
+          context 'when the severity was overridden' do
+            let(:severity_levels) { [:critical] }
+            let(:finding_uuid) { Security::Finding.first.uuid }
+            let(:expected_uuids) { Security::Finding.where(severity: 'critical').pluck(:uuid) + [finding_uuid] }
+
+            before do
+              vulnerability = create(:vulnerability, :critical_severity)
+              create(:vulnerabilities_finding, vulnerability: vulnerability, uuid: finding_uuid, severity: :critical)
+            end
+
+            it { is_expected.to eq(expected_uuids) }
+          end
         end
 
         context 'when the `report_types` is provided' do
