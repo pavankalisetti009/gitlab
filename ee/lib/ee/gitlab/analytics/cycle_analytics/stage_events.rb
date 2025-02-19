@@ -155,7 +155,8 @@ module EE
               :merge_request_last_edited,
               :merge_request_label_added,
               :merge_request_label_removed,
-              :merge_request_first_commit_at
+              :merge_request_first_commit_at,
+              :merge_request_last_approved_at
             ),
             event(:merge_request_last_build_started) => events(
               :merge_request_closed,
@@ -190,13 +191,15 @@ module EE
               :merge_request_label_removed,
               :merge_request_merged,
               :merge_request_first_assigned_at,
-              :merge_request_reviewer_first_assigned_at
+              :merge_request_reviewer_first_assigned_at,
+              :merge_request_last_approved_at
             ),
             event(:merge_request_label_removed) => events(
               :merge_request_label_added,
               :merge_request_label_removed,
               :merge_request_first_assigned_at,
-              :merge_request_reviewer_first_assigned_at
+              :merge_request_reviewer_first_assigned_at,
+              :merge_request_last_approved_at
             ),
             event(:merge_request_first_assigned_at) => events(
               :merge_request_closed,
@@ -224,7 +227,9 @@ module EE
               :merge_request_closed,
               :merge_request_last_edited,
               :merge_request_label_added,
-              :merge_request_label_removed
+              :merge_request_label_removed,
+              :merge_request_last_build_started,
+              :merge_request_last_build_finished
             )
           }.freeze
 
