@@ -36,6 +36,9 @@ describe('note_app', () => {
             aiLoading: false,
           };
         },
+        stubs: {
+          AiSummary,
+        },
       });
     };
   });
