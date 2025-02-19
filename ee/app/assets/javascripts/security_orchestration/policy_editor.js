@@ -3,7 +3,6 @@ import { convertObjectPropsToCamelCase, parseBoolean } from '~/lib/utils/common_
 import apolloProvider from 'ee/vue_shared/security_configuration/graphql/provider';
 import App from './components/policy_editor/app.vue';
 import { DEFAULT_ASSIGNED_POLICY_PROJECT, MAX_SCAN_EXECUTION_ACTION_COUNT } from './constants';
-import { decomposeApprovers } from './utils';
 
 export default (el, namespaceType) => {
   if (!el) return null;
@@ -32,7 +31,6 @@ export default (el, namespaceType) => {
     scanPolicyDocumentationPath,
     softwareLicenses,
     timezones,
-    actionApprovers,
     maxScanExecutionPolicyActions,
   } = el.dataset;
 
@@ -55,14 +53,6 @@ export default (el, namespaceType) => {
     parsedSoftwareLicenses = [];
   }
 
-  let parsedActionApprovers;
-
-  try {
-    parsedActionApprovers = decomposeApprovers(JSON.parse(actionApprovers));
-  } catch {
-    parsedActionApprovers = [];
-  }
-
   try {
     parsedTimezones = JSON.parse(timezones);
   } catch {
@@ -78,7 +68,6 @@ export default (el, namespaceType) => {
     el,
     apolloProvider,
     provide: {
-      actionApprovers: parsedActionApprovers,
       createAgentHelpPath,
       disableScanPolicyUpdate: parseBoolean(disableScanPolicyUpdate),
       globalGroupApproversEnabled: parseBoolean(globalGroupApproversEnabled),

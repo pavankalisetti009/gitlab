@@ -1,43 +1,39 @@
 <script>
-import { GlAlert, GlFormInput, GlIcon, GlPopover, GlSprintf } from '@gitlab/ui';
-import { uniqueId } from 'lodash';
-import { GROUP_TYPE, ROLE_TYPE, USER_TYPE } from 'ee/security_orchestration/constants';
+import { GlAlert, GlSprintf, GlIcon, GlFormInput, GlPopover, GlButton } from '@gitlab/ui';
+import SectionLayout from 'ee/security_orchestration/components/policy_editor/section_layout.vue';
 import {
-  APPROVER_TYPE_DICT,
-  APPROVER_TYPE_LIST_ITEMS,
-  removeAvailableApproverType,
-  createActionFromApprovers,
-  actionHasType,
   getDefaultHumanizedTemplate,
   WARN_TEMPLATE,
   WARN_TEMPLATE_HELP_TITLE,
   WARN_TEMPLATE_HELP_DESCRIPTION,
-} from '../lib/actions';
-import SectionLayout from '../../section_layout.vue';
-import ApproverSelectionWrapper from './approver_selection_wrapper.vue';
+  ADD_APPROVER_LABEL,
+  APPROVER_TYPE_LIST_ITEMS,
+} from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
+import { EMPTY_TYPE, GROUP_TYPE, ROLE_TYPE, USER_TYPE } from 'ee/security_orchestration/constants';
+import { mapYamlApproversActionsToSelectedApproverTypes } from 'ee/security_orchestration/components/policy_editor/scan_result/lib/actions';
+import ApproverSelect from './approver_select.vue';
 
 export default {
-  warnId: 'warn-help-text',
   i18n: {
     WARN_TEMPLATE_HELP_TITLE,
     WARN_TEMPLATE_HELP_DESCRIPTION,
+    ADD_APPROVER_LABEL,
   },
   name: 'ApproverAction',
   components: {
+    GlButton,
+    ApproverSelect,
     GlAlert,
-    GlFormInput,
     GlIcon,
+    GlFormInput,
     GlPopover,
     GlSprintf,
-    ApproverSelectionWrapper,
     SectionLayout,
   },
-  inject: ['namespaceId'],
   props: {
-    errors: {
-      type: Array,
-      required: false,
-      default: () => [],
+    actionIndex: {
+      type: Number,
+      required: true,
     },
     initAction: {
       type: Object,
@@ -48,32 +44,43 @@ export default {
       required: false,
       default: false,
     },
-    existingApprovers: {
-      type: Object,
-      required: true,
-    },
-    actionIndex: {
-      type: Number,
+    errors: {
+      type: Array,
       required: false,
-      default: 0,
+      default: () => [],
     },
   },
   data() {
-    const approverTypeTracker = [];
-    let availableApproverTypes = [...APPROVER_TYPE_LIST_ITEMS];
-    [GROUP_TYPE, ROLE_TYPE, USER_TYPE].forEach((type) => {
-      if (actionHasType(this.initAction, type)) {
-        availableApproverTypes = removeAvailableApproverType(availableApproverTypes, type);
-        approverTypeTracker.push({ id: uniqueId(), type });
-      }
-    });
-
     return {
-      approverTypeTracker: approverTypeTracker.length ? approverTypeTracker : [{ id: uniqueId() }],
-      availableApproverTypes,
+      selectedApproverTypes: mapYamlApproversActionsToSelectedApproverTypes(this.initAction),
     };
   },
   computed: {
+    allTypesSelected() {
+      return (
+        this.selectedApproverTypes.includes(GROUP_TYPE) &&
+        this.selectedApproverTypes.includes(ROLE_TYPE) &&
+        this.selectedApproverTypes.includes(USER_TYPE)
+      );
+    },
+    selectedGroupIds() {
+      return this.initAction.group_approvers_ids || [];
+    },
+    selectedGroupNames() {
+      return this.initAction.group_approvers || [];
+    },
+    selectedUserIds() {
+      return this.initAction.user_approvers_ids || [];
+    },
+    selectedUserNames() {
+      return this.initAction.user_approvers || [];
+    },
+    selectedRoles() {
+      return this.initAction.role_approvers || [];
+    },
+    approvalsRequired() {
+      return this.initAction.approvals_required;
+    },
     actionErrors() {
       return this.errors.filter((error) => {
         if ('index' in error) {
@@ -83,88 +90,100 @@ export default {
         return error;
       });
     },
-    approvalsRequired() {
-      return this.initAction.approvals_required;
-    },
     humanizedTemplate() {
       return this.isWarnType ? WARN_TEMPLATE : getDefaultHumanizedTemplate(this.approvalsRequired);
     },
     isApproverFieldValid() {
       return this.errors.every((error) => error.field !== 'approvers_ids');
     },
-  },
-  created() {
-    this.updateRoleApprovers();
+    showAddButton() {
+      return this.selectedApproverTypes.length < APPROVER_TYPE_LIST_ITEMS.length;
+    },
+    showRemoveButton() {
+      return this.selectedApproverTypes.length > 1;
+    },
   },
   methods: {
-    handleAddApproverType() {
-      this.approverTypeTracker.push({ id: uniqueId() });
+    addApproval() {
+      this.selectedApproverTypes.push(EMPTY_TYPE);
     },
-    handleRemoveApproverType(approverIndex, approverType) {
-      this.approverTypeTracker.splice(approverIndex, 1);
-
-      if (approverType) {
-        this.removeApproversByType(approverType);
-      }
+    errorKey(error) {
+      return error.index;
     },
-    handleUpdateApprovalsRequired(value) {
+    updateApprovalsRequired(value) {
       const updatedAction = { ...this.initAction, approvals_required: parseInt(value, 10) };
       this.updatePolicy(updatedAction);
-    },
-    handleUpdateApprovers(updatedExistingApprovers) {
-      const updatedAction = createActionFromApprovers(this.initAction, updatedExistingApprovers);
-      this.updatePolicy(updatedAction);
-      this.$emit('updateApprovers', updatedExistingApprovers);
-    },
-    handleUpdateApproverType(approverIndex, { oldApproverType, newApproverType }) {
-      this.approverTypeTracker[approverIndex].type = newApproverType;
-      this.availableApproverTypes = removeAvailableApproverType(
-        this.availableApproverTypes,
-        newApproverType,
-      );
-
-      if (oldApproverType) {
-        this.removeApproversByType(oldApproverType);
-      }
-    },
-    removeApproversByType(approverType) {
-      const updatedAction = Object.entries(this.initAction).reduce((acc, [key, value]) => {
-        if (APPROVER_TYPE_DICT[approverType].includes(key)) {
-          return acc;
-        }
-
-        acc[key] = value;
-        return acc;
-      }, {});
-      this.updatePolicy(updatedAction);
-
-      this.availableApproverTypes.push(
-        APPROVER_TYPE_LIST_ITEMS.find((t) => t.value === approverType),
-      );
-
-      const updatedExistingApprovers = Object.keys(this.existingApprovers).reduce((acc, type) => {
-        if (type !== approverType) {
-          acc[type] = [...this.existingApprovers[type]];
-        }
-        return acc;
-      }, {});
-      this.$emit('updateApprovers', updatedExistingApprovers);
     },
     updatePolicy(updatedAction) {
       this.$emit('changed', updatedAction);
     },
-    updateRoleApprovers() {
-      const newApprovers = { ...this.existingApprovers };
-      const roleApprovers = this.initAction[APPROVER_TYPE_DICT[ROLE_TYPE][0]];
-      if (roleApprovers) {
-        newApprovers[ROLE_TYPE] = roleApprovers;
-      } else {
-        delete newApprovers[ROLE_TYPE];
-      }
-      this.handleUpdateApprovers(newApprovers);
+    selectItems(payload, type) {
+      const action = this.removePropertyFromApprover(type, payload);
+      this.$emit('changed', { ...action, ...payload });
     },
-    errorKey(error) {
-      return error.index;
+    selectType(type, index) {
+      const alreadySelectedType = this.selectedApproverTypes[index];
+
+      if (alreadySelectedType && alreadySelectedType !== type) {
+        const action = this.removePropertyFromApprover(alreadySelectedType);
+        this.$emit('changed', action);
+      }
+
+      this.selectedApproverTypes.splice(index, 1, type);
+    },
+    removePropertyFromApprover(type) {
+      const action = { ...this.initAction };
+
+      switch (type) {
+        case GROUP_TYPE:
+          delete action.group_approvers_ids;
+          delete action.group_approvers;
+          break;
+        case USER_TYPE:
+          delete action.user_approvers_ids;
+          delete action.user_approvers;
+          break;
+        case ROLE_TYPE:
+          delete action.role_approvers;
+          break;
+        default:
+          break;
+      }
+
+      return action;
+    },
+    removeApprover(index, type) {
+      const action = this.removePropertyFromApprover(type);
+
+      this.selectedApproverTypes.splice(index, 1);
+      this.$emit('changed', action);
+    },
+    showAdditionalText(index) {
+      return index < this.selectedApproverTypes.length - 1;
+    },
+    getSelectedItems(type) {
+      switch (type) {
+        case GROUP_TYPE:
+          return this.selectedGroupIds;
+        case USER_TYPE:
+          return this.selectedUserIds;
+        case ROLE_TYPE:
+          return this.selectedRoles;
+        default:
+          return [];
+      }
+    },
+    getSelectedNames(type) {
+      switch (type) {
+        case GROUP_TYPE:
+          return this.selectedGroupNames;
+        case USER_TYPE:
+          return this.selectedUserNames;
+        case ROLE_TYPE:
+          return this.selectedRoles;
+        default:
+          return [];
+      }
     },
   },
 };
@@ -182,6 +201,7 @@ export default {
     >
       {{ error.message }}
     </gl-alert>
+
     <section-layout
       class="gl-pr-0"
       content-classes="gl-py-5 gl-pr-2 gl-bg-white"
@@ -206,7 +226,7 @@ export default {
                 class="gl-mx-3 !gl-w-11"
                 :min="1"
                 :max="100"
-                @update="handleUpdateApprovalsRequired"
+                @update="updateApprovalsRequired"
               />
             </template>
 
@@ -223,23 +243,31 @@ export default {
           </template>
         </div>
 
-        <approver-selection-wrapper
-          v-for="({ id, type }, i) in approverTypeTracker"
-          :key="id"
-          :approver-index="i"
-          :available-types="availableApproverTypes"
-          :approver-type="type"
-          :is-approver-field-valid="isApproverFieldValid"
-          :num-of-approver-types="approverTypeTracker.length"
-          :existing-approvers="existingApprovers"
-          :show-additional-approver-text="i < approverTypeTracker.length - 1"
-          :show-remove-button="approverTypeTracker.length > 1"
-          @addApproverType="handleAddApproverType"
+        <approver-select
+          v-for="(type, index) in selectedApproverTypes"
+          :key="type"
+          :selected-items="getSelectedItems(type)"
+          :selected-names="getSelectedNames(type)"
+          :disabled="allTypesSelected"
+          :disabled-types="selectedApproverTypes"
+          :selected-type="type"
+          :show-additional-text="showAdditionalText(index)"
+          :show-remove-button="showRemoveButton"
           @error="$emit('error')"
-          @updateApprovers="handleUpdateApprovers"
-          @updateApproverType="handleUpdateApproverType(i, $event)"
-          @removeApproverType="handleRemoveApproverType(i, $event)"
+          @remove="removeApprover(index, type)"
+          @select-items="selectItems($event, type)"
+          @select-type="selectType($event, index)"
         />
+
+        <gl-button
+          v-if="showAddButton"
+          class="gl-ml-5 gl-mt-4"
+          variant="link"
+          data-testid="add-approver"
+          @click="addApproval"
+        >
+          {{ $options.i18n.ADD_APPROVER_LABEL }}
+        </gl-button>
       </template>
     </section-layout>
   </div>

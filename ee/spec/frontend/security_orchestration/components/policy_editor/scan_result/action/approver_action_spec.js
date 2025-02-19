@@ -1,38 +1,16 @@
 import { nextTick } from 'vue';
 import { GlAlert, GlFormInput, GlPopover, GlSprintf } from '@gitlab/ui';
-import { shallowMount } from '@vue/test-utils';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { GROUP_TYPE, USER_TYPE, ROLE_TYPE } from 'ee/security_orchestration/constants';
 import ApproverAction from 'ee/security_orchestration/components/policy_editor/scan_result/action/approver_action.vue';
-import ApproverSelectionWrapper from 'ee/security_orchestration/components/policy_editor/scan_result/action/approver_selection_wrapper.vue';
-import { APPROVER_TYPE_LIST_ITEMS } from 'ee/security_orchestration/components/policy_editor/scan_result/lib/actions';
+import ApproverSelect from 'ee/security_orchestration/components/policy_editor/scan_result/action/approver_select.vue';
 import SectionLayout from 'ee/security_orchestration/components/policy_editor/section_layout.vue';
 
 describe('ApproverAction', () => {
   let wrapper;
 
   const APPROVERS_IDS = [1, 2, 3];
-
-  const MOCK_USER_APPROVERS = APPROVERS_IDS.map((id) => ({
-    id,
-    name: `name${id}`,
-    username: `username${id}`,
-    type: USER_TYPE,
-    webUrl: '',
-    avatarUrl: '',
-  }));
-
-  const MOCK_GROUP_APPROVERS = APPROVERS_IDS.map((id) => ({
-    id,
-    name: `group-name${id}`,
-    fullName: `group-name${id}`,
-    fullPath: `path/to/group${id}`,
-    webUrl: '',
-    avatarUrl: '',
-  }));
-
-  const USER_APPROVERS = [MOCK_USER_APPROVERS[0], MOCK_USER_APPROVERS[1]];
-
-  const GROUP_APPROVERS = [MOCK_GROUP_APPROVERS[0], MOCK_GROUP_APPROVERS[1]];
+  const APPROVERS_NAMES = ['Name 1', 'Name 2'];
 
   const DEFAULT_ACTION = {
     approvals_required: 1,
@@ -45,10 +23,22 @@ describe('ApproverAction', () => {
     user_approvers_ids: APPROVERS_IDS,
   };
 
+  const EXISTING_USER_ACTION_WITH_NAMES = {
+    approvals_required: 1,
+    type: 'require_approval',
+    user_approvers: APPROVERS_NAMES,
+  };
+
   const EXISTING_GROUP_ACTION = {
     approvals_required: 1,
     type: 'require_approval',
     group_approvers_ids: APPROVERS_IDS,
+  };
+
+  const EXISTING_GROUP_ACTION_WITH_NAMES = {
+    approvals_required: 1,
+    type: 'require_approval',
+    group_approvers: APPROVERS_NAMES,
   };
 
   const EXISTING_MIXED_ACTION = {
@@ -59,10 +49,10 @@ describe('ApproverAction', () => {
   };
 
   const createWrapper = (propsData = {}, provide = {}) => {
-    wrapper = shallowMount(ApproverAction, {
+    wrapper = shallowMountExtended(ApproverAction, {
       propsData: {
+        actionIndex: 0,
         initAction: DEFAULT_ACTION,
-        existingApprovers: {},
         ...propsData,
       },
       provide: {
@@ -76,14 +66,15 @@ describe('ApproverAction', () => {
   };
 
   const findApprovalsRequiredInput = () => wrapper.findComponent(GlFormInput);
-  const findActionApprover = () => wrapper.findComponent(ApproverSelectionWrapper);
-  const findAllApproverSelectionWrapper = () => wrapper.findAllComponents(ApproverSelectionWrapper);
+  const findActionApprover = () => wrapper.findComponent(ApproverSelect);
+  const findAllApproverSelectionWrapper = () => wrapper.findAllComponents(ApproverSelect);
   const findAllAlerts = () => wrapper.findAllComponents(GlAlert);
   const findPopover = () => wrapper.findComponent(GlPopover);
   const findSectionLayout = () => wrapper.findComponent(SectionLayout);
+  const findAddButton = () => wrapper.findByTestId('add-approver');
 
-  const emit = async (event, value) => {
-    findActionApprover().vm.$emit(event, value);
+  const emit = async (event, ...values) => {
+    findActionApprover().vm.$emit(event, ...values);
     await nextTick();
   };
 
@@ -92,20 +83,20 @@ describe('ApproverAction', () => {
 
     it('renders', () => {
       expect(findActionApprover().props()).toEqual({
-        approverIndex: 0,
-        approverType: '',
-        availableTypes: APPROVER_TYPE_LIST_ITEMS,
-        existingApprovers: {},
-        isApproverFieldValid: true,
-        numOfApproverTypes: 1,
-        showAdditionalApproverText: false,
+        disabled: false,
+        disabledTypes: [''],
+        errors: [],
+        selectedItems: [],
+        selectedNames: [],
+        selectedType: '',
+        showAdditionalText: false,
         showRemoveButton: false,
       });
     });
 
-    it('creates a new approver on "addApproverType"', async () => {
+    it('adds a new approver type', async () => {
       expect(findAllApproverSelectionWrapper()).toHaveLength(1);
-      await emit('addApproverType');
+      await findAddButton().vm.$emit('click');
       expect(findAllApproverSelectionWrapper()).toHaveLength(2);
     });
 
@@ -113,20 +104,20 @@ describe('ApproverAction', () => {
       expect(findAllAlerts()).toHaveLength(0);
     });
 
-    it('emits "updateApprovers" with the appropriate values on "updateApprover"', async () => {
-      await emit('updateApprovers', { [USER_TYPE]: [MOCK_USER_APPROVERS[0]] });
-      expect(wrapper.emitted('updateApprovers')[1]).toEqual([
-        { [USER_TYPE]: [MOCK_USER_APPROVERS[0]] },
-      ]);
+    it('selects approver type', async () => {
+      expect(findAllApproverSelectionWrapper().at(0).props('selectedType')).toBe('');
+      await emit('select-type', GROUP_TYPE, 0);
+
+      expect(findAllApproverSelectionWrapper().at(0).props('selectedType')).toBe(GROUP_TYPE);
     });
 
-    it('emits "changed" with the appropriate values on "updateApprover"', async () => {
-      await emit('updateApprovers', { [USER_TYPE]: [MOCK_USER_APPROVERS[0]] });
-      expect(wrapper.emitted('changed')[1]).toEqual([
+    it('selects approver items', async () => {
+      await emit('select-items', { group_approvers_ids: [1, 2] });
+      expect(wrapper.emitted('changed')[0]).toEqual([
         {
           approvals_required: 1,
           type: 'require_approval',
-          user_approvers_ids: [1],
+          group_approvers_ids: [1, 2],
         },
       ]);
     });
@@ -143,14 +134,16 @@ describe('ApproverAction', () => {
 
       await formInput.vm.$emit('update', approvalRequestPlusOne);
 
-      expect(wrapper.emitted('changed')[1][0]).toEqual({
-        approvals_required: approvalRequestPlusOne,
-        type: 'require_approval',
-      });
+      expect(wrapper.emitted('changed')[0]).toEqual([
+        {
+          approvals_required: approvalRequestPlusOne,
+          type: 'require_approval',
+        },
+      ]);
     });
 
     it('renders the correct message for the first type added', () => {
-      expect(findSectionLayout().text()).toBe('Require  approval from:');
+      expect(findSectionLayout().text()).toContain('Require  approval from:');
     });
 
     it('does not render the popover when the action is not a warn type', () => {
@@ -179,7 +172,7 @@ describe('ApproverAction', () => {
 
   describe('errors', () => {
     it('renders the alert when there is an error', () => {
-      const error = { title: 'Error', message: 'Something went wrong' };
+      const error = { title: 'Error', message: 'Something went wrong', index: 0 };
       createWrapper({ errors: [error] });
       const allAlerts = findAllAlerts();
       expect(allAlerts).toHaveLength(1);
@@ -227,61 +220,40 @@ describe('ApproverAction', () => {
     describe('initial selection', () => {
       it('updates the approver type', async () => {
         createWrapper();
-        await nextTick();
-        expect(findActionApprover().props('availableTypes')).toEqual(APPROVER_TYPE_LIST_ITEMS);
-        await emit('updateApproverType', { newApproverType: USER_TYPE });
-        expect(findActionApprover().props('availableTypes')).toEqual(
-          APPROVER_TYPE_LIST_ITEMS.filter((t) => t.value !== USER_TYPE),
-        );
+
+        expect(findActionApprover().props('selectedType')).toEqual('');
+        await emit('select-type', GROUP_TYPE, 0);
+        expect(findActionApprover().props('selectedType')).toEqual(GROUP_TYPE);
+
+        await emit('select-type', USER_TYPE, 0);
+        expect(findActionApprover().props('selectedType')).toEqual(USER_TYPE);
       });
     });
 
     describe('change approver type', () => {
       beforeEach(async () => {
         createWrapper();
-        await nextTick();
-        await emit('updateApproverType', { newApproverType: USER_TYPE });
+        await emit('select-type', GROUP_TYPE, 0);
       });
 
       const changeApproverType = async () => {
-        await emit('updateApproverType', {
-          oldApproverType: USER_TYPE,
-          newApproverType: GROUP_TYPE,
-        });
+        await emit('select-type', ROLE_TYPE, 0);
       };
 
-      it('adds the old type back into the list of available types', async () => {
+      it('replaces the type with new type', async () => {
         await changeApproverType();
-        expect(findActionApprover().props('availableTypes')).toEqual(
-          APPROVER_TYPE_LIST_ITEMS.filter((t) => t.value !== GROUP_TYPE),
-        );
+        expect(findActionApprover().props('selectedType')).toEqual(ROLE_TYPE);
       });
 
-      it('removes existing approvers of the old type', async () => {
-        await emit('updateApprovers', { [USER_TYPE]: [MOCK_USER_APPROVERS[0]] });
-        expect(wrapper.emitted('changed')[1]).toEqual([
+      it('emits changes with the appropriate values', async () => {
+        await emit('select-items', { user_approvers_ids: [1, 2] });
+        expect(wrapper.emitted('changed')[0]).toEqual([
           {
             approvals_required: 1,
             type: 'require_approval',
-            user_approvers_ids: [1],
+            user_approvers_ids: [1, 2],
           },
         ]);
-        await changeApproverType();
-        expect(wrapper.emitted('changed')[2]).toEqual([
-          {
-            approvals_required: 1,
-            type: 'require_approval',
-          },
-        ]);
-      });
-
-      it('emits "updateApprovers" with the appropriate values', async () => {
-        await emit('updateApprovers', { [USER_TYPE]: [MOCK_USER_APPROVERS[0]] });
-        expect(wrapper.emitted('updateApprovers')[1]).toEqual([
-          { [USER_TYPE]: [MOCK_USER_APPROVERS[0]] },
-        ]);
-        await changeApproverType();
-        expect(wrapper.emitted('updateApprovers')[2]).toEqual([{}]);
       });
     });
   });
@@ -297,79 +269,131 @@ describe('ApproverAction', () => {
   describe('remove approver type', () => {
     beforeEach(async () => {
       createWrapper();
-      await nextTick();
-      await emit('updateApproverType', { newApproverType: USER_TYPE });
+
+      await emit('select-type', GROUP_TYPE, 0);
     });
 
-    const removeApproverType = async () => {
-      await emit('removeApproverType', USER_TYPE);
+    const removeApproverType = async (index = 0, type = GROUP_TYPE) => {
+      await emit('remove', index, type);
     };
 
-    it('adds the old type back into the list of available types', async () => {
-      expect(findActionApprover().props('availableTypes')).toEqual(
-        APPROVER_TYPE_LIST_ITEMS.filter((t) => t.value !== USER_TYPE),
-      );
-      await emit('addApproverType');
-      findAllApproverSelectionWrapper().at(0).vm.$emit('removeApproverType', USER_TYPE);
+    it('removes type from the list', async () => {
+      expect(findActionApprover().props('selectedType')).toBe(GROUP_TYPE);
+      await findAddButton().vm.$emit('click');
+      await findAllApproverSelectionWrapper().at(1).vm.$emit('select-type', USER_TYPE, 1);
+
+      expect(findAllApproverSelectionWrapper()).toHaveLength(2);
+
+      expect(findAllApproverSelectionWrapper().at(1).props('selectedType')).toBe(USER_TYPE);
+
+      findAllApproverSelectionWrapper().at(1).vm.$emit('remove', 1);
       await nextTick();
-      expect(findActionApprover().props('availableTypes')).toEqual(
-        expect.arrayContaining(APPROVER_TYPE_LIST_ITEMS),
-      );
+      expect(findAllApproverSelectionWrapper()).toHaveLength(1);
     });
 
-    it('removes existing approvers of the old type', async () => {
-      await emit('updateApprovers', { [USER_TYPE]: [MOCK_USER_APPROVERS[0]] });
+    it('removes type from payload when selected type is replaced with new type', async () => {
+      await emit('select-type', GROUP_TYPE, 0);
+      await emit('select-items', { group_approvers_ids: [1, 2] });
+
+      const ACTION = {
+        approvals_required: 1,
+        type: 'require_approval',
+        group_approvers_ids: [1, 2],
+      };
+
+      expect(wrapper.emitted('changed')[0]).toEqual([ACTION]);
+
+      await emit('select-type', USER_TYPE, 0);
+
       expect(wrapper.emitted('changed')[1]).toEqual([
         {
           approvals_required: 1,
           type: 'require_approval',
-          user_approvers_ids: [1],
-        },
-      ]);
-      await removeApproverType();
-      expect(wrapper.emitted('changed')[2]).toEqual([
-        {
-          approvals_required: 1,
-          type: 'require_approval',
         },
       ]);
     });
 
-    it('emits "updateApprovers" with the appropriate values', async () => {
-      await emit('updateApprovers', { [USER_TYPE]: [MOCK_USER_APPROVERS[0]] });
-      expect(wrapper.emitted('updateApprovers')[1]).toEqual([
-        { [USER_TYPE]: [MOCK_USER_APPROVERS[0]] },
-      ]);
-      await removeApproverType();
-      expect(wrapper.emitted('updateApprovers')[2]).toEqual([{}]);
-    });
+    it.each(['user_approvers_ids', 'user_approvers', 'group_approvers_ids', 'group_approvers'])(
+      'emits "changed" with the appropriate values',
+      async (type) => {
+        await emit('select-items', { [type]: [1, 2] });
+        expect(wrapper.emitted('changed')[0]).toEqual([
+          {
+            approvals_required: 1,
+            type: 'require_approval',
+            [type]: [1, 2],
+          },
+        ]);
+        await removeApproverType();
+        expect(findAllApproverSelectionWrapper()).toHaveLength(0);
+        expect(wrapper.emitted('changed')[1]).toEqual([
+          {
+            approvals_required: 1,
+            type: 'require_approval',
+          },
+        ]);
+      },
+    );
   });
 
   describe('existing user approvers', () => {
-    beforeEach(() => {
+    it('renders the user select when there are existing user approvers', () => {
       createWrapper({
         initAction: EXISTING_USER_ACTION,
-        existingApprovers: { [USER_TYPE]: USER_APPROVERS },
       });
+
+      expect(findAllApproverSelectionWrapper()).toHaveLength(1);
+      expect(findActionApprover().props('selectedType')).toBe(USER_TYPE);
+      expect(findActionApprover().props('selectedItems')).toEqual([1, 2, 3]);
     });
 
-    it('renders the user select when there are existing user approvers', () => {
+    it('renders the user select when there are existing group approvers with names', () => {
+      createWrapper({
+        initAction: EXISTING_USER_ACTION_WITH_NAMES,
+      });
       expect(findAllApproverSelectionWrapper()).toHaveLength(1);
-      expect(findActionApprover().props('approverType')).toBe(USER_TYPE);
+      expect(findActionApprover().props('selectedType')).toBe(USER_TYPE);
+      expect(findActionApprover().props('selectedItems')).toEqual([]);
+      expect(findActionApprover().props('selectedNames')).toEqual(APPROVERS_NAMES);
+    });
+
+    it.each`
+      initAction                          | payloadKey
+      ${EXISTING_USER_ACTION_WITH_NAMES}  | ${'user_approvers_ids'}
+      ${EXISTING_GROUP_ACTION_WITH_NAMES} | ${'group_approvers_ids'}
+    `('replaces deprecated name properties with ids', async ({ initAction, payloadKey }) => {
+      createWrapper({
+        initAction,
+      });
+
+      expect(findActionApprover().props('selectedNames')).toEqual(APPROVERS_NAMES);
+      await emit('select-items', { [payloadKey]: [1, 2] });
+
+      expect(wrapper.emitted('changed')[0]).toEqual([
+        { approvals_required: 1, type: 'require_approval', [payloadKey]: [1, 2] },
+      ]);
     });
   });
 
   describe('existing group approvers', () => {
-    beforeEach(() => {
+    it('renders the group select when there are existing group approvers', () => {
       createWrapper({
         initAction: EXISTING_GROUP_ACTION,
-        existingApprovers: { [GROUP_TYPE]: GROUP_APPROVERS },
       });
+      expect(findAllApproverSelectionWrapper()).toHaveLength(1);
+      expect(findActionApprover().props('selectedType')).toBe(GROUP_TYPE);
+      expect(findActionApprover().props('selectedItems')).toEqual([1, 2, 3]);
+      expect(findActionApprover().props('selectedNames')).toEqual([]);
     });
 
-    it('renders the group select when there are existing group approvers', () => {
+    it('renders the group select when there are existing group approvers with names', () => {
+      createWrapper({
+        initAction: EXISTING_GROUP_ACTION_WITH_NAMES,
+      });
       expect(findAllApproverSelectionWrapper()).toHaveLength(1);
-      expect(findActionApprover().props('approverType')).toBe(GROUP_TYPE);
+      expect(findActionApprover().props('selectedType')).toBe(GROUP_TYPE);
+      expect(findActionApprover().props('selectedItems')).toEqual([]);
+      expect(findActionApprover().props('selectedNames')).toEqual(APPROVERS_NAMES);
     });
   });
 
@@ -377,36 +401,53 @@ describe('ApproverAction', () => {
     beforeEach(() => {
       createWrapper({
         initAction: EXISTING_MIXED_ACTION,
-        existingApprovers: { [GROUP_TYPE]: [...GROUP_APPROVERS], [USER_TYPE]: [...USER_APPROVERS] },
       });
     });
 
     it('renders the user select with only the user approvers', () => {
       expect(findAllApproverSelectionWrapper()).toHaveLength(2);
-      expect(findAllApproverSelectionWrapper().at(0).props('approverType')).toBe(GROUP_TYPE);
-      expect(findAllApproverSelectionWrapper().at(1).props('approverType')).toBe(USER_TYPE);
+      expect(findAllApproverSelectionWrapper().at(0).props('selectedType')).toBe(USER_TYPE);
+      expect(findAllApproverSelectionWrapper().at(1).props('selectedType')).toBe(GROUP_TYPE);
+
+      expect(findAllApproverSelectionWrapper().at(0).props('selectedItems')).toEqual([1, 2, 3]);
+      expect(findAllApproverSelectionWrapper().at(1).props('selectedItems')).toEqual([1, 2, 3]);
     });
   });
 
   describe('updates role approvers', () => {
-    it('updates role approvers with new values', () => {
+    it('updates role approvers with new values', async () => {
       createWrapper({
         initAction: { ...DEFAULT_ACTION, role_approvers: ['developer'] },
-        existingApprovers: { [ROLE_TYPE]: ['owner'] },
       });
+
+      expect(findAllApproverSelectionWrapper().at(0).props('selectedType')).toBe(ROLE_TYPE);
+      await emit('select-items', { role_approvers: ['developer', 'maintainer'] });
+
       expect(wrapper.emitted('changed')).toEqual([
-        [{ ...DEFAULT_ACTION, role_approvers: ['developer'] }],
+        [
+          {
+            approvals_required: 1,
+            role_approvers: ['developer', 'maintainer'],
+            type: 'require_approval',
+          },
+        ],
       ]);
-      expect(wrapper.emitted('updateApprovers')).toEqual([[{ [ROLE_TYPE]: ['developer'] }]]);
     });
 
-    it('updates role approvers with no values', () => {
+    it('updates role approvers with no values', async () => {
       createWrapper({
         initAction: DEFAULT_ACTION,
-        existingApprovers: { [ROLE_TYPE]: ['owner'] },
       });
-      expect(wrapper.emitted('changed')).toEqual([[DEFAULT_ACTION]]);
-      expect(wrapper.emitted('updateApprovers')).toEqual([[{}]]);
+      await emit('select-items', { role_approvers: ['owner'] });
+
+      expect(wrapper.emitted('changed')).toEqual([
+        [
+          {
+            ...DEFAULT_ACTION,
+            role_approvers: ['owner'],
+          },
+        ],
+      ]);
     });
   });
 });

@@ -58,48 +58,6 @@ export const actionHasType = (action, type) => {
   return Object.keys(action).some((k) => APPROVER_TYPE_DICT[type].includes(k));
 };
 
-/*
-  Check if users are present in approvers
-*/
-const usersOutOfSync = (action, users) => {
-  const usersIDs = action?.user_approvers_ids?.some(
-    (id) => !users.find((approver) => (approver.id ? approver.id === id : approver === id)),
-  );
-
-  const usersNames =
-    action?.user_approvers?.some(
-      (userName) => !users.find((approver) => approver.username === userName),
-    ) || false;
-  const userLength =
-    (action?.user_approvers?.length || 0) + (action?.user_approvers_ids?.length || 0);
-
-  return usersIDs || usersNames || userLength !== users.length;
-};
-
-/*
-  Check if groups are present in approvers
-*/
-const groupsOutOfSync = (action, groups) => {
-  const groupsIDs = action?.group_approvers_ids?.some(
-    (id) => !groups.find((approver) => (approver.id ? approver.id === id : approver === id)),
-  );
-  const groupsPaths =
-    action?.group_approvers?.some(
-      (path) => !groups.find((approver) => approver.fullPath === path),
-    ) || false;
-  const groupLength =
-    (action?.group_approvers?.length || 0) + (action?.group_approvers_ids?.length || 0);
-
-  return groupsIDs || groupsPaths || groupLength !== groups.length;
-};
-
-/*
-  Check if yaml is out of sync with available approvers
-*/
-export const approversOutOfSync = (action, { user = [], group = [] }) => {
-  return usersOutOfSync(action, user) || groupsOutOfSync(action, group);
-};
-
 export const WARN_TEMPLATE = s__(
   'SecurityOrchestration|%{requireStart}Warn users with a bot comment%{requireEnd} and select users as security consultants that developers may contact for support in addressing violations.',
 );
@@ -173,3 +131,23 @@ export const ACTION_LISTBOX_ITEMS = () => {
 export const DISABLED_BOT_MESSAGE_ACTION = { ...buildAction(BOT_MESSAGE_TYPE), enabled: false };
 
 export const ROLE_PERMISSION_TO_APPROVE_MRS = 'ADMIN_MERGE_REQUEST';
+
+/**
+ * Map selected approver ids or names to selected types
+ * @param action approver action
+ * @returns {Array} flat array of selected types
+ */
+export const mapYamlApproversActionsToSelectedApproverTypes = (action = {}) => {
+  const hasRoleApprovers = 'role_approvers' in action;
+  const hasUserApprovers = 'user_approvers_ids' in action || 'user_approvers' in action;
+  const hasGroupApprovers = 'group_approvers_ids' in action || 'group_approvers' in action;
+
+  const uiStates = [];
+
+  if (hasRoleApprovers) uiStates.push(ROLE_TYPE);
+  if (hasUserApprovers) uiStates.push(USER_TYPE);
+  if (hasGroupApprovers) uiStates.push(GROUP_TYPE);
+  if (uiStates.length === 0) uiStates.push('');
+
+  return uiStates;
+};

@@ -44,11 +44,11 @@ export default {
         allowed: !value,
       });
     },
-    updateUsers(users) {
+    updateUsers({ user_approvers_ids: users = [] }) {
       this.$emit('changed', 'skip_ci', {
         ...this.skipCiConfiguration,
         allowed: false,
-        allowlist: { users: users?.map(({ id }) => ({ id: this.mapUserId(id) })) },
+        allowlist: { users: users?.map((id) => ({ id: this.mapUserId(id) })) },
       });
     },
     mapUserId(id) {
@@ -85,9 +85,9 @@ export default {
         <user-select
           reset-on-empty
           :disabled="enabled"
-          :existing-approvers="selectedUsers"
+          :selected="selectedUsers"
           class="gl-ml-3"
-          @updateSelectedApprovers="updateUsers"
+          @select-items="updateUsers"
         />
       </div>
     </div>

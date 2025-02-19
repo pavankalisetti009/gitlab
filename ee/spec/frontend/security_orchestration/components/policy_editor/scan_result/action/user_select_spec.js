@@ -5,10 +5,9 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import searchProjectMembers from '~/graphql_shared/queries/project_user_members_search.query.graphql';
 import searchGroupMembers from '~/graphql_shared/queries/group_users_search.query.graphql';
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import UserSelect from 'ee/security_orchestration/components/policy_editor/scan_result/action/user_select.vue';
-import { NAMESPACE_TYPES, USER_TYPE } from 'ee/security_orchestration/constants';
+import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 
 Vue.use(VueApollo);
 
@@ -90,7 +89,7 @@ describe('UserSelect component', () => {
     wrapper = shallowMountExtended(UserSelect, {
       apolloProvider: fakeApollo,
       propsData: {
-        existingApprovers: [],
+        selected: [],
         ...propsData,
       },
       provide: {
@@ -152,31 +151,27 @@ describe('UserSelect component', () => {
     });
 
     it('emits when a user is selected', async () => {
+      createComponent({ propsData: { selected: [user.id] } });
+      await waitForApolloAndVue();
+      await waitForPromises();
+
+      expect(findListbox().props('toggleText')).toBe('Name 1');
+
       findListbox().vm.$emit('select', [user.id]);
       await nextTick();
-      expect(findListbox().props('toggleText')).toBe('Name 1');
-      expect(wrapper.emitted('updateSelectedApprovers')).toEqual([
-        [
-          [
-            {
-              ...user,
-              id: getIdFromGraphQLId(user.id),
-              text: user.name,
-              type: USER_TYPE,
-              username: `@${user.username}`,
-              value: user.id,
-            },
-          ],
-        ],
-      ]);
+
+      expect(wrapper.emitted('select-items')).toEqual([[{ user_approvers_ids: [1] }]]);
     });
 
     it('emits when a user is deselected', async () => {
-      findListbox().vm.$emit('select', [user.id]);
-      await nextTick();
+      createComponent({ propsData: { selected: [user.id] } });
+      await waitForApolloAndVue();
+      await waitForPromises();
+
       findListbox().vm.$emit('select', []);
       await nextTick();
-      expect(wrapper.emitted('updateSelectedApprovers')[1]).toEqual([[]]);
+
+      expect(wrapper.emitted('select-items')[0]).toEqual([{ user_approvers_ids: [] }]);
     });
   });
 
@@ -209,7 +204,7 @@ describe('UserSelect component', () => {
   });
 
   it('sets correct toggle text when only approver id is provided', async () => {
-    createComponent({ propsData: { existingApprovers: [1, 2] } });
+    createComponent({ propsData: { selected: [1, 2] } });
     await waitForApolloAndVue();
     await waitForPromises();
 
@@ -220,7 +215,7 @@ describe('UserSelect component', () => {
     it('preserves initial selection after search', async () => {
       createComponent({
         propsData: {
-          existingApprovers: [user],
+          selected: [user.id],
         },
       });
 
@@ -236,14 +231,7 @@ describe('UserSelect component', () => {
 
       await wrapper.findByTestId(`listbox-item-${user2.id}`).vm.$emit('select', true);
 
-      expect(wrapper.emitted('updateSelectedApprovers')).toEqual([
-        [
-          [
-            expect.objectContaining({ name: user.name }),
-            expect.objectContaining({ name: user2.name }),
-          ],
-        ],
-      ]);
+      expect(wrapper.emitted('select-items')).toEqual([[{ user_approvers_ids: [1, 2] }]]);
     });
   });
 
@@ -261,7 +249,7 @@ describe('UserSelect component', () => {
 
   describe('reset selected users', () => {
     it('reset selected users when there are no selected users', async () => {
-      createComponent({ propsData: { existingApprovers: [1, 2], resetOnEmpty: true } });
+      createComponent({ propsData: { selected: [1, 2], resetOnEmpty: true } });
       await waitForApolloAndVue();
       await waitForPromises();
 
@@ -270,23 +258,71 @@ describe('UserSelect component', () => {
         'gid://gitlab/User/2',
       ]);
 
-      await wrapper.setProps({ existingApprovers: [] });
+      await wrapper.setProps({ selected: [] });
 
       expect(findListbox().props('selected')).toEqual([]);
     });
 
     it('update selected users when new users selected', async () => {
-      createComponent({ propsData: { existingApprovers: [1], resetOnEmpty: true } });
+      createComponent({ propsData: { selected: [1], resetOnEmpty: true } });
       await waitForApolloAndVue();
       await waitForPromises();
 
       expect(findListbox().props('selected')).toEqual(['gid://gitlab/User/1']);
 
-      await wrapper.setProps({ existingApprovers: [1, 2] });
+      await wrapper.setProps({ selected: [1, 2] });
 
       expect(findListbox().props('selected')).toEqual([
         'gid://gitlab/User/1',
         'gid://gitlab/User/2',
+      ]);
+    });
+  });
+
+  describe('render selected names', () => {
+    it.each(['@name.1', 'name.1'])('renders users selected by name or username', async (value) => {
+      createComponent({ propsData: { selectedNames: [value] } });
+      await waitForApolloAndVue();
+      await waitForPromises();
+
+      expect(findListbox().props('selected')).toEqual(['gid://gitlab/User/1']);
+      expect(wrapper.emitted('select-items')).toEqual([[{ user_approvers_ids: [1] }]]);
+    });
+  });
+
+  describe('render selected names and ids', () => {
+    it('renders both selected names and ids', async () => {
+      createComponent({
+        propsData: {
+          selectedNames: ['name.2'],
+          selected: [1],
+        },
+      });
+
+      await waitForApolloAndVue();
+      await waitForPromises();
+
+      expect(findListbox().props('selected')).toEqual([
+        'gid://gitlab/User/2',
+        'gid://gitlab/User/1',
+      ]);
+      expect(wrapper.emitted('select-items')).toEqual([
+        [{ user_approvers_ids: [1] }],
+        [{ user_approvers_ids: [2, 1] }],
+      ]);
+    });
+  });
+
+  describe('reset users', () => {
+    it('resets all selected users', async () => {
+      createComponent({ propsData: { selectedNames: ['name.1'] } });
+      await waitForApolloAndVue();
+      await waitForPromises();
+
+      findListbox().vm.$emit('reset');
+      expect(wrapper.emitted('select-items')).toEqual([
+        [{ user_approvers_ids: [1] }],
+        [{ user_approvers_ids: [] }],
       ]);
     });
   });

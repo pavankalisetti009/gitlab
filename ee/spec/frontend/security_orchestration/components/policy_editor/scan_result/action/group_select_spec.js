@@ -5,10 +5,8 @@ import { mount } from '@vue/test-utils';
 import waitForPromises from 'helpers/wait_for_promises';
 import searchDescendantGroups from 'ee/security_orchestration/graphql/queries/get_descendant_groups.query.graphql';
 import searchNamespaceGroups from 'ee/security_orchestration/graphql/queries/get_namespace_groups.query.graphql';
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import GroupSelect from 'ee/security_orchestration/components/policy_editor/scan_result/action/group_select.vue';
-import { GROUP_TYPE } from 'ee/security_orchestration/constants';
 
 Vue.use(VueApollo);
 
@@ -127,32 +125,19 @@ describe('GroupSelect component', () => {
       findListbox().vm.$emit('select', [group.id]);
       await nextTick();
 
-      expect(wrapper.emitted('updateSelectedApprovers')).toEqual([
+      expect(wrapper.emitted('select-items')).toEqual([
         [
-          [
-            {
-              ...group,
-              id: getIdFromGraphQLId(group.id),
-              text: group.fullName,
-              type: GROUP_TYPE,
-              value: group.id,
-            },
-          ],
+          {
+            group_approvers_ids: [2],
+          },
         ],
       ]);
-    });
-
-    it('sets correct toggle text', async () => {
-      findListbox().vm.$emit('select', [group.id]);
-      await nextTick();
-
-      expect(findListbox().props('toggleText')).toBe('Name 2');
     });
 
     it('emits when a group is deselected', () => {
       findListbox().vm.$emit('select', [group.id]);
       findListbox().vm.$emit('select', []);
-      expect(wrapper.emitted('updateSelectedApprovers')[1]).toEqual([[]]);
+      expect(wrapper.emitted('select-items')[1]).toEqual([{ group_approvers_ids: [] }]);
     });
   });
 
@@ -198,11 +183,68 @@ describe('GroupSelect component', () => {
     });
 
     it('sets correct toggle text when only approver id is provided', async () => {
-      createComponent({ propsData: { existingApprovers: [2] } });
+      createComponent({ propsData: { selected: [2] } });
       await waitForApolloAndVue();
       await waitForPromises();
 
       expect(findListbox().props('toggleText')).toBe('Name 2');
+    });
+
+    it('sets correct toggle text', async () => {
+      createComponent({ propsData: { selected: [2] } });
+      await waitForApolloAndVue();
+      await waitForPromises();
+
+      expect(findListbox().props('toggleText')).toBe('Name 2');
+    });
+  });
+
+  describe('render selected names', () => {
+    it.each(['path/to/name-2', 'Name 2'])(
+      'renders groups selected by name or fullPath',
+      async (value) => {
+        createComponent({ propsData: { selectedNames: [value] } });
+        await waitForApolloAndVue();
+        await waitForPromises();
+
+        expect(findListbox().props('selected')).toEqual(['gid://gitlab/Group/2']);
+        expect(wrapper.emitted('select-items')).toEqual([[{ group_approvers_ids: [2] }]]);
+      },
+    );
+  });
+
+  describe('render selected names and ids', () => {
+    it('renders both selected names and ids', async () => {
+      createComponent({
+        propsData: {
+          selectedNames: ['path/to/name-2'],
+          selected: [1],
+        },
+      });
+
+      await waitForApolloAndVue();
+      await waitForPromises();
+
+      expect(findListbox().props('selected')).toEqual([
+        'gid://gitlab/Group/2',
+        'gid://gitlab/Group/1',
+      ]);
+      expect(wrapper.emitted('select-items')).toEqual([
+        [{ group_approvers_ids: [1] }],
+        [{ group_approvers_ids: [2, 1] }],
+      ]);
+    });
+  });
+
+  describe('reset groups', () => {
+    it('resets all selected groups', async () => {
+      createComponent({ propsData: { selectedNames: ['Name 1'] } });
+      await waitForApolloAndVue();
+      await waitForPromises();
+
+      findListbox().vm.$emit('reset');
+
+      expect(wrapper.emitted('select-items')).toEqual([[{ group_approvers_ids: [] }]]);
     });
   });
 });

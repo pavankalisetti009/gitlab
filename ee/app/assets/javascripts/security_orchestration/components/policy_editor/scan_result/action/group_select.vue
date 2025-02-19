@@ -1,13 +1,12 @@
 <script>
-import { GlAvatarLabeled, GlCollapsibleListbox } from '@gitlab/ui';
-import { __ } from '~/locale';
+import { GlCollapsibleListbox, GlAvatarLabeled } from '@gitlab/ui';
+import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { TYPENAME_GROUP } from '~/graphql_shared/constants';
 import searchNamespaceGroups from 'ee/security_orchestration/graphql/queries/get_namespace_groups.query.graphql';
 import searchDescendantGroups from 'ee/security_orchestration/graphql/queries/get_descendant_groups.query.graphql';
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import { TYPENAME_GROUP } from '~/graphql_shared/constants';
+import { renderMultiSelectText } from 'ee/security_orchestration/components/policy_editor/utils';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
-import { GROUP_TYPE } from 'ee/security_orchestration/constants';
-import { renderMultiSelectText, findItemsIntersection } from '../../utils';
+import { __ } from '~/locale';
 
 const createGroupObject = (group) => ({
   ...group,
@@ -16,22 +15,10 @@ const createGroupObject = (group) => ({
 });
 
 export default {
+  name: 'GroupSelect',
   components: {
     GlAvatarLabeled,
     GlCollapsibleListbox,
-  },
-  inject: ['globalGroupApproversEnabled', 'rootNamespacePath'],
-  props: {
-    existingApprovers: {
-      type: Array,
-      required: false,
-      default: () => [],
-    },
-    state: {
-      type: Boolean,
-      required: false,
-      default: true,
-    },
   },
   apollo: {
     groups: {
@@ -59,30 +46,55 @@ export default {
           return [rootGroup, ...descendantGroups];
         }
 
-        const groups = (data?.groups?.nodes || []).map(createGroupObject);
-
-        this.selectedGroups = findItemsIntersection({
-          collectionOne: this.existingApprovers,
-          collectionTwo: groups,
-          mapperFn: createGroupObject,
-          type: TYPENAME_GROUP,
-        });
-
-        return groups;
+        return (data?.groups?.nodes || []).map(createGroupObject);
       },
       debounce: DEFAULT_DEBOUNCE_AND_THROTTLE_MS,
+    },
+  },
+  inject: ['globalGroupApproversEnabled', 'rootNamespacePath'],
+  props: {
+    selected: {
+      type: Array,
+      required: false,
+      default: () => [],
+    },
+    selectedNames: {
+      type: Array,
+      required: false,
+      default: () => [],
+    },
+    state: {
+      type: Boolean,
+      required: false,
+      default: true,
     },
   },
   data() {
     return {
       groups: [],
-      selectedGroups: [],
       search: '',
     };
   },
   computed: {
-    selectedGroupsValues() {
-      return this.selectedGroups.map((g) => g.value);
+    selectedGraphQlIds() {
+      const getGraphQLIds = (ids) => ids.map((id) => convertToGraphQLId(TYPENAME_GROUP, id));
+      const getGroupsByNames = (names) => {
+        return this.groups
+          .filter(({ text, fullPath }) => names.includes(text) || names.includes(fullPath))
+          .map(({ value }) => value);
+      };
+
+      if (this.selectedNames.length === 0) {
+        return getGraphQLIds(this.selected);
+      }
+
+      const groupsByNames = getGroupsByNames(this.selectedNames);
+
+      if (this.selected.length === 0) {
+        return groupsByNames;
+      }
+
+      return [...groupsByNames, ...getGraphQLIds(this.selected)];
     },
     groupItems() {
       return this.groups.reduce((acc, { id, fullName }) => {
@@ -92,38 +104,35 @@ export default {
     },
     toggleText() {
       return renderMultiSelectText({
-        selected: this.selectedGroupsValues,
+        selected: this.selectedGraphQlIds,
         items: this.groupItems,
         itemTypeName: __('groups'),
         useAllSelected: false,
       });
     },
+    hasSelectedNames() {
+      return this.selectedGraphQlIds.length > 0 && this.selectedNames.length > 0;
+    },
+  },
+  updated() {
+    /**
+     * Edge case when instead of group ids
+     * Policy has group names or fullPath it would be
+     * replaced with group ids by emitting
+     * change event
+     */
+    if (this.hasSelectedNames) {
+      this.selectGroups(this.selectedGraphQlIds);
+    }
   },
   methods: {
-    createSelectedGroups(groupsIds) {
-      let updatedSelectedGroups = [...this.selectedGroups];
-
-      const isAddingGroup = this.selectedGroups.length < groupsIds.length;
-      if (isAddingGroup) {
-        const newGroup = this.groups.find((g) => g.value === groupsIds[groupsIds.length - 1]);
-        updatedSelectedGroups.push({
-          ...newGroup,
-          type: GROUP_TYPE,
-          id: getIdFromGraphQLId(newGroup.value),
-        });
-      } else {
-        updatedSelectedGroups = this.selectedGroups.filter((selectedGroup) =>
-          groupsIds.includes(selectedGroup.value),
-        );
-      }
-
-      return updatedSelectedGroups;
+    selectGroups(groupsIds) {
+      this.$emit('select-items', {
+        group_approvers_ids: groupsIds.map((id) => getIdFromGraphQLId(id)),
+      });
     },
-    handleSelectedGroup(groupsIds) {
-      const updatedSelectedGroups = this.createSelectedGroups(groupsIds);
-
-      this.selectedGroups = updatedSelectedGroups;
-      this.$emit('updateSelectedApprovers', updatedSelectedGroups);
+    setSearch(search) {
+      this.search = search;
     },
   },
 };
@@ -136,12 +145,16 @@ export default {
     searchable
     is-check-centered
     multiple
+    :header-text="__('Groups')"
+    :reset-button-label="__('Clear all')"
     :toggle-class="[{ '!gl-shadow-inner-1-red-500': !state }]"
     :searching="$apollo.loading"
-    :selected="selectedGroupsValues"
+    :loading="$apollo.loading"
+    :selected="selectedGraphQlIds"
     :toggle-text="toggleText"
-    @search="search = $event"
-    @select="handleSelectedGroup"
+    @reset="selectGroups([])"
+    @search="setSearch"
+    @select="selectGroups"
   >
     <template #list-item="{ item }">
       <gl-avatar-labeled

@@ -92,7 +92,7 @@ describe('RoleSelect component', () => {
     wrapper = shallowMount(RoleSelect, {
       apolloProvider: createMockApolloProvider(handlers),
       propsData: {
-        existingApprovers: [],
+        selected: [],
         ...propsData,
       },
       provide: {
@@ -115,7 +115,7 @@ describe('RoleSelect component', () => {
     it('emits when a role is selected', async () => {
       const role = 'owner';
       await findListbox().vm.$emit('select', [role]);
-      expect(wrapper.emitted('updateSelectedApprovers')).toEqual([[[role]]]);
+      expect(wrapper.emitted('select-items')).toEqual([[{ role_approvers: [role] }]]);
     });
 
     it('displays the correct listbox toggle class', () => {
@@ -151,7 +151,7 @@ describe('RoleSelect component', () => {
     const role = { text: 'Developer', value: 'developer' };
 
     beforeEach(() => {
-      createComponent({ propsData: { existingApprovers: [role.value] } });
+      createComponent({ propsData: { selected: [role.value] } });
     });
 
     it('displays the correct toggle text', () => {
@@ -160,7 +160,7 @@ describe('RoleSelect component', () => {
 
     it('emits when a user is deselected', () => {
       findListbox().vm.$emit('select', []);
-      expect(wrapper.emitted('updateSelectedApprovers')).toEqual([[[]]]);
+      expect(wrapper.emitted('select-items')).toEqual([[{ role_approvers: [] }]]);
     });
 
     it('does not emit an error', () => {
@@ -173,13 +173,13 @@ describe('RoleSelect component', () => {
     const invalidRole = 'invalid';
 
     it('displays the correct toggle text', () => {
-      createComponent({ propsData: { existingApprovers: [invalidRole] } });
+      createComponent({ propsData: { selected: [invalidRole] } });
       expect(findListbox().props('toggleText')).toBe('Choose specific role');
     });
 
     it('emits an error when a user updates to an invalid role', async () => {
-      createComponent({ propsData: { existingApprovers: [validRole] } });
-      await wrapper.setProps({ existingApprovers: [invalidRole] });
+      createComponent({ propsData: { selected: [validRole] } });
+      await wrapper.setProps({ selected: [invalidRole] });
       expect(wrapper.emitted('error')).toEqual([[]]);
     });
   });
@@ -259,7 +259,7 @@ describe('RoleSelect component', () => {
 
         it('displays the correct toggle text for a custom role', async () => {
           createComponent({
-            propsData: { existingApprovers: [customRole.id] },
+            propsData: { selected: [customRole.id] },
             provide: { glFeatures: { securityPolicyCustomRoles: true } },
           });
           await waitForPromises();
@@ -269,13 +269,13 @@ describe('RoleSelect component', () => {
         it('does not emit an invalid role error for custom roles that exist', async () => {
           createComponent({ provide: { glFeatures: { securityPolicyCustomRoles: true } } });
           await waitForPromises();
-          await wrapper.setProps({ existingApprovers: [customRole.id] });
+          await wrapper.setProps({ selected: [customRole.id] });
           expect(wrapper.emitted('error')).toBeUndefined();
         });
 
         it('does not emit an invalid role error for custom roles that exist before the custom roles load', async () => {
           createComponent({ provide: { glFeatures: { securityPolicyCustomRoles: true } } });
-          await wrapper.setProps({ existingApprovers: [customRole.id] });
+          await wrapper.setProps({ selected: [customRole.id] });
           expect(wrapper.emitted('error')).toBeUndefined();
         });
       });
@@ -286,7 +286,7 @@ describe('RoleSelect component', () => {
 
         it('displays the correct toggle text', () => {
           createComponent({
-            propsData: { existingApprovers: [invalidCustomRole, validStandardRole.value] },
+            propsData: { selected: [invalidCustomRole, validStandardRole.value] },
           });
           expect(findListbox().props('toggleText')).toBe(validStandardRole.text);
         });
@@ -294,11 +294,22 @@ describe('RoleSelect component', () => {
         it('emits an invalid role error for custom roles that do not exist', async () => {
           createComponent({ provide: { glFeatures: { securityPolicyCustomRoles: true } } });
           await waitForPromises();
-          await wrapper.setProps({ existingApprovers: [invalidCustomRole.id] });
+          await wrapper.setProps({ selected: [invalidCustomRole.id] });
           expect(wrapper.emitted('error')).toEqual([[]]);
           expect(findListbox().props('toggleText')).toBe('Choose specific role');
         });
       });
+    });
+  });
+
+  describe('reset roles', () => {
+    it('resets all selected roles', async () => {
+      createComponent({ propsData: { selected: ['developer'] } });
+      await waitForPromises();
+
+      findListbox().vm.$emit('reset');
+
+      expect(wrapper.emitted('select-items')).toEqual([[{ role_approvers: [] }]]);
     });
   });
 });

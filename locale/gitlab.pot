@@ -48867,6 +48867,9 @@ msgstr ""
 msgid "Role promotions"
 msgstr ""
 
+msgid "Roles"
+msgstr ""
+
 msgid "Roles and permissions"
 msgstr ""
 
