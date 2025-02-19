@@ -61,6 +61,22 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
             expect(returned_widgets.map(&:widget_class)).not_to include(::WorkItems::Widgets::Assignees)
           end
         end
+
+        context 'when work_items_alpha is enabled' do
+          it 'returns Milestone widget' do
+            expect(returned_widgets.map(&:widget_class)).to include(::WorkItems::Widgets::Milestone)
+          end
+        end
+
+        context 'when work_items_alpha is disabled' do
+          before do
+            stub_feature_flags(work_items_alpha: false)
+          end
+
+          it 'does not return Milestone widget' do
+            expect(returned_widgets.map(&:widget_class)).not_to include(::WorkItems::Widgets::Milestone)
+          end
+        end
       end
 
       context 'when custom_fields_feature is disabled' do
