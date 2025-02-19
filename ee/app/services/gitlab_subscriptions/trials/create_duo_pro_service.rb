@@ -23,9 +23,7 @@ module GitlabSubscriptions
         # We override here as we use a general add on lead service currently
         # GitlabSubscriptions::Trials::CreateAddOnLeadService.
         params = super
-        if Feature.enabled?(:pass_add_on_name_for_trial_requests, Feature.current_request)
-          params[:add_on_name] = 'code_suggestions'
-        end
+        params[:add_on_name] = 'code_suggestions'
 
         params
       end
