@@ -741,7 +741,7 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
   describe 'dora field' do
     subject { described_class.fields['dora'] }
 
-    it { is_expected.to have_graphql_type(Types::DoraType) }
+    it { is_expected.to have_graphql_type(::Types::Analytics::Dora::DoraType) }
   end
 
   describe 'vulnerability_images' do

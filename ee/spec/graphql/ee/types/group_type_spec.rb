@@ -396,7 +396,7 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
   describe 'dora field' do
     subject { described_class.fields['dora'] }
 
-    it { is_expected.to have_graphql_type(Types::DoraType) }
+    it { is_expected.to have_graphql_type(Types::Analytics::Dora::DoraType) }
   end
 
   describe 'group adjourned deletion fields', feature_category: :groups_and_projects do

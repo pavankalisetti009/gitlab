@@ -267,7 +267,7 @@ module EE
           resolver: ::Resolvers::SecurityOrchestration::SecurityPolicyProjectSuggestionsResolver
 
         field :dora,
-          ::Types::DoraType,
+          ::Types::Analytics::Dora::DoraType,
           null: true,
           method: :itself,
           description: "Project's DORA metrics."
