@@ -30,6 +30,7 @@ import {
 } from 'ee/analytics/analytics_dashboards/components/filters/utils';
 import AnonUsersFilter from 'ee/analytics/analytics_dashboards/components/filters/anon_users_filter.vue';
 import DateRangeFilter from 'ee/analytics/analytics_dashboards/components/filters/date_range_filter.vue';
+import ProjectsFilter from 'ee/analytics/analytics_dashboards/components/filters/projects_filter.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import {
   NEW_DASHBOARD,
@@ -57,6 +58,7 @@ import {
   TEST_CUSTOM_GROUP_VSD_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE,
   TEST_AI_IMPACT_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE,
   createDashboardGraphqlSuccessResponse,
+  createGroupDashboardGraphqlSuccessResponse,
   TEST_INVALID_CUSTOM_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE,
   mockInvalidDashboardErrors,
   TEST_DASHBOARD_WITH_USAGE_OVERVIEW_GRAPHQL_SUCCESS_RESPONSE,
@@ -111,6 +113,7 @@ describe('AnalyticsDashboard', () => {
   const findAfterDescriptionLink = () => wrapper.findByTestId('after-description-link');
   const findAnonUsersFilter = () => wrapper.findComponent(AnonUsersFilter);
   const findDateRangeFilter = () => wrapper.findComponent(DateRangeFilter);
+  const findProjectsFilter = () => wrapper.findComponent(ProjectsFilter);
   const findUrlSync = () => wrapper.findComponent(UrlSync);
 
   const mockSaveDashboardImplementation = async (responseCallback, dashboardToSave = dashboard) => {
@@ -228,9 +231,8 @@ describe('AnalyticsDashboard', () => {
   const setupDashboard = (dashboardResponse, slug = '') => {
     mockDashboardResponse(dashboardResponse);
     mockAvailableVisualizationsResponse(TEST_VISUALIZATIONS_GRAPHQL_SUCCESS_RESPONSE);
-
     createWrapper({
-      routeSlug: slug || dashboardResponse.data.project.customizableDashboards.nodes[0]?.slug,
+      routeSlug: slug,
     });
 
     return waitForPromises();
@@ -898,8 +900,28 @@ describe('AnalyticsDashboard', () => {
     const defaultFilters = buildDefaultDashboardFilters('');
     let trackEventSpy;
 
+    const setupGroupDashboardWithFilters = (filters) => {
+      setupDashboard(
+        createGroupDashboardGraphqlSuccessResponse(getGraphQLDashboard({ filters })),
+        'test-dashboard-with-filters',
+      );
+
+      createWrapper({
+        provide: {
+          namespaceId: TEST_CUSTOM_DASHBOARDS_GROUP.id,
+          namespaceFullPath: TEST_CUSTOM_DASHBOARDS_GROUP.fullPath,
+          isGroup: true,
+          isProject: false,
+        },
+      });
+      return waitForPromises();
+    };
+
     const setupDashboardWithFilters = (filters) => {
-      setupDashboard(createDashboardGraphqlSuccessResponse(getGraphQLDashboard({ filters })));
+      setupDashboard(
+        createDashboardGraphqlSuccessResponse(getGraphQLDashboard({ filters })),
+        'test-dashboard-with-filters',
+      );
       createWrapper({});
       return waitForPromises();
     };
@@ -959,6 +981,51 @@ describe('AnalyticsDashboard', () => {
           await findAnonUsersFilter().vm.$emit('change', false);
 
           expect(trackEventSpy).not.toHaveBeenCalled();
+        });
+      });
+    });
+
+    describe('projects  filter', () => {
+      // In Vue3 this is kebabbed, in Vue2 it is not :( https://gitlab.com/gitlab-org/gitlab/-/issues/509355
+      const findDropdownGroupNamespace = () =>
+        findProjectsFilter().attributes('group-namespace') ||
+        findProjectsFilter().attributes('groupnamespace');
+
+      describe('when dashboard is group-level', () => {
+        beforeEach(async () => {
+          await setupGroupDashboardWithFilters({ projects: { enabled: true } });
+        });
+
+        it('renders the filter', () => {
+          expect(findProjectsFilter().exists()).toBe(true);
+          expect(findDropdownGroupNamespace()).toBe(TEST_CUSTOM_DASHBOARDS_GROUP.fullPath);
+        });
+
+        describe('on project selection', () => {
+          beforeEach(async () => {
+            await findProjectsFilter().vm.$emit('projectSelected', {
+              projectNamespace: 'test-project',
+              projectId: 123,
+            });
+          });
+
+          it('updates the slot filters', () => {
+            expect(findAllPanels().at(0).props('filters')).toMatchObject({
+              project: {
+                projectNamespace: 'test-project',
+                projectId: 123,
+              },
+            });
+          });
+        });
+      });
+
+      describe('when dashboard is project-level', () => {
+        beforeEach(async () => {
+          await setupDashboardWithFilters({ projectSelector: { enabled: true } }, false);
+        });
+        it('does not render the filter', () => {
+          expect(findProjectsFilter().exists()).toBe(false);
         });
       });
     });
@@ -1101,6 +1168,7 @@ describe('AnalyticsDashboard', () => {
     it('does not render filters', () => {
       expect(findAnonUsersFilter().exists()).toBe(false);
       expect(findDateRangeFilter().exists()).toBe(false);
+      expect(findProjectsFilter().exists()).toBe(false);
       expect(findUrlSync().exists()).toBe(false);
     });
   });

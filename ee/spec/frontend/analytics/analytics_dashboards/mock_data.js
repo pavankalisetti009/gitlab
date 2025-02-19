@@ -274,6 +274,19 @@ export const TEST_INVALID_CUSTOM_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE = {
   },
 };
 
+export const createGroupDashboardGraphqlSuccessResponse = (dashboardNodes) => ({
+  data: {
+    group: {
+      id: 'gid://gitlab/Group/1',
+      customizableDashboards: {
+        nodes: [dashboardNodes],
+        __typename: 'CustomizableDashboardConnection',
+      },
+      __typename: 'Group',
+    },
+  },
+});
+
 export const createDashboardGraphqlSuccessResponse = (dashboardNodes) => ({
   data: {
     project: {

@@ -67,6 +67,9 @@
         },
         "dateRange": {
           "$ref": "#/definitions/DateRangeFilter"
+        },
+        "projects": {
+          "$ref": "#/definitions/DashboardFilter"
         }
       },
       "title": "DashboardFilters"
