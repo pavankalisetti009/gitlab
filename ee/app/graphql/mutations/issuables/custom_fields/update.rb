@@ -33,8 +33,7 @@ module Mutations
           custom_field = authorized_find!(id: id)
 
           unless args[:work_item_type_ids].nil?
-            args[:work_item_type_ids] = ::WorkItems::Type.with_correct_id_and_fallback(args[:work_item_type_ids])
-                                                         .map(&:correct_id)
+            args[:work_item_type_ids] = ::WorkItems::Type.with_id_and_fallback(args[:work_item_type_ids]).map(&:id)
           end
 
           response = ::Issuables::CustomFields::UpdateService.new(

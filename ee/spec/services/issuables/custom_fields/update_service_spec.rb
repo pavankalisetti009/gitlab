@@ -125,7 +125,7 @@ RSpec.describe Issuables::CustomFields::UpdateService, feature_category: :team_p
     let_it_be(:task_type) { create(:work_item_type, :task) }
 
     context 'when adding work item types' do
-      let(:params) { { work_item_type_ids: [task_type.correct_id, issue_type.correct_id] } }
+      let(:params) { { work_item_type_ids: [task_type.id, issue_type.id] } }
 
       it 'updates the custom field with the work item types' do
         expect(response).to be_success
@@ -172,7 +172,7 @@ RSpec.describe Issuables::CustomFields::UpdateService, feature_category: :team_p
       end
 
       context 'when replacing work item types' do
-        let(:params) { { work_item_type_ids: [task_type.correct_id] } }
+        let(:params) { { work_item_type_ids: [task_type.id] } }
 
         it 'updates the custom field with the work item types' do
           expect(response).to be_success

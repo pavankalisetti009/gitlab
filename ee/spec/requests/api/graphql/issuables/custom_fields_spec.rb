@@ -124,8 +124,8 @@ RSpec.describe 'Listing custom fields', feature_category: :team_planning do
   end
 
   context 'when filtering by work item type ids', :aggregate_failures do
-    it 'returns matching fields while using work_item_types.correct_id' do
-      expect(task_type.to_global_id.model_id.to_i).to eq(task_type.attributes['correct_id'])
+    it 'returns matching fields while using work_item_types.id' do
+      expect(task_type.to_global_id.model_id.to_i).to eq(task_type.id)
 
       post_graphql(query, current_user: guest, variables: { work_item_type_ids: [task_type.to_global_id] })
 
@@ -137,7 +137,7 @@ RSpec.describe 'Listing custom fields', feature_category: :team_planning do
 
     context 'when an old global ID is used as a filter' do
       it 'returns matching fields' do
-        expect(task_type.old_id).not_to eq(task_type.correct_id)
+        expect(task_type.old_id).not_to eq(task_type.id)
 
         post_graphql(
           query,

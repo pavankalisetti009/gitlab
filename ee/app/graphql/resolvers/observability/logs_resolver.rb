@@ -43,7 +43,7 @@ module Resolvers
       def preloads
         {
           issue: {
-            issue: [{ project: { namespace: [:route] } }, :author, ::Gitlab::Issues::TypeAssociationGetter.call]
+            issue: [{ project: { namespace: [:route] } }, :author, :work_item_type]
           }
         }
       end

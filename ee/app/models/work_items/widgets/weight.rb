@@ -37,7 +37,7 @@ module WorkItems
         # We cannot use `#sum(:weight)` because ActiveRecord returns 0 when PG returns NULL.
         # We need to distinguish between a sum of 0 and the absence of descendant weights.
         work_item.descendants
-          .where(correct_work_item_type_id: WorkItems::Type.default_issue_type.correct_id)
+          .where(work_item_type_id: WorkItems::Type.default_issue_type.id)
           .group(:state_id)
           .pluck('state_id, SUM(weight)') # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- We only have a limited number of states
           .to_h

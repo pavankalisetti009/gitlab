@@ -54,8 +54,8 @@ RSpec.describe Issuables::CustomFields::CreateService, feature_category: :team_p
           name: 'my custom field',
           field_type: 'single_select',
           work_item_type_ids: [
-            task_type.correct_id,
-            issue_type.correct_id
+            task_type.id,
+            issue_type.id
           ]
         }
       end

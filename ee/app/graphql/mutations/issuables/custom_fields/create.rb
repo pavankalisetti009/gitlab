@@ -39,8 +39,7 @@ module Mutations
           group = authorized_find!(group_path: group_path)
 
           unless args[:work_item_type_ids].nil?
-            args[:work_item_type_ids] = ::WorkItems::Type.with_correct_id_and_fallback(args[:work_item_type_ids])
-                                                         .map(&:correct_id)
+            args[:work_item_type_ids] = ::WorkItems::Type.with_id_and_fallback(args[:work_item_type_ids]).map(&:id)
           end
 
           response = ::Issuables::CustomFields::CreateService.new(
