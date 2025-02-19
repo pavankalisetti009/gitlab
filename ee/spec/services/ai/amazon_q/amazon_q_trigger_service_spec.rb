@@ -10,13 +10,16 @@ RSpec.describe Ai::AmazonQ::AmazonQTriggerService, feature_category: :ai_agents 
   let_it_be(:issue) { create(:issue, project: project) }
   let_it_be(:merge_request) { create(:merge_request_with_diffs, source_project: project) }
   let_it_be(:oauth_app) { create(:doorkeeper_application) }
+
   let(:response) { instance_double(HTTParty::Response, success?: true, parsed_response: nil) }
   let(:source) { issue }
+  let(:role_arn) { 'role-arn' }
 
   before do
-    Ai::Setting.instance.update!(
+    ::Ai::Setting.instance.update!(
       amazon_q_service_account_user_id: service_account.id,
-      amazon_q_oauth_application_id: oauth_app.id
+      amazon_q_oauth_application_id: oauth_app.id,
+      amazon_q_role_arn: role_arn
     )
   end
 
@@ -48,9 +51,9 @@ RSpec.describe Ai::AmazonQ::AmazonQTriggerService, feature_category: :ai_agents 
 
       shared_examples 'successful dev execution' do
         it 'creates an auth grant with the correct scopes', :aggregate_failures do
-          expect { execution }.to change { OauthAccessGrant.count }.by(1)
-          grant = OauthAccessGrant.find_by(resource_owner: service_account, application: oauth_app)
-          expect(grant.scopes.to_s).to eq("api read_repository write_repository user:#{user.id}")
+          expect(client).to receive(:create_event).with(payload: a_hash_including(command: command), role_arn: role_arn)
+
+          execution
         end
 
         it 'executes successfully' do
@@ -74,7 +77,6 @@ RSpec.describe Ai::AmazonQ::AmazonQTriggerService, feature_category: :ai_agents 
 
         context 'when server returns a 500 error' do
           let(:response) { instance_double(HTTParty::Response, success?: false, parsed_response: nil) }
-          let(:client) { instance_double(Gitlab::Llm::QAi::Client, create_event: response) }
 
           before do
             allow(Gitlab::Llm::QAi::Client).to receive(:new).with(user).and_return(client)
@@ -109,10 +111,6 @@ RSpec.describe Ai::AmazonQ::AmazonQTriggerService, feature_category: :ai_agents 
       context 'when executes fix command after validation' do
         before do
           allow(service).to receive(:validate_command!)
-        end
-
-        it 'creates an auth grant' do
-          expect { execution }.to change { OauthAccessGrant.count }.by(1)
         end
 
         it 'executes successfully' do
@@ -168,10 +166,6 @@ RSpec.describe Ai::AmazonQ::AmazonQTriggerService, feature_category: :ai_agents 
           'file_path' => diff_note.position.new_path,
           'user_message' => anything
         )
-      end
-
-      it 'creates an auth grant' do
-        expect { execution }.to change { OauthAccessGrant.count }.by(1)
       end
 
       it 'executes successfully with the right payload' do

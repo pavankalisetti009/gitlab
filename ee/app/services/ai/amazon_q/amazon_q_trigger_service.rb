@@ -50,7 +50,6 @@ module Ai
 
         client.create_event(
           payload: payload,
-          auth_grant: create_auth_grant_new,
           role_arn: ai_settings.amazon_q_role_arn
         )
       end
@@ -131,21 +130,6 @@ module Ai
         end
       end
       strong_memoize_attr :line_position_for_comment
-
-      def create_auth_grant_new
-        OauthAccessGrant.create!(
-          resource_owner_id: ai_settings.amazon_q_service_account_user_id,
-          application_id: ai_settings.amazon_q_oauth_application_id,
-          redirect_uri: Gitlab::Routing.url_helpers.root_url,
-          expires_in: 1.hour,
-          scopes: Gitlab::Auth::Q_SCOPES + dynamic_user_scope,
-          organization: Gitlab::Current::Organization.new(user: user).organization
-        ).plaintext_token
-      end
-
-      def dynamic_user_scope
-        ["user:#{user.id}"]
-      end
 
       def create_note
         @progress_note = ::Ai::AmazonQ::CreateNoteService.new(
@@ -240,11 +224,6 @@ module Ai
         source.notes.authored_by(amazon_q_service_account).find_discussion(discussion_id)&.notes.to_a
       end
       strong_memoize_attr :service_account_notes
-
-      def ai_settings
-        Ai::Setting.instance
-      end
-      strong_memoize_attr :ai_settings
     end
   end
 end
