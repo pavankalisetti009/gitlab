@@ -34,7 +34,11 @@ module Security
 
           def update_vulnerability_records
             ::Vulnerability.id_in(redetected_vulnerability_ids)
-                           .update_all(state: :detected, resolved_at: nil)
+              .update_all(
+                state: :detected,
+                resolved_at: nil,
+                resolved_by_id: nil
+              )
           end
 
           def create_state_transitions

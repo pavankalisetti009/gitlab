@@ -15,7 +15,7 @@ RSpec.describe Security::Ingestion::Tasks::IngestVulnerabilities::MarkResolvedAs
 
   let_it_be(:resolved_vulnerability) do
     create(:vulnerability, :resolved, :with_finding,
-      resolved_on_default_branch: true, present_on_default_branch: false
+      resolved_on_default_branch: true, present_on_default_branch: false, resolved_by_id: user.id
     )
   end
 
@@ -40,8 +40,9 @@ RSpec.describe Security::Ingestion::Tasks::IngestVulnerabilities::MarkResolvedAs
       .from("detected")
   end
 
-  it 'resets the `resolved_at` attribute' do
+  it 'resets the `resolved_at` attributes' do
     expect { mark_resolved_as_detected }.to change { resolved_vulnerability.reload.resolved_at }.to(nil)
+                                              .and change { resolved_vulnerability.reload.resolved_by_id }.to(nil)
   end
 
   it 'creates state transition entry for each vulnerability' do
