@@ -28,7 +28,7 @@ module Preloaders
     def abilities_for_user_grouped_by_group(group_ids)
       @group_relation = Group.where(id: group_ids)
 
-      ::Preloaders::GroupRootAncestorPreloader.new(group_relation).execute
+      ::Namespaces::Preloaders::GroupRootAncestorPreloader.new(group_relation).execute
 
       groups_with_traversal_ids = group_relation.filter_map do |group|
         next unless group.custom_roles_enabled?

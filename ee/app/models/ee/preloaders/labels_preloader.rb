@@ -24,7 +24,7 @@ module EE
 
         return if project_groups.empty?
 
-        ::Preloaders::GroupRootAncestorPreloader.new(project_groups).execute
+        ::Namespaces::Preloaders::GroupRootAncestorPreloader.new(project_groups).execute
 
         ActiveRecord::Associations::Preloader.new(
           records: project_groups.map(&:root_ancestor),

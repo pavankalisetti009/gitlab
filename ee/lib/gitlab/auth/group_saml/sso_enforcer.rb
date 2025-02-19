@@ -34,7 +34,7 @@ module Gitlab
           def access_restricted_groups(groups, user: nil)
             return [] unless groups.any?
 
-            ::Preloaders::GroupRootAncestorPreloader.new(groups, [:saml_provider]).execute
+            ::Namespaces::Preloaders::GroupRootAncestorPreloader.new(groups, [:saml_provider]).execute
             root_ancestors = groups.map(&:root_ancestor).uniq
 
             root_ancestors.select do |root_ancestor|

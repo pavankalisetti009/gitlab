@@ -502,7 +502,7 @@ module EE
       projects = projects_not_aimed_for_deletions_for(group_id)
 
       ::Preloaders::ProjectPolicyPreloader.new(projects, current_user).execute
-      ::Preloaders::ProjectRootAncestorPreloader.new(projects).execute
+      ::Namespaces::Preloaders::ProjectRootAncestorPreloader.new(projects).execute
 
       projects
     end

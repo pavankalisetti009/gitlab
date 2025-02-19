@@ -11,7 +11,7 @@ module EE
 
         super
 
-        ::Preloaders::GroupRootAncestorPreloader.new(groups, root_ancestor_preloads).execute
+        ::Namespaces::Preloaders::GroupRootAncestorPreloader.new(groups, root_ancestor_preloads).execute
 
         if ::Feature.enabled?(:preload_member_roles, current_user)
           ::Preloaders::UserMemberRolesInGroupsPreloader.new(groups: groups, user: current_user).execute
