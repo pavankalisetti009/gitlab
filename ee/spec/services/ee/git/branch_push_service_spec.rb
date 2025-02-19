@@ -292,18 +292,6 @@ RSpec.describe Git::BranchPushService, feature_category: :source_code_management
             expect(Security::SyncLinkedPipelineExecutionPolicyConfigsWorker).not_to receive(:perform_async)
           end
         end
-
-        context 'when feature flag "pipeline_execution_policy_analyze_configs" is disabled' do
-          before do
-            stub_feature_flags(pipeline_execution_policy_analyze_configs: false)
-          end
-
-          it 'does not run the worker' do
-            expect(Security::SyncLinkedPipelineExecutionPolicyConfigsWorker).not_to receive(:perform_async)
-
-            subject.execute
-          end
-        end
       end
     end
   end

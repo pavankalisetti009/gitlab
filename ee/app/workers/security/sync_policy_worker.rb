@@ -54,7 +54,6 @@ module Security
     end
 
     def sync_pipeline_execution_policy_metadata(policy)
-      return if ::Feature.disabled?(:pipeline_execution_policy_analyze_configs, policy.namespace)
       return unless policy.type_pipeline_execution_policy?
 
       config_project_id = policy.security_pipeline_execution_policy_config_link&.project_id

@@ -363,16 +363,6 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
           expect { upsert! }.to change { Security::PipelineExecutionPolicyConfigLink.count }.by(1)
           expect(Security::PipelineExecutionPolicyConfigLink.last.project).to eq config_project
         end
-
-        context 'when feature flag "pipeline_execution_policy_analyze_configs" is disabled' do
-          before do
-            stub_feature_flags(pipeline_execution_policy_analyze_configs: false)
-          end
-
-          it 'does not create a new link to the config project' do
-            expect { upsert! }.not_to change { Security::PipelineExecutionPolicyConfigLink.count }
-          end
-        end
       end
     end
 
@@ -948,16 +938,6 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
         let(:policy) { create(:security_policy, type) }
 
         it { expect  { update_links }.not_to change { Security::PipelineExecutionPolicyConfigLink.count } }
-      end
-    end
-
-    context 'when feature flag "pipeline_execution_policy_analyze_configs" is disabled' do
-      before do
-        stub_feature_flags(pipeline_execution_policy_analyze_configs: false)
-      end
-
-      it 'does not create a new link to the config project' do
-        expect { update_links }.not_to change { Security::PipelineExecutionPolicyConfigLink.count }
       end
     end
   end

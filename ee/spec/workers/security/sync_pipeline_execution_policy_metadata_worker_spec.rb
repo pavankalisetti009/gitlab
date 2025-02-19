@@ -150,16 +150,4 @@ RSpec.describe Security::SyncPipelineExecutionPolicyMetadataWorker, '#perform', 
       perform
     end
   end
-
-  context 'when feature flag "pipeline_execution_policy_analyze_configs" is disabled' do
-    before do
-      stub_feature_flags(pipeline_execution_policy_analyze_configs: false)
-    end
-
-    it 'does not call AnalyzePipelineExecutionPolicyConfigService' do
-      expect(Security::SecurityOrchestrationPolicies::AnalyzePipelineExecutionPolicyConfigService).not_to receive(:new)
-
-      perform
-    end
-  end
 end

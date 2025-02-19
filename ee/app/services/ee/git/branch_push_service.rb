@@ -20,7 +20,6 @@ module EE
       private
 
       def enqueue_sync_pipeline_execution_policy_metadata
-        return if ::Feature.disabled?(:pipeline_execution_policy_analyze_configs, project.group)
         return unless project.licensed_feature_available?(:security_orchestration_policies)
         return if ::Security::PipelineExecutionPolicyConfigLink.for_project(project).none?
 

@@ -55,14 +55,6 @@ RSpec.describe ::Security::SyncPolicyWorker, feature_category: :security_policy_
 
       it_behaves_like 'does not trigger SyncPipelineExecutionPolicyMetadataWorker'
     end
-
-    context 'when feature flag "pipeline_execution_policy_analyze_configs" is disabled' do
-      before do
-        stub_feature_flags(pipeline_execution_policy_analyze_configs: false)
-      end
-
-      it_behaves_like 'does not trigger SyncPipelineExecutionPolicyMetadataWorker'
-    end
   end
 
   context 'when event is Security::PolicyDeletedEvent' do
