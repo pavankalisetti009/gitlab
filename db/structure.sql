@@ -23320,6 +23320,7 @@ CREATE TABLE vulnerability_finding_links (
     name text,
     url text NOT NULL,
     project_id bigint,
+    CONSTRAINT check_3dd0293472 CHECK ((project_id IS NOT NULL)),
     CONSTRAINT check_55f0a95439 CHECK ((char_length(name) <= 255)),
     CONSTRAINT check_b7fe886df6 CHECK ((char_length(url) <= 2048))
 );
@@ -27243,9 +27244,6 @@ ALTER TABLE security_scans
 
 ALTER TABLE vulnerability_scanners
     ADD CONSTRAINT check_37608c9db5 CHECK ((char_length(vendor) <= 255)) NOT VALID;
-
-ALTER TABLE vulnerability_finding_links
-    ADD CONSTRAINT check_3dd0293472 CHECK ((project_id IS NOT NULL)) NOT VALID;
 
 ALTER TABLE ONLY instance_type_ci_runners_e59bb2812d
     ADD CONSTRAINT check_5c34a3c1db UNIQUE (id);
