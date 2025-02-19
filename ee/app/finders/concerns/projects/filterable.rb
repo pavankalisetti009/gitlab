@@ -7,15 +7,16 @@ module Projects
     private
 
     def by_saml_sso_session(projects)
-      return projects unless filter_expired_saml_session_projects?
+      return projects unless params.fetch(:filter_expired_saml_session_projects, false)
+      return projects unless current_user
 
-      projects.by_not_in_root_id(current_user.expired_sso_session_saml_providers.select(:group_id))
-    end
+      saml_providers_to_exclude = current_user.expired_sso_session_saml_providers_with_access_restricted
 
-    def filter_expired_saml_session_projects?
-      return false if current_user.nil? || current_user.can_read_all_resources?
+      return projects if saml_providers_to_exclude.blank?
 
-      params.fetch(:filter_expired_saml_session_projects, false)
+      projects.by_not_in_root_id(
+        saml_providers_to_exclude.map(&:group_id)
+      )
     end
   end
 end

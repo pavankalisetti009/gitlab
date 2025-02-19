@@ -313,6 +313,12 @@ module EE
       project.maintain_elasticsearch_update if self.active? && project.maintaining_elasticsearch?
     end
 
+    def expired_sso_session_saml_providers_with_access_restricted
+      expired_sso_session_saml_providers.select do |saml_provider|
+        ::Gitlab::Auth::GroupSaml::SsoEnforcer.new(saml_provider, user: self).access_restricted?
+      end
+    end
+
     def expired_sso_session_saml_providers
       group_saml_providers.id_not_in(active_sso_sessions_saml_provider_ids)
     end

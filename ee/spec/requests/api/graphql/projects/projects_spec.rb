@@ -103,4 +103,6 @@ RSpec.describe 'getting a collection of projects', feature_category: :groups_and
       end.not_to exceed_query_limit(control)
     end
   end
+
+  it_behaves_like 'projects graphql query with SAML session filtering'
 end

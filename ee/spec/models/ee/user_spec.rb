@@ -409,6 +409,43 @@ RSpec.describe User, feature_category: :system_access do
       end
     end
 
+    describe '.expired_sso_session_saml_providers_with_access_restricted' do
+      let_it_be(:user) { create(:user) }
+      let_it_be(:saml_provider) { create(:saml_provider) }
+
+      before do
+        allow(user).to receive(:expired_sso_session_saml_providers).and_return([saml_provider])
+      end
+
+      subject(:expired_sso_session_saml_providers_with_access_restricted) do
+        user.expired_sso_session_saml_providers_with_access_restricted
+      end
+
+      context 'when SAML provider has access restricted' do
+        before do
+          allow_next_instance_of(::Gitlab::Auth::GroupSaml::SsoEnforcer) do |sso_enforcer|
+            allow(sso_enforcer).to receive(:access_restricted?).and_return(true)
+          end
+        end
+
+        it 'returns array including SAML provider' do
+          expect(expired_sso_session_saml_providers_with_access_restricted).to include(saml_provider)
+        end
+      end
+
+      context 'when SAML provider does not have access restricted' do
+        before do
+          allow_next_instance_of(::Gitlab::Auth::GroupSaml::SsoEnforcer) do |sso_enforcer|
+            allow(sso_enforcer).to receive(:access_restricted?).and_return(false)
+          end
+        end
+
+        it 'returns array excluding SAML provider' do
+          expect(expired_sso_session_saml_providers_with_access_restricted).not_to include(saml_provider)
+        end
+      end
+    end
+
     describe '.expired_sso_session_saml_providers' do
       let_it_be(:user) { create(:user) }
       let_it_be(:saml_provider1) { create(:saml_provider) }
