@@ -257,7 +257,6 @@ spec/frontend/vue_shared/components/color_picker/color_picker_spec.js
 spec/frontend/vue_shared/components/confirm_modal_spec.js
 spec/frontend/vue_shared/components/design_management/design_note_pin_spec.js
 spec/frontend/vue_shared/components/diff_stats_dropdown_spec.js
-spec/frontend/vue_shared/components/file_finder/index_spec.js
 spec/frontend/vue_shared/components/file_tree_spec.js
 spec/frontend/vue_shared/components/filtered_search_bar/tokens/date_token_spec.js
 spec/frontend/vue_shared/components/markdown/markdown_editor_spec.js
