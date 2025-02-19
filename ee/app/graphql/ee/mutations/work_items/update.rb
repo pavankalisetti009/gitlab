@@ -30,6 +30,11 @@ module EE
           argument :color_widget, ::Types::WorkItems::Widgets::ColorInputType,
             required: false,
             description: 'Input for color widget.'
+
+          argument :custom_fields_widget, [::Types::WorkItems::Widgets::CustomFieldValueInputType],
+            required: false,
+            description: 'Input for custom fields widget.',
+            experiment: { milestone: '17.10' }
         end
       end
     end

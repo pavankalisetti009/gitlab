@@ -774,4 +774,54 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
       end
     end
   end
+
+  context 'with custom fields widget input' do
+    include_context 'with group configured with custom fields'
+
+    let_it_be(:project) { create(:project, group: group, developers: [developer]) }
+
+    let(:mutation) { graphql_mutation(:workItemCreate, input, 'workItem { id }') }
+
+    let(:input) do
+      {
+        'namespacePath' => project.full_path,
+        'workItemTypeId' => issue_type.to_gid.to_s,
+        'title' => 'New work item',
+        'customFieldsWidget' => [
+          { 'customFieldId' => global_id_of(number_field), 'numberValue' => 100 },
+          { 'customFieldId' => global_id_of(multi_select_field), 'selectedOptionIds' => [
+            global_id_of(multi_select_option_1), global_id_of(multi_select_option_3)
+          ] }
+        ]
+      }
+    end
+
+    before do
+      stub_licensed_features(custom_fields: true)
+    end
+
+    it 'creates the work item with custom field values' do
+      post_graphql_mutation(mutation, current_user: developer)
+
+      expect(response).to have_gitlab_http_status(:success)
+
+      work_item_id = GlobalID.parse(mutation_response['workItem']['id']).model_id.to_i
+
+      expect(WorkItems::NumberFieldValue.last).to have_attributes(
+        work_item_id: work_item_id, custom_field_id: number_field.id, value: 100
+      )
+      expect(WorkItems::SelectFieldValue.last(2)).to contain_exactly(
+        have_attributes({
+          work_item_id: work_item_id,
+          custom_field_id: multi_select_field.id,
+          custom_field_select_option_id: multi_select_option_1.id
+        }),
+        have_attributes({
+          work_item_id: work_item_id,
+          custom_field_id: multi_select_field.id,
+          custom_field_select_option_id: multi_select_option_3.id
+        })
+      )
+    end
+  end
 end
