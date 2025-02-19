@@ -1,0 +1,9 @@
+---
+name: filter_saml_enforced_resources_from_graphql
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/514406
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180998
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/517989
+milestone: '17.9'
+group: group::organizations
+type: gitlab_com_derisk
+default_enabled: false

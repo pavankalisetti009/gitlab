@@ -5,9 +5,9 @@ RSpec.shared_examples 'projects finder with SAML session filtering' do
 
   let_it_be(:current_user) { user }
 
-  let_it_be(:saml_provider1) { create(:saml_provider) }
-  let_it_be(:saml_provider2) { create(:saml_provider) }
-  let_it_be(:saml_provider3) { create(:saml_provider) }
+  let_it_be(:saml_provider1) { create(:saml_provider, enabled: true, enforced_sso: true) }
+  let_it_be(:saml_provider2) { create(:saml_provider, enabled: true, enforced_sso: true) }
+  let_it_be(:saml_provider3) { create(:saml_provider, enabled: true, enforced_sso: true) }
 
   let_it_be(:root_group1) do
     create(:group, saml_provider: saml_provider1, developers: current_user) do |group|
@@ -29,6 +29,10 @@ RSpec.shared_examples 'projects finder with SAML session filtering' do
   let_it_be(:project2) { create(:project, :public, group: root_group2) }
   let_it_be(:private_project) { create(:project, :private, group: private_root_group) }
   let_it_be(:all_projects) { [project1, project2, private_project] }
+
+  before do
+    stub_licensed_features(group_saml: true)
+  end
 
   subject(:projects) { finder.execute.id_in(all_projects).to_a }
 
@@ -53,8 +57,21 @@ RSpec.shared_examples 'projects finder with SAML session filtering' do
   end
 
   context 'when the current user has no active SAML sessions' do
-    it 'filters out the SAML member projects' do
-      expect(projects).to contain_exactly(project2)
+    context 'when in the context of web activity' do
+      around do |example|
+        session = { 'warden.user.user.key' => [[current_user.id], current_user.authenticatable_salt] }
+        Gitlab::Session.with_session(session) do
+          example.run
+        end
+      end
+
+      it 'filters out the SAML member projects' do
+        expect(projects).to contain_exactly(project2)
+      end
+    end
+
+    context 'when not in the context of web activity' do
+      it_behaves_like 'includes all SAML projects'
     end
   end
 
