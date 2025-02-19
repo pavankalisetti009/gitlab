@@ -28,6 +28,7 @@ export const createWorkItemMutationResponse = {
         userPermissions: {
           deleteWorkItem: false,
           updateWorkItem: false,
+          moveWorkItem: false,
         },
         widgets: [],
       },
