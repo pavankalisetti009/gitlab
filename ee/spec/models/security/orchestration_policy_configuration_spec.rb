@@ -494,6 +494,9 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
           invalid_policy[:scan_execution_policy][0][:actions][0][:scan] = 'secret_detection'
           invalid_policy[:scan_execution_policy][0][:actions][0][:variables] = { 'SECRET_DETECTION_HISTORIC_SCAN' => 'false' }
           invalid_policy[:scan_execution_policy][0][:actions][0][:tags] = %w[linux]
+          invalid_policy[:scan_execution_policy][0][:actions][0][:site_profile] = 'Site Profile'
+          invalid_policy[:scan_execution_policy][0][:actions][0][:scanner_profile] = 'Scanner Profile'
+          invalid_policy[:scan_execution_policy][0][:actions][0][:scan_settings] = { 'ignore_default_before_after_script' => true }
 
           expect(security_orchestration_policy_configuration.policy_configuration_valid?(invalid_policy)).to be_falsey
         end
@@ -501,6 +504,35 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
         it 'returns true if extra fields are not present' do
           valid_policy = policy.deep_dup
           valid_policy[:scan_execution_policy][0][:actions][0] = { scan: 'secret_detection' }
+
+          expect(security_orchestration_policy_configuration.policy_configuration_valid?(valid_policy)).to be_truthy
+        end
+      end
+
+      context 'when scan type is sast' do
+        it 'returns false if extra fields are present' do
+          invalid_policy = policy.deep_dup
+          invalid_policy[:scan_execution_policy][0][:actions][0] = {
+            scan: 'sast',
+            variables: { 'SAST_CONFIG_OPTION' => 'false' },
+            tags: %w[linux],
+            template: 'latest',
+            scan_settings: { 'ignore_default_before_after_script' => true },
+            site_profile: 'Site Profile'
+          }
+
+          expect(security_orchestration_policy_configuration.policy_configuration_valid?(invalid_policy)).to be_falsey
+        end
+
+        it 'returns true if no more fields than allowed max fields are present' do
+          valid_policy = policy.deep_dup
+          valid_policy[:scan_execution_policy][0][:actions][0] = {
+            scan: 'sast',
+            variables: { 'SAST_CONFIG_OPTION' => 'false' },
+            tags: %w[linux],
+            template: 'latest',
+            scan_settings: { 'ignore_default_before_after_script' => true }
+          }
 
           expect(security_orchestration_policy_configuration.policy_configuration_valid?(valid_policy)).to be_truthy
         end
@@ -2273,6 +2305,9 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
           invalid_policy[:scan_execution_policy][0][:actions][0][:scan] = 'secret_detection'
           invalid_policy[:scan_execution_policy][0][:actions][0][:variables] = { 'SECRET_DETECTION_HISTORIC_SCAN' => 'false' }
           invalid_policy[:scan_execution_policy][0][:actions][0][:template] = 'default'
+          invalid_policy[:scan_execution_policy][0][:actions][0][:scanner_profile] = 'Scanner Profile'
+          invalid_policy[:scan_execution_policy][0][:actions][0][:site_profile] = 'Site Profile'
+          invalid_policy[:scan_execution_policy][0][:actions][0][:scan_settings] = { 'ignore_default_before_after_script' => true }
           invalid_policy[:scan_execution_policy][0][:rules][0][:cadence] = 'invalid * * * *'
 
           expect(security_orchestration_policy_configuration.policy_configuration_validation_errors(invalid_policy)).to contain_exactly(
