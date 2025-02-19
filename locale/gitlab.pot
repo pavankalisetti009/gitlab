@@ -54438,9 +54438,6 @@ msgstr ""
 msgid "Show all activity"
 msgstr ""
 
-msgid "Show all breadcrumbs"
-msgstr ""
-
 msgid "Show all comments"
 msgstr ""
 
