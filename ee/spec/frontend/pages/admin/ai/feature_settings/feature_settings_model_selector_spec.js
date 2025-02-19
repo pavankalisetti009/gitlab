@@ -5,7 +5,7 @@ import { shallowMount } from '@vue/test-utils';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import FeatureSettingsModelSelector from 'ee/pages/admin/ai/feature_settings/components/feature_settings_model_selector.vue';
-import ModelSelectDropdown from 'ee/pages/admin/ai/custom_models/shared/model_select_dropdown.vue';
+import ModelSelectDropdown from 'ee/pages/admin/ai/duo_self_hosted/shared/model_select_dropdown.vue';
 import updateAiFeatureSetting from 'ee/pages/admin/ai/feature_settings/graphql/mutations/update_ai_feature_setting.mutation.graphql';
 import getAiFeatureSettingsQuery from 'ee/pages/admin/ai/feature_settings/graphql/queries/get_ai_feature_settings.query.graphql';
 import getSelfHostedModelsQuery from 'ee/pages/admin/ai/self_hosted_models/graphql/queries/get_self_hosted_models.query.graphql';

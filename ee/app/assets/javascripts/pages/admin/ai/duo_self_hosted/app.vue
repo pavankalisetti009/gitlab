@@ -7,7 +7,7 @@ import FeatureSettingsTable from '../feature_settings/components/feature_setting
 import { SELF_HOSTED_DUO_TABS } from './constants';
 
 export default {
-  name: 'SelfHostedDuoConfiguration',
+  name: 'DuoSelfHostedApp',
   components: {
     GlTabs,
     GlTab,

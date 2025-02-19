@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
-import createRouter from '../custom_models/router';
+import createRouter from '../duo_self_hosted/router';
 
 Vue.use(VueApollo);
 

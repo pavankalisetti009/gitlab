@@ -1,14 +1,14 @@
 import { nextTick } from 'vue';
 import { GlButton } from '@gitlab/ui';
-import SelfHostedDuoConfiguration from 'ee/pages/admin/ai/custom_models/self_hosted_duo_configuration.vue';
+import DuoSelfHostedApp from 'ee/pages/admin/ai/duo_self_hosted/app.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
-describe('SelfHostedDuoConfiguration', () => {
+describe('DuoSelfHostedApp', () => {
   let wrapper;
   const $router = { push: jest.fn() };
 
   const createComponent = ({ props = {} } = {}) => {
-    wrapper = shallowMountExtended(SelfHostedDuoConfiguration, {
+    wrapper = shallowMountExtended(DuoSelfHostedApp, {
       propsData: {
         ...props,
       },

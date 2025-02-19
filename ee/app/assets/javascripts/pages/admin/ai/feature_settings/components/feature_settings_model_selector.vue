@@ -5,7 +5,7 @@ import { RELEASE_STATES } from '../../self_hosted_models/constants';
 import updateAiFeatureSetting from '../graphql/mutations/update_ai_feature_setting.mutation.graphql';
 import getAiFeatureSettingsQuery from '../graphql/queries/get_ai_feature_settings.query.graphql';
 import getSelfHostedModelsQuery from '../../self_hosted_models/graphql/queries/get_self_hosted_models.query.graphql';
-import ModelSelectDropdown from '../../custom_models/shared/model_select_dropdown.vue';
+import ModelSelectDropdown from '../../duo_self_hosted/shared/model_select_dropdown.vue';
 
 const PROVIDERS = {
   DISABLED: 'disabled',
