@@ -4,6 +4,7 @@ module Projects
   module ComplianceStandards
     class Adherence < ApplicationRecord
       self.table_name = 'project_compliance_standards_adherence'
+      include EachBatch
 
       enum status: ::Enums::Projects::ComplianceStandards::Adherence.status
       enum check_name: ::Enums::Projects::ComplianceStandards::Adherence.check_name
