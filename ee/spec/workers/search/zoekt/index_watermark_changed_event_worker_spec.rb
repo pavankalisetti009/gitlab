@@ -32,7 +32,8 @@ RSpec.describe Search::Zoekt::IndexWatermarkChangedEventWorker, :zoekt_settings_
       let_it_be_with_reload(:mismatched_index) { create(:zoekt_index, :critical_watermark_exceeded) }
 
       before do
-        mismatched_index.healthy!
+        mismatched_index.update!(watermark_level: :healthy) # skip active record callback
+        negative_bytes_index.update!(watermark_level: :healthy)
       end
 
       it 'calls update_reserved_storage_bytes! on the indices' do

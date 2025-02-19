@@ -295,12 +295,14 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
 
       it 'returns indices where watermark_level is mismatched (healthy)' do
         # Setup a healthy record but with incorrect watermark_level
-        create(
+        idx = create(
           :zoekt_index,
           used_storage_bytes: 40,
-          reserved_storage_bytes: 100,
-          watermark_level: :low_watermark_exceeded # Incorrect level
+          reserved_storage_bytes: 100
         )
+
+        # Skip active record callback: set_watermark_level
+        idx.update!(watermark_level: :low_watermark_exceeded) # Incorrect level
 
         expect(mismatched_indices.count).to eq(1)
         expect(mismatched_indices.first.watermark_level).to eq('low_watermark_exceeded')
@@ -320,12 +322,14 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
 
       it 'detects overprovisioned mismatches' do
         # Setup an overprovisioned record with incorrect watermark_level
-        create(
+        idx = create(
           :zoekt_index,
           used_storage_bytes: 10,
-          reserved_storage_bytes: 100,
-          watermark_level: :healthy # Incorrect level
+          reserved_storage_bytes: 100
         )
+
+        # Skip active record callback: set_watermark_level
+        idx.update!(watermark_level: :healthy) # Incorrect level
 
         expect(mismatched_indices.count).to eq(1)
         expect(mismatched_indices.first.watermark_level).to eq('healthy')
@@ -333,11 +337,15 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
 
       it 'handles edge cases at the exact boundary' do
         # Setup a record exactly at the STORAGE_LOW_WATERMARK
-        create(
+        idx = create(
           :zoekt_index,
           used_storage_bytes: (low_watermark * 100).to_i,
-          reserved_storage_bytes: 100,
-          watermark_level: :healthy
+          reserved_storage_bytes: 100
+        )
+
+        # Skip active record callback
+        idx.update!(
+          watermark_level: :healthy # Incorrect level
         )
 
         expect(mismatched_indices.count).to eq(1)
@@ -358,12 +366,13 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
 
       it 'returns indices where watermark_level is mismatched (critical)' do
         # Setup a record that should be critical but has incorrect watermark_level
-        create(
+        idx = create(
           :zoekt_index,
           used_storage_bytes: (critical_watermark * 100) + 1,
-          reserved_storage_bytes: 100,
-          watermark_level: :high_watermark_exceeded # Incorrect level
+          reserved_storage_bytes: 100
         )
+
+        idx.update!(watermark_level: :high_watermark_exceeded) # Incorrect level
 
         expect(mismatched_indices.count).to eq(1)
         expect(mismatched_indices.first.watermark_level).to eq('high_watermark_exceeded')

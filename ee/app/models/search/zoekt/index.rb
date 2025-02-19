@@ -27,6 +27,7 @@ module Search
 
       validates :metadata, json_schema: { filename: 'zoekt_indices_metadata' }
 
+      before_save :set_watermark_level, if: :storage_bytes_changed?
       after_commit :delete_from_index, on: :destroy
 
       enum state: {
@@ -133,7 +134,6 @@ module Search
         return if new_reserved_bytes == reserved_storage_bytes
 
         self.reserved_storage_bytes = new_reserved_bytes
-        self.watermark_level = appropriate_watermark_level
         save!
       rescue ActiveRecord::ActiveRecordError => err
         logger.error(build_structured_payload(
@@ -174,6 +174,14 @@ module Search
         else
           :critical_watermark_exceeded
         end
+      end
+
+      def set_watermark_level
+        self.watermark_level = appropriate_watermark_level
+      end
+
+      def storage_bytes_changed?
+        reserved_storage_bytes_changed? || used_storage_bytes_changed?
       end
 
       def delete_from_index
