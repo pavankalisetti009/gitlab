@@ -35,6 +35,7 @@ RSpec.describe 'Remote Development workspaces dropdown group', :api, :js, featur
     allow(Gitlab::Kas).to receive(:verify_api_request).and_return(true)
 
     stub_licensed_features(remote_development: true)
+    stub_feature_flags(directory_code_dropdown_updates: false)
 
     # rubocop:disable RSpec/AnyInstanceOf -- It's NOT the next instance...
     allow_any_instance_of(Gitlab::Auth::AuthFinders)

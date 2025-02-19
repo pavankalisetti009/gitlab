@@ -19,8 +19,9 @@ RSpec.describe 'EE user opens IDE', :js, feature_category: :web_ide do
     sign_in(user)
   end
 
-  shared_examples 'no warning' do
+  shared_examples 'no warning' do |directory_code_dropdown_updates|
     it 'does not show warning' do
+      stub_feature_flags(directory_code_dropdown_updates: directory_code_dropdown_updates)
       ide_visit(project)
 
       wait_for_all_requests
@@ -29,8 +30,9 @@ RSpec.describe 'EE user opens IDE', :js, feature_category: :web_ide do
     end
   end
 
-  shared_examples 'has warning' do
+  shared_examples 'has warning' do |directory_code_dropdown_updates|
     it 'shows warning' do
+      stub_feature_flags(directory_code_dropdown_updates: directory_code_dropdown_updates)
       ide_visit(project)
 
       wait_for_all_requests
@@ -39,23 +41,47 @@ RSpec.describe 'EE user opens IDE', :js, feature_category: :web_ide do
     end
   end
 
-  context 'no push rules' do
-    it_behaves_like 'no warning'
-  end
-
-  context 'when has reject_unsigned_commit push rule' do
-    before do
-      create(:push_rule, project: project, reject_unsigned_commits: true)
+  context 'with directory_code_dropdown_updates enabled' do
+    context 'no push rules' do
+      it_behaves_like 'no warning', true
     end
 
-    it_behaves_like 'has warning'
-
-    context 'and feature flag off' do
+    context 'when has reject_unsigned_commit push rule' do
       before do
-        stub_feature_flags(reject_unsigned_commits_by_gitlab: false)
+        create(:push_rule, project: project, reject_unsigned_commits: true)
       end
 
-      it_behaves_like 'no warning'
+      it_behaves_like 'has warning', true
+
+      context 'and feature flag off' do
+        before do
+          stub_feature_flags(reject_unsigned_commits_by_gitlab: false)
+        end
+
+        it_behaves_like 'no warning', true
+      end
+    end
+  end
+
+  context 'with directory_code_dropdown_updates disabled' do
+    context 'no push rules' do
+      it_behaves_like 'no warning', false
+    end
+
+    context 'when has reject_unsigned_commit push rule' do
+      before do
+        create(:push_rule, project: project, reject_unsigned_commits: true)
+      end
+
+      it_behaves_like 'has warning', false
+
+      context 'and feature flag off' do
+        before do
+          stub_feature_flags(reject_unsigned_commits_by_gitlab: false)
+        end
+
+        it_behaves_like 'no warning', false
+      end
     end
   end
 end
