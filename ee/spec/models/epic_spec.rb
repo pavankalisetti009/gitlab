@@ -1364,8 +1364,8 @@ RSpec.describe Epic, feature_category: :portfolio_management do
         it 'calls ::Elastic::ProcessBookkeepingService.track! when the epic is updated' do
           expect(::Elastic::ProcessBookkeepingService).to receive(:track!).once do |*tracked_refs|
             expect(tracked_refs.count).to eq(1)
-            expect(tracked_refs[0]).to be_a_kind_of(Search::Elastic::References::WorkItem)
-            expect(tracked_refs[0].identifier).to eq(epic.issue_id)
+            expect(tracked_refs[0]).to be_a_kind_of(Epic)
+            expect(tracked_refs[0].id).to eq(epic.id)
           end
           epic.update!(title: 'A new title')
         end
@@ -1831,6 +1831,22 @@ RSpec.describe Epic, feature_category: :portfolio_management do
         expect(epic.reload.subscriptions).to contain_exactly(work_item_subscription)
         expect(work_item.reload.subscriptions).to contain_exactly(work_item_subscription)
       end
+    end
+  end
+
+  describe '#elastic_reference' do
+    let_it_be(:epic) { create(:epic, group: group) }
+
+    it 'returns the string representation for the elasticsearch' do
+      expect(epic.elastic_reference).to eq("WorkItem|#{epic.issue_id}|#{epic.es_parent}")
+    end
+  end
+
+  describe '#es_parent' do
+    let_it_be(:epic) { create(:epic, group: group) }
+
+    it 'returns to correct routing id' do
+      expect(epic.es_parent).to eq("group_#{group.root_ancestor.id}")
     end
   end
 end
