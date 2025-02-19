@@ -223,12 +223,13 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
         end.not_to exceed_query_limit(control)
       end
 
-      it 'respects the budget', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/509490' do
+      it 'respects the budget' do
         result = described_class.new(project, vulnerability_ids, 1).execute
 
         expect(result.payload[:count]).to eq(1)
-        expect(vulnerabilities[0].reload).to be_auto_resolved
-        expect(vulnerabilities[1].reload).not_to be_auto_resolved
+        ordered_vulnerabilities = Vulnerability.where(id: vulnerability_ids).order(:auto_resolved)
+        expect(ordered_vulnerabilities[0]).not_to be_auto_resolved
+        expect(ordered_vulnerabilities[1]).to be_auto_resolved
       end
     end
   end
