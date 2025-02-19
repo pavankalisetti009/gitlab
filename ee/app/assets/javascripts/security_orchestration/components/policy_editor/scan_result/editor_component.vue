@@ -14,7 +14,6 @@ import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/compone
 import {
   policyBodyToYaml,
   policyToYaml,
-  mapYamlApproversActionsFormatToEditorFormat,
 } from 'ee/security_orchestration/components/policy_editor/utils';
 import {
   ACTION_SECTION_DISABLE_ERROR,
@@ -48,7 +47,6 @@ import {
   createPolicyObject,
   getInvalidBranches,
   getPolicyYaml,
-  approversOutOfSync,
   emptyBuildRule,
   humanizeInvalidBranchesError,
   BOT_MESSAGE_TYPE,
@@ -141,7 +139,6 @@ export default {
   },
   mixins: [glFeatureFlagsMixin()],
   inject: [
-    'actionApprovers',
     'disableScanPolicyUpdate',
     'namespaceId',
     'namespacePath',
@@ -198,7 +195,6 @@ export default {
         'scan-result-policy-editor',
       ),
       mode: EDITOR_MODE_RULE,
-      existingApprovers: this.actionApprovers,
       yamlEditorValue,
     };
   },
@@ -334,9 +330,6 @@ export default {
     },
   },
   methods: {
-    getExistingApprover(index) {
-      return this.existingApprovers[index] || {};
-    },
     ruleHasBranchesProperty(rule) {
       return BRANCHES_KEY in rule;
     },
@@ -350,7 +343,6 @@ export default {
         (!this.hasWarnAction && type === WARN_TYPE)
       ) {
         this.policy.actions = [];
-        this.updatePolicyApprovers({}, 0);
       }
 
       switch (type) {
@@ -390,12 +382,10 @@ export default {
     removeApproverAction(index) {
       this.policy.actions?.splice(index, 1);
       this.updateYamlEditorValue(this.policy);
-      this.updatePolicyApprovers({}, index);
     },
     removeWarnAction() {
       this.policy.actions = [];
       this.updateYamlEditorValue(this.policy);
-      this.updatePolicyApprovers({}, 0);
     },
     updateAction(values, index) {
       this.policy.actions.splice(index, 1, values);
@@ -471,7 +461,6 @@ export default {
       this.yamlEditorValue = manifest;
       this.parsingError = parsingError;
       this.policy = policy;
-      this.updatePolicyApproversFromYaml();
     },
     updateYamlEditorValue(policy) {
       this.yamlEditorValue = policyToYaml(
@@ -482,8 +471,6 @@ export default {
     async changeEditorMode(mode) {
       this.mode = mode;
       if (this.isRuleMode) {
-        this.parsingError = this.verifyActions();
-
         if (!this.hasEmptyRules && this.isProject && this.rulesHaveBranches) {
           this.invalidBranches = await getInvalidBranches({
             branches: this.allBranches,
@@ -491,19 +478,6 @@ export default {
           });
         }
       }
-    },
-    updatePolicyApprovers(values, index) {
-      this.existingApprovers[index] = values;
-    },
-    updatePolicyApproversFromYaml() {
-      this.existingApprovers = mapYamlApproversActionsFormatToEditorFormat(this.approversActions);
-    },
-    verifyActions() {
-      const hasInvalidApprovers = this.existingApprovers.some((existingApprovers, index) =>
-        approversOutOfSync(this.approversActions[index], existingApprovers),
-      );
-
-      return { ...this.parsingError, actions: hasInvalidApprovers };
     },
     shouldDisableActionSelector(filter) {
       if (filter === WARN_TYPE) {
@@ -608,15 +582,13 @@ export default {
         <div v-if="!hasWarnAction">
           <action-section
             v-for="(action, index) in approversActions"
-            :key="`${action.id}_${index}`"
+            :key="action.id"
             :data-testid="`action-${index}`"
             class="gl-mb-4"
             :action-index="index"
             :init-action="action"
             :errors="actionError.action"
-            :existing-approvers="getExistingApprover(index)"
             @error="handleParsingError"
-            @updateApprovers="updatePolicyApprovers($event, index)"
             @changed="updateAction($event, index)"
             @remove="removeApproverAction(index)"
           />
@@ -633,16 +605,14 @@ export default {
         <div v-else>
           <action-section
             v-for="(action, index) in approversActions"
-            :key="`${action.id}_${index}`"
+            :key="action.id"
             :data-testid="`warn-action`"
             class="gl-mb-4"
             :action-index="index"
             :init-action="action"
             :is-warn-type="true"
             :errors="actionError.action"
-            :existing-approvers="getExistingApprover(index)"
             @error="handleParsingError"
-            @updateApprovers="updatePolicyApprovers($event, index)"
             @changed="updateAction($event, index)"
             @remove="removeWarnAction"
           />

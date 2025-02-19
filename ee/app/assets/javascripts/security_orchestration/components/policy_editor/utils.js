@@ -785,44 +785,6 @@ export const findItemsIntersection = ({
 };
 
 /**
- * Map yaml format for actions into
- * user group role component format
- * @param actions
- * @returns {{}[]|*[]}
- */
-export const mapYamlApproversActionsFormatToEditorFormat = (actions = []) => {
-  if (!actions) return [];
-
-  return actions
-    .map(
-      ({
-        group_approvers_ids: groupApproversIds,
-        user_approvers_ids: userApproversIds,
-        role_approvers: roleApprovers,
-        user_approvers: userApprovers,
-        group_approvers: groupApprovers,
-      }) => {
-        const result = {};
-
-        if (groupApproversIds || groupApprovers) {
-          result.group = groupApproversIds || groupApprovers;
-        }
-
-        if (userApproversIds || userApprovers) {
-          result.user = userApproversIds || userApprovers;
-        }
-
-        if (roleApprovers) {
-          result.role = roleApprovers;
-        }
-
-        return result;
-      },
-    )
-    .filter((item) => !isEmpty(item));
-};
-
-/**
  * split string by comma and white space
  * @param source
  * @returns {*|*[]}

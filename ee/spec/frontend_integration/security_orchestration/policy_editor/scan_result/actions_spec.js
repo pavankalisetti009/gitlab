@@ -63,7 +63,7 @@ describe('Scan result policy actions', () => {
     it('should render action section', () => {
       expect(findApproverAction().exists()).toBe(true);
       expect(findYamlPreview(wrapper).text()).toContain(
-        'actions:\n  - type: require_approval\n    approvals_required: 1\n  - type: send_bot_message\n    enabled: true',
+        '\n  actions:\n    - type: require_approval\n      approvals_required: 1\n    - type: send_bot_message\n      enabled: true',
       );
     });
   });
@@ -87,7 +87,7 @@ describe('Scan result policy actions', () => {
       };
 
       await findAvailableTypeListBox().vm.$emit('select', ROLE_TYPE);
-      await findRoleSelect().vm.$emit('updateSelectedApprovers', [DEVELOPER]);
+      await findRoleSelect().vm.$emit('select-items', { role_approvers: [DEVELOPER] });
       await findApprovalsInput().vm.$emit('update', 2);
 
       await verify({ manifest: mockRoleApproversApprovalManifest, verifyRuleMode, wrapper });
@@ -107,7 +107,7 @@ describe('Scan result policy actions', () => {
       };
 
       await findAvailableTypeListBox().vm.$emit('select', USER_TYPE);
-      await findUserSelect().vm.$emit('updateSelectedApprovers', [USER]);
+      await findUserSelect().vm.$emit('select-items', { user_approvers_ids: [USER.id] });
       await findApprovalsInput().vm.$emit('update', 2);
 
       await verify({ manifest: mockUserApproversApprovalManifest, verifyRuleMode, wrapper });
@@ -116,7 +116,7 @@ describe('Scan result policy actions', () => {
 
   describe('groups', () => {
     beforeEach(() => {
-      createWrapper({ provide: { namespaceType: 'group', actionApprovers: [] } });
+      createWrapper({ provide: { namespaceType: 'group' } });
     });
 
     it('selects group approvers', async () => {
@@ -127,7 +127,7 @@ describe('Scan result policy actions', () => {
       };
 
       await findAvailableTypeListBox().vm.$emit('select', GROUP_TYPE);
-      await findGroupSelect().vm.$emit('updateSelectedApprovers', [GROUP]);
+      await findGroupSelect().vm.$emit('select-items', { group_approvers_ids: [GROUP.id] });
       await findApprovalsInput().vm.$emit('update', 2);
 
       await verify({ manifest: mockGroupApproversApprovalManifest, verifyRuleMode, wrapper });

@@ -35,10 +35,8 @@ import EditorComponent from 'ee/security_orchestration/components/policy_editor/
 import {
   DEFAULT_ASSIGNED_POLICY_PROJECT,
   NAMESPACE_TYPES,
-  USER_TYPE,
 } from 'ee/security_orchestration/constants';
 import {
-  mockAllApprovalTypesManifest,
   mockDefaultBranchesScanResultManifest,
   mockDefaultBranchesScanResultObject,
   mockDefaultBranchesScanResultObjectWithoutBotAction,
@@ -114,7 +112,6 @@ describe('EditorComponent', () => {
         ...propsData,
       },
       provide: {
-        actionApprovers: [],
         disableScanPolicyUpdate: false,
         policyEditorEmptyStateSvgPath,
         namespaceId: 1,
@@ -574,20 +571,13 @@ describe('EditorComponent', () => {
             { approvals_required: 1, type: REQUIRE_APPROVAL_TYPE },
             { type: BOT_MESSAGE_TYPE, enabled: true },
           ]);
-          expect(findActionSection().props('existingApprovers')).toEqual({});
         });
       });
 
       describe('update', () => {
         beforeEach(() => {
-          factory({
-            provide: {
-              actionApprovers: [{ role: ['owner'] }],
-            },
-          });
+          factory();
         });
-
-        const newApprover = ['owner'];
 
         it('updates policy action when edited', async () => {
           const UPDATED_ACTION = {
@@ -598,28 +588,6 @@ describe('EditorComponent', () => {
           };
           await findActionSection().vm.$emit('changed', UPDATED_ACTION);
           expect(findActionSection().props('initAction')).toEqual(UPDATED_ACTION);
-        });
-
-        it('updates the policy approvers', async () => {
-          await findActionSection().vm.$emit('updateApprovers', { role: newApprover });
-
-          expect(findActionSection().props('existingApprovers')).toEqual({
-            role: newApprover,
-          });
-        });
-
-        it('updates the policy approvers when yaml is updated', async () => {
-          expect(findActionSection().props('existingApprovers')).toEqual({
-            role: newApprover,
-          });
-
-          await findPolicyEditorLayout().vm.$emit('update-yaml', mockAllApprovalTypesManifest);
-
-          expect(findActionSection().props('existingApprovers')).toEqual({
-            user: ['the.one'],
-            role: ['owner'],
-            group: [29],
-          });
         });
 
         it('creates an error when the action section emits one', async () => {
@@ -685,43 +653,6 @@ describe('EditorComponent', () => {
       expect(findDisabledSection('rules').props('disabled')).toBe(true);
       expect(findDisabledSection('settings').props('disabled')).toBe(true);
       expect(findFallbackAndEdgeCasesSection().props('hasError')).toBe(true);
-    });
-
-    describe('existing approvers', () => {
-      const existingPolicyWithUserId = {
-        actions: [
-          buildBotMessageAction(),
-          { type: REQUIRE_APPROVAL_TYPE, approvals_required: 1, user_approvers_ids: [1] },
-        ],
-      };
-
-      const existingUserApprover = {
-        user: [{ id: 1, username: 'the.one', state: 'active', type: USER_TYPE }],
-      };
-      const nonExistingUserApprover = {
-        user: [{ id: 2, username: 'the.two', state: 'active', type: USER_TYPE }],
-      };
-
-      it.each`
-        title         | policy                      | approver                   | output
-        ${'does not'} | ${{}}                       | ${existingUserApprover}    | ${false}
-        ${'does'}     | ${{}}                       | ${nonExistingUserApprover} | ${true}
-        ${'does not'} | ${existingPolicyWithUserId} | ${existingUserApprover}    | ${false}
-        ${'does'}     | ${existingPolicyWithUserId} | ${nonExistingUserApprover} | ${true}
-      `(
-        '$title create an error when the policy does not match existing approvers',
-        async ({ policy, approver, output }) => {
-          factoryWithExistingPolicy({
-            policy,
-            provide: {
-              actionApprovers: [approver],
-            },
-          });
-
-          await goToRuleMode(findPolicyEditorLayout);
-          expect(findDisabledSection('actions').props('disabled')).toBe(output);
-        },
-      );
     });
   });
 

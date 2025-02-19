@@ -38,7 +38,7 @@ describe('SkipCiSelector', () => {
       skipCiConfiguration: { allowed: false },
     });
 
-    findUserSelect().vm.$emit('updateSelectedApprovers', [{ id: 1 }]);
+    findUserSelect().vm.$emit('select-items', { user_approvers_ids: [1] });
 
     expect(wrapper.emitted('changed')).toEqual([
       ['skip_ci', { allowed: false, allowlist: { users: [{ id: 1 }] } }],
@@ -54,7 +54,7 @@ describe('SkipCiSelector', () => {
       skipCiConfiguration: { allowed: false, allowlist: { users } },
     });
 
-    expect(findUserSelect().props('existingApprovers')).toEqual(expected);
+    expect(findUserSelect().props('selected')).toEqual(expected);
   });
 
   it('selects user exceptions in graphql format', () => {
@@ -62,10 +62,7 @@ describe('SkipCiSelector', () => {
       skipCiConfiguration: { allowed: false },
     });
 
-    findUserSelect().vm.$emit('updateSelectedApprovers', [
-      { id: 'gid://gitlab/User/1' },
-      { id: 'gid://gitlab/User/2' },
-    ]);
+    findUserSelect().vm.$emit('select-items', { user_approvers_ids: [1, 2] });
 
     expect(wrapper.emitted('changed')).toEqual([
       ['skip_ci', { allowed: false, allowlist: { users: [{ id: 1 }, { id: 2 }] } }],

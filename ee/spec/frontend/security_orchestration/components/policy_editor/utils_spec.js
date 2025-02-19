@@ -28,7 +28,6 @@ import {
   policyToYaml,
   parseAllowDenyLicenseList,
   findItemsIntersection,
-  mapYamlApproversActionsFormatToEditorFormat,
   mapComponentLicenseFormatToYaml,
   parseExceptionsStringToItems,
   splitItemsByCommaOrSpace,
@@ -650,22 +649,6 @@ describe('mapBranchesToExceptions', () => {
         );
       },
     );
-  });
-
-  describe('mapYamlApproversActionsFormatToEditorFormat', () => {
-    it.each`
-      actions                                                                    | output
-      ${undefined}                                                               | ${[]}
-      ${[{ group_approvers_ids: [1, 2] }]}                                       | ${[{ group: [1, 2] }]}
-      ${[{ group_approvers: [1, 2] }]}                                           | ${[{ group: [1, 2] }]}
-      ${[{ user_approvers_ids: [1, 2] }]}                                        | ${[{ user: [1, 2] }]}
-      ${[{ user_approvers: [1, 2] }]}                                            | ${[{ user: [1, 2] }]}
-      ${[{ role_approvers: [1, 2] }]}                                            | ${[{ role: [1, 2] }]}
-      ${[{ user_approvers_ids: [1, 2], user_approvers: [1, 2] }]}                | ${[{ user: [1, 2] }]}
-      ${[{ user_approvers: [1, 2], role_approvers: [1], group_approvers: [1] }]} | ${[{ user: [1, 2], group: [1], role: [1] }]}
-    `('maps yaml format actions to component format', ({ actions, output }) => {
-      expect(mapYamlApproversActionsFormatToEditorFormat(actions)).toEqual(output);
-    });
   });
 
   describe('splitItemsByCommaOrSpace', () => {

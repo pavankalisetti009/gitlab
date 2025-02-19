@@ -29,10 +29,6 @@ export default {
       required: false,
       default: false,
     },
-    existingApprovers: {
-      type: Object,
-      required: true,
-    },
   },
   computed: {
     isFirstAction() {
@@ -64,9 +60,7 @@ export default {
           :init-action="initAction"
           :is-warn-type="isWarnType"
           :errors="errors"
-          :existing-approvers="existingApprovers"
           @error="$emit('error')"
-          @updateApprovers="$emit('updateApprovers', $event)"
           @changed="$emit('changed', $event)"
         />
       </div>

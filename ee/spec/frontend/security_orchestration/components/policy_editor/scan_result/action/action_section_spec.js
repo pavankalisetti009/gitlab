@@ -50,12 +50,6 @@ describe('ActionSection', () => {
         expect(wrapper.emitted('error')).toEqual([[]]);
       });
 
-      it('passes through the "update-approvers" event', () => {
-        const event = 'event';
-        findApproverAction().vm.$emit('updateApprovers', event);
-        expect(wrapper.emitted('updateApprovers')).toEqual([[event]]);
-      });
-
       it('passes through the "changed" event', () => {
         const event = 'event';
         findApproverAction().vm.$emit('changed', event);

@@ -13,4 +13,6 @@ export const ROLE_TYPE = 'role';
 
 export const USER_TYPE = 'user';
 
+export const EMPTY_TYPE = 'empty';
+
 export const MAX_SCAN_EXECUTION_ACTION_COUNT = 10;

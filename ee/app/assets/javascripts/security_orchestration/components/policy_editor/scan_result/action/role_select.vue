@@ -56,7 +56,7 @@ export default {
     },
   },
   props: {
-    existingApprovers: {
+    selected: {
       type: Array,
       required: false,
       default: () => [],
@@ -80,7 +80,7 @@ export default {
       return this.customRoles.length && this.hasCustomRoleFeatureFlag;
     },
     hasValidRoles() {
-      return this.$apollo.loading || this.existingApprovers.every(this.isRoleValid);
+      return this.$apollo.loading || this.selected.every(this.isRoleValid);
     },
     items() {
       const roles = [{ text: this.$options.i18n.standardRoleText, options: this.roles }];
@@ -95,7 +95,7 @@ export default {
       return this.roleApproverTypes.map((r) => ({ text: convertToTitleCase(r), value: r }));
     },
     toggleText() {
-      const validExistingApprovers = this.existingApprovers.filter(this.isRoleValid);
+      const validExistingApprovers = this.selected.filter(this.isRoleValid);
       const allRoles = this.items.map(({ options }) => options).flat();
 
       return getSelectedOptionsText({
@@ -114,13 +114,14 @@ export default {
     },
   },
   methods: {
+    selectRoles(roles) {
+      this.$emit('select-items', { role_approvers: roles });
+    },
     isRoleValid(role) {
       return (
-        this.roleApproverTypes.includes(role) || this.customRoles.map((r) => r.value).includes(role)
+        this.roleApproverTypes.includes(role) ||
+        this.customRoles.map(({ value }) => value).includes(role)
       );
-    },
-    handleSelectedRoles(selectedRoles) {
-      this.$emit('updateSelectedApprovers', selectedRoles);
     },
   },
 };
@@ -130,12 +131,16 @@ export default {
   <div class="gl-flex">
     <gl-collapsible-listbox
       :items="items"
+      block
       is-check-centered
       multiple
+      :header-text="__('Roles')"
+      :reset-button-label="__('Clear all')"
       :toggle-class="[{ '!gl-shadow-inner-1-red-500': !state }]"
-      :selected="existingApprovers"
+      :selected="selected"
       :toggle-text="toggleText"
-      @select="handleSelectedRoles"
+      @reset="selectRoles([])"
+      @select="selectRoles"
     />
     <gl-icon
       v-if="hasCustomRoleFeatureFlag"
