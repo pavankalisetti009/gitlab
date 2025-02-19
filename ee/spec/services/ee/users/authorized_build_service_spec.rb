@@ -124,6 +124,15 @@ RSpec.describe Users::AuthorizedBuildService, feature_category: :user_management
                 end
               end
 
+              context 'when the user is a service account' do
+                before do
+                  params[:user_type] = :service_account
+                  params.delete(:password)
+                end
+
+                it_behaves_like 'successful user domain matching'
+              end
+
               context 'with various email address formats' do
                 before do
                   params[:provider] = ::Users::BuildService::GROUP_SAML_PROVIDER
@@ -155,6 +164,15 @@ RSpec.describe Users::AuthorizedBuildService, feature_category: :user_management
               end
 
               it_behaves_like 'unsuccessful user domain matching'
+
+              context 'when the user is a service account' do
+                before do
+                  params[:user_type] = :service_account
+                  params.delete(:password)
+                end
+
+                it_behaves_like 'unsuccessful user domain matching'
+              end
             end
           end
         end

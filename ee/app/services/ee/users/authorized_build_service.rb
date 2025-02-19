@@ -38,11 +38,16 @@ module EE
 
       def set_skip_confirmation_param
         return if params[:skip_confirmation] # Explicit skip confirmation passed as param
-        return unless PROVIDERS_ALLOWED_TO_SKIP_CONFIRMATION.include?(params[:provider])
+        return unless provider_or_service_account_allowed_to_skip_confirmation?
 
         return unless params[:email] && ValidateEmail.valid?(params[:email])
 
         params[:skip_confirmation] = true if group&.owner_of_email?(params[:email])
+      end
+
+      def provider_or_service_account_allowed_to_skip_confirmation?
+        PROVIDERS_ALLOWED_TO_SKIP_CONFIRMATION.include?(params[:provider]) ||
+          params[:user_type] == :service_account
       end
     end
   end
