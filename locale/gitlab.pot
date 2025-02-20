@@ -14613,6 +14613,9 @@ msgstr ""
 msgid "Compliance frameworks"
 msgstr ""
 
+msgid "Compliance requirement control successfully deleted"
+msgstr ""
+
 msgid "Compliance requirement successfully deleted"
 msgstr ""
 
@@ -24275,6 +24278,9 @@ msgid "Failed to deploy to"
 msgstr ""
 
 msgid "Failed to destroy compliance requirement"
+msgstr ""
+
+msgid "Failed to destroy compliance requirement control"
 msgstr ""
 
 msgid "Failed to enqueue the rebase operation, possibly due to a long-lived transaction. Try again later."
@@ -38483,6 +38489,9 @@ msgid "Not permitted to destroy framework"
 msgstr ""
 
 msgid "Not permitted to destroy requirement"
+msgstr ""
+
+msgid "Not permitted to destroy requirement control"
 msgstr ""
 
 msgid "Not permitted to reset user feed token"
