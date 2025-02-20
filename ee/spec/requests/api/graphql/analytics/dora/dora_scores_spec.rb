@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe 'Query.[group](fullPath).doraPerformanceScoreCounts', :freeze_time, feature_category: :dora_metrics do
   include GraphqlHelpers
 
-  # rubocop:disable RSpec/MultipleMemoizedHelpers
+  # rubocop:disable RSpec/MultipleMemoizedHelpers -- all required
   let_it_be(:group) { create(:group) }
   let_it_be(:subgroup) { create(:group, parent: group) }
   let_it_be(:ruby_topic) { create(:topic, name: "ruby") }
@@ -15,7 +15,7 @@ RSpec.describe 'Query.[group](fullPath).doraPerformanceScoreCounts', :freeze_tim
   let_it_be(:project_4) { create(:project, group: group) }
   let_it_be(:project_5) { create(:project, group: group, name: "Project with no data ever") }
   let_it_be(:unrelated_project) { create(:project) }
-  let_it_be(:reporter) { create(:user) }
+  let_it_be(:reporter) { create(:user, reporter_of: group) }
   let_it_be(:other_user) { create(:user) }
   let_it_be(:beginning_of_last_month) { Time.current.last_month.beginning_of_month }
 
@@ -45,7 +45,6 @@ RSpec.describe 'Query.[group](fullPath).doraPerformanceScoreCounts', :freeze_tim
 
   before do
     stub_licensed_features(dora4_analytics: true)
-    group.add_reporter(reporter)
   end
 
   context 'when DORA analytics feature is not available' do

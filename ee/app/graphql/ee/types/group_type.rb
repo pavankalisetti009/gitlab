@@ -124,9 +124,9 @@ module EE
           method: :itself,
           description: "Group's DORA metrics."
 
-        field :dora_performance_score_counts, ::Types::Dora::PerformanceScoreCountType.connection_type,
+        field :dora_performance_score_counts, ::Types::Analytics::Dora::PerformanceScoreCountType.connection_type,
           null: true,
-          resolver: ::Resolvers::Dora::PerformanceScoresCountResolver, complexity: 10,
+          resolver: ::Resolvers::Analytics::Dora::PerformanceScoresCountResolver, complexity: 10,
           description: "Group's DORA scores for all projects by DORA key metric for the last complete month."
 
         field :external_audit_event_destinations,
