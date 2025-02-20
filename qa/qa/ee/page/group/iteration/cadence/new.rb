@@ -38,8 +38,8 @@ module QA
               end
 
               def fill_start_date(start_date)
-                fill_element('iteration-cadence-start-date-field', start_date)
-                send_keys_to_element('iteration-cadence-start-date-field', :enter)
+                fill_element('gl-datepicker-input', start_date)
+                send_keys_to_element('gl-datepicker-input', :enter)
               end
 
               def fill_title(title)

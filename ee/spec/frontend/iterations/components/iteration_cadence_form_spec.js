@@ -116,7 +116,8 @@ describe('Iteration cadence form', () => {
   const findError = () => wrapper.findComponent(GlAlert);
 
   const findTitle = () => wrapper.find('#cadence-title');
-  const findStartDate = () => wrapper.find('#cadence-start-date');
+  const findStartDate = () => wrapper.findByTestId('iteration-cadence-start-date-field');
+  const findStartDateInput = () => wrapper.find('#cadence-start-date');
   const findUpcomingIterations = () => wrapper.find('#cadence-schedule-upcoming-iterations');
   const findDuration = () => wrapper.find('#cadence-duration');
   const findRollOver = () => wrapper.find('#cadence-rollover-issues');
@@ -141,7 +142,7 @@ describe('Iteration cadence form', () => {
 
   const findAllFields = () => [
     findTitle(),
-    findStartDate(),
+    findStartDateInput(),
     findUpcomingIterations(),
     findDuration(),
   ];
@@ -166,7 +167,7 @@ describe('Iteration cadence form', () => {
     });
 
     it('does not disable the start date field', () => {
-      expect(findStartDate().attributes('disabled')).toBe(undefined);
+      expect(findStartDateInput().attributes('disabled')).toBe(undefined);
     });
 
     it('does not show the description text for automation start date', () => {
@@ -291,7 +292,7 @@ describe('Iteration cadence form', () => {
       it('disables the fields concerning automatic scheduling', () => {
         expect(findUpcomingIterations().attributes('disabled')).toBeDefined();
         expect(findDuration().attributes('disabled')).toBeDefined();
-        expect(findStartDate().attributes('disabled')).toBeDefined();
+        expect(findStartDateInput().props('disabled')).toBeDefined();
       });
 
       it('resets the fields concerning automatic scheduling on disabling automatic scheduling', async () => {
@@ -371,7 +372,7 @@ describe('Iteration cadence form', () => {
     it('does not disable the start date field when the first iteration is upcoming', async () => {
       await waitForPromises();
 
-      expect(findStartDate().attributes('disabled')).toBe(undefined);
+      expect(findStartDateInput().attributes('disabled')).toBe(undefined);
     });
 
     it('shows the description text with the correct weekday for automation start date', async () => {
@@ -417,7 +418,7 @@ describe('Iteration cadence form', () => {
       await nextTick();
 
       expect(findTitle().element.value).toBe(iterationCadence.title);
-      expect(findStartDate().element.value).toBe(iterationCadence.startDate);
+      expect(findStartDateInput().element.value).toBe(iterationCadence.startDate);
       expect(findUpcomingIterations().element.value).toBe(
         `${iterationCadence.iterationsInAdvance}`,
       );
