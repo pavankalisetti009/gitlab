@@ -2,7 +2,7 @@ import {
   ERRORS,
   NAME_MAX_LENGTH,
   editableFormFieldKeys,
-} from 'ee/analytics/cycle_analytics/components/create_value_stream_form/constants';
+} from 'ee/analytics/cycle_analytics/vsa_settings/constants';
 import {
   validateStage,
   validateValueStreamName,
@@ -10,7 +10,7 @@ import {
   formatStageDataForSubmission,
   generateInitialStageData,
   cleanStageName,
-} from 'ee/analytics/cycle_analytics/components/create_value_stream_form/utils';
+} from 'ee/analytics/cycle_analytics/vsa_settings/utils';
 import { labelStartEvent, labelEndEvent } from 'ee_jest/analytics/cycle_analytics/mock_data';
 
 describe('cleanStageName', () => {

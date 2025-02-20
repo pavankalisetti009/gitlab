@@ -1,7 +1,7 @@
 <script>
 import { GlButton } from '@gitlab/ui';
 import { __ } from '~/locale';
-import { i18n } from 'ee/analytics/cycle_analytics/components/create_value_stream_form/constants';
+import { i18n } from '../constants';
 
 const { FORM_TITLE, EDIT_FORM_ACTION, BTN_ADD_STAGE } = i18n;
 

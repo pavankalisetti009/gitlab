@@ -1,9 +1,9 @@
 import { nextTick } from 'vue';
 import { GlAlert, GlFormInput } from '@gitlab/ui';
-import CustomStageFields from 'ee/analytics/cycle_analytics/components/create_value_stream_form/custom_stage_fields.vue';
-import CustomStageEventField from 'ee/analytics/cycle_analytics/components/create_value_stream_form/custom_stage_event_field.vue';
-import CustomStageEventLabelField from 'ee/analytics/cycle_analytics/components/create_value_stream_form/custom_stage_event_label_field.vue';
-import StageFieldActions from 'ee/analytics/cycle_analytics/components/create_value_stream_form/stage_field_actions.vue';
+import CustomStageFields from 'ee/analytics/cycle_analytics/vsa_settings/components/custom_stage_fields.vue';
+import CustomStageEventField from 'ee/analytics/cycle_analytics/vsa_settings/components/custom_stage_event_field.vue';
+import CustomStageEventLabelField from 'ee/analytics/cycle_analytics/vsa_settings/components/custom_stage_event_label_field.vue';
+import StageFieldActions from 'ee/analytics/cycle_analytics/vsa_settings/components/stage_field_actions.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import {
   customStageEvents as stageEvents,
@@ -11,7 +11,7 @@ import {
   labelEndEvent,
   customStageEndEvents as endEvents,
 } from '../../mock_data';
-import { emptyState, firstLabel } from './mock_data';
+import { emptyState, firstLabel } from '../mock_data';
 
 const formatStartEventOpts = (_events) =>
   _events

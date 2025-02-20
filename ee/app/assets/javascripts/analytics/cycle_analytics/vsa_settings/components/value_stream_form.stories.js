@@ -6,7 +6,7 @@ import {
   selectedValueStream,
   selectedValueStreamStages,
   formSubmissionErrors as createValueStreamErrors,
-} from 'ee/analytics/cycle_analytics/vsa_settings/components/stories_constants';
+} from './stories_constants';
 import ValueStreamForm from './value_stream_form.vue';
 
 export default {

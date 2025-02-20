@@ -1,7 +1,7 @@
 <script>
 import { GlButton, GlButtonGroup, GlTooltipDirective } from '@gitlab/ui';
 import { __ } from '~/locale';
-import { STAGE_SORT_DIRECTION } from './constants';
+import { STAGE_SORT_DIRECTION } from '../constants';
 
 export default {
   i18n: {
