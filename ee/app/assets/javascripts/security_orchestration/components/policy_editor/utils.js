@@ -703,21 +703,15 @@ export const policyBodyToYaml = (policy) => {
  * @returns {string}
  */
 export const policyToYaml = (policy, type) => {
-  const { securityPoliciesNewYamlFormat } = window.gon?.features || {};
+  const policyWithoutIds = removeIdsFromPolicy(policy);
+  const hasLegacyTypeRootProperty = 'type' in policyWithoutIds;
 
-  if (securityPoliciesNewYamlFormat) {
-    const policyWithoutIds = removeIdsFromPolicy(policy);
-    const hasLegacyTypeRootProperty = 'type' in policyWithoutIds;
-
-    if (hasLegacyTypeRootProperty) {
-      delete policyWithoutIds.type;
-    }
-
-    const payload = { [type]: [policyWithoutIds] };
-    return safeDump(payload);
+  if (hasLegacyTypeRootProperty) {
+    delete policyWithoutIds.type;
   }
 
-  return policyBodyToYaml(policy);
+  const payload = { [type]: [policyWithoutIds] };
+  return safeDump(payload);
 };
 
 /**

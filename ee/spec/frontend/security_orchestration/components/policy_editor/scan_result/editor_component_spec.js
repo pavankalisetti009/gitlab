@@ -45,6 +45,7 @@ import {
   mockWarnActionScanResultObject,
   mockFallbackInvalidScanResultManifest,
   mockDefaultBranchesScanResultManifestNewFormat,
+  mockDefaultBranchesScanResultManifestWithWrapper,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_result_policy_data';
 import {
   APPROVAL_POLICY_DEFAULT_POLICY,
@@ -221,7 +222,7 @@ describe('EditorComponent', () => {
         factoryWithExistingPolicy();
         expect(findEmptyActionsAlert().exists()).toBe(false);
         expect(findPolicyEditorLayout().props('yamlEditorValue')).toBe(
-          mockDefaultBranchesScanResultManifest,
+          mockDefaultBranchesScanResultManifestWithWrapper,
         );
 
         expect(findAllRuleSections()).toHaveLength(1);

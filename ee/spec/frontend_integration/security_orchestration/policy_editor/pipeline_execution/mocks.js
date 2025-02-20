@@ -10,6 +10,16 @@ export const mockPipelineExecutionActionManifest = `pipeline_execution_policy:
       - project: ''
 `;
 
+export const mockPipelineExecutionOverrideActionManifest = `pipeline_execution_policy:
+  - name: ''
+    description: ''
+    enabled: true
+    pipeline_config_strategy: override_project_ci
+    content:
+      include:
+        - project: ''
+`;
+
 export const mockPipelineExecutionObject = fromYaml({
   manifest: mockPipelineExecutionActionManifest,
 });

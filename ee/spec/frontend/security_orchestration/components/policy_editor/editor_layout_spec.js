@@ -409,13 +409,6 @@ describe('EditorLayout component', () => {
 
       expect(findRootSection().classes()).toContain('security-policies');
     });
-
-    it('renders wider layout for new yaml format', () => {
-      factory({ provide: { glFeatures: { securityPoliciesNewYamlFormat: true } } });
-
-      expect(findRootSection().classes()).not.toContain('security-policies');
-      expect(findRootSection().classes()).toContain('security-policies-new-yaml-format');
-    });
   });
 
   describe('new split view layout', () => {

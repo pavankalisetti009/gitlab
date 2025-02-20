@@ -12,61 +12,61 @@ export const mockScanExecutionManifest = `scan_execution_policy:
     - scan: secret_detection
 `;
 
-const mockScanExecutionManifestParsed = `name: ''
-description: ''
-enabled: true
-rules:
-  - type: pipeline
-    branches:
-      - '*'
-actions:
-  - scan: secret_detection
-type: scan_execution_policy
+const mockScanExecutionManifestParsed = `scan_execution_policy:
+  - name: ''
+    description: ''
+    enabled: true
+    rules:
+      - type: pipeline
+        branches:
+          - '*'
+    actions:
+      - scan: secret_detection
 `;
 
-export const mockDastActionScanExecutionManifest = `name: ''
-description: ''
-enabled: true
-rules:
-  - type: pipeline
-    branches:
-      - '*'
-actions:
-  - scan: dast
-    site_profile: ''
-    scanner_profile: ''
-type: scan_execution_policy
+export const mockDastActionScanExecutionManifest = `scan_execution_policy:
+  - name: ''
+    description: ''
+    enabled: true
+    rules:
+      - type: pipeline
+        branches:
+          - '*'
+    actions:
+      - scan: dast
+        site_profile: ''
+        scanner_profile: ''
 `;
 
-export const mockGroupDastActionScanExecutionManifest = `name: ''
-description: ''
-enabled: true
-policy_scope:
-  projects:
-    excluding: []
-rules:
-  - type: pipeline
-    branches:
-      - '*'
-actions:
-  - scan: dast
-    site_profile: ''
-    scanner_profile: ''
-type: scan_execution_policy
+export const mockGroupDastActionScanExecutionManifest = `scan_execution_policy:
+  - name: ''
+    description: ''
+    enabled: true
+    policy_scope:
+      projects:
+        excluding: []
+    rules:
+      - type: pipeline
+        branches:
+          - '*'
+    actions:
+      - scan: dast
+        site_profile: ''
+        scanner_profile: ''
 `;
 
-export const mockActionsVariablesScanExecutionManifest = `name: ''
-description: ''
-enabled: true
-rules:
-  - type: pipeline
-    branches:
-      - '*'
-actions:
-  - scan: secret_detection
-    variables:
-      '': ''
-type: scan_execution_policy
+export const mockActionsVariablesScanExecutionManifest = `scan_execution_policy:
+  - name: ''
+    description: ''
+    enabled: true
+    rules:
+      - type: pipeline
+        branches:
+          - '*'
+    actions:
+      - scan: secret_detection
+        variables:
+          '': ''
 `;
 
 export const createScanActionScanExecutionManifest = (scanType, parsed = false) => {
@@ -74,16 +74,16 @@ export const createScanActionScanExecutionManifest = (scanType, parsed = false) 
   return parser.replace('scan: secret_detection', `scan: ${scanType}`);
 };
 
-export const mockScheduleScanExecutionManifest = `name: ''
-description: ''
-enabled: true
-rules:
-  - type: schedule
-    branches: []
-    cadence: 0 0 * * *
-actions:
-  - scan: secret_detection
-type: scan_execution_policy
+export const mockScheduleScanExecutionManifest = `scan_execution_policy:
+  - name: ''
+    description: ''
+    enabled: true
+    rules:
+      - type: schedule
+        branches: []
+        cadence: 0 0 * * *
+    actions:
+      - scan: secret_detection
 `;
 
 export const mockScanExecutionObject = fromYaml({ manifest: mockScanExecutionManifest });

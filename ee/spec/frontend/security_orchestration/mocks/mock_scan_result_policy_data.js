@@ -61,6 +61,31 @@ export const mockDefaultBranchesScanResultManifest =
   fail: open
 `);
 
+export const mockDefaultBranchesScanResultManifestWithWrapper = `approval_policy:
+  - name: critical vulnerability CS approvals
+    description: This policy enforces critical vulnerability CS approvals
+    enabled: true
+    rules:
+      - type: scan_finding
+        branches: []
+        scanners:
+          - container_scanning
+        vulnerabilities_allowed: 1
+        severity_levels:
+          - critical
+        vulnerability_states:
+          - newly_detected
+    actions:
+      - type: require_approval
+        approvals_required: 1
+        user_approvers:
+          - the.one
+      - type: send_bot_message
+        enabled: true
+    fallback_behavior:
+      fail: open
+`;
+
 export const mockDefaultBranchesScanResultManifestNewFormat =
   mockNoFallbackScanResultManifestNewFormat.concat(`fallback_behavior:
   fail: open
@@ -109,27 +134,27 @@ export const mockDefaultBranchesScanResultObjectWithoutBotAction = {
   ],
 };
 
-export const mockDeprecatedScanResultManifest = `type: scan_result_policy
-name: critical vulnerability CS approvals
-description: This policy enforces critical vulnerability CS approvals
-enabled: true
-rules:
-  - type: scan_finding
-    branches: []
-    scanners:
-      - container_scanning
-    vulnerabilities_allowed: 1
-    severity_levels:
-      - critical
-    vulnerability_states:
-      - newly_detected
-actions:
-  - type: require_approval
-    approvals_required: 1
-    user_approvers:
-      - the.one
-fallback_behavior:
-  fail: open
+export const mockDeprecatedScanResultManifest = `approval_policy:
+  - name: critical vulnerability CS approvals
+    description: This policy enforces critical vulnerability CS approvals
+    enabled: true
+    rules:
+      - type: scan_finding
+        branches: []
+        scanners:
+          - container_scanning
+        vulnerabilities_allowed: 1
+        severity_levels:
+          - critical
+        vulnerability_states:
+          - newly_detected
+    actions:
+      - type: require_approval
+        approvals_required: 1
+        user_approvers:
+          - the.one
+    fallback_behavior:
+      fail: open
 `;
 
 export const zeroActionsScanResultManifest = `type: approval_policy
