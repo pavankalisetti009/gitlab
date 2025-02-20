@@ -14,7 +14,8 @@ module Gitlab
           ::Gitlab::Llm::Chain::Tools::IssueReader,
           ::Gitlab::Llm::Chain::Tools::GitlabDocumentation,
           ::Gitlab::Llm::Chain::Tools::EpicReader,
-          ::Gitlab::Llm::Chain::Tools::MergeRequestReader
+          ::Gitlab::Llm::Chain::Tools::MergeRequestReader,
+          ::Gitlab::Llm::Chain::Tools::CommitReader
         ].freeze
 
         COMMAND_TOOLS = TOOLS + [
@@ -94,11 +95,7 @@ module Gitlab
 
         # allows conditional logic e.g. feature flagging
         def tools
-          tools = TOOLS.dup
-
-          tools << ::Gitlab::Llm::Chain::Tools::CommitReader if Feature.enabled?(:ai_commit_reader_for_chat, user)
-
-          tools
+          TOOLS
         end
 
         def response_post_processing
@@ -159,8 +156,6 @@ module Gitlab
         strong_memoize_attr :slash_command
 
         def push_feature_flags
-          Gitlab::AiGateway.push_feature_flag(:ai_commit_reader_for_chat, user)
-
           if Feature.enabled?(:enable_anthropic_prompt_caching, user)
             Gitlab::AiGateway.push_feature_flag(:enable_anthropic_prompt_caching, user)
           end
