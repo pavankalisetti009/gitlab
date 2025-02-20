@@ -19812,7 +19812,8 @@ CREATE TABLE project_relation_exports (
     project_id bigint,
     CONSTRAINT check_15e644d856 CHECK ((char_length(jid) <= 255)),
     CONSTRAINT check_4b5880b795 CHECK ((char_length(relation) <= 255)),
-    CONSTRAINT check_dbd1cf73d0 CHECK ((char_length(export_error) <= 300))
+    CONSTRAINT check_dbd1cf73d0 CHECK ((char_length(export_error) <= 300)),
+    CONSTRAINT check_f461e3537f CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE project_relation_exports_id_seq
@@ -27251,9 +27252,6 @@ ALTER TABLE sprints
 
 ALTER TABLE web_hook_logs
     ADD CONSTRAINT check_df72cb58f5 CHECK ((char_length(url_hash) <= 44)) NOT VALID;
-
-ALTER TABLE project_relation_exports
-    ADD CONSTRAINT check_f461e3537f CHECK ((project_id IS NOT NULL)) NOT VALID;
 
 ALTER TABLE merge_request_blocks
     ADD CONSTRAINT check_f8034ca45e CHECK ((project_id IS NOT NULL)) NOT VALID;
