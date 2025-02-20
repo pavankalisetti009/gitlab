@@ -142,7 +142,7 @@ export default {
     },
   },
   i18n: {
-    createImportTitle: s__('MlModelRegistry|Create/Import'),
+    createImportTitle: s__('MlModelRegistry|Create/Import model'),
     titleLabel: s__('MlModelRegistry|Model registry'),
     modelsCountLabel: (modelCount) =>
       n__('MlModelRegistry|%d model', 'MlModelRegistry|%d models', modelCount),

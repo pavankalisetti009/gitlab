@@ -36653,7 +36653,7 @@ msgstr ""
 msgid "MlModelRegistry|Create your machine learning using GitLab directly or using the MLflow client"
 msgstr ""
 
-msgid "MlModelRegistry|Create/Import"
+msgid "MlModelRegistry|Create/Import model"
 msgstr ""
 
 msgid "MlModelRegistry|Creating a model"
@@ -36951,6 +36951,9 @@ msgid "MlModelRegistry|Versions"
 msgstr ""
 
 msgid "MlModelRegistry|folder name"
+msgstr ""
+
+msgid "MlModelRegistry|version"
 msgstr ""
 
 msgid "Mock an external CI integration."
