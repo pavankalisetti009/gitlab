@@ -4,6 +4,7 @@ module EE
   module Ci
     module Runner
       extend ActiveSupport::Concern
+      extend ::Gitlab::Utils::Override
 
       MOST_ACTIVE_RUNNERS_BUILDS_LIMIT = 1000
 
@@ -15,6 +16,7 @@ module EE
         has_many :instance_runner_monthly_usages,
           class_name: 'Ci::Minutes::InstanceRunnerMonthlyUsage',
           inverse_of: :runner
+        has_one :hosted_registration, class_name: 'Ci::HostedRunner', inverse_of: :runner
 
         scope :with_top_running_builds_of_runner_type, ->(runner_type) do
           most_active_runners(->(relation) { relation.where(runner_type: runner_type) })
@@ -54,6 +56,15 @@ module EE
 
       def allowed_plans=(names)
         self.allowed_plan_ids = ::Plan.ids_for_names(names)
+      end
+
+      # On a dedicated installation we use a table to track which runners are hosted at registration time
+      override :dedicated_gitlab_hosted?
+      def dedicated_gitlab_hosted?
+        return true if ::Gitlab::CurrentSettings.gitlab_dedicated_instance? &&
+          hosted_registration.present?
+
+        super
       end
 
       private

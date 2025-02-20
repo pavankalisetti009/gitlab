@@ -14,5 +14,15 @@ module Ci
 
     validates :runner, presence: true
     validates :runner_id, uniqueness: true
+    validate :validate_instance_type_runner
+
+    private
+
+    def validate_instance_type_runner
+      return unless runner
+      return if runner.instance_type?
+
+      errors.add(:runner, 'is not an instance runner')
+    end
   end
 end
