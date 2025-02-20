@@ -25,6 +25,19 @@ module EE
             message: 'Created %{runner_type} CI runner'
           ).track_event
         end
+
+        override :create_hosted_runner!
+        def create_hosted_runner!(runner, should_mark_hosted)
+          return unless should_create_hosted_runner?(runner, should_mark_hosted)
+
+          ::Ci::HostedRunner.create!(runner_id: runner.id)
+        end
+
+        def should_create_hosted_runner?(runner, should_mark_hosted)
+          ::Gitlab::CurrentSettings.gitlab_dedicated_instance? &&
+            should_mark_hosted == true &&
+            runner.instance_type?
+        end
       end
     end
   end

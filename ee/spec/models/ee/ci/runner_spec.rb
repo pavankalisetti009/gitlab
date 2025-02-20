@@ -31,6 +31,48 @@ RSpec.describe Ci::Runner, feature_category: :hosted_runners do
       .class_name('Ci::Minutes::CostSetting')
       .with_foreign_key(:runner_id)
     end
+
+    it { is_expected.to have_one(:hosted_registration).class_name('Ci::HostedRunner').inverse_of(:runner) }
+  end
+
+  describe '#dedicated_gitlab_hosted?' do
+    let_it_be(:runner) { create(:ci_runner) }
+
+    context 'when on dedicated installation' do
+      before do
+        allow(Gitlab::CurrentSettings).to receive(:gitlab_dedicated_instance?).and_return(true)
+      end
+
+      context 'with hosted registration' do
+        before do
+          create(:ci_hosted_runner, runner: runner)
+        end
+
+        it 'returns true' do
+          expect(runner.dedicated_gitlab_hosted?).to be_truthy
+        end
+      end
+
+      context 'without hosted registration' do
+        let(:runner) { create(:ci_runner) }
+
+        it 'returns false' do
+          expect(runner.dedicated_gitlab_hosted?).to be_falsey
+        end
+      end
+    end
+
+    context 'when not on dedicated installation' do
+      before do
+        allow(Gitlab::CurrentSettings).to receive(:gitlab_dedicated_instance?).and_return(false)
+      end
+
+      it 'returns false regardless of hosted registration' do
+        create(:ci_hosted_runner, runner: runner)
+
+        expect(runner.dedicated_gitlab_hosted?).to be_falsey
+      end
+    end
   end
 
   describe '#cost_factor_for_project' do
