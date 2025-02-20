@@ -405,6 +405,13 @@ module EE
            .where(index_statuses: { project_id: nil })
       }
 
+      scope :with_existing_dora_records, ->(from, to) do
+        condition = Dora::DailyMetrics.in_range_of(from, to)
+                                      .where(::Project.arel_table[:id].eq(Dora::DailyMetrics.arel_table[:project_id]))
+
+        where(condition.arel.exists)
+      end
+
       scope :with_dora_scores_for_date, ->(date) do
         joins(:dora_performance_scores).where(dora_performance_scores: { date: date })
       end
