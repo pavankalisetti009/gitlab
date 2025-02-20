@@ -295,6 +295,18 @@ RSpec.describe 'Dependency-Scanning.latest.gitlab-ci.yml', feature_category: :co
           build = pipeline.builds.first
           expect(String(build.variables.to_hash['DS_EXCLUDED_PATHS'])).to eql('spec, test, tests, tmp')
         end
+
+        context 'when DS_PIPCOMPILE_REQUIREMENTS_FILE_NAME_PATTERN is defined' do
+          let(:files) { { 'some_file' => '' } }
+
+          before do
+            create(:ci_variable, project: project, key: 'DS_PIPCOMPILE_REQUIREMENTS_FILE_NAME_PATTERN', value: 'some/custom-requirements.txt')
+          end
+
+          it 'creates a pipeline with the new DS analyzer, independently from which files are in the repo' do
+            expect(build_names).to include('dependency-scanning')
+          end
+        end
       end
 
       context 'as default', fips_mode: false do
