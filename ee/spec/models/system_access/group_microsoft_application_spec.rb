@@ -12,6 +12,13 @@ RSpec.describe SystemAccess::GroupMicrosoftApplication, type: :model, feature_ca
 
       expect(app.graph_access_token).to eql(token)
     end
+
+    it 'can access graph_access_token via legacy association' do
+      token = create(:system_access_group_microsoft_graph_access_token)
+      app = build_stubbed(:system_access_group_microsoft_application, system_access_microsoft_graph_access_token: token)
+
+      expect(app.system_access_microsoft_graph_access_token).to eql(token)
+    end
   end
 
   describe 'validations' do
@@ -45,6 +52,35 @@ RSpec.describe SystemAccess::GroupMicrosoftApplication, type: :model, feature_ca
         app = build(:system_access_group_microsoft_application, graph_endpoint: 'https://example.com')
         expect(app).to be_valid
       end
+    end
+  end
+
+  describe '#build_system_access_microsoft_graph_access_token' do
+    let(:instance) { create(:system_access_group_microsoft_application) }
+
+    it 'builds a new SystemAccess::GroupMicrosoftGraphAccessToken with inherited group' do
+      graph_token = instance.build_system_access_microsoft_graph_access_token(
+        expires_in: 2.hours,
+        token: 'abc123'
+      )
+
+      expect(graph_token).to be_a(SystemAccess::GroupMicrosoftGraphAccessToken)
+      expect(graph_token.group).to eq(instance.group)
+      expect(graph_token).to be_valid
+    end
+
+    it 'allows overriding group if necessary' do
+      group2 = build_stubbed(:group)
+
+      graph_token = instance.build_system_access_microsoft_graph_access_token(
+        group: group2,
+        expires_in: 2.hours,
+        token: 'abc123'
+      )
+
+      expect(graph_token).to be_a(SystemAccess::GroupMicrosoftGraphAccessToken)
+      expect(graph_token.group).to eq(group2)
+      expect(graph_token).to be_valid
     end
   end
 end

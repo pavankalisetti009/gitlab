@@ -6,6 +6,12 @@ module  SystemAccess # rubocop:disable Gitlab/BoundedContexts -- Spliting existi
       class_name: 'SystemAccess::GroupMicrosoftApplication',
       inverse_of: :graph_access_token
 
+    # legacy association to provide compatibility with SystemAccess::MicrosoftGraphAccessToken
+    belongs_to :system_access_microsoft_application,
+      class_name: 'SystemAccess::GroupMicrosoftApplication',
+      foreign_key: :system_access_group_microsoft_application_id,
+      inverse_of: :graph_access_token
+
     belongs_to :group, optional: false
 
     validates :system_access_group_microsoft_application_id, presence: true, uniqueness: true

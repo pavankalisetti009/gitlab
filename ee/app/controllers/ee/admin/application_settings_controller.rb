@@ -6,12 +6,11 @@ module EE
       extend ::Gitlab::Utils::Override
       extend ActiveSupport::Concern
       include ::GitlabSubscriptions::MemberManagement::PromotionManagementUtils
+      include SafeFormatHelper
 
       UNINDEXED_PROJECT_DISPLAY_LIMIT = 50
 
       prepended do
-        include MicrosoftApplicationActions
-
         before_action :elasticsearch_reindexing_task, only: [:search]
         before_action :elasticsearch_reindexing_state, only: [:search]
         before_action :elasticsearch_index_settings, only: [:search]
@@ -22,6 +21,7 @@ module EE
         before_action :search_outdated_code_analyzer_detected, only: [:search]
         before_action :new_license, only: [:general]
         before_action :scim_token, only: [:general]
+        before_action :check_microsoft_group_sync_available, only: [:update_microsoft_application]
         before_action :find_or_initialize_microsoft_application, only: [:general]
         before_action :verify_namespace_plan_check_enabled, only: [:namespace_storage]
         before_action :indexing_status, only: [:search]
@@ -34,6 +34,7 @@ module EE
         feature_category :software_composition_analysis, [:security_and_compliance]
         feature_category :consumables_cost_management, [:namespace_storage]
         feature_category :product_analytics, [:analytics]
+        feature_category :system_access, [:update_microsoft_application]
         urgency :low, [:search, :seat_link_payload]
 
         def elasticsearch_reindexing_task
@@ -94,6 +95,24 @@ module EE
           scim_token = ScimOauthAccessToken.find_for_instance
 
           @scim_token_url = scim_token.as_entity_json[:scim_api_url] if scim_token
+        end
+
+        def update_microsoft_application
+          params = microsoft_application_params.dup
+          params.delete(:client_secret) if params[:client_secret].blank?
+
+          result = update_microsoft_application_model(params)
+
+          if result[:status]
+            flash[:notice] = s_('Microsoft|Microsoft Azure integration settings were successfully updated.')
+          else
+            flash[:alert] = safe_format(
+              s_('Microsoft|Microsoft Azure integration settings failed to save. %{errors}'),
+              errors: result[:errors].to_sentence
+            )
+          end
+
+          redirect_to general_admin_application_settings_path
         end
 
         def indexing_status
@@ -240,12 +259,27 @@ module EE
         ::CloudConnector::SyncServiceTokenWorker.perform_async
       end
 
-      def microsoft_application_namespace
-        nil
+      # rubocop:disable CodeReuse/ActiveRecord, Gitlab/ModuleWithInstanceVariables -- splitting out legacy code
+      def find_or_initialize_microsoft_application
+        return unless microsoft_group_sync_enabled?
+
+        @microsoft_application = ::SystemAccess::MicrosoftApplication.find_or_initialize_by(namespace: nil)
       end
 
-      def microsoft_application_redirect_path
-        general_admin_application_settings_path
+      def update_microsoft_application_model(params)
+        instance_app = ::SystemAccess::MicrosoftApplication.find_or_initialize_by(namespace: nil)
+        status = instance_app.update(params)
+        { status: status, errors: instance_app.errors.full_messages }
+      end
+      # rubocop:enable CodeReuse/ActiveRecord, Gitlab/ModuleWithInstanceVariables
+
+      def microsoft_application_params
+        params.require(:system_access_microsoft_application)
+              .permit(:enabled, :tenant_xid, :client_xid, :client_secret, :login_endpoint, :graph_endpoint)
+      end
+
+      def check_microsoft_group_sync_available
+        render_404 unless microsoft_group_sync_enabled?
       end
 
       def microsoft_group_sync_enabled?

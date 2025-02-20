@@ -8,6 +8,12 @@ module SystemAccess # rubocop:disable Gitlab/BoundedContexts -- Spliting existin
       inverse_of: :system_access_group_microsoft_application,
       foreign_key: :system_access_group_microsoft_application_id
 
+    # legacy method to provide compatibility with SystemAccess::MicrosoftApplication
+    has_one :system_access_microsoft_graph_access_token,
+      class_name: '::SystemAccess::GroupMicrosoftGraphAccessToken',
+      inverse_of: :system_access_group_microsoft_application,
+      foreign_key: :system_access_group_microsoft_application_id
+
     validates :enabled, inclusion: { in: [true, false] }
     validates :group_id, uniqueness: true
     validates :tenant_xid, presence: true
@@ -24,5 +30,11 @@ module SystemAccess # rubocop:disable Gitlab/BoundedContexts -- Spliting existin
       key: Settings.attr_encrypted_db_key_base_32,
       mode: :per_attribute_iv,
       algorithm: 'aes-256-gcm'
+
+    # for compatibility with SystemAccess::MicrosoftApplication
+    # called in Microsoft::GraphClient
+    def build_system_access_microsoft_graph_access_token(attrs = {})
+      super(attrs.reverse_merge(group: group))
+    end
   end
 end
