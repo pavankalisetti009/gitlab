@@ -19,7 +19,7 @@ module SystemCheck
           'Follow Geo setup instructions to configure primary and secondary nodes for replication'
         )
 
-        help_page = construct_help_page_url('administration/geo/setup/database')
+        help_page = Rails.application.routes.url_helpers.help_page_url('administration/geo/setup/database.md')
         for_more_information(help_page)
       end
 
