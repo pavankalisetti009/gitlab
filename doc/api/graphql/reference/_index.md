@@ -39463,6 +39463,7 @@ Check permissions for the current user on a work item.
 | <a id="workitempermissionsadminparentlink"></a>`adminParentLink` | [`Boolean!`](#boolean) | If `true`, the user can perform `admin_parent_link` on this resource. |
 | <a id="workitempermissionsadminworkitem"></a>`adminWorkItem` | [`Boolean!`](#boolean) | If `true`, the user can perform `admin_work_item` on this resource. |
 | <a id="workitempermissionsadminworkitemlink"></a>`adminWorkItemLink` | [`Boolean!`](#boolean) | If `true`, the user can perform `admin_work_item_link` on this resource. |
+| <a id="workitempermissionsblockedworkitems"></a>`blockedWorkItems` | [`Boolean`](#boolean) | If `true`, the user can perform `blocked_work_items` on the work item. |
 | <a id="workitempermissionscloneworkitem"></a>`cloneWorkItem` | [`Boolean!`](#boolean) | If `true`, the user can perform `clone_work_item` on this resource. |
 | <a id="workitempermissionscreatenote"></a>`createNote` | [`Boolean!`](#boolean) | If `true`, the user can perform `create_note` on this resource. |
 | <a id="workitempermissionsdeleteworkitem"></a>`deleteWorkItem` | [`Boolean!`](#boolean) | If `true`, the user can perform `delete_work_item` on this resource. |
