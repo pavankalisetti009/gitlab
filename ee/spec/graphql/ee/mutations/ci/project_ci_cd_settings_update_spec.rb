@@ -10,7 +10,7 @@ RSpec.describe Mutations::Ci::ProjectCiCdSettingsUpdate, feature_category: :cont
   let(:current_user) { project.first_owner }
   let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
-  subject { mutation.resolve(full_path: project.full_path, **mutation_params) }
+  subject(:resolve_mutation) { mutation.resolve(full_path: project.full_path, **mutation_params) }
 
   before do
     stub_licensed_features(merge_pipelines: true, merge_trains: true)
@@ -23,7 +23,7 @@ RSpec.describe Mutations::Ci::ProjectCiCdSettingsUpdate, feature_category: :cont
 
   describe '#resolve' do
     before do
-      subject
+      resolve_mutation
       project.reload
     end
 
@@ -37,7 +37,7 @@ RSpec.describe Mutations::Ci::ProjectCiCdSettingsUpdate, feature_category: :cont
       end
 
       it 'does not enable merge trains' do
-        expect(project.ci_cd_settings.merge_trains_enabled?).to eq(false)
+        expect(project.ci_cd_settings.merge_trains_enabled?).to be(false)
       end
     end
 
@@ -51,8 +51,8 @@ RSpec.describe Mutations::Ci::ProjectCiCdSettingsUpdate, feature_category: :cont
       end
 
       it 'enables merge pipelines and merge trains' do
-        expect(project.merge_pipelines_enabled?).to eq(true)
-        expect(project.merge_trains_enabled?).to eq(true)
+        expect(project.merge_pipelines_enabled?).to be(true)
+        expect(project.merge_trains_enabled?).to be(true)
       end
     end
 
@@ -66,7 +66,7 @@ RSpec.describe Mutations::Ci::ProjectCiCdSettingsUpdate, feature_category: :cont
       it 'updates the value' do
         # This column value is not the same as #merge_trains_skip_train_allowed?
         # which has added business logic
-        expect(project.ci_cd_settings.merge_trains_skip_train_allowed).to eq(true)
+        expect(project.ci_cd_settings.merge_trains_skip_train_allowed).to be(true)
       end
     end
   end
@@ -81,9 +81,10 @@ RSpec.describe Mutations::Ci::ProjectCiCdSettingsUpdate, feature_category: :cont
     end
 
     it 'does not log an audit event' do
-      expect(::Gitlab::Audit::Auditor).not_to receive(:audit)
-
-      subject
+      expect(::Gitlab::Audit::Auditor).not_to receive(:audit).with(
+        hash_including(name: a_string_matching(/^secure_ci_job_token_inbound/))
+      )
+      resolve_mutation
     end
   end
 
@@ -131,7 +132,7 @@ RSpec.describe Mutations::Ci::ProjectCiCdSettingsUpdate, feature_category: :cont
       it 'logs an audit event' do
         expect(::Gitlab::Audit::Auditor).to receive(:audit).with(hash_including(expected_audit_context))
 
-        subject
+        resolve_mutation
       end
     end
 
@@ -144,7 +145,7 @@ RSpec.describe Mutations::Ci::ProjectCiCdSettingsUpdate, feature_category: :cont
       it 'logs an audit event' do
         expect(::Gitlab::Audit::Auditor).to receive(:audit).with(hash_including(expected_audit_context))
 
-        subject
+        resolve_mutation
       end
     end
 
@@ -155,7 +156,7 @@ RSpec.describe Mutations::Ci::ProjectCiCdSettingsUpdate, feature_category: :cont
       it 'does not log an audit event' do
         expect(::Gitlab::Audit::Auditor).not_to receive(:audit)
 
-        subject
+        resolve_mutation
       end
     end
   end

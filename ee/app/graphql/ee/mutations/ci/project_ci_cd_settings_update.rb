@@ -19,28 +19,41 @@ module EE
           argument :merge_trains_skip_train_allowed, GraphQL::Types::Boolean,
             required: false,
             description: 'Indicates whether an option is allowed to merge without refreshing the merge train. ' \
-                         'Ignored unless the `merge_trains_skip_train` feature flag is also enabled.'
+              'Ignored unless the `merge_trains_skip_train` feature flag is also enabled.'
         end
 
         override :resolve
-        def resolve(full_path:, **args)
-          if ::Feature.disabled?(:merge_trains_skip_train, project(full_path))
-            args.delete(:merge_trains_skip_train_allowed)
-          end
-
+        def resolve(**args)
           super.tap do |result|
             ci_cd_settings = result[:ci_cd_settings]
             audit_project = ci_cd_settings.project
 
             if ci_cd_settings.inbound_job_token_scope_enabled_previously_changed?
-              audit(audit_project, ci_cd_settings, current_user, ci_cd_settings.inbound_job_token_scope_enabled)
+              audit_inbound_job_token_enabled_changed(
+                audit_project,
+                ci_cd_settings,
+                current_user,
+                ci_cd_settings.inbound_job_token_scope_enabled
+              )
             end
           end
         end
 
         private
 
-        def audit(scope, target, author, inbound_job_token_scope_enabled)
+        override :project_update_params
+        def project_update_params(project, **args)
+          result = super
+          result.merge!(args.slice(:merge_pipelines_enabled, :merge_trains_enabled))
+
+          if ::Feature.enabled?(:merge_trains_skip_train, project)
+            result.merge!(args.slice(:merge_trains_skip_train_allowed))
+          end
+
+          result.compact
+        end
+
+        def audit_inbound_job_token_enabled_changed(scope, target, author, inbound_job_token_scope_enabled)
           audit_action = inbound_job_token_scope_enabled ? 'enabled' : 'disabled'
           audit_message = "Secure ci_job_token was #{audit_action} for inbound"
           event_name = "secure_ci_job_token_inbound_#{audit_action}"
