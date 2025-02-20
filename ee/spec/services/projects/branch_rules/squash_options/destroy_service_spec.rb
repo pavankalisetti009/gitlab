@@ -14,19 +14,19 @@ RSpec.describe ::Projects::BranchRules::SquashOptions::DestroyService, feature_c
 
     subject(:execute) { described_class.new(branch_rule, current_user: current_user).execute }
 
-    context 'when the user is not authorized' do
-      let(:current_user) { developer }
-
-      it 'returns an error response' do
-        result = execute
-
-        expect(result.message).to eq(described_class::AUTHORIZATION_ERROR_MESSAGE)
-        expect(result).to be_error
-      end
-    end
-
     context 'when there is a squash option' do
       let!(:squash_option) { create :branch_rule_squash_option, project: project, protected_branch: protected_branch }
+
+      context 'and the user is not authorized' do
+        let(:current_user) { developer }
+
+        it 'returns an error response' do
+          result = execute
+
+          expect(result.message).to eq(described_class::AUTHORIZATION_ERROR_MESSAGE)
+          expect(result).to be_error
+        end
+      end
 
       it 'deletes the squash option' do
         expect { execute }
@@ -39,7 +39,7 @@ RSpec.describe ::Projects::BranchRules::SquashOptions::DestroyService, feature_c
     it 'returns an error' do
       result = execute
 
-      expect(result.message).to eq(described_class::NOT_FOUND_ERROR_MESSAGE)
+      expect(result.message).to eq(described_class::AUTHORIZATION_ERROR_MESSAGE)
       expect(result).to be_error
     end
   end

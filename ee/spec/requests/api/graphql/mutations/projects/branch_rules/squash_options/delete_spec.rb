@@ -67,7 +67,9 @@ RSpec.describe 'Deleting a squash option', feature_category: :source_code_manage
       let(:squash_option) { nil }
       let(:mutation_response) { graphql_mutation_response(:branch_rule_squash_option_delete) }
 
-      it_behaves_like 'a mutation that returns errors in the response', errors: ["Squash option not found"]
+      it_behaves_like 'a mutation that returns errors in the response', errors: [
+        ::Projects::BranchRules::SquashOptions::DestroyService::AUTHORIZATION_ERROR_MESSAGE
+      ]
     end
   end
 end
