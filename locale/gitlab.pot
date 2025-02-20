@@ -21360,6 +21360,9 @@ msgstr ""
 msgid "Download PDF"
 msgstr ""
 
+msgid "Download all"
+msgstr ""
+
 msgid "Download artifacts"
 msgstr ""
 
@@ -51560,6 +51563,11 @@ msgstr ""
 msgid "SecurityConfiguration|%{scanType} configuration code snippet"
 msgstr ""
 
+msgid "SecurityConfiguration|1 vulnerability"
+msgid_plural "SecurityConfiguration|%d vulnerabilities"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "SecurityConfiguration|An error occurred while creating the merge request."
 msgstr ""
 
@@ -51609,6 +51617,9 @@ msgid "SecurityConfiguration|High-level vulnerability statistics across projects
 msgstr ""
 
 msgid "SecurityConfiguration|Immediately begin risk analysis and remediation with application security features. Start with SAST and Secret Detection, available to all plans. Upgrade to Ultimate to get all features, including:"
+msgstr ""
+
+msgid "SecurityConfiguration|Learn more about our vulnerability data retention policies"
 msgstr ""
 
 msgid "SecurityConfiguration|Learn more about vulnerability training"
@@ -51674,7 +51685,13 @@ msgstr ""
 msgid "SecurityConfiguration|Using custom settings. You won't receive automatic updates on this variable. %{anchorStart}Restore to default%{anchorEnd}"
 msgstr ""
 
+msgid "SecurityConfiguration|Vulnerabilities are retained in the database for one year after the last update. After one year of inactivity, vulnerabilities are archived on the first of each month. Archives are removed after five years."
+msgstr ""
+
 msgid "SecurityConfiguration|Vulnerability Management"
+msgstr ""
+
+msgid "SecurityConfiguration|Vulnerability archives"
 msgstr ""
 
 msgid "SecurityConfiguration|Vulnerability details and statistics in the merge request"
