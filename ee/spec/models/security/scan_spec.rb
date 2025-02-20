@@ -305,7 +305,12 @@ RSpec.describe Security::Scan, feature_category: :vulnerability_management do
   end
 
   describe '.stale' do
-    let!(:stale_succeeded_scan) { create(:security_scan, status: :succeeded, created_at: 91.days.ago) }
+    let(:gitlab_dot_com) { false }
+    let(:over_retention_period) { 91.days.ago }
+
+    let!(:thirty_days_stale_succeeded_scan) { create(:security_scan, status: :succeeded, created_at: 31.days.ago) }
+    let!(:sixty_days_stale_succeeded_scan) { create(:security_scan, status: :succeeded, created_at: 61.days.ago) }
+    let!(:ninety_days_stale_succeeded_scan) { create(:security_scan, status: :succeeded, created_at: 91.days.ago) }
     let!(:stale_failed_scan) { create(:security_scan, status: :preparation_failed, created_at: 91.days.ago) }
     let!(:stale_created_scan) { create(:security_scan, status: :created, created_at: 91.days.ago) }
     let!(:stale_job_failed_scan) { create(:security_scan, status: :job_failed, created_at: 91.days.ago) }
@@ -313,19 +318,33 @@ RSpec.describe Security::Scan, feature_category: :vulnerability_management do
     let!(:stale_preparing_scan) { create(:security_scan, status: :preparing, created_at: 91.days.ago) }
 
     let(:expected_scans) do
-      [stale_succeeded_scan, stale_failed_scan, stale_created_scan,
+      [ninety_days_stale_succeeded_scan, stale_failed_scan, stale_created_scan,
        stale_job_failed_scan, stale_report_errored_scan, stale_preparing_scan]
     end
 
     subject { described_class.stale }
 
     before do
+      allow(Gitlab).to receive(:com?).and_return(gitlab_dot_com)
       create(:security_scan, status: :succeeded)
       create(:security_scan, status: :preparation_failed)
-      create(:security_scan, status: :purged, created_at: 91.days.ago)
+      create(:security_scan, status: :purged, created_at: over_retention_period)
     end
 
     it { is_expected.to match_array(expected_scans) }
+
+    context 'for Gitlab.com' do
+      let(:gitlab_dot_com) { true }
+      let(:over_retention_period) { 31.days.ago }
+
+      let(:expected_scans) do
+        [ninety_days_stale_succeeded_scan, stale_failed_scan, stale_created_scan,
+         stale_job_failed_scan, stale_report_errored_scan, stale_preparing_scan,
+         sixty_days_stale_succeeded_scan, thirty_days_stale_succeeded_scan]
+      end
+
+      it { is_expected.to match_array(expected_scans) }
+    end
   end
 
   describe '.ordered_by_created_at_and_id' do
