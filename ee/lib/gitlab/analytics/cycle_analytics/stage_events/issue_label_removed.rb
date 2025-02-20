@@ -6,7 +6,7 @@ module Gitlab
       module StageEvents
         class IssueLabelRemoved < LabelBasedStageEvent
           def self.name
-            s_("CycleAnalyticsEvent|Issue label was removed")
+            s_("CycleAnalyticsEvent|Issue label removed")
           end
 
           def self.identifier

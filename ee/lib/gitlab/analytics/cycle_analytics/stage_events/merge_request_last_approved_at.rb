@@ -6,7 +6,7 @@ module Gitlab
       module StageEvents
         class MergeRequestLastApprovedAt < StageEvent
           def self.name
-            s_("CycleAnalyticsEvent|Merge request was last approved at")
+            s_("CycleAnalyticsEvent|Merge request last approved")
           end
 
           def self.identifier

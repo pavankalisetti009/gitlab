@@ -6,7 +6,7 @@ module Gitlab
       module StageEvents
         class MergeRequestFirstCommitAt < MetricsBasedStageEvent
           def self.name
-            s_("CycleAnalyticsEvent|Merge request first commit time")
+            s_("CycleAnalyticsEvent|Merge request first committed")
           end
 
           def self.identifier

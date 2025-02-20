@@ -91,7 +91,7 @@ export const formEvents = [
     ],
   },
   {
-    name: 'Issue label was added',
+    name: 'Issue label added',
     identifier: 'issue_label_added',
     type: 'label',
     canBeStartEvent: true,
@@ -104,7 +104,7 @@ export const formEvents = [
     ],
   },
   {
-    name: 'Issue label was removed',
+    name: 'Issue label removed',
     identifier: 'issue_label_removed',
     type: 'label',
     canBeStartEvent: true,
