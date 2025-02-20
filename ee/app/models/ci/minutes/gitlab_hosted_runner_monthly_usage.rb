@@ -26,8 +26,8 @@ module Ci
       }
       validate :validate_billing_month_format
 
-      scope :instance_aggregate, ->(billing_month, year) do
-        select("TO_CHAR(billing_month, 'FMMonth YYYY') AS billing_month_formatted",
+      scope :instance_aggregate, ->(billing_month, year, runner_id = nil) do
+        query = select("TO_CHAR(billing_month, 'FMMonth YYYY') AS billing_month_formatted",
           'billing_month AS billing_month',
           'TO_CHAR(DATE_TRUNC(\'month\', billing_month), \'YYYY-MM-DD\') AS billing_month_iso8601',
           'SUM(compute_minutes_used) AS compute_minutes',
@@ -36,10 +36,13 @@ module Ci
         .where(billing_month: billing_month_range(billing_month, year))
         .group(:billing_month)
         .order(billing_month: :desc)
+
+        query = query.where(runner_id: runner_id) if runner_id.present?
+        query
       end
 
-      scope :per_root_namespace, ->(billing_month, year) do
-        where(billing_month: billing_month_range(billing_month, year))
+      scope :per_root_namespace, ->(billing_month, year, runner_id = nil) do
+        query = where(billing_month: billing_month_range(billing_month, year))
           .group(:billing_month, :root_namespace_id)
           .select("TO_CHAR(billing_month, 'FMMonth YYYY') AS billing_month_formatted",
             'billing_month AS billing_month',
@@ -48,6 +51,9 @@ module Ci
             'SUM(compute_minutes_used) AS compute_minutes',
             'SUM(runner_duration_seconds) AS duration_seconds')
           .order(billing_month: :desc, root_namespace_id: :asc)
+
+        query = query.where(runner_id: runner_id) if runner_id.present?
+        query
       end
 
       private

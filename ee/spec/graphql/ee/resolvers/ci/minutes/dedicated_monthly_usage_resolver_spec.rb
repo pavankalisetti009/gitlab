@@ -125,6 +125,20 @@ RSpec.describe EE::Resolvers::Ci::Minutes::DedicatedMonthlyUsageResolver, featur
       end
     end
 
+    context 'with runner_id filter', :enable_admin_mode do
+      let_it_be(:runner) { create(:ci_runner) }
+      let_it_be(:other_runner) { create(:ci_runner) }
+      let_it_be(:usage1) { create(:ci_hosted_runner_monthly_usage, runner: runner, compute_minutes_used: 100) }
+      let_it_be(:usage2) { create(:ci_hosted_runner_monthly_usage, runner: other_runner, compute_minutes_used: 200) }
+
+      let(:args) { { grouping: 'INSTANCE_AGGREGATE', runner_id: runner.to_global_id } }
+
+      it 'returns usage data only for the specified runner' do
+        result = resolve_usage(admin)
+        expect(result.first.compute_minutes).to eq(100)
+      end
+    end
+
     context 'when user is not on GitLab Dedicated', :enable_admin_mode do
       let(:grouping) { 'INSTANCE_AGGREGATE' }
       let(:billing_month_arg) { billing_month }
