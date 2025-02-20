@@ -13,8 +13,6 @@ module Security
 
     def perform(project_id, current_user_id, oldrev, newrev, ref)
       project = Project.find_by_id(project_id) || return
-      return if ::Feature.disabled?(:pipeline_execution_policy_analyze_configs, project.group)
-
       current_user = User.find_by_id(current_user_id) || return
 
       modified_paths = modified_paths_by_push(project, oldrev, newrev, ref)

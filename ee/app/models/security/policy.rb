@@ -140,7 +140,6 @@ module Security
     end
 
     def update_pipeline_execution_policy_config_link!
-      return if ::Feature.disabled?(:pipeline_execution_policy_analyze_configs, namespace)
       return unless type_pipeline_execution_policy?
 
       security_pipeline_execution_policy_config_link&.destroy!

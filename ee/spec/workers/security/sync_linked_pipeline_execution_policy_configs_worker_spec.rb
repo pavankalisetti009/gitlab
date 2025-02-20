@@ -152,12 +152,4 @@ RSpec.describe Security::SyncLinkedPipelineExecutionPolicyConfigsWorker, '#perfo
 
     it_behaves_like 'does not enqueue the worker'
   end
-
-  context 'when feature flag "pipeline_execution_policy_analyze_configs" is disabled' do
-    before do
-      stub_feature_flags(pipeline_execution_policy_analyze_configs: false)
-    end
-
-    it_behaves_like 'does not enqueue the worker'
-  end
 end

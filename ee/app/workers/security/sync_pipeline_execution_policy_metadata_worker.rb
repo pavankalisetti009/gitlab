@@ -13,8 +13,6 @@ module Security
 
     def perform(config_project_id, user_id, content, security_policy_ids)
       config_project = Project.find_by_id(config_project_id) || return
-      return if ::Feature.disabled?(:pipeline_execution_policy_analyze_configs, config_project.group)
-
       user = User.find_by_id(user_id) || return
 
       result = Security::SecurityOrchestrationPolicies::AnalyzePipelineExecutionPolicyConfigService
