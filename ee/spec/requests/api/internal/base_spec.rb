@@ -480,9 +480,9 @@ RSpec.describe API::Internal::Base, feature_category: :source_code_management do
             expect(response).to have_gitlab_http_status(:unauthorized)
             expect(json_response["status"]).to eq(false)
             expect(json_response["message"]).to eq(
-              "Your push to this repository would cause it to exceed " \
-              "the size limit of 4 MiB so it has been rejected. " \
-              "Please contact your GitLab administrator for more information."
+              "Your push to this repository cannot be completed as it would exceed " \
+              "the allocated storage for your project. " \
+              "Contact your GitLab administrator for more information."
             )
           end
         end

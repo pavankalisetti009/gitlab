@@ -398,7 +398,7 @@ RSpec.describe Gitlab::GitAccess, feature_category: :system_access do
       it 'rejects the push' do
         expect do
           push_changes("#{Gitlab::Git::SHA1_BLANK_SHA} #{sha_with_smallest_changes} refs/heads/master")
-        end.to raise_error(described_class::ForbiddenError, /Your push has been rejected/)
+        end.to raise_error(described_class::ForbiddenError, /Your push to this repository cannot be completed because this repository has exceeded the allocated storage for your project. Contact your GitLab administrator for more information./)
       end
 
       context 'when deleting a branch' do
@@ -472,7 +472,7 @@ RSpec.describe Gitlab::GitAccess, feature_category: :system_access do
           it 'rejects the push' do
             expect do
               push_changes("#{Gitlab::Git::SHA1_BLANK_SHA} #{sha_with_2_mb_file} refs/heads/my_branch_2")
-            end.to raise_error(described_class::ForbiddenError, /Your push to this repository would cause it to exceed the size limit/)
+            end.to raise_error(described_class::ForbiddenError, /Your push to this repository cannot be completed as it would exceed the allocated storage for your project. Contact your GitLab administrator for more information./)
           end
         end
 
@@ -528,7 +528,7 @@ RSpec.describe Gitlab::GitAccess, feature_category: :system_access do
 
             expect do
               push_changes("#{Gitlab::Git::SHA1_BLANK_SHA} #{sha_with_2_mb_file} refs/heads/my_branch_2")
-            end.to raise_error(described_class::ForbiddenError, /Your push to this repository would cause it to exceed the size limit/)
+            end.to raise_error(described_class::ForbiddenError, /Your push to this repository cannot be completed as it would exceed the allocated storage for your project. Contact your GitLab administrator for more information./)
           end
         end
 

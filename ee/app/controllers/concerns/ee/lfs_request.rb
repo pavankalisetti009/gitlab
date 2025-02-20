@@ -58,7 +58,7 @@ module EE
     end
 
     def error_message
-      return size_checker.error_message.push_error(lfs_objects_change_size) if size_checker.above_size_limit?
+      return size_checker.error_message.push_error if size_checker.above_size_limit?
 
       size_checker.error_message.new_changes_error
     end
