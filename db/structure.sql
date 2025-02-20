@@ -17800,7 +17800,8 @@ CREATE TABLE packages_debian_group_components (
     distribution_id bigint NOT NULL,
     name text NOT NULL,
     group_id bigint,
-    CONSTRAINT check_a9bc7d85be CHECK ((char_length(name) <= 255))
+    CONSTRAINT check_a9bc7d85be CHECK ((char_length(name) <= 255)),
+    CONSTRAINT check_bb77e71a15 CHECK ((group_id IS NOT NULL))
 );
 
 CREATE SEQUENCE packages_debian_group_components_id_seq
