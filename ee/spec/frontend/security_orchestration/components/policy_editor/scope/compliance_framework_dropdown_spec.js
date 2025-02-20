@@ -1,8 +1,15 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { shallowMount } from '@vue/test-utils';
-import { GlButton, GlCollapsibleListbox, GlModal, GlPopover, GlFormGroup } from '@gitlab/ui';
+import {
+  GlButton,
+  GlCollapsibleListbox,
+  GlListboxItem,
+  GlModal,
+  GlPopover,
+  GlFormGroup,
+} from '@gitlab/ui';
 import createMockApollo from 'helpers/mock_apollo_helper';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { TYPE_COMPLIANCE_FRAMEWORK } from '~/graphql_shared/constants';
 import ComplianceFrameworkDropdown from 'ee/security_orchestration/components/policy_editor/scope/compliance_framework_dropdown.vue';
@@ -77,12 +84,25 @@ describe('ComplianceFrameworkDropdown', () => {
     },
   ];
 
+  const moreNodes = [
+    ...defaultNodes,
+    {
+      id: convertToGraphQLId(TYPE_COMPLIANCE_FRAMEWORK, 4),
+      name: 'A4',
+      default: true,
+      description: 'description 4',
+      color: '#cd5b45',
+      pipelineConfigurationFullPath: 'path 4',
+      projects: { nodes: [] },
+    },
+  ];
+
   const defaultNodesIds = defaultNodes.map(({ id }) => id);
 
   const mapItems = (items) =>
     items.map(({ id, name, ...framework }) => ({ value: id, text: name, ...framework }));
 
-  const mockApolloHandlers = (nodes = defaultNodes) => {
+  const mockApolloHandlers = (nodes = defaultNodes, hasNextPage = false) => {
     return {
       complianceFrameworks: jest.fn().mockResolvedValue({
         data: {
@@ -90,7 +110,7 @@ describe('ComplianceFrameworkDropdown', () => {
             id: 1,
             name: 'name',
             complianceFrameworks: {
-              pageInfo: mockPageInfo(),
+              pageInfo: { ...mockPageInfo(), hasNextPage },
               nodes,
             },
           },
@@ -115,7 +135,7 @@ describe('ComplianceFrameworkDropdown', () => {
     handlers = mockApolloHandlers(),
     stubs = {},
   } = {}) => {
-    wrapper = shallowMount(ComplianceFrameworkDropdown, {
+    wrapper = shallowMountExtended(ComplianceFrameworkDropdown, {
       apolloProvider: createMockApolloProvider(handlers),
       propsData: {
         fullPath: 'gitlab-org',
@@ -244,9 +264,10 @@ describe('ComplianceFrameworkDropdown', () => {
       await waitForPromises();
 
       expect(showMock).toHaveBeenCalled();
-      expect(requestHandlers.complianceFrameworks).toHaveBeenCalledTimes(2);
+      expect(requestHandlers.complianceFrameworks).toHaveBeenCalledTimes(3);
       expect(requestHandlers.complianceFrameworks).toHaveBeenNthCalledWith(2, {
         fullPath: 'gitlab-org',
+        ids: null,
       });
     });
   });
@@ -385,6 +406,74 @@ describe('ComplianceFrameworkDropdown', () => {
       await waitForPromises();
 
       expect(findDropdown().props('selected')).toEqual(defaultNodesIds);
+    });
+  });
+
+  describe('infinite scroll', () => {
+    it('makes a query to fetch more frameworks', async () => {
+      createComponent({
+        handlers: mockApolloHandlers(defaultNodes, true),
+      });
+
+      await waitForPromises();
+
+      findDropdown().vm.$emit('bottom-reached');
+
+      expect(requestHandlers.complianceFrameworks).toHaveBeenCalledTimes(2);
+      expect(requestHandlers.complianceFrameworks).toHaveBeenNthCalledWith(2, {
+        after: mockPageInfo().endCursor,
+        fullPath: 'gitlab-org',
+        ids: null,
+        search: '',
+      });
+    });
+  });
+
+  describe('selection after search', () => {
+    it('should add frameworks to existing selection after search', async () => {
+      createComponent({
+        propsData: {
+          selectedFrameworkIds: defaultNodesIds,
+        },
+        handlers: mockApolloHandlers(moreNodes),
+        stubs: {
+          GlCollapsibleListbox,
+          GlListboxItem,
+        },
+      });
+
+      await waitForPromises();
+
+      expect(findDropdown().props('selected')).toEqual(defaultNodesIds);
+
+      findDropdown().vm.$emit('search', '4');
+      await waitForPromises();
+
+      expect(requestHandlers.complianceFrameworks).toHaveBeenCalledWith({
+        search: '4',
+        fullPath: 'gitlab-org',
+        ids: null,
+      });
+
+      await waitForPromises();
+
+      await wrapper.findByTestId(`listbox-item-${moreNodes[3].id}`).vm.$emit('select', true);
+
+      expect(wrapper.emitted('select')).toEqual([[[1, 2, 3, 4]]]);
+    });
+  });
+
+  describe('missing frameworks', () => {
+    it('loads frameworks if they were selected but missing from first loaded page', async () => {
+      createComponent({
+        propsData: { selectedFrameworkIds: [4] },
+      });
+      await waitForPromises();
+
+      expect(requestHandlers.complianceFrameworks).toHaveBeenNthCalledWith(2, {
+        fullPath: 'gitlab-org',
+        ids: [moreNodes[3].id],
+      });
     });
   });
 });
