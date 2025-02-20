@@ -30,7 +30,7 @@ RSpec.describe WorkItems::DataSync::Widgets::LinkedItems, feature_category: :tea
     )
   end
 
-  describe '#after_save_commit' do
+  describe '#after_create' do
     context 'when target work item does not have linked_items widget' do
       before do
         allow(target_work_item).to receive(:get_widget).with(:linked_items).and_return(false)
@@ -40,7 +40,7 @@ RSpec.describe WorkItems::DataSync::Widgets::LinkedItems, feature_category: :tea
         expect(callback).not_to receive(:recreate_related_items)
         expect(::Epic::RelatedEpicLink).not_to receive(:insert_all)
 
-        callback.after_save_commit
+        callback.after_create
 
         expect(target_work_item.reload.linked_work_items(authorize: false)).to be_empty
         expect(target_work_item.sync_object.reload.unauthorized_related_epics).to be_empty
@@ -55,7 +55,7 @@ RSpec.describe WorkItems::DataSync::Widgets::LinkedItems, feature_category: :tea
         expected_linked_work_items = work_item.reload.linked_work_items(authorize: false)
         expected_related_epics = work_item.sync_object.reload.unauthorized_related_epics
 
-        callback.after_save_commit
+        callback.after_create
 
         target_work_item_related_epics = target_work_item.reload.linked_work_items(authorize: false)
         expect(target_work_item_related_epics).to match_array(expected_linked_work_items)
