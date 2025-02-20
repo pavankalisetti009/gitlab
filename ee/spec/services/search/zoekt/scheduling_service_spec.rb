@@ -119,7 +119,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
 
     context 'with tasks that have cache periods configured' do
       it 'is formatted correctly based on task name and cache period' do
-        %i[adjust_indices_reserved_storage_bytes lost_nodes_check update_replica_states].each do |task|
+        %i[lost_nodes_check update_replica_states].each do |task|
           svc = described_class.new(task)
           expect(svc.cache_key).to eq("search/zoekt/scheduling_service:execute_every:#{svc.cache_period}:#{task}")
         end
@@ -130,7 +130,6 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
   describe '#cache_period' do
     context 'with a task from CONFIG' do
       it 'returns the period when configured' do
-        expect(described_class.new(:adjust_indices_reserved_storage_bytes).cache_period).to eq(10.minutes)
         expect(described_class.new(:update_replica_states).cache_period).to eq(2.minutes)
       end
 
@@ -209,6 +208,56 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
           expect { execute_task }.not_to change { zoekt_index2.zoekt_enabled_namespace.reload.search }
         end
       end
+    end
+  end
+
+  describe '#index_mismatched_watermark_check' do
+    let(:task) { :index_mismatched_watermark_check }
+    let(:logger) { instance_double(Logger) }
+
+    before do
+      allow_next_instance_of(described_class) do |instance|
+        allow(instance).to receive(:logger).and_return(logger)
+        allow(instance).to receive(:build_structured_payload) do |**payload|
+          payload
+        end
+      end
+
+      allow(logger).to receive(:info)
+    end
+
+    context 'when there are no indices with mismatched watermark levels' do
+      before do
+        allow(Search::Zoekt::Index).to receive_message_chain(:with_mismatched_watermark_levels, :exists?)
+          .and_return(false)
+      end
+
+      it 'returns false' do
+        expect(execute_task).to be false
+      end
+    end
+
+    context 'when there are indices with mismatched watermark levels' do
+      before do
+        allow(Search::Zoekt::Index).to receive_message_chain(:with_mismatched_watermark_levels, :exists?)
+          .and_return(true)
+        allow(Search::Zoekt::Index).to receive_message_chain(:with_mismatched_watermark_levels, :count)
+          .and_return(5)
+      end
+
+      it 'logs a message with the count of mismatched indices' do
+        expected_payload = {
+          task: :index_mismatched_watermark_check,
+          message: 'Detected indices with mismatched watermarks',
+          count: 5
+        }
+
+        execute_task
+
+        expect(logger).to have_received(:info).with(expected_payload)
+      end
+
+      it_behaves_like 'a execute_every task', period: 10.minutes
     end
   end
 
@@ -760,33 +809,6 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
     end
   end
 
-  describe '#index_mismatched_watermark_check' do
-    let(:task) { :index_mismatched_watermark_check }
-
-    context 'when no indexes have mismatched watermark levels or negative reserved storage bytes' do
-      it 'does nothing, publishes no events' do
-        expect { execute_task }.not_to publish_event(Search::Zoekt::IndexWatermarkChangedEvent)
-      end
-    end
-
-    context 'when indexes have mismatched watermark levels' do
-      it 'publishes a Search::Zoekt::IndexWatermarkChangedEvent' do
-        idx = create(:zoekt_index, :low_watermark_exceeded)
-        idx.healthy!
-
-        expect { execute_task }.to publish_event(Search::Zoekt::IndexWatermarkChangedEvent)
-      end
-    end
-
-    context 'when indexes have negative reserved storage bytes' do
-      it 'publishes a Search::Zoekt::IndexWatermarkChangedEvent' do
-        create(:zoekt_index, :negative_reserved_storage_bytes)
-
-        expect { execute_task }.to publish_event(Search::Zoekt::IndexWatermarkChangedEvent)
-      end
-    end
-  end
-
   describe '#repo_to_index_check' do
     let(:task) { :repo_to_index_check }
     let_it_be(:pending_repo) { create(:zoekt_repository) }
@@ -844,28 +866,6 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
         allow(Search::Zoekt::Index).to receive_message_chain(:should_be_pending_eviction, :exists?).and_return(true)
 
         expect { execute_task }.to publish_event(Search::Zoekt::IndexMarkPendingEvictionEvent).with({})
-      end
-    end
-  end
-
-  describe '#adjust_indices_reserved_storage_bytes' do
-    let(:task) { :adjust_indices_reserved_storage_bytes }
-
-    context 'when should_be_reserved_storage_bytes_adjusted scope returns no indices' do
-      it 'does not publishes an AdjustIndicesReservedStorageBytesEvent' do
-        allow(Search::Zoekt::Index).to receive_message_chain(:should_be_reserved_storage_bytes_adjusted, :exists?)
-          .and_return(false)
-
-        expect { execute_task }.not_to publish_event(Search::Zoekt::AdjustIndicesReservedStorageBytesEvent)
-      end
-    end
-
-    context 'when should_be_reserved_storage_bytes_adjusted scope returns indices' do
-      it 'publishes an AdjustIndicesReservedStorageBytesEvent' do
-        allow(Search::Zoekt::Index).to receive_message_chain(:should_be_reserved_storage_bytes_adjusted, :exists?)
-          .and_return(true)
-
-        expect { execute_task }.to publish_event(Search::Zoekt::AdjustIndicesReservedStorageBytesEvent).with({})
       end
     end
   end
