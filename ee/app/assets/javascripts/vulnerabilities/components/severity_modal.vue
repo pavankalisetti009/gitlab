@@ -49,7 +49,7 @@ export default {
     },
     validate() {
       this.severityValid = Boolean(this.severity);
-      this.commentValid = Boolean(this.comment);
+      this.commentValid = Boolean(this.comment?.trim());
     },
     saveChange(event) {
       this.validate();
@@ -73,7 +73,7 @@ export default {
     },
   },
   actions: {
-    primary: { text: __('Save change') },
+    primary: { text: __('Change severity') },
     cancel: { text: __('Cancel') },
   },
 };

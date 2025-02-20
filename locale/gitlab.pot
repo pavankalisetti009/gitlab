@@ -11763,6 +11763,9 @@ msgstr ""
 msgid "Change role"
 msgstr ""
 
+msgid "Change severity"
+msgstr ""
+
 msgid "Change status"
 msgstr ""
 
@@ -50308,9 +50311,6 @@ msgid "Save Changes"
 msgstr ""
 
 msgid "Save application"
-msgstr ""
-
-msgid "Save change"
 msgstr ""
 
 msgid "Save changes"
