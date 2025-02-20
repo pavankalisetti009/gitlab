@@ -86,7 +86,7 @@ RSpec.describe 'Git LFS API and storage', feature_category: :source_code_managem
             batch_request
 
             expect(response).to have_gitlab_http_status(:not_acceptable)
-            expect(json_response['message']).to eql('Your push has been rejected, because this repository has exceeded its size limit of 100 MiB by 160 MiB. Please contact your GitLab administrator for more information.')
+            expect(json_response['message']).to eql('Your push to this repository cannot be completed because this repository has exceeded the allocated storage for your project. Contact your GitLab administrator for more information.')
           end
         end
 
@@ -106,7 +106,7 @@ RSpec.describe 'Git LFS API and storage', feature_category: :source_code_managem
 
             expect(response).to have_gitlab_http_status(:not_acceptable)
             expect(json_response['documentation_url']).to include('/help')
-            expect(json_response['message']).to eql('Your push to this repository would cause it to exceed the size limit of 300 MiB so it has been rejected. Please contact your GitLab administrator for more information.')
+            expect(json_response['message']).to eql('Your push to this repository cannot be completed as it would exceed the allocated storage for your project. Contact your GitLab administrator for more information.')
           end
         end
 
