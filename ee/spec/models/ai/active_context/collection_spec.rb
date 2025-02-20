@@ -25,4 +25,29 @@ RSpec.describe Ai::ActiveContext::Collection, feature_category: :global_search d
       expect(collection.errors[:metadata]).to include('must be a valid json schema')
     end
   end
+
+  describe '.partition_for' do
+    using RSpec::Parameterized::TableSyntax
+
+    let(:collection) { create(:ai_active_context_collection, number_of_partitions: 5) }
+
+    where(:routing_value, :partition_number) do
+      1 | 0
+      2 | 1
+      3 | 3
+      4 | 2
+      5 | 3
+      6 | 3
+      7 | 4
+      8 | 4
+      9 | 2
+      10 | 2
+    end
+
+    with_them do
+      it 'always returns the same partition for a routing value' do
+        expect(collection.partition_for(routing_value)).to eq(partition_number)
+      end
+    end
+  end
 end
