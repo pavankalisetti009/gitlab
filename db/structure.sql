@@ -16964,6 +16964,8 @@ CREATE TABLE namespace_settings (
     pipeline_variables_default_role smallint DEFAULT 2 NOT NULL,
     force_pages_access_control boolean DEFAULT false NOT NULL,
     extended_grat_expiry_webhooks_execute boolean DEFAULT false NOT NULL,
+    jwt_ci_cd_job_token_enabled boolean DEFAULT false NOT NULL,
+    jwt_ci_cd_job_token_opted_out boolean DEFAULT false NOT NULL,
     CONSTRAINT check_0ba93c78c7 CHECK ((char_length(default_branch_name) <= 255)),
     CONSTRAINT namespace_settings_unique_project_download_limit_alertlist_size CHECK ((cardinality(unique_project_download_limit_alertlist) <= 100)),
     CONSTRAINT namespace_settings_unique_project_download_limit_allowlist_size CHECK ((cardinality(unique_project_download_limit_allowlist) <= 100))
