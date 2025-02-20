@@ -6,11 +6,6 @@ module Search
       include Gitlab::Loggable
 
       CONFIG = {
-        adjust_indices_reserved_storage_bytes: {
-          period: 10.minutes,
-          if: -> { Index.should_be_reserved_storage_bytes_adjusted.exists? },
-          dispatch: { event: AdjustIndicesReservedStorageBytesEvent }
-        },
         indices_to_evict_check: {
           period: 10.minutes,
           if: -> { Index.pending_eviction.exists? },
@@ -18,11 +13,14 @@ module Search
         },
         index_mismatched_watermark_check: {
           period: 10.minutes,
-          if: -> {
-            Search::Zoekt::Index.with_mismatched_watermark_levels
-              .or(Search::Zoekt::Index.negative_reserved_storage_bytes).exists?
-          },
-          dispatch: { event: IndexWatermarkChangedEvent }
+          if: -> { Search::Zoekt::Index.with_mismatched_watermark_levels.exists? },
+          execute: -> {
+            info(
+              :index_mismatched_watermark_check,
+              message: "Detected indices with mismatched watermarks",
+              count: Search::Zoekt::Index.with_mismatched_watermark_levels.count
+            )
+          }
         },
         index_should_be_marked_as_orphaned_check: {
           period: 10.minutes,
@@ -160,8 +158,8 @@ module Search
             break false
           end
 
-          # Call the execute block if provided
-          config[:execute].call if config[:execute]
+          # Call the execute block if provided, using self as the caller
+          instance_exec(&config[:execute]) if config[:execute]
 
           dispatch(config[:dispatch][:event], &config[:dispatch][:data]) if config[:dispatch]
         end

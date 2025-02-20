@@ -165,21 +165,6 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
       end
     end
 
-    describe '.should_be_reserved_storage_bytes_adjusted' do
-      let_it_be(:overprovisioned_pending) { create(:zoekt_index, :overprovisioned) }
-      let_it_be(:overprovisioned_ready) { create(:zoekt_index, :overprovisioned, :ready) }
-      let_it_be(:high_watermark_exceeded_pending) { create(:zoekt_index, :high_watermark_exceeded) }
-      let_it_be(:high_watermark_exceeded_ready) { create(:zoekt_index, :high_watermark_exceeded, :ready) }
-      let_it_be(:healthy) { create(:zoekt_index, :healthy) }
-
-      subject(:scope) { described_class.should_be_reserved_storage_bytes_adjusted }
-
-      it 'returns correct indices' do
-        expect(scope).to include(overprovisioned_ready, high_watermark_exceeded_pending, high_watermark_exceeded_ready)
-        expect(scope).not_to include(overprovisioned_pending, healthy)
-      end
-    end
-
     describe '.pre_ready' do
       let_it_be(:in_progress) { create(:zoekt_index, state: :in_progress) }
       let_it_be(:initializing) { create(:zoekt_index, state: :initializing) }
@@ -392,136 +377,82 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
     end
   end
 
-  describe '#update_reserved_storage_bytes!' do
-    let_it_be(:zoekt_node) { create(:zoekt_node, total_bytes: 100_000) }
-    let_it_be_with_reload(:idx) do
-      create(:zoekt_index, used_storage_bytes: 90, reserved_storage_bytes: 100, node: zoekt_node)
+  describe '#refresh_reserved_storage_bytes' do
+    let_it_be(:zoekt_node) { build(:zoekt_node, total_bytes: 100_000) }
+    let_it_be(:idx) do
+      build(:zoekt_index, used_storage_bytes: 90, reserved_storage_bytes: 100, node: zoekt_node)
     end
 
-    it 'updates indices with the sum of size_bytes for all associated repositories' do
+    it 'updates reserved_storage_bytes with the ideal storage based on used bytes' do
+      allow(zoekt_node).to receive_messages(indices: [], reserved_storage_bytes: 0)
       ideal_reserved_storage = idx.used_storage_bytes / described_class::STORAGE_IDEAL_PERCENT_USED
 
       expect do
-        idx.update_reserved_storage_bytes!
+        idx.refresh_reserved_storage_bytes
       end.to change {
-        idx.reload.reserved_storage_bytes
+        idx.reserved_storage_bytes
       }.from(100).to(ideal_reserved_storage)
-
-      expect(
-        idx.used_storage_bytes / idx.reserved_storage_bytes.to_f
-      ).to eq(described_class::STORAGE_IDEAL_PERCENT_USED)
     end
 
-    describe 'updates the watermark level to the appropriate state' do
-      let(:percent_used) { 0 }
+    context 'when the node has limited storage' do
+      let_it_be(:zoekt_node) { build(:zoekt_node, total_bytes: 300, used_bytes: 198, indexed_bytes: 0) }
+      let_it_be(:idx) do
+        build(:zoekt_index, used_storage_bytes: 90, reserved_storage_bytes: 100, node: zoekt_node)
+      end
+
+      let_it_be(:other_index) { build(:zoekt_index, node: zoekt_node, reserved_storage_bytes: 100) }
 
       before do
-        idx.high_watermark_exceeded!
-        allow(idx).to receive(:storage_percent_used).and_return(percent_used)
+        allow(zoekt_node).to receive_messages(indices: [other_index], reserved_storage_bytes: 100)
       end
 
-      context 'when index should be marked as overprovisioned' do
-        let(:percent_used) { 0.01 }
-
-        it 'updates the watermark level to the appropriate state' do
-          expect { idx.update_reserved_storage_bytes! }.to change {
-            idx.reload.watermark_level
-          }.from("high_watermark_exceeded").to("overprovisioned")
-        end
-      end
-
-      context 'when index should be marked as healthy' do
-        let(:percent_used) { described_class::STORAGE_IDEAL_PERCENT_USED }
-
-        it 'updates the watermark level to the appropriate state' do
-          expect { idx.update_reserved_storage_bytes! }.to change {
-            idx.reload.watermark_level
-          }.from("high_watermark_exceeded").to("healthy")
-        end
-      end
-
-      context 'when index should be marked as low_watermark_exceeded' do
-        let(:percent_used) { described_class::STORAGE_LOW_WATERMARK }
-
-        it 'updates the watermark level to the appropriate state' do
-          expect { idx.update_reserved_storage_bytes! }.to change {
-            idx.reload.watermark_level
-          }.from("high_watermark_exceeded").to("low_watermark_exceeded")
-        end
-      end
-
-      context 'when index should be marked as high_watermark_exceeded' do
-        let(:percent_used) { described_class::STORAGE_HIGH_WATERMARK }
-
-        it 'updates the watermark level to the appropriate state' do
-          idx.low_watermark_exceeded!
-
-          expect { idx.update_reserved_storage_bytes! }.to change {
-            idx.reload.watermark_level
-          }.from("low_watermark_exceeded").to("high_watermark_exceeded")
-        end
-      end
-    end
-
-    context 'when the node only has a little bit more storage' do
-      let_it_be(:zoekt_node) { create(:zoekt_node, total_bytes: 102, used_bytes: 0) }
-
-      let_it_be(:idx) do
-        create(:zoekt_index, used_storage_bytes: 90, reserved_storage_bytes: 100, node: zoekt_node)
-      end
-
-      it 'increases the node reservation as much as possible' do
+      it 'increases the reserved storage only up to available node storage' do
         expect do
-          idx.update_reserved_storage_bytes!
+          idx.refresh_reserved_storage_bytes
         end.to change {
-          idx.reload.reserved_storage_bytes
-        }.from(100).to(102)
+          idx.reserved_storage_bytes
+        }.from(100).to(102) # 300 total - 198 used - 100 other_index + 100 current = 102 available
       end
     end
 
     context 'when the node does not have any more storage' do
-      let_it_be(:zoekt_node) { create(:zoekt_node, total_bytes: 100, used_bytes: 0) }
-
+      let_it_be(:zoekt_node) { build(:zoekt_node, total_bytes: 300, used_bytes: 200, indexed_bytes: 0) }
       let_it_be(:idx) do
-        create(:zoekt_index, used_storage_bytes: 90, reserved_storage_bytes: 100, node: zoekt_node)
+        build(:zoekt_index, used_storage_bytes: 90, reserved_storage_bytes: 100, node: zoekt_node)
       end
 
-      it 'does not do anything' do
+      let_it_be(:other_index) { build(:zoekt_index, node: zoekt_node, reserved_storage_bytes: 100) }
+
+      before do
+        allow(zoekt_node).to receive_messages(indices: [other_index], reserved_storage_bytes: 100)
+      end
+
+      it 'does not change reserved_storage_bytes' do
         expect do
-          idx.update_reserved_storage_bytes!
-        end.not_to change {
-          idx.reload.reserved_storage_bytes
-        }
-      end
-    end
-
-    context 'when an exception occurs' do
-      it 'logs the error and re-raises the exception' do
-        stubbed_logger = instance_double(::Search::Zoekt::Logger)
-        expect(::Search::Zoekt::Logger).to receive(:build).and_return stubbed_logger
-
-        expect(stubbed_logger).to receive(:error).with({
-          class: 'Search::Zoekt::Index',
-          message: 'Error attempting to update reserved_storage_bytes',
-          error: 'Record invalid',
-          new_reserved_bytes: anything,
-          reserved_storage_bytes: anything,
-          index_id: idx.id
-        }.with_indifferent_access)
-
-        expect(idx).to receive(:save!).and_raise ActiveRecord::RecordInvalid
-
-        expect { idx.update_reserved_storage_bytes! }.to raise_error ActiveRecord::RecordInvalid
+          idx.refresh_reserved_storage_bytes
+        end.not_to change { idx.reserved_storage_bytes }
       end
     end
 
     context 'when used_storage_bytes is 0' do
-      let_it_be(:index) { create(:zoekt_index, used_storage_bytes: 0) }
+      let_it_be(:idx) { build(:zoekt_index, used_storage_bytes: 0) }
 
-      it 'sets reserved_storage_bytes to DEFAULT_RESERVED_STORAGE_BYTES and watermark_level to overprovisioned' do
-        index.update_reserved_storage_bytes!
-        expect(index.reload.reserved_storage_bytes).to eq described_class::DEFAULT_RESERVED_STORAGE_BYTES
-        expect(index).to be_overprovisioned
+      it 'sets reserved_storage_bytes to DEFAULT_RESERVED_STORAGE_BYTES' do
+        expect do
+          idx.refresh_reserved_storage_bytes
+        end.to change {
+          idx.reserved_storage_bytes
+        }.to(described_class::DEFAULT_RESERVED_STORAGE_BYTES)
+      end
+
+      it 'does not perform division calculation' do
+        expect(idx).not_to receive(:storage_percent_used)
+        idx.refresh_reserved_storage_bytes
+      end
+
+      it 'does not check node unclaimed storage' do
+        expect(idx.node).not_to receive(:unclaimed_storage_bytes)
+        idx.refresh_reserved_storage_bytes
       end
     end
   end
@@ -533,47 +464,87 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
     end
   end
 
-  describe '#refresh_storage_bytes!' do
-    let_it_be(:zoekt_index) { create(:zoekt_index) }
-    let(:repository_size) { 100.megabytes }
+  describe '#update_storage_bytes!' do
+    using RSpec::Parameterized::TableSyntax
 
     before do
-      travel_to Time.current
+      allow(zoekt_index).to receive(:refresh_used_storage_bytes)
+      allow(zoekt_index).to receive(:refresh_reserved_storage_bytes)
+      allow(zoekt_index).to receive(:save!)
+      allow(zoekt_index).to receive_messages(ready?: ready, overprovisioned?: overprovisioned,
+        high_watermark_exceeded?: high_watermark_exceeded)
+    end
+
+    where(:ready, :overprovisioned, :high_watermark_exceeded, :should_update_reserved_storage) do
+      true  | true  | false | true
+      true  | false | true  | true
+      true  | false | false | false
+      false | true  | false | false
+      false | false | true  | true
+      false | false | false | false
+    end
+
+    with_them do
+      it 'calls the correct methods' do
+        expect(zoekt_index).to receive(:refresh_used_storage_bytes).once
+        expect(zoekt_index).to receive(:save!).once
+
+        if should_update_reserved_storage
+          expect(zoekt_index).to receive(:refresh_reserved_storage_bytes).once
+        else
+          expect(zoekt_index).not_to receive(:refresh_reserved_storage_bytes)
+        end
+
+        zoekt_index.update_storage_bytes!
+      end
+    end
+  end
+
+  describe '#refresh_used_storage_bytes', :freeze_time do
+    let_it_be(:initial_time) { 10.minutes.ago }
+    let_it_be(:current_time) { Time.zone.now }
+    let_it_be(:zoekt_index) do
+      build(:zoekt_index, used_storage_bytes_updated_at: initial_time)
     end
 
     context 'when there are repositories with size_bytes' do
+      let(:repository_size) { 100.megabytes }
+      let(:repositories_association) { instance_double(ActiveRecord::Associations::CollectionProxy) }
+
       before do
-        create_list(:zoekt_repository, 3, zoekt_index: zoekt_index, size_bytes: repository_size)
+        allow(zoekt_index).to receive(:zoekt_repositories).and_return(repositories_association)
+        allow(repositories_association).to receive(:sum).with(:size_bytes).and_return(repository_size * 3)
       end
 
       it 'updates used_storage_bytes to the sum of repository sizes' do
-        expect { zoekt_index.refresh_storage_bytes! }.to change {
-          zoekt_index.reload.used_storage_bytes
+        expect { zoekt_index.refresh_used_storage_bytes }.to change {
+          zoekt_index.used_storage_bytes
         }.to(repository_size * 3)
       end
 
       it 'updates used_storage_bytes_updated_at to current time' do
-        expect { zoekt_index.refresh_storage_bytes! }.to change {
-          zoekt_index.reload.used_storage_bytes_updated_at
-        }.to(be_like_time(Time.current))
+        zoekt_index.refresh_used_storage_bytes
+        expect(zoekt_index.used_storage_bytes_updated_at).to be_like_time(current_time)
       end
     end
 
     context 'when there are no repositories or all repositories have zero size' do
+      let(:repositories_association) { instance_double(ActiveRecord::Associations::CollectionProxy) }
+
       before do
-        create_list(:zoekt_repository, 3, zoekt_index: zoekt_index, size_bytes: 0)
+        allow(zoekt_index).to receive(:zoekt_repositories).and_return(repositories_association)
+        allow(repositories_association).to receive(:sum).with(:size_bytes).and_return(0)
       end
 
       it 'sets used_storage_bytes to DEFAULT_USED_STORAGE_BYTES' do
-        expect { zoekt_index.refresh_storage_bytes! }.to change {
-          zoekt_index.reload.used_storage_bytes
+        expect { zoekt_index.refresh_used_storage_bytes }.to change {
+          zoekt_index.used_storage_bytes
         }.to(described_class::DEFAULT_USED_STORAGE_BYTES)
       end
 
       it 'updates used_storage_bytes_updated_at to current time' do
-        expect { zoekt_index.refresh_storage_bytes! }.to change {
-          zoekt_index.reload.used_storage_bytes_updated_at
-        }.to(be_like_time(Time.current))
+        zoekt_index.refresh_used_storage_bytes
+        expect(zoekt_index.used_storage_bytes_updated_at).to be_like_time(current_time)
       end
     end
   end

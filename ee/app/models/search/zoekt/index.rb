@@ -78,7 +78,6 @@ module Search
 
       scope :ordered, -> { order(:id) }
       scope :ordered_by_used_storage_updated_at, -> { order(:used_storage_bytes_updated_at) }
-      scope :should_be_reserved_storage_bytes_adjusted, -> { overprovisioned.ready.or(high_watermark_exceeded) }
       scope :preload_zoekt_enabled_namespace_and_namespace, -> { includes(zoekt_enabled_namespace: :namespace) }
       scope :preload_node, -> { includes(:node) }
       scope :with_stale_used_storage_bytes_updated_at, -> { where('last_indexed_at >= used_storage_bytes_updated_at') }
@@ -111,14 +110,26 @@ module Search
         SQL
       end
 
-      def refresh_storage_bytes!
-        sum_for_index = zoekt_repositories.sum(:size_bytes)
-        used_storage_bytes = sum_for_index == 0 ? DEFAULT_USED_STORAGE_BYTES : sum_for_index
+      def update_storage_bytes!
+        refresh_used_storage_bytes
 
-        update!(used_storage_bytes: used_storage_bytes, used_storage_bytes_updated_at: Time.zone.now)
+        refresh_reserved_storage_bytes if (ready? && overprovisioned?) || high_watermark_exceeded?
+
+        save!
       end
 
-      def update_reserved_storage_bytes!
+      def refresh_used_storage_bytes
+        sum_for_index = zoekt_repositories.sum(:size_bytes)
+        self.used_storage_bytes = sum_for_index == 0 ? DEFAULT_USED_STORAGE_BYTES : sum_for_index
+        self.used_storage_bytes_updated_at = Time.zone.now
+      end
+
+      def refresh_reserved_storage_bytes
+        if used_storage_bytes == 0
+          self.reserved_storage_bytes = DEFAULT_RESERVED_STORAGE_BYTES
+          return
+        end
+
         # This number of bytes will put the index as the ideal storage utilization
         ideal_reserved_storage_bytes = used_storage_bytes / STORAGE_IDEAL_PERCENT_USED
 
@@ -134,17 +145,6 @@ module Search
         return if new_reserved_bytes == reserved_storage_bytes
 
         self.reserved_storage_bytes = new_reserved_bytes
-        save!
-      rescue ActiveRecord::ActiveRecordError => err
-        logger.error(build_structured_payload(
-          message: 'Error attempting to update reserved_storage_bytes',
-          index_id: id,
-          error: err.message,
-          new_reserved_bytes: new_reserved_bytes,
-          reserved_storage_bytes: reserved_storage_bytes
-        ))
-
-        raise err
       end
 
       def free_storage_bytes
