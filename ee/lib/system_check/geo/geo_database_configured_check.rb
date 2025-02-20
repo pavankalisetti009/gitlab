@@ -56,11 +56,11 @@ module SystemCheck
       end
 
       def database_docs
-        construct_help_page_url('administration/geo/setup/database.md')
+        Rails.application.routes.url_helpers.help_page_url('administration/geo/setup/database.md')
       end
 
       def troubleshooting_docs
-        construct_help_page_url('administration/geo/replication/troubleshooting.md')
+        Rails.application.routes.url_helpers.help_page_url('administration/geo/replication/troubleshooting/_index.md')
       end
 
       private

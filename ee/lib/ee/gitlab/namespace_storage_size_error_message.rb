@@ -17,14 +17,14 @@ module EE
         _(
           "Your action has been rejected because the namespace storage limit has been reached. " \
           "For more information, visit %{doc_url}.") % {
-            doc_url: help_page_url('user/storage_usage_quotas.md')
+            doc_url: ::Gitlab::Routing.url_helpers.help_page_url('user/storage_usage_quotas.md')
           }
       end
 
       def merge_error
         manage_storage_url = link_to(
           '',
-          help_page_path('user/storage_usage_quotas.md'),
+          ::Gitlab::Routing.url_helpers.help_page_path('user/storage_usage_quotas.md'),
           target: '_blank',
           rel: 'noopener noreferrer'
         )
@@ -88,8 +88,10 @@ module EE
       def push_message_params
         {
           namespace_name: message_params[:namespace_name],
-          manage_storage_url: help_page_url('user/storage_usage_quotas.md', 'manage-storage-usage'),
-          restricted_actions_url: help_page_url('user/read_only_namespaces.md', 'restricted-actions'),
+          manage_storage_url: ::Gitlab::Routing.url_helpers.help_page_url('user/storage_usage_quotas.md',
+            anchor: 'manage-storage-usage'),
+          restricted_actions_url: ::Gitlab::Routing.url_helpers.help_page_url('user/read_only_namespaces.md',
+            anchor: 'restricted-actions'),
           current_size: formatted(current_size),
           size_limit: formatted(limit),
           usage_percentage: usage_percentage
@@ -106,14 +108,6 @@ module EE
 
       def link_to(text, url, options)
         ActionController::Base.helpers.link_to(text, url, options)
-      end
-
-      def help_page_path(path)
-        ::Gitlab::Routing.url_helpers.help_page_path(path)
-      end
-
-      def help_page_url(path, anchor = nil)
-        ::Gitlab::Routing.url_helpers.help_page_url(path, anchor: anchor)
       end
     end
   end

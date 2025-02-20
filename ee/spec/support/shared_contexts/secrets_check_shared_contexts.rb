@@ -307,8 +307,8 @@ RSpec.shared_context 'secret detection error and log messages context' do
       log_messages[:found_secrets_docs_link],
       {
         path: Rails.application.routes.url_helpers.help_page_url(
-          Gitlab::Checks::SecretsCheck::DOCUMENTATION_PATH,
-          anchor: Gitlab::Checks::SecretsCheck::DOCUMENTATION_PATH_ANCHOR
+          'user/application_security/secret_detection/secret_push_protection/_index.md',
+          anchor: 'resolve-a-blocked-push'
         )
       }
     )

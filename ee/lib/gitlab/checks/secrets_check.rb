@@ -42,8 +42,6 @@ module Gitlab
 
       PAYLOAD_BYTES_LIMIT = 1.megabyte # https://handbook.gitlab.com/handbook/engineering/architecture/design-documents/secret_detection/#target-types
       SPECIAL_COMMIT_FLAG = /\[skip secret push protection\]/i
-      DOCUMENTATION_PATH = 'user/application_security/secret_detection/secret_push_protection/_index.html'
-      DOCUMENTATION_PATH_ANCHOR = 'resolve-a-blocked-push'
       EXCLUSION_TYPE_MAP = {
         rule: ::Gitlab::SecretDetection::GRPC::ExclusionType::EXCLUSION_TYPE_RULE,
         path: ::Gitlab::SecretDetection::GRPC::ExclusionType::EXCLUSION_TYPE_PATH,
@@ -581,8 +579,8 @@ module Gitlab
           LOG_MESSAGES[:found_secrets_docs_link],
           {
             path: Rails.application.routes.url_helpers.help_page_url(
-              DOCUMENTATION_PATH,
-              anchor: DOCUMENTATION_PATH_ANCHOR
+              'user/application_security/secret_detection/secret_push_protection/_index.md',
+              anchor: 'resolve-a-blocked-push'
             )
           }
         )

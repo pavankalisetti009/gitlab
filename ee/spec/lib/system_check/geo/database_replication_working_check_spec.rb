@@ -71,6 +71,15 @@ RSpec.describe SystemCheck::Geo::DatabaseReplicationWorkingCheck, :silence_stdou
     end
   end
 
+  describe '#show_error' do
+    subject(:show_error) { database_replication_working_check.show_error }
+
+    it 'returns an error message' do
+      expect(show_error.count).to be 1
+      expect(show_error.first).to end_with "/help/administration/geo/setup/database.md"
+    end
+  end
+
   describe '#skip_reason' do
     context 'with geo_postgresql_replication_agnostic disabled' do
       before do
