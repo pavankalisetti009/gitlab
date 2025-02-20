@@ -2571,6 +2571,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_8a11b103857c() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."group_id" IS NULL THEN
+  SELECT "group_id"
+  INTO NEW."group_id"
+  FROM "packages_debian_group_components"
+  WHERE "packages_debian_group_components"."id" = NEW."component_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_8a38ce2327de() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -17809,6 +17825,7 @@ CREATE TABLE packages_debian_group_component_files (
     file_store smallint DEFAULT 1 NOT NULL,
     file text NOT NULL,
     file_sha256 bytea NOT NULL,
+    group_id bigint,
     CONSTRAINT check_839e1685bc CHECK ((char_length(file) <= 255))
 );
 
@@ -34125,6 +34142,8 @@ CREATE INDEX index_packages_debian_group_architectures_on_group_id ON packages_d
 
 CREATE INDEX index_packages_debian_group_component_files_on_component_id ON packages_debian_group_component_files USING btree (component_id);
 
+CREATE INDEX index_packages_debian_group_component_files_on_group_id ON packages_debian_group_component_files USING btree (group_id);
+
 CREATE INDEX index_packages_debian_group_components_on_group_id ON packages_debian_group_components USING btree (group_id);
 
 CREATE INDEX index_packages_debian_group_distribution_keys_on_group_id ON packages_debian_group_distribution_keys USING btree (group_id);
@@ -38375,6 +38394,8 @@ CREATE TRIGGER trigger_85d89f0f11db BEFORE INSERT OR UPDATE ON issue_metrics FOR
 
 CREATE TRIGGER trigger_897f35481f9a BEFORE UPDATE OF pre_receive_secret_detection_enabled ON project_security_settings FOR EACH ROW EXECUTE FUNCTION function_for_trigger_897f35481f9a();
 
+CREATE TRIGGER trigger_8a11b103857c BEFORE INSERT OR UPDATE ON packages_debian_group_component_files FOR EACH ROW EXECUTE FUNCTION trigger_8a11b103857c();
+
 CREATE TRIGGER trigger_8a38ce2327de BEFORE INSERT OR UPDATE ON boards_epic_user_preferences FOR EACH ROW EXECUTE FUNCTION trigger_8a38ce2327de();
 
 CREATE TRIGGER trigger_8ac78f164b2d BEFORE INSERT OR UPDATE ON design_management_repositories FOR EACH ROW EXECUTE FUNCTION trigger_8ac78f164b2d();
@@ -39740,6 +39761,9 @@ ALTER TABLE ONLY notes
 
 ALTER TABLE ONLY approval_group_rules_users
     ADD CONSTRAINT fk_9a4b673183 FOREIGN KEY (approval_group_rule_id) REFERENCES approval_group_rules(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY packages_debian_group_component_files
+    ADD CONSTRAINT fk_9a816f378c FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY import_failures
     ADD CONSTRAINT fk_9a9b9ba21c FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
