@@ -240,7 +240,7 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
       <<~GQL
         query($namespaceId: ID!) {
           subscription(namespaceId: $namespaceId) {
-            eligibleForSeatUsageAlerts
+            isEligibleForSeatUsageAlerts
           }
         }
       GQL
@@ -259,7 +259,7 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
         data: {
           "data" => {
             "subscription" => {
-              "eligibleForSeatUsageAlerts" => true
+              "isEligibleForSeatUsageAlerts" => true
             }
           }
         }
