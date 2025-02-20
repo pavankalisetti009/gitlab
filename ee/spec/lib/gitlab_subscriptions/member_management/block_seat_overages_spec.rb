@@ -321,6 +321,21 @@ RSpec.describe GitlabSubscriptions::MemberManagement::BlockSeatOverages, feature
       end
     end
 
+    context 'with a subscription downgraded to free', :saas do
+      let_it_be_with_refind(:group) { create(:group_with_plan, plan: :free_plan) }
+
+      before_all do
+        group.gitlab_subscription.update!(seats: 0)
+      end
+
+      it 'returns true' do
+        user_ids = %w[1 2 3 4 5 6 7 8 9 10 11 12]
+
+        expect(described_class.seats_available_for_group?(group, user_ids, ::Gitlab::Access::DEVELOPER,
+          nil)).to be(true)
+      end
+    end
+
     context 'without a subscription' do
       it 'returns true' do
         user_ids = %w[1 2 3 4 5 6 7 8 9 10 11 12]

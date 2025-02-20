@@ -32,7 +32,7 @@ module GitlabSubscriptions
         end
 
         def seats_available_for_group?(root_group, invites, access_level, member_role_id)
-          return true unless root_group.gitlab_subscription
+          return true unless root_group.gitlab_subscription&.has_a_paid_hosted_plan?
 
           return true if non_billable_member?(access_level, member_role_id, root_group.exclude_guests?)
 

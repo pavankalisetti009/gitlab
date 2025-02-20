@@ -640,6 +640,8 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
         before do
           stub_feature_flags(block_seat_overages: true)
           group.namespace_settings.update!(seat_control: :block_overages)
+
+          create(:gitlab_subscription, :premium, namespace: group, seats: 1)
         end
 
         it 'rejects the request' do
