@@ -1,6 +1,6 @@
-import Vue from 'vue';
+import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlAvatar, GlButton, GlLink } from '@gitlab/ui';
+import { GlAvatar, GlButton, GlLink, GlDaterangePicker } from '@gitlab/ui';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import { createAlert } from '~/alert';
 import { confirmAction } from '~/lib/utils/confirm_via_gl_modal/confirm_via_gl_modal';
@@ -103,6 +103,7 @@ describe('RunnerUsage', () => {
   let runnerUsageByProjectHandler;
   let runnerUsageExportHandler;
 
+  const findDaterangePicker = () => wrapper.findComponent(GlDaterangePicker);
   const findButton = () => wrapper.findComponent(GlButton);
   const findTopRunnersTable = () => wrapper.findByTestId('top-runners-table');
   const findTopProjectsTable = () => wrapper.findByTestId('top-projects-table');
@@ -145,6 +146,18 @@ describe('RunnerUsage', () => {
     runnerUsageExportHandler = jest.fn();
   });
 
+  it('shows daterange picker', () => {
+    createWrapper();
+
+    expect(findDaterangePicker().props()).toMatchObject({
+      defaultEndDate: new Date('2020-06-30T00:00:00.000Z'),
+      defaultMaxDate: new Date('2020-07-06T00:00:00.000Z'),
+      defaultStartDate: new Date('2020-06-01T00:00:00.000Z'),
+      maxDateRange: 365,
+      tooltip: 'Date range limited to 365 days',
+    });
+  });
+
   describe('when showing data for instance runners', () => {
     beforeEach(async () => {
       createWrapper({ mountFn: mountExtended });
@@ -164,11 +177,43 @@ describe('RunnerUsage', () => {
     });
 
     it('fetches data', () => {
+      const expectedVariables = {
+        fromDate: '2020-06-01T00:00:00.000Z',
+        toDate: '2020-06-30T00:00:00.000Z',
+        runnerType: INSTANCE_TYPE,
+      };
+
       expect(runnerUsageByProjectHandler).toHaveBeenCalledTimes(1);
-      expect(runnerUsageByProjectHandler).toHaveBeenCalledWith({ runnerType: INSTANCE_TYPE });
+      expect(runnerUsageByProjectHandler).toHaveBeenCalledWith(expectedVariables);
 
       expect(runnerUsageHandler).toHaveBeenCalledTimes(1);
-      expect(runnerUsageHandler).toHaveBeenCalledWith({ runnerType: INSTANCE_TYPE });
+      expect(runnerUsageHandler).toHaveBeenCalledWith(expectedVariables);
+    });
+
+    it('fetches data on new date range input', async () => {
+      const updatedFromDate = '2020-06-15T00:00:00.000Z';
+      const updatedToDate = '2020-06-20T00:00:00.000Z';
+
+      findDaterangePicker().vm.$emit('input', {
+        startDate: new Date(updatedFromDate),
+        endDate: new Date(updatedToDate),
+      });
+
+      await nextTick();
+
+      expect(runnerUsageByProjectHandler).toHaveBeenCalledTimes(2);
+      expect(runnerUsageByProjectHandler).toHaveBeenLastCalledWith({
+        fromDate: updatedFromDate,
+        toDate: updatedToDate,
+        runnerType: INSTANCE_TYPE,
+      });
+
+      expect(runnerUsageHandler).toHaveBeenCalledTimes(2);
+      expect(runnerUsageHandler).toHaveBeenLastCalledWith({
+        fromDate: updatedFromDate,
+        toDate: updatedToDate,
+        runnerType: INSTANCE_TYPE,
+      });
     });
 
     it('shows top projects', () => {
@@ -237,17 +282,18 @@ describe('RunnerUsage', () => {
     });
 
     it('fetches data', () => {
-      expect(runnerUsageHandler).toHaveBeenCalledTimes(1);
-      expect(runnerUsageHandler).toHaveBeenCalledWith({
+      const expectedVariables = {
+        fromDate: '2020-06-01T00:00:00.000Z',
+        toDate: '2020-06-30T00:00:00.000Z',
         runnerType: GROUP_TYPE,
         fullPath: 'my-group',
-      });
+      };
+
+      expect(runnerUsageHandler).toHaveBeenCalledTimes(1);
+      expect(runnerUsageHandler).toHaveBeenCalledWith(expectedVariables);
 
       expect(runnerUsageByProjectHandler).toHaveBeenCalledTimes(1);
-      expect(runnerUsageByProjectHandler).toHaveBeenCalledWith({
-        runnerType: GROUP_TYPE,
-        fullPath: 'my-group',
-      });
+      expect(runnerUsageByProjectHandler).toHaveBeenCalledWith(expectedVariables);
     });
   });
 
@@ -288,7 +334,11 @@ describe('RunnerUsage', () => {
       await clickButton();
 
       expect(runnerUsageExportHandler).toHaveBeenCalledWith({
-        input: { runnerType: INSTANCE_TYPE },
+        input: {
+          fromDate: '2020-06-01T00:00:00.000Z',
+          toDate: '2020-06-30T00:00:00.000Z',
+          runnerType: INSTANCE_TYPE,
+        },
       });
       expect(findButton().props('loading')).toBe(true);
     });
@@ -306,7 +356,12 @@ describe('RunnerUsage', () => {
       await clickButton();
 
       expect(runnerUsageExportHandler).toHaveBeenCalledWith({
-        input: { runnerType: 'GROUP_TYPE', fullPath: 'my-group' },
+        input: {
+          fromDate: '2020-06-01T00:00:00.000Z',
+          toDate: '2020-06-30T00:00:00.000Z',
+          runnerType: GROUP_TYPE,
+          fullPath: 'my-group',
+        },
       });
       expect(findButton().props('loading')).toBe(true);
     });
