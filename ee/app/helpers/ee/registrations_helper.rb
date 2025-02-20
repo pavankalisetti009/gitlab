@@ -12,7 +12,7 @@ module EE
     end
 
     def arkose_labs_data
-      path = data_exchange_payload_path if ::Feature.enabled?(:fetch_arkose_data_exchange_payload, :instance)
+      path = data_exchange_payload_path
 
       data = {
         api_key: ::AntiAbuse::IdentityVerification::Settings.arkose_public_api_key,
