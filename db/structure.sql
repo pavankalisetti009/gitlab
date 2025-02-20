@@ -2414,6 +2414,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_7a6d75e9eecd() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."project_id"
+  FROM "project_relation_exports"
+  WHERE "project_relation_exports"."id" = NEW."project_relation_export_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_7a8b08eed782() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -19789,6 +19805,7 @@ CREATE TABLE project_relation_export_uploads (
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
     export_file text NOT NULL,
+    project_id bigint,
     CONSTRAINT check_d8ee243e9e CHECK ((char_length(export_file) <= 255))
 );
 
@@ -34465,6 +34482,8 @@ CREATE INDEX index_project_pages_metadata_on_project_id_and_deployed_is_true ON 
 
 CREATE INDEX index_project_relation_export_upload_id ON project_relation_export_uploads USING btree (project_relation_export_id);
 
+CREATE INDEX index_project_relation_export_uploads_on_project_id ON project_relation_export_uploads USING btree (project_id);
+
 CREATE INDEX index_project_relation_exports_on_project_id ON project_relation_exports USING btree (project_id);
 
 CREATE UNIQUE INDEX index_project_repositories_on_disk_path ON project_repositories USING btree (disk_path);
@@ -38349,6 +38368,8 @@ CREATE TRIGGER trigger_78c85ddc4031 BEFORE INSERT OR UPDATE ON issue_emails FOR 
 
 CREATE TRIGGER trigger_7943cb549289 BEFORE INSERT OR UPDATE ON issuable_metric_images FOR EACH ROW EXECUTE FUNCTION trigger_7943cb549289();
 
+CREATE TRIGGER trigger_7a6d75e9eecd BEFORE INSERT OR UPDATE ON project_relation_export_uploads FOR EACH ROW EXECUTE FUNCTION trigger_7a6d75e9eecd();
+
 CREATE TRIGGER trigger_7a8b08eed782 BEFORE INSERT OR UPDATE ON boards_epic_board_positions FOR EACH ROW EXECUTE FUNCTION trigger_7a8b08eed782();
 
 CREATE TRIGGER trigger_7b21c87a1f91 BEFORE INSERT OR UPDATE ON bulk_import_failures FOR EACH ROW EXECUTE FUNCTION trigger_7b21c87a1f91();
@@ -38717,6 +38738,9 @@ ALTER TABLE ONLY security_policy_project_links
 
 ALTER TABLE ONLY deployment_approvals
     ADD CONSTRAINT fk_0f58311058 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY project_relation_export_uploads
+    ADD CONSTRAINT fk_0f7fad01a3 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY project_pages_metadata
     ADD CONSTRAINT fk_0fd5b22688 FOREIGN KEY (pages_deployment_id) REFERENCES pages_deployments(id) ON DELETE SET NULL;
