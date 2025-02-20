@@ -53,6 +53,7 @@ duo_chat_write_tests:
     - mixtral
     - claude_3
     - gpt
+    - codestral
 duo_chat_refactor_code:
   title: Refactor Code
   release_state: BETA
@@ -62,6 +63,7 @@ duo_chat_refactor_code:
     - mixtral
     - claude_3
     - gpt
+    - codestral
 duo_chat_fix_code:
   title: Fix Code
   release_state: BETA
@@ -71,3 +73,4 @@ duo_chat_fix_code:
     - mixtral
     - claude_3
     - gpt
+    - codestral
