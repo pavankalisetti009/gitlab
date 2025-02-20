@@ -2951,6 +2951,9 @@ msgstr ""
 msgid "AccessTokens|Created date"
 msgstr ""
 
+msgid "AccessTokens|Enable DPoP"
+msgstr ""
+
 msgid "AccessTokens|Expiration date"
 msgstr ""
 
@@ -2973,6 +2976,9 @@ msgid "AccessTokens|For example, the application using the token or the purpose 
 msgstr ""
 
 msgid "AccessTokens|For example, the application using the token or the purpose of the token. Do not give sensitive information for the name of the token, as it will be visible to all %{resource_type} members."
+msgstr ""
+
+msgid "AccessTokens|How do I use DPoP headers?"
 msgstr ""
 
 msgid "AccessTokens|IP: %{ips}"
@@ -3023,6 +3029,12 @@ msgid "AccessTokens|Personal / project / group access token expiration"
 msgstr ""
 
 msgid "AccessTokens|Personal access tokens"
+msgstr ""
+
+msgid "AccessTokens|Require DPoP headers to access the REST or GraphQL API with a personal access token."
+msgstr ""
+
+msgid "AccessTokens|Require Demonstrating Proof of Possession (DPoP) headers"
 msgstr ""
 
 msgid "AccessTokens|Revoke"
@@ -18240,6 +18252,9 @@ msgid "DORA4Metrics|Total projects (%{count}) with DORA metrics"
 msgstr ""
 
 msgid "DORA4Metrics|You have insufficient permissions to view"
+msgstr ""
+
+msgid "DPoP preference updated."
 msgstr ""
 
 msgid "DSN"
@@ -61485,6 +61500,9 @@ msgid "Unable to sign in to group with SAML: \"%{reason}\""
 msgstr ""
 
 msgid "Unable to suggest a path. Please refresh and try again."
+msgstr ""
+
+msgid "Unable to update DPoP preference."
 msgstr ""
 
 msgid "Unable to update label prioritization at this time"
