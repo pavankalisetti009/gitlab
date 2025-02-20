@@ -8,6 +8,8 @@ module EE
       PROCESSING_TO_DEFAULT = ::Packages::Package.statuses.invert.values_at(2, 0).freeze
 
       prepended do
+        include ::Auditable
+
         after_commit :create_audit_event, on: %i[create update]
 
         private

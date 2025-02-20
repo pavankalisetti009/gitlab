@@ -1,46 +1,58 @@
 # frozen_string_literal: true
 
 module Packages
-  class CreateAuditEventService
-    FEATURE_FLAG_DISABLED_ERROR = ServiceResponse.error(message: 'Feature flag is not enabled').freeze
-
+  class CreateAuditEventService < ::Packages::AuditEventsBaseService
     delegate :project, :creator, to: :package, private: true
 
-    def initialize(package, event_name: 'package_registry_package_published')
+    def initialize(package, current_user: nil, event_name: 'package_registry_package_published')
       @package = package
+      @current_user = current_user
       @event_name = event_name
     end
 
     def execute
-      return FEATURE_FLAG_DISABLED_ERROR if ::Feature.disabled?(:package_registry_audit_events, project)
-
-      ::Gitlab::Audit::Auditor.audit(audit_context)
-
-      ServiceResponse.success
+      super do
+        ::Gitlab::Audit::Auditor.audit(audit_context)
+      end
     end
 
     private
 
-    attr_reader :package, :event_name
+    attr_reader :package, :current_user, :event_name
 
     def audit_context
       {
         name: event_name,
-        author: creator || ::Gitlab::Audit::DeployTokenAuthor.new,
+        author: author,
         scope: project.group || project,
         target: package,
         target_details: target_details,
-        message: "#{package.package_type.humanize} package published",
+        message: audit_message,
         additional_details: { auth_token_type: }
       }
+    end
+
+    def author
+      current_user || creator || ::Gitlab::Audit::DeployTokenAuthor.new
     end
 
     def target_details
       "#{project.full_path}/#{package.name}-#{package.version}"
     end
 
+    def audit_message
+      action = case event_name
+               when 'package_registry_package_published'
+                 'published'
+               when 'package_registry_package_deleted'
+                 'deleted'
+               end
+
+      "#{package.package_type.humanize} package #{action}"
+    end
+
     def auth_token_type
-      ::Current.token_info&.dig(:token_type) || token_type_from_package_creator
+      super || token_type_from_package_creator
     end
 
     def token_type_from_package_creator
