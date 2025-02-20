@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Types::Dora::PerformanceScoreConnectionType, feature_category: :dora_metrics do
+RSpec.describe Types::Analytics::Dora::PerformanceScoreConnectionType, feature_category: :dora_metrics do
   include GraphqlHelpers
 
   let(:fields) { %i[total_projects_count no_dora_data_projects_count] }

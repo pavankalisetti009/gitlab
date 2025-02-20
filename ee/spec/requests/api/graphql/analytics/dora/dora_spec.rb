@@ -31,7 +31,7 @@ RSpec.describe 'Query.[project|group](fullPath).dora.metrics', feature_category:
   let(:data) { graphql_data.dig(*path_prefix) }
 
   around do |example|
-    travel_to '2021-02-01'.to_time do
+    travel_to '2021-02-01 13:00:00'.to_time do
       example.run
     end
   end
