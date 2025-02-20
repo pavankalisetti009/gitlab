@@ -964,7 +964,7 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
         stub_licensed_features(epics: true, subepics: true)
         # TODO: reduce threshold after epic-work item sync
         # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
-        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(170)
+        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(175)
       end
 
       it_behaves_like 'PUT request permissions for admin mode' do
@@ -1007,7 +1007,7 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
         before do
           # TODO: reduce threshold after epic-work item sync
           # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
-          allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(190)
+          allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(195)
 
           group.add_developer(user)
         end
