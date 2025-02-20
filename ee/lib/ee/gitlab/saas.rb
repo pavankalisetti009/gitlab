@@ -35,6 +35,7 @@ module EE
           limit_normalized_email_reuse
           secret_detection_service
           ci_component_usages_in_projects
+          deduplicate_ci_tags
         ].freeze
 
       CONFIG_FILE_ROOT = 'ee/config/saas_features'
