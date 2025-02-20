@@ -14,6 +14,10 @@ module Gitlab
       def self.secure?
         !!Gitlab.config.duo_workflow.secure
       end
+
+      def self.debug_mode?
+        !!Gitlab.config.duo_workflow.debug
+      end
     end
   end
 end

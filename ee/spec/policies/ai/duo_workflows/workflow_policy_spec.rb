@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Ai::DuoWorkflows::WorkflowPolicy, feature_category: :duo_workflow do
+  using RSpec::Parameterized::TableSyntax
+
   subject(:policy) { described_class.new(current_user, workflow) }
 
   let_it_be(:group) { create(:group) }
@@ -10,62 +12,77 @@ RSpec.describe Ai::DuoWorkflows::WorkflowPolicy, feature_category: :duo_workflow
   let_it_be(:workflow) { create(:duo_workflows_workflow, project: project) }
   let_it_be(:guest) { create(:user, guest_of: workflow.project) }
   let_it_be(:developer) { create(:user, developer_of: workflow.project) }
+  let_it_be(:maintainer) { create(:user, maintainer_of: workflow.project) }
   let(:current_user) { guest }
 
   describe "read_duo_workflow and update_duo_workflow" do
-    context "when duo_workflow FF is disabled" do
-      before do
-        stub_feature_flags(duo_workflow: false)
-      end
-
-      it { is_expected.to be_disallowed(:read_duo_workflow) }
-      it { is_expected.to be_disallowed(:update_duo_workflow) }
+    where(:duo_features_enabled, :current_user, :stage_check_available, :allowed) do
+      true   | ref(:developer)  | true  | true
+      true   | ref(:developer)  | false | false
+      true   | ref(:maintainer) | false | false
+      true   | ref(:maintainer) | true  | true
+      true   | ref(:guest)      | true  | false
+      false  | ref(:developer)  | true  | false
     end
 
-    context "when duo workflow is not available" do
+    with_them do
       before do
-        allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(false)
+        allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project,
+          :duo_workflow).and_return(stage_check_available)
+        project.project_setting.update!(duo_features_enabled: duo_features_enabled)
+        workflow.update!(user: current_user)
       end
 
-      it { is_expected.to be_disallowed(:read_duo_workflow) }
-      it { is_expected.to be_disallowed(:update_duo_workflow) }
+      it 'checks read and update workflow policy' do
+        is_expected.to(allowed ? be_allowed(:read_duo_workflow) : be_disallowed(:read_duo_workflow))
+        is_expected.to(allowed ? be_allowed(:update_duo_workflow) : be_disallowed(:update_duo_workflow))
+      end
     end
 
-    context "when duo workflow is available" do
+    context "when user is not workflow owner" do
       before do
         allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+        project.project_setting.update!(duo_features_enabled: true)
       end
 
-      context "when user is guest" do
-        it { is_expected.to be_disallowed(:read_duo_workflow) }
-        it { is_expected.to be_disallowed(:update_duo_workflow) }
+      it { is_expected.to be_disallowed(:read_duo_workflow) }
+      it { is_expected.to be_disallowed(:update_duo_workflow) }
+    end
+
+    context "when feature flag is disabled" do
+      before do
+        stub_feature_flags(duo_workflow: false)
+        allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+        project.project_setting.update!(duo_features_enabled: true)
+        workflow.update!(user: current_user)
       end
 
-      context "when user is developer" do
-        let(:current_user) { developer }
+      it { is_expected.to be_disallowed(:read_duo_workflow) }
+      it { is_expected.to be_disallowed(:update_duo_workflow) }
+    end
+  end
 
-        context "when user is not workflow owner" do
-          it { is_expected.to be_disallowed(:read_duo_workflow) }
-          it { is_expected.to be_disallowed(:update_duo_workflow) }
-        end
+  describe "execute_duo_workflow_in_ci" do
+    where(:duo_workflow_ff, :duo_workflow_in_ci_ff, :duo_features_enabled, :current_user, :stage_check, :allowed) do
+      false | false | true   | ref(:developer)  | true  | false
+      true  | false | true   | ref(:developer)  | true  | false
+      false | true  | true   | ref(:developer)  | true  | false
+      true  | true  | true   | ref(:maintainer) | false | false
+      true  | true  | true   | ref(:developer)  | true  | true
+      true  | true  | true   | ref(:guest)      | true  | false
+      true  | true  | false  | ref(:developer)  | true  | false
+    end
 
-        context "when user is workflow owner" do
-          before do
-            workflow.update!(user: current_user)
-          end
+    with_them do
+      before do
+        stub_feature_flags(duo_workflow: duo_workflow_ff, duo_workflow_in_ci: duo_workflow_in_ci_ff)
+        allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(stage_check)
+        project.project_setting.update!(duo_features_enabled: duo_features_enabled)
+        workflow.update!(user: current_user)
+      end
 
-          it { is_expected.to be_allowed(:read_duo_workflow) }
-          it { is_expected.to be_allowed(:update_duo_workflow) }
-
-          context "when duo_features_enabled settings is turned off" do
-            before do
-              project.project_setting.update!(duo_features_enabled: false)
-            end
-
-            it { is_expected.to be_disallowed(:read_duo_workflow) }
-            it { is_expected.to be_disallowed(:update_duo_workflow) }
-          end
-        end
+      it 'checks execute_duo_workflow_in_ci policy' do
+        is_expected.to(allowed ? be_allowed(:execute_duo_workflow_in_ci) : be_disallowed(:execute_duo_workflow_in_ci))
       end
     end
   end
