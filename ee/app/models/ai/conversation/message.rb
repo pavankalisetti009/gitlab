@@ -11,6 +11,7 @@ module Ai
       validates :content, :role, :thread_id, presence: true
 
       scope :for_thread, ->(thread) { where(thread: thread) }
+      scope :for_user, ->(user) { joins(:thread).where(ai_conversation_threads: { user_id: user.id }) }
       # This message_xid is a secure random ID that is generated in runtime.
       # https://gitlab.com/gitlab-org/gitlab/-/blob/master/ee/lib/gitlab/llm/ai_message.rb#L47
       scope :for_message_xid, ->(message_xid) { where(message_xid: message_xid) }

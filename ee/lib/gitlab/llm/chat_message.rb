@@ -6,13 +6,15 @@ module Gitlab
       RESET_MESSAGE = '/reset'
       CLEAR_HISTORY_MESSAGE = '/clear'
 
+      attr_writer :active_record
+
       def save!
         storage = ChatStorage.new(user, agent_version_id, thread)
 
         if content == CLEAR_HISTORY_MESSAGE
           storage.clear!
         else
-          storage.add(self)
+          @active_record = storage.add(self)
         end
 
         self.thread = storage.current_thread
@@ -28,6 +30,10 @@ module Gitlab
 
       def question?
         user? && !conversation_reset? && !clear_history?
+      end
+
+      def active_record
+        @active_record ||= ::Ai::Conversation::Message.for_user(user).for_message_xid(id).first
       end
 
       def chat?

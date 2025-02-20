@@ -34,10 +34,11 @@ RSpec.describe Gitlab::Llm::ChatStorage, :clean_gitlab_redis_chat, feature_categ
 
   describe '#add' do
     it 'stores the message in PostgreSQL' do
-      subject.add(message)
+      result = subject.add(message)
 
       expect(postgres_storage.messages).to include(message)
       expect(redis_storage.messages).to be_empty
+      expect(result).to eq(Ai::Conversation::Message.last)
     end
 
     context 'when feature flag duo_chat_drop_redis_storage is disabled' do
@@ -46,9 +47,10 @@ RSpec.describe Gitlab::Llm::ChatStorage, :clean_gitlab_redis_chat, feature_categ
       end
 
       it 'updates Redis storage as well' do
-        subject.add(message)
+        result = subject.add(message)
 
         expect(redis_storage.messages).to include(message)
+        expect(result).to eq(Ai::Conversation::Message.last)
       end
     end
   end

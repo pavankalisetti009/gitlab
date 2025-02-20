@@ -71,8 +71,15 @@ module Gitlab
             data.merge(Gitlab::Llm::ChatMessageAnalyzer.new(messages).execute)
           end
 
+          def valid?
+            messages.present?
+          rescue ActiveRecord::RecordNotFound
+            false
+          end
+
           def messages
-            ::Gitlab::Llm::ChatStorage.new(user).messages_up_to(options[:message_id])
+            message = ::Ai::Conversation::Message.for_user(user).for_message_xid(options[:message_id]).first! # rubocop:disable CodeReuse/ActiveRecord -- not sure why first is allowed but not first!
+            ::Gitlab::Llm::ChatStorage.new(user, nil, message.thread).messages_up_to(options[:message_id])
           end
           strong_memoize_attr :messages
 

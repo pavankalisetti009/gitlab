@@ -53,6 +53,20 @@ RSpec.describe Ai::Conversation::Message, feature_category: :duo_chat do
         expect(messages).to eq([message1, message2])
       end
     end
+
+    describe '.for_user' do
+      let_it_be(:user) { create(:user) }
+      let_it_be(:thread) { create(:ai_conversation_thread, user: user) }
+
+      let_it_be(:message) { create(:ai_conversation_message, thread: thread, role: :user) }
+      let_it_be(:message_from_other_user) { create(:ai_conversation_message, role: :user) }
+
+      it 'returns messages readable by the user' do
+        messages = described_class.for_user(user)
+
+        expect(messages).to contain_exactly(message)
+      end
+    end
   end
 
   describe '.recent' do
