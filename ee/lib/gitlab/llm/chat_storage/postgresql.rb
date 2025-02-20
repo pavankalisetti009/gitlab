@@ -15,9 +15,11 @@ module Gitlab
           data['request_xid'] = data.delete('request_id') if data['request_id']
           data.delete('timestamp') if data['timestamp']
 
-          current_thread.messages.create!(**data)
+          result = current_thread.messages.create!(**data)
           current_thread.update_column(:last_updated_at, Time.current)
           clear_memoization(:messages)
+
+          result
         end
 
         def set_has_feedback(message)
@@ -37,6 +39,8 @@ module Gitlab
             msg = load_message(data)
 
             msg.extras['has_feedback'] = data.delete('has_feedback') if data['has_feedback']
+            msg.active_record = message
+            msg.thread = current_thread
 
             msg
           end

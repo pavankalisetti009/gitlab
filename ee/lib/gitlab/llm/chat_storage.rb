@@ -18,8 +18,8 @@ module Gitlab
       end
 
       def add(message)
-        postgres_storage.add(message)
         redis_storage.add(message) if ::Feature.disabled?(:duo_chat_drop_redis_storage, user)
+        postgres_storage.add(message)
       end
 
       def update_message_extras(request_id, key, value)

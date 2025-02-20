@@ -115,4 +115,24 @@ RSpec.describe Gitlab::Llm::ChatMessage, feature_category: :duo_chat do
       expect(subject).to be_chat
     end
   end
+
+  describe '#active_record' do
+    it 'returns the active record if assigned' do
+      subject.active_record = build_stubbed(:ai_conversation_message)
+
+      expect(subject.active_record).to be_a(Ai::Conversation::Message)
+    end
+
+    it 'returns the active record if saved' do
+      subject.save!
+
+      expect(subject.active_record).to be_a(Ai::Conversation::Message)
+    end
+
+    it 'returns nil if not saved' do
+      subject
+
+      expect(subject.active_record).to be_nil
+    end
+  end
 end

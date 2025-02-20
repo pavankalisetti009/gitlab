@@ -3,17 +3,26 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Llm::AiGateway::Completions::CategorizeQuestion, feature_category: :duo_chat do
+  let_it_be(:organization) { create(:organization) }
   let_it_be(:user) { create(:user) }
+  let_it_be(:ai_conversation_thread) { create(:ai_conversation_thread, user: user) }
+  let_it_be(:ai_conversation_message) { create(:ai_conversation_message, thread: ai_conversation_thread) }
+  let_it_be(:question) { 'What is the pipeline?' }
+  let(:chat_message) do
+    message = build(:ai_chat_message, content: question, id: ai_conversation_message.message_xid)
+    message.active_record = ai_conversation_message
+    message.thread = ai_conversation_thread
+    message
+  end
 
   let(:template_class) { ::Gitlab::Llm::Templates::CategorizeQuestion }
   let(:ai_client) { instance_double(Gitlab::Llm::AiGateway::Client) }
   let(:ai_response) { instance_double(HTTParty::Response, body: llm_analysis_response.to_json, success?: true) }
   let(:uuid) { SecureRandom.uuid }
   let(:tracking_context) { { action: :categorize_question, request_id: uuid } }
-  let(:question) { 'What is the pipeline?' }
-  let(:chat_message) { build(:ai_chat_message, content: question) }
   let(:messages) { [chat_message] }
-  let(:ai_options) { { question: chat_message.content, message_id: chat_message.id } }
+  let(:message_id) { chat_message.id }
+  let(:ai_options) { { question: chat_message.content, message_id: message_id } }
   let(:prompt_message) { build(:ai_message, :categorize_question, user: user, request_id: uuid) }
   let(:llm_analysis_response) do
     {
@@ -26,7 +35,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::CategorizeQuestion, feature_
   end
 
   before do
-    allow_next_instance_of(::Gitlab::Llm::ChatStorage, user) do |storage|
+    allow_next_instance_of(::Gitlab::Llm::ChatStorage, user, nil, chat_message.thread) do |storage|
       allow(storage).to receive(:messages_up_to).with(chat_message.id).and_return(messages)
     end
   end
@@ -148,6 +157,15 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::CategorizeQuestion, feature_
             }
           }]
         )
+      end
+    end
+
+    context 'when message_id no longer exists' do
+      let(:message_id) { nil }
+
+      it 'raises error' do
+        expect(Gitlab::Llm::AiGateway::Client).not_to receive(:new)
+        expect(execute).to be_nil
       end
     end
   end

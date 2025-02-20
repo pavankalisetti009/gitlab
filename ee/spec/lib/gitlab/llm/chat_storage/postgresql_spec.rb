@@ -36,7 +36,7 @@ RSpec.describe Gitlab::Llm::ChatStorage::Postgresql, :clean_gitlab_redis_chat, f
       allow(SecureRandom).to receive(:uuid).and_return(uuid)
       expect(storage.messages).to be_empty
 
-      storage.add(message)
+      result = storage.add(message)
 
       last = storage.messages.last
       expect(last.id).to eq(uuid)
@@ -50,6 +50,9 @@ RSpec.describe Gitlab::Llm::ChatStorage::Postgresql, :clean_gitlab_redis_chat, f
       expect(last.timestamp).not_to be_nil
       expect(last.referer_url).to eq('http://127.0.0.1:3000')
       expect(last.extras['additional_context']).to eq(payload[:additional_context].to_a)
+
+      expect(result).to be_a(Ai::Conversation::Message)
+      expect(result.message_xid).to eq(last.id)
     end
 
     context 'when the content exceeds the text limit' do

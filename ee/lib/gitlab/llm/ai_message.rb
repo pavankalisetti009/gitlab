@@ -111,6 +111,10 @@ module Gitlab
             @id == other.id
         )
       end
+
+      def thread_id
+        thread&.id
+      end
     end
   end
 end

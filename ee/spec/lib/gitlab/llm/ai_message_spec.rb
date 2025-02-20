@@ -229,4 +229,20 @@ RSpec.describe Gitlab::Llm::AiMessage, feature_category: :duo_chat do
       expect(subject).not_to be_chat
     end
   end
+
+  describe '#thread_id' do
+    context 'when thread is present' do
+      it 'returns the thread id' do
+        expect(subject.thread_id).to eq(thread.id)
+      end
+    end
+
+    context 'when thread is nil' do
+      it 'returns nil' do
+        subject.thread = nil
+
+        expect(subject.thread_id).to be_nil
+      end
+    end
+  end
 end
