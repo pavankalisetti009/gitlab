@@ -1165,10 +1165,10 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
 
   describe '#pages_deployments_usage_quota_data' do
     let_it_be(:group) { create(:group) }
-    let_it_be_with_reload(:project) { create(:project, namespace: group) }
-    let_it_be(:project2) { create(:project, namespace: group) }
+    let(:project) { create(:project, namespace: group) }
+    let(:project2) { create(:project, namespace: group) }
 
-    before_all do
+    before do
       project.actual_limits.update!(active_versioned_pages_deployments_limit_by_namespace: 100)
       project2.project_setting.update!(pages_unique_domain_enabled: false)
       create(:pages_deployment, project: project, path_prefix: '/foo')
@@ -1199,7 +1199,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
         project.project_setting.update!(pages_unique_domain_enabled: false)
       end
 
-      it 'returns expected hash', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/519558' do
+      it 'returns expected hash' do
         expect(helper.pages_deployments_usage_quota_data(project)).to match(
           {
             full_path: project.full_path,
