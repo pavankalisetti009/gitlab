@@ -17766,10 +17766,10 @@ msgstr ""
 msgid "CycleAnalyticsEvent|Issue first mentioned in a commit"
 msgstr ""
 
-msgid "CycleAnalyticsEvent|Issue label was added"
+msgid "CycleAnalyticsEvent|Issue label added"
 msgstr ""
 
-msgid "CycleAnalyticsEvent|Issue label was removed"
+msgid "CycleAnalyticsEvent|Issue label removed"
 msgstr ""
 
 msgid "CycleAnalyticsEvent|Issue last edited"
@@ -17784,22 +17784,25 @@ msgstr ""
 msgid "CycleAnalyticsEvent|Merge request first assigned"
 msgstr ""
 
-msgid "CycleAnalyticsEvent|Merge request first commit time"
+msgid "CycleAnalyticsEvent|Merge request first committed"
 msgstr ""
 
 msgid "CycleAnalyticsEvent|Merge request first deployed to production"
 msgstr ""
 
-msgid "CycleAnalyticsEvent|Merge request label was added"
+msgid "CycleAnalyticsEvent|Merge request label added"
 msgstr ""
 
-msgid "CycleAnalyticsEvent|Merge request label was removed"
+msgid "CycleAnalyticsEvent|Merge request label removed"
 msgstr ""
 
-msgid "CycleAnalyticsEvent|Merge request last build finish time"
+msgid "CycleAnalyticsEvent|Merge request last approved"
 msgstr ""
 
-msgid "CycleAnalyticsEvent|Merge request last build start time"
+msgid "CycleAnalyticsEvent|Merge request last build finished"
+msgstr ""
+
+msgid "CycleAnalyticsEvent|Merge request last build started"
 msgstr ""
 
 msgid "CycleAnalyticsEvent|Merge request last edited"
@@ -17809,9 +17812,6 @@ msgid "CycleAnalyticsEvent|Merge request merged"
 msgstr ""
 
 msgid "CycleAnalyticsEvent|Merge request reviewer first assigned"
-msgstr ""
-
-msgid "CycleAnalyticsEvent|Merge request was last approved at"
 msgstr ""
 
 msgid "CycleAnalyticsStage|Code"
