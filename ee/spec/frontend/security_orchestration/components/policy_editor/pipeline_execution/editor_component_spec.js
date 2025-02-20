@@ -26,7 +26,8 @@ import {
   mockInvalidPipelineExecutionObject,
   customYamlUrlParams,
 } from 'ee_jest/security_orchestration/mocks/mock_pipeline_execution_policy_data';
-import { fromYaml } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/utils';
+import { fromYaml } from 'ee/security_orchestration/components/utils';
+import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 import { goToYamlMode } from '../policy_editor_helper';
 
 jest.mock('ee/security_orchestration/components/policy_editor/utils', () => ({
@@ -215,7 +216,7 @@ describe('EditorComponent', () => {
   describe('modifying a policy', () => {
     it.each`
       status                           | action                            | event              | factoryFn                    | yamlEditorValue
-      ${'creating a new policy'}       | ${undefined}                      | ${'save-policy'}   | ${factory}                   | ${policyBodyToYaml(fromYaml({ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY }))}
+      ${'creating a new policy'}       | ${undefined}                      | ${'save-policy'}   | ${factory}                   | ${policyBodyToYaml(fromYaml({ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY, type: POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter, addIds: false }))}
       ${'updating an existing policy'} | ${undefined}                      | ${'save-policy'}   | ${factoryWithExistingPolicy} | ${mockWithoutRefPipelineExecutionManifest}
       ${'deleting an existing policy'} | ${SECURITY_POLICY_ACTIONS.REMOVE} | ${'remove-policy'} | ${factoryWithExistingPolicy} | ${mockWithoutRefPipelineExecutionManifest}
     `('emits "save" when $status', async ({ action, event, factoryFn, yamlEditorValue }) => {

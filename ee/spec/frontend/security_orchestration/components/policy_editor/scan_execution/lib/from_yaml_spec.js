@@ -1,6 +1,5 @@
 import {
   createPolicyObject,
-  fromYaml,
   hasInvalidScanners,
   validatePolicy,
 } from 'ee/security_orchestration/components/policy_editor/scan_execution/lib/from_yaml';
@@ -25,6 +24,8 @@ import {
   mockScanSettingsScanExecutionManifest,
   mockScanSettingsScanExecutionObject,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_execution_policy_data';
+import { fromYaml } from 'ee/security_orchestration/components/utils';
+import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 
 jest.mock('lodash/uniqueId', () => jest.fn((prefix) => `${prefix}0`));
 
@@ -37,7 +38,9 @@ describe('fromYaml', () => {
     ${'policy object with an error for an invalid cadence cron value'} | ${mockInvalidCadenceScanExecutionManifest} | ${mockInvalidCadenceScanExecutionObject}
     ${'policy object for a manifest with settings'}                    | ${mockScanSettingsScanExecutionManifest}   | ${mockScanSettingsScanExecutionObject}
   `('returns the $title', ({ manifest, output }) => {
-    expect(fromYaml({ manifest })).toStrictEqual(output);
+    expect(
+      fromYaml({ manifest, type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter }),
+    ).toStrictEqual(output);
   });
 
   describe('validatePolicy', () => {

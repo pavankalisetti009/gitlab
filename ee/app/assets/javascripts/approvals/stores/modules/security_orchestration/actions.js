@@ -3,8 +3,8 @@ import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import projectScanResultPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_scan_result_policies.query.graphql';
 import groupScanResultPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_scan_result_policies.query.graphql';
-import { fromYaml } from 'ee/security_orchestration/components/policy_editor/scan_result/lib/from_yaml';
 import { gqClient } from 'ee/security_orchestration/utils';
+import { fromYaml } from 'ee/security_orchestration/components/utils';
 import * as types from './mutation_types';
 
 export const fetchScanResultPolicies = ({ commit }, { fullPath, isGroup = false }) => {

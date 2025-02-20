@@ -3,9 +3,9 @@ import {
   DEFAULT_TEMPLATE,
   LATEST_TEMPLATE,
 } from 'ee/security_orchestration/components/policy_editor/scan_execution/action/scan_filters/constants';
-import { extractPolicyContent } from 'ee/security_orchestration/components/utils';
+import { fromYaml } from 'ee/security_orchestration/components/utils';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
-import { addIdsToPolicy, hasConflictingKeys, hasInvalidCron } from '../../utils';
+import { hasConflictingKeys, hasInvalidCron } from '../../utils';
 import {
   BRANCH_TYPE_KEY,
   RULE_MODE_SCANNERS,
@@ -53,29 +53,6 @@ export const hasInvalidScanners = (actions = []) => {
 };
 
 /**
- * Construct a policy object expected by the policy editor from a yaml manifest.
- * @param {Object} options
- * @param {String}  options.manifest a security policy in yaml form
- * @returns {Object} security policy as JS object
- */
-export const fromYaml = ({ manifest }) => {
-  try {
-    const payload = extractPolicyContent({
-      manifest,
-      type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
-      withType: true,
-    });
-
-    return addIdsToPolicy(payload);
-  } catch {
-    /**
-     * Catch parsing error of safeLoad
-     */
-    return {};
-  }
-};
-
-/**
  * Validate policy actions and rules keys
  * @param policy
  * @returns {Object} errors object. If empty, policy is valid.
@@ -110,7 +87,10 @@ export const validatePolicy = (policy) => {
  * @returns {Object} security policy object and any errors
  */
 export const createPolicyObject = (manifest) => {
-  const policy = fromYaml({ manifest });
+  const policy = fromYaml({
+    manifest,
+    type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
+  });
   const parsingError = validatePolicy(policy);
 
   return { policy, parsingError };

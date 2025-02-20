@@ -1,4 +1,4 @@
-import { intersection, isNumber, uniqBy, uniqueId, isEmpty } from 'lodash';
+import { intersection, isNumber, uniqBy, isEmpty } from 'lodash';
 import { isValidCron } from 'cron-validator';
 import { safeDump } from 'js-yaml';
 import { sprintf, s__ } from '~/locale';
@@ -516,23 +516,6 @@ export const mapBranchesToExceptions = (branches = []) => {
   if (!branches) return [];
 
   return branches.map(mapExceptionsListBoxItem).filter(({ name }) => Boolean(name));
-};
-
-export const addIdsToPolicy = (policy) => {
-  const updatedPolicy = { ...policy };
-
-  if (updatedPolicy.actions) {
-    updatedPolicy.actions = policy.actions?.map((action) => ({
-      ...action,
-      id: uniqueId('action_'),
-    }));
-  }
-
-  if (updatedPolicy.rules) {
-    updatedPolicy.rules = policy.rules?.map((action) => ({ ...action, id: uniqueId('rule_') }));
-  }
-
-  return updatedPolicy;
 };
 
 export const removeIdsFromPolicy = (policy) => {

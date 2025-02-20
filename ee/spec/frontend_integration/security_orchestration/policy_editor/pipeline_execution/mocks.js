@@ -1,4 +1,5 @@
-import { fromYaml } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/utils';
+import { fromYaml } from 'ee/security_orchestration/components/utils';
+import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 
 export const mockPipelineExecutionActionManifest = `pipeline_execution_policy:
 - name: ''
@@ -22,4 +23,5 @@ export const mockPipelineExecutionOverrideActionManifest = `pipeline_execution_p
 
 export const mockPipelineExecutionObject = fromYaml({
   manifest: mockPipelineExecutionActionManifest,
+  type: POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter,
 });

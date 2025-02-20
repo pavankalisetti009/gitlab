@@ -1,29 +1,7 @@
 import { safeDump } from 'js-yaml';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
-import { extractPolicyContent } from 'ee/security_orchestration/components/utils';
+import { fromYaml } from 'ee/security_orchestration/components/utils';
 import { hasInvalidKey } from '../utils';
-
-/**
- * Construct a policy object expected by the policy editor from a yaml manifest.
- * @param {Object} options
- * @param {String}  options.manifest a security policy in yaml form
- * @returns {Object} security policy
- */
-
-export const fromYaml = ({ manifest }) => {
-  try {
-    return extractPolicyContent({
-      manifest,
-      type: POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter,
-      withType: true,
-    });
-  } catch {
-    /**
-     * Catch parsing error of safeLoad
-     */
-    return {};
-  }
-};
 
 /**
  * Validate policy actions and rules keys
@@ -54,7 +32,11 @@ export const validatePolicy = (policy) => {
  * @returns {Object} security policy object and any errors
  */
 export const createPolicyObject = (manifest) => {
-  const policy = fromYaml({ manifest });
+  const policy = fromYaml({
+    manifest,
+    type: POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter,
+    addIds: false,
+  });
   const parsingError = validatePolicy(policy);
 
   return { policy, parsingError };
@@ -72,13 +54,20 @@ export const getInitialPolicy = (defaultPolicy, params = {}) => {
     return defaultPolicy;
   }
 
-  const newPolicy = Object.assign(fromYaml({ manifest: defaultPolicy }), {
-    type,
-    pipeline_config_strategy: 'override_project_ci',
-    policy_scope: { compliance_frameworks: [{ id: Number(frameworkId) }] },
-    content: { include: [{ project, file }] },
-    metadata: { compliance_pipeline_migration: true },
-  });
+  const newPolicy = Object.assign(
+    fromYaml({
+      manifest: defaultPolicy,
+      type: POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter,
+      addIds: false,
+    }),
+    {
+      type,
+      pipeline_config_strategy: 'override_project_ci',
+      policy_scope: { compliance_frameworks: [{ id: Number(frameworkId) }] },
+      content: { include: [{ project, file }] },
+      metadata: { compliance_pipeline_migration: true },
+    },
+  );
 
   return safeDump(newPolicy);
 };

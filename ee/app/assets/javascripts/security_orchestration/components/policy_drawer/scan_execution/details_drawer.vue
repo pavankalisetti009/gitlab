@@ -3,8 +3,11 @@ import { GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import SkipCiConfiguration from 'ee/security_orchestration/components/policy_drawer/skip_ci_configuration.vue';
-import { DEFAULT_SKIP_SI_CONFIGURATION } from 'ee/security_orchestration/components/constants';
-import { fromYaml } from '../../policy_editor/scan_execution/lib';
+import {
+  DEFAULT_SKIP_SI_CONFIGURATION,
+  POLICY_TYPE_COMPONENT_OPTIONS,
+} from 'ee/security_orchestration/components/constants';
+import { fromYaml } from 'ee/security_orchestration/components/utils';
 import { ACTIONS } from '../../policy_editor/constants';
 import { CONFIGURATION_TITLE, SUMMARY_TITLE } from '../constants';
 import ToggleList from '../toggle_list.vue';
@@ -65,7 +68,10 @@ export default {
       return humanizeRules(this.rules);
     },
     parsedYaml() {
-      return fromYaml({ manifest: this.policy.yaml });
+      return fromYaml({
+        manifest: this.policy.yaml,
+        type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
+      });
     },
     configuration() {
       return this.parsedYaml.skip_ci || DEFAULT_SKIP_SI_CONFIGURATION;

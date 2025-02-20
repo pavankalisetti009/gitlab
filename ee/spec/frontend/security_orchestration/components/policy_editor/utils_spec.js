@@ -1,5 +1,4 @@
 import {
-  addIdsToPolicy,
   assignSecurityPolicyProjectAsync,
   doesFileExist,
   getPolicyLimitDetails,
@@ -114,19 +113,6 @@ const mockApolloQueryResponse = (nodes = []) => {
     });
   };
 };
-
-describe('addIdsToPolicy', () => {
-  it('adds ids to a policy with actions and rules', () => {
-    expect(addIdsToPolicy({ actions: [{}], rules: [{}] })).toStrictEqual({
-      actions: [{ id: 'action_0' }],
-      rules: [{ id: 'rule_0' }],
-    });
-  });
-
-  it('does not add ids to a policy with no actions and no rules', () => {
-    expect(addIdsToPolicy({ name: 'the best' })).toStrictEqual({ name: 'the best' });
-  });
-});
 
 describe('removeIdsFromPolicy', () => {
   it('removes ids from a policy with actions and rules', () => {
