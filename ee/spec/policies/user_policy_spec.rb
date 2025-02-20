@@ -142,12 +142,37 @@ RSpec.describe UserPolicy do
   describe ':create_user_personal_access_token' do
     subject { described_class.new(current_user, current_user) }
 
-    context 'when personal access tokens are disabled' do
+    context 'when personal access tokens are disabled on instance level' do
       before do
         stub_ee_application_setting(personal_access_tokens_disabled?: true)
       end
 
       it { is_expected.to be_disallowed(:create_user_personal_access_token) }
+    end
+
+    context 'when personal access tokens are disabled by enterprise group' do
+      let_it_be(:enterprise_group) do
+        create(:group, namespace_settings: create(:namespace_settings, disable_personal_access_tokens: true))
+      end
+
+      let_it_be(:enterprise_user_of_the_group) { create(:enterprise_user, enterprise_group: enterprise_group) }
+      let_it_be(:enterprise_user_of_another_group) { create(:enterprise_user) }
+
+      before do
+        stub_licensed_features(disable_personal_access_tokens: true)
+      end
+
+      context 'for non-enterprise users of the group' do
+        let(:current_user) { enterprise_user_of_another_group }
+
+        it { is_expected.to be_allowed(:create_user_personal_access_token) }
+      end
+
+      context 'for enterprise users of the group' do
+        let(:current_user) { enterprise_user_of_the_group }
+
+        it { is_expected.to be_disallowed(:create_user_personal_access_token) }
+      end
     end
   end
 
