@@ -4,12 +4,12 @@ require_relative '../concerns/saml_authorization'
 class Groups::SamlProvidersController < Groups::ApplicationController
   include SamlAuthorization
   include SafeFormatHelper
-  include MicrosoftApplicationActions
 
   before_action :require_top_level_group
   before_action :authorize_manage_saml!
   before_action :check_group_saml_available!
   before_action :check_group_saml_configured
+  before_action :check_microsoft_group_sync_available, only: [:update_microsoft_application]
   before_action :find_or_initialize_microsoft_application, only: [:show]
 
   feature_category :system_access
@@ -45,6 +45,24 @@ class Groups::SamlProvidersController < Groups::ApplicationController
     render :show
   end
 
+  def update_microsoft_application
+    params = microsoft_application_params.dup
+    params.delete(:client_secret) if params[:client_secret].blank?
+
+    result = update_microsoft_application_model(params)
+
+    if result[:status]
+      flash[:notice] = s_('Microsoft|Microsoft Azure integration settings were successfully updated.')
+    else
+      flash[:alert] = safe_format(
+        s_('Microsoft|Microsoft Azure integration settings failed to save. %{errors}'),
+        errors: result[:errors].to_sentence
+      )
+    end
+
+    redirect_to group_saml_providers_path(group)
+  end
+
   private
 
   def load_test_response
@@ -73,15 +91,59 @@ class Groups::SamlProvidersController < Groups::ApplicationController
     params.require(:saml_provider).permit(allowed_params)
   end
 
-  def microsoft_application_namespace
-    @group
+  # rubocop:disable CodeReuse/ActiveRecord -- splitting out legacy code
+  def find_or_initialize_microsoft_application
+    is_enabled = Feature.enabled?(:group_microsoft_applications_table, @group)
+
+    @microsoft_application = if is_enabled
+                               ::SystemAccess::GroupMicrosoftApplication.find_or_initialize_by(
+                                 group: @group
+                               )
+                             else
+                               ::SystemAccess::MicrosoftApplication.find_or_initialize_by(
+                                 namespace: @group
+                               )
+                             end
   end
 
-  def microsoft_application_redirect_path
-    group_saml_providers_path(group)
+  def update_microsoft_application_model(params)
+    group_app = ::SystemAccess::GroupMicrosoftApplication.find_or_initialize_by(
+      group: @group
+    )
+    legacy_app = ::SystemAccess::MicrosoftApplication.find_or_initialize_by(
+      namespace: @group
+    )
+
+    group_app_result = nil
+    legacy_app_result = nil
+
+    ::SystemAccess::GroupMicrosoftApplication.transaction do
+      group_app_result = group_app.update(params)
+      legacy_app_result = legacy_app.update(params)
+
+      raise ActiveRecord::Rollback unless group_app_result && legacy_app_result
+    end
+
+    errors = group_app.errors.full_messages + legacy_app.errors.full_messages
+
+    {
+      status: group_app_result && legacy_app_result,
+      errors: errors.uniq
+    }
+  end
+  # rubocop:enable CodeReuse/ActiveRecord
+
+  def microsoft_application_params
+    fields = %i[enabled tenant_xid client_xid client_secret login_endpoint graph_endpoint]
+
+    if Feature.enabled?(:group_microsoft_applications_table, @group)
+      params.require(:system_access_group_microsoft_application).permit(*fields)
+    else
+      params.require(:system_access_microsoft_application).permit(*fields)
+    end
   end
 
-  def microsoft_group_sync_enabled?
-    @group.saml_provider&.enabled?
+  def check_microsoft_group_sync_available
+    render_404 unless @group.saml_provider&.enabled?
   end
 end

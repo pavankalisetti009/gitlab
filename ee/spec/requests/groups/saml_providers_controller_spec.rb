@@ -23,13 +23,27 @@ RSpec.describe Groups::SamlProvidersController, feature_category: :system_access
       create(:saml_provider, group: group)
     end
 
-    it 'initializes microsoft application from SystemAccess::MicrosoftApplication' do
+    it 'initializes microsoft application from SystemAccess::GroupMicrosoftApplication' do
       create(:system_access_group_microsoft_application, group: group, client_xid: 'test-xid-123')
-      create(:system_access_microsoft_application, namespace: group, client_xid: 'test-xid-456')
 
       get_group_saml_providers
 
-      expect(response.body).to match(/test-xid-456/)
+      expect(response.body).to match(/test-xid-123/)
+    end
+
+    context 'when group_microsoft_applications_table FF is disabled' do
+      before do
+        stub_feature_flags(group_microsoft_applications_table: false)
+      end
+
+      it 'initializes microsoft application from SystemAccess::MicrosoftApplication' do
+        create(:system_access_group_microsoft_application, group: group, client_xid: 'test-xid-123')
+        create(:system_access_microsoft_application, namespace: group, client_xid: 'test-xid-456')
+
+        get_group_saml_providers
+
+        expect(response.body).to match(/test-xid-456/)
+      end
     end
   end
 
@@ -57,7 +71,7 @@ RSpec.describe Groups::SamlProvidersController, feature_category: :system_access
 
       context 'when the user is a group owner' do
         let(:params) do
-          { system_access_microsoft_application: attributes_for(:system_access_group_microsoft_application) }
+          { system_access_group_microsoft_application: attributes_for(:system_access_group_microsoft_application) }
         end
 
         let(:path) { update_microsoft_application_group_saml_providers_path(group) }
@@ -68,16 +82,62 @@ RSpec.describe Groups::SamlProvidersController, feature_category: :system_access
           group.add_owner(user)
         end
 
-        it_behaves_like 'Microsoft application controller actions'
+        it 'raises an error when parameters are missing' do
+          expect { put path }.to raise_error(ActionController::ParameterMissing)
+        end
+
+        it 'redirects with error alert when missing required attributes' do
+          put path, params: { system_access_group_microsoft_application: { enabled: true } }
+
+          expect(response).to have_gitlab_http_status(:redirect)
+          expect(flash[:alert]).to include('Microsoft Azure integration settings failed to save.')
+        end
+
+        it 'redirects with success notice' do
+          put path, params: params
+
+          expect(response).to have_gitlab_http_status(:redirect)
+          expect(flash[:notice]).to eq(s_('Microsoft|Microsoft Azure integration settings were successfully updated.'))
+        end
 
         it 'creates new SystemAccess::GroupMicrosoftApplication' do
           expect { update_request }.to change { SystemAccess::GroupMicrosoftApplication.count }.by(1)
         end
 
-        it 'also writes to legacy SystemAccess::MicrosoftApplication table' do
-          expect { update_request }.to change { SystemAccess::GroupMicrosoftApplication.count }.by(1).and(
-            change { SystemAccess::MicrosoftApplication.count }.by(1)
-          )
+        context 'when group_microsoft_applications_table FF is disabled' do
+          let(:params) do
+            { system_access_microsoft_application: attributes_for(:system_access_microsoft_application) }
+          end
+
+          before do
+            stub_feature_flags(group_microsoft_applications_table: false)
+          end
+
+          it 'writes to both microsoft applications tables' do
+            expect { update_request }.to change { SystemAccess::GroupMicrosoftApplication.count }.by(1).and(
+              change { SystemAccess::MicrosoftApplication.count }.by(1)
+            )
+          end
+
+          it 'raises an error when parameters are missing' do
+            expect { put path }.to raise_error(ActionController::ParameterMissing)
+          end
+
+          it 'redirects with error alert when missing required attributes' do
+            put path, params: { system_access_microsoft_application: { enabled: true } }
+
+            expect(response).to have_gitlab_http_status(:redirect)
+            expect(flash[:alert]).to include('Microsoft Azure integration settings failed to save.')
+          end
+
+          it 'redirects with success notice' do
+            put path, params: params
+
+            expect(response).to have_gitlab_http_status(:redirect)
+            expect(flash[:notice]).to eq(
+              s_('Microsoft|Microsoft Azure integration settings were successfully updated.')
+            )
+          end
         end
       end
     end

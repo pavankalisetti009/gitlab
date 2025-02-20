@@ -14,6 +14,12 @@ RSpec.describe SystemAccess::GroupMicrosoftGraphAccessToken, type: :model, featu
         .class_name('SystemAccess::GroupMicrosoftApplication')
         .inverse_of(:graph_access_token)
     end
+
+    it 'has legacy association for MicrosoftApplication' do
+      is_expected.to belong_to(:system_access_microsoft_application)
+        .class_name('SystemAccess::GroupMicrosoftApplication')
+        .inverse_of(:graph_access_token)
+    end
   end
 
   describe 'validations' do

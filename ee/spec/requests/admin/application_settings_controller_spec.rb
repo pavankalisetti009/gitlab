@@ -25,7 +25,23 @@ RSpec.describe Admin::ApplicationSettingsController, :enable_admin_mode, feature
       allow(::Gitlab::Auth::Saml::Config).to receive(:microsoft_group_sync_enabled?).and_return(true)
     end
 
-    it_behaves_like 'Microsoft application controller actions'
+    it 'raises an error when parameters are missing' do
+      expect { put path }.to raise_error(ActionController::ParameterMissing)
+    end
+
+    it 'redirects with error alert when missing required attributes' do
+      put path, params: { system_access_microsoft_application: { enabled: true } }
+
+      expect(response).to have_gitlab_http_status(:redirect)
+      expect(flash[:alert]).to include('Microsoft Azure integration settings failed to save.')
+    end
+
+    it 'redirects with success notice' do
+      put path, params: params
+
+      expect(response).to have_gitlab_http_status(:redirect)
+      expect(flash[:notice]).to eq(s_('Microsoft|Microsoft Azure integration settings were successfully updated.'))
+    end
 
     it 'creates new SystemAccess::MicrosoftApplication' do
       expect { update_request }.to change { SystemAccess::MicrosoftApplication.count }.by(1)
@@ -33,6 +49,16 @@ RSpec.describe Admin::ApplicationSettingsController, :enable_admin_mode, feature
 
     it 'does not create a SystemAccess::GroupMicrosoftApplication' do
       expect { update_request }.not_to change { SystemAccess::GroupMicrosoftApplication.count }
+    end
+
+    context 'when group_microsoft_applications_table FF is disabled' do
+      before do
+        stub_feature_flags(group_microsoft_applications_table: false)
+      end
+
+      it 'creates new SystemAccess::MicrosoftApplication' do
+        expect { update_request }.to change { SystemAccess::MicrosoftApplication.count }.by(1)
+      end
     end
   end
 
@@ -48,6 +74,20 @@ RSpec.describe Admin::ApplicationSettingsController, :enable_admin_mode, feature
         get general_admin_application_settings_path
 
         expect(response.body).to match(/test-xid-456/)
+      end
+
+      context 'with feature flag group_microsoft_applications_table disabled' do
+        before do
+          stub_feature_flags(group_microsoft_applications_table: false)
+        end
+
+        it 'initializes correctly with SystemAccess::MicrosoftApplication' do
+          create(:system_access_microsoft_application, namespace: nil, client_xid: 'test-xid-123')
+
+          get general_admin_application_settings_path
+
+          expect(response.body).to match(/test-xid-123/)
+        end
       end
     end
 
