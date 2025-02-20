@@ -425,6 +425,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="querycidedicatedhostedrunnerusagebillingmonth"></a>`billingMonth` | [`Date`](#date) | First day of the month to retrieve data for. |
 | <a id="querycidedicatedhostedrunnerusagegrouping"></a>`grouping` | [`GroupingEnum`](#groupingenum) | Groups usage data by instance aggregate or root namespace. |
+| <a id="querycidedicatedhostedrunnerusagerunnerid"></a>`runnerId` | [`CiRunnerID`](#cirunnerid) | Runner ID to retrieve data for. |
 | <a id="querycidedicatedhostedrunnerusageyear"></a>`year` | [`Int`](#int) | Year to retrieve data for. |
 
 ### `Query.ciMinutesUsage`

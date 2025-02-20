@@ -49,6 +49,9 @@ module EE
             type: EE::Types::Ci::Minutes::GroupingEnum,
             required: false,
             description: 'Groups usage data by instance aggregate or root namespace.'
+          argument :runner_id, ::Types::GlobalIDType[::Ci::Runner],
+            required: false,
+            description: 'Runner ID to retrieve data for.'
         end
         field :current_license, ::Types::Admin::CloudLicenses::CurrentLicenseType,
           null: true,
