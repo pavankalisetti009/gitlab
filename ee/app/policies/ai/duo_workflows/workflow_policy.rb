@@ -11,9 +11,21 @@ module Ai
         @subject.user == @user
       end
 
+      condition(:can_update_workflow) do
+        can?(:update_duo_workflow, @subject)
+      end
+
+      condition(:duo_workflow_in_ci_available) do
+        ::Feature.enabled?(:duo_workflow_in_ci, @user)
+      end
+
       rule { can_use_duo_workflows_in_project & is_workflow_owner }.policy do
         enable :read_duo_workflow
         enable :update_duo_workflow
+      end
+
+      rule { duo_workflow_in_ci_available & can_update_workflow }.policy do
+        enable :execute_duo_workflow_in_ci
       end
     end
   end

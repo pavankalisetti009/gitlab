@@ -117,6 +117,66 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         it_behaves_like 'workflow access is forbidden'
       end
     end
+
+    context 'when start_workflow is true' do
+      let(:params) do
+        {
+          project_id: project.id,
+          start_workflow: true,
+          goal: 'Print hello world'
+        }
+      end
+
+      before do
+        allow_next_instance_of(::Ai::DuoWorkflow::DuoWorkflowService::Client) do |client|
+          allow(client).to receive(:generate_token).and_return({ status: "success", token: "an-encrypted-token" })
+        end
+      end
+
+      it 'creates a pipeline to run the workflow' do
+        expect_next_instance_of(Ci::CreatePipelineService) do |pipeline_service|
+          expect(pipeline_service).to receive(:execute).and_call_original
+        end
+
+        post api(path, user), params: params
+        expect(json_response['id']).to eq(Ai::DuoWorkflows::Workflow.last.id)
+        expect(json_response.dig('pipeline', 'id')).not_to be_nil
+      end
+
+      context 'when Feature flag is disabled' do
+        before do
+          stub_feature_flags(duo_workflow_in_ci: false)
+        end
+
+        it 'does not start a pipeline' do
+          post api(path, user), params: params
+
+          expect(json_response.dig('pipeline', 'id')).to eq(nil)
+          expect(json_response.dig('pipeline', 'message')).to eq('Can not execute workflow in CI')
+        end
+      end
+
+      context 'when ci pipeline could not be created' do
+        let(:pipeline) do
+          instance_double('Ci::Pipeline', created_successfully?: false, full_error_messages: 'full error messages')
+        end
+
+        let(:service_response) { ServiceResponse.error(message: 'Error in creating pipeline', payload: pipeline) }
+
+        before do
+          allow_next_instance_of(::Ci::CreatePipelineService) do |instance|
+            allow(instance).to receive(:execute).and_return(service_response)
+          end
+        end
+
+        it 'does not start a pipeline to execute workflow' do
+          post api(path, user), params: params
+          expect(json_response['id']).to eq(Ai::DuoWorkflows::Workflow.last.id)
+          expect(json_response.dig('pipeline', 'id')).to eq(nil)
+          expect(json_response.dig('pipeline', 'message')).to eq('Error in creating pipeline')
+        end
+      end
+    end
   end
 
   describe 'POST /ai/duo_workflows/direct_access' do

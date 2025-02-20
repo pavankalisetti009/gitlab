@@ -17,6 +17,10 @@ module API
               ::Ai::DuoWorkflows::Workflow::AgentPrivileges::ALL_PRIVILEGES[privilege][:name]
             end
           end
+
+          expose :pipeline do |_, opts|
+            opts[:pipeline]
+          end
         end
       end
     end

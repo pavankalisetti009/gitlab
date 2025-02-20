@@ -28,6 +28,15 @@ module API
             forbidden!
           end
 
+          def start_workflow_params(workflow_id)
+            {
+              goal: params[:goal],
+              workflow_id: workflow_id,
+              workflow_oauth_token: gitlab_oauth_token,
+              workflow_service_token: duo_workflow_token
+            }
+          end
+
           def gitlab_oauth_token
             gitlab_oauth_token_result = ::Ai::DuoWorkflows::CreateOauthAccessTokenService.new(
               current_user: current_user,
@@ -53,12 +62,16 @@ module API
           end
 
           def create_workflow_params
-            declared_params(include_missing: false)
+            declared_params(include_missing: false).except(:start_workflow)
           end
 
           params :workflow_params do
             requires :project_id, type: String, desc: 'The ID or path of the workflow project',
               documentation: { example: '1' }
+            optional :start_workflow, type: Boolean,
+              desc: 'Optional parameter to start workflow in a CI pipeline.' \
+                'This feature is currently in an experimental state.',
+              documentation: { example: true }
             optional :goal, type: String, desc: 'Goal of the workflow',
               documentation: { example: 'Fix pipeline for merge request 1 in project 1' }
             optional :agent_privileges, type: [Integer], desc: 'The actions the agent is allowed to perform',
@@ -72,6 +85,7 @@ module API
           namespace :duo_workflows do
             resources :direct_access do
               desc 'Connection details for accessing Duo Workflow Service directly' do
+                detail 'This feature is experimental.'
                 success code: 201
                 failure [
                   { code: 401, message: 'Unauthorized' },
@@ -114,10 +128,12 @@ module API
 
             namespace :workflows do
               desc 'creates workflow persistence' do
+                detail 'This feature is experimental.'
                 success code: 200
                 failure [
                   { code: 400, message: 'Validation failed' },
                   { code: 401, message: 'Unauthorized' },
+                  { code: 403, message: '403 Forbidden' },
                   { code: 404, message: 'Not found' }
                 ]
               end
@@ -135,7 +151,18 @@ module API
 
                 bad_request!(result[:message]) if result[:status] == :error
 
-                present result[:workflow], with: ::API::Entities::Ai::DuoWorkflows::Workflow
+                if params[:start_workflow].present?
+                  response = ::Ai::DuoWorkflows::StartWorkflowService.new(
+                    workflow: result[:workflow],
+                    params: start_workflow_params(result[:workflow].id)
+                  ).execute
+
+                  pipeline_id = response.payload && response.payload[:pipeline_id]
+                  message = response.message
+                end
+
+                present result[:workflow], with: ::API::Entities::Ai::DuoWorkflows::Workflow,
+                  pipeline: { id: pipeline_id, message: message }
               end
 
               desc 'Get all possible agent privileges and descriptions' do
