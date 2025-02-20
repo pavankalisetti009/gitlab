@@ -32,8 +32,7 @@ module Resolvers
 
     argument :identifier_name, GraphQL::Types::String,
       required: false,
-      description: 'Filter vulnerabilities by identifier name. Applicable on group ' \
-                   'level when feature flag `vulnerability_filtering_by_identifier_group` is enabled. ' \
+      description: 'Filter vulnerabilities by identifier name. ' \
                    'Ignored when applied on instance security dashboard queries.'
 
     argument :scanner, [GraphQL::Types::String],

@@ -87,9 +87,6 @@ RSpec.describe Resolvers::Vulnerabilities::IdentifierSearchResolver, feature_cat
         end
 
         it_behaves_like 'handles invalid search input'
-        it_behaves_like 'handles a disabled feature flag' do
-          let(:feature_flag) { :vulnerability_filtering_by_identifier_group }
-        end
       end
 
       context 'with a project' do
