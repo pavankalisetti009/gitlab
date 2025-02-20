@@ -1586,6 +1586,29 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
       end
     end
 
+    context 'when updating ci_id_token_sub_claim_components' do
+      let(:project_params) { { ci_id_token_sub_claim_components: sub_claim_components } }
+      let(:sub_claim_components) { ['project_path'] }
+
+      it 'updates id_token_sub_claim_components' do
+        subject
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(project.reload.ci_id_token_sub_claim_components).to eq(sub_claim_components)
+      end
+
+      context 'when value is invalid' do
+        let(:sub_claim_components) { ['missing-component'] }
+
+        it 'fails with an error' do
+          subject
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+          expect(json_response['error']).to eq('ci_id_token_sub_claim_components does not have a valid value')
+        end
+      end
+    end
+
     context 'when updating external classification' do
       before do
         enable_external_authorization_service_check
