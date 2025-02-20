@@ -131,5 +131,13 @@ describe('useAccessTokens store', () => {
         expect(store.page).toBe(2);
       });
     });
+
+    describe('setToken', () => {
+      it('sets the token', () => {
+        store.setToken(2);
+
+        expect(store.token).toBe(2);
+      });
+    });
   });
 });

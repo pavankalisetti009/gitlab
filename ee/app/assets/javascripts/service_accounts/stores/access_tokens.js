@@ -66,6 +66,9 @@ export const useAccessTokens = defineStore('accessTokens', {
     setPage(page) {
       this.page = page;
     },
+    setToken(token) {
+      this.token = token;
+    },
   },
   getters: {
     params() {

@@ -10,6 +10,7 @@ import {
 import DateToken from '~/vue_shared/components/filtered_search_bar/tokens/date_token.vue';
 
 import { useAccessTokens } from '../../stores/access_tokens';
+import AccessToken from './access_token.vue';
 import AccessTokenTable from './access_token_table.vue';
 
 export default {
@@ -17,6 +18,7 @@ export default {
     GlFilteredSearch,
     GlPagination,
     PageHeading,
+    AccessToken,
     AccessTokenTable,
   },
   inject: ['accessTokenShow'],
@@ -114,6 +116,7 @@ export default {
 <template>
   <div>
     <page-heading :heading="s__('AccessTokens|Personal access tokens')" />
+    <access-token />
     <gl-filtered-search
       :value="filters"
       :placeholder="s__('AccessTokens|Search or filter access tokens...')"
