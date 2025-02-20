@@ -151,7 +151,7 @@ describe('ValueStreamSelect', () => {
 
         it('renders a create option for custom value streams', () => {
           expect(findCreateValueStreamOption().exists()).toBe(true);
-          expect(findCreateValueStreamOption().text()).toBe('New Value Stream');
+          expect(findCreateValueStreamOption().text()).toBe('New value stream');
           expect(findCreateValueStreamOption().attributes('href')).toBe(newValueStreamPath);
         });
 

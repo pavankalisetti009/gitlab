@@ -22,7 +22,7 @@ const i18n = {
   ),
   DELETED: s__("DeleteValueStream|'%{name}' Value Stream deleted"),
   DELETE: __('Delete'),
-  CREATE_VALUE_STREAM: s__('CreateValueStreamForm|New Value Stream'),
+  CREATE_VALUE_STREAM: s__('CreateValueStreamForm|New value stream'),
   CANCEL: __('Cancel'),
   EDIT_VALUE_STREAM: __('Edit'),
 };

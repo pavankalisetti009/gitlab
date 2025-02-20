@@ -17286,9 +17286,6 @@ msgstr ""
 msgid "CreateValueStreamForm|Name is required"
 msgstr ""
 
-msgid "CreateValueStreamForm|New Value Stream"
-msgstr ""
-
 msgid "CreateValueStreamForm|New stage"
 msgstr ""
 
@@ -17912,7 +17909,7 @@ msgstr ""
 msgid "CycleAnalytics|Median duration"
 msgstr ""
 
-msgid "CycleAnalytics|New value stream…"
+msgid "CycleAnalytics|New value stream"
 msgstr ""
 
 msgid "CycleAnalytics|No data"
