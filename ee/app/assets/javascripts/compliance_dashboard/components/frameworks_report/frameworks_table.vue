@@ -22,6 +22,7 @@ import {
   CREATE_FRAMEWORKS_DOCS_URL,
 } from '../../constants';
 import { isTopLevelGroup, convertFrameworkIdToGraphQl } from '../../utils';
+import updateComplianceFrameworkMutation from '../../graphql/mutations/update_compliance_framework.mutation.graphql';
 import FrameworkInfoDrawer from './framework_info_drawer.vue';
 import DeleteModal from './edit_framework/components/delete_modal.vue';
 
@@ -119,6 +120,7 @@ export default {
     copyFrameworkId(id) {
       navigator?.clipboard?.writeText(getIdFromGraphQLId(id));
       this.$toast.show(this.$options.i18n.copyIdToastText);
+      this.$refs[`framework-dropdown-${id}`].closeAndFocus();
     },
     showDeleteModal(framework) {
       this.frameworkToDeleteName = framework.name;
@@ -137,6 +139,45 @@ export default {
     editFramework({ id }) {
       this.$router.push({ name: ROUTE_EDIT_FRAMEWORK, params: { id: getIdFromGraphQLId(id) } });
     },
+    async updateDefaultFramework({ framework, isDefault }) {
+      try {
+        const { data } = await this.$apollo.mutate({
+          mutation: updateComplianceFrameworkMutation,
+          variables: {
+            input: {
+              id: framework.id,
+              params: {
+                default: isDefault,
+              },
+            },
+          },
+        });
+        const errors = data?.updateComplianceFramework?.errors;
+
+        if (errors && errors.length) {
+          throw new Error(errors.join(', '));
+        }
+
+        this.$emit('update-frameworks');
+
+        this.$toast.show(
+          isDefault
+            ? this.$options.i18n.setAsDefaultFrameworkSuccess
+            : this.$options.i18n.removeAsDefaultFrameworkSuccess,
+        );
+      } catch (error) {
+        this.$toast.show(
+          isDefault
+            ? this.$options.i18n.setAsDefaultFrameworkError
+            : this.$options.i18n.removeAsDefaultFrameworkError,
+        );
+        Sentry.captureException(error, {
+          tags: {
+            vue_component: 'frameworks_table',
+          },
+        });
+      }
+    },
     async exportFramework(framework) {
       try {
         const frameworkId = getIdFromGraphQLId(framework.id);
@@ -147,6 +188,7 @@ export default {
           },
         }).href;
         window.location.href = downloadUrl;
+        this.$refs[`framework-dropdown-${framework.id}`].closeAndFocus();
       } catch (error) {
         this.$toast.show(s__('ComplianceFrameworksReport|Failed to export framework'));
         Sentry.captureException(error, {
@@ -155,6 +197,12 @@ export default {
           },
         });
       }
+    },
+    getSetAsDefaultActionTooltipTitle(framework) {
+      if (framework.default) {
+        return this.$options.i18n.removeAsDefaultFrameworkTooltip;
+      }
+      return this.$options.i18n.setAsDefaultFrameworkTooltip;
     },
     getPoliciesList(item) {
       const {
@@ -235,6 +283,8 @@ export default {
     actionEdit: __('Edit'),
     actionExport: __('Export as a JSON file'),
     actionDelete: __('Delete'),
+    actionSetAsDefault: __('Set as default'),
+    actionRemoveAsDefault: __('Remove as default'),
     toggleText: __('Actions for'),
     deleteButtonLinkedPoliciesDisabledTooltip: s__(
       "ComplianceFrameworks|Compliance frameworks that are linked to an active policy can't be deleted",
@@ -243,6 +293,18 @@ export default {
       "ComplianceFrameworks|The default framework can't be deleted",
     ),
     andMore: s__('ComplianceReport|and %{count} more'),
+    setAsDefaultFrameworkSuccess: s__(
+      'ComplianceFrameworksReport|Default framework set successfully',
+    ),
+    setAsDefaultFrameworkError: s__('ComplianceFrameworksReport|Failed to set default framework'),
+    setAsDefaultFrameworkTooltip: s__('ComplianceFrameworksReport|Set as default framework'),
+    removeAsDefaultFrameworkSuccess: s__(
+      'ComplianceFrameworksReport|Default framework removed successfully',
+    ),
+    removeAsDefaultFrameworkError: s__(
+      'ComplianceFrameworksReport|Failed to remove default framework',
+    ),
+    removeAsDefaultFrameworkTooltip: s__('ComplianceFrameworksReport|Remove as default framework'),
   },
   CREATE_FRAMEWORKS_DOCS_URL,
 };
@@ -307,6 +369,7 @@ export default {
       </template>
       <template #cell(action)="{ item }">
         <gl-disclosure-dropdown
+          :ref="`framework-dropdown-${item.id}`"
           icon="ellipsis_v"
           :toggle-text="`${$options.i18n.toggleText} ${item.name}`"
           text-sr-only
@@ -315,7 +378,7 @@ export default {
           no-caret
         >
           <template #header>
-            <div class="gl-border-b gl-border-b-dropdown gl-p-4">
+            <div class="gl-border-b gl-border-b-dropdown gl-p-4 gl-text-left">
               <span class="gl-font-bold">
                 {{ $options.i18n.dropdownTitle }}
               </span>
@@ -347,6 +410,27 @@ export default {
                 @click="editFramework({ id: item.id })"
               >
                 {{ $options.i18n.actionEdit }}
+              </gl-button>
+            </div>
+            <div
+              v-if="isTopLevelGroup"
+              v-gl-tooltip.left.viewport
+              class="gl-mx-2"
+              data-testid="set-as-default-tooltip"
+              :title="getSetAsDefaultActionTooltipTitle(item)"
+            >
+              <gl-button
+                data-testid="action-set-as-default"
+                class="!gl-justify-start !gl-border-none"
+                category="tertiary"
+                :block="true"
+                @click="updateDefaultFramework({ framework: item, isDefault: !item.default })"
+              >
+                {{
+                  item.default
+                    ? $options.i18n.actionRemoveAsDefault
+                    : $options.i18n.actionSetAsDefault
+                }}
               </gl-button>
             </div>
             <div class="gl-mx-2">

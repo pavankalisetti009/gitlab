@@ -14646,6 +14646,12 @@ msgstr ""
 msgid "ComplianceFrameworksReport|Default"
 msgstr ""
 
+msgid "ComplianceFrameworksReport|Default framework removed successfully"
+msgstr ""
+
+msgid "ComplianceFrameworksReport|Default framework set successfully"
+msgstr ""
+
 msgid "ComplianceFrameworksReport|Description"
 msgstr ""
 
@@ -14655,10 +14661,22 @@ msgstr ""
 msgid "ComplianceFrameworksReport|Failed to export framework"
 msgstr ""
 
+msgid "ComplianceFrameworksReport|Failed to remove default framework"
+msgstr ""
+
+msgid "ComplianceFrameworksReport|Failed to set default framework"
+msgstr ""
+
 msgid "ComplianceFrameworksReport|Framework ID copied to clipboard."
 msgstr ""
 
 msgid "ComplianceFrameworksReport|Policies"
+msgstr ""
+
+msgid "ComplianceFrameworksReport|Remove as default framework"
+msgstr ""
+
+msgid "ComplianceFrameworksReport|Set as default framework"
 msgstr ""
 
 msgid "ComplianceFrameworksReport|Use the compliance framework ID in configuration or API requests."
@@ -47772,6 +47790,9 @@ msgstr ""
 msgid "Remove approvers?"
 msgstr ""
 
+msgid "Remove as default"
+msgstr ""
+
 msgid "Remove asset link"
 msgstr ""
 
@@ -54169,6 +54190,9 @@ msgid "Set a group, access level or users who are required to deploy."
 msgstr ""
 
 msgid "Set a password on your account to pull or push via %{protocol}."
+msgstr ""
+
+msgid "Set as default"
 msgstr ""
 
 msgid "Set due date"

@@ -118,6 +118,14 @@ export default {
     handleOnDismissMaintenanceMode() {
       this.maintenanceModeDismissed = true;
     },
+    async refreshFrameworks() {
+      try {
+        return await this.$apollo.queries.frameworks.refetch();
+      } catch (error) {
+        createAlert({ message: error, captureError: true, error });
+        return null;
+      }
+    },
     async deleteFramework(id) {
       try {
         const {
@@ -136,7 +144,7 @@ export default {
         if (error) {
           throw error;
         } else {
-          this.$apollo.queries.frameworks.refetch();
+          this.refreshFrameworks();
           this.$toast.show(s__('Compliance|Framework deleted successfully'));
         }
       } catch (error) {
@@ -206,6 +214,7 @@ export default {
         :frameworks="frameworks.nodes"
         @search="onSearch"
         @delete-framework="deleteFramework"
+        @update-frameworks="refreshFrameworks"
       />
 
       <gl-keyset-pagination

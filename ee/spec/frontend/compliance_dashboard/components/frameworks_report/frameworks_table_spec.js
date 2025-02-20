@@ -9,6 +9,7 @@ import {
 } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
+import { createApolloProvider } from '@vue/apollo-option';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 
 import { mountExtended } from 'helpers/vue_test_utils_helper';
@@ -24,6 +25,9 @@ import { DOCS_URL_IN_EE_DIR } from 'jh_else_ce/lib/utils/url_utility';
 import DeleteModal from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/delete_modal.vue';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import FrameworkBadge from 'ee/compliance_dashboard/components/shared/framework_badge.vue';
+import updateComplianceFrameworkMutation from 'ee/compliance_dashboard/graphql/mutations/update_compliance_framework.mutation.graphql';
+import { createMockClient } from 'helpers/mock_apollo_helper';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 
 Vue.use(VueApollo);
 
@@ -65,8 +69,10 @@ describe('FrameworksTable component', () => {
   const findActionsDropdownItems = () => findActionsDropdowns().at(0).findAll('.gl-mx-2');
   const findEditAction = () => wrapper.findByTestId('action-edit');
   const findDeleteAction = () => wrapper.findByTestId('action-delete');
+  const findSetAsDefaultAction = () => wrapper.findByTestId('action-set-as-default');
   const findCopyIdAction = () => wrapper.findByTestId('action-copy-id');
   const findDeleteActionTooltip = () => wrapper.findByTestId('delete-tooltip');
+  const findSetAsDefaultActionTooltip = () => wrapper.findByTestId('set-as-default-tooltip');
   const findDeleteModal = () => wrapper.findComponent(DeleteModal);
   const findBadge = () => wrapper.findComponent(FrameworkBadge);
 
@@ -75,13 +81,20 @@ describe('FrameworksTable component', () => {
     await nextTick();
   };
 
-  const createComponent = (props = {}, queryParams = {}) => {
+  const createComponent = (props = {}, queryParams = {}, options = {}) => {
     const currentQueryParams = { ...queryParams };
     $router = {
       push: jest.fn().mockImplementation(({ query }) => {
         Object.assign(currentQueryParams, query);
       }),
     };
+
+    const defaultApolloProvider =
+      options.apolloProvider ||
+      createApolloProvider({
+        defaultClient: createMockClient(),
+      });
+
     return mountExtended(FrameworksTable, {
       propsData: {
         groupPath: GROUP_PATH,
@@ -109,7 +122,9 @@ describe('FrameworksTable component', () => {
         EditForm: true,
         FrameworkInfoDrawer: true,
         GlModal: GlModalStub,
+        ...options.stubs,
       },
+      apolloProvider: defaultApolloProvider,
       attachTo: document.body,
     });
   };
@@ -339,8 +354,8 @@ describe('FrameworksTable component', () => {
       );
     });
 
-    it('dropdown has four actions', () => {
-      expect(findActionsDropdownItems()).toHaveLength(4);
+    it('dropdown has five actions', () => {
+      expect(findActionsDropdownItems()).toHaveLength(5);
     });
 
     describe('edit action', () => {
@@ -353,6 +368,52 @@ describe('FrameworksTable component', () => {
         expect($router.push).toHaveBeenCalledWith({
           name: ROUTE_EDIT_FRAMEWORK,
           params: { id: getIdFromGraphQLId(frameworks[rowCheckIndex].id) },
+        });
+      });
+    });
+
+    describe('set as default action', () => {
+      describe('when framework is not default', () => {
+        it('renders expected text', () => {
+          expect(findSetAsDefaultAction().text()).toBe('Set as default');
+        });
+
+        it('shows correct tooltip', () => {
+          const tooltipElement = findSetAsDefaultActionTooltip();
+          expect(tooltipElement.exists()).toBe(true);
+          expect(tooltipElement.text()).toBe('Set as default');
+        });
+
+        it('triggers updateDefaultFramework when clicked', async () => {
+          const component = wrapper.findComponent(FrameworksTable);
+          jest.spyOn(component.vm, 'updateDefaultFramework');
+          await findSetAsDefaultAction().trigger('click');
+          expect(component.vm.updateDefaultFramework).toHaveBeenCalledWith(
+            expect.objectContaining({ isDefault: true }),
+          );
+        });
+      });
+
+      describe('when framework is default', () => {
+        beforeEach(async () => {
+          const defaultFramework = createFramework({ isDefault: true });
+
+          wrapper = createComponent({
+            frameworks: [defaultFramework],
+            isLoading: false,
+          });
+
+          await nextTick();
+        });
+
+        it('renders expected text', () => {
+          expect(findSetAsDefaultAction().text()).toBe('Remove as default');
+        });
+
+        it('shows correct tooltip', () => {
+          const tooltipElement = findSetAsDefaultActionTooltip();
+          expect(tooltipElement.exists()).toBe(true);
+          expect(tooltipElement.text()).toBe('Remove as default');
         });
       });
     });
@@ -370,7 +431,7 @@ describe('FrameworksTable component', () => {
       });
 
       it('disables delete action and shows correct tooltip when framework is default', async () => {
-        const defaultFramework = createFramework({ default: true });
+        const defaultFramework = createFramework();
         wrapper = createComponent({
           frameworks: [defaultFramework],
           isLoading: false,
@@ -426,6 +487,32 @@ describe('FrameworksTable component', () => {
     });
 
     describe('copy id action', () => {
+      let dropdownStub;
+      let closeAndFocusSpy;
+
+      beforeEach(() => {
+        closeAndFocusSpy = jest.fn();
+        dropdownStub = {
+          template: '<div><slot></slot></div>',
+          methods: {
+            closeAndFocus: closeAndFocusSpy,
+          },
+        };
+
+        wrapper = createComponent(
+          {
+            frameworks,
+            isLoading: false,
+          },
+          {},
+          {
+            stubs: {
+              GlDisclosureDropdown: dropdownStub,
+            },
+          },
+        );
+      });
+
       it('has expected text', () => {
         expect(findCopyIdAction().text()).toBe('Copy ID: 1');
       });
@@ -438,11 +525,15 @@ describe('FrameworksTable component', () => {
         );
       });
 
-      it('copies id to clipboard on action', () => {
+      it('copies id to clipboard, shows toast, and closes dropdown on action', async () => {
         jest.spyOn(navigator.clipboard, 'writeText');
-        findCopyIdAction().vm.$emit('click');
+
+        await findCopyIdAction().vm.$emit('click');
+        await nextTick();
+
         expect(navigator.clipboard.writeText).toHaveBeenCalledWith(1);
         expect($toast.show).toHaveBeenCalledWith('Framework ID copied to clipboard.');
+        expect(closeAndFocusSpy).toHaveBeenCalled();
       });
     });
   });
@@ -504,17 +595,34 @@ describe('FrameworksTable component', () => {
     const mockFrameworkId = '123';
     const expectedUrl = '/groups/group-path/-/security/compliance_frameworks/123.json';
     let locationMock;
+    let dropdownStub;
+    let closeAndFocusSpy;
 
     beforeEach(() => {
-      wrapper = createComponent({
-        groupPath: 'group-path',
-      });
+      dropdownStub = {
+        template: '<div><slot></slot></div>',
+        methods: {
+          closeAndFocus: jest.fn(),
+        },
+      };
+
+      closeAndFocusSpy = dropdownStub.methods.closeAndFocus;
 
       locationMock = {
         href: 'http://test.host/',
       };
 
       jest.spyOn(window, 'location', 'get').mockImplementation(() => locationMock);
+
+      wrapper = createComponent(
+        {
+          groupPath: 'group-path',
+        },
+        {},
+        {
+          GlDisclosureDropdown: dropdownStub,
+        },
+      );
 
       jest.clearAllMocks();
     });
@@ -545,6 +653,130 @@ describe('FrameworksTable component', () => {
       await wrapper.vm.exportFramework({ id: mockFrameworkId });
 
       expect(toastSpy).toHaveBeenCalledWith('Failed to export framework');
+    });
+
+    it('does not close dropdown if export fails', async () => {
+      $router.resolve = jest.fn().mockImplementation(() => {
+        throw new Error('Failed to resolve route');
+      });
+
+      await wrapper.vm.exportFramework({ id: mockFrameworkId });
+      await nextTick();
+
+      expect(closeAndFocusSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('setAsDefaultFramework', () => {
+    let mutationResolver;
+    let apolloProvider;
+
+    beforeEach(() => {
+      mutationResolver = jest.fn().mockResolvedValue({
+        data: {
+          updateComplianceFramework: {
+            errors: [],
+            clientMutationId: 'test-id',
+            complianceFramework: {
+              id: 'gid://gitlab/ComplianceFramework/1',
+              name: 'Test Framework',
+              description: 'Test Description',
+              color: '#FF0000',
+              pipelineConfigurationFullPath: '/path/to/pipeline',
+            },
+          },
+        },
+      });
+
+      const mockApolloClient = createMockClient([
+        [updateComplianceFrameworkMutation, mutationResolver],
+      ]);
+
+      apolloProvider = createApolloProvider({
+        defaultClient: mockApolloClient,
+      });
+
+      wrapper = createComponent(
+        {
+          frameworks,
+          isLoading: false,
+        },
+        {},
+        { apolloProvider },
+      );
+    });
+
+    it.each([
+      {
+        isDefault: true,
+        expectedMessage: 'Default framework set successfully',
+      },
+      {
+        isDefault: false,
+        expectedMessage: 'Default framework removed successfully',
+      },
+    ])(
+      'handles setting framework default status to $isDefault',
+      async ({ isDefault, expectedMessage }) => {
+        const framework = { id: 'gid://gitlab/ComplianceFramework/1' };
+
+        await wrapper.vm.updateDefaultFramework({ framework, isDefault });
+
+        expect(mutationResolver).toHaveBeenCalledWith(
+          expect.objectContaining({
+            input: {
+              id: framework.id,
+              params: {
+                default: isDefault,
+              },
+            },
+          }),
+        );
+        expect(wrapper.emitted('update-frameworks').length).toBe(1);
+        expect($toast.show).toHaveBeenCalledWith(expectedMessage);
+      },
+    );
+
+    it('shows error toast and logs to Sentry when mutation fails', async () => {
+      const framework = { id: 'gid://gitlab/ComplianceFramework/1' };
+      const error = new Error('GraphQL error');
+      jest.spyOn(Sentry, 'captureException');
+      mutationResolver.mockRejectedValueOnce(error);
+
+      await wrapper.vm.updateDefaultFramework({ framework, isDefault: true });
+
+      expect(wrapper.emitted('update-frameworks')).toBeUndefined();
+      expect($toast.show).toHaveBeenCalledWith('Failed to set default framework');
+      expect(Sentry.captureException).toHaveBeenCalledWith(error, {
+        tags: {
+          vue_component: 'frameworks_table',
+        },
+      });
+    });
+
+    it('shows error toast and logs to Sentry when mutation returns errors', async () => {
+      const framework = { id: 'gid://gitlab/ComplianceFramework/1' };
+      const mutationError = 'Something went wrong';
+      jest.spyOn(Sentry, 'captureException');
+      mutationResolver.mockResolvedValueOnce({
+        data: {
+          updateComplianceFramework: {
+            errors: [mutationError],
+            clientMutationId: 'test-id',
+            complianceFramework: null,
+          },
+        },
+      });
+
+      await wrapper.vm.updateDefaultFramework({ framework, isDefault: true });
+
+      expect(wrapper.emitted('update-frameworks')).toBeUndefined();
+      expect($toast.show).toHaveBeenCalledWith('Failed to set default framework');
+      expect(Sentry.captureException).toHaveBeenCalledWith(new Error(mutationError), {
+        tags: {
+          vue_component: 'frameworks_table',
+        },
+      });
     });
   });
 });

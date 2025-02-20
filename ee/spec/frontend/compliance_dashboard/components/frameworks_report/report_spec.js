@@ -395,4 +395,27 @@ describe('ComplianceFrameworksReport component', () => {
       expect(complianceFrameworksGroupResolverMock).not.toHaveBeenCalled();
     });
   });
+
+  describe('refreshFrameworks', () => {
+    it('refetches frameworks data when successful', async () => {
+      const refetchSpy = jest.spyOn(wrapper.vm.$apollo.queries.frameworks, 'refetch');
+
+      await wrapper.vm.refreshFrameworks();
+
+      expect(refetchSpy).toHaveBeenCalled();
+    });
+
+    it('shows error alert when refetch fails', async () => {
+      const error = new Error('Network error');
+      jest.spyOn(wrapper.vm.$apollo.queries.frameworks, 'refetch').mockRejectedValue(error);
+
+      await wrapper.vm.refreshFrameworks();
+
+      expect(createAlert).toHaveBeenCalledWith({
+        message: error,
+        captureError: true,
+        error,
+      });
+    });
+  });
 });
