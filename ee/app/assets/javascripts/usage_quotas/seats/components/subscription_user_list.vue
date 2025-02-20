@@ -163,6 +163,9 @@ export default {
       if (this.removedBillableMemberId === user?.id) return true;
       return this.recentlyDeletedMembersIds.includes(user?.id);
     },
+    isLastOwner(user) {
+      return user.is_last_owner;
+    },
     getRecentlyDeletedMembersIds() {
       try {
         if (this.hasLocalStorageExpired()) {
@@ -173,6 +176,9 @@ export default {
       } catch {
         return [];
       }
+    },
+    removeButtonDisabled(user) {
+      return this.isUserRemoved(user) || this.isLastOwner(user);
     },
   },
   i18n: {
@@ -275,35 +281,40 @@ export default {
         </div>
       </template>
 
-      <template #cell(lastActivityTime)="data">
+      <template #cell(lastActivityTime)="{ item }">
         <span data-testid="last_activity_on">
-          {{ data.item.user.last_activity_on ? data.item.user.last_activity_on : __('Never') }}
+          {{ item.user.last_activity_on ? item.user.last_activity_on : __('Never') }}
         </span>
       </template>
 
-      <template #cell(lastLoginAt)="data">
+      <template #cell(lastLoginAt)="{ item }">
         <span data-testid="last_login_at">
-          {{ formatLastLoginAt(data.item.user.last_login_at) }}
+          {{ formatLastLoginAt(item.user.last_login_at) }}
         </span>
       </template>
 
-      <template #cell(actions)="data">
-        <span :id="`remove-member-${data.item.user.id}`" class="gl-inline-block" tabindex="0">
+      <template #cell(actions)="{ item }">
+        <span :id="`remove-member-${item.user.id}`" class="gl-inline-block" tabindex="0">
           <gl-button
             v-gl-modal="$options.removeBillableMemberModalId"
             category="secondary"
             variant="danger"
             data-testid="remove-user"
-            :disabled="isUserRemoved(data.item.user)"
-            @click="displayRemoveMemberModal(data.item.user)"
+            :disabled="removeButtonDisabled(item.user)"
+            @click="displayRemoveMemberModal(item.user)"
           >
             {{ __('Remove user') }}
           </gl-button>
           <gl-tooltip
-            v-if="isUserRemoved(data.item.user)"
-            :target="`remove-member-${data.item.user.id}`"
+            v-if="removeButtonDisabled(item.user)"
+            :target="`remove-member-${item.user.id}`"
+            data-testid="remove-user-tooltip"
           >
-            {{ s__('Billing|This user is scheduled for removal.') }}</gl-tooltip
+            {{
+              isLastOwner(item.user)
+                ? s__('Billing|Cannot remove the last owner.')
+                : s__('Billing|This user is scheduled for removal.')
+            }}</gl-tooltip
           >
         </span>
       </template>

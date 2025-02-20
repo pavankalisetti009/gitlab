@@ -1,6 +1,5 @@
 import {
   GlPagination,
-  GlButton,
   GlTable,
   GlAvatarLink,
   GlAvatarLabeled,
@@ -120,14 +119,20 @@ describe('SubscriptionUserList', () => {
   const findErrorModal = () => wrapper.findComponent(GlModal);
 
   const serializeTableRow = (rowWrapper) => {
-    const emailWrapper = rowWrapper.find('[data-testid="email"]');
+    const extendedRowWrapper = extendedWrapper(rowWrapper);
+    const emailWrapper = extendedRowWrapper.findByTestId('email');
 
     return {
       email: emailWrapper.text(),
       tooltip: emailWrapper.find('span').attributes('title'),
-      removeUserButtonExists: rowWrapper.findComponent(GlButton).exists(),
-      lastActivityOn: rowWrapper.find('[data-testid="last_activity_on"]').text(),
-      lastLoginAt: rowWrapper.find('[data-testid="last_login_at"]').text(),
+      removeUserButtonExists: extendedRowWrapper.findByTestId('remove-user').exists(),
+      removeUserButtonDisabled:
+        extendedRowWrapper.findByTestId('remove-user').attributes('disabled') === 'disabled',
+      removeUserButtonTooltip: extendedRowWrapper.findByTestId('remove-user-tooltip').exists()
+        ? extendedRowWrapper.findByTestId('remove-user-tooltip').text()
+        : undefined,
+      lastActivityOn: extendedRowWrapper.findByTestId('last_activity_on').text(),
+      lastLoginAt: extendedRowWrapper.findByTestId('last_login_at').text(),
     };
   };
 
@@ -213,7 +218,7 @@ describe('SubscriptionUserList', () => {
     });
 
     describe('when removing a billable user', () => {
-      const [{ user }] = mockTableItems;
+      const { user } = mockTableItems[0];
 
       describe('with billableMemberAsyncDeletion enabled', () => {
         beforeEach(() => {
@@ -273,7 +278,7 @@ describe('SubscriptionUserList', () => {
     });
 
     describe('when the removed billable user is set', () => {
-      const selectedItem = 0;
+      const selectedItem = 1;
       const { user } = mockTableItems[selectedItem];
 
       beforeEach(() => {
@@ -285,7 +290,7 @@ describe('SubscriptionUserList', () => {
       });
 
       it('does not disable unrelated remove button', () => {
-        expect(findAllRemoveUserItems().at(1).attributes().disabled).toBeUndefined();
+        expect(findAllRemoveUserItems().at(2).attributes().disabled).toBeUndefined();
       });
 
       it('shows a tooltip for related users', () => {
@@ -294,8 +299,8 @@ describe('SubscriptionUserList', () => {
         );
       });
 
-      it('does snot show a tooltip for unrelated user', () => {
-        const [, { user: nonRemovedUser }] = mockTableItems;
+      it('does not show a tooltip for unrelated user', () => {
+        const { user: nonRemovedUser } = mockTableItems[2];
 
         expect(findRemoveMemberItem(nonRemovedUser.id).findComponent(GlTooltip).exists()).toBe(
           false,
@@ -322,7 +327,7 @@ describe('SubscriptionUserList', () => {
     });
 
     describe('when the removed billable user is in local storage', () => {
-      const selectedItem = 0;
+      const selectedItem = 1;
       const { user } = mockTableItems[selectedItem];
 
       beforeEach(() => {
@@ -336,7 +341,7 @@ describe('SubscriptionUserList', () => {
       });
 
       it('does not disable unrelated remove button', () => {
-        expect(findAllRemoveUserItems().at(1).attributes().disabled).toBeUndefined();
+        expect(findAllRemoveUserItems().at(3).attributes().disabled).toBeUndefined();
       });
 
       it('shows a tooltip for related users', () => {
@@ -345,8 +350,8 @@ describe('SubscriptionUserList', () => {
         );
       });
 
-      it('does snot show a tooltip for unrelated user', () => {
-        const [, { user: nonRemovedUser }] = mockTableItems;
+      it('does not show a tooltip for unrelated user', () => {
+        const { user: nonRemovedUser } = mockTableItems[2];
 
         expect(findRemoveMemberItem(nonRemovedUser.id).findComponent(GlTooltip).exists()).toBe(
           false,

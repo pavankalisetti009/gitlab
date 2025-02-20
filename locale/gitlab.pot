@@ -9547,6 +9547,9 @@ msgstr ""
 msgid "Billing|Awaiting member signup"
 msgstr ""
 
+msgid "Billing|Cannot remove the last owner."
+msgstr ""
+
 msgid "Billing|Cannot remove user"
 msgstr ""
 
