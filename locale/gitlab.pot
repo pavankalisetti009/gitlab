@@ -36746,6 +36746,9 @@ msgstr ""
 msgid "MlModelRegistry|Failed to load model with error: %{message}"
 msgstr ""
 
+msgid "MlModelRegistry|Failed to load models with error: %{message}"
+msgstr ""
+
 msgid "MlModelRegistry|File \"%{name}\" is %{size}. It is larger than max allowed size of %{maxAllowedFileSize}"
 msgstr ""
 
@@ -36909,9 +36912,6 @@ msgid "MlModelRegistry|Subfolder"
 msgstr ""
 
 msgid "MlModelRegistry|Subfolder cannot contain spaces"
-msgstr ""
-
-msgid "MlModelRegistry|This model has no runs"
 msgstr ""
 
 msgid "MlModelRegistry|Total versions"
