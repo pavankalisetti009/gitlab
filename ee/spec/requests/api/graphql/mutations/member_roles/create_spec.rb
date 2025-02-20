@@ -99,7 +99,7 @@ RSpec.describe 'creating member role', feature_category: :permissions do
 
             it_behaves_like 'a mutation that returns top-level errors',
               errors: ["The resource that you are attempting to access does not exist or " \
-                       "you don't have permission to perform this action"]
+                "you don't have permission to perform this action"]
           end
 
           context 'with missing arguments' do
@@ -123,7 +123,7 @@ RSpec.describe 'creating member role', feature_category: :permissions do
       context 'when the current user is not an instance admin' do
         it_behaves_like 'a mutation that returns a top-level access error',
           errors: ["The resource that you are attempting to access does not exist or " \
-                   "you don't have permission to perform this action"]
+            "you don't have permission to perform this action"]
       end
 
       context 'when the current user is an instance admin' do

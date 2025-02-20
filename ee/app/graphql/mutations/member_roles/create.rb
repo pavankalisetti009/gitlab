@@ -5,8 +5,9 @@ module Mutations
     class Create < Base
       graphql_name 'MemberRoleCreate'
 
-      include ::GitlabSubscriptions::SubscriptionHelper
       include Mutations::ResolvesNamespace
+
+      authorize :admin_member_role
 
       argument :base_access_level,
         ::Types::Members::MemberRoles::AccessLevelEnum,
@@ -30,7 +31,7 @@ module Mutations
       def resolve(**args)
         group = find_group(args.delete(:group_path))
 
-        params = canonicalize(args.merge(namespace: group))
+        params = canonicalize_for_create(args.merge(namespace: group))
         response = ::MemberRoles::CreateService.new(current_user, params).execute
 
         raise_resource_not_available_error! if response.error? && response.reason == :unauthorized
@@ -67,13 +68,6 @@ module Mutations
         return false if gitlab_com_subscription?
 
         args[:group_path].present?
-      end
-
-      def canonicalize(args)
-        permissions = args.delete(:permissions) || []
-        permissions.each_with_object(args) do |permission, new_args|
-          new_args[permission.downcase] = true
-        end
       end
     end
   end

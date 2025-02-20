@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'creating member role', feature_category: :permissions do
+RSpec.describe 'creating admin member role', :enable_admin_mode, feature_category: :permissions do
   include GraphqlHelpers
 
   let_it_be_with_reload(:current_user) { create(:admin) }
@@ -33,7 +33,7 @@ RSpec.describe 'creating member role', feature_category: :permissions do
 
   subject(:create_member_role) { graphql_mutation_response(:member_role_admin_create) }
 
-  context 'without the custom roles feature', :enable_admin_mode do
+  context 'without the custom roles feature' do
     before do
       stub_licensed_features(custom_roles: false)
     end
@@ -41,7 +41,7 @@ RSpec.describe 'creating member role', feature_category: :permissions do
     it_behaves_like 'a mutation that returns a top-level access error'
   end
 
-  context 'with the custom roles feature', :enable_admin_mode do
+  context 'with the custom roles feature' do
     before do
       stub_licensed_features(custom_roles: true)
     end
@@ -58,9 +58,9 @@ RSpec.describe 'creating member role', feature_category: :permissions do
     context 'when on self-managed' do
       it_behaves_like 'a mutation that creates a member role'
 
-      context 'when custom_ability_read_admin_dashboard FF is disabled' do
+      context 'when custom_admin_roles FF is disabled' do
         before do
-          stub_feature_flags(custom_ability_read_admin_dashboard: false)
+          stub_feature_flags(custom_admin_roles: false)
         end
 
         it_behaves_like 'a mutation that returns a top-level access error',

@@ -25,8 +25,7 @@ module Mutations
         def ready?(**args)
           raise_resource_not_available_error! if gitlab_com_subscription?
 
-          raise_resource_not_available_error! unless Feature.enabled?(:custom_ability_read_admin_dashboard,
-            current_user)
+          raise_resource_not_available_error! unless Feature.enabled?(:custom_admin_roles, :instance)
 
           raise_resource_not_available_error! unless current_user.can?(:admin_member_role)
 

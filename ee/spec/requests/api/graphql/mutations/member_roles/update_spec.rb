@@ -6,13 +6,14 @@ RSpec.describe 'updating member role', feature_category: :system_access do
   include GraphqlHelpers
 
   let_it_be(:group) { create(:group) }
-  let_it_be(:member_role) { create(:member_role, namespace: group) }
+  let_it_be(:member_role) { create(:member_role, :read_code, namespace: group) }
   let_it_be(:current_user) { create(:user) }
 
   let(:name) { 'new name' }
-  let(:permissions) { MemberRole.all_customizable_standard_permissions.keys.map(&:to_s).map(&:upcase) }
+  let(:description) { 'new description' }
+  let(:permissions) { %w[READ_VULNERABILITY ADMIN_VULNERABILITY] }
 
-  let(:input) { { 'name' => name, 'permissions' => permissions } }
+  let(:input) { { 'name' => name, 'description' => description, 'permissions' => permissions } }
   let(:mutation) { graphql_mutation(:memberRoleUpdate, input.merge('id' => member_role.to_global_id.to_s), fields) }
   let(:fields) do
     <<~FIELDS
@@ -72,14 +73,22 @@ RSpec.describe 'updating member role', feature_category: :system_access do
 
           expect(update_member_role['memberRole']).to include('name' => 'new name')
 
+          expect(update_member_role['memberRole']).to include('description' => 'new description')
+
           expect(update_member_role['memberRole']['enabledPermissions']['nodes'].flat_map(&:values))
             .to match_array(permissions)
         end
 
         it 'updates the member role' do
-          expect { post_graphql_mutation(mutation, current_user: current_user) }
-            .to change { member_role.reload.name }.to('new name')
-            .and change { member_role.read_vulnerability }.to(true)
+          post_graphql_mutation(mutation, current_user: current_user)
+
+          member_role.reload
+
+          expect(member_role.name).to eq('new name')
+          expect(member_role.description).to eq('new description')
+          expect(member_role.read_vulnerability).to be(true)
+          expect(member_role.admin_vulnerability).to be(true)
+          expect(member_role.read_code).to be(false)
         end
       end
 
@@ -103,6 +112,31 @@ RSpec.describe 'updating member role', feature_category: :system_access do
           expect(graphql_errors).not_to be_empty
           expect(graphql_errors.first['message'])
             .to include("The list of member_role attributes is empty")
+        end
+      end
+
+      context 'when ability is disabled' do
+        before do
+          stub_feature_flag_definition("custom_ability_admin_vulnerability")
+          stub_feature_flags(custom_ability_admin_vulnerability: false)
+        end
+
+        it 'returns success without the ability' do
+          post_graphql_mutation(mutation, current_user: current_user)
+
+          expect(graphql_errors).to be_nil
+
+          expect(update_member_role['memberRole']['enabledPermissions']['nodes'].flat_map(&:values))
+            .to eq(['READ_VULNERABILITY'])
+        end
+
+        it 'updates member role' do
+          post_graphql_mutation(mutation, current_user: current_user)
+
+          member_role.reload
+
+          expect(member_role.read_vulnerability).to be(true)
+          expect(member_role.admin_vulnerability).to be(true)
         end
       end
     end

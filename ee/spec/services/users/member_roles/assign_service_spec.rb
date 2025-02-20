@@ -28,9 +28,9 @@ RSpec.describe Users::MemberRoles::AssignService, feature_category: :permissions
   end
 
   context 'when current user is an admin', :enable_admin_mode do
-    context 'when custom_ability_read_admin_dashboard FF is disabled' do
+    context 'when custom_admin_roles FF is disabled' do
       before do
-        stub_feature_flags(custom_ability_read_admin_dashboard: false)
+        stub_feature_flags(custom_admin_roles: false)
       end
 
       it 'returns an error' do
@@ -38,7 +38,7 @@ RSpec.describe Users::MemberRoles::AssignService, feature_category: :permissions
       end
     end
 
-    context 'when custom_ability_read_admin_dashboard FF is enabled' do
+    context 'when custom_admin_roles FF is enabled' do
       context 'when member_role param is present' do
         it 'creates a new user member role relation' do
           expect { assign_member_role }.to change { Users::UserMemberRole.count }.by(1)
