@@ -4,8 +4,6 @@ module Security
   class Scan < ::Gitlab::Database::SecApplicationRecord
     include CreatedAtFilterable
 
-    STALE_AFTER = 90.days
-
     self.table_name = 'security_scans'
 
     validates :build_id, presence: true
@@ -39,7 +37,7 @@ module Security
     scope :latest_successful, -> { latest.succeeded }
     scope :by_build_ids, ->(build_ids) { where(build_id: build_ids) }
     scope :without_errors, -> { where("jsonb_array_length(COALESCE(info->'errors', '[]'::jsonb)) = 0") }
-    scope :stale, -> { where("created_at < ?", STALE_AFTER.ago).where.not(status: :purged) }
+    scope :stale, -> { where("created_at < ?", stale_after.ago).where.not(status: :purged) }
     scope :ordered_by_created_at_and_id, -> { order(:created_at, :id) }
     scope :with_warnings, -> { where("jsonb_array_length(COALESCE(info->'warnings', '[]'::jsonb)) > 0") }
     scope :with_errors, -> { where("jsonb_array_length(COALESCE(info->'errors', '[]'::jsonb)) > 0") }
@@ -62,11 +60,21 @@ module Security
       Security::Scan.where(project_id: project_ids).distinct.pluck(:project_id)
     end
 
+    # rubocop:disable Gitlab/AvoidGitlabInstanceChecks -- This is not a feature check
+    def self.stale_after
+      if Gitlab.com?
+        30.days
+      else
+        90.days
+      end
+    end
+    # rubocop:enable Gitlab/AvoidGitlabInstanceChecks
+
     # If the record is created 3 months ago and purged,
     # it means that all the previous records must be purged
     # as well so the related findings can be dropped.
     def findings_can_be_purged?
-      created_at < STALE_AFTER.ago && purged?
+      created_at < self.class.stale_after.ago && purged?
     end
 
     def has_warnings?
