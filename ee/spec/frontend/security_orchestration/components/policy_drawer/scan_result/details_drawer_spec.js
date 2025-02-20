@@ -21,6 +21,7 @@ import {
   mockProjectPolicyTuningScanResultManifest,
   allowDenyScanResultLicenseNonEmptyManifest,
   mockWarnActionScanResultManifest,
+  denyScanResultLicenseNonEmptyManifest,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_result_policy_data';
 
 describe('DetailsDrawer component', () => {
@@ -255,13 +256,17 @@ describe('DetailsDrawer component', () => {
   });
 
   describe('deny allow license exceptions table', () => {
-    it('renders allow deny list when license packages exist', () => {
+    it.each`
+      yaml                                          | isDenied
+      ${allowDenyScanResultLicenseNonEmptyManifest} | ${false}
+      ${denyScanResultLicenseNonEmptyManifest}      | ${true}
+    `('renders allow deny list when license packages exist', ({ yaml, isDenied }) => {
       window.gon = { features: { excludeLicensePackages: true } };
       factory({
         props: {
           policy: {
             ...mockProjectScanResultPolicy,
-            yaml: allowDenyScanResultLicenseNonEmptyManifest,
+            yaml,
           },
         },
         provide: {
@@ -272,6 +277,7 @@ describe('DetailsDrawer component', () => {
       });
 
       expect(findDenyAllowViewList().exists()).toBe(true);
+      expect(findDenyAllowViewList().props('isDenied')).toBe(isDenied);
       expect(findDenyAllowViewList().props('items')).toEqual([
         { license: { value: 'MIT', text: 'MIT' }, exceptions: [] },
         {
