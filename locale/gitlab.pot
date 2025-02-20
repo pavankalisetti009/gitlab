@@ -28168,6 +28168,12 @@ msgstr ""
 msgid "GroupSettings|Emails are not encrypted. Concerned administrators may want to disable diff previews."
 msgstr ""
 
+msgid "GroupSettings|Enable JWT format for CI/CD job tokens"
+msgstr ""
+
+msgid "GroupSettings|Enable JWT format for the CI_JOB_TOKEN variable. When disabled, it uses the legacy database format."
+msgstr ""
+
 msgid "GroupSettings|Enable caching of hierarchical objects (subgroups and projects) to improve the performance of group-level features within a large group."
 msgstr ""
 
