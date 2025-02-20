@@ -83,7 +83,8 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
       ::Gitlab::Llm::Chain::Tools::IssueReader,
       ::Gitlab::Llm::Chain::Tools::GitlabDocumentation,
       ::Gitlab::Llm::Chain::Tools::EpicReader,
-      ::Gitlab::Llm::Chain::Tools::MergeRequestReader
+      ::Gitlab::Llm::Chain::Tools::MergeRequestReader,
+      ::Gitlab::Llm::Chain::Tools::CommitReader
     ]
   end
 
@@ -221,7 +222,6 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
       allow(Gitlab::Llm::Chain::Requests::AiGateway).to receive(:new).and_return(ai_request)
       allow(context).to receive(:tools_used).and_return([Gitlab::Llm::Chain::Tools::IssueReader::Executor])
       stub_saas_features(duo_chat_categorize_question: true)
-      stub_feature_flags(ai_commit_reader_for_chat: false)
     end
 
     context 'when resource is an issue' do
@@ -243,42 +243,6 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
       it_behaves_like 'success'
     end
 
-    shared_examples_for 'tool behind a feature flag' do
-      it 'calls zero shot agent with selected tools' do
-        expected_params = [
-          user_input: content,
-          thread: thread,
-          tools: match_array(tools),
-          context: context,
-          response_handler: response_handler,
-          stream_response_handler: stream_response_handler
-        ]
-
-        expect_next_instance_of(::Gitlab::Duo::Chat::ReactExecutor, *expected_params) do |instance|
-          expect(instance).to receive(:execute).and_return(answer)
-        end
-        expect(response_handler).to receive(:execute)
-        expect(::Gitlab::Llm::ResponseService).to receive(:new)
-          .with(context, { ai_action: :chat, request_id: 'uuid', thread: thread })
-          .and_return(response_handler)
-        expect(::Gitlab::Llm::Chain::GitlabContext).to receive(:new)
-          .with(current_user: user, container: expected_container, resource: resource,
-            ai_request: ai_request, extra_resource: extra_resource, request_id: 'uuid',
-            started_at: started_at,
-            current_file: current_file, agent_version: agent_version, additional_context: additional_context)
-          .and_return(context)
-        # This is temporarily commented out due to the following production issue:
-        # https://gitlab.com/gitlab-com/gl-infra/production/-/issues/18191
-        # Since the `#response_post_processing` call is commented out, this should be too.
-        # expect(categorize_service).to receive(:execute)
-        # expect(Llm::ExecuteMethodService).to receive(:new)
-        #   .with(user, user, :categorize_question, categorize_service_params)
-        #   .and_return(categorize_service)
-
-        subject
-      end
-    end
-
     context 'when on self-managed cloud-connected instance' do
       before do
         allow(::CloudConnector).to receive(:self_managed_cloud_connected?).and_return(true)
@@ -290,41 +254,6 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
         end
 
         expect(::Gitlab::AiGateway).not_to receive(:push_feature_flag).with(:expanded_ai_logging, user)
-
-        subject
-      end
-    end
-
-    context 'with commit reader allowed' do
-      before do
-        stub_feature_flags(ai_commit_reader_for_chat: true)
-        allow(ai_request).to receive(:request)
-        allow(::Gitlab::AiGateway).to receive(:push_feature_flag)
-        allow(::CloudConnector).to receive(:self_managed_cloud_connected?).and_return(false)
-      end
-
-      let(:tools) do
-        [
-          ::Gitlab::Llm::Chain::Tools::BuildReader,
-          ::Gitlab::Llm::Chain::Tools::IssueReader,
-          ::Gitlab::Llm::Chain::Tools::GitlabDocumentation,
-          ::Gitlab::Llm::Chain::Tools::EpicReader,
-          ::Gitlab::Llm::Chain::Tools::MergeRequestReader,
-          ::Gitlab::Llm::Chain::Tools::CommitReader
-        ]
-      end
-
-      it_behaves_like 'tool behind a feature flag'
-
-      it 'pushes feature flag to AI Gateway' do
-        allow_next_instance_of(::Gitlab::Duo::Chat::ReactExecutor) do |instance|
-          allow(instance).to receive(:execute).and_return(answer)
-        end
-
-        expect(::Gitlab::AiGateway).to receive(:push_feature_flag)
-          .with(:ai_commit_reader_for_chat, user).and_return(:ai_commit_reader_for_chat)
-        expect(::Gitlab::AiGateway).to receive(:push_feature_flag)
-         .with(:expanded_ai_logging, user).and_return(:expanded_ai_logging)
 
         subject
       end
