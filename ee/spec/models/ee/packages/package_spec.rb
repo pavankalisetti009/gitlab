@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Packages::Package, type: :model, feature_category: :package_registry do
+  it { is_expected.to be_a ::Auditable }
+
   describe '#create_audit_event callback' do
     before do
       allow(::Packages::CreateAuditEventService).to receive(:new).and_call_original

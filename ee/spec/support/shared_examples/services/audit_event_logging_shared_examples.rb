@@ -18,13 +18,17 @@ RSpec.shared_examples 'audit event logging' do
           )).and_call_original
         end
 
-        expect { operation }.to change(AuditEvent, :count).by(1)
+        expect { operation }.to change(AuditEvent, :count).by(defined?(event_count) ? event_count : 1)
       end
 
       it 'logs the audit event info' do
         operation
 
-        expect(AuditEvent.last).to have_attributes(attributes)
+        if defined?(event_count)
+          expect(AuditEvent.last(event_count)).to match_array(attributes.map { |attrs| have_attributes(attrs) })
+        else
+          expect(AuditEvent.last).to have_attributes(attributes)
+        end
       end
 
       it 'calls the audit method with the event type' do

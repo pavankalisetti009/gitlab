@@ -46,13 +46,31 @@ RSpec.describe Auditable, feature_category: :compliance_management do
 
   describe 'approval_project_rule' do
     it_behaves_like 'auditable concern' do
-      let!(:instance) { create(:approval_project_rule) }
+      let_it_be(:instance) { create(:approval_project_rule) }
     end
   end
 
   describe 'external_status_check' do
     it_behaves_like 'auditable concern' do
-      let!(:instance) { create(:external_status_check) }
+      let_it_be(:instance) { create(:external_status_check) }
+    end
+  end
+
+  describe 'packages_package' do
+    let_it_be(:instance) { create(:generic_package) }
+
+    it_behaves_like 'auditable concern'
+
+    context 'when calling push_audit_event with after_commit: false', :request_store do
+      before do
+        allow(::Gitlab::Audit::EventQueue).to receive(:active?).and_return(true)
+      end
+
+      it 'does not call run_after_commit' do
+        expect(instance).not_to receive(:run_after_commit)
+
+        instance.push_audit_event('event', after_commit: false)
+      end
     end
   end
 end

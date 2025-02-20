@@ -132,10 +132,18 @@ RSpec.describe Gitlab::Audit::Auditor, feature_category: :audit_events do
           expect(Gitlab::Audit::EventQueue).to have_received(:end!).ordered
         end
 
-        it 'bulk-inserts audit events to database' do
-          expect(AuditEvent).to receive(:bulk_insert!).with(include(kind_of(AuditEvent)), returns: :ids)
+        context 'for bulk insert' do
+          before do
+            allow(AuditEvent).to receive(:id_in).and_return([build_stubbed(:audit_event), build_stubbed(:audit_event)])
+          end
 
-          audit!
+          it 'bulk-inserts audit events to database' do
+            expect(AuditEvent).to receive(:bulk_insert!).with(include(kind_of(AuditEvent)), returns: :ids)
+            expect(AuditEvents::UserAuditEvent).to receive(:bulk_insert!)
+              .with(include(kind_of(AuditEvents::UserAuditEvent)))
+
+            audit!
+          end
         end
 
         it 'records audit events in correct order', :aggregate_failures do
@@ -397,7 +405,11 @@ RSpec.describe Gitlab::Audit::Auditor, feature_category: :audit_events do
           end
         end
 
-        it_behaves_like 'when audit event is invalid'
+        it_behaves_like 'when audit event is invalid' do
+          before do
+            allow(::AuditEvents::InstanceAuditEvent).to receive(:bulk_insert!).and_raise(ActiveRecord::RecordInvalid)
+          end
+        end
       end
 
       context 'when recording single event' do
