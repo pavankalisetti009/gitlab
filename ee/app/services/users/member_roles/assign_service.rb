@@ -22,7 +22,7 @@ module Users
           )
         end
 
-        unless Feature.enabled?(:custom_ability_read_admin_dashboard, current_user)
+        unless Feature.enabled?(:custom_admin_roles, :instance)
           return ServiceResponse.error(message: 'Not yet available', reason: :forbidden)
         end
 

@@ -61,9 +61,9 @@ RSpec.describe 'Assigning a user to a member role', feature_category: :permissio
   end
 
   context 'when current user is an admin', :enable_admin_mode do
-    context 'when custom_ability_read_admin_dashboard FF is disabled' do
+    context 'when custom_admin_roles FF is disabled' do
       before do
-        stub_feature_flags(custom_ability_read_admin_dashboard: false)
+        stub_feature_flags(custom_admin_roles: false)
       end
 
       it_behaves_like 'a mutation that returns a top-level access error',
@@ -71,7 +71,7 @@ RSpec.describe 'Assigning a user to a member role', feature_category: :permissio
           "you don't have permission to perform this action"]
     end
 
-    context 'when custom_ability_read_admin_dashboard FF is enabled' do
+    context 'when custom_admin_roles FF is enabled' do
       context 'when on SaaS' do
         before do
           stub_saas_features(gitlab_com_subscriptions: true)

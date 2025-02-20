@@ -119,7 +119,8 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
     end
 
     def permission_enabled?(permission, user = nil)
-      if ::Feature.disabled?(:custom_admin_roles, user) && all_customizable_admin_permission_keys.include?(permission)
+      if ::Feature.disabled?(:custom_admin_roles, :instance) &&
+          all_customizable_admin_permission_keys.include?(permission)
         return false
       end
 
