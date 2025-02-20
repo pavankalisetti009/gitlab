@@ -129,10 +129,10 @@ export default {
       return mapApproversToArray(this.actionApprovers[index]);
     },
     getDenyAllowList(licenses) {
-      return parseAllowDenyLicenseList({ licenses }).licenses;
+      return parseAllowDenyLicenseList({ licenses });
     },
     showDenyAllowList(licenses = {}) {
-      return this.showLicenseExcludePackages && this.getDenyAllowList(licenses).length > 0;
+      return this.showLicenseExcludePackages && this.getDenyAllowList(licenses).licenses.length > 0;
     },
   },
 };
@@ -188,7 +188,8 @@ export default {
           <deny-allow-view-list
             v-if="showDenyAllowList(denyAllowList)"
             class="gl-my-4"
-            :items="getDenyAllowList(denyAllowList)"
+            :is-denied="getDenyAllowList(denyAllowList).isDenied"
+            :items="getDenyAllowList(denyAllowList).licenses"
           />
           <toggle-list
             v-if="showItems(branchExceptions)"

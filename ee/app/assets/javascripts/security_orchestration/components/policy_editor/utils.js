@@ -744,13 +744,21 @@ export const parseAllowDenyLicenseList = (rule = {}) => {
 /**
  * map licenses format from component to yaml
  * @param licenses
- * @returns {{name: *, packages: {excluding: {purls: []}}}[]}
+ * @returns {{name: *}[]}
  */
 export const mapComponentLicenseFormatToYaml = (licenses = []) =>
-  (licenses || []).map(({ license = {}, exceptions = [] }) => ({
-    name: license.value,
-    packages: { excluding: { purls: exceptions } },
-  }));
+  (licenses || []).map(({ license = {}, exceptions = [] }) => {
+    const licenseName = { name: license.value };
+
+    if (exceptions.length === 0) {
+      return licenseName;
+    }
+
+    return {
+      ...licenseName,
+      packages: { excluding: { purls: exceptions } },
+    };
+  });
 
 /**
  * find intersection in two collections or return original item

@@ -625,7 +625,7 @@ describe('mapBranchesToExceptions', () => {
       licenses                                                                       | output
       ${undefined}                                                                   | ${[]}
       ${null}                                                                        | ${[]}
-      ${[{ license: { text: 'value', value: 'value' } }]}                            | ${[{ name: 'value', packages: { excluding: { purls: [] } } }]}
+      ${[{ license: { text: 'value', value: 'value' } }]}                            | ${[{ name: 'value' }]}
       ${[{ license: { text: 'value', value: 'value' }, exceptions: ['test@test'] }]} | ${[{ name: 'value', packages: { excluding: { purls: ['test@test'] } } }]}
     `('parse licenses to yaml format', ({ licenses, output }) => {
       expect(mapComponentLicenseFormatToYaml(licenses)).toEqual(output);

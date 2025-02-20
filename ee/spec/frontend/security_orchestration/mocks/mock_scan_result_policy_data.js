@@ -379,39 +379,8 @@ actions:
     approvals_required: 1
 `;
 
-export const collidingKeysScanResultManifest = `---
-name: This policy has colliding keys
-description: This policy has colliding keys
-enabled: true
-rules:
-  - type: scan_finding
-    branches: []
-    branch_type: protected
-    scanners: []
-    vulnerabilities_allowed: 0
-    severity_levels: []
-    vulnerability_states: []
-actions:
-  - type: require_approval
-    approvals_required: 1
-`;
-
-export const allowDenyScanResultLicenseManifest = `---
-name: This policy has license packages with exceptions
-description: This policy license packages with exceptions
-enabled: true
-rules:
-  - type: license_finding
-    match_on_inclusion_license: true
-    license_types: []
-    license_states: []
-    branch_type: protected
-    licenses:
-      allowed: []
-actions:
-  - type: require_approval
-    approvals_required: 1
-`;
+export const denyScanResultLicenseNonEmptyManifest =
+  allowDenyScanResultLicenseNonEmptyManifest.replace('allowed', 'denied');
 
 export const mockWithBranchesScanResultManifest = `type: approval_policy
 name: low vulnerability SAST approvals
