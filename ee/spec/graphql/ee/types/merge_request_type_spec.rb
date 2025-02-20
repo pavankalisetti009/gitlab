@@ -514,5 +514,44 @@ RSpec.describe GitlabSchema.types['MergeRequest'], feature_category: :code_revie
         expect { GitlabSchema.execute(query, context: { current_user: user }) }.not_to exceed_query_limit(control)
       end
     end
+
+    describe '#squash_read_only' do
+      let_it_be(:project) { create(:project, :public, :repository) }
+      let_it_be(:squash_option) { create :branch_rule_squash_option, squash_option: 'never', project: project }
+      let_it_be(:merge_request) { create :merge_request, target_branch: squash_option.protected_branch.name, source_project: project, target_project: project }
+      let(:query) do
+        %(
+          query {
+            project(fullPath: "#{project.full_path}") {
+              mergeRequests {
+                nodes {
+                  squashReadOnly
+                }
+              }
+            }
+          }
+        )
+      end
+
+      it 'returns squash option' do
+        result = GitlabSchema.execute(query, context: { current_user: create(:user) })
+        expect(result.dig('data', 'project', 'mergeRequests', 'nodes', 0, 'squashReadOnly')).to be(true)
+      end
+
+      it 'avoids N+1 queries' do
+        # Warm up table schema and other data
+        GitlabSchema.execute(query, context: { current_user: user })
+
+        control = ActiveRecord::QueryRecorder.new { GitlabSchema.execute(query, context: { current_user: user }) }
+
+        other_squash_option = create(:branch_rule_squash_option, squash_option: 'never', project: project)
+        create :merge_request, target_branch: other_squash_option.protected_branch.name, source_project: project, target_project: project
+
+        # Warm up table schema and other data
+        GitlabSchema.execute(query, context: { current_user: user })
+
+        expect { GitlabSchema.execute(query, context: { current_user: user }) }.not_to exceed_query_limit(control)
+      end
+    end
   end
 end
