@@ -43,7 +43,7 @@ module Types
             null: true, description: 'Date when the license was activated.'
 
           field :users_in_license_count, GraphQL::Types::Int,
-            null: true, method: :restricted_user_count,
+            null: true, method: :seats,
             description: 'Number of paid users in the license.'
 
           def id

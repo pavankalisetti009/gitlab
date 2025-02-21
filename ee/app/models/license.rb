@@ -35,7 +35,7 @@ class License < ApplicationRecord
   validate :valid_license
   validate :check_users_limit, if: :new_record?, unless: [:validate_with_trueup?, :reconciliation_completed?]
   validate :check_trueup, unless: :reconciliation_completed?, if: [:new_record?, :validate_with_trueup?]
-  validate :check_restricted_user_count, if: [:new_record?, :reconciliation_completed?]
+  validate :check_available_seats, if: [:new_record?, :reconciliation_completed?]
 
   # When an online cloud license subscription is cancelled, the license_key received from the seat link sync
   # is an expired license but we still want to be able to create it to reflect that the license is not active anymore.
@@ -157,12 +157,8 @@ class License < ApplicationRecord
     cloud_license? && !!license&.offline_cloud_licensing?
   end
 
-  def restricted_user_count
+  def seats
     restricted_attr(:active_user_count)
-  end
-
-  def restricted_user_count?
-    seats.to_i > 0
   end
 
   def ultimate?
@@ -307,7 +303,6 @@ class License < ApplicationRecord
   end
 
   alias_method :exclude_guests_from_active_count?, :ultimate?
-  alias_method :seats, :restricted_user_count
 
   def remaining_days
     return 0 if expired?
@@ -505,7 +500,7 @@ class License < ApplicationRecord
     (License.current&.expires_at || (expires_at && (expires_at - 1.year)) || starts_at).end_of_day
   end
 
-  def restricted_user_count_with_threshold
+  def seats_with_threshold
     (seats * (1 + ALLOWED_PERCENTAGE_OF_USERS_OVERAGE)).to_i
   end
 
@@ -517,9 +512,9 @@ class License < ApplicationRecord
     current_period = true
 
     if previous_user_count && (prior_historical_max <= previous_user_count)
-      return if restricted_user_count_with_threshold >= daily_billable_users_count
+      return if seats_with_threshold >= daily_billable_users_count
     else
-      return if restricted_user_count_with_threshold >= prior_historical_max
+      return if seats_with_threshold >= prior_historical_max
 
       user_count = prior_historical_max
       current_period = false
@@ -542,7 +537,7 @@ class License < ApplicationRecord
 
   def check_trueup
     unless trueup_period_seat_count
-      check_restricted_user_count
+      check_available_seats
       return
     end
 
@@ -551,7 +546,7 @@ class License < ApplicationRecord
     expected_trueup_qty = max_historical - trueup_period_seat_count
 
     if trueup_quantity_with_threshold >= expected_trueup_qty
-      check_restricted_user_count
+      check_available_seats
     else
       message = ["You have applied a True-up for #{trueup_qty} #{'user'.pluralize(trueup_qty)}"]
       message << "but you need one for #{expected_trueup_qty} #{'user'.pluralize(expected_trueup_qty)}."
@@ -565,11 +560,11 @@ class License < ApplicationRecord
     (restrictions[:trueup_quantity] * (1 + ALLOWED_PERCENTAGE_OF_USERS_OVERAGE)).to_i
   end
 
-  def check_restricted_user_count
+  def check_available_seats
     return if cloud_license?
-    return unless seats && restricted_user_count_with_threshold < daily_billable_users_count
+    return unless seats && seats_with_threshold < daily_billable_users_count
 
-    add_limit_error(type: :check_restricted_user_count, user_count: daily_billable_users_count)
+    add_limit_error(type: :check_available_seats, user_count: daily_billable_users_count)
   end
 
   def add_limit_error(user_count:, current_period: true, type: :invalid)
