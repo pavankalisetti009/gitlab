@@ -150,7 +150,7 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
         positive_nodes = described_class.with_positive_unclaimed_storage_bytes
 
         expect(positive_nodes).to include(node_with_positive_storage)
-        expect(positive_nodes).to include(node_with_zero_storage)
+        expect(positive_nodes).not_to include(node_with_zero_storage)
         expect(positive_nodes).not_to include(node_with_negative_storage)
       end
 
@@ -158,7 +158,7 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
         result = described_class.with_positive_unclaimed_storage_bytes.find(node_with_positive_storage.id)
 
         expect(result).to respond_to(:unclaimed_storage_bytes)
-        expect(result.unclaimed_storage_bytes).to be >= 0
+        expect(result.unclaimed_storage_bytes).to be > 0
       end
 
       it 'calculates unclaimed_storage_bytes correctly' do
