@@ -63,7 +63,7 @@ export default {
         <template #helpPageLink="{ content }">
           <help-page-link
             href="user/application_security/dependency_list/_index"
-            anchor="prerequisites"
+            anchor="getting-started"
             target="_blank"
             >{{ content }}</help-page-link
           >
