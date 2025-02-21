@@ -53,6 +53,10 @@ FactoryBot.define do
       add_on { association(:gitlab_subscription_add_on, :duo_enterprise) }
     end
 
+    trait :duo_amazon_q do
+      add_on { association(:gitlab_subscription_add_on, :duo_amazon_q) }
+    end
+
     trait :self_managed do
       namespace { nil }
     end
