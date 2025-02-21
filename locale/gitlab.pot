@@ -36632,9 +36632,6 @@ msgstr ""
 msgid "MlModelRegistry|All artifact uploads failed or were canceled."
 msgstr ""
 
-msgid "MlModelRegistry|An error has occurred when saving the model."
-msgstr ""
-
 msgid "MlModelRegistry|Are you sure you want to delete this model version?"
 msgstr ""
 
@@ -36693,9 +36690,6 @@ msgid "MlModelRegistry|Creating a model"
 msgstr ""
 
 msgid "MlModelRegistry|Creating a model version"
-msgstr ""
-
-msgid "MlModelRegistry|Creating models is also possible through the MLflow client. %{linkStart}Follow the documentation to learn more.%{linkEnd}"
 msgstr ""
 
 msgid "MlModelRegistry|Creating models, model versions and runs is also possible using the MLflow client:"
@@ -36773,6 +36767,9 @@ msgstr ""
 msgid "MlModelRegistry|Failed to load model runs with error: %{message}"
 msgstr ""
 
+msgid "MlModelRegistry|Failed to load model version with error: %{message}"
+msgstr ""
+
 msgid "MlModelRegistry|Failed to load model versions with error: %{message}"
 msgstr ""
 
@@ -36788,16 +36785,10 @@ msgstr ""
 msgid "MlModelRegistry|For example 1.0.0"
 msgstr ""
 
-msgid "MlModelRegistry|ID"
-msgstr ""
-
 msgid "MlModelRegistry|Import model using MLflow"
 msgstr ""
 
 msgid "MlModelRegistry|Import your machine learning models"
-msgstr ""
-
-msgid "MlModelRegistry|Info"
 msgstr ""
 
 msgid "MlModelRegistry|Latest version"
@@ -36857,9 +36848,6 @@ msgstr ""
 msgid "MlModelRegistry|Must be unique. May not contain spaces."
 msgstr ""
 
-msgid "MlModelRegistry|New model"
-msgstr ""
-
 msgid "MlModelRegistry|New version"
 msgstr ""
 
@@ -36867,9 +36855,6 @@ msgid "MlModelRegistry|No description available. To add a description, click \"E
 msgstr ""
 
 msgid "MlModelRegistry|No description available. To add a description, click \"Edit model\" above."
-msgstr ""
-
-msgid "MlModelRegistry|No description provided"
 msgstr ""
 
 msgid "MlModelRegistry|No logged artifacts."
@@ -36933,9 +36918,6 @@ msgid "MlModelRegistry|Setting up the client"
 msgstr ""
 
 msgid "MlModelRegistry|Something went wrong while trying to delete the model version. Please try again later."
-msgstr ""
-
-msgid "MlModelRegistry|Status"
 msgstr ""
 
 msgid "MlModelRegistry|Step %{step}"
