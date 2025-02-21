@@ -65,8 +65,10 @@ export default {
   <div class="gl-mb-6 gl-grid gl-gap-5 sm:gl-grid-cols-2">
     <gl-card>
       <header>
-        <h5 class="gl-mt-0 gl-font-normal gl-text-subtle">{{ usersInSubscriptionTitle }}</h5>
-        <h2 class="!gl-mt-0" data-testid="users-in-subscription-content">
+        <h5 role="presentation" class="gl-mt-0 gl-font-normal gl-text-subtle">
+          {{ usersInSubscriptionTitle }}
+        </h5>
+        <h2 class="!gl-mt-0" role="presentation" data-testid="users-in-subscription-content">
           {{ usersInSubscription }}
         </h2>
       </header>
@@ -81,10 +83,12 @@ export default {
 
     <gl-card data-testid="billable-users">
       <header>
-        <h5 class="gl-mt-0 gl-font-normal gl-text-subtle">
+        <h5 role="presentation" class="gl-mt-0 gl-font-normal gl-text-subtle">
           {{ __('Billable users') }}
         </h5>
-        <h2 class="!gl-mt-0" data-testid="billable-users-count">{{ billableUsers }}</h2>
+        <h2 class="!gl-mt-0" role="presentation" data-testid="billable-users-count">
+          {{ billableUsers }}
+        </h2>
       </header>
       <div>
         <gl-sprintf
@@ -105,10 +109,10 @@ export default {
 
     <gl-card data-testid="maximum-users">
       <header>
-        <h5 class="gl-mt-0 gl-font-normal gl-text-subtle">
+        <h5 role="presentation" class="gl-mt-0 gl-font-normal gl-text-subtle">
           {{ __('Maximum users') }}
         </h5>
-        <h2 class="!gl-mt-0">{{ maximumUsers }}</h2>
+        <h2 class="!gl-mt-0" role="presentation">{{ maximumUsers }}</h2>
       </header>
       <div>
         {{
@@ -119,10 +123,10 @@ export default {
 
     <gl-card data-testid="users-over-license">
       <header>
-        <h5 class="gl-mt-0 gl-font-normal gl-text-subtle">
+        <h5 role="presentation" class="gl-mt-0 gl-font-normal gl-text-subtle">
           {{ __('Users over subscription') }}
         </h5>
-        <h2 class="!gl-mt-0">{{ usersOverSubscription }}</h2>
+        <h2 class="!gl-mt-0" role="presentation">{{ usersOverSubscription }}</h2>
       </header>
       <div>
         <gl-sprintf :message="usersOverSubscriptionText">

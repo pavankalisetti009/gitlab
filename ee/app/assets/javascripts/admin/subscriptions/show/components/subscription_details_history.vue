@@ -121,7 +121,9 @@ export default {
 <template>
   <section>
     <header>
-      <h2 class="gl-mb-6 gl-mt-0">{{ $options.i18n.subscriptionHistoryTitle }}</h2>
+      <h2 class="gl-mb-6 gl-mt-0">
+        {{ $options.i18n.subscriptionHistoryTitle }}
+      </h2>
     </header>
     <gl-table-lite
       :details-td-class="$options.tdClass"
