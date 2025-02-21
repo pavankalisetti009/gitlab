@@ -47,6 +47,17 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
     end
   end
 
+  describe '#enable_auth_engine' do
+    let(:mount_path) { 'auth/testing/pipeline_jwt' }
+    let(:engine) { 'jwt' }
+
+    it 'enables the secrets engine' do
+      client.enable_auth_engine(mount_path, engine)
+
+      expect_jwt_auth_engine_to_be_mounted(mount_path)
+    end
+  end
+
   describe '#disable_secrets_engine' do
     let(:mount_path) { 'some/test/path' }
 
@@ -72,7 +83,7 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
       client.enable_secrets_engine(mount_path, 'kv-v2')
       client.enable_secrets_engine(other_mount_path, 'kv-v2')
 
-      client.create_kv_secret(
+      client.update_kv_secret(
         mount_path,
         "#{secrets_path}/DBPASS",
         'somevalue',
@@ -81,7 +92,7 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
         }
       )
 
-      client.create_kv_secret(
+      client.update_kv_secret(
         mount_path,
         "other_secrets/APIKEY",
         'somevalue',
@@ -90,7 +101,7 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
         }
       )
 
-      client.create_kv_secret(
+      client.update_kv_secret(
         other_mount_path,
         "#{secrets_path}/DEPLOYKEY",
         'somevalue',
@@ -147,7 +158,7 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
     before do
       client.enable_secrets_engine(existing_mount_path, 'kv-v2')
 
-      client.create_kv_secret(
+      client.update_kv_secret(
         existing_mount_path,
         existing_secret_path,
         'somevalue',
@@ -184,7 +195,7 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
     end
   end
 
-  describe '#create_kv_secret' do
+  describe '#update_kv_secret' do
     let(:existing_mount_path) { 'some/test/path' }
     let(:mount_path) { existing_mount_path }
     let(:secret_path) { 'DBPASS' }
@@ -200,7 +211,7 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
       client.enable_secrets_engine(existing_mount_path, 'kv-v2')
     end
 
-    subject(:call_api) { client.create_kv_secret(mount_path, secret_path, value, custom_metadata) }
+    subject(:call_api) { client.update_kv_secret(mount_path, secret_path, value, custom_metadata) }
 
     context 'when the mount path exists' do
       context 'when the given secret path does not exist' do
@@ -214,7 +225,7 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
 
       context 'when the given secret path exists' do
         before do
-          client.create_kv_secret(mount_path, secret_path, 'someexistingvalue')
+          client.update_kv_secret(mount_path, secret_path, 'someexistingvalue')
         end
 
         it_behaves_like 'making an invalid API request'
@@ -327,7 +338,7 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
     before do
       client.enable_secrets_engine(existing_mount_path, 'kv-v2')
 
-      client.create_kv_secret(
+      client.update_kv_secret(
         existing_mount_path,
         existing_secret_path,
         'somevalue',

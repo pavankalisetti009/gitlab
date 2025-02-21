@@ -60,27 +60,15 @@ module SecretsManagement
 
       client = SecretsManagerClient.new
 
-      # The follow API calls are ordered such that they fail closed: first we
+      # The following API calls are ordered such that they fail closed: first we
       # create the secret and its metadata and then attach policy to it. If we
       # fail to attach policy, no pipelines can access it and only project-level
       # users can modify it in the future. Updating a secret to set missing
       # branch and environments will then allow pipelines to access the secret.
 
-      # Create the secret itself.
-      custom_metadata = { environment: environment, branch: branch, description: description }.compact
-      client.create_kv_secret(
-        secrets_manager.ci_secrets_mount_path,
-        secrets_manager.ci_data_path(name),
-        value,
-        custom_metadata
-      )
-
-      # Add it to the CI policy for the specified environment and branch.
-      policy_name = secrets_manager.ci_policy_name(environment, branch)
-      p = client.get_policy(policy_name)
-      p.add_capability(secrets_manager.ci_full_path(name), "read")
-      p.add_capability(secrets_manager.ci_metadata_full_path(name), "read")
-      client.set_policy(p)
+      create_secret(client, value)
+      add_policy(client)
+      add_wildcard_role(client)
 
       true
     rescue SecretsManagerClient::ApiError => e
@@ -108,6 +96,42 @@ module SecretsManagement
     end
 
     private
+
+    def create_secret(client, value)
+      # Create the secret itself.
+      custom_metadata = { environment: environment, branch: branch, description: description }.compact
+      client.update_kv_secret(
+        secrets_manager.ci_secrets_mount_path,
+        secrets_manager.ci_data_path(name),
+        value,
+        custom_metadata
+      )
+    end
+
+    def add_policy(client)
+      # Add it to the CI policy for the specified environment and branch.
+      policy_name = secrets_manager.ci_policy_name(environment, branch)
+      p = client.get_policy(policy_name)
+      p.add_capability(secrets_manager.ci_full_path(name), "read")
+      p.add_capability(secrets_manager.ci_metadata_full_path(name), "read")
+      client.set_policy(p)
+    end
+
+    def add_wildcard_role(client)
+      # Lastly, update the JWT role. If we have a glob, we need to know
+      # the possible values for that glob so that we can.
+
+      return unless environment.include?("*") || branch.include?("*")
+
+      role = client.read_jwt_role(secrets_manager.ci_auth_mount, secrets_manager.ci_auth_role)
+
+      token_policies = Set.new(role["token_policies"])
+      new_policies = secrets_manager.ci_auth_glob_policies(environment, branch)
+      token_policies.merge(new_policies)
+
+      role["token_policies"] = token_policies.to_a
+      client.update_jwt_role(secrets_manager.ci_auth_mount, secrets_manager.ci_auth_role, **role)
+    end
 
     def ensure_active_secrets_manager
       errors.add(:base, 'Project secrets manager is not active.') unless project.secrets_manager&.active?

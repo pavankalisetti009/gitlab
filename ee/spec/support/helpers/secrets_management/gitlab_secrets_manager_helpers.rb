@@ -11,6 +11,16 @@ module SecretsManagement
       end
     end
 
+    def clean_all_pipeline_jwt_engines
+      client = secrets_manager_client
+      client.each_auth_engine do |path, info|
+        next unless info["type"] == "jwt"
+        next unless path.include? "pipeline_jwt"
+
+        client.disable_auth_engine(path)
+      end
+    end
+
     def clean_all_policies
       client = secrets_manager_client
       client.each_acl_policy do |name|
@@ -50,6 +60,10 @@ module SecretsManagement
     def expect_kv_secret_not_to_exist(mount_path, path)
       expect(secrets_manager_client.read_secret_metadata(mount_path, path)).to be_nil
       expect(secrets_manager_client.read_kv_secret_value(mount_path, path)).to be_nil
+    end
+
+    def expect_jwt_auth_engine_to_be_mounted(path)
+      expect { secrets_manager_client.read_auth_engine_configuration(path) }.not_to raise_error
     end
 
     def secrets_manager_client
