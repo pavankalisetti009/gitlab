@@ -1563,7 +1563,7 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
       let(:new_role) { 'maintainer' }
       let(:project_params) { { ci_restrict_pipeline_cancellation_role: new_role } }
 
-      context 'when licence is availible' do
+      context 'when licence is available' do
         before do
           stub_licensed_features(ci_pipeline_cancellation_restrictions: true)
         end
@@ -1576,7 +1576,7 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
         end
       end
 
-      context 'when licence is not availible' do
+      context 'when licence is not available' do
         it 'does not update the value' do
           expect { subject }.not_to change { project.reload.ci_cancellation_restriction.role }
 
@@ -1590,21 +1590,24 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
       let(:project_params) { { ci_id_token_sub_claim_components: sub_claim_components } }
       let(:sub_claim_components) { ['project_path'] }
 
-      it 'updates id_token_sub_claim_components' do
+      it 'updates the project setting and returns its new value' do
         subject
 
         expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response['ci_id_token_sub_claim_components']).to eq(sub_claim_components)
         expect(project.reload.ci_id_token_sub_claim_components).to eq(sub_claim_components)
       end
 
       context 'when value is invalid' do
-        let(:sub_claim_components) { ['missing-component'] }
+        let(:sub_claim_components) { ['invalid-component'] }
 
-        it 'fails with an error' do
+        it 'fails with errors' do
           subject
 
           expect(response).to have_gitlab_http_status(:bad_request)
-          expect(json_response['error']).to eq('ci_id_token_sub_claim_components does not have a valid value')
+          expect(json_response['message']['ci_cd_settings.id_token_sub_claim_components']).to include(
+            "invalid-component is not an allowed sub claim component",
+            "project_path must be the first element of the sub claim")
         end
       end
     end
