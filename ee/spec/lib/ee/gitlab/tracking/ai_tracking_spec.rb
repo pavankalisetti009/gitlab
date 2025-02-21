@@ -31,6 +31,33 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
     end
 
     shared_examples 'common event tracking for' do |model_class|
+      let(:base_event_hash) do
+        {
+          user: current_user,
+          event: event_name,
+          namespace_path: nil
+        }.merge(event_payload_hash)
+      end
+
+      let(:expected_event_hash) { base_event_hash }
+
+      let_it_be(:group) { create(:group, path: 'group') }
+      let_it_be(:project) { create(:project, namespace: group, path: 'project') }
+
+      context 'with clickhouse not available' do
+        before do
+          allow(Gitlab::ClickHouse).to receive(:globally_enabled_for_analytics?).and_return(false)
+        end
+
+        it 'stores event to postgres' do
+          expect_next_instance_of(model_class, expected_event_hash) do |instance|
+            expect(instance).to receive(:store_to_pg).and_call_original
+          end
+
+          track_event
+        end
+      end
+
       context 'when clickhouse is disabled for analytics' do
         before do
           allow(Gitlab::ClickHouse).to receive(:globally_enabled_for_analytics?).and_return(false)
@@ -45,9 +72,80 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
         end
       end
 
+      context 'when event_name is nil' do
+        let(:event_name) { nil }
+
+        it 'does not track the event' do
+          expect(model_class).not_to receive(:new)
+          track_event
+        end
+      end
+
+      context 'when building traversal path' do
+        context 'when a project ID is provided' do
+          let(:event_context) { super().merge(project_id: project.id) }
+          let(:expected_event_hash) do
+            base_event_hash.merge(namespace_path: project.reload.project_namespace.traversal_path)
+          end
+
+          it 'loads the project and includes the correct namespace path' do
+            expect(model_class).to receive(:new).with(expected_event_hash).and_call_original
+            track_event
+          end
+        end
+
+        context 'when a project object is provided' do
+          let(:event_context) { super().merge(project: project) }
+          let(:expected_event_hash) do
+            base_event_hash.merge(namespace_path: project.reload.project_namespace.traversal_path)
+          end
+
+          it 'uses the provided project and includes the correct namespace path' do
+            expect(model_class).to receive(:new).with(expected_event_hash).and_call_original
+            track_event
+          end
+        end
+
+        context 'when a namespace_id is provided' do
+          let(:event_context) { super().merge(namespace_id: project.namespace.id) }
+          let(:expected_event_hash) do
+            base_event_hash.merge(namespace_path: project.namespace.traversal_path)
+          end
+
+          it 'loads the namespace and includes the correct namespace path' do
+            expect(model_class).to receive(:new).with(expected_event_hash).and_call_original
+            track_event
+          end
+        end
+
+        context 'when a namespace object is provided' do
+          let(:event_context) { super().merge(namespace: project.namespace) }
+          let(:expected_event_hash) do
+            base_event_hash.merge(namespace_path: project.namespace.traversal_path)
+          end
+
+          it 'uses the provided namespace and includes the correct namespace path' do
+            expect(model_class).to receive(:new).with(expected_event_hash).and_call_original
+            track_event
+          end
+        end
+
+        context 'when both project and namespace objects are provided' do
+          let(:event_context) { super().merge(project: project, namespace: project.namespace) }
+          let(:expected_event_hash) do
+            base_event_hash.merge(namespace_path: project.reload.project_namespace.traversal_path)
+          end
+
+          it 'prefers project namespace path over namespace path' do
+            expect(model_class).to receive(:new).with(expected_event_hash).and_call_original
+            track_event
+          end
+        end
+      end
+
       it 'stores new event' do
         expect_next_instance_of(model_class, expected_event_hash) do |instance|
-          expect(instance).to receive(:store_to_clickhouse).once
+          expect(instance).to receive(:store_to_clickhouse).and_call_original
         end
 
         track_event
@@ -55,7 +153,6 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
 
       it 'creates an event with correct attributes' do
         expect(model_class).to receive(:new).with(expected_event_hash)
-
         track_event
       end
 
@@ -68,11 +165,8 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
 
     context 'for code suggestion event' do
       let(:event_name) { 'code_suggestion_shown_in_ide' }
-      let(:expected_event_hash) do
+      let(:event_payload_hash) do
         {
-          user: current_user,
-          event: event_name,
-          namespace_path: nil,
           payload: {
             branch_name: 'main',
             language: 'cobol',
@@ -83,48 +177,17 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
       end
 
       include_examples 'common event tracking for', Ai::CodeSuggestionEvent
-
-      context 'with clickhouse not available' do
-        before do
-          allow(Gitlab::ClickHouse).to receive(:globally_enabled_for_analytics?).and_return(false)
-        end
-
-        it 'stores event to postgres' do
-          expect_next_instance_of(Ai::CodeSuggestionEvent, expected_event_hash) do |instance|
-            expect(instance).to receive(:store_to_pg).once
-          end
-
-          track_event
-        end
-      end
     end
 
     context 'for chat event' do
       let(:event_name) { 'request_duo_chat_response' }
-      let(:expected_event_hash) do
+      let(:event_payload_hash) do
         {
-          user: current_user,
-          event: event_name,
-          namespace_path: nil,
           payload: {}
         }
       end
 
       include_examples 'common event tracking for', Ai::DuoChatEvent
-
-      context 'with clickhouse not available' do
-        before do
-          allow(Gitlab::ClickHouse).to receive(:globally_enabled_for_analytics?).and_return(false)
-        end
-
-        it 'stores event to postgres' do
-          expect_next_instance_of(Ai::DuoChatEvent, expected_event_hash) do |instance|
-            expect(instance).to receive(:store_to_pg).once
-          end
-
-          track_event
-        end
-      end
     end
   end
 

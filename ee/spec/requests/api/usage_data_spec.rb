@@ -7,51 +7,96 @@ RSpec.describe API::UsageData, feature_category: :service_ping do
 
   describe 'POST /usage_data/track_event' do
     let(:endpoint) { '/usage_data/track_event' }
+    let(:event_name) { 'code_suggestion_shown_in_ide' }
+    let(:project) { nil }
+    let(:namespace) { nil }
+
+    let(:base_properties) do
+      {
+        language: 'ruby',
+        timestamp: '2024-01-01',
+        unrelated_info: 'bar',
+        branch_name: 'foo'
+      }
+    end
+
+    let(:additional_properties) do
+      base_properties.merge(
+        user: user,
+        project_id: project&.id,
+        namespace_id: namespace&.id
+      )
+    end
+
+    let(:allowed_fields_for_internal_event) do
+      base_properties.except(:branch_name).symbolize_keys
+    end
 
     before do
       stub_application_setting(usage_ping_enabled: true, use_clickhouse_for_analytics: true)
     end
 
+    def expect_track_events
+      expect(Gitlab::InternalEvents).to receive(:track_event)
+        .with(
+          event_name,
+          additional_properties: allowed_fields_for_internal_event,
+          project: project,
+          namespace: namespace,
+          send_snowplow_event: false,
+          user: user
+        )
+
+      expect(Gitlab::Tracking::AiTracking).to receive(:track_event)
+        .with(event_name, additional_properties)
+        .and_call_original
+    end
+
+    def make_request
+      post api(endpoint, user), params: {
+        event: event_name,
+        project_id: project&.id,
+        namespace_id: namespace&.id,
+        additional_properties: base_properties
+      }
+    end
+
     context 'with AI related metric' do
-      let_it_be(:additional_properties) do
-        {
-          language: 'ruby',
-          timestamp: '2024-01-01',
-          unrelated_info: 'bar',
-          branch_name: 'foo'
-        }
-      end
-
-      let_it_be(:allowed_fields_for_internal_event) do
-        # Does not persist branch name on internal telemetry
-        additional_properties.except(:branch_name).symbolize_keys
-      end
-
-      let(:event_name) { 'code_suggestion_shown_in_ide' }
-
-      it 'triggers AI tracking' do
-        expect(Gitlab::InternalEvents).to receive(:track_event)
-                                            .with(
-                                              event_name,
-                                              additional_properties: allowed_fields_for_internal_event,
-                                              project: nil,
-                                              namespace: nil,
-                                              send_snowplow_event: false,
-                                              user: user
-                                            )
-
-        expect(Gitlab::Tracking::AiTracking).to receive(:track_event)
-                                                  .with(
-                                                    event_name,
-                                                    additional_properties.merge(user: user)
-                                                  ).and_call_original
-
-        post api(endpoint, user), params: {
-          event: event_name,
-          additional_properties: additional_properties
-        }
-
+      it 'triggers AI tracking without project or namespace' do
+        expect_track_events
+        make_request
         expect(response).to have_gitlab_http_status(:ok)
+      end
+
+      context 'when project is passed' do
+        let_it_be(:project) { create(:project) }
+
+        it 'triggers AI tracking with project' do
+          expect_track_events
+          make_request
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+      end
+
+      context 'when namespace is passed' do
+        let_it_be(:namespace) { create(:namespace) }
+
+        it 'triggers AI tracking with namespace' do
+          expect_track_events
+          make_request
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+      end
+
+      context 'when both project and namespace are passed' do
+        let_it_be(:project) { create(:project) }
+        let_it_be(:namespace) { create(:namespace) }
+
+        it 'triggers AI tracking with both project and namespace' do
+          expect_track_events
+          make_request
+          expect(response).to have_gitlab_http_status(:ok)
+        end
       end
     end
   end
