@@ -8,7 +8,12 @@ import { DEFAULT_ASSIGNED_POLICY_PROJECT, MAX_SCAN_EXECUTION_ACTION_COUNT } from
 Vue.use(VueApollo);
 
 const apolloProvider = new VueApollo({
-  defaultClient: createDefaultClient(),
+  defaultClient: createDefaultClient(
+    {},
+    {
+      cacheConfig: { typePolicies: { ScanExecutionPolicy: { keyFields: ['name', 'source'] } } },
+    },
+  ),
 });
 
 export default (el, namespaceType) => {

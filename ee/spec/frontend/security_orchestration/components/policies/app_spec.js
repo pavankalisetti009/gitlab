@@ -40,6 +40,7 @@ import {
 import {
   mockProjectScanExecutionPolicy,
   mockScanExecutionPoliciesResponse,
+  mockScanExecutionPoliciesWithSameNamesDifferentSourcesResponse,
 } from '../../mocks/mock_scan_execution_policy_data';
 import {
   mockScanResultPoliciesResponse,
@@ -99,32 +100,32 @@ describe('App', () => {
         maxScanExecutionPolicyActions: MAX_SCAN_EXECUTION_ACTION_COUNT,
         ...provide,
       },
-      apolloProvider: createMockApollo([
-        [projectScanExecutionPoliciesQuery, requestHandlers.projectScanExecutionPolicies],
-        [groupScanExecutionPoliciesQuery, requestHandlers.groupScanExecutionPolicies],
-        [projectScanResultPoliciesQuery, requestHandlers.projectScanResultPolicies],
-        [groupScanResultPoliciesQuery, requestHandlers.groupScanResultPolicies],
-        [getSppLinkedProjectsGroups, requestHandlers.linkedSppItemsResponse],
-        [projectPipelineExecutionPoliciesQuery, requestHandlers.projectPipelineExecutionPolicies],
-        [groupPipelineExecutionPoliciesQuery, requestHandlers.groupPipelineExecutionPolicies],
+      apolloProvider: createMockApollo(
         [
-          projectVulnerabilityManagementPoliciesQuery,
-          requestHandlers.projectVulnerabilityManagementPolicies,
+          [projectScanExecutionPoliciesQuery, requestHandlers.projectScanExecutionPolicies],
+          [groupScanExecutionPoliciesQuery, requestHandlers.groupScanExecutionPolicies],
+          [projectScanResultPoliciesQuery, requestHandlers.projectScanResultPolicies],
+          [groupScanResultPoliciesQuery, requestHandlers.groupScanResultPolicies],
+          [getSppLinkedProjectsGroups, requestHandlers.linkedSppItemsResponse],
+          [projectPipelineExecutionPoliciesQuery, requestHandlers.projectPipelineExecutionPolicies],
+          [groupPipelineExecutionPoliciesQuery, requestHandlers.groupPipelineExecutionPolicies],
+          [
+            projectVulnerabilityManagementPoliciesQuery,
+            requestHandlers.projectVulnerabilityManagementPolicies,
+          ],
+          [
+            groupVulnerabilityManagementPoliciesQuery,
+            requestHandlers.groupVulnerabilityManagementPolicies,
+          ],
         ],
-        [
-          groupVulnerabilityManagementPoliciesQuery,
-          requestHandlers.groupVulnerabilityManagementPolicies,
-        ],
-      ]),
+        {},
+        { typePolicies: { ScanExecutionPolicy: { keyFields: ['name', 'updatedAt'] } } },
+      ),
     });
   };
 
   const findPoliciesHeader = () => wrapper.findComponent(ListHeader);
   const findPoliciesList = () => wrapper.findComponent(ListComponent);
-
-  beforeEach(() => {
-    gon.features = {};
-  });
 
   describe('loading', () => {
     it('renders the policies list correctly', () => {
@@ -196,6 +197,35 @@ describe('App', () => {
         });
       },
     );
+  });
+
+  it('renders scan execution policies with different sources and same name', async () => {
+    const projectScanExecutionPoliciesWitSameNameSpy = projectScanExecutionPolicies(
+      mockScanExecutionPoliciesWithSameNamesDifferentSourcesResponse,
+    );
+
+    createWrapper({
+      handlers: { projectScanExecutionPolicies: projectScanExecutionPoliciesWitSameNameSpy },
+    });
+    await waitForPromises();
+
+    expect(findPoliciesList().props('policiesByType').SCAN_EXECUTION[0].source).toEqual({
+      __typename: 'ProjectSecurityPolicySource',
+      project: {
+        fullPath: 'project/path',
+      },
+    });
+
+    expect(findPoliciesList().props('policiesByType').SCAN_EXECUTION[1].source).toEqual({
+      __typename: 'GroupSecurityPolicySource',
+      inherited: true,
+      namespace: {
+        __typename: 'Namespace',
+        id: '1',
+        fullPath: 'parent-group-path',
+        name: 'parent-group-name',
+      },
+    });
   });
 
   it('renders correctly when a policy project is linked', async () => {
