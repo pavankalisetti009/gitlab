@@ -6,7 +6,8 @@ RSpec.describe Ai::CodeSuggestionEvent, feature_category: :code_suggestions do
   subject(:event) { described_class.new(attributes) }
 
   let(:attributes) { { event: 'code_suggestion_shown_in_ide' } }
-  let(:user) { build_stubbed(:user, :with_namespace) }
+  let_it_be(:user) { create(:user) }
+  let_it_be(:default_organization) { create(:organization, :default) }
 
   it { is_expected.to belong_to(:organization) }
   it { is_expected.to belong_to(:user) }
@@ -24,7 +25,12 @@ RSpec.describe Ai::CodeSuggestionEvent, feature_category: :code_suggestions do
   describe 'validations' do
     it { is_expected.to validate_presence_of(:user_id) }
     it { is_expected.to validate_presence_of(:timestamp) }
-    it { is_expected.to validate_presence_of(:organization_id) }
+
+    it 'validates presence of organization_id' do
+      allow(Organizations::Organization).to receive(:default_organization).and_return(nil)
+
+      expect(event).not_to allow_value(nil).for(:organization_id)
+    end
 
     it do
       is_expected.not_to allow_value(5.months.ago).for(:timestamp).with_message(_('must be 3 months old at the most'))
@@ -44,9 +50,20 @@ RSpec.describe Ai::CodeSuggestionEvent, feature_category: :code_suggestions do
   describe '#organization_id' do
     subject(:event) { described_class.new(user: user).tap(&:valid?) }
 
-    it 'populates organization_id from user namespace' do
-      expect(event.organization_id).to be_present
-      expect(event.organization_id).to eq(user.namespace.organization_id)
+    it 'populates organization_id from default_organization' do
+      expect(event.organization_id).to eq(default_organization.id)
+    end
+
+    context 'when user belongs to an organization' do
+      let!(:user_organization) do
+        create(:organization).tap do |org|
+          create(:organization_user, organization: org, user: user)
+        end
+      end
+
+      it 'populates organization_id from user' do
+        expect(event.organization_id).to eq(user_organization.id)
+      end
     end
   end
 
@@ -105,7 +122,7 @@ RSpec.describe Ai::CodeSuggestionEvent, feature_category: :code_suggestions do
             event: 'code_suggestion_shown_in_ide',
             timestamp: 1.day.ago,
             user_id: user.id,
-            organization_id: user.namespace.organization_id,
+            organization_id: default_organization.id,
             payload: {
               suggestion_size: 3,
               language: 'foo',

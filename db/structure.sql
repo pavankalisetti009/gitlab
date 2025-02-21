@@ -3973,6 +3973,7 @@ CREATE TABLE ai_duo_chat_events (
     event smallint NOT NULL,
     namespace_path text,
     payload jsonb,
+    organization_id bigint,
     CONSTRAINT check_628cdfbf3f CHECK ((char_length(namespace_path) <= 255))
 )
 PARTITION BY RANGE ("timestamp");
@@ -31510,6 +31511,8 @@ CREATE INDEX index_ai_conversation_threads_on_last_updated_at ON ai_conversation
 CREATE INDEX index_ai_conversation_threads_on_organization_id ON ai_conversation_threads USING btree (organization_id);
 
 CREATE INDEX index_ai_conversation_threads_on_user_id_and_last_updated_at ON ai_conversation_threads USING btree (user_id, last_updated_at);
+
+CREATE INDEX index_ai_duo_chat_events_on_organization_id ON ONLY ai_duo_chat_events USING btree (organization_id);
 
 CREATE INDEX index_ai_duo_chat_events_on_personal_namespace_id ON ONLY ai_duo_chat_events USING btree (personal_namespace_id);
 

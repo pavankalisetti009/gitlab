@@ -23,7 +23,10 @@ RSpec.describe UsageEvents::DumpWriteBufferCronWorker, :clean_gitlab_redis_share
 
   context 'when data is present' do
     before do
-      add_to_buffer({ user_id: 3, event: 'request_duo_chat_response', personal_namespace_id: personal_namespace.id },
+      add_to_buffer({ user_id: 3,
+                    event: 'request_duo_chat_response',
+                    organization_id: organization.id,
+                    personal_namespace_id: personal_namespace.id },
         Ai::DuoChatEvent)
       add_to_buffer(user_id: 1, event: 'code_suggestion_shown_in_ide', organization_id: organization.id)
       add_to_buffer(user_id: 2, event: 'code_suggestion_shown_in_ide', organization_id: organization.id)
@@ -76,18 +79,48 @@ RSpec.describe UsageEvents::DumpWriteBufferCronWorker, :clean_gitlab_redis_share
 
   context 'when data contains different sets of attributes' do
     before do
-      add_to_buffer({ user_id: 1, event: 'request_duo_chat_response', personal_namespace_id: personal_namespace.id },
+      add_to_buffer({ user_id: 1,
+                      event: 'request_duo_chat_response',
+                      organization_id: organization.id,
+                      personal_namespace_id: personal_namespace.id },
         Ai::DuoChatEvent)
-      add_to_buffer({ user_id: 2, event: 'request_duo_chat_response', personal_namespace_id: personal_namespace.id },
+      add_to_buffer({ user_id: 2,
+                      event: 'request_duo_chat_response',
+                      organization_id: organization.id,
+                      personal_namespace_id: personal_namespace.id },
         Ai::DuoChatEvent)
-      add_to_buffer(
-        { user_id: 3, event: 'request_duo_chat_response', personal_namespace_id: personal_namespace.id,
-          namespace_path: '1/2/3/' }, Ai::DuoChatEvent)
+      add_to_buffer({ user_id: 3,
+                      event: 'request_duo_chat_response',
+                      organization_id: organization.id,
+                      personal_namespace_id: personal_namespace.id,
+                      namespace_path: '1/2/3/' },
+        Ai::DuoChatEvent)
     end
 
     it 'inserts all rows by attribute groups' do
       expect(Ai::DuoChatEvent).to receive(:upsert_all).twice.and_call_original
       expect(perform).to eq({ status: :processed, inserted_rows: 3 })
+    end
+  end
+
+  context 'when data contains obsolete attributes' do
+    before do
+      add_to_buffer({ user_id: 1,
+                      event: 'request_duo_chat_response',
+                      organization_id: organization.id,
+                      personal_namespace_id: personal_namespace.id },
+        Ai::DuoChatEvent)
+      add_to_buffer({ user_id: 2,
+                      event: 'request_duo_chat_response',
+                      organization_id: organization.id,
+                      personal_namespace_id: personal_namespace.id,
+                      foo: 'bar' },
+        Ai::DuoChatEvent)
+    end
+
+    it 'ignores extra attributes and inserts all rows' do
+      expect(Ai::DuoChatEvent).to receive(:upsert_all).once.and_call_original
+      expect(perform).to eq({ status: :processed, inserted_rows: 2 })
     end
   end
 end

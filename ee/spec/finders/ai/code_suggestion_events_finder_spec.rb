@@ -2,13 +2,14 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::CodeSuggestionEventsFinder, :click_house, feature_category: :duo_chat do
+RSpec.describe Ai::CodeSuggestionEventsFinder, :click_house, feature_category: :value_stream_management do
+  let_it_be(:organization) { create :organization, :default }
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
-  let_it_be(:user_contributor_1) { create(:user, :with_namespace) }
-  let_it_be(:user_contributor_2) { create(:user, :with_namespace) }
-  let_it_be(:user_contributor_only_on_ch) { create(:user, :with_namespace) }
-  let_it_be(:user_not_contributor) { create(:user, :with_namespace) }
+  let_it_be(:user_contributor_1) { create(:user) }
+  let_it_be(:user_contributor_2) { create(:user) }
+  let_it_be(:user_contributor_only_on_ch) { create(:user) }
+  let_it_be(:user_not_contributor) { create(:user) }
   let_it_be(:code_suggestion_event_1) { create(:code_suggestion_event, :shown, user: user_contributor_1) }
   let_it_be(:code_suggestion_event_2) { create(:code_suggestion_event, :shown, user: user_contributor_2) }
   let_it_be(:code_suggestion_event_3) { create(:code_suggestion_event, :accepted, user: user_not_contributor) }
@@ -18,7 +19,7 @@ RSpec.describe Ai::CodeSuggestionEventsFinder, :click_house, feature_category: :
 
   describe '#execute' do
     context 'when user cannot see code suggestion events' do
-      let_it_be(:user) { create(:user, :with_self_managed_duo_enterprise_seat, :with_namespace) }
+      let_it_be(:user) { create(:user, :with_self_managed_duo_enterprise_seat) }
 
       before_all do
         group.add_guest(user)
@@ -30,7 +31,7 @@ RSpec.describe Ai::CodeSuggestionEventsFinder, :click_house, feature_category: :
     end
 
     context 'when user can see code suggestion events' do
-      let_it_be(:user) { create(:user, :with_self_managed_duo_enterprise_seat, :with_namespace) }
+      let_it_be(:user) { create(:user, :with_self_managed_duo_enterprise_seat) }
       let_it_be(:event_1) do
         create(:event, :pushed, project: project, author: user_contributor_1, created_at: 3.days.ago)
       end

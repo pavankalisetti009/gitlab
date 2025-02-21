@@ -28,7 +28,7 @@ module Ai
     validates :payload, json_schema: { filename: "code_suggestion_event" }, allow_blank: true
     validate :validate_recent_timestamp, on: :create
 
-    before_validation :populate_organization_id
+    before_validation :populate_sharding_key
 
     def to_clickhouse_csv_row
       super.merge({
@@ -47,8 +47,8 @@ module Ai
 
     private
 
-    def populate_organization_id
-      self.organization_id = user.namespace&.organization_id if user
+    def populate_sharding_key
+      self.organization_id ||= Gitlab::Current::Organization.new(user: user).organization&.id
     end
 
     def validate_recent_timestamp

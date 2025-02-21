@@ -17,7 +17,7 @@ module Ai
 
     belongs_to :user
 
-    validates :user_id, :timestamp, :personal_namespace_id, presence: true
+    validates :user_id, :timestamp, :organization_id, :personal_namespace_id, presence: true
     validates :payload, json_schema: { filename: "duo_chat_event" }, allow_blank: true
     validate :validate_recent_timestamp, on: :create
 
@@ -33,6 +33,7 @@ module Ai
 
     def populate_sharding_key
       self.personal_namespace_id = user.namespace_id if user
+      self.organization_id ||= Gitlab::Current::Organization.new(user: user).organization&.id
     end
 
     def validate_recent_timestamp

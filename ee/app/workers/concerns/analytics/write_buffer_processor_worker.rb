@@ -50,7 +50,7 @@ module Analytics
     end
 
     def prepare_batch_objects(batch)
-      batch.map { |attrs| current_model.new(attrs) }.select(&:valid?)
+      batch.map { |attrs| current_model.new(attrs.slice(*current_model.attribute_names)) }.select(&:valid?)
     end
   end
 end
