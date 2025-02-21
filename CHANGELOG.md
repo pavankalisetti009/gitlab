@@ -1083,6 +1083,13 @@ entry.
 - [Quarantine a flaky test](https://gitlab.com/gitlab-org/gitlab/-/commit/c932e35efdc0e3c6f316a3c2d37045e115ce8cd5) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/176452))
 - [Finalize migration BackfillRemoteDevelopmentAgentConfigsProjectId](https://gitlab.com/gitlab-org/gitlab/-/commit/da4c63d7aab3685c3fbe9d1e48f68ba2162a0b5e) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/172769))
 
+## 17.8.3 (2025-02-21)
+
+### Fixed (2 changes)
+
+- [Use primary DB when authenticating via job token in jobs API](https://gitlab.com/gitlab-org/gitlab/-/commit/6eee5c6811cac82981252280f1b08316ae8c1fd5) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/181872))
+- [Revert stricter workhorse route regexes](https://gitlab.com/gitlab-org/gitlab/-/commit/aba07e94e0587dd378dccbdf18dfe839f09078bf) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/181358))
+
 ## 17.8.2 (2025-02-11)
 
 ### Fixed (3 changes)
