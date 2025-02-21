@@ -21,6 +21,9 @@ RSpec.describe SecretsManagement::CreateProjectSecretService, :gitlab_secrets_ma
       let_it_be_with_reload(:secrets_manager) { create(:project_secrets_manager, project: project) }
 
       before do
+        rsa_key = OpenSSL::PKey::RSA.generate(3072).to_s
+        stub_application_setting(ci_jwt_signing_key: rsa_key)
+
         provision_project_secrets_manager(secrets_manager)
       end
 

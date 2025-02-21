@@ -7,6 +7,9 @@ RSpec.describe SecretsManagement::ProjectSecret, :gitlab_secrets_manager, featur
     subject(:result) { described_class.for_project(project) }
 
     before do
+      rsa_key = OpenSSL::PKey::RSA.generate(3072).to_s
+      stub_application_setting(ci_jwt_signing_key: rsa_key)
+
       provision_project_secrets_manager(secrets_manager)
       provision_project_secrets_manager(other_secrets_manager)
     end

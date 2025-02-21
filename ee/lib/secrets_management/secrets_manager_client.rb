@@ -24,6 +24,19 @@ module SecretsManagement
       path.read.chomp
     end
 
+    def enable_auth_engine(mount_path, type, allow_existing: false)
+      make_request(:post, "sys/auth/#{mount_path}", { type: type })
+    rescue ApiError => e
+      raise e unless allow_existing
+      raise e unless e.message.include? "path is already in use"
+
+      true
+    end
+
+    def disable_auth_engine(mount_path)
+      make_request(:delete, "sys/auth/#{mount_path}")
+    end
+
     def enable_secrets_engine(mount_path, type)
       make_request(:post, "sys/mounts/#{mount_path}", { type: type })
     end
@@ -58,7 +71,7 @@ module SecretsManagement
       result["data"]
     end
 
-    def create_kv_secret(mount_path, secret_path, value, custom_metadata = {})
+    def update_kv_secret(mount_path, secret_path, value, custom_metadata = {})
       result = make_request(
         :post,
         "#{mount_path}/data/#{secret_path}",
@@ -86,6 +99,33 @@ module SecretsManagement
 
     def delete_kv_secret(mount_path, secret_path)
       make_request(:delete, "#{mount_path}/metadata/#{secret_path}")
+    end
+
+    def configure_jwt(mount_path, server_url, jwk_signer)
+      config = {
+        bound_issuer: server_url
+      }
+
+      if Rails.env.test?
+        jwk_key = OpenSSL::PKey::RSA.new(jwk_signer)
+        jwk_verifier = jwk_key.public_key.to_s
+        config[:jwt_validation_pubkeys] = jwk_verifier
+      else
+        config[:oidc_discovery_url] = server_url
+      end
+
+      make_request(:post, "auth/#{mount_path}/config", config)
+    end
+
+    def update_jwt_role(mount_path, role_name, **role_data)
+      url = "auth/#{mount_path}/role/#{role_name}"
+      make_request(:post, url, role_data)
+    end
+
+    def read_jwt_role(mount_path, role_name)
+      url = "auth/#{mount_path}/role/#{role_name}"
+      body = make_request(:get, url)
+      body["data"] if body
     end
 
     def get_policy(name)

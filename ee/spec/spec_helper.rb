@@ -95,6 +95,7 @@ RSpec.configure do |config|
     # all we're handling in the secrets manager for now. We can add more
     # things to clean up here later on as we add more features.
     clean_all_kv_secrets_engines
+    clean_all_pipeline_jwt_engines
     clean_all_policies
   end
 end

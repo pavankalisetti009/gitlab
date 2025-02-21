@@ -10,6 +10,11 @@ RSpec.describe SecretsManagement::ProvisionProjectSecretsManagerWorker, :gitlab_
 
     let!(:secrets_manager) { create(:project_secrets_manager, project: project) }
 
+    before do
+      rsa_key = OpenSSL::PKey::RSA.generate(3072).to_s
+      stub_application_setting(ci_jwt_signing_key: rsa_key)
+    end
+
     it 'executes a service' do
       expect(SecretsManagement::ProjectSecretsManager)
         .to receive(:find_by_id).with(secrets_manager.id).and_return(secrets_manager)

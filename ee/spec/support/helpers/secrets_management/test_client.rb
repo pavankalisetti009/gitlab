@@ -6,8 +6,21 @@ module SecretsManagement
       make_request(:get, "sys/mounts/#{mount_path}")
     end
 
+    def read_auth_engine_configuration(mount_path)
+      make_request(:get, "sys/auth/#{mount_path}")
+    end
+
     def each_secrets_engine
       body = make_request(:get, "sys/mounts", {}, optional: true)
+      return unless body
+
+      body["data"].each do |path, info|
+        yield(path, info)
+      end
+    end
+
+    def each_auth_engine
+      body = make_request(:get, "sys/auth", {}, optional: true)
       return unless body
 
       body["data"].each do |path, info|

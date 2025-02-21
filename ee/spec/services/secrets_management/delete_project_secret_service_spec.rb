@@ -16,6 +16,8 @@ RSpec.describe SecretsManagement::DeleteProjectSecretService, :gitlab_secrets_ma
 
   describe '#execute', :aggregate_failures do
     before do
+      rsa_key = OpenSSL::PKey::RSA.generate(3072).to_s
+      stub_application_setting(ci_jwt_signing_key: rsa_key)
       provision_project_secrets_manager(secrets_manager)
     end
 

@@ -28,6 +28,10 @@ module SecretsManagement
       end
     end
 
+    def self.jwt_issuer
+      Gitlab.config.gitlab.base_url
+    end
+
     def self.server_url
       # Allow setting an external secrets manager URL if necessary. This is
       # useful for GitLab.Com's deployment.
@@ -140,6 +144,121 @@ module SecretsManagement
         "branch",
         Base64.urlsafe_encode64(branch, padding: false)
       ].compact.join('/')
+    end
+
+    def ci_auth_literal_policies
+      [
+        # Global policy
+        ci_policy_name("*", "*"),
+        # Environment policy
+        ci_policy_template_literal_environment,
+        # Branch policy
+        ci_policy_template_literal_branch,
+        # Combined environment+branch policy
+        ci_policy_template_literal_combined
+      ]
+    end
+
+    def ci_policy_template_literal_environment
+      "{{ if ne \"\" .environment }}project_{{ .project_id }}/pipelines/env/{{ .environment | base64 }}{{ end }}"
+    end
+
+    def ci_policy_template_literal_branch
+      "{{ if and (eq \"branch\" .ref_type) (ne \"\" .ref) }}" \
+        "project_{{ .project_id }}/pipelines/" \
+        "branch/{{ .ref | base64 }}" \
+        "{{ end }}"
+    end
+
+    def ci_policy_template_literal_combined
+      "{{ if and (eq \"branch\" .ref_type) (ne \"\" .ref) (ne \"\" .environment) }}" \
+        "project_{{ .project_id }}/pipelines/combined/" \
+        "env/{{ .environment | base64}}/" \
+        "branch/{{ .ref | base64 }}" \
+        "{{ end }}"
+    end
+
+    def ci_auth_glob_policies(environment, branch)
+      ret = []
+
+      # Add environment or branch policies. Both may be added.
+      ret.append(ci_policy_template_glob_environment(environment)) if environment.include?("*")
+      ret.append(ci_policy_template_glob_branch(branch)) if branch.include?("*")
+
+      # Add the relevant combined policy. Only one will be added.
+      if environment.include?("*") && branch.include?("*")
+        ret.append(ci_policy_template_combined_glob_environment_glob_branch(environment,
+          branch))
+      end
+
+      if environment.include?("*") && branch.exclude?("*")
+        ret.append(ci_policy_template_combined_glob_environment_branch(environment,
+          branch))
+      end
+
+      if environment.exclude?("*") && branch.include?("*")
+        ret.append(ci_policy_template_combined_environment_glob_branch(environment,
+          branch))
+      end
+
+      ret
+    end
+
+    def ci_policy_template_glob_environment(env_glob)
+      # Because env_glob is converted to base64, we know it is safe to
+      # directly embed in the template string. This is a bit more expensive
+      # to evaluate but saves us from having to ensure we always have
+      # consistent string escaping for text/template.
+      env_glob_b64 = Base64.urlsafe_encode64(env_glob, padding: false)
+      "{{ if and (ne \"\" .environment) (eq \"#{env_glob_b64}\" (.environment | base64)) }}" \
+        "#{ci_policy_name_env(env_glob)}" \
+        "{{end }}"
+    end
+
+    def ci_policy_template_glob_branch(branch_glob)
+      # See note in ci_policy_template_glob_environment.
+      branch_glob_b64 = Base64.urlsafe_encode64(branch_glob, padding: false)
+
+      "{{ if and (eq \"branch\" .ref_type) (ne \"\" .ref) (eq \"#{branch_glob_b64}\" (.ref | base64)) }}" \
+        "#{ci_policy_name_branch(branch_glob)}" \
+        "{{ end }}"
+    end
+
+    def ci_policy_template_combined_glob_environment_branch(env_glob, branch_literal)
+      # See note in ci_policy_template_glob_environment.
+      env_glob_b64 = Base64.urlsafe_encode64(env_glob, padding: false)
+      "{{ if and " \
+        "(eq \"branch\" .ref_type) " \
+        "(ne \"\" .ref) " \
+        "(ne \"\" .environment) " \
+        "(eq \"#{env_glob_b64}\" (.environment | base64)) }}" \
+        "#{ci_policy_name_combined(env_glob, branch_literal)}" \
+        "{{ end }}"
+    end
+
+    def ci_policy_template_combined_environment_glob_branch(env_literal, branch_glob)
+      # See note in ci_policy_template_glob_environment.
+      branch_glob_b64 = Base64.urlsafe_encode64(branch_glob, padding: false)
+      "(eq \"branch\" .ref_type) " \
+        "(ne \"\" .ref) " \
+        "(ne \"\" .environment) " \
+        "(eq \"#{branch_glob_b64}\" (.ref | base64)) }}" \
+        "#{ci_policy_name_combined(env_literal, branch_glob)}" \
+        "{{ end }}"
+    end
+
+    def ci_policy_template_combined_glob_environment_glob_branch(env_glob, branch_glob)
+      # See note in ci_policy_template_glob_environment.
+      env_glob_b64 = Base64.urlsafe_encode64(env_glob, padding: false)
+      branch_glob_b64 = Base64.urlsafe_encode64(branch_glob, padding: false)
+      "{{ if and " \
+        "(eq \"branch\" .ref_type) " \
+        "(ne \"\" .ref) " \
+        "(ne \"\" .environment) " \
+        "(eq \"#{env_glob_b64}\" (.environment | base64)) " \
+        "(eq \"#{branch_glob_b64}\" (.ref | base64)) }}" \
+        "#{ci_policy_name_combined(env_glob, branch_glob)}" \
+        "{{ end }}"
     end
 
     private
