@@ -216,6 +216,24 @@ export const mockScanExecutionPoliciesResponse = [
   mockGroupScanExecutionPolicy,
 ];
 
+export const mockScanExecutionPoliciesWithSameNamesDifferentSourcesResponse = [
+  mockProjectScanExecutionPolicy,
+  {
+    ...mockProjectScanExecutionPolicy,
+    updatedAt: new Date('2021-06-09T00:00:00.000Z').getDate(),
+    source: {
+      __typename: 'GroupSecurityPolicySource',
+      inherited: true,
+      namespace: {
+        __typename: 'Namespace',
+        id: '1',
+        fullPath: 'parent-group-path',
+        name: 'parent-group-name',
+      },
+    },
+  },
+];
+
 export const mockScheduleScanExecutionPoliciesResponse = [
   mockScheduledProjectScanExecutionPolicy,
   ...mockScanExecutionPoliciesResponse,
