@@ -53,7 +53,7 @@ module Search
         sql = <<~SQL
           zoekt_nodes.*, #{UNCLAIMED_STORAGE_BYTES_FORMULA} AS unclaimed_storage_bytes
         SQL
-        left_joins(:indices).group(:id).having("#{UNCLAIMED_STORAGE_BYTES_FORMULA} >= 0").select(sql)
+        left_joins(:indices).group(:id).having("#{UNCLAIMED_STORAGE_BYTES_FORMULA} > 0").select(sql)
       end
       scope :order_by_unclaimed_space, -> do
         with_positive_unclaimed_storage_bytes.order('unclaimed_storage_bytes')

@@ -743,6 +743,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace: :cronjob
+- :name: cronjob:search_zoekt_rollout
+  :worker_name: Search::Zoekt::RolloutWorker
+  :feature_category: :global_search
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace: :cronjob
 - :name: cronjob:search_zoekt_scheduling
   :worker_name: Search::Zoekt::SchedulingWorker
   :feature_category: :global_search
