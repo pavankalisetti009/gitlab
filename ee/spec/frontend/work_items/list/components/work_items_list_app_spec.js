@@ -156,7 +156,7 @@ describeSkipVue3(skipReason, () => {
       });
     });
 
-    it('passes the `alwaysShowWorkItemTypeSelect` props for project level', () => {
+    it('`alwaysShowWorkItemTypeSelect` props is `true` for project level', () => {
       mountComponent({
         hasEpicsFeature: true,
         showNewIssueLink: true,
@@ -173,7 +173,7 @@ describeSkipVue3(skipReason, () => {
       });
     });
 
-    it('does not pass the `allowedWorkItemTypes` props for group level', () => {
+    it('`alwaysShowWorkItemTypeSelect` props is `false` when the workItemType is `Epic`', () => {
       mountComponent({
         hasEpicsFeature: true,
         showNewIssueLink: true,
@@ -185,6 +185,7 @@ describeSkipVue3(skipReason, () => {
       expect(findCreateWorkItemModal().props()).toMatchObject({
         isGroup: true,
         allowedWorkItemTypes: [],
+        alwaysShowWorkItemTypeSelect: false,
         workItemTypeName: WORK_ITEM_TYPE_ENUM_EPIC,
       });
     });
