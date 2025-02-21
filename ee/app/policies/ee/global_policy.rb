@@ -85,7 +85,7 @@ module EE
         @user.allowed_to_use?(:glab_ask_git_command, licensed_feature: :glab_ask_git_command)
       end
 
-      rule { ai_features_enabled & user_allowed_to_use_glab_ask_git_command }.policy do
+      rule { ~ai_features_banned & user_allowed_to_use_glab_ask_git_command }.policy do
         enable :access_glab_ask_git_command
       end
 
@@ -214,7 +214,7 @@ module EE
       end
 
       rule do
-        code_suggestions_licensed & ai_features_enabled & code_suggestions_enabled_for_user
+        code_suggestions_licensed & ~ai_features_banned & code_suggestions_enabled_for_user
       end.enable :access_code_suggestions
 
       rule { duo_chat_enabled_for_user & ~ai_features_banned }.enable :access_duo_chat

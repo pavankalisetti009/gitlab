@@ -643,19 +643,22 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
     let_it_be_with_reload(:current_user) { create(:user) }
 
     where(:code_suggestions_licensed, :duo_pro_seat_assigned, :self_hosted_enabled, :self_hosted_licensed,
-      :code_suggestions_enabled_for_user) do
-      true  | true  | true  | true   |  be_allowed(:access_code_suggestions)
-      true  | true  | false | false  |  be_allowed(:access_code_suggestions)
-      true  | false | true  | true   |  be_allowed(:access_code_suggestions)
-      true  | false | true  | false  |  be_disallowed(:access_code_suggestions)
-      true  | false | false | false  |  be_disallowed(:access_code_suggestions)
-      false | true  | true  | true   |  be_disallowed(:access_code_suggestions)
-      false | false | false | false  |  be_disallowed(:access_code_suggestions)
+      :lock_duo_features_enabled, :code_suggestions_enabled_for_user) do
+      true  | true  | true  | true   | false   |  be_allowed(:access_code_suggestions)
+      true  | true  | false | false  | false   |  be_allowed(:access_code_suggestions)
+      true  | false | true  | true   | false   |  be_allowed(:access_code_suggestions)
+      true  | false | true  | false  | false   |  be_disallowed(:access_code_suggestions)
+      true  | false | false | false  | false   |  be_disallowed(:access_code_suggestions)
+      false | true  | true  | true   | false   |  be_disallowed(:access_code_suggestions)
+      false | false | false | false  | false   |  be_disallowed(:access_code_suggestions)
+      true  | false | true  | true   | true    |  be_disallowed(:access_code_suggestions)
+      true  | true  | true  | true   | true    |  be_disallowed(:access_code_suggestions)
     end
 
     with_them do
       before do
         stub_licensed_features(code_suggestions: code_suggestions_licensed)
+        stub_application_setting(lock_duo_features_enabled: lock_duo_features_enabled)
 
         # This is needed to allow responding differently based on the arguments. We make the default throw an error
         # to check we don't get unexpected calls.
@@ -835,15 +838,15 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
   describe 'explain git commands' do
     let(:policy) { :access_glab_ask_git_command }
 
-    where(:duo_features_enabled, :allowed_to_use, :enabled_for_user) do
-      true | false | be_disallowed(:access_glab_ask_git_command)
-      false | true | be_disallowed(:access_glab_ask_git_command)
-      true | true | be_allowed(:access_glab_ask_git_command)
+    where(:lock_duo_features_enabled, :allowed_to_use, :enabled_for_user) do
+      false | false | be_disallowed(:access_glab_ask_git_command)
+      true  | true  | be_disallowed(:access_glab_ask_git_command)
+      false | true  | be_allowed(:access_glab_ask_git_command)
     end
 
     with_them do
       before do
-        stub_application_setting(duo_features_enabled: duo_features_enabled)
+        stub_application_setting(lock_duo_features_enabled: lock_duo_features_enabled)
 
         allow(current_user).to receive(:allowed_to_use?)
           .with(:glab_ask_git_command, licensed_feature: :glab_ask_git_command).and_return(allowed_to_use)
