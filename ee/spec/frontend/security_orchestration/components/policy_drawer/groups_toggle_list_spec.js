@@ -6,8 +6,8 @@ describe('GroupsToggleList', () => {
   let wrapper;
 
   const mockedGroups = [
-    { id: 1, name: 'group 1' },
-    { id: 2, name: 'group 2' },
+    { id: 1, name: 'group 1', fullPath: 'fullPath1' },
+    { id: 2, name: 'group 2', fullPath: 'fullPath2' },
   ];
   const mockedProjects = [
     { id: 1, name: 'project 1' },
@@ -107,20 +107,22 @@ describe('GroupsToggleList', () => {
         },
       });
 
-      expect(findGroupsList().findAllComponents(GlLink).at(0).props('href')).toBe(
-        mockedGroups[0].full_path,
+      const groupLinks = findGroupsList().findAllComponents(GlLink);
+
+      expect(groupLinks.at(0).attributes('href')).toBe(
+        'http://test.host/groups/fullPath1/-/security/policies',
       );
 
-      expect(findGroupsList().findAllComponents(GlLink).at(1).props('href')).toBe(
-        mockedGroups[1].full_path,
+      expect(groupLinks.at(1).attributes('href')).toBe(
+        'http://test.host/groups/fullPath2/-/security/policies',
       );
 
-      expect(findProjectsList().findAllComponents(GlLink).at(0).props('href')).toBe(
-        mockedProjects[0].full_path,
+      expect(groupLinks.at(0).attributes('href')).toBe(
+        'http://test.host/groups/fullPath1/-/security/policies',
       );
 
-      expect(findProjectsList().findAllComponents(GlLink).at(1).props('href')).toBe(
-        mockedProjects[1].full_path,
+      expect(groupLinks.at(1).attributes('href')).toBe(
+        'http://test.host/groups/fullPath2/-/security/policies',
       );
 
       expect(findAllLinks()).toHaveLength(mockedGroups.length + mockedProjects.length);
