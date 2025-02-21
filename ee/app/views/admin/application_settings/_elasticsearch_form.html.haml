@@ -89,8 +89,10 @@
                         %td
                           .gl-pt-3= setting.alias_name
                         %td
+                          = f.label _('Number of shards'), class: 'gl-sr-only', for: "application_setting_elasticsearch_shards[#{setting.alias_name}]"
                           = f.number_field :elasticsearch_shards, name: "application_setting[elasticsearch_shards][#{setting.alias_name}]", value: setting.number_of_shards, min: 0, class: 'form-control gl-form-input', id: "application_setting_elasticsearch_shards[#{setting.alias_name}]"
                         %td
+                          = f.label _('Number of replicas'), class: 'gl-sr-only', for: "application_setting_elasticsearch_replicas[#{setting.alias_name}]"
                           = f.number_field :elasticsearch_replicas, name: "application_setting[elasticsearch_replicas][#{setting.alias_name}]", value: setting.number_of_replicas, min: 0, class: 'form-control gl-form-input', id: "application_setting_elasticsearch_replicas[#{setting.alias_name}]"
 
           .form-group
@@ -221,16 +223,16 @@
     = gitlab_ui_form_for @elasticsearch_reindexing_task, url: admin_elasticsearch_trigger_reindexing_path, method: :post, html: { class: 'fieldset-form' } do |f|
       %fieldset
         .form-group
-          = f.label :slice_multiplier, _('Slice multiplier'), class: 'label-bold'
-          = f.number_field :elasticsearch_slice_multiplier, class: 'form-control gl-form-input', value: @elasticsearch_reindexing_task.slice_multiplier
+          = f.label :slice_multiplier, _('Slice multiplier'), for: 'slice_multiplier'
+          = f.number_field :elasticsearch_slice_multiplier, class: 'form-control gl-form-input', value: @elasticsearch_reindexing_task.slice_multiplier, id: 'slice_multiplier'
           .form-text.gl-text-subtle.gl-mt-0
             - slice_multiplier_link_url = help_page_path('integration/advanced_search/elasticsearch.md', anchor: 'slice-multiplier')
             - slice_multiplier_link_start = '<a href="%{url}" target="_blank" rel="noopener noreferrer">'.html_safe % { url: slice_multiplier_link_url }
             = html_escape(_('Calculate the number of slices during reindexing. The multiplier is applied to the number of shards per index. Learn more about %{slice_multiplier_link_start}slice multiplier configuration%{slice_multiplier_link_end}.')) % { slice_multiplier_link_start: slice_multiplier_link_start, slice_multiplier_link_end: '</a>'.html_safe }
 
         .form-group
-          = f.label :max_slices_running, _('Maximum running slices'), class: 'label-bold'
-          = f.number_field :elasticsearch_max_slices_running, class: 'form-control gl-form-input', value: @elasticsearch_reindexing_task.max_slices_running
+          = f.label :max_slices_running, _('Maximum running slices'), for: 'maximum_running_slices'
+          = f.number_field :elasticsearch_max_slices_running, class: 'form-control gl-form-input', value: @elasticsearch_reindexing_task.max_slices_running, id: 'maximum_running_slices'
           .form-text.gl-text-subtle.gl-mt-0
             - max_slices_running_link_url = help_page_path('integration/advanced_search/elasticsearch.md', anchor: 'maximum-running-slices')
             - max_slices_running_link_start = '<a href="%{url}" target="_blank" rel="noopener noreferrer">'.html_safe % { url: max_slices_running_link_url }
