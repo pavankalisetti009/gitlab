@@ -1567,6 +1567,12 @@ entry.
 - [Remove default on `group_saved_replies_flag feature flag](https://gitlab.com/gitlab-org/gitlab/-/commit/75d49fe13646e1e0d3b68233ac4a965c86853917) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/175647))
 - [Remove use_actual_plan_in_license_check flag](https://gitlab.com/gitlab-org/gitlab/-/commit/b8c3fe16aedb69c82ff52d1c695d72e933c4b946) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/175649))
 
+## 17.7.5 (2025-02-21)
+
+### Fixed (1 change)
+
+- [Revert stricter workhorse route regexes](https://gitlab.com/gitlab-org/gitlab/-/commit/9f1a05217022094de570ca4e4afd5b96b9b68c56) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/181359))
+
 ## 17.7.4 (2025-02-11)
 
 ### Security (8 changes)
