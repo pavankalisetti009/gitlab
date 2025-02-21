@@ -565,9 +565,9 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
       stub_ee_application_setting(elasticsearch_indexing: true)
     end
 
-    it 'indexes namespaces', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/467999' do
+    it 'indexes namespaces' do
       expect(ElasticNamespaceIndexerWorker).to receive(:bulk_perform_async_with_contexts)
-        .with(groups, { arguments_proc: kind_of(Proc), context_proc: kind_of(Proc) })
+        .with(match_array(groups), { arguments_proc: kind_of(Proc), context_proc: kind_of(Proc) })
 
       task
     end
