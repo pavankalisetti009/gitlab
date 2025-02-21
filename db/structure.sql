@@ -13115,6 +13115,7 @@ CREATE TABLE draft_notes (
     internal boolean DEFAULT false NOT NULL,
     note_type smallint,
     project_id bigint,
+    CONSTRAINT check_2a752d05fe CHECK ((project_id IS NOT NULL)),
     CONSTRAINT check_c497a94a0e CHECK ((char_length(line_code) <= 255))
 );
 
@@ -27268,9 +27269,6 @@ ALTER TABLE ONLY chat_names
 
 ALTER TABLE ONLY chat_teams
     ADD CONSTRAINT chat_teams_pkey PRIMARY KEY (id);
-
-ALTER TABLE draft_notes
-    ADD CONSTRAINT check_2a752d05fe CHECK ((project_id IS NOT NULL)) NOT VALID;
 
 ALTER TABLE workspaces
     ADD CONSTRAINT check_2a89035b04 CHECK ((personal_access_token_id IS NOT NULL)) NOT VALID;
