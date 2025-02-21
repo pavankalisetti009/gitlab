@@ -1853,7 +1853,7 @@ GEM
     state_machines-activerecord (0.8.0)
       activerecord (>= 5.1)
       state_machines-activemodel (>= 0.8.0)
-    stringio (3.1.4)
+    stringio (3.1.5)
     strings (0.2.1)
       strings-ansi (~> 0.2)
       unicode-display_width (>= 1.5, < 3.0)
@@ -2303,7 +2303,7 @@ DEPENDENCIES
   rack-oauth2 (~> 2.2.1)
   rack-proxy (~> 0.7.7)
   rack-timeout (~> 0.7.0)
-  rails (~> 7.1.5)
+  rails (~> 7.1.5.1)
   rails-controller-testing
   rails-i18n (~> 7.0, >= 7.0.9)
   rainbow (~> 3.0)
