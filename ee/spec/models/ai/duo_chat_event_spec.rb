@@ -6,8 +6,9 @@ RSpec.describe Ai::DuoChatEvent, feature_category: :value_stream_management do
   subject(:event) { described_class.new(attributes) }
 
   let(:attributes) { { event: 'request_duo_chat_response' } }
-  let(:personal_namespace) { create(:namespace) }
-  let(:user) { build_stubbed(:user, namespace: personal_namespace) }
+  let_it_be(:personal_namespace) { create(:namespace) }
+  let_it_be(:user) { create(:user, namespace: personal_namespace) }
+  let_it_be(:default_organization) { create(:organization, :default) }
 
   it { is_expected.to belong_to(:user) }
 
@@ -22,7 +23,12 @@ RSpec.describe Ai::DuoChatEvent, feature_category: :value_stream_management do
   describe 'validations' do
     it { is_expected.to validate_presence_of(:user_id) }
     it { is_expected.to validate_presence_of(:timestamp) }
-    it { is_expected.to validate_presence_of(:personal_namespace_id) }
+
+    it 'validates presence of organization_id' do
+      allow(Organizations::Organization).to receive(:default_organization).and_return(nil)
+
+      expect(event).not_to allow_value(nil).for(:organization_id)
+    end
 
     it "allows 3 months old timestamp at the most" do
       is_expected.not_to allow_value(5.months.ago).for(:timestamp).with_message(_('must be 3 months old at the most'))
@@ -36,6 +42,26 @@ RSpec.describe Ai::DuoChatEvent, feature_category: :value_stream_management do
 
     it 'properly converts from string' do
       expect(described_class.new(timestamp: DateTime.current.to_s).timestamp).to eq(DateTime.current)
+    end
+  end
+
+  describe '#organization_id' do
+    subject(:event) { described_class.new(user: user).tap(&:valid?) }
+
+    it 'populates organization_id from default_organization' do
+      expect(event.organization_id).to eq(default_organization.id)
+    end
+
+    context 'when user belongs to an organization' do
+      let!(:user_organization) do
+        create(:organization).tap do |org|
+          create(:organization_user, organization: org, user: user)
+        end
+      end
+
+      it 'populates organization_id from user' do
+        expect(event.organization_id).to eq(user_organization.id)
+      end
     end
   end
 
@@ -81,7 +107,8 @@ RSpec.describe Ai::DuoChatEvent, feature_category: :value_stream_management do
                                                  event: 'request_duo_chat_response',
                                                  timestamp: 1.day.ago,
                                                  user_id: user.id,
-                                                 personal_namespace_id: personal_namespace.id
+                                                 personal_namespace_id: personal_namespace.id,
+                                                 organization_id: default_organization.id
                                                }.with_indifferent_access)
 
         event.store_to_pg
