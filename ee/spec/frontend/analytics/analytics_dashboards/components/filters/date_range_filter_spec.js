@@ -62,7 +62,7 @@ describe('DateRangeFilter', () => {
 
       expect(helpIcon.props('name')).toBe('information-o');
       expect(helpIcon.attributes('title')).toBe(
-        'Dates and times are displayed in the UTC timezone',
+        'Dates and times are displayed in the UTC timezone.',
       );
       expect(tooltip).toBeDefined();
     });
@@ -133,7 +133,7 @@ describe('DateRangeFilter', () => {
         expect(findDateRangePicker().props()).toMatchObject({
           toLabel: 'To',
           fromLabel: 'From',
-          tooltip: null,
+          tooltip: '',
           defaultMaxDate: TODAY,
           maxDateRange: 0,
           value: {
@@ -147,10 +147,22 @@ describe('DateRangeFilter', () => {
     });
 
     describe.each([
-      { dateRangeLimit: 0, expectedTooltip: null },
-      { dateRangeLimit: 1, expectedTooltip: 'Date range limited to 1 day' },
-      { dateRangeLimit: 12, expectedTooltip: 'Date range limited to 12 days' },
-      { dateRangeLimit: 31, expectedTooltip: 'Date range limited to 31 days' },
+      { dateRangeLimit: 0, expectedTooltip: 'Dates and times are displayed in the UTC timezone.' },
+      {
+        dateRangeLimit: 1,
+        expectedTooltip:
+          'Dates and times are displayed in the UTC timezone. Date range is limited to 1 day.',
+      },
+      {
+        dateRangeLimit: 12,
+        expectedTooltip:
+          'Dates and times are displayed in the UTC timezone. Date range is limited to 12 days.',
+      },
+      {
+        dateRangeLimit: 31,
+        expectedTooltip:
+          'Dates and times are displayed in the UTC timezone. Date range is limited to 31 days.',
+      },
     ])(
       'when given a date range limit of $dateRangeLimit',
       ({ dateRangeLimit, expectedTooltip }) => {
@@ -164,9 +176,9 @@ describe('DateRangeFilter', () => {
           await findCollapsibleListBox().vm.$emit('select', customRangeOption.key);
 
           expect(findDateRangePicker().props()).toMatchObject({
-            tooltip: expectedTooltip,
             maxDateRange: dateRangeLimit,
           });
+          expect(findHelpIcon().attributes('title')).toBe(expectedTooltip);
         });
       },
     );
