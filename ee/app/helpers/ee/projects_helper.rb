@@ -15,9 +15,9 @@ module EE
     def project_permissions_settings(project)
       super.merge({
         requirementsAccessLevel: project.requirements_access_level,
-        cveIdRequestEnabled: (project.public? && project.project_setting.cve_id_request_enabled?),
-        duoFeaturesEnabled: (project.project_setting.duo_features_enabled?),
-        sppRepositoryPipelineAccess: (project.project_setting.spp_repository_pipeline_access)
+        cveIdRequestEnabled: project.public? && project.project_setting.cve_id_request_enabled?,
+        duoFeaturesEnabled: project.project_setting.duo_features_enabled?,
+        sppRepositoryPipelineAccess: project.project_setting.spp_repository_pipeline_access
       })
     end
 
@@ -66,8 +66,8 @@ module EE
       return super unless project.adjourned_deletion?
 
       date = permanent_deletion_date_formatted(project, Time.now.utc)
-      _("Deleting a project places it into a read-only state until %{date}, at which point the project will be permanently deleted. Are you ABSOLUTELY sure?") %
-        { date: date }
+      format(_("Deleting a project places it into a read-only state until %{date}, " \
+        "at which point the project will be permanently deleted. Are you ABSOLUTELY sure?"), date: date)
     end
 
     def approvals_app_data(project = @project)
@@ -82,9 +82,11 @@ module EE
         approvals_path: expose_path(api_v4_projects_merge_request_approval_setting_path(id: project.id)),
         rules_path: expose_path(api_v4_projects_approval_rules_path(id: project.id)),
         allow_multi_rule: project.multiple_approval_rules_available?.to_s,
-        eligible_approvers_docs_path: help_page_path('user/project/merge_requests/approvals/rules.md', anchor: 'eligible-approvers'),
+        eligible_approvers_docs_path: help_page_path('user/project/merge_requests/approvals/rules.md',
+          anchor: 'eligible-approvers'),
         security_configuration_path: project_security_configuration_path(project),
-        coverage_check_help_page_path: help_page_path('ci/testing/code_coverage/_index.md', anchor: 'add-a-coverage-check-approval-rule'),
+        coverage_check_help_page_path: help_page_path('ci/testing/code_coverage/_index.md',
+          anchor: 'add-a-coverage-check-approval-rule'),
         group_name: project.root_ancestor.name,
         full_path: project.full_path,
         new_policy_path: expose_path(new_project_security_policy_path(project))
@@ -140,8 +142,10 @@ module EE
       date = permanent_deletion_date_formatted(project, Time.now.utc)
 
       if project.feature_available?(:adjourned_deletion_for_projects_and_groups)
-        message = _("This action will place this project, including all its resources, in a pending deletion state for %{deletion_adjourned_period} days, and delete it permanently on %{strongOpen}%{date}%{strongClose}.")
-        ERB::Util.html_escape(message) % delete_message_data(project).merge(date: date, deletion_adjourned_period: deletion_adjourned_period)
+        message = _("This action will place this project, including all its resources, in a pending deletion state " \
+          "for %{deletion_adjourned_period} days, and delete it permanently on %{strongOpen}%{date}%{strongClose}.")
+        ERB::Util.html_escape(message) % delete_message_data(project).merge(date: date,
+          deletion_adjourned_period: deletion_adjourned_period)
       else
         # This is a free project, it will use delayed deletion but can only be restored by an admin.
         _('This action will permanently delete this project, including all its resources.')
@@ -152,7 +156,8 @@ module EE
       project.permanent_deletion_date(date).strftime('%F')
     end
 
-    # Given the current GitLab configuration, check whether the GitLab URL for Kerberos is going to be different than the HTTP URL
+    # Given the current GitLab configuration, check whether the GitLab URL
+    # for Kerberos is going to be different than the HTTP URL
     def alternative_kerberos_url?
       ::Gitlab.config.alternative_gitlab_kerberos_url?
     end
@@ -183,7 +188,8 @@ module EE
     def remote_mirror_setting_enabled?
       ::Gitlab::CurrentSettings.import_sources.any? &&
         ::License.feature_available?(:ci_cd_projects) &&
-        (::Gitlab::CurrentSettings.current_application_settings.mirror_available || current_user.can_admin_all_resources?)
+        (::Gitlab::CurrentSettings.current_application_settings.mirror_available ||
+        current_user.can_admin_all_resources?)
     end
 
     def merge_pipelines_available?
@@ -199,8 +205,14 @@ module EE
     end
 
     def size_limit_message(project)
-      repository_size_limit_link = link_to _('Learn more'), help_page_path('administration/settings/account_and_limit_settings.md', anchor: 'repository-size-limit')
-      message = project.lfs_enabled? ? _("Max size of this project's repository, including LFS files. %{repository_size_limit_link}.") : _("Max size of this project's repository. %{repository_size_limit_link}.")
+      repository_size_limit_link = link_to _('Learn more'),
+        help_page_path('administration/settings/account_and_limit_settings.md', anchor: 'repository-size-limit')
+
+      message = if project.lfs_enabled?
+                  _("Max size of this project's repository, including LFS files. %{repository_size_limit_link}.")
+                else
+                  _("Max size of this project's repository. %{repository_size_limit_link}.")
+                end
 
       safe_format(message, repository_size_limit_link: repository_size_limit_link)
     end
@@ -258,7 +270,8 @@ module EE
       base_project_security_dashboard_config(project).merge(
         {
           has_vulnerabilities: 'true',
-          vulnerabilities_export_endpoint: expose_path(api_v4_security_projects_vulnerability_exports_path(id: project.id)),
+          vulnerabilities_export_endpoint:
+            expose_path(api_v4_security_projects_vulnerability_exports_path(id: project.id)),
           new_project_pipeline_path: new_project_pipeline_path(project),
           scanners: VulnerabilityScanners::ListService.new(project).execute.to_json,
           can_view_false_positive: can_view_false_positive?,
@@ -285,21 +298,21 @@ module EE
     end
 
     def create_vulnerability_feedback_issue_path(project)
-      if can_create_feedback?(project, :issue)
-        project_vulnerability_feedback_index_path(project)
-      end
+      return unless can_create_feedback?(project, :issue)
+
+      project_vulnerability_feedback_index_path(project)
     end
 
     def create_vulnerability_feedback_merge_request_path(project)
-      if can_create_feedback?(project, :merge_request)
-        project_vulnerability_feedback_index_path(project)
-      end
+      return unless can_create_feedback?(project, :merge_request)
+
+      project_vulnerability_feedback_index_path(project)
     end
 
     def create_vulnerability_feedback_dismissal_path(project)
-      if can_create_feedback?(project, :dismissal)
-        project_vulnerability_feedback_index_path(project)
-      end
+      return unless can_create_feedback?(project, :dismissal)
+
+      project_vulnerability_feedback_index_path(project)
     end
 
     def show_discover_project_security?(project)
@@ -329,9 +342,7 @@ module EE
         group_path: group_path(group),
         empty_state_svg_path: image_path('illustrations/welcome/ee_trial.svg')
       }.tap do |data|
-        if can_edit
-          data[:add_framework_path] = "#{edit_group_path(group)}#js-compliance-frameworks-settings"
-        end
+        data[:add_framework_path] = "#{edit_group_path(group)}#js-compliance-frameworks-settings" if can_edit
       end
     end
 
