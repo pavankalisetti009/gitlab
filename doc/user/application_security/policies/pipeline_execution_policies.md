@@ -401,7 +401,8 @@ the only jobs that run are the pipeline execution policy jobs.
 
 {{< history >}}
 
-- Updated handling of workflow rules [introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/175088) in GitLab 17.8 [with a flag](../../../administration/feature_flags.md) named `policies_always_override_project_ci`. Enabled by default.
+- Updated handling of workflow rules [introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/175088) in GitLab 17.8 [with a flag](../../../administration/feature_flags.md) named `policies_always_override_project_ci`. Enabled by default. 
+- Updated handling of workflow rules [generally available](https://gitlab.com/gitlab-org/gitlab/-/issues/512877) in GitLab 17.10. Feature flag `policies_always_override_project_ci` removed.
 
 {{< /history >}}
 
@@ -504,14 +505,9 @@ ProjectVariablesYAML -- "Basis of the resulting pipeline" --> ResultingProjectVa
 
 {{< alert type="note" >}}
 
-When a pipeline execution policy uses workflow rules that prevent policy jobs from running, the
-project's original CI/CD configuration remains in effect instead of being overridden. You can
-conditionally apply pipeline execution policies to control when the policy impacts the project's
-CI/CD configuration. For example, if you set a workflow rule `if: $CI_PIPELINE_SOURCE ==
-"merge_request_event"`, the project's CI/CD configuration is only overridden when the pipeline source
-is a merge request event. However, if the feature flag `policies_always_override_project_ci` is enabled,
-the workflow rules in the pipeline execution policy also override the project's original CI/CD configuration.
-As a result, if workflow rules cause the pipeline execution policy to be filtered out, no pipeline is created.
+The workflow rules in the pipeline execution policy override the project's original CI/CD configuration.
+By defining workflow rules in the policy, you can set rules that are enforced across all linked projects,
+like preventing the use of branch pipelines.
 
 {{< /alert >}}
 

@@ -69,11 +69,7 @@ module Gitlab
           end
 
           def has_overriding_execution_policy_pipelines?
-            if ::Feature.enabled?(:policies_always_override_project_ci, project)
-              policies.any?(&:strategy_override_project_ci?)
-            else
-              policy_pipelines.any?(&:strategy_override_project_ci?)
-            end
+            policies.any?(&:strategy_override_project_ci?)
           end
 
           def applying_config_override?
