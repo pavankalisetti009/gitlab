@@ -317,20 +317,6 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
             end
           end
         end
-
-        context 'when feature flag "policies_always_override_project_ci" is disabled' do
-          before do
-            stub_feature_flags(policies_always_override_project_ci: false)
-          end
-
-          it { is_expected.to eq(false) }
-
-          context 'when overriding policy_pipelines are present' do
-            let(:policy_pipelines) { build_list(:pipeline_execution_policy_pipeline, 2, :override_project_ci) }
-
-            it { is_expected.to eq(true) }
-          end
-        end
       end
     end
   end

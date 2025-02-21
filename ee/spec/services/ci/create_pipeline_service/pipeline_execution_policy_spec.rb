@@ -477,22 +477,6 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
         expect(execute.payload).not_to be_persisted
         expect(execute.payload.errors.full_messages).to contain_exactly 'Missing CI config file'
       end
-
-      context 'when feature flag "policies_always_override_project_ci" is disabled' do
-        before do
-          stub_feature_flags(policies_always_override_project_ci: false)
-        end
-
-        it 'creates the pipeline with project jobs and without policy jobs' do
-          expect { execute }.to change { Ci::Build.count }.from(0).to(2)
-
-          stages = execute.payload.stages
-          build_stage = stages.find_by(name: 'build')
-          expect(build_stage.builds.map(&:name)).to contain_exactly('build')
-          test_stage = stages.find_by(name: 'test')
-          expect(test_stage.builds.map(&:name)).to contain_exactly('rspec')
-        end
-      end
     end
   end
 
