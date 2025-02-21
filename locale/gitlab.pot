@@ -64390,7 +64390,7 @@ msgstr ""
 msgid "Vulnerability|The CVSS (Common Vulnerability Scoring System) is a standardized framework for assessing and communicating the severity of security vulnerabilities in software. It provides a numerical score (ranging from 0.0 to 10.0) to indicate the severity risk of the vulnerability."
 msgstr ""
 
-msgid "Vulnerability|The Exploit Prediction Scoring System model produces a probability score between 0 and 1 indicating the likelihood that a vulnerability will be exploited in the next 30 days."
+msgid "Vulnerability|The Exploit Prediction Scoring System model produces a percentage value between 0 and 100 that represents the likelihood that a vulnerability will be exploited in the next 30 days."
 msgstr ""
 
 msgid "Vulnerability|The scanner determined this vulnerability to be a false positive. Verify the evaluation before changing its status. %{linkStart}Learn more about false positive detection.%{linkEnd}"
