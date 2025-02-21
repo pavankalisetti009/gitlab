@@ -46105,6 +46105,9 @@ msgstr ""
 msgid "ProjectsNew|Available only for projects within groups"
 msgstr ""
 
+msgid "ProjectsNew|Bitbucket Server URL"
+msgstr ""
+
 msgid "ProjectsNew|Choose a group"
 msgstr ""
 
@@ -46174,6 +46177,9 @@ msgstr ""
 msgid "ProjectsNew|Import projects from Gitea"
 msgstr ""
 
+msgid "ProjectsNew|Import repositories from Bitbucket Server"
+msgstr ""
+
 msgid "ProjectsNew|Include a Getting Started README"
 msgstr ""
 
@@ -46204,10 +46210,16 @@ msgstr ""
 msgid "ProjectsNew|No import options available"
 msgstr ""
 
+msgid "ProjectsNew|Password/Personal access token"
+msgstr ""
+
 msgid "ProjectsNew|Pick a group or namespace"
 msgstr ""
 
 msgid "ProjectsNew|Pick a group or namespace where you want to create this project."
+msgstr ""
+
+msgid "ProjectsNew|Please enter a valid Bitbucket Server URL."
 msgstr ""
 
 msgid "ProjectsNew|Please enter a valid Gitea host URL."
@@ -46220,6 +46232,12 @@ msgid "ProjectsNew|Please enter a valid project name."
 msgstr ""
 
 msgid "ProjectsNew|Please enter a valid project slug."
+msgstr ""
+
+msgid "ProjectsNew|Please enter a valid token."
+msgstr ""
+
+msgid "ProjectsNew|Please enter a valid username."
 msgstr ""
 
 msgid "ProjectsNew|Please upload a valid GitLab project export file."
