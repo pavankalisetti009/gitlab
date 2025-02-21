@@ -17,6 +17,8 @@ RSpec.describe Ai::AmazonQ::DestroyService, feature_category: :ai_agents do
       stub_request(:post, "#{Gitlab::AiGateway.url}/v1/amazon_q/oauth/application/delete")
         .and_return(status: status, body: body)
 
+      stub_licensed_features(amazon_q: true)
+
       Ai::Setting.instance.update!(
         amazon_q_service_account_user_id: service_account.id,
         amazon_q_oauth_application_id: doorkeeper_application.id,
@@ -93,6 +95,33 @@ RSpec.describe Ai::AmazonQ::DestroyService, feature_category: :ai_agents do
           'amazon_q_oauth_application_id to null, ' \
           'amazon_q_ready to null'
       )
+    end
+
+    it 'destroys the instance integration' do
+      integration = create(:amazon_q_integration)
+      project_integration = create(:amazon_q_integration, instance: false, project: create(:project),
+        inherit_from_id: integration.id)
+      group_integration = create(:amazon_q_integration, instance: false, group: create(:group),
+        inherit_from_id: integration.id)
+
+      expect { instance.execute }.to change { Integrations::AmazonQ.count }.from(3).to(0)
+      expect { integration.reload }.to raise_error(ActiveRecord::RecordNotFound)
+      expect { project_integration.reload }.to raise_error(ActiveRecord::RecordNotFound)
+      expect { group_integration.reload }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+
+    it 'returns an error if amazon q instance integration is not deleted' do
+      integration = create(:amazon_q_integration)
+
+      expect(Integrations::AmazonQ).to receive(:for_instance).and_return([integration])
+      expect(integration).to receive(:destroy).and_return(false)
+      integration.errors.add(:base, 'Integration error')
+
+      expect(instance.execute).to have_attributes(
+        success?: false,
+        message: 'Failed to delete an integration: Error Integration error'
+      )
+      expect(Integrations::AmazonQ.count).to eq(1)
     end
   end
 end

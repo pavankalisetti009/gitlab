@@ -12,6 +12,8 @@ module Ai
 
         return result unless result.success?
 
+        return ServiceResponse.error(message: ai_settings.errors.full_messages.to_sentence) unless destroy_integration
+
         if ai_settings.update(
           amazon_q_oauth_application_id: nil,
           amazon_q_ready: false,
@@ -22,6 +24,7 @@ module Ai
             audit_ai_settings: true,
             exclude_columns: %w[amazon_q_service_account_user_id]
           )
+
           ServiceResponse.success
         else
           ServiceResponse.error(message: ai_settings.errors.full_messages.to_sentence)
@@ -57,6 +60,18 @@ module Ai
         end
 
         response
+      end
+
+      def destroy_integration
+        integration = Integrations::AmazonQ.for_instance.first
+        return true unless integration
+
+        unless integration.destroy
+          ai_settings.errors.add(:base,
+            "Failed to delete an integration: Error #{integration.errors.full_messages.to_sentence}")
+        end
+
+        integration.destroyed?
       end
     end
   end

@@ -95,6 +95,42 @@ RSpec.describe Ai::AmazonQ::CreateService, feature_category: :ai_agents do
       )
     end
 
+    it 'creates amazon q instance integration' do
+      allow(PropagateIntegrationWorker).to receive(:perform_async)
+
+      expect { instance.execute }.to change { Integrations::AmazonQ.count }.by(1)
+
+      integration = Integrations::AmazonQ.last
+
+      expect(integration).to be_active
+      expect(integration.role_arn).to eq('a')
+      expect(PropagateIntegrationWorker).to have_received(:perform_async).with(integration.id)
+    end
+
+    it 'returns an error if amazon q instance integration is not saved' do
+      expect(PropagateIntegrationWorker).not_to receive(:perform_async)
+      expect_next_instance_of(Integrations::AmazonQ) do |instance|
+        expect(instance).to receive(:update).and_return(false)
+        instance.errors.add(:base, 'Integration error')
+      end
+
+      expect(instance.execute).to have_attributes(
+        success?: false,
+        message: 'Failed to create an integration: Error Integration error'
+      )
+      expect(Integrations::AmazonQ.count).to eq(0)
+    end
+
+    it 'returns an error if amazon q instance integration cannot be found' do
+      stub_licensed_features(amazon_q: false)
+
+      expect(instance.execute).to have_attributes(
+        success?: false,
+        message: 'Failed to create an integration: Amazon Q is not available'
+      )
+      expect(Integrations::AmazonQ.count).to eq(0)
+    end
+
     it 'returns ServiceResponse.success' do
       result = instance.execute
 
