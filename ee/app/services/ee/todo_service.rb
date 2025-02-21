@@ -4,6 +4,26 @@ module EE
   module TodoService
     extend ::Gitlab::Utils::Override
 
+    def duo_pro_access_granted(user)
+      attributes = {
+        target_id: user.id,
+        target_type: ::User,
+        action: ::Todo::DUO_PRO_ACCESS_GRANTED,
+        author_id: user.id
+      }
+      create_todos(user, attributes, nil, nil)
+    end
+
+    def duo_enterprise_access_granted(user)
+      attributes = {
+        target_id: user.id,
+        target_type: ::User,
+        action: ::Todo::DUO_ENTERPRISE_ACCESS_GRANTED,
+        author_id: user.id
+      }
+      create_todos(user, attributes, nil, nil)
+    end
+
     def new_epic(epic, current_user)
       create_mention_todos(nil, epic, current_user)
     end

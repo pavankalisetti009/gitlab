@@ -56,8 +56,24 @@ module GitlabSubscriptions
       attr_reader :add_on_purchase, :user
 
       def after_success_hook
-        # overridden in inheriting classes.
+        return unless Feature.enabled?(:duo_seat_assignment_todo, user)
+
+        todo_service.duo_pro_access_granted(user) if duo_pro?
+        todo_service.duo_enterprise_access_granted(user) if duo_enterprise?
       end
+
+      def duo_pro?
+        add_on_purchase.add_on.code_suggestions?
+      end
+
+      def duo_enterprise?
+        add_on_purchase.add_on.duo_enterprise?
+      end
+
+      def todo_service
+        TodoService.new
+      end
+      strong_memoize_attr :todo_service
 
       def validate
         return ERROR_NO_SEATS_AVAILABLE unless seats_available?
