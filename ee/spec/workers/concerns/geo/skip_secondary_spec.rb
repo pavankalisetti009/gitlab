@@ -48,7 +48,7 @@ RSpec.describe ::Geo::SkipSecondary, feature_category: :global_search do
     it 'returns nil' do
       expect(worker).to receive(:geo_logger).once.and_call_original
       expect(Gitlab::Geo::Logger).to receive(:info).once.and_call_original
-      expect(worker.perform(*worker_args)).to be(nil)
+      expect(worker.perform(*worker_args)).to be_nil
     end
   end
 end

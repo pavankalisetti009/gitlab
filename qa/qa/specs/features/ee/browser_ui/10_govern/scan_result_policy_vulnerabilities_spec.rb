@@ -73,7 +73,7 @@ module QA
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/365005' do
         # Make sure Scan result policy commit was successful before running examples
         expect(scan_result_policy_commit.api_response).to have_key(:branch)
-        expect(scan_result_policy_commit.api_response[:branch]).not_to be nil
+        expect(scan_result_policy_commit.api_response[:branch]).not_to be_nil
 
         create_scan_result_policy
         # Create a branch and a commit to trigger a pipeline to generate container scanning findings
@@ -94,7 +94,7 @@ module QA
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/423412' do
         # Make sure Scan result policy commit was successful before running examples
         expect(scan_result_policy_commit.api_response).to have_key(:branch)
-        expect(scan_result_policy_commit.api_response[:branch]).not_to be nil
+        expect(scan_result_policy_commit.api_response[:branch]).not_to be_nil
 
         create_scan_result_policy
 

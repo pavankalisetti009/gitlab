@@ -57,7 +57,7 @@ module QA
       it 'takes effect when pipeline is run on the main branch', :smoke,
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/423944' do
         expect(scan_execution_policy_commit.api_response).to have_key(:branch)
-        expect(scan_execution_policy_commit.api_response[:branch]).not_to be nil
+        expect(scan_execution_policy_commit.api_response[:branch]).not_to be_nil
 
         create_scan_execution_policy
 
@@ -70,7 +70,7 @@ module QA
       it 'does not take effect when pipeline is run on non default branch', :smoke,
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/426177' do
         expect(scan_execution_policy_commit.api_response).to have_key(:branch)
-        expect(scan_execution_policy_commit.api_response[:branch]).not_to be nil
+        expect(scan_execution_policy_commit.api_response[:branch]).not_to be_nil
 
         create_scan_execution_policy
 

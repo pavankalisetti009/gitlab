@@ -141,7 +141,7 @@ RSpec.describe AppSec::Dast::Profiles::UpdateService, :dynamic_analysis,
 
           context 'when associated schedule is not present' do
             before do
-              expect(dast_profile.dast_profile_schedule).to be nil
+              expect(dast_profile.dast_profile_schedule).to be_nil
             end
 
             it 'creates a new schedule' do

@@ -62,7 +62,7 @@ RSpec.describe RepositoryUpdateMirrorWorker, feature_category: :source_code_mana
         mirror = create(:project, :repository, :mirror, :import_started)
 
         expect(Gitlab::AppLogger).to receive(:info).with(message: /inconsistent state/, jid: jid)
-        expect(subject.perform(mirror.id)).to be nil
+        expect(subject.perform(mirror.id)).to be_nil
       end
     end
 
