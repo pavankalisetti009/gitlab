@@ -53,7 +53,7 @@ module GitlabSubscriptions
       # Fetches add_on_purchases whose assigned_users have not been refreshed in last 8 hours.
       # Used primarily by BulkRefreshUserAssignmentsWorker, which is scheduled every 4 hours
       # by ScheduleBulkRefreshUserAssignmentsWorker.
-      for_duo_pro_or_duo_enterprise
+      for_duo_add_ons
         .where("last_assigned_users_refreshed_at < ? OR last_assigned_users_refreshed_at is NULL", 8.hours.ago)
         .limit(limit)
     end
@@ -81,7 +81,7 @@ module GitlabSubscriptions
     end
 
     def self.maximum_duo_seat_count(namespace_ids: [])
-      scope = active.for_duo_pro_or_duo_enterprise
+      scope = active.for_duo_add_ons
       scope = scope.by_namespace(namespace_ids) if namespace_ids.any?
       scope.pluck(:quantity).max || 0
     end

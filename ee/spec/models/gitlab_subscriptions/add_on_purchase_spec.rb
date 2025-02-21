@@ -457,6 +457,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
     describe '.requiring_assigned_users_refresh' do
       let_it_be(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :code_suggestions) }
       let_it_be(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
+      let_it_be(:duo_amazon_q_add_on) { create(:gitlab_subscription_add_on, :duo_amazon_q) }
       let_it_be(:product_analytics_add_on) { create(:gitlab_subscription_add_on, :product_analytics) }
 
       let_it_be(:duo_pro_add_on_purchase_fresh) do
@@ -475,12 +476,24 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
         )
       end
 
+      let_it_be(:duo_amazon_q_add_on_purchase_fresh) do
+        create(
+          :gitlab_subscription_add_on_purchase,
+          add_on: duo_amazon_q_add_on,
+          last_assigned_users_refreshed_at: 1.hour.ago
+        )
+      end
+
       let_it_be(:duo_pro_add_on_purchase_refreshed_nil) do
         create(:gitlab_subscription_add_on_purchase, add_on: duo_pro_add_on)
       end
 
       let_it_be(:duo_enterprise_add_on_purchase_refreshed_nil) do
         create(:gitlab_subscription_add_on_purchase, add_on: duo_enterprise_add_on)
+      end
+
+      let_it_be(:duo_amazon_q_add_on_purchase_refreshed_nil) do
+        create(:gitlab_subscription_add_on_purchase, add_on: duo_amazon_q_add_on)
       end
 
       let_it_be(:product_analytics_add_on_purchase_refreshed_nil) do
@@ -503,6 +516,14 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
         )
       end
 
+      let_it_be(:duo_amazon_q_add_on_purchase_stale) do
+        create(
+          :gitlab_subscription_add_on_purchase,
+          add_on: duo_amazon_q_add_on,
+          last_assigned_users_refreshed_at: 21.hours.ago
+        )
+      end
+
       let_it_be(:product_analytics_add_on_purchase_stale) do
         create(
           :gitlab_subscription_add_on_purchase,
@@ -512,12 +533,14 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
       end
 
       it 'returns correct add_on_purchases' do
-        query_limit = 5
+        query_limit = 7
         result = [
           duo_pro_add_on_purchase_refreshed_nil,
           duo_enterprise_add_on_purchase_refreshed_nil,
+          duo_amazon_q_add_on_purchase_refreshed_nil,
           duo_pro_add_on_purchase_stale,
-          duo_enterprise_add_on_purchase_stale
+          duo_enterprise_add_on_purchase_stale,
+          duo_amazon_q_add_on_purchase_stale
         ]
 
         expect(described_class.requiring_assigned_users_refresh(query_limit))
@@ -667,14 +690,17 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
       context 'when there is both a duo pro add-on and a duo enterprise trial add-on' do
         let(:expected_duo_enterprise_seat_count) { 15 }
         let(:expected_duo_pro_seat_count) { 5 }
+        let(:expected_duo_amazon_q_seat_count) { 25 }
 
         it 'returns the maximum number of seats purchased for the add-on with the most seats' do
           create(:gitlab_subscription_add_on_purchase, :active, :duo_enterprise, :trial,
             options.merge(quantity: expected_duo_enterprise_seat_count))
           create(:gitlab_subscription_add_on_purchase, :active, :gitlab_duo_pro,
             options.merge(quantity: expected_duo_pro_seat_count))
+          create(:gitlab_subscription_add_on_purchase, :active, :duo_amazon_q,
+            options.merge(quantity: expected_duo_amazon_q_seat_count))
 
-          expect(seat_count).to eq(expected_duo_enterprise_seat_count)
+          expect(seat_count).to eq(expected_duo_amazon_q_seat_count)
         end
       end
 
