@@ -779,6 +779,12 @@ RSpec.describe Group, feature_category: :groups_and_projects do
 
     context 'when group_vulnerability_scanners_using_statistics is disabled' do
       before do
+        # This test cannot pass in a post Sec Decomposition Gitlab instance, so we skip it if
+        # that's what we're running in.
+        # It won't be turned off post decomposition, so this will be cleaned up with the FF.
+        # Consult https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180764 for more info.
+        skip_if_multiple_databases_are_setup(:sec)
+
         stub_feature_flags(group_vulnerability_scanners_using_statistics: false)
       end
 

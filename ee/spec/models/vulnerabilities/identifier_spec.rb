@@ -278,6 +278,12 @@ RSpec.describe Vulnerabilities::Identifier, feature_category: :vulnerability_man
 
         context 'when search_identifier_name_in_group_using_vulnerability_statistics is disabled' do
           before do
+            # This test cannot pass in a post Sec Decomposition Gitlab instance, so we skip it if
+            # that's what we're running in.
+            # It won't be turned off post decomposition, so this will be cleaned up with the FF.
+            # Consult https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180764 for more info.
+            skip_if_multiple_databases_are_setup(:sec)
+
             stub_feature_flags(search_identifier_name_in_group_using_vulnerability_statistics: false)
           end
 
@@ -296,6 +302,12 @@ RSpec.describe Vulnerabilities::Identifier, feature_category: :vulnerability_man
 
         context 'when search_identifier_name_in_group_using_vulnerability_statistics is disabled' do
           before do
+            # This test cannot pass in a post Sec Decomposition Gitlab instance, so we skip it if
+            # that's what we're running in.
+            # It won't be turned off post decomposition, so this will be cleaned up with the FF.
+            # Consult https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180764 for more info.
+            skip_if_multiple_databases_are_setup(:sec)
+
             stub_feature_flags(search_identifier_name_in_group_using_vulnerability_statistics: false)
           end
 
@@ -314,6 +326,12 @@ RSpec.describe Vulnerabilities::Identifier, feature_category: :vulnerability_man
 
         context 'when search_identifier_name_in_group_using_vulnerability_statistics is disabled' do
           before do
+            # This test cannot pass in a post Sec Decomposition Gitlab instance, so we skip it if
+            # that's what we're running in.
+            # It won't be turned off post decomposition, so this will be cleaned up with the FF.
+            # Consult https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180764 for more info.
+            skip_if_multiple_databases_are_setup(:sec)
+
             stub_feature_flags(search_identifier_name_in_group_using_vulnerability_statistics: false)
           end
 
@@ -333,6 +351,12 @@ RSpec.describe Vulnerabilities::Identifier, feature_category: :vulnerability_man
         # rubocop:disable RSpec/RepeatedExampleGroupDescription -- to be removed when doing the flag cleanup
         context 'when search_identifier_name_in_group_using_vulnerability_statistics is disabled' do
           before do
+            # This test cannot pass in a post Sec Decomposition Gitlab instance, so we skip it if
+            # that's what we're running in.
+            # It won't be turned off post decomposition, so this will be cleaned up with the FF.
+            # Consult https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180764 for more info.
+            skip_if_multiple_databases_are_setup(:sec)
+
             stub_feature_flags(search_identifier_name_in_group_using_vulnerability_statistics: false)
           end
 
@@ -354,6 +378,12 @@ RSpec.describe Vulnerabilities::Identifier, feature_category: :vulnerability_man
         # rubocop:disable RSpec/RepeatedExampleGroupDescription -- to be removed when doing the flag cleanup
         context 'when search_identifier_name_in_group_using_vulnerability_statistics is disabled' do
           before do
+            # This test cannot pass in a post Sec Decomposition Gitlab instance, so we skip it if
+            # that's what we're running in.
+            # It won't be turned off post decomposition, so this will be cleaned up with the FF.
+            # Consult https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180764 for more info.
+            skip_if_multiple_databases_are_setup(:sec)
+
             stub_feature_flags(search_identifier_name_in_group_using_vulnerability_statistics: false)
           end
 
@@ -376,6 +406,12 @@ RSpec.describe Vulnerabilities::Identifier, feature_category: :vulnerability_man
 
         context 'when search_identifier_name_in_group_using_vulnerability_statistics is disabled' do
           before do
+            # This test cannot pass in a post Sec Decomposition Gitlab instance, so we skip it if
+            # that's what we're running in.
+            # It won't be turned off post decomposition, so this will be cleaned up with the FF.
+            # Consult https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180764 for more info.
+            skip_if_multiple_databases_are_setup(:sec)
+
             stub_feature_flags(search_identifier_name_in_group_using_vulnerability_statistics: false)
           end
 
@@ -400,6 +436,12 @@ RSpec.describe Vulnerabilities::Identifier, feature_category: :vulnerability_man
 
         context 'when search_identifier_name_in_group_using_vulnerability_statistics is disabled' do
           before do
+            # This test cannot pass in a post Sec Decomposition Gitlab instance, so we skip it if
+            # that's what we're running in.
+            # It won't be turned off post decomposition, so this will be cleaned up with the FF.
+            # Consult https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180764 for more info.
+            skip_if_multiple_databases_are_setup(:sec)
+
             stub_feature_flags(search_identifier_name_in_group_using_vulnerability_statistics: false)
           end
 
