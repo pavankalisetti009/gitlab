@@ -77,13 +77,13 @@ RSpec.describe License, feature_category: :plan_provisioning do
 
         it 'is not valid' do
           expect(license).not_to be_valid
-          expect(license.errors.added?(:base, :check_restricted_user_count)).to eq(true)
+          expect(license.errors.added?(:base, :check_available_seats)).to eq(true)
         end
       end
 
       context 'when reconciliation_completed is true on the license' do
         before do
-          set_restrictions(restricted_user_count: 10, trueup_quantity: 8, reconciliation_completed: true, previous_user_count: 0)
+          set_restrictions(seats: 10, trueup_quantity: 8, reconciliation_completed: true, previous_user_count: 0)
         end
 
         it { is_expected.to be_valid }
@@ -91,7 +91,7 @@ RSpec.describe License, feature_category: :plan_provisioning do
 
       context 'when reconciliation_completed is false on the license' do
         it 'adds errors for invalid true up figures' do
-          set_restrictions(restricted_user_count: 10, trueup_quantity: 8, reconciliation_completed: false, trueup_period_seat_count: 0)
+          set_restrictions(seats: 10, trueup_quantity: 8, reconciliation_completed: false, trueup_period_seat_count: 0)
 
           expect(license).not_to be_valid
           expect(license.errors.added?(:base, :check_trueup)).to eq(true)
@@ -102,7 +102,7 @@ RSpec.describe License, feature_category: :plan_provisioning do
 
       context 'when reconciliation_completed is not present on the license' do
         it 'adds errors for invalid true up figures' do
-          set_restrictions(restricted_user_count: 10, trueup_quantity: 8, trueup_period_seat_count: 0)
+          set_restrictions(seats: 10, trueup_quantity: 8, trueup_period_seat_count: 0)
 
           expect(license).not_to be_valid
           expect(license.errors.added?(:base, :check_trueup)).to eq(true)
@@ -113,7 +113,7 @@ RSpec.describe License, feature_category: :plan_provisioning do
 
       context 'when trueup quantity with threshold is more than the required quantity' do
         before do
-          set_restrictions(restricted_user_count: 10, trueup_quantity: 10, trueup_period_seat_count: 0)
+          set_restrictions(seats: 10, trueup_quantity: 10, trueup_period_seat_count: 0)
         end
 
         it { is_expected.to be_valid }
@@ -123,7 +123,7 @@ RSpec.describe License, feature_category: :plan_provisioning do
 
       context 'when trueup quantity with threshold is equal to the required quantity' do
         before do
-          set_restrictions(restricted_user_count: 10, trueup_quantity: 10, trueup_period_seat_count: 0)
+          set_restrictions(seats: 10, trueup_quantity: 10, trueup_period_seat_count: 0)
         end
 
         let(:active_user_count) { described_class.current.daily_billable_users_count + 11 }
@@ -135,7 +135,7 @@ RSpec.describe License, feature_category: :plan_provisioning do
 
       context 'when trueup quantity with threshold is less than the required quantity' do
         before do
-          set_restrictions(restricted_user_count: 10, trueup_quantity: 8, trueup_period_seat_count: 0)
+          set_restrictions(seats: 10, trueup_quantity: 8, trueup_period_seat_count: 0)
         end
 
         it 'is not valid' do
@@ -146,7 +146,7 @@ RSpec.describe License, feature_category: :plan_provisioning do
 
       context 'when trueup_period_seat_count is absent and previous_user_count is absent' do
         before do
-          set_restrictions(restricted_user_count: 10, trueup_quantity: 10)
+          set_restrictions(seats: 10, trueup_quantity: 10)
         end
 
         it { is_expected.to be_valid }
@@ -156,7 +156,7 @@ RSpec.describe License, feature_category: :plan_provisioning do
 
       context 'when trueup_period_seat_count is present' do
         before do
-          set_restrictions(restricted_user_count: 5, trueup_quantity: 6, trueup_period_seat_count: 4)
+          set_restrictions(seats: 5, trueup_quantity: 6, trueup_period_seat_count: 4)
         end
 
         it { is_expected.to be_valid }
@@ -164,7 +164,7 @@ RSpec.describe License, feature_category: :plan_provisioning do
 
       context 'when trueup_period_seat_count is absent but previous_user_count is present' do
         before do
-          set_restrictions(restricted_user_count: 5, trueup_quantity: 6, previous_user_count: 4)
+          set_restrictions(seats: 5, trueup_quantity: 6, previous_user_count: 4)
         end
 
         it { is_expected.to be_valid }
@@ -218,27 +218,27 @@ RSpec.describe License, feature_category: :plan_provisioning do
       end
     end
 
-    describe '#check_restricted_user_count' do
+    describe '#check_available_seats' do
       context 'when reconciliation_completed is true' do
         before do
-          set_restrictions(restricted_user_count: 10, reconciliation_completed: true)
+          set_restrictions(seats: 10, reconciliation_completed: true)
           create_list(:user, user_count)
           create(:historical_data, recorded_at: described_class.current.starts_at, active_user_count: 100)
         end
 
-        context 'when restricted_user_count with threshold is more than active_user_count' do
+        context 'when seats with threshold is more than active_user_count' do
           let(:user_count) { 10 }
 
           it { is_expected.to be_valid }
         end
 
-        context 'when restricted_user_count with threshold is equal than active_user_count' do
+        context 'when seats with threshold is equal than active_user_count' do
           let(:user_count) { 11 }
 
           it { is_expected.to be_valid }
         end
 
-        context 'when the restricted_user_count with threshold is less than active_user_count' do
+        context 'when the seats with threshold is less than active_user_count' do
           let(:user_count) { 12 }
 
           it 'add limit error' do
@@ -271,9 +271,9 @@ RSpec.describe License, feature_category: :plan_provisioning do
       end
 
       context 'when reconciliation_completed is false' do
-        context 'when the restricted_user_count with threshold is less than active_user_count' do
+        context 'when the seats with threshold is less than active_user_count' do
           before do
-            set_restrictions(restricted_user_count: 10, reconciliation_completed: false)
+            set_restrictions(seats: 10, reconciliation_completed: false)
             create_list(:user, 12)
             create(:historical_data, recorded_at: described_class.current.starts_at, active_user_count: 100)
           end
@@ -494,7 +494,7 @@ RSpec.describe License, feature_category: :plan_provisioning do
           before do
             create(:historical_data, recorded_at: described_class.current.starts_at + 1.month, active_user_count: 15)
 
-            set_restrictions(restricted_user_count: 5, previous_user_count: 10)
+            set_restrictions(seats: 5, previous_user_count: 10)
           end
 
           it 'is invalid without a true-up' do
@@ -506,7 +506,7 @@ RSpec.describe License, feature_category: :plan_provisioning do
           before do
             create(:historical_data, recorded_at: 6.months.ago, active_user_count: 15)
 
-            set_restrictions(restricted_user_count: 10, previous_user_count: 15)
+            set_restrictions(seats: 10, previous_user_count: 15)
           end
 
           it { is_expected.to be_valid }
@@ -1664,7 +1664,7 @@ RSpec.describe License, feature_category: :plan_provisioning do
     date = described_class.current.starts_at
 
     gl_license.restrictions = {
-      active_user_count: opts[:restricted_user_count],
+      active_user_count: opts[:seats],
       previous_user_count: opts[:previous_user_count],
       trueup_period_seat_count: opts[:trueup_period_seat_count],
       trueup_quantity: opts[:trueup_quantity],
@@ -2055,8 +2055,8 @@ RSpec.describe License, feature_category: :plan_provisioning do
     end
   end
 
-  describe '#restricted_user_count?' do
-    subject { license.restricted_user_count? }
+  describe 'checking if there are any seats' do
+    subject { seats.to_i > 0 }
 
     where(:seats, :result) do
       nil | false
@@ -2071,12 +2071,6 @@ RSpec.describe License, feature_category: :plan_provisioning do
       end
 
       it { is_expected.to eq(result) }
-    end
-  end
-
-  describe 'seats' do
-    it "is an alias for #restricted_user_count" do
-      expect(license.method(:seats)).to eq license.method(:restricted_user_count)
     end
   end
 
