@@ -12,7 +12,10 @@ RSpec.describe Sbom::Exporters::CsvService, feature_category: :dependency_manage
   describe '#header' do
     subject { service_class.header }
 
-    it { is_expected.to eq("Name,Version,Packager,Location\n") }
+    it 'returns correct headers' do
+      is_expected.to eq(
+        "Name,Version,Packager,Location,License Identifiers,Project,Vulnerabilities Detected,Vulnerability IDs\n")
+    end
   end
 
   context 'when block is not given' do
@@ -30,7 +33,18 @@ RSpec.describe Sbom::Exporters::CsvService, feature_category: :dependency_manage
   describe '#generate' do
     subject(:csv) { CSV.parse(service_class.generate, headers: true) }
 
-    let(:header) { %w[Name Version Packager Location] }
+    let(:header) do
+      [
+        'Name',
+        'Version',
+        'Packager',
+        'Location',
+        'License Identifiers',
+        'Project',
+        'Vulnerabilities Detected',
+        'Vulnerability IDs'
+      ]
+    end
 
     context 'when the organization does not have dependencies' do
       it { is_expected.to match_array([header]) }
@@ -41,7 +55,11 @@ RSpec.describe Sbom::Exporters::CsvService, feature_category: :dependency_manage
       let_it_be(:bundler_v1) { create(:sbom_component_version, component: bundler, version: "1.0.0") }
 
       let_it_be(:occurrence) do
-        create(:sbom_occurrence, :mit, project: project, component: bundler, component_version: bundler_v1)
+        create(:sbom_occurrence, :mit, :with_vulnerabilities,
+          project: project,
+          component: bundler,
+          component_version: bundler_v1
+        )
       end
 
       it 'returns correct content' do
@@ -49,6 +67,12 @@ RSpec.describe Sbom::Exporters::CsvService, feature_category: :dependency_manage
         expect(csv[0]['Version']).to eq(occurrence.version)
         expect(csv[0]['Packager']).to eq(occurrence.package_manager)
         expect(csv[0]['Location']).to eq(occurrence.location[:blob_path])
+        expect(csv[0]['License Identifiers']).to eq('MIT')
+        expect(csv[0]['Project']).to eq(project.full_path)
+        expect(csv[0]['Vulnerabilities Detected']).to eq('2')
+
+        expected_vulnerabilities = occurrence.vulnerabilities.pluck(:id).join('; ')
+        expect(csv[0]['Vulnerability IDs']).to eq(expected_vulnerabilities)
       end
 
       it 'avoids N+1 queries' do
@@ -56,7 +80,8 @@ RSpec.describe Sbom::Exporters::CsvService, feature_category: :dependency_manage
           service_class.generate
         end
 
-        create_list(:sbom_occurrence, 3, project: project, source: create(:sbom_source))
+        create_list(:sbom_occurrence, 3, :with_vulnerabilities,
+          project: project, source: create(:sbom_source))
 
         expect do
           service_class.generate

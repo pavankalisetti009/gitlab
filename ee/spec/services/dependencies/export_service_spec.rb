@@ -120,7 +120,11 @@ RSpec.describe Dependencies::ExportService, feature_category: :dependency_manage
             occurrence.component_name,
             occurrence.version,
             occurrence.package_manager,
-            occurrence.send(:input_file_blob_path)
+            occurrence.send(:input_file_blob_path),
+            occurrence.licenses.pluck('spdx_identifier').join('; '),
+            occurrence.project.full_path,
+            occurrence.vulnerability_count,
+            occurrence.vulnerabilities.pluck(:id).join('; ')
           ]))
         end
       end

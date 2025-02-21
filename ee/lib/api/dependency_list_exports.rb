@@ -28,6 +28,8 @@ module API
         requires :id, types: [String, Integer], desc: 'The ID or URL-encoded path of the project'
 
         optional :send_email, type: Boolean, default: false, desc: 'Send an email when the export completes'
+        optional :export_type, type: Symbol, values: %i[dependency_list csv], default: :dependency_list,
+          desc: 'File format of the export'
       end
       desc 'Generate a dependency list export on a project-level'
       post ':id/dependency_list_exports' do
@@ -44,12 +46,12 @@ module API
         requires :id, types: [String, Integer], desc: 'The ID or URL-encoded path of the group'
 
         optional :send_email, type: Boolean, default: false, desc: 'Send an email when the export completes'
+        optional :export_type, type: Symbol, values: %i[json_array], default: :json_array,
+          desc: 'File format of the export'
       end
       desc 'Generate a dependency list export on a group-level'
       post ':id/dependency_list_exports' do
         authorize! :read_dependency, user_group
-
-        params[:export_type] = :json_array
 
         result = ::Dependencies::CreateExportService.new(user_group, current_user, params).execute
 
@@ -84,14 +86,11 @@ module API
       params do
         requires :id, types: [String, Integer], desc: 'The ID of the pipeline'
 
-        optional :export_type, type: String, values: %w[sbom dependency_list], desc: 'The type of the export file'
         optional :send_email, type: Boolean, default: false, desc: 'Send an email when the export completes'
+        optional :export_type, type: String, values: %w[sbom], desc: 'The type of the export file'
       end
       desc 'Generate a dependency list export on a pipeline-level'
       post ':id/dependency_list_exports' do
-        # Currently, we only support sbom export type for this endpoint.
-        not_found! if params[:export_type] != 'sbom'
-
         authorize! :read_dependency, user_pipeline
 
         result = ::Dependencies::CreateExportService.new(
