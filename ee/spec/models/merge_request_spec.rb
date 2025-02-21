@@ -2905,6 +2905,101 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
           end
         end
       end
+
+      context 'when there are multiple diff start pipelines' do
+        let!(:old_diff_start_pipeline) do
+          create(
+            :ee_ci_pipeline,
+            :with_cyclonedx_report,
+            project: project,
+            ref: merge_request.target_branch,
+            sha: merge_request.diff_start_sha,
+            created_at: 1.hour.ago
+          )
+        end
+
+        let!(:most_recent_diff_start_pipeline) do
+          create(
+            :ee_ci_pipeline,
+            :with_cyclonedx_report,
+            project: project,
+            ref: merge_request.target_branch,
+            sha: merge_request.diff_start_sha,
+            created_at: Time.current
+          )
+        end
+
+        let_it_be(:third_diff_start_pipeline) do
+          create(
+            :ee_ci_pipeline,
+            :with_dependency_scanning_report,
+            project: project,
+            ref: merge_request.target_branch,
+            sha: merge_request.diff_start_sha
+          )
+        end
+
+        context 'when all pipelines have security reports' do
+          before do
+            allow(old_diff_start_pipeline).to receive(:has_sbom_reports?).and_return(true)
+            allow(most_recent_diff_start_pipeline).to receive(:has_sbom_reports?).and_return(true)
+          end
+
+          it 'returns the most recent pipeline within the limit' do
+            expect(pipeline).to eq(most_recent_diff_start_pipeline)
+          end
+        end
+
+        context 'when the most recent pipeline does not have security reports' do
+          before do
+            # Ensure most recent pipeline has no SBOM reports
+            most_recent_diff_start_pipeline.job_artifacts.cyclonedx.delete_all
+
+            # Explicitly set has_sbom_reports? behavior
+            allow(most_recent_diff_start_pipeline).to receive(:has_sbom_reports?).and_return(false)
+            allow(old_diff_start_pipeline).to receive(:has_sbom_reports?).and_return(true)
+          end
+
+          it 'returns the latest diff start pipeline with security reports' do
+            expect(pipeline).to eq(old_diff_start_pipeline)
+          end
+        end
+
+        context 'with child pipelines' do
+          let!(:child_pipeline) do
+            create(
+              :ee_ci_pipeline,
+              :with_cyclonedx_report,
+              project: project,
+              ref: merge_request.target_branch
+            )
+          end
+
+          before do
+            create(:ci_sources_pipeline, source_pipeline: most_recent_diff_start_pipeline, pipeline: child_pipeline)
+
+            # Ensure parent pipeline doesn't have SBOM reports directly
+            most_recent_diff_start_pipeline.job_artifacts.cyclonedx.delete_all
+
+            # Mock the has_sbom_reports? method to consider child pipeline reports
+            allow(most_recent_diff_start_pipeline).to receive(:has_sbom_reports?).and_return(true)
+          end
+
+          it 'considers child pipeline reports' do
+            expect(pipeline).to eq(most_recent_diff_start_pipeline)
+          end
+        end
+      end
+    end
+
+    context 'when there are no merge base and diff start pipelines' do
+      before do
+        base_pipeline.job_artifacts.security_reports(project: project).delete_all
+      end
+
+      it 'returns nil' do
+        expect(pipeline).to be_nil
+      end
     end
   end
 

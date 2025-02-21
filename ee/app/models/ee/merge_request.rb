@@ -521,7 +521,7 @@ module EE
     end
 
     def latest_scan_finding_comparison_pipeline
-      find_common_ancestor_pipeline_with_security_reports
+      find_common_ancestor_pipeline_with_security_reports || find_diff_start_pipeline_with_security_reports
     end
 
     def find_pipeline_with_dependency_scanning_reports(pipelines)
@@ -680,6 +680,13 @@ module EE
         :has_sbom_reports?)
     end
 
+    def find_diff_start_pipeline_with_security_reports
+      find_pipeline_with_reports(
+        last_diff_start_pipelines(limit: MAX_CHECKED_PIPELINES_FOR_SECURITY_REPORT_COMPARISON),
+        :has_sbom_reports?
+      )
+    end
+
     def find_pipeline_with_reports(pipelines, report_method)
       pipelines.find do |pipeline|
         pipeline.self_and_project_descendants.any?(&report_method)
@@ -692,6 +699,14 @@ module EE
 
     def last_base_pipelines(limit:)
       base_pipelines.order(id: :desc).limit(limit)
+    end
+
+    def diff_start_pipelines
+      target_branch_pipelines_for(sha: diff_start_sha)
+    end
+
+    def last_diff_start_pipelines(limit:)
+      diff_start_pipelines.order(id: :desc).limit(limit)
     end
 
     def has_approved_license_check?
