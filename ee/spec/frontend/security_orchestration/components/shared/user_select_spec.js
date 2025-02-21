@@ -6,7 +6,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import searchProjectMembers from '~/graphql_shared/queries/project_user_members_search.query.graphql';
 import searchGroupMembers from '~/graphql_shared/queries/group_users_search.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
-import UserSelect from 'ee/security_orchestration/components/policy_editor/scan_result/action/user_select.vue';
+import UserSelect from 'ee/security_orchestration/components/shared/user_select.vue';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 
 Vue.use(VueApollo);

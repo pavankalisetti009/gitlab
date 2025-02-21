@@ -4,7 +4,7 @@ import SectionLayout from 'ee/security_orchestration/components/policy_editor/se
 import ApproverSelect from 'ee/security_orchestration/components/policy_editor/scan_result/action/approver_select.vue';
 import { EMPTY_TYPE, GROUP_TYPE, ROLE_TYPE, USER_TYPE } from 'ee/security_orchestration/constants';
 import GroupSelect from 'ee/security_orchestration/components/policy_editor/scan_result/action/group_select.vue';
-import UserSelect from 'ee/security_orchestration/components/policy_editor/scan_result/action/user_select.vue';
+import UserSelect from 'ee/security_orchestration/components/shared/user_select.vue';
 import RoleSelect from 'ee/security_orchestration/components/policy_editor/scan_result/action/role_select.vue';
 
 describe('ApproverSelect', () => {
