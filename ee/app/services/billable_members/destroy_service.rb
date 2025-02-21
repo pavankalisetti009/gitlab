@@ -35,23 +35,9 @@ module BillableMembers
 
     attr_reader :group, :user_id, :current_user
 
-    # rubocop: disable CodeReuse/ActiveRecord
     def remove_user_from_resources
-      if Feature.enabled?(:billable_member_async_deletion, group)
-        Members::ScheduleDeletionService.new(group, user_id, current_user).execute
-      else
-        memberships_found = false
-        memberships = ::Member.in_hierarchy(group).where(user_id: user_id)
-
-        memberships.find_each do |member|
-          memberships_found = true
-          ::Members::DestroyService.new(current_user).execute(member, skip_subresources: true)
-        end
-
-        raise InvalidMemberError, 'No member found for the given user_id' unless memberships_found
-      end
+      Members::ScheduleDeletionService.new(group, user_id, current_user).execute
     end
-    # rubocop: enable CodeReuse/ActiveRecord
 
     def check_group_level
       unless group.root?

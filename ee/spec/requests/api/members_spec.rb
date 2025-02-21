@@ -1623,71 +1623,11 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
         end
       end
 
-      shared_examples 'successful deletion' do
-        it 'deletes the member' do
-          stub_saas_features(gitlab_com_subscriptions: true)
-
-          expect(group.member?(user)).to be is_group_member
-
-          expect(GitlabSubscriptions::AddOnPurchases::CleanupUserAddOnAssignmentWorker)
-            .to receive(:perform_async).with(group.id, user.id).and_call_original
-
-          expect do
-            delete api("/groups/#{group.id}/billable_members/#{user.id}", owner)
-
-            expect(response).to have_gitlab_http_status(:no_content)
-          end.to change { source.members.count }.by(-1)
-        end
-      end
-
       context 'when authenticated as an owner' do
-        context 'when billable_member_async_deletion is enabled' do
-          before do
-            stub_feature_flags(billable_member_async_deletion: true)
-          end
-
-          it 'schedules async deletion' do
-            expect do
-              delete api("/groups/#{group.id}/billable_members/#{maintainer.id}", owner)
-            end.to change { Members::DeletionSchedule.count }.from(0).to(1)
-          end
-        end
-
-        context 'when billable_member_async_deletion is disabled' do
-          before do
-            stub_feature_flags(billable_member_async_deletion: false)
-          end
-
-          context 'with a user that is a GroupMember' do
-            let(:user) { maintainer }
-            let(:is_group_member) { true }
-            let(:source) { group }
-
-            it_behaves_like 'successful deletion'
-          end
-
-          context 'with a user that is only a ProjectMember' do
-            let(:user) { create(:user) }
-            let(:is_group_member) { false }
-            let(:source) { project }
-            let(:project) do
-              create(:project, group: group) do |project|
-                project.add_developer(user)
-              end
-            end
-
-            it_behaves_like 'successful deletion'
-          end
-
-          context 'with a user that is not a member' do
-            it 'returns a relevant error message' do
-              user = create(:user)
-              delete api("/groups/#{group.id}/billable_members/#{user.id}", owner)
-
-              expect(response).to have_gitlab_http_status(:bad_request)
-              expect(json_response['message']).to eq '400 Bad request - No member found for the given user_id'
-            end
-          end
+        it 'schedules async deletion' do
+          expect do
+            delete api("/groups/#{group.id}/billable_members/#{maintainer.id}", owner)
+          end.to change { Members::DeletionSchedule.count }.from(0).to(1)
         end
       end
     end
