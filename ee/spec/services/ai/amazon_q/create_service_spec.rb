@@ -153,7 +153,7 @@ RSpec.describe Ai::AmazonQ::CreateService, feature_category: :ai_agents do
 
     context 'when an existing oauth application does not exist' do
       it 'creates a new oauth application' do
-        expect_next_instance_of(::Gitlab::Llm::QAi::Client) do |client|
+        expect_next_instance_of(::Gitlab::Llm::QAi::Client, user) do |client|
           expect(client).to receive(:perform_create_auth_application)
             .with(
               doorkeeper_application,
@@ -197,7 +197,7 @@ RSpec.describe Ai::AmazonQ::CreateService, feature_category: :ai_agents do
       it 'does not create a new oauth application' do
         expect(Doorkeeper::Application).not_to receive(:new)
 
-        expect_next_instance_of(::Gitlab::Llm::QAi::Client) do |client|
+        expect_next_instance_of(::Gitlab::Llm::QAi::Client, user) do |client|
           expect(client).to receive(:perform_create_auth_application)
             .with(
               doorkeeper_application,

@@ -5,6 +5,7 @@ module Gitlab
     module QAi
       class Client
         include ::Gitlab::Llm::Concerns::Logger
+        include Gitlab::Utils::StrongMemoize
 
         def initialize(user)
           @user = user
@@ -28,13 +29,13 @@ module Gitlab
           end
         end
 
-        def create_event(payload:, auth_grant:, role_arn:)
+        def create_event(payload:, role_arn:)
           with_response_logger do
             Gitlab::HTTP.post(
               url(path: "/v1/amazon_q/events"),
               body: {
                 payload: payload,
-                code: auth_grant,
+                code: create_auth_grant_new,
                 role_arn: role_arn
               }.to_json,
               headers: request_headers
@@ -45,6 +46,19 @@ module Gitlab
         private
 
         attr_reader :user
+
+        def create_auth_grant_new
+          dynamic_user_scope = ["user:#{user.id}"]
+
+          OauthAccessGrant.create!(
+            resource_owner_id: ai_settings.amazon_q_service_account_user_id,
+            application_id: ai_settings.amazon_q_oauth_application_id,
+            redirect_uri: Gitlab::Routing.url_helpers.root_url,
+            expires_in: 1.hour,
+            scopes: Gitlab::Auth::Q_SCOPES + dynamic_user_scope,
+            organization: Gitlab::Current::Organization.new(user: user).organization
+          ).plaintext_token
+        end
 
         def url(path:)
           # use append_path to handle potential trailing slash in AI Gateway URL
@@ -98,6 +112,11 @@ module Gitlab
             status: response.code,
             event_name: 'response_received')
         end
+
+        def ai_settings
+          ::Ai::Setting.instance
+        end
+        strong_memoize_attr :ai_settings
       end
     end
   end

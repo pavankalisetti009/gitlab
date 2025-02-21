@@ -3,11 +3,14 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Llm::QAi::Client, feature_category: :ai_agents do
+  let_it_be(:default_organization) { create(:organization, :default) }
+  let_it_be_with_reload(:service_account) { create(:user, :service_account, composite_identity_enforced: true) }
   let_it_be(:user) { create(:user) }
   let_it_be(:oauth_app) { create(:doorkeeper_application) }
 
   let(:service_data) { instance_double(CloudConnector::SelfManaged::AvailableServiceData) }
 
+  let(:ai_settings) { ::Ai::Setting.instance }
   let(:cc_token) { 'cc_token' }
   let(:response) { 'response' }
   let(:role_arn) { 'role_arn' }
@@ -16,6 +19,7 @@ RSpec.describe Gitlab::Llm::QAi::Client, feature_category: :ai_agents do
 
   before do
     allow(Gitlab::Llm::Logger).to receive(:build).and_return(logger)
+    allow(Doorkeeper::OAuth::Helpers::UniqueToken).to receive(:generate).and_return('1234')
   end
 
   describe '#create_event' do
@@ -23,7 +27,6 @@ RSpec.describe Gitlab::Llm::QAi::Client, feature_category: :ai_agents do
       described_class.new(user)
         .create_event(
           payload: {},
-          auth_grant: '1234',
           role_arn: '5678'
         )
     end
@@ -39,6 +42,11 @@ RSpec.describe Gitlab::Llm::QAi::Client, feature_category: :ai_agents do
           code: '1234',
           role_arn: '5678'
         }.to_json).to_return(body: body, status: status, headers: headers)
+
+      ai_settings.update!(
+        amazon_q_service_account_user_id: service_account.id,
+        amazon_q_oauth_application_id: oauth_app.id
+      )
     end
 
     it 'makes expected HTTP post request' do
@@ -76,6 +84,19 @@ RSpec.describe Gitlab::Llm::QAi::Client, feature_category: :ai_agents do
         response = create_event
         expect(response.code).to eq(500)
       end
+    end
+
+    it 'creates an auth grant with the correct scopes', :aggregate_failures do
+      expect(logger).to receive(:conditional_info)
+        .with(user, a_hash_including(
+          message: "Received successful response from AI Gateway",
+          ai_component: 'abstraction_layer',
+          status: 204,
+          event_name: 'response_received'))
+
+      expect { create_event }.to change { OauthAccessGrant.count }.by(1)
+      grant = OauthAccessGrant.find_by(resource_owner: service_account, application: oauth_app)
+      expect(grant.scopes.to_s).to eq("api read_repository write_repository user:#{user.id}")
     end
   end
 
