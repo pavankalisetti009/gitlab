@@ -181,6 +181,10 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
       let(:pipeline_id) { pipeline.id }
       let(:cache_key) { Ci::CompareSecurityReportsService.transition_cache_key(pipeline_id: pipeline_id) }
 
+      before do
+        allow(redis_spy).to receive(:ttl).and_return(10) # to allow event tracking Redis call
+      end
+
       it "sets the polling redis key for mr security widget when transitioning to: #{transition}" do
         expect(Gitlab::Redis::SharedState).to receive(:with).and_yield(redis_spy).at_least(:once)
 
