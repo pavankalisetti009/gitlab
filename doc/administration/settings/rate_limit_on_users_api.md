@@ -17,10 +17,13 @@ title: Rate limits on Users API
 
 You can configure the per minute rate limit per IP address and per user for requests to the following [Users API](../../api/users.md).
 
-FLAG:
+{{< alert type="flag" >}}
+
 The availability of this feature is controlled by a feature flag.
 For more information, see the history.
 This feature is available for testing, but not ready for production use.
+
+{{< /alert >}}
 
 | Limit                                                           | Default |
 |-----------------------------------------------------------------|---------|
