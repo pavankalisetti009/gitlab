@@ -1,6 +1,6 @@
 <script>
 import { GlCollapsibleListbox, GlDaterangePicker, GlIcon, GlTooltipDirective } from '@gitlab/ui';
-import { n__ } from '~/locale';
+import { n__, s__ } from '~/locale';
 import { dateRangeOptionToFilter, getDateRangeOption } from './utils';
 import {
   TODAY,
@@ -70,16 +70,15 @@ export default {
         );
       },
     },
-    dateRangeTooltip() {
+    tooltip() {
       if (this.dateRangeLimit) {
         return n__(
-          'Date range limited to %d day',
-          'Date range limited to %d days',
+          'Analytics|Dates and times are displayed in the UTC timezone. Date range is limited to %d day.',
+          'Analytics|Dates and times are displayed in the UTC timezone. Date range is limited to %d days.',
           this.dateRangeLimit,
         );
       }
-
-      return null;
+      return s__('Analytics|Dates and times are displayed in the UTC timezone.');
     },
     dropdownItems() {
       return this.options
@@ -129,12 +128,11 @@ export default {
         :max-date-range="dateRangeLimit"
         :to-label="__('To')"
         :from-label="__('From')"
-        :tooltip="dateRangeTooltip"
         same-day-selection
       />
       <gl-icon
         v-gl-tooltip
-        :title="s__('Analytics|Dates and times are displayed in the UTC timezone')"
+        :title="tooltip"
         name="information-o"
         class="gl-mb-3 gl-min-w-5 gl-self-end"
         variant="subtle"
