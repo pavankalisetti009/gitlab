@@ -113,7 +113,6 @@ export default {
   },
   watch: {
     removedBillableMemberId(value) {
-      if (!this.glFeatures.billableMemberAsyncDeletion) return;
       const uniqueMembersIds = Array.from(new Set([...this.recentlyDeletedMembersIds, value]));
       try {
         const deleteMembersString = JSON.stringify(uniqueMembersIds);
@@ -159,7 +158,6 @@ export default {
       return user.membership_type === 'project_invite';
     },
     isUserRemoved(user) {
-      if (!this.glFeatures.billableMemberAsyncDeletion) return false;
       if (this.removedBillableMemberId === user?.id) return true;
       return this.recentlyDeletedMembersIds.includes(user?.id);
     },

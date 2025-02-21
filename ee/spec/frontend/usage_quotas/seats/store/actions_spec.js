@@ -291,7 +291,8 @@ describe('Usage Quotas Seats actions', () => {
       });
 
       expect(createAlert).toHaveBeenCalledWith({
-        message: 'User was successfully removed',
+        message:
+          'User successfully scheduled for removal. This process might take some time. Refresh the page to see the changes.',
         variant: VARIANT_SUCCESS,
       });
     });

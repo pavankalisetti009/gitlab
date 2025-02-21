@@ -39,9 +39,6 @@ const actionSpies = {
 
 const defaultProvide = {
   subscriptionHistoryHref: '/groups/my-group/-/usage_quotas/subscription_history.csv',
-  glFeatures: {
-    billableMemberAsyncDeletion: true,
-  },
   seatUsageExportPath: MOCK_SEAT_USAGE_EXPORT_PATH,
 };
 
@@ -220,14 +217,29 @@ describe('SubscriptionUserList', () => {
     describe('when removing a billable user', () => {
       const { user } = mockTableItems[0];
 
-      describe('with billableMemberAsyncDeletion enabled', () => {
-        beforeEach(() => {
-          createComponent({ initialState: { namespaceId: 13 } });
-          return store.commit(REMOVE_BILLABLE_MEMBER_SUCCESS, { memberId: user.id });
-        });
+      beforeEach(() => {
+        createComponent({ initialState: { namespaceId: 13 } });
+        return store.commit(REMOVE_BILLABLE_MEMBER_SUCCESS, { memberId: user.id });
+      });
 
-        it('sets the local storage key for the member id', () => {
-          expect(localStorage.setItem).toHaveBeenCalledWith(localStorageKey, `[${user.id}]`);
+      it('sets the local storage key for the member id', () => {
+        expect(localStorage.setItem).toHaveBeenCalledWith(localStorageKey, `[${user.id}]`);
+      });
+
+      it('sets the local storage key for expiration', () => {
+        expect(localStorage.setItem).toHaveBeenCalledWith(
+          localStorageExpireKey,
+          fiveMinutesFromNow(),
+        );
+      });
+
+      describe('when removing another member', () => {
+        it('sets the local storage key for the member id', async () => {
+          store.commit(REMOVE_BILLABLE_MEMBER_SUCCESS, { memberId: 13 });
+
+          await nextTick();
+
+          expect(localStorage.setItem).toHaveBeenLastCalledWith(localStorageKey, `[${user.id},13]`);
         });
 
         it('sets the local storage key for expiration', () => {
@@ -235,44 +247,6 @@ describe('SubscriptionUserList', () => {
             localStorageExpireKey,
             fiveMinutesFromNow(),
           );
-        });
-
-        describe('when removing another member', () => {
-          it('sets the local storage key for the member id', async () => {
-            store.commit(REMOVE_BILLABLE_MEMBER_SUCCESS, { memberId: 13 });
-
-            await nextTick();
-
-            expect(localStorage.setItem).toHaveBeenLastCalledWith(
-              localStorageKey,
-              `[${user.id},13]`,
-            );
-          });
-
-          it('sets the local storage key for expiration', () => {
-            expect(localStorage.setItem).toHaveBeenCalledWith(
-              localStorageExpireKey,
-              fiveMinutesFromNow(),
-            );
-          });
-        });
-      });
-
-      describe('with billableMemberAsyncDeletion disabled', () => {
-        beforeEach(() => {
-          createComponent({
-            initialState: { namespaceId: 13 },
-            provide: {
-              glFeatures: {
-                billableMemberAsyncDeletion: false,
-              },
-            },
-          });
-          return store.commit(REMOVE_BILLABLE_MEMBER_SUCCESS, { memberId: user.id });
-        });
-
-        it('does not set items in the local storage', () => {
-          expect(localStorage.setItem).not.toHaveBeenCalled();
         });
       });
     });
@@ -305,24 +279,6 @@ describe('SubscriptionUserList', () => {
         expect(findRemoveMemberItem(nonRemovedUser.id).findComponent(GlTooltip).exists()).toBe(
           false,
         );
-      });
-
-      describe('with billableMemberAsyncDeletion disabled', () => {
-        beforeEach(() => {
-          createComponent({
-            initialState: { namespaceId: 13 },
-            mountFn: mount,
-            provide: {
-              glFeatures: {
-                billableMemberAsyncDeletion: false,
-              },
-            },
-          });
-        });
-
-        it('does not disable the related remove button', () => {
-          expect(findAllRemoveUserItems().at(selectedItem).attributes().disabled).toBeUndefined();
-        });
       });
     });
 

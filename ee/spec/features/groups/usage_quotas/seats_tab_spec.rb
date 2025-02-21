@@ -19,7 +19,7 @@ RSpec.describe 'Groups > Usage Quotas > Seats tab', :js, :saas, feature_category
     stub_signing_key
     stub_application_setting(check_namespace_plan: true)
     stub_subscription_permissions_data(group.id)
-    stub_feature_flags(billable_member_async_deletion: false)
+    stub_feature_flags(limited_capacity_member_destruction: true)
 
     group.add_owner(user)
     group.add_maintainer(maintainer)
@@ -73,7 +73,7 @@ RSpec.describe 'Groups > Usage Quotas > Seats tab', :js, :saas, feature_category
       wait_for_requests
     end
 
-    context 'with a modal to confirm removal' do
+    shared_examples 'a modal to confirm removal' do
       before do
         remove_user(maintainer)
       end
@@ -107,40 +107,26 @@ RSpec.describe 'Groups > Usage Quotas > Seats tab', :js, :saas, feature_category
       end
     end
 
-    context 'when removing the user' do
+    it_behaves_like 'a modal to confirm removal'
+
+    context 'when the namespace is in a read_only state' do
+      let_it_be(:group) { create(:group_with_plan, :private, plan: :free_plan) }
+
       before do
-        remove_user(maintainer)
-        confirm_remove_user(maintainer)
+        stub_ee_application_setting(dashboard_limit_enabled: true)
 
-        wait_for_all_requests
+        # group_seat_usage_path does some admin_group_member check then
+        # redirects to the below path where we only check read.
+        # This is strangely more restrictive then going to the
+        # usage_quotas controller directly with an anchor...so we'll
+        # just do that since admin_group_member is prevented in
+        # read_only mode.
+        visit group_usage_quotas_path(group, anchor: 'seats-quota-tab')
+
+        wait_for_requests
       end
 
-      it 'shows a flash message' do
-        within member_table_selector do
-          expect(all('tbody tr').count).to eq(3)
-        end
-
-        expect(page.find('.flash-container')).to have_content('User was successfully removed')
-      end
-    end
-
-    context 'when removing the user async' do
-      before do
-        stub_feature_flags(billable_member_async_deletion: true)
-
-        visit group_seat_usage_path(group)
-        wait_for_all_requests
-      end
-
-      it 'shows a flash message' do
-        remove_user(maintainer)
-        confirm_remove_user(maintainer)
-
-        wait_for_all_requests
-
-        expect(page.find('.flash-container')).to have_content('User successfully scheduled for removal. ' \
-          'This process might take some time. Refresh the page to see the changes.')
-      end
+      it_behaves_like 'a modal to confirm removal'
     end
 
     context 'when removing a user from a sub-group' do
@@ -202,7 +188,7 @@ RSpec.describe 'Groups > Usage Quotas > Seats tab', :js, :saas, feature_category
         wait_for_requests
       end
 
-      it 'correctly updates seat counts on user removal' do
+      it 'correctly shows seat usage and counts' do
         expect(page).to have_content('4 / 1 Seats in use / Seats in subscription')
         expect(page.text).to include('4 Max seats used')
         expect(page.text).to include('3 Seats owed')
@@ -212,26 +198,6 @@ RSpec.describe 'Groups > Usage Quotas > Seats tab', :js, :saas, feature_category
           expect(page.text).to include(maintainer.name)
           expect(page.text).to include(user_from_sub_group.name)
           expect(page.text).to include(shared_group_developer.name)
-          expect(page.text).not_to include(guest.name)
-        end
-
-        remove_user(maintainer)
-        confirm_remove_user(maintainer)
-
-        refresh_subscription_seats
-
-        page.refresh
-        wait_for_requests
-
-        expect(page).to have_content('3 / 1 Seats in use / Seats in subscription')
-        expect(page.text).to include('4 Max seats used')
-        expect(page.text).to include('3 Seats owed')
-
-        within member_table_selector do
-          expect(page.text).to include(user.name)
-          expect(page.text).to include(user_from_sub_group.name)
-          expect(page.text).to include(shared_group_developer.name)
-          expect(page.text).not_to include(maintainer.name)
           expect(page.text).not_to include(guest.name)
         end
       end
@@ -283,41 +249,6 @@ RSpec.describe 'Groups > Usage Quotas > Seats tab', :js, :saas, feature_category
           expect(page).to have_content('Your subscription is in read-only mode')
         end
       end
-    end
-  end
-
-  context 'when removing a user when the namespace is in read_only state' do
-    let_it_be(:group) { create(:group_with_plan, :private, plan: :free_plan) }
-
-    before do
-      stub_ee_application_setting(dashboard_limit_enabled: true)
-
-      # group_seat_usage_path does some admin_group_member check then
-      # redirects to the below path where we only check read.
-      # This is strangely more restrictive then going to the
-      # usage_quotas controller directly with an anchor...so we'll
-      # just do that since admin_group_member is prevented in
-      # read_only mode.
-      visit group_usage_quotas_path(group, anchor: 'seats-quota-tab')
-
-      wait_for_requests
-    end
-
-    it 'shows a flash message' do
-      within member_table_selector do
-        expect(all('tbody tr').count).to eq(3)
-      end
-
-      remove_user(maintainer)
-      confirm_remove_user(maintainer)
-
-      wait_for_all_requests
-
-      within member_table_selector do
-        expect(all('tbody tr').count).to eq(2)
-      end
-
-      expect(page.find('.flash-container')).to have_content('User was successfully removed')
     end
   end
 

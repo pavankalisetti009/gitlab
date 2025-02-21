@@ -67,11 +67,9 @@ export const removeBillableMember = ({ dispatch, state, commit }) => {
     .catch(() => dispatch('removeBillableMemberError'));
 };
 
-const removeBillableMemberSuccessMessage = window.gon?.features?.billableMemberAsyncDeletion
-  ? s__(
-      'Billing|User successfully scheduled for removal. This process might take some time. Refresh the page to see the changes.',
-    )
-  : s__('Billing|User was successfully removed');
+const removeBillableMemberSuccessMessage = s__(
+  'Billing|User successfully scheduled for removal. This process might take some time. Refresh the page to see the changes.',
+);
 
 export const removeBillableMemberSuccess = ({ dispatch, commit }, memberId) => {
   dispatch('fetchBillableMembersList');

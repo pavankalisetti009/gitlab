@@ -9658,9 +9658,6 @@ msgstr ""
 msgid "Billing|User successfully scheduled for removal. This process might take some time. Refresh the page to see the changes."
 msgstr ""
 
-msgid "Billing|User was successfully removed"
-msgstr ""
-
 msgid "Billing|You are about to remove user %{username} from your subscription. If you continue, the user will be removed from the %{namespace} group and all its subgroups and projects. This action can't be undone."
 msgstr ""
 
