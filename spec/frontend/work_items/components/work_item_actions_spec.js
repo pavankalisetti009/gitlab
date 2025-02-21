@@ -146,7 +146,6 @@ describe('WorkItemActions component', () => {
     canCreateRelatedItem = true,
     workItemsBeta = true,
     parentId = null,
-    workItemsAlpha = true,
   } = {}) => {
     wrapper = shallowMountExtended(WorkItemActions, {
       isLoggedIn: isLoggedIn(),
@@ -191,7 +190,6 @@ describe('WorkItemActions component', () => {
         glFeatures: {
           okrsMvc,
           workItemsBeta,
-          workItemsAlpha,
         },
         hasOkrsFeature,
       },
@@ -729,7 +727,7 @@ describe('WorkItemActions component', () => {
   });
 
   describe('move issue button', () => {
-    it('shows move button when workItemType is issue and `moveWorkItem` is true', async () => {
+    it('shows move button when workItemType is issue and `canMove` is true', async () => {
       createComponent({
         workItemType: WORK_ITEM_TYPE_VALUE_ISSUE,
       });
@@ -753,17 +751,6 @@ describe('WorkItemActions component', () => {
         workItemType: WORK_ITEM_TYPE_VALUE_ISSUE,
         canMove: false,
       });
-      await waitForPromises();
-
-      expect(findMoveButton().exists()).toBe(false);
-    });
-
-    it('hides move button when `workItemsAlpha` is disabled', async () => {
-      createComponent({
-        workItemType: WORK_ITEM_TYPE_VALUE_ISSUE,
-        workItemsAlpha: false,
-      });
-
       await waitForPromises();
 
       expect(findMoveButton().exists()).toBe(false);
