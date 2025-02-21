@@ -96,6 +96,32 @@ RSpec.describe API::DependencyListExports, feature_category: :dependency_managem
     end
   end
 
+  shared_examples 'supports export type' do |type|
+    let(:params) { { export_type: type } }
+
+    subject(:create_dependency_list_export) { post api(request_path, user), params: params }
+
+    it 'supports export type' do
+      create_dependency_list_export
+
+      expect(response).to have_gitlab_http_status(:created)
+      expect(json_response['export_type']).to eq(type)
+    end
+  end
+
+  shared_examples 'does not support export type' do |type|
+    let(:params) { { export_type: type } }
+
+    subject(:create_dependency_list_export) { post api(request_path, user), params: params }
+
+    it 'does not support export type' do
+      create_dependency_list_export
+
+      expect(response).to have_gitlab_http_status(:bad_request)
+      expect(json_response['error']).to eq('export_type does not have a valid value')
+    end
+  end
+
   describe 'POST /organizations/:id/dependency_list_exports' do
     let_it_be(:organization) { create(:organization) }
 
@@ -116,9 +142,7 @@ RSpec.describe API::DependencyListExports, feature_category: :dependency_managem
           expect(json_response).to have_key('has_finished')
           expect(json_response).to have_key('self')
           expect(json_response).to have_key('download')
-
-          created_export = ::Dependencies::DependencyListExport.find(json_response['id'])
-          expect(created_export.export_type).to eq('csv')
+          expect(json_response['export_type']).to eq('csv')
         end
 
         context 'when the `explore_dependencies` feature flag is disabled' do
@@ -143,6 +167,18 @@ RSpec.describe API::DependencyListExports, feature_category: :dependency_managem
     let(:export_type) { 'dependency_list' }
 
     it_behaves_like 'creating dependency list export'
+
+    context 'with permissions to create exports' do
+      before do
+        stub_licensed_features(dependency_scanning: true, security_dashboard: true)
+        resource.add_developer(user)
+      end
+
+      it_behaves_like 'supports export type', 'dependency_list'
+      it_behaves_like 'supports export type', 'csv'
+      it_behaves_like 'does not support export type', 'json_array'
+      it_behaves_like 'does not support export type', 'sbom'
+    end
   end
 
   describe 'POST /groups/:id/dependency_list_exports' do
@@ -152,6 +188,18 @@ RSpec.describe API::DependencyListExports, feature_category: :dependency_managem
     let(:export_type) { 'json_array' }
 
     it_behaves_like 'creating dependency list export'
+
+    context 'with permissions to create exports' do
+      before do
+        stub_licensed_features(dependency_scanning: true, security_dashboard: true)
+        resource.add_developer(user)
+      end
+
+      it_behaves_like 'supports export type', 'json_array'
+      it_behaves_like 'does not support export type', 'csv'
+      it_behaves_like 'does not support export type', 'dependency_list'
+      it_behaves_like 'does not support export type', 'sbom'
+    end
   end
 
   describe 'POST /pipelines/:id/dependency_list_exports' do
@@ -161,6 +209,18 @@ RSpec.describe API::DependencyListExports, feature_category: :dependency_managem
     let(:export_type) { 'sbom' }
 
     it_behaves_like 'creating dependency list export'
+
+    context 'with permissions to create exports' do
+      before do
+        stub_licensed_features(dependency_scanning: true, security_dashboard: true)
+        resource.add_developer(user)
+      end
+
+      it_behaves_like 'supports export type', 'sbom'
+      it_behaves_like 'does not support export type', 'csv'
+      it_behaves_like 'does not support export type', 'dependency_list'
+      it_behaves_like 'does not support export type', 'json_array'
+    end
   end
 
   describe 'GET /dependency_list_exports/:export_id' do
