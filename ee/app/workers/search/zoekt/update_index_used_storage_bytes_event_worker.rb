@@ -8,10 +8,10 @@ module Search
       prepend ::Geo::SkipSecondary
 
       idempotent!
-      deduplicate :until_executed
+      deduplicate :until_executed, if_deduplicated: :reschedule_once
       defer_on_database_health_signal :gitlab_main, [:zoekt_indices, :zoekt_repositories], 10.minutes
 
-      BATCH_SIZE = 100
+      BATCH_SIZE = 1000
 
       def handle_event(_event)
         indices = Index.with_stale_used_storage_bytes_updated_at.ordered_by_used_storage_updated_at

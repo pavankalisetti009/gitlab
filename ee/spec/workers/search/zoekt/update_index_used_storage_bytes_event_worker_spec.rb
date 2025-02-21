@@ -50,6 +50,7 @@ RSpec.describe Search::Zoekt::UpdateIndexUsedStorageBytesEventWorker, feature_ca
 
   it 'has the `until_executed` deduplicate strategy' do
     expect(described_class.get_deduplicate_strategy).to eq(:until_executed)
+    expect(described_class.get_deduplication_options).to include({ if_deduplicated: :reschedule_once })
   end
 
   it_behaves_like 'an idempotent worker', :freeze_time do
