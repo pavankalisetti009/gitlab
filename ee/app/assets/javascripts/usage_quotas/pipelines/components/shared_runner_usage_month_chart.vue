@@ -34,20 +34,6 @@ export default {
     },
   },
   computed: {
-    chartOptions() {
-      return {
-        xAxis: {
-          name: X_AXIS_MONTH_LABEL,
-          type: X_AXIS_CATEGORY,
-        },
-        yAxis: {
-          name: Y_AXIS_SHARED_RUNNER_LABEL,
-          axisLabel: {
-            formatter: (val) => val,
-          },
-        },
-      };
-    },
     chartData() {
       return [
         {

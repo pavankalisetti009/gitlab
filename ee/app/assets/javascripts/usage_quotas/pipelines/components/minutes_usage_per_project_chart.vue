@@ -43,11 +43,6 @@ export default {
       },
     },
   },
-  data() {
-    return {
-      formattedData: [],
-    };
-  },
   computed: {
     chartData() {
       return [
