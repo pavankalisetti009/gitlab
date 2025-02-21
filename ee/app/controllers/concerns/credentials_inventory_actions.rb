@@ -63,7 +63,7 @@ module CredentialsInventoryActions
   end
 
   def pat_params
-    params.permit(:state, :revoked, :created_before, :created_after, :expires_before, :expires_after, :last_used_before, :last_used_after, :search).to_hash.transform_keys(&:to_sym)
+    params.permit(:state, :revoked, :created_before, :created_after, :expires_before, :expires_after, :last_used_before, :last_used_after, :search, :sort).to_hash.transform_keys(&:to_sym)
   end
 
   def notify_deleted_or_revoked_credential(credential)
