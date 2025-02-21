@@ -61,6 +61,7 @@ module Namespaces
     def remove_dormant_members(namespace)
       dormant_period = namespace.namespace_settings.remove_dormant_members_period.days.ago
       admin_bot = ::Users::Internal.admin_bot
+      dormant_count = 0
 
       ::GitlabSubscriptions::SeatAssignment.dormant_in_namespace(namespace, dormant_period).find_each do |assignment|
         next if namespace.owner_ids.include?(assignment.user_id)
@@ -68,7 +69,19 @@ module Namespaces
         ::Gitlab::Auth::CurrentUserMode.optionally_run_in_admin_mode(admin_bot) do
           ::Members::ScheduleDeletionService.new(namespace, assignment.user_id, admin_bot).execute
         end
+
+        dormant_count += 1
       end
+
+      log_monitoring_data(namespace.id, dormant_count)
+    end
+
+    def log_monitoring_data(namespace_id, dormant_count)
+      Gitlab::AppLogger.info(
+        message: 'Processed dormant member removal',
+        namespace_id: namespace_id,
+        dormant_count: dormant_count
+      )
     end
   end
 end

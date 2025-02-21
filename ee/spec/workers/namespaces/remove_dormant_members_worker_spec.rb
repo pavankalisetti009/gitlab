@@ -38,6 +38,18 @@ RSpec.describe Namespaces::RemoveDormantMembersWorker, :saas, feature_category: 
             expect { perform_work }.to change { group.namespace_settings.reload.last_dormant_member_review_at }
           end
 
+          it 'logs monitoring data' do
+            allow(Gitlab::AppLogger).to receive(:info)
+
+            expect(Gitlab::AppLogger).to receive(:info).with(
+              message: 'Processed dormant member removal',
+              namespace_id: group.id,
+              dormant_count: 1
+            )
+
+            perform_work
+          end
+
           context 'when the dormant member is an owner of the group' do
             it 'does not remove the owner' do
               group.add_owner(dormant_assignment.user)
