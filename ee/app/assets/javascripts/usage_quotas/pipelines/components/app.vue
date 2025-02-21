@@ -73,7 +73,6 @@ export default {
 
     return {
       error: '',
-      namespace: null,
       ciMinutesUsage: [],
       projectsCiMinutesUsage: [],
       selectedYear: year,
