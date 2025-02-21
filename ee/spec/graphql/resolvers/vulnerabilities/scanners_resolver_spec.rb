@@ -33,6 +33,10 @@ RSpec.describe Resolvers::Vulnerabilities::ScannersResolver, feature_category: :
 
       context 'when group_vulnerability_scanners_using_statistics is disabled' do
         before do
+          # This test won't work in a decomposed GitLab, so we skip it.
+          # Consult https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180764 for more info.
+          skip_if_multiple_databases_are_setup(:sec)
+
           stub_feature_flags(group_vulnerability_scanners_using_statistics: false)
         end
 

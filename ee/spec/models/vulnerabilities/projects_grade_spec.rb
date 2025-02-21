@@ -54,6 +54,12 @@ RSpec.describe Vulnerabilities::ProjectsGrade, feature_category: :vulnerability_
 
           context 'when remove_cross_join_from_vulnerabilities_projects_grade is disabled' do
             before do
+              # This test cannot pass in a post Sec Decomposition Gitlab instance, so we skip it if
+              # that's what we're running in.
+              # It won't be turned off post decomposition, so this will be cleaned up with the FF.
+              # Consult https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180764 for more info.
+              skip_if_multiple_databases_are_setup(:sec)
+
               stub_feature_flags(remove_cross_join_from_vulnerabilities_projects_grade: false)
             end
 
@@ -79,6 +85,12 @@ RSpec.describe Vulnerabilities::ProjectsGrade, feature_category: :vulnerability_
 
           context 'when remove_cross_join_from_vulnerabilities_projects_grade is disabled' do
             before do
+              # This test cannot pass in a post Sec Decomposition Gitlab instance, so we skip it if
+              # that's what we're running in.
+              # It won't be turned off post decomposition, so this will be cleaned up with the FF.
+              # Consult https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180764 for more info.
+              skip_if_multiple_databases_are_setup(:sec)
+
               stub_feature_flags(remove_cross_join_from_vulnerabilities_projects_grade: false)
             end
 
@@ -111,6 +123,12 @@ RSpec.describe Vulnerabilities::ProjectsGrade, feature_category: :vulnerability_
 
           context 'when remove_cross_join_from_vulnerabilities_projects_grade is disabled' do
             before do
+              # This test cannot pass in a post Sec Decomposition Gitlab instance, so we skip it if
+              # that's what we're running in.
+              # It won't be turned off post decomposition, so this will be cleaned up with the FF.
+              # Consult https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180764 for more info.
+              skip_if_multiple_databases_are_setup(:sec)
+
               stub_feature_flags(remove_cross_join_from_vulnerabilities_projects_grade: false)
             end
 
@@ -136,6 +154,12 @@ RSpec.describe Vulnerabilities::ProjectsGrade, feature_category: :vulnerability_
 
           context 'when remove_cross_join_from_vulnerabilities_projects_grade is disabled' do
             before do
+              # This test cannot pass in a post Sec Decomposition Gitlab instance, so we skip it if
+              # that's what we're running in.
+              # It won't be turned off post decomposition, so this will be cleaned up with the FF.
+              # Consult https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180764 for more info.
+              skip_if_multiple_databases_are_setup(:sec)
+
               stub_feature_flags(remove_cross_join_from_vulnerabilities_projects_grade: false)
             end
 
@@ -169,6 +193,12 @@ RSpec.describe Vulnerabilities::ProjectsGrade, feature_category: :vulnerability_
 
       context 'when remove_cross_join_from_vulnerabilities_projects_grade is disabled in one of the groups' do
         before do
+          # This test cannot pass in a post Sec Decomposition Gitlab instance, so we skip it if
+          # that's what we're running in.
+          # It won't be turned off post decomposition, so this will be cleaned up with the FF.
+          # Consult https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180764 for more info.
+          skip_if_multiple_databases_are_setup(:sec)
+
           stub_feature_flags(remove_cross_join_from_vulnerabilities_projects_grade: false)
           stub_feature_flags(remove_cross_join_from_vulnerabilities_projects_grade: group)
         end

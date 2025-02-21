@@ -69,6 +69,11 @@ RSpec.describe Gitlab::BackgroundMigration::FixProjectSettingsHasVulnerabilities
   end
 
   before do
+    # There is a bug in some background migration spec where the helpers attempt to create data using the wrong
+    # database connection. As this migration has already run we should be safe to skip the spec.
+    # Consult https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180764 for more info.
+    skip_if_multiple_databases_are_setup(:sec)
+
     create_vulnerability_read(project_1.id)
     create_vulnerability_read(project_2.id)
   end
