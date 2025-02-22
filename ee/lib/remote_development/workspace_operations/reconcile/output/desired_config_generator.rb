@@ -121,7 +121,6 @@ module RemoteDevelopment
             env_secret_name:,
             file_secret_name:
           )
-
             workspaces_agent_config = workspace.workspaces_agent_config
             agent_annotations = workspaces_agent_config.annotations
             agent_labels = workspaces_agent_config.labels
@@ -281,7 +280,7 @@ module RemoteDevelopment
               'workspaces.gitlab.com/host-template' => domain_template.to_s,
               'workspaces.gitlab.com/id' => workspace_id.to_s,
               'workspaces.gitlab.com/max-resources-per-workspace-sha256' =>
-                Digest::SHA256.hexdigest(max_resources_per_workspace.sort.to_h.to_s)
+                OpenSSL::Digest::SHA256.hexdigest(max_resources_per_workspace.sort.to_h.to_s)
             }
             annotations = agent_annotations.merge(extra_annotations)
             [labels, annotations]
