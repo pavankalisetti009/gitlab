@@ -32,8 +32,6 @@ module Groups
         @policy = policy
 
         render_404 if @policy.nil?
-
-        @approvers = approvers
       end
 
       def index
@@ -102,20 +100,6 @@ module Groups
 
       def policy_configuration
         @policy_configuration ||= group.security_orchestration_policy_configuration
-      end
-
-      def approvers
-        return unless ::Security::ScanResultPolicy::SCAN_RESULT_POLICY_TYPES.include?(@policy_type)
-
-        result = ::Security::SecurityOrchestrationPolicies::FetchPolicyApproversService.new(
-          policy: @policy,
-          container: group,
-          current_user: @current_user
-        ).execute
-
-        return unless result[:status] == :success
-
-        API::Entities::PolicyApprovers.represent(result[:approvers])
       end
     end
   end

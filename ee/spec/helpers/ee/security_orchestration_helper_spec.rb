@@ -148,7 +148,6 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
     end
 
     context 'for project' do
-      let(:approvers) { { single_approvers: %w[approver1 approver2] } }
       let(:owner) { project.first_owner }
       let(:policy) { nil }
       let(:policy_type) { 'scan_execution_policy' }
@@ -165,7 +164,6 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
           policy_type: policy_type,
           role_approver_types: %w[developer maintainer owner],
           scan_policy_documentation_path: kind_of(String),
-          action_approvers: approvers&.to_json,
           software_licenses: kind_of(Array),
           global_group_approvers_enabled:
             Gitlab::CurrentSettings.security_policy_global_group_approvers_enabled.to_json,
@@ -191,12 +189,11 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
         allow(helper).to receive(:can?).with(owner, :modify_security_policy, project) { true }
       end
 
-      subject(:orchestration_policy_data) { helper.orchestration_policy_data(project, policy_type, policy, approvers) }
+      subject(:orchestration_policy_data) { helper.orchestration_policy_data(project, policy_type, policy) }
 
       context 'when a new policy is being created' do
         let(:policy) { nil }
         let(:policy_type) { nil }
-        let(:approvers) { nil }
 
         it { is_expected.to match(base_data) }
       end
@@ -239,7 +236,6 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
     end
 
     context 'for namespace' do
-      let(:approvers) { { single_approvers: %w[approver1 approver2] } }
       let(:owner) { namespace.first_owner }
       let(:policy) { nil }
       let(:policy_type) { 'scan_execution_policy' }
@@ -255,7 +251,6 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
           scan_policy_documentation_path: kind_of(String),
           namespace_path: namespace.full_path,
           namespace_id: namespace.id,
-          action_approvers: approvers&.to_json,
           software_licenses: kind_of(Array),
           global_group_approvers_enabled:
             Gitlab::CurrentSettings.security_policy_global_group_approvers_enabled.to_json,
@@ -282,13 +277,12 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
       end
 
       subject(:orchestration_policy_data) do
-        helper.orchestration_policy_data(namespace, policy_type, policy, approvers)
+        helper.orchestration_policy_data(namespace, policy_type, policy)
       end
 
       context 'when a new policy is being created' do
         let(:policy) { nil }
         let(:policy_type) { nil }
-        let(:approvers) { nil }
 
         it { is_expected.to match(base_data) }
       end

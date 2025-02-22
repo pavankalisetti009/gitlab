@@ -23,7 +23,7 @@ module EE::SecurityOrchestrationHelper
     }
   end
 
-  def orchestration_policy_data(container, policy_type = nil, policy = nil, approvers = nil)
+  def orchestration_policy_data(container, policy_type = nil, policy = nil)
     return unless container
 
     disable_scan_policy_update = !can_modify_security_policy?(container)
@@ -39,7 +39,6 @@ module EE::SecurityOrchestrationHelper
       policy_type: policy_type,
       role_approver_types: Security::ScanResultPolicy::ALLOWED_ROLES,
       scan_policy_documentation_path: help_page_path('user/application_security/policies/_index.md'),
-      action_approvers: approvers&.to_json,
       software_licenses: software_licenses,
       global_group_approvers_enabled: Gitlab::CurrentSettings.security_policy_global_group_approvers_enabled.to_json,
       root_namespace_path: container.root_ancestor&.full_path,
