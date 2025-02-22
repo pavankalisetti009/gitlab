@@ -10,7 +10,6 @@ export default (graphQlFieldName, verificationEnabled) => {
             id
             checksumMismatch
             createdAt
-            forceToRedownload
             lastSyncFailure
             lastSyncedAt
             missingOnPrimary
