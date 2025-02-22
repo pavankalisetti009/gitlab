@@ -35,7 +35,6 @@ module Projects
       def edit
         @policy_name = URI.decode_www_form_component(policy_params[:id])
         @policy = policy
-        @approvers = approvers
 
         render_404 if @policy.nil?
       end
@@ -86,20 +85,6 @@ module Projects
 
       def policy_configuration
         @policy_configuration ||= project.security_orchestration_policy_configuration
-      end
-
-      def approvers
-        return unless ::Security::ScanResultPolicy::SCAN_RESULT_POLICY_TYPES.include?(@policy_type)
-
-        result = ::Security::SecurityOrchestrationPolicies::FetchPolicyApproversService.new(
-          policy: @policy,
-          container: project,
-          current_user: @current_user
-        ).execute
-
-        return unless result[:status] == :success
-
-        API::Entities::PolicyApprovers.represent(result[:approvers])
       end
     end
   end

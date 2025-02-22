@@ -43,30 +43,18 @@ RSpec.describe Projects::Security::PoliciesController, type: :request, feature_c
           expect(app.attributes['data-policy-type'].value).to eq(type)
         end
 
-        it 'does not contain any approver data' do
-          request
-          app = Nokogiri::HTML.parse(response.body).at_css('div#js-policy-builder-app')
-
-          expect(app['data-action-approvers']).to be_nil
-        end
-
         shared_examples 'scan result policy like type' do |type|
           let_it_be(:type) { type }
           let_it_be(:policy) { build(:scan_result_policy) }
           let_it_be(:group) { create(:group) }
-          let_it_be(:approvers) { [{ users: [user], groups: [group], all_groups: [group], roles: ['OWNER'] }] }
-          let_it_be(:service_result) { { users: [user], groups: [group], roles: ['OWNER'], approvers: approvers, status: :success } }
-
-          let(:service) { instance_double('::Security::SecurityOrchestrationPolicies::FetchPolicyApproversService', execute: service_result) }
 
           before do
             allow_next_instance_of(Repository) do |repository|
               allow(repository).to receive(:blob_data_at).and_return({ scan_result_policy: [policy] }.to_yaml)
             end
-            allow(::Security::SecurityOrchestrationPolicies::FetchPolicyApproversService).to receive(:new).with(policy: policy, container: project, current_user: user).and_return(service)
           end
 
-          it 'renders the edit page with approvers data' do
+          it 'renders the edit page' do
             request
 
             expect(response).to have_gitlab_http_status(:ok)
@@ -76,8 +64,6 @@ RSpec.describe Projects::Security::PoliciesController, type: :request, feature_c
 
             expect(app['data-policy']).to eq(policy.to_json)
             expect(app['data-policy-type']).to eq(type)
-            expect(app['data-action-approvers']).to include(user.name,
-              user.id.to_s, group.full_path, group.id.to_s)
           end
         end
 
