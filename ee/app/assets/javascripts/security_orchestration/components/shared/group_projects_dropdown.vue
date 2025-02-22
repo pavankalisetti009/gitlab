@@ -2,7 +2,6 @@
 import { debounce, uniqBy, get } from 'lodash';
 import produce from 'immer';
 import { __ } from '~/locale';
-import getGroups from 'ee/security_orchestration/graphql/queries/get_groups_for_policies.query.graphql';
 import getGroupProjects from 'ee/security_orchestration/graphql/queries/get_group_projects.query.graphql';
 import { searchInItemsProperties } from '~/lib/utils/search_utils';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
@@ -11,38 +10,12 @@ import BaseItemsDropdown from './base_items_dropdown.vue';
 export default {
   i18n: {
     projectDropdownHeader: __('Select projects'),
-    groupDropdownHeader: __('Select groups'),
   },
   name: 'GroupProjectsDropdown',
   components: {
     BaseItemsDropdown,
   },
   apollo: {
-    groups: {
-      query: getGroups,
-      variables() {
-        return {
-          search: this.searchTerm,
-        };
-      },
-      update(data) {
-        /**
-         * It is important to preserve all groups that have been loaded
-         * otherwise after performing backend search and selecting found item
-         * selection is overwritten
-         */
-        return uniqBy([...this.groups, ...data.groups.nodes], 'id');
-      },
-      result({ data }) {
-        this.pageInfo = data?.groups?.pageInfo || {};
-      },
-      error() {
-        this.$emit('groups-query-error');
-      },
-      skip() {
-        return !this.groupsOnly;
-      },
-    },
     projects: {
       query() {
         return getGroupProjects;
@@ -63,12 +36,13 @@ export default {
       },
       result({ data }) {
         this.pageInfo = data?.group?.projects.pageInfo || {};
+
+        if (this.selectedButNotLoadedProjectIds.length > 0) {
+          this.fetchGroupProjectsByIds();
+        }
       },
       error() {
         this.$emit('projects-query-error');
-      },
-      skip() {
-        return this.groupsOnly;
       },
     },
   },
@@ -102,11 +76,6 @@ export default {
       required: false,
       default: false,
     },
-    groupsOnly: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
     groupIds: {
       type: Array,
       required: false,
@@ -123,12 +92,15 @@ export default {
       pageInfo: {},
       searchTerm: '',
       projects: [],
-      groups: [],
     };
   },
   computed: {
-    itemsQuery() {
-      return this.$apollo.queries[this.groupsOnly ? 'groups' : 'projects'];
+    projectIds() {
+      return this.filteredProjects?.map(({ id }) => id);
+    },
+    selectedButNotLoadedProjectIds() {
+      const selected = this.multiple ? this.selected : [this.selected];
+      return selected.filter((id) => !this.projectIds.includes(id));
     },
     filteredProjects() {
       if (this.groupIds.length === 0) {
@@ -138,25 +110,20 @@ export default {
       return this.projects.filter(({ group = {} }) => this.groupIds.includes(group.id));
     },
     items() {
-      return this.groupsOnly ? this.groups : this.filteredProjects;
+      return this.filteredProjects;
     },
     itemTypeName() {
       return this.isGroup ? __('groups') : __('projects');
     },
-    headerText() {
-      return this.groupsOnly
-        ? this.$options.i18n.groupDropdownHeader
-        : this.$options.i18n.projectDropdownHeader;
-    },
     existingFormattedSelectedIds() {
       if (this.multiple) {
-        return this.selected.filter((id) => this.itemsIds.includes(id));
+        return this.selected.filter((id) => this.projectIds.includes(id));
       }
 
       return this.selected;
     },
     loading() {
-      return this.itemsQuery.loading;
+      return this.$apollo.queries.projects.loading;
     },
     searching() {
       return this.loading && this.searchUsed && !this.hasNextPage;
@@ -180,9 +147,6 @@ export default {
         searchQuery: this.searchTerm,
       });
     },
-    itemsIds() {
-      return this.items.map(({ id }) => id);
-    },
     category() {
       return this.state ? 'primary' : 'secondary';
     },
@@ -200,30 +164,43 @@ export default {
     this.debouncedSearch.cancel();
   },
   methods: {
+    async fetchGroupProjectsByIds() {
+      const variables = {
+        after: this.pageInfo.endCursor,
+        projectIds: this.selectedButNotLoadedProjectIds,
+        ...this.pathVariable,
+      };
+
+      try {
+        const { data } = await this.$apollo.query({
+          query: getGroupProjects,
+          variables,
+        });
+
+        this.projects = uniqBy([...this.projects, ...data.group.projects.nodes], 'id');
+      } catch {
+        this.$emit('projects-query-error');
+      }
+    },
     fetchMoreItems() {
-      const { groupsOnly } = this;
       const variables = {
         after: this.pageInfo.endCursor,
         ...this.pathVariable,
       };
 
-      this.itemsQuery
+      this.$apollo.queries.projects
         .fetchMore({
           variables,
           updateQuery(previousResult, { fetchMoreResult }) {
             return produce(fetchMoreResult, (draftData) => {
-              if (groupsOnly) {
-                draftData.group.nodes = [...previousResult.group.nodes, ...draftData.group.nodes];
-              } else {
-                const getSourceObject = (source) => {
-                  return get(source, 'group.projects');
-                };
+              const getSourceObject = (source) => {
+                return get(source, 'group.projects');
+              };
 
-                getSourceObject(draftData).nodes = [
-                  ...getSourceObject(previousResult).nodes,
-                  ...getSourceObject(draftData).nodes,
-                ];
-              }
+              getSourceObject(draftData).nodes = [
+                ...getSourceObject(previousResult).nodes,
+                ...getSourceObject(draftData).nodes,
+              ];
             });
           },
         })
@@ -251,7 +228,7 @@ export default {
     :disabled="disabled"
     :multiple="multiple"
     :loading="loading"
-    :header-text="headerText"
+    :header-text="$options.i18n.projectDropdownHeader"
     :items="listBoxItems"
     :infinite-scroll="hasNextPage"
     :searching="searching"
