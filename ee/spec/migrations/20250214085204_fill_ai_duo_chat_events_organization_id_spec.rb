@@ -13,7 +13,7 @@ RSpec.describe FillAiDuoChatEventsOrganizationId, feature_category: :value_strea
       organization_id: organization.id)
   end
 
-  let(:ai_duo_chat_events) { table(:ai_duo_chat_events) }
+  let(:ai_duo_chat_events) { partitioned_table(:ai_duo_chat_events) }
 
   let!(:event1) do
     ai_duo_chat_events.create!(
