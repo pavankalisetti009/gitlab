@@ -9,7 +9,7 @@ module QA
       end
 
       let(:push_content_secondary) { 'This is from the Geo wiki push to secondary!' }
-      let(:git_push_http_path_prefix) { '/-/push_from_secondary' }
+      let(:git_push_http_path_prefix) { '/-/from_secondary' }
 
       wiki = nil
       project = nil
