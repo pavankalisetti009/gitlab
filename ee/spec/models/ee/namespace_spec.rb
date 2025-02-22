@@ -2057,8 +2057,9 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
     let_it_be(:parent_security_orchestration_policy_configuration) { create(:security_orchestration_policy_configuration, :namespace, namespace: parent_group) }
     let_it_be(:child_security_orchestration_policy_configuration) { create(:security_orchestration_policy_configuration, :namespace, namespace: child_group_2) }
     let_it_be(:child_project_security_orchestration_policy_configuration) { create(:security_orchestration_policy_configuration, project: child_group_project) }
+    let_it_be(:include_invalid) { false }
 
-    subject { parent_group.all_descendant_security_orchestration_policy_configurations }
+    subject { parent_group.all_descendant_security_orchestration_policy_configurations(include_invalid: include_invalid) }
 
     context 'when configuration is invalid' do
       before do
@@ -2069,6 +2070,12 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
 
       it 'returns empty list' do
         expect(subject).to be_empty
+      end
+
+      context 'when including invalid configurations' do
+        let_it_be(:include_invalid) { true }
+
+        it { is_expected.to contain_exactly(parent_security_orchestration_policy_configuration, child_security_orchestration_policy_configuration, child_project_security_orchestration_policy_configuration) }
       end
     end
 

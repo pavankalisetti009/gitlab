@@ -594,13 +594,13 @@ module EE
       security_orchestration_policies_for_namespaces(self_and_ancestor_ids, include_invalid: include_invalid)
     end
 
-    def all_descendant_security_orchestration_policy_configurations
+    def all_descendant_security_orchestration_policy_configurations(include_invalid: false)
       return [] if self_and_descendant_ids.blank?
 
       configurations = ::Security::OrchestrationPolicyConfiguration
         .for_namespace_and_projects(self_and_descendant_ids, all_project_ids)
 
-      validated_security_orchestration_policies(configurations)
+      validated_security_orchestration_policies(configurations, include_invalid: include_invalid)
     end
 
     def all_inherited_security_orchestration_policy_configurations(include_invalid: false)
