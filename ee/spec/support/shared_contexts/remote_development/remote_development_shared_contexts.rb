@@ -315,7 +315,9 @@ RSpec.shared_context 'with remote development shared fixtures' do
     desired_config_generator_version = workspace.desired_config_generator_version
 
     method_name = "create_config_to_apply_v#{desired_config_generator_version}"
+    # rubocop:disable GitlabSecurity/PublicSend -- We are intentionally doing this send to dynamically select the generator version method
     send(method_name, workspace: workspace, **args)
+    # rubocop:enable GitlabSecurity/PublicSend
   end
 
   # rubocop:disable Metrics/ParameterLists, Metrics/AbcSize -- Cleanup as part of https://gitlab.com/gitlab-org/gitlab/-/issues/421687
@@ -986,7 +988,6 @@ RSpec.shared_context 'with remote development shared fixtures' do
     labels:,
     annotations:
   )
-
     image_pull_secrets_names = image_pull_secrets.map { |secret| { name: secret.symbolize_keys.fetch(:name) } }
     {
       kind: 'ServiceAccount',
