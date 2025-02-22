@@ -305,7 +305,7 @@ export default {
       return this.policy.rules.some(this.ruleHasBranchesProperty);
     },
     settingAlert() {
-      if (this.hasEmptySettings && this.hasEmptyActions) {
+      if ((this.hasEmptySettings && this.hasEmptyActions) || this.hasEmptyRules) {
         return {
           variant: 'danger',
           title: this.$options.i18n.settingErrorTitle,
