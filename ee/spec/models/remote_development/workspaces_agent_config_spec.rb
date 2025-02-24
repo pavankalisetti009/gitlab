@@ -9,13 +9,13 @@ RSpec.describe RemoteDevelopment::WorkspacesAgentConfig, feature_category: :work
   let(:default_network_policy_egress) do
     [
       {
-        allow: "0.0.0.0/0",
-        except: [
+        "allow" => "0.0.0.0/0",
+        "except" => [
           -"10.0.0.0/8",
           -"172.16.0.0/12",
           -"192.168.0.0/16"
         ]
-      }.deep_stringify_keys
+      }
     ]
   end
 

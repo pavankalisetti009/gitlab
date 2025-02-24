@@ -23,9 +23,13 @@ RSpec.describe ::RemoteDevelopment::NamespaceClusterAgentMappingOperations::Crea
       expect(response.fetch(:status)).to eq(:success)
       expect(response[:message]).to be_nil
       expect(response[:payload]).not_to be_nil
-      expect(response.dig(:payload, :namespace_cluster_agent_mapping)).not_to be_nil
+      response => {
+        payload: {
+          namespace_cluster_agent_mapping: mapping
+        }
+      }
 
-      mapping = response.dig(:payload, :namespace_cluster_agent_mapping)
+      expect(mapping).not_to be_nil
       # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
       expect(mapping.cluster_agent_id).to eq(cluster_agent.id)
       expect(mapping.namespace_id).to eq(namespace.id)

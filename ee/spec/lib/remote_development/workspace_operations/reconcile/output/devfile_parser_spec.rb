@@ -34,7 +34,30 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
   end
   # rubocop:enable RSpec/VerifiedDoubleReference
 
-  let(:processed_devfile_yaml) { example_processed_devfile_yaml }
+  let(:processed_devfile_yaml) do
+    yaml = example_processed_devfile_yaml
+
+    puts yaml
+
+    # Add additional entries to the processed devfile yaml to ensure full coverage of all DevfileParser logic
+    hash = yaml_safe_load_symbolized(yaml)
+
+    # Add explicit resources to main component container
+    hash => {
+      components: [
+        *_,
+        {
+          name: "tooling-container",
+          container: tooling_container
+        },
+        *_
+      ]
+    }
+    tooling_container[:memoryLimit] = "786Mi"
+
+    YAML.dump(hash.deep_stringify_keys)
+  end
+
   let(:domain_template) { "" }
   let(:egress_ip_rules) do
     [{
@@ -75,26 +98,24 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
   end
 
   let(:expected_workspace_resources) do
-    YAML.load_stream(
-      create_config_to_apply(
-        workspace: workspace,
-        workspace_variables_environment: {},
-        workspace_variables_file: {},
-        started: true,
-        include_inventory: false,
-        include_network_policy: false,
-        include_all_resources: false,
-        dns_zone: dns_zone,
-        egress_ip_rules: egress_ip_rules,
-        default_resources_per_workspace_container: default_resources_per_workspace_container,
-        allow_privilege_escalation: allow_privilege_escalation,
-        use_kubernetes_user_namespaces: use_kubernetes_user_namespaces,
-        default_runtime_class: default_runtime_class,
-        agent_labels: agent_labels,
-        agent_annotations: agent_annotations,
-        image_pull_secrets: image_pull_secrets,
-        core_resources_only: true
-      )
+    create_config_to_apply(
+      workspace: workspace,
+      workspace_variables_environment: {},
+      workspace_variables_file: {},
+      started: true,
+      include_inventory: false,
+      include_network_policy: false,
+      include_all_resources: false,
+      dns_zone: dns_zone,
+      egress_ip_rules: egress_ip_rules,
+      default_resources_per_workspace_container: default_resources_per_workspace_container,
+      allow_privilege_escalation: allow_privilege_escalation,
+      use_kubernetes_user_namespaces: use_kubernetes_user_namespaces,
+      default_runtime_class: default_runtime_class,
+      agent_labels: agent_labels,
+      agent_annotations: agent_annotations,
+      image_pull_secrets: image_pull_secrets,
+      core_resources_only: true
     )
   end
 
@@ -108,13 +129,13 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
 
   context "when the DevFile parser is successful in parsing k8s core resources" do
     let(:domain_template) { "{{.port}}-#{workspace.name}.#{dns_zone}" }
-    let(:labels) { agent_labels.merge('agent.gitlab.com/id' => workspace.agent.id) }
+    let(:labels) { agent_labels.merge('agent.gitlab.com/id': workspace.agent.id) }
     let(:annotations) do
       agent_annotations.merge({
-        'config.k8s.io/owning-inventory' => "#{workspace.name}-workspace-inventory",
-        'workspaces.gitlab.com/host-template' => domain_template,
-        'workspaces.gitlab.com/id' => workspace.id,
-        'workspaces.gitlab.com/max-resources-per-workspace-sha256' =>
+        'config.k8s.io/owning-inventory': "#{workspace.name}-workspace-inventory",
+        'workspaces.gitlab.com/host-template': domain_template,
+        'workspaces.gitlab.com/id': workspace.id,
+        'workspaces.gitlab.com/max-resources-per-workspace-sha256':
           Digest::SHA256.hexdigest(max_resources_per_workspace.sort.to_h.to_s)
       })
     end
@@ -122,19 +143,32 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
     context "when allow_privilege_escalation is true" do
       let(:allow_privilege_escalation) { true }
 
-      it 'returns workspace_resources with allow_privilege_escalation set to true' do
+      it 'returns workspace_resources with allow_privilege_escalation set to true',
+        :unlimited_max_formatted_output_length do
         expect(k8s_resources_for_workspace_core).to eq(expected_workspace_resources)
-        deployment = k8s_resources_for_workspace_core.find do |resource|
-          resource.fetch('kind') == 'Deployment'
-        end.to_h
 
-        container_privilege_escalation = deployment.dig('spec', 'template', 'spec', 'containers').map do |container|
-          container.dig('securityContext', 'allowPrivilegeEscalation')
+        k8s_resources_for_workspace_core => [
+          *_,
+          {
+            kind: "Deployment",
+            spec: {
+              template: {
+                spec: {
+                  containers: containers,
+                  initContainers: init_containers
+                }
+              }
+            }
+          },
+          *_
+        ]
+
+        container_privilege_escalation = containers.map do |container|
+          container.fetch(:securityContext).fetch(:allowPrivilegeEscalation)
         end
 
-        init_container_privilege_escalation = deployment.dig('spec', 'template', 'spec',
-          'initContainers').map do |container|
-          container.dig('securityContext', 'allowPrivilegeEscalation')
+        init_container_privilege_escalation = init_containers.map do |init_container|
+          init_container.fetch(:securityContext).fetch(:allowPrivilegeEscalation)
         end
 
         all_containers_privilege_escalation = init_container_privilege_escalation + container_privilege_escalation
@@ -148,10 +182,23 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
 
       it 'returns workspace_resources with hostUsers set to true' do
         expect(k8s_resources_for_workspace_core).to eq(expected_workspace_resources)
-        deployment = k8s_resources_for_workspace_core.find do |resource|
-          resource.fetch('kind') == 'Deployment'
-        end.to_h
-        expect(deployment.dig('spec', 'template', 'spec', 'hostUsers')).to be(true)
+
+        k8s_resources_for_workspace_core => [
+          *_,
+          {
+            kind: "Deployment",
+            spec: {
+              template: {
+                spec: {
+                  hostUsers: host_users
+                }
+              }
+            }
+          },
+          *_
+        ]
+
+        expect(host_users).to be(true)
       end
     end
   end
@@ -189,8 +236,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
       let(:error_type) { StandardError }
       let(:error_message) do
         <<~MSG.squish
-        An unrecoverable error occurred when invoking the devfile gem, this may hint that a gem with a wrong
-        architecture is being used.
+          An unrecoverable error occurred when invoking the devfile gem, this may hint that a gem with a wrong
+          architecture is being used.
         MSG
       end
 

@@ -29,11 +29,24 @@ module RemoteDevelopment
             # Create an array of workspace_rails_info hashes based on the workspaces. These indicate the desired updates
             # to the workspace, which will be returned in the payload to the agent to be applied to kubernetes
             workspace_rails_infos = workspaces_to_be_returned.map do |workspace|
-              config_to_apply, config_to_apply_resources_include_type = config_to_apply(workspace: workspace,
+              config_to_apply, config_to_apply_resources_include_type = generate_config_to_apply(workspace: workspace,
                 update_type: update_type, logger: logger)
               observability_for_rails_infos[workspace.name] = {
                 config_to_apply_resources_included: config_to_apply_resources_include_type
               }
+
+              config_to_apply_yaml_stream =
+                # config_to_apply_yaml will be returned as nil if generate_config_to_apply returned nil
+                if config_to_apply
+                  # Dump the config_to_apply to yaml with stringified keys, so it can be sent to the agent. This is
+                  # the last time we will have access to it before it is returned to the agent in the reconciliation
+                  # response, so we have kept everything as a hash with symbolized keys until now.
+                  config_to_apply.map { |resource| YAML.dump(resource.deep_stringify_keys) }.join
+                else
+                  # Return an empty string, which is valid YAML to represent a YAML `stream` with "zero" documents:
+                  # https://yaml.org/spec/1.2.2/#streams
+                  ""
+                end
 
               {
                 name: workspace.name,
@@ -41,8 +54,7 @@ module RemoteDevelopment
                 desired_state: workspace.desired_state,
                 actual_state: workspace.actual_state,
                 deployment_resource_version: workspace.deployment_resource_version,
-                # NOTE: config_to_apply should be returned as null if config_to_apply returned nil
-                config_to_apply: config_to_apply,
+                config_to_apply: config_to_apply_yaml_stream,
                 image_pull_secrets: workspace.workspaces_agent_config.image_pull_secrets.map(&:symbolize_keys)
               }
             end
@@ -65,7 +77,7 @@ module RemoteDevelopment
           # @param [String (frozen)] update_type
           # @param [RemoteDevelopment::Logger] logger
           # @return [Array]
-          def self.config_to_apply(workspace:, update_type:, logger:)
+          def self.generate_config_to_apply(workspace:, update_type:, logger:)
             return nil, NO_RESOURCES_INCLUDED unless should_include_config_to_apply?(update_type: update_type,
               workspace: workspace)
 
@@ -92,13 +104,13 @@ module RemoteDevelopment
                 )
               end
 
-            desired_config_to_apply_array = workspace_resources.map do |resource|
-              YAML.dump(Gitlab::Utils.deep_sort_hash(resource).deep_stringify_keys)
+            stable_sorted_workspace_resources = workspace_resources.map do |resource|
+              Gitlab::Utils.deep_sort_hash(resource)
             end
 
-            return nil, NO_RESOURCES_INCLUDED unless desired_config_to_apply_array.present?
+            return nil, NO_RESOURCES_INCLUDED unless stable_sorted_workspace_resources.present?
 
-            [desired_config_to_apply_array.join, resources_include_type]
+            [stable_sorted_workspace_resources, resources_include_type]
           end
 
           # @param [String (frozen)] update_type
@@ -109,7 +121,8 @@ module RemoteDevelopment
               workspace.force_include_all_resources ||
               workspace.desired_state_updated_more_recently_than_last_response_to_agent?
           end
-          private_class_method :should_include_config_to_apply?, :config_to_apply
+
+          private_class_method :should_include_config_to_apply?, :generate_config_to_apply
         end
       end
     end

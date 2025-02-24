@@ -153,7 +153,7 @@ RSpec.describe 'Remote Development workspaces', :freeze_time, :api, :js, feature
       click_button 'Actions'
 
       additional_args_for_expected_config_to_apply =
-        build_additional_args_for_expected_config_to_apply(
+        build_additional_args_for_expected_config_to_apply_yaml_stream(
           network_policy_enabled: true,
           dns_zone: workspaces_agent_config.dns_zone,
           namespace_path: group.path,

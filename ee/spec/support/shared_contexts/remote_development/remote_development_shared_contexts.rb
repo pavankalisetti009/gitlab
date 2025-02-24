@@ -270,7 +270,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
     # rubocop:enable Lint/DuplicateBranch
     # rubocop:enable Layout/LineLength
 
-    config_to_apply_yaml = create_config_to_apply(
+    config_to_apply = create_config_to_apply(
       workspace: workspace,
       workspace_variables_environment: workspace_variables_environment,
       workspace_variables_file: workspace_variables_file,
@@ -280,35 +280,20 @@ RSpec.shared_context 'with remote development shared fixtures' do
       include_all_resources: false,
       dns_zone: dns_zone
     )
-    config_to_apply = YAML.load_stream(config_to_apply_yaml)
-    latest_k8s_deployment_info = config_to_apply.detect { |config| config.fetch('kind') == 'Deployment' }
-    latest_k8s_deployment_info['metadata']['resourceVersion'] = resource_version
-    latest_k8s_deployment_info['status'] = YAML.safe_load(status)
+
+    latest_k8s_deployment_info = config_to_apply.detect { |config| config.fetch(:kind) == 'Deployment' }
+    latest_k8s_deployment_info[:metadata][:resourceVersion] = resource_version
+    latest_k8s_deployment_info[:status] = yaml_safe_load_symbolized(status)
 
     info[:latest_k8s_deployment_info] = latest_k8s_deployment_info
     info[:error_details] = error_details
-    info.deep_symbolize_keys.to_h
+    info
   end
 
-  # rubocop:enable Metrics/ParameterLists
-  # rubocop:enable Metrics/CyclomaticComplexity
-  # rubocop:enable Metrics/PerceivedComplexity
-  def create_workspace_rails_info(
-    name:,
-    namespace:,
-    desired_state:,
-    actual_state:,
-    deployment_resource_version: nil,
-    config_to_apply: nil
-  )
-    {
-      name: name,
-      namespace: namespace,
-      desired_state: desired_state,
-      actual_state: actual_state,
-      deployment_resource_version: deployment_resource_version,
-      config_to_apply: config_to_apply
-    }.compact
+  # rubocop:enable Metrics/ParameterLists, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+
+  def create_config_to_apply_yaml_stream(workspace:, **args)
+    create_config_to_apply(workspace: workspace, **args).map { |resource| YAML.dump(resource.deep_stringify_keys) }.join
   end
 
   def create_config_to_apply(workspace:, **args)
@@ -438,13 +423,15 @@ RSpec.shared_context 'with remote development shared fixtures' do
       )
     )
 
-    workspace_resource_quota = workspace_resource_quota(
-      workspace_name: workspace.name,
-      workspace_namespace: workspace.namespace,
-      labels: labels,
-      annotations: annotations,
-      max_resources_per_workspace: max_resources_per_workspace
-    )
+    if max_resources_per_workspace.present?
+      workspace_resource_quota = workspace_resource_quota(
+        workspace_name: workspace.name,
+        workspace_namespace: workspace.namespace,
+        labels: labels,
+        annotations: annotations,
+        max_resources_per_workspace: max_resources_per_workspace
+      )
+    end
 
     workspace_service_account = workspace_service_account(
       name: workspace.name,
@@ -472,14 +459,10 @@ RSpec.shared_context 'with remote development shared fixtures' do
       end
     end
 
-    resources.map do |resource|
-      yaml = YAML.dump(Gitlab::Utils.deep_sort_hash(resource).deep_stringify_keys)
-      yaml.gsub!('test-project', project_name)
-      yaml.gsub!('test-group', namespace_path)
-      yaml.gsub!('http://localhost/', root_url)
-      yaml
-    end.join
+    normalize_resources(namespace_path, project_name, resources)
   end
+
+  # rubocop:enable Metrics/ParameterLists, Metrics/AbcSize
 
   def workspace_inventory(workspace_name:, workspace_namespace:, agent_id:)
     {
@@ -497,6 +480,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
     }
   end
 
+  # rubocop:disable Metrics/ParameterLists -- Cleanup as part of https://gitlab.com/gitlab-org/gitlab/-/issues/421687
   def workspace_deployment(
     workspace_name:,
     workspace_namespace:,
@@ -823,7 +807,8 @@ RSpec.shared_context 'with remote development shared fixtures' do
 
     deployment
   end
-  # rubocop:enable Metrics/ParameterLists, Metrics/AbcSize
+
+  # rubocop:enable Metrics/ParameterLists
 
   def workspace_service(
     workspace_name:,
@@ -961,6 +946,17 @@ RSpec.shared_context 'with remote development shared fixtures' do
     annotations:,
     max_resources_per_workspace:
   )
+    max_resources_per_workspace => {
+      limits: {
+        cpu: limits_cpu,
+        memory: limits_memory
+      },
+      requests: {
+        cpu: requests_cpu,
+        memory: requests_memory
+      }
+    }
+
     {
       apiVersion: "v1",
       kind: "ResourceQuota",
@@ -972,10 +968,10 @@ RSpec.shared_context 'with remote development shared fixtures' do
       },
       spec: {
         hard: {
-          "limits.cpu": max_resources_per_workspace.dig(:limits, :cpu),
-          "limits.memory": max_resources_per_workspace.dig(:limits, :memory),
-          "requests.cpu": max_resources_per_workspace.dig(:requests, :cpu),
-          "requests.memory": max_resources_per_workspace.dig(:requests, :memory)
+          "limits.cpu": limits_cpu,
+          "limits.memory": limits_memory,
+          "requests.cpu": requests_cpu,
+          "requests.memory": requests_memory
         }
       }
     }
@@ -1064,15 +1060,37 @@ RSpec.shared_context 'with remote development shared fixtures' do
     }
   end
 
+  def normalize_resources(namespace_path, project_name, resources)
+    # Convert to YAML to normalize project_name, namespace_path, and root_url
+    normalized_resources_yaml = resources.map do |resource|
+      yaml = YAML.dump(resource)
+      yaml.gsub!('test-project', project_name)
+      yaml.gsub!('test-group', namespace_path)
+      yaml.gsub!('http://localhost/', root_url)
+      yaml
+    end.join
+
+    # Convert back to array of hashes, symbolizing keys, and deep sorting for test fixture comparison stability
+    YAML.load_stream(normalized_resources_yaml).map do |resource|
+      sorted_then_symbolized_resource = Gitlab::Utils.deep_sort_hash(resource).deep_symbolize_keys
+      symbolized_then_sorted_resource = Gitlab::Utils.deep_sort_hash(resource.deep_symbolize_keys)
+
+      # Verify there's no unexpected sorting instability for symbols vs. strings
+      raise "Sorting stability order error!" unless sorted_then_symbolized_resource == symbolized_then_sorted_resource
+
+      sorted_then_symbolized_resource
+    end
+  end
+
   def get_workspace_variables_environment(workspace_variables:)
     workspace_variables.with_variable_type_environment.each_with_object({}) do |workspace_variable, hash|
-      hash[workspace_variable.key] = workspace_variable.value
+      hash[workspace_variable.key.to_sym] = workspace_variable.value
     end
   end
 
   def get_workspace_variables_file(workspace_variables:)
     workspace_variables.with_variable_type_file.each_with_object({}) do |workspace_variable, hash|
-      hash[workspace_variable.key] = workspace_variable.value
+      hash[workspace_variable.key.to_sym] = workspace_variable.value
     end
   end
 
@@ -1085,7 +1103,12 @@ RSpec.shared_context 'with remote development shared fixtures' do
   end
 
   def yaml_safe_load_symbolized(yaml)
-    YAML.safe_load(yaml).to_h.deep_symbolize_keys
+    is_multiple_docs = YAML.load_stream(yaml).size > 1
+    if is_multiple_docs
+      YAML.load_stream(yaml).map { |doc| YAML.safe_load(YAML.dump(doc)).deep_symbolize_keys }
+    else
+      YAML.safe_load(yaml).deep_symbolize_keys
+    end
   end
 
   def example_default_devfile_yaml

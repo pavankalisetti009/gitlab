@@ -70,7 +70,8 @@ module RemoteDevelopment
               return []
             end
 
-            workspace_resources = YAML.load_stream(workspace_resources_yaml)
+            workspace_resources = YAML.load_stream(workspace_resources_yaml).map(&:deep_symbolize_keys)
+
             workspace_resources = set_host_users(
               workspace_resources: workspace_resources,
               use_kubernetes_user_namespaces: use_kubernetes_user_namespaces
@@ -86,7 +87,7 @@ module RemoteDevelopment
             workspace_resources = patch_default_resources(
               workspace_resources: workspace_resources,
               default_resources_per_workspace_container:
-                default_resources_per_workspace_container.deep_stringify_keys.to_h
+                default_resources_per_workspace_container
             )
             workspace_resources = inject_secrets(
               workspace_resources: workspace_resources,
@@ -110,9 +111,9 @@ module RemoteDevelopment
             return workspace_resources unless use_kubernetes_user_namespaces
 
             workspace_resources.each do |workspace_resource|
-              next unless workspace_resource['kind'] == 'Deployment'
+              next unless workspace_resource[:kind] == 'Deployment'
 
-              workspace_resource['spec']['template']['spec']['hostUsers'] = use_kubernetes_user_namespaces
+              workspace_resource[:spec][:template][:spec][:hostUsers] = use_kubernetes_user_namespaces
             end
             workspace_resources
           end
@@ -127,9 +128,9 @@ module RemoteDevelopment
             return workspace_resources if runtime_class_name.empty?
 
             workspace_resources.each do |workspace_resource|
-              next unless workspace_resource['kind'] == 'Deployment'
+              next unless workspace_resource[:kind] == 'Deployment'
 
-              workspace_resource['spec']['template']['spec']['runtimeClassName'] = runtime_class_name
+              workspace_resource[:spec][:template][:spec][:runtimeClassName] = runtime_class_name
             end
             workspace_resources
           end
@@ -151,31 +152,31 @@ module RemoteDevelopment
             allow_privilege_escalation:
           )
             workspace_resources.each do |workspace_resource|
-              next unless workspace_resource['kind'] == 'Deployment'
+              next unless workspace_resource[:kind] == 'Deployment'
 
               pod_security_context = {
-                'runAsNonRoot' => true,
-                'runAsUser' => RUN_AS_USER,
-                'fsGroup' => 0,
-                'fsGroupChangePolicy' => 'OnRootMismatch'
+                runAsNonRoot: true,
+                runAsUser: RUN_AS_USER,
+                fsGroup: 0,
+                fsGroupChangePolicy: 'OnRootMismatch'
               }
               container_security_context = {
-                'allowPrivilegeEscalation' => allow_privilege_escalation,
-                'privileged' => false,
-                'runAsNonRoot' => true,
-                'runAsUser' => RUN_AS_USER
+                allowPrivilegeEscalation: allow_privilege_escalation,
+                privileged: false,
+                runAsNonRoot: true,
+                runAsUser: RUN_AS_USER
               }
 
-              pod_spec = workspace_resource['spec']['template']['spec']
+              pod_spec = workspace_resource[:spec][:template][:spec]
               # Explicitly set security context for the pod
-              pod_spec['securityContext'] = pod_security_context
+              pod_spec[:securityContext] = pod_security_context
               # Explicitly set security context for all containers
-              pod_spec['containers'].each do |container|
-                container['securityContext'] = container_security_context
+              pod_spec[:containers].each do |container|
+                container[:securityContext] = container_security_context
               end
               # Explicitly set security context for all init containers
-              pod_spec['initContainers'].each do |init_container|
-                init_container['securityContext'] = container_security_context
+              pod_spec[:initContainers].each do |init_container|
+                init_container[:securityContext] = container_security_context
               end
             end
             workspace_resources
@@ -186,22 +187,19 @@ module RemoteDevelopment
           # @return [Array<Hash>]
           def self.patch_default_resources(workspace_resources:, default_resources_per_workspace_container:)
             workspace_resources.each do |workspace_resource|
-              next unless workspace_resource.fetch('kind') == 'Deployment'
+              next unless workspace_resource.fetch(:kind) == 'Deployment'
 
-              pod_spec = workspace_resource.fetch('spec').fetch('template').fetch('spec')
+              pod_spec = workspace_resource.fetch(:spec).fetch(:template).fetch(:spec)
 
-              # the purpose of this deep_merge (and the one below) is to ensure
-              # the values from the devfile override any defaults defined at the agent
-              pod_spec.fetch('initContainers').each do |init_container|
-                init_container
-                  .fetch('resources', {})
-                  .deep_merge!(default_resources_per_workspace_container) { |_, val, _| val }
-              end
-
-              pod_spec.fetch('containers').each do |container|
-                container
-                  .fetch('resources', {})
-                  .deep_merge!(default_resources_per_workspace_container) { |_, val, _| val }
+              container_types = [:initContainers, :containers]
+              container_types.each do |container_type|
+                # the purpose of this deep_merge is to ensure
+                # the values from the devfile override any defaults defined at the agent
+                pod_spec.fetch(container_type).each do |container|
+                  container
+                    .fetch(:resources, {})
+                    .deep_merge!(default_resources_per_workspace_container) { |_, val, _| val }
+                end
               end
             end
             workspace_resources
@@ -213,37 +211,37 @@ module RemoteDevelopment
           # @return [Array<Hash>]
           def self.inject_secrets(workspace_resources:, env_secret_names:, file_secret_names:)
             workspace_resources.each do |workspace_resource|
-              next unless workspace_resource.fetch('kind') == 'Deployment'
+              next unless workspace_resource.fetch(:kind) == 'Deployment'
 
               volume_name = 'gl-workspace-variables'
               volumes = [
                 {
-                  'name' => volume_name,
-                  'projected' => {
-                    'defaultMode' => 0o774,
-                    'sources' => file_secret_names.map { |v| { 'secret' => { 'name' => v } } }
+                  name: volume_name,
+                  projected: {
+                    defaultMode: 0o774,
+                    sources: file_secret_names.map { |v| { secret: { name: v } } }
                   }
                 }
               ]
               volume_mounts = [
                 {
-                  'name' => volume_name,
-                  'mountPath' => VARIABLES_FILE_DIR
+                  name: volume_name,
+                  mountPath: VARIABLES_FILE_DIR
                 }
               ]
-              env_from = env_secret_names.map { |v| { 'secretRef' => { 'name' => v } } }
+              env_from = env_secret_names.map { |v| { secretRef: { name: v } } }
 
-              pod_spec = workspace_resource.fetch('spec').fetch('template').fetch('spec')
-              pod_spec.fetch('volumes').concat(volumes) unless file_secret_names.empty?
+              pod_spec = workspace_resource.fetch(:spec).fetch(:template).fetch(:spec)
+              pod_spec.fetch(:volumes).concat(volumes) unless file_secret_names.empty?
 
-              pod_spec.fetch('initContainers').each do |init_container|
-                init_container.fetch('volumeMounts').concat(volume_mounts) unless file_secret_names.empty?
-                init_container['envFrom'] = env_from unless env_secret_names.empty?
+              pod_spec.fetch(:initContainers).each do |init_container|
+                init_container.fetch(:volumeMounts).concat(volume_mounts) unless file_secret_names.empty?
+                init_container[:envFrom] = env_from unless env_secret_names.empty?
               end
 
-              pod_spec.fetch('containers').each do |container|
-                container.fetch('volumeMounts').concat(volume_mounts) unless file_secret_names.empty?
-                container['envFrom'] = env_from unless env_secret_names.empty?
+              pod_spec.fetch(:containers).each do |container|
+                container.fetch(:volumeMounts).concat(volume_mounts) unless file_secret_names.empty?
+                container[:envFrom] = env_from unless env_secret_names.empty?
               end
             end
             workspace_resources
@@ -254,9 +252,9 @@ module RemoteDevelopment
           # @return [Array<Hash>]
           def self.set_service_account(workspace_resources:, service_account_name:)
             workspace_resources.each do |workspace_resource|
-              next unless workspace_resource.fetch('kind') == 'Deployment'
+              next unless workspace_resource.fetch(:kind) == 'Deployment'
 
-              workspace_resource['spec']['template']['spec']['serviceAccountName'] = service_account_name
+              workspace_resource[:spec][:template][:spec][:serviceAccountName] = service_account_name
             end
             workspace_resources
           end

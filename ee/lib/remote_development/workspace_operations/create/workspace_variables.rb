@@ -40,92 +40,92 @@ module RemoteDevelopment
               workspace_id: workspace_id
             },
             {
-              key: 'GIT_CONFIG_COUNT',
-              value: '3',
+              key: "GIT_CONFIG_COUNT",
+              value: "3",
               variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
               workspace_id: workspace_id
             },
             {
-              key: 'GIT_CONFIG_KEY_0',
+              key: "GIT_CONFIG_KEY_0",
               value: "credential.helper",
               variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
               workspace_id: workspace_id
             },
             {
-              key: 'GIT_CONFIG_VALUE_0',
+              key: "GIT_CONFIG_VALUE_0",
               value: GIT_CREDENTIAL_STORE_SCRIPT_FILE,
               variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
               workspace_id: workspace_id
             },
             {
-              key: 'GIT_CONFIG_KEY_1',
+              key: "GIT_CONFIG_KEY_1",
               value: "user.name",
               variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
               workspace_id: workspace_id
             },
             {
-              key: 'GIT_CONFIG_VALUE_1',
+              key: "GIT_CONFIG_VALUE_1",
               value: user_name,
               variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
               workspace_id: workspace_id
             },
             {
-              key: 'GIT_CONFIG_KEY_2',
+              key: "GIT_CONFIG_KEY_2",
               value: "user.email",
               variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
               workspace_id: workspace_id
             },
             {
-              key: 'GIT_CONFIG_VALUE_2',
+              key: "GIT_CONFIG_VALUE_2",
               value: user_email,
               variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
               workspace_id: workspace_id
             },
             {
-              key: 'GL_GIT_CREDENTIAL_STORE_SCRIPT_FILE',
+              key: "GL_GIT_CREDENTIAL_STORE_SCRIPT_FILE",
               value: GIT_CREDENTIAL_STORE_SCRIPT_FILE,
               variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
               workspace_id: workspace_id
             },
             {
-              key: 'GL_TOKEN_FILE_PATH',
+              key: "GL_TOKEN_FILE_PATH",
               value: TOKEN_FILE,
               variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
               workspace_id: workspace_id
             },
             {
-              key: 'GL_WORKSPACE_DOMAIN_TEMPLATE',
+              key: "GL_WORKSPACE_DOMAIN_TEMPLATE",
               value: "${PORT}-#{name}.#{dns_zone}",
               variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
               workspace_id: workspace_id
             },
             {
-              key: 'GL_EDITOR_EXTENSIONS_GALLERY_SERVICE_URL',
+              key: "GL_EDITOR_EXTENSIONS_GALLERY_SERVICE_URL",
               value: vscode_extensions_gallery_service_url,
               variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
               workspace_id: workspace_id
             },
             {
-              key: 'GL_EDITOR_EXTENSIONS_GALLERY_ITEM_URL',
+              key: "GL_EDITOR_EXTENSIONS_GALLERY_ITEM_URL",
               value: vscode_extensions_gallery_item_url,
               variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
               workspace_id: workspace_id
             },
             {
-              key: 'GL_EDITOR_EXTENSIONS_GALLERY_RESOURCE_URL_TEMPLATE',
+              key: "GL_EDITOR_EXTENSIONS_GALLERY_RESOURCE_URL_TEMPLATE",
               value: vscode_extensions_gallery_resource_url_template,
               variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
               workspace_id: workspace_id
             },
             # variables with prefix `GITLAB_WORKFLOW_` are used for configured GitLab Workflow extension for VS Code
             {
-              key: 'GITLAB_WORKFLOW_INSTANCE_URL',
+              key: "GITLAB_WORKFLOW_INSTANCE_URL",
               value: Gitlab::Routing.url_helpers.root_url,
               variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
               workspace_id: workspace_id
             },
             {
-              key: 'GITLAB_WORKFLOW_TOKEN_FILE',
+              key: "GITLAB_WORKFLOW_TOKEN_FILE",
               value: TOKEN_FILE,
               variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
               workspace_id: workspace_id

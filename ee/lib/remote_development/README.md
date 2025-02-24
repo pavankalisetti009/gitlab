@@ -202,6 +202,169 @@ that the types are correct. See [this comment thread](https://gitlab.com/gitlab-
 
 Also note that the destructuring a hash or array, even without the type checks (e.g. `x => {y: i}`), is still a form of type safety, because it will raise a `NoMatchingPatternKeyError` exception if the hash or array does not have the expected structure.
 
+#### Pattern matching with arrays
+
+This approach can also be used with structures that are a mix of arrays and hashes. In this example, the call to `#find`
+to search for a matching hash within an array can be replaced with
+an equivalent pattern matching structure which uses the `*_` syntax to match any number of elements.
+
+```ruby
+haystack = [
+  { type: :straw, value: :nope },
+  { type: :needle, value: "FOUND IT!" },
+  { type: :dirt, value: :nope },
+]
+
+puts haystack.find { |item| item.fetch(:type) == :needle }.fetch(:value)
+# => "FOUND IT!"
+
+haystack => [
+  *_,
+  { type: :needle, value: value },
+  *_
+]
+puts value
+# => "FOUND IT!"
+
+begin
+  haystack.find { |item| item.fetch(:type) == :gold }.fetch(:value)
+rescue => e
+  # Less descriptive error message:
+  p e
+  # #<NoMethodError: undefined method `fetch' for nil>
+end
+
+begin
+  haystack => [
+    *_,
+    { type: :missing_gold, value: String => value },
+    *_
+  ]
+rescue => e
+  # More descriptive error message:
+  p e
+  # #<NoMatchingPatternError: [{:type=>:straw, :value=>:nope}, {:type=>:needle, :value=>"FOUND IT!"}, {:type=>:dirt, :value=>:nope}]: [{:type=>:straw, :value=>:nope}, {:type=>:needle, :value=>"FOUND IT!"}, {:type=>:dirt, :value=>:nope}] does not match to find pattern>
+end
+```
+
+This approach can also be used to concisely replace combinations of `#find` and `#dig` for deeply-nested
+structures.
+
+```ruby
+array = [
+  { key: 1 },
+  {
+    key: 2,
+    a: {
+      b: {
+        value: "The value",
+      }
+    }
+  },
+  { key: 3 }
+]
+
+value = array.find { |item| item.fetch(:key) == 2 }.dig(:a, :b, :value)
+puts value.length
+# => 9
+
+array => [
+  *_,
+  {
+    key: 2,
+    a: {
+      b: {
+        value: value
+      }
+    }
+  },
+  *_
+]
+puts value.length
+# => 9
+```
+
+#### Type safety for hash keys: `#dig` vs. pattern matching vs. `#fetch`
+
+In cases where the expected key is not found, pattern matching will fail with a descriptive error, where
+`#dig` will just return `nil`:
+
+```ruby
+array = [
+  { key: 1 },
+  {
+    key: 2,
+    a: {
+      b: {
+        value: "The value",
+      }
+    }
+  },
+  { key: 3 }
+]
+
+# With #dig, an incorrect key will allow nil to be returned:
+value = array.find { |item| item.fetch(:key) == 2 }.dig(:MISSING, :b, :value)
+begin
+  puts value.length
+rescue => e
+  # No null-safety, less descriptive error message:
+  p e
+  # #<NoMethodError: undefined method `length' for nil>
+end
+
+# With pattern matching, an incorrect key will raise a descriptive error:
+begin
+  array => [
+    *_,
+    {
+      key: 2,
+      MISSING: {
+        b: {
+          value: value
+        }
+      }
+    },
+    *_
+  ]
+rescue => e
+  # More descriptive error message:
+  p e
+  # #<NoMatchingPatternError: [{:key=>1}, {:key=>2, :a=>{:b=>{:value=>"The value"}}}, {:key=>3}]: [{:key=>1}, {:key=>2, :a=>{:b=>{:value=>"The value"}}}, {:key=>3}] does not match to find pattern>
+end
+```
+
+You can also get null-safety if the `#dig` is replaced with multiple chained `#fetch` calls.
+
+This gives a more descriptive error message than dig, but it is different than pattern matching.
+`#fetch` will tell you the missing key, but won't print out the full data structure for you to look
+at. Pattern matching doesn't tell you the missing key, but will print out the full data structure.
+
+```ruby
+array => [
+  *_,
+  {
+    key: 2,
+    a: {
+      b: {
+        value: value
+      }
+    }
+  },
+  *_
+]
+
+# You can get nil safety by using #fetch instead of #dig
+begin
+  array.find { |item| item.fetch(:key) == 2 }.fetch(:a).fetch(:MISSING).fetch(:value)
+rescue => e
+  p e
+  # #<KeyError: key not found: :MISSING>
+end
+```
+
+You can choose which is more appropriate for your use case.
+
 #### Do not use type safety on unvalidated user-provided values
 
 We do not want to use type safety on values which come directly from user input, and have not yet been validated.

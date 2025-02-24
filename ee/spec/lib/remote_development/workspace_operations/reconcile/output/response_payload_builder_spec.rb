@@ -66,7 +66,11 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
     ]
   end
 
-  let(:returned_workspace_rails_infos) do
+  let(:expected_returned_workspace_rails_infos) do
+    config_to_apply_yaml_stream = generated_config_to_apply&.map do |resource|
+      YAML.dump(resource.deep_stringify_keys)
+    end&.join
+
     [
       {
         name: workspace.name,
@@ -75,10 +79,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
         desired_state: desired_state,
         actual_state: actual_state,
         image_pull_secrets: image_pull_secrets,
-        config_to_apply:
-          generated_config_to_apply&.map do |resource|
-            YAML.dump(resource.deep_stringify_keys)
-          end&.join
+        config_to_apply: config_to_apply_yaml_stream || ""
       }
     ]
   end
@@ -86,7 +87,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
   let(:expected_returned_value) do
     context.merge(
       response_payload: {
-        workspace_rails_infos: returned_workspace_rails_infos,
+        workspace_rails_infos: expected_returned_workspace_rails_infos,
         settings: settings
       },
       observability_for_rails_infos: {
@@ -127,6 +128,38 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
 
       it "includes config_to_apply with all resources included" do
         expect(returned_value).to eq(expected_returned_value)
+      end
+
+      context "when config_to_apply contains multiple resources" do
+        let(:generated_config_to_apply) do
+          [
+            {
+              a: 1
+            },
+            {
+              b: 2
+            },
+            {
+              c: 3
+            }
+          ]
+        end
+
+        it "includes all resources" do
+          expect(returned_value).to eq(expected_returned_value)
+          returned_value[:response_payload][:workspace_rails_infos].first[:config_to_apply]
+          returned_value => {
+            response_payload: {
+              workspace_rails_infos: [
+                {
+                  config_to_apply: config_to_apply_yaml_stream
+                },
+              ]
+            }
+          }
+          loaded_multiple_docs = YAML.load_stream(config_to_apply_yaml_stream)
+          expect(loaded_multiple_docs.size).to eq(3)
+        end
       end
     end
 
@@ -176,7 +209,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
             described_class::NO_RESOURCES_INCLUDED
           end
 
-          it "does not includes config_to_apply and returns it as nil" do
+          it "does not includes config_to_apply and returns it as an empty string" do
             expect(returned_value).to eq(expected_returned_value)
           end
         end
@@ -196,6 +229,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
       stub_const(
         "RemoteDevelopment::WorkspaceOperations::Reconcile::Output::DesiredConfigGeneratorV2",
         Class.new do
+          # @param [Object] _
           # @return [Hash]
           def self.generate_desired_config(_)
             {}
@@ -205,6 +239,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
     end
 
     it "includes config_to_apply with all resources included" do
+      # noinspection RubyResolve -- This constant is stubbed
       allow(RemoteDevelopment::WorkspaceOperations::Reconcile::Output::DesiredConfigGeneratorV2)
         .to(receive(:generate_desired_config)) { generated_config_to_apply }
 
