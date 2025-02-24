@@ -44,22 +44,20 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
     end
 
     let(:expected_config) do
-      YAML.load_stream(
-        create_config_to_apply(
-          workspace: workspace,
-          started: started,
-          include_network_policy: workspace.workspaces_agent_config.network_policy_enabled,
-          include_all_resources: include_all_resources,
-          egress_ip_rules: workspace.workspaces_agent_config.network_policy_egress,
-          max_resources_per_workspace: max_resources_per_workspace,
-          default_resources_per_workspace_container: default_resources_per_workspace_container,
-          allow_privilege_escalation: workspace.workspaces_agent_config.allow_privilege_escalation,
-          use_kubernetes_user_namespaces: workspace.workspaces_agent_config.use_kubernetes_user_namespaces,
-          default_runtime_class: workspace.workspaces_agent_config.default_runtime_class,
-          agent_labels: workspace.workspaces_agent_config.labels,
-          agent_annotations: workspace.workspaces_agent_config.annotations,
-          image_pull_secrets: image_pull_secrets
-        )
+      create_config_to_apply(
+        workspace: workspace,
+        started: started,
+        include_network_policy: workspace.workspaces_agent_config.network_policy_enabled,
+        include_all_resources: include_all_resources,
+        egress_ip_rules: workspace.workspaces_agent_config.network_policy_egress,
+        max_resources_per_workspace: max_resources_per_workspace,
+        default_resources_per_workspace_container: default_resources_per_workspace_container,
+        allow_privilege_escalation: workspace.workspaces_agent_config.allow_privilege_escalation,
+        use_kubernetes_user_namespaces: workspace.workspaces_agent_config.use_kubernetes_user_namespaces,
+        default_runtime_class: workspace.workspaces_agent_config.default_runtime_class,
+        agent_labels: workspace.workspaces_agent_config.labels,
+        agent_annotations: workspace.workspaces_agent_config.annotations,
+        image_pull_secrets: image_pull_secrets
       )
     end
 
@@ -74,8 +72,18 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
     context 'when desired_state results in started=true' do
       it 'returns expected config with the replicas set to one' do
         expect(workspace_resources).to eq(expected_config)
-        deployment = workspace_resources.find { |resource| resource.fetch('kind') == 'Deployment' }
-        expect(deployment.dig('spec', 'replicas')).to eq(1)
+        workspace_resources => [
+          *_,
+          {
+            kind: "Deployment",
+            spec: {
+              replicas: replicas
+            }
+          },
+          *_
+        ]
+
+        expect(replicas).to eq(1)
       end
     end
 
@@ -85,8 +93,17 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
 
       it 'returns expected config with the replicas set to zero' do
         expect(workspace_resources).to eq(expected_config)
-        deployment = workspace_resources.find { |resource| resource.fetch('kind') == 'Deployment' }
-        expect(deployment.dig('spec', 'replicas')).to eq(0)
+        workspace_resources => [
+          *_,
+          {
+            kind: "Deployment",
+            spec: {
+              replicas: replicas
+            }
+          },
+          *_
+        ]
+        expect(replicas).to eq(0)
       end
     end
 
@@ -95,7 +112,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
 
       it 'returns expected config without network policy' do
         expect(workspace_resources).to eq(expected_config)
-        network_policy_resource = workspace_resources.select { |resource| resource.fetch('kind') == 'NetworkPolicy' }
+        network_policy_resource = workspace_resources.select { |resource| resource.fetch(:kind) == 'NetworkPolicy' }
         expect(network_policy_resource).to be_empty
       end
     end
@@ -107,24 +124,33 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
 
       it 'returns expected config with defaults for the container resources set' do
         expect(workspace_resources).to eq(expected_config)
-        deployment = workspace_resources.find { |resource| resource.fetch('kind') == 'Deployment' }
-        resources_per_workspace_container = deployment.dig('spec', 'template', 'spec',
-          'containers').map do |container|
-          container.fetch('resources')
-        end
-        resources = default_resources_per_workspace_container.deep_stringify_keys
-        expect(resources_per_workspace_container).to all(eq resources)
+        workspace_resources => [
+          *_,
+          {
+            kind: "Deployment",
+            spec: {
+              template: {
+                spec: {
+                  containers: containers
+                }
+              }
+            }
+          },
+          *_
+        ]
+        resources_per_workspace_container = containers.map { |container| container.fetch(:resources) }
+        expect(resources_per_workspace_container).to all(eq(default_resources_per_workspace_container))
       end
     end
 
     context 'when there are image-pull-secrets' do
       let(:image_pull_secrets) { [{ name: 'secret-name', namespace: 'secret-namespace' }] }
-      let(:expected_image_pull_secrets_names) { [{ 'name' => 'secret-name' }] }
+      let(:expected_image_pull_secrets_names) { [{ name: 'secret-name' }] }
 
       it 'returns expected config with a service account resource configured' do
         expect(workspace_resources).to eq(expected_config)
-        service_account_resource = workspace_resources.find { |resource| resource.fetch('kind') == 'ServiceAccount' }
-        expect(service_account_resource.fetch('imagePullSecrets')).to eq(expected_image_pull_secrets_names)
+        service_account_resource = workspace_resources.find { |resource| resource.fetch(:kind) == 'ServiceAccount' }
+        expect(service_account_resource.to_h.fetch(:imagePullSecrets)).to eq(expected_image_pull_secrets_names)
       end
     end
 
@@ -138,7 +164,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
 
         it 'returns expected config with resource quota set' do
           expect(workspace_resources).to eq(expected_config)
-          resource_quota = workspace_resources.find { |resource| resource.fetch('kind') == 'ResourceQuota' }
+          resource_quota = workspace_resources.find { |resource| resource.fetch(:kind) == 'ResourceQuota' }
           expect(resource_quota).not_to be_nil
         end
       end

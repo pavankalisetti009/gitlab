@@ -10,7 +10,20 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
     it "sets desired_state to #{expected_desired_state}" do
       response = subject
       expect(response[:message]).to be_nil
-      expect(response.dig(:payload, :workspace_rails_infos)).not_to be_nil
+
+      response => {
+        payload: {
+          workspace_rails_infos: [
+            *_,
+            {
+              desired_state: actual_desired_state
+            },
+            *_
+          ]
+        }
+      }
+
+      expect(actual_desired_state).to eq(expected_desired_state)
 
       expect(workspace.reload.desired_state).to eq(expected_desired_state)
     end
@@ -34,11 +47,31 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
     end
 
     it 'uses versioned config values' do
-      config_to_apply =
-        YAML.load_stream(response.dig(:payload, :workspace_rails_infos, 0, :config_to_apply))
+      response => {
+        payload: {
+          workspace_rails_infos: [
+            {
+              config_to_apply: config_to_apply_yaml_stream
+            },
+            *_
+          ]
+        }
+      }
 
-      service = config_to_apply.find { |config| config["kind"] == "Service" }.to_h
-      host_template_annotation = service.dig("metadata", "annotations", "workspaces.gitlab.com/host-template")
+      config_to_apply = yaml_safe_load_symbolized(config_to_apply_yaml_stream)
+
+      config_to_apply => [
+        *_,
+        {
+          kind: "Service",
+          metadata: {
+            annotations: {
+              "workspaces.gitlab.com/host-template": host_template_annotation
+            }
+          }
+        },
+        *_
+      ]
 
       expect(host_template_annotation).to include(dns_zone)
       expect(host_template_annotation).not_to include(new_dns_zone)
@@ -47,7 +80,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
 
   let_it_be(:image_pull_secrets) { [{ name: "secret-name", namespace: "secret-namespace" }] }
   let_it_be(:dns_zone) { 'workspaces.localdev.me' }
+  # noinspection RubyArgCount --https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
   let_it_be(:user) { create(:user) }
+  # noinspection RubyArgCount --https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
   let_it_be(:agent, refind: true) { create(:cluster_agent) }
   let_it_be(:workspaces_agent_config, refind: true) do
     create(:workspaces_agent_config, dns_zone: dns_zone, agent: agent, image_pull_secrets: image_pull_secrets)
@@ -131,7 +166,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
       let(:expected_desired_state) { desired_state }
       let(:expected_actual_state) { actual_state }
       let(:expected_deployment_resource_version) { deployment_resource_version_from_agent }
-      let(:expected_config_to_apply) { nil }
+      let(:expected_config_to_apply_yaml_stream) { "" }
       let(:error_from_agent) { nil }
 
       let(:workspace_agent_info) do
@@ -154,7 +189,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
           desired_state: expected_desired_state,
           actual_state: expected_actual_state,
           deployment_resource_version: expected_deployment_resource_version,
-          config_to_apply: expected_config_to_apply,
+          config_to_apply: expected_config_to_apply_yaml_stream,
           image_pull_secrets: image_pull_secrets
         }
       end
@@ -259,7 +294,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
           provisioned_workspace_rails_info =
             workspace_rails_infos.detect { |info| info.fetch(:name) == workspace.name }
           # Since the workspace is now in Error state, the config should not be returned to the agent
-          expect(provisioned_workspace_rails_info.fetch(:config_to_apply)).to be_nil
+          expect(provisioned_workspace_rails_info.fetch(:config_to_apply)).to eq("")
 
           # then test everything in the infos
           expect(workspace_rails_infos).to eq(expected_workspace_rails_infos)
@@ -299,7 +334,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
             desired_state: expected_desired_state,
             actual_state: expected_actual_state,
             deployment_resource_version: expected_deployment_resource_version,
-            config_to_apply: nil,
+            config_to_apply: "",
             image_pull_secrets: image_pull_secrets
           }
         end
@@ -322,7 +357,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
 
           workspace2_rails_info =
             workspace_rails_infos.detect { |info| info.fetch(:name) == workspace2.name }
-          expect(workspace2_rails_info.fetch(:config_to_apply)).to be_nil
+          expect(workspace2_rails_info.fetch(:config_to_apply)).to eq("")
 
           # then test everything in the infos
           expect(workspace_rails_infos).to eq(expected_workspace_rails_infos)
@@ -410,8 +445,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
         context 'when desired_state does not match actual_state' do
           let(:deployment_resource_version_from_agent) { workspace.deployment_resource_version }
 
-          let(:expected_config_to_apply) do
-            create_config_to_apply(
+          let(:expected_config_to_apply_yaml_stream) do
+            create_config_to_apply_yaml_stream(
               workspace: workspace,
               started: expected_value_for_started,
               egress_ip_rules: egress_ip_rules,
@@ -449,10 +484,11 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
                 .to eq(expected_deployment_resource_version)
 
               # test the config to apply first to get a more specific diff if it fails
-              provisioned_workspace_rails_info =
-                workspace_rails_infos.detect { |info| info.fetch(:name) == workspace.name }
-              expect(provisioned_workspace_rails_info.fetch(:config_to_apply))
-                .to eq(expected_workspace_rails_info.fetch(:config_to_apply))
+              actual_workspace_rails_info = workspace_rails_infos.detect { |info| info.fetch(:name) == workspace.name }
+              actual_config_to_apply = yaml_safe_load_symbolized(actual_workspace_rails_info.fetch(:config_to_apply))
+              expected_config_to_apply =
+                yaml_safe_load_symbolized(expected_workspace_rails_info.fetch(:config_to_apply))
+              expect(actual_config_to_apply).to eq(expected_config_to_apply)
 
               # then test everything in the infos
               expect(workspace_rails_infos).to eq(expected_workspace_rails_infos)
@@ -520,8 +556,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
             let(:expected_actual_state) { RemoteDevelopment::WorkspaceOperations::States::UNKNOWN }
             let(:expected_value_for_started) { false }
 
-            let(:expected_config_to_apply) do
-              create_config_to_apply(
+            let(:expected_config_to_apply_yaml_stream) do
+              create_config_to_apply_yaml_stream(
                 workspace: workspace,
                 started: expected_value_for_started,
                 egress_ip_rules: egress_ip_rules,
@@ -542,10 +578,11 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
               config_to_apply_hash = YAML.safe_load(
                 response[:payload].fetch(:workspace_rails_infos)[0][:config_to_apply]
               )
-              expected_config_to_apply_hash = YAML.safe_load(expected_config_to_apply)
+              expected_config_to_apply_hash = YAML.safe_load(expected_config_to_apply_yaml_stream)
               expect(config_to_apply_hash).to eq(expected_config_to_apply_hash)
 
-              expect(response[:payload][:workspace_rails_infos][0][:config_to_apply]).to eq(expected_config_to_apply)
+              expect(response[:payload][:workspace_rails_infos][0][:config_to_apply])
+                .to eq(expected_config_to_apply_yaml_stream)
 
               expect(response[:payload][:workspace_rails_infos]).to eq(expected_workspace_rails_infos)
             end
@@ -600,13 +637,14 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
       let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::CREATION_REQUESTED }
 
       let_it_be(:unprovisioned_workspace) do
+        # noinspection RubyArgCount --https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
         create(:workspace, :unprovisioned, agent: agent, user: user)
       end
 
       let(:workspace_agent_infos) { [] }
 
-      let(:expected_config_to_apply) do
-        create_config_to_apply(
+      let(:expected_config_to_apply_yaml_stream) do
+        create_config_to_apply_yaml_stream(
           workspace: unprovisioned_workspace,
           started: expected_value_for_started,
           include_all_resources: true,
@@ -624,7 +662,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
           desired_state: desired_state,
           actual_state: actual_state,
           deployment_resource_version: nil,
-          config_to_apply: expected_config_to_apply,
+          config_to_apply: expected_config_to_apply_yaml_stream,
           image_pull_secrets: image_pull_secrets
         }
       end

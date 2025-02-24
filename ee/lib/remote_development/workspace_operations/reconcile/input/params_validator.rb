@@ -13,10 +13,9 @@ module RemoteDevelopment
           def self.validate(context)
             context => { original_params: Hash => original_params }
 
-            # NOTE: We deep_stringify_keys here, because even though they will be strings in the a real request,
-            #       so we can still pass keys as symbols during tests, and not have to worry about passing string
-            #       keys in tests. This is the only place where keys need to be strings, because of the JSON schema
-            #       validation, all other places we convert and work with the keys as symbols.
+            # NOTE: We deep_stringify_keys here because even though they will be strings in a real request,
+            #       we use symbols during tests. JSON schema validators are the only place where keys need
+            #       to be strings. All other internal logic uses symbols.
             errors = validate_original_params_against_schema(original_params.deep_stringify_keys)
 
             if errors.none?

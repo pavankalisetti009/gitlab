@@ -137,6 +137,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     create(:ee_cluster_agent, project: agent_project, created_by_user: agent_admin_user, project_id: agent_project.id)
   end
 
+  # @return [void]
   def do_create_workspaces_agent_config
     # Perform an agent update post which will cause a workspaces_agent_config record to be created
     # based on the cluster agent's config file.
@@ -181,8 +182,11 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     expect(
       graphql_data_at(:namespace, :remoteDevelopmentClusterAgents, :nodes, 0, :workspacesAgentConfig)
     ).to eq(expected_agent_config)
+
+    nil
   end
 
+  # @return [void]
   def do_create_mapping
     namespace_create_remote_development_cluster_agent_mapping_create_mutation_args =
       {
@@ -194,9 +198,12 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
       input: namespace_create_remote_development_cluster_agent_mapping_create_mutation_args,
       user: agent_admin_user
     )
+
+    nil
   end
 
   # rubocop:disable Metrics/AbcSize -- We want this to stay a single method
+  # @return [RemoteDevelopment::Workspace]
   def do_create_workspace
     # FETCH THE AGENT CONFIG VIA THE GRAPHQL API, SO WE CAN USE ITS VALUES WHEN CREATING WORKSPACE
     cluster_agent_gid = "gid://gitlab/Clusters::Agent/#{agent.id}"
@@ -240,10 +247,11 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     types = RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES
     all_actual_vars = RemoteDevelopment::WorkspaceVariable.where(workspace: workspace)
 
+    # noinspection RailsParamDefResolve -- RubyMine is incorrectly detecting this as ActiveRecord #select method
     actual_user_provided_vars = all_actual_vars.select(&:user_provided)
 
     all_actual_vars = all_actual_vars.map { |v| { key: v.key, type: types.invert[v.variable_type], value: v.value } }
-    .sort_by { |v| v[:key] }
+                                     .sort_by { |v| v[:key] }
 
     # Check that user provided variables had their flag set correctly.
     expect(actual_user_provided_vars.count).to eq(user_provided_variables.count)
@@ -267,6 +275,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
   # rubocop:enable Metrics/AbcSize
 
   # @param [String] cluster_agent_gid
+  # @return [Hash]
   def workspace_create_mutation_args(cluster_agent_gid)
     {
       desired_state: states::RUNNING,
@@ -282,17 +291,24 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
   end
 
   # @param [RemoteDevelopment::Workspace] workspace
+  # @return [void]
   def do_start_workspace(workspace)
     do_change_workspace_state(workspace: workspace, desired_state: states::RUNNING)
+
+    nil
   end
 
   # @param [RemoteDevelopment::Workspace] workspace
+  # @return [void]
   def do_stop_workspace(workspace)
     do_change_workspace_state(workspace: workspace, desired_state: states::STOPPED)
+
+    nil
   end
 
   # @param [RemoteDevelopment::Workspace] workspace
   # @param [String] desired_state
+  # @return [void]
   def do_change_workspace_state(workspace:, desired_state:)
     workspace_update_mutation_args = {
       id: global_id_of(workspace),
@@ -310,11 +326,14 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
 
     # noinspection RubyResolve
     expect(workspace.reload.desired_state_updated_at).to eq(Time.current)
+
+    nil
   end
 
   # @param [Symbol] name
   # @param [Hash] input
   # @param [User] user
+  # @return [Hash]
   def do_graphql_mutation_post(name:, input:, user:)
     mutation = graphql_mutation(name, input)
     post_graphql_mutation(mutation, current_user: user)
@@ -368,7 +387,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
       workspace = do_create_workspace
 
       additional_args_for_expected_config_to_apply =
-        build_additional_args_for_expected_config_to_apply(
+        build_additional_args_for_expected_config_to_apply_yaml_stream(
           network_policy_enabled: true,
           dns_zone: dns_zone,
           namespace_path: workspace_project_namespace.full_path,

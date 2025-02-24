@@ -13,17 +13,20 @@ module RemoteDevelopment
         # @return [Hash]
         def self.update(context)
           context => {
-            processed_devfile: Hash => processed_devfile,
+            processed_devfile: {
+              components: Array => components
+            },
             tools_dir: String => tools_dir,
             vscode_extension_marketplace_metadata: Hash => vscode_extension_marketplace_metadata
           }
 
           # NOTE: We will always have exactly one main_component found, because we have already
           #       validated this in devfile_validator.rb
-          main_component =
-            processed_devfile
-              .fetch(:components)
-              .find { |component| component.dig(:attributes, MAIN_COMPONENT_INDICATOR_ATTRIBUTE.to_sym) }
+          main_component = components.find do |component|
+            # NOTE: We can't use pattern matching here, because constants can't be used in pattern matching.
+            #       Otherwise, we could do this all in a single pattern match.
+            component.dig(:attributes, MAIN_COMPONENT_INDICATOR_ATTRIBUTE.to_sym)
+          end
 
           container = main_component.fetch(:container)
 

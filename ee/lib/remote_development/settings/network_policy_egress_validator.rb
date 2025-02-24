@@ -5,6 +5,8 @@ module RemoteDevelopment
     class NetworkPolicyEgressValidator
       include Messages
 
+      # @param [Hash] context
+      # @return [Gitlab::Fp::Result]
       def self.validate(context)
         unless context.fetch(:requested_setting_names).include?(:network_policy_egress)
           return Gitlab::Fp::Result.ok(context)
@@ -15,12 +17,13 @@ module RemoteDevelopment
             network_policy_egress: Array => network_policy_egress,
           }
         }
-        network_policy_egress = network_policy_egress.map do |element|
-          next element unless element.is_a?(Hash)
 
-          element.deep_stringify_keys
-        end
-        errors = validate_against_schema(network_policy_egress)
+        # NOTE: We deep_stringify_keys here because even though they will be strings in a real request,
+        #       we use symbols during tests. JSON schema validators are the only place where keys need
+        #       to be strings. All other internal logic uses symbols.
+        network_policy_egress_stringified_keys = network_policy_egress.map(&:deep_stringify_keys)
+
+        errors = validate_against_schema(network_policy_egress_stringified_keys)
 
         if errors.none?
           Gitlab::Fp::Result.ok(context)

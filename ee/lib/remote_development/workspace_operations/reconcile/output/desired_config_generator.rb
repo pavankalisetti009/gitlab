@@ -61,12 +61,12 @@ module RemoteDevelopment
               default_runtime_class: workspaces_agent_config.default_runtime_class
             }
 
-            # TODO: https://gitlab.com/groups/gitlab-org/-/epics/12225 - handle error
             k8s_resources_for_workspace_core = DevfileParser.get_all(
               processed_devfile: workspace.processed_devfile,
               k8s_resources_params: k8s_resources_params,
               logger: logger
             )
+
             # If we got no resources back from the devfile parser, this indicates some error was encountered in parsing
             # the processed_devfile. So we return an empty array which will result in no updates being applied by the
             # agent. We should not continue on and try to add anything else to the resources, as this would result
@@ -193,7 +193,7 @@ module RemoteDevelopment
 
             data_for_environment = workspace.workspace_variables.with_variable_type_environment
             data_for_environment = data_for_environment.each_with_object({}) do |workspace_variable, hash|
-              hash[workspace_variable.key] = workspace_variable.value
+              hash[workspace_variable.key.to_sym] = workspace_variable.value
             end
             k8s_secret_for_environment = get_secret(
               name: env_secret_name,
@@ -205,7 +205,7 @@ module RemoteDevelopment
 
             data_for_file = workspace.workspace_variables.with_variable_type_file
             data_for_file = data_for_file.each_with_object({}) do |workspace_variable, hash|
-              hash[workspace_variable.key] = workspace_variable.value
+              hash[workspace_variable.key.to_sym] = workspace_variable.value
             end
             k8s_secret_for_file = get_secret(
               name: file_secret_name,
@@ -237,8 +237,8 @@ module RemoteDevelopment
           # @return [Hash]
           def self.get_inventory_config_map(name:, namespace:, agent_labels:, agent_annotations:, agent_id:)
             extra_labels = {
-              'cli-utils.sigs.k8s.io/inventory-id' => name,
-              'agent.gitlab.com/id' => agent_id.to_s
+              'cli-utils.sigs.k8s.io/inventory-id': name,
+              'agent.gitlab.com/id': agent_id.to_s
             }
             labels = agent_labels.merge(extra_labels)
             {
@@ -250,7 +250,7 @@ module RemoteDevelopment
                 labels: labels,
                 annotations: agent_annotations
               }
-            }.deep_stringify_keys.to_h
+            }
           end
 
           # @param [Hash<String, String>] agent_labels
@@ -272,14 +272,14 @@ module RemoteDevelopment
             max_resources_per_workspace:
           )
             extra_labels = {
-              'agent.gitlab.com/id' => agent_id.to_s
+              'agent.gitlab.com/id': agent_id.to_s
             }
             labels = agent_labels.merge(extra_labels)
             extra_annotations = {
-              'config.k8s.io/owning-inventory' => owning_inventory.to_s,
-              'workspaces.gitlab.com/host-template' => domain_template.to_s,
-              'workspaces.gitlab.com/id' => workspace_id.to_s,
-              'workspaces.gitlab.com/max-resources-per-workspace-sha256' =>
+              'config.k8s.io/owning-inventory': owning_inventory.to_s,
+              'workspaces.gitlab.com/host-template': domain_template.to_s,
+              'workspaces.gitlab.com/id': workspace_id.to_s,
+              'workspaces.gitlab.com/max-resources-per-workspace-sha256':
                 OpenSSL::Digest::SHA256.hexdigest(max_resources_per_workspace.sort.to_h.to_s)
             }
             annotations = agent_annotations.merge(extra_annotations)
@@ -303,7 +303,7 @@ module RemoteDevelopment
                 annotations: annotations
               },
               data: data.transform_values { |v| Base64.strict_encode64(v) }
-            }.deep_stringify_keys.to_h
+            }
           end
 
           # @param [String] name
@@ -378,7 +378,7 @@ module RemoteDevelopment
                 podSelector: {},
                 policyTypes: policy_types
               }
-            }.deep_stringify_keys.to_h
+            }
           end
 
           # @param [String] name
@@ -394,6 +394,17 @@ module RemoteDevelopment
             annotations:,
             max_resources_per_workspace:
           )
+            max_resources_per_workspace => {
+              limits: {
+                cpu: limits_cpu,
+                memory: limits_memory
+              },
+              requests: {
+                cpu: requests_cpu,
+                memory: requests_memory
+              }
+            }
+
             {
               apiVersion: "v1",
               kind: "ResourceQuota",
@@ -405,13 +416,13 @@ module RemoteDevelopment
               },
               spec: {
                 hard: {
-                  "limits.cpu": max_resources_per_workspace.dig(:limits, :cpu),
-                  "limits.memory": max_resources_per_workspace.dig(:limits, :memory),
-                  "requests.cpu": max_resources_per_workspace.dig(:requests, :cpu),
-                  "requests.memory": max_resources_per_workspace.dig(:requests, :memory)
+                  "limits.cpu": limits_cpu,
+                  "limits.memory": limits_memory,
+                  "requests.cpu": requests_cpu,
+                  "requests.memory": requests_memory
                 }
               }
-            }.deep_stringify_keys.to_h
+            }
           end
 
           # @param [String] name
@@ -433,7 +444,7 @@ module RemoteDevelopment
               },
               automountServiceAccountToken: false,
               imagePullSecrets: image_pull_secrets_names
-            }.deep_stringify_keys.to_h
+            }
           end
         end
       end
