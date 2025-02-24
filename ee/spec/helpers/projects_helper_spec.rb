@@ -46,9 +46,12 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
     let_it_be(:group) { create(:group) }
     let_it_be(:project) { create(:project, group: group) }
 
+    before_all do
+      project.add_maintainer(user)
+    end
+
     before do
       allow(helper).to receive(:current_user) { user }
-      project.add_maintainer(user)
     end
 
     context 'when membership is not locked' do
@@ -108,7 +111,8 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
 
   describe '#compliance_center_path' do
     it 'returns the path to the project security compliance dashboard' do
-      expect(helper.compliance_center_path(project)).to eq(project_security_compliance_dashboard_path(project, vueroute: "frameworks"))
+      expect(helper.compliance_center_path(project))
+        .to eq(project_security_compliance_dashboard_path(project, vueroute: "frameworks"))
     end
   end
 
@@ -171,8 +175,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
     end
 
     before do
-      allow(helper).to receive(:current_user).and_return(user)
-      allow(helper).to receive(:can?).and_return(true)
+      allow(helper).to receive_messages(current_user: user, can?: true)
     end
 
     specify do
@@ -180,7 +183,8 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
     end
 
     it 'preloads the policy requirements' do
-      expect(::Preloaders::ProjectPolicyPreloader).to receive(:new).with(kind_of(ActiveRecord::Relation), user).and_call_original
+      expect(::Preloaders::ProjectPolicyPreloader)
+        .to receive(:new).with(kind_of(ActiveRecord::Relation), user).and_call_original
       expect(::Namespaces::Preloaders::ProjectRootAncestorPreloader).to receive(:new).at_least(:once).and_call_original
 
       helper.group_project_templates_count(parent_group.id)
@@ -255,7 +259,9 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
         # Namespace parent loads and authorization checks
         threshold = 4
 
-        expect { helper.group_project_templates_count(nil) }.not_to exceed_query_limit(control).with_threshold(threshold)
+        expect do
+          helper.group_project_templates_count(nil)
+        end.not_to exceed_query_limit(control).with_threshold(threshold)
       end
     end
   end
@@ -272,8 +278,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
     end
 
     before do
-      allow(helper).to receive(:current_user).and_return(user)
-      allow(helper).to receive(:can?).and_return(true)
+      allow(helper).to receive_messages(current_user: user, can?: true)
     end
 
     specify do
@@ -337,29 +342,36 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
     let_it_be(:user) { create(:user) }
     let_it_be(:group) { create(:group) }
     let_it_be(:project) { create(:project, :repository, group: group) }
-    let_it_be(:jira_integration) { create(:jira_integration, project: project, vulnerabilities_enabled: true, project_key: 'GV', vulnerabilities_issuetype: '10000') }
+    let_it_be(:jira_integration) do
+      create(:jira_integration, project: project, vulnerabilities_enabled: true,
+        project_key: 'GV', vulnerabilities_issuetype: '10000')
+    end
+
     let_it_be(:dismissal_descriptions_json) do
       Gitlab::Json.parse(fixture_file('vulnerabilities/dismissal_descriptions.json', dir: 'ee')).to_json
     end
 
     subject { helper.project_security_dashboard_config(project) }
 
-    before do
+    before_all do
       group.add_owner(user)
-      stub_licensed_features(jira_vulnerabilities_integration: true)
-      allow(helper).to receive(:current_user).and_return(user)
-      allow(helper).to receive(:can?).and_return(true)
     end
 
-    context 'project with third party offers hidden' do
+    before do
+      stub_licensed_features(jira_vulnerabilities_integration: true)
+      allow(helper).to receive_messages(current_user: user, can?: true)
+    end
+
+    context 'for project with third party offers hidden' do
       before do
-        allow(::Gitlab::CurrentSettings.current_application_settings).to receive(:hide_third_party_offers?).and_return(true)
+        allow(::Gitlab::CurrentSettings.current_application_settings)
+          .to receive(:hide_third_party_offers?).and_return(true)
       end
 
       it { is_expected.to include(hide_third_party_offers: 'true') }
     end
 
-    context 'project without vulnerabilities' do
+    context 'for project without vulnerabilities' do
       let(:expected_value) do
         {
           has_vulnerabilities: 'false',
@@ -381,7 +393,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
       it { is_expected.to match(expected_value) }
     end
 
-    context 'project with vulnerabilities' do
+    context 'for project with vulnerabilities' do
       let_it_be(:vulnerability) { create(:vulnerability, project: project) }
       let(:scanner) { vulnerability.vulnerability_finding.scanner }
 
@@ -463,8 +475,8 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
         end
 
         before do
-          allow(project).to receive(:latest_ingested_security_pipeline).and_return(pipeline)
-          allow(project).to receive(:latest_ingested_sbom_pipeline).and_return(nil)
+          allow(project)
+            .to receive_messages(latest_ingested_security_pipeline: pipeline, latest_ingested_sbom_pipeline: nil)
           allow(pipeline).to receive_messages(
             has_security_report_ingestion_warnings?: true,
             has_security_report_ingestion_errors?: false
@@ -526,7 +538,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
   end
 
   describe '#remove_project_message' do
-    subject { helper.remove_project_message(project) }
+    subject(:message) { helper.remove_project_message(project) }
 
     before do
       allow(project).to receive(:adjourned_deletion?).and_return(enabled)
@@ -538,7 +550,8 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
       specify do
         deletion_date = helper.permanent_deletion_date_formatted(project, Time.now.utc)
 
-        expect(subject).to eq "Deleting a project places it into a read-only state until #{deletion_date}, at which point the project will be permanently deleted. Are you ABSOLUTELY sure?"
+        expect(message).to eq "Deleting a project places it into a read-only state until #{deletion_date}, " \
+          "at which point the project will be permanently deleted. Are you ABSOLUTELY sure?"
       end
     end
 
@@ -546,16 +559,18 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
       let(:enabled) { false }
 
       specify do
-        expect(subject).to eq "You are going to delete #{project.full_name}. Deleted projects CANNOT be restored! Are you ABSOLUTELY sure?"
+        expect(message).to eq "You are going to delete #{project.full_name}. Deleted projects CANNOT be " \
+          "restored! Are you ABSOLUTELY sure?"
       end
     end
   end
 
   describe '#delete_delayed_message' do
-    subject { helper.delete_delayed_message(project) }
+    subject(:message) { helper.delete_delayed_message(project) }
 
     before do
-      allow(project).to receive(:feature_available?).with(:adjourned_deletion_for_projects_and_groups).and_return(feature_available)
+      allow(project).to receive(:feature_available?)
+        .with(:adjourned_deletion_for_projects_and_groups).and_return(feature_available)
     end
 
     context 'when project has delayed deletion feature' do
@@ -565,7 +580,9 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
         deletion_adjourned_period = ::Gitlab::CurrentSettings.deletion_adjourned_period
         deletion_date = helper.permanent_deletion_date_formatted(project, Time.now.utc)
 
-        expect(subject).to eq "This action will place this project, including all its resources, in a pending deletion state for #{deletion_adjourned_period} days, and delete it permanently on <strong>#{deletion_date}</strong>."
+        expect(message).to eq "This action will place this project, " \
+          "including all its resources, in a pending deletion state for #{deletion_adjourned_period} days, " \
+          "and delete it permanently on <strong>#{deletion_date}</strong>."
       end
     end
 
@@ -573,7 +590,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
       let(:feature_available) { false }
 
       specify do
-        expect(subject).to eq "This action will permanently delete this project, including all its resources."
+        expect(message).to eq "This action will permanently delete this project, including all its resources."
       end
     end
   end
@@ -597,24 +614,27 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
       stub_application_setting(spp_repository_pipeline_access: false, lock_spp_repository_pipeline_access: false)
     end
 
-    let(:expected_settings) { { requirementsAccessLevel: 20, securityAndComplianceAccessLevel: 10, duoFeaturesEnabled: true } }
+    let(:expected_settings) do
+      { requirementsAccessLevel: 20, securityAndComplianceAccessLevel: 10, duoFeaturesEnabled: true }
+    end
 
     subject { helper.project_permissions_settings(project) }
 
     it { is_expected.to include(expected_settings) }
 
-    context 'cveIdRequestEnabled' do
+    context 'for cveIdRequestEnabled' do
       where(:project_attrs, :expected) do
         [:public]   | true
         [:internal] | false
         [:private]  | false
       end
+
       with_them do
         let(:project) { create(:project, :with_cve_request, *project_attrs) }
-        subject { helper.project_permissions_settings(project) }
+        subject(:settings) { helper.project_permissions_settings(project) }
 
         it 'has the correct cveIdRequestEnabled value' do
-          expect(subject[:cveIdRequestEnabled]).to eq(expected)
+          expect(settings[:cveIdRequestEnabled]).to eq(expected)
         end
       end
     end
@@ -641,11 +661,10 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
         sppRepositoryPipelineAccessLocked: false, policySettingsAvailable: false }
     end
 
-    subject { helper.project_permissions_panel_data(project) }
+    subject(:data) { helper.project_permissions_panel_data(project) }
 
     before do
-      allow(helper).to receive(:current_user).and_return(user)
-      allow(helper).to receive(:can?).and_return(false)
+      allow(helper).to receive_messages(current_user: user, can?: false)
     end
 
     it { is_expected.to include(expected_data) }
@@ -658,7 +677,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
         end
 
         it 'sets amazonQAvailable to the correct value' do
-          expect(subject[:amazonQAvailable]).to eq(connected)
+          expect(data[:amazonQAvailable]).to eq(connected)
         end
       end
     end
@@ -671,7 +690,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
         end
 
         it 'sets requestCveAvailable to the correct value' do
-          expect(subject[:requestCveAvailable]).to eq(is_gitlab_com)
+          expect(data[:requestCveAvailable]).to eq(is_gitlab_com)
         end
       end
     end
@@ -688,8 +707,8 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
         with_them do
           before do
             stub_licensed_features(security_orchestration_policies: licensed_feature)
-            allow(::Security::OrchestrationPolicyConfiguration).to receive(:policy_management_project?)
-                                                                     .with(project).and_return(policy_project_exists)
+            allow(::Security::OrchestrationPolicyConfiguration)
+              .to receive(:policy_management_project?).with(project).and_return(policy_project_exists)
           end
 
           it { is_expected.to include(policySettingsAvailable: result) }
@@ -708,7 +727,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
     describe 'Secret Manager settings' do
       it { is_expected.to include(canManageSecretManager: true) }
 
-      context 'returns false for canManageSecretManager when FF secrets_manager is disabled' do
+      context 'if returns false for canManageSecretManager when FF secrets_manager is disabled' do
         before do
           stub_feature_flags(secrets_manager: false)
         end
@@ -719,18 +738,16 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
   end
 
   describe '#approvals_app_data' do
-    subject { helper.approvals_app_data(project) }
+    subject(:data) { helper.approvals_app_data(project) }
 
     let(:user) { instance_double(User, can_admin_all_resources?: false) }
 
     before do
-      allow(helper).to receive(:current_user).and_return(user)
-      allow(helper).to receive(:can?).and_return(true)
-      allow(helper).to receive(:saml_provider_enabled_for_project?).and_return(true)
+      allow(helper).to receive_messages(current_user: user, can?: true, saml_provider_enabled_for_project?: true)
     end
 
     it 'returns the correct data' do
-      expect(subject).to include(
+      expect(data).to include(
         project_id: project.id,
         can_edit: 'true',
         can_modify_author_settings: 'true',
@@ -741,9 +758,11 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
         project_path: expose_path(api_v4_projects_path(id: project.id)),
         rules_path: expose_path(api_v4_projects_approval_rules_path(id: project.id)),
         allow_multi_rule: project.multiple_approval_rules_available?.to_s,
-        eligible_approvers_docs_path: help_page_path('user/project/merge_requests/approvals/rules.md', anchor: 'eligible-approvers'),
+        eligible_approvers_docs_path:
+          help_page_path('user/project/merge_requests/approvals/rules.md', anchor: 'eligible-approvers'),
         security_configuration_path: project_security_configuration_path(project),
-        coverage_check_help_page_path: help_page_path('ci/testing/code_coverage/_index.md', anchor: 'add-a-coverage-check-approval-rule'),
+        coverage_check_help_page_path:
+          help_page_path('ci/testing/code_coverage/_index.md', anchor: 'add-a-coverage-check-approval-rule'),
         group_name: project.root_ancestor.name,
         full_path: project.full_path,
         new_policy_path: expose_path(new_project_security_policy_path(project))
@@ -752,10 +771,10 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
   end
 
   describe '#status_checks_app_data' do
-    subject { helper.status_checks_app_data(project) }
+    subject(:data) { helper.status_checks_app_data(project) }
 
     it 'returns the correct data' do
-      expect(subject[:data]).to eq({
+      expect(data[:data]).to eq({
         project_id: project.id,
         status_checks_path: expose_path(api_v4_projects_external_status_checks_path(id: project.id))
       })
@@ -768,7 +787,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
 
     let(:can_edit) { false }
 
-    subject { helper.project_compliance_framework_app_data(project, can_edit) }
+    subject(:data) { helper.project_compliance_framework_app_data(project, can_edit) }
 
     before do
       allow(helper).to receive(:image_path).and_return('#empty_state_svg_path')
@@ -778,7 +797,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
       let(:can_edit) { false }
 
       it 'returns the correct data' do
-        expect(subject).to eq({
+        expect(data).to eq({
           group_name: group.name,
           group_path: group_path(group),
           empty_state_svg_path: '#empty_state_svg_path'
@@ -790,7 +809,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
       let(:can_edit) { true }
 
       it 'includes the framework edit path' do
-        expect(subject).to eq({
+        expect(data).to eq({
           group_name: group.name,
           group_path: group_path(group),
           empty_state_svg_path: '#empty_state_svg_path',
@@ -802,7 +821,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
 
   describe "#show_archived_project_banner?" do
     shared_examples 'does not show the banner' do |pass_project: true|
-      it do
+      it 'hides the archived project banner' do
         expect(project.archived?).to be(false)
         expect(helper.show_archived_project_banner?(pass_project ? project : nil)).to be(false)
       end
@@ -843,7 +862,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
 
   describe "#show_pending_deletion_project_banner?" do
     shared_examples 'does not show the banner' do |pass_project: true|
-      it do
+      it 'hides the archived project banner' do
         expect(project.marked_for_deletion_at.present?).to be(false)
         expect(helper.show_pending_deletion_project_banner?(pass_project ? project : nil)).to be(false)
       end
@@ -943,7 +962,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
     let(:geo_url) { 'http://localhost/geonode_url' }
     let(:geo_node) { instance_double(GeoNode, url: geo_url) }
 
-    subject { helper.http_clone_url_to_repo(project) }
+    subject(:url) { helper.http_clone_url_to_repo(project) }
 
     before do
       stub_proxied_site(geo_node)
@@ -951,14 +970,14 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
       allow(helper).to receive(:geo_proxied_http_url_to_repo).with(geo_node, project).and_return(geo_url)
     end
 
-    it { expect(subject).to eq geo_url }
+    it { expect(url).to eq geo_url }
   end
 
   describe '#ssh_clone_url_to_repo' do
     let(:geo_url) { 'git@localhost/geonode_url' }
     let(:geo_node) { instance_double(GeoNode, url: geo_url) }
 
-    subject { helper.ssh_clone_url_to_repo(project) }
+    subject(:url) { helper.ssh_clone_url_to_repo(project) }
 
     before do
       stub_proxied_site(geo_node)
@@ -966,7 +985,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
       allow(helper).to receive(:geo_proxied_ssh_url_to_repo).with(geo_node, project).and_return(geo_url)
     end
 
-    it { expect(subject).to eq geo_url }
+    it { expect(url).to eq geo_url }
   end
 
   describe '#project_transfer_app_data' do
@@ -993,7 +1012,8 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
       before do
         allow(project).to receive(:product_analytics_enabled?).and_return(feature_enabled)
         allow(helper).to receive(:current_user).and_return(user)
-        allow(helper).to receive(:can?).with(user, :modify_product_analytics_settings, project).and_return(user_permission)
+        allow(helper).to receive(:can?).with(user, :modify_product_analytics_settings,
+          project).and_return(user_permission)
       end
 
       it { is_expected.to eq(outcome) }
@@ -1004,11 +1024,8 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
     let_it_be(:user) { create(:user) }
 
     before do
-      allow(helper).to receive(:current_user).and_return(user)
-      allow(helper).to receive(:groups_projects_more_actions_dropdown_data).and_return(nil)
-      allow(helper).to receive(:fork_button_data_attributes).and_return(nil)
-      allow(helper).to receive(:notification_data_attributes).and_return(nil)
-      allow(helper).to receive(:star_count_data_attributes).and_return({})
+      allow(helper).to receive_messages(current_user: user, groups_projects_more_actions_dropdown_data: nil,
+        fork_button_data_attributes: nil, notification_data_attributes: nil, star_count_data_attributes: {})
     end
 
     context "when project is not marked for deletion" do
@@ -1035,7 +1052,8 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
   describe '#compliance_framework_data_attributes' do
     let_it_be(:user) { create(:user) }
 
-    where(:custom_compliance_frameworks, :compliance_framework, :has_framework, :color, :name, :description, :expected) do
+    where(:custom_compliance_frameworks, :compliance_framework, :has_framework, :color, :name, :description,
+      :expected) do
       true  | true  | true    | "#FF0000" | "Framework 1"   | "New framework" | ref(:data_attributes)
       false | true  | true    | "#00FF00" | "Framework 2"   | "Another framework" | {}
       true  | false | false   | nil | nil | nil | {}
@@ -1079,7 +1097,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
   end
 
   describe '#delete_immediately_message' do
-    subject { helper.delete_immediately_message(project) }
+    subject(:message) { helper.delete_immediately_message(project) }
 
     before do
       allow(project).to receive(:adjourned_deletion?).and_return(allowed)
@@ -1089,7 +1107,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
       let(:allowed) { false }
 
       it 'returns correct message' do
-        expect(subject).to eq "This action will permanently delete this project, including all its resources."
+        expect(message).to eq "This action will permanently delete this project, including all its resources."
       end
     end
 
@@ -1099,7 +1117,9 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
       it 'returns correct message' do
         deletion_date = helper.permanent_deletion_date_formatted(project, Time.now.utc)
 
-        expect(subject).to eq "This project is scheduled for deletion on <strong>#{deletion_date}</strong>. This action will permanently delete this project, including all its resources, <strong>immediately</strong>. This action cannot be undone."
+        expect(message).to eq "This project is scheduled for deletion on <strong>#{deletion_date}</strong>. " \
+          "This action will permanently delete this project, including all its resources, " \
+          "<strong>immediately</strong>. This action cannot be undone."
       end
     end
   end
@@ -1126,26 +1146,26 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
     end
 
     describe 'with default button text' do
-      subject { helper.project_delete_delayed_button_data(project) }
+      subject(:data) { helper.project_delete_delayed_button_data(project) }
 
       it 'returns expected hash' do
-        expect(subject).to match(base_button_data.merge(button_text: 'Delete project'))
+        expect(data).to match(base_button_data.merge(button_text: 'Delete project'))
       end
     end
 
     describe 'with custom button text' do
-      subject { helper.project_delete_delayed_button_data(project, 'Delete project immediately') }
+      subject(:data) { helper.project_delete_delayed_button_data(project, 'Delete project immediately') }
 
       it 'returns expected hash' do
-        expect(subject).to match(base_button_data.merge(button_text: 'Delete project immediately'))
+        expect(data).to match(base_button_data.merge(button_text: 'Delete project immediately'))
       end
     end
 
     describe 'when it is a security policy project' do
-      subject { helper.project_delete_delayed_button_data(project, is_security_policy_project: true) }
+      subject(:data) { helper.project_delete_delayed_button_data(project, is_security_policy_project: true) }
 
       it 'returns expected hash' do
-        expect(subject).to match({
+        expect(data).to match({
           button_text: 'Delete project',
           restore_help_path: help_page_path('user/project/working_with_projects.md', anchor: 'restore-a-project'),
           delayed_deletion_date: '2025-02-09',
