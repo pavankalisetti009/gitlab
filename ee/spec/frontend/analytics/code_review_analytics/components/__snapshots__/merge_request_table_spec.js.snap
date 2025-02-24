@@ -162,7 +162,7 @@ exports[`MergeRequestTable component template matches the snapshot 1`] = `
       >
         <div>
           <a
-            class="gl-avatar-link gl-link"
+            class="gl-avatar-link gl-link gl-link-meta"
             href="https://gitlab.com/foo"
             rel="noopener noreferrer"
             target="_blank"
@@ -185,7 +185,7 @@ exports[`MergeRequestTable component template matches the snapshot 1`] = `
         <div>
           <div>
             <a
-              class="gl-avatar-link gl-link"
+              class="gl-avatar-link gl-link gl-link-meta"
               href="https://gitlab.com/bar"
               rel="noopener noreferrer"
               target="_blank"
