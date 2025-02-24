@@ -9,6 +9,7 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
   let_it_be(:job) { create(:ci_build, :running, namespace: namespace, user: user) }
   let_it_be(:sub_job) { create(:ci_build, :running, namespace: sub_namespace, user: user) }
   let_it_be(:code_suggestion_add_on) { create(:gitlab_subscription_add_on) }
+  let_it_be(:cloud_connector_keys) { create(:cloud_connector_keys) }
 
   let(:ai_gateway_token) { 'ai gateway token' }
   let(:instance_uuid) { "uuid-not-set" }

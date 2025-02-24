@@ -12,6 +12,8 @@ RSpec.describe Llm::GitCommandService, feature_category: :source_code_management
       create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: group)
     end
 
+    let_it_be(:cloud_connector_keys) { create(:cloud_connector_keys) }
+
     let_it_be(:seat_assignment) do
       create(
         :gitlab_subscription_user_add_on_assignment,

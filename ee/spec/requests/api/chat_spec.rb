@@ -136,6 +136,8 @@ RSpec.describe API::Chat, :saas, feature_category: :duo_chat do
       include_examples 'an unauthorized response'
 
       context 'and access token is provided' do
+        let_it_be(:cloud_connector_keys) { create(:cloud_connector_keys) }
+
         it_behaves_like 'an endpoint authenticated with token'
       end
     end
