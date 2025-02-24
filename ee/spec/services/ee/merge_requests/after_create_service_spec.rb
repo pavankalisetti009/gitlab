@@ -174,6 +174,56 @@ RSpec.describe MergeRequests::AfterCreateService, feature_category: :code_review
       end
     end
 
+    describe 'schedule_duo_code_review' do
+      let(:merge_request) { create(:merge_request) }
+      let(:current_user) { merge_request.author }
+      let(:ai_review_allowed) { true }
+
+      before do
+        allow(merge_request).to receive(:ai_review_merge_request_allowed?)
+          .with(current_user)
+          .and_return(ai_review_allowed)
+      end
+
+      context 'when Duo Code Review bot is not assigned as a reviewer' do
+        it 'does not call ::Llm::ReviewMergeRequestService' do
+          expect(Llm::ReviewMergeRequestService).not_to receive(:new)
+
+          execute
+        end
+      end
+
+      context 'when Duo Code Review bot is assigned as a reviewer' do
+        let(:duo_user_id) { 1234 }
+
+        before do
+          merge_request.reviewers = [::Users::Internal.duo_code_review_bot]
+        end
+
+        context 'when AI review feature is not allowed' do
+          let(:ai_review_allowed) { false }
+
+          it 'does not call ::Llm::ReviewMergeRequestService' do
+            expect(Llm::ReviewMergeRequestService).not_to receive(:new)
+
+            execute
+          end
+        end
+
+        context 'when AI review feature is allowed' do
+          let(:ai_review_allowed) { true }
+
+          it 'calls ::Llm::ReviewMergeRequestService' do
+            expect_next_instance_of(Llm::ReviewMergeRequestService, current_user, merge_request) do |svc|
+              expect(svc).to receive(:execute)
+            end
+
+            execute
+          end
+        end
+      end
+    end
+
     describe 'usage activity tracking' do
       let(:user) { merge_request.author }
 

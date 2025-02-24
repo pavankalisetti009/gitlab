@@ -59,6 +59,10 @@ module EE
 
       override :request_duo_code_review
       def request_duo_code_review(merge_request)
+        # NOTE: Skip if the merge_request has just been created and its diffs are not yet ready since
+        #   they are generated asynchronously.
+        #   Duo code review will then be triggered in AfterCreateService after diffs are created.
+        return unless merge_request.merge_request_diff.persisted?
         return unless merge_request.ai_review_merge_request_allowed?(current_user)
 
         ::Llm::ReviewMergeRequestService.new(current_user, merge_request).execute

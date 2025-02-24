@@ -20,6 +20,7 @@ module EE
         schedule_sync_for(merge_request)
         schedule_fetch_suggested_reviewers(merge_request)
         schedule_approval_notifications(merge_request)
+        schedule_duo_code_review(merge_request)
         track_usage_event if merge_request.project.scan_result_policy_reads.any?
       end
 
@@ -64,6 +65,13 @@ module EE
         return unless merge_request.can_suggest_reviewers?
 
         ::MergeRequests::FetchSuggestedReviewersWorker.perform_async(merge_request.id)
+      end
+
+      # NOTE: If it was requested, Duo Code Review needs to be triggered after merge_request_diff gets created.
+      def schedule_duo_code_review(merge_request)
+        return unless merge_request.reviewers.duo_code_review_bot.any?
+
+        request_duo_code_review(merge_request)
       end
 
       def track_usage_event
