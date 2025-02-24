@@ -119,6 +119,8 @@ These events play a key role in the duration calculation, which is calculated by
 
 To learn what start and end events can be paired, see [Validating start and end events](../../../development/value_stream_analytics.md#validating-start-and-end-events).
 
+You can share your ideas or feedback about stage events in [issue 520962](https://gitlab.com/gitlab-org/gitlab/-/issues/520962).
+
 ### How value stream analytics aggregates data
 
 {{< details >}}
