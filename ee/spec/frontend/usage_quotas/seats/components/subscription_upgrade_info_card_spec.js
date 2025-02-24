@@ -9,13 +9,15 @@ describe('SubscriptionUpgradeInfoCard', () => {
   let wrapper;
 
   const defaultProps = {
-    maxNamespaceSeats: 5,
     explorePlansPath: 'http://test.gitlab.com/',
   };
 
   const createComponent = (props = {}) => {
     wrapper = mount(SubscriptionUpgradeInfoCard, {
       propsData: { ...defaultProps, ...props },
+      provide: {
+        maxFreeNamespaceSeats: 5,
+      },
     });
   };
 

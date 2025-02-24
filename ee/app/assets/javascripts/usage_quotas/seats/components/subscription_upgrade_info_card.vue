@@ -8,11 +8,8 @@ export default {
   name: 'SubscriptionUpgradeInfoCard',
   components: { GlButton },
   mixins: [Tracking.mixin()],
+  inject: ['maxFreeNamespaceSeats'],
   props: {
-    maxNamespaceSeats: {
-      type: Number,
-      required: true,
-    },
     explorePlansPath: {
       type: String,
       required: true,
@@ -37,7 +34,7 @@ export default {
       return n__(
         'Billing|Groups in the Free tier are limited to %d seat',
         'Billing|Groups in the Free tier are limited to %d seats',
-        this.maxNamespaceSeats,
+        this.maxFreeNamespaceSeats,
       );
     },
   },

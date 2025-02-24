@@ -80,6 +80,7 @@ export const getSeatTabMetadata = ({ includeEl = false } = {}) => {
         addSeatsHref,
         seatUsageExportPath,
         hasNoSubscription,
+        maxFreeNamespaceSeats,
       },
       store,
       render(createElement) {

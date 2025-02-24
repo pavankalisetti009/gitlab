@@ -29,7 +29,6 @@ const actionSpies = {
 };
 
 const providedFields = {
-  maxFreeNamespaceSeats: 5,
   explorePlansPath: '/groups/test_group/-/billings',
   hasNoSubscription: false,
   hasLimitedFreePlan: false,
@@ -236,7 +235,6 @@ describe('Subscription Seats', () => {
         expect(findStatisticsSeatsCard().exists()).toBe(false);
         expect(upgradeInfoCard.exists()).toBe(true);
         expect(upgradeInfoCard.props()).toMatchObject({
-          maxNamespaceSeats: providedFields.maxFreeNamespaceSeats,
           explorePlansPath: providedFields.explorePlansPath,
           activeTrial: false,
         });

@@ -78,14 +78,7 @@ export default {
     };
   },
   computed: {
-    ...mapState([
-      'hasError',
-      'maxSeatsUsed',
-      'seatsOwed',
-      'maxFreeNamespaceSeats',
-      'hasLimitedFreePlan',
-      'activeTrial',
-    ]),
+    ...mapState(['hasError', 'maxSeatsUsed', 'seatsOwed', 'hasLimitedFreePlan', 'activeTrial']),
     ...mapGetters(['isLoading']),
     isPublicFreeNamespace() {
       return this.hasFreePlan && this.isPublicNamespace;
@@ -143,7 +136,6 @@ export default {
         />
         <subscription-upgrade-info-card
           v-if="showUpgradeInfoCard"
-          :max-namespace-seats="maxFreeNamespaceSeats"
           :explore-plans-path="explorePlansPath"
           :active-trial="activeTrial"
         />

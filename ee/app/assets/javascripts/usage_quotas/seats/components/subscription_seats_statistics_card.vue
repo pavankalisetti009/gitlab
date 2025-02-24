@@ -16,7 +16,7 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  inject: ['hasNoSubscription'],
+  inject: ['hasNoSubscription', 'maxFreeNamespaceSeats'],
   props: {
     billableMembersCount: {
       type: Number,
@@ -53,13 +53,7 @@ export default {
   },
   computed: {
     ...mapGetters(['isLoading']),
-    ...mapState([
-      'activeTrial',
-      'hasLimitedFreePlan',
-      'maxFreeNamespaceSeats',
-      'namespaceId',
-      'seatsInSubscription',
-    ]),
+    ...mapState(['activeTrial', 'hasLimitedFreePlan', 'namespaceId', 'seatsInSubscription']),
     freeNamespaceSeatsLimitText() {
       return sprintf(s__('Billings|Free groups are limited to %{number} seats.'), {
         number: this.maxFreeNamespaceSeats,
