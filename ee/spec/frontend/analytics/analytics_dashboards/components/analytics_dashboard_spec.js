@@ -50,6 +50,7 @@ import {
 import { stubComponent } from 'helpers/stub_component';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import UrlSync, { HISTORY_REPLACE_UPDATE_METHOD } from '~/vue_shared/components/url_sync.vue';
+import FilteredSearchFilter from 'ee/analytics/analytics_dashboards/components/filters/filtered_search_filter.vue';
 import {
   TEST_CUSTOM_DASHBOARDS_GROUP,
   TEST_ROUTER_BACK_HREF,
@@ -68,6 +69,7 @@ import {
   TEST_VISUALIZATIONS_GRAPHQL_SUCCESS_RESPONSE,
   getGraphQLDashboard,
   mockDateRangeFilterChangePayload,
+  mockFilteredSearchChangePayload,
 } from '../mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
@@ -114,6 +116,7 @@ describe('AnalyticsDashboard', () => {
   const findAnonUsersFilter = () => wrapper.findComponent(AnonUsersFilter);
   const findDateRangeFilter = () => wrapper.findComponent(DateRangeFilter);
   const findProjectsFilter = () => wrapper.findComponent(ProjectsFilter);
+  const findFilteredSearchFilter = () => wrapper.findComponent(FilteredSearchFilter);
   const findUrlSync = () => wrapper.findComponent(UrlSync);
 
   const mockSaveDashboardImplementation = async (responseCallback, dashboardToSave = dashboard) => {
@@ -197,6 +200,7 @@ describe('AnalyticsDashboard', () => {
         GlLink,
         AnonUsersFilter,
         DateRangeFilter,
+        FilteredSearchFilter,
         RouterLink: true,
         RouterView: true,
         CustomizableDashboard: stubComponent(CustomizableDashboard, {
@@ -374,6 +378,7 @@ describe('AnalyticsDashboard', () => {
       expect(findUrlSync().exists()).toBe(false);
       expect(findAnonUsersFilter().exists()).toBe(false);
       expect(findDateRangeFilter().exists()).toBe(false);
+      expect(findFilteredSearchFilter().exists()).toBe(false);
     });
   });
 
@@ -1113,6 +1118,41 @@ describe('AnalyticsDashboard', () => {
         });
       });
     });
+
+    describe('filtered search filter', () => {
+      beforeEach(async () => {
+        await setupDashboardWithFilters({ filteredSearch: { enabled: true } });
+      });
+
+      it('shows the filtered search filter', () => {
+        expect(findFilteredSearchFilter().exists()).toBe(true);
+      });
+
+      it('sets the filtered search options when they are present', async () => {
+        const mockFilteredSearchOptions = [{ token: 'assignee', unique: true }];
+
+        await setupDashboardWithFilters({
+          filteredSearch: {
+            enabled: true,
+            options: mockFilteredSearchOptions,
+          },
+        });
+
+        expect(findFilteredSearchFilter().props('options')).toEqual(mockFilteredSearchOptions);
+      });
+
+      describe('when filters change', () => {
+        beforeEach(async () => {
+          await findFilteredSearchFilter().vm.$emit('change', mockFilteredSearchChangePayload);
+        });
+
+        it('updates the slot filters', () => {
+          expect(findAllPanels().at(0).props('filters')).toMatchObject({
+            searchFilters: mockFilteredSearchChangePayload,
+          });
+        });
+      });
+    });
   });
 
   describe('with an AI impact dashboard', () => {
@@ -1169,6 +1209,7 @@ describe('AnalyticsDashboard', () => {
       expect(findAnonUsersFilter().exists()).toBe(false);
       expect(findDateRangeFilter().exists()).toBe(false);
       expect(findProjectsFilter().exists()).toBe(false);
+      expect(findFilteredSearchFilter().exists()).toBe(false);
       expect(findUrlSync().exists()).toBe(false);
     });
   });
@@ -1211,6 +1252,7 @@ describe('AnalyticsDashboard', () => {
     it('does not render filters', () => {
       expect(findAnonUsersFilter().exists()).toBe(false);
       expect(findDateRangeFilter().exists()).toBe(false);
+      expect(findFilteredSearchFilter().exists()).toBe(false);
       expect(findUrlSync().exists()).toBe(false);
     });
   });

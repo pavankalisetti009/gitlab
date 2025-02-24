@@ -48,6 +48,7 @@ export default () => {
     isInstanceConfiguredWithSelfManagedAnalyticsProvider,
     defaultUseInstanceConfiguration,
     overviewCountsAggregationEnabled,
+    hasScopedLabelsFeature,
   } = el.dataset;
 
   const analyticsDashboardPointer = buildAnalyticsDashboardPointer(analyticsDashboardPointerJSON);
@@ -122,6 +123,7 @@ export default () => {
       ),
       defaultUseInstanceConfiguration: parseBoolean(defaultUseInstanceConfiguration),
       overviewCountsAggregationEnabled: parseBoolean(overviewCountsAggregationEnabled),
+      hasScopedLabelsFeature: parseBoolean(hasScopedLabelsFeature),
     },
     render(h) {
       return h(DashboardsApp);

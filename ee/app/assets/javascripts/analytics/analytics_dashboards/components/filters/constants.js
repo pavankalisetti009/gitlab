@@ -1,6 +1,11 @@
 import { __, sprintf } from '~/locale';
 import { nDaysBefore, getCurrentUtcDate, getDateInPast } from '~/lib/utils/datetime_utility';
 import { startOfTomorrow } from 'ee/dora/components/static_data/shared';
+import {
+  OPERATORS_IS,
+  OPERATORS_IS_NOT,
+  OPERATORS_IS_NOT_OR,
+} from '~/vue_shared/components/filtered_search_bar/constants';
 
 export const TODAY = getCurrentUtcDate();
 export const SEVEN_DAYS_AGO = getDateInPast(TODAY, 7);
@@ -87,4 +92,16 @@ export const START_DATES = {
   [DATE_RANGE_OPTION_LAST_60_DAYS]: nDaysBefore(startOfTomorrow, 60, { utc: true }),
   [DATE_RANGE_OPTION_LAST_90_DAYS]: nDaysBefore(startOfTomorrow, 90, { utc: true }),
   [DATE_RANGE_OPTION_LAST_180_DAYS]: nDaysBefore(startOfTomorrow, 180, { utc: true }),
+};
+
+export const FILTERED_SEARCH_MAX_LABELS = 100;
+
+export const FILTERED_SEARCH_OPERATOR_IS = 'is';
+export const FILTERED_SEARCH_OPERATOR_IS_NOT = 'is_not';
+export const FILTERED_SEARCH_OPERATOR_IS_NOT_OR = 'is_not_or';
+
+export const FILTERED_SEARCH_OPERATORS = {
+  [FILTERED_SEARCH_OPERATOR_IS]: OPERATORS_IS,
+  [FILTERED_SEARCH_OPERATOR_IS_NOT]: OPERATORS_IS_NOT,
+  [FILTERED_SEARCH_OPERATOR_IS_NOT_OR]: OPERATORS_IS_NOT_OR,
 };

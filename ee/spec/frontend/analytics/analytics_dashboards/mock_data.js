@@ -1,5 +1,20 @@
 import { TEST_HOST } from 'spec/test_constants';
 import { getUniquePanelId } from '~/vue_shared/components/customizable_dashboard/utils';
+import {
+  FILTERED_SEARCH_TERM,
+  TOKEN_TITLE_ASSIGNEE,
+  TOKEN_TITLE_AUTHOR,
+  TOKEN_TITLE_LABEL,
+  TOKEN_TITLE_MILESTONE,
+  TOKEN_TYPE_ASSIGNEE,
+  TOKEN_TYPE_AUTHOR,
+  TOKEN_TYPE_LABEL,
+  TOKEN_TYPE_MILESTONE,
+} from '~/vue_shared/components/filtered_search_bar/constants';
+import MilestoneToken from '~/vue_shared/components/filtered_search_bar/tokens/milestone_token.vue';
+import LabelToken from '~/vue_shared/components/filtered_search_bar/tokens/label_token.vue';
+import UserToken from '~/vue_shared/components/filtered_search_bar/tokens/user_token.vue';
+import { FILTERED_SEARCH_MAX_LABELS } from 'ee/analytics/analytics_dashboards/components/filters/constants';
 
 export const TEST_TRACKING_KEY = 'gid://gitlab/Project/2';
 
@@ -1069,4 +1084,168 @@ export const mockDateRangeFilterChangePayload = {
   startDate: new Date('2016-01-01'),
   endDate: new Date('2016-02-01'),
   dateRangeOption: 'foo',
+};
+
+export const mockMilestoneToken = {
+  icon: 'milestone',
+  title: TOKEN_TITLE_MILESTONE,
+  type: TOKEN_TYPE_MILESTONE,
+  token: MilestoneToken,
+  unique: true,
+  symbol: '%',
+};
+
+export const mockLabelToken = {
+  icon: 'labels',
+  title: TOKEN_TITLE_LABEL,
+  type: TOKEN_TYPE_LABEL,
+  token: LabelToken,
+  unique: false,
+  symbol: '~',
+  maxSuggestions: FILTERED_SEARCH_MAX_LABELS,
+};
+
+export const mockAuthorToken = {
+  icon: 'pencil',
+  title: TOKEN_TITLE_AUTHOR,
+  type: TOKEN_TYPE_AUTHOR,
+  token: UserToken,
+  dataType: 'user',
+  unique: true,
+};
+
+export const mockAssigneeToken = {
+  icon: 'user',
+  title: TOKEN_TITLE_ASSIGNEE,
+  type: TOKEN_TYPE_ASSIGNEE,
+  token: UserToken,
+  dataType: 'user',
+  unique: false,
+};
+
+export const mockFilteredSearchFilters = [
+  {
+    type: TOKEN_TYPE_AUTHOR,
+    value: {
+      data: 'root',
+      operator: '=',
+    },
+    id: 'token-14',
+  },
+  {
+    type: TOKEN_TYPE_MILESTONE,
+    value: {
+      data: 'Any',
+      operator: '=',
+    },
+    id: 'token-16',
+  },
+  {
+    type: TOKEN_TYPE_LABEL,
+    value: {
+      data: 'Afterpod',
+      operator: '=',
+    },
+    id: 'token-18',
+  },
+  {
+    type: TOKEN_TYPE_ASSIGNEE,
+    value: {
+      data: 'root',
+      operator: '=',
+    },
+    id: 'token-20',
+  },
+  {
+    type: TOKEN_TYPE_ASSIGNEE,
+    value: {
+      data: 'vsm-user-1-1737989060',
+      operator: '!=',
+    },
+    id: 'token-24',
+  },
+  {
+    id: 'token-25',
+    type: FILTERED_SEARCH_TERM,
+    value: {
+      data: '',
+    },
+  },
+];
+
+export const mockFilteredSearchChangePayload = {
+  [TOKEN_TYPE_ASSIGNEE]: [
+    {
+      operator: '=',
+      value: 'root',
+    },
+    {
+      operator: '!=',
+      value: 'vsm-user-1-1737989060',
+    },
+  ],
+  [TOKEN_TYPE_AUTHOR]: [
+    {
+      operator: '=',
+      value: 'root',
+    },
+  ],
+  [FILTERED_SEARCH_TERM]: [
+    {
+      operator: undefined,
+      value: '',
+    },
+  ],
+  [TOKEN_TYPE_LABEL]: [
+    {
+      operator: '=',
+      value: 'Afterpod',
+    },
+  ],
+  [TOKEN_TYPE_MILESTONE]: [
+    {
+      operator: '=',
+      value: 'Any',
+    },
+  ],
+};
+
+export const mockLabel1 = {
+  id: 'gid://gitlab/GroupLabel/121',
+  title: 'UX',
+  color: '#F0AD4E',
+  textColor: '#FFFFFF',
+  description: null,
+};
+
+export const mockLabel2 = {
+  id: 'gid://gitlab/GroupLabel/122',
+  title: 'frontend',
+  color: '#F0AD4E',
+  textColor: '#FFFFFF',
+  description: null,
+};
+
+export const mockProjectLabelsResponse = {
+  data: {
+    project: {
+      id: 'gid://gitlab/Project/1',
+      labels: {
+        nodes: [mockLabel1, mockLabel2],
+      },
+      __typename: 'Project',
+    },
+  },
+};
+
+export const mockGroupLabelsResponse = {
+  data: {
+    group: {
+      id: 'gid://gitlab/Group/1',
+      labels: {
+        nodes: [mockLabel1, mockLabel2],
+      },
+      __typename: 'Group',
+    },
+  },
 };

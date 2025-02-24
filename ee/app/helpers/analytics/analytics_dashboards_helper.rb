@@ -30,7 +30,8 @@ module Analytics
         is_instance_configured_with_self_managed_analytics_provider:
           instance_configured_with_self_managed_analytics_provider?(namespace).to_s,
         default_use_instance_configuration: default_use_instance_configuration?(namespace).to_s,
-        overview_counts_aggregation_enabled: overview_counts_aggregation_enabled?(namespace).to_s
+        overview_counts_aggregation_enabled: overview_counts_aggregation_enabled?(namespace).to_s,
+        has_scoped_labels_feature: has_scoped_labels_feature?(namespace).to_s
       }
     end
 
@@ -174,6 +175,10 @@ module Analytics
       )
 
       analytics_settings.values.all?(&:blank?)
+    end
+
+    def has_scoped_labels_feature?(namespace)
+      namespace.licensed_feature_available?(:scoped_labels)
     end
   end
 end

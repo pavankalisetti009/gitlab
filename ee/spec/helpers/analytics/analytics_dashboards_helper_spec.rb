@@ -48,7 +48,7 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
 
           stub_application_setting(product_analytics_enabled: product_analytics_enabled_setting)
           stub_feature_flags(product_analytics_features: feature_flag_enabled)
-          stub_licensed_features(product_analytics: licensed_feature_enabled)
+          stub_licensed_features(product_analytics: licensed_feature_enabled, scoped_labels: licensed_feature_enabled)
 
           allow(helper).to receive(:can?).with(user, :read_product_analytics, project).and_return(user_has_permission)
           allow(helper).to receive(:can?).with(user, :admin_project, project).and_return(user_can_admin_project)
@@ -84,7 +84,8 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
             ai_generate_cube_query_enabled: 'false',
             is_instance_configured_with_self_managed_analytics_provider: 'true',
             default_use_instance_configuration: 'true',
-            overview_counts_aggregation_enabled: "false"
+            overview_counts_aggregation_enabled: "false",
+            has_scoped_labels_feature: licensed_feature_enabled.to_s
           }
         end
 
@@ -145,7 +146,8 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
           ai_generate_cube_query_enabled: 'false',
           is_instance_configured_with_self_managed_analytics_provider: 'true',
           default_use_instance_configuration: 'true',
-          overview_counts_aggregation_enabled: "false"
+          overview_counts_aggregation_enabled: "false",
+          has_scoped_labels_feature: 'false'
         }
       end
 
@@ -156,6 +158,16 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
 
         it 'returns the expected data' do
           expect(data).to include({ overview_counts_aggregation_enabled: "true" })
+        end
+      end
+
+      context 'when license has scoped labels feature' do
+        before do
+          stub_licensed_features(scoped_labels: true)
+        end
+
+        it 'returns the expected data' do
+          expect(data).to include({ has_scoped_labels_feature: "true" })
         end
       end
 
@@ -210,7 +222,8 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
           ai_generate_cube_query_enabled: 'false',
           is_instance_configured_with_self_managed_analytics_provider: 'true',
           default_use_instance_configuration: 'true',
-          overview_counts_aggregation_enabled: "false"
+          overview_counts_aggregation_enabled: "false",
+          has_scoped_labels_feature: 'false'
         }
       end
 
@@ -221,6 +234,16 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
 
         it 'returns the expected data' do
           expect(data).to include({ overview_counts_aggregation_enabled: "true" })
+        end
+      end
+
+      context 'when license has scoped labels feature' do
+        before do
+          stub_licensed_features(scoped_labels: true)
+        end
+
+        it 'returns the expected data' do
+          expect(data).to include({ has_scoped_labels_feature: "true" })
         end
       end
 
