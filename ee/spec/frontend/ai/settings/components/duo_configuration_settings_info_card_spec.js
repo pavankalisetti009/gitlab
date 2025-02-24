@@ -78,16 +78,16 @@ describe('DuoConfigurationSettingsInfoCard', () => {
       createComponent({ isSaaS: false });
 
       expect(findDuoConfigurationRows()).toHaveLength(3);
-      expect(findDuoConfigurationRowTitlePropByRowIdx(0)).toEqual('Experiment and beta features');
-      expect(findDuoConfigurationRowTitlePropByRowIdx(1)).toEqual('Direct connections');
-      expect(findDuoConfigurationRowTitlePropByRowIdx(2)).toEqual('Self-hosted models');
+      expect(findDuoConfigurationRowTitlePropByRowIdx(0)).toBe('Experiment and beta features');
+      expect(findDuoConfigurationRowTitlePropByRowIdx(1)).toBe('Direct connections');
+      expect(findDuoConfigurationRowTitlePropByRowIdx(2)).toBe('Self-hosted models');
     });
 
     it('renders fewer rows for SaaS instance', () => {
       createComponent({ isSaaS: true });
 
       expect(findDuoConfigurationRows()).toHaveLength(1);
-      expect(findDuoConfigurationRowTitlePropByRowIdx(0)).toEqual('Experiment and beta features');
+      expect(findDuoConfigurationRowTitlePropByRowIdx(0)).toBe('Experiment and beta features');
     });
 
     it('passes correct props to configuration rows', () => {
