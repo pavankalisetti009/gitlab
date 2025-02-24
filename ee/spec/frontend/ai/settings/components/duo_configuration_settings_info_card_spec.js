@@ -80,7 +80,7 @@ describe('DuoConfigurationSettingsInfoCard', () => {
       expect(findDuoConfigurationRows()).toHaveLength(3);
       expect(findDuoConfigurationRowTitlePropByRowIdx(0)).toEqual('Experiment and beta features');
       expect(findDuoConfigurationRowTitlePropByRowIdx(1)).toEqual('Direct connections');
-      expect(findDuoConfigurationRowTitlePropByRowIdx(2)).toEqual('Beta self-hosted models');
+      expect(findDuoConfigurationRowTitlePropByRowIdx(2)).toEqual('Self-hosted models');
     });
 
     it('renders fewer rows for SaaS instance', () => {

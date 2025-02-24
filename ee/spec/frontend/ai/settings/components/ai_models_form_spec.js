@@ -39,7 +39,7 @@ describe('AiModelsForm', () => {
   });
 
   it('has the correct label', () => {
-    expect(findCheckboxLabel().text()).toBe('Use beta self-hosted models features');
+    expect(findCheckboxLabel().text()).toBe('Use self-hosted models features');
   });
 
   describe('help text', () => {

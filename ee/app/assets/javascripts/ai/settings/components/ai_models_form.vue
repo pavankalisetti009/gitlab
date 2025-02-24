@@ -7,7 +7,7 @@ export default {
   name: 'AiModelsForm',
   i18n: {
     title: s__('AiPowered|Self-hosted AI models'),
-    checkBoxLabel: s__('AiPowered|Use beta self-hosted models features'),
+    checkBoxLabel: s__('AiPowered|Use self-hosted models features'),
     checkboxHelpText: s__(
       'AiPowered|Enabling this feature is your acceptance of the %{linkStart}GitLab Testing Agreement%{linkEnd}.',
     ),
