@@ -62,6 +62,45 @@ RSpec.describe 'Create a Compliance Requirement Control', feature_category: :com
       end
 
       it_behaves_like 'a mutation that creates a compliance requirement control'
+
+      context "when creating an external control" do
+        let(:mutation) do
+          graphql_mutation(
+            :create_compliance_requirements_control,
+            compliance_requirement_id: requirement.to_gid,
+            params: {
+              name: 'external_control',
+              control_type: 'external',
+              external_url: 'https://example.com',
+              secret_token: 'secret_token'
+            }
+          )
+        end
+
+        subject(:mutate) { post_graphql_mutation(mutation, current_user: current_user) }
+
+        it 'creates a new external compliance requirement control', :aggregate_failures do
+          expect { mutate }.to change { requirement.compliance_requirements_controls.count }.by(1)
+
+          control = requirement.compliance_requirements_controls.last
+          expect(control.name).to eq('external_control')
+          expect(control.control_type).to eq('external')
+          expect(control.external_url).to eq('https://example.com')
+          expect(control.secret_token).to eq('secret_token')
+          expect(control.expression).to be_nil
+        end
+
+        it 'returns the correct response', :aggregate_failures do
+          mutate
+
+          expect(mutation_response['requirementsControl']['name']).to eq('external_control')
+          expect(mutation_response['requirementsControl']['controlType']).to eq('external')
+          expect(mutation_response['requirementsControl']['externalUrl']).to eq('https://example.com')
+          expect(mutation_response['requirementsControl']['expression']).to be_nil
+          expect(mutation_response['requirementsControl']['secretToken']).to be_nil
+          expect(mutation_response['requirementsControl'].keys).not_to include('secretToken')
+        end
+      end
     end
 
     context 'when current_user is not a group owner' do

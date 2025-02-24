@@ -6,6 +6,8 @@ module ComplianceManagement
       class CreateService < BaseService
         attr_reader :params, :current_user, :requirement, :control
 
+        DEFAULT_CONTROL_TYPE = 'internal'
+
         def initialize(requirement:, params:, current_user:)
           @requirement = requirement
           @params = params
@@ -19,7 +21,9 @@ module ComplianceManagement
             namespace_id: requirement.namespace.id,
             name: params[:name],
             expression: params[:expression],
-            control_type: 'internal'
+            control_type: params[:control_type] || DEFAULT_CONTROL_TYPE,
+            external_url: params[:external_url],
+            secret_token: params[:secret_token]
           )
 
           return ServiceResponse.error(message: _('Not permitted to create compliance control')) unless permitted?

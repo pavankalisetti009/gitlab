@@ -141,5 +141,37 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
 
       it_behaves_like 'unsuccessful update', 'Not permitted to update requirement control'
     end
+
+    context 'when updating secret_token' do
+      let(:old_token) { 'old_secret_token' }
+      let(:new_token) { 'new_secret_token' }
+
+      before do
+        control.update!(secret_token: old_token)
+      end
+
+      it 'does not include token values in audit log' do
+        expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
+          hash_including(message: "Changed compliance requirement control's secret token")
+        )
+
+        described_class::SENSITIVE_ATTRIBUTES.each do |attribute|
+          sensitive_value = control.public_send(attribute)
+          next if sensitive_value.nil?
+
+          expect(::Gitlab::Audit::Auditor).not_to receive(:audit).with(
+            hash_including(
+              message: include(sensitive_value)
+            )
+          )
+        end
+
+        described_class.new(
+          control: control,
+          params: { secret_token: new_token },
+          current_user: owner
+        ).execute
+      end
+    end
   end
 end
