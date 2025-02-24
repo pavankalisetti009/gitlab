@@ -49,5 +49,16 @@ export const resolvers = {
           throw error;
         });
     },
+    async billableMemberDetails(_, { namespaceId, memberId }) {
+      const [{ data: memberships }, { data: indirectMembership }] = await Promise.all([
+        GroupsApi.fetchBillableGroupMemberMemberships(namespaceId, memberId),
+        GroupsApi.fetchBillableGroupMemberIndirectMemberships(namespaceId, memberId),
+      ]);
+
+      return {
+        memberships: memberships.length ? memberships : indirectMembership,
+        hasIndirectMembership: Boolean(indirectMembership?.length) && !memberships?.length,
+      };
+    },
   },
 };
