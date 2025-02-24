@@ -17527,6 +17527,24 @@ CREATE SEQUENCE operations_user_lists_id_seq
 
 ALTER SEQUENCE operations_user_lists_id_seq OWNED BY operations_user_lists.id;
 
+CREATE TABLE organization_cluster_agent_mappings (
+    id bigint NOT NULL,
+    organization_id bigint NOT NULL,
+    cluster_agent_id bigint NOT NULL,
+    creator_id bigint,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL
+);
+
+CREATE SEQUENCE organization_cluster_agent_mappings_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE organization_cluster_agent_mappings_id_seq OWNED BY organization_cluster_agent_mappings.id;
+
 CREATE TABLE organization_details (
     organization_id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
@@ -25746,6 +25764,8 @@ ALTER TABLE ONLY operations_strategies_user_lists ALTER COLUMN id SET DEFAULT ne
 
 ALTER TABLE ONLY operations_user_lists ALTER COLUMN id SET DEFAULT nextval('operations_user_lists_id_seq'::regclass);
 
+ALTER TABLE ONLY organization_cluster_agent_mappings ALTER COLUMN id SET DEFAULT nextval('organization_cluster_agent_mappings_id_seq'::regclass);
+
 ALTER TABLE ONLY organization_users ALTER COLUMN id SET DEFAULT nextval('organization_users_id_seq'::regclass);
 
 ALTER TABLE ONLY organizations ALTER COLUMN id SET DEFAULT nextval('organizations_id_seq'::regclass);
@@ -28369,6 +28389,9 @@ ALTER TABLE ONLY operations_strategies_user_lists
 ALTER TABLE ONLY operations_user_lists
     ADD CONSTRAINT operations_user_lists_pkey PRIMARY KEY (id);
 
+ALTER TABLE ONLY organization_cluster_agent_mappings
+    ADD CONSTRAINT organization_cluster_agent_mappings_pkey PRIMARY KEY (id);
+
 ALTER TABLE ONLY organization_details
     ADD CONSTRAINT organization_details_pkey PRIMARY KEY (organization_id);
 
@@ -30883,6 +30906,12 @@ CREATE INDEX i_gitlab_subscription_histories_on_namespace_change_type_plan ON gi
 CREATE INDEX i_namespace_cluster_agent_mappings_on_cluster_agent_id ON remote_development_namespace_cluster_agent_mappings USING btree (cluster_agent_id);
 
 CREATE INDEX i_namespace_cluster_agent_mappings_on_creator_id ON remote_development_namespace_cluster_agent_mappings USING btree (creator_id);
+
+CREATE INDEX i_organization_cluster_agent_mappings_on_creator_id ON organization_cluster_agent_mappings USING btree (creator_id);
+
+CREATE INDEX i_organization_cluster_agent_mappings_on_organization_id ON organization_cluster_agent_mappings USING btree (organization_id);
+
+CREATE UNIQUE INDEX i_organization_cluster_agent_mappings_unique_cluster_agent_id ON organization_cluster_agent_mappings USING btree (cluster_agent_id);
 
 CREATE UNIQUE INDEX i_packages_unique_project_id_package_type_package_name_pattern ON packages_protection_rules USING btree (project_id, package_type, package_name_pattern);
 
@@ -39107,6 +39136,9 @@ ALTER TABLE ONLY operations_feature_flags_issues
 ALTER TABLE ONLY push_event_payloads
     ADD CONSTRAINT fk_36c74129da FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY organization_cluster_agent_mappings
+    ADD CONSTRAINT fk_3727f3f4ec FOREIGN KEY (cluster_agent_id) REFERENCES cluster_agents(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY protected_branch_merge_access_levels
     ADD CONSTRAINT fk_37ab3dd3ba FOREIGN KEY (protected_branch_project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
@@ -39461,6 +39493,9 @@ ALTER TABLE ONLY projects
 ALTER TABLE ONLY compliance_framework_security_policies
     ADD CONSTRAINT fk_6d3bd0c9f1 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY organization_cluster_agent_mappings
+    ADD CONSTRAINT fk_6d8bfa275e FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY audit_events_streaming_instance_namespace_filters
     ADD CONSTRAINT fk_6e0be28087 FOREIGN KEY (external_streaming_destination_id) REFERENCES audit_events_instance_external_streaming_destinations(id) ON DELETE CASCADE;
 
@@ -39595,6 +39630,9 @@ ALTER TABLE ONLY catalog_resource_versions
 
 ALTER TABLE ONLY merge_requests_approval_rules
     ADD CONSTRAINT fk_7af76dbd21 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY organization_cluster_agent_mappings
+    ADD CONSTRAINT fk_7b441007e5 FOREIGN KEY (creator_id) REFERENCES users(id) ON DELETE SET NULL;
 
 ALTER TABLE ONLY issue_customer_relations_contacts
     ADD CONSTRAINT fk_7b92f835bb FOREIGN KEY (contact_id) REFERENCES customer_relations_contacts(id) ON DELETE CASCADE;

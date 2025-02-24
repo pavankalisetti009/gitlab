@@ -138,6 +138,11 @@ module EE
         class_name: 'RemoteDevelopment::RemoteDevelopmentNamespaceClusterAgentMapping',
         inverse_of: :user
 
+      has_many :created_organization_cluster_agent_mappings,
+        class_name: 'RemoteDevelopment::OrganizationClusterAgentMapping',
+        foreign_key: 'creator_id',
+        inverse_of: :user
+
       has_many :country_access_logs, class_name: 'Users::CountryAccessLog', inverse_of: :user
 
       has_one :pipl_user, class_name: 'ComplianceManagement::PiplUser'
