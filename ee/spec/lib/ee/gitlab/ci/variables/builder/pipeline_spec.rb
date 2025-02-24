@@ -74,30 +74,6 @@ RSpec.describe Gitlab::Ci::Variables::Builder::Pipeline, feature_category: :ci_v
               described_class.new(pipeline.reload).predefined_variables
             end.to issue_same_number_of_queries_as(control)
           end
-
-          context 'when the FF is disabled' do
-            before do
-              stub_feature_flags(ci_merge_request_variables_preload: false)
-            end
-
-            it 'does not avoid N+1 database queries' do
-              # warm up the cache
-              described_class.new(pipeline).predefined_variables
-
-              control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
-                described_class.new(pipeline.reload).predefined_variables
-              end
-
-              create(:code_owner_rule, name: '*/*', merge_request: merge_request)
-              create(:report_approver_rule, :scan_finding, merge_request: merge_request,
-                scan_result_policy_read: policy, name: 'Policy 2')
-
-              extra_query_count = 7
-              expect do
-                described_class.new(pipeline.reload).predefined_variables
-              end.to issue_same_number_of_queries_as(control).with_threshold(extra_query_count)
-            end
-          end
         end
       end
     end
