@@ -3,7 +3,6 @@ import { GlCollapsibleListbox, GlIcon, GlTooltipDirective } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import { convertToTitleCase } from '~/lib/utils/text_utility';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { ROLE_PERMISSION_TO_APPROVE_MRS } from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
 import groupCustomRoles from 'ee/security_orchestration/graphql/queries/group_custom_roles.query.graphql';
 import projectCustomRoles from 'ee/security_orchestration/graphql/queries/project_custom_roles.query.graphql';
@@ -26,7 +25,6 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  mixins: [glFeatureFlagsMixin()],
   inject: ['roleApproverTypes', 'namespacePath', 'namespaceType'],
   apollo: {
     customRoles: {
@@ -50,9 +48,6 @@ export default {
             })) || []
         );
       },
-      skip() {
-        return !this.glFeatures.securityPolicyCustomRoles;
-      },
     },
   },
   props: {
@@ -73,11 +68,8 @@ export default {
     };
   },
   computed: {
-    hasCustomRoleFeatureFlag() {
-      return this.glFeatures.securityPolicyCustomRoles;
-    },
     hasCustomRoles() {
-      return this.customRoles.length && this.hasCustomRoleFeatureFlag;
+      return this.customRoles.length;
     },
     hasValidRoles() {
       return this.$apollo.loading || this.selected.every(this.isRoleValid);
@@ -143,7 +135,6 @@ export default {
       @select="selectRoles"
     />
     <gl-icon
-      v-if="hasCustomRoleFeatureFlag"
       v-gl-tooltip
       name="information-o"
       class="gl-ml-3 gl-mt-3 gl-text-blue-500"

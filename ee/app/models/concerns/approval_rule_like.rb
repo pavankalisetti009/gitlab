@@ -174,14 +174,10 @@ module ApprovalRuleLike
   def scan_result_policy_read_role_approvers
     return User.none unless scan_result_policy_read
 
-    if Feature.enabled?(:security_policy_custom_roles, project)
-      project.team.members_with_access_level_or_custom_roles(
-        levels: scan_result_policy_read.role_approvers,
-        member_role_ids: scan_result_policy_read.custom_role_ids_with_permission
-      )
-    else
-      project.team.members_with_access_levels(scan_result_policy_read.role_approvers)
-    end
+    project.team.members_with_access_level_or_custom_roles(
+      levels: scan_result_policy_read.role_approvers,
+      member_role_ids: scan_result_policy_read.custom_role_ids_with_permission
+    )
   end
 
   def filter_inactive_approvers(approvers)
