@@ -17,15 +17,14 @@ export const resolvers = {
             exclude_guests: Boolean(data.plan.exclude_guests),
           },
           usage: {
-            seats_in_subscription: Number(data.usage.seats_in_subscription),
-            seats_in_use: Number(data.usage.seats_in_use),
-            max_seats_used: Number(data.usage.max_seats_used),
-            seats_owed: Number(data.usage.seats_owed),
+            seats_in_subscription: Number(data.usage?.seats_in_subscription) || 0,
+            seats_in_use: Number(data.usage?.seats_in_use) || 0,
+            max_seats_used: Number(data.usage?.max_seats_used) || 0,
+            seats_owed: Number(data.usage?.seats_owed) || 0,
           },
           billing: {
             subscription_start_date: data.billing.subscription_start_date,
             subscription_end_date: data.billing.subscription_end_date,
-            trial_ends_on: data.billing.trial_ends_on,
           },
         };
       });
