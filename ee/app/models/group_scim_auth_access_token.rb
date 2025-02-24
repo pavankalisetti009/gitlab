@@ -17,7 +17,7 @@ class GroupScimAuthAccessToken < ApplicationRecord # rubocop:disable Gitlab/Name
     return ScimOauthAccessToken.token_matches_for_group?(token, group) unless Feature.enabled?(
       :separate_group_scim_table, group)
 
-    # Necessary to call `TokenAuthenticatableStrategies::Encrypted.find_token_authenticatable`
+    # Necessary to call `Authn::TokenField::Encrypted.find_token_authenticatable`
     token = find_by_token(token)
 
     token && group && token.group_id == group.id
