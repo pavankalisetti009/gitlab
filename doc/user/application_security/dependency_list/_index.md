@@ -28,16 +28,16 @@ Software Bill of Materials, SBOM, or BOM.
 <i class="fa fa-youtube-play youtube" aria-hidden="true"></i>
 For an overview, see [Project Dependency](https://www.youtube.com/watch?v=ckqkn9Tnbw4).
 
-## Getting Started
+## Generate the dependency list
 
 To list your project's dependencies, run [Dependency Scanning](../dependency_scanning/_index.md)
 or [Container Scanning](../container_scanning/_index.md) on the default branch of your project.
 
-The dependency list will also show dependencies from any
+The dependency list also shows dependencies from any
 [CycloneDX reports](../../../ci/yaml/artifacts_reports.md#artifactsreportscyclonedx) uploaded from the
 latest default branch pipeline.
 The CycloneDX reports must comply with [the CycloneDX specification](https://github.com/CycloneDX/specification) version `1.4`, `1.5`, or `1.6`.
-An online validator is available on the [CycloneDX Web Tool](https://cyclonedx.github.io/cyclonedx-web-tool/validate).
+You can use the [CycloneDX Web Tool](https://cyclonedx.github.io/cyclonedx-web-tool/validate) to validate CycloneDX reports.
 
 {{< alert type="note" >}}
 
