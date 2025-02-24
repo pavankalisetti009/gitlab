@@ -116,7 +116,9 @@ description: with missing properties
           expect(subject.last.description).to eq('North Star Metrics across all departments for the last 3 quarters.')
           expect(subject.last.schema_version).to eq('2')
           expect(subject.last.filters).to eq({ "projects" => { "enabled" => true },
-            "dateRange" => { "enabled" => true }, "excludeAnonymousUsers" => { "enabled" => true } })
+            "dateRange" => { "enabled" => true }, "excludeAnonymousUsers" => { "enabled" => true },
+                                               "filteredSearch" => { "enabled" => true, "options" =>
+                                                 [{ "token" => "label", "maxSuggestions" => 20 }] } })
           expect(subject.last.errors).to be_nil
         end
       end

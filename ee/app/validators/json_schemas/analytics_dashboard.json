@@ -70,6 +70,9 @@
         },
         "projects": {
           "$ref": "#/definitions/DashboardFilter"
+        },
+        "filteredSearch": {
+          "$ref": "#/definitions/FilteredSearchFilter"
         }
       },
       "title": "DashboardFilters"
@@ -103,6 +106,21 @@
               "$ref": "#/definitions/DateRangeFilterOptions/items"
             }
           ]
+        }
+      }
+    },
+    "FilteredSearchFilter": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FilteredSearchFilterOption"
+          }
         }
       }
     },
@@ -251,6 +269,37 @@
           "180d"
         ]
       }
+    },
+    "FilteredSearchFilterOption": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "token": {
+          "enum": [
+            "assignee",
+            "author",
+            "label",
+            "milestone"
+          ]
+        },
+        "operator": {
+          "enum": [
+            "is",
+            "is_not",
+            "is_not_or"
+          ]
+        },
+        "unique": {
+          "type": "boolean"
+        },
+        "maxSuggestions": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "token"
+      ],
+      "title": "FilteredSearchFilterOption"
     }
   }
 }

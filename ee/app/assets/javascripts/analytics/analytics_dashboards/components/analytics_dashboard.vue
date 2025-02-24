@@ -48,6 +48,7 @@ export default {
     DateRangeFilter: () => import('./filters/date_range_filter.vue'),
     AnonUsersFilter: () => import('./filters/anon_users_filter.vue'),
     ProjectsFilter: () => import('./filters/projects_filter.vue'),
+    FilteredSearchFilter: () => import('./filters/filtered_search_filter.vue'),
     AnalyticsDashboardPanel,
     CustomizableDashboard,
     ProductAnalyticsFeedbackBanner,
@@ -137,9 +138,12 @@ export default {
       );
     },
     showFilters() {
-      return [this.showProjectsFilter, this.showAnonUserFilter, this.showDateRangeFilter].some(
-        Boolean,
-      );
+      return [
+        this.showProjectsFilter,
+        this.showAnonUserFilter,
+        this.showDateRangeFilter,
+        this.showFilteredSearchFilter,
+      ].some(Boolean);
     },
     showDateRangeFilter() {
       return isDashboardFilterEnabled(this.dateRangeFilter);
@@ -155,6 +159,12 @@ export default {
     },
     showAnonUserFilter() {
       return isDashboardFilterEnabled(this.currentDashboard?.filters?.excludeAnonymousUsers);
+    },
+    filteredSearchFilter() {
+      return this.currentDashboard?.filters?.filteredSearch;
+    },
+    showFilteredSearchFilter() {
+      return isDashboardFilterEnabled(this.filteredSearchFilter);
     },
     invalidDashboardErrors() {
       return this.currentDashboard?.errors ?? [];
@@ -190,6 +200,9 @@ export default {
     },
     dateRangeOptions() {
       return this.currentDashboard.filters?.dateRange?.options;
+    },
+    filteredSearchOptions() {
+      return this.currentDashboard.filters?.filteredSearch?.options;
     },
   },
   watch: {
@@ -458,6 +471,12 @@ export default {
         },
       };
     },
+    setFilteredSearchFilter(searchFilters) {
+      this.filters = {
+        ...this.filters,
+        searchFilters,
+      };
+    },
   },
   troubleshootingUrl: helpPagePath('user/analytics/analytics_dashboards', {
     anchor: '#troubleshooting',
@@ -542,6 +561,12 @@ export default {
         </template>
 
         <template v-if="showFilters" #filters>
+          <filtered-search-filter
+            v-if="showFilteredSearchFilter"
+            class="gl-basis-full"
+            :options="filteredSearchOptions"
+            @change="setFilteredSearchFilter"
+          />
           <projects-filter
             v-if="showProjectsFilter"
             :group-namespace="namespaceFullPath"
