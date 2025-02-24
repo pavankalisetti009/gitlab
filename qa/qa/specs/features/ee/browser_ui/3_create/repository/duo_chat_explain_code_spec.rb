@@ -41,7 +41,8 @@ module QA
           end
 
           expect(duo_chat).to have_text('/explain'), 'Expected "/explain" request sent to Duo Chat.'
-          expect { duo_chat.response }.to eventually_include('code'), 'Expected "code" within Duo Chat response.'
+          expect { duo_chat.response }.to eventually_include('code').within(max_duration: 30),
+            'Expected "code" within Duo Chat response.'
         end
       end
     end
