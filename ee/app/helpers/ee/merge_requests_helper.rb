@@ -41,7 +41,7 @@ module EE
 
     override :review_bar_data
     def review_bar_data(merge_request, user)
-      super.merge({ can_summarize: Ability.allowed?(user, :summarize_draft_code_review, merge_request).to_s })
+      super.merge({ can_summarize: Ability.allowed?(user, :access_summarize_review, merge_request).to_s })
     end
 
     override :identity_verification_alert_data
