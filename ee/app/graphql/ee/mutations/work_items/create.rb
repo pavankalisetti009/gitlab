@@ -33,6 +33,7 @@ module EE
             experiment: { milestone: '17.10' }
 
           argument :vulnerability_id, ::Types::GlobalIDType[::Vulnerability],
+            loads: ::Types::VulnerabilityType,
             required: false,
             description: 'Input for linking an existing vulnerability to created work item.',
             experiment: { milestone: '17.9' }
@@ -43,6 +44,24 @@ module EE
           return super unless type.epic?
 
           raise ::Gitlab::Graphql::Errors::ArgumentError, 'Epic type is not available for the given group'
+        end
+
+        override :resolve
+        def resolve(project_path: nil, namespace_path: nil, vulnerability: nil, **attributes)
+          result = super(project_path: project_path, namespace_path: namespace_path, **attributes)
+          work_item = result[:work_item]
+          errors = result[:errors]
+
+          return result if errors.any? || vulnerability.blank?
+
+          result = VulnerabilityIssueLinks::CreateService.new(
+            current_user, vulnerability, work_item, link_type: Vulnerabilities::IssueLink.link_types[:created]
+          ).execute
+
+          {
+            work_item: work_item,
+            errors: result.errors
+          }
         end
       end
     end
