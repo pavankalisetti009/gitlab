@@ -90,18 +90,18 @@ export default {
       return this.hasLimitedFreePlan;
     },
     isLoaderShown() {
-      return this.isLoading || this.hasError;
+      return this.$apollo.loading || this.isLoading || this.hasError;
     },
     hasFreePlan() {
       return this.plan.code === PLAN_CODE_FREE;
     },
   },
-  created() {
-    this.$store.dispatch('fetchInitialData');
-    this.$store.commit(types.REQUEST_GITLAB_SUBSCRIPTION);
-  },
   methods: {
     ...mapActions(['receiveBillableMembersListError']),
+    refetchData() {
+      this.$apollo.queries.plan.refetch();
+      this.$apollo.queries.billableMembersCount.refetch();
+    },
   },
 };
 </script>
@@ -153,6 +153,6 @@ export default {
       </div>
     </div>
 
-    <subscription-user-list :has-free-plan="hasFreePlan" />
+    <subscription-user-list :has-free-plan="hasFreePlan" @refetchData="refetchData" />
   </section>
 </template>

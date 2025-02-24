@@ -1,62 +1,49 @@
-import { GlSprintf } from '@gitlab/ui';
+import { GlSprintf, GlModal } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
-import Vue, { nextTick } from 'vue';
-// eslint-disable-next-line no-restricted-imports
-import Vuex from 'vuex';
 import RemoveBillableMemberModal from 'ee/usage_quotas/seats/components/remove_billable_member_modal.vue';
-
-Vue.use(Vuex);
 
 describe('RemoveBillableMemberModal', () => {
   let wrapper;
 
-  const defaultState = {
-    namespaceName: 'foo',
-    billableMemberToRemove: {
-      id: 2,
-      username: 'username',
-      name: 'First Last',
-    },
+  const billableMemberToRemove = {
+    id: 2,
+    username: 'username',
+    name: 'First Last',
   };
 
-  const createStore = () => {
-    return new Vuex.Store({
-      state: defaultState,
-    });
-  };
-
-  const createComponent = (mountFn = shallowMount) => {
-    wrapper = mountFn(RemoveBillableMemberModal, {
-      store: createStore(),
+  const createComponent = () => {
+    wrapper = shallowMount(RemoveBillableMemberModal, {
       stubs: {
         GlSprintf,
+        GlModal,
       },
       provide: {
         namespaceName: 'Dummy namespace',
       },
+      propsData: {
+        billableMemberToRemove,
+      },
     });
   };
 
-  beforeEach(() => {
-    createComponent();
-
-    return nextTick();
-  });
-
   describe('on rendering', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
     it('renders the submit button disabled', () => {
-      expect(wrapper.attributes('ok-disabled')).toBe('true');
+      expect(wrapper.findComponent(GlModal).attributes('okdisabled')).toBe('true');
     });
 
     it('renders the title with username', () => {
-      expect(wrapper.attributes('title')).toBe(
-        `Remove user @${defaultState.billableMemberToRemove.username} from your subscription`,
+      expect(wrapper.findComponent(GlModal).props('title')).toBe(
+        `Remove user @${billableMemberToRemove.username} from your subscription`,
       );
     });
 
     it('renders the confirmation label with username', () => {
-      expect(wrapper.find('label').text()).toContain(
-        defaultState.billableMemberToRemove.username.substring(1),
+      expect(wrapper.findComponent(GlModal).find('label').text()).toContain(
+        billableMemberToRemove.username,
       );
     });
   });

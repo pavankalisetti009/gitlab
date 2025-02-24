@@ -1,4 +1,10 @@
 import Api from 'ee/api';
+import * as GroupsApi from 'ee/api/groups_api';
+import {
+  HEADER_TOTAL_ENTRIES,
+  HEADER_PAGE_NUMBER,
+  HEADER_ITEMS_PER_PAGE,
+} from 'ee/usage_quotas/seats/constants';
 
 export const resolvers = {
   Query: {
@@ -28,6 +34,20 @@ export const resolvers = {
           },
         };
       });
+    },
+    billableMembers(_, { namespaceId, page, search, sort }) {
+      return GroupsApi.fetchBillableGroupMembersList(namespaceId, { page, search, sort })
+        .then(({ data, headers }) => {
+          return {
+            total: Number(headers[HEADER_TOTAL_ENTRIES]),
+            page: Number(headers[HEADER_PAGE_NUMBER]),
+            perPage: Number(headers[HEADER_ITEMS_PER_PAGE]),
+            members: data || [],
+          };
+        })
+        .catch((error) => {
+          throw error;
+        });
     },
   },
 };

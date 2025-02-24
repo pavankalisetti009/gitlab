@@ -1,17 +1,13 @@
 <script>
 import { GlBadge, GlFormInput, GlModal, GlSprintf } from '@gitlab/ui';
-// eslint-disable-next-line no-restricted-imports
-import { mapActions, mapState } from 'vuex';
 import {
   REMOVE_BILLABLE_MEMBER_MODAL_ID,
   REMOVE_BILLABLE_MEMBER_MODAL_CONTENT_TEXT_TEMPLATE,
 } from 'ee/usage_quotas/seats/constants';
-import csrf from '~/lib/utils/csrf';
 import { __, s__, sprintf } from '~/locale';
 
 export default {
   name: 'RemoveBillableMemberModal',
-  csrf,
   components: {
     GlFormInput,
     GlModal,
@@ -19,16 +15,22 @@ export default {
     GlBadge,
   },
   inject: ['namespaceName'],
+  props: {
+    billableMemberToRemove: {
+      type: Object,
+      required: false,
+      default: null,
+    },
+  },
   data() {
     return {
       enteredMemberUsername: null,
     };
   },
   computed: {
-    ...mapState(['billableMemberToRemove']),
     modalTitle() {
       return sprintf(s__('Billing|Remove user %{username} from your subscription'), {
-        username: this.usernameWithAtPrepended,
+        username: `@${this.username}`,
       });
     },
     canSubmit() {
@@ -55,12 +57,9 @@ export default {
         },
       };
     },
-    usernameWithAtPrepended() {
-      return `@${this.billableMemberToRemove.username}`;
+    username() {
+      return this.billableMemberToRemove.username;
     },
-  },
-  methods: {
-    ...mapActions(['removeBillableMember', 'setBillableMemberToRemove']),
   },
   modalId: REMOVE_BILLABLE_MEMBER_MODAL_ID,
   i18n: {
@@ -78,13 +77,13 @@ export default {
     :title="modalTitle"
     data-testid="remove-billable-member-modal"
     :ok-disabled="!canSubmit"
-    @primary="removeBillableMember"
-    @hide="setBillableMemberToRemove(null)"
+    @primary="$emit('removeBillableMember', billableMemberToRemove.id)"
+    @hide="$emit('clearBillableMemberToRemove')"
   >
     <p>
       <gl-sprintf :message="modalText">
         <template #username>
-          <strong>{{ usernameWithAtPrepended }}</strong>
+          <strong>@{{ username }}</strong>
         </template>
         <template #namespace>{{ namespaceName }}</template>
       </gl-sprintf>

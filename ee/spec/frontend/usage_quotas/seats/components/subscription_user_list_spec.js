@@ -9,8 +9,7 @@ import {
 } from '@gitlab/ui';
 import { mount, shallowMount } from '@vue/test-utils';
 import Vue, { nextTick } from 'vue';
-// eslint-disable-next-line no-restricted-imports
-import Vuex from 'vuex';
+import VueApollo from 'vue-apollo';
 import SubscriptionUserList, {
   FIVE_MINUTES_IN_MS,
 } from 'ee/usage_quotas/seats/components/subscription_user_list.vue';
@@ -20,58 +19,39 @@ import {
   DELETED_BILLABLE_MEMBERS_STORAGE_KEY_SUFFIX,
   SORT_OPTIONS,
 } from 'ee/usage_quotas/seats/constants';
-import getStoreConfig from 'ee/usage_quotas/seats/store';
-import { REMOVE_BILLABLE_MEMBER_SUCCESS } from 'ee/usage_quotas/seats/store/mutation_types';
 import { mockTableItems } from 'ee_jest/usage_quotas/seats/mock_data';
 import { useLocalStorageSpy } from 'helpers/local_storage_helper';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import SearchAndSortBar from '~/usage_quotas/components/search_and_sort_bar/search_and_sort_bar.vue';
 import { useFakeDate } from 'helpers/fake_date';
+import { createMockClient } from 'helpers/mock_apollo_helper';
+import RemoveBillableMemberModal from 'ee/usage_quotas/seats/components/remove_billable_member_modal.vue';
+import waitForPromises from 'helpers/wait_for_promises';
+import * as GroupsApi from 'ee/api/groups_api';
+import { createAlert } from '~/alert';
 
-Vue.use(Vuex);
+jest.mock('~/alert');
+jest.mock('ee/api/groups_api');
+
+Vue.use(VueApollo);
 
 const MOCK_SEAT_USAGE_EXPORT_PATH = '/groups/test_group/-/seat_usage.csv';
-
-const actionSpies = {
-  setBillableMemberToRemove: jest.fn(),
-  setSearchQuery: jest.fn(),
-};
 
 const defaultProvide = {
   subscriptionHistoryHref: '/groups/my-group/-/usage_quotas/subscription_history.csv',
   seatUsageExportPath: MOCK_SEAT_USAGE_EXPORT_PATH,
+  namespaceId: 1,
+  namespaceName: 'GitLab',
 };
 
 const defaultProps = {
   hasFreePlan: false,
 };
 
-const fakeStore = ({ initialState, initialGetters }) =>
-  new Vuex.Store({
-    actions: actionSpies,
-    mutations: getStoreConfig().mutations,
-    getters: {
-      tableItems: () => mockTableItems,
-      isLoading: () => false,
-      ...initialGetters,
-    },
-    state: {
-      hasError: false,
-      namespaceId: 1,
-      total: 300,
-      page: 1,
-      perPage: 5,
-      sort: 'last_activity_on_desc',
-      removedBillableMemberId: null,
-      ...initialState,
-    },
-  });
-
 describe('SubscriptionUserList', () => {
   useLocalStorageSpy();
   useFakeDate('2025-03-16T15:00:00.000Z');
 
-  let store;
   let wrapper;
 
   const localStorageKey = `13-${DELETED_BILLABLE_MEMBERS_STORAGE_KEY_SUFFIX}`;
@@ -79,17 +59,30 @@ describe('SubscriptionUserList', () => {
   const fiveMinutesBeforeNow = () => new Date().getTime() - FIVE_MINUTES_IN_MS;
   const fiveMinutesFromNow = () => new Date().getTime() + FIVE_MINUTES_IN_MS;
 
-  const createComponent = ({
-    mountFn = shallowMount,
-    initialState = {},
-    initialGetters = {},
-    provide = {},
-    props = {},
-  } = {}) => {
-    store = fakeStore({ initialGetters, initialState });
+  const billableMembersMockHandler = jest.fn().mockResolvedValue({
+    total: mockTableItems.length,
+    page: 1,
+    perPage: 5,
+    members: mockTableItems,
+  });
+
+  const createComponent = ({ mountFn = shallowMount, provide = {}, props = {} } = {}) => {
+    const resolvers = {
+      Query: {
+        billableMembers: billableMembersMockHandler,
+      },
+    };
+
+    const mockGitlabClient = createMockClient([], resolvers);
+
+    const apolloProvider = new VueApollo({
+      defaultClient: mockGitlabClient,
+      clients: { gitlabClient: mockGitlabClient },
+    });
     wrapper = extendedWrapper(
       mountFn(SubscriptionUserList, {
-        store,
+        apolloProvider,
+
         provide: {
           ...defaultProvide,
           ...provide,
@@ -103,6 +96,7 @@ describe('SubscriptionUserList', () => {
         },
       }),
     );
+    return waitForPromises();
   };
 
   const findTable = () => wrapper.findComponent(GlTable);
@@ -114,6 +108,7 @@ describe('SubscriptionUserList', () => {
   const findAllRemoveUserItems = () => wrapper.findAllByTestId('remove-user');
   const findRemoveUserItem = (id) => wrapper.find(`[id="remove-user-${id}"]`);
   const findErrorModal = () => wrapper.findComponent(GlModal);
+  const findRemoveBillableMemberModal = () => wrapper.findComponent(RemoveBillableMemberModal);
 
   const serializeTableRow = (rowWrapper) => {
     const extendedRowWrapper = extendedWrapper(rowWrapper);
@@ -143,11 +138,8 @@ describe('SubscriptionUserList', () => {
 
   describe('renders', () => {
     beforeEach(() => {
-      createComponent({
+      return createComponent({
         mountFn: mount,
-        initialGetters: {
-          tableItems: () => mockTableItems,
-        },
       });
     });
 
@@ -168,9 +160,6 @@ describe('SubscriptionUserList', () => {
         beforeEach(() => {
           createComponent({
             mountFn: mount,
-            initialGetters: {
-              tableItems: () => mockTableItems,
-            },
             props: {
               hasFreePlan: true,
             },
@@ -196,7 +185,7 @@ describe('SubscriptionUserList', () => {
 
       expect(pagination.props()).toMatchObject({
         perPage: 5,
-        totalItems: 300,
+        totalItems: 6,
       });
     });
 
@@ -215,11 +204,14 @@ describe('SubscriptionUserList', () => {
     });
 
     describe('when removing a billable user', () => {
-      const { user } = mockTableItems[0];
+      const user = mockTableItems[0];
 
-      beforeEach(() => {
-        createComponent({ initialState: { namespaceId: 13 } });
-        return store.commit(REMOVE_BILLABLE_MEMBER_SUCCESS, { memberId: user.id });
+      beforeEach(async () => {
+        GroupsApi.removeBillableMemberFromGroup.mockResolvedValue();
+
+        await createComponent({ provide: { namespaceId: 13 } });
+        // call removeBillableMember from the modal
+        await findRemoveBillableMemberModal().vm.$emit('removeBillableMember', user.id);
       });
 
       it('sets the local storage key for the member id', () => {
@@ -234,9 +226,10 @@ describe('SubscriptionUserList', () => {
       });
 
       describe('when removing another member', () => {
-        it('sets the local storage key for the member id', async () => {
-          store.commit(REMOVE_BILLABLE_MEMBER_SUCCESS, { memberId: 13 });
+        beforeEach(() => findRemoveBillableMemberModal().vm.$emit('removeBillableMember', 13));
 
+        it('sets the local storage key for the member id', async () => {
+          // TODO: consider removing the next line
           await nextTick();
 
           expect(localStorage.setItem).toHaveBeenLastCalledWith(localStorageKey, `[${user.id},13]`);
@@ -253,10 +246,17 @@ describe('SubscriptionUserList', () => {
 
     describe('when the removed billable user is set', () => {
       const selectedItem = 1;
-      const { user } = mockTableItems[selectedItem];
+      const user = mockTableItems[selectedItem];
 
-      beforeEach(() => {
-        createComponent({ initialState: { removedBillableMemberId: user.id }, mountFn: mount });
+      beforeEach(async () => {
+        await createComponent({ mountFn: mount });
+        GroupsApi.removeBillableMemberFromGroup.mockResolvedValue();
+
+        return findRemoveBillableMemberModal().vm.$emit('removeBillableMember', user.id);
+      });
+
+      it('calls the endpoint to remove the user from the group', () => {
+        expect(GroupsApi.removeBillableMemberFromGroup).toHaveBeenCalledWith(1, user.id);
       });
 
       it('disables the related remove button', () => {
@@ -274,7 +274,7 @@ describe('SubscriptionUserList', () => {
       });
 
       it('does not show a tooltip for unrelated user', () => {
-        const { user: nonRemovedUser } = mockTableItems[2];
+        const nonRemovedUser = mockTableItems[2];
 
         expect(findRemoveUserItem(nonRemovedUser.id).findComponent(GlTooltip).exists()).toBe(false);
       });
@@ -282,12 +282,12 @@ describe('SubscriptionUserList', () => {
 
     describe('when the removed billable user is in local storage', () => {
       const selectedItem = 1;
-      const { user } = mockTableItems[selectedItem];
+      const user = mockTableItems[selectedItem];
 
       beforeEach(() => {
         localStorage.setItem(localStorageKey, `[${user.id}]`);
         localStorage.setItem(localStorageExpireKey, fiveMinutesFromNow());
-        createComponent({ initialState: { namespaceId: 13 }, mountFn: mount });
+        return createComponent({ provide: { namespaceId: 13 }, mountFn: mount });
       });
 
       it('disables the related remove button', () => {
@@ -305,7 +305,7 @@ describe('SubscriptionUserList', () => {
       });
 
       it('does not show a tooltip for unrelated user', () => {
-        const { user: nonRemovedUser } = mockTableItems[2];
+        const nonRemovedUser = mockTableItems[2];
 
         expect(findRemoveUserItem(nonRemovedUser.id).findComponent(GlTooltip).exists()).toBe(false);
       });
@@ -314,7 +314,7 @@ describe('SubscriptionUserList', () => {
         beforeEach(() => {
           localStorage.setItem(localStorageKey, `[${user.id}]`);
           localStorage.setItem(localStorageExpireKey, fiveMinutesBeforeNow());
-          createComponent({ initialState: { namespaceId: 13 }, mountFn: mount });
+          return createComponent({ provide: { namespaceId: 13 }, mountFn: mount });
         });
 
         it('does not disable the related remove button', () => {
@@ -327,32 +327,38 @@ describe('SubscriptionUserList', () => {
       });
 
       describe('when the local storage item does not match the user', () => {
-        it('does not disable the related remove button', () => {
+        beforeEach(() => {
           localStorage.setItem(localStorageKey, `[11]`);
           localStorage.setItem(localStorageExpireKey, fiveMinutesFromNow());
-          createComponent({ initialState: { namespaceId: 13 }, mountFn: mount });
+          return createComponent({ provide: { namespaceId: 13 }, mountFn: mount });
+        });
 
+        it('does not disable the related remove button', () => {
           expect(findAllRemoveUserItems().at(selectedItem).attributes().disabled).toBeUndefined();
         });
       });
 
       describe('when the local storage item does not match namespace id', () => {
-        it('does not disable the related remove button', () => {
+        beforeEach(() => {
           localStorage.setItem(localStorageKey, `[${user.id}]`);
           localStorage.setItem(localStorageExpireKey, fiveMinutesFromNow());
-          createComponent({ initialState: { namespaceId: 11 }, mountFn: mount });
+          return createComponent({ provide: { namespaceId: 11 }, mountFn: mount });
+        });
 
+        it('does not disable the related remove button', () => {
           expect(findAllRemoveUserItems().at(selectedItem).attributes().disabled).toBeUndefined();
         });
       });
 
       describe('when the local storage errors', () => {
-        it('does not disable any remove button', () => {
+        beforeEach(() => {
           localStorage.setItem.mockImplementation(() => {
             throw new Error('This is an error');
           });
-          createComponent({ initialState: { namespaceId: 11 }, mountFn: mount });
+          return createComponent({ provide: { namespaceId: 11 }, mountFn: mount });
+        });
 
+        it('does not disable any remove button', () => {
           expect(findAllRemoveUserItems().at(selectedItem).attributes().disabled).toBeUndefined();
         });
       });
@@ -398,10 +404,10 @@ describe('SubscriptionUserList', () => {
 
           avatarLinks.wrappers.forEach((avatarLinkWrapper) => {
             const currentMember = mockTableItems.find(
-              (item) => item.user.name === avatarLinkWrapper.attributes().alt,
+              (item) => item.name === avatarLinkWrapper.attributes().alt,
             );
 
-            if (membershipType === currentMember.user.membership_type) {
+            if (membershipType === currentMember.membership_type) {
               expect(avatarLinkWrapper.findComponent(GlBadge).text()).toBe(badgeText);
             }
           });
@@ -421,10 +427,10 @@ describe('SubscriptionUserList', () => {
         ({ membershipType }) => {
           mockTableItems.forEach((item) => {
             const detailsExpandButtons = findTable().find(
-              `[data-testid="toggle-seat-usage-details-${item.user.id}"]`,
+              `[data-testid="toggle-seat-usage-details-${item.id}"]`,
             );
 
-            if (membershipType === item.user.membership_type) {
+            if (membershipType === item.membership_type) {
               expect(detailsExpandButtons.exists()).toBe(true);
             }
           });
@@ -434,49 +440,53 @@ describe('SubscriptionUserList', () => {
   });
 
   describe('Loading state', () => {
-    describe('when nothing is loading', () => {
-      beforeEach(() => {
-        createComponent();
-      });
-
-      it('displays the table in a non-busy state', () => {
-        expect(findTable().attributes('busy')).toBe(undefined);
-      });
+    beforeEach(() => {
+      createComponent();
     });
 
-    describe.each([
-      [true, false],
-      [false, true],
-    ])('busy when isLoading=%s and hasError=%s', (isLoading, hasError) => {
-      beforeEach(() => {
-        createComponent({
-          initialGetters: { isLoading: () => isLoading },
-          initialState: { hasError },
-        });
-      });
+    it('displays table in busy state', () => {
+      // the table is in busy state when $apollo.loading since we didn't wait for the promise to resolve
+      expect(findTable().attributes('busy')).toBe('true');
+    });
 
-      it('displays table in busy state', () => {
-        expect(findTable().attributes('busy')).toBe('true');
-      });
+    it('does not display the table in busy state after the query has loaded', async () => {
+      await waitForPromises();
+
+      expect(findTable().attributes('busy')).toBeUndefined();
     });
   });
 
   describe('search box', () => {
     beforeEach(() => {
-      createComponent();
+      return createComponent();
     });
 
-    it('input event triggers the setSearchQuery action', () => {
-      const SEARCH_STRING = 'search string';
+    it('input event changes search property', async () => {
+      expect(billableMembersMockHandler).toHaveBeenCalledTimes(2);
 
-      findSearchAndSortBar().vm.$emit('onFilter', SEARCH_STRING);
-
-      expect(actionSpies.setSearchQuery).toHaveBeenCalledTimes(1);
-      expect(actionSpies.setSearchQuery).toHaveBeenCalledWith(expect.any(Object), SEARCH_STRING);
+      findSearchAndSortBar().vm.$emit('onFilter', 'search string');
+      await nextTick();
+      expect(billableMembersMockHandler).toHaveBeenCalledTimes(3);
     });
 
     it('contains the correct sort options', () => {
       expect(findSearchAndSortBar().props('sortOptions')).toMatchObject(SORT_OPTIONS);
+    });
+  });
+
+  describe('remove billable members modal', () => {
+    beforeEach(() => createComponent());
+    describe('removing billable member', () => {
+      it('renders an alert when request succeed', async () => {
+        GroupsApi.removeBillableMemberFromGroup.mockResolvedValueOnce();
+
+        await findRemoveBillableMemberModal().vm.$emit('removeBillableMember', 2);
+        expect(createAlert).toHaveBeenCalledWith({
+          message:
+            'User successfully scheduled for removal. This process might take some time. Refresh the page to see the changes.',
+          variant: 'success',
+        });
+      });
     });
   });
 });
