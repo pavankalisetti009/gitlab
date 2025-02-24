@@ -9,6 +9,8 @@ module Ai
 
       encrypts :options
 
+      has_many :migrations, class_name: 'Ai::ActiveContext::Migration'
+
       validates :name, presence: true, length: { maximum: 255 }, uniqueness: true
       validates :adapter_class, presence: true, length: { maximum: 255 }
       validates :prefix, length: { maximum: 255 }, allow_nil: true
