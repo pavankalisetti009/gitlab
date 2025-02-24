@@ -216,9 +216,9 @@ module EE
     end
 
     def base_delay(timestamp)
-      return 0 unless self.last_update_started_at
+      return 0 unless last_update_started_at
 
-      duration = timestamp - self.last_update_started_at
+      duration = timestamp - last_update_started_at
 
       (BACKOFF_PERIOD + rand(JITTER)) * duration.seconds
     end

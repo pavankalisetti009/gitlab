@@ -20,15 +20,17 @@ RSpec.describe Elastic::ProcessInitialBookkeepingService, feature_category: :glo
 
       with_them do
         before do
-          public_send("stub_#{geo}_node") unless geo == :disabled
+          public_send(:"stub_#{geo}_node") unless geo == :disabled
 
           allow(project).to receive(:maintaining_indexed_associations?).and_return(true)
         end
 
         it 'indexes itself and initiates wiki reindexing, commits reindexing when indexing is excepted' do
           expect(described_class).to receive(:track!).with(project)
-          expect(described_class).to receive(:maintain_indexed_associations).with(project, Elastic::ProcessInitialBookkeepingService::INDEXED_PROJECT_ASSOCIATIONS)
-          expect(ElasticWikiIndexerWorker).to receive(:perform_async).with(project.id, project.class.name, { 'force' => true })
+          expect(described_class).to receive(:maintain_indexed_associations)
+            .with(project, Elastic::ProcessInitialBookkeepingService::INDEXED_PROJECT_ASSOCIATIONS)
+          expect(ElasticWikiIndexerWorker).to receive(:perform_async)
+            .with(project.id, project.class.name, { 'force' => true })
 
           if commit_indexing_expected
             expect(ElasticCommitIndexerWorker).to receive(:perform_async).with(project.id, false, { 'force' => true })
@@ -46,7 +48,8 @@ RSpec.describe Elastic::ProcessInitialBookkeepingService, feature_category: :glo
     end
 
     it 'uses a separate queue' do
-      expect { described_class.backfill_projects!(project) }.not_to change { Elastic::ProcessBookkeepingService.queue_size }
+      expect { described_class.backfill_projects!(project) }
+        .not_to change { Elastic::ProcessBookkeepingService.queue_size }
     end
 
     context 'when project is not maintaining indexed associations' do

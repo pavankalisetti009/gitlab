@@ -28,7 +28,7 @@ RSpec.describe Elastic::RepositoriesSearch, feature_category: :global_search do
 
     with_them do
       before do
-        public_send("stub_#{geo}_node") unless geo == :disabled
+        public_send(:"stub_#{geo}_node") unless geo == :disabled
       end
 
       it 'initiates commits reindexing when indexing is expected' do

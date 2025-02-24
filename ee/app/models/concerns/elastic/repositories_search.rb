@@ -7,7 +7,8 @@ module Elastic
     include ApplicationVersionedSearch
 
     included do
-      delegate(:find_commits_by_message_with_elastic, :delete_index_for_commits_and_blobs, :elastic_search, to: :__elasticsearch__)
+      delegate(:find_commits_by_message_with_elastic, :delete_index_for_commits_and_blobs, :elastic_search,
+        to: :__elasticsearch__)
 
       class << self
         delegate(:find_commits_by_message_with_elastic, to: :__elasticsearch__)

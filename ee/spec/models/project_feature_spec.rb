@@ -9,9 +9,9 @@ RSpec.describe ProjectFeature, feature_category: :groups_and_projects do
   let_it_be_with_reload(:user) { create(:user) }
 
   describe 'default values' do
-    subject { Project.new.project_feature }
+    subject(:project_feature) { Project.new.project_feature }
 
-    specify { expect(subject.requirements_access_level).to eq(Featurable::ENABLED) }
+    specify { expect(project_feature.requirements_access_level).to eq(Featurable::ENABLED) }
   end
 
   describe '#feature_available?' do
@@ -22,8 +22,8 @@ RSpec.describe ProjectFeature, feature_category: :groups_and_projects do
         user.update_attribute(:auditor, true)
 
         features.each do |feature|
-          project.project_feature.update_attribute("#{feature}_access_level".to_sym, ProjectFeature::PRIVATE)
-          expect(project.feature_available?(:issues, user)).to eq(true)
+          project.project_feature.update_attribute(:"#{feature}_access_level", ProjectFeature::PRIVATE)
+          expect(project.feature_available?(:issues, user)).to be(true)
         end
       end
     end
@@ -45,10 +45,10 @@ RSpec.describe ProjectFeature, feature_category: :groups_and_projects do
 
       with_them do
         before do
-          public_send("stub_#{geo}_node") unless geo == :disabled
+          public_send(:"stub_#{geo}_node") unless geo == :disabled
 
-          allow(project).to receive(:maintaining_elasticsearch?).and_return(maintaining_elasticsearch)
-          allow(project).to receive(:maintaining_indexed_associations?).and_return(maintaining_indexed_associations)
+          allow(project).to receive_messages(maintaining_elasticsearch?: maintaining_elasticsearch,
+            maintaining_indexed_associations?: maintaining_indexed_associations)
         end
 
         context 'when updating repository_access_level' do
@@ -75,8 +75,8 @@ RSpec.describe ProjectFeature, feature_category: :groups_and_projects do
 
       with_them do
         before do
-          allow(project).to receive(:maintaining_elasticsearch?).and_return(maintaining_elasticsearch)
-          allow(project).to receive(:maintaining_indexed_associations?).and_return(maintaining_indexed_associations)
+          allow(project).to receive_messages(maintaining_elasticsearch?: maintaining_elasticsearch,
+            maintaining_indexed_associations?: maintaining_indexed_associations)
         end
 
         context 'when updating wiki_access_level' do
@@ -95,7 +95,8 @@ RSpec.describe ProjectFeature, feature_category: :groups_and_projects do
     end
 
     context 'for associations in the database' do
-      where(:feature, :maintaining_elasticsearch, :maintaining_indexed_associations, :worker_expected, :associations) do
+      where(:project_feature, :maintaining_elasticsearch, :maintaining_indexed_associations, :worker_expected,
+        :associations) do
         'issues'                  | true  | true  | true  | %w[issues notes milestones]
         'issues'                  | false | true  | false | nil
         'issues'                  | true  | false | false | nil
@@ -132,8 +133,8 @@ RSpec.describe ProjectFeature, feature_category: :groups_and_projects do
 
       with_them do
         before do
-          allow(project).to receive(:maintaining_elasticsearch?).and_return(maintaining_elasticsearch)
-          allow(project).to receive(:maintaining_indexed_associations?).and_return(maintaining_indexed_associations)
+          allow(project).to receive_messages(maintaining_elasticsearch?: maintaining_elasticsearch,
+            maintaining_indexed_associations?: maintaining_indexed_associations)
         end
 
         it 're-indexes project and project associations on update' do
@@ -149,7 +150,7 @@ RSpec.describe ProjectFeature, feature_category: :groups_and_projects do
             expect(ElasticAssociationIndexerWorker).not_to receive(:perform_async)
           end
 
-          project.project_feature.update_attribute("#{feature}_access_level".to_sym, ProjectFeature::DISABLED)
+          project.project_feature.update_attribute(:"#{project_feature}_access_level", ProjectFeature::DISABLED)
         end
       end
     end
