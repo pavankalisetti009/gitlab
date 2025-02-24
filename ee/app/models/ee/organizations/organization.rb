@@ -15,6 +15,9 @@ module EE
         has_many :sbom_source_packages, class_name: 'Sbom::SourcePackage'
         has_many :sbom_components, class_name: 'Sbom::Component'
         has_many :sbom_component_versions, class_name: 'Sbom::ComponentVersion'
+        has_many :organization_cluster_agent_mappings,
+          class_name: 'RemoteDevelopment::OrganizationClusterAgentMapping',
+          inverse_of: :organization
       end
     end
   end
