@@ -421,6 +421,25 @@ RSpec.describe Epics::IssuePromoteService, :aggregate_failures, feature_category
             end
           end
         end
+
+        context 'with work_item_epics_ssot feature flag enabled' do
+          before do
+            stub_feature_flags(work_item_epics_ssot: true)
+          end
+
+          let_it_be(:project_milestone) { create(:milestone, project: project) }
+
+          it 'successfully retains the group level Milestone on the new epic' do
+            epic = subject.execute(issue, group)
+            expect(WorkItem.find(epic.issue_id).milestone).to eq(milestone)
+          end
+
+          it 'does not retain project level milestones on the new epic' do
+            issue.milestone = project_milestone
+            epic = subject.execute(issue, group)
+            expect(WorkItem.find(epic.issue_id).milestone).to be_nil
+          end
+        end
       end
     end
   end
