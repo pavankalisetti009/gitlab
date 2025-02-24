@@ -23,6 +23,10 @@ module Types
       field :control_type, GraphQL::Types::String,
         null: false,
         description: 'Type of the compliance control.'
+
+      field :external_url, GraphQL::Types::String,
+        null: true,
+        description: 'URL of the external control.'
     end
   end
 end

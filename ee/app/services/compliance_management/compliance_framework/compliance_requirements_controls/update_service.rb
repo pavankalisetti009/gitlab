@@ -4,6 +4,9 @@ module ComplianceManagement
   module ComplianceFramework
     module ComplianceRequirementsControls
       class UpdateService < BaseService
+        SENSITIVE_ATTRIBUTES = %w[secret_token encrypted_secret_token encrypted_secret_token_iv].freeze
+        IGNORED_ATTRIBUTES = %w[updated_at encrypted_secret_token encrypted_secret_token_iv].freeze
+
         def initialize(control:, params:, current_user:)
           @control = control
           super(nil, current_user, params)
@@ -30,14 +33,20 @@ module ComplianceManagement
 
         def audit_changes
           control.previous_changes.each do |attribute, changes|
-            next if attribute.eql?('updated_at')
+            next if IGNORED_ATTRIBUTES.include?(attribute)
+
+            message = if attribute.eql?('secret_token')
+                        "Changed compliance requirement control's secret token"
+                      else
+                        "Changed compliance requirement control's #{attribute} from '#{changes[0]}' to '#{changes[1]}'"
+                      end
 
             audit_context = {
               name: 'updated_compliance_requirement_control',
               author: current_user,
               scope: control.namespace,
               target: control,
-              message: "Changed compliance requirement control's #{attribute} from '#{changes[0]}' to '#{changes[1]}'"
+              message: message
             }
 
             ::Gitlab::Audit::Auditor.audit(audit_context)

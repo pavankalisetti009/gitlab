@@ -30,7 +30,7 @@ RSpec.describe 'Update a compliance requirement control', feature_category: :com
   let(:mutation_params) do
     {
       params: {
-        name: 'project_visibility_not_internal',
+        name: 'external_control',
         expression: control_expression
       }
     }
@@ -44,7 +44,7 @@ RSpec.describe 'Update a compliance requirement control', feature_category: :com
 
   shared_examples 'a mutation that updates a compliance requirement control' do
     it 'updates the requirement control' do
-      expect { mutate }.to change { control.reload.name }.to('project_visibility_not_internal')
+      expect { mutate }.to change { control.reload.name }.to('external_control')
                                                          .and change {
                                                            control.reload.expression
                                                          }.to(control_expression)
@@ -53,7 +53,7 @@ RSpec.describe 'Update a compliance requirement control', feature_category: :com
     it 'returns the updated requirement control', :aggregate_failures do
       mutate
 
-      expect(mutation_response['requirementsControl']['name']).to eq 'project_visibility_not_internal'
+      expect(mutation_response['requirementsControl']['name']).to eq 'external_control'
       expect(mutation_response['requirementsControl']['expression']).to eq control_expression
     end
 
@@ -119,6 +119,45 @@ RSpec.describe 'Update a compliance requirement control', feature_category: :com
 
         it 'does not update the requirement control' do
           expect { mutate }.to not_change { control.reload.attributes }
+        end
+      end
+
+      context "when updating an external control" do
+        let(:mutation_params) do
+          {
+            params: {
+              name: 'external_control',
+              control_type: 'external',
+              external_url: 'https://example.com',
+              secret_token: 'secret_token',
+              expression: nil
+            }
+          }
+        end
+
+        it 'updates the requirement control' do
+          expect { mutate }.to change { control.reload.control_type }.to('external').and change {
+            control.reload.external_url
+          }.to('https://example.com')
+          .and change {
+            control.reload.secret_token
+          }.to('secret_token')
+        end
+
+        it 'returns the updated requirement control', :aggregate_failures do
+          mutate
+
+          expect(mutation_response['requirementsControl']['name']).to eq 'external_control'
+          expect(mutation_response['requirementsControl']['expression']).to be_nil
+          expect(mutation_response['requirementsControl']['controlType']).to eq 'external'
+          expect(mutation_response['requirementsControl']['externalUrl']).to eq 'https://example.com'
+          expect(mutation_response['requirementsControl']['secretToken']).to be_nil
+        end
+
+        it 'returns an empty array of errors' do
+          mutate
+
+          expect(mutation_response['errors']).to be_empty
         end
       end
     end

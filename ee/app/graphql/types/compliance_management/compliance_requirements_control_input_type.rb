@@ -14,6 +14,21 @@ module Types
         GraphQL::Types::String,
         required: false,
         description: 'Expression of the compliance control.'
+
+      argument :control_type,
+        GraphQL::Types::String,
+        required: false,
+        description: 'Type of the compliance control.'
+
+      argument :external_url,
+        GraphQL::Types::String,
+        required: false,
+        description: 'URL of the external control.'
+
+      argument :secret_token,
+        GraphQL::Types::String,
+        required: false,
+        description: 'Secret token for an external control.'
     end
   end
 end
