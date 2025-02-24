@@ -11,15 +11,6 @@ module EE
         @subject.target_project&.can_override_approvers?
       end
 
-      condition(:summarize_draft_code_review_enabled) do
-        ::Feature.enabled?(:summarize_my_code_review, @user) &&
-          ::Gitlab::Llm::FeatureAuthorizer.new(
-            container: @subject.project,
-            feature_name: :summarize_review,
-            user: @user
-          ).allowed?
-      end
-
       condition(:external_status_checks_enabled) do
         @subject.target_project&.licensed_feature_available?(:external_status_checks)
       end
@@ -67,6 +58,20 @@ module EE
         @user.allowed_to_use?(:generate_commit_message, licensed_feature: :generate_commit_message)
       end
 
+      condition(:summarize_review_enabled) do
+        subject.project.project_setting.duo_features_enabled? &&
+          ::Feature.enabled?(:summarize_my_code_review, @user) &&
+          ::Gitlab::Llm::FeatureAuthorizer.new(
+            container: @subject.project,
+            feature_name: :summarize_review,
+            user: @user
+          ).allowed?
+      end
+
+      condition(:user_allowed_to_use_summarize_review) do
+        @user.allowed_to_use?(:summarize_review, licensed_feature: :summarize_review)
+      end
+
       def read_only?
         @subject.target_project&.namespace&.read_only?
       end
@@ -105,13 +110,15 @@ module EE
       end
 
       rule do
-        summarize_draft_code_review_enabled & can?(:read_merge_request)
-      end.enable :summarize_draft_code_review
-
-      rule do
         generate_commit_message_enabled &
           user_allowed_to_use_generate_commit_message
       end.enable :access_generate_commit_message
+
+      rule do
+        summarize_review_enabled &
+          user_allowed_to_use_summarize_review &
+          can?(:read_merge_request)
+      end.enable :access_summarize_review
     end
 
     private
@@ -121,10 +128,6 @@ module EE
       return can?(:developer_access) if read_only?
 
       super
-    end
-
-    def generate_commit_message_data
-      CloudConnector::AvailableServices.find_by_name(:generate_commit_message)
     end
   end
 end

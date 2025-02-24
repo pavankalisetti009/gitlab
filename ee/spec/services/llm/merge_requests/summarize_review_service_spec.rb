@@ -23,6 +23,15 @@ RSpec.describe Llm::MergeRequests::SummarizeReviewService, :saas, feature_catego
       group.add_developer(user)
 
       group.namespace_settings.update!(experiment_features_enabled: true)
+
+      # Multiple base permissions are checked before executing this service (read_issue, read_merge_request etc)
+      # so we stub all permission checks to return true to avoid having to stub each one individually
+      allow(user).to receive(:can?).and_return(true)
+
+      allow(user)
+        .to receive(:can?)
+        .with(:access_summarize_review, merge_request)
+        .and_return(true)
     end
 
     subject { described_class.new(user, merge_request, options) }

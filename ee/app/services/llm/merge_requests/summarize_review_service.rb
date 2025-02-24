@@ -17,7 +17,7 @@ module Llm
         super &&
           resource.to_ability_name == "merge_request" &&
           resource.draft_notes.authored_by(user).any? &&
-          Ability.allowed?(user, :summarize_draft_code_review, resource)
+          user.can?(:access_summarize_review, resource)
       end
     end
   end
