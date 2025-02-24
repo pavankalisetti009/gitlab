@@ -10,7 +10,7 @@ RSpec.describe ProjectImportState, type: :model, feature_category: :importers do
   describe 'transitions' do
     let(:import_state) { create(:import_state, :started, import_type: :github, project: project) }
 
-    context 'state transition: [:none, :finished, :failed] => :scheduled' do
+    context 'on state transition: [:none, :finished, :failed] => :scheduled' do
       let(:import_state) { create(:import_state, :failed, import_type: :github, project: project) }
       let(:jid) { '551d3ceac5f67a116719ce41' }
 
@@ -43,11 +43,11 @@ RSpec.describe ProjectImportState, type: :model, feature_category: :importers do
       end
     end
 
-    context 'state transition: [:started] => [:finished]' do
+    context 'on state transition: [:started] => [:finished]' do
       let_it_be(:geo_primary_site) { create(:geo_node, :primary) }
       let_it_be(:geo_secondary_site) { create(:geo_node, :secondary) }
 
-      context 'Geo repository update events' do
+      context 'when Geo repository update events' do
         let_it_be(:import_state) { create(:import_state, :started, project: project) }
 
         it 'calls Geo event code when running on a Geo primary site' do
@@ -89,7 +89,7 @@ RSpec.describe ProjectImportState, type: :model, feature_category: :importers do
             stub_current_geo_node(geo_secondary_site)
           end
 
-          expect(project).to receive(:use_elasticsearch?).and_return(elasticsearch_indexing_enabled)
+          allow(project).to receive(:use_elasticsearch?).and_return(elasticsearch_indexing_enabled)
 
           IndexStatus.create!(project: project, indexed_at: Time.current, last_commit: 'foo') if index_status_exists
         end
@@ -105,9 +105,9 @@ RSpec.describe ProjectImportState, type: :model, feature_category: :importers do
         end
       end
 
-      context 'zoekt indexing enabled for this project' do
+      context 'when zoekt indexing enabled for this project' do
         before do
-          expect(project).to receive(:use_zoekt?).and_return(true)
+          allow(project).to receive(:use_zoekt?).and_return(true)
         end
 
         it 'schedules a full index of the repository' do
@@ -117,9 +117,9 @@ RSpec.describe ProjectImportState, type: :model, feature_category: :importers do
         end
       end
 
-      context 'zoekt indexing disabled for this project' do
+      context 'when zoekt indexing disabled for this project' do
         before do
-          expect(project).to receive(:use_zoekt?).and_return(false)
+          allow(project).to receive(:use_zoekt?).and_return(false)
         end
 
         it 'does not index the repository' do
@@ -209,7 +209,9 @@ RSpec.describe ProjectImportState, type: :model, feature_category: :importers do
   end
 
   describe 'mirror has an unrecoverable failure' do
-    let(:import_state) { create(:import_state, :mirror, :started, last_error: 'SSL certificate problem: certificate has expired') }
+    let(:import_state) do
+      create(:import_state, :mirror, :started, last_error: 'SSL certificate problem: certificate has expired')
+    end
 
     it 'sends a notification' do
       expect_any_instance_of(EE::NotificationService).to receive(:mirror_was_hard_failed).with(import_state.project)
@@ -390,7 +392,7 @@ RSpec.describe ProjectImportState, type: :model, feature_category: :importers do
       end
     end
 
-    context 'mirror is updating' do
+    context 'when mirror is updating' do
       it 'returns false when scheduled' do
         import_state = create(:import_state, :scheduled, :mirror, :repository)
 
@@ -488,7 +490,9 @@ RSpec.describe ProjectImportState, type: :model, feature_category: :importers do
     let!(:jitter) { 2.seconds }
 
     before do
-      allow_any_instance_of(described_class).to receive(:rand).and_return(jitter)
+      allow_next_instance_of(described_class) do |instance|
+        allow(instance).to receive(:rand).and_return(jitter)
+      end
     end
 
     context 'when base delay is lower than mirror_max_delay' do
@@ -604,7 +608,7 @@ RSpec.describe ProjectImportState, type: :model, feature_category: :importers do
       expect(UpdateAllMirrorsWorker).to receive(:perform_async)
 
       travel_to(timestamp) do
-        expect { import_state.force_import_job! }.to change(import_state, :next_execution_timestamp).to(5.minutes.ago)
+        expect { import_state.force_import_job! }.to change { import_state.next_execution_timestamp }.to(5.minutes.ago)
       end
     end
 
@@ -616,7 +620,7 @@ RSpec.describe ProjectImportState, type: :model, feature_category: :importers do
         expect(UpdateAllMirrorsWorker).to receive(:perform_async)
 
         travel_to(timestamp) do
-          expect { import_state.force_import_job! }.to change(import_state, :retry_count).to(0)
+          expect { import_state.force_import_job! }.to change { import_state.retry_count }.to(0)
           expect(import_state.next_execution_timestamp).to be_like_time(5.minutes.ago)
         end
       end
@@ -643,7 +647,8 @@ RSpec.describe ProjectImportState, type: :model, feature_category: :importers do
     let(:import_state) { create(:import_state, :mirror, :failed) }
 
     it 'sets retry_count to max' do
-      expect { import_state.set_max_retry_count }.to change { import_state.retry_count }.from(0).to(Gitlab::Mirror::MAX_RETRY + 1)
+      expect { import_state.set_max_retry_count }
+        .to change { import_state.retry_count }.from(0).to(Gitlab::Mirror::MAX_RETRY + 1)
     end
   end
 
@@ -651,12 +656,18 @@ RSpec.describe ProjectImportState, type: :model, feature_category: :importers do
     subject { import_state.unrecoverable_failure? }
 
     let(:import_state) { create(:import_state, :mirror, :failed, last_error: last_error) }
-    let(:last_error) { 'fetch remote: "fatal: unable to access \'https://expired_cert.host\': SSL certificate problem: certificate has expired\n": exit status 128' }
+    let(:last_error) do
+      'fetch remote: "fatal: unable to access \'https://expired_cert.host\': ' \
+        'SSL certificate problem: certificate has expired\n": exit status 128'
+    end
 
     it { is_expected.to be_truthy }
 
     context 'when error is recoverable' do
-      let(:last_error) { 'fetch remote: "fatal: unable to access \'host\': Failed to connect to host port 80: Connection timed out\n": exit status 128' }
+      let(:last_error) do
+        'fetch remote: "fatal: unable to access \'host\': Failed to connect to host port 80: ' \
+          'Connection timed out\n": exit status 128'
+      end
 
       it { is_expected.to be_falsey }
     end

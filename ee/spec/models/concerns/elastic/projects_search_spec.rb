@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Elastic::ProjectsSearch, feature_category: :global_search do
   include EE::GeoHelpers
 
-  subject do
+  subject(:projects_search) do
     Class.new do
       include Elastic::ProjectsSearch
 
@@ -35,7 +35,7 @@ RSpec.describe Elastic::ProjectsSearch, feature_category: :global_search do
     it 'calls track!' do
       expect(::Elastic::ProcessInitialBookkeepingService).to receive(:track!).and_return(true)
 
-      subject.maintain_elasticsearch_create
+      projects_search.maintain_elasticsearch_create
     end
   end
 
@@ -58,7 +58,7 @@ RSpec.describe Elastic::ProjectsSearch, feature_category: :global_search do
 
     with_them do
       before do
-        public_send("stub_#{geo}_node") unless geo == :disabled
+        public_send(:"stub_#{geo}_node") unless geo == :disabled
       end
 
       it 'initiates repository reindexing when attributes change for when indexing is expected' do
@@ -76,7 +76,7 @@ RSpec.describe Elastic::ProjectsSearch, feature_category: :global_search do
           expect(::ElasticWikiIndexerWorker).not_to receive(:perform_async)
         end
 
-        subject.maintain_elasticsearch_update(updated_attributes: [attribute_updated])
+        projects_search.maintain_elasticsearch_update(updated_attributes: [attribute_updated])
       end
     end
   end
@@ -85,7 +85,7 @@ RSpec.describe Elastic::ProjectsSearch, feature_category: :global_search do
     it 'calls delete worker' do
       expect(ElasticDeleteProjectWorker).to receive(:perform_async)
 
-      subject.maintain_elasticsearch_destroy
+      projects_search.maintain_elasticsearch_destroy
     end
   end
 end

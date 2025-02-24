@@ -16,9 +16,7 @@ RSpec.describe Git::BranchPushService, feature_category: :source_code_management
     { change: { oldrev: oldrev, newrev: newrev, ref: ref } }
   end
 
-  subject do
-    described_class.new(project, user, params)
-  end
+  subject(:branch_push_service) { described_class.new(project, user, params) }
 
   context 'with pull project' do
     let_it_be_with_reload(:project) { create(:project, :repository, :mirror) }
@@ -28,7 +26,8 @@ RSpec.describe Git::BranchPushService, feature_category: :source_code_management
       allow(project.repository).to receive(:commit).with("master").and_return(nil)
     end
 
-    context 'ElasticSearch indexing', :elastic, :clean_gitlab_redis_shared_state, feature_category: :global_search do
+    context 'with ElasticSearch indexing', :elastic, :clean_gitlab_redis_shared_state,
+      feature_category: :global_search do
       before do
         stub_ee_application_setting(elasticsearch_indexing?: true)
       end
@@ -36,13 +35,15 @@ RSpec.describe Git::BranchPushService, feature_category: :source_code_management
       it 'runs ElasticCommitIndexerWorker' do
         expect(ElasticCommitIndexerWorker).to receive(:perform_async).with(project.id)
 
-        subject.execute
+        branch_push_service.execute
       end
 
       it "triggers indexer when push to default branch", :sidekiq_might_not_need_inline do
-        expect_any_instance_of(Gitlab::Elastic::Indexer).to receive(:run)
+        expect_next_instance_of(Gitlab::Elastic::Indexer) do |instance|
+          expect(instance).to receive(:run)
+        end
 
-        subject.execute
+        branch_push_service.execute
       end
 
       context 'when push to non-default branch' do
@@ -51,7 +52,7 @@ RSpec.describe Git::BranchPushService, feature_category: :source_code_management
         it 'does not trigger indexer when push to non-default branch' do
           expect_any_instance_of(Gitlab::Elastic::Indexer).not_to receive(:run)
 
-          subject.execute
+          branch_push_service.execute
         end
       end
 
@@ -64,7 +65,7 @@ RSpec.describe Git::BranchPushService, feature_category: :source_code_management
           it 'does not run ElasticCommitIndexerWorker' do
             expect(ElasticCommitIndexerWorker).not_to receive(:perform_async)
 
-            subject.execute
+            branch_push_service.execute
           end
         end
 
@@ -76,7 +77,7 @@ RSpec.describe Git::BranchPushService, feature_category: :source_code_management
           it 'runs ElasticCommitIndexerWorker' do
             expect(ElasticCommitIndexerWorker).to receive(:perform_async).with(project.id)
 
-            subject.execute
+            branch_push_service.execute
           end
         end
 
@@ -91,7 +92,7 @@ RSpec.describe Git::BranchPushService, feature_category: :source_code_management
           it 'runs ElasticCommitIndexerWorker' do
             expect(ElasticCommitIndexerWorker).to receive(:perform_async).with(project.id)
 
-            subject.execute
+            branch_push_service.execute
           end
         end
       end
@@ -107,7 +108,7 @@ RSpec.describe Git::BranchPushService, feature_category: :source_code_management
       it 'triggers async_update_zoekt_index' do
         expect(project.repository).to receive(:async_update_zoekt_index)
 
-        subject.execute
+        branch_push_service.execute
       end
 
       context 'when pushing to a non-default branch' do
@@ -116,7 +117,7 @@ RSpec.describe Git::BranchPushService, feature_category: :source_code_management
         it 'does not trigger async_update_zoekt_index' do
           expect(project.repository).not_to receive(:async_update_zoekt_index)
 
-          subject.execute
+          branch_push_service.execute
         end
       end
 
@@ -128,7 +129,7 @@ RSpec.describe Git::BranchPushService, feature_category: :source_code_management
         it 'does not trigger async_update_zoekt_index' do
           expect(project.repository).not_to receive(:async_update_zoekt_index)
 
-          subject.execute
+          branch_push_service.execute
         end
       end
 
@@ -138,16 +139,16 @@ RSpec.describe Git::BranchPushService, feature_category: :source_code_management
         it 'does not trigger async_update_zoekt_index' do
           expect(project.repository).not_to receive(:async_update_zoekt_index)
 
-          subject.execute
+          branch_push_service.execute
         end
       end
     end
 
-    context 'External pull requests' do
+    context 'with external pull requests' do
       it 'runs UpdateExternalPullRequestsWorker' do
         expect(UpdateExternalPullRequestsWorker).to receive(:perform_async).with(project.id, user.id, ref)
 
-        subject.execute
+        branch_push_service.execute
       end
 
       context 'when project is not mirror' do
@@ -158,7 +159,7 @@ RSpec.describe Git::BranchPushService, feature_category: :source_code_management
         it 'does nothing' do
           expect(UpdateExternalPullRequestsWorker).not_to receive(:perform_async)
 
-          subject.execute
+          branch_push_service.execute
         end
       end
 
@@ -170,12 +171,12 @@ RSpec.describe Git::BranchPushService, feature_category: :source_code_management
         it 'does nothing' do
           expect(UpdateExternalPullRequestsWorker).not_to receive(:perform_async)
 
-          subject.execute
+          branch_push_service.execute
         end
       end
     end
 
-    context 'Product Analytics' do
+    context 'for Product Analytics' do
       using RSpec::Parameterized::TableSyntax
 
       let(:group) { create(:group) }
@@ -211,7 +212,7 @@ RSpec.describe Git::BranchPushService, feature_category: :source_code_management
             expect(::ProductAnalytics::PostPushWorker).not_to receive(:perform_async)
           end
 
-          subject.execute
+          branch_push_service.execute
         end
       end
     end
@@ -222,10 +223,10 @@ RSpec.describe Git::BranchPushService, feature_category: :source_code_management
       end
 
       shared_examples 'does not enqueue the X-Ray worker' do
-        it do
+        it 'does not schedule a dependency scan' do
           expect(Ai::RepositoryXray::ScanDependenciesWorker).not_to receive(:perform_async)
 
-          subject.execute
+          branch_push_service.execute
         end
       end
 
@@ -233,7 +234,7 @@ RSpec.describe Git::BranchPushService, feature_category: :source_code_management
         it 'enqueues the X-Ray worker' do
           expect(Ai::RepositoryXray::ScanDependenciesWorker).to receive(:perform_async).with(project.id)
 
-          subject.execute
+          branch_push_service.execute
         end
 
         context 'when the project does not have Duo features enabled' do
@@ -282,7 +283,7 @@ RSpec.describe Git::BranchPushService, feature_category: :source_code_management
                   .with(project.id, user.id, oldrev, newrev, ref)
                   .ordered
 
-          subject.execute
+          branch_push_service.execute
         end
 
         context 'when feature is not licensed' do

@@ -16,7 +16,7 @@ RSpec.describe ConcurrencyLimit::ResumeWorker, feature_category: :scalability do
     end
 
     shared_examples 'report prometheus metrics' do |limit = described_class::BATCH_SIZE, queue_size = 10000|
-      it do
+      it 'reports worker queue size and concurrency limit to prometheus' do
         queue_size_gauge_double = instance_double(Prometheus::Client::Gauge)
         expect(Gitlab::Metrics).to receive(:gauge).at_least(:once)
                                                   .with(:sidekiq_concurrency_limit_queue_jobs, anything, {}, :max)
