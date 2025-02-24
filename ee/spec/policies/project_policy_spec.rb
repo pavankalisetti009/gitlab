@@ -425,6 +425,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       let(:project) { create(:project, group: root_group) }
       let(:member_with_identity) { identity.user }
       let(:member_without_identity) { create(:user) }
+      let(:project_member_without_identity) { create(:user) }
       let(:non_member) { create(:user) }
       let(:not_signed_in_user) { nil }
 
@@ -432,6 +433,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         stub_licensed_features(group_saml: true)
         root_group.add_developer(member_with_identity)
         root_group.add_developer(member_without_identity)
+        project.add_developer(project_member_without_identity)
       end
 
       subject { described_class.new(current_user, resource) }
@@ -490,6 +492,11 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         ref(:project)    | 'private' | true  | ref(:member_without_identity) | false | nil   | true | true  | nil  | 'allows to read project'
         ref(:project)    | 'private' | true  | ref(:member_without_identity) | false | nil   | nil  | nil   | true | 'allows to read project'
 
+        ref(:project)    | 'private' | true  | ref(:project_member_without_identity) | false | nil   | nil  | nil   | nil  | 'does not allow read project'
+        ref(:project)    | 'private' | true  | ref(:project_member_without_identity) | false | nil   | true | false | nil  | 'does not allow read project'
+        ref(:project)    | 'private' | true  | ref(:project_member_without_identity) | false | nil   | true | true  | nil  | 'allows to read project'
+        ref(:project)    | 'private' | true  | ref(:project_member_without_identity) | false | nil   | nil  | nil   | true | 'allows to read project'
+
         ref(:project)    | 'private' | true  | ref(:non_member)              | nil   | nil   | nil  | nil   | nil  | 'does not allow read project'
         ref(:project)    | 'private' | true  | ref(:non_member)              | nil   | nil   | true | false | nil  | 'does not allow read project'
         ref(:project)    | 'private' | true  | ref(:non_member)              | nil   | nil   | true | true  | nil  | 'allows to read project'
@@ -524,6 +531,11 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         ref(:project)    | 'public'  | true  | ref(:member_without_identity) | false | nil   | true | false | nil  | 'does not allow read project'
         ref(:project)    | 'public'  | true  | ref(:member_without_identity) | false | nil   | true | true  | nil  | 'allows to read project'
         ref(:project)    | 'public'  | true  | ref(:member_without_identity) | false | nil   | nil  | nil   | true | 'allows to read project'
+
+        ref(:project)    | 'public' | true  | ref(:project_member_without_identity) | false | nil   | nil  | nil   | nil  | 'does not allow read project'
+        ref(:project)    | 'public' | true  | ref(:project_member_without_identity) | false | nil   | true | false | nil  | 'does not allow read project'
+        ref(:project)    | 'public' | true  | ref(:project_member_without_identity) | false | nil   | true | true  | nil  | 'allows to read project'
+        ref(:project)    | 'public' | true  | ref(:project_member_without_identity) | false | nil   | nil  | nil   | true | 'allows to read project'
 
         ref(:project)    | 'public'  | true  | ref(:non_member)              | nil   | nil   | nil  | nil   | nil  | 'allows to read project'
         ref(:project)    | 'public'  | true  | ref(:not_signed_in_user)      | nil   | nil   | nil  | nil   | nil  | 'allows to read project'
