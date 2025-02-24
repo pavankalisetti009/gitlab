@@ -12,8 +12,7 @@ import {
   GlTooltip,
   GlTooltipDirective,
 } from '@gitlab/ui';
-// eslint-disable-next-line no-restricted-imports
-import { mapActions, mapState, mapGetters } from 'vuex';
+import getBillableMembersQuery from 'ee/usage_quotas/seats/graphql/get_billable_members.query.graphql';
 import dateFormat from '~/lib/dateformat';
 import {
   FIELDS,
@@ -30,7 +29,10 @@ import {
 } from 'ee/usage_quotas/seats/constants';
 import { s__, __ } from '~/locale';
 import SearchAndSortBar from '~/usage_quotas/components/search_and_sort_bar/search_and_sort_bar.vue';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import { createAlert, VARIANT_SUCCESS } from '~/alert';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import Tracking from '~/tracking';
+import * as GroupsApi from 'ee/api/groups_api';
 import RemoveBillableMemberModal from './remove_billable_member_modal.vue';
 import SubscriptionSeatDetails from './subscription_seat_details.vue';
 
@@ -58,8 +60,7 @@ export default {
     SearchAndSortBar,
     SubscriptionSeatDetails,
   },
-  mixins: [glFeatureFlagMixin()],
-  inject: ['subscriptionHistoryHref', 'seatUsageExportPath'],
+  inject: ['subscriptionHistoryHref', 'seatUsageExportPath', 'namespaceId'],
   props: {
     hasFreePlan: {
       type: Boolean,
@@ -70,28 +71,49 @@ export default {
   data() {
     return {
       recentlyDeletedMembersIds: [],
+      total: null,
+      page: null,
+      search: null,
+      perPage: null,
+      sort: 'last_activity_on_desc',
+      billableMembers: [],
+      billableMemberToRemove: null,
+      isRemovingBillableMember: false,
+      removedBillableMemberId: null,
     };
   },
-  computed: {
-    ...mapState([
-      'hasError',
-      'page',
-      'perPage',
-      'total',
-      'namespaceId',
-      'billableMemberToRemove',
-      'search',
-      'removedBillableMemberId',
-    ]),
-    ...mapGetters(['tableItems', 'isLoading']),
-    currentPage: {
-      get() {
-        return this.page;
+  apollo: {
+    billableMembers: {
+      query: getBillableMembersQuery,
+      variables() {
+        return {
+          namespaceId: this.namespaceId,
+          page: this.page,
+          search: this.search,
+          sort: this.sort,
+        };
       },
-      set(val) {
-        this.setCurrentPage(val);
+      update({ billableMembers }) {
+        const { members, total, page, perPage } = billableMembers;
+
+        // set total, page, and perPage for the pagination component
+        this.total = total;
+        this.page = page;
+        this.perPage = perPage;
+
+        // create new extensible objects from the members array, so we can use the gl-table details slot
+        return members.map((member) => ({ ...member }));
+      },
+      error: (error) => {
+        createAlert({
+          message: s__('Billing|An error occurred while loading billable members list.'),
+        });
+
+        Sentry.captureException(error);
       },
     },
+  },
+  computed: {
     emptyText() {
       if (this.search?.length < 3) {
         return s__('Billing|Enter at least three characters to search.');
@@ -99,7 +121,7 @@ export default {
       return s__('Billing|No users to display.');
     },
     isLoaderShown() {
-      return this.isLoading || this.hasError;
+      return this.$apollo.loading || this.isRemovingBillableMember;
     },
     deletedMembersKey() {
       return `${this.namespaceId}-${DELETED_BILLABLE_MEMBERS_STORAGE_KEY_SUFFIX}`;
@@ -127,21 +149,26 @@ export default {
     this.recentlyDeletedMembersIds = this.getRecentlyDeletedMembersIds();
   },
   methods: {
-    ...mapActions([
-      'setBillableMemberToRemove',
-      'setCurrentPage',
-      'setSearchQuery',
-      'setSortOption',
-    ]),
     formatLastLoginAt(lastLogin) {
       return lastLogin ? dateFormat(lastLogin, 'yyyy-mm-dd HH:MM:ss') : __('Never');
     },
     applyFilter(searchTerm) {
-      this.setSearchQuery(searchTerm);
+      // reset pagination on applying new filter
+      this.page = 1;
+
+      this.search = searchTerm;
+    },
+    setSortOption(sortOption) {
+      this.sort = sortOption;
+
+      Tracking.event('usage_quota_seats', 'click', {
+        label: 'billable_members_table_sort_selection',
+        property: sortOption,
+      });
     },
     displayRemoveMemberModal(user) {
       if (user.removable) {
-        this.setBillableMemberToRemove(user);
+        this.billableMemberToRemove = user;
       } else {
         this.$refs.cannotRemoveModal.show();
       }
@@ -177,6 +204,38 @@ export default {
     },
     removeButtonDisabled(user) {
       return this.isUserRemoved(user) || this.isLastOwner(user);
+    },
+    removeBillableMember(memberId) {
+      this.removedBillableMemberId = memberId;
+      this.isRemovingBillableMember = true;
+
+      return GroupsApi.removeBillableMemberFromGroup(this.namespaceId, memberId)
+        .then(() => {
+          this.$apollo.queries.billableMembers.refetch();
+          this.$emit('refetchData');
+
+          const removeBillableMemberSuccessMessage = s__(
+            'Billing|User successfully scheduled for removal. This process might take some time. Refresh the page to see the changes.',
+          );
+
+          createAlert({
+            message: removeBillableMemberSuccessMessage,
+            variant: VARIANT_SUCCESS,
+          });
+        })
+        .catch(() => {
+          createAlert({
+            message: s__('Billing|An error occurred while removing a billable member.'),
+          });
+
+          this.clearRemovedBillableMemberId();
+        })
+        .finally(() => {
+          this.isRemovingBillableMember = false;
+        });
+    },
+    clearRemovedBillableMemberId() {
+      this.removedBillableMemberId = null;
     },
   },
   i18n: {
@@ -223,7 +282,7 @@ export default {
     </div>
 
     <gl-table
-      :items="tableItems"
+      :items="billableMembers"
       :fields="$options.tableFields"
       :busy="isLoaderShown"
       :show-empty="true"
@@ -236,7 +295,7 @@ export default {
           class="gl-h-7 gl-w-7"
           :aria-label="s__('Billing|Toggle seat details')"
           :aria-expanded="detailsShowing ? 'true' : 'false'"
-          :data-testid="`toggle-seat-usage-details-${item.user.id}`"
+          :data-testid="`toggle-seat-usage-details-${item.id}`"
           @click="toggleDetails"
         >
           <gl-icon :name="detailsShowing ? 'chevron-down' : 'chevron-right'" />
@@ -245,18 +304,18 @@ export default {
 
       <template #cell(user)="{ item }">
         <div class="gl-flex">
-          <gl-avatar-link target="blank" :href="item.user.web_url" :alt="item.user.name">
+          <gl-avatar-link target="blank" :href="item.web_url" :alt="item.name">
             <gl-avatar-labeled
-              :src="item.user.avatar_url"
+              :src="item.avatar_url"
               :size="$options.avatarSize"
-              :label="item.user.name"
-              :sub-label="item.user.username"
+              :label="item.name"
+              :sub-label="`@${item.username}`"
             >
               <template #meta>
-                <gl-badge v-if="isGroupInvite(item.user)" variant="muted">
+                <gl-badge v-if="isGroupInvite(item)" variant="muted">
                   {{ s__('Billing|Group invite') }}
                 </gl-badge>
-                <gl-badge v-if="isProjectInvite(item.user)" variant="muted">
+                <gl-badge v-if="isProjectInvite(item)" variant="muted">
                   {{ s__('Billing|Project invite') }}
                 </gl-badge>
               </template>
@@ -281,35 +340,36 @@ export default {
 
       <template #cell(lastActivityTime)="{ item }">
         <span data-testid="last_activity_on">
-          {{ item.user.last_activity_on ? item.user.last_activity_on : __('Never') }}
+          {{ item.last_activity_on ? item.last_activity_on : __('Never') }}
         </span>
       </template>
 
       <template #cell(lastLoginAt)="{ item }">
         <span data-testid="last_login_at">
-          {{ formatLastLoginAt(item.user.last_login_at) }}
+          {{ formatLastLoginAt(item.last_login_at) }}
         </span>
       </template>
 
       <template #cell(actions)="{ item }">
-        <span :id="`remove-user-${item.user.id}`" class="gl-inline-block" tabindex="0">
+        <span :id="`remove-user-${item.id}`" class="gl-inline-block" tabindex="0">
           <gl-button
             v-gl-modal="$options.removeBillableMemberModalId"
             category="secondary"
             variant="danger"
             data-testid="remove-user"
-            :disabled="removeButtonDisabled(item.user)"
-            @click="displayRemoveMemberModal(item.user)"
+            :disabled="removeButtonDisabled(item)"
+            @click="displayRemoveMemberModal(item)"
           >
             {{ __('Remove user') }}
           </gl-button>
+
           <gl-tooltip
-            v-if="removeButtonDisabled(item.user)"
-            :target="`remove-user-${item.user.id}`"
+            v-if="removeButtonDisabled(item)"
+            :target="`remove-user-${item.id}`"
             data-testid="remove-user-tooltip"
           >
             {{
-              isLastOwner(item.user)
+              isLastOwner(item)
                 ? s__('Billing|Cannot remove the last owner.')
                 : s__('Billing|This user is scheduled for removal.')
             }}</gl-tooltip
@@ -318,20 +378,24 @@ export default {
       </template>
 
       <template #row-details="{ item }">
-        <subscription-seat-details :seat-member-id="item.user.id" />
+        <subscription-seat-details :seat-member-id="item.id" />
       </template>
     </gl-table>
 
     <gl-pagination
-      v-if="currentPage"
-      v-model="currentPage"
+      v-if="page"
+      v-model="page"
       :per-page="perPage"
       :total-items="total"
       align="center"
       class="gl-mt-5"
     />
 
-    <remove-billable-member-modal v-if="billableMemberToRemove" />
+    <remove-billable-member-modal
+      :billable-member-to-remove="billableMemberToRemove"
+      @removeBillableMember="removeBillableMember"
+      @clearBillableMemberToRemove="clearRemovedBillableMemberId"
+    />
 
     <gl-modal
       ref="cannotRemoveModal"
