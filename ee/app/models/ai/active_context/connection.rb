@@ -5,6 +5,8 @@ module Ai
     class Connection < ApplicationRecord
       self.table_name = :ai_active_context_connections
 
+      has_many :collections, class_name: 'Ai::ActiveContext::Collection'
+
       encrypts :options
 
       validates :name, presence: true, length: { maximum: 255 }, uniqueness: true

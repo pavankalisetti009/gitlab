@@ -3,15 +3,20 @@
 require 'spec_helper'
 
 RSpec.describe Ai::ActiveContext::Collection, feature_category: :global_search do
-  subject(:collection) { build(:ai_active_context_collection) }
+  subject(:collection) { create(:ai_active_context_collection) }
 
   it { is_expected.to be_valid }
 
   it { is_expected.to validate_presence_of(:name) }
   it { is_expected.to validate_length_of(:name).is_at_most(255) }
+  it { is_expected.to validate_uniqueness_of(:name).scoped_to(:connection_id) }
 
   it { is_expected.to validate_presence_of(:number_of_partitions) }
   it { is_expected.to validate_numericality_of(:number_of_partitions).is_greater_than_or_equal_to(1).only_integer }
+
+  it { is_expected.to validate_presence_of(:connection_id) }
+
+  it { is_expected.to belong_to(:connection).class_name('Ai::ActiveContext::Connection') }
 
   describe 'metadata' do
     it 'is valid when empty' do

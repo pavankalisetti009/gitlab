@@ -7121,6 +7121,7 @@ CREATE TABLE ai_active_context_collections (
     number_of_partitions integer DEFAULT 1 NOT NULL,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
+    connection_id bigint NOT NULL,
     CONSTRAINT check_fe84a77f95 CHECK ((char_length(name) <= 255))
 );
 
@@ -36055,6 +36056,8 @@ CREATE UNIQUE INDEX uniq_compliance_statuses_control_project_id ON project_contr
 
 CREATE UNIQUE INDEX uniq_google_cloud_logging_configuration_namespace_id_and_name ON audit_events_google_cloud_logging_configurations USING btree (namespace_id, name);
 
+CREATE UNIQUE INDEX uniq_idx_ai_active_context_collections_on_connection_id_name ON ai_active_context_collections USING btree (connection_id, name);
+
 CREATE UNIQUE INDEX uniq_idx_audit_events_aws_configs_stream_dests ON audit_events_amazon_s3_configurations USING btree (stream_destination_id) WHERE (stream_destination_id IS NOT NULL);
 
 CREATE UNIQUE INDEX uniq_idx_audit_events_ext_audit_event_stream_dests ON audit_events_external_audit_event_destinations USING btree (stream_destination_id) WHERE (stream_destination_id IS NOT NULL);
@@ -38629,6 +38632,9 @@ CREATE TRIGGER vulnerabilities_loose_fk_trigger AFTER DELETE ON vulnerabilities 
 
 ALTER TABLE ONLY ai_conversation_threads
     ADD CONSTRAINT fk_00234c7444 FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY ai_active_context_collections
+    ADD CONSTRAINT fk_008426fce1 FOREIGN KEY (connection_id) REFERENCES ai_active_context_connections(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY deployments
     ADD CONSTRAINT fk_009fd21147 FOREIGN KEY (environment_id) REFERENCES environments(id) ON DELETE CASCADE;
