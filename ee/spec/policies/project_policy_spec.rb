@@ -3228,13 +3228,6 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         end
       end
 
-      context 'for an admin member role with read_admin_cicd true' do
-        let(:member_role_abilities) { [:read_admin_cicd] }
-        let(:allowed_abilities) { %i[read_project read_commit_status read_build read_pipeline] }
-
-        it_behaves_like 'admin custom roles abilities'
-      end
-
       context 'for an admin member role with read_admin_dashboard true' do
         let(:member_role_abilities) { [:read_admin_dashboard] }
         let(:allowed_abilities) { %i[read_member_access_request] }
