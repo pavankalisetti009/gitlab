@@ -52,7 +52,7 @@ export default {
       },
       update(data) {
         this.$store.commit(types.RECEIVE_GITLAB_SUBSCRIPTION_SUCCESS, data?.subscription);
-        return data?.subscription?.plan || {};
+        return data?.subscription?.plan;
       },
       error: (error) => {
         createAlert({
@@ -98,6 +98,7 @@ export default {
   },
   created() {
     this.$store.dispatch('fetchInitialData');
+    this.$store.commit(types.REQUEST_GITLAB_SUBSCRIPTION);
   },
   methods: {
     ...mapActions(['receiveBillableMembersListError']),

@@ -28,6 +28,11 @@ const actionSpies = {
   fetchInitialData: jest.fn(),
 };
 
+const mutationSpies = {
+  RECEIVE_GITLAB_SUBSCRIPTION_SUCCESS: jest.fn(),
+  REQUEST_GITLAB_SUBSCRIPTION: jest.fn(),
+};
+
 const providedFields = {
   explorePlansPath: '/groups/test_group/-/billings',
   hasNoSubscription: false,
@@ -39,9 +44,7 @@ const providedFields = {
 const fakeStore = ({ initialState, initialGetters }) =>
   new Vuex.Store({
     actions: actionSpies,
-    mutations: {
-      RECEIVE_GITLAB_SUBSCRIPTION_SUCCESS: jest.fn(),
-    },
+    mutations: mutationSpies,
     getters: {
       tableItems: () => mockTableItems,
       isLoading: () => false,
@@ -156,6 +159,11 @@ describe('Subscription Seats', () => {
     it('dispatches fetchInitialData action', async () => {
       await createComponent();
       expect(actionSpies.fetchInitialData).toHaveBeenCalled();
+    });
+
+    it('commits REQUEST_GITLAB_SUBSCRIPTION', async () => {
+      await createComponent();
+      expect(mutationSpies.REQUEST_GITLAB_SUBSCRIPTION).toHaveBeenCalled();
     });
 
     it('calls createAlert when gitlab subscription query fails', async () => {
