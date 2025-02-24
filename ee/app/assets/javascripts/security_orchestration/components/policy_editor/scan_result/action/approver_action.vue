@@ -1,5 +1,5 @@
 <script>
-import { GlAlert, GlSprintf, GlIcon, GlFormInput, GlPopover, GlButton } from '@gitlab/ui';
+import { GlSprintf, GlIcon, GlFormInput, GlPopover, GlButton } from '@gitlab/ui';
 import SectionLayout from 'ee/security_orchestration/components/policy_editor/section_layout.vue';
 import {
   getDefaultHumanizedTemplate,
@@ -23,7 +23,6 @@ export default {
   components: {
     GlButton,
     ApproverSelect,
-    GlAlert,
     GlIcon,
     GlFormInput,
     GlPopover,
@@ -81,20 +80,13 @@ export default {
     approvalsRequired() {
       return this.initAction.approvals_required;
     },
-    actionErrors() {
-      return this.errors.filter((error) => {
-        if ('index' in error) {
-          return error.index === this.actionIndex;
-        }
-
-        return error;
-      });
-    },
     humanizedTemplate() {
       return this.isWarnType ? WARN_TEMPLATE : getDefaultHumanizedTemplate(this.approvalsRequired);
     },
     isApproverFieldValid() {
-      return this.errors.every((error) => error.field !== 'approvers_ids');
+      return this.errors
+        .filter((error) => error.index === this.actionIndex)
+        .every((error) => error.field !== 'actions');
     },
     showAddButton() {
       return this.selectedApproverTypes.length < APPROVER_TYPE_LIST_ITEMS.length;
@@ -106,9 +98,6 @@ export default {
   methods: {
     addApproval() {
       this.selectedApproverTypes.push(EMPTY_TYPE);
-    },
-    errorKey(error) {
-      return error.index;
     },
     updateApprovalsRequired(value) {
       const updatedAction = { ...this.initAction, approvals_required: parseInt(value, 10) };
@@ -190,85 +179,74 @@ export default {
 </script>
 
 <template>
-  <div>
-    <gl-alert
-      v-for="(error, index) in actionErrors"
-      :key="errorKey(error)"
-      :class="{ 'gl-mb-3': index === errors.length - 1 }"
-      :dismissible="false"
-      :title="error.title"
-      variant="danger"
-    >
-      {{ error.message }}
-    </gl-alert>
-
-    <section-layout
-      class="gl-pr-0"
-      content-classes="gl-py-5 gl-pr-2 gl-bg-white"
-      :show-remove-button="false"
-    >
-      <template #content>
-        <div
-          class="gl-mb-3 gl-ml-5"
-          :class="{ 'gl-flex': !isWarnType, 'gl-items-center': !isWarnType }"
-        >
-          <gl-sprintf :message="humanizedTemplate">
-            <template #require="{ content }">
-              <strong>{{ content }}</strong>
-            </template>
-
-            <template #approvalsRequired>
-              <gl-form-input
-                :state="isApproverFieldValid"
-                :value="approvalsRequired"
-                data-testid="approvals-required-input"
-                type="number"
-                class="gl-mx-3 !gl-w-11"
-                :min="1"
-                :max="100"
-                @update="updateApprovalsRequired"
-              />
-            </template>
-
-            <template #approval="{ content }">
-              <strong class="gl-mr-3">{{ content }}</strong>
-            </template>
-          </gl-sprintf>
-          <template v-if="isWarnType">
-            <gl-icon :id="$options.warnId" name="information-o" variant="info" class="gl-ml-3" />
-            <gl-popover :target="$options.warnId" placement="bottom">
-              <template #title>{{ $options.i18n.WARN_TEMPLATE_HELP_TITLE }}</template>
-              {{ $options.i18n.WARN_TEMPLATE_HELP_DESCRIPTION }}
-            </gl-popover>
+  <section-layout
+    class="gl-pr-0"
+    content-classes="gl-py-5 gl-pr-2 gl-bg-white"
+    :show-remove-button="false"
+  >
+    <template #content>
+      <div
+        class="gl-mb-3 gl-ml-5"
+        :class="{ 'gl-flex': !isWarnType, 'gl-items-center': !isWarnType }"
+      >
+        <gl-sprintf :message="humanizedTemplate">
+          <template #require="{ content }">
+            <strong>{{ content }}</strong>
           </template>
-        </div>
 
-        <approver-select
-          v-for="(type, index) in selectedApproverTypes"
-          :key="type"
-          :selected-items="getSelectedItems(type)"
-          :selected-names="getSelectedNames(type)"
-          :disabled="allTypesSelected"
-          :disabled-types="selectedApproverTypes"
-          :selected-type="type"
-          :show-additional-text="showAdditionalText(index)"
-          :show-remove-button="showRemoveButton"
-          @error="$emit('error')"
-          @remove="removeApprover(index, type)"
-          @select-items="selectItems($event, type)"
-          @select-type="selectType($event, index)"
-        />
+          <template #approvalsRequired>
+            <gl-form-input
+              :state="isApproverFieldValid"
+              :value="approvalsRequired"
+              data-testid="approvals-required-input"
+              type="number"
+              class="gl-mx-3 !gl-w-11"
+              :min="1"
+              :max="100"
+              @update="updateApprovalsRequired"
+            />
+          </template>
 
-        <gl-button
-          v-if="showAddButton"
-          class="gl-ml-5 gl-mt-4"
-          variant="link"
-          data-testid="add-approver"
-          @click="addApproval"
-        >
-          {{ $options.i18n.ADD_APPROVER_LABEL }}
-        </gl-button>
-      </template>
-    </section-layout>
-  </div>
+          <template #approval="{ content }">
+            <strong class="gl-mr-3">{{ content }}</strong>
+          </template>
+        </gl-sprintf>
+        <template v-if="isWarnType">
+          <gl-icon :id="$options.warnId" name="information-o" variant="info" class="gl-ml-3" />
+          <gl-popover :target="$options.warnId" placement="bottom">
+            <template #title>{{ $options.i18n.WARN_TEMPLATE_HELP_TITLE }}</template>
+            {{ $options.i18n.WARN_TEMPLATE_HELP_DESCRIPTION }}
+          </gl-popover>
+        </template>
+      </div>
+
+      <approver-select
+        v-for="(type, index) in selectedApproverTypes"
+        :key="type"
+        :action-index="actionIndex"
+        :errors="errors"
+        :selected-items="getSelectedItems(type)"
+        :selected-names="getSelectedNames(type)"
+        :disabled="allTypesSelected"
+        :disabled-types="selectedApproverTypes"
+        :selected-type="type"
+        :show-additional-text="showAdditionalText(index)"
+        :show-remove-button="showRemoveButton"
+        @error="$emit('error')"
+        @remove="removeApprover(index, type)"
+        @select-items="selectItems($event, type)"
+        @select-type="selectType($event, index)"
+      />
+
+      <gl-button
+        v-if="showAddButton"
+        class="gl-ml-5 gl-mt-4"
+        variant="link"
+        data-testid="add-approver"
+        @click="addApproval"
+      >
+        {{ $options.i18n.ADD_APPROVER_LABEL }}
+      </gl-button>
+    </template>
+  </section-layout>
 </template>

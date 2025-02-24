@@ -141,11 +141,11 @@ describe('ApproverSelect', () => {
           errors: [
             {
               index: 0,
-              field: 'approvers_ids',
+              field: 'actions',
             },
             {
               index: 1,
-              field: 'not_approvers',
+              field: 'actions',
             },
           ],
         },

@@ -1,5 +1,5 @@
 <script>
-import { GlButton } from '@gitlab/ui';
+import { GlAlert, GlButton } from '@gitlab/ui';
 import { ACTION_AND_LABEL } from '../../constants';
 import ApproverAction from './approver_action.vue';
 
@@ -7,6 +7,7 @@ export default {
   ACTION_AND_LABEL,
   name: 'ActionSection',
   components: {
+    GlAlert,
     GlButton,
     ApproverAction,
   },
@@ -34,10 +35,22 @@ export default {
     isFirstAction() {
       return this.actionIndex === 0;
     },
+    actionErrors() {
+      return this.errors.filter((error) => {
+        if ('index' in error) {
+          return error.index === this.actionIndex;
+        }
+
+        return error;
+      });
+    },
   },
   methods: {
     remove() {
       this.$emit('remove');
+    },
+    errorKey(error) {
+      return error.index;
     },
   },
 };
@@ -52,6 +65,17 @@ export default {
     >
       {{ $options.ACTION_AND_LABEL }}
     </div>
+
+    <gl-alert
+      v-for="error in actionErrors"
+      :key="errorKey(error)"
+      class="gl-w-full"
+      :dismissible="false"
+      :title="error.title"
+      variant="danger"
+    >
+      {{ error.message }}
+    </gl-alert>
 
     <div class="gl-flex gl-w-full">
       <div class="gl-flex-1">
