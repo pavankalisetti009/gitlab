@@ -1,6 +1,7 @@
 <script>
-import { debounce } from 'lodash';
+import { debounce, uniqBy } from 'lodash';
 import { GlButton, GlCollapsibleListbox, GlLabel, GlFormGroup, GlPopover } from '@gitlab/ui';
+import produce from 'immer';
 import { n__, s__, __, sprintf } from '~/locale';
 import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { TYPE_COMPLIANCE_FRAMEWORK } from '~/graphql_shared/constants';
@@ -8,6 +9,7 @@ import getComplianceFrameworkQuery from 'ee/graphql_shared/queries/get_complianc
 import { renderMultiSelectText } from 'ee/security_orchestration/components/policy_editor/utils';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import ComplianceFrameworkFormModal from 'ee/groups/settings/compliance_frameworks/components/form_modal.vue';
+import { searchInItemsProperties } from '~/lib/utils/search_utils';
 
 export default {
   i18n: {
@@ -36,14 +38,22 @@ export default {
       query: getComplianceFrameworkQuery,
       variables() {
         return {
+          search: this.searchTerm,
           fullPath: this.fullPath,
         };
       },
       update(data) {
-        return data.namespace?.complianceFrameworks?.nodes || [];
+        return this.getUniqueFrameworks(data.namespace?.complianceFrameworks.nodes);
+      },
+      result({ data }) {
+        this.pageInfo = data?.namespace?.complianceFrameworks?.pageInfo || {};
+
+        if (this.selectedButNotLoadedComplianceIds.length > 0) {
+          this.fetchComplianceFramoworksByIds();
+        }
       },
       error() {
-        this.$emit('framework-query-error');
+        this.emitError();
       },
     },
   },
@@ -91,9 +101,13 @@ export default {
     return {
       complianceFrameworks: [],
       searchTerm: '',
+      pageInfo: {},
     };
   },
   computed: {
+    hasNextPage() {
+      return this.pageInfo.hasNextPage;
+    },
     formattedSelectedFrameworkIds() {
       if (this.useShortIdFormat) {
         return (
@@ -108,6 +122,11 @@ export default {
     existingFormattedSelectedFrameworkIds() {
       return this.formattedSelectedFrameworkIds.filter((id) =>
         this.complianceFrameworkIds.includes(id),
+      );
+    },
+    selectedButNotLoadedComplianceIds() {
+      return this.formattedSelectedFrameworkIds.filter(
+        (id) => !this.complianceFrameworkIds.includes(id),
       );
     },
     complianceFrameworkItems() {
@@ -134,9 +153,11 @@ export default {
       );
     },
     filteredListBoxItems() {
-      return this.listBoxItems.filter(({ text }) =>
-        text.toLowerCase().includes(this.searchTerm.toLowerCase()),
-      );
+      return searchInItemsProperties({
+        items: this.listBoxItems,
+        properties: ['text'],
+        searchQuery: this.searchTerm,
+      });
     },
     complianceFrameworkIds() {
       return this.complianceFrameworks?.map(({ id }) => id);
@@ -158,6 +179,46 @@ export default {
     this.debouncedSearch.cancel();
   },
   methods: {
+    async fetchComplianceFramoworksByIds() {
+      try {
+        const { data } = await this.$apollo.query({
+          query: getComplianceFrameworkQuery,
+          variables: {
+            fullPath: this.fullPath,
+            ids: this.selectedButNotLoadedComplianceIds,
+          },
+        });
+
+        this.complianceFrameworks = this.getUniqueFrameworks(
+          data?.namespace?.complianceFrameworks.nodes,
+        );
+      } catch {
+        this.emitError();
+      }
+    },
+    fetchMoreItems() {
+      this.$apollo.queries.complianceFrameworks
+        .fetchMore({
+          variables: {
+            after: this.pageInfo.endCursor,
+            fullPath: this.fullPath,
+          },
+          updateQuery(previousResult, { fetchMoreResult }) {
+            return produce(fetchMoreResult, (draftData) => {
+              draftData.namespace.complianceFrameworks.nodes = [
+                ...previousResult.namespace.complianceFrameworks.nodes,
+                ...draftData.namespace.complianceFrameworks.nodes,
+              ];
+            });
+          },
+        })
+        .catch(() => {
+          this.emitError();
+        });
+    },
+    emitError() {
+      this.$emit('framework-query-error');
+    },
     showCreateFrameworkForm() {
       this.$refs.formModal.show();
     },
@@ -180,6 +241,9 @@ export default {
     },
     extractProjects(framework) {
       return framework?.projects?.nodes || [];
+    },
+    getUniqueFrameworks(items = []) {
+      return uniqBy([...this.complianceFrameworks, ...items], 'id');
     },
     renderPopoverContent(framework) {
       return (
@@ -225,11 +289,13 @@ export default {
         :loading="loading"
         :no-results-text="$options.i18n.noFrameworksText"
         :items="filteredListBoxItems"
+        :infinite-scroll="hasNextPage"
         :reset-button-label="$options.i18n.clearAllLabel"
         :show-select-all-button-label="$options.i18n.selectAllLabel"
         :toggle-text="dropdownPlaceholder"
         :title="dropdownPlaceholder"
         :selected="existingFormattedSelectedFrameworkIds"
+        @bottom-reached="fetchMoreItems"
         @reset="selectFrameworks([])"
         @search="debouncedSearch"
         @select="selectFrameworks"

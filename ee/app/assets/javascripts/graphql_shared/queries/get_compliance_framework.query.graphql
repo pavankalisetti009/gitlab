@@ -8,12 +8,14 @@ query getComplianceFramework(
   $after: String
   $first: Int
   $last: Int
+  $ids: [ComplianceManagementFrameworkID!] = null
 ) {
   namespace(fullPath: $fullPath) {
     id
     name
     complianceFrameworks(
       id: $complianceFramework
+      ids: $ids
       search: $search
       before: $before
       after: $after
