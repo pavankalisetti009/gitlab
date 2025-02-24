@@ -208,7 +208,9 @@ describe('DependenciesApp component', () => {
       });
 
       it('renders export button', () => {
-        expect(findExportMenu().exists()).toBe(true);
+        const exportMenu = findExportMenu();
+        expect(exportMenu.exists()).toBe(true);
+        expect(exportMenu.props()).toHaveProperty('container', basicAppProvides.namespaceType);
       });
 
       describe('with namespaceType set to group', () => {
