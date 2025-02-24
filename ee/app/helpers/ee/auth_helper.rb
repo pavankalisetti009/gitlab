@@ -46,7 +46,7 @@ module EE
     def password_rule_list(basic)
       if ::License.feature_available?(:password_complexity)
         rules = []
-        rules.concat([:length, :common, :user_info]) if basic && display_password_requirements?
+        rules.concat([:length, :common, :user_info]) if basic
         rules << :number if ::Gitlab::CurrentSettings.password_number_required?
         rules << :lowercase if ::Gitlab::CurrentSettings.password_lowercase_required?
         rules << :uppercase if ::Gitlab::CurrentSettings.password_uppercase_required?

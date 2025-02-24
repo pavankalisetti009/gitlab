@@ -187,16 +187,6 @@ RSpec.describe EE::AuthHelper do
         it 'returns basic list' do
           expect(password_rule_list(true)).to match_array([:length, :common, :user_info])
         end
-
-        context 'when display_password_requirements is disabled' do
-          before do
-            stub_feature_flags(display_password_requirements: false)
-          end
-
-          it 'returns an empty array' do
-            expect(password_rule_list(true)).to be_empty
-          end
-        end
       end
 
       context 'with all rules' do

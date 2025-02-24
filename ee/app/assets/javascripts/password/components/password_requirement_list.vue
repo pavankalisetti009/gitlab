@@ -66,15 +66,6 @@ export default {
     isEmptyPasswordLegal() {
       return this.password.trim() === '' && this.allowNoPassword;
     },
-    displayPasswordRequirements() {
-      // this will be true with display_password_requirements ff removal
-      return this.ruleTypes.includes(COMMON) || this.ruleTypes.includes(USER_INFO);
-    },
-    boxClasses() {
-      return {
-        'gl-text-subtle': this.displayPasswordRequirements,
-      };
-    },
   },
   watch: {
     password() {
@@ -94,25 +85,25 @@ export default {
       this.password = this.passwordInputElement.value;
     });
 
-    if (this.firstName && this.displayPasswordRequirements) {
+    if (this.firstName) {
       this.firstName.addEventListener('input', () => {
         this.checkValidity(this.findRule(USER_INFO));
       });
     }
 
-    if (this.lastName && this.displayPasswordRequirements) {
+    if (this.lastName) {
       this.lastName.addEventListener('input', () => {
         this.checkValidity(this.findRule(USER_INFO));
       });
     }
 
-    if (this.username && this.displayPasswordRequirements) {
+    if (this.username) {
       this.username.addEventListener('input', () => {
         this.checkValidity(this.findRule(USER_INFO));
       });
     }
 
-    if (this.email && this.displayPasswordRequirements) {
+    if (this.email) {
       this.email.addEventListener('input', () => {
         this.checkValidity(this.findRule(USER_INFO));
       });
@@ -202,8 +193,7 @@ export default {
       return { name: 'status_created_borderless', size: 12 };
     },
     ruleText(rule) {
-      // make text capitalization permanent with display_password_requirements ff removal
-      return this.ruleTypes.includes(COMMON) ? capitalizeFirstCharacter(rule.text) : rule.text;
+      return capitalizeFirstCharacter(rule.text);
     },
     passwordComplexityParams() {
       return {
@@ -221,7 +211,11 @@ export default {
 </script>
 
 <template>
-  <div v-show="!isEmptyPasswordLegal" data-testid="password-requirement-list" :class="boxClasses">
+  <div
+    v-show="!isEmptyPasswordLegal"
+    class="gl-text-subtle"
+    data-testid="password-requirement-list"
+  >
     <div
       v-for="(rule, index) in ruleList"
       :key="rule.text"
