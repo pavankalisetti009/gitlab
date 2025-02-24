@@ -331,6 +331,10 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
         { api_key: "token", endpoint: "http://localhost:11434/v1", name: "mistral", provider: :openai, identifier: 'provider/some-model' }
       end
 
+      before_all do
+        create(:cloud_connector_keys)
+      end
+
       context 'with no unit primitive corresponding a feature setting' do
         let(:unit_primitive) { :test }
         let(:endpoint) { "#{described_class::BASE_PROMPTS_CHAT_ENDPOINT}/#{unit_primitive}" }

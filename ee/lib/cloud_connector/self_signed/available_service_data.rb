@@ -13,19 +13,43 @@ module CloudConnector
           # an access token is created. This function should be called lazily the first
           # time the signing key is needed.
           def signing_key
+            update_cached_state_based_on_ff_state!
             @signing_key ||= load_signing_key
           end
 
           private
 
+          # This workaround is needed because we need to evaluate the FF every time we
+          # try to sign tokens, but the key loaded as a result of this is being cached.
+          # This method will update the cached state if the FF has changed.
+          #
+          # We can remove this helper once we remove the FF.
+          def update_cached_state_based_on_ff_state!
+            feature_enabled = Feature.enabled?(:cloud_connector_new_keys, Feature.current_request)
+            @use_new_cc_keys = feature_enabled if @use_new_cc_keys.nil?
+
+            return if @use_new_cc_keys == feature_enabled
+
+            # FF state has changed: ensure we reload keys based on new FF state.
+            @signing_key = nil
+            @use_new_cc_keys = feature_enabled
+          end
+
           def load_signing_key
-            key_data = Rails.application.credentials.openid_connect_signing_key
+            if @use_new_cc_keys
+              jwk = ::CloudConnector::Keys.current_as_jwk
+              raise 'Cloud Connector: no key found' unless jwk
 
-            raise 'Cloud Connector: no key found' unless key_data
+              jwk
+            else
+              key_data = Rails.application.credentials.openid_connect_signing_key
 
-            rsa_key = OpenSSL::PKey::RSA.new(key_data)
+              raise 'Cloud Connector: no key found' unless key_data
 
-            ::JWT::JWK.new(rsa_key, kid_generator: ::JWT::JWK::Thumbprint)
+              rsa_key = OpenSSL::PKey::RSA.new(key_data)
+
+              ::JWT::JWK.new(rsa_key, kid_generator: ::JWT::JWK::Thumbprint)
+            end
           end
         end
       end
