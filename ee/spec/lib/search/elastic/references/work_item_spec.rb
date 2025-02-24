@@ -94,7 +94,7 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
       it 'truncates notes fields' do
         create(:note, :internal, noteable: project_work_item, project: project, note: 'Newest')
 
-        stub_const('Search::Elastic::References::WorkItem::NOTES_MAXIMUM_BYTES', 10)
+        stub_const("#{described_class}::NOTES_MAXIMUM_BYTES", 10)
 
         expect(indexed_json[:notes_internal]).not_to include('Radiant')
         expect(indexed_json[:notes_internal]).to eq("Newest\n…")

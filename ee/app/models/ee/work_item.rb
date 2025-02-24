@@ -48,7 +48,7 @@ module EE
         ::Namespaces::Preloaders::NamespaceRootAncestorPreloader.new(preloaded_data.map(&:namespace)).execute
 
         if ::Feature.enabled?(:search_work_items_index_notes, ::Feature.current_request)
-          preloaded_data = preloaded_data.includes(:notes)
+          preloaded_data.each(&:lazy_user_notes)
         end
 
         preloaded_data
@@ -103,6 +103,26 @@ module EE
 
     def elastic_reference
       ::Search::Elastic::References::WorkItem.serialize(self)
+    end
+
+    override :lazy_user_notes
+    def lazy_user_notes
+      BatchLoader.for(id).batch(default_value: []) do |work_item_ids, loader|
+        legacy_epic_ids = ::Epic.where(issue_id: work_item_ids).select(:id)
+        epic_user_notes = ::Note.where(noteable_type: 'Epic', noteable_id: legacy_epic_ids)
+        epic_user_notes.each_batch do |batch|
+          batch.user.preload(:noteable).each do |note| # rubocop:disable Rails/FindEach -- Already operates on a sub batch
+            loader.call(note.noteable.issue_id) { |notes| notes << note }
+          end
+        end
+
+        issue_user_notes = ::Note.where(noteable_type: 'Issue', noteable_id: work_item_ids)
+        issue_user_notes.each_batch do |batch|
+          batch.user.each do |note|
+            loader.call(note.noteable_id) { |notes| notes << note }
+          end
+        end
+      end
     end
 
     private

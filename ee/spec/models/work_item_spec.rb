@@ -676,7 +676,7 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
         work_item.namespace
         work_item.labels
         work_item.project.project_feature
-        work_item.notes
+        work_item.lazy_user_notes
       end
       expect(recorder.count).to be_zero
     end
@@ -738,6 +738,36 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
           expect(work_item.reload.subscriptions).to contain_exactly(epic_subscription)
         end
       end
+    end
+  end
+
+  describe '#lazy_user_notes' do
+    it 'returns user notes lazily with 1 SQL query' do
+      project_work_item = create(:work_item)
+      create(:note_on_work_item, project: project_work_item.project, noteable: project_work_item)
+      group_work_item = create(:work_item, :group_level)
+      create(:note_on_work_item, namespace: project_work_item.namespace, noteable: group_work_item)
+      legacy_epic_work_item = create(:work_item, :epic_with_legacy_epic)
+      create(:note, :on_epic, noteable: legacy_epic_work_item.sync_object)
+      create(:note, :on_epic, noteable: legacy_epic_work_item)
+      work_items = [project_work_item, group_work_item, legacy_epic_work_item]
+
+      recorder = ActiveRecord::QueryRecorder.new do
+        work_items.each(&:lazy_user_notes)
+
+        expect(project_work_item.lazy_user_notes).to match_array(project_work_item.notes)
+        expect(group_work_item.lazy_user_notes).to match_array(group_work_item.notes)
+        expect(legacy_epic_work_item.lazy_user_notes)
+          .to match_array(legacy_epic_work_item.own_notes + legacy_epic_work_item.sync_object.own_notes)
+      end
+
+      # from batch loader for lazy_user_notes
+      # 3 queries to find epic notes using each_batch
+      # 1 query to preload the noteable
+      # 3 queries to find issue notes using each_batch
+      # from spec itself
+      # 4 queries to load the notes to verify lazy_user_notes returns the right notes
+      expect(recorder.count).to eq(11)
     end
   end
 end
