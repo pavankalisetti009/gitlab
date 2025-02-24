@@ -1,11 +1,5 @@
 <script>
-import {
-  GlEmptyState,
-  GlLoadingIcon,
-  GlSprintf,
-  GlLink,
-  GlTooltipDirective,
-} from '@gitlab/ui';
+import { GlEmptyState, GlLoadingIcon, GlSprintf, GlLink, GlTooltipDirective } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapGetters, mapState } from 'vuex';
 import { getTimeago } from '~/lib/utils/datetime_utility';

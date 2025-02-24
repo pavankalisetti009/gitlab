@@ -8,7 +8,12 @@ import {
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
 import { s__ } from '~/locale';
-import { EXPORT_FORMATS, NAMESPACE_GROUP, NAMESPACE_ORGANIZATION, NAMESPACE_PROJECT } from '../constants';
+import {
+  EXPORT_FORMATS,
+  NAMESPACE_GROUP,
+  NAMESPACE_ORGANIZATION,
+  NAMESPACE_PROJECT,
+} from '../constants';
 
 const exportFormats = [
   {
@@ -55,7 +60,7 @@ export default {
       },
     }),
     availableFormats() {
-      return exportFormats.filter(format => format.availableFor.includes(this.container));
+      return exportFormats.filter((format) => format.availableFor.includes(this.container));
     },
     multipleFormats() {
       return this.availableFormats.length > 1;
