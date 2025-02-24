@@ -292,7 +292,7 @@ export default {
       </template>
 
       <template #cell(actions)="{ item }">
-        <span :id="`remove-member-${item.user.id}`" class="gl-inline-block" tabindex="0">
+        <span :id="`remove-user-${item.user.id}`" class="gl-inline-block" tabindex="0">
           <gl-button
             v-gl-modal="$options.removeBillableMemberModalId"
             category="secondary"
@@ -305,7 +305,7 @@ export default {
           </gl-button>
           <gl-tooltip
             v-if="removeButtonDisabled(item.user)"
-            :target="`remove-member-${item.user.id}`"
+            :target="`remove-user-${item.user.id}`"
             data-testid="remove-user-tooltip"
           >
             {{

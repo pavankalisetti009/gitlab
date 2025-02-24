@@ -112,7 +112,7 @@ describe('SubscriptionUserList', () => {
   const findSearchAndSortBar = () => wrapper.findComponent(SearchAndSortBar);
   const findPagination = () => wrapper.findComponent(GlPagination);
   const findAllRemoveUserItems = () => wrapper.findAllByTestId('remove-user');
-  const findRemoveMemberItem = (id) => wrapper.find(`[id="remove-member-${id}"]`);
+  const findRemoveUserItem = (id) => wrapper.find(`[id="remove-user-${id}"]`);
   const findErrorModal = () => wrapper.findComponent(GlModal);
 
   const serializeTableRow = (rowWrapper) => {
@@ -268,7 +268,7 @@ describe('SubscriptionUserList', () => {
       });
 
       it('shows a tooltip for related users', () => {
-        expect(findRemoveMemberItem(user.id).findComponent(GlTooltip).text()).toBe(
+        expect(findRemoveUserItem(user.id).findComponent(GlTooltip).text()).toBe(
           'This user is scheduled for removal.',
         );
       });
@@ -276,9 +276,7 @@ describe('SubscriptionUserList', () => {
       it('does not show a tooltip for unrelated user', () => {
         const { user: nonRemovedUser } = mockTableItems[2];
 
-        expect(findRemoveMemberItem(nonRemovedUser.id).findComponent(GlTooltip).exists()).toBe(
-          false,
-        );
+        expect(findRemoveUserItem(nonRemovedUser.id).findComponent(GlTooltip).exists()).toBe(false);
       });
     });
 
@@ -301,7 +299,7 @@ describe('SubscriptionUserList', () => {
       });
 
       it('shows a tooltip for related users', () => {
-        expect(findRemoveMemberItem(user.id).findComponent(GlTooltip).text()).toBe(
+        expect(findRemoveUserItem(user.id).findComponent(GlTooltip).text()).toBe(
           'This user is scheduled for removal.',
         );
       });
@@ -309,9 +307,7 @@ describe('SubscriptionUserList', () => {
       it('does not show a tooltip for unrelated user', () => {
         const { user: nonRemovedUser } = mockTableItems[2];
 
-        expect(findRemoveMemberItem(nonRemovedUser.id).findComponent(GlTooltip).exists()).toBe(
-          false,
-        );
+        expect(findRemoveUserItem(nonRemovedUser.id).findComponent(GlTooltip).exists()).toBe(false);
       });
 
       describe('when the local storage item is expired', () => {
