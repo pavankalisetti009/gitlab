@@ -95,21 +95,9 @@ RSpec.describe ApprovalRuleLike, feature_category: :source_code_management do
         end
 
         context 'for a team member with the custom role' do
-          context 'when security_policy_custom_roles feature flag is enabled' do
-            it 'returns true when user belongs to custom role and false otherwise' do
-              expect(rule.approvers_include_user?(team_member_with_role)).to be_truthy
-              expect(rule.approvers_include_user?(team_member_without_role)).to be_falsey
-            end
-          end
-
-          context 'when security_policy_custom_roles feature flag is disabled' do
-            before do
-              stub_feature_flags(security_policy_custom_roles: false)
-            end
-
-            it 'returns false regardless of custom role assignment' do
-              expect(rule.approvers_include_user?(team_member_with_role)).to be_falsey
-            end
+          it 'returns true when user belongs to custom role and false otherwise' do
+            expect(rule.approvers_include_user?(team_member_with_role)).to be_truthy
+            expect(rule.approvers_include_user?(team_member_without_role)).to be_falsey
           end
         end
 
@@ -124,27 +112,12 @@ RSpec.describe ApprovalRuleLike, feature_category: :source_code_management do
 
         context 'when the user relations are already loaded' do
           context 'for a team member with the custom role' do
-            context 'when security_policy_custom_roles feature flag is enabled' do
-              it 'returns true when user belongs to custom role and false otherwise' do
-                rule.users.to_a
-                rule.group_members.to_a
+            it 'returns true when user belongs to custom role and false otherwise' do
+              rule.users.to_a
+              rule.group_members.to_a
 
-                expect(rule.approvers_include_user?(team_member_with_role)).to be_truthy
-                expect(rule.approvers_include_user?(team_member_without_role)).to be_falsey
-              end
-            end
-
-            context 'when security_policy_custom_roles feature flag is disabled' do
-              before do
-                stub_feature_flags(security_policy_custom_roles: false)
-              end
-
-              it 'returns false regardless of custom role assignment' do
-                rule.users.to_a
-                rule.group_members.to_a
-
-                expect(rule.approvers_include_user?(team_member_with_role)).to be_falsey
-              end
+              expect(rule.approvers_include_user?(team_member_with_role)).to be_truthy
+              expect(rule.approvers_include_user?(team_member_without_role)).to be_falsey
             end
           end
 
