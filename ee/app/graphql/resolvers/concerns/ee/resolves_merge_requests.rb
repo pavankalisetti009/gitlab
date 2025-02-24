@@ -24,6 +24,10 @@ module EE
           *commits_status_mergeability_check_preloads,
           *security_policy_violation_check_preloads
         ]
+
+        h[:squash_read_only] = {
+          target_project: [{ protected_branches: :squash_option }, :project_setting]
+        }
       end
     end
 
