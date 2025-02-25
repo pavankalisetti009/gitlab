@@ -4128,9 +4128,6 @@ msgstr ""
 msgid "AdminSelfHostedModels|Model identifier"
 msgstr ""
 
-msgid "AdminSelfHostedModels|Model identifier (optional)"
-msgstr ""
-
 msgid "AdminSelfHostedModels|Model identifier must be less than 255 characters."
 msgstr ""
 
