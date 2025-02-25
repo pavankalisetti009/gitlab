@@ -161,7 +161,7 @@ module API
           job
         end
 
-        def authenticate_job_via_dependent_job!
+        def ensure_job_and_artifact_access!
           # Use primary for both main and ci database as authenticating in the scope of runners will load
           # Ci::Build model and other standard authn related models like License, Project and User.
           ::Gitlab::Database::LoadBalancing::SessionMap
@@ -169,6 +169,7 @@ module API
 
           forbidden! unless current_job
           forbidden! unless can?(current_user, :read_build, current_job)
+          forbidden! unless can?(current_user, :read_job_artifacts, current_job)
         end
 
         # current_job is queried by URL :id param with no authentication

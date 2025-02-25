@@ -1099,6 +1099,40 @@ RSpec.describe API::Ci::Runner, :clean_gitlab_redis_shared_state, feature_catego
 
           it_behaves_like 'unauthorized request'
         end
+
+        context 'with authenticated user not in project' do
+          let_it_be(:current_user) { create(:user) }
+
+          context 'when project is public' do
+            before do
+              project.update!(visibility_level: Project::PUBLIC)
+            end
+
+            context 'when job artifacts are set to private access' do
+              before do
+                job.job_artifacts_archive.update!(accessibility: 'private')
+              end
+
+              it 'responds with forbidden' do
+                get api("/jobs/#{job.id}/artifacts", current_user)
+
+                expect(response).to have_gitlab_http_status(:forbidden)
+              end
+            end
+
+            context 'when job artifacts are set to none access' do
+              before do
+                job.job_artifacts_archive.update!(accessibility: 'none')
+              end
+
+              it 'responds with forbidden' do
+                get api("/jobs/#{job.id}/artifacts", current_user)
+
+                expect(response).to have_gitlab_http_status(:forbidden)
+              end
+            end
+          end
+        end
       end
 
       context 'when job does not have artifacts' do
