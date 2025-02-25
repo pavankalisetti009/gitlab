@@ -55,23 +55,19 @@ RSpec.describe Vulnerabilities::BulkDismissService, feature_category: :vulnerabi
         expect(last_state.author).to eq(user)
       end
 
-      it 'inserts a system note for each vulnerability' do
-        service.execute
-
-        last_note = Note.last
-
-        expect(last_note.noteable).to eq(vulnerability)
-        expect(last_note.author).to eq(user)
-        expect(last_note.project).to eq(project)
-        expect(last_note.namespace_id).to eq(project.project_namespace_id)
-        expect(last_note.note).to eq(
-          "changed vulnerability status to Dismissed: Used In Tests with the following comment: \"#{comment}\""
+      it 'publishes the bulk dismissed event' do
+        expect { service.execute }.to publish_event(Vulnerabilities::BulkDismissedEvent).with(
+          {
+            vulnerabilities: [{
+              vulnerability_id: vulnerability.id,
+              project_id: project.id,
+              namespace_id: vulnerability.project.project_namespace_id,
+              dismissal_reason: dismissal_reason,
+              comment: comment,
+              user_id: user.id
+            }]
+          }
         )
-        expect(last_note).to be_system
-
-        last_system_note_metadata = SystemNoteMetadata.last
-        expect(last_system_note_metadata.note_id).to eq(last_note.id)
-        expect(last_system_note_metadata.action).to eq("vulnerability_dismissed")
       end
 
       it 'updates the dismissal reason for each vulnerability read record' do
@@ -105,7 +101,8 @@ RSpec.describe Vulnerabilities::BulkDismissService, feature_category: :vulnerabi
 
       context 'when an error occurs' do
         before do
-          allow(Note).to receive(:insert_all!).and_raise(ActiveRecord::RecordNotUnique)
+          allow(Gitlab::Database::SecApplicationRecord).to receive(:transaction)
+                                                             .and_raise(ActiveRecord::RecordNotUnique)
         end
 
         it 'does not bubble up the error' do
@@ -173,8 +170,19 @@ RSpec.describe Vulnerabilities::BulkDismissService, feature_category: :vulnerabi
           expect { service.execute }.to change { dismissed_vulnerability.reload.dismissed_at }
         end
 
-        it 'inserts a system note' do
-          expect { service.execute }.to change { Note.count }
+        it 'publishes the bulk dismissed event' do
+          expect { service.execute }.to publish_event(Vulnerabilities::BulkDismissedEvent).with(
+            {
+              vulnerabilities: [{
+                vulnerability_id: dismissed_vulnerability.id,
+                project_id: project.id,
+                namespace_id: dismissed_vulnerability.project.project_namespace_id,
+                dismissal_reason: dismissal_reason,
+                comment: comment,
+                user_id: user.id
+              }]
+            }
+          )
         end
 
         it 'inserts a state transition' do

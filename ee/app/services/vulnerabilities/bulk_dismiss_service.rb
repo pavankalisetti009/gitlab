@@ -23,10 +23,18 @@ module Vulnerabilities
         vulnerabilities.update_all(db_attributes[:vulnerabilities])
       end
 
-      Note.transaction do
-        notes_ids = Note.insert_all!(db_attributes[:system_notes], returning: %w[id])
-        SystemNoteMetadata.insert_all!(system_note_metadata_attributes_for(notes_ids))
+      attrs = vulnerability_attrs.map do |id, _, project_id, namespace_id|
+        {
+          vulnerability_id: id,
+          project_id: project_id,
+          namespace_id: namespace_id,
+          dismissal_reason: dismissal_reason.to_s,
+          comment: comment,
+          user_id: user.id
+        }
       end
+
+      Gitlab::EventStore.publish(::Vulnerabilities::BulkDismissedEvent.new(data: { vulnerabilities: attrs }))
     end
 
     def vulnerabilities_to_update(ids)

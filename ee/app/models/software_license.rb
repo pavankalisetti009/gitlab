@@ -39,10 +39,9 @@ class SoftwareLicense < ApplicationRecord
       project:, name:, classification:,
       scan_result_policy_read: nil,
       approval_policy_rule_id: nil,
-      custom_software_license: nil
+      custom_software_license: nil,
+      catalogue_license: nil
     )
-
-      catalogue_license = Gitlab::SPDX::Catalogue.latest_active_licenses.find { |license| license.name == name }
 
       project.software_license_policies.create!(
         classification: classification,

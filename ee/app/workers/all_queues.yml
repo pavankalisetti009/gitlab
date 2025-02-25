@@ -3433,6 +3433,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: vulnerabilities_process_bulk_dismissed_events
+  :worker_name: Vulnerabilities::ProcessBulkDismissedEventsWorker
+  :feature_category: :vulnerability_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: vulnerabilities_process_transfer_events
   :worker_name: Vulnerabilities::ProcessTransferEventsWorker
   :feature_category: :vulnerability_management

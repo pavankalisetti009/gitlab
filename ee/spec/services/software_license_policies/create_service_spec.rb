@@ -93,14 +93,13 @@ RSpec.describe SoftwareLicensePolicies::CreateService, feature_category: :securi
         end
 
         context 'when a software license with the given name exists' do
-          let(:license_name) { 'License' }
-
           before do
             create(:software_license, name: license_name, spdx_identifier: spdx_identifier)
           end
 
-          context 'when the license has a spdx_identifier set' do
-            let(:spdx_identifier) { 'SPDX' }
+          context 'when the license is part of spdx latest catalog' do
+            let(:license_name) { 'MIT License' }
+            let(:spdx_identifier) { 'MIT' }
 
             it 'does not call CustomSoftwareLicense::FindOrCreateService' do
               expect(Security::CustomSoftwareLicenses::FindOrCreateService).not_to receive(:new)
@@ -117,8 +116,9 @@ RSpec.describe SoftwareLicensePolicies::CreateService, feature_category: :securi
             end
           end
 
-          context 'when the license does not have a spdx_identifier set' do
-            let(:spdx_identifier) { nil }
+          context 'when the license is not part of spdx latest catalog' do
+            let(:license_name) { 'License outside spdx catalogue' }
+            let(:spdx_identifier) { 'License' }
 
             it_behaves_like 'find or creates a custom software license'
           end
