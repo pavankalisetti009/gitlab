@@ -2683,6 +2683,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: search_elastic_commit_indexer
+  :worker_name: Search::Elastic::CommitIndexerWorker
+  :feature_category: :global_search
+  :has_external_dependencies: false
+  :urgency: :throttled
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: search_elastic_default_branch_changed
   :worker_name: Search::ElasticDefaultBranchChangedWorker
   :feature_category: :global_search
