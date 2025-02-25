@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe PathLock do
+RSpec.describe PathLock, feature_category: :source_code_management do
   let!(:path_lock) { create(:path_lock, path: 'app/models') }
   let(:project) { path_lock.project }
 
@@ -76,6 +76,15 @@ RSpec.describe PathLock do
     it 'filters path locks by passed' do
       expect(described_class.for_paths(['app'])).to eq([another_path_lock])
       expect(described_class.for_paths(['app/models'])).to eq([path_lock])
+    end
+  end
+
+  describe '#for_path' do
+    let!(:another_path_lock) { create(:path_lock, path: 'app') }
+
+    it 'finds the path lock with the given path' do
+      expect(described_class.for_path('app')).to eq(another_path_lock)
+      expect(described_class.for_path('app/models')).to eq(path_lock)
     end
   end
 end
