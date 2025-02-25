@@ -31,11 +31,19 @@ module Gitlab
               log_info(message: "Calling TanukiBot",
                 event_name: 'documentation_question_initial_request',
                 ai_component: 'duo_chat')
+
+              return empty_response unless options[:input].present?
+
+              search_documents = get_search_results(options[:input])
+
+              return empty_response if search_documents.blank?
+
               streamed_answer = StreamedDocumentationAnswer.new
 
               response_modifier = ::Gitlab::Llm::Chain::Tools::EmbeddingsCompletion.new(
                 current_user: context.current_user,
                 question: options[:input],
+                search_documents: search_documents,
                 tracking_context: { action: 'chat_documentation' }
               ).execute do |content|
                 next unless stream_response_handler
@@ -67,6 +75,21 @@ module Gitlab
 
             def resource_name
               RESOURCE_NAME
+            end
+
+            def get_search_results(question)
+              response = Gitlab::Llm::AiGateway::DocsClient.new(context.current_user)
+                .search(query: question) || {}
+
+              response.dig('response', 'results')&.map(&:with_indifferent_access)
+            end
+
+            def empty_response
+              error_with_message(
+                s_("AI|I'm sorry, I couldn't find any documentation to answer your question."),
+                error_code: "M2000",
+                source: "gitlab_documentation"
+              )
             end
           end
         end
