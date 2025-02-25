@@ -239,6 +239,7 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
           expect(tasked_node.metadata['name']).to eq(params['node.name'])
           expect(tasked_node.metadata['task_count']).to eq(params['node.task_count'])
           expect(tasked_node.metadata['concurrency']).to eq(params['node.concurrency'])
+          expect(tasked_node.metadata['version']).to be_nil
         end
       end
 
@@ -271,6 +272,14 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
 
       it 'sets indexed_bytes to the disk.indexed from params' do
         expect(tasked_node.indexed_bytes).to eq(params['disk.indexed'])
+      end
+    end
+
+    context 'when node.version is present' do
+      let(:params) { base_params.merge('node.version' => '1.2.3') }
+
+      it 'sets version in metadata' do
+        expect(tasked_node.metadata['version']).to eq('1.2.3')
       end
     end
   end
@@ -320,7 +329,7 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
 
   describe '#metadata_json' do
     it 'returns a json with metadata' do
-      node.update!(metadata: { name: 'test_name', task_count: 100, concurrency: 10 })
+      node.update!(metadata: { name: 'test_name', task_count: 100, concurrency: 10, version: '2.0.0' })
       expected_json = {
         'zoekt.node_name' => 'test_name',
         'zoekt.node_id' => node.id,
@@ -330,7 +339,8 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
         'zoekt.total_bytes' => node.total_bytes,
         'zoekt.task_count' => 100,
         'zoekt.concurrency' => 10,
-        'zoekt.concurrency_limit' => 10
+        'zoekt.concurrency_limit' => 10,
+        'zoekt.version' => '2.0.0'
       }
 
       expect(node.metadata_json).to eq(expected_json)

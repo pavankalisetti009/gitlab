@@ -78,6 +78,7 @@ module Search
           s.metadata['name'] = params.fetch('node.name')
           s.metadata['task_count'] = params['node.task_count'].to_i if params['node.task_count'].present?
           s.metadata['concurrency'] = params['node.concurrency'].to_i if params['node.concurrency'].present?
+          s.metadata['version'] = params['node.version'] if params['node.version'].present?
         end
       end
 
@@ -113,7 +114,8 @@ module Search
           'zoekt.total_bytes' => total_bytes,
           'zoekt.task_count' => metadata['task_count'],
           'zoekt.concurrency' => metadata['concurrency'],
-          'zoekt.concurrency_limit' => concurrency_limit
+          'zoekt.concurrency_limit' => concurrency_limit,
+          'zoekt.version' => metadata['version']
         }.compact
       end
 
