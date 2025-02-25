@@ -75,7 +75,8 @@ RSpec.describe Gitlab::EventStore, feature_category: :shared do
         Security::PolicyDeletedEvent,
         ::Members::MembershipModifiedByAdminEvent,
         Repositories::ProtectedBranchCreatedEvent,
-        Repositories::ProtectedBranchDestroyedEvent
+        Repositories::ProtectedBranchDestroyedEvent,
+        Vulnerabilities::BulkDismissedEvent
       ])
     end
   end
