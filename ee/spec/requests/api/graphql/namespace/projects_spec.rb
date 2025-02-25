@@ -32,7 +32,7 @@ RSpec.describe 'Namespace.projects', feature_category: :groups_and_projects do
       before do
         project_4.statistics.update!(lfs_objects_size: 1, repository_size: 4.gigabytes)
         project_2.statistics.update!(lfs_objects_size: 1, repository_size: 2.gigabytes)
-        project_3.statistics.update!(lfs_objects_size: 2, repository_size: 1.gigabytes)
+        project_3.statistics.update!(lfs_objects_size: 2, repository_size: 1.gigabyte)
       end
 
       it_behaves_like 'sorted paginated query' do
