@@ -124,7 +124,7 @@ export default {
     },
 
     compliancePipelineConfigurationHelpPath() {
-      return helpPagePath('user/group/compliance_pipelines', {
+      return helpPagePath('user/compliance/compliance_pipelines', {
         anchor: 'example-configuration',
       });
     },
