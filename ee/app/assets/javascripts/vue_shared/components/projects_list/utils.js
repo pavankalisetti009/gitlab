@@ -43,7 +43,7 @@ export const renderRestoreSuccessToast = (project) => {
 // eslint-disable-next-line import/export
 export const renderDeleteSuccessToast = (project) => {
   // Adjourned deletion feature is not available, call CE function.
-  if (!isAdjournedDeletionEnabled(project)) {
+  if (!isAdjournedDeletionEnabled(project) || project.isPersonal) {
     renderDeleteSuccessToastCE(project);
     return;
   }
