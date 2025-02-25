@@ -5,7 +5,6 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { HTTP_STATUS_BAD_REQUEST } from '~/lib/utils/http_status';
 import LineChart from 'ee/analytics/analytics_dashboards/components/visualizations/line_chart.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import dataSources from 'ee/analytics/analytics_dashboards/data_sources';
 
 import waitForPromises from 'helpers/wait_for_promises';
 import AnalyticsDashboardPanel from 'ee/analytics/analytics_dashboards/components/analytics_dashboard_panel.vue';
@@ -90,8 +89,24 @@ describe('AnalyticsDashboardPanel', () => {
       });
     });
 
-    it('fetches from the data source', () => {
-      expect(dataSources.cube_analytics).toHaveBeenCalled();
+    it('fetches from the data source with the proper parameters', () => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Daily Active Users',
+          projectId: '1',
+          namespace: 'namespace/full/path',
+          isProject: true,
+          query: mockPanel.visualization.data.query,
+          queryOverrides: mockPanel.queryOverrides,
+          visualizationType: mockPanel.visualization.type,
+          visualizationOptions: mockPanel.visualization.options,
+          filters: {},
+          dataSourceClickhouse: true,
+          setAlerts: expect.any(Function),
+          onRequestDelayed: expect.any(Function),
+          setVisualizationOverrides: expect.any(Function),
+        }),
+      );
     });
   });
 
@@ -381,6 +396,22 @@ describe('AnalyticsDashboardPanel', () => {
               expect(findPanelRetryButton().exists()).toBe(canRetry);
             });
           });
+        });
+      });
+
+      describe('updateQuery', () => {
+        it('refetches data with the overrides sent from the updateQuery event', async () => {
+          findVisualization().vm.$emit('updateQuery', { foo: 'bar' });
+
+          await waitForPromises();
+
+          expect(mockFetch).toHaveBeenCalledTimes(2);
+
+          expect(mockFetch).toHaveBeenCalledWith(
+            expect.objectContaining({
+              queryOverrides: { ...mockPanel.queryOverrides, foo: 'bar' },
+            }),
+          );
         });
       });
     });
