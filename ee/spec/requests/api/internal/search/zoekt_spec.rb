@@ -41,44 +41,6 @@ RSpec.describe API::Internal::Search::Zoekt, feature_category: :global_search do
                                            .with(valid_params).and_return(node)
       end
 
-      context 'with feature flag disabled' do
-        before do
-          stub_feature_flags(zoekt_internal_api_register_nodes: false)
-        end
-
-        context 'when node does not exist' do
-          let(:node) { build(:zoekt_node, id: nil) }
-
-          it 'does not save node' do
-            expect(node).not_to receive(:save)
-
-            request
-
-            expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response).to eq(
-              { 'id' => nil, 'tasks' => [], 'pull_frequency' => Search::Zoekt::Node::TASK_PULL_FREQUENCY_DEFAULT,
-                'truncate' => true, 'stop_indexing' => false, 'optimized_performance' => true }
-            )
-          end
-        end
-
-        context 'when node exists' do
-          let(:node) { create(:zoekt_node, id: 123) }
-
-          it 'does not save node when node does not exist' do
-            expect(node).not_to receive(:save)
-
-            request
-
-            expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response).to eq(
-              { 'id' => node.id, 'tasks' => [], 'pull_frequency' => Search::Zoekt::Node::TASK_PULL_FREQUENCY_DEFAULT,
-                'truncate' => false, 'stop_indexing' => false, 'optimized_performance' => true }
-            )
-          end
-        end
-      end
-
       context 'when a task request is received with valid params' do
         let(:node) { build(:zoekt_node, id: 123) }
         let(:tasks) { %w[task1 task2] }

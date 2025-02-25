@@ -34,8 +34,7 @@ module API
                   node = ::Search::Zoekt::Node.find_or_initialize_by_task_request(params)
                   new_node = node.new_record?
 
-                  # We don't want to register (save) the node if the feature flag is disabled
-                  if Feature.disabled?(:zoekt_internal_api_register_nodes, type: :ops) || node.save_debounce
+                  if node.save_debounce
                     { id: node.id, truncate: new_node }.tap do |resp|
                       resp[:tasks] = ::Search::Zoekt::TaskPresenterService.execute(node)
                       resp[:optimized_performance] = Feature.enabled?(:zoekt_optimized_performance_indexing)

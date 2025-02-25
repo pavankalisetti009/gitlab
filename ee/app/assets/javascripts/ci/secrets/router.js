@@ -23,6 +23,7 @@ export const initNavigationGuards = ({ router, base, props, location }) => {
     router.beforeEach((to, _, next) => {
       if (to.name === INDEX_ROUTE_NAME) {
         visitUrl(props.projectSecretsSettingsPath);
+        next();
       } else next();
     });
   } else {
@@ -31,6 +32,7 @@ export const initNavigationGuards = ({ router, base, props, location }) => {
     router.beforeEach((to, _, next) => {
       if (to.name !== INDEX_ROUTE_NAME) {
         visitUrl(base + to.fullPath);
+        next();
       } else next();
     });
   }

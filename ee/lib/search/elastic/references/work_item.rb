@@ -80,7 +80,6 @@ module Search
           data
         end
 
-        # rubocop: disable Metrics/AbcSize -- it's above the limit because we have feature flags that we will remove
         def build_indexed_json(target)
           data = {}
 
@@ -106,7 +105,6 @@ module Search
           data['traversal_ids'] = target.namespace.elastic_namespace_ancestry
           data['hashed_root_namespace_id'] = target.namespace.hashed_root_namespace_id
           data['work_item_type_id'] = target.work_item_type_id
-          data['correct_work_item_type_id'] = target.correct_work_item_type_id
 
           if ::Feature.enabled?(:search_work_items_index_notes, ::Feature.current_request)
             data = populate_notes(target, data)
@@ -134,7 +132,6 @@ module Search
 
           data
         end
-        # rubocop: enable Metrics/AbcSize
       end
     end
   end
