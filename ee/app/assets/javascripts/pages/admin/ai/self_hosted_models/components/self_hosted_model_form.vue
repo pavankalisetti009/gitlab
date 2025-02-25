@@ -49,8 +49,9 @@ const apiFormFields = {
     },
   },
   identifier: {
-    label: s__('AdminSelfHostedModels|Model identifier (optional)'),
+    label: s__('AdminSelfHostedModels|Model identifier'),
     validators: [
+      formValidators.required(s__('AdminSelfHostedModels|Please enter a model identifier.')),
       formValidators.factory(
         s__('AdminSelfHostedModels|Model identifier must be less than 255 characters.'),
         (val) => val.length <= 255,
@@ -222,7 +223,7 @@ export default {
     hasValidInput() {
       const { name, model, endpoint, identifier } = this.baseFormValues;
 
-      if (name === '' || model === '') {
+      if (name === '' || model === '' || identifier === '') {
         return false;
       }
 

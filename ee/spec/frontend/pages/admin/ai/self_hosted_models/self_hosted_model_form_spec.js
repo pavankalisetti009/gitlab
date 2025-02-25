@@ -198,6 +198,7 @@ describe('SelfHostedModelForm', () => {
         expect(findNameValidationMessage().exists()).toBe(true);
         expect(findModelValidationMessage().exists()).toBe(true);
         expect(findEndpointValidationMessage().exists()).toBe(true);
+        expect(findIdentifierValidationMessage().exists()).toBe(true);
       });
 
       it('displays validation error when identifier is too long', async () => {
@@ -303,6 +304,7 @@ describe('SelfHostedModelForm', () => {
         await findNameInputField().setValue('test deployment');
         await findEndpointInputField().setValue('http://test.com');
         await findModelDropDownSelector().vm.$emit('select', 'MISTRAL');
+        await findIdentifierInputField().setValue('provider/model-name');
 
         wrapper.find('form').trigger('submit.prevent');
 
@@ -334,6 +336,7 @@ describe('SelfHostedModelForm', () => {
         await findNameInputField().setValue('test deployment');
         await findEndpointInputField().setValue('invalid endpoint');
         await findModelDropDownSelector().vm.$emit('select', 'MISTRAL');
+        await findIdentifierInputField().setValue('provider/model-name');
 
         wrapper.find('form').trigger('submit.prevent');
 
@@ -355,6 +358,7 @@ describe('SelfHostedModelForm', () => {
         await findNameInputField().setValue('test deployment');
         await findEndpointInputField().setValue('http://test.com');
         await findModelDropDownSelector().vm.$emit('select', 'MISTRAL');
+        await findIdentifierInputField().setValue('provider/model-name');
 
         wrapper.find('form').trigger('submit.prevent');
 
