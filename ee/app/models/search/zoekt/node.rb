@@ -82,7 +82,6 @@ module Search
       end
 
       def self.marking_lost_enabled?
-        return false if Feature.disabled?(:zoekt_internal_api_register_nodes, Feature.current_request)
         return false if Gitlab::CurrentSettings.zoekt_indexing_paused?
         return false unless Gitlab::CurrentSettings.zoekt_indexing_enabled?
         return false unless Gitlab::CurrentSettings.zoekt_auto_delete_lost_nodes?

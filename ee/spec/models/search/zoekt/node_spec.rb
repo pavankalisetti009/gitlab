@@ -280,16 +280,6 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
       expect(described_class.marking_lost_enabled?).to eq true
     end
 
-    context 'when FF zoekt_internal_api_register_nodes is disabled' do
-      before do
-        stub_feature_flags(zoekt_internal_api_register_nodes: false)
-      end
-
-      it 'returns false' do
-        expect(described_class.marking_lost_enabled?).to eq false
-      end
-    end
-
     context 'when application setting zoekt_indexing_paused? is enabled' do
       before do
         stub_ee_application_setting(zoekt_indexing_paused: true)
