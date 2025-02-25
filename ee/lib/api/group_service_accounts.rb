@@ -31,7 +31,7 @@ module API
       resource :service_accounts do
         desc 'Create a service account user' do
           detail 'Create a service account user'
-          success Entities::UserSafe
+          success Entities::ServiceAccount
           failure [
             { code: 400, message: '400 Bad request' },
             { code: 401, message: '401 Unauthorized' },
@@ -65,7 +65,7 @@ module API
 
         desc 'Get list of service account users' do
           detail 'Get list of service account users'
-          success Entities::UserSafe
+          success Entities::ServiceAccount
           failure [
             { code: 400, message: '400 Bad request' },
             { code: 401, message: '401 Unauthorized' },
@@ -118,6 +118,39 @@ module API
             ::Namespaces::ServiceAccounts::DeleteService
             .new(current_user, user)
             .execute(delete_params)
+          end
+        end
+
+        desc 'Update a service account user' do
+          detail 'Update a service account user'
+          success Entities::ServiceAccount
+          failure [
+            { code: 400, message: '400 Bad request' },
+            { code: 401, message: '401 Unauthorized' },
+            { code: 403, message: '403 Forbidden' },
+            { code: 404, message: '404 User not found' }
+          ]
+        end
+
+        params do
+          requires :user_id, type: Integer, desc: 'The ID of the service account user'
+          optional :name, type: String, desc: 'Name of the user'
+          optional :username, type: String, desc: 'Username of the user'
+        end
+
+        patch ":user_id" do
+          validate_service_account_user
+
+          update_params = declared_params(include_missing: false)
+
+          response = ::Namespaces::ServiceAccounts::UpdateService
+                       .new(current_user, user, update_params)
+                       .execute
+
+          if response.success?
+            present response.payload[:user], with: Entities::ServiceAccount, current_user: current_user
+          else
+            render_api_error!(response.message, response.reason)
           end
         end
 

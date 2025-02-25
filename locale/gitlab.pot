@@ -54454,6 +54454,9 @@ msgstr ""
 msgid "Service account token expiration"
 msgstr ""
 
+msgid "Service account was successfully updated."
+msgstr ""
+
 msgid "Service accounts"
 msgstr ""
 
@@ -54494,6 +54497,9 @@ msgid "ServiceAccount|User does not have permission to create a service account.
 msgstr ""
 
 msgid "ServiceAccount|User does not have permission to delete a service account."
+msgstr ""
+
+msgid "ServiceAccount|You are not authorized to update service accounts in this namespace."
 msgstr ""
 
 msgid "ServiceDesk|%{customEmail} with SMTP host %{smtpAddress} is %{badgeStart}verified%{badgeEnd}"
@@ -63132,6 +63138,9 @@ msgstr[0] ""
 msgstr[1] ""
 
 msgid "User is blocked"
+msgstr ""
+
+msgid "User is not a service account"
 msgstr ""
 
 msgid "User is not allowed to resolve thread"
