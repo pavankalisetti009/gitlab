@@ -394,7 +394,7 @@ module API
         route_setting :authentication, job_token_allowed: true
         route_setting :authorization, job_token_policies: :read_jobs
         get '/:id/artifacts', feature_category: :job_artifacts do
-          authenticate_job_via_dependent_job!
+          ensure_job_and_artifact_access!
           authorize_job_token_policies!(current_job.project)
 
           audit_download(current_job, current_job.artifacts_file&.filename) if current_job.artifacts_file
