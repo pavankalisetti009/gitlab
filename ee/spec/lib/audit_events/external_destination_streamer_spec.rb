@@ -35,12 +35,34 @@ RSpec.describe AuditEvents::ExternalDestinationStreamer, feature_category: :audi
     context 'when no external streaming destinations are present' do
       it_behaves_like 'external destination streamer'
 
+      it 'only uses the streamers with feature flag enabled' do
+        allow(streamer.send(:streamers)).to receive(:any?).and_return(true)
+        allow_next_instance_of(AuditEvents::Streaming::Group::Streamer) do |instance|
+          allow(instance).to receive(:execute)
+        end
+        allow_next_instance_of(AuditEvents::Streaming::Instance::Streamer) do |instance|
+          allow(instance).to receive(:execute)
+        end
+
+        expect(streamer).to receive(:streamers).at_least(:once).and_call_original
+        expect(streamer).not_to receive(:streamable_strategies)
+
+        stream_to_destinations
+      end
+
       context 'with feature flag disabled' do
         before do
           stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: false)
         end
 
         it_behaves_like 'external destination streamer'
+
+        it 'only uses the streamable_strategies with feature flag disabled' do
+          expect(streamer).not_to receive(:streamers)
+          expect(streamer).to receive(:streamable_strategies).at_least(:once).and_call_original
+
+          stream_to_destinations
+        end
       end
     end
 
@@ -73,13 +95,22 @@ RSpec.describe AuditEvents::ExternalDestinationStreamer, feature_category: :audi
 
         expect_next_instance_of(AuditEvents::Streaming::Group::Streamer) do |streamer|
           expect(streamer).to receive(:execute).once.and_call_original
-          expect(streamer).to receive(:streamable?).once.and_return(true)
+          allow(streamer).to receive(:streamable?).and_return(true)
         end
 
         expect_next_instance_of(AuditEvents::Streaming::Instance::Streamer) do |streamer|
           expect(streamer).to receive(:execute).once.and_call_original
-          expect(streamer).to receive(:streamable?).once.and_return(true)
+          allow(streamer).to receive(:streamable?).and_return(true)
         end
+
+        stream_to_destinations
+      end
+
+      it 'only uses the streamers with feature flag enabled' do
+        allow(streamer.send(:streamers)).to receive(:any?).and_return(true)
+
+        expect(streamer).to receive(:streamers).at_least(:once).and_call_original
+        expect(streamer).not_to receive(:streamable_strategies)
 
         stream_to_destinations
       end
@@ -103,70 +134,121 @@ RSpec.describe AuditEvents::ExternalDestinationStreamer, feature_category: :audi
 
           stream_to_destinations
         end
+
+        it 'only uses the streamable_strategies with feature flag disabled' do
+          expect(streamer).not_to receive(:streamers)
+          expect(streamer).to receive(:streamable_strategies).at_least(:once).and_call_original
+
+          stream_to_destinations
+        end
+      end
+    end
+  end
+
+  describe '#streamable?' do
+    subject(:streamable) { streamer.streamable? }
+
+    context 'when none of the external streaming destinations are present' do
+      it { is_expected.to be_falsey }
+
+      it 'only checks streamers with feature flag enabled' do
+        expect(streamer).to receive(:streamers).at_least(:once).and_call_original
+
+        expect(streamer).to receive(:streamable_strategies).at_least(:once).and_call_original
+
+        streamable
+      end
+
+      context 'with feature flag disabled' do
+        before do
+          stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: false)
+        end
+
+        it { is_expected.to be_falsey }
+
+        it 'only checks streamable_strategies with feature flag disabled' do
+          expect(streamer).not_to receive(:streamers)
+          expect(streamer).to receive(:streamable_strategies).at_least(:once).and_call_original
+
+          streamable
+        end
       end
     end
 
-    describe '#streamable?' do
-      subject { streamer.streamable? }
-
-      context 'when none of the external streaming destinations are present' do
-        it { is_expected.to be_falsey }
-
-        context 'with feature flag disabled' do
-          before do
-            stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: false)
-          end
-
-          it { is_expected.to be_falsey }
-        end
+    context 'when external streaming destinations are present' do
+      before do
+        create(:audit_events_group_external_streaming_destination, :http,
+          group: group)
+        create(:audit_events_instance_external_streaming_destination, :gcp)
       end
 
-      context 'when external streaming destinations are present' do
+      it { is_expected.to be_truthy }
+
+      it 'only checks streamers with feature flag enabled' do
+        allow_next_instance_of(AuditEvents::Streaming::Group::Streamer) do |instance|
+          allow(instance).to receive(:streamable?).and_return(true)
+        end
+
+        expect(streamer).to receive(:streamers).at_least(:once).and_call_original
+        allow(streamer).to receive(:streamable_strategies).and_return([])
+
+        streamable
+      end
+
+      context 'with feature flag disabled' do
         before do
-          create(:audit_events_group_external_streaming_destination, :http,
-            group: group)
-          create(:audit_events_instance_external_streaming_destination, :gcp)
+          stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: false)
+          create(:external_audit_event_destination, group: group)
+          create(:instance_external_audit_event_destination)
+          create(:google_cloud_logging_configuration, group: group)
+          create(:instance_google_cloud_logging_configuration)
+          create(:amazon_s3_configuration, group: group)
+          create(:instance_amazon_s3_configuration)
         end
 
         it { is_expected.to be_truthy }
 
-        context 'with feature flag disabled' do
-          before do
-            stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: false)
-            create(:external_audit_event_destination, group: group)
-            create(:instance_external_audit_event_destination)
-            create(:google_cloud_logging_configuration, group: group)
-            create(:instance_google_cloud_logging_configuration)
-            create(:amazon_s3_configuration, group: group)
-            create(:instance_amazon_s3_configuration)
-          end
+        it 'only checks streamable_strategies with feature flag disabled' do
+          expect(streamer).not_to receive(:streamers)
+          expect(streamer).to receive(:streamable_strategies).at_least(:once).and_call_original
 
-          it { is_expected.to be_truthy }
+          streamable
         end
       end
+    end
 
-      context 'when only one destination type is present' do
-        using RSpec::Parameterized::TableSyntax
+    context 'when only one destination type is present' do
+      using RSpec::Parameterized::TableSyntax
 
-        where(:factory, :trait, :is_group_destination) do
-          :audit_events_group_external_streaming_destination | :aws | true
-          :audit_events_group_external_streaming_destination | :gcp | true
-          :audit_events_group_external_streaming_destination | :http | true
-          :audit_events_instance_external_streaming_destination | :aws | false
-          :audit_events_instance_external_streaming_destination | :gcp | false
-          :audit_events_instance_external_streaming_destination | :http | false
+      where(:factory, :trait, :is_group_destination) do
+        :audit_events_group_external_streaming_destination | :aws | true
+        :audit_events_group_external_streaming_destination | :gcp | true
+        :audit_events_group_external_streaming_destination | :http | true
+        :audit_events_instance_external_streaming_destination | :aws | false
+        :audit_events_instance_external_streaming_destination | :gcp | false
+        :audit_events_instance_external_streaming_destination | :http | false
+      end
+
+      with_them do
+        before do
+          if is_group_destination
+            create(factory, trait, group: group)
+          else
+            create(factory, trait)
+          end
         end
 
-        with_them do
-          before do
-            if is_group_destination
-              create(factory, trait, group: group)
-            else
-              create(factory, trait)
-            end
+        it { is_expected.to be_truthy }
+
+        it 'only checks streamers with feature flag enabled' do
+          allow_next_instance_of(AuditEvents::Streaming::Group::Streamer) do |instance|
+            allow(instance).to receive(:streamable?).and_return(true)
           end
 
-          it { is_expected.to be_truthy }
+          expect(streamer).to receive(:streamers).at_least(:once).and_call_original
+          allow(streamer).to receive(:streamable_strategies).and_return([])
+
+          streamable
         end
       end
     end
