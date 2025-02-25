@@ -17,7 +17,7 @@ module EE
             return if [:security_orchestration_policy, :ondemand_dast_scan].include?(pipeline_source)
 
             path_file, path_project = pipeline_configuration_full_path.split('@', 2)
-            YAML.dump('include' => [{ 'project' => path_project, 'file' => path_file }])
+            ci_yaml_include({ 'project' => path_project, 'file' => path_file })
           end
           strong_memoize_attr :content
 

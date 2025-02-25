@@ -4,6 +4,7 @@ import { debounce, uniqBy } from 'lodash';
 import produce from 'immer';
 import { s__, __ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
+import getGroups from 'ee/security_orchestration/graphql/queries/get_groups_by_ids.query.graphql';
 import getSppLinkedProjectGroups from 'ee/security_orchestration/graphql/queries/get_spp_linked_groups.graphql';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import { searchInItemsProperties } from '~/lib/utils/search_utils';
@@ -49,6 +50,11 @@ export default {
 
         this.$emit('loaded', this.items);
       },
+      result() {
+        if (this.selectedButNotLoadedGroupIds.length > 0) {
+          this.fetchGroupsByIds();
+        }
+      },
       error() {
         this.$emit(this.$options.ERROR_KEY);
         this.$emit('loaded', this.items);
@@ -76,7 +82,7 @@ export default {
       default: false,
     },
     selected: {
-      type: [Array, String],
+      type: Array,
       required: false,
       default: () => [],
     },
@@ -90,6 +96,9 @@ export default {
     };
   },
   computed: {
+    selectedButNotLoadedGroupIds() {
+      return this.selected.filter((id) => !this.itemsIds.includes(id));
+    },
     category() {
       return this.state ? 'primary' : 'secondary';
     },
@@ -143,6 +152,23 @@ export default {
   methods: {
     flatMapDescendantGroups(groups) {
       return groups.flatMap(({ descendantGroups }) => descendantGroups.nodes);
+    },
+    async fetchGroupsByIds() {
+      const variables = {
+        topLevelOnly: false,
+        ids: this.selectedButNotLoadedGroupIds,
+      };
+
+      try {
+        const { data } = await this.$apollo.query({
+          query: getGroups,
+          variables,
+        });
+
+        this.items = uniqBy([...this.items, ...data.groups.nodes], 'id');
+      } catch {
+        this.$emit(this.$options.ERROR_KEY);
+      }
     },
     fetchMoreItems() {
       const variables = {

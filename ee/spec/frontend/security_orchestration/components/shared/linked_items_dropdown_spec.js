@@ -4,10 +4,12 @@ import { GlCollapsibleListbox, GlPopover, GlLink } from '@gitlab/ui';
 import LinkedItemsDropdown from 'ee/security_orchestration/components/shared/linked_items_dropdown.vue';
 import BaseItemsDropdown from 'ee/security_orchestration/components/shared/base_items_dropdown.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import getGroups from 'ee/security_orchestration/graphql/queries/get_groups_by_ids.query.graphql';
 import getSppLinkedProjectGroups from 'ee/security_orchestration/graphql/queries/get_spp_linked_groups.graphql';
 import { mockLinkedSppItemsResponse } from 'ee_jest/security_orchestration/mocks/mock_apollo';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import { createMockGroups } from 'ee_jest/security_orchestration/mocks/mock_data';
 
 describe('LinkedItemsDropdown', () => {
   let wrapper;
@@ -36,18 +38,34 @@ describe('LinkedItemsDropdown', () => {
 
   const mapItems = ({ id, name, fullPath }) => ({ text: name, value: id, fullPath });
 
+  const moreGroups = createMockGroups(4);
+
+  const groupsHandler = (nodes = moreGroups) =>
+    jest.fn().mockResolvedValue({
+      data: {
+        groups: {
+          nodes,
+          pageInfo: {},
+        },
+      },
+    });
+
   const createMockApolloProvider = (handler) => {
     Vue.use(VueApollo);
     requestHandler = handler;
 
-    return createMockApollo([[getSppLinkedProjectGroups, requestHandler]]);
+    return createMockApollo([
+      [getSppLinkedProjectGroups, requestHandler.linkedGroupsHandler],
+      [getGroups, requestHandler.groupsHandler],
+    ]);
   };
 
-  const createComponent = ({
-    propsData = {},
-    handler = mockLinkedSppItemsResponse({ groups }),
-    stubs = {},
-  } = {}) => {
+  const defaultHandler = {
+    linkedGroupsHandler: mockLinkedSppItemsResponse({ groups }),
+    groupsHandler: groupsHandler(),
+  };
+
+  const createComponent = ({ propsData = {}, handler = defaultHandler, stubs = {} } = {}) => {
     wrapper = shallowMountExtended(LinkedItemsDropdown, {
       apolloProvider: createMockApolloProvider(handler),
       propsData: {
@@ -94,8 +112,8 @@ describe('LinkedItemsDropdown', () => {
     it('makes a query to fetch more groups', () => {
       findDropdown().vm.$emit('bottom-reached');
 
-      expect(requestHandler).toHaveBeenCalledTimes(2);
-      expect(requestHandler).toHaveBeenNthCalledWith(2, {
+      expect(requestHandler.linkedGroupsHandler).toHaveBeenCalledTimes(2);
+      expect(requestHandler.linkedGroupsHandler).toHaveBeenNthCalledWith(2, {
         fullPath: 'gitlab-org',
         after: null,
         includeParentDescendants: false,
@@ -191,7 +209,7 @@ describe('LinkedItemsDropdown', () => {
         },
       });
 
-      expect(requestHandler).toHaveBeenCalledWith({
+      expect(requestHandler.linkedGroupsHandler).toHaveBeenCalledWith({
         after: '',
         fullPath: 'gitlab-org',
         includeParentDescendants: true,
@@ -205,10 +223,27 @@ describe('LinkedItemsDropdown', () => {
     it('selects items and emits selected event', async () => {
       createComponent();
       await waitForPromises();
-
       findDropdown().vm.$emit('select', [groups[0].id]);
 
       expect(wrapper.emitted('select')).toEqual([[[groups[0]]]]);
+    });
+  });
+
+  describe('missing groups', () => {
+    it('loads groups if they were selected but missing from first loaded page', async () => {
+      createComponent({
+        propsData: {
+          selected: [groupsIds[0], moreGroups[2].id.toString()],
+        },
+      });
+      await waitForPromises();
+
+      expect(requestHandler.groupsHandler).toHaveBeenCalledTimes(1);
+      expect(requestHandler.groupsHandler).toHaveBeenCalledWith({
+        topLevelOnly: false,
+        ids: ['3'],
+        after: '',
+      });
     });
   });
 });
