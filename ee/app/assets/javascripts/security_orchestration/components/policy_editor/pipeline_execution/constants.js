@@ -2,23 +2,23 @@ import { s__ } from '~/locale';
 import { mapToListboxItems } from 'ee/security_orchestration/utils';
 
 export const DEFAULT_PIPELINE_EXECUTION_POLICY = `pipeline_execution_policy:
-- name: ''
-  description: ''
-  enabled: true
-  pipeline_config_strategy: inject_policy
-  content:
-    include:
-      - project: ''
+  - name: ''
+    description: ''
+    enabled: true
+    pipeline_config_strategy: inject_policy
+    content:
+      include:
+        - project: ''
 `;
 
 export const INJECT_CI_PIPELINE_EXECUTION_POLICY = `pipeline_execution_policy:
-- name: ''
-  description: ''
-  enabled: true
-  pipeline_config_strategy: inject_ci
-  content:
-    include:
-      - project: ''
+  - name: ''
+    description: ''
+    enabled: true
+    pipeline_config_strategy: inject_ci
+    content:
+      include:
+        - project: ''
 `;
 
 export const PIPELINE_EXECUTION_POLICY_INVALID_STRATEGY = `type: pipeline_execution_policy

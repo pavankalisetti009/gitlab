@@ -5,30 +5,30 @@ export * from './cron';
 export * from './actions';
 
 export const DEFAULT_SCAN_EXECUTION_POLICY = `scan_execution_policy:
-- name: ''
-  description: ''
-  enabled: true
-  rules:
-  - type: pipeline
-    branches:
-      - '*'
-  actions:
-    - scan: secret_detection
-`;
-
-export const DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE = `scan_execution_policy:
-- name: ''
-  description: ''
-  enabled: true
-  policy_scope:
-    projects:
-      excluding: []
-  rules:
+  - name: ''
+    description: ''
+    enabled: true
+    rules:
     - type: pipeline
       branches:
         - '*'
-  actions:
-    - scan: secret_detection
+    actions:
+      - scan: secret_detection
+`;
+
+export const DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE = `scan_execution_policy:
+  - name: ''
+    description: ''
+    enabled: true
+    policy_scope:
+      projects:
+        excluding: []
+    rules:
+      - type: pipeline
+        branches:
+          - '*'
+    actions:
+      - scan: secret_detection
 `;
 
 export const getPolicyYaml = ({ isGroup }) =>

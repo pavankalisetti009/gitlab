@@ -1,15 +1,15 @@
 import { fromYaml } from 'ee/security_orchestration/components/policy_editor/scan_execution/lib';
 
 export const mockScanExecutionManifest = `scan_execution_policy:
-- name: ''
-  description: ''
-  enabled: true
-  rules:
-  - type: pipeline
-    branches:
-      - '*'
-  actions:
-    - scan: secret_detection
+  - name: ''
+    description: ''
+    enabled: true
+    rules:
+    - type: pipeline
+      branches:
+        - '*'
+    actions:
+      - scan: secret_detection
 `;
 
 const mockScanExecutionManifestParsed = `scan_execution_policy:
