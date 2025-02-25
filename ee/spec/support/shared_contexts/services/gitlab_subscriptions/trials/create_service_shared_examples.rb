@@ -91,7 +91,7 @@ RSpec.shared_examples 'when on trial step' do |plan_name|
     let(:trial_params) { { namespace_id: namespace_id } }
 
     shared_examples 'starts a trial' do
-      it do
+      specify do
         expect_apply_trial_success(user, group, extra_params: existing_group_attrs(group))
 
         expect(execute).to be_success
@@ -100,7 +100,7 @@ RSpec.shared_examples 'when on trial step' do |plan_name|
     end
 
     shared_examples 'returns an error of not_found and does not apply a trial' do
-      it do
+      specify do
         expect(apply_trial_service_class).not_to receive(:new)
 
         expect(execute).to be_error
@@ -186,7 +186,7 @@ RSpec.shared_examples 'with no step' do
 end
 
 RSpec.shared_examples 'returns an error of not_found and does not create lead or apply a trial' do
-  it do
+  specify do
     expect(lead_service_class).not_to receive(:new)
     expect(apply_trial_service_class).not_to receive(:new)
 

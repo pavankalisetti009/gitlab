@@ -16,7 +16,11 @@ module GitlabSubscriptions
       end
 
       def trial_type
-        namespace.free_plan? ? :ultimate_with_gitlab_duo_enterprise : :ultimate_on_premium_with_gitlab_duo_enterprise
+        if namespace.free_plan?
+          GitlabSubscriptions::Trials::FREE_TRIAL_TYPE
+        else
+          GitlabSubscriptions::Trials::PREMIUM_TRIAL_TYPE
+        end
       end
 
       def add_on_purchase_finder

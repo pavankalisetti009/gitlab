@@ -166,6 +166,30 @@ RSpec.describe GitlabSubscriptions::Trials, feature_category: :subscription_mana
     end
   end
 
+  describe '.eligible_namespaces_for_user' do
+    let_it_be(:user) { create(:user) }
+    let_it_be(:namespace) { create(:group, owners: user) }
+    let_it_be(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :gitlab_duo_pro) }
+
+    subject(:execute) { described_class.eligible_namespaces_for_user(user) }
+
+    context 'when eligible' do
+      before do
+        create(:gitlab_subscription_add_on_purchase, add_on: duo_pro_add_on, namespace: namespace)
+      end
+
+      it { is_expected.to eq([namespace]) }
+    end
+
+    context 'when ineligible' do
+      before do
+        create(:gitlab_subscription_add_on_purchase, :active_trial, add_on: duo_pro_add_on, namespace: namespace)
+      end
+
+      it { is_expected.to be_empty }
+    end
+  end
+
   describe '.namespace_with_mid_trial_premium?', :saas do
     let_it_be(:free_namespace) { create(:group) }
     let_it_be(:premium_namespace) { create(:group_with_plan, plan: :premium_plan) }

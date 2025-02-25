@@ -45,7 +45,7 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, :saas, feature_ca
         before do
           allow_trial_creation(
             namespace,
-            trial_user_information.merge(trial_type: :ultimate_with_gitlab_duo_enterprise)
+            trial_user_information.merge(trial_type: GitlabSubscriptions::Trials::FREE_TRIAL_TYPE)
           )
         end
 
@@ -60,7 +60,7 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, :saas, feature_ca
         before do
           allow_trial_creation(
             namespace,
-            trial_user_information.merge(trial_type: :ultimate_on_premium_with_gitlab_duo_enterprise)
+            trial_user_information.merge(trial_type: GitlabSubscriptions::Trials::PREMIUM_TRIAL_TYPE)
           )
         end
 

@@ -12,6 +12,10 @@ class PathLock < ApplicationRecord
   scope :for_paths, ->(paths) { where(path: paths) }
   scope :not_for_users, ->(user_ids) { where.not(user_id: user_ids) }
 
+  def self.for_path(path)
+    find_by(path: path)
+  end
+
   def downstream?(path)
     self.path.start_with?(path) && !exact?(path)
   end

@@ -53166,6 +53166,9 @@ msgstr ""
 msgid "SecurityReports|All projects"
 msgstr ""
 
+msgid "SecurityReports|All report types"
+msgstr ""
+
 msgid "SecurityReports|All scanners"
 msgstr ""
 
@@ -53428,6 +53431,9 @@ msgid "SecurityReports|Projects added"
 msgstr ""
 
 msgid "SecurityReports|Remove project from dashboard"
+msgstr ""
+
+msgid "SecurityReports|Report Type"
 msgstr ""
 
 msgid "SecurityReports|Report has expired"
