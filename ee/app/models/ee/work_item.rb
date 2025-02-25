@@ -105,7 +105,6 @@ module EE
       ::Search::Elastic::References::WorkItem.serialize(self)
     end
 
-    override :lazy_user_notes
     def lazy_user_notes
       BatchLoader.for(id).batch(default_value: []) do |work_item_ids, loader|
         legacy_epic_ids = ::Epic.where(issue_id: work_item_ids).select(:id)
