@@ -44,7 +44,7 @@ RSpec.describe Gitlab::Auth, :use_clean_rails_memory_store_caching, feature_cate
         end
       end
 
-      context 'when personal access tokens are disabled' do
+      context 'when personal access tokens are disabled on instance level' do
         before do
           stub_licensed_features(disable_personal_access_tokens: true)
           stub_application_setting(disable_personal_access_tokens: true)
@@ -81,6 +81,33 @@ RSpec.describe Gitlab::Auth, :use_clean_rails_memory_store_caching, feature_cate
 
             include_examples 'fails to authenticate'
           end
+        end
+      end
+
+      context 'when personal access tokens are disabled by enterprise group' do
+        let_it_be(:enterprise_group) do
+          create(:group, namespace_settings: create(:namespace_settings, disable_personal_access_tokens: true))
+        end
+
+        let_it_be(:enterprise_user_of_the_group) { create(:enterprise_user, enterprise_group: enterprise_group) }
+        let_it_be(:enterprise_user_of_another_group) { create(:enterprise_user) }
+
+        let!(:personal_access_token) { create(:personal_access_token, user: user) }
+
+        before do
+          stub_licensed_features(disable_personal_access_tokens: true)
+        end
+
+        context 'for non-enterprise users of the group' do
+          let(:user) { enterprise_user_of_another_group }
+
+          include_examples 'successfully authenticates'
+        end
+
+        context 'for enterprise users of the group' do
+          let(:user) { enterprise_user_of_the_group }
+
+          include_examples 'fails to authenticate'
         end
       end
 

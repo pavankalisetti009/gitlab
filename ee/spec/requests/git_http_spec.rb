@@ -191,6 +191,52 @@ RSpec.describe 'Git HTTP requests', feature_category: :source_code_management do
     end
   end
 
+  context 'when personal access tokens are disabled by enterprise group' do
+    let_it_be(:enterprise_group) { create(:group, namespace_settings: create(:namespace_settings, disable_personal_access_tokens: true)) }
+    let_it_be(:project) { create(:project, :repository, :private, group: enterprise_group) }
+
+    let_it_be(:enterprise_user_of_the_group) { create(:enterprise_user, enterprise_group: enterprise_group) }
+    let_it_be(:enterprise_user_of_another_group) { create(:enterprise_user) }
+
+    let(:path) { "#{project.full_path}.git" }
+    let(:access_token) { create(:personal_access_token, user: user) }
+    let(:env) { { user: user.username, password: access_token.token } }
+
+    before do
+      stub_licensed_features(disable_personal_access_tokens: true)
+
+      project.add_developer(enterprise_user_of_the_group)
+      project.add_developer(enterprise_user_of_another_group)
+    end
+
+    context 'for non-enterprise users of the group' do
+      context 'when username and personal access token are provided' do
+        let(:user) { enterprise_user_of_another_group }
+
+        it_behaves_like 'pulls are allowed'
+        it_behaves_like 'pushes are allowed'
+      end
+    end
+
+    context 'for enterprise users of the group' do
+      context 'when username and personal access token are provided' do
+        let(:user) { enterprise_user_of_the_group }
+
+        it 'responds with status 401 Unauthorized for pull action' do
+          download(path, **env) do |response|
+            expect(response).to have_gitlab_http_status(:unauthorized)
+          end
+        end
+
+        it 'responds with status 401 Unauthorized for push action' do
+          upload(path, **env) do |response|
+            expect(response).to have_gitlab_http_status(:unauthorized)
+          end
+        end
+      end
+    end
+  end
+
   describe 'when namespace storage limits are enforced', :saas do
     let_it_be(:user) { create(:user) }
     let_it_be(:group, refind: true) { create(:group) }
