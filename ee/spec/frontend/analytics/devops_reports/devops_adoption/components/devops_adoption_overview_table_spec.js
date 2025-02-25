@@ -39,8 +39,11 @@ describe('DevopsAdoptionOverviewTable', () => {
 
   const findCol = (testId) => wrapper.findByTestId(testId);
 
-  const findColRowChild = (col, row, child) =>
-    wrapper.findAllByTestId(col).at(row).findComponent(child);
+  const findColRow = (col, row) => wrapper.findAllByTestId(col).at(row);
+
+  const findColRowChild = (col, row, child) => findColRow(col, row).find(child);
+
+  const findColRowChildComponent = (col, row, child) => findColRow(col, row).findComponent(child);
 
   const findColSubComponent = (colTestId, childComponent) =>
     findCol(colTestId).findComponent(childComponent);
@@ -56,9 +59,13 @@ describe('DevopsAdoptionOverviewTable', () => {
     });
 
     it('displays the table headings', () => {
-      const headerTexts = wrapper
-        .findAllByTestId(TABLE_TEST_IDS_HEADERS)
-        .wrappers.map((x) => x.text().split('\n')[0]);
+      const headerTexts = wrapper.findAllByTestId(TABLE_TEST_IDS_HEADERS).wrappers.map(
+        (x) =>
+          x
+            .text()
+            .replaceAll('↑', '')
+            .split(/\s+|\n+/)[0],
+      );
 
       headerTexts.pop(); // Remove the blank entry at the end used for the actions
 
@@ -131,7 +138,7 @@ describe('DevopsAdoptionOverviewTable', () => {
         });
 
         it('does not include a link to the group DevOps page', () => {
-          const link = findColRowChild(TABLE_TEST_IDS_NAMESPACE, 1, GlLink);
+          const link = findColRowChildComponent(TABLE_TEST_IDS_NAMESPACE, 1, GlLink);
 
           expect(link.exists()).toBe(false);
         });
@@ -140,7 +147,7 @@ describe('DevopsAdoptionOverviewTable', () => {
           let icon;
 
           beforeEach(() => {
-            icon = findColRowChild(TABLE_TEST_IDS_NAMESPACE, 1, GlIcon);
+            icon = findColRowChildComponent(TABLE_TEST_IDS_NAMESPACE, 1, GlIcon);
           });
 
           it('displays the icon', () => {
