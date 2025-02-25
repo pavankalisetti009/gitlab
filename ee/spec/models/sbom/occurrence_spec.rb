@@ -388,7 +388,7 @@ RSpec.describe Sbom::Occurrence, type: :model, feature_category: :dependency_man
     let_it_be(:occurrence_2) { create(:sbom_occurrence, :mit) }
     let_it_be(:occurrence_3) { create(:sbom_occurrence, :mpl_2) }
     let_it_be(:occurrence_4) { create(:sbom_occurrence, :apache_2, :mpl_2) }
-    let_it_be(:occurrence_5) { create(:sbom_occurrence) }
+    let_it_be(:occurrence_5) { create(:sbom_occurrence, :unknown) }
 
     where(:input, :expected) do
       %w[MIT MPL-2.0]     | [ref(:occurrence_2), ref(:occurrence_3), ref(:occurrence_4)]
@@ -398,8 +398,20 @@ RSpec.describe Sbom::Occurrence, type: :model, feature_category: :dependency_man
     end
 
     with_them do
-      it 'returns expected output for each input' do
-        expect(described_class.by_licenses(input)).to match_array(expected)
+      context "when the feature flag 'filter_unknown_licenses_by_spdx_identifier' is disabled" do
+        before do
+          stub_feature_flags(filter_unknown_licenses_by_spdx_identifier: false)
+        end
+
+        let_it_be(:occurrence_5) { create(:sbom_occurrence) }
+
+        it "returns the expected occurrences" do
+          expect(described_class.by_licenses(input)).to match_array(expected)
+        end
+      end
+
+      it "returns the expected occurrences" do
+        expect(described_class.by_licenses(input, empty_licenses_as_unknown: false)).to match_array(expected)
       end
     end
   end
@@ -411,7 +423,7 @@ RSpec.describe Sbom::Occurrence, type: :model, feature_category: :dependency_man
     let_it_be(:occurrence_2) { create(:sbom_occurrence, :mit) }
     let_it_be(:occurrence_3) { create(:sbom_occurrence, :mpl_2) }
     let_it_be(:occurrence_4) { create(:sbom_occurrence, :apache_2, :mpl_2) }
-    let_it_be(:occurrence_5) { create(:sbom_occurrence) }
+    let_it_be(:occurrence_5) { create(:sbom_occurrence, :unknown) }
 
     where(:input, :expected) do
       %w[MIT MPL-2.0]     | [ref(:occurrence_2), ref(:occurrence_3)]
@@ -421,8 +433,20 @@ RSpec.describe Sbom::Occurrence, type: :model, feature_category: :dependency_man
     end
 
     with_them do
-      it 'returns expected output for each input' do
-        expect(described_class.by_primary_license(input)).to match_array(expected)
+      context "when the feature flag 'filter_unknown_licenses_by_spdx_identifier' is disabled" do
+        before do
+          stub_feature_flags(filter_unknown_licenses_by_spdx_identifier: false)
+        end
+
+        let_it_be(:occurrence_5) { create(:sbom_occurrence) }
+
+        it "returns the expected occurrences" do
+          expect(described_class.by_primary_license(input)).to match_array(expected)
+        end
+      end
+
+      it "returns the expected occurrences" do
+        expect(described_class.by_primary_license(input, empty_licenses_as_unknown: false)).to match_array(expected)
       end
     end
   end

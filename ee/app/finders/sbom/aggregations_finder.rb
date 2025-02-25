@@ -106,7 +106,10 @@ module Sbom
     def filter_by_licences(relation)
       return relation unless params[:licenses].present?
 
-      relation.by_primary_license(params[:licenses])
+      relation.by_primary_license(
+        params[:licenses],
+        empty_licenses_as_unknown: Feature.disabled?(:filter_unknown_licenses_by_spdx_identifier, namespace)
+      )
     end
 
     def filter_by_component_ids(relation)
