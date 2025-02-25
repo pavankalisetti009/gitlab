@@ -87,7 +87,7 @@ module API
         requires :id, types: [String, Integer], desc: 'The ID of the pipeline'
 
         optional :send_email, type: Boolean, default: false, desc: 'Send an email when the export completes'
-        optional :export_type, type: String, values: %w[sbom], desc: 'The type of the export file'
+        optional :export_type, type: String, values: %w[sbom], default: 'sbom', desc: 'The type of the export file'
       end
       desc 'Generate a dependency list export on a pipeline-level'
       post ':id/dependency_list_exports' do
