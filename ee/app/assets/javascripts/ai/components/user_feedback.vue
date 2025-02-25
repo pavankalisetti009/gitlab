@@ -40,7 +40,7 @@ export default {
   methods: {
     trackFeedback({ feedbackOptions, extendedFeedback } = {}) {
       this.track(this.eventName, {
-        action: 'click_button',
+        action: 'duo_chat',
         label: 'response_feedback',
         property: feedbackOptions,
         extra: {
