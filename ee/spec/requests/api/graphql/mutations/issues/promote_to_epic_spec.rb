@@ -97,7 +97,7 @@ RSpec.describe 'Setting the epic of an issue', feature_category: :team_planning 
     context 'when user can create epic in new group' do
       # TODO: restore threshold after epic-work item sync
       # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
-      let(:queries_count_threshold) { 140 }
+      let(:queries_count_threshold) { 141 }
 
       before do
         new_epic_group.add_developer(current_user)

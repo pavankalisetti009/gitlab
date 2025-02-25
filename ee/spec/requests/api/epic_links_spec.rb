@@ -119,6 +119,8 @@ RSpec.describe API::EpicLinks, feature_category: :portfolio_management do
     context 'when subepics feature is enabled' do
       before do
         stub_licensed_features(epics: true, subepics: true)
+
+        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(102)
       end
 
       context 'and group is public and user is not a member' do

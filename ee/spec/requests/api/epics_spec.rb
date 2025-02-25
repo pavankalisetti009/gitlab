@@ -686,7 +686,7 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
       before do
         # TODO: remove threshold after epic-work item sync
         # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
-        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(140)
+        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(142)
         stub_licensed_features(epics: true, subepics: true)
         group.add_developer(user)
       end
@@ -913,7 +913,7 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
       it 'creates a new epic with labels param as array' do
         # TODO: remove threshold after epic-work item sync
         # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
-        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(160)
+        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(161)
         params[:labels] = ['label1', 'label2', 'foo, bar', '&,?']
 
         post api(url, user), params: params

@@ -227,7 +227,8 @@ RSpec.describe PersonalAccessToken, feature_category: :system_access do
   end
 
   describe '.find_by_token' do
-    let!(:token) { create(:personal_access_token) }
+    let(:user) { create(:user) }
+    let!(:token) { create(:personal_access_token, user: user) }
 
     it 'finds the token' do
       expect(described_class.find_by_token(token.token)).to eq(token)
@@ -238,7 +239,7 @@ RSpec.describe PersonalAccessToken, feature_category: :system_access do
         stub_licensed_features(disable_personal_access_tokens: true)
       end
 
-      context 'when personal access tokens are disabled' do
+      context 'when personal access tokens are disabled on instance level' do
         before do
           stub_application_setting(disable_personal_access_tokens: true)
         end
@@ -251,6 +252,31 @@ RSpec.describe PersonalAccessToken, feature_category: :system_access do
       context 'when personal access tokens are not disabled' do
         it 'finds the token' do
           expect(described_class.find_by_token(token.token)).to eq(token)
+        end
+      end
+
+      context 'when personal access tokens are disabled by enterprise group' do
+        let_it_be(:enterprise_group) do
+          create(:group, namespace_settings: create(:namespace_settings, disable_personal_access_tokens: true))
+        end
+
+        let_it_be(:enterprise_user_of_the_group) { create(:enterprise_user, enterprise_group: enterprise_group) }
+        let_it_be(:enterprise_user_of_another_group) { create(:enterprise_user) }
+
+        context 'for non-enterprise users of the group' do
+          let(:user) { enterprise_user_of_another_group }
+
+          it 'finds the token' do
+            expect(described_class.find_by_token(token.token)).to eq(token)
+          end
+        end
+
+        context 'for enterprise users of the group' do
+          let(:user) { enterprise_user_of_the_group }
+
+          it 'does not find the token' do
+            expect(described_class.find_by_token(token.token)).to be_nil
+          end
         end
       end
     end
