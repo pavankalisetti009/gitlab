@@ -27,7 +27,7 @@ module EE
             group).to_s,
           pipeline_configuration_enabled: group.licensed_feature_available?(:compliance_pipeline_configuration).to_s,
 
-          migrate_pipeline_to_policy_path: help_page_path('user/group/compliance_pipelines.md',
+          migrate_pipeline_to_policy_path: help_page_path('user/compliance/compliance_pipelines.md',
             anchor: 'pipeline-execution-policies-migration'),
           pipeline_execution_policy_path: new_group_security_policy_url(group, type: :pipeline_execution_policy),
           group_security_policies_path: group_security_policies_path(group),
