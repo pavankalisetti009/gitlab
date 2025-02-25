@@ -26,7 +26,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
   context 'basic permissions' do
     let(:additional_guest_permissions) { %i[read_limit_alert] }
     let(:additional_reporter_permissions) do
-      %i[read_software_license_policy admin_value_stream read_product_analytics]
+      %i[read_software_license_policy admin_value_stream read_product_analytics read_path_locks]
     end
 
     let(:additional_developer_permissions) do
@@ -34,7 +34,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         admin_vulnerability_feedback read_project_audit_events read_project_security_dashboard
         admin_vulnerability_issue_link admin_vulnerability_external_issue_link
         read_security_resource read_vulnerability_scanner admin_vulnerability read_vulnerability
-        create_vulnerability_export read_merge_train
+        create_vulnerability_export read_merge_train create_path_locks
       ]
     end
 

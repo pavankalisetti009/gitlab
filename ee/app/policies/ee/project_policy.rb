@@ -414,6 +414,10 @@ module EE
       rule { oncall_schedules_available & can?(:reporter_access) }.enable :read_incident_management_oncall_schedule
       rule { escalation_policies_available & can?(:reporter_access) }.enable :read_incident_management_escalation_policy
 
+      rule { can?(:read_code) }.policy do
+        enable :read_path_locks
+      end
+
       rule { can?(:developer_access) }.policy do
         enable :admin_issue_board
         enable :admin_feature_flags_issue_links
@@ -422,6 +426,10 @@ module EE
         enable :enable_continuous_vulnerability_scans
         enable :read_project_security_exclusions
         enable :read_security_settings
+      end
+
+      rule { can?(:push_code) }.policy do
+        enable :create_path_lock
       end
 
       rule { planner_or_reporter_access & iterations_available }.policy do

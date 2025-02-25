@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require 'spec_helper'
 
-RSpec.describe PathLockPolicy do
+RSpec.describe PathLockPolicy, feature_category: :source_code_management do
   let(:project) { create(:project) }
   let(:maintainer) { create(:user) }
   let(:developer) { create(:user) }
@@ -15,24 +15,41 @@ RSpec.describe PathLockPolicy do
     project.add_developer(developer)
   end
 
-  def permissions(user, path_lock)
-    described_class.new(user, path_lock)
+  subject(:policy) { described_class.new(user, path_lock) }
+
+  context 'with a non-member' do
+    let(:user) { non_member }
+
+    context 'and a path lock they created' do
+      let(:path_lock) { non_member_path_lock }
+
+      it { is_expected.to be_disallowed(:destroy_path_lock) }
+    end
   end
 
-  it 'disallows non-member from administrating path lock they created' do
-    expect(permissions(non_member, non_member_path_lock)).to be_disallowed(:admin_path_locks)
+  context 'with a developer' do
+    let(:user) { developer }
+
+    context 'and a path lock they created' do
+      let(:path_lock) { developer_path_lock }
+
+      it { is_expected.to be_allowed(:destroy_path_lock) }
+    end
+
+    context 'and path lock they did not create' do
+      let(:path_lock) { non_member_path_lock }
+
+      it { is_expected.to be_disallowed(:destroy_path_lock) }
+    end
   end
 
-  it 'disallows developer from administrating path lock they did not create' do
-    expect(permissions(developer, non_member_path_lock)).to be_disallowed(:admin_path_locks)
-  end
+  context 'with a maintainer' do
+    let(:user) { maintainer }
 
-  it 'allows developer to administrating path lock they created' do
-    expect(permissions(developer, developer_path_lock)).to be_allowed(:admin_path_locks)
-  end
+    context 'and a path lock they did not create' do
+      let(:path_lock) { non_member_path_lock }
 
-  it 'allows maintainer to administrating path lock they did not create' do
-    expect(permissions(maintainer, non_member_path_lock)).to be_allowed(:admin_path_locks)
-    expect(permissions(maintainer, developer_path_lock)).to be_allowed(:admin_path_locks)
+      it { is_expected.to be_allowed(:destroy_path_lock) }
+    end
   end
 end
