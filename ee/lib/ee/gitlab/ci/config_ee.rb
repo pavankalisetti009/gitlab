@@ -18,7 +18,7 @@ module EE
         end
 
         override :build_config
-        def build_config(config)
+        def build_config(config, inputs)
           super
             .then { |config| process_required_includes(config) }
             .then { |config| enforce_pipeline_execution_policy_stages(config) }
