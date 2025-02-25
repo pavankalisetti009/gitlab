@@ -1,6 +1,6 @@
-import { GlBadge, GlButton, GlLink, GlSkeletonLoader, GlLoadingIcon } from '@gitlab/ui';
-import { mount } from '@vue/test-utils';
+import { GlBadge, GlLink, GlSkeletonLoader, GlLoadingIcon } from '@gitlab/ui';
 import { nextTick } from 'vue';
+import { mountExtended } from 'helpers/vue_test_utils_helper';
 import DependenciesTable from 'ee/dependencies/components/dependencies_table.vue';
 import DependencyLicenseLinks from 'ee/dependencies/components/dependency_license_links.vue';
 import DependencyVulnerabilities from 'ee/dependencies/components/dependency_vulnerabilities.vue';
@@ -10,6 +10,7 @@ import DependencyLocation from 'ee/dependencies/components/dependency_location.v
 import { DEPENDENCIES_TABLE_I18N, NAMESPACE_ORGANIZATION } from 'ee/dependencies/constants';
 import stubChildren from 'helpers/stub_children';
 import waitForPromises from 'helpers/wait_for_promises';
+import DependencyPathDrawer from 'ee/dependencies/components/dependency_path_drawer.vue';
 import { makeDependency } from './utils';
 
 describe('DependenciesTable component', () => {
@@ -26,7 +27,7 @@ describe('DependenciesTable component', () => {
   };
 
   const createComponent = ({ propsData, provide } = {}) => {
-    wrapper = mount(DependenciesTable, {
+    wrapper = mountExtended(DependenciesTable, {
       propsData: { vulnerabilityInfo: {}, ...propsData },
       stubs: {
         ...stubChildren(DependenciesTable),
@@ -35,16 +36,24 @@ describe('DependenciesTable component', () => {
         DependencyProjectCount: false,
         DependencyLocationCount: false,
       },
-      provide: { ...basicAppProps, ...provide },
+      provide: {
+        glFeatures: {
+          dependencyPaths: true,
+        },
+        ...basicAppProps,
+        ...provide,
+      },
     });
   };
 
   const findTableRows = () => wrapper.findAll('tbody > tr');
-  const findRowToggleButtons = () => wrapper.findAllComponents(GlButton);
+  const findRowToggleButtons = () => wrapper.findAllByTestId('row-toggle-button');
   const findDependencyVulnerabilities = () => wrapper.findComponent(DependencyVulnerabilities);
   const findDependencyLocation = () => wrapper.findComponent(DependencyLocation);
   const findDependencyLocationCount = () => wrapper.findComponent(DependencyLocationCount);
   const findDependencyProjectCount = () => wrapper.findComponent(DependencyProjectCount);
+  const findDependencyPathButtons = () => wrapper.findAllByTestId('dependency-path-button');
+  const findDependencyPathDrawer = () => wrapper.findComponent(DependencyPathDrawer);
   const findDependencyLicenseLinks = (licenseCell) =>
     licenseCell.findComponent(DependencyLicenseLinks);
   const normalizeWhitespace = (string) => string.replace(/\s+/g, ' ');
@@ -426,6 +435,69 @@ describe('DependenciesTable component', () => {
       const packagerCell = rows.at(0).findAll('td').at(1);
 
       expect(packagerCell.text()).toBe(DEPENDENCIES_TABLE_I18N.unknown);
+    });
+  });
+
+  describe('dependency paths', () => {
+    const dependency = makeDependency();
+
+    beforeEach(() => {
+      createComponent({
+        propsData: {
+          dependencies: [dependency],
+          isLoading: false,
+        },
+      });
+    });
+
+    it('displays the correct text for the dependency paths button', () => {
+      expect(findDependencyPathButtons().at(0).text()).toBe('View dependency paths');
+    });
+
+    it('passes the correct prop to the DependencyPathDrawer component when the drawer is shown', async () => {
+      expect(findDependencyPathDrawer().props('showDrawer')).toBe(false);
+
+      findDependencyPathButtons().at(0).vm.$emit('click');
+
+      await nextTick();
+
+      expect(findDependencyPathDrawer().props()).toMatchObject({
+        showDrawer: true,
+        dependency,
+      });
+    });
+
+    it('passes the correct prop to the DependencyPathDrawer component when the drawer is closed', async () => {
+      // First click to open drawer
+      findDependencyPathButtons().at(0).vm.$emit('click');
+      await nextTick();
+
+      expect(findDependencyPathDrawer().props('showDrawer')).toBe(true);
+
+      // Next, click to close drawer
+      findDependencyPathButtons().at(0).vm.$emit('click');
+      await nextTick();
+
+      expect(findDependencyPathDrawer().props('showDrawer')).toBe(false);
+      expect(findDependencyPathDrawer().props('dependency')).toStrictEqual({});
+    });
+
+    describe('when the feature flag "dependencyPaths" is disabled', () => {
+      it('does not display the dependency paths button', () => {
+        createComponent({
+          propsData: {
+            dependencies: [dependency],
+            isLoading: false,
+          },
+          provide: {
+            glFeatures: {
+              dependencyPaths: false,
+            },
+          },
+        });
+
+        expect(findDependencyPathButtons().length).toBe(0);
+      });
     });
   });
 });

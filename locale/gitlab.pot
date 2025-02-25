@@ -19757,6 +19757,9 @@ msgstr ""
 msgid "Dependencies|Unknown path"
 msgstr ""
 
+msgid "Dependencies|View dependency paths"
+msgstr ""
+
 msgid "Dependencies|Vulnerabilities"
 msgstr ""
 
