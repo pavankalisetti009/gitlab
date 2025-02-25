@@ -23176,8 +23176,6 @@ CREATE TABLE vulnerabilities (
     state smallint DEFAULT 1 NOT NULL,
     severity smallint NOT NULL,
     severity_overridden boolean DEFAULT false,
-    confidence smallint,
-    confidence_overridden boolean DEFAULT false,
     resolved_by_id bigint,
     resolved_at timestamp with time zone,
     report_type smallint NOT NULL,
