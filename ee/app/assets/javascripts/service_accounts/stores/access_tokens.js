@@ -33,14 +33,18 @@ export const useAccessTokens = defineStore('accessTokens', {
       id: null,
       page: 1,
       perPage: null,
+      token: null, // New and rotated token
       tokens: [],
       total: 0,
+      urlRotate: '',
       urlShow: '',
     };
   },
   actions: {
-    async fetchTokens() {
-      this.alert?.dismiss();
+    async fetchTokens({ clearAlert } = { clearAlert: true }) {
+      if (clearAlert) {
+        this.alert?.dismiss();
+      }
       this.busy = true;
       try {
         const { data, perPage, total } = await fetchTokens(this.urlShow, this.id, this.params);
@@ -55,15 +59,41 @@ export const useAccessTokens = defineStore('accessTokens', {
         this.busy = false;
       }
     },
-    setup({ id, filters, urlShow }) {
-      this.id = id;
+    async revokeToken(tokenId) {
+      // TODO
+      return tokenId;
+    },
+    async rotateToken(tokenId, expiresAt) {
+      this.alert?.dismiss();
+      this.busy = true;
+      try {
+        const url = this.urlRotate.replace(':id', this.id);
+        const { data } = await axios.post(`${url}/${tokenId}/rotate`, { expires_at: expiresAt });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Reset pagination because after rotation the token may appear on a different page.
+        this.page = 1;
+        await this.fetchTokens({ clearAlert: false });
+        this.token = data.token;
+      } catch (error) {
+        const message =
+          error?.response?.data?.message ??
+          s__('AccessTokens|An error occurred while rotating the token.');
+        this.alert = createAlert({ message });
+      } finally {
+        this.busy = false;
+      }
+    },
+    setup({ filters, id, urlRotate, urlShow }) {
       this.filters = filters;
+      this.id = id;
+      this.urlRotate = urlRotate;
       this.urlShow = urlShow;
     },
     setFilters(filters) {
       this.filters = filters;
     },
     setPage(page) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       this.page = page;
     },
     setToken(token) {

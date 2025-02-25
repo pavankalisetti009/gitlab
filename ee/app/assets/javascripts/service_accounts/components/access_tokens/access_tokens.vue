@@ -21,7 +21,7 @@ export default {
     AccessToken,
     AccessTokenTable,
   },
-  inject: ['accessTokenShow'],
+  inject: ['accessTokenRotate', 'accessTokenShow'],
   props: {
     id: {
       type: Number,
@@ -33,7 +33,6 @@ export default {
   },
   created() {
     this.setup({
-      id: this.id,
       filters: [
         {
           type: 'state',
@@ -43,6 +42,8 @@ export default {
           },
         },
       ],
+      id: this.id,
+      urlRotate: this.accessTokenRotate,
       urlShow: this.accessTokenShow,
     });
     this.fetchTokens();

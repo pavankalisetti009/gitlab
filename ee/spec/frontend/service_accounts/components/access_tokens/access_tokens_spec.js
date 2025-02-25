@@ -15,13 +15,15 @@ describe('AccessTokens', () => {
   const pinia = createTestingPinia();
   const store = useAccessTokens();
 
-  const accessTokenShow = 'https://gitlab.example.com/api/v4/personal_access_tokens';
+  const accessTokenRotate = '/api/v4/groups/4/service_accounts/:id/personal_access_tokens/';
+  const accessTokenShow = '/api/v4/personal_access_tokens';
   const id = 235;
 
   const createComponent = () => {
     wrapper = shallowMountExtended(AccessTokens, {
       pinia,
       provide: {
+        accessTokenRotate,
         accessTokenShow,
       },
       propsData: {
@@ -40,7 +42,8 @@ describe('AccessTokens', () => {
     expect(store.setup).toHaveBeenCalledWith({
       filters: [{ type: 'state', value: { data: 'active', operator: '=' } }],
       id: 235,
-      urlShow: 'https://gitlab.example.com/api/v4/personal_access_tokens',
+      urlRotate: '/api/v4/groups/4/service_accounts/:id/personal_access_tokens/',
+      urlShow: '/api/v4/personal_access_tokens',
     });
     expect(store.fetchTokens).toHaveBeenCalledTimes(1);
   });

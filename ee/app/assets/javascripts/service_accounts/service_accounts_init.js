@@ -9,7 +9,13 @@ export default (el) => {
     return null;
   }
 
-  const { basePath, serviceAccountsPath, serviceAccountsDocsPath, accessTokenShow } = el.dataset;
+  const {
+    basePath,
+    serviceAccountsPath,
+    serviceAccountsDocsPath,
+    accessTokenRotate,
+    accessTokenShow,
+  } = el.dataset;
 
   const router = createRouter(basePath);
 
@@ -21,6 +27,7 @@ export default (el) => {
     provide: {
       serviceAccountsPath,
       serviceAccountsDocsPath,
+      accessTokenRotate,
       accessTokenShow,
     },
     render(createElement) {
