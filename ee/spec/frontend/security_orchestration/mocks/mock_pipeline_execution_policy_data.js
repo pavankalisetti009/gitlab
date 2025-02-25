@@ -1,5 +1,6 @@
 import { POLICY_SCOPE_MOCK } from 'ee_jest/security_orchestration/mocks/mock_apollo';
-import { fromYaml } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/utils';
+import { fromYaml } from 'ee/security_orchestration/components/utils';
+import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 
 /**
  * Naming convention for mocks:
@@ -86,6 +87,8 @@ type: pipeline_execution_policy
 
 export const mockWithoutRefPipelineExecutionObject = fromYaml({
   manifest: mockWithoutRefPipelineExecutionManifest,
+  type: POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter,
+  addIds: false,
 });
 
 export const invalidStrategyManifest = `name: Ci config file

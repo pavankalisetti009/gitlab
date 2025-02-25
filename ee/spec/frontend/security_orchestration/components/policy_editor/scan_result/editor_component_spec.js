@@ -29,7 +29,6 @@ import {
   REQUIRE_APPROVAL_TYPE,
   DEFAULT_SCAN_RESULT_POLICY,
   DEFAULT_SCAN_RESULT_POLICY_WITH_SCOPE_WITH_GROUP_SETTINGS,
-  fromYaml,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
 import EditorComponent from 'ee/security_orchestration/components/policy_editor/scan_result/editor_component.vue';
 import {
@@ -70,6 +69,8 @@ import { SECURITY_POLICY_ACTIONS } from 'ee/security_orchestration/components/po
 import ActionSection from 'ee/security_orchestration/components/policy_editor/scan_result/action/action_section.vue';
 import RuleSection from 'ee/security_orchestration/components/policy_editor/scan_result/rule/rule_section.vue';
 import { mockLinkedSppItemsResponse } from 'ee_jest/security_orchestration/mocks/mock_apollo';
+import { fromYaml } from 'ee/security_orchestration/components/utils';
+import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 import { goToRuleMode } from '../policy_editor_helper';
 
 jest.mock('lodash/uniqueId');
@@ -621,7 +622,7 @@ describe('EditorComponent', () => {
   describe('modifying a policy', () => {
     it.each`
       status                           | action                            | event              | factoryFn                    | yamlEditorValue
-      ${'creating a new policy'}       | ${undefined}                      | ${'save-policy'}   | ${factory}                   | ${policyBodyToYaml(fromYaml({ manifest: DEFAULT_SCAN_RESULT_POLICY }))}
+      ${'creating a new policy'}       | ${undefined}                      | ${'save-policy'}   | ${factory}                   | ${policyBodyToYaml(fromYaml({ manifest: DEFAULT_SCAN_RESULT_POLICY, type: POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter }))}
       ${'updating an existing policy'} | ${undefined}                      | ${'save-policy'}   | ${factoryWithExistingPolicy} | ${mockDefaultBranchesScanResultManifestNewFormat}
       ${'deleting an existing policy'} | ${SECURITY_POLICY_ACTIONS.REMOVE} | ${'remove-policy'} | ${factoryWithExistingPolicy} | ${mockDefaultBranchesScanResultManifestNewFormat}
     `('emits "save" when $status', async ({ action, event, factoryFn, yamlEditorValue }) => {

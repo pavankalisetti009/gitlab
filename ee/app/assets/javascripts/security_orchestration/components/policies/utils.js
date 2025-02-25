@@ -3,9 +3,9 @@ import {
   POLICY_SOURCE_OPTIONS,
   POLICY_TYPE_FILTER_OPTIONS,
 } from 'ee/security_orchestration/components/policies/constants';
-import { fromYaml } from 'ee/security_orchestration/components/policy_editor/scan_execution/lib';
 import { sprintf } from '~/locale';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
+import { fromYaml } from 'ee/security_orchestration/components/utils';
 
 /**
  * @param {Object} allowedValues
@@ -69,7 +69,10 @@ export const extractSourceParameter = (source) =>
  */
 export const exceedsActionLimit = ({ policyType, yaml, maxScanExecutionPolicyActions } = {}) => {
   if (policyType === POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.text) {
-    const policy = fromYaml({ manifest: yaml });
+    const policy = fromYaml({
+      manifest: yaml,
+      type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
+    });
 
     const { actions = [] } = policy;
     return actions.length > maxScanExecutionPolicyActions;

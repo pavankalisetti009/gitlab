@@ -1,4 +1,4 @@
-import { isEmpty } from 'lodash';
+import { isEmpty, uniqueId } from 'lodash';
 import { safeLoad } from 'js-yaml';
 import {
   EXCLUDING,
@@ -164,52 +164,6 @@ export const isGroup = (namespaceType) => namespaceType === NAMESPACE_TYPES.GROU
 export const isScanningReport = (scanner) =>
   [REPORT_TYPE_CONTAINER_SCANNING, REPORT_TYPE_DEPENDENCY_SCANNING].includes(scanner);
 
-/**
- * Parses the policy from yaml to an object
- * @param {Object} manifest policy in yaml form
- * @returns
- */
-export const fromYaml = ({ manifest }) => {
-  try {
-    return safeLoad(manifest, { json: true });
-  } catch {
-    /**
-     * Catch parsing error of safeLoad
-     */
-    return { error: true, key: 'yaml-parsing' };
-  }
-};
-
-/**
- * Check if the policy is a scan execution policy and has a scheduled rule
- * @param {Object} policy
- * @returns {Boolean}
- */
-export const hasScheduledRule = (policy) => {
-  let policyObject = policy;
-
-  // Handle policy list policies
-  if (
-    policyObject.yaml &&
-    // eslint-disable-next-line no-underscore-dangle
-    policyObject.__typename === POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.typeName
-  ) {
-    policyObject = fromYaml({ manifest: policyObject.yaml });
-  }
-
-  return policyObject?.rules?.some(({ type }) => type === SCAN_EXECUTION_RULES_SCHEDULE_KEY);
-};
-
-export const checkForPerformanceRisk = ({ policy, namespaceType, projectsCount }) => {
-  const PROJECTS_COUNT_PERFORMANCE_LIMIT = 1000;
-
-  return (
-    hasScheduledRule(policy) &&
-    isGroup(namespaceType) &&
-    projectsCount > PROJECTS_COUNT_PERFORMANCE_LIMIT
-  );
-};
-
 const isValidPolicyType = (type) => {
   const validTypes = Object.values(POLICY_TYPE_COMPONENT_OPTIONS).map(
     ({ urlParameter }) => urlParameter,
@@ -259,4 +213,78 @@ export const extractPolicyContent = ({ manifest, type, withType = false }) => {
   } catch {
     return defaultPayload;
   }
+};
+
+export const addIdsToPolicy = (policy) => {
+  const updatedPolicy = { ...policy };
+
+  if (updatedPolicy.actions) {
+    updatedPolicy.actions = policy.actions?.map((action) => ({
+      ...action,
+      id: uniqueId('action_'),
+    }));
+  }
+
+  if (updatedPolicy.rules) {
+    updatedPolicy.rules = policy.rules?.map((action) => ({ ...action, id: uniqueId('rule_') }));
+  }
+
+  return updatedPolicy;
+};
+
+/**
+ * Construct a policy object expected by the policy editor from a yaml manifest.
+ * @param {Object} options
+ * @param {String}  options.manifest a security policy in yaml form
+ * @returns {Object} security policy as JS object
+ */
+export const fromYaml = ({
+  manifest,
+  type = POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter,
+  addIds = true,
+}) => {
+  try {
+    const payload = extractPolicyContent({
+      manifest,
+      type,
+      withType: true,
+    });
+
+    return addIds ? addIdsToPolicy(payload) : payload;
+  } catch {
+    /**
+     * Catch parsing error of safeLoad
+     */
+    return {};
+  }
+};
+
+/**
+ * Check if the policy is a scan execution policy and has a scheduled rule
+ * @param {Object} policy
+ * @returns {Boolean}
+ */
+export const hasScheduledRule = (policy) => {
+  let policyObject = policy;
+
+  // Handle policy list policies
+  if (
+    policyObject.yaml &&
+    // eslint-disable-next-line no-underscore-dangle
+    policyObject.__typename === POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.typeName
+  ) {
+    policyObject = fromYaml({ manifest: policyObject.yaml });
+  }
+
+  return policyObject?.rules?.some(({ type }) => type === SCAN_EXECUTION_RULES_SCHEDULE_KEY);
+};
+
+export const checkForPerformanceRisk = ({ policy, namespaceType, projectsCount }) => {
+  const PROJECTS_COUNT_PERFORMANCE_LIMIT = 1000;
+
+  return (
+    hasScheduledRule(policy) &&
+    isGroup(namespaceType) &&
+    projectsCount > PROJECTS_COUNT_PERFORMANCE_LIMIT
+  );
 };
