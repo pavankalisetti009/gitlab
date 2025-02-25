@@ -65,9 +65,9 @@ RSpec.describe Elastic::ProjectsSearch, feature_category: :global_search do
         expect(::Elastic::ProcessBookkeepingService).to receive(:track!).once.and_return(true)
 
         if commit_indexing_expected
-          expect(::ElasticCommitIndexerWorker).to receive(:perform_async).and_return(true)
+          expect(::Search::Elastic::CommitIndexerWorker).to receive(:perform_async).and_return(true)
         else
-          expect(::ElasticCommitIndexerWorker).not_to receive(:perform_async)
+          expect(::Search::Elastic::CommitIndexerWorker).not_to receive(:perform_async)
         end
 
         if wiki_indexing_expected

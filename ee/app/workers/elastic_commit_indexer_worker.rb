@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# This class is deprecated in favor of Search::Elastic::CommitIndexerWorker
+# https://gitlab.com/gitlab-org/gitlab/-/issues/518705
 class ElasticCommitIndexerWorker
   include ApplicationWorker
   include Search::Worker

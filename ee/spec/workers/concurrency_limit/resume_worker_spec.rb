@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe ConcurrencyLimit::ResumeWorker, feature_category: :scalability do
   subject(:worker) { described_class.new }
 
-  let(:worker_with_concurrency_limit) { ElasticCommitIndexerWorker }
+  let(:worker_with_concurrency_limit) { Search::Elastic::CommitIndexerWorker }
   let(:concurrent_workers) { 5 }
 
   describe '#perform' do
@@ -89,7 +89,7 @@ RSpec.describe ConcurrencyLimit::ResumeWorker, feature_category: :scalability do
     end
 
     context 'when worker_name is present' do
-      subject(:perform) { worker.perform('ElasticCommitIndexerWorker') }
+      subject(:perform) { worker.perform('Search::Elastic::CommitIndexerWorker') }
 
       context 'when there are no jobs in the queue' do
         before do

@@ -11,8 +11,8 @@ RSpec.describe Search::ElasticDefaultBranchChangedWorker, feature_category: :glo
 
   before do
     stub_ee_application_setting(elasticsearch_indexing: true)
-    allow(ElasticCommitIndexerWorker).to receive(:perform_async).and_return(true)
-    allow(ElasticWikiIndexerWorker).to receive(:perform_async).and_return(true)
+    allow(Search::Elastic::CommitIndexerWorker).to receive(:perform_async).and_return(true)
+    allow(Search::Elastic::CommitIndexerWorker).to receive(:perform_async).and_return(true)
   end
 
   it_behaves_like 'subscribes to event' do
@@ -20,8 +20,8 @@ RSpec.describe Search::ElasticDefaultBranchChangedWorker, feature_category: :glo
   end
 
   context 'when passed a project' do
-    it 'schedules ElasticCommitIndexerWorker' do
-      expect(ElasticCommitIndexerWorker).to receive(:perform_async).with(project.id)
+    it 'schedules Search::Elastic::CommitIndexerWorker' do
+      expect(Search::Elastic::CommitIndexerWorker).to receive(:perform_async).with(project.id)
 
       consume_event(subscriber: described_class, event: default_branch_changed_event)
     end
@@ -29,8 +29,8 @@ RSpec.describe Search::ElasticDefaultBranchChangedWorker, feature_category: :glo
     context 'when project does not exist' do
       let(:data) { { container_id: non_existing_record_id, container_type: container.class.name } }
 
-      it 'does not schedule ElasticCommitIndexerWorker and does not raise an exception' do
-        expect(ElasticCommitIndexerWorker).not_to receive(:perform_async)
+      it 'does not schedule Search::Elastic::CommitIndexerWorker and does not raise an exception' do
+        expect(Search::Elastic::CommitIndexerWorker).not_to receive(:perform_async)
 
         expect { consume_event(subscriber: described_class, event: default_branch_changed_event) }
           .not_to raise_exception
@@ -42,8 +42,8 @@ RSpec.describe Search::ElasticDefaultBranchChangedWorker, feature_category: :glo
         stub_ee_application_setting(elasticsearch_limit_indexing: true)
       end
 
-      it 'does not schedule ElasticCommitIndexerWorker' do
-        expect(ElasticCommitIndexerWorker).not_to receive(:perform_async)
+      it 'does not schedule Search::Elastic::CommitIndexerWorker' do
+        expect(Search::Elastic::CommitIndexerWorker).not_to receive(:perform_async)
 
         consume_event(subscriber: described_class, event: default_branch_changed_event)
       end
@@ -54,8 +54,8 @@ RSpec.describe Search::ElasticDefaultBranchChangedWorker, feature_category: :glo
         stub_ee_application_setting(elasticsearch_indexing: false)
       end
 
-      it 'does not schedule ElasticCommitIndexerWorker' do
-        expect(ElasticCommitIndexerWorker).not_to receive(:perform_async)
+      it 'does not schedule Search::Elastic::CommitIndexerWorker' do
+        expect(Search::Elastic::CommitIndexerWorker).not_to receive(:perform_async)
 
         consume_event(subscriber: described_class, event: default_branch_changed_event)
       end

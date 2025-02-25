@@ -36,10 +36,9 @@ RSpec.describe ::Search::IndexRepairService, feature_category: :global_search do
     it 'queues the blobs for indexing and logs a warning', :aggregate_failures, :freeze_time do
       expect(logger).to receive(:warn).with(a_hash_including(expected_hash)).once
 
-      expect(ElasticCommitIndexerWorker).to receive(:perform_in).with(
+      expect(Search::Elastic::CommitIndexerWorker).to receive(:perform_in).with(
         within(described_class::DELAY_INTERVAL).of(described_class::DELAY_INTERVAL),
         project.id,
-        false,
         { 'force' => true }
       )
 
@@ -75,7 +74,7 @@ RSpec.describe ::Search::IndexRepairService, feature_category: :global_search do
         expect(logger).to receive(:warn).with(a_hash_including(expected_hash)).once
       end
 
-      expect(ElasticCommitIndexerWorker).not_to receive(:perform_in)
+      expect(Search::Elastic::CommitIndexerWorker).not_to receive(:perform_in)
 
       service.execute
     end
