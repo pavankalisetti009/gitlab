@@ -69,7 +69,7 @@ RSpec.describe 'Groups::Security::ComplianceDashboard::Frameworks', feature_cate
 
         context 'when export is successful' do
           let(:export_service) { instance_double(ComplianceManagement::Frameworks::JsonExportService) }
-          let(:export_payload) { { data: 'exported_framework_data' } }
+          let(:export_payload) { { data: 'exported_framework_data' }.to_json }
 
           before do
             allow(ComplianceManagement::Frameworks::JsonExportService)
@@ -83,7 +83,7 @@ RSpec.describe 'Groups::Security::ComplianceDashboard::Frameworks', feature_cate
             make_request
 
             expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response).to eq(export_payload.as_json)
+            expect(json_response).to eq(::Gitlab::Json.parse(export_payload))
           end
 
           it 'sets the correct filename in Content-Disposition header' do

@@ -18,7 +18,7 @@ module Groups
             format.json do
               if export_service_response.success?
                 send_data(
-                  export_service_response.payload.to_json,
+                  export_service_response.payload,
                   filename: "#{framework.filename}.json",
                   type: 'application/json',
                   disposition: 'attachment'
