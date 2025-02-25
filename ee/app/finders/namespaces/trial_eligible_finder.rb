@@ -12,12 +12,10 @@ module Namespaces
 
     def execute
       if params[:use_caching]
-        raise ArgumentError, 'Trial types must be provided' unless params[:trials]
+        namespaces = scope_by_plans.in_specific_plans(eligible_plans)
+        return Namespace.none if namespaces.empty?
 
-        namespaces = scope_by_plans
-        @namespace_ids = namespaces.map(&:id)
-        return Namespace.none if @namespace_ids.empty?
-
+        build_namespaces_trial_type(namespaces)
         namespaces.id_in(find_eligible_namespace_ids).ordered_by_name
       else
         filter_by_duo_enterprise_eligibility.ordered_by_name
@@ -26,7 +24,23 @@ module Namespaces
 
     private
 
-    attr_reader :params, :namespace_ids
+    attr_reader :params, :namespaces_trial_type
+
+    def build_namespaces_trial_type(namespaces)
+      @namespaces_trial_type = namespaces.to_h { |namespace| [namespace.id, namespace_trial_type(namespace)] }
+    end
+
+    def namespace_ids
+      namespaces_trial_type.keys
+    end
+
+    def namespace_trial_type(namespace)
+      if namespace.premium_plan?
+        GitlabSubscriptions::Trials::PREMIUM_TRIAL_TYPE
+      else
+        GitlabSubscriptions::Trials::FREE_TRIAL_TYPE
+      end
+    end
 
     def scope_by_plans(plans = nil)
       if params[:user] && params[:namespace]
@@ -83,8 +97,11 @@ module Namespaces
     end
 
     def base_qualifications
-      scope_by_plans([no_subscription_plan_name, *::Plan::PLANS_ELIGIBLE_FOR_TRIAL])
-        .not_duo_enterprise_or_no_add_on.no_active_duo_pro_trial.select(:id)
+      scope_by_plans(eligible_plans).not_duo_enterprise_or_no_add_on.no_active_duo_pro_trial.select(:id)
+    end
+
+    def eligible_plans
+      [no_subscription_plan_name, *::Plan::PLANS_ELIGIBLE_FOR_TRIAL]
     end
 
     def find_eligible_namespace_ids
@@ -113,7 +130,9 @@ module Namespaces
     end
 
     def filter_namespace_ids(id_trials_hash)
-      id_trials_hash.select { |_, trials| (trials & params[:trials]).sort == params[:trials].sort }.keys
+      id_trials_hash.filter_map do |id, eligible_trial_types|
+        id if namespaces_trial_type[id.to_i].in?(eligible_trial_types)
+      end
     end
 
     def cached_eligible_namespace_ids

@@ -126,7 +126,7 @@ module GitlabSubscriptions
     end
 
     def eligible_namespaces
-      @eligible_namespaces = Namespaces::TrialEligibleFinder.new(user: current_user).execute
+      @eligible_namespaces = GitlabSubscriptions::Trials.eligible_namespaces_for_user(current_user)
     end
 
     def discover_group_security_flow?

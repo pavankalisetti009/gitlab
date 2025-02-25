@@ -2,6 +2,10 @@
 
 module GitlabSubscriptions
   module Trials
+    FREE_TRIAL_TYPE = 'ultimate_with_gitlab_duo_enterprise'
+    PREMIUM_TRIAL_TYPE = 'ultimate_on_premium_with_gitlab_duo_enterprise'
+    TRIAL_TYPES = [FREE_TRIAL_TYPE, PREMIUM_TRIAL_TYPE].freeze
+
     def self.single_eligible_namespace?(eligible_namespaces)
       return false unless eligible_namespaces.any? # executes query and now relation is loaded
 
@@ -31,8 +35,12 @@ module GitlabSubscriptions
       namespace.actual_plan_name.in?(::Plan::ULTIMATE_TRIAL_PLANS)
     end
 
+    def self.eligible_namespaces_for_user(user)
+      Namespaces::TrialEligibleFinder.new(user:).execute
+    end
+
     def self.namespace_add_on_eligible?(namespace)
-      Namespaces::TrialEligibleFinder.new(namespace: namespace).execute.any?
+      Namespaces::TrialEligibleFinder.new(namespace:).execute.any?
     end
 
     def self.namespace_with_mid_trial_premium?(namespace, trial_starts_on)
