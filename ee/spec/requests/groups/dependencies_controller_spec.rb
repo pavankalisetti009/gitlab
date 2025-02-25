@@ -456,7 +456,7 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
               end
 
               context 'when filtered by unknown licenses' do
-                let_it_be(:sbom_occurrence_unknown) { create(:sbom_occurrence, project: project) }
+                let_it_be(:sbom_occurrence_unknown) { create(:sbom_occurrence, :unknown, project: project) }
 
                 let(:params) do
                   {
@@ -473,7 +473,7 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
               end
 
               context 'when filtered by multiple licenses' do
-                let_it_be(:sbom_occurrence_unknown) { create(:sbom_occurrence, project: project) }
+                let_it_be(:sbom_occurrence_unknown) { create(:sbom_occurrence, :unknown, project: project) }
 
                 let(:params) do
                   {

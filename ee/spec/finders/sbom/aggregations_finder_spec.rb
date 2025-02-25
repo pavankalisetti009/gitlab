@@ -19,7 +19,7 @@ RSpec.describe Sbom::AggregationsFinder, feature_category: :dependency_managemen
 
   let_it_be(:target_occurrences) do
     target_projects.map do |project|
-      create(:sbom_occurrence, :with_vulnerabilities, project: project)
+      create(:sbom_occurrence, :unknown, :with_vulnerabilities, project: project)
     end
   end
 
@@ -37,7 +37,7 @@ RSpec.describe Sbom::AggregationsFinder, feature_category: :dependency_managemen
         an_object_having_attributes(
           component_id: occurrence.component_id,
           component_version_id: occurrence.component_version_id,
-          licenses: [],
+          licenses: occurrence.licenses,
           occurrence_count: 1,
           project_count: 1,
           vulnerability_count: 2
@@ -76,6 +76,13 @@ RSpec.describe Sbom::AggregationsFinder, feature_category: :dependency_managemen
       let_it_be(:occurrence_mpl) { create(:sbom_occurrence, :mpl_2, :nuget, project: target_projects.first) }
       let_it_be(:occurrence_apache_2) { create(:sbom_occurrence, :apache_2, :yarn, project: target_projects.first) }
 
+      let_it_be(:occurrence_unknown_1) { target_occurrences.first }
+      let_it_be(:occurrence_unknown_2) { target_occurrences.last }
+      let_it_be(:unknown_license) { Gitlab::LicenseScanning::PackageLicenses::UNKNOWN_LICENSE.stringify_keys }
+      let_it_be(:unknown_license_spdx_identifier) do
+        Gitlab::LicenseScanning::PackageLicenses::UNKNOWN_LICENSE[:spdx_identifier]
+      end
+
       it 'returns the first license' do
         expect(execute).to match_array([
           an_object_having_attributes(
@@ -99,8 +106,18 @@ RSpec.describe Sbom::AggregationsFinder, feature_category: :dependency_managemen
                          "name" => "Apache 2.0 License", "spdx_identifier" => "Apache-2.0" }],
             primary_license_spdx_identifier: "Apache-2.0"
           ),
-          an_object_having_attributes(licenses: []),
-          an_object_having_attributes(licenses: [])
+          an_object_having_attributes(
+            component_id: occurrence_unknown_1.component_id,
+            component_version_id: occurrence_unknown_1.component_version_id,
+            licenses: [unknown_license],
+            primary_license_spdx_identifier: unknown_license_spdx_identifier
+          ),
+          an_object_having_attributes(
+            component_id: occurrence_unknown_2.component_id,
+            component_version_id: occurrence_unknown_2.component_version_id,
+            licenses: [unknown_license],
+            primary_license_spdx_identifier: unknown_license_spdx_identifier
+          )
         ])
       end
     end
