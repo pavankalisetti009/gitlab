@@ -91,6 +91,12 @@ FactoryBot.define do
       end
     end
 
+    trait :unknown do
+      after(:build) do |occurrence|
+        occurrence.licenses.push(Gitlab::LicenseScanning::PackageLicenses::UNKNOWN_LICENSE.stringify_keys)
+      end
+    end
+
     trait :with_ancestors do
       ancestors { [{ name: 'libc', version: '1.2.3' }] }
     end

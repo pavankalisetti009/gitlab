@@ -61,32 +61,26 @@ module Sbom
       ))
     end
 
-    scope :by_licenses, ->(licenses, depth: 1) do
-      unknown, ids = licenses.partition { |id| id.casecmp?("unknown") }
+    scope :by_licenses, ->(spdx_identifiers, depth: 1, empty_licenses_as_unknown: true) do
+      return none if depth < 0 || spdx_identifiers.blank?
 
-      id_filters = (0..depth).map do |index|
-        "(licenses#>'{#{index},spdx_identifier}' ?| array[:licenses])"
+      conditions = (0..depth).map do |depth_level|
+        "licenses#>>'{#{depth_level},spdx_identifier}' = ANY(ARRAY[:spdx_identifiers])"
       end
 
-      query_parts = []
-      query_parts.append(*id_filters) if ids.present?
-      query_parts.append("licenses = '[]'") if unknown.present?
+      if empty_licenses_as_unknown
+        unknown_license_spdx_identifier = Gitlab::LicenseScanning::PackageLicenses::UNKNOWN_LICENSE[:spdx_identifier]
 
-      return none unless query_parts.present?
+        if spdx_identifiers.reject! { |identifier| identifier == unknown_license_spdx_identifier }
+          conditions << "jsonb_array_length(licenses) = 0"
+        end
+      end
 
-      where(query_parts.join(' OR '), licenses: Array(ids))
+      where(Arel.sql(conditions.join(" OR ")), spdx_identifiers: Array(spdx_identifiers).uniq)
     end
 
-    scope :by_primary_license, ->(license_ids) do
-      return none if license_ids.blank?
-
-      license_ids.map do |id|
-        if id.casecmp('unknown') == 0
-          where("licenses = '[]'")
-        else
-          where("(licenses -> 0 ->> 'spdx_identifier')::text = ?", id)
-        end
-      end.reduce(:or)
+    scope :by_primary_license, ->(spdx_identifiers, empty_licenses_as_unknown: true) do
+      by_licenses(spdx_identifiers, depth: 0, empty_licenses_as_unknown: empty_licenses_as_unknown)
     end
 
     scope :unarchived, -> { where(archived: false) }
