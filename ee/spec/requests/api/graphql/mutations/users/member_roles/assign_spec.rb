@@ -142,7 +142,7 @@ RSpec.describe 'Assigning a user to a member role', feature_category: :permissio
               response_object = mutation_response['userMemberRole']
 
               expect(response).to have_gitlab_http_status(:success)
-              expect(mutation_response['errors']).to include('No member role exists for the user.')
+              expect(mutation_response['errors']).to be_empty
 
               expect(response_object).to be_nil
             end

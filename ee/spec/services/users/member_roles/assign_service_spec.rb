@@ -40,12 +40,34 @@ RSpec.describe Users::MemberRoles::AssignService, feature_category: :permissions
 
     context 'when custom_admin_roles FF is enabled' do
       context 'when member_role param is present' do
-        it 'creates a new user member role relation' do
-          expect { assign_member_role }.to change { Users::UserMemberRole.count }.by(1)
+        context 'when no admin member role is assigned to the user' do
+          it 'creates a new user member role relation' do
+            expect { assign_member_role }.to change { Users::UserMemberRole.count }.by(1)
+          end
+
+          it 'returns success' do
+            expect(assign_member_role).to be_success
+          end
         end
 
-        it 'returns success' do
-          expect(assign_member_role).to be_success
+        context 'when the user has another admin member role assigned' do
+          let_it_be(:user_member_role) { create(:user_member_role, member_role: member_role, user: user) }
+          let_it_be(:new_member_role) { create(:member_role, :admin) }
+
+          let(:member_role_param) { new_member_role }
+
+          it 'does not create a new user member role relation' do
+            expect { assign_member_role }.not_to change { Users::UserMemberRole.count }
+          end
+
+          it 'updates the member role assigned to the user' do
+            expect { assign_member_role }.to change { user_member_role.reload.member_role }
+              .from(member_role).to(new_member_role)
+          end
+
+          it 'returns success' do
+            expect(assign_member_role).to be_success
+          end
         end
       end
 
@@ -75,8 +97,8 @@ RSpec.describe Users::MemberRoles::AssignService, feature_category: :permissions
             expect(other_user_member_role.reload).not_to be_nil
           end
 
-          it 'returns error' do
-            expect(assign_member_role).to be_error
+          it 'returns success' do
+            expect(assign_member_role).to be_success
           end
         end
       end
