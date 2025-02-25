@@ -3,6 +3,7 @@ import StatusToken from './status_token.vue';
 import ActivityToken from './activity_token.vue';
 import SeverityToken from './severity_token.vue';
 import ToolToken from './tool_token.vue';
+import ReportTypeToken from './report_type_token.vue';
 import ImageToken from './image_token.vue';
 import ClusterToken from './cluster_token.vue';
 import ProjectToken from './project_token.vue';
@@ -42,6 +43,15 @@ export const TOOL_VENDOR_TOKEN_DEFINITION = {
   multiSelect: true,
   unique: true,
   token: ToolToken,
+  operators: OPERATORS_OR,
+};
+
+export const REPORT_TYPE_VENDOR_TOKEN_DEFINITION = {
+  type: 'reportType',
+  title: ReportTypeToken.i18n.label,
+  multiSelect: true,
+  unique: true,
+  token: ReportTypeToken,
   operators: OPERATORS_OR,
 };
 
