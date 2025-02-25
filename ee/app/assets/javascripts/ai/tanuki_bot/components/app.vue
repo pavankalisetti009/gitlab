@@ -283,7 +283,7 @@ export default {
                 aiMessageId: id,
                 trackingEvent: {
                   category: TANUKI_BOT_TRACKING_EVENT_NAME,
-                  action: 'click_button',
+                  action: 'duo_chat',
                   label: 'response_feedback',
                   property: feedbackChoices.join(','),
                   extra: {

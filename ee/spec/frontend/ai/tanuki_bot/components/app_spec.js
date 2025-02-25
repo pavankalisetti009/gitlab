@@ -462,7 +462,7 @@ describeSkipVue3(skipReason, () => {
             aiMessageId: feedbackData.message.id,
             trackingEvent: {
               category: TANUKI_BOT_TRACKING_EVENT_NAME,
-              action: 'click_button',
+              action: 'duo_chat',
               label: 'response_feedback',
               property: 'useful,not_relevant',
               extra: {
