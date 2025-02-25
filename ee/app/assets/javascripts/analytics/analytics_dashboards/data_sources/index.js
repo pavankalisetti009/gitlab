@@ -9,8 +9,7 @@
  * @param {string} options.namespace - // the namespace full path
  * @param {boolean} options.isProject - If `true` this dashboard is project-level, otherwise group-level
  * @param {Object} options.query - The query object for fetching data
- * @param {Object} [options.queryOverrides={}] - Optional overrides for the base query.  Refert to `QueryOverrides` in `ee/app/validators/json_schemas/analytics_visualization.json`
- *
+ * @param {Object} [options.queryOverrides={}] - Optional overrides for the base query.  Refer to `QueryOverrides` in `ee/app/validators/json_schemas/analytics_visualization.json`. This can also be changed by the visualisation at runtime.
  * @param {string} options.visualizationType - The type of visualization to render (line chart, table, etc.). Refer to `AnalyticsVisualization.type` in `ee/app/validators/json_schemas/analytics_visualization.json`
  * @param {Object} options.visualizationOptions - Additional options for customizing the visualization Refer to `Options` in `ee/app/validators/json_schemas/analytics_visualization.json`
  * @param {Object} [options.filters={}] - Optional filters to apply to the query (date range, anon users, etc.). Refer to `DashboardFilters` in `ee/app/validators/json_schemas/analytics_dashboard.json`

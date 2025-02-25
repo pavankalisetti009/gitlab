@@ -117,6 +117,7 @@ export default {
       ],
       currentRequestNumber: 0,
       visualizationOptionOverrides: {},
+      visualizationQueryOverrides: {},
     };
   },
   computed: {
@@ -162,13 +163,19 @@ export default {
         ...this.visualizationOptionOverrides,
       };
     },
+    aggregatedQueryOverrides() {
+      return {
+        ...this.queryOverrides,
+        ...this.visualizationQueryOverrides,
+      };
+    },
   },
   watch: {
     visualization: {
       handler: 'onVisualizationChange',
       immediate: true,
     },
-    queryOverrides: 'fetchData',
+    aggregatedQueryOverrides: 'fetchData',
     filters: 'fetchData',
   },
   methods: {
@@ -179,7 +186,7 @@ export default {
     isValidAlertMessage(message) {
       return isString(message) || (isString(message.link) && isString(message.description));
     },
-    async onVisualizationChange() {
+    onVisualizationChange() {
       if (this.hasValidationErrors) {
         this.setAlerts({
           errors: this.validationErrors,
@@ -194,8 +201,11 @@ export default {
 
       this.fetchData();
     },
+    onUpdateQuery(queryOverrides) {
+      this.visualizationQueryOverrides = queryOverrides;
+    },
     async fetchData() {
-      const { queryOverrides, filters } = this;
+      const { aggregatedQueryOverrides, filters } = this;
       const { type: dataType, query } = this.visualization.data;
       this.loading = true;
       this.clearAlerts();
@@ -211,7 +221,7 @@ export default {
           namespace: this.namespace,
           isProject: this.isProject,
           query,
-          queryOverrides,
+          queryOverrides: aggregatedQueryOverrides,
           visualizationType: this.visualization.type,
           visualizationOptions: this.visualization.options,
           setAlerts: this.setAlerts,
@@ -320,6 +330,7 @@ export default {
         :options="visualizationOptions"
         @set-alerts="setAlerts"
         @showTooltip="handleShowTooltip"
+        @updateQuery="onUpdateQuery"
       />
     </template>
 
