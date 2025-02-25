@@ -10,6 +10,9 @@
     },
     "concurrency": {
       "type": "integer"
+    },
+    "version": {
+      "type": "string"
     }
   },
   "additionalProperties": true
