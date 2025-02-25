@@ -1,4 +1,4 @@
-export { createPolicyObject, fromYaml } from './from_yaml';
+export { createPolicyObject } from './from_yaml';
 export * from './to_yaml';
 export * from './rules';
 export * from './cron';

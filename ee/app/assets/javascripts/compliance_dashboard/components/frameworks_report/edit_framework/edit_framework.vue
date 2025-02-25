@@ -18,8 +18,9 @@ import {
   getSubmissionParams,
   initialiseFormData,
 } from 'ee/groups/settings/compliance_frameworks/utils';
-import { fromYaml } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/utils';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { fromYaml } from 'ee/security_orchestration/components/utils';
+import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 import { ROUTE_NEW_FRAMEWORK_SUCCESS } from '../../../constants';
 import { convertFrameworkIdToGraphQl } from '../../../utils';
 import createComplianceFrameworkMutation from '../../../graphql/mutations/create_compliance_framework.mutation.graphql';
@@ -94,7 +95,11 @@ export default {
             data.namespace.securityPolicyProject?.repository?.blobs?.nodes?.[0]?.rawBlob;
           if (policyBlob) {
             const id = getIdFromGraphQLId(this.graphqlId);
-            const policy = fromYaml({ manifest: policyBlob });
+            const policy = fromYaml({
+              manifest: policyBlob,
+              type: POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter,
+              addIds: false,
+            });
 
             this.hasMigratedPipeline = Boolean(
               policy?.policy_scope?.compliance_frameworks?.find((f) => f.id === id) &&

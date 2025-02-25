@@ -1,7 +1,6 @@
 import {
   DEFAULT_SCAN_RESULT_POLICY,
   createPolicyObject,
-  fromYaml,
   validatePolicy,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
 import {
@@ -18,23 +17,11 @@ import {
   unsupportedManifest,
   unsupportedManifestObject,
 } from 'ee_jest/security_orchestration/mocks/mock_data';
-
-afterEach(() => {
-  window.gon = {};
-});
+import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
+import { fromYaml } from 'ee/security_orchestration/components/utils';
 
 jest.mock('lodash/uniqueId', () => jest.fn((prefix) => `${prefix}0`));
 
-describe('fromYaml', () => {
-  it.each`
-    title                                                                     | input                                    | output
-    ${'returns the policy object for a supported manifest'}                   | ${mockDefaultBranchesScanResultManifest} | ${mockDefaultBranchesScanResultObject}
-    ${'returns the policy object for a policy with an unsupported attribute'} | ${unsupportedManifest}                   | ${{ ...unsupportedManifestObject, type: 'approval_policy' }}
-    ${'returns empty object for a policy with an invalid yaml'}               | ${invalidYaml}                           | ${{}}
-  `('$title', ({ input, output }) => {
-    expect(fromYaml({ manifest: input })).toStrictEqual(output);
-  });
-});
 describe('createPolicyObject', () => {
   it.each`
     title                                                                           | input                                    | output
@@ -58,6 +45,14 @@ describe('validatePolicy', () => {
     ${'returns error objects for invalid settings'}                                          | ${mockInvalidApprovalSettingScanResultManifest}               | ${{ settings: true }}
     ${'returns error objects for invalid setting structure'}                                 | ${mockInvalidGroupApprovalSettingStructureScanResultManifest} | ${{ settings: true }}
   `('$title', ({ input, output }) => {
-    expect(validatePolicy(fromYaml({ manifest: input }))).toStrictEqual(output);
+    expect(
+      validatePolicy(
+        fromYaml({
+          manifest: input,
+          type: POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter,
+          addIds: true,
+        }),
+      ),
+    ).toStrictEqual(output);
   });
 });

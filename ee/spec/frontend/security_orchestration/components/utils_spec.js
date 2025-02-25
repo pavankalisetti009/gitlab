@@ -1,4 +1,5 @@
 import {
+  addIdsToPolicy,
   checkForPerformanceRisk,
   hasScheduledRule,
   isPolicyInherited,
@@ -32,6 +33,19 @@ import {
   mockScheduleScanExecutionObject,
   mockScheduleScanExecutionManifest,
 } from '../mocks/mock_scan_execution_policy_data';
+
+describe('addIdsToPolicy', () => {
+  it('adds ids to a policy with actions and rules', () => {
+    expect(addIdsToPolicy({ actions: [{}], rules: [{}] })).toStrictEqual({
+      actions: [{ id: 'action_1' }],
+      rules: [{ id: 'rule_2' }],
+    });
+  });
+
+  it('does not add ids to a policy with no actions and no rules', () => {
+    expect(addIdsToPolicy({ name: 'the best' })).toStrictEqual({ name: 'the best' });
+  });
+});
 
 describe(isPolicyInherited, () => {
   it.each`

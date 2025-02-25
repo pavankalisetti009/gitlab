@@ -4,11 +4,9 @@ import { s__ } from '~/locale';
 import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { parseAllowDenyLicenseList } from 'ee/security_orchestration/components/policy_editor/utils';
-import {
-  BOT_MESSAGE_TYPE,
-  fromYaml,
-  REQUIRE_APPROVAL_TYPE,
-} from '../../policy_editor/scan_result/lib';
+import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
+import { fromYaml } from 'ee/security_orchestration/components/utils';
+import { BOT_MESSAGE_TYPE, REQUIRE_APPROVAL_TYPE } from '../../policy_editor/scan_result/lib';
 import { SUMMARY_TITLE } from '../constants';
 import InfoRow from '../info_row.vue';
 import DrawerLayout from '../drawer_layout.vue';
@@ -82,7 +80,10 @@ export default {
       return humanizeRules(this.parsedYaml?.rules);
     },
     parsedYaml() {
-      return fromYaml({ manifest: this.policy.yaml });
+      return fromYaml({
+        manifest: this.policy.yaml,
+        type: POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter,
+      });
     },
     hasRequireApprovals() {
       return this.requireApprovals.length > 0;

@@ -1,5 +1,6 @@
 import { GROUP_TYPE, USER_TYPE } from 'ee/security_orchestration/constants';
-import { fromYaml } from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
+import { fromYaml } from 'ee/security_orchestration/components/utils';
+import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 
 export const USER = {
   id: 2,
@@ -192,4 +193,7 @@ export const mockAnyMergeRequestApprovalManifest = `approval_policy:
       fail: closed
 `;
 
-export const mockScanResultObject = fromYaml({ manifest: mockAnyMergeRequestApprovalManifest });
+export const mockScanResultObject = fromYaml({
+  manifest: mockAnyMergeRequestApprovalManifest,
+  type: POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter,
+});

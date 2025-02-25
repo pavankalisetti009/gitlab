@@ -1,7 +1,7 @@
 import { isBoolean, isEmpty, isEqual } from 'lodash';
-import { extractPolicyContent } from 'ee/security_orchestration/components/utils';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
-import { addIdsToPolicy, hasInvalidKey } from '../../utils';
+import { fromYaml } from 'ee/security_orchestration/components/utils';
+import { hasInvalidKey } from '../../utils';
 import { OPEN, CLOSED } from '../advanced_settings/constants';
 import { hasInvalidRules } from './rules';
 import {
@@ -10,30 +10,6 @@ import {
   PERMITTED_INVALID_SETTINGS,
   PERMITTED_INVALID_SETTINGS_KEY,
 } from './settings';
-
-/*
-  Construct a policy object expected by the policy editor from a yaml manifest.
-*/
-
-/**
- * Construct a policy object expected by the policy editor from a yaml manifest
- * @param {Object} options
- * @param {String}  options.manifest a security policy in yaml form
- * @returns {Object} security policy object
- */
-export const fromYaml = ({ manifest }) => {
-  try {
-    const payload = extractPolicyContent({
-      manifest,
-      type: POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter,
-      withType: true,
-    });
-
-    return addIdsToPolicy(payload);
-  } catch {
-    return {};
-  }
-};
 
 /**
  * Validate policy properties that would break rule mode
@@ -96,7 +72,7 @@ export const validatePolicy = (policy) => {
  * @returns {Object} security policy object and any errors
  */
 export const createPolicyObject = (manifest) => {
-  const policy = fromYaml({ manifest });
+  const policy = fromYaml({ manifest, type: POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter });
   const parsingError = validatePolicy(policy);
 
   return { policy, parsingError };

@@ -3,13 +3,16 @@ import { GlLink } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { joinPaths } from '~/lib/utils/url_utility';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import { fromYaml } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/utils';
 import { humanizeActions } from 'ee/security_orchestration/components/policy_drawer/pipeline_execution/utils';
 import {
   SUMMARY_TITLE,
   CONFIGURATION_TITLE,
 } from 'ee/security_orchestration/components/policy_drawer/constants';
-import { PIPELINE_EXECUTION_POLICY_TYPE_HEADER } from 'ee/security_orchestration/components/constants';
+import {
+  PIPELINE_EXECUTION_POLICY_TYPE_HEADER,
+  POLICY_TYPE_COMPONENT_OPTIONS,
+} from 'ee/security_orchestration/components/constants';
+import { fromYaml } from 'ee/security_orchestration/components/utils';
 import DrawerLayout from '../drawer_layout.vue';
 import InfoRow from '../info_row.vue';
 import SkipCiConfiguration from '../skip_ci_configuration.vue';
@@ -49,7 +52,10 @@ export default {
       return this.policy?.policyScope;
     },
     parsedYaml() {
-      return fromYaml({ manifest: this.policy.yaml });
+      return fromYaml({
+        manifest: this.policy.yaml,
+        type: POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter,
+      });
     },
     configuration() {
       return this.parsedYaml.skip_ci;
