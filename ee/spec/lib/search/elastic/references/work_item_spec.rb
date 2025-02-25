@@ -31,7 +31,6 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
         upvotes: object.upvotes_count,
         hidden: object.hidden?,
         work_item_type_id: object.work_item_type_id,
-        correct_work_item_type_id: object.correct_work_item_type_id,
         confidential: object.confidential,
         author_id: object.author_id,
         label_ids: [label.id.to_s],
