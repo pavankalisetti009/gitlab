@@ -12,7 +12,10 @@
       "type": "integer"
     },
     "version": {
-      "type": "string"
+      "type": [
+        "string",
+        "null"
+      ]
     }
   },
   "additionalProperties": true

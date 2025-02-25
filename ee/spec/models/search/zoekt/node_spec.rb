@@ -18,6 +18,17 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
     create(:zoekt_index, :ready, node: node, zoekt_enabled_namespace: enabled_namespace2)
   end
 
+  describe 'validations' do
+    describe 'metadata JSON schema validation' do
+      it 'allows null values in version field' do
+        node = build(:zoekt_node)
+        node.metadata['version'] = nil
+
+        expect(node).to be_valid
+      end
+    end
+  end
+
   describe 'relations' do
     it { is_expected.to have_many(:indices).inverse_of(:node) }
     it { is_expected.to have_many(:tasks).inverse_of(:node) }
