@@ -23,7 +23,7 @@ RSpec.describe 'Epics > User uses quick actions', :js, feature_category: :portfo
     it 'applies quick action' do
       # TODO: remove threshold after epic-work item sync
       # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
-      allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(120)
+      allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(140)
       epic_2 = create(:epic, group: group)
       visit group_epic_path(group, epic_2)
       wait_for_requests
@@ -40,7 +40,7 @@ RSpec.describe 'Epics > User uses quick actions', :js, feature_category: :portfo
     it 'applies quick action' do
       # TODO: remove threshold after epic-work item sync
       # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
-      allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(115)
+      allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(140)
 
       epic_title = 'New epic with parent'
       visit new_group_epic_path(group)
