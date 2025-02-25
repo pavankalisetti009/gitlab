@@ -33,9 +33,10 @@ RSpec.describe Elastic::ProcessInitialBookkeepingService, feature_category: :glo
             .with(project.id, project.class.name, { 'force' => true })
 
           if commit_indexing_expected
-            expect(ElasticCommitIndexerWorker).to receive(:perform_async).with(project.id, false, { 'force' => true })
+            expect(Search::Elastic::CommitIndexerWorker).to receive(:perform_async)
+              .with(project.id, { 'force' => true })
           else
-            expect(ElasticCommitIndexerWorker).not_to receive(:perform_async)
+            expect(Search::Elastic::CommitIndexerWorker).not_to receive(:perform_async)
           end
 
           described_class.backfill_projects!(project)
@@ -59,7 +60,7 @@ RSpec.describe Elastic::ProcessInitialBookkeepingService, feature_category: :glo
 
       it 'indexes itself only' do
         expect(described_class).not_to receive(:maintain_indexed_associations)
-        expect(ElasticCommitIndexerWorker).not_to receive(:perform_async)
+        expect(Search::Elastic::CommitIndexerWorker).not_to receive(:perform_async)
         expect(ElasticWikiIndexerWorker).not_to receive(:perform_async)
 
         described_class.backfill_projects!(project)

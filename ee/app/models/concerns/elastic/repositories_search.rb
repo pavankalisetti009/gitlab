@@ -18,7 +18,11 @@ module Elastic
     def index_commits_and_blobs
       return if ::Gitlab::Geo.secondary?
 
-      ::ElasticCommitIndexerWorker.perform_async(project.id)
+      if ::Feature.enabled?(:rename_commit_indexer_worker, ::Feature.current_request)
+        ::Search::Elastic::CommitIndexerWorker.perform_async(project.id)
+      else
+        ::ElasticCommitIndexerWorker.perform_async(project.id)
+      end
     end
   end
 end

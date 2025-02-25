@@ -32,8 +32,8 @@ RSpec.describe Git::BranchPushService, feature_category: :source_code_management
         stub_ee_application_setting(elasticsearch_indexing?: true)
       end
 
-      it 'runs ElasticCommitIndexerWorker' do
-        expect(ElasticCommitIndexerWorker).to receive(:perform_async).with(project.id)
+      it 'runs Search::Elastic::CommitIndexerWorker' do
+        expect(Search::Elastic::CommitIndexerWorker).to receive(:perform_async).with(project.id)
 
         branch_push_service.execute
       end
@@ -62,8 +62,8 @@ RSpec.describe Git::BranchPushService, feature_category: :source_code_management
         end
 
         context 'when the project is not enabled specifically' do
-          it 'does not run ElasticCommitIndexerWorker' do
-            expect(ElasticCommitIndexerWorker).not_to receive(:perform_async)
+          it 'does not run Search::Elastic::CommitIndexerWorker' do
+            expect(Search::Elastic::CommitIndexerWorker).not_to receive(:perform_async)
 
             branch_push_service.execute
           end
@@ -74,8 +74,8 @@ RSpec.describe Git::BranchPushService, feature_category: :source_code_management
             create :elasticsearch_indexed_project, project: project
           end
 
-          it 'runs ElasticCommitIndexerWorker' do
-            expect(ElasticCommitIndexerWorker).to receive(:perform_async).with(project.id)
+          it 'runs Search::Elastic::CommitIndexerWorker' do
+            expect(Search::Elastic::CommitIndexerWorker).to receive(:perform_async).with(project.id)
 
             branch_push_service.execute
           end
@@ -89,8 +89,8 @@ RSpec.describe Git::BranchPushService, feature_category: :source_code_management
             create :elasticsearch_indexed_namespace, namespace: group
           end
 
-          it 'runs ElasticCommitIndexerWorker' do
-            expect(ElasticCommitIndexerWorker).to receive(:perform_async).with(project.id)
+          it 'runs Search::Elastic::CommitIndexerWorker' do
+            expect(Search::Elastic::CommitIndexerWorker).to receive(:perform_async).with(project.id)
 
             branch_push_service.execute
           end

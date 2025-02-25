@@ -33,9 +33,9 @@ RSpec.describe Elastic::RepositoriesSearch, feature_category: :global_search do
 
       it 'initiates commits reindexing when indexing is expected' do
         if commit_indexing_expected
-          expect(ElasticCommitIndexerWorker).to receive(:perform_async).with(model.project.id)
+          expect(Search::Elastic::CommitIndexerWorker).to receive(:perform_async).with(model.project.id)
         else
-          expect(ElasticCommitIndexerWorker).not_to receive(:perform_async)
+          expect(Search::Elastic::CommitIndexerWorker).not_to receive(:perform_async)
         end
 
         index_commits_and_blobs

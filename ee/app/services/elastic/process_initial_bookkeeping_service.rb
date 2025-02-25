@@ -31,7 +31,11 @@ module Elastic
           maintain_indexed_associations(project, INDEXED_PROJECT_ASSOCIATIONS)
 
           unless ::Gitlab::Geo.secondary?
-            ElasticCommitIndexerWorker.perform_async(project.id, false, { 'force' => true })
+            if ::Feature.enabled?(:rename_commit_indexer_worker, ::Feature.current_request)
+              ::Search::Elastic::CommitIndexerWorker.perform_async(project.id, { 'force' => true })
+            else
+              ElasticCommitIndexerWorker.perform_async(project.id, false, { 'force' => true })
+            end
           end
 
           ElasticWikiIndexerWorker.perform_async(project.id, project.class.name, { 'force' => true })

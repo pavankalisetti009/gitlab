@@ -96,9 +96,9 @@ RSpec.describe ProjectImportState, type: :model, feature_category: :importers do
 
         it 'schedules a full index of the repository if indexing is expected' do
           if repository_indexing_expected
-            expect(ElasticCommitIndexerWorker).to receive(:perform_async).with(import_state.project_id)
+            expect(Search::Elastic::CommitIndexerWorker).to receive(:perform_async).with(import_state.project_id)
           else
-            expect(ElasticCommitIndexerWorker).not_to receive(:perform_async)
+            expect(Search::Elastic::CommitIndexerWorker).not_to receive(:perform_async)
           end
 
           import_state.finish

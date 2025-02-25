@@ -37,7 +37,11 @@ module Elastic
 
         updated_attributes = updated_attributes.map(&:to_sym)
         if (updated_attributes & BLOB_AND_COMMIT_TRACKED_FIELDS).any? && !::Gitlab::Geo.secondary?
-          ElasticCommitIndexerWorker.perform_async(id, false, { 'force' => true })
+          if ::Feature.enabled?(:rename_commit_indexer_worker, ::Feature.current_request)
+            ::Search::Elastic::CommitIndexerWorker.perform_async(id, { 'force' => true })
+          else
+            ElasticCommitIndexerWorker.perform_async(id, false, { 'force' => true })
+          end
         end
 
         if (updated_attributes & WIKI_TRACKED_FIELDS).any?

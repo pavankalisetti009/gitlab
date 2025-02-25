@@ -191,6 +191,15 @@ In the keyboard shortcuts editor, you can search for:
 Keybindings are based on your keyboard layout.
 If you change your keyboard layout, existing keybindings are updated automatically.
 
+### Use Vim keybindings
+
+Use Vim keybindings to navigate and edit text using keyboard shortcuts from the Vim text editor.
+With the [Extensions Marketplace](#extension-marketplace), you can add Vim keybindings to
+the Web IDE.
+
+To enable Vim keybindings, install the [Vim](https://open-vsx.org/extension/vscodevim/vim)
+extension. For more information, see [install an extension](#install-an-extension).
+
 ## Change the color theme
 
 You can choose between different color themes for the Web IDE.
