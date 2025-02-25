@@ -5538,6 +5538,9 @@ msgstr ""
 msgid "Alert"
 msgstr ""
 
+msgid "Alert type:"
+msgstr ""
+
 msgid "AlertManagement|Acknowledged"
 msgstr ""
 
@@ -47884,6 +47887,9 @@ msgid "Remove Zoom meeting."
 msgstr ""
 
 msgid "Remove access"
+msgstr ""
+
+msgid "Remove alert"
 msgstr ""
 
 msgid "Remove all or specific assignees"
