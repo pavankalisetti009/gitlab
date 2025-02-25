@@ -51,11 +51,7 @@ module Ci
     end
 
     def comparer_class
-      if feature_flag_disabled?(project)
-        Gitlab::Ci::Reports::Security::VulnerabilityReportsComparer
-      else
-        Gitlab::Ci::Reports::Security::SecurityFindingsReportsComparer
-      end
+      Gitlab::Ci::Reports::Security::SecurityFindingsReportsComparer
     end
 
     def serializer_class
@@ -67,29 +63,21 @@ module Ci
       # until `Security::StoreFindingsService` is complete
       return :parsing unless ready_to_send_to_finder?(pipeline)
 
-      if feature_flag_disabled?(project)
-        Security::PipelineVulnerabilitiesFinder.new(
-          pipeline: pipeline,
-          params: { report_type: [params[:report_type]], scope: 'all' }
-        ).execute
-      else
-        findings = Security::FindingsFinder.new(
-          pipeline,
-          params: {
-            report_type: [params[:report_type]],
-            scope: 'all',
-            limit: Gitlab::Ci::Reports::Security::SecurityFindingsReportsComparer::MAX_FINDINGS_COUNT
-          }
-        ).execute
-        Gitlab::Ci::Reports::Security::AggregatedFinding.new(pipeline, findings)
-      end
+      findings = Security::FindingsFinder.new(
+        pipeline,
+        params: {
+          report_type: [params[:report_type]],
+          scope: 'all',
+          limit: Gitlab::Ci::Reports::Security::SecurityFindingsReportsComparer::MAX_FINDINGS_COUNT
+        }
+      ).execute
+      Gitlab::Ci::Reports::Security::AggregatedFinding.new(pipeline, findings)
     end
 
     private
 
     def ready_to_send_to_finder?(pipeline)
-      return true if pipeline.nil? || feature_flag_disabled?(project)
-      return true if report_type_ingested?(pipeline, params[:report_type])
+      return true if pipeline.nil? || report_type_ingested?(pipeline, params[:report_type])
       return false if ingesting_security_scans_for?(pipeline)
 
       !pipeline.security_scans.by_build_ids(
@@ -97,10 +85,6 @@ module Ci
           .with_reports_of_type(params[:report_type])
           .pluck_primary_key
       ).not_in_terminal_state.any?
-    end
-
-    def feature_flag_disabled?(project)
-      Feature.disabled?(:migrate_mr_security_widget_to_security_findings_table, project)
     end
 
     def report_type_ingested?(pipeline, report_type)
