@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import { GlTabs, GlTooltip, GlLink } from '@gitlab/ui';
+import { GlTabs, GlPopover, GlLink } from '@gitlab/ui';
 import { extendedWrapper, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
 import MainLayout from 'ee/compliance_dashboard/components/main_layout.vue';
@@ -25,6 +25,7 @@ describe('ComplianceReportsApp component', () => {
     violationsCsvExportPath: '/compliance_violation_reports.csv',
     adherencesCsvExportPath: '/compliance_standards_adherences.csv',
     frameworksCsvExportPath: '/compliance_frameworks_report.csv',
+    canAccessRootAncestorComplianceCenter: true,
     glAbilities: {
       adminComplianceFramework: true,
     },
@@ -51,7 +52,7 @@ describe('ComplianceReportsApp component', () => {
   const findViolationsTab = () => wrapper.findByTestId('violations-tab-content');
   const findStandardsAdherenceTab = () => wrapper.findByTestId('standards-adherence-tab-content');
   const findNewFrameworkButton = () => wrapper.findByRole('button', { name: 'New framework' });
-  const findNewFrameworkTooltip = () => wrapper.findComponent(GlTooltip);
+  const findNewFrameworkPopover = () => wrapper.findComponent(GlPopover);
 
   const createComponent = (
     mountFn = shallowMountExtended,
@@ -118,13 +119,28 @@ describe('ComplianceReportsApp component', () => {
       expect($router.push).toHaveBeenCalledWith({ name: ROUTE_NEW_FRAMEWORK });
     });
 
-    it('is disabled and shows info tooltip otherwise', () => {
-      wrapper = createComponent(mount, {}, {}, { groupPath: 'sub-group-path' });
+    describe('when in a subgroup', () => {
+      it('is disabled and shows info popover', () => {
+        wrapper = createComponent(mount, {}, {}, { groupPath: 'sub-group-path' });
 
-      expect(findNewFrameworkButton().attributes('disabled')).toBeDefined();
-      expect(findNewFrameworkTooltip().text()).toMatchInterpolatedText(
-        'You can only create the compliance framework in top-level group Top Level Group',
-      );
+        expect(findNewFrameworkButton().attributes('disabled')).toBeDefined();
+        expect(findNewFrameworkPopover().text()).toMatchInterpolatedText(
+          'You must create compliance frameworks in top-level group Top Level Group',
+        );
+      });
+
+      it('shows additional info when user does not have access to top-level group', () => {
+        wrapper = createComponent(
+          mount,
+          {},
+          { canAccessRootAncestorComplianceCenter: false },
+          { groupPath: 'sub-group-path' },
+        );
+
+        expect(findNewFrameworkPopover().text()).toMatchInterpolatedText(
+          'You must have the Owner role for the top-level group Top Level Group',
+        );
+      });
     });
 
     describe('when ability `adminComplianceFramework` is false', () => {

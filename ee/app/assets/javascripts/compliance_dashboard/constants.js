@@ -62,7 +62,10 @@ export const FRAMEWORKS_FILTER_VALUE_NO_FRAMEWORK = {
 export const i18n = {
   newFramework: s__('ComplianceFrameworks|New framework'),
   newFrameworkButtonMessage: s__(
-    'ComplianceFrameworks|You can only create the compliance framework in top-level group %{linkStart}namespace%{linkEnd}',
+    'ComplianceFrameworks|You must create compliance frameworks in top-level group %{linkStart}namespace%{linkEnd}',
+  ),
+  tooltipMessageNoAccess: s__(
+    'ComplianceFrameworks|You must have the Owner role for the top-level group %{strongStart}namespace%{strongEnd}',
   ),
   frameworksTab: s__('Compliance Center|Frameworks'),
   projectsTab: __('Projects'),

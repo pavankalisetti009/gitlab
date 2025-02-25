@@ -47,6 +47,7 @@ module EE
       can_admin_compliance_frameworks = can?(current_user, :admin_compliance_framework, container)
       adherence_report = can?(current_user, :read_compliance_adherence_report, container)
       violations_report = can?(current_user, :read_compliance_violations_report, container)
+      can_access_root_ancestor_compliance_center = can?(current_user, :read_compliance_dashboard, group.root_ancestor)
 
       {
         base_path: base_path(container),
@@ -61,6 +62,7 @@ module EE
         root_ancestor_compliance_center_path: group_security_compliance_dashboard_path(group.root_ancestor,
           vueroute: 'frameworks'),
 
+        can_access_root_ancestor_compliance_center: can_access_root_ancestor_compliance_center.to_s,
         feature_adherence_report_enabled: adherence_report.to_s,
         feature_violations_report_enabled: violations_report.to_s,
         active_compliance_frameworks: group.active_compliance_frameworks?.to_s,
