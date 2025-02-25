@@ -71,8 +71,7 @@ RSpec.shared_examples 'migration backfills fields' do
       end
 
       it 'processes in batches', :aggregate_failures do
-        allow(migration).to receive(:batch_size).and_return(2)
-        allow(migration).to receive(:update_batch_size).and_return(1)
+        allow(migration).to receive_messages(batch_size: 2, update_batch_size: 1)
 
         expect(::Elastic::ProcessInitialBookkeepingService).to receive(:track!).exactly(3).times.and_call_original
 
@@ -272,8 +271,7 @@ RSpec.shared_examples 'migration reindex based on schema_version' do
       end
 
       it 'processes in batches', :aggregate_failures do
-        allow(migration).to receive(:batch_size).and_return(2)
-        allow(migration).to receive(:update_batch_size).and_return(1)
+        allow(migration).to receive_messages(batch_size: 2, update_batch_size: 1)
 
         expect(::Elastic::ProcessInitialBookkeepingService).to receive(:track!).exactly(3).times.and_call_original
 
@@ -434,8 +432,7 @@ RSpec.shared_examples 'migration creates a new index' do |version, klass|
     describe 'reindexing_cleanup!' do
       context 'when the index already exists' do
         before do
-          allow(helper).to receive(:index_exists?).and_return(true)
-          allow(helper).to receive(:create_standalone_indices).and_return(true)
+          allow(helper).to receive_messages(index_exists?: true, create_standalone_indices: true)
         end
 
         it 'deletes the index' do
@@ -594,8 +591,7 @@ RSpec.shared_examples 'migration reindexes all data' do
       end
 
       it 'processes in batches', :aggregate_failures do
-        allow(migration).to receive(:batch_size).and_return(1)
-        allow(migration).to receive(:limit_per_iteration).and_return(1)
+        allow(migration).to receive_messages(batch_size: 1, limit_per_iteration: 1)
 
         expect(::Elastic::ProcessInitialBookkeepingService).to receive(:track!)
           .exactly(objects.size).times.and_call_original
@@ -646,8 +642,7 @@ RSpec.shared_examples 'migration deletes documents based on schema version' do
   before do
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
     set_elasticsearch_migration_to(version, including: false)
-    allow(migration).to receive(:helper).and_return(helper)
-    allow(migration).to receive(:client).and_return(client)
+    allow(migration).to receive_messages(helper: helper, client: client)
 
     # ensure objects are indexed
     objects
@@ -720,8 +715,7 @@ RSpec.shared_examples 'migration deletes documents based on schema version' do
 
       context 'when task in progress' do
         before do
-          allow(migration).to receive(:completed?).and_return(false)
-          allow(migration).to receive(:client).and_return(client)
+          allow(migration).to receive_messages(completed?: false, client: client)
           allow(helper).to receive(:task_status).and_return('completed' => false)
           migration.set_migration_state(task_id: 'task_1')
         end
