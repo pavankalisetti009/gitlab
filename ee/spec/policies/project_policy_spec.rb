@@ -927,7 +927,31 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           create(:security_orchestration_policy_configuration, project: project, security_policy_management_project: security_policy_management_project)
         end
 
+        context 'when current_user is guest of security_policy_management_project' do
+          let(:project) { security_policy_management_project }
+
+          before do
+            security_policy_management_project.add_guest(developer)
+          end
+
+          it { is_expected.to be_disallowed(:read_security_orchestration_policy_project) }
+          it { is_expected.to be_disallowed(:modify_security_policy) }
+        end
+
+        context 'when current_user is reporter of security_policy_management_project' do
+          let(:project) { security_policy_management_project }
+
+          before do
+            security_policy_management_project.add_reporter(developer)
+          end
+
+          it { is_expected.to be_allowed(:read_security_orchestration_policy_project) }
+          it { is_expected.to be_disallowed(:modify_security_policy) }
+        end
+
         context 'when current_user is developer of security_policy_management_project' do
+          let(:project) { security_policy_management_project }
+
           before do
             security_policy_management_project.add_developer(developer)
           end
@@ -935,7 +959,10 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           it { is_expected.to be_allowed(:modify_security_policy) }
         end
 
-        context 'when current_user is not developer of security_policy_management_project' do
+        context 'when current_user is not member of security_policy_management_project' do
+          let(:project) { security_policy_management_project }
+
+          it { is_expected.to be_disallowed(:read_security_orchestration_policy_project) }
           it { is_expected.to be_disallowed(:modify_security_policy) }
         end
       end

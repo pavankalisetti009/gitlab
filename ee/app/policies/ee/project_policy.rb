@@ -443,7 +443,7 @@ module EE
         enable :update_security_orchestration_policy_project
       end
 
-      rule { security_orchestration_policies_enabled & can?(:guest_access) }.policy do
+      rule { security_orchestration_policies_enabled & can?(:reporter_access) }.policy do
         enable :read_security_orchestration_policy_project
       end
 
