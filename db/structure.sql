@@ -13615,7 +13615,8 @@ CREATE TABLE evidences (
     updated_at timestamp with time zone NOT NULL,
     summary_sha bytea,
     summary jsonb DEFAULT '{}'::jsonb NOT NULL,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_32e833c325 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE evidences_id_seq
