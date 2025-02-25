@@ -39,20 +39,28 @@ module Users
 
       def assign
         user_member_role = if params[:member_role]
-                             Users::UserMemberRole.create(params)
+                             handle_assignement
                            else
-                             user_role = Users::UserMemberRole.find_by_user_id(params[:user].id)
-
-                             unless user_role
-                               return ServiceResponse.error(message: 'No member role exists for the user.')
-                             end
-
-                             user_role.destroy!
+                             existing_user_member_role.destroy! if existing_user_member_role
 
                              nil
                            end
 
         ServiceResponse.success(payload: { user_member_role: user_member_role })
+      end
+
+      def handle_assignement
+        if existing_user_member_role
+          existing_user_member_role.tap do |user_role|
+            user_role.update!(member_role: params[:member_role])
+          end
+        else
+          Users::UserMemberRole.create(params)
+        end
+      end
+
+      def existing_user_member_role
+        @existing_user_member_role ||= Users::UserMemberRole.find_by_user_id(params[:user].id)
       end
     end
   end
