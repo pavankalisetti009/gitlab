@@ -13,7 +13,8 @@ RSpec.describe EE::SecurityComplianceCenterHelper, feature_category: :security_p
       group_path: group.full_path,
       active_compliance_frameworks: "false",
       feature_projects_report_enabled: "true",
-      can_admin_compliance_frameworks: "true"
+      can_admin_compliance_frameworks: "true",
+      can_access_root_ancestor_compliance_center: "true"
     }
   end
 
@@ -40,6 +41,7 @@ RSpec.describe EE::SecurityComplianceCenterHelper, feature_category: :security_p
         allow(helper).to receive(:can?).with(user, :read_compliance_adherence_report, project).and_return(true)
         allow(helper).to receive(:can?).with(user, :read_compliance_violations_report, project).and_return(true)
         allow(helper).to receive(:can?).with(user, :admin_compliance_framework, project).and_return(true)
+        allow(helper).to receive(:can?).with(user, :read_compliance_dashboard, project.root_ancestor).and_return(true)
       end
 
       subject { helper.compliance_center_app_data(project) }
@@ -70,6 +72,7 @@ RSpec.describe EE::SecurityComplianceCenterHelper, feature_category: :security_p
         allow(helper).to receive(:can?).with(user, :read_security_orchestration_policies, group).and_return(true)
         allow(helper).to receive(:can?).with(user, :admin_compliance_pipeline_configuration, group).and_return(true)
         allow(helper).to receive(:can?).with(user, :admin_compliance_framework, group).and_return(true)
+        allow(helper).to receive(:can?).with(user, :read_compliance_dashboard, group).and_return(true)
         allow(helper).to receive(:can_modify_security_policy?).with(group).and_return(true)
       end
 

@@ -1,14 +1,5 @@
 <script>
-import {
-  GlTab,
-  GlTabs,
-  GlTooltipDirective,
-  GlButton,
-  GlTooltip,
-  GlSprintf,
-  GlLink,
-} from '@gitlab/ui';
-
+import { GlTab, GlTabs, GlButton, GlPopover, GlSprintf, GlLink } from '@gitlab/ui';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import Tracking from '~/tracking';
@@ -32,14 +23,11 @@ export default {
     GlTabs,
     GlTab,
     GlButton,
-    GlTooltip,
+    GlPopover,
     GlSprintf,
     GlLink,
     ReportsExport,
     PageHeading,
-  },
-  directives: {
-    GlTooltip: GlTooltipDirective,
   },
   mixins: [Tracking.mixin(), glAbilitiesMixin()],
   inject: [
@@ -48,6 +36,7 @@ export default {
     'violationsCsvExportPath',
     'adherencesCsvExportPath',
     'frameworksCsvExportPath',
+    'canAccessRootAncestorComplianceCenter',
   ],
   props: {
     availableTabs: {
@@ -159,15 +148,21 @@ export default {
           :adherences-csv-export-path="adherencesCsvExportPath"
           :frameworks-csv-export-path="frameworksCsvExportPath"
         />
-        <gl-tooltip v-if="!isTopLevelGroup" :target="() => $refs.newFrameworkButton">
-          <gl-sprintf :message="$options.i18n.newFrameworkButtonMessage">
+        <gl-popover v-if="!isTopLevelGroup" :target="() => $refs.newFrameworkButton">
+          <gl-sprintf
+            v-if="canAccessRootAncestorComplianceCenter"
+            :message="$options.i18n.newFrameworkButtonMessage"
+          >
             <template #link>
-              <gl-link :href="rootAncestor.complianceCenterPath">
-                {{ rootAncestor.name }}
-              </gl-link>
+              <gl-link :href="rootAncestor.complianceCenterPath">{{ rootAncestor.name }}</gl-link>
             </template>
           </gl-sprintf>
-        </gl-tooltip>
+          <gl-sprintf v-else :message="$options.i18n.tooltipMessageNoAccess">
+            <template #strong>
+              <strong>{{ rootAncestor.name }}</strong>
+            </template>
+          </gl-sprintf>
+        </gl-popover>
         <span ref="newFrameworkButton">
           <gl-button
             v-if="canAdminComplianceFramework"

@@ -30,6 +30,7 @@ export default () => {
     projectId,
     rootAncestorPath,
     rootAncestorName,
+    canAccessRootAncestorComplianceCenter,
     rootAncestorComplianceCenterPath,
     pipelineConfigurationFullPathEnabled,
     pipelineConfigurationEnabled,
@@ -83,6 +84,7 @@ export default () => {
     provide: {
       namespaceType: projectPath ? 'project' : 'group',
       canAdminComplianceFrameworks: parseBoolean(canAdminComplianceFrameworks),
+      canAccessRootAncestorComplianceCenter: parseBoolean(canAccessRootAncestorComplianceCenter),
       groupPath,
       rootAncestorPath,
       pipelineConfigurationFullPathEnabled: parseBoolean(pipelineConfigurationFullPathEnabled),

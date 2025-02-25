@@ -71,6 +71,7 @@ describe('FrameworkInfoDrawer component', () => {
 
   const createComponent = ({
     props = {},
+    provide = {},
     projectsInNamespaceResolverMock = pendingPromiseMock,
   } = {}) => {
     const apolloProvider = createMockApolloProvider({
@@ -90,6 +91,8 @@ describe('FrameworkInfoDrawer component', () => {
       },
       provide: {
         groupSecurityPoliciesPath: '/group-policies',
+        canAccessRootAncestorComplianceCenter: true,
+        ...provide,
       },
       mocks: {
         $toast,
@@ -329,7 +332,26 @@ describe('FrameworkInfoDrawer component', () => {
 
     it('renders popover', () => {
       expect(findPopover().text()).toMatchInterpolatedText(
-        'The compliance framework must be edited in top-level group Root',
+        'You must edit the compliance framework in top-level group Root',
+      );
+    });
+
+    it('shows additional info when user does not have access to top-level group', () => {
+      createComponent({
+        props: {
+          groupPath: `${GROUP_PATH}/child`,
+          rootAncestor: {
+            path: GROUP_PATH,
+            webUrl: `/web/${GROUP_PATH}`,
+            name: 'Root',
+          },
+          framework: defaultFramework,
+        },
+        provide: { canAccessRootAncestorComplianceCenter: false },
+      });
+
+      expect(findPopover().text()).toMatchInterpolatedText(
+        'You must have the Owner role for the top-level group Root',
       );
     });
   });

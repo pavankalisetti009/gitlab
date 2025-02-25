@@ -16,7 +16,7 @@ import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import { isTopLevelGroup } from '../../utils';
-import { POLICY_SCOPES_DOCS_URL } from '../../constants';
+import { POLICY_SCOPES_DOCS_URL, i18n as mainI18n } from '../../constants';
 import projectsInNamespaceWithFrameworkQuery from './graphql/projects_in_namespace_with_framework.query.graphql';
 
 export default {
@@ -32,7 +32,7 @@ export default {
     GlPopover,
     HelpIcon,
   },
-  inject: ['groupSecurityPoliciesPath'],
+  inject: ['groupSecurityPoliciesPath', 'canAccessRootAncestorComplianceCenter'],
   props: {
     groupPath: {
       type: String,
@@ -157,8 +157,9 @@ export default {
     defaultFramework: s__('ComplianceFrameworksReport|Default'),
     editFramework: s__('ComplianceFrameworksReport|Edit framework'),
     editFrameworkButtonMessage: s__(
-      'ComplianceFrameworks|The compliance framework must be edited in top-level group %{linkStart}namespace%{linkEnd}',
+      'ComplianceFrameworks|You must edit the compliance framework in top-level group %{linkStart}namespace%{linkEnd}',
     ),
+    tooltipMessageNoAccess: mainI18n.tooltipMessageNoAccess,
     frameworkIdTitle: s__('ComplianceFrameworksReport|Compliance framework ID'),
     frameworkIdPopoverTitle: s__('ComplianceFrameworksReport|Using the ID'),
     frameworkIdPopoverText: s__(
@@ -202,11 +203,17 @@ export default {
         boundary="viewport"
         data-testid="edit-framework-popover"
       >
-        <gl-sprintf :message="$options.i18n.editFrameworkButtonMessage">
+        <gl-sprintf
+          v-if="canAccessRootAncestorComplianceCenter"
+          :message="$options.i18n.editFrameworkButtonMessage"
+        >
           <template #link>
-            <gl-link :href="rootAncestor.complianceCenterPath">
-              {{ rootAncestor.name }}
-            </gl-link>
+            <gl-link :href="rootAncestor.complianceCenterPath">{{ rootAncestor.name }}</gl-link>
+          </template>
+        </gl-sprintf>
+        <gl-sprintf v-else :message="$options.i18n.tooltipMessageNoAccess">
+          <template #strong>
+            <strong>{{ rootAncestor.name }}</strong>
           </template>
         </gl-sprintf>
       </gl-popover>

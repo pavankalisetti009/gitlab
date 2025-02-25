@@ -55,6 +55,7 @@ describe('ComplianceFrameworksReport component', () => {
     migratePipelineToPolicyPath: '/migrate-pipeline--to-policy-example-path',
     pipelineExecutionPolicyPath: '/pipeline-execution-policy-example-path',
     groupSecurityPoliciesPath: '/group-security-policies-example-path',
+    canAccessRootAncestorComplianceCenter: true,
   };
 
   function createMockApolloProvider({
