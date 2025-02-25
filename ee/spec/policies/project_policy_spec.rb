@@ -1574,38 +1574,49 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     end
 
     describe ':read_code_review_analytics' do
-      let(:project) { private_project }
+      let(:policy) { :read_code_review_analytics }
 
-      where(:role, :admin_mode, :allowed) do
-        :guest      | nil   | false
-        :planner    | nil   | true
-        :reporter   | nil   | true
-        :developer  | nil   | true
-        :maintainer | nil   | true
-        :owner      | nil   | true
-        :admin      | false | false
-        :admin      | true  | true
+      where(:role, :project_visibility, :allowed) do
+        :guest      | 'public'   | true
+        :planner    | 'public'   | true
+        :reporter   | 'public'   | true
+        :developer  | 'public'   | true
+        :maintainer | 'public'   | true
+        :owner      | 'public'   | true
+        :admin      | 'public'   | true
+        :guest      | 'internal' | true
+        :planner    | 'internal' | true
+        :reporter   | 'internal' | true
+        :developer  | 'internal' | true
+        :maintainer | 'internal' | true
+        :owner      | 'internal' | true
+        :admin      | 'internal' | true
+        :guest      | 'private'  | false
+        :planner    | 'private'  | false
+        :reporter   | 'private'  | true
+        :developer  | 'private'  | true
+        :maintainer | 'private'  | true
+        :owner      | 'private'  | true
+        :admin      | 'private'  | true
       end
 
       with_them do
         let(:current_user) { public_send(role) }
+        let(:project) { public_send(:"#{project_visibility}_project") }
 
         before do
-          stub_licensed_features(code_review_analytics: true)
-          enable_admin_mode!(current_user) if admin_mode
+          enable_admin_mode!(current_user) if role == :admin
         end
 
-        it { is_expected.to(allowed ? be_allowed(:read_code_review_analytics) : be_disallowed(:read_code_review_analytics)) }
-      end
+        it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
 
-      context 'with code review analytics is not available in license' do
-        let(:current_user) { owner }
+        context 'with code review analytics is not available in license' do
+          before do
+            stub_licensed_features(code_review_analytics: false)
+          end
 
-        before do
-          stub_licensed_features(code_review_analytics: false)
+          it { is_expected.to be_disallowed(:read_code_review_analytics) }
         end
-
-        it { is_expected.to be_disallowed(:read_code_review_analytics) }
       end
     end
 

@@ -807,6 +807,8 @@ module EE
 
       rule { can?(:read_merge_request) & code_review_analytics_enabled }.enable :read_code_review_analytics
 
+      rule { private_project & planner }.prevent :read_code_review_analytics
+
       rule { (admin | reporter) & dora4_analytics_available }
         .enable :read_dora4_analytics
 
