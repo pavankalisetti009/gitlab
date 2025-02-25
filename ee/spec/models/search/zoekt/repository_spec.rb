@@ -109,9 +109,9 @@ RSpec.describe Search::Zoekt::Repository, feature_category: :global_search do
         expect(zoekt_repo_with_processing_tasks.reload.tasks.count).to eq processing_tasks_count + 1
         expect(zoekt_repo_without_tasks.reload.tasks.count).to eq 1
         expect(failed_zoekt_repo_without_tasks.reload.tasks.count).to eq 1
-        expect(zoekt_repo_without_tasks).to be_initializing
+        expect(zoekt_repo_without_tasks).to be_deleted
         expect(zoekt_repo_without_tasks.retries_left).to eq 3
-        expect(zoekt_repo_with_processing_tasks).to be_initializing
+        expect(zoekt_repo_with_processing_tasks).to be_deleted
         expect(zoekt_repo_with_pending_tasks).to be_pending
       end
     end
