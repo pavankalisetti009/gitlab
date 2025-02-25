@@ -71,7 +71,7 @@ module API
           end
 
           def present_package_file!(package_file)
-            header(*RESPONSE_HEADERS.to_a.flatten)
+            RESPONSE_HEADERS.each { |k, v| header(k, v) }
             download_package_file!(package_file)
           end
         end

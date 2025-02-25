@@ -18,7 +18,15 @@ module API
 
         CALLBACKS_CLASS = Struct.new(:skip_upload, :before_respond_with)
 
-        RESPONSE_HEADERS = { 'Content-Security-Policy' => "default-src 'none'" }.freeze
+        CSP_DIRECTIVES = "default-src 'none'; script-src 'none'; connect-src 'none'; img-src 'none';" \
+          "style-src 'none'; frame-ancestors 'none'; form-action 'none'"
+
+        RESPONSE_HEADERS = {
+          # from https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html#basic-non-strict-csp-policy
+          # but with all directives set to none
+          'Content-Security-Policy' => CSP_DIRECTIVES,
+          'X-Content-Type-Options' => 'nosniff'
+        }.freeze
 
         MAJOR_BROWSERS = %i[webkit firefox ie edge opera chrome].freeze
         WEB_BROWSER_ERROR_MESSAGE = 'This endpoint is not meant to be accessed by a web browser.'
