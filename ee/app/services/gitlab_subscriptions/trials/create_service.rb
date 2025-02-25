@@ -56,7 +56,7 @@ module GitlabSubscriptions
       end
 
       def namespaces_eligible_for_trial
-        Namespaces::TrialEligibleFinder.new(user: user).execute
+        GitlabSubscriptions::Trials.eligible_namespaces_for_user(user)
       end
 
       override :tracking_prefix
