@@ -254,6 +254,21 @@ RSpec.describe API::ProtectedBranches, feature_category: :source_code_management
           expect(response).to have_gitlab_http_status(:ok)
           expect(json_response['code_owner_approval_required']).to eq(true)
         end
+
+        context 'when code_owner_approval_required is not provided' do
+          before do
+            protected_branch.update!(code_owner_approval_required: true)
+          end
+
+          it 'does not reset previous "code_owner_approval_required" state' do
+            expect do
+              patch api(route, user), params: {}
+            end.not_to change { protected_branch.reload.code_owner_approval_required }
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response['code_owner_approval_required']).to eq(true)
+          end
+        end
       end
 
       context "when the feature is disabled" do
@@ -445,6 +460,21 @@ RSpec.describe API::ProtectedBranches, feature_category: :source_code_management
             new_branch = project.protected_branches.find_by_name(branch_name)
             expect(new_branch.code_owner_approval_required).to be_falsy
             expect(new_branch[:code_owner_approval_required]).to be_falsy
+          end
+
+          context 'when code_owner_approval_required is not provided' do
+            it "sets :code_owner_approval_required to false by default" do
+              expect(project.protected_branches.find_by_name(branch_name)).to be_nil
+
+              post post_endpoint, params: { name: branch_name }
+
+              expect(response).to have_gitlab_http_status(:created)
+              expect(json_response["code_owner_approval_required"]).to eq(false)
+
+              new_branch = project.protected_branches.find_by_name(branch_name)
+              expect(new_branch.code_owner_approval_required).to be_falsy
+              expect(new_branch[:code_owner_approval_required]).to be_falsy
+            end
           end
         end
 

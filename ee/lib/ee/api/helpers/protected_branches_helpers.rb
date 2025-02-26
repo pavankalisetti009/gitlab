@@ -39,7 +39,7 @@ module EE
               use :shared_params
             end
 
-            optional :code_owner_approval_required, type: Grape::API::Boolean, default: false, desc: 'Prevent pushes to this branch if it matches an item in CODEOWNERS'
+            optional :code_owner_approval_required, type: Grape::API::Boolean, desc: 'Prevent pushes to this branch if it matches an item in CODEOWNERS'
           end
         end
       end
