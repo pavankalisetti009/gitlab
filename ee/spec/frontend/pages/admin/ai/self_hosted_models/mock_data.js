@@ -88,4 +88,6 @@ export const SELF_HOSTED_MODEL_OPTIONS = [
   { modelValue: 'MISTRAL', modelName: 'Mistral', releaseState: 'GA' },
   { modelValue: 'DEEPSEEKCODER', modelName: 'Deepseek Coder', releaseState: 'BETA' },
   { modelValue: 'LLAMA3', modelName: 'Llama 3', releaseState: 'BETA' },
+  { modelValue: 'GPT', modelName: 'GPT', releaseState: 'GA' },
+  { modelValue: 'CLAUDE_3', modelName: 'Claude 3', releaseState: 'GA' },
 ];

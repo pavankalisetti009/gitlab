@@ -15,3 +15,11 @@ export const RELEASE_STATES = {
   GA: 'GA',
   BETA: 'BETA',
 };
+
+// These are model identifiers that should not be translated as they are proper names
+/* eslint-disable @gitlab/require-i18n-strings */
+export const CLOUD_PROVIDER_MODELS = {
+  GPT: 'GPT',
+  CLAUDE_3: 'CLAUDE_3',
+};
+/* eslint-enable @gitlab/require-i18n-strings */

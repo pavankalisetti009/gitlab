@@ -4167,7 +4167,7 @@ msgstr ""
 msgid "AdminSelfHostedModels|Please select a model."
 msgstr ""
 
-msgid "AdminSelfHostedModels|Provide the model identifier in the form of provider/model-name"
+msgid "AdminSelfHostedModels|Provide the model identifier in the form of %{identifierLabel}"
 msgstr ""
 
 msgid "AdminSelfHostedModels|Select an appropriate model family from the list of approved GitLab models."
