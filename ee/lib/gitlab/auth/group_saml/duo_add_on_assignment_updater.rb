@@ -16,7 +16,7 @@ module Gitlab
 
         def execute
           return unless Feature.enabled?(:saml_groups_duo_add_on_assignment, group)
-          return unless group_names_from_saml.any?
+          return unless any_duo_group_links?
           return unless add_on_purchase&.active?
 
           if user_in_add_on_group?
@@ -41,20 +41,23 @@ module Gitlab
         end
 
         def group_names_from_saml
-          auth_hash.groups || []
+          auth_hash.groups
         end
         strong_memoize_attr :group_names_from_saml
 
-        def duo_groups
+        def any_duo_group_links?
+          SamlGroupLink
+            .by_group_id(group.id)
+            .by_assign_duo_seats(true)
+            .exists?
+        end
+
+        def user_in_add_on_group?
           SamlGroupLink
             .by_saml_group_name(group_names_from_saml)
             .by_group_id(group.id)
             .by_assign_duo_seats(true)
-        end
-        strong_memoize_attr :duo_groups
-
-        def user_in_add_on_group?
-          duo_groups.exists?
+            .exists?
         end
 
         def add_on_purchase
