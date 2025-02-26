@@ -1,11 +1,15 @@
 import { resolvers } from 'ee/usage_quotas/shared/resolvers';
 import Api from 'ee/api';
+import * as GroupsApi from 'ee/api/groups_api';
+import { mockMemberDetails } from 'ee_jest/usage_quotas/seats/mock_data';
 
 jest.mock('ee/api', () => {
   return {
     userSubscription: jest.fn(),
   };
 });
+
+jest.mock('ee/api/groups_api');
 
 const subscriptionMockData = {
   billing: {
@@ -114,6 +118,42 @@ describe('resolvers', () => {
               subscription_end_date: '2024-12-31',
             },
           });
+        });
+      });
+    });
+
+    describe('billableMemberDetails', () => {
+      let billableMemberDetailsResult;
+
+      beforeEach(async () => {
+        GroupsApi.fetchBillableGroupMemberMemberships.mockResolvedValueOnce({
+          data: mockMemberDetails,
+        });
+        GroupsApi.fetchBillableGroupMemberIndirectMemberships.mockResolvedValueOnce({
+          data: mockMemberDetails,
+        });
+        billableMemberDetailsResult = await resolvers.Query.billableMemberDetails(null, {
+          namespaceId: 1,
+          memberId: 2,
+        });
+      });
+
+      it('calls fetchBillableGroupMemberMemberships and fetchBillableGroupMemberIndirectMemberships endpoints', () => {
+        expect(GroupsApi.fetchBillableGroupMemberMemberships).toHaveBeenCalledWith(1, 2);
+        expect(GroupsApi.fetchBillableGroupMemberIndirectMemberships).toHaveBeenCalledWith(1, 2);
+
+        expect(billableMemberDetailsResult).toMatchObject({
+          hasIndirectMembership: false,
+          memberships: [
+            {
+              id: 173,
+              source_id: 155,
+              source_full_name: 'group_with_ultimate_plan / subgroup',
+              created_at: '2021-02-25T08:21:32.257Z',
+              expires_at: null,
+              access_level: { string_value: 'Owner', integer_value: 50 },
+            },
+          ],
         });
       });
     });

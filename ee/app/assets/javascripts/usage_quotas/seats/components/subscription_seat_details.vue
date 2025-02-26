@@ -1,9 +1,11 @@
 <script>
 import { GlTableLite, GlBadge, GlLink } from '@gitlab/ui';
-// eslint-disable-next-line no-restricted-imports
-import { mapState, mapActions } from 'vuex';
 import { formatDate } from '~/lib/utils/datetime_utility';
+import { createAlert } from '~/alert';
+import { s__ } from '~/locale';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { membershipDetailsFields } from '../constants';
+import getBillableMemberDetailsQuery from '../graphql/get_billable_member_details.query.graphql';
 import SubscriptionSeatDetailsLoader from './subscription_seat_details_loader.vue';
 
 export default {
@@ -13,40 +15,55 @@ export default {
     GlLink,
     SubscriptionSeatDetailsLoader,
   },
+  inject: ['namespaceId'],
   props: {
     seatMemberId: {
       type: Number,
       required: true,
     },
   },
-  computed: {
-    ...mapState({
-      userDetailsEntry(state) {
-        return state.userDetails[this.seatMemberId];
+  data() {
+    return {
+      billableMemberDetails: {},
+    };
+  },
+  apollo: {
+    billableMemberDetails: {
+      query: getBillableMemberDetailsQuery,
+      variables() {
+        return {
+          namespaceId: this.namespaceId,
+          memberId: this.seatMemberId,
+        };
       },
-    }),
-    items() {
-      return this.userDetailsEntry.items;
+      update({ billableMemberDetails }) {
+        return billableMemberDetails;
+      },
+      error: (error) => {
+        createAlert({
+          message: s__('Billing|An error occurred while getting a billable member details.'),
+        });
+
+        Sentry.captureException(error);
+      },
     },
-    isLoaderShown() {
-      return this.userDetailsEntry.isLoading || this.userDetailsEntry.hasError;
+  },
+  computed: {
+    items() {
+      return this.billableMemberDetails.memberships;
     },
     fields() {
-      return membershipDetailsFields(this.userDetailsEntry.hasIndirectMembership);
+      return membershipDetailsFields(this.billableMemberDetails.hasIndirectMembership);
     },
   },
-  created() {
-    this.fetchBillableMemberDetails(this.seatMemberId);
-  },
   methods: {
-    ...mapActions(['fetchBillableMemberDetails']),
     formatDate,
   },
 };
 </script>
 
 <template>
-  <div v-if="isLoaderShown">
+  <div v-if="$apollo.queries.billableMemberDetails.loading">
     <subscription-seat-details-loader />
   </div>
   <gl-table-lite v-else :fields="fields" :items="items" data-testid="seat-usage-details">

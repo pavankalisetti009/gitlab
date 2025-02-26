@@ -9,7 +9,14 @@ RSpec.describe Ai::AmazonQ::DestroyService, feature_category: :ai_agents do
     let_it_be(:doorkeeper_application) { create(:doorkeeper_application) }
     let_it_be(:role_arn) { SecureRandom.hex }
 
+    let(:params) { { role_arn: 'a' } }
+    let(:status) { 204 }
+    let(:body) { nil }
+
     before do
+      stub_request(:post, "#{Gitlab::AiGateway.url}/v1/amazon_q/oauth/application/delete")
+        .and_return(status: status, body: body)
+
       Ai::Setting.instance.update!(
         amazon_q_service_account_user_id: service_account.id,
         amazon_q_oauth_application_id: doorkeeper_application.id,
@@ -39,6 +46,18 @@ RSpec.describe Ai::AmazonQ::DestroyService, feature_category: :ai_agents do
         expect(instance.execute).to have_attributes(
           success?: false,
           message: 'Oh oh!'
+        )
+      end
+    end
+
+    context 'when the AI client returns an error' do
+      let(:status) { 403 }
+      let(:body) { '403 Unauthorized' }
+
+      it 'responds with AI Gateway error' do
+        expect(instance.execute).to have_attributes(
+          success?: false,
+          message: 'Application could not be deleted by the AI Gateway: Error 403 - 403 Unauthorized'
         )
       end
     end

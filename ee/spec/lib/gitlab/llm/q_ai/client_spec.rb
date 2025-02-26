@@ -138,4 +138,38 @@ RSpec.describe Gitlab::Llm::QAi::Client, feature_category: :ai_agents do
       expect(perform_create_auth_application.parsed_response).to eq(response)
     end
   end
+
+  describe '#perform_delete_auth_application' do
+    subject(:perform_delete_auth_application) do
+      described_class.new(user).perform_delete_auth_application(role_arn)
+    end
+
+    before do
+      payload = {
+        role_arn: role_arn
+      }
+
+      stub_request(:post, "#{Gitlab::AiGateway.url}/v1/amazon_q/oauth/application/delete")
+        .with(body: payload.to_json)
+        .to_return(body: response)
+    end
+
+    it 'makes expected HTTP post request' do
+      expect(service_data).to receive_messages(
+        name: 'amazon_q_integration',
+        access_token: 'cc_token'
+      )
+      expect(::CloudConnector::AvailableServices).to receive(:find_by_name)
+        .with(:amazon_q_integration).and_return(service_data)
+
+      expect(logger).to receive(:conditional_info)
+        .with(user, a_hash_including(
+          message: 'Received successful response from AI Gateway',
+          ai_component: 'abstraction_layer',
+          status: 200,
+          event_name: 'response_received'))
+
+      expect(perform_delete_auth_application.parsed_response).to eq(response)
+    end
+  end
 end

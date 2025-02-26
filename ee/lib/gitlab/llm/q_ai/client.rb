@@ -29,6 +29,20 @@ module Gitlab
           end
         end
 
+        def perform_delete_auth_application(role_arn)
+          payload = {
+            role_arn: role_arn
+          }
+
+          with_response_logger do
+            Gitlab::HTTP.post(
+              url(path: "/v1/amazon_q/oauth/application/delete"),
+              body: payload.to_json,
+              headers: request_headers
+            )
+          end
+        end
+
         def create_event(payload:, role_arn:)
           with_response_logger do
             Gitlab::HTTP.post(

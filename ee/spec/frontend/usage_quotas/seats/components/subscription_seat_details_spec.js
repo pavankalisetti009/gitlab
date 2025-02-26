@@ -1,70 +1,62 @@
-import { GlTableLite, GlBadge } from '@gitlab/ui';
-import { shallowMount, mount } from '@vue/test-utils';
+import { GlBadge, GlTableLite } from '@gitlab/ui';
+import { mount, shallowMount } from '@vue/test-utils';
 import Vue from 'vue';
-// eslint-disable-next-line no-restricted-imports
-import Vuex from 'vuex';
+import VueApollo from 'vue-apollo';
 import { cloneDeep } from 'lodash';
 import SubscriptionSeatDetails from 'ee/usage_quotas/seats/components/subscription_seat_details.vue';
 import SubscriptionSeatDetailsLoader from 'ee/usage_quotas/seats/components/subscription_seat_details_loader.vue';
-import createStore from 'ee/usage_quotas/seats/store';
-import initState from 'ee/usage_quotas/seats/store/state';
+import { createAlert } from '~/alert';
 import { mockMemberDetails } from 'ee_jest/usage_quotas/seats/mock_data';
-import { stubComponent } from 'helpers/stub_component';
+import waitForPromises from 'helpers/wait_for_promises';
+import createMockApollo from 'helpers/mock_apollo_helper';
 
-Vue.use(Vuex);
+jest.mock('~/alert');
+jest.mock('ee/api');
+jest.mock('ee/api/groups_api');
+
+Vue.use(VueApollo);
 
 describe('SubscriptionSeatDetails', () => {
   let wrapper;
-  const actions = {
-    fetchBillableMemberDetails: jest.fn(),
-  };
 
-  const createComponent = ({ initialUserDetails, mountFn = shallowMount } = {}) => {
+  const createComponent = ({
+    membershipsResolver = { memberships: mockMemberDetails, hasIndirectMembership: false },
+    mountFn = shallowMount,
+  } = {}) => {
     const seatMemberId = 1;
-    const store = createStore(initState({ namespaceId: 1 }));
-    store.state = {
-      ...store.state,
-      userDetails: {
-        [seatMemberId]: {
-          isLoading: false,
-          hasError: false,
-          items: mockMemberDetails,
-          ...initialUserDetails,
+
+    const resolvers = {
+      Query: {
+        billableMemberDetails() {
+          return membershipsResolver;
         },
       },
     };
 
+    const apolloProvider = createMockApollo([], resolvers);
+
     wrapper = mountFn(SubscriptionSeatDetails, {
+      apolloProvider,
       propsData: {
         seatMemberId,
       },
-      store: new Vuex.Store({ ...store, actions }),
-      stubs: mountFn === shallowMount ? { GlTableLite: stubComponent(GlTableLite) } : {},
+      provide: {
+        namespaceId: 1,
+      },
+      stubs: {
+        GlTableLite,
+      },
     });
   };
 
   const findRoleCell = () => wrapper.find('tbody td:nth-child(4)');
 
-  describe('on created', () => {
-    beforeEach(() => {
-      createComponent();
-    });
-
-    it('calls fetchBillableMemberDetails', () => {
-      expect(actions.fetchBillableMemberDetails).toHaveBeenCalledWith(expect.any(Object), 1);
-    });
-  });
-
   describe('loading state', () => {
-    beforeEach(() => {
-      createComponent({
-        initialUserDetails: {
-          isLoading: true,
-        },
-      });
-    });
-
     it('displays skeleton loader', () => {
+      // creating a resolver that doesn't resolve will trigger the loader
+      const membershipsResolver = jest.fn();
+      createComponent({ membershipsResolver });
+
       expect(wrapper.findComponent(SubscriptionSeatDetailsLoader).isVisible()).toBe(true);
     });
   });
@@ -72,22 +64,22 @@ describe('SubscriptionSeatDetails', () => {
   describe('error state', () => {
     beforeEach(() => {
       createComponent({
-        initialUserDetails: {
-          isLoading: false,
-          hasError: true,
-        },
+        membershipsResolver: jest.fn().mockRejectedValue(new Error('GraphQL networkError')),
       });
+      return waitForPromises();
     });
 
-    it('displays skeleton loader', () => {
-      expect(wrapper.findComponent(SubscriptionSeatDetailsLoader).isVisible()).toBe(true);
+    it('calls createAlert with error message', () => {
+      expect(createAlert).toHaveBeenCalledWith({
+        message: 'An error occurred while getting a billable member details.',
+      });
     });
   });
 
   describe('membership role', () => {
-    it('shows base role if there is no custom role', () => {
+    it('shows base role if there is no custom role', async () => {
       createComponent({ mountFn: mount });
-
+      await waitForPromises();
       expect(findRoleCell().text()).toBe('Owner');
     });
 
@@ -95,8 +87,9 @@ describe('SubscriptionSeatDetails', () => {
       beforeEach(() => {
         const items = cloneDeep(mockMemberDetails);
         items[0].access_level.custom_role = { id: 1, name: 'Custom role name' };
-
-        createComponent({ mountFn: mount, initialUserDetails: { items } });
+        const membershipResolver = { memberships: items, hasIndirectMembership: false };
+        createComponent({ mountFn: mount, membershipsResolver: membershipResolver });
+        return waitForPromises();
       });
 
       it('shows custom role name', () => {
