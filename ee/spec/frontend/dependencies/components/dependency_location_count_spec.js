@@ -31,7 +31,12 @@ describe('Dependency Location Count component', () => {
     ],
   };
 
-  const createComponent = ({ propsData, mountFn = shallowMountExtended, ...options } = {}) => {
+  const createComponent = ({
+    propsData,
+    mountFn = shallowMountExtended,
+    dependencyPaths = true,
+    ...options
+  } = {}) => {
     wrapper = mountFn(DependencyLocationCount, {
       propsData: {
         ...{
@@ -40,7 +45,12 @@ describe('Dependency Location Count component', () => {
         },
         ...propsData,
       },
-      provide: { locationsEndpoint: endpoint },
+      provide: {
+        locationsEndpoint: endpoint,
+        glFeatures: {
+          dependencyPaths,
+        },
+      },
       ...options,
     });
   };
@@ -50,6 +60,12 @@ describe('Dependency Location Count component', () => {
   const findLocationInfo = () => wrapper.findComponent(GlLink);
   const findUnknownLocationInfo = () => wrapper.findByTestId('unknown-path');
   const findUnknownLocationIcon = () => findUnknownLocationInfo().findComponent(GlIcon);
+  const findDependencyPathButton = () => wrapper.findByTestId('dependency-path-button');
+
+  const clickLocationList = async () => {
+    await findLocationList().vm.$emit('shown');
+    await waitForPromises();
+  };
 
   beforeEach(() => {
     mockAxios = new MockAdapter(axios);
@@ -125,8 +141,7 @@ describe('Dependency Location Count component', () => {
     });
 
     it('renders location information', async () => {
-      await findLocationList().vm.$emit('shown');
-      await waitForPromises();
+      await clickLocationList();
 
       expect(findLocationInfo().attributes('href')).toBe(blobPath);
       expect(findLocationInfo().text()).toContain(path);
@@ -153,8 +168,7 @@ describe('Dependency Location Count component', () => {
       });
 
       it('renders location information', async () => {
-        await findLocationList().vm.$emit('shown');
-        await waitForPromises();
+        await clickLocationList();
 
         expect(findUnknownLocationIcon().props('name')).toBe('error');
         expect(findUnknownLocationInfo().text()).toContain(unknownPath);
@@ -174,12 +188,44 @@ describe('Dependency Location Count component', () => {
       });
 
       it(`renders listbox with searchable set to ${searchable}`, async () => {
-        await findLocationList().vm.$emit('shown');
-        await waitForPromises();
+        await clickLocationList();
 
         expect(findLocationList().props()).toMatchObject({
           headerText: `${locationCount} locations`,
           searchable,
+        });
+      });
+    });
+
+    describe('with dependency path', () => {
+      it('shows the dependency path', async () => {
+        await clickLocationList();
+        expect(findDependencyPathButton().exists()).toBe(true);
+      });
+
+      it('emits event and passes the project and selected location data', async () => {
+        await clickLocationList();
+
+        findDependencyPathButton().vm.$emit('click');
+        await waitForPromises();
+
+        const emittedData = wrapper.emitted('click-dependency-path')[0][0];
+
+        expect(emittedData.location).toEqual(locationsData.locations[0].location);
+        expect(emittedData.project).toEqual(locationsData.locations[0].project);
+      });
+
+      describe('when feature flag "dependencyPaths" is disabled', () => {
+        it('does not show the dependency path', async () => {
+          createComponent({
+            mountFn: mountExtended,
+            dependencyPaths: false,
+          });
+          mockAxios.onGet(endpoint).reply(HTTP_STATUS_OK, locationsData);
+
+          await clickLocationList();
+
+          expect(findDependencyPathButton().exists()).toBe(false);
         });
       });
     });

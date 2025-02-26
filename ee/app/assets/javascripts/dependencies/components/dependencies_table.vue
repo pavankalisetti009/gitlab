@@ -137,18 +137,27 @@ export default {
       showDetails();
       this.$emit('row-click', item);
     },
-    toggleDrawer(item) {
-      const { occurrenceId } = item;
+    toggleDrawer(item, emittedItem) {
+      let drawerId = item.occurrenceId;
+      const drawerItem = { ...item };
 
-      if (this.drawerId === occurrenceId) {
+      // On group level, occurrenceId isn't unique, so we use project and location
+      // from emittedItem to create a unique ID and pass that extra data to the drawer.
+      if (emittedItem !== undefined) {
+        const { project, location } = emittedItem;
+        drawerItem.project = project;
+        drawerId += `${project.name}${location.path}`;
+      }
+
+      if (this.drawerId === drawerId) {
         this.closeDrawer();
       } else {
-        this.openDrawer(occurrenceId, item);
+        this.openDrawer(drawerId, drawerItem);
       }
     },
-    openDrawer(id, item) {
-      this.drawerId = id;
-      this.drawerDependency = item;
+    openDrawer(drawerId, drawerItem) {
+      this.drawerId = drawerId;
+      this.drawerDependency = drawerItem;
     },
     closeDrawer() {
       this.drawerId = null;
@@ -233,16 +242,19 @@ export default {
           v-if="item.occurrenceCount"
           :location-count="item.occurrenceCount"
           :component-id="item.componentId"
+          @click-dependency-path="toggleDrawer(item, $event)"
         />
-        <dependency-location v-else-if="item.location" :location="item.location" />
-        <gl-button
-          v-if="glFeatures.dependencyPaths"
-          class="gl-mt-2"
-          size="small"
-          data-testid="dependency-path-button"
-          @click="toggleDrawer(item)"
-          >{{ $options.i18n.dependencyPathButtonText }}</gl-button
-        >
+        <template v-else-if="item.location">
+          <dependency-location :location="item.location" />
+          <gl-button
+            v-if="glFeatures.dependencyPaths"
+            class="gl-mt-2"
+            size="small"
+            data-testid="dependency-path-button"
+            @click="toggleDrawer(item)"
+            >{{ $options.i18n.dependencyPathButtonText }}</gl-button
+          >
+        </template>
       </template>
 
       <template #cell(license)="{ item }">

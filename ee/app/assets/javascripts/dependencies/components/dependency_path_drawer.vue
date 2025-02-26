@@ -27,8 +27,17 @@ export default {
       default: false,
     },
   },
+  computed: {
+    showHeader() {
+      return this.dependency?.name;
+    },
+    showProject() {
+      return this.dependency.project?.name;
+    },
+  },
   i18n: {
     drawerTitle: s__('Vulnerability|Dependency paths'),
+    projectTitle: s__('Vulnerability|Project'),
   },
   getContentWrapperHeight,
   DRAWER_Z_INDEX,
@@ -49,12 +58,16 @@ export default {
         {{ $options.i18n.drawerTitle }}
       </h4>
     </template>
-    <template #header>
+    <template v-if="showHeader" #header>
       <div class="gl-mt-3" data-testid="dependency-path-drawer-header">
-        <span class="gl-font-bold">{{ dependency.name }}</span
-        >&nbsp;{{ dependency.version }}
+        <strong>{{ dependency.name }}</strong>
+        <span class="gl-ml-2">{{ dependency.version }}</span>
       </div>
     </template>
+    <div v-if="showProject" data-testid="dependency-path-drawer-project">
+      <strong>{{ $options.i18n.projectTitle }}:</strong>
+      <span>{{ dependency.project.name }}</span>
+    </div>
     <ul class="gl-list-none gl-p-2">
       <li
         v-for="(path, index) in $options.TEST_PATHS"
