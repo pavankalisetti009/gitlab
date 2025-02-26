@@ -16,7 +16,7 @@ module Gitlab
         return unless config
 
         base_config = {
-          adapter: self.adapter,
+          adapter: :typhoeus,
           urls: config[:url],
           transport_options: {
             request: {
@@ -40,10 +40,6 @@ module Gitlab
         else
           ::Elasticsearch::Client.new(base_config)
         end
-      end
-
-      def self.adapter
-        ::Feature.enabled?(:use_typhoeus_elasticsearch_adapter) ? :typhoeus : :net_http
       end
 
       def self.debug?

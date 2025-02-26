@@ -7,7 +7,7 @@ RSpec.describe GemExtensions::Elasticsearch::Model::Client, feature_category: :g
   let(:instance) { dummy_class.new }
   let(:config) { { url: 'http://localhost:9200' } }
   let(:retry_on_failure) { 3 }
-  let(:adapter) { :net_http }
+  let(:adapter) { :typhoeus }
   let(:stubbed_client) { double('ElasticsearchClient') } # rubocop: disable RSpec/VerifiedDoubles -- actual client is defined in the gem
 
   before do
@@ -72,20 +72,6 @@ RSpec.describe GemExtensions::Elasticsearch::Model::Client, feature_category: :g
       instance.client(:search)
     end
 
-    it 'creates new clients when adapter changes' do
-      instance.client
-      instance.client(:search)
-
-      new_adapter = :typhoeus
-      allow(::Gitlab::Elastic::Client).to receive(:adapter).and_return(new_adapter)
-
-      expect(::Gitlab::Elastic::Client).to receive(:build).with(config)
-      expect(::Gitlab::Elastic::Client).to receive(:build).with(config.merge(retry_on_failure: retry_on_failure))
-
-      instance.client
-      instance.client(:search)
-    end
-
     describe 'retry_on_failure' do
       before do
         allow(::Gitlab::Elastic::Client).to receive(:build).and_call_original
@@ -112,6 +98,5 @@ RSpec.describe GemExtensions::Elasticsearch::Model::Client, feature_category: :g
     described_class.cached_search_client = nil
     described_class.cached_config = nil
     described_class.cached_retry_on_failure = nil
-    described_class.cached_adapter = nil
   end
 end
