@@ -8,7 +8,6 @@ module Search
       METRICS = %i[
         indices_metrics
         node_metrics
-        tasks_metrics
       ].freeze
 
       def self.execute(metric)
@@ -34,13 +33,14 @@ module Search
 
       def node_metrics
         ::Search::Zoekt::Node.online.find_each do |node|
+          task_count_processing_queue = node.tasks.processing_queue.count
           log_data = build_structured_payload(
             meta: node.metadata_json,
             enabled_namespaces_count: node.enabled_namespaces.count,
             indices_count: node.indices.count,
             task_count_pending: node.tasks.pending.count,
             task_count_failed: node.tasks.failed.count,
-            task_count_processing_queue: node.tasks.processing_queue.count,
+            task_count_processing_queue: task_count_processing_queue,
             task_count_orphaned: node.tasks.orphaned.count,
             task_count_done: node.tasks.done.count,
             message: 'Reporting metrics',
@@ -48,6 +48,7 @@ module Search
           )
 
           logger.info(log_data)
+          set_task_processing_queue_size_metric(node.metadata['name'], task_count_processing_queue)
         end
       end
 
@@ -61,11 +62,11 @@ module Search
         logger.info(log_data)
       end
 
-      def tasks_metrics
+      def set_task_processing_queue_size_metric(node_name, count)
         task_gauge = ::Gitlab::Metrics.gauge(:search_zoekt_task_processing_queue_size,
           'Number of tasks waiting to be processed by Zoekt', {}, :max)
 
-        task_gauge.set({}, ::Search::Zoekt::Task.processing_queue.count)
+        task_gauge.set({ node_name: node_name }, count)
       end
 
       def logger
