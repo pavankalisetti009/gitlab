@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { createAlert } from '~/alert';
+import { smoothScrollTop } from '~/behaviors/smooth_scroll';
 import axios from '~/lib/utils/axios_utils';
 import {
   convertObjectPropsToCamelCase,
@@ -36,6 +37,7 @@ export const useAccessTokens = defineStore('accessTokens', {
       token: null, // New and rotated token
       tokens: [],
       total: 0,
+      urlRevoke: '',
       urlRotate: '',
       urlShow: '',
     };
@@ -60,8 +62,27 @@ export const useAccessTokens = defineStore('accessTokens', {
       }
     },
     async revokeToken(tokenId) {
-      // TODO
-      return tokenId;
+      this.alert?.dismiss();
+      this.busy = true;
+      try {
+        const url = this.urlRevoke.replace(':id', this.id);
+        await axios.delete(`${url}/${tokenId}`);
+        this.alert = createAlert({
+          message: s__('AccessTokens|The token was revoked successfully.'),
+          variant: 'success',
+        });
+        smoothScrollTop();
+        // Reset pagination to avoid situations like: page 2 contains only one token and after it
+        // is revoked the page shows `No tokens access tokens` (but there are 20 tokens on page 1).
+        this.page = 1;
+        await this.fetchTokens({ clearAlert: false });
+      } catch {
+        this.alert = createAlert({
+          message: s__('AccessTokens|An error occurred while revoking the token.'),
+        });
+      } finally {
+        this.busy = false;
+      }
     },
     async rotateToken(tokenId, expiresAt) {
       this.alert?.dismiss();
@@ -69,7 +90,7 @@ export const useAccessTokens = defineStore('accessTokens', {
       try {
         const url = this.urlRotate.replace(':id', this.id);
         const { data } = await axios.post(`${url}/${tokenId}/rotate`, { expires_at: expiresAt });
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        smoothScrollTop();
         // Reset pagination because after rotation the token may appear on a different page.
         this.page = 1;
         await this.fetchTokens({ clearAlert: false });
@@ -83,9 +104,10 @@ export const useAccessTokens = defineStore('accessTokens', {
         this.busy = false;
       }
     },
-    setup({ filters, id, urlRotate, urlShow }) {
+    setup({ filters, id, urlRevoke, urlRotate, urlShow }) {
       this.filters = filters;
       this.id = id;
+      this.urlRevoke = urlRevoke;
       this.urlRotate = urlRotate;
       this.urlShow = urlShow;
     },
@@ -93,7 +115,7 @@ export const useAccessTokens = defineStore('accessTokens', {
       this.filters = filters;
     },
     setPage(page) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      smoothScrollTop();
       this.page = page;
     },
     setToken(token) {

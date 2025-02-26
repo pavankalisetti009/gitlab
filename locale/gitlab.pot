@@ -2918,6 +2918,9 @@ msgstr ""
 msgid "AccessTokens|An error occurred while fetching the tokens."
 msgstr ""
 
+msgid "AccessTokens|An error occurred while revoking the token."
+msgstr ""
+
 msgid "AccessTokens|An error occurred while rotating the token."
 msgstr ""
 
@@ -3095,6 +3098,9 @@ msgid "AccessTokens|The last five distinct IP addresses from where the token was
 msgstr ""
 
 msgid "AccessTokens|The last time a token was used"
+msgstr ""
+
+msgid "AccessTokens|The token was revoked successfully."
 msgstr ""
 
 msgid "AccessTokens|They are the only accepted password when you have Two-Factor Authentication (2FA) enabled."
