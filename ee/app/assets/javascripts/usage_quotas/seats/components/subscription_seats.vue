@@ -148,7 +148,6 @@ export default {
           :seats-used="maxSeatsUsed"
           :seats-owed="seatsOwed"
           :purchase-button-link="addSeatsHref"
-          :namespace-id="namespaceId"
         />
       </div>
     </div>

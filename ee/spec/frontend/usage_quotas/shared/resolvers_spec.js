@@ -15,7 +15,6 @@ const subscriptionMockData = {
   billing: {
     subscription_end_date: '2024-12-31',
     subscription_start_date: '2024-01-01',
-    trial_ends_on: null,
   },
   plan: {
     code: 'premium',

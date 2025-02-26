@@ -1,6 +1,5 @@
 import * as getters from 'ee/usage_quotas/seats/store/getters';
 import State from 'ee/usage_quotas/seats/store/state';
-import { PLAN_CODE_FREE } from 'ee/usage_quotas/seats/constants';
 
 describe('Usage Quotas Seats getters', () => {
   let state;
@@ -28,18 +27,6 @@ describe('Usage Quotas Seats getters', () => {
       state[key] = true;
 
       expect(getters.isLoading(state)).toBe(true);
-    });
-  });
-
-  describe('hasFreePlan', () => {
-    it.each`
-      plan              | expected
-      ${PLAN_CODE_FREE} | ${true}
-      ${undefined}      | ${false}
-    `('return $expected when is $plan', ({ plan, expected }) => {
-      state.planCode = plan;
-
-      expect(getters.hasFreePlan(state)).toBe(expected);
     });
   });
 });

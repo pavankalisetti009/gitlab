@@ -3,7 +3,6 @@ export default ({
   maxFreeNamespaceSeats = null,
   enforcementFreeUserCapEnabled = false,
 } = {}) => ({
-  initialized: false,
   isLoadingBillableMembers: false,
   isLoadingGitlabSubscription: false,
   isChangingMembershipState: false,
@@ -12,8 +11,6 @@ export default ({
   namespaceId,
   members: [],
   total: null,
-  planCode: null,
-  planName: null,
   page: null,
   perPage: null,
   billableMemberToRemove: null,

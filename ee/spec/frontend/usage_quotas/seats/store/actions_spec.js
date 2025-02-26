@@ -25,32 +25,6 @@ describe('Usage Quotas Seats actions', () => {
     state = createState();
   });
 
-  describe('fetchInitialData', () => {
-    it('triggers initializing actions', async () => {
-      state.initialized = false;
-
-      await testAction({
-        action: actions.fetchInitialData,
-        payload: null,
-        state,
-        expectedMutations: [{ type: types.SET_STATE_INITIALIZED }],
-        expectedActions: [{ type: 'fetchBillableMembersList' }],
-      });
-    });
-
-    it('will not initialize twice', async () => {
-      state.initialized = true;
-
-      await testAction({
-        action: actions.fetchInitialData,
-        payload: null,
-        state,
-        expectedMutations: [],
-        expectedActions: [],
-      });
-    });
-  });
-
   describe('fetchBillableMembersList', () => {
     const payload = {
       page: 5,

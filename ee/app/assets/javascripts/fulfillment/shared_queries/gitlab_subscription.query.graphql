@@ -20,7 +20,6 @@ query getGitlabSubscription($namespaceId: ID!) {
     billing @client {
       subscription_start_date
       subscription_end_date
-      trial_ends_on
     }
   }
 }
