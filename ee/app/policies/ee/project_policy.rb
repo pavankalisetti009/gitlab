@@ -443,7 +443,7 @@ module EE
         enable :update_security_orchestration_policy_project
       end
 
-      rule { security_orchestration_policies_enabled & can?(:guest_access) }.policy do
+      rule { security_orchestration_policies_enabled & can?(:reporter_access) }.policy do
         enable :read_security_orchestration_policy_project
       end
 
@@ -824,6 +824,8 @@ module EE
       rule { issue_analytics_enabled }.enable :read_issue_analytics
 
       rule { can?(:read_merge_request) & code_review_analytics_enabled }.enable :read_code_review_analytics
+
+      rule { private_project & planner }.prevent :read_code_review_analytics
 
       rule { (admin | reporter) & dora4_analytics_available }
         .enable :read_dora4_analytics

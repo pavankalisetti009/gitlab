@@ -29,9 +29,9 @@ RSpec.describe Mutations::SecurityPolicy::AssignSecurityPolicyProject, feature_c
             container.add_owner(owner)
           end
 
-          context 'when user is a member of the security project' do
+          context 'when user has at least reporter access on the security project' do
             before_all do
-              policy_project.add_guest(owner)
+              policy_project.add_reporter(owner)
             end
 
             it 'assigns the security policy project' do
