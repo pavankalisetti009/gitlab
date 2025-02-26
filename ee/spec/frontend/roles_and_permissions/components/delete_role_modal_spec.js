@@ -1,11 +1,12 @@
-import { GlModal, GlAlert } from '@gitlab/ui';
-import Vue, { nextTick } from 'vue';
+import { GlModal } from '@gitlab/ui';
+import Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 import VueApollo from 'vue-apollo';
 import DeleteRoleModal from 'ee/roles_and_permissions/components/delete_role_modal.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import deleteMemberRoleMutation from 'ee/roles_and_permissions/graphql/delete_member_role.mutation.graphql';
 import waitForPromises from 'helpers/wait_for_promises';
+import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
 
 Vue.use(VueApollo);
 
@@ -26,164 +27,80 @@ describe('Delete role modal', () => {
     wrapper = shallowMount(DeleteRoleModal, {
       propsData: { role },
       apolloProvider: createMockApollo([[deleteMemberRoleMutation, deleteMutationHandler]]),
+      stubs: { ConfirmActionModal },
     });
   };
 
-  const findModal = () => wrapper.findComponent(GlModal);
-  const findAlert = () => wrapper.findComponent(GlAlert);
+  const findModal = () => wrapper.findComponent(ConfirmActionModal);
+  const confirmModalAction = () => {
+    findModal().findComponent(GlModal).vm.$emit('primary', { preventDefault: jest.fn() });
+    return waitForPromises();
+  };
 
-  describe('on creation', () => {
+  describe('when there is no role', () => {
+    beforeEach(() => createComponent({ role: null }));
+
+    it('does not show modal', () => {
+      expect(findModal().exists()).toBe(false);
+    });
+  });
+
+  describe('when there is a role', () => {
     beforeEach(() => createComponent());
 
-    it('shows modal title', () => {
-      expect(findModal().attributes('title')).toEqual('Delete custom role?');
-    });
-
-    it('shows modal text', () => {
+    it('shows modal', () => {
       expect(findModal().text()).toBe('Are you sure you want to delete this custom role?');
-    });
-
-    it('shows Delete role button', () => {
-      expect(findModal().props('actionPrimary')).toEqual({
-        text: 'Delete role',
-        attributes: { variant: 'danger', loading: false },
+      expect(findModal().props()).toMatchObject({
+        title: 'Delete custom role?',
+        actionText: 'Delete role',
+        actionFn: wrapper.vm.deleteRole,
+        modalId: 'delete-role-modal',
       });
     });
 
-    it('shows Cancel button', () => {
-      expect(findModal().props('actionCancel')).toEqual({
-        text: 'Cancel',
-        attributes: { disabled: false },
+    describe('when the modal is closed', () => {
+      it('emits close event', () => {
+        findModal().vm.$emit('close');
+
+        expect(wrapper.emitted('close')).toHaveLength(1);
       });
     });
 
-    it.each(['ok', 'esc', 'cancel', 'backdrop', 'headerclose', null])(
-      'allows modal to be closed for the "%s" trigger',
-      (trigger) => {
-        const event = { preventDefault: jest.fn(), trigger };
-        findModal().vm.$emit('hide', event);
+    describe('when the modal action is confirmed', () => {
+      beforeEach(() => confirmModalAction());
 
-        expect(event.preventDefault).not.toHaveBeenCalled();
-      },
-    );
+      it('runs delete mutation', () => {
+        expect(defaultDeleteMutationHandler).toHaveBeenCalledTimes(1);
+        expect(defaultDeleteMutationHandler).toHaveBeenCalledWith({
+          input: { id: 'gid://gitlab/MemberRole/5' },
+        });
+      });
 
-    it('emits close event when modal is closed', () => {
-      findModal().vm.$emit('hidden');
-
-      expect(wrapper.emitted('close')).toHaveLength(1);
+      it('emits deleted event', () => {
+        expect(wrapper.emitted('deleted')).toHaveLength(1);
+      });
     });
   });
 
-  it.each`
-    phrase     | role
-    ${'shows'} | ${defaultRole}
-    ${'hides'} | ${null}
-  `('$phrase modal when role is $role', ({ role }) => {
-    createComponent({ role });
-
-    expect(findModal().props('visible')).toBe(Boolean(role));
-  });
-
-  describe('when Delete role button is clicked', () => {
+  describe('when the mutation succeeds but returns an error', () => {
     beforeEach(() => {
-      createComponent();
-      findModal().vm.$emit('primary', new Event('primary'));
+      createComponent({ deleteMutationHandler: getDeleteMutationHandler('some error') });
+      return confirmModalAction();
     });
 
-    it('runs delete mutation', () => {
-      expect(defaultDeleteMutationHandler).toHaveBeenCalledTimes(1);
-      expect(defaultDeleteMutationHandler).toHaveBeenCalledWith({
-        input: { id: 'gid://gitlab/MemberRole/5' },
-      });
-    });
-
-    it('changes Delete role button to loading', () => {
-      expect(findModal().props('actionPrimary').attributes.loading).toBe(true);
-    });
-
-    it('changes Cancel button to disabled', () => {
-      expect(findModal().props('actionCancel').attributes.disabled).toBe(true);
-    });
-
-    it.each`
-      phrase                                     | trigger
-      ${'Delete role button is clicked'}         | ${'ok'}
-      ${'Cancel button is clicked'}              | ${'cancel'}
-      ${'Esc key is pressed'}                    | ${'esc'}
-      ${'modal backdrop is clicked'}             | ${'backdrop'}
-      ${'X icon in the modal header is clicked'} | ${'headerclose'}
-    `('prevents the modal from closing when the $phrase', ({ trigger }) => {
-      const event = { preventDefault: jest.fn(), trigger };
-      findModal().vm.$emit('hide', event);
-
-      expect(event.preventDefault).toHaveBeenCalledTimes(1);
-    });
-
-    it('emits deleted event when deletion is finished', async () => {
-      // Sanity check to make sure we don't prematurely emit the deleted event before the mutation is done.
-      expect(wrapper.emitted('deleted')).toBeUndefined();
-
-      await waitForPromises();
-
-      expect(wrapper.emitted('deleted')).toHaveLength(1);
+    it('shows specific error in the modal', () => {
+      expect(findModal().text()).toContain('Failed to delete role. some error');
     });
   });
 
-  describe('when the modal is closed', () => {
+  describe('when the mutation call itself fails', () => {
     beforeEach(() => {
-      createComponent();
-      findModal().vm.$emit('hidden');
+      createComponent({ deleteMutationHandler: jest.fn().mockRejectedValue() });
+      return confirmModalAction();
     });
 
-    it('emits close event', () => {
-      expect(wrapper.emitted('close')).toHaveLength(1);
-    });
-
-    it('re-enables Delete role button', () => {
-      expect(findModal().props('actionPrimary').attributes.loading).toBe(false);
-    });
-
-    it('re-enables Cancel button', () => {
-      expect(findModal().props('actionCancel').attributes.disabled).toBe(false);
-    });
-  });
-
-  describe.each`
-    phrase                                              | deleteMutationHandler                     | expectedText
-    ${'backend mutation response has an error message'} | ${getDeleteMutationHandler('some error')} | ${'Failed to delete role. some error'}
-    ${'role delete throws an exception'}                | ${jest.fn().mockRejectedValue()}          | ${'Failed to delete role.'}
-  `('when $phrase', ({ deleteMutationHandler, expectedText }) => {
-    beforeEach(() => {
-      createComponent({ deleteMutationHandler });
-      findModal().vm.$emit('primary', new Event('primary'));
-      return waitForPromises();
-    });
-
-    it('shows an alert', () => {
-      expect(findAlert().text()).toBe(expectedText);
-      expect(findAlert().props()).toMatchObject({
-        variant: 'danger',
-        dismissible: false,
-      });
-    });
-
-    it('shows modal as visible', () => {
-      expect(findModal().props('visible')).toBe(true);
-    });
-
-    it('re-enables Delete role button', () => {
-      expect(findModal().props('actionPrimary').attributes.loading).toBe(false);
-    });
-
-    it('re-enables Cancel button', () => {
-      expect(findModal().props('actionCancel').attributes.disabled).toBe(false);
-    });
-
-    it('clears alert when modal is closed', async () => {
-      findModal().vm.$emit('hidden');
-      await nextTick();
-
-      expect(findAlert().exists()).toBe(false);
+    it('shows general error in the modal', () => {
+      expect(findModal().text()).toContain('Failed to delete role.');
     });
   });
 });
