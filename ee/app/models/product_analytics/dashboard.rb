@@ -155,6 +155,18 @@ module ProductAnalytics
       )
     end
 
+    def self.dora_metrics_dashboard(container, config_project)
+      config = load_yaml_dashboard_config('dashboard', 'ee/lib/gitlab/analytics/dora_metrics')
+
+      new(
+        slug: 'dora_metrics',
+        container: container,
+        config: config,
+        config_project: config_project,
+        user_defined: false
+      )
+    end
+
     def self.builtin_dashboards(container, config_project, user)
       builtin = []
 
@@ -162,6 +174,7 @@ module ProductAnalytics
       builtin << value_stream_dashboard(container, config_project)
       builtin << ai_impact_dashboard(container, config_project, user)
       builtin << contributions_dashboard(container, config_project)
+      builtin << dora_metrics_dashboard(container, config_project) if container.dora_metrics_dashboard_enabled?(user)
 
       builtin.flatten
     end

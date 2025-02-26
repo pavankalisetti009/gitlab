@@ -4,8 +4,9 @@ type: SingleStat
 data:
   type: dora_metrics
   query:
-    metric: change_failure_rate
-    date_range: last_180_days
+    metric: lead_time_for_changes
+    dateRange: 180d
+    interval: ALL
 options:
-  unit: percent
+  unit: days
   decimalPlaces: 1

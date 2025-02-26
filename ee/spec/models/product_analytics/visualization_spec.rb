@@ -21,10 +21,6 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
     %w[
       dora_chart
       usage_overview
-      change_failure_rate_over_time
-      deployment_frequency_over_time
-      lead_time_for_changes_over_time
-      time_to_restore_service_over_time
       vsd_dora_metrics_table
       vsd_lifecycle_metrics_table
       vsd_security_metrics_table
@@ -48,6 +44,19 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
     ]
   end
 
+  let(:dora_metrics_available_visualizations) do
+    %w[
+      change_failure_rate_over_time
+      deployment_frequency_over_time
+      lead_time_for_changes_over_time
+      time_to_restore_service_over_time
+      change_failure_rate
+      deployment_frequency_average
+      lead_time_for_changes_median
+      time_to_restore_service_median
+    ]
+  end
+
   before do
     allow(Gitlab::CurrentSettings).to receive(:product_analytics_enabled?).and_return(true)
     stub_licensed_features(
@@ -61,6 +70,10 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
         'results' => [{ "data" => [{ "TrackedEvents.count" => "1" }] }]
       }))
     end
+
+    allow(Ability).to receive(:allowed?)
+                  .with(user, :read_dora4_analytics, anything)
+                  .and_return(false)
   end
 
   shared_examples_for 'a valid visualization' do
@@ -79,6 +92,20 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
 
     it 'includes built in visualizations for AI impact dashboard' do
       expect(subject.map(&:slug)).to include(*ai_impact_available_visualizations)
+    end
+  end
+
+  shared_examples_for 'shows DORA Metrics visualizations when available' do
+    before do
+      allow(Ability).to receive(:allowed?)
+                    .with(user, :read_enterprise_ai_analytics, anything)
+                    .and_return(true)
+                    .with(user, :read_dora4_analytics, anything)
+                    .and_return(true)
+    end
+
+    it 'includes built in visualizations for DORA metrics dashboard' do
+      expect(subject.map(&:slug)).to include(*dora_metrics_available_visualizations)
     end
   end
 
@@ -216,6 +243,7 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
       end
 
       it_behaves_like 'shows AI impact visualizations when available'
+      it_behaves_like 'shows DORA Metrics visualizations when available'
     end
   end
 
@@ -290,9 +318,19 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
   describe '.value_stream_dashboard_visualizations' do
     subject { described_class.value_stream_dashboard_visualizations }
 
-    num_builtin_visualizations = 11
+    num_builtin_visualizations = 7
 
     it 'returns the value stream dashboard builtin visualizations' do
+      expect(subject.count).to eq(num_builtin_visualizations)
+    end
+  end
+
+  describe '.dora_metrics_visualizations' do
+    subject { described_class.dora_metrics_visualizations }
+
+    num_builtin_visualizations = 8
+
+    it 'returns the dora metrics dashboard builtin visualizations' do
       expect(subject.count).to eq(num_builtin_visualizations)
     end
   end
