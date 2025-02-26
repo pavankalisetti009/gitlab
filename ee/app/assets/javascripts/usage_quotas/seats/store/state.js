@@ -7,7 +7,6 @@ export default ({
   isLoadingBillableMembers: false,
   isLoadingGitlabSubscription: false,
   isChangingMembershipState: false,
-  isRemovingBillableMember: false,
   removedBillableMemberId: null,
   hasError: false,
   namespaceId,

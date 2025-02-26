@@ -185,52 +185,6 @@ describe('Usage Quotas Seats mutations', () => {
     });
   });
 
-  describe('Billable member removal', () => {
-    const [memberToRemove] = mockDataSeats.data;
-
-    beforeEach(() => {
-      state.billableMemberToRemove = memberToRemove;
-      mutations[types.RECEIVE_BILLABLE_MEMBERS_SUCCESS](state, mockDataSeats);
-    });
-
-    it(`${types.SET_BILLABLE_MEMBER_TO_REMOVE}`, () => {
-      mutations[types.SET_BILLABLE_MEMBER_TO_REMOVE](state, memberToRemove);
-
-      expect(state.billableMemberToRemove).toMatchObject(memberToRemove);
-    });
-
-    it(`${types.REMOVE_BILLABLE_MEMBER}`, () => {
-      mutations[types.REMOVE_BILLABLE_MEMBER](state, memberToRemove);
-
-      expect(state).toMatchObject({ isRemovingBillableMember: true, hasError: false });
-    });
-
-    it(`${types.REMOVE_BILLABLE_MEMBER_SUCCESS}`, () => {
-      expect(state).toMatchObject({
-        isRemovingBillableMember: false,
-        billableMemberToRemove: memberToRemove,
-        removedBillableMemberId: null,
-      });
-
-      mutations[types.REMOVE_BILLABLE_MEMBER_SUCCESS](state, { memberId: memberToRemove.id });
-
-      expect(state).toMatchObject({
-        isRemovingBillableMember: false,
-        billableMemberToRemove: null,
-        removedBillableMemberId: memberToRemove.id,
-      });
-    });
-
-    it(`${types.REMOVE_BILLABLE_MEMBER_ERROR}`, () => {
-      mutations[types.REMOVE_BILLABLE_MEMBER_ERROR](state, memberToRemove);
-
-      expect(state).toMatchObject({
-        isRemovingBillableMember: false,
-        billableMemberToRemove: null,
-      });
-    });
-  });
-
   describe('fetching billable member details', () => {
     const member = mockDataSeats.data[0];
 

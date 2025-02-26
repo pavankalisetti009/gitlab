@@ -9,7 +9,7 @@ import {
   mockUserSubscription,
 } from 'ee_jest/usage_quotas/seats/mock_data';
 import testAction from 'helpers/vuex_action_helper';
-import { createAlert, VARIANT_SUCCESS } from '~/alert';
+import { createAlert } from '~/alert';
 import Tracking from '~/tracking';
 
 jest.mock('ee/api/groups_api');
@@ -214,101 +214,6 @@ describe('Usage Quotas Seats actions', () => {
       });
 
       expect(createAlert).toHaveBeenCalled();
-    });
-  });
-
-  describe('setBillableMemberToRemove', () => {
-    it('should commit the set member mutation', async () => {
-      const member = { id: 'test' };
-
-      await testAction({
-        action: actions.setBillableMemberToRemove,
-        payload: member,
-        state,
-        expectedMutations: [{ type: types.SET_BILLABLE_MEMBER_TO_REMOVE, payload: member }],
-      });
-    });
-  });
-
-  describe('removeBillableMember', () => {
-    beforeEach(() => {
-      state = {
-        namespaceId: 1,
-        billableMemberToRemove: {
-          id: 2,
-        },
-      };
-    });
-
-    describe('on success', () => {
-      it('dispatches the removeBillableMemberSuccess action', async () => {
-        GroupsApi.removeBillableMemberFromGroup.mockResolvedValue();
-
-        await testAction({
-          action: actions.removeBillableMember,
-          state,
-          expectedActions: [{ type: 'removeBillableMemberSuccess', payload: 2 }],
-          expectedMutations: [{ type: types.REMOVE_BILLABLE_MEMBER }],
-        });
-
-        expect(GroupsApi.removeBillableMemberFromGroup).toHaveBeenCalledWith(
-          state.namespaceId,
-          state.billableMemberToRemove.id,
-        );
-      });
-    });
-
-    describe('on error', () => {
-      it('dispatches the removeBillableMemberError action', async () => {
-        GroupsApi.removeBillableMemberFromGroup.mockRejectedValue();
-
-        await testAction({
-          action: actions.removeBillableMember,
-          state,
-          expectedActions: [{ type: 'removeBillableMemberError' }],
-          expectedMutations: [{ type: types.REMOVE_BILLABLE_MEMBER }],
-        });
-
-        expect(GroupsApi.removeBillableMemberFromGroup).toHaveBeenCalled();
-      });
-    });
-  });
-
-  describe('removeBillableMemberSuccess', () => {
-    const memberId = 13;
-
-    it('dispatches fetchBillableMembersList', async () => {
-      await testAction({
-        action: actions.removeBillableMemberSuccess,
-        payload: memberId,
-        state,
-        expectedActions: [
-          { type: 'fetchBillableMembersList' },
-          { type: 'fetchGitlabSubscription' },
-        ],
-
-        expectedMutations: [{ type: types.REMOVE_BILLABLE_MEMBER_SUCCESS, payload: { memberId } }],
-      });
-
-      expect(createAlert).toHaveBeenCalledWith({
-        message:
-          'User successfully scheduled for removal. This process might take some time. Refresh the page to see the changes.',
-        variant: VARIANT_SUCCESS,
-      });
-    });
-  });
-
-  describe('removeBillableMemberError', () => {
-    it('commits remove member error', async () => {
-      await testAction({
-        action: actions.removeBillableMemberError,
-        state,
-        expectedMutations: [{ type: types.REMOVE_BILLABLE_MEMBER_ERROR }],
-      });
-
-      expect(createAlert).toHaveBeenCalledWith({
-        message: 'An error occurred while removing a billable member.',
-      });
     });
   });
 
