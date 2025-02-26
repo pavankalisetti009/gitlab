@@ -1215,4 +1215,34 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
       end
     end
   end
+
+  describe "license management metrics for after_commit callbacks" do
+    subject(:create_ci_build) { create(:ci_build, project: project, name: name) }
+
+    let(:metrics) do
+      [
+        'counts.count_total_license_management_ci_builds_weekly',
+        'counts.count_total_license_management_ci_builds_monthly'
+      ]
+    end
+
+    context "with license_scanning ci build" do
+      let(:name) { 'license_scanning' }
+
+      it "increments license management metrics" do
+        expect { create_ci_build }
+          .to trigger_internal_events('create_ci_build')
+          .and increment_usage_metrics(*metrics)
+      end
+    end
+
+    context "with a different build name" do
+      let(:name) { 'test123' }
+
+      it "doesn't increment license management metrics" do
+        expect { create_ci_build }
+          .not_to increment_usage_metrics(*metrics)
+      end
+    end
+  end
 end
