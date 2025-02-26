@@ -82,6 +82,7 @@ module EE
         :zoekt_auto_delete_lost_nodes,
         :zoekt_auto_index_root_namespace,
         :zoekt_cpu_to_tasks_ratio,
+        :zoekt_rollout_batch_size,
         :zoekt_indexing_enabled,
         :zoekt_indexing_paused,
         :zoekt_search_enabled,
@@ -336,6 +337,16 @@ module EE
             :zoekt_cpu_to_tasks_ratio,
             step: 0.1,
             value: @application_setting.zoekt_cpu_to_tasks_ratio,
+            class: 'form-control gl-form-input'
+          )
+        ],
+        [
+          form.label(:zoekt_rollout_batch_size, _('Batch size of namespaces for initial indexing'),
+            class: 'label-bold'),
+          form.number_field(
+            :zoekt_rollout_batch_size,
+            step: 1,
+            value: @application_setting.zoekt_rollout_batch_size,
             class: 'form-control gl-form-input'
           )
         ]

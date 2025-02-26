@@ -9072,6 +9072,9 @@ msgstr ""
 msgid "Batch size"
 msgstr ""
 
+msgid "Batch size of namespaces for initial indexing"
+msgstr ""
+
 msgid "Batched Job|Background migrations"
 msgstr ""
 

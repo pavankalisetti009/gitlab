@@ -25,6 +25,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     it { expect(setting.zoekt_auto_delete_lost_nodes).to be true }
     it { expect(setting.zoekt_auto_index_root_namespace).to be false }
     it { expect(setting.zoekt_cpu_to_tasks_ratio).to eq(1.0) }
+    it { expect(setting.zoekt_rollout_batch_size).to eq(32) }
     it { expect(setting.zoekt_indexing_enabled).to be false }
     it { expect(setting.zoekt_indexing_paused).to be false }
     it { expect(setting.zoekt_search_enabled).to be false }
