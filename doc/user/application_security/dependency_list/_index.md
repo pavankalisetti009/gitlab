@@ -28,7 +28,7 @@ Software Bill of Materials, SBOM, or BOM.
 <i class="fa fa-youtube-play youtube" aria-hidden="true"></i>
 For an overview, see [Project Dependency](https://www.youtube.com/watch?v=ckqkn9Tnbw4).
 
-## Generate the dependency list
+## Set up the dependency list
 
 To list your project's dependencies, run [Dependency Scanning](../dependency_scanning/_index.md)
 or [Container Scanning](../container_scanning/_index.md) on the default branch of your project.
