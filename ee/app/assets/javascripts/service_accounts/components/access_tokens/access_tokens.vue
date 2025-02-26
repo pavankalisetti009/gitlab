@@ -21,7 +21,7 @@ export default {
     AccessToken,
     AccessTokenTable,
   },
-  inject: ['accessTokenRotate', 'accessTokenShow'],
+  inject: ['accessTokenRevoke', 'accessTokenRotate', 'accessTokenShow'],
   props: {
     id: {
       type: Number,
@@ -43,6 +43,7 @@ export default {
         },
       ],
       id: this.id,
+      urlRevoke: this.accessTokenRevoke,
       urlRotate: this.accessTokenRotate,
       urlShow: this.accessTokenShow,
     });
