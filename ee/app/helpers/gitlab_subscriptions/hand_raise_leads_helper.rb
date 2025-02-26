@@ -86,6 +86,12 @@ module GitlabSubscriptions
       }
     end
 
+    def group_trial_status(group)
+      strong_memoize_with(:group_trial_status, group) do
+        group.trial_active? ? 'trial_active' : 'trial_expired'
+      end
+    end
+
     def duo_pro_trial_status_cta_label(namespace)
       if GitlabSubscriptions::Trials::DuoPro.active_add_on_purchase_for_namespace?(namespace)
         'duo_pro_active_trial'
