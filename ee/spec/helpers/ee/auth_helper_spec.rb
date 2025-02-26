@@ -321,7 +321,7 @@ RSpec.describe EE::AuthHelper do
   describe '#admin_service_accounts_data' do
     it 'returns data for the service accounts UI' do
       expect(helper.admin_service_accounts_data).to match(a_hash_including({
-        base_path: 'http://localhost/admin/application_settings/service_accounts',
+        base_path: '/admin/application_settings/service_accounts',
         service_accounts: {
           path: 'http://localhost/api/v4/service_accounts',
           docs_path: '/help/user/profile/service_accounts.md'
@@ -340,7 +340,7 @@ RSpec.describe EE::AuthHelper do
 
     it 'returns data for the service accounts UI' do
       expect(helper.groups_service_accounts_data(group)).to match(a_hash_including({
-        base_path: 'http://localhost/groups/my-group-path/-/settings/service_accounts',
+        base_path: '/groups/my-group-path/-/settings/service_accounts',
         service_accounts: {
           path: 'http://localhost/api/v4/groups/4/service_accounts',
           docs_path: '/help/user/profile/service_accounts.md'
