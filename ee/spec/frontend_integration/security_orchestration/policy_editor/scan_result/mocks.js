@@ -20,25 +20,25 @@ export const GROUP = {
 };
 
 export const mockDefaultApprovalManifest = `approval_policy:
-- name: ''
-  description: ''
-  enabled: true
-  rules:
-    - type: ''
-  actions:
-    - type: require_approval
-      approvals_required: 1
-    - type: send_bot_message
-      enabled: true
-  approval_settings:
-    block_branch_modification: true
-    prevent_pushing_and_force_pushing: true
-    prevent_approval_by_author: true
-    prevent_approval_by_commit_author: true
-    remove_approvals_with_new_commit: true
-    require_password_to_approve: false
-  fallback_behavior:
-    fail: closed`;
+  - name: ''
+    description: ''
+    enabled: true
+    rules:
+      - type: ''
+    actions:
+      - type: require_approval
+        approvals_required: 1
+      - type: send_bot_message
+        enabled: true
+    approval_settings:
+      block_branch_modification: true
+      prevent_pushing_and_force_pushing: true
+      prevent_approval_by_author: true
+      prevent_approval_by_commit_author: true
+      remove_approvals_with_new_commit: true
+      require_password_to_approve: false
+    fallback_behavior:
+      fail: closed`;
 
 export const mockRoleApproversApprovalManifest = `approval_policy:
   - name: ''
