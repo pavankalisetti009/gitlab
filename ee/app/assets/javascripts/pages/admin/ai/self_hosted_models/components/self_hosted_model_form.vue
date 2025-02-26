@@ -15,7 +15,12 @@ import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
 import { s__, __, sprintf } from '~/locale';
 import { createAlert } from '~/alert';
 import InputCopyToggleVisibility from '~/vue_shared/components/input_copy_toggle_visibility/input_copy_toggle_visibility.vue';
-import { SELF_HOSTED_MODEL_PLATFORMS, BEDROCK_DUMMY_ENDPOINT, RELEASE_STATES } from '../constants';
+import {
+  SELF_HOSTED_MODEL_PLATFORMS,
+  BEDROCK_DUMMY_ENDPOINT,
+  RELEASE_STATES,
+  CLOUD_PROVIDER_MODELS,
+} from '../constants';
 import ModelSelectDropdown from '../../duo_self_hosted/shared/model_select_dropdown.vue';
 import TestConnectionButton from './test_connection_button.vue';
 
@@ -83,9 +88,6 @@ const bedrockFormFields = {
     ],
     groupAttrs: {
       class: baseFormFieldClasses,
-    },
-    inputAttrs: {
-      placeholder: bedrockIdentifierPrefix,
     },
   },
 };
@@ -214,11 +216,16 @@ export default {
     },
     formFields() {
       const platformFields = this.isApiPlatform ? apiFormFields : bedrockFormFields;
-
-      return {
+      const fields = {
         ...baseFormFields,
         ...platformFields,
       };
+
+      fields.identifier.inputAttrs = {
+        placeholder: this.identifierPlaceholder,
+      };
+
+      return fields;
     },
     hasValidInput() {
       const { name, model, endpoint, identifier } = this.baseFormValues;
@@ -263,6 +270,29 @@ export default {
         apiToken: this.apiToken,
         ...this.baseFormValues,
       };
+    },
+    identifierPlaceholder() {
+      if (this.platform === SELF_HOSTED_MODEL_PLATFORMS.BEDROCK) {
+        return 'bedrock/';
+      }
+
+      const model = this.selectedModel?.modelValue;
+      if (model && !Object.values(CLOUD_PROVIDER_MODELS).includes(model)) {
+        return 'custom_openai/';
+      }
+
+      return '';
+    },
+    identifierLabelDescription() {
+      let identifierLabel = 'provider/model-name';
+      if (this.identifierPlaceholder.length > 0) {
+        identifierLabel = `${this.identifierPlaceholder}model-name`;
+      }
+
+      return sprintf(
+        s__('AdminSelfHostedModels|Provide the model identifier in the form of %{identifierLabel}'),
+        { identifierLabel },
+      );
     },
   },
   methods: {
@@ -428,11 +458,7 @@ export default {
       </template>
 
       <template #group(identifier)-label-description>
-        {{
-          s__(
-            'AdminSelfHostedModels|Provide the model identifier in the form of provider/model-name',
-          )
-        }}
+        {{ identifierLabelDescription }}
       </template>
     </gl-form-fields>
     <div :class="[...$options.baseFormFieldClasses, 'gl-pb-6']">
