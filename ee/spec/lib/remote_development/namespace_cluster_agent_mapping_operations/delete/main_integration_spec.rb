@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 
+# noinspection RubyArgCount -- Rubymine is detecting wrong classes here
 RSpec.describe ::RemoteDevelopment::NamespaceClusterAgentMappingOperations::Delete::Main, feature_category: :workspaces do
   let_it_be(:namespace_cluster_agent_mapping) do
     create(:remote_development_namespace_cluster_agent_mapping)

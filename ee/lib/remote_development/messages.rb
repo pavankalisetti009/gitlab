@@ -40,6 +40,14 @@ module RemoteDevelopment
     # Namespace Cluster Agent Mapping delete errors
     NamespaceClusterAgentMappingNotFound = Class.new(Gitlab::Fp::Message)
 
+    # Organization Cluster Agent Mapping create errors
+    OrganizationClusterAgentMappingAlreadyExists = Class.new(Gitlab::Fp::Message)
+    OrganizationClusterAgentMappingCreateFailed = Class.new(Gitlab::Fp::Message)
+    OrganizationClusterAgentMappingCreateValidationFailed = Class.new(Gitlab::Fp::Message)
+
+    # Organization Cluster Agent Mapping delete errors
+    OrganizationClusterAgentMappingNotFound = Class.new(Gitlab::Fp::Message)
+
     #---------------------------------------------------------
     # Domain Events - message name should describe the outcome
     #---------------------------------------------------------
@@ -56,5 +64,9 @@ module RemoteDevelopment
     # Namespace Cluster Agent Mapping domain events
     NamespaceClusterAgentMappingCreateSuccessful = Class.new(Gitlab::Fp::Message)
     NamespaceClusterAgentMappingDeleteSuccessful = Class.new(Gitlab::Fp::Message)
+
+    # Organization Cluster Agent Mapping domain events
+    OrganizationClusterAgentMappingCreateSuccessful = Class.new(Gitlab::Fp::Message)
+    OrganizationClusterAgentMappingDeleteSuccessful = Class.new(Gitlab::Fp::Message)
   end
 end
