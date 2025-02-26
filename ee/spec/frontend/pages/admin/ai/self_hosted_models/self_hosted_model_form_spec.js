@@ -95,6 +95,9 @@ describe('SelfHostedModelForm', () => {
   const findTestConnectionButton = () => wrapper.findComponent(TestConnectionButton);
   const findBetaAlert = () => wrapper.findComponent(GlAlert);
   const findDuoConfigurationLink = () => wrapper.findByTestId('duo-configuration-link');
+  const findIdentifierInput = () => wrapper.findByLabelText('Model identifier', { exact: false });
+  const findIdentifierLabelDescription = () =>
+    wrapper.findByText(/Provide the model identifier/, { exact: false });
 
   // Find validation messages
   const findNameValidationMessage = () => wrapper.findByText('Please enter a deployment name.');
@@ -150,6 +153,8 @@ describe('SelfHostedModelForm', () => {
           expect(modelOptions.map(({ text, releaseState }) => [text, releaseState])).toEqual([
             ['Codestral', 'GA'],
             ['Mistral', 'GA'],
+            ['GPT', 'GA'],
+            ['Claude 3', 'GA'],
             ['CodeGemma', 'BETA'],
             ['Code-Llama', 'BETA'],
             ['Deepseek Coder', 'BETA'],
@@ -166,6 +171,42 @@ describe('SelfHostedModelForm', () => {
 
       it('renders the optional API token input field', () => {
         expect(findApiKeyInputField().exists()).toBe(true);
+      });
+
+      describe('identifier placeholder', () => {
+        it('shows custom_openai/ placeholder for non-cloud provider models', async () => {
+          await findModelDropDownSelector().vm.$emit('select', 'MISTRAL');
+
+          expect(findIdentifierInput().attributes('placeholder')).toBe('custom_openai/');
+        });
+
+        it('shows no placeholder for cloud provider models', async () => {
+          await findModelDropDownSelector().vm.$emit('select', 'GPT');
+
+          expect(findIdentifierInput().attributes('placeholder')).toBe('');
+
+          await findModelDropDownSelector().vm.$emit('select', 'CLAUDE_3');
+
+          expect(findIdentifierInput().attributes('placeholder')).toBe('');
+        });
+      });
+
+      describe('identifier label description', () => {
+        it('shows custom_openai/ format for non-cloud provider models', async () => {
+          await findModelDropDownSelector().vm.$emit('select', 'MISTRAL');
+
+          expect(findIdentifierLabelDescription().text()).toContain('custom_openai/model-name');
+        });
+
+        it('shows provider/ format for cloud provider models', async () => {
+          await findModelDropDownSelector().vm.$emit('select', 'GPT');
+
+          expect(findIdentifierLabelDescription().text()).toContain('provider/model-name');
+
+          await findModelDropDownSelector().vm.$emit('select', 'CLAUDE_3');
+
+          expect(findIdentifierLabelDescription().text()).toContain('provider/model-name');
+        });
       });
     });
 
@@ -186,6 +227,26 @@ describe('SelfHostedModelForm', () => {
         expect(findGlForm().text()).toMatch(
           'To fully set up AWS credentials for this model please refer to the AWS Bedrock Configuration Guide',
         );
+      });
+
+      describe('identifier placeholder', () => {
+        it('always shows bedrock/ placeholder regardless of model', async () => {
+          await findModelDropDownSelector().vm.$emit('select', 'MISTRAL');
+          expect(findIdentifierInput().attributes('placeholder')).toBe('bedrock/');
+
+          await findModelDropDownSelector().vm.$emit('select', 'GPT');
+          expect(findIdentifierInput().attributes('placeholder')).toBe('bedrock/');
+        });
+      });
+
+      describe('identifier label description', () => {
+        it('shows bedrock/ format regardless of model', async () => {
+          await findModelDropDownSelector().vm.$emit('select', 'MISTRAL');
+          expect(findIdentifierLabelDescription().text()).toContain('bedrock/model-name');
+
+          await findModelDropDownSelector().vm.$emit('select', 'GPT');
+          expect(findIdentifierLabelDescription().text()).toContain('bedrock/model-name');
+        });
       });
     });
   });
