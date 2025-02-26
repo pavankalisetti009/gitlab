@@ -673,18 +673,6 @@ RSpec.describe Gitlab::CodeOwners::File, feature_category: :source_code_manageme
 
         file.valid?
       end
-
-      context 'when the validate_codeowner_users feature flag is not enabled' do
-        before do
-          stub_feature_flags(validate_codeowner_users: false)
-        end
-
-        it 'does not call UserPermissionCheck' do
-          expect(Gitlab::CodeOwners::UserPermissionCheck).not_to receive(:new)
-
-          file.valid?
-        end
-      end
     end
   end
 end

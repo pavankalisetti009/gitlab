@@ -294,18 +294,6 @@ RSpec.describe Gitlab::CodeOwners::Loader, feature_category: :source_code_manage
     subject { loader.track_file_validation }
 
     context 'when file has no linting error' do
-      context 'when the validate_codeowner_users flag is not enabled' do
-        before do
-          stub_feature_flags(validate_codeowner_users: false)
-        end
-
-        it 'sends no snowplow event' do
-          subject
-
-          expect_no_snowplow_event(category: described_class.name)
-        end
-      end
-
       it 'sends errors for invalid user references' do
         subject
 

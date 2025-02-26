@@ -105,7 +105,7 @@ module Gitlab
         # Avoids querying the database for users if there are still syntax errors
         return if errors.present?
 
-        return unless project && Feature.enabled?(:validate_codeowner_users, project)
+        return unless project
 
         entries = parsed_data.values.flat_map(&:values)
         validation_errors = UserPermissionCheck.new(project, entries, limit: MAX_REFERENCES).errors
