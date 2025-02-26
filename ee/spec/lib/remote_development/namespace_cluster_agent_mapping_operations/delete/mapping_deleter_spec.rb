@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 
+# noinspection RubyArgCount -- Rubymine is detecting wrong classes here
 RSpec.describe ::RemoteDevelopment::NamespaceClusterAgentMappingOperations::Delete::MappingDeleter, feature_category: :workspaces do
   include ResultMatchers
 

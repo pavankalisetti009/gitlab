@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 
+# noinspection RubyArgCount -- Rubymine is detecting wrong classes here
 RSpec.describe RemoteDevelopment::NamespaceClusterAgentMappingOperations::Validations, feature_category: :workspaces do
   describe 'filter_valid_namespace_cluster_agent_mappings' do
     let_it_be(:user) { create(:user) }
