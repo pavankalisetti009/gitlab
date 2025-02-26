@@ -39,13 +39,13 @@ RSpec.describe ::Search::Zoekt::MetricsService, feature_category: :global_search
 
   describe '#node_metrics' do
     let(:metric) { :node_metrics }
+    let_it_be(:node) { create(:zoekt_node, :enough_free_space) }
 
     before do
       allow(logger).to receive(:info) # avoid a flaky test if there are multiple zoekt nodes
     end
 
     it 'logs zoekt metadata and tasks info for nodes' do
-      node = create(:zoekt_node, :enough_free_space)
       create(:zoekt_index, zoekt_enabled_namespace: create(:zoekt_enabled_namespace), node: node)
       create_list(:zoekt_task, 4, :pending, node: node)
       create(:zoekt_task, :done, node: node)
@@ -63,6 +63,21 @@ RSpec.describe ::Search::Zoekt::MetricsService, feature_category: :global_search
         'task_count_orphaned' => 1,
         'metric' => :node_metrics
       ))
+
+      execute
+    end
+
+    it 'sets a gauge for the task processing queue size' do
+      create_list(:zoekt_task, 2, :pending, node: node)
+
+      gauge_double = instance_double(Prometheus::Client::Gauge)
+      expect(Gitlab::Metrics).to receive(:gauge)
+        .with(:search_zoekt_task_processing_queue_size, anything, {}, :max)
+        .at_least(:once)
+        .and_return(gauge_double)
+
+      allow(gauge_double).to receive(:set) # avoid flakiness if other nodes exist
+      expect(gauge_double).to receive(:set).with({ node_name: node.metadata['name'] }, 2)
 
       execute
     end
@@ -85,23 +100,6 @@ RSpec.describe ::Search::Zoekt::MetricsService, feature_category: :global_search
         'meta.zoekt.with_stale_used_storage_bytes_updated_at' => 8675309,
         'metric' => :indices_metrics
       ))
-
-      execute
-    end
-  end
-
-  describe '#tasks_metrics' do
-    let(:metric) { :tasks_metrics }
-
-    it 'sets a gauge for the task processing queue size' do
-      allow(::Search::Zoekt::Task).to receive_message_chain(:processing_queue, :count).and_return(34)
-
-      gauge_double = instance_double(Prometheus::Client::Gauge)
-      expect(Gitlab::Metrics).to receive(:gauge)
-        .with(:search_zoekt_task_processing_queue_size, anything, {}, :max)
-        .and_return(gauge_double)
-
-      expect(gauge_double).to receive(:set).with({}, 34)
 
       execute
     end
