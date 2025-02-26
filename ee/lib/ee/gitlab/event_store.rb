@@ -83,11 +83,12 @@ module EE
           subscribe_to_zoekt_events(store)
           subscribe_to_members_added_event(store)
           subscribe_to_users_activity_events(store)
-          subscribe_to_member_destroyed_events(store)
           subscribe_to_merge_events(store)
         end
 
+        override :subscribe_to_member_destroyed_events
         def subscribe_to_member_destroyed_events(store)
+          super
           store.subscribe ::GitlabSubscriptions::Members::DestroyedWorker, to: ::Members::DestroyedEvent
         end
 
