@@ -254,6 +254,88 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
       end
     end
 
+    shared_examples 'creates work item linked to a vulnerability' do
+      let(:vulnerability) { create(:vulnerability, title: "First", project: project) }
+      let_it_be(:issue_work_item_type) { WorkItems::Type.default_by_type(:issue) }
+
+      let(:work_item_type) { issue_work_item_type }
+
+      let(:fields) do
+        <<~FIELDS
+          workItem {
+            id
+            workItemType {
+              name
+            }
+          }
+          errors
+        FIELDS
+      end
+
+      let(:input) do
+        {
+          title: 'new title',
+          workItemTypeId: work_item_type.to_global_id.to_s,
+          vulnerabilityId: vulnerability.to_global_id.to_s
+        }
+      end
+
+      before do
+        stub_licensed_features(security_dashboard: true, epics: true)
+      end
+
+      it "links Issue work item to vulnerability", :aggregate_failures do
+        expect do
+          post_graphql_mutation(mutation, current_user: current_user)
+        end.to change { WorkItem.count }.by(1)
+
+        work_item_id = GlobalID.parse(mutation_response['workItem']['id']).model_id.to_i
+        work_item = WorkItem.find(work_item_id)
+
+        expect(response).to have_gitlab_http_status(:success)
+        expect(type_response).to include({ 'name' => 'Issue' })
+        expect(work_item.related_vulnerabilities).to include(vulnerability)
+      end
+
+      context 'with other work item types' do
+        let_it_be(:task_work_item_type) { WorkItems::Type.default_by_type(:task) }
+
+        let(:work_item_type) { task_work_item_type }
+
+        it "links Task work item to vulnerability", :aggregate_failures do
+          expect do
+            post_graphql_mutation(mutation, current_user: current_user)
+          end.to change { WorkItem.count }.by(1)
+
+          work_item_id = GlobalID.parse(mutation_response['workItem']['id']).model_id.to_i
+          work_item = WorkItem.find(work_item_id)
+
+          expect(response).to have_gitlab_http_status(:success)
+          expect(type_response).to include({ 'name' => 'Task' })
+          expect(work_item.related_vulnerabilities).to include(vulnerability)
+        end
+      end
+
+      context 'when feature is not available' do
+        before do
+          stub_licensed_features(security_dashboard: false)
+        end
+
+        it 'returns an error', :aggregate_failures do
+          expect do
+            post_graphql_mutation(mutation, current_user: current_user)
+          end.to not_change { WorkItem.count }
+
+          expect(json_response['errors']).to include(
+            a_hash_including(
+              'message' => "The resource that you are attempting to access does not exist or you " \
+                "don't have permission to perform this action"
+            )
+          )
+        end
+      end
+    end
+
     context 'when creating work items in a project' do
       context 'with projectPath' do
         let_it_be(:container_params) { { project: project } }
@@ -262,6 +344,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
 
         it_behaves_like 'creates work item with iteration widget'
         it_behaves_like 'creates work item with weight widget'
+        it_behaves_like 'creates work item linked to a vulnerability'
       end
 
       context 'with namespacePath' do
@@ -271,6 +354,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
 
         it_behaves_like 'creates work item with iteration widget'
         it_behaves_like 'creates work item with weight widget'
+        it_behaves_like 'creates work item linked to a vulnerability'
       end
     end
 
@@ -280,6 +364,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
       let(:work_item_type) { :epic }
 
       it_behaves_like 'creates work item with iteration widget'
+      it_behaves_like 'creates work item linked to a vulnerability'
 
       context 'when using resolve discussion in merge request arguments' do
         let_it_be(:merge_request) { create(:merge_request, source_project: project) }
