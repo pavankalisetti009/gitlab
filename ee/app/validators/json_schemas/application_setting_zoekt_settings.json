@@ -27,6 +27,10 @@
     "zoekt_cpu_to_tasks_ratio": {
       "type": "number",
       "description": "The ratio between number of concurrent tasks and number of CPUs"
+    },
+    "zoekt_rollout_batch_size": {
+      "type": "number",
+      "description": "Batch size of namespaces for initial indexing"
     }
   }
 }

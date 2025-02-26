@@ -16,7 +16,6 @@ module GemExtensions
         cattr_accessor :cached_search_client
         cattr_accessor :cached_config
         cattr_accessor :cached_retry_on_failure
-        cattr_accessor :cached_adapter
 
         def client(operation = :general)
           store = ::GemExtensions::Elasticsearch::Model::Client
@@ -24,15 +23,13 @@ module GemExtensions
           store::CLIENT_MUTEX.synchronize do
             config = ::Gitlab::CurrentSettings.elasticsearch_config
             retry_on_failure = ::Gitlab::CurrentSettings.elasticsearch_retry_on_failure
-            adapter = ::Gitlab::Elastic::Client.adapter
 
-            if should_build_clients?(store: store, config: config, retry_on_failure: retry_on_failure, adapter: adapter)
+            if should_build_clients?(store: store, config: config, retry_on_failure: retry_on_failure)
               search_config = config.deep_dup.merge(retry_on_failure: retry_on_failure)
               store.cached_client = ::Gitlab::Elastic::Client.build(config.deep_dup)
               store.cached_search_client = ::Gitlab::Elastic::Client.build(search_config)
               store.cached_config = config
               store.cached_retry_on_failure = retry_on_failure
-              store.cached_adapter = adapter
             end
           end
 
@@ -41,12 +38,11 @@ module GemExtensions
 
         private
 
-        def should_build_clients?(store:, config:, retry_on_failure:, adapter:)
+        def should_build_clients?(store:, config:, retry_on_failure:)
           store.cached_client.nil? ||
             store.cached_search_client.nil? ||
             config != store.cached_config ||
-            retry_on_failure != store.cached_retry_on_failure ||
-            adapter != store.cached_adapter
+            retry_on_failure != store.cached_retry_on_failure
         end
       end
     end

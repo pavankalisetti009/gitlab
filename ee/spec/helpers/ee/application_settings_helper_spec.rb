@@ -31,7 +31,7 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
     it 'contains zoekt parameters' do
       expected_fields = %i[
         zoekt_auto_delete_lost_nodes zoekt_auto_index_root_namespace zoekt_indexing_enabled
-        zoekt_indexing_paused zoekt_search_enabled zoekt_cpu_to_tasks_ratio
+        zoekt_indexing_paused zoekt_search_enabled zoekt_cpu_to_tasks_ratio zoekt_rollout_batch_size
       ]
       expect(visible_attributes).to include(*expected_fields)
     end
@@ -311,6 +311,7 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
 
     before do
       application_setting.zoekt_cpu_to_tasks_ratio = 1.5
+      application_setting.zoekt_rollout_batch_size = 100
       helper.instance_variable_set(:@application_setting, application_setting)
     end
 
@@ -320,6 +321,9 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
         expect(result[0]).to have_selector('label', text: 'Indexing CPU to tasks multiplier')
         expect(result[1])
           .to have_selector('input[type="number"][name="application_setting[zoekt_cpu_to_tasks_ratio]"][value="1.5"]')
+        expect(result[2]).to have_selector('label', text: 'Batch size of namespaces for initial indexing')
+        expect(result[3])
+          .to have_selector('input[type="number"][name="application_setting[zoekt_rollout_batch_size]"][value="100"]')
       end
     end
   end
