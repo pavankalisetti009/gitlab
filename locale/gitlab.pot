@@ -48224,6 +48224,9 @@ msgstr ""
 msgid "Replace all labels"
 msgstr ""
 
+msgid "Replace file"
+msgstr ""
+
 msgid "Replaced all labels with %{label_references} %{label_text}."
 msgstr ""
 
