@@ -10810,7 +10810,8 @@ CREATE TABLE ci_pipeline_schedule_variables (
     updated_at timestamp with time zone,
     variable_type smallint DEFAULT 1 NOT NULL,
     raw boolean DEFAULT false NOT NULL,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_17806054a8 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE ci_pipeline_schedule_variables_id_seq
