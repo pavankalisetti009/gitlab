@@ -96,7 +96,3 @@ Add aria-label attributes to buttons without text content.
 Use the button's function for the label value.
 Required format: aria-label="Action description"
 ```
-
-## Related topics
-
-- [Use GitLab Duo Workflow in your IDE](use_in_your_ide.md)
