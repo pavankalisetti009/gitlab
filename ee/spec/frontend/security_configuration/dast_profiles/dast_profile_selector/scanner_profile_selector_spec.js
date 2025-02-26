@@ -1,5 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
 import ScannerProfileSelector from 'ee/security_configuration/dast_profiles/dast_profile_selector/scanner_profile_selector.vue';
+import EmptyState from 'ee/security_configuration/dast_profiles/dast_profile_selector/empty_state.vue';
 import { scannerProfiles } from 'ee_jest/security_configuration/dast_profiles/mocks/mock_data';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 
@@ -12,6 +13,9 @@ describe('ScannerProfileSelector', () => {
         propsData: {
           profiles: [],
           props,
+        },
+        stubs: {
+          EmptyState,
         },
       }),
     );
