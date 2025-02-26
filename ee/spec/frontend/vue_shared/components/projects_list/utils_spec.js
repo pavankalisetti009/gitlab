@@ -25,12 +25,24 @@ jest.mock('~/vue_shared/components/projects_list/utils', () => ({
   deleteParams: jest.fn(),
 }));
 
+const MOCK_PERSONAL_PROJECT = {
+  name: 'No Delay Project',
+  fullPath: 'path/to/project/1',
+  isAdjournedDeletionEnabled: false,
+  markedForDeletionOn: null,
+  permanentDeletionDate: '2024-03-31',
+  group: null,
+};
+
 const MOCK_PROJECT_NO_ADJOURNED_DELETION = {
   name: 'No Delay Project',
   fullPath: 'path/to/project/1',
   isAdjournedDeletionEnabled: false,
   markedForDeletionOn: null,
   permanentDeletionDate: '2024-03-31',
+  group: {
+    id: 'gid://gitlab/Group/1',
+  },
 };
 
 const MOCK_PROJECT_WITH_DELAY_DELETION = {
@@ -39,6 +51,9 @@ const MOCK_PROJECT_WITH_DELAY_DELETION = {
   isAdjournedDeletionEnabled: true,
   markedForDeletionOn: null,
   permanentDeletionDate: '2024-03-31',
+  group: {
+    id: 'gid://gitlab/Group/2',
+  },
 };
 
 const MOCK_PROJECT_PENDING_DELETION = {
@@ -47,6 +62,9 @@ const MOCK_PROJECT_PENDING_DELETION = {
   isAdjournedDeletionEnabled: true,
   markedForDeletionOn: '2024-03-24',
   permanentDeletionDate: '2024-03-31',
+  group: {
+    id: 'gid://gitlab/Group/3',
+  },
 };
 
 describe('availableGraphQLProjectActions', () => {
@@ -115,6 +133,16 @@ describe('renderDeleteSuccessToast', () => {
   describe('when adjourned deletion is not available at any level', () => {
     beforeEach(() => {
       renderDeleteSuccessToast(MOCK_PROJECT_NO_ADJOURNED_DELETION);
+    });
+
+    it('calls CE function', () => {
+      expect(renderDeleteSuccessToastCE).toHaveBeenCalled();
+    });
+  });
+
+  describe('when project is a personal project', () => {
+    beforeEach(() => {
+      renderDeleteSuccessToast(MOCK_PERSONAL_PROJECT);
     });
 
     it('calls CE function', () => {
