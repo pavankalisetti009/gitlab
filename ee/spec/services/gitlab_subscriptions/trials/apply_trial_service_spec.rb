@@ -91,16 +91,6 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, :saas, feature_ca
           expect { execute }.to change { user.assigned_add_ons.count }.by(1)
         end
 
-        context 'when auto_assign_duo_seat is disabled' do
-          before do
-            stub_feature_flags(auto_assign_duo_seat: false)
-          end
-
-          it 'does not auto-assigns a duo seat' do
-            expect { execute }.not_to change { user.assigned_add_ons.count }
-          end
-        end
-
         context 'when namespace has already had a trial' do
           let_it_be(:namespace) do
             create(

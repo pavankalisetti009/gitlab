@@ -74,8 +74,6 @@ module GitlabSubscriptions
       strong_memoize_attr :namespace
 
       def assign_seat(add_on_purchase, user)
-        return if ::Feature.disabled?(:auto_assign_duo_seat, user)
-
         ::GitlabSubscriptions::UserAddOnAssignments::Saas::CreateWithoutNotificationService.new(
           add_on_purchase: add_on_purchase,
           user: user
