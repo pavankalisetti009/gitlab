@@ -46,7 +46,6 @@ RSpec.describe Search::Zoekt::IndexingTaskService, feature_category: :global_sea
 
       context 'on low watermark' do
         before do
-          stub_feature_flags(zoekt_random_force_reindexing: false)
           allow(zoekt_index).to receive(:low_watermark_exceeded?).and_return(true)
         end
 
@@ -171,72 +170,8 @@ RSpec.describe Search::Zoekt::IndexingTaskService, feature_category: :global_sea
       let(:task_type) { 'index_repo' }
       let(:service) { described_class.new(project.id, task_type) }
 
-      context 'when zoekt_random_force_reindexing is disabled' do
+      context 'when REINDEXING_CHANCE_PERCENTAGE is set to 100%' do
         before do
-          stub_feature_flags(zoekt_random_force_reindexing: false)
-        end
-
-        context 'for preflight_check? is false' do
-          context 'if project does not have a repository' do
-            let_it_be(:project) { create(:project, :empty_repo, namespace: ns) }
-
-            it 'does not creates Search::Zoekt::Task record' do
-              expect { service.execute }.not_to change { Search::Zoekt::Task.count }
-            end
-          end
-
-          context 'if project does not exists' do
-            it 'does not creates Search::Zoekt::Task record' do
-              project.destroy!
-              service = described_class.new(project.id, task_type)
-              expect { service.execute }.not_to change { Search::Zoekt::Task.count }
-            end
-          end
-        end
-
-        context 'when Repository does not exists' do
-          it 'creates a Repository record and a Task record' do
-            expect { service.execute }.to change { Search::Zoekt::Task.count }.by(1)
-              .and change { Search::Zoekt::Repository.count }.by(1)
-            repo = Search::Zoekt::Repository.find_by(project: project, zoekt_index: zoekt_index)
-            expect(repo).to be_present
-            new_task = repo.tasks.last
-            expect(new_task.zoekt_node_id).to eq zoekt_index.zoekt_node_id
-            expect(new_task).to be_pending
-            expect(new_task.task_type).to eq task_type
-          end
-        end
-
-        context 'when Repository already exists' do
-          let_it_be(:zoekt_repo) { create(:zoekt_repository, project: project, zoekt_index: zoekt_index) }
-
-          it 'creates only a Task record' do
-            expect { service.execute }.to change { Search::Zoekt::Task.count }.by(1)
-              .and change { Search::Zoekt::Repository.count }.by(0)
-            new_task = zoekt_repo.tasks.last
-            expect(new_task.zoekt_node_id).to eq zoekt_index.zoekt_node_id
-            expect(new_task).to be_pending
-            expect(new_task.task_type).to eq task_type
-          end
-        end
-
-        context 'when delay is passed' do
-          let(:delay) { 1.hour }
-          let(:service) { described_class.new(project.id, task_type, delay: delay) }
-
-          it 'sets perform_at with delay' do
-            freeze_time do
-              service.execute
-              new_task = Search::Zoekt::Task.last
-              expect(new_task.perform_at).to eq delay.from_now
-            end
-          end
-        end
-      end
-
-      context 'when zoekt_random_force_reindexing is enabled' do
-        before do
-          stub_feature_flags(zoekt_random_force_reindexing: true)
           stub_const("#{described_class}::REINDEXING_CHANCE_PERCENTAGE", 100)
         end
 
