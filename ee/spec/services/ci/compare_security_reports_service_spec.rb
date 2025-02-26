@@ -123,8 +123,6 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
     end
   end
 
-  # We check for scans in `succeeded` state,
-  # only when migrate_mr_security_widget_to_security_findings_table FF is enabled
   shared_examples_for 'when a pipeline has scan that is not in the `succeeded` state' do
     let_it_be(:base_pipeline) { test_pipelines[:default_base] }
     let_it_be(:head_pipeline) { test_pipelines[:"with_#{scan_type}_feature_branch"] }
@@ -219,290 +217,175 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
   end
 
   describe '#execute' do
-    context 'with migrate_mr_security_widget_to_security_findings_table flag disabled' do
-      where(vulnerability_finding_signatures: [true, false])
-      with_them do
-        before do
-          stub_licensed_features(vulnerability_finding_signatures: vulnerability_finding_signatures)
-          stub_licensed_features(security_dashboard: true, scan_type => true)
-          stub_feature_flags(migrate_mr_security_widget_to_security_findings_table: false)
-        end
-
-        context 'with dependency_scanning' do
-          let_it_be(:scan_type) { :dependency_scanning }
-
-          it_behaves_like 'when only the head pipeline has a report' do
-            let(:num_findings_in_fixture) { 4 }
-          end
-
-          it_behaves_like 'when base and head pipelines have scanning reports' do
-            let(:num_fixed_findings) { 1 }
-            let(:num_added_findings) { 1 }
-
-            it 'does not query the database' do
-              expect { subject }.not_to make_queries_matching(/SELECT 1 AS one/)
-            end
-
-            it_behaves_like 'serializes `found_by_pipeline` attribute'
-          end
-
-          it_behaves_like 'when head pipeline has corrupted scanning reports'
-        end
-
-        context 'with container_scanning' do
-          let_it_be(:scan_type) { :container_scanning }
-
-          it_behaves_like 'when only the head pipeline has a report' do
-            let(:num_findings_in_fixture) { 8 }
-          end
-
-          it_behaves_like 'when base and head pipelines have scanning reports' do
-            let(:num_fixed_findings) { 8 }
-            let(:num_added_findings) { 1 }
-
-            it 'does not query the database' do
-              expect { subject }.not_to make_queries_matching(/SELECT 1 AS one/)
-            end
-
-            it_behaves_like 'serializes `found_by_pipeline` attribute'
-          end
-
-          it_behaves_like 'when head pipeline has corrupted scanning reports'
-        end
-
-        context 'with dast' do
-          let_it_be(:scan_type) { :dast }
-
-          it_behaves_like 'when only the head pipeline has a report' do
-            let(:num_findings_in_fixture) { 20 }
-          end
-
-          it_behaves_like 'when base and head pipelines have scanning reports' do
-            let(:num_fixed_findings) { 19 }
-            let(:num_added_findings) { 1 }
-
-            it 'does not query the database' do
-              expect { subject }.not_to make_queries_matching(/SELECT 1 AS one/)
-            end
-
-            it_behaves_like 'serializes `found_by_pipeline` attribute'
-          end
-        end
-
-        context 'with sast' do
-          let_it_be(:scan_type) { :sast }
-
-          it_behaves_like 'when only the head pipeline has a report' do
-            let(:num_findings_in_fixture) { 5 }
-          end
-
-          it_behaves_like 'when base and head pipelines have scanning reports' do
-            let(:num_fixed_findings) { 1 }
-            let(:num_added_findings) { 1 }
-
-            it 'does not query the database' do
-              expect { subject }.not_to make_queries_matching(/SELECT 1 AS one/)
-            end
-
-            it_behaves_like 'serializes `found_by_pipeline` attribute'
-          end
-        end
-
-        context 'with secret detection' do
-          let_it_be(:scan_type) { :secret_detection }
-
-          it_behaves_like 'when only the head pipeline has a report' do
-            let(:num_findings_in_fixture) { 1 }
-          end
-
-          it_behaves_like 'when base and head pipelines have scanning reports' do
-            let(:num_fixed_findings) { 1 }
-            let(:num_added_findings) { 0 }
-            let(:expected_payload_fields) { [] }
-
-            it 'does not query the database' do
-              expect { subject }.not_to make_queries_matching(/SELECT 1 AS one/)
-            end
-
-            it 'returns nil for the "added" field' do
-              expect(subject[:data]['added'].first).to be_nil
-            end
-          end
-        end
-      end
+    before do
+      stub_licensed_features(security_dashboard: true, scan_type => true)
     end
 
-    context 'with migrate_mr_security_widget_to_security_findings_table flag enabled' do
-      before do
-        stub_licensed_features(security_dashboard: true, scan_type => true)
+    context 'with dependency_scanning' do
+      let_it_be(:scan_type) { :dependency_scanning }
+
+      it_behaves_like 'when only the head pipeline has a report' do
+        let(:num_findings_in_fixture) { 4 }
       end
 
-      context 'with dependency_scanning' do
-        let_it_be(:scan_type) { :dependency_scanning }
+      it_behaves_like 'when base and head pipelines have scanning reports' do
+        let(:num_fixed_findings) { 4 }
+        let(:num_added_findings) { 4 }
 
-        it_behaves_like 'when only the head pipeline has a report' do
-          let(:num_findings_in_fixture) { 4 }
+        it 'queries the database' do
+          expect { subject }.to make_queries_matching(/SELECT 1 AS one/)
         end
 
-        it_behaves_like 'when base and head pipelines have scanning reports' do
-          let(:num_fixed_findings) { 4 }
-          let(:num_added_findings) { 4 }
-
-          it 'queries the database' do
-            expect { subject }.to make_queries_matching(/SELECT 1 AS one/)
-          end
-
-          it_behaves_like 'serializes `found_by_pipeline` attribute'
-        end
-
-        it_behaves_like 'when a pipeline has scan that is not in the `succeeded` state'
+        it_behaves_like 'serializes `found_by_pipeline` attribute'
       end
 
-      context 'with container_scanning' do
-        let_it_be(:scan_type) { :container_scanning }
+      it_behaves_like 'when a pipeline has scan that is not in the `succeeded` state'
+    end
 
-        it_behaves_like 'when only the head pipeline has a report' do
-          let(:num_findings_in_fixture) { 8 }
-        end
+    context 'with container_scanning' do
+      let_it_be(:scan_type) { :container_scanning }
 
-        it_behaves_like 'when base and head pipelines have scanning reports' do
-          let(:num_fixed_findings) { 8 }
-          let(:num_added_findings) { 8 }
-
-          it 'queries the database' do
-            expect { subject }.to make_queries_matching(/SELECT 1 AS one/)
-          end
-
-          it_behaves_like 'serializes `found_by_pipeline` attribute'
-        end
-
-        it_behaves_like 'when a pipeline has scan that is not in the `succeeded` state'
+      it_behaves_like 'when only the head pipeline has a report' do
+        let(:num_findings_in_fixture) { 8 }
       end
 
-      context 'with dast' do
-        let_it_be(:scan_type) { :dast }
+      it_behaves_like 'when base and head pipelines have scanning reports' do
+        let(:num_fixed_findings) { 8 }
+        let(:num_added_findings) { 8 }
 
-        it_behaves_like 'when only the head pipeline has a report' do
-          let(:num_findings_in_fixture) { 20 }
+        it 'queries the database' do
+          expect { subject }.to make_queries_matching(/SELECT 1 AS one/)
         end
 
-        it_behaves_like 'when base and head pipelines have scanning reports' do
-          let(:num_fixed_findings) { 20 }
-          let(:num_added_findings) { 20 }
-
-          it 'queries the database' do
-            expect { subject }.to make_queries_matching(/SELECT 1 AS one/)
-          end
-
-          it_behaves_like 'serializes `found_by_pipeline` attribute'
-        end
-
-        it_behaves_like 'when a pipeline has scan that is not in the `succeeded` state'
+        it_behaves_like 'serializes `found_by_pipeline` attribute'
       end
 
-      context 'with sast' do
-        let_it_be(:scan_type) { :sast }
+      it_behaves_like 'when a pipeline has scan that is not in the `succeeded` state'
+    end
 
-        it_behaves_like 'when only the head pipeline has a report' do
-          let(:num_findings_in_fixture) { 5 }
-        end
+    context 'with dast' do
+      let_it_be(:scan_type) { :dast }
 
-        it_behaves_like 'when base and head pipelines have scanning reports' do
-          let(:num_fixed_findings) { 5 }
-          let(:num_added_findings) { 5 }
-
-          it 'queries the database' do
-            expect { subject }.to make_queries_matching(/SELECT 1 AS one/)
-          end
-
-          it_behaves_like 'serializes `found_by_pipeline` attribute'
-        end
-
-        it_behaves_like 'when a pipeline has scan that is not in the `succeeded` state'
+      it_behaves_like 'when only the head pipeline has a report' do
+        let(:num_findings_in_fixture) { 20 }
       end
 
-      context 'with secret detection' do
-        let_it_be(:scan_type) { :secret_detection }
+      it_behaves_like 'when base and head pipelines have scanning reports' do
+        let(:num_fixed_findings) { 20 }
+        let(:num_added_findings) { 20 }
 
-        it_behaves_like 'when only the head pipeline has a report' do
-          let(:num_findings_in_fixture) { 1 }
+        it 'queries the database' do
+          expect { subject }.to make_queries_matching(/SELECT 1 AS one/)
         end
 
-        it_behaves_like 'when base and head pipelines have scanning reports' do
-          let(:num_fixed_findings) { 0 }
-          let(:num_added_findings) { 1 }
-          let(:expected_payload_fields) { [] }
-
-          it 'queries the database' do
-            expect { subject }.to make_queries_matching(/SELECT 1 AS one/)
-          end
-        end
-
-        it_behaves_like 'when a pipeline has scan that is not in the `succeeded` state'
+        it_behaves_like 'serializes `found_by_pipeline` attribute'
       end
 
-      describe 'order of findings' do
-        let(:head_pipeline) { create(:ee_ci_pipeline, :with_sast_report, project: project) }
-        let(:base_pipeline) { test_pipelines[:default_base] }
-        let(:scan_type) { 'sast' }
+      it_behaves_like 'when a pipeline has scan that is not in the `succeeded` state'
+    end
 
-        let(:scan) do
-          create(
-            :security_scan,
-            :latest_successful,
-            project: project,
-            pipeline: head_pipeline,
-            scan_type: scan_type
-          )
+    context 'with sast' do
+      let_it_be(:scan_type) { :sast }
+
+      it_behaves_like 'when only the head pipeline has a report' do
+        let(:num_findings_in_fixture) { 5 }
+      end
+
+      it_behaves_like 'when base and head pipelines have scanning reports' do
+        let(:num_fixed_findings) { 5 }
+        let(:num_added_findings) { 5 }
+
+        it 'queries the database' do
+          expect { subject }.to make_queries_matching(/SELECT 1 AS one/)
         end
 
-        let!(:medium_finding) do
-          create(
-            :security_finding,
-            :with_finding_data,
-            deduplicated: true,
-            severity: Enums::Vulnerability.severity_levels[:medium],
-            scan: scan
-          )
+        it_behaves_like 'serializes `found_by_pipeline` attribute'
+      end
+
+      it_behaves_like 'when a pipeline has scan that is not in the `succeeded` state'
+    end
+
+    context 'with secret detection' do
+      let_it_be(:scan_type) { :secret_detection }
+
+      it_behaves_like 'when only the head pipeline has a report' do
+        let(:num_findings_in_fixture) { 1 }
+      end
+
+      it_behaves_like 'when base and head pipelines have scanning reports' do
+        let(:num_fixed_findings) { 0 }
+        let(:num_added_findings) { 1 }
+        let(:expected_payload_fields) { [] }
+
+        it 'queries the database' do
+          expect { subject }.to make_queries_matching(/SELECT 1 AS one/)
         end
+      end
 
-        let!(:high_finding) do
-          create(
-            :security_finding,
-            :with_finding_data,
-            deduplicated: true,
-            severity: Enums::Vulnerability.severity_levels[:high],
-            scan: scan
-          )
-        end
+      it_behaves_like 'when a pipeline has scan that is not in the `succeeded` state'
+    end
 
-        let!(:critical_finding) do
-          create(
-            :security_finding,
-            :with_finding_data,
-            deduplicated: true,
-            severity: Enums::Vulnerability.severity_levels[:critical],
-            scan: scan
-          )
-        end
+    describe 'order of findings' do
+      let(:head_pipeline) { create(:ee_ci_pipeline, :with_sast_report, project: project) }
+      let(:base_pipeline) { test_pipelines[:default_base] }
+      let(:scan_type) { 'sast' }
 
-        it 'returns findings in decreasing order of severity' do
-          added_findings_ids = subject[:data]['added'].pluck("id")
+      let(:scan) do
+        create(
+          :security_scan,
+          :latest_successful,
+          project: project,
+          pipeline: head_pipeline,
+          scan_type: scan_type
+        )
+      end
 
-          expect(added_findings_ids[0]).to eq(critical_finding.id)
-          expect(added_findings_ids[1]).to eq(high_finding.id)
-          expect(added_findings_ids[2]).to eq(medium_finding.id)
-        end
+      let!(:medium_finding) do
+        create(
+          :security_finding,
+          :with_finding_data,
+          deduplicated: true,
+          severity: Enums::Vulnerability.severity_levels[:medium],
+          scan: scan
+        )
+      end
 
-        it 'returns findings in decreasing order with no more than MAX_FINDINGS_COUNT findings' do
-          stub_const("Gitlab::Ci::Reports::Security::SecurityFindingsReportsComparer::MAX_FINDINGS_COUNT", 2)
+      let!(:high_finding) do
+        create(
+          :security_finding,
+          :with_finding_data,
+          deduplicated: true,
+          severity: Enums::Vulnerability.severity_levels[:high],
+          scan: scan
+        )
+      end
 
-          added_findings_ids = subject[:data]['added'].pluck("id")
+      let!(:critical_finding) do
+        create(
+          :security_finding,
+          :with_finding_data,
+          deduplicated: true,
+          severity: Enums::Vulnerability.severity_levels[:critical],
+          scan: scan
+        )
+      end
 
-          expect(added_findings_ids.count).to eq(2)
-          expect(added_findings_ids[0]).to eq(critical_finding.id)
-          expect(added_findings_ids[1]).to eq(high_finding.id)
-        end
+      it 'returns findings in decreasing order of severity' do
+        added_findings_ids = subject[:data]['added'].pluck("id")
+
+        expect(added_findings_ids[0]).to eq(critical_finding.id)
+        expect(added_findings_ids[1]).to eq(high_finding.id)
+        expect(added_findings_ids[2]).to eq(medium_finding.id)
+      end
+
+      it 'returns findings in decreasing order with no more than MAX_FINDINGS_COUNT findings' do
+        stub_const("Gitlab::Ci::Reports::Security::SecurityFindingsReportsComparer::MAX_FINDINGS_COUNT", 2)
+
+        added_findings_ids = subject[:data]['added'].pluck("id")
+
+        expect(added_findings_ids.count).to eq(2)
+        expect(added_findings_ids[0]).to eq(critical_finding.id)
+        expect(added_findings_ids[1]).to eq(high_finding.id)
       end
     end
   end

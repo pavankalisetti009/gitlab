@@ -25,7 +25,20 @@ RSpec.describe "Merge request > User sees security widget",
     sign_in(user)
   end
 
-  shared_examples_for "shows the security widget" do
+  context "when there are changes in the vulnerabilities detected" do
+    let(:vuln_text) { "New Medium Test finding" }
+
+    before do
+      create(
+        :security_scan,
+        :latest_successful,
+        :with_findings,
+        project: project,
+        pipeline: merge_request.head_pipeline,
+        scan_type: 'sast'
+      )
+    end
+
     it "shows the security widget" do
       visit(merge_request_path)
 
@@ -38,33 +51,6 @@ RSpec.describe "Merge request > User sees security widget",
 
         expect(page).to have_content(vuln_text)
       end
-    end
-  end
-
-  context "with migrate_mr_security_widget_to_security_findings_table disabled" do
-    before do
-      stub_feature_flags(migrate_mr_security_widget_to_security_findings_table: false)
-    end
-
-    it_behaves_like "shows the security widget" do
-      let(:vuln_text) { "Hard coded key" }
-    end
-  end
-
-  context "with migrate_mr_security_widget_to_security_findings_table enabled" do
-    before do
-      create(
-        :security_scan,
-        :latest_successful,
-        :with_findings,
-        project: project,
-        pipeline: merge_request.head_pipeline,
-        scan_type: 'sast'
-      )
-    end
-
-    it_behaves_like "shows the security widget" do
-      let(:vuln_text) { "New Medium Test finding" }
     end
   end
 
