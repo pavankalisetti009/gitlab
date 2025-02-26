@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Dependencies::DependencyListExport, feature_category: :dependency_management do
+  using RSpec::Parameterized::TableSyntax
+
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
   let_it_be(:pipeline) { create(:ci_pipeline, project: project) }
@@ -34,8 +36,6 @@ RSpec.describe Dependencies::DependencyListExport, feature_category: :dependency
     end
 
     describe 'only one exportable can be set' do
-      using RSpec::Parameterized::TableSyntax
-
       let(:expected_error) { { error: 'Only one exportable is required' } }
 
       subject { export.errors.details[:base] }
@@ -141,6 +141,23 @@ RSpec.describe Dependencies::DependencyListExport, feature_category: :dependency
         end
 
         it { is_expected.to have_attributes(status: -1) }
+      end
+    end
+  end
+
+  describe '#completed?' do
+    let(:export) { create(:dependency_list_export, status) }
+
+    where(:status, :expected) do
+      :created  | false
+      :running  | false
+      :finished | true
+      :failed   | true
+    end
+
+    with_them do
+      it 'returns expected value' do
+        expect(export.completed?).to eq(expected)
       end
     end
   end

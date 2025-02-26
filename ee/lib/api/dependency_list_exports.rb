@@ -11,7 +11,7 @@ module API
 
     helpers do
       def find_export
-        ::Dependencies::DependencyListExport.find_by_id(params[:export_id].to_i)
+        ::Dependencies::DependencyListExport.find_by_id(params[:export_id].to_i) || not_found!
       end
 
       def present_created_export(result)
@@ -109,12 +109,12 @@ module API
 
       authorize! :read_dependency_list_export, dependency_list_export
 
-      if dependency_list_export&.finished?
-        present dependency_list_export, with: EE::API::Entities::DependencyListExport
-      else
+      unless dependency_list_export.completed?
         ::Gitlab::PollingInterval.set_api_header(self, interval: 5_000)
         status :accepted
       end
+
+      present dependency_list_export, with: EE::API::Entities::DependencyListExport
     end
 
     desc 'Download a dependency list export'
@@ -123,7 +123,7 @@ module API
 
       authorize! :read_dependency_list_export, dependency_list_export
 
-      if dependency_list_export&.finished?
+      if dependency_list_export.finished?
         present_carrierwave_file!(dependency_list_export.file, content_disposition: :attachment)
       else
         not_found!('DependencyListExport')

@@ -57,6 +57,10 @@ module Dependencies
       end
     end
 
+    def completed?
+      finished? || failed?
+    end
+
     def retrieve_upload(_identifier, paths)
       Upload.find_by(model: self, path: paths)
     end

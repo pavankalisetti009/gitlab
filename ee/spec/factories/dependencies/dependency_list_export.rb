@@ -11,6 +11,10 @@ FactoryBot.define do
       file { fixture_file_upload('ee/spec/fixtures/dependencies/dependencies.json') }
     end
 
+    trait :created do
+      status { 0 }
+    end
+
     trait :running do
       status { 1 }
     end
