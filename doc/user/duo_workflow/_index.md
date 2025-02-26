@@ -96,7 +96,7 @@ Workflow has the following limitations:
 ## Audit log
 
 An audit event is created for each API request done by Workflow.
-On your GitLab Self-Managed instance, you can view these events on the [instance audit events](../../administration/audit_event_reports.md#instance-audit-events) page.
+On your GitLab Self-Managed instance, you can view these events on the [instance audit events](../../administration/compliance/audit_event_reports.md#instance-audit-events) page.
 
 ## Give feedback
 
