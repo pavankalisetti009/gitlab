@@ -60257,6 +60257,9 @@ msgstr ""
 msgid "Todos|(removed)"
 msgstr ""
 
+msgid "Todos|Action failed. Try again later."
+msgstr ""
+
 msgid "Todos|Added approver"
 msgstr ""
 
@@ -60421,6 +60424,11 @@ msgstr ""
 msgid "Todos|Removed from Merge Train"
 msgstr ""
 
+msgid "Todos|Removed snooze from 1 to-do"
+msgid_plural "Todos|Removed snooze from %d to-dos"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "Todos|Restored 1 to-do"
 msgid_plural "Todos|Restored %d to-dos"
 msgstr[0] ""
@@ -60464,6 +60472,11 @@ msgstr ""
 
 msgid "Todos|Snoozed"
 msgstr ""
+
+msgid "Todos|Snoozed 1 to-do"
+msgid_plural "Todos|Snoozed %d to-dos"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "Todos|Snoozed until %{date}"
 msgstr ""
