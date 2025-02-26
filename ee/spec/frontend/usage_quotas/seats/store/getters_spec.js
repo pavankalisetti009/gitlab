@@ -14,7 +14,6 @@ describe('Usage Quotas Seats getters', () => {
       state.isLoadingBillableMembers = false;
       state.isLoadingGitlabSubscription = false;
       state.isChangingMembershipState = false;
-      state.isRemovingBillableMember = false;
     });
 
     it('returns false if nothing is being loaded', () => {
@@ -25,7 +24,6 @@ describe('Usage Quotas Seats getters', () => {
       'isLoadingBillableMembers',
       'isLoadingGitlabSubscription',
       'isChangingMembershipState',
-      'isRemovingBillableMember',
     ])('returns true if %s is being loaded', (key) => {
       state[key] = true;
 

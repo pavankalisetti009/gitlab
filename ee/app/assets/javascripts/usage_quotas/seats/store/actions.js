@@ -1,6 +1,6 @@
 import * as GroupsApi from 'ee/api/groups_api';
 import Api from 'ee/api';
-import { createAlert, VARIANT_SUCCESS } from '~/alert';
+import { createAlert } from '~/alert';
 import { s__ } from '~/locale';
 import Tracking from '~/tracking';
 import * as types from './mutation_types';
@@ -51,43 +51,6 @@ export const receiveGitlabSubscriptionError = ({ commit }) => {
     message: s__('Billing|An error occurred while loading GitLab subscription details.'),
   });
   commit(types.RECEIVE_GITLAB_SUBSCRIPTION_ERROR);
-};
-
-export const setBillableMemberToRemove = ({ commit }, member) => {
-  commit(types.SET_BILLABLE_MEMBER_TO_REMOVE, member);
-};
-
-export const removeBillableMember = ({ dispatch, state, commit }) => {
-  commit(types.REMOVE_BILLABLE_MEMBER);
-
-  const { id } = state.billableMemberToRemove;
-
-  return GroupsApi.removeBillableMemberFromGroup(state.namespaceId, id)
-    .then(() => dispatch('removeBillableMemberSuccess', id))
-    .catch(() => dispatch('removeBillableMemberError'));
-};
-
-const removeBillableMemberSuccessMessage = s__(
-  'Billing|User successfully scheduled for removal. This process might take some time. Refresh the page to see the changes.',
-);
-
-export const removeBillableMemberSuccess = ({ dispatch, commit }, memberId) => {
-  dispatch('fetchBillableMembersList');
-  dispatch('fetchGitlabSubscription');
-
-  createAlert({
-    message: removeBillableMemberSuccessMessage,
-    variant: VARIANT_SUCCESS,
-  });
-
-  commit(types.REMOVE_BILLABLE_MEMBER_SUCCESS, { memberId });
-};
-
-export const removeBillableMemberError = ({ commit }) => {
-  createAlert({
-    message: s__('Billing|An error occurred while removing a billable member.'),
-  });
-  commit(types.REMOVE_BILLABLE_MEMBER_ERROR);
 };
 
 export const fetchBillableMemberDetails = async ({ dispatch, commit, state }, memberId) => {

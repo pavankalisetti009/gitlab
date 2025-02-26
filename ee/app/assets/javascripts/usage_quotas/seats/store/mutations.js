@@ -78,33 +78,6 @@ export default {
     state.hasError = true;
   },
 
-  // Billable member removal
-  [types.SET_BILLABLE_MEMBER_TO_REMOVE](state, memberToRemove) {
-    if (!memberToRemove) {
-      state.billableMemberToRemove = null;
-    } else {
-      state.billableMemberToRemove = state.members.find(
-        (member) => member.id === memberToRemove.id,
-      );
-    }
-  },
-
-  [types.REMOVE_BILLABLE_MEMBER](state) {
-    state.isRemovingBillableMember = true;
-    state.hasError = false;
-  },
-
-  [types.REMOVE_BILLABLE_MEMBER_SUCCESS](state, { memberId }) {
-    state.isRemovingBillableMember = false;
-    state.billableMemberToRemove = null;
-    state.removedBillableMemberId = memberId;
-  },
-
-  [types.REMOVE_BILLABLE_MEMBER_ERROR](state) {
-    state.isRemovingBillableMember = false;
-    state.billableMemberToRemove = null;
-  },
-
   // Billable member details
   [types.FETCH_BILLABLE_MEMBER_DETAILS](state, { memberId }) {
     state.userDetails = {
