@@ -5,16 +5,6 @@ import { s__ } from '~/locale';
 import Tracking from '~/tracking';
 import * as types from './mutation_types';
 
-/** @type {import('vuex').Action<any, any>} */
-export const fetchInitialData = ({ commit, dispatch, state }) => {
-  if (state.initialized) {
-    return Promise.resolve();
-  }
-
-  commit(types.SET_STATE_INITIALIZED);
-  return dispatch('fetchBillableMembersList');
-};
-
 export const fetchBillableMembersList = ({ commit, dispatch, state }) => {
   commit(types.REQUEST_BILLABLE_MEMBERS);
 

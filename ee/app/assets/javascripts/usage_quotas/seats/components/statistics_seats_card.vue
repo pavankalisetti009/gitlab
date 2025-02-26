@@ -38,7 +38,7 @@ export default {
     explorePlansText: s__('Billing|Explore paid plans'),
   },
   mixins: [Tracking.mixin()],
-  inject: ['explorePlansPath'],
+  inject: ['explorePlansPath', 'namespaceId'],
   props: {
     seatsUsed: {
       type: Number,
@@ -59,10 +59,6 @@ export default {
       type: String,
       required: false,
       default: null,
-    },
-    namespaceId: {
-      type: Number,
-      required: true,
     },
     hasFreePlan: {
       type: Boolean,

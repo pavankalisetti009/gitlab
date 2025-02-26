@@ -6,10 +6,6 @@ import {
 import * as types from './mutation_types';
 
 export default {
-  [types.SET_STATE_INITIALIZED](state) {
-    state.initialized = true;
-  },
-
   // Gitlab subscription
   [types.REQUEST_GITLAB_SUBSCRIPTION](state) {
     state.isLoadingGitlabSubscription = true;
@@ -24,8 +20,6 @@ export default {
     state.maxSeatsUsed = usage?.max_seats_used ?? 0;
     state.seatsOwed = usage?.seats_owed ?? 0;
     state.activeTrial = Boolean(plan?.trial);
-    state.planCode = plan?.code ?? null;
-    state.planName = plan?.name ?? null;
     state.subscriptionEndDate = billing?.subscription_end_date ?? null;
     state.subscriptionStartDate = billing?.subscription_start_date ?? null;
 

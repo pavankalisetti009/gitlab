@@ -15,16 +15,6 @@ describe('Usage Quotas Seats mutations', () => {
     state = createState();
   });
 
-  describe('Initialization', () => {
-    it(`${types.SET_STATE_INITIALIZED}`, () => {
-      state.initialized = false;
-
-      mutations[types.SET_STATE_INITIALIZED](state);
-
-      expect(state.initialized).toBe(true);
-    });
-  });
-
   describe('GitLab subscription', () => {
     it(`${types.REQUEST_GITLAB_SUBSCRIPTION}`, () => {
       state.isLoadingGitlabSubscription = false;
@@ -98,7 +88,6 @@ describe('Usage Quotas Seats mutations', () => {
         mutations[types.RECEIVE_GITLAB_SUBSCRIPTION_SUCCESS](state, {});
 
         expect(state).toMatchObject({
-          planCode: null,
           seatsInSubscription: 0,
           seatsInUse: 0,
           maxSeatsUsed: 0,

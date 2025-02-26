@@ -31,7 +31,6 @@ describe('StatisticsSeatsCard', () => {
     hasFreePlan: false,
     seatsUsed: 20,
     seatsOwed: 5,
-    namespaceId: 4321,
     purchaseButtonLink,
   };
 
@@ -57,6 +56,7 @@ describe('StatisticsSeatsCard', () => {
       apolloProvider,
       provide: {
         explorePlansPath,
+        namespaceId: 4321,
       },
       stubs: {
         LimitedAccessModal,
