@@ -17,12 +17,15 @@ import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 export default {
   i18n: {
     exceptionMessage: s__(
-      'ScanResultPolicy|Use purl format for package paths: %{schemaStart}scheme:type/namespace/name@version?qualifiers#subpath%{schemaEnd}. For multiple packages, separate paths with comma ",".',
+      'SecurityOrchestration|Use the format %{schemaStart}path-to-package@package-version%{schemaEnd}. For multiple packages, separate paths with commas. For example: path/file1.yaml@1.1.1, path/file2.yaml@2.2.2',
     ),
     errorMessage: s__(
       'SecurityOrchestration|Add project full path after @ to following exceptions: %{exceptions}',
     ),
     duplicatesError: s__('ScanResultPolicy|Duplicates will be removed'),
+    exceptionsPlaceholder: s__(
+      'ScanResultPolicy|Specify the packages where this license requires approval before use',
+    ),
   },
   EXCEPTION_TYPE_ITEMS: [
     {
@@ -132,6 +135,7 @@ export default {
     <div v-if="withExceptions" class="gl-mt-4">
       <gl-form-textarea
         no-resize
+        :placeholder="$options.i18n.exceptionsPlaceholder"
         :value="convertedToStringPackages"
         @input="debouncedSetExceptions"
       />

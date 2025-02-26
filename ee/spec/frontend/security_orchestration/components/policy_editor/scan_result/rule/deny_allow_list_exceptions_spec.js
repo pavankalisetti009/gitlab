@@ -78,7 +78,7 @@ describe('DenyAllowExceptions', () => {
 
       expect(findTextArea().props('value')).toBe(VALID_EXCEPTIONS_STRING);
       expect(findFormatDescription().text()).toBe(
-        'Use purl format for package paths: scheme:type/namespace/name@version?qualifiers#subpath. For multiple packages, separate paths with comma ",".',
+        'Use the format path-to-package@package-version. For multiple packages, separate paths with commas. For example: path/file1.yaml@1.1.1, path/file2.yaml@2.2.2',
       );
     });
 

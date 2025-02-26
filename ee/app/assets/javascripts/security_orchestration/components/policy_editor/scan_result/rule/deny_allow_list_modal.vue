@@ -27,8 +27,7 @@ export default {
     listDescription: s__('ScanResultPolicy|The product %{verb} use the selected licenses'),
     denyTableHeader: s__('ScanResultPolicy|Denied license'),
     allowTableHeader: s__('ScanResultPolicy|Allowed license'),
-    denySecondTableHeader: s__('ScanResultPolicy|Deny except on'),
-    allowSecondTableHeader: s__('ScanResultPolicy|Allow except on'),
+    exceptionsHeader: s__('ScanResultPolicy|Exceptions that require approval'),
     addLicenseButton: s__('ScanResultPolicy|Add new license'),
     disabledTooltip: s__('ScanResultPolicy|All licenses have been selected'),
   },
@@ -112,9 +111,7 @@ export default {
         },
         {
           key: 'exceptions',
-          label: this.isDeniedList
-            ? this.$options.i18n.denySecondTableHeader
-            : this.$options.i18n.allowSecondTableHeader,
+          label: this.$options.i18n.exceptionsHeader,
           thAttr: { 'data-testid': 'exception-th' },
           thClass: '!gl-pl-0',
           tdClass: '!gl-pl-0 !gl-border-none !gl-pb-3',
