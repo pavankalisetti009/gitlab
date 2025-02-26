@@ -4,11 +4,13 @@ module Ai
   module AmazonQ
     class DestroyService < BaseService
       def execute
+        unless destroy_oauth_application!
+          return ServiceResponse.error(message: ai_settings.errors.full_messages.to_sentence)
+        end
+
         result = block_service_account!
 
         return result unless result.success?
-
-        destroy_oauth_application!
 
         if ai_settings.update(
           amazon_q_oauth_application_id: nil,
@@ -31,12 +33,30 @@ module Ai
       attr_reader :user
 
       def destroy_oauth_application!
+        return unless delete_amazon_q_onboarding.success?
+
         oauth_application = Doorkeeper::Application.find_by_id(ai_settings.amazon_q_oauth_application_id)
         oauth_application&.destroy!
       end
 
       def block_service_account!
         Ai::AmazonQ.ensure_service_account_blocked!(current_user: user)
+      end
+
+      def delete_amazon_q_onboarding
+        client = ::Gitlab::Llm::QAi::Client.new(user)
+        # Currently the AI Gateway API call is idempotent; it will remove the existing
+        # application if it already exists.
+        response = client.perform_delete_auth_application(
+          ai_settings.amazon_q_role_arn
+        )
+
+        unless response.success?
+          ai_settings.errors.add(:application,
+            "could not be deleted by the AI Gateway: Error #{response.code} - #{response.body}")
+        end
+
+        response
       end
     end
   end
