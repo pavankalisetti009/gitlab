@@ -41,18 +41,35 @@ GitLab Duo Workflow helps you complete development tasks directly in the VS Code
 Workflow:
 
 - Runs in your IDE so that you do not have to switch contexts or tools.
-- In response to your prompt, creates and works through a plan.
-  Workflow then stages the corresponding changes in your project's repository.
-  You control when to accept, modify, or reject the suggestions from Workflow.
-- Is context-aware. Workflow understands your project structure, codebase, and history.
+- Creates and works through a plan, in response to your prompt.
+- Stages proposed changes in your project's repository.
+  You control when to accept, modify, or reject the suggestions.
+- Understands the context of your project structure, codebase, and history.
   You can also add your own context, such as relevant GitLab issues or merge requests.
   For more information, see [context](context.md).
 
-For more information, see:
+## Use Workflow in VS Code
 
-- [Set up Workflow](set_up.md).
-- [Use Workflow in your IDE](use_in_your_ide.md).
-- [Best practices](best_practices.md).
+Prerequisites:
+
+- You must have [set up Workflow](set_up.md).
+
+To use Workflow in VS Code:
+
+1. In VS Code, open the Git repository folder for your GitLab project.
+   - You must check out the branch for the code you would like to change.
+1. Open the command palette:
+   - On macOS: <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>
+   - On Windows and Linux: <kbd>Ctrl</kbd> + <kbd>P</kbd>.
+1. Type `GitLab Duo Workflow` and select **GitLab: Show Duo Workflow**.
+1. To create a workflow, select **New workflow**.
+1. For **Task description**, specify a junior-level code task in detail,
+   and then select **Start**.
+
+After you describe your task, Workflow generates and executes on a plan to address it.
+While it executes, you can pause or ask it to adjust the plan.
+
+For more information about how to interact with Workflow, see [best practices](best_practices.md).
 
 ## Supported languages
 
