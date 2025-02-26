@@ -18130,7 +18130,8 @@ CREATE TABLE packages_maven_metadata (
     app_name character varying NOT NULL,
     app_version character varying,
     path character varying(512) NOT NULL,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_bf287ce98c CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE packages_maven_metadata_id_seq
