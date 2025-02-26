@@ -1,0 +1,16 @@
+---
+version: 1
+type: LineChart
+data:
+  type: dora_metrics
+  query:
+    metric: deployment_frequency
+    dateRange: 180d
+    interval: DAILY
+options:
+  xAxis:
+    name: Date
+    type: category
+  yAxis:
+    name: "Number of deployments"
+    type: value

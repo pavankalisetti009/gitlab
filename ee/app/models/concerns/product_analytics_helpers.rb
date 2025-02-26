@@ -52,6 +52,11 @@ module ProductAnalyticsHelpers
     Ability.allowed?(user, :read_enterprise_ai_analytics, self)
   end
 
+  def dora_metrics_dashboard_enabled?(user)
+    Feature.enabled?(:dora_metrics_dashboard, self) &&
+      Ability.allowed?(user, :read_dora4_analytics, self)
+  end
+
   def contributions_dashboard_available?
     is_a?(Group) && Feature.enabled?(:contributions_analytics_dashboard, self)
   end

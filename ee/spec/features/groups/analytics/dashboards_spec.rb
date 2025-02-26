@@ -54,15 +54,19 @@ RSpec.describe 'Analytics Dashboard', :js, feature_category: :value_stream_manag
 
             vsd_dashboard = dashboard_items[0]
             contribution_dashboard = dashboard_items[1]
-            custom_dashboard = dashboard_items[2]
+            dora_metrics_dashboard = dashboard_items[2]
+            custom_dashboard = dashboard_items[3]
 
-            expect(dashboard_items.length).to eq(3)
+            expect(dashboard_items.length).to eq(4)
 
             expect(vsd_dashboard).to have_content _('Value Streams Dashboard')
             expect(vsd_dashboard).to have_selector(dashboard_by_gitlab_testid)
 
             expect(contribution_dashboard).to have_content _('Contributions Dashboard')
             expect(contribution_dashboard).to have_selector(dashboard_by_gitlab_testid)
+
+            expect(dora_metrics_dashboard).to have_content _('DORA Metrics')
+            expect(dora_metrics_dashboard).to have_selector(dashboard_by_gitlab_testid)
 
             expect(custom_dashboard).to have_content _('Custom VSD')
             expect(custom_dashboard).to have_content _('VSD from fixture')
@@ -71,6 +75,20 @@ RSpec.describe 'Analytics Dashboard', :js, feature_category: :value_stream_manag
         end
 
         it_behaves_like 'has value streams dashboard link'
+
+        context 'with dora_metrics_dashboard disabled' do
+          before do
+            stub_feature_flags(dora_metrics_dashboard: false)
+
+            visit_group_analytics_dashboards_list(group)
+          end
+
+          it 'does not render DORA metrics dashboard link' do
+            dashboard_items_arr = page.all(dashboard_list_item_title).map(&:text)
+
+            expect(dashboard_items_arr).not_to include('DORA Metrics')
+          end
+        end
       end
 
       context 'with default configuration' do

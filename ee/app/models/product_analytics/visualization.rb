@@ -27,6 +27,18 @@ module ProductAnalytics
       total_unique_users
     ].freeze
 
+    DORA_METRICS_VISUALIZATIONS_PATH = 'ee/lib/gitlab/analytics/dora_metrics/visualizations'
+    DORA_METRICS_VISUALIZATIONS = %w[
+      deployment_frequency_average
+      time_to_restore_service_median
+      lead_time_for_changes_median
+      change_failure_rate
+      deployment_frequency_over_time
+      change_failure_rate_over_time
+      time_to_restore_service_over_time
+      lead_time_for_changes_over_time
+    ].freeze
+
     VALUE_STREAM_DASHBOARD_PATH = 'ee/lib/gitlab/analytics/value_stream_dashboard/visualizations'
     VALUE_STREAM_DASHBOARD_VISUALIZATIONS = %w[
       dora_chart
@@ -36,10 +48,6 @@ module ProductAnalytics
       usage_overview
       dora_performers_score
       dora_projects_comparison
-      deployment_frequency_over_time
-      lead_time_for_changes_over_time
-      time_to_restore_service_over_time
-      change_failure_rate_over_time
     ].freeze
 
     AI_IMPACT_DASHBOARD_PATH = 'ee/lib/gitlab/analytics/ai_impact_dashboard/visualizations'
@@ -157,6 +165,10 @@ module ProductAnalytics
       unsafe_load_builtin_visualizations(AI_IMPACT_DASHBOARD_VISUALIZATIONS, AI_IMPACT_DASHBOARD_PATH, is_project)
     end
 
+    def self.dora_metrics_visualizations(is_project = false)
+      unsafe_load_builtin_visualizations(DORA_METRICS_VISUALIZATIONS, DORA_METRICS_VISUALIZATIONS_PATH, is_project)
+    end
+
     def self.builtin_visualizations(container, user)
       is_project = container.is_a?(Project)
 
@@ -167,6 +179,10 @@ module ProductAnalytics
       end
 
       visualizations << value_stream_dashboard_visualizations(is_project) if container.vsd_dashboard_editor_enabled?
+
+      if container.vsd_dashboard_editor_enabled? && container.dora_metrics_dashboard_enabled?(user)
+        visualizations << dora_metrics_visualizations(is_project)
+      end
 
       if container.ai_impact_dashboard_available_for?(user)
         visualizations << ai_impact_dashboard_visualizations(is_project)
@@ -185,6 +201,8 @@ module ProductAnalytics
           AI_IMPACT_DASHBOARD_PATH
         elsif CONTRIBUTIONS_DASHBOARD_VISUALIZATIONS.include?(data)
           CONTRIBUTIONS_DASHBOARD_PATH
+        elsif DORA_METRICS_VISUALIZATIONS.include?(data)
+          DORA_METRICS_VISUALIZATIONS_PATH
         else
           PRODUCT_ANALYTICS_PATH
         end

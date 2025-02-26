@@ -98,11 +98,13 @@ RSpec.describe ProductAnalyticsHelpers, feature_category: :product_analytics do
   describe '#product_analytics_dashboards' do
     it 'returns nothing if product analytics disabled' do
       stub_licensed_features(product_analytics: false)
+      stub_feature_flags(dora_metrics_dashboard: false)
       expect(project.product_analytics_dashboards(user)).to be_empty
     end
 
     it 'returns nothing if feature flag is disabled' do
       stub_licensed_features(product_analytics: false)
+      stub_feature_flags(dora_metrics_dashboard: false)
       stub_feature_flags(product_analytics_features: false)
       expect(project.product_analytics_dashboards(user)).to be_empty
     end
@@ -152,7 +154,7 @@ RSpec.describe ProductAnalyticsHelpers, feature_category: :product_analytics do
     context 'without configuration project' do
       before do
         allow(::Gitlab::CurrentSettings).to receive(:product_analytics_enabled?).and_return true
-        stub_licensed_features(product_analytics: true)
+        stub_licensed_features(product_analytics: true, dora4_analytics: true)
         stub_feature_flags(product_analytics_features: true)
         project.project_setting.update!(product_analytics_instrumentation_key: "key")
         allow_next_instance_of(::ProductAnalytics::CubeDataQueryService) do |instance|

@@ -1,4 +1,5 @@
 <script>
+import { merge } from 'lodash';
 import { GlButton, GlLink, GlSprintf } from '@gitlab/ui';
 import isString from 'lodash/isString';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -157,10 +158,7 @@ export default {
       });
     },
     visualizationOptions() {
-      return {
-        ...this.visualization.options,
-        ...this.visualizationOptionOverrides,
-      };
+      return merge(this.visualization.options, this.visualizationOptionOverrides);
     },
   },
   watch: {
