@@ -63,10 +63,10 @@ RSpec.describe Repository, feature_category: :source_code_management do
     it 'fetches the URL without creating a remote' do
       expect(repository)
         .to receive(:fetch_remote)
-        .with(url, refmap: ['+refs/heads/*:refs/remotes/upstream/*'], ssh_auth: nil, forced: true, check_tags_changed: true)
+        .with(url, refmap: ['+refs/heads/*:refs/remotes/upstream/*'], ssh_auth: nil, forced: true)
         .and_return(nil)
 
-      repository.fetch_upstream(url, forced: true, check_tags_changed: true)
+      repository.fetch_upstream(url, forced: true)
     end
   end
 
