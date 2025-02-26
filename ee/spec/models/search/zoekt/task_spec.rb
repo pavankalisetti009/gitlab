@@ -154,11 +154,12 @@ RSpec.describe ::Search::Zoekt::Task, feature_category: :global_search do
         create(:zoekt_task, task_type: :delete_repo, project: project_without_repo)
       end
 
-      it 'marks indexing tasks as orphaned and processes delete tasks' do
+      it 'marks indexing tasks as done, the repository as ready, and processes delete tasks' do
         expect do
           described_class.each_task_for_processing(limit: 10) { |t| t }
-        end.to change { task_with_invalid_repo.reload.state }.from('pending').to('orphaned')
+        end.to change { task_with_invalid_repo.reload.state }.from('pending').to('done')
         expect(delete_task_with_invalid_repo.reload).to be_processing
+        expect(task_with_invalid_repo.zoekt_repository.reload).to be_ready
       end
     end
 

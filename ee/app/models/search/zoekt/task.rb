@@ -90,14 +90,18 @@ module Search
         processed_project_identifiers = Set.new
 
         task_iterator.each_batch(of: PROCESSING_BATCH_SIZE) do |tasks|
-          task_states = tasks.each_with_object(orphaned: [], skipped: []) do |task, states|
-            case handle_invalid_task(task)
-            in [:orphaned, task_id]
-              states[:orphaned] << task_id
-            in [:skipped, task_id]
-              states[:skipped] << task_id
-            in [:valid, nil]
+          task_states = tasks.each_with_object(valid: [], orphaned: [], skipped: [], done: []) do |task, states|
+            case determine_task_state(task)
+            when :done
+              states[:done] << task.id
+            when :orphaned
+              states[:orphaned] << task.id
+            when :skipped
+              states[:skipped] << task.id
+            when :valid
               next unless processed_project_identifiers.add?(task.project_identifier)
+
+              states[:valid] << task.id
 
               yield task
               count += 1
@@ -106,8 +110,7 @@ module Search
             break states if count >= limit
           end
 
-          update_task_states(tasks, orphaned_task_ids: task_states[:orphaned],
-            skipped_task_ids: task_states[:skipped])
+          update_task_states(states: task_states)
           break if count >= limit
         end
       end
@@ -117,21 +120,34 @@ module Search
         Gitlab::Pagination::Keyset::Iterator.new(scope: scope)
       end
 
-      def self.handle_invalid_task(task)
-        return [:valid, nil] if task.delete_repo?
+      def self.determine_task_state(task)
+        return :valid if task.delete_repo?
 
         project = task.zoekt_repository&.project
-        return [:orphaned, task.id] unless project && project.repo_exists?
+        return :orphaned unless project
 
-        return [:skipped, task.id] if task.zoekt_repository.failed? || project.pending_delete
+        return :skipped if task.zoekt_repository.failed? || project.pending_delete
 
-        [:valid, nil]
+        # Mark tasks as done since we have nothing to index
+        return :done unless project.repo_exists?
+
+        :valid
       end
 
-      def self.update_task_states(tasks, orphaned_task_ids:, skipped_task_ids:)
-        tasks.where(id: orphaned_task_ids).update_all(state: :orphaned) if orphaned_task_ids.any?
-        tasks.where(id: skipped_task_ids).update_all(state: :skipped) if skipped_task_ids.any?
-        tasks.where.not(state: [:orphaned, :skipped]).update_all(state: :processing)
+      def self.update_task_states(states:)
+        Search::Zoekt::Task.id_in(states[:orphaned]).update_all(state: :orphaned) if states[:orphaned].any?
+        Search::Zoekt::Task.id_in(states[:skipped]).update_all(state: :skipped) if states[:skipped].any?
+
+        if states[:valid].any?
+          Search::Zoekt::Task.id_in(states[:valid]).where.not(state: [:orphaned, :skipped, :done])
+                             .update_all(state: :processing)
+        end
+
+        return unless states[:done].any?
+
+        done_tasks = Search::Zoekt::Task.id_in(states[:done])
+        done_tasks.update_all(state: :done)
+        Search::Zoekt::Repository.id_in(done_tasks.select(:zoekt_repository_id)).update_all(state: :ready)
       end
 
       def set_project_identifier
