@@ -87,13 +87,9 @@ module Search
       def random_force_reindexing?
         return true if task_type == :force_index_repo
 
-        eligible_for_force_reindexing? && (rand * 100 <= REINDEXING_CHANCE_PERCENTAGE)
+        task_type == :index_repo && (rand * 100 <= REINDEXING_CHANCE_PERCENTAGE)
       end
       strong_memoize_attr :random_force_reindexing?
-
-      def eligible_for_force_reindexing?
-        task_type == :index_repo && Feature.enabled?(:zoekt_random_force_reindexing, project, type: :ops)
-      end
 
       def index_circuit_broken?(idx)
         # Note: we skip indexing tasks depending on storage watermark levels.
