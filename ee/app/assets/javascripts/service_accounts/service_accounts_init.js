@@ -13,6 +13,7 @@ export default (el) => {
     basePath,
     serviceAccountsPath,
     serviceAccountsDocsPath,
+    accessTokenRevoke,
     accessTokenRotate,
     accessTokenShow,
   } = el.dataset;
@@ -27,6 +28,7 @@ export default (el) => {
     provide: {
       serviceAccountsPath,
       serviceAccountsDocsPath,
+      accessTokenRevoke,
       accessTokenRotate,
       accessTokenShow,
     },

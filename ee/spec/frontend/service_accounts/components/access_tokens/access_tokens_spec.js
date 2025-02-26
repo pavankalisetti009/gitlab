@@ -15,6 +15,7 @@ describe('AccessTokens', () => {
   const pinia = createTestingPinia();
   const store = useAccessTokens();
 
+  const accessTokenRevoke = '/api/v4/groups/4/service_accounts/:id/personal_access_tokens/';
   const accessTokenRotate = '/api/v4/groups/4/service_accounts/:id/personal_access_tokens/';
   const accessTokenShow = '/api/v4/personal_access_tokens';
   const id = 235;
@@ -23,6 +24,7 @@ describe('AccessTokens', () => {
     wrapper = shallowMountExtended(AccessTokens, {
       pinia,
       provide: {
+        accessTokenRevoke,
         accessTokenRotate,
         accessTokenShow,
       },
@@ -42,6 +44,7 @@ describe('AccessTokens', () => {
     expect(store.setup).toHaveBeenCalledWith({
       filters: [{ type: 'state', value: { data: 'active', operator: '=' } }],
       id: 235,
+      urlRevoke: '/api/v4/groups/4/service_accounts/:id/personal_access_tokens/',
       urlRotate: '/api/v4/groups/4/service_accounts/:id/personal_access_tokens/',
       urlShow: '/api/v4/personal_access_tokens',
     });

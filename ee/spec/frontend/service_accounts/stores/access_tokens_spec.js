@@ -2,6 +2,7 @@ import MockAdapter from 'axios-mock-adapter';
 import { setActivePinia, createPinia } from 'pinia';
 import { useAccessTokens } from 'ee/service_accounts/stores/access_tokens';
 import { createAlert } from '~/alert';
+import { smoothScrollTop } from '~/behaviors/smooth_scroll';
 import axios from '~/lib/utils/axios_utils';
 import {
   HTTP_STATUS_NO_CONTENT,
@@ -15,6 +16,8 @@ jest.mock('~/alert', () => ({
     dismiss: mockAlertDismiss,
   })),
 }));
+
+jest.mock('~/behaviors/smooth_scroll');
 
 describe('useAccessTokens store', () => {
   let store;
@@ -35,6 +38,7 @@ describe('useAccessTokens store', () => {
       expect(store.token).toEqual(null);
       expect(store.tokens).toEqual([]);
       expect(store.total).toBe(0);
+      expect(store.urlRevoke).toBe('');
       expect(store.urlRotate).toBe('');
       expect(store.urlShow).toBe('');
     });
@@ -44,6 +48,7 @@ describe('useAccessTokens store', () => {
     const mockAxios = new MockAdapter(axios);
     const filters = ['dummy'];
     const id = 235;
+    const urlRevoke = '/api/v4/groups/4/service_accounts/:id/personal_access_tokens';
     const urlRotate = '/api/v4/groups/4/service_accounts/:id/personal_access_tokens';
     const urlShow = '/api/v4/personal_access_tokens';
 
@@ -59,10 +64,11 @@ describe('useAccessTokens store', () => {
 
     describe('setup', () => {
       it('sets up the store', async () => {
-        await store.setup({ filters, id, urlRotate, urlShow });
+        await store.setup({ filters, id, urlRevoke, urlRotate, urlShow });
 
         expect(store.filters).toEqual(filters);
         expect(store.id).toBe(id);
+        expect(store.urlRevoke).toBe(urlRevoke);
         expect(store.urlRotate).toBe(urlRotate);
         expect(store.urlShow).toBe(urlShow);
       });
@@ -154,6 +160,107 @@ describe('useAccessTokens store', () => {
       });
     });
 
+    describe('revokeToken', () => {
+      beforeEach(() => {
+        store.setup({ id, filters, urlRevoke });
+      });
+
+      it('sets busy to true when revoking', () => {
+        store.revokeToken(1);
+
+        expect(store.busy).toBe(true);
+      });
+
+      it('dismisses any existing alert', () => {
+        store.alert = createAlert({ message: 'dummy' });
+        store.fetchTokens();
+
+        expect(mockAlertDismiss).toHaveBeenCalledTimes(1);
+      });
+
+      it('revokes the token', async () => {
+        await store.revokeToken(1);
+
+        expect(mockAxios.history.delete).toHaveLength(1);
+        expect(mockAxios.history.delete[0]).toEqual(
+          expect.objectContaining({
+            url: '/api/v4/groups/4/service_accounts/235/personal_access_tokens/1',
+          }),
+        );
+      });
+
+      it('scrolls to the top', async () => {
+        mockAxios.onDelete().replyOnce(HTTP_STATUS_NO_CONTENT);
+        await store.revokeToken(1);
+
+        expect(smoothScrollTop).toHaveBeenCalledTimes(1);
+      });
+
+      it('shows an alert after successful token revocation', async () => {
+        mockAxios.onDelete().replyOnce(HTTP_STATUS_NO_CONTENT);
+        mockAxios.onGet().replyOnce(HTTP_STATUS_OK);
+        await store.revokeToken(1);
+
+        expect(createAlert).toHaveBeenCalledTimes(1);
+        expect(createAlert).toHaveBeenCalledWith({
+          message: 'The token was revoked successfully.',
+          variant: 'success',
+        });
+      });
+
+      it('updates tokens and sets busy to false after fetching', async () => {
+        mockAxios.onDelete().replyOnce(HTTP_STATUS_NO_CONTENT);
+        mockAxios.onGet().replyOnce(HTTP_STATUS_OK, [{ active: true, name: 'Token' }], headers);
+        await store.revokeToken(1);
+
+        expect(store.tokens).toHaveLength(1);
+        expect(store.busy).toBe(false);
+      });
+
+      it('shows an alert if an error occurs while revoking', async () => {
+        mockAxios.onDelete().replyOnce(HTTP_STATUS_INTERNAL_SERVER_ERROR);
+        await store.revokeToken(1);
+
+        expect(createAlert).toHaveBeenCalledTimes(1);
+        expect(createAlert).toHaveBeenCalledWith({
+          message: 'An error occurred while revoking the token.',
+        });
+        expect(store.busy).toBe(false);
+      });
+
+      it('shows an alert if an error occurs while fetching', async () => {
+        mockAxios.onDelete().replyOnce(HTTP_STATUS_NO_CONTENT);
+        mockAxios.onGet().replyOnce(HTTP_STATUS_INTERNAL_SERVER_ERROR);
+        await store.revokeToken(1);
+
+        expect(createAlert).toHaveBeenCalledTimes(2);
+        expect(createAlert).toHaveBeenCalledWith({
+          message: 'An error occurred while fetching the tokens.',
+        });
+        expect(store.busy).toBe(false);
+      });
+
+      it('uses correct params in the fetch', async () => {
+        mockAxios.onDelete().replyOnce(HTTP_STATUS_NO_CONTENT);
+        mockAxios.onGet().replyOnce(HTTP_STATUS_OK, [{ active: true, name: 'Token' }], headers);
+        store.setPage(2);
+        store.setFilters(['my token']);
+        await store.revokeToken(1);
+
+        expect(mockAxios.history.get).toHaveLength(1);
+        expect(mockAxios.history.get[0]).toEqual(
+          expect.objectContaining({
+            params: {
+              page: 1,
+              sort: 'expires_at_asc_id_desc',
+              search: 'my token',
+              user_id: 235,
+            },
+          }),
+        );
+      });
+    });
+
     describe('rotateToken', () => {
       beforeEach(() => {
         store.setup({ id, filters, urlRotate });
@@ -185,11 +292,10 @@ describe('useAccessTokens store', () => {
       });
 
       it('scrolls to the top', async () => {
-        const scrollToSpy = jest.spyOn(window, 'scrollTo');
         mockAxios.onPost().replyOnce(HTTP_STATUS_NO_CONTENT);
         await store.rotateToken(1, '2025-01-01');
 
-        expect(scrollToSpy).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' });
+        expect(smoothScrollTop).toHaveBeenCalledTimes(1);
       });
 
       it('updates tokens and sets busy to false after fetching', async () => {
@@ -253,10 +359,9 @@ describe('useAccessTokens store', () => {
       });
 
       it('scrolls to the top', () => {
-        const scrollToSpy = jest.spyOn(window, 'scrollTo');
         store.setPage(2);
 
-        expect(scrollToSpy).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' });
+        expect(smoothScrollTop).toHaveBeenCalledTimes(1);
       });
     });
 

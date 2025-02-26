@@ -297,6 +297,38 @@ describe('AccessTokenTable', () => {
     });
   });
 
+  describe('when revoking a token', () => {
+    it('makes the modal to appear with correct text', async () => {
+      createComponent();
+      const modal = findModal();
+      expect(modal.props('visible')).toBe(false);
+      await findDisclosureButton(1).trigger('click');
+
+      expect(modal.props()).toMatchObject({
+        visible: true,
+        title: 'Revoke the token "My name"?',
+        actionPrimary: {
+          text: 'Revoke',
+          attributes: { variant: 'danger' },
+        },
+        actionCancel: {
+          text: 'Cancel',
+        },
+      });
+      expect(modal.text()).toBe(
+        'Are you sure you want to revoke the token "My name"? This action cannot be undone. Any tools that rely on this access token will stop working.',
+      );
+    });
+
+    it('confirming the primary action calls the revokeToken method in the store', async () => {
+      createComponent();
+      findDisclosureButton(1).trigger('click');
+      await findModal().vm.$emit('primary');
+
+      expect(store.revokeToken).toHaveBeenCalledWith(1);
+    });
+  });
+
   describe('when rotating a token', () => {
     it('makes the modal to appear with correct text', async () => {
       createComponent();
