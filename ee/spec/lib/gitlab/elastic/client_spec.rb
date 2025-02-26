@@ -47,29 +47,6 @@ RSpec.describe Gitlab::Elastic::Client, feature_category: :global_search do
 
           expect(options).to include(adapter: :typhoeus)
         end
-
-        context 'when use_typhoeus_elasticsearch_adapter FeatureFlag is disabled' do
-          before do
-            stub_feature_flags(use_typhoeus_elasticsearch_adapter: false)
-          end
-
-          it 'uses the net/http adapter' do
-            options = client.transport.transport.options
-            expect(options).to include(adapter: :net_http)
-          end
-        end
-
-        context 'cached client when FeatureFlag changes' do
-          it 'successfully changes adapter from net/http to typhoeus' do
-            stub_feature_flags(use_typhoeus_elasticsearch_adapter: false)
-            adapter = Issue.__elasticsearch__.client.transport.transport.connections.first.connection.builder.adapter
-            expect(adapter).to eq(::Faraday::Adapter::NetHttp)
-
-            stub_feature_flags(use_typhoeus_elasticsearch_adapter: true)
-            adapter = Issue.__elasticsearch__.client.transport.transport.connections.first.connection.builder.adapter
-            expect(adapter).to eq(::Faraday::Adapter::Typhoeus)
-          end
-        end
       end
 
       context 'with client_request_timeout in config' do
