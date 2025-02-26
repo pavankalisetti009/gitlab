@@ -24,7 +24,7 @@ describe('Merge request reports SecurityListApp component', () => {
   it('renders loading text', () => {
     createComponent({ loading: true });
 
-    expect(findSecuritySubheading().text()).toBe('Results pending...');
+    expect(findSecuritySubheading().text()).toBe('Results pending…');
   });
 
   describe('with findings', () => {

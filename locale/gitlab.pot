@@ -7613,10 +7613,10 @@ msgstr ""
 msgid "Applying multiple commands"
 msgstr ""
 
-msgid "Applying suggestion..."
+msgid "Applying suggestions…"
 msgstr ""
 
-msgid "Applying suggestions..."
+msgid "Applying suggestion…"
 msgstr ""
 
 msgid "Approval Rules"
@@ -12029,9 +12029,6 @@ msgstr ""
 msgid "Checking approval status"
 msgstr ""
 
-msgid "Checking branch availability..."
-msgstr ""
-
 msgid "Checking branch availability…"
 msgstr ""
 
@@ -12044,7 +12041,7 @@ msgstr ""
 msgid "Checking group path availability..."
 msgstr ""
 
-msgid "Checking if merge request can be merged..."
+msgid "Checking if merge request can be merged…"
 msgstr ""
 
 msgid "Checking source validity"
@@ -14504,7 +14501,7 @@ msgstr ""
 msgid "Compare"
 msgstr ""
 
-msgid "Compare %{oldCommitId}...%{newCommitId}"
+msgid "Compare %{oldCommitId}…%{newCommitId}"
 msgstr ""
 
 msgid "Compare Branches"
@@ -25058,6 +25055,9 @@ msgstr ""
 msgid "Filter results..."
 msgstr ""
 
+msgid "Filter results…"
+msgstr ""
+
 msgid "Filter users"
 msgstr ""
 
@@ -28390,7 +28390,7 @@ msgstr ""
 msgid "GroupSettings|Retry"
 msgstr ""
 
-msgid "GroupSettings|Saving..."
+msgid "GroupSettings|Saving…"
 msgstr ""
 
 msgid "GroupSettings|Select a project"
@@ -28639,7 +28639,7 @@ msgstr ""
 msgid "GroupsNew|You can also %{linkStart}import an existing group%{linkEnd}."
 msgstr ""
 
-msgid "GroupsNew|e.g. h8d3f016698e..."
+msgid "GroupsNew|e.g. h8d3f016698e…"
 msgstr ""
 
 msgid "GroupsTree|Are you sure you want to leave the \"%{fullName}\" group?"
@@ -28675,7 +28675,7 @@ msgstr ""
 msgid "Groups|Changing group URL can have unintended side effects. %{linkStart}Learn more%{linkEnd}."
 msgstr ""
 
-msgid "Groups|Checking group URL availability..."
+msgid "Groups|Checking group URL availability…"
 msgstr ""
 
 msgid "Groups|Create and add README"
@@ -30547,7 +30547,7 @@ msgstr ""
 msgid "Incident|Timeline text"
 msgstr ""
 
-msgid "Incident|Timeline text..."
+msgid "Incident|Timeline text…"
 msgstr ""
 
 msgid "Include additional optional data in Service Ping. To enable optional data, first enable Service Ping."
@@ -35880,9 +35880,6 @@ msgstr ""
 msgid "Merge when pipeline succeeds"
 msgstr ""
 
-msgid "Merge..."
-msgstr ""
-
 msgid "MergeChecks|All threads must be resolved"
 msgstr ""
 
@@ -35922,7 +35919,7 @@ msgstr ""
 msgid "MergeConflict|Commit to source branch"
 msgstr ""
 
-msgid "MergeConflict|Committing..."
+msgid "MergeConflict|Committing…"
 msgstr ""
 
 msgid "MergeConflict|Edit inline"
@@ -36187,6 +36184,9 @@ msgid "Merged: %{merged}"
 msgstr ""
 
 msgid "Merges this merge request immediately."
+msgstr ""
+
+msgid "Merge…"
 msgstr ""
 
 msgid "Mermaid diagram"
@@ -47555,12 +47555,12 @@ msgstr ""
 msgid "Refresh the page to view sync status"
 msgstr ""
 
-msgid "Refreshing in a second to show the updated status..."
-msgid_plural "Refreshing in %d seconds to show the updated status..."
+msgid "Refreshing in a second to show the updated status…"
+msgid_plural "Refreshing in %d seconds to show the updated status…"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid "Refreshing..."
+msgid "Refreshing…"
 msgstr ""
 
 msgid "Regenerate export"
@@ -48200,7 +48200,7 @@ msgstr ""
 msgid "Reopening %{issuableType}..."
 msgstr ""
 
-msgid "Reopening..."
+msgid "Reopening…"
 msgstr ""
 
 msgid "Reopens this %{quick_action_target}."
@@ -48919,7 +48919,7 @@ msgstr ""
 msgid "Results limit reached"
 msgstr ""
 
-msgid "Results pending..."
+msgid "Results pending…"
 msgstr ""
 
 msgid "Resume"
@@ -56018,7 +56018,7 @@ msgstr ""
 msgid "Start merge train"
 msgstr ""
 
-msgid "Start merge train..."
+msgid "Start merge train…"
 msgstr ""
 
 msgid "Start review"
@@ -57507,7 +57507,7 @@ msgstr ""
 msgid "Terraform|Job status"
 msgstr ""
 
-msgid "Terraform|Loading Terraform reports..."
+msgid "Terraform|Loading Terraform reports…"
 msgstr ""
 
 msgid "Terraform|Lock"
@@ -58130,7 +58130,7 @@ msgstr ""
 msgid "The invitation was successfully resent."
 msgstr ""
 
-msgid "The issue was successfully promoted to an epic. Redirecting to epic..."
+msgid "The issue was successfully promoted to an epic. Redirecting to epic…"
 msgstr ""
 
 msgid "The last owner cannot be set to awaiting"
@@ -66650,6 +66650,9 @@ msgid "Write comment template content here…"
 msgstr ""
 
 msgid "Write milestone description..."
+msgstr ""
+
+msgid "Write milestone description…"
 msgstr ""
 
 msgid "Write your release notes or drag your files here…"

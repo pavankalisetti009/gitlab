@@ -64,7 +64,7 @@ export default {
     },
     subHeadingText() {
       if (this.loading) {
-        return __('Results pending...');
+        return __('Results pending…');
       }
 
       if (!this.hasFindings) {
