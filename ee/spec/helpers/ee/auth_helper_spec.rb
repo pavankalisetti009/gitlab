@@ -319,6 +319,13 @@ RSpec.describe EE::AuthHelper do
   end
 
   describe '#admin_service_accounts_data' do
+    before do
+      allow(helper).to receive_messages(
+        expires_at_field_data: { max_date: '2022-03-02',
+                                 min_date: '2022-03-02' }
+      )
+    end
+
     it 'returns data for the service accounts UI' do
       expect(helper.admin_service_accounts_data).to match(a_hash_including({
         base_path: '/admin/application_settings/service_accounts',
@@ -327,6 +334,9 @@ RSpec.describe EE::AuthHelper do
           docs_path: '/help/user/profile/service_accounts.md'
         },
         access_token: {
+          max_date: '2022-03-02',
+          min_date: '2022-03-02',
+          create: 'http://localhost/api/v4/users/:id/personal_access_tokens',
           revoke: 'http://localhost/api/v4/personal_access_tokens',
           rotate: 'http://localhost/api/v4/personal_access_tokens',
           show: 'http://localhost/api/v4/personal_access_tokens'
@@ -338,6 +348,13 @@ RSpec.describe EE::AuthHelper do
   describe '#groups_service_accounts_data' do
     let_it_be(:group) { build_stubbed(:group, path: 'my-group-path', id: 4) }
 
+    before do
+      allow(helper).to receive_messages(
+        expires_at_field_data: { max_date: '2022-03-02',
+                                 min_date: '2022-03-02' }
+      )
+    end
+
     it 'returns data for the service accounts UI' do
       expect(helper.groups_service_accounts_data(group)).to match(a_hash_including({
         base_path: '/groups/my-group-path/-/settings/service_accounts',
@@ -346,6 +363,9 @@ RSpec.describe EE::AuthHelper do
           docs_path: '/help/user/profile/service_accounts.md'
         },
         access_token: {
+          max_date: '2022-03-02',
+          min_date: '2022-03-02',
+          create: 'http://localhost/api/v4/groups/4/service_accounts/:id/personal_access_tokens',
           revoke: 'http://localhost/api/v4/groups/4/service_accounts/:id/personal_access_tokens',
           rotate: 'http://localhost/api/v4/groups/4/service_accounts/:id/personal_access_tokens',
           show: 'http://localhost/api/v4/personal_access_tokens'
