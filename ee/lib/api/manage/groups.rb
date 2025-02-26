@@ -27,7 +27,16 @@ module API
 
         def pat_finder_params
           declared(params,
-            include_missing: false).merge({ users: users, impersonation: false, sort: 'id_desc', owner_type: 'human' })
+            include_missing: false).merge({ users: users, impersonation: false, owner_type: 'human' })
+        end
+
+        def bot_users
+          User.by_bot_namespace_ids(user_group.self_and_descendants(skope: Namespace).as_ids)
+        end
+
+        def rat_finder_params
+          declared(params, include_missing: false)
+            .merge({ users: bot_users, impersonation: false })
         end
       end
 
@@ -50,6 +59,26 @@ module API
 
             present paginate(tokens), with: Entities::PersonalAccessToken
           end
+        end
+
+        resources :resource_access_tokens do
+          params do
+            use :access_token_params
+            use :pagination
+          end
+
+          desc 'Get resource access tokens' do
+            detail 'This feature was introduced in GitLab 17.10.'
+          end
+          # rubocop:disable CodeReuse/ActiveRecord -- Specific to this endpoint
+          get do
+            tokens = PersonalAccessTokensFinder.new(rat_finder_params)
+                                               .execute
+                                               .includes(user: [:members, { user_detail: :bot_namespace }])
+
+            present paginate(tokens), with: Entities::ResourceAccessToken
+          end
+          # rubocop:enable CodeReuse/ActiveRecord
         end
 
         resources :ssh_keys do
