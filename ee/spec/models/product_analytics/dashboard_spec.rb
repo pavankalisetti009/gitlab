@@ -21,15 +21,19 @@ RSpec.describe ProductAnalytics::Dashboard, feature_category: :product_analytics
 
   before do
     allow(Ability).to receive(:allowed?)
-                  .with(user, :read_enterprise_ai_analytics, anything)
-                  .and_return(true)
+      .with(user, :read_enterprise_ai_analytics, anything)
+      .and_return(true)
+    allow(Ability).to receive(:allowed?)
+      .with(user, :read_dora4_analytics, anything)
+      .and_return(true)
 
     allow(Gitlab::ClickHouse).to receive(:globally_enabled_for_analytics?).and_return(true)
 
     stub_licensed_features(
       product_analytics: true,
       project_level_analytics_dashboard: true,
-      group_level_analytics_dashboard: true
+      group_level_analytics_dashboard: true,
+      dora4_analytics: true
     )
   end
 
@@ -41,6 +45,19 @@ RSpec.describe ProductAnalytics::Dashboard, feature_category: :product_analytics
       expect(dashboard.description).to eq('Track key DevSecOps metrics throughout the development lifecycle.')
       expect(dashboard.filters).to be_nil
       expect(dashboard.schema_version).to eq('2')
+    end
+  end
+
+  shared_examples 'returns the DORA Metrics dashboard' do
+    it 'returns the value streams dashboard' do
+      expect(dashboard).to be_a(described_class)
+      expect(dashboard.title).to eq('DORA Metrics')
+      expect(dashboard.slug).to eq('dora_metrics')
+      expect(dashboard.description).to eq('DORA metrics stats and trends')
+    end
+
+    it 'returns the correct panels' do
+      expect(dashboard.panels.size).to eq(8)
     end
   end
 
@@ -98,7 +115,13 @@ description: with missing properties
 
       it 'returns a collection of builtin dashboards' do
         expect(subject.map(&:title)).to match_array(
-          ['Audience', 'Behavior', 'Value Streams Dashboard', 'AI impact analytics']
+          [
+            'Audience',
+            'Behavior',
+            'Value Streams Dashboard',
+            'DORA Metrics',
+            'AI impact analytics'
+          ]
         )
       end
 
@@ -109,7 +132,7 @@ description: with missing properties
 
         it 'returns custom and builtin dashboards' do
           expect(subject).to be_a(Array)
-          expect(subject.size).to eq(5)
+          expect(subject.size).to eq(6)
           expect(subject.last).to be_a(described_class)
           expect(subject.last.title).to eq('Dashboard Example 1')
           expect(subject.last.slug).to eq('dashboard_example_1')
@@ -146,7 +169,8 @@ description: with missing properties
 
         it 'excludes the dashboard from the list' do
           expected_dashboards =
-            ["Audience", "Behavior", "Value Streams Dashboard", "AI impact analytics", "Dashboard Example 1"]
+            ["Audience", "Behavior", "Value Streams Dashboard", "AI impact analytics",
+              "DORA Metrics", "Dashboard Example 1"]
 
           expect(subject.map(&:title)).to eq(expected_dashboards)
         end
@@ -158,7 +182,7 @@ description: with missing properties
         end
 
         it 'excludes product analytics dashboards' do
-          expect(subject.size).to eq(3)
+          expect(subject.size).to eq(4)
         end
       end
     end
@@ -169,8 +193,8 @@ description: with missing properties
       subject { described_class.for(container: resource_parent, user: user) }
 
       it 'returns a collection of builtin dashboards' do
-        expect(subject.map(&:title)).to match_array(['Value Streams Dashboard', 'AI impact analytics',
-          'Contributions Dashboard'])
+        expect(subject.map(&:title)).to match_array(['Value Streams Dashboard', 'DORA Metrics',
+          'AI impact analytics', 'Contributions Dashboard'])
       end
 
       context 'when configuration project is set' do
@@ -181,7 +205,8 @@ description: with missing properties
         it 'returns custom and builtin dashboards' do
           expect(subject).to be_a(Array)
           expect(subject.map(&:title)).to match_array(
-            ['Value Streams Dashboard', 'AI impact analytics', 'Dashboard Example 1', 'Contributions Dashboard']
+            ['Value Streams Dashboard', 'AI impact analytics', 'DORA Metrics',
+              'Dashboard Example 1', 'Contributions Dashboard']
           )
         end
       end
@@ -199,8 +224,24 @@ description: with missing properties
 
         it 'excludes the dashboard from the list' do
           expect(subject.map(&:title)).to match_array(
-            ['Value Streams Dashboard', 'AI impact analytics', 'Dashboard Example 1', 'Contributions Dashboard']
+            ['Value Streams Dashboard', 'AI impact analytics', 'DORA Metrics',
+              "Dashboard Example 1", 'Contributions Dashboard']
           )
+        end
+      end
+
+      context 'when DORA metrics are not licensed' do
+        before do
+          allow(Ability).to receive(:allowed?)
+                        .with(user, :read_enterprise_ai_analytics, anything)
+                        .and_return(true)
+          allow(Ability).to receive(:allowed?)
+                        .with(user, :read_dora4_analytics, anything)
+                        .and_return(false)
+        end
+
+        it 'excludes the dashboard from the list' do
+          expect(subject.map(&:title)).not_to include('DORA Metrics')
         end
       end
     end
@@ -295,6 +336,20 @@ description: with missing properties
           %w[UsageOverview DORAChart DORAChart DORAChart]
         )
       end
+    end
+  end
+
+  describe '.dora_metrics_dashboard' do
+    context 'for groups' do
+      let(:dashboard) { described_class.dora_metrics_dashboard(group, config_project) }
+
+      it_behaves_like 'returns the DORA Metrics dashboard'
+    end
+
+    context 'for projects' do
+      let(:dashboard) { described_class.dora_metrics_dashboard(project, config_project) }
+
+      it_behaves_like 'returns the DORA Metrics dashboard'
     end
   end
 

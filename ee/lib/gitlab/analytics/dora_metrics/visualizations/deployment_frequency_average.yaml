@@ -4,8 +4,9 @@ type: SingleStat
 data:
   type: dora_metrics
   query:
-    metric: lead_time_for_changes
-    date_range: last_180_days
+    metric: deployment_frequency
+    dateRange: 180d
+    interval: ALL
 options:
-  unit: days
+  unit: per_day
   decimalPlaces: 1

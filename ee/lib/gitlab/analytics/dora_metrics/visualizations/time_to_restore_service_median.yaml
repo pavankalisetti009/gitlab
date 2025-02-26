@@ -5,7 +5,8 @@ data:
   type: dora_metrics
   query:
     metric: time_to_restore_service
-    date_range: last_180_days
+    dateRange: 180d
+    interval: ALL
 options:
   unit: days
   decimalPlaces: 1

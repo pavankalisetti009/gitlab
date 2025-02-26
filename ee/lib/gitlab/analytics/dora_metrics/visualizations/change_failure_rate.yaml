@@ -4,8 +4,9 @@ type: SingleStat
 data:
   type: dora_metrics
   query:
-    metric: deployment_frequency
-    date_range: last_180_days
+    metric: change_failure_rate
+    dateRange: 180d
+    interval: ALL
 options:
-  unit: per_day
+  unit: percent
   decimalPlaces: 1
