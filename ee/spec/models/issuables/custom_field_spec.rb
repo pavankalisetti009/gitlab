@@ -316,6 +316,14 @@ RSpec.describe Issuables::CustomField, feature_category: :team_planning do
       end
     end
 
+    describe ".of_field_type" do
+      let_it_be(:custom_field_number) { create(:custom_field, :number, namespace: group) }
+
+      it "returns custom field of a given field type" do
+        expect(described_class.of_field_type("number")).to contain_exactly(custom_field_number)
+      end
+    end
+
     describe 'work item type scopes' do
       let_it_be(:issue_type) { create(:work_item_type, :issue) }
       let_it_be(:task_type) { create(:work_item_type, :task) }

@@ -15,7 +15,7 @@ module Issuables
     end
 
     def initialize(
-      current_user, group:, active: nil, search: nil, work_item_type_ids: nil,
+      current_user, group:, active: nil, field_type: nil, search: nil, work_item_type_ids: nil,
       skip_permissions_check: false
     )
       raise ArgumentError, 'group argument is missing' if group.nil?
@@ -23,6 +23,7 @@ module Issuables
       @current_user = current_user
       @group = group
       @active = active
+      @field_type = field_type
       @search = search
       @work_item_type_ids = work_item_type_ids
       @skip_permissions_check = skip_permissions_check
@@ -38,6 +39,7 @@ module Issuables
       items = Issuables::CustomField.of_namespace(@group)
       items = by_status(items)
       items = by_search(items)
+      items = by_field_type(items)
       items = by_work_item_type_ids(items)
       items.ordered_by_status_and_name
     end
@@ -64,6 +66,12 @@ module Issuables
       return items if @work_item_type_ids.nil?
 
       items.with_work_item_types(@work_item_type_ids)
+    end
+
+    def by_field_type(items)
+      return items if @field_type.nil?
+
+      items.of_field_type(@field_type)
     end
   end
 end

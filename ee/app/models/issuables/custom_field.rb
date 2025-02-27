@@ -40,6 +40,7 @@ module Issuables
     scope :active, -> { where(archived_at: nil) }
     scope :archived, -> { where.not(archived_at: nil) }
     scope :ordered_by_status_and_name, -> { order(Arel.sql('archived_at IS NULL').desc, name: :asc) }
+    scope :of_field_type, ->(field_type) { where(field_type: field_type) }
 
     class << self
       def without_any_work_item_types
