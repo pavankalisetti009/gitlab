@@ -11,7 +11,15 @@ module Security
       idempotent!
 
       def perform(configuration_id)
-        Security::OrchestrationPolicyConfiguration.find_by_id(configuration_id)&.delete_scan_result_policy_reads
+        configuration = Security::OrchestrationPolicyConfiguration.find_by_id(configuration_id)
+
+        return unless configuration
+
+        configuration.delete_scan_result_policy_reads
+
+        configuration.security_policies.each do |policy|
+          Security::DeleteSecurityPolicyWorker.perform_async(policy.id)
+        end
       end
     end
   end
