@@ -8703,6 +8703,7 @@ Input type: `PipelineCreateInput`
 | ---- | ---- | ----------- |
 | <a id="mutationpipelinecreateasync"></a>`async` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Deprecated:** **Status**: Experiment. Introduced in GitLab 17.8. |
 | <a id="mutationpipelinecreateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationpipelinecreateinputs"></a>`inputs` {{< icon name="warning-solid" >}} | [`[CiInputsInputType!]`](#ciinputsinputtype) | **Deprecated:** **Status**: Experiment. Introduced in GitLab 17.10. |
 | <a id="mutationpipelinecreateprojectpath"></a>`projectPath` | [`ID!`](#id) | Full path of the project that is triggering the pipeline. |
 | <a id="mutationpipelinecreateref"></a>`ref` | [`String!`](#string) | Ref on which to run the pipeline. |
 | <a id="mutationpipelinecreatevariables"></a>`variables` | [`[CiVariableInput!]`](#civariableinput) | Variables for the pipeline. |
@@ -44295,6 +44296,10 @@ A `CiCatalogResourcesVersionID` is a global ID. It is encoded as a string.
 
 An example `CiCatalogResourcesVersionID` is: `"gid://gitlab/Ci::Catalog::Resources::Version/1"`.
 
+### `CiInputsValueInputType`
+
+Value for a CI input. Can be a string, array, number, or boolean.
+
 ### `CiJobArtifactID`
 
 A `CiJobArtifactID` is a global ID. It is encoded as a string.
@@ -46626,6 +46631,17 @@ Field that are available while modifying the custom mapping attributes for an HT
 | <a id="branchprotectioninputcodeownerapprovalrequired"></a>`codeOwnerApprovalRequired` | [`Boolean`](#boolean) | Enforce code owner approvals before allowing a merge. |
 | <a id="branchprotectioninputmergeaccesslevels"></a>`mergeAccessLevels` | [`[MergeAccessLevelInput!]`](#mergeaccesslevelinput) | Details about who can merge into the branch rule target. |
 | <a id="branchprotectioninputpushaccesslevels"></a>`pushAccessLevels` | [`[PushAccessLevelInput!]`](#pushaccesslevelinput) | Details about who can push to the branch rule target. |
+
+### `CiInputsInputType`
+
+Attributes for defining an input.
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="ciinputsinputtypekey"></a>`key` | [`String!`](#string) | Name of the input. |
+| <a id="ciinputsinputtypevalue"></a>`value` | [`CiInputsValueInputType!`](#ciinputsvalueinputtype) | Value of the input. |
 
 ### `CiVariableInput`
 
