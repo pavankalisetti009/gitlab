@@ -610,7 +610,7 @@ module EE
     end
 
     def all_projects_pages_domains(only_verified: false)
-      domains = ::PagesDomain.where(project_id: all_projects)
+      domains = ::PagesDomain.for_project(all_project_ids)
       domains = domains.verified if only_verified
 
       domains
