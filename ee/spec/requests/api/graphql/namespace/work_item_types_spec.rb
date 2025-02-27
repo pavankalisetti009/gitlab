@@ -80,5 +80,38 @@ RSpec.describe 'getting a list of work item types for a group EE', feature_categ
         }
       )
     end
+
+    context 'when loading associated fields' do
+      let(:work_item_type_fields) do
+        <<~GRAPHQL
+          id
+          widgetDefinitions {
+            type
+            ... on WorkItemWidgetDefinitionCustomFields {
+              customFields {
+                id
+                createdBy { name }
+              }
+            }
+          }
+        GRAPHQL
+      end
+
+      it 'avoids N+1 queries', :use_sql_query_cache do
+        post_graphql(query, current_user: current_user)
+
+        control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
+          post_graphql(query, current_user: current_user)
+        end
+        expect_graphql_errors_to_be_empty
+
+        other_type = create(:work_item_type, :non_default)
+        create(:widget_definition, widget_type: 'custom_fields', work_item_type: other_type)
+        create(:custom_field, namespace: group, work_item_types: [other_type])
+
+        expect { post_graphql(query, current_user: current_user) }.not_to exceed_all_query_limit(control)
+        expect_graphql_errors_to_be_empty
+      end
+    end
   end
 end
