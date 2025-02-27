@@ -102,6 +102,27 @@ RSpec.describe Issuables::CustomFieldsFinder, feature_category: :team_planning d
     end
   end
 
+  context "when filtering by field type" do
+    let_it_be(:custom_field_number) { create(:custom_field, :number, namespace: group, name: 'number field') }
+
+    context "when field type is nil" do
+      let(:params) { {} }
+
+      it 'returns all custom fields for the group' do
+        expect(custom_fields).to contain_exactly(custom_field_1, custom_field_2, custom_field_archived,
+          custom_field_number)
+      end
+    end
+
+    context "when field is has a value" do
+      let(:params) { { field_type: "number" } }
+
+      it 'returns custom fields of type number' do
+        expect(custom_fields).to contain_exactly(custom_field_number)
+      end
+    end
+  end
+
   context 'when group is nil' do
     let(:group) { nil }
 

@@ -9,5 +9,9 @@ FactoryBot.define do
     trait :archived do
       archived_at { Time.current }
     end
+
+    trait :number do
+      field_type { :number }
+    end
   end
 end

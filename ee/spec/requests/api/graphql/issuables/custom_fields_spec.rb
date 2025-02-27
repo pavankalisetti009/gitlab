@@ -33,10 +33,10 @@ RSpec.describe 'Listing custom fields', feature_category: :team_planning do
 
   let(:query) do
     <<~QUERY
-    query($active: Boolean, $search: String, $workItemTypeIds: [WorkItemsTypeID!]) {
+    query($active: Boolean, $fieldType: CustomFieldType, $search: String, $workItemTypeIds: [WorkItemsTypeID!]) {
       group(fullPath: "#{group.full_path}") {
         id
-        customFields(active: $active, search: $search, workItemTypeIds: $workItemTypeIds) {
+        customFields(active: $active, fieldType: $fieldType, search: $search, workItemTypeIds: $workItemTypeIds) {
           nodes {
             id
             name
@@ -107,6 +107,17 @@ RSpec.describe 'Listing custom fields', feature_category: :team_planning do
       expect(response).to have_gitlab_http_status(:ok)
       expect(graphql_data_at(:group, :customFields, :nodes)).to match([
         custom_field_attributes(archived_field)
+      ])
+    end
+  end
+
+  context "when filtering by field type" do
+    it 'returns fields of the given type' do
+      post_graphql(query, current_user: guest, variables: { fieldType: 'TEXT' })
+
+      expect(response).to have_gitlab_http_status(:ok)
+      expect(graphql_data_at(:group, :customFields, :nodes)).to match([
+        custom_field_attributes(text_field)
       ])
     end
   end
