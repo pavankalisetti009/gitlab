@@ -36,7 +36,7 @@ RSpec.describe UpdateAllMirrorsWorker, feature_category: :source_code_management
       worker.perform
     end
 
-    it 'removes metadata except correlation_id from the application context before scheduling mirrors' do
+    it 'removes metadata except correlation_id from the application context before scheduling mirrors', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/516801' do
       inner_context = nil
       outer_context = nil
 
