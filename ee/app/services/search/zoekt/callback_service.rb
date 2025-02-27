@@ -79,7 +79,7 @@ module Search
       end
 
       def publish_task_failed_event_for(task)
-        publish_event(TaskFailedEvent, data: { zoekt_repository_id: task.zoekt_repository_id })
+        publish_event(TaskFailedEvent, data: { zoekt_repository_id: task.zoekt_repository_id, task_id: task.id })
       end
 
       def publish_event(event, data:)

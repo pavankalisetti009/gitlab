@@ -16,9 +16,11 @@ module Search
         repo = ::Search::Zoekt::Repository.find_by_id(event.data[:zoekt_repository_id])
         return if repo.nil?
 
+        task = repo.tasks.find_by_id(event.data[:task_id])
+        repo_state = task&.delete_repo? ? Repository.states[:pending_deletion] : Repository.states[:pending]
+
         sql = "retries_left = retries_left - 1," \
-          "state = CASE retries_left WHEN 1 THEN #{::Search::Zoekt::Repository.states[:failed]} " \
-          "ELSE #{::Search::Zoekt::Repository.states[:pending]} END"
+          "state = CASE retries_left WHEN 1 THEN #{::Search::Zoekt::Repository.states[:failed]} ELSE #{repo_state} END"
         ::Search::Zoekt::Repository.id_in(repo.id).update_all(sql)
         return unless repo.reset.failed?
 
