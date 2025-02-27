@@ -336,6 +336,30 @@ describeSkipVue3(skipReason, () => {
         });
       });
 
+      it('sends the chat mutation with correct headers', async () => {
+        createComponent();
+
+        // Spy on the Apollo mutate method to capture the full mutation options
+        const mutateSpy = jest.spyOn(wrapper.vm.$apollo, 'mutate');
+
+        findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+
+        await nextTick();
+
+        expect(mutateSpy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            mutation: chatMutation,
+            variables: expect.any(Object),
+            context: {
+              headers: {
+                'X-GitLab-Interface': 'duo_chat',
+                'X-GitLab-Client-Type': 'web_browser',
+              },
+            },
+          }),
+        );
+      });
+
       it.each([GENIE_CHAT_RESET_MESSAGE, GENIE_CHAT_CLEAR_MESSAGE])(
         'does not set loading to `true` for "%s" message',
         async (msg) => {
