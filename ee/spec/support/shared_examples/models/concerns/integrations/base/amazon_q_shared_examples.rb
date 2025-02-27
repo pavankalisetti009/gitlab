@@ -18,8 +18,51 @@ RSpec.shared_examples Integrations::Base::AmazonQ do
   end
 
   describe '#execute' do
-    it 'returns nil regardless of input' do
-      expect(integration.execute({})).to be_nil
+    let_it_be(:user) { create(:user) }
+
+    it 'does not send events if user is not passed' do
+      expect(::Gitlab::Llm::QAi::Client).not_to receive(:new)
+
+      integration.execute({ some_data: :data })
+    end
+
+    context 'when a user can be found' do
+      using RSpec::Parameterized::TableSyntax
+
+      where(:object_kind, :event_id) do
+        :pipeline | 'Pipeline Hook'
+        :merge_request | 'Merge Request Hook'
+      end
+
+      with_them do
+        it 'sends an event to amazon q' do
+          data = { object_kind: object_kind, user: { id: user.id } }
+
+          ::Ai::Setting.instance.update!(amazon_q_role_arn: 'role-arn')
+
+          expect_next_instance_of(::Gitlab::Llm::QAi::Client, user) do |instance|
+            expect(instance).to receive(:create_event).with(
+              payload: { source: :web_hook, data: data },
+              role_arn: 'role-arn',
+              event_id: event_id
+            )
+          end
+
+          integration.execute(data)
+        end
+      end
+    end
+
+    context 'when amazon_q_chat_and_code_suggestions is disabled' do
+      before do
+        stub_feature_flags(amazon_q_chat_and_code_suggestions: false)
+      end
+
+      it 'does not send events' do
+        expect(::Gitlab::Llm::QAi::Client).not_to receive(:new)
+
+        integration.execute({ object_kind: :pipeline, user: { id: user.id } })
+      end
     end
   end
 
@@ -75,8 +118,8 @@ RSpec.shared_examples Integrations::Base::AmazonQ do
     end
 
     describe '.supported_events' do
-      it 'returns an empty array' do
-        expect(described_class.supported_events).to eq([])
+      it 'returns supported events for web hooks' do
+        expect(described_class.supported_events).to eq(%w[merge_request pipeline])
       end
     end
   end
