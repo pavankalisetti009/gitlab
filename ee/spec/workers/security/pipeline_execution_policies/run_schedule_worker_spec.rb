@@ -16,7 +16,7 @@ RSpec.describe Security::PipelineExecutionPolicies::RunScheduleWorker, '#perform
       :pipeline_execution_schedule_policy,
       content: {
         content: { include: [{ project: ci_config_project.full_path, file: policy_ci_filename }] },
-        schedule: { cadence: '0 0 * * *' }
+        schedules: [{ type: "daily", start_time: "00:00", time_window: { distribution: 'random', value: 4000 } }]
       })
   end
 

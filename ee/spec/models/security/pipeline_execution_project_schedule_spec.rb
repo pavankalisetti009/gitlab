@@ -11,18 +11,52 @@ RSpec.describe Security::PipelineExecutionProjectSchedule, feature_category: :se
     it { is_expected.to be_valid }
     it { is_expected.to validate_presence_of(:security_policy) }
     it { is_expected.to validate_presence_of(:project) }
-
-    describe 'uniqueness validation' do
-      let(:schedule) { create(:security_pipeline_execution_project_schedule) }
-
-      it { is_expected.to validate_uniqueness_of(:security_policy).scoped_to(:project_id) }
-    end
+    it { is_expected.to validate_presence_of(:cron) }
+    it { is_expected.to validate_presence_of(:cron_timezone) }
+    it { is_expected.to validate_presence_of(:time_window_seconds) }
+    it { is_expected.to validate_numericality_of(:time_window_seconds).is_greater_than(0).only_integer }
 
     context 'when security policy is not a pipeline_execution_schedule_policy' do
       let_it_be(:security_policy) { create(:security_policy, :pipeline_execution_policy) }
       let(:schedule) { build(:security_pipeline_execution_project_schedule, security_policy: security_policy) }
 
       it { is_expected.not_to be_valid }
+    end
+
+    describe 'cron validation' do
+      context 'with valid crontab' do
+        before do
+          schedule.cron = "* * * * *"
+        end
+
+        it { is_expected.to be_valid }
+      end
+
+      context 'with invalid crontab' do
+        before do
+          schedule.cron = "a b c d e"
+        end
+
+        it { is_expected.to be_invalid }
+      end
+    end
+
+    describe 'cron timezone validation' do
+      context 'with valid cron_timezone' do
+        before do
+          schedule.cron_timezone = "Europe/Berlin"
+        end
+
+        it { is_expected.to be_valid }
+      end
+
+      context 'with invalid cron_timezone' do
+        before do
+          schedule.cron_timezone = "Europe/New_York"
+        end
+
+        it { is_expected.to be_invalid }
+      end
     end
   end
 
@@ -105,7 +139,12 @@ RSpec.describe Security::PipelineExecutionProjectSchedule, feature_category: :se
     describe 'update next_run_at on create', time_travel_to: '2024-12-20 00:00:00' do
       let_it_be(:security_policy) { create(:security_policy, :pipeline_execution_schedule_policy) }
 
-      let(:schedule) { build(:security_pipeline_execution_project_schedule, security_policy: security_policy) }
+      let(:schedule) do
+        build(
+          :security_pipeline_execution_project_schedule,
+          security_policy: security_policy,
+          cron: "0 0 * * *")
+      end
 
       subject(:save!) { schedule.save! }
 
@@ -117,73 +156,8 @@ RSpec.describe Security::PipelineExecutionProjectSchedule, feature_category: :se
     end
   end
 
-  describe '#cron_timezone' do
-    let(:schedule) { build(:security_pipeline_execution_project_schedule) }
-
-    subject { schedule.cron_timezone }
-
-    context 'when timezone is not set' do
-      it { is_expected.to eq(Time.zone.name) }
-    end
-
-    context 'when timezone is valid' do
-      let_it_be(:security_policy) { create(:security_policy, :pipeline_execution_schedule_policy) }
-
-      let_it_be(:policy_content) do
-        {
-          content: { include: [{ project: 'compliance-project', file: "compliance-pipeline.yml" }] },
-          schedule: { cadence: '0 0 * * *', timezone: 'America/New_York' }
-        }.deep_stringify_keys
-      end
-
-      let(:schedule) { build(:security_pipeline_execution_project_schedule, security_policy: security_policy) }
-
-      before do
-        security_policy.update!(content: policy_content)
-      end
-
-      it { is_expected.to eq('America/New_York') }
-    end
-
-    context 'when timezone is invalid' do
-      let_it_be(:security_policy) { create(:security_policy, :pipeline_execution_schedule_policy) }
-
-      let(:policy_content) do
-        {
-          content: { include: [{ project: 'compliance-project', file: "compliance-pipeline.yml" }] },
-          schedule: { cadence: '0 0 * * *', timezone: 'Invalid/Timezone' }
-        }
-      end
-
-      let(:schedule) { build(:security_pipeline_execution_project_schedule, security_policy: security_policy) }
-
-      it { is_expected.to eq(Time.zone.name) }
-    end
-  end
-
-  describe '#cron' do
-    let_it_be(:security_policy) { create(:security_policy, :pipeline_execution_schedule_policy) }
-
-    let(:policy_content) do
-      {
-        content: { include: [{ project: 'compliance-project', file: "compliance-pipeline.yml" }] },
-        schedule: { cadence: '0 0 1 * *', timezone: 'Invalid/Timezone' }
-      }
-    end
-
-    let(:schedule) { build(:security_pipeline_execution_project_schedule, security_policy: security_policy) }
-
-    before do
-      security_policy.update!(content: policy_content)
-    end
-
-    it 'returns the cadence value from the security policy' do
-      expect(schedule.cron).to eq('0 0 1 * *')
-    end
-  end
-
   describe 'schedule_next_run!', time_travel_to: '2024-12-20 00:00:00' do
-    let(:schedule) { create(:security_pipeline_execution_project_schedule) }
+    let(:schedule) { create(:security_pipeline_execution_project_schedule, cron: "0 0 * * *") }
 
     subject(:schedule_next_run!) { schedule.schedule_next_run! }
 

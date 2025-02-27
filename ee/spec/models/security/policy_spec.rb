@@ -190,15 +190,17 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
           :pipeline_execution_schedule_policy,
           content: {
             content: { include: [{ project: 'compliance-project', file: "compliance-pipeline.yml" }] },
-            schedule: {
-              cadence: '0 * * * *',
-              timezone: 'Europe/Berlin'
-            }
+            schedules: [
+              { type: "daily", start_time: "00:00", time_window: { value: 4000, distribution: 'random' } }
+            ]
           }
         )
       end
 
       it 'creates a new schedule with the right attributes' do
+        # Newly introduced columns will be written by https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180714
+        pending "schedule creation not currently in place"
+
         expect { policy.link_project!(project) }.to change { Security::PolicyProjectLink.count }.by(1)
         .and change { Security::PipelineExecutionProjectSchedule.count }.by(1)
 

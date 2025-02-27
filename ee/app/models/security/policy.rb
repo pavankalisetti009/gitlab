@@ -14,7 +14,7 @@ module Security
       scan_execution_policy: %i[actions skip_ci],
       pipeline_execution_policy: %i[content pipeline_config_strategy suffix skip_ci],
       vulnerability_management_policy: %i[actions],
-      pipeline_execution_schedule_policy: %i[content schedule]
+      pipeline_execution_schedule_policy: %i[content schedules]
     }.freeze
     APPROVAL_MERGE_REQUEST_RULES_BATCH_SIZE = 5000
 
@@ -119,7 +119,8 @@ module Security
         link_policy_rules_project!(project)
 
         if type_pipeline_execution_schedule_policy? && Feature.enabled?(:scheduled_pipeline_execution_policies, project)
-          security_pipeline_execution_project_schedules.for_project(project).first_or_create!
+          # Newly introduced columns will be written by https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180714
+          # security_pipeline_execution_project_schedules.for_project(project).first_or_create!
         end
       end
     end

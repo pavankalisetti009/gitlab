@@ -565,7 +565,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
                   description: pipeline_execution_schedule_policy[:description],
                   checksum: Security::Policy.checksum(pipeline_execution_schedule_policy),
                   enabled: true,
-                  content: pipeline_execution_schedule_policy.slice(:content, :schedule).deep_stringify_keys
+                  content: pipeline_execution_schedule_policy.slice(:content, :schedules).deep_stringify_keys
                 }
               ]
             end
