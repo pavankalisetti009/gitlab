@@ -1,11 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Secure', product_group: :static_analysis, quarantine: {
-    issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/498138',
-    type: :flaky,
-    only: { job: /cng-instance/ }
-  } do
+  RSpec.describe 'Secure', :runner, product_group: :static_analysis do
     describe 'Enable Scanning from UI' do
       let(:test_data_sast_string_fields_array) do
         [
@@ -26,6 +22,16 @@ module QA
 
       let(:project) { create(:project, name: 'project-with-secure', description: 'Project with Secure') }
 
+      # Adding a dedicated project runner to address flakiness in MR creation tests
+      # The runner ensures pipelines progress immediately, preventing timing issues
+      # when attempting to merge the MR which is a prerequisite for scanning
+      let!(:runner) do
+        create(:project_runner,
+          project: project,
+          name: "runner-for-#{project.name}",
+          executor: :docker)
+      end
+
       before do
         build(:commit, project: project,
           commit_message:  'Create Secure compatible application to serve premade reports') do |commit|
@@ -36,6 +42,10 @@ module QA
 
         Flow::Login.sign_in_unless_signed_in
         project.visit!
+      end
+
+      after do
+        runner.remove_via_api! if runner
       end
 
       describe 'enable dependency scanning from configuration' do
