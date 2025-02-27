@@ -87,4 +87,132 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectControlComplian
       expect(result).to contain_exactly(another_project_status)
     end
   end
+
+  describe '.create_or_find_for_project_and_control' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:control) { create(:compliance_requirements_control) }
+
+    context 'when record does not exist' do
+      it 'creates a new record' do
+        expect do
+          described_class.create_or_find_for_project_and_control(project, control)
+        end.to change { described_class.count }.by(1)
+      end
+
+      it 'sets correct attributes', :aggregate_failures do
+        status = described_class.create_or_find_for_project_and_control(project, control)
+
+        expect(status.project_id).to eq(project.id)
+        expect(status.compliance_requirements_control_id).to eq(control.id)
+        expect(status.compliance_requirement_id).to eq(control.compliance_requirement_id)
+        expect(status.namespace_id).to eq(project.namespace_id)
+        expect(status).to be_pending
+      end
+    end
+
+    context 'when record exists' do
+      let_it_be(:existing_status) do
+        create(:project_control_compliance_status,
+          project: project,
+          compliance_requirements_control: control)
+      end
+
+      it 'returns existing record' do
+        status = described_class.create_or_find_for_project_and_control(project, control)
+
+        expect(status).to eq(existing_status)
+      end
+
+      it 'does not create a new record' do
+        expect do
+          described_class.create_or_find_for_project_and_control(project, control)
+        end.not_to change { described_class.count }
+      end
+    end
+
+    context 'when concurrent creation occurs' do
+      context "when ActiveRecord::RecordNotUnique is raised" do
+        let!(:existing_status) do
+          create(:project_control_compliance_status,
+            project: project,
+            compliance_requirements_control: control)
+        end
+
+        before do
+          empty_relation = described_class.none
+          record_relation = described_class.where(id: existing_status.id)
+
+          allow(described_class).to receive(:for_project_and_control)
+                                      .with(project.id, control.id)
+                                      .and_return(empty_relation, record_relation)
+
+          allow(described_class).to receive(:create!)
+                                      .and_raise(ActiveRecord::RecordNotUnique)
+        end
+
+        it 'handles race condition and returns existing record' do
+          status = described_class.create_or_find_for_project_and_control(project, control)
+
+          expect(status).to eq(existing_status)
+        end
+      end
+
+      context "when ActiveRecord::RecordInvalid is raised" do
+        let!(:existing_status) do
+          create(:project_control_compliance_status,
+            project: project,
+            compliance_requirements_control: control)
+        end
+
+        before do
+          empty_relation = described_class.none
+          record_relation = described_class.where(id: existing_status.id)
+
+          allow(described_class).to receive(:for_project_and_control)
+                                      .with(project.id, control.id)
+                                      .and_return(empty_relation, record_relation)
+
+          allow(described_class).to receive(:create!)
+                                      .and_raise(
+                                        ActiveRecord::RecordInvalid.new(
+                                          existing_status.tap do |status|
+                                            status.errors.add(:project_id, :taken, message: "has already been taken")
+                                          end
+                                        )
+                                      )
+        end
+
+        it 'handles race condition and returns existing record' do
+          status = described_class.create_or_find_for_project_and_control(project, control)
+
+          expect(status).to eq(existing_status)
+        end
+      end
+    end
+
+    context "when ActiveRecord::RecordInvalid isn't cause by project_id" do
+      let!(:existing_status) do
+        create(:project_control_compliance_status,
+          project: project,
+          compliance_requirements_control: control)
+      end
+
+      before do
+        empty_relation = described_class.none
+        record_relation = described_class.where(id: existing_status.id)
+
+        allow(described_class).to receive(:for_project_and_control)
+                                    .with(project.id, control.id)
+                                    .and_return(empty_relation, record_relation)
+
+        allow(described_class).to receive(:create!).and_raise(ActiveRecord::RecordInvalid)
+      end
+
+      it 'raises the error' do
+        expect do
+          described_class.create_or_find_for_project_and_control(project, control)
+        end.to raise_error(ActiveRecord::RecordInvalid)
+      end
+    end
+  end
 end

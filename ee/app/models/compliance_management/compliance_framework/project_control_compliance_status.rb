@@ -21,6 +21,26 @@ module ComplianceManagement
       scope :for_project_and_control, ->(project_id, control_id) {
         where(project_id: project_id, compliance_requirements_control_id: control_id)
       }
+
+      def self.create_or_find_for_project_and_control(project, control)
+        record = for_project_and_control(project.id, control.id).first
+        return record if record.present?
+
+        create!(
+          compliance_requirements_control: control,
+          project: project,
+          compliance_requirement_id: control.compliance_requirement_id,
+          namespace_id: project.namespace_id,
+          status: :pending
+        )
+      rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid => e
+        if e.is_a?(ActiveRecord::RecordNotUnique) ||
+            (e.is_a?(ActiveRecord::RecordInvalid) && e.record&.errors&.of_kind?(:project_id, :taken))
+          for_project_and_control(project.id, control.id).first
+        else
+          raise e
+        end
+      end
     end
   end
 end
