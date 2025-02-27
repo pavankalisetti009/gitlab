@@ -19,7 +19,6 @@ module Search
 
       def perform(task = nil)
         return false unless Search::Zoekt.licensed_and_indexing_enabled?
-        return false if Feature.disabled?(:zoekt_scheduling_worker, Feature.current_request)
         return false if Gitlab::CurrentSettings.zoekt_indexing_paused?
 
         return initiate if task.nil?

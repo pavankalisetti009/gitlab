@@ -29,19 +29,9 @@ RSpec.describe ::Search::Zoekt::SchedulingWorker, feature_category: :global_sear
         it_behaves_like 'returns false without executing'
       end
 
-      context 'when zoekt_scheduling_worker feature flag is disabled' do
-        before do
-          allow(Search::Zoekt).to receive(:licensed_and_indexing_enabled?).and_return(true)
-          stub_feature_flags(zoekt_scheduling_worker: false)
-        end
-
-        it_behaves_like 'returns false without executing'
-      end
-
       context 'when zoekt indexing is paused' do
         before do
           allow(Search::Zoekt).to receive(:licensed_and_indexing_enabled?).and_return(true)
-          stub_feature_flags(zoekt_scheduling_worker: true)
           allow(Gitlab::CurrentSettings).to receive(:zoekt_indexing_paused?).and_return(true)
         end
 
@@ -52,7 +42,6 @@ RSpec.describe ::Search::Zoekt::SchedulingWorker, feature_category: :global_sear
     context 'when all prerequisites are met' do
       before do
         allow(Search::Zoekt).to receive(:licensed_and_indexing_enabled?).and_return(true)
-        stub_feature_flags(zoekt_scheduling_worker: true)
         allow(Gitlab::CurrentSettings).to receive(:zoekt_indexing_paused?).and_return(false)
       end
 
