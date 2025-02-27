@@ -2,7 +2,7 @@
 import { GlAccordion, GlAccordionItem, GlTableLite } from '@gitlab/ui';
 import { s__ } from '~/locale';
 
-const TH_CSS_CLASSES = '!gl-pl-0 !gl-font-normal !gl-text-sm !gl-border-t-0';
+const TH_CSS_CLASSES = '!gl-pl-0 !gl-text-sm !gl-border-t-0';
 const TD_CSS_CLASSES = '!gl-pl-0 !gl-border-none !gl-pb-3 !gl-text-sm';
 
 export default {
@@ -11,8 +11,7 @@ export default {
     denyListHeader: s__('SecurityOrchestration|Denylist details'),
     denyTableHeader: s__('SecurityOrchestration|Denied licenses'),
     allowTableHeader: s__('SecurityOrchestration|Allowed licenses'),
-    denySecondTableHeader: s__('SecurityOrchestration|Deny except on these packages'),
-    allowSecondTableHeader: s__('SecurityOrchestration|Allow except on these packages'),
+    exceptionsHeader: s__('ScanResultPolicy|Exceptions that require approval'),
     noExceptionsText: s__('SecurityOrchestration|No exceptions'),
   },
   name: 'DenyAllowViewList',
@@ -50,9 +49,7 @@ export default {
         },
         {
           key: 'exceptions',
-          label: this.isDenied
-            ? this.$options.i18n.denySecondTableHeader
-            : this.$options.i18n.allowSecondTableHeader,
+          label: this.$options.i18n.exceptionsHeader,
           thAttr: { 'data-testid': 'exception-th' },
           thClass: TH_CSS_CLASSES,
           tdClass: TD_CSS_CLASSES,

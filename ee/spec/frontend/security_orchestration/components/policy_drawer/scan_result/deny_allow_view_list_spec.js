@@ -44,7 +44,7 @@ describe('DenyAllowViewList', () => {
       ).toBe('Allowed licenses');
       expect(
         findTableCell({ rowIndex: 0, cellIndex: 1, table: 'thead', cellType: 'th' }).text(),
-      ).toBe('Allow except on these packages');
+      ).toBe('Exceptions that require approval');
 
       expect(findTableCell({ rowIndex: 0, cellIndex: 0 }).text()).toBe('MIT');
       expect(findTableCell({ rowIndex: 0, cellIndex: 1 }).text()).toBe('No exceptions');
@@ -66,9 +66,14 @@ describe('DenyAllowViewList', () => {
       expect(
         findTableCell({ rowIndex: 0, cellIndex: 0, table: 'thead', cellType: 'th' }).text(),
       ).toBe('Denied licenses');
+
+      expect(
+        findTableCell({ rowIndex: 0, cellIndex: 0, table: 'thead', cellType: 'th' }).classes(),
+      ).toEqual(['!gl-pl-0', '!gl-text-sm', '!gl-border-t-0']);
+
       expect(
         findTableCell({ rowIndex: 0, cellIndex: 1, table: 'thead', cellType: 'th' }).text(),
-      ).toBe('Deny except on these packages');
+      ).toBe('Exceptions that require approval');
     });
   });
 });

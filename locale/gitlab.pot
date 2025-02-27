@@ -50816,9 +50816,6 @@ msgstr ""
 msgid "ScanResultPolicy|All licenses have been selected"
 msgstr ""
 
-msgid "ScanResultPolicy|Allow except on"
-msgstr ""
-
 msgid "ScanResultPolicy|Allow the merge request to proceed, even if not all criteria are met"
 msgstr ""
 
@@ -50864,9 +50861,6 @@ msgstr ""
 msgid "ScanResultPolicy|Denied license"
 msgstr ""
 
-msgid "ScanResultPolicy|Deny except on"
-msgstr ""
-
 msgid "ScanResultPolicy|Don't show me this again"
 msgstr ""
 
@@ -50883,6 +50877,9 @@ msgid "ScanResultPolicy|Edit denylist"
 msgstr ""
 
 msgid "ScanResultPolicy|Except"
+msgstr ""
+
+msgid "ScanResultPolicy|Exceptions that require approval"
 msgstr ""
 
 msgid "ScanResultPolicy|Fail closed"
@@ -51050,6 +51047,9 @@ msgstr ""
 msgid "ScanResultPolicy|Severity is:"
 msgstr ""
 
+msgid "ScanResultPolicy|Specify the packages where this license requires approval before use"
+msgstr ""
+
 msgid "ScanResultPolicy|Status is:"
 msgstr ""
 
@@ -51057,9 +51057,6 @@ msgid "ScanResultPolicy|The product %{verb} use the selected licenses"
 msgstr ""
 
 msgid "ScanResultPolicy|Unknown"
-msgstr ""
-
-msgid "ScanResultPolicy|Use purl format for package paths: %{schemaStart}scheme:type/namespace/name@version?qualifiers#subpath%{schemaEnd}. For multiple packages, separate paths with comma \",\"."
 msgstr ""
 
 msgid "ScanResultPolicy|When %{scanType} %{scanners} runs against the %{branches} %{branchExceptions} and find(s) %{vulnerabilitiesNumber} %{boldDescription} of the following criteria:"
@@ -52173,9 +52170,6 @@ msgstr ""
 msgid "SecurityOrchestration|All types"
 msgstr ""
 
-msgid "SecurityOrchestration|Allow except on these packages"
-msgstr ""
-
 msgid "SecurityOrchestration|Allowed licenses"
 msgstr ""
 
@@ -52312,9 +52306,6 @@ msgid "SecurityOrchestration|Delete policy: %{policy}"
 msgstr ""
 
 msgid "SecurityOrchestration|Denied licenses"
-msgstr ""
-
-msgid "SecurityOrchestration|Deny except on these packages"
 msgstr ""
 
 msgid "SecurityOrchestration|Denylist details"
@@ -52926,6 +52917,9 @@ msgid "SecurityOrchestration|Use a scan execution policy to create rules which %
 msgstr ""
 
 msgid "SecurityOrchestration|Use default mode for scoping"
+msgstr ""
+
+msgid "SecurityOrchestration|Use the format %{schemaStart}path-to-package@package-version%{schemaEnd}. For multiple packages, separate paths with commas. For example: path/file1.yaml@1.1.1, path/file2.yaml@2.2.2"
 msgstr ""
 
 msgid "SecurityOrchestration|Users can skip pipelines"
