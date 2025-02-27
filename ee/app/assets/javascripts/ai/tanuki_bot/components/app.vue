@@ -242,6 +242,12 @@ export default {
             clientSubscriptionId: this.clientSubscriptionId,
             ...variables,
           },
+          context: {
+            headers: {
+              'X-GitLab-Interface': 'duo_chat',
+              'X-GitLab-Client-Type': 'web_browser',
+            },
+          },
         })
         .then(({ data: { aiAction = {} } = {} }) => {
           if (!this.isClearOrResetMessage(question)) {
