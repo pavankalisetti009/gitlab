@@ -130,6 +130,7 @@ module Security
     end
     scope :deduplicated, -> { where(deduplicated: true) }
     scope :grouped_by_scan_type, -> { joins(:scan).group('security_scans.scan_type') }
+    scope :left_joins_vulnerability_finding, -> { left_joins(:vulnerability_finding) }
     scope :false_positives, -> do
       where("COALESCE((finding_data -> 'false_positive?')::boolean, FALSE) IS TRUE")
     end

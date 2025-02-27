@@ -52,8 +52,12 @@ module Security
       return Security::Finding.none unless pipeline
 
       lateral_relation = Security::Finding
+        .left_joins_vulnerability_finding
         .where('"security_findings"."scan_id" = "security_scans"."id"') # rubocop:disable CodeReuse/ActiveRecord
-        .where('"security_findings"."severity" = "severities"."severity"') # rubocop:disable CodeReuse/ActiveRecord
+        .where( # rubocop:disable CodeReuse/ActiveRecord
+          # prefer "vulnerability_occurrences" severities for security findings whose severity has been overridden
+          'COALESCE("vulnerability_occurrences"."severity", "security_findings"."severity") = "severities"."severity"'
+        )
         .by_partition_number(security_findings_partition_number)
         .deduplicated
         .ordered(params[:sort])
