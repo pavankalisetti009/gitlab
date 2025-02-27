@@ -77,7 +77,6 @@ module Search
         },
         update_replica_states: {
           period: 2.minutes,
-          if: -> { Feature.enabled? :zoekt_replica_state_updates, Feature.current_request },
           execute: -> { ReplicaStateService.execute }
         },
         saas_rollout: {
