@@ -60,7 +60,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
     {
       service_url: "https://open-vsx.org/vscode/gallery",
       item_url: "https://open-vsx.org/vscode/item",
-      resource_url_template: "https://open-vsx.org/vscode/asset/{publisher}/{name}/{version}/Microsoft.VisualStudio.Code.WebResources/{path}"
+      resource_url_template: "https://open-vsx.org/vscode/unpkg/{publisher}/{name}/{version}/{path}"
     }
   end
 

@@ -96,7 +96,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
       { key: "GIT_CONFIG_VALUE_1", type: :environment, value: "Workspaces User" },
       { key: "GIT_CONFIG_VALUE_2", type: :environment, value: "workspaces-user@example.org" },
       { key: "GL_EDITOR_EXTENSIONS_GALLERY_ITEM_URL", type: :environment, value: "https://open-vsx.org/vscode/item" },
-      { key: "GL_EDITOR_EXTENSIONS_GALLERY_RESOURCE_URL_TEMPLATE", type: :environment, value: "https://open-vsx.org/vscode/asset/{publisher}/{name}/{version}/Microsoft.VisualStudio.Code.WebResources/{path}" },
+      { key: "GL_EDITOR_EXTENSIONS_GALLERY_RESOURCE_URL_TEMPLATE", type: :environment, value: "https://open-vsx.org/vscode/unpkg/{publisher}/{name}/{version}/{path}" },
       { key: "GL_EDITOR_EXTENSIONS_GALLERY_SERVICE_URL", type: :environment, value: "https://open-vsx.org/vscode/gallery" },
       { key: "GL_GIT_CREDENTIAL_STORE_SCRIPT_FILE", type: :environment, value: "/.workspace-data/variables/file/gl_git_credential_store.sh" },
       { key: "GL_TOKEN_FILE_PATH", type: :environment, value: "/.workspace-data/variables/file/gl_token" },
