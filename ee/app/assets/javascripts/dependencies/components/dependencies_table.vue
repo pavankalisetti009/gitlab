@@ -11,12 +11,14 @@ import {
 } from '@gitlab/ui';
 import { cloneDeep } from 'lodash';
 import { DOCS_URL_IN_EE_DIR } from 'jh_else_ce/lib/utils/url_utility';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { NAMESPACE_ORGANIZATION, NAMESPACE_PROJECT, DEPENDENCIES_TABLE_I18N } from '../constants';
 import DependencyLicenseLinks from './dependency_license_links.vue';
 import DependencyLocation from './dependency_location.vue';
 import DependencyLocationCount from './dependency_location_count.vue';
 import DependencyProjectCount from './dependency_project_count.vue';
 import DependencyVulnerabilities from './dependency_vulnerabilities.vue';
+import DependencyPathDrawer from './dependency_path_drawer.vue';
 
 const tdClass =
   (defaultClasses = []) =>
@@ -51,6 +53,7 @@ export default {
     DependencyLocation,
     DependencyLocationCount,
     DependencyProjectCount,
+    DependencyPathDrawer,
     GlBadge,
     GlIcon,
     GlButton,
@@ -60,6 +63,7 @@ export default {
     GlLink,
     GlLoadingIcon,
   },
+  mixins: [glFeatureFlagMixin()],
   inject: ['namespaceType'],
   props: {
     dependencies: {
@@ -80,6 +84,12 @@ export default {
       required: true,
     },
   },
+  data() {
+    return {
+      drawerDependency: {},
+      drawerId: null,
+    };
+  },
   computed: {
     anyDependencyHasVulnerabilities() {
       return this.localDependencies.some((dependency) => dependency.vulnerabilityCount);
@@ -99,6 +109,9 @@ export default {
     },
     localDependencies() {
       return this.transformDependenciesForUI(this.dependencies);
+    },
+    showDrawer() {
+      return this.drawerId !== null;
     },
   },
   methods: {
@@ -124,6 +137,23 @@ export default {
       showDetails();
       this.$emit('row-click', item);
     },
+    toggleDrawer(item) {
+      const { occurrenceId } = item;
+
+      if (this.drawerId === occurrenceId) {
+        this.closeDrawer();
+      } else {
+        this.openDrawer(occurrenceId, item);
+      }
+    },
+    openDrawer(id, item) {
+      this.drawerId = id;
+      this.drawerDependency = item;
+    },
+    closeDrawer() {
+      this.drawerId = null;
+      this.drawerDependency = {};
+    },
   },
   organizationFields: [...sharedFields],
   groupFields: [
@@ -143,101 +173,117 @@ export default {
 </script>
 
 <template>
-  <gl-table
-    :fields="fields"
-    :items="localDependencies"
-    :busy="isLoading"
-    data-testid="dependencies-table-content"
-    details-td-class="pt-0"
-    stacked="md"
-    show-empty
-  >
-    <template #head(location)="data">
-      {{ data.label }}
-      <gl-icon id="location-info" name="information-o" class="gl-ml-2" variant="info" />
-      <gl-popover
-        target="location-info"
-        placement="top"
-        :title="$options.i18n.locationDependencyTitle"
-      >
-        {{ $options.i18n.tooltipText }}
-        <div class="gl-mt-4">
-          <gl-link :href="$options.DEPENDENCY_PATH_LINK" target="_blank">{{
-            $options.i18n.tooltipMoreText
-          }}</gl-link>
-        </div>
-      </gl-popover>
-    </template>
+  <div>
+    <dependency-path-drawer
+      :dependency="drawerDependency"
+      :show-drawer="showDrawer"
+      @close="closeDrawer"
+    />
+    <gl-table
+      :fields="fields"
+      :items="localDependencies"
+      :busy="isLoading"
+      data-testid="dependencies-table-content"
+      details-td-class="pt-0"
+      stacked="md"
+      show-empty
+    >
+      <template #head(location)="data">
+        {{ data.label }}
+        <gl-icon id="location-info" name="information-o" class="gl-ml-2" variant="info" />
+        <gl-popover
+          target="location-info"
+          placement="top"
+          :title="$options.i18n.locationDependencyTitle"
+        >
+          {{ $options.i18n.tooltipText }}
+          <div class="gl-mt-4">
+            <gl-link :href="$options.DEPENDENCY_PATH_LINK" target="_blank">{{
+              $options.i18n.tooltipMoreText
+            }}</gl-link>
+          </div>
+        </gl-popover>
+      </template>
 
-    <!-- toggleDetails and detailsShowing are scoped slot props provided by
+      <!-- toggleDetails and detailsShowing are scoped slot props provided by
       GlTable; they mutate/read the item's _showDetails property, which GlTable
       uses to show/hide the row-details slot -->
-    <template #cell(component)="{ item, toggleDetails, detailsShowing }">
-      <gl-button
-        v-if="anyDependencyHasVulnerabilities"
-        class="gl-hidden md:gl-inline"
-        :class="{ invisible: !item.vulnerabilityCount }"
-        category="tertiary"
-        size="small"
-        :aria-label="$options.i18n.toggleVulnerabilityList"
-        :icon="detailsShowing ? 'chevron-up' : 'chevron-down'"
-        @click="rowExpanded(toggleDetails, item)"
-      />
-      <span class="gl-font-bold">{{ item.name }}</span
-      >&nbsp;{{ item.version }}
-    </template>
+      <template #cell(component)="{ item, toggleDetails, detailsShowing }">
+        <gl-button
+          v-if="anyDependencyHasVulnerabilities"
+          class="gl-hidden md:gl-inline"
+          :class="{ invisible: !item.vulnerabilityCount }"
+          category="tertiary"
+          size="small"
+          :aria-label="$options.i18n.toggleVulnerabilityList"
+          :icon="detailsShowing ? 'chevron-up' : 'chevron-down'"
+          data-testid="row-toggle-button"
+          @click="rowExpanded(toggleDetails, item)"
+        />
+        <span class="gl-font-bold">{{ item.name }}</span
+        >&nbsp;{{ item.version }}
+      </template>
 
-    <template #cell(packager)="{ item }">
-      <span>{{ packager(item) }}</span>
-    </template>
+      <template #cell(packager)="{ item }">
+        <span>{{ packager(item) }}</span>
+      </template>
 
-    <template #cell(location)="{ item }">
-      <dependency-location-count
-        v-if="item.occurrenceCount"
-        :location-count="item.occurrenceCount"
-        :component-id="item.componentId"
-      />
-      <dependency-location v-else-if="item.location" :location="item.location" />
-    </template>
+      <template #cell(location)="{ item }">
+        <dependency-location-count
+          v-if="item.occurrenceCount"
+          :location-count="item.occurrenceCount"
+          :component-id="item.componentId"
+        />
+        <dependency-location v-else-if="item.location" :location="item.location" />
+        <gl-button
+          v-if="glFeatures.dependencyPaths"
+          class="gl-mt-2"
+          size="small"
+          data-testid="dependency-path-button"
+          @click="toggleDrawer(item)"
+          >{{ $options.i18n.dependencyPathButtonText }}</gl-button
+        >
+      </template>
 
-    <template #cell(license)="{ item }">
-      <dependency-license-links :licenses="item.licenses" :title="item.name" />
-    </template>
+      <template #cell(license)="{ item }">
+        <dependency-license-links :licenses="item.licenses" :title="item.name" />
+      </template>
 
-    <template #cell(projects)="{ item }">
-      <dependency-project-count
-        :project-count="item.projectCount"
-        :component-id="item.componentId"
-      />
-    </template>
+      <template #cell(projects)="{ item }">
+        <dependency-project-count
+          :project-count="item.projectCount"
+          :component-id="item.componentId"
+        />
+      </template>
 
-    <template #cell(isVulnerable)="{ item, toggleDetails }">
-      <gl-badge
-        v-if="item.vulnerabilityCount"
-        variant="warning"
-        href="#"
-        @click.native="rowExpanded(toggleDetails, item)"
-      >
-        <gl-icon name="warning" class="mr-1" variant="warning" />
-        {{
-          n__(
-            'Dependencies|%d vulnerability detected',
-            'Dependencies|%d vulnerabilities detected',
-            item.vulnerabilityCount,
-          )
-        }}
-      </gl-badge>
-    </template>
+      <template #cell(isVulnerable)="{ item, toggleDetails }">
+        <gl-badge
+          v-if="item.vulnerabilityCount"
+          variant="warning"
+          href="#"
+          @click.native="rowExpanded(toggleDetails, item)"
+        >
+          <gl-icon name="warning" class="mr-1" variant="warning" />
+          {{
+            n__(
+              'Dependencies|%d vulnerability detected',
+              'Dependencies|%d vulnerabilities detected',
+              item.vulnerabilityCount,
+            )
+          }}
+        </gl-badge>
+      </template>
 
-    <template #row-details="{ item }">
-      <gl-loading-icon v-if="vulnerabilityItemsLoading.includes(item)" size="md" />
-      <dependency-vulnerabilities v-else class="ml-4" :vulnerabilities="vulnerabilities(item)" />
-    </template>
+      <template #row-details="{ item }">
+        <gl-loading-icon v-if="vulnerabilityItemsLoading.includes(item)" size="md" />
+        <dependency-vulnerabilities v-else class="ml-4" :vulnerabilities="vulnerabilities(item)" />
+      </template>
 
-    <template #table-busy>
-      <div class="mt-2">
-        <gl-skeleton-loader v-for="n in $options.DEPENDENCIES_PER_PAGE" :key="n" :lines="1" />
-      </div>
-    </template>
-  </gl-table>
+      <template #table-busy>
+        <div class="mt-2">
+          <gl-skeleton-loader v-for="n in $options.DEPENDENCIES_PER_PAGE" :key="n" :lines="1" />
+        </div>
+      </template>
+    </gl-table>
+  </div>
 </template>

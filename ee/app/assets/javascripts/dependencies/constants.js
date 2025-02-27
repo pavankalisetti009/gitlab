@@ -18,4 +18,5 @@ export const DEPENDENCIES_TABLE_I18N = {
   tooltipMoreText: s__('Dependencies|Learn more about direct dependents'),
   locationDependencyTitle: s__('Dependencies|List of direct dependents'),
   toggleVulnerabilityList: s__('Dependencies|Toggle vulnerability list'),
+  dependencyPathButtonText: s__('Dependencies|View dependency paths'),
 };
