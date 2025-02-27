@@ -21,6 +21,8 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
       .inverse_of(:work_item)
   end
 
+  it { is_expected.to have_one(:current_status).class_name('WorkItems::Statuses::CurrentStatus') }
+
   describe 'custom validations' do
     subject(:valid?) { work_item.valid? }
 
