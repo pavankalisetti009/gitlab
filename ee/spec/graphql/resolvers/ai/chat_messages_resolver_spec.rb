@@ -19,7 +19,7 @@ RSpec.describe Resolvers::Ai::ChatMessagesResolver, feature_category: :duo_chat 
     end
 
     context 'when there is a message' do
-      let!(:thread) { create(:ai_conversation_thread, user: user) }
+      let!(:thread) { create(:ai_conversation_thread, user: user, conversation_type: :duo_chat_legacy) }
       let!(:message) do
         create(:ai_conversation_message, created_at: Time.new(2020, 2, 2, 17, 30, 45, '+00:00'),
           thread: thread, message_xid: 'message_xid')

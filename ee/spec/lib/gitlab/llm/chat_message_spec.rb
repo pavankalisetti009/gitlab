@@ -65,7 +65,7 @@ RSpec.describe Gitlab::Llm::ChatMessage, feature_category: :duo_chat do
     end
 
     context 'when a thread exists for the user' do
-      let!(:thread) { create(:ai_conversation_thread, user: user) }
+      let!(:thread) { create(:ai_conversation_thread, user: user, conversation_type: :duo_chat_legacy) }
 
       it 'fetches the thread and assign it to the message' do
         expect(subject.thread).to be_nil
