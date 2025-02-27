@@ -1,4 +1,5 @@
 <script>
+import { s__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import {
   WIDGET_TYPE_CUSTOM_FIELDS,
@@ -6,7 +7,6 @@ import {
   CUSTOM_FIELDS_TYPE_TEXT,
   CUSTOM_FIELDS_TYPE_SINGLE_SELECT,
   CUSTOM_FIELDS_TYPE_MULTI_SELECT,
-  I18N_WORK_ITEM_FETCH_CUSTOM_FIELDS_ERROR,
 } from '~/work_items/constants';
 import workItemCustomFieldsQuery from '../graphql/work_item_custom_fields.query.graphql';
 import WorkItemCustomFieldNumber from './work_item_custom_fields_number.vue';
@@ -66,7 +66,10 @@ export default {
         );
       },
       error(error) {
-        this.$emit('error', I18N_WORK_ITEM_FETCH_CUSTOM_FIELDS_ERROR);
+        this.$emit(
+          'error',
+          s__('WorkItem|Some fields could not be loaded. Refresh the page to try again.'),
+        );
         Sentry.captureException(error);
       },
     },

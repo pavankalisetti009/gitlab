@@ -13,7 +13,6 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import Tracking from '~/tracking';
 import {
   I18N_WORK_ITEM_ERROR_UPDATING,
-  I18N_WORK_ITEM_FETCH_ITERATIONS_ERROR,
   sprintfWorkItem,
   TRACKING_CATEGORY_SHOW,
 } from '~/work_items/constants';
@@ -135,7 +134,10 @@ export default {
         return !this.shouldFetch;
       },
       error() {
-        this.$emit('error', I18N_WORK_ITEM_FETCH_ITERATIONS_ERROR);
+        this.$emit(
+          'error',
+          s__('WorkItem|Something went wrong when fetching iterations. Please try again.'),
+        );
       },
     },
   },
