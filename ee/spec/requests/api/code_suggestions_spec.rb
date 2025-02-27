@@ -53,6 +53,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
     stub_feature_flags(incident_fail_over_completion_provider: false)
     stub_feature_flags(fireworks_qwen_code_completion: false)
     stub_feature_flags(code_completion_model_opt_out_from_fireworks_qwen: false)
+    stub_feature_flags(disable_code_gecko_default: false)
   end
 
   shared_examples 'a response' do |case_name|
@@ -317,6 +318,19 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             expect(response.body).to eq("".to_json)
             _, params = workhorse_send_data
             expect(params['Header']).to include("x-gitlab-enabled-feature-flags" => [""])
+          end
+        end
+
+        context 'when disable code-gecko default FF is enabled' do
+          before do
+            stub_feature_flags(disable_code_gecko_default: true)
+          end
+
+          it 'workhorse includes the FF in the headers' do
+            post_api
+
+            _, params = workhorse_send_data
+            expect(params['Header']["x-gitlab-enabled-feature-flags"][0]).to match("disable_code_gecko_default")
           end
         end
 
@@ -992,6 +1006,18 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
                 'model_provider' => 'fireworks_ai',
                 'model_name' => 'qwen2p5-coder-7b'
               })
+            end
+          end
+
+          context 'when disable code-gecko default FF is enabled' do
+            before do
+              stub_feature_flags(disable_code_gecko_default: true)
+            end
+
+            it 'includes the FF in the direct access headers' do
+              post_api
+
+              expect(json_response['headers']['x-gitlab-enabled-feature-flags']).to match('disable_code_gecko_default')
             end
           end
 
