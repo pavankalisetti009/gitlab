@@ -47,6 +47,12 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
         )
       end
 
+      it 'returns fields based on license availability' do
+        post_graphql(query, current_user: current_user)
+
+        expect(work_item_data['userPermissions']['blockedWorkItems']).to be(true)
+      end
+
       context 'without group level work item license' do
         before do
           stub_licensed_features(epics: false)
