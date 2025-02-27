@@ -631,17 +631,6 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
       expect(::Search::Zoekt::ReplicaStateService).to receive(:execute)
       execute_task
     end
-
-    context 'when zoekt replica state updates FF is disabled' do
-      before do
-        stub_feature_flags(zoekt_replica_state_updates: false)
-      end
-
-      it 'returns false and does not do anything' do
-        expect(::Search::Zoekt::ReplicaStateService).not_to receive(:execute)
-        expect(execute_task).to be(false)
-      end
-    end
   end
 
   describe '#update_index_used_storage_bytes' do
