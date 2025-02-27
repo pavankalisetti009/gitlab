@@ -72,16 +72,9 @@ RSpec.describe Security::PipelineExecutionPolicies::ScheduleWorker, feature_cate
         create(:security_pipeline_execution_project_schedule, security_policy: security_policy)
       end
 
-      let(:policy_content) do
-        {
-          content: { include: [{ project: 'compliance-project', file: "compliance-pipeline.yml" }] },
-          schedule: { cadence: '*/5 * * * *' }
-        }.deep_stringify_keys
-      end
-
       before do
+        invalid_schedule.update_column(:cron, 'foobar')
         invalid_schedule.update_column(:next_run_at, 1.hour.ago)
-        security_policy.update_column(:content, policy_content)
       end
 
       it 'does not updates next_run_at for invalid schedules' do

@@ -11,28 +11,17 @@ module Security
     belongs_to :project
     belongs_to :security_policy, class_name: 'Security::Policy'
 
-    validates :security_policy, uniqueness: { scope: :project_id }
-    validates :security_policy, :project, presence: true
+    validates :security_policy, :project, :cron, :cron_timezone, :time_window_seconds, presence: true
+    validates :cron, cron: true
+    validates :cron_timezone, cron_timezone: true
+    validates :time_window_seconds, numericality: { greater_than: 0, only_integer: true }
+
     validate :security_policy_is_pipeline_execution_schedule_policy
 
     scope :for_project, ->(project) { where(project: project) }
     scope :runnable_schedules, -> { where(next_run_at: ...Time.zone.now) }
     scope :ordered_by_next_run_at, -> { order(:next_run_at, :id) }
     scope :including_security_policy_and_project, -> { includes(:security_policy, :project) }
-
-    def cron_timezone
-      # ActiveSupport::TimeZone.new will return nil if timezone is invalid
-      # https://github.com/rails/rails/blob/dd8f7185faeca6ee968a6e9367f6d8601a83b8db/activesupport/lib/active_support/values/time_zone.rb#L309-L312
-
-      ActiveSupport::TimeZone.new(timezone)&.name || Time.zone.name
-    rescue ArgumentError
-      # In case self.timezone is nil
-      Time.zone.name
-    end
-
-    def cron
-      security_policy.content.dig('schedule', 'cadence')
-    end
 
     def schedule_next_run!
       set_next_run_at

@@ -118,7 +118,9 @@ FactoryBot.define do
       content do
         {
           content: { include: [{ project: 'compliance-project', file: "compliance-pipeline.yml" }] },
-          schedule: { cadence: '0 0 * * *' }
+          schedules: [
+            { type: "daily", start_time: "00:00", time_window: { value: 4000, distribution: 'random' } }
+          ]
         }
       end
     end
@@ -336,7 +338,7 @@ FactoryBot.define do
     sequence(:content) { |n| { include: [{ project: 'compliance-project', file: "compliance-pipeline-#{n}.yml" }] } }
     policy_scope { {} }
     metadata { {} }
-    schedule { { cadence: '0 0 * * *' } }
+    schedules { [{ type: "daily", start_time: "00:00", time_window: { value: 4000, distribution: 'random' } }] }
 
     trait :with_policy_scope do
       policy_scope do

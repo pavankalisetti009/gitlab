@@ -21298,7 +21298,13 @@ CREATE TABLE security_pipeline_execution_project_schedules (
     updated_at timestamp with time zone NOT NULL,
     next_run_at timestamp with time zone NOT NULL,
     security_policy_id bigint NOT NULL,
-    project_id bigint NOT NULL
+    project_id bigint NOT NULL,
+    time_window_seconds integer NOT NULL,
+    cron text NOT NULL,
+    cron_timezone text NOT NULL,
+    CONSTRAINT check_b93315bfbb CHECK ((char_length(cron_timezone) <= 255)),
+    CONSTRAINT check_bbbe4b1b8d CHECK ((char_length(cron) <= 128)),
+    CONSTRAINT check_c440017377 CHECK ((time_window_seconds > 0))
 );
 
 CREATE SEQUENCE security_pipeline_execution_project_schedules_id_seq
@@ -31202,6 +31208,8 @@ CREATE INDEX idx_pat_last_used_ips_on_pat_id ON personal_access_token_last_used_
 
 CREATE INDEX idx_personal_access_tokens_on_previous_personal_access_token_id ON personal_access_tokens USING btree (previous_personal_access_token_id);
 
+CREATE INDEX idx_pipeline_execution_schedules_on_project_id ON security_pipeline_execution_project_schedules USING btree (project_id);
+
 CREATE INDEX idx_pipeline_execution_schedules_security_policy_id_and_id ON security_pipeline_execution_project_schedules USING btree (security_policy_id, id);
 
 CREATE INDEX idx_pkgs_conan_file_metadata_on_pkg_file_id_when_recipe_file ON packages_conan_file_metadata USING btree (package_file_id) WHERE (conan_file_type = 1);
@@ -36121,8 +36129,6 @@ CREATE UNIQUE INDEX uniq_idx_on_packages_conan_package_references_package_refere
 CREATE UNIQUE INDEX uniq_idx_on_packages_conan_package_revisions_revision ON packages_conan_package_revisions USING btree (package_id, package_reference_id, revision);
 
 CREATE UNIQUE INDEX uniq_idx_packages_packages_on_project_id_name_version_ml_model ON packages_packages USING btree (project_id, name, version) WHERE ((package_type = 14) AND (status <> 4));
-
-CREATE UNIQUE INDEX uniq_idx_pipeline_execution_schedules_projects_and_policies ON security_pipeline_execution_project_schedules USING btree (project_id, security_policy_id);
 
 CREATE UNIQUE INDEX uniq_idx_project_compliance_framework_on_project_framework ON project_compliance_framework_settings USING btree (project_id, framework_id);
 
