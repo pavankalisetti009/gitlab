@@ -9,6 +9,7 @@ RSpec.describe 'Milestones on EE', feature_category: :team_planning do
 
   before do
     login_as(user)
+    stub_feature_flags(work_items_alpha: false)
   end
 
   def visit_milestone
