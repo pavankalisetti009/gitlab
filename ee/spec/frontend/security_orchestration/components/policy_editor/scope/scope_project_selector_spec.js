@@ -4,6 +4,7 @@ import GroupProjectsDropdown from 'ee/security_orchestration/components/shared/g
 import { generateMockProjects } from 'ee_jest/security_orchestration/mocks/mock_data';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { EXCEPT_PROJECTS } from 'ee/security_orchestration/components/policy_editor/scope/constants';
+import { WITHOUT_EXCEPTIONS } from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
 
 describe('ScopeProjectSelector', () => {
   let wrapper;
@@ -164,6 +165,29 @@ describe('ScopeProjectSelector', () => {
       findExceptionTypeSelector().vm.$emit('select', EXCEPT_PROJECTS);
 
       expect(wrapper.emitted('select-exception-type')).toEqual([[EXCEPT_PROJECTS]]);
+    });
+  });
+
+  describe('reset selected projects', () => {
+    it('should select exception type WITHOUT_EXCEPTIONS and reset exceptions', () => {
+      createComponent({
+        projects: {
+          excluding: mappedProjects,
+        },
+      });
+
+      findExceptionTypeSelector().vm.$emit('select', WITHOUT_EXCEPTIONS);
+
+      expect(wrapper.emitted('select-exception-type')).toEqual([[WITHOUT_EXCEPTIONS]]);
+      expect(wrapper.emitted('changed')).toEqual([
+        [
+          {
+            projects: {
+              excluding: [],
+            },
+          },
+        ],
+      ]);
     });
   });
 });
