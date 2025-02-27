@@ -156,7 +156,7 @@ RSpec.describe Gitlab::Llm::ChatStorage::Postgresql, :clean_gitlab_redis_chat, f
       end
 
       context 'when a thread exists for the user' do
-        let!(:existing_thread) { create(:ai_conversation_thread, user: user) }
+        let!(:existing_thread) { create(:ai_conversation_thread, user: user, conversation_type: :duo_chat_legacy) }
 
         it 'returns the latest thread' do
           expect(current_thread).to eq(existing_thread)

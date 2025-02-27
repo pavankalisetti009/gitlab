@@ -4,7 +4,7 @@ module Gitlab
   module Llm
     class ChatStorage
       class Postgresql < Base
-        DEFAULT_CONVERSATION_TYPE = :duo_chat
+        DEFAULT_CONVERSATION_TYPE = :duo_chat_legacy
         MAX_MESSAGES = 50
 
         def add(message)
