@@ -27,7 +27,7 @@ module Projects
       end
 
       fetch_result = update_tags do
-        project.fetch_mirror(forced: true, check_tags_changed: true)
+        project.fetch_mirror(forced: true)
       end
 
       update_lfs_objects_and_branches(fetch_result)

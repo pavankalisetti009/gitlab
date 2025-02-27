@@ -25,14 +25,12 @@ module EE
       expire_content_cache
     end
 
-    def fetch_upstream(
-      url, forced: false, check_tags_changed: false)
+    def fetch_upstream(url, forced: false)
       fetch_remote(
         url,
         refmap: ["+refs/heads/*:refs/remotes/#{MIRROR_REMOTE}/*"],
         ssh_auth: project&.import_data,
-        forced: forced,
-        check_tags_changed: check_tags_changed
+        forced: forced
       )
     end
 
