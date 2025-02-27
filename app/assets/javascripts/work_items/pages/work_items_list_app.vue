@@ -151,6 +151,7 @@ export default {
       activeItem: null,
       isRefetching: false,
       hasStateToken: false,
+      initialLoadWasFiltered: false,
     };
   },
   apollo: {
@@ -206,6 +207,7 @@ export default {
         if (!this.isInitialLoadComplete) {
           this.hasAnyIssues = Boolean(all);
           this.isInitialLoadComplete = true;
+          this.initialLoadWasFiltered = this.filterTokens.length > 0;
         }
       },
       error(error) {
@@ -677,7 +679,7 @@ export default {
 <template>
   <gl-loading-icon v-if="!isInitialLoadComplete && !error" class="gl-mt-5" size="lg" />
 
-  <div v-else-if="hasAnyIssues || error">
+  <div v-else-if="hasAnyIssues || error || initialLoadWasFiltered">
     <work-item-drawer
       v-if="workItemDrawerEnabled"
       :active-item="activeItem"
