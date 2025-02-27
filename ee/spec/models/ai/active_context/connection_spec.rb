@@ -45,14 +45,12 @@ RSpec.describe Ai::ActiveContext::Connection, feature_category: :global_search d
     end
   end
 
-  describe 'scopes' do
-    describe '.active' do
-      let!(:active_connection) { create(:ai_active_context_connection) }
-      let!(:inactive_connection) { create(:ai_active_context_connection, :inactive) }
+  describe '.active' do
+    let!(:active_connection) { create(:ai_active_context_connection) }
+    let!(:inactive_connection) { create(:ai_active_context_connection, :inactive) }
 
-      it 'returns only active connections' do
-        expect(described_class.active).to contain_exactly(active_connection)
-      end
+    it 'returns only active connection' do
+      expect(described_class.active).to eq(active_connection)
     end
   end
 end

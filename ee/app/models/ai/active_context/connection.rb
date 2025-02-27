@@ -19,7 +19,9 @@ module Ai
       validate :validate_options
       validates_uniqueness_of :active, conditions: -> { where(active: true) }, if: :active
 
-      scope :active, -> { where(active: true) }
+      def self.active
+        where(active: true).first
+      end
 
       private
 
