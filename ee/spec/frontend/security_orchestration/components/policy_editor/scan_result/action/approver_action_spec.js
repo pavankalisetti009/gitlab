@@ -1,5 +1,5 @@
 import { nextTick } from 'vue';
-import { GlAlert, GlFormInput, GlPopover, GlSprintf } from '@gitlab/ui';
+import { GlFormInput, GlPopover, GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { GROUP_TYPE, USER_TYPE, ROLE_TYPE } from 'ee/security_orchestration/constants';
 import ApproverAction from 'ee/security_orchestration/components/policy_editor/scan_result/action/approver_action.vue';
@@ -68,7 +68,6 @@ describe('ApproverAction', () => {
   const findApprovalsRequiredInput = () => wrapper.findComponent(GlFormInput);
   const findActionApprover = () => wrapper.findComponent(ApproverSelect);
   const findAllApproverSelectionWrapper = () => wrapper.findAllComponents(ApproverSelect);
-  const findAllAlerts = () => wrapper.findAllComponents(GlAlert);
   const findPopover = () => wrapper.findComponent(GlPopover);
   const findSectionLayout = () => wrapper.findComponent(SectionLayout);
   const findAddButton = () => wrapper.findByTestId('add-approver');
@@ -83,6 +82,7 @@ describe('ApproverAction', () => {
 
     it('renders', () => {
       expect(findActionApprover().props()).toEqual({
+        actionIndex: 0,
         disabled: false,
         disabledTypes: [''],
         errors: [],
@@ -100,8 +100,8 @@ describe('ApproverAction', () => {
       expect(findAllApproverSelectionWrapper()).toHaveLength(2);
     });
 
-    it('does not render alert', () => {
-      expect(findAllAlerts()).toHaveLength(0);
+    it('does not render errors', () => {
+      expect(findActionApprover().props('errors')).toEqual([]);
     });
 
     it('selects approver type', async () => {
@@ -171,48 +171,17 @@ describe('ApproverAction', () => {
   });
 
   describe('errors', () => {
-    it('renders the alert when there is an error', () => {
+    it('passes errors to select component', () => {
       const error = { title: 'Error', message: 'Something went wrong', index: 0 };
       createWrapper({ errors: [error] });
-      const allAlerts = findAllAlerts();
-      expect(allAlerts).toHaveLength(1);
-      expect(allAlerts.at(0).props()).toMatchObject({
-        title: error.title,
-        dismissible: false,
-      });
-      expect(allAlerts.at(0).text()).toBe(error.message);
+      expect(findActionApprover().props('errors')).toEqual([error]);
     });
 
     it('renders the number of approvers input with an invalid state', () => {
-      createWrapper({ errors: [{ field: 'approvers_ids' }] });
+      createWrapper({ errors: [{ field: 'actions', index: 0 }] });
       const approvalsRequiredInput = findApprovalsRequiredInput();
       expect(approvalsRequiredInput.exists()).toBe(true);
       expect(approvalsRequiredInput.attributes('state')).toBe(undefined);
-    });
-
-    it('renders the alert only for related to action error', () => {
-      const error = { title: 'Error', message: 'Something went wrong', index: 0 };
-      const error2 = { title: 'Error 2', message: 'Something went wrong 2', index: 1 };
-      const errorWithoutIndex = {
-        title: 'Error without index',
-        message: 'Something went wrong without index',
-      };
-      createWrapper({ errors: [error, error2, errorWithoutIndex], actionIndex: 1 });
-
-      const allAlerts = findAllAlerts();
-      expect(allAlerts).toHaveLength(2);
-
-      expect(allAlerts.at(0).props()).toMatchObject({
-        title: error2.title,
-        dismissible: false,
-      });
-      expect(allAlerts.at(0).text()).toBe(error2.message);
-
-      expect(allAlerts.at(1).props()).toMatchObject({
-        title: errorWithoutIndex.title,
-        dismissible: false,
-      });
-      expect(allAlerts.at(1).text()).toBe(errorWithoutIndex.message);
     });
   });
 

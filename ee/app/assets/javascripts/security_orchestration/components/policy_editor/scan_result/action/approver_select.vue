@@ -28,6 +28,11 @@ export default {
     RoleSelect,
   },
   props: {
+    actionIndex: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
     disabled: {
       type: Boolean,
       required: false,
@@ -98,7 +103,9 @@ export default {
       }));
     },
     isApproverFieldValid() {
-      return this.errors.every((error) => error.field !== 'approvers_ids');
+      return this.errors
+        .filter((error) => error.index === this.actionIndex)
+        .every((error) => error.field !== 'actions');
     },
   },
   methods: {
