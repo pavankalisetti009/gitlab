@@ -807,3 +807,98 @@ RSpec.shared_examples 'migration deletes documents based on schema version' do
     })
   end
 end
+
+RSpec.shared_examples 'migration removes field' do
+  let_it_be(:client) { ::Gitlab::Search::Client.new }
+  let(:migration) { described_class.new(version) }
+  let(:klass) { objects.first.class }
+  let(:index_name) { klass.__elasticsearch__.index_name }
+
+  before do
+    stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+    objects
+    ensure_elasticsearch_index!
+  end
+
+  describe 'migration options' do
+    it 'has migration options set', :aggregate_failures do
+      expect(migration).to be_batched
+      expect(migration.throttle_delay).to eq(expected_throttle_delay)
+    end
+  end
+
+  describe '#completed?' do
+    context 'when field is present in the mapping' do
+      before do
+        add_field_in_mapping!
+      end
+
+      context 'when some documents have the value for field set' do
+        before do
+          add_field_value_to_documents!(3)
+        end
+
+        it 'returns false' do
+          expect(migration.completed?).to be false
+        end
+      end
+
+      context 'when no documents have the value for field set' do
+        it 'returns true' do
+          expect(migration.completed?).to be true
+        end
+      end
+    end
+
+    context 'when field is not present in the mapping' do
+      it 'returns true' do
+        expect(migration.completed?).to be true
+      end
+    end
+  end
+
+  describe '#migrate' do
+    let(:original_target_doc_count) { 5 }
+    let(:batch_size) { 2 }
+
+    before do
+      add_field_in_mapping!
+      add_field_value_to_documents!(original_target_doc_count)
+      allow(migration).to receive(:batch_size).and_return(batch_size)
+    end
+
+    it 'completes the migration in batches' do
+      expect(documents_count_with_field).to eq original_target_doc_count
+      expect(migration.completed?).to be false
+      migration.migrate
+      expect(migration.completed?).to be false
+      expect(documents_count_with_field).to eq original_target_doc_count - batch_size
+      10.times do
+        break if migration.completed?
+
+        migration.migrate
+        sleep 0.01
+      end
+      expect(migration.completed?).to be true
+      expect(documents_count_with_field).to eq 0
+    end
+  end
+
+  def add_field_in_mapping!
+    client.indices.put_mapping(index: index_name,
+      body: { properties: { "#{field}": { type: type } } }
+    )
+  end
+
+  def add_field_value_to_documents!(count)
+    client.update_by_query(index: index_name, refresh: true, body: {
+      script: { source: "ctx._source.#{field}=1" }, max_docs: count
+    })
+  end
+
+  def documents_count_with_field
+    client.count(index: index_name,
+      body: { query: { bool: { must: { exists: { field: field } } } } }
+    )['count']
+  end
+end
