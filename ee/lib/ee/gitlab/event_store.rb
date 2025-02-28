@@ -246,6 +246,7 @@ module EE
         end
 
         def register_autoflow_subscribers(store)
+          # Work Item subscriptions
           store.subscribe ::Clusters::Agents::AutoFlow::WorkItems::CreatedEventWorker,
             to: ::WorkItems::WorkItemCreatedEvent,
             if: ->(event) { ::Clusters::Agents::AutoFlow.issue_events_enabled?(event.data[:id]) }
@@ -258,6 +259,23 @@ module EE
           store.subscribe ::Clusters::Agents::AutoFlow::WorkItems::ReopenedEventWorker,
             to: ::WorkItems::WorkItemReopenedEvent,
             if: ->(event) { ::Clusters::Agents::AutoFlow.issue_events_enabled?(event.data[:id]) }
+
+          # Merge Request subscriptions
+          store.subscribe ::Clusters::Agents::AutoFlow::MergeRequests::CreatedEventWorker,
+            to: ::MergeRequests::CreatedEvent,
+            if: ->(event) { ::Clusters::Agents::AutoFlow.merge_request_events_enabled?(event.data[:merge_request_id]) }
+          store.subscribe ::Clusters::Agents::AutoFlow::MergeRequests::UpdatedEventWorker,
+            to: ::MergeRequests::UpdatedEvent,
+            if: ->(event) { ::Clusters::Agents::AutoFlow.merge_request_events_enabled?(event.data[:merge_request_id]) }
+          store.subscribe ::Clusters::Agents::AutoFlow::MergeRequests::MergedEventWorker,
+            to: ::MergeRequests::MergedEvent,
+            if: ->(event) { ::Clusters::Agents::AutoFlow.merge_request_events_enabled?(event.data[:merge_request_id]) }
+          store.subscribe ::Clusters::Agents::AutoFlow::MergeRequests::ClosedEventWorker,
+            to: ::MergeRequests::ClosedEvent,
+            if: ->(event) { ::Clusters::Agents::AutoFlow.merge_request_events_enabled?(event.data[:merge_request_id]) }
+          store.subscribe ::Clusters::Agents::AutoFlow::MergeRequests::ReopenedEventWorker,
+            to: ::MergeRequests::ReopenedEvent,
+            if: ->(event) { ::Clusters::Agents::AutoFlow.merge_request_events_enabled?(event.data[:merge_request_id]) }
         end
       end
     end

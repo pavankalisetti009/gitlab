@@ -14,7 +14,19 @@ module EE
             log_audit_event(merge_request, 'merge_request_reopened_by_project_bot',
               "Reopened merge request #{merge_request.title}")
           end
+
+          publish_event(merge_request)
         end
+      end
+
+      private
+
+      def publish_event(merge_request)
+        ::Gitlab::EventStore.publish(
+          ::MergeRequests::ReopenedEvent.new(data: {
+            merge_request_id: merge_request.id
+          })
+        )
       end
     end
   end

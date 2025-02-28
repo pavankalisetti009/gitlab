@@ -21,9 +21,18 @@ module EE
         schedule_fetch_suggested_reviewers(merge_request)
         schedule_approval_notifications(merge_request)
         track_usage_event if merge_request.project.scan_result_policy_reads.any?
+        publish_event(merge_request)
       end
 
       private
+
+      def publish_event(merge_request)
+        ::Gitlab::EventStore.publish(
+          ::MergeRequests::CreatedEvent.new(data: {
+            merge_request_id: merge_request.id
+          })
+        )
+      end
 
       def record_onboarding_progress(merge_request)
         ::Onboarding::ProgressService

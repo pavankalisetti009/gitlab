@@ -27,6 +27,13 @@ RSpec.describe MergeRequests::AfterCreateService, feature_category: :code_review
       expect(::MergeRequests::NotifyApproversWorker).to have_received(:perform_in).with(10.seconds, merge_request.id)
     end
 
+    it 'publishes created event' do
+      expect { execute }
+        .to publish_event(::MergeRequests::CreatedEvent).with(
+          merge_request_id: merge_request.id
+        )
+    end
+
     it_behaves_like 'records an onboarding progress action', :merge_request_created do
       let(:namespace) { merge_request.target_project.namespace }
     end
