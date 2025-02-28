@@ -14,6 +14,7 @@ RSpec.describe 'Registration group and project creation flow', :with_current_org
     # Stubbed not to break query budget. Should be safe as the query only happens on SaaS and the result is cached
     allow(Gitlab::Com).to receive(:gitlab_com_group_member?).and_return(nil)
 
+    stub_feature_flags(new_project_creation_form: false)
     stub_saas_features(onboarding: true)
     stub_application_setting(import_sources: %w[github gitlab_project])
     sign_in(user)

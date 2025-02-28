@@ -243,6 +243,7 @@ module SaasRegistrationHelpers
   end
 
   def expect_to_see_import_form
+    stub_feature_flags(new_project_creation_form: false)
     expect_to_see_group_and_project_creation_form
     expect(page).to have_content('GitLab export')
   end
