@@ -358,7 +358,7 @@ module Gitlab
             work_item_type_ids: [::WorkItems::Type.find_by_name(::WorkItems::Type::TYPE_NAMES[:epic]).id]
           ).except(:fields)
         when :users
-          base_options.merge(admin: current_user&.admin?, routing_disabled: true) # rubocop:disable Cop/UserAdmin
+          user_scope_options
         when :blobs
           base_options.merge(filters.slice(:language, :include_archived, :num_context_lines))
         when :wiki_blobs
@@ -384,6 +384,16 @@ module Gitlab
         end
 
         work_item_scope_options
+      end
+
+      def user_scope_options
+        base_options.merge(
+          {
+            admin: current_user&.can_admin_all_resources?,
+            routing_disabled: true
+          },
+          filters.slice(:autocomplete)
+        )
       end
 
       def scope_results(scope, klass, count_only:)

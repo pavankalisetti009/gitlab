@@ -414,6 +414,15 @@ module Search
           end
         end
 
+        # Caution: use this method with care.
+        # Only use if `traversal_ids` is predetermined and on scopes that don't have visibility checks.
+        # Prefer to use `by_search_level_and_membership` which takes care of visibility and membership.
+        def by_traversal_ids(query_hash:, traversal_ids:, options:)
+          return query_hash unless traversal_ids
+
+          traversal_ids_ancestry_filter(query_hash, traversal_ids, options)
+        end
+
         private
 
         # This is a helper method that we are using to add filter conditions

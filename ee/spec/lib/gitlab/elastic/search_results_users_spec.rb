@@ -48,7 +48,9 @@ RSpec.describe Gitlab::Elastic::SearchResults, 'users', feature_category: :globa
       end
 
       context 'when the calling user is an admin' do
-        let_it_be(:user) { create(:user, admin: true) }
+        before do
+          allow(user).to receive(:can_admin_all_resources?).and_return(true)
+        end
 
         it 'lists found users including blocked user and email match' do
           users = results.objects('users')
