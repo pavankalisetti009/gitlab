@@ -1,12 +1,16 @@
 <script>
-import { GlEmptyState } from '@gitlab/ui';
+import { GlEmptyState, GlLink, GlSprintf } from '@gitlab/ui';
+import { helpPagePath } from '~/helpers/help_page_helper';
 import { sprintf, s__ } from '~/locale';
 import { NEW_POLICY_BUTTON_TEXT } from '../constants';
 import { EMPTY_LIST_DESCRIPTION, EMPTY_POLICY_PROJECT_DESCRIPTION } from './constants';
 
 export default {
+  link: helpPagePath('user/application_security/policies/_index.md'),
   components: {
     GlEmptyState,
+    GlLink,
+    GlSprintf,
   },
   i18n: {
     emptyFilterTitle: s__('SecurityOrchestration|Sorry, your filter produced no results.'),
@@ -74,9 +78,13 @@ export default {
     title=""
   >
     <template #description>
-      <p class="gl-font-bold">
-        {{ emptyStateDescription }}
-      </p>
+      <gl-sprintf :message="emptyStateDescription">
+        <template #link="{ content }">
+          <gl-link :href="$options.link" target="_blank">
+            {{ content }}
+          </gl-link>
+        </template>
+      </gl-sprintf>
     </template>
   </gl-empty-state>
 </template>

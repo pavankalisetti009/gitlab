@@ -1,12 +1,8 @@
+import { GlSprintf } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import { sprintf } from '~/locale';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import EmptyState from 'ee/security_orchestration/components/policies/empty_state.vue';
-import {
-  EMPTY_LIST_DESCRIPTION,
-  EMPTY_POLICY_PROJECT_DESCRIPTION,
-} from 'ee/security_orchestration/components/policies/constants';
 
 describe('EmptyState component', () => {
   let wrapper;
@@ -32,6 +28,7 @@ describe('EmptyState component', () => {
         namespaceType,
         newPolicyPath: 'path/to/new/policy',
       },
+      stubs: { GlSprintf },
     });
   };
 
@@ -47,15 +44,19 @@ describe('EmptyState component', () => {
     expect(findComponent().exists()).toBe(state);
   });
 
-  it.each`
-    title                                                                         | text                                | factoryFn
-    ${'displays the correct empty list state when there is not a policy project'} | ${EMPTY_POLICY_PROJECT_DESCRIPTION} | ${factory}
-    ${'displays the correct empty list state when there is a policy project'}     | ${EMPTY_LIST_DESCRIPTION}           | ${() => factory({ hasPolicyProject: true })}
-  `('$title', async ({ factoryFn, text }) => {
-    factoryFn();
+  it('displays the correct empty list state when there is not a policy project', async () => {
+    factory();
     await nextTick();
-    expect(findEmptyListState().text()).toBe(
-      sprintf(text, { namespaceType: NAMESPACE_TYPES.PROJECT }),
+    expect(findEmptyListState().text()).toContain(
+      'This project is not linked to a security policy project. Either link it to an existing project or create a new policy, which will create a new project that you can use as a security policy project. For help, see',
+    );
+  });
+
+  it('displays the correct empty list state when there is a policy project', async () => {
+    factory({ hasPolicyProject: true });
+    await nextTick();
+    expect(findEmptyListState().text()).toContain(
+      'This project does not contain any security policies.',
     );
   });
 
