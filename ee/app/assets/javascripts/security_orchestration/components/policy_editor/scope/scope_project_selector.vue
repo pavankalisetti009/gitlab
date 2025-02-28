@@ -87,6 +87,10 @@ export default {
       this.$emit('error', this.$options.i18n.groupProjectErrorDescription);
     },
     selectExceptionType(type) {
+      if (type === WITHOUT_EXCEPTIONS) {
+        this.$emit('changed', { projects: { [this.payloadKey]: [] } });
+      }
+
       this.$emit('select-exception-type', type);
     },
     setSelectedProjects(projects) {
