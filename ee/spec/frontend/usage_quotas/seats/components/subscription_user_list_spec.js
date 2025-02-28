@@ -462,11 +462,11 @@ describe('SubscriptionUserList', () => {
     });
 
     it('input event changes search property', async () => {
-      expect(billableMembersMockHandler).toHaveBeenCalledTimes(2);
+      expect(billableMembersMockHandler).toHaveBeenCalledTimes(1);
 
       findSearchAndSortBar().vm.$emit('onFilter', 'search string');
       await nextTick();
-      expect(billableMembersMockHandler).toHaveBeenCalledTimes(3);
+      expect(billableMembersMockHandler).toHaveBeenCalledTimes(2);
     });
 
     it('contains the correct sort options', () => {

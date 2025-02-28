@@ -72,7 +72,7 @@ export default {
     return {
       recentlyDeletedMembersIds: [],
       total: null,
-      page: null,
+      page: 1,
       search: null,
       perPage: null,
       sort: 'last_activity_on_desc',
