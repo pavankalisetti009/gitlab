@@ -1,4 +1,4 @@
-import { resolvers } from 'ee/usage_quotas/shared/resolvers';
+import { resolvers } from 'ee/usage_quotas/seats/resolvers';
 import Api from 'ee/api';
 import * as GroupsApi from 'ee/api/groups_api';
 import { mockMemberDetails } from 'ee_jest/usage_quotas/seats/mock_data';
