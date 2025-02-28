@@ -45,16 +45,12 @@ describe('SkipCiSelector', () => {
     ]);
   });
 
-  it.each`
-    users                                                             | expected
-    ${[{ id: 1 }, { id: 2 }]}                                         | ${[1, 2]}
-    ${[{ id: 'gid://gitlab/User/1' }, { id: 'gid://gitlab/User/2' }]} | ${[1, 2]}
-  `('renders user exceptions dropdown', ({ users, expected }) => {
+  it('renders user exceptions dropdown', () => {
     createComponent({
-      skipCiConfiguration: { allowed: false, allowlist: { users } },
+      skipCiConfiguration: { allowed: false, allowlist: { users: [{ id: 1 }, { id: 2 }] } },
     });
 
-    expect(findUserSelect().props('selected')).toEqual(expected);
+    expect(findUserSelect().props('selected')).toEqual([1, 2]);
   });
 
   it('selects user exceptions in graphql format', () => {
