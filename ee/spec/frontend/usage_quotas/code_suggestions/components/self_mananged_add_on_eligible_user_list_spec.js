@@ -14,8 +14,6 @@ import {
 import {
   DUO_PRO,
   DUO_ENTERPRISE,
-  ADD_ON_CODE_SUGGESTIONS,
-  ADD_ON_DUO_ENTERPRISE,
   SORT_OPTIONS,
   DEFAULT_SORT_OPTION,
 } from 'ee/usage_quotas/code_suggestions/constants';
@@ -65,12 +63,12 @@ describe('Add On Eligible User List', () => {
 
   const duoTier = DUO_PRO;
   const defaultQueryVariables = {
-    addOnType: ADD_ON_CODE_SUGGESTIONS,
+    addOnType: DUO_PRO,
     addOnPurchaseIds: [addOnPurchaseId],
     ...defaultPaginationParams,
   };
   const defaultDuoEnterpriseQueryVariables = {
-    addOnType: ADD_ON_DUO_ENTERPRISE,
+    addOnType: DUO_ENTERPRISE,
     addOnPurchaseIds: [duoEnterpriseAddOnPurchaseId],
     ...defaultPaginationParams,
   };

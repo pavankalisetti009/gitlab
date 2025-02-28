@@ -3,11 +3,9 @@ import { GlCard } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import UsageStatistics from 'ee/usage_quotas/components/usage_statistics.vue';
 import {
-  DUO_PRO,
-  DUO_ENTERPRISE,
   codeSuggestionsLearnMoreLink,
-  CODE_SUGGESTIONS_TITLE,
-  DUO_ENTERPRISE_TITLE,
+  DUO_IDENTIFIERS,
+  DUO_TITLES,
 } from 'ee/usage_quotas/code_suggestions/constants';
 
 export default {
@@ -37,8 +35,8 @@ export default {
     duoTier: {
       type: String,
       required: false,
-      default: DUO_PRO,
-      validator: (val) => [DUO_PRO, DUO_ENTERPRISE].includes(val),
+      default: DUO_IDENTIFIERS[0],
+      validator: (val) => DUO_IDENTIFIERS.includes(val),
     },
   },
   computed: {
@@ -49,7 +47,7 @@ export default {
       return Boolean(this.totalValue) && this.percentage >= 0;
     },
     duoTitle() {
-      return this.duoTier === DUO_ENTERPRISE ? DUO_ENTERPRISE_TITLE : CODE_SUGGESTIONS_TITLE;
+      return DUO_TITLES[this.duoTier];
     },
   },
 };

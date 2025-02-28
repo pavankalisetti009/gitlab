@@ -9,12 +9,10 @@ import getAddOnPurchasesQuery from 'ee/usage_quotas/add_on/graphql/get_add_on_pu
 import getCurrentLicense from 'ee/admin/subscriptions/show/graphql/queries/get_current_license.query.graphql';
 
 import {
-  ADD_ON_CODE_SUGGESTIONS,
-  ADD_ON_DUO_ENTERPRISE,
   DUO_ENTERPRISE,
   DUO_PRO,
-  DUO_ENTERPRISE_TITLE,
-  CODE_SUGGESTIONS_TITLE,
+  DUO_TITLES,
+  DUO_BADGE_TITLES,
 } from 'ee/usage_quotas/code_suggestions/constants';
 
 import {
@@ -130,7 +128,7 @@ export default {
       );
     },
     duoTier() {
-      return this.addOnPurchase?.name === ADD_ON_DUO_ENTERPRISE ? DUO_ENTERPRISE : DUO_PRO;
+      return this.addOnPurchase?.name || DUO_PRO;
     },
     shouldForceHideTitle() {
       if (isBoolean(this.forceHideTitle)) {
@@ -153,10 +151,13 @@ export default {
       const message = this.isSaaS
         ? s__('CodeSuggestions|Manage seat assignments for %{addOnName} within your group.')
         : s__('CodeSuggestions|Manage seat assignments for %{addOnName}.');
-      return sprintf(message, { addOnName: this.codeSuggestionsFriendlyName });
+      return sprintf(message, { addOnName: this.duoTitle });
     },
-    codeSuggestionsFriendlyName() {
-      return this.duoTier === DUO_ENTERPRISE ? DUO_ENTERPRISE_TITLE : CODE_SUGGESTIONS_TITLE;
+    duoTitle() {
+      return DUO_TITLES[this.duoTier];
+    },
+    duoBadgeTitle() {
+      return DUO_BADGE_TITLES[this.duoTier];
     },
     activationListeners() {
       return {
@@ -174,8 +175,8 @@ export default {
         return (
           // Prioritize Duo Enterprise add-on over Duo Pro if both are available to the namespace.
           // For example, a namespace can have a Duo Pro add-on but also a Duo Enterprise trial add-on.
-          addOnPurchases?.find((addOnPurchase) => addOnPurchase.name === ADD_ON_DUO_ENTERPRISE) ||
-          addOnPurchases?.find((addOnPurchase) => addOnPurchase.name === ADD_ON_CODE_SUGGESTIONS)
+          addOnPurchases?.find((addOnPurchase) => addOnPurchase.name === DUO_ENTERPRISE) ||
+          addOnPurchases?.find((addOnPurchase) => addOnPurchase.name === DUO_PRO)
         );
       },
       error(error) {
@@ -273,7 +274,7 @@ export default {
           <template #heading>
             <span class="gl-flex gl-items-center gl-gap-3">
               <span data-testid="code-suggestions-title">{{ title }}</span>
-              <gl-badge variant="tier" icon="license" class="gl-capitalize">{{ duoTier }}</gl-badge>
+              <gl-badge variant="tier" icon="license">{{ duoBadgeTitle }}</gl-badge>
             </span>
           </template>
 

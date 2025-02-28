@@ -2,12 +2,7 @@ import { shallowMount } from '@vue/test-utils';
 import { GlCard, GlIcon, GlButton } from '@gitlab/ui';
 import UsageStatistics from 'ee/usage_quotas/components/usage_statistics.vue';
 import DuoSeatUtilizationInfoCard from 'ee/ai/settings/components/duo_seat_utilization_info_card.vue';
-import {
-  DUO_PRO,
-  DUO_ENTERPRISE,
-  CODE_SUGGESTIONS_TITLE,
-  DUO_ENTERPRISE_TITLE,
-} from 'ee/usage_quotas/code_suggestions/constants';
+import { DUO_PRO, DUO_ENTERPRISE, DUO_TITLES } from 'ee/usage_quotas/code_suggestions/constants';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 
 jest.mock('~/lib/utils/url_utility');
@@ -95,10 +90,10 @@ describe('DuoSeatUtilizationInfoCard', () => {
 
     it('sets duoTitle correctly based on duoTier', () => {
       wrapper = createComponent({ duoTier: DUO_PRO });
-      expect(findSeatUtilizationDescription().text()).toContain(CODE_SUGGESTIONS_TITLE);
+      expect(findSeatUtilizationDescription().text()).toContain(DUO_TITLES[DUO_PRO]);
 
       wrapper = createComponent({ duoTier: DUO_ENTERPRISE });
-      expect(findSeatUtilizationDescription().text()).toContain(DUO_ENTERPRISE_TITLE);
+      expect(findSeatUtilizationDescription().text()).toContain(DUO_TITLES[DUO_ENTERPRISE]);
     });
 
     it('renders subscription dates correctly', () => {

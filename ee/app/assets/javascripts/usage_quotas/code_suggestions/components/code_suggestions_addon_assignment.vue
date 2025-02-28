@@ -2,14 +2,7 @@
 import { GlToggle } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { s__, sprintf } from '~/locale';
-import {
-  ADD_ON_CODE_SUGGESTIONS,
-  ADD_ON_DUO_ENTERPRISE,
-  CODE_SUGGESTIONS_TITLE,
-  DUO_ENTERPRISE,
-  DUO_ENTERPRISE_TITLE,
-  DUO_PRO,
-} from 'ee/usage_quotas/code_suggestions/constants';
+import { DUO_TITLES, DUO_IDENTIFIERS } from 'ee/usage_quotas/code_suggestions/constants';
 import {
   CANNOT_ASSIGN_ADDON_ERROR_CODE,
   CANNOT_UNASSIGN_ADDON_ERROR_CODE,
@@ -45,8 +38,8 @@ export default {
     duoTier: {
       type: String,
       required: false,
-      default: DUO_PRO,
-      validator: (value) => [DUO_PRO, DUO_ENTERPRISE].includes(value),
+      default: DUO_IDENTIFIERS[0],
+      validator: (value) => DUO_IDENTIFIERS.includes(value),
     },
   },
   data() {
@@ -59,12 +52,9 @@ export default {
     isAssigned() {
       return Boolean(
         this.addOnAssignments?.find(
-          (assignment) => assignment.addOnPurchase?.name === this.duoPlan,
+          (assignment) => assignment.addOnPurchase?.name === this.duoTier,
         ),
       );
-    },
-    duoPlan() {
-      return this.duoTier === DUO_ENTERPRISE ? ADD_ON_DUO_ENTERPRISE : ADD_ON_CODE_SUGGESTIONS;
     },
     addOnAssignmentQueryVariables() {
       return {
@@ -74,7 +64,7 @@ export default {
     },
     toggleLabel() {
       return sprintf(s__('CodeSuggestions|%{addOnName} status'), {
-        addOnName: this.duoTier === DUO_ENTERPRISE ? DUO_ENTERPRISE_TITLE : CODE_SUGGESTIONS_TITLE,
+        addOnName: DUO_TITLES[this.duoTier],
       });
     },
   },

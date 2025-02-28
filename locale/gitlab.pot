@@ -14141,6 +14141,9 @@ msgstr ""
 msgid "CodeSuggestions|Enhance your coding experience with intelligent recommendations. %{linkStart}GitLab Duo%{linkEnd} offers features that use generative AI to suggest code."
 msgstr ""
 
+msgid "CodeSuggestions|Enterprise"
+msgstr ""
+
 msgid "CodeSuggestions|Get started with GitLab Duo Pro today to boost your efficiency and effectiveness by reducing the time required to write and understand code."
 msgstr ""
 
@@ -14175,6 +14178,9 @@ msgid "CodeSuggestions|Not operational. Resolve issues to use GitLab Duo."
 msgstr ""
 
 msgid "CodeSuggestions|Outbound and inbound connections from clients to the GitLab instance must be allowed."
+msgstr ""
+
+msgid "CodeSuggestions|Pro"
 msgstr ""
 
 msgid "CodeSuggestions|Problems detected with setup"

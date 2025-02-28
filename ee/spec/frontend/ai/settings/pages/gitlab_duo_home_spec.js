@@ -4,12 +4,13 @@ import CodeSuggestionsUsage from 'ee/usage_quotas/code_suggestions/components/co
 import HealthCheckList from 'ee/usage_quotas/code_suggestions/components/health_check_list.vue';
 import DuoSeatUtilizationInfoCard from 'ee/ai/settings/components/duo_seat_utilization_info_card.vue';
 import GitlabDuoHome from 'ee/ai/settings/pages/gitlab_duo_home.vue';
+import { DUO_PRO } from 'ee/usage_quotas/code_suggestions/constants';
 
 describe('GitLab Duo Home', () => {
   const mockSlotProps = {
     totalValue: 100,
     usageValue: 50,
-    duoTier: 'pro',
+    duoTier: DUO_PRO,
   };
 
   let wrapper;

@@ -8,13 +8,7 @@ import Tracking from '~/tracking';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import CodeSuggestionsAddonAssignment from 'ee/usage_quotas/code_suggestions/components/code_suggestions_addon_assignment.vue';
-import {
-  ADD_ON_CODE_SUGGESTIONS,
-  ADD_ON_DUO_ENTERPRISE,
-  CODE_SUGGESTIONS_TITLE,
-  DUO_ENTERPRISE,
-  DUO_ENTERPRISE_TITLE,
-} from 'ee/usage_quotas/code_suggestions/constants';
+import { DUO_PRO, DUO_ENTERPRISE, DUO_TITLES } from 'ee/usage_quotas/code_suggestions/constants';
 import getAddOnEligibleUsers from 'ee/usage_quotas/add_on/graphql/saas_add_on_eligible_users.query.graphql';
 import userAddOnAssignmentCreateMutation from 'ee/usage_quotas/add_on/graphql/user_add_on_assignment_create.mutation.graphql';
 import userAddOnAssignmentRemoveMutation from 'ee/usage_quotas/add_on/graphql/user_add_on_assignment_remove.mutation.graphql';
@@ -37,19 +31,19 @@ describe('CodeSuggestionsAddonAssignment', () => {
   const addOnPurchaseId = 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/2';
   const duoEnterpriseAddOnPurchaseId = 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/3';
 
-  const codeSuggestionsAddOn = { addOnPurchase: { name: ADD_ON_CODE_SUGGESTIONS } };
-  const duoEnterpriseAddOn = { addOnPurchase: { name: ADD_ON_DUO_ENTERPRISE } };
+  const codeSuggestionsAddOn = { addOnPurchase: { name: DUO_PRO } };
+  const duoEnterpriseAddOn = { addOnPurchase: { name: DUO_ENTERPRISE } };
 
   const addOnPurchase = {
     id: addOnPurchaseId,
-    name: ADD_ON_CODE_SUGGESTIONS,
+    name: DUO_PRO,
     purchasedQuantity: 3,
     assignedQuantity: 2,
     __typename: 'AddOnPurchase',
   };
   const duoEnterpriseAddOnPurchase = {
     id: duoEnterpriseAddOnPurchaseId,
-    name: ADD_ON_DUO_ENTERPRISE,
+    name: DUO_ENTERPRISE,
     purchasedQuantity: 3,
     assignedQuantity: 2,
     __typename: 'AddOnPurchase',
@@ -57,12 +51,12 @@ describe('CodeSuggestionsAddonAssignment', () => {
 
   const addOnEligibleUsersQueryVariables = {
     fullPath: 'namespace/full-path',
-    addOnType: ADD_ON_CODE_SUGGESTIONS,
+    addOnType: DUO_PRO,
     addOnPurchaseIds: [addOnPurchaseId],
   };
   const duoEnterpriseAddOnEligibleUsersQueryVariables = {
     fullPath: 'namespace/full-path',
-    addOnType: ADD_ON_DUO_ENTERPRISE,
+    addOnType: DUO_ENTERPRISE,
     addOnPurchaseIds: [duoEnterpriseAddOnPurchaseId],
   };
 
@@ -195,7 +189,7 @@ describe('CodeSuggestionsAddonAssignment', () => {
   it('shows correct label on the toggle', () => {
     createComponent();
     expect(findToggle().props('label')).toBe(
-      sprintf('%{addOnName} status', { addOnName: CODE_SUGGESTIONS_TITLE }),
+      sprintf('%{addOnName} status', { addOnName: DUO_TITLES[DUO_PRO] }),
     );
   });
 
@@ -206,7 +200,7 @@ describe('CodeSuggestionsAddonAssignment', () => {
 
     it('shows correct label on the toggle', () => {
       expect(findToggle().props('label')).toBe(
-        sprintf('%{addOnName} status', { addOnName: DUO_ENTERPRISE_TITLE }),
+        sprintf('%{addOnName} status', { addOnName: DUO_TITLES[DUO_ENTERPRISE] }),
       );
     });
   });

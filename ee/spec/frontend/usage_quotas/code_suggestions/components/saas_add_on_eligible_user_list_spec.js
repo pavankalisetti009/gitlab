@@ -22,8 +22,6 @@ import SearchAndSortBar from 'ee/usage_quotas/code_suggestions/components/search
 import {
   DUO_PRO,
   DUO_ENTERPRISE,
-  ADD_ON_CODE_SUGGESTIONS,
-  ADD_ON_DUO_ENTERPRISE,
   SORT_OPTIONS,
   DEFAULT_SORT_OPTION,
 } from 'ee/usage_quotas/code_suggestions/constants';
@@ -59,13 +57,13 @@ describe('Add On Eligible User List', () => {
 
   const defaultQueryVariables = {
     fullPath,
-    addOnType: ADD_ON_CODE_SUGGESTIONS,
+    addOnType: DUO_PRO,
     addOnPurchaseIds: [addOnPurchaseId],
     ...defaultPaginationParams,
   };
   const defaultDuoEnterpriseQueryVariables = {
     fullPath,
-    addOnType: ADD_ON_DUO_ENTERPRISE,
+    addOnType: DUO_ENTERPRISE,
     addOnPurchaseIds: [duoEnterpriseAddOnPurchaseId],
     ...defaultPaginationParams,
   };
