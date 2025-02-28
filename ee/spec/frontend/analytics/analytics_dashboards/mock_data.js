@@ -1190,12 +1190,6 @@ export const mockFilteredSearchChangePayload = {
       value: 'root',
     },
   ],
-  [FILTERED_SEARCH_TERM]: [
-    {
-      operator: undefined,
-      value: '',
-    },
-  ],
   [TOKEN_TYPE_LABEL]: [
     {
       operator: '=',
@@ -1208,6 +1202,25 @@ export const mockFilteredSearchChangePayload = {
       value: 'Any',
     },
   ],
+};
+
+export const mockFilteredSearchQueryObj = {
+  [TOKEN_TYPE_MILESTONE]: ['Any'],
+  [TOKEN_TYPE_AUTHOR]: ['root'],
+  [TOKEN_TYPE_LABEL]: ['Afterpod'],
+  [TOKEN_TYPE_ASSIGNEE]: ['root'],
+  [`not[${TOKEN_TYPE_ASSIGNEE}]`]: ['vsm-user-1-1737989060'],
+};
+
+export const mockFilteredSearchEmptyQueryObj = {
+  [TOKEN_TYPE_MILESTONE]: null,
+  [TOKEN_TYPE_AUTHOR]: null,
+  [TOKEN_TYPE_LABEL]: null,
+  [TOKEN_TYPE_ASSIGNEE]: null,
+  [`not[${TOKEN_TYPE_MILESTONE}]`]: null,
+  [`not[${TOKEN_TYPE_AUTHOR}]`]: null,
+  [`not[${TOKEN_TYPE_LABEL}]`]: null,
+  [`not[${TOKEN_TYPE_ASSIGNEE}]`]: null,
 };
 
 export const mockLabel1 = {

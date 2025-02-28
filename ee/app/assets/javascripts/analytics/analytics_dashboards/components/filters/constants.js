@@ -5,6 +5,10 @@ import {
   OPERATORS_IS,
   OPERATORS_IS_NOT,
   OPERATORS_IS_NOT_OR,
+  TOKEN_TYPE_ASSIGNEE,
+  TOKEN_TYPE_AUTHOR,
+  TOKEN_TYPE_LABEL,
+  TOKEN_TYPE_MILESTONE,
 } from '~/vue_shared/components/filtered_search_bar/constants';
 
 export const TODAY = getCurrentUtcDate();
@@ -93,6 +97,13 @@ export const START_DATES = {
   [DATE_RANGE_OPTION_LAST_90_DAYS]: nDaysBefore(startOfTomorrow, 90, { utc: true }),
   [DATE_RANGE_OPTION_LAST_180_DAYS]: nDaysBefore(startOfTomorrow, 180, { utc: true }),
 };
+
+export const FILTERED_SEARCH_SUPPORTED_TOKENS = [
+  TOKEN_TYPE_MILESTONE,
+  TOKEN_TYPE_LABEL,
+  TOKEN_TYPE_AUTHOR,
+  TOKEN_TYPE_ASSIGNEE,
+];
 
 export const FILTERED_SEARCH_MAX_LABELS = 100;
 

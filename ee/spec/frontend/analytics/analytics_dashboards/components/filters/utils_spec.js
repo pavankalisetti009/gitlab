@@ -12,51 +12,74 @@ import {
   DATE_RANGE_OPTION_LAST_90_DAYS,
   DEFAULT_SELECTED_DATE_RANGE_OPTION,
 } from 'ee/analytics/analytics_dashboards/components/filters/constants';
-import { mockDateRangeFilterChangePayload } from '../../mock_data';
+import {
+  TOKEN_TYPE_ASSIGNEE,
+  TOKEN_TYPE_AUTHOR,
+  TOKEN_TYPE_LABEL,
+  TOKEN_TYPE_MILESTONE,
+} from '~/vue_shared/components/filtered_search_bar/constants';
+import {
+  mockDateRangeFilterChangePayload,
+  mockFilteredSearchChangePayload,
+  mockFilteredSearchEmptyQueryObj,
+  mockFilteredSearchQueryObj,
+} from '../../mock_data';
 
 const option = DATE_RANGE_OPTIONS[DEFAULT_SELECTED_DATE_RANGE_OPTION];
 describe('buildDefaultDashboardFilters', () => {
+  const dateRangeFilter = { dateRange: { enabled: true } };
   const defaultOption = DATE_RANGE_OPTIONS[DEFAULT_SELECTED_DATE_RANGE_OPTION];
 
-  it('returns the default option for an empty query string', () => {
+  it('returns the default filters for an empty query string', () => {
     expect(buildDefaultDashboardFilters('')).toStrictEqual({
+      filterAnonUsers: false,
+      searchFilters: {},
+    });
+  });
+
+  it('returns the default date range option for an empty query string with date range filter enabled', () => {
+    expect(buildDefaultDashboardFilters('', dateRangeFilter)).toStrictEqual({
       startDate: defaultOption.startDate,
       endDate: defaultOption.endDate,
       dateRangeOption: defaultOption.key,
       filterAnonUsers: false,
+      searchFilters: {},
     });
   });
 
-  it('returns the option that matches the date_range_option', () => {
+  it('returns the date range option that matches the date_range_option', () => {
     const queryString = `date_range_option=${option.key}`;
 
-    expect(buildDefaultDashboardFilters(queryString)).toStrictEqual({
+    expect(buildDefaultDashboardFilters(queryString, dateRangeFilter)).toStrictEqual({
       startDate: option.startDate,
       endDate: option.endDate,
       dateRangeOption: option.key,
       filterAnonUsers: false,
+      searchFilters: {},
     });
   });
 
-  it('returns the a custom range when the query string is custom and contains dates', () => {
+  it('returns a custom range when the query string is custom and contains dates', () => {
     const queryString = `date_range_option=${DATE_RANGE_OPTION_CUSTOM}&start_date=2023-01-10&end_date=2023-02-08`;
 
-    expect(buildDefaultDashboardFilters(queryString)).toStrictEqual({
+    expect(buildDefaultDashboardFilters(queryString, dateRangeFilter)).toStrictEqual({
       startDate: newDate('2023-01-10'),
       endDate: newDate('2023-02-08'),
       dateRangeOption: DATE_RANGE_OPTION_CUSTOM,
       filterAnonUsers: false,
+      searchFilters: {},
     });
   });
 
-  it('returns the option that matches the date_range_option and ignores the query dates when the option is not custom', () => {
+  it('returns the date range option that matches the date_range_option and ignores the query dates when the option is not custom', () => {
     const queryString = `date_range_option=${option.key}&start_date=2023-01-10&end_date=2023-02-08`;
 
-    expect(buildDefaultDashboardFilters(queryString)).toStrictEqual({
+    expect(buildDefaultDashboardFilters(queryString, dateRangeFilter)).toStrictEqual({
       startDate: option.startDate,
       endDate: option.endDate,
       dateRangeOption: option.key,
       filterAnonUsers: false,
+      searchFilters: {},
     });
   });
 
@@ -68,10 +91,20 @@ describe('buildDefaultDashboardFilters', () => {
     });
   });
 
+  it('returns populated `searchFilters` object when filtered search params are present in query string', () => {
+    const queryString = `${TOKEN_TYPE_LABEL}[]=Afterpod&${TOKEN_TYPE_MILESTONE}[]=Any&${TOKEN_TYPE_AUTHOR}[]=root&${TOKEN_TYPE_ASSIGNEE}[]=root&not%5B${TOKEN_TYPE_ASSIGNEE}%5D[]=vsm-user-1-1737989060&fake_param=hello`;
+
+    expect(buildDefaultDashboardFilters(queryString)).toStrictEqual({
+      filterAnonUsers: false,
+      searchFilters: mockFilteredSearchChangePayload,
+    });
+  });
+
   describe('with dashboardDefaultFilters', () => {
     const selectedDateRangeOption = DATE_RANGE_OPTION_LAST_90_DAYS;
     const dashboardDefaultFilters = {
       dateRange: {
+        enabled: true,
         defaultOption: selectedDateRangeOption,
       },
     };
@@ -82,6 +115,7 @@ describe('buildDefaultDashboardFilters', () => {
         endDate: defaultOption.endDate,
         filterAnonUsers: false,
         dateRangeOption: selectedDateRangeOption,
+        searchFilters: {},
       });
     });
 
@@ -93,6 +127,7 @@ describe('buildDefaultDashboardFilters', () => {
         endDate: option.endDate,
         dateRangeOption: option.key,
         filterAnonUsers: false,
+        searchFilters: {},
       });
     });
   });
@@ -130,6 +165,17 @@ describe('filtersToQueryParams', () => {
   it('returns "filter_anon_users=true" when filtering out anonymous users', () => {
     expect(filtersToQueryParams({ filterAnonUsers: true })).toMatchObject({
       filter_anon_users: true,
+    });
+  });
+
+  it('returns filtered search params when search filters are present', () => {
+    expect(filtersToQueryParams({ searchFilters: mockFilteredSearchChangePayload })).toStrictEqual({
+      date_range_option: undefined,
+      start_date: null,
+      end_date: null,
+      filter_anon_users: null,
+      ...mockFilteredSearchEmptyQueryObj,
+      ...mockFilteredSearchQueryObj,
     });
   });
 });

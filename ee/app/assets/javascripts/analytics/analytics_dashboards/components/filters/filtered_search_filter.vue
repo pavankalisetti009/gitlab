@@ -1,4 +1,5 @@
 <script>
+import { pick } from 'lodash';
 import FilteredSearchBar from '~/vue_shared/components/filtered_search_bar/filtered_search_bar_root.vue';
 import {
   TOKEN_TITLE_ASSIGNEE,
@@ -13,11 +14,15 @@ import {
 import MilestoneToken from '~/vue_shared/components/filtered_search_bar/tokens/milestone_token.vue';
 import LabelToken from '~/vue_shared/components/filtered_search_bar/tokens/label_token.vue';
 import UserToken from '~/vue_shared/components/filtered_search_bar/tokens/user_token.vue';
-import { processFilters } from '~/vue_shared/components/filtered_search_bar/filtered_search_utils';
+import {
+  prepareTokens,
+  processFilters,
+} from '~/vue_shared/components/filtered_search_bar/filtered_search_utils';
 import searchLabelsQuery from 'ee/analytics/analytics_dashboards/graphql/queries/search_labels.query.graphql';
 import {
   FILTERED_SEARCH_MAX_LABELS,
   FILTERED_SEARCH_OPERATORS,
+  FILTERED_SEARCH_SUPPORTED_TOKENS,
 } from 'ee/analytics/analytics_dashboards/components/filters/constants';
 
 export default {
@@ -43,6 +48,11 @@ export default {
       type: Array,
       required: false,
       default: () => [],
+    },
+    initialFilterValue: {
+      type: Object,
+      required: false,
+      default: () => {},
     },
   },
   computed: {
@@ -113,10 +123,15 @@ export default {
         return acc;
       }, []);
     },
+    formattedInitialFilterValue() {
+      return prepareTokens(this.initialFilterValue);
+    },
   },
   methods: {
     handleFilter(filters) {
-      this.$emit('change', processFilters(filters));
+      const sanitizedFilters = pick(processFilters(filters), FILTERED_SEARCH_SUPPORTED_TOKENS);
+
+      this.$emit('change', sanitizedFilters);
     },
     fetchLabels(search) {
       return this.$apollo
@@ -138,6 +153,7 @@ export default {
   <filtered-search-bar
     :tokens="tokens"
     :namespace="namespaceFullPath"
+    :initial-filter-value="formattedInitialFilterValue"
     recent-searches-storage-key="analytics-dashboard"
     :search-input-placeholder="__('Filter results')"
     terms-as-tokens
