@@ -372,6 +372,15 @@ module EE
           description: 'Software dependencies used by the project.',
           resolver: ::Resolvers::Sbom::DependenciesResolver
 
+        field :dependency_paths,
+          [::Types::Sbom::DependencyPathType],
+          null: true,
+          authorize: :read_dependency,
+          description: 'Ancestor dependency paths for a dependency used by the project. \
+          Returns `null` if `dependency_graph_graphql` feature flag is disabled.',
+          resolver: ::Resolvers::Sbom::DependencyPathsResolver,
+          experiment: { milestone: '17.10' }
+
         field :components,
           [::Types::Sbom::ComponentType],
           null: true,
