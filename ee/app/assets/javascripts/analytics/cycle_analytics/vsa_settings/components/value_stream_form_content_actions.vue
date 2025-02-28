@@ -1,5 +1,6 @@
 <script>
 import { GlButton } from '@gitlab/ui';
+import { mergeUrlParams } from '~/lib/utils/url_utility';
 import { __ } from '~/locale';
 import { i18n } from '../constants';
 
@@ -10,21 +11,22 @@ export default {
   components: {
     GlButton,
   },
+  inject: ['vsaPath'],
   props: {
     isEditing: {
       type: Boolean,
       required: false,
       default: false,
     },
+    valueStreamId: {
+      type: Number,
+      required: false,
+      default: -1,
+    },
     isLoading: {
       type: Boolean,
       required: false,
       default: false,
-    },
-    valueStreamPath: {
-      type: String,
-      required: false,
-      default: null,
     },
   },
   i18n: {
@@ -38,6 +40,11 @@ export default {
       return this.isEditing
         ? this.$options.i18n.saveValueStreamAction
         : this.$options.i18n.newValueStreamAction;
+    },
+    cancelHref() {
+      return this.isEditing && this.valueStreamId > 0
+        ? mergeUrlParams({ value_stream_id: this.valueStreamId }, this.vsaPath)
+        : this.vsaPath;
     },
   },
 };
@@ -60,7 +67,7 @@ export default {
       @click="$emit('clickAddStageAction')"
       >{{ $options.i18n.addStageAction }}</gl-button
     >
-    <gl-button data-testid="cancel-button" :href="valueStreamPath" :disabled="isLoading">{{
+    <gl-button data-testid="cancel-button" :href="cancelHref" :disabled="isLoading">{{
       $options.i18n.cancelAction
     }}</gl-button>
   </div>

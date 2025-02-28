@@ -78,27 +78,6 @@ export const EditValueStreamWithHiddenStages = {
   },
 };
 
-export const SavingNewValueStream = {
-  render: createStoryWithState({
-    state: {
-      isCreatingValueStream: true,
-    },
-  }),
-};
-
-export const UpdatingValueStream = {
-  render: createStoryWithState({
-    state: {
-      selectedValueStream,
-      stages: selectedValueStreamStages(),
-      isEditingValueStream: true,
-    },
-  }),
-  args: {
-    isEditing: true,
-  },
-};
-
 export const WithFormSubmissionErrors = {
   render: createStoryWithState({
     state: {

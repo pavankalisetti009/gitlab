@@ -2,7 +2,6 @@
 import { GlLoadingIcon } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapState, mapActions } from 'vuex';
-import { mergeUrlParams } from '~/lib/utils/url_utility';
 import { generateInitialStageData } from '../utils';
 import ValueStreamFormContent from './value_stream_form_content.vue';
 
@@ -12,11 +11,6 @@ export default {
     ValueStreamFormContent,
     GlLoadingIcon,
   },
-  inject: {
-    vsaPath: {
-      default: null,
-    },
-  },
   props: {
     isEditing: {
       type: Boolean,
@@ -25,43 +19,28 @@ export default {
     },
   },
   computed: {
-    ...mapState({
-      selectedValueStream: 'selectedValueStream',
-      selectedValueStreamStages: 'stages',
-      initialFormErrors: 'createValueStreamErrors',
-      defaultStageConfig: 'defaultStageConfig',
-      defaultGroupLabels: 'defaultGroupLabels',
-      isFetchingGroupStagesAndEvents: 'isFetchingGroupStagesAndEvents',
-      isFetchingGroupLabels: 'isFetchingGroupLabels',
-      isValueStreamLoading: 'isLoading',
-    }),
-    isLoading() {
-      return (
-        this.isValueStreamLoading ||
-        this.isFetchingGroupLabels ||
-        this.isFetchingGroupStagesAndEvents
-      );
+    ...mapState([
+      'selectedValueStream',
+      'stages',
+      'defaultStageConfig',
+      'defaultGroupLabels',
+      'isFetchingGroupStagesAndEvents',
+      'isFetchingGroupLabels',
+      'isLoading',
+    ]),
+    isLoadingOrFetching() {
+      return this.isLoading || this.isFetchingGroupLabels || this.isFetchingGroupStagesAndEvents;
     },
     initialData() {
       return this.isEditing
         ? {
             ...this.selectedValueStream,
-            stages: generateInitialStageData(
-              this.defaultStageConfig,
-              this.selectedValueStreamStages,
-            ),
+            stages: generateInitialStageData(this.defaultStageConfig, this.stages),
           }
         : {
             name: '',
             stages: [],
           };
-    },
-    valueStreamPath() {
-      const { selectedValueStream, vsaPath } = this;
-
-      return selectedValueStream
-        ? mergeUrlParams({ value_stream_id: selectedValueStream.id }, vsaPath)
-        : vsaPath;
     },
   },
   created() {
@@ -76,16 +55,14 @@ export default {
 </script>
 <template>
   <div>
-    <div v-if="isLoading" class="gl-pt-7 gl-text-center">
+    <div v-if="isLoadingOrFetching" class="gl-pt-7 gl-text-center">
       <gl-loading-icon size="lg" />
     </div>
     <value-stream-form-content
       v-else
       :initial-data="initialData"
-      :initial-form-errors="initialFormErrors"
       :default-stage-config="defaultStageConfig"
       :is-editing="isEditing"
-      :value-stream-path="valueStreamPath"
     />
   </div>
 </template>

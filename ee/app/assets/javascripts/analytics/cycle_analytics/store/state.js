@@ -26,11 +26,8 @@ export default () => ({
   selectedStageEvents: [],
 
   isLoadingValueStreams: false,
-  isCreatingValueStream: false,
-  isEditingValueStream: false,
   isDeletingValueStream: false,
   isFetchingGroupLabels: false,
-  isCreatingAggregation: false,
   isFetchingGroupStagesAndEvents: false,
 
   createValueStreamErrors: {},

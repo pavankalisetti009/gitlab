@@ -1,4 +1,4 @@
-import { GlAlert, GlFormInput } from '@gitlab/ui';
+import { GlAlert } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
@@ -8,7 +8,6 @@ import {
   PRESET_OPTIONS_DEFAULT,
 } from 'ee/analytics/cycle_analytics/vsa_settings/constants';
 import CustomStageFields from 'ee/analytics/cycle_analytics/vsa_settings/components/custom_stage_fields.vue';
-import CustomStageEventField from 'ee/analytics/cycle_analytics/vsa_settings/components/custom_stage_event_field.vue';
 import DefaultStageFields from 'ee/analytics/cycle_analytics/vsa_settings/components/default_stage_fields.vue';
 import ValueStreamFormContent from 'ee/analytics/cycle_analytics/vsa_settings/components/value_stream_form_content.vue';
 import { mockTracking, unmockTracking } from 'helpers/tracking_helper';
@@ -23,7 +22,6 @@ import {
   defaultStageConfig,
   rawCustomStage,
   groupLabels as defaultGroupLabels,
-  valueStreamPath,
 } from '../../mock_data';
 
 jest.mock('~/lib/utils/url_utility', () => ({
@@ -37,19 +35,10 @@ describe('ValueStreamFormContent', () => {
   let wrapper = null;
   let trackingSpy = null;
 
-  const createValueStreamMock = jest.fn(() => Promise.resolve());
-  const updateValueStreamMock = jest.fn(() => Promise.resolve());
-  const mockToastShow = jest.fn();
+  const mockValueStream = { id: 13 };
+  const createValueStreamMock = jest.fn(() => Promise.resolve({ data: mockValueStream }));
+  const updateValueStreamMock = jest.fn(() => Promise.resolve({ data: mockValueStream }));
   const streamName = 'Cool stream';
-  const initialFormNameErrors = { name: ['Name field required'] };
-  const initialFormStageErrors = {
-    stages: [
-      {
-        name: ['Name field is required'],
-        startEventIdentifier: ['Start event is required'],
-      },
-    ],
-  };
   const formSubmissionErrors = {
     name: ['has already been taken'],
     stages: [
@@ -65,16 +54,19 @@ describe('ValueStreamFormContent', () => {
     name: 'Editable value stream',
   };
 
-  const initialPreset = PRESET_OPTIONS_DEFAULT;
-
-  const fakeStore = ({ state }) =>
+  const fakeStore = ({ state: stateOverrides }) =>
     new Vuex.Store({
       state: {
-        isCreatingValueStream: false,
-        isEditingValueStream: false,
         formEvents,
         defaultGroupLabels,
-        ...state,
+        createValueStreamErrors: {},
+        selectedValueStream: undefined,
+        ...stateOverrides,
+      },
+      mutations: {
+        setCreateValueStreamErrors(state, value) {
+          state.createValueStreamErrors = value;
+        },
       },
       actions: {
         createValueStream: createValueStreamMock,
@@ -82,48 +74,28 @@ describe('ValueStreamFormContent', () => {
       },
     });
 
-  const createComponent = ({ props = {}, data = {}, stubs = {}, state = {} } = {}) =>
+  const createComponent = ({ props = {}, state = {} } = {}) =>
     shallowMountExtended(ValueStreamFormContent, {
       store: fakeStore({ state }),
-      data() {
-        return {
-          ...data,
-        };
-      },
+      provide: { vsaPath: '/mockPath' },
       propsData: {
         defaultStageConfig,
-        valueStreamPath,
         ...props,
-      },
-      mocks: {
-        $toast: {
-          show: mockToastShow,
-        },
-      },
-      stubs: {
-        ...stubs,
       },
     });
 
   const findFormActions = () => wrapper.findComponent(ValueStreamFormContentActions);
-  const findExtendedFormFields = () => wrapper.findByTestId('extended-form-fields');
-  const findDefaultStages = () => findExtendedFormFields().findAllComponents(DefaultStageFields);
-  const findCustomStages = () => findExtendedFormFields().findAllComponents(CustomStageFields);
+  const findDefaultStages = () => wrapper.findAllComponents(DefaultStageFields);
+  const findCustomStages = () => wrapper.findAllComponents(CustomStageFields);
   const findLastCustomStage = () => findCustomStages().wrappers.at(-1);
 
   const findPresetSelector = () => wrapper.findByTestId('vsa-preset-selector');
   const findRestoreButton = () => wrapper.findByTestId('vsa-reset-button');
   const findRestoreStageButton = (index) => wrapper.findByTestId(`stage-action-restore-${index}`);
   const findHiddenStages = () => wrapper.findAllByTestId('vsa-hidden-stage').wrappers;
-  const findCustomStageEventField = (index = 0) =>
-    wrapper.findAllComponents(CustomStageEventField).at(index);
-  const findFieldErrors = (testId) => wrapper.findByTestId(testId).attributes('invalid-feedback');
-  const findNameInput = () =>
-    wrapper.findByTestId('create-value-stream-name').findComponent(GlFormInput);
+  const findNameFormGroup = () => wrapper.findByTestId('create-value-stream-name');
+  const findNameInput = () => wrapper.findByTestId('create-value-stream-name-input');
   const findSubmitErrorAlert = () => wrapper.findComponent(GlAlert);
-
-  const fillStageNameAtIndex = (name, index) =>
-    findCustomStages().at(index).findComponent(GlFormInput).vm.$emit('input', name);
 
   const clickSubmit = () => findFormActions().vm.$emit('clickPrimaryAction');
   const clickAddStage = async () => {
@@ -131,27 +103,24 @@ describe('ValueStreamFormContent', () => {
     await nextTick();
   };
   const clickRestoreStageAtIndex = (index) => findRestoreStageButton(index).vm.$emit('click');
-  const expectFieldError = (testId, error = '') => expect(findFieldErrors(testId)).toBe(error);
-  const expectCustomFieldError = (index, attr, error = '') =>
-    expect(findCustomStageEventField(index).attributes(attr)).toBe(error);
   const expectStageTransitionKeys = (stages) =>
     stages.forEach((stage) => expect(stage.transitionKey).toContain('stage-'));
 
-  describe('default state', () => {
+  const changeToDefaultStages = () =>
+    findPresetSelector().vm.$emit('input', PRESET_OPTIONS_DEFAULT);
+  const changeToCustomStages = () => findPresetSelector().vm.$emit('input', PRESET_OPTIONS_BLANK);
+
+  describe('when creating value stream', () => {
     beforeEach(() => {
       wrapper = createComponent({ state: { defaultGroupLabels: null } });
     });
 
-    it('has the form header', () => {
+    it('has the form actions', () => {
       expect(findFormActions().props()).toMatchObject({
         isLoading: false,
         isEditing: false,
-        valueStreamPath,
+        valueStreamId: -1,
       });
-    });
-
-    it('has the extended fields', () => {
-      expect(findExtendedFormFields().exists()).toBe(true);
     });
 
     describe('Preset selector', () => {
@@ -163,12 +132,12 @@ describe('ValueStreamFormContent', () => {
         expect(findDefaultStages()).toHaveLength(defaultStageConfig.length);
         expect(findCustomStages()).toHaveLength(0);
 
-        await findPresetSelector().vm.$emit('input', PRESET_OPTIONS_BLANK);
+        await changeToCustomStages();
 
         expect(findDefaultStages()).toHaveLength(0);
         expect(findCustomStages()).toHaveLength(1);
 
-        await findPresetSelector().vm.$emit('input', PRESET_OPTIONS_DEFAULT);
+        await changeToDefaultStages();
 
         expect(findDefaultStages()).toHaveLength(defaultStageConfig.length);
         expect(findCustomStages()).toHaveLength(0);
@@ -179,21 +148,21 @@ describe('ValueStreamFormContent', () => {
 
         expect(findNameInput().attributes('value')).toBe(initialData.name);
 
-        await findPresetSelector().vm.$emit('input', PRESET_OPTIONS_BLANK);
+        await changeToCustomStages();
 
         expect(findNameInput().attributes('value')).toBe(initialData.name);
 
-        await findPresetSelector().vm.$emit('input', PRESET_OPTIONS_DEFAULT);
+        await changeToDefaultStages();
 
         expect(findNameInput().attributes('value')).toBe(initialData.name);
       });
 
       it('each stage has a transition key when toggling', async () => {
-        await findPresetSelector().vm.$emit('input', PRESET_OPTIONS_BLANK);
+        await changeToCustomStages();
 
         expectStageTransitionKeys(wrapper.vm.stages);
 
-        await findPresetSelector().vm.$emit('input', PRESET_OPTIONS_DEFAULT);
+        await changeToDefaultStages();
 
         expectStageTransitionKeys(wrapper.vm.stages);
       });
@@ -205,11 +174,7 @@ describe('ValueStreamFormContent', () => {
 
     describe('Add stage button', () => {
       beforeEach(() => {
-        wrapper = createComponent({
-          stubs: {
-            CustomStageFields,
-          },
-        });
+        wrapper = createComponent();
       });
 
       it('adds a blank custom stage when clicked', async () => {
@@ -237,20 +202,15 @@ describe('ValueStreamFormContent', () => {
 
     describe('field validation', () => {
       beforeEach(() => {
-        wrapper = createComponent({
-          stubs: {
-            CustomStageFields,
-          },
-        });
+        wrapper = createComponent();
       });
 
       it('validates existing fields when clicked', async () => {
-        const fieldTestId = 'create-value-stream-name';
-        expect(findFieldErrors(fieldTestId)).toBeUndefined();
+        expect(findNameFormGroup().attributes('invalid-feedback')).toBe(undefined);
 
         await clickAddStage();
 
-        expectFieldError(fieldTestId, 'Name is required');
+        expect(findNameFormGroup().attributes('invalid-feedback')).toBe('Name is required');
       });
 
       it('does not allow duplicate stage names', async () => {
@@ -258,64 +218,56 @@ describe('ValueStreamFormContent', () => {
         await findNameInput().vm.$emit('input', streamName);
 
         await clickAddStage();
-        await fillStageNameAtIndex(firstDefaultStage.name, 0);
+        await findCustomStages().at(0).vm.$emit('input', {
+          field: 'name',
+          value: firstDefaultStage.name,
+        });
 
         // Trigger the field validation
         await clickAddStage();
 
-        expectFieldError('custom-stage-name-3', 'Stage name already exists');
+        expect(findCustomStages().at(0).props().errors.name).toEqual(['Stage name already exists']);
       });
     });
 
     describe('initial form stage errors', () => {
-      const commonExtendedData = {
-        props: {
-          initialFormErrors: initialFormStageErrors,
-        },
+      const createValueStreamErrors = {
+        stages: [
+          {
+            name: ['Name field is required'],
+            startEventIdentifier: ['Start event is required'],
+          },
+        ],
       };
 
-      it('renders errors for a default stage field', () => {
+      beforeEach(() => {
         wrapper = createComponent({
-          ...commonExtendedData,
-          stubs: {
-            DefaultStageFields,
-          },
+          state: { createValueStreamErrors },
         });
-
-        expectFieldError('default-stage-name-0', initialFormStageErrors.stages[0].name[0]);
       });
 
-      it('renders errors for a custom stage field', () => {
-        wrapper = createComponent({
-          props: {
-            ...commonExtendedData.props,
-            initialPreset: PRESET_OPTIONS_BLANK,
-          },
-          stubs: {
-            CustomStageFields,
-          },
-        });
-
-        expectFieldError('custom-stage-name-0', initialFormStageErrors.stages[0].name[0]);
-        expectCustomFieldError(
-          0,
-          'identifiererror',
-          initialFormStageErrors.stages[0].startEventIdentifier[0],
-        );
+      it('renders errors for a default stage field', () => {
+        expect(findDefaultStages().at(0).props().errors).toEqual(createValueStreamErrors.stages[0]);
       });
     });
 
     describe('initial form name errors', () => {
+      const nameError = 'Name field required';
+
       beforeEach(() => {
         wrapper = createComponent({
-          props: {
-            initialFormErrors: initialFormNameErrors,
+          state: {
+            createValueStreamErrors: { name: [nameError] },
           },
         });
       });
 
-      it('renders errors for the name field', () => {
-        expectFieldError('create-value-stream-name', initialFormNameErrors.name[0]);
+      it('sets the feedback for the name form group', () => {
+        expect(findNameFormGroup().attributes('invalid-feedback')).toBe(nameError);
+      });
+
+      it('sets the state for the name input', () => {
+        expect(findNameInput().props().state).toBe(false);
       });
     });
 
@@ -326,20 +278,6 @@ describe('ValueStreamFormContent', () => {
 
       afterEach(() => {
         unmockTracking();
-      });
-
-      describe('form submitting', () => {
-        beforeEach(() => {
-          wrapper = createComponent({
-            state: {
-              isCreatingValueStream: true,
-            },
-          });
-        });
-
-        it("enables form header's loading state", () => {
-          expect(findFormActions().props('isLoading')).toBe(true);
-        });
       });
 
       describe('form submitted successfully', () => {
@@ -370,10 +308,6 @@ describe('ValueStreamFormContent', () => {
           });
         });
 
-        it('does not display a toast message', () => {
-          expect(mockToastShow).not.toHaveBeenCalled();
-        });
-
         it('sends tracking information', () => {
           expect(trackingSpy).toHaveBeenCalledWith(undefined, 'submit_form', {
             label: 'create_value_stream',
@@ -385,7 +319,7 @@ describe('ValueStreamFormContent', () => {
         });
 
         it('redirects to the new value stream page', () => {
-          expect(visitUrlWithAlerts).toHaveBeenCalledWith(valueStreamPath, [
+          expect(visitUrlWithAlerts).toHaveBeenCalledWith('/mockPath?value_stream_id=13', [
             {
               id: 'vsa-settings-form-submission-success',
               message: `'${streamName}' Value Stream has been successfully created.`,
@@ -397,17 +331,12 @@ describe('ValueStreamFormContent', () => {
 
       describe('form submission fails', () => {
         beforeEach(async () => {
-          wrapper = createComponent({
-            props: {
-              initialFormErrors: formSubmissionErrors,
-            },
-            stubs: {
-              CustomStageFields,
-            },
-          });
+          wrapper = createComponent();
 
           await findNameInput().vm.$emit('input', streamName);
           clickSubmit();
+
+          wrapper.vm.$store.commit('setCreateValueStreamErrors', formSubmissionErrors);
         });
 
         it('calls the createValueStream action', () => {
@@ -418,20 +347,18 @@ describe('ValueStreamFormContent', () => {
           expect(findNameInput().attributes('value')).toBe(streamName);
         });
 
-        it('does not display a toast message', () => {
-          expect(mockToastShow).not.toHaveBeenCalled();
-        });
-
         it('does not redirect to the new value stream page', () => {
           expect(visitUrlWithAlerts).not.toHaveBeenCalled();
         });
 
-        it('form header should not be in loading state', () => {
+        it('form actions should not be in loading state', () => {
           expect(findFormActions().props('isLoading')).toBe(false);
         });
 
         it('renders errors for the name field', () => {
-          expectFieldError('create-value-stream-name', formSubmissionErrors.name[0]);
+          expect(findNameFormGroup().attributes('invalid-feedback')).toBe(
+            formSubmissionErrors.name[0],
+          );
         });
 
         it('renders a dismissible generic alert error', async () => {
@@ -443,14 +370,16 @@ describe('ValueStreamFormContent', () => {
     });
   });
 
-  describe('isEditing=true', () => {
+  describe('when editing value stream', () => {
     const stageCount = initialData.stages.length;
     beforeEach(() => {
       wrapper = createComponent({
         props: {
-          initialPreset,
           initialData,
           isEditing: true,
+        },
+        state: {
+          selectedValueStream: mockValueStream,
         },
       });
     });
@@ -459,8 +388,12 @@ describe('ValueStreamFormContent', () => {
       expect(findPresetSelector().exists()).toBe(false);
     });
 
-    it("enables form header's editing state", () => {
-      expect(findFormActions().props('isEditing')).toBe(true);
+    it('passes isEditing=true to form actions', () => {
+      expect(findFormActions().props().isEditing).toBe(true);
+    });
+
+    it('passes value stream ID to form actions', () => {
+      expect(findFormActions().props().valueStreamId).toBe(mockValueStream.id);
     });
 
     it('does not display any hidden stages', () => {
@@ -503,7 +436,6 @@ describe('ValueStreamFormContent', () => {
       beforeEach(() => {
         wrapper = createComponent({
           props: {
-            initialPreset,
             initialData: { ...initialData, stages: [...initialData.stages, ...hiddenStages] },
             isEditing: true,
           },
@@ -543,12 +475,8 @@ describe('ValueStreamFormContent', () => {
       beforeEach(() => {
         wrapper = createComponent({
           props: {
-            initialPreset,
             initialData,
             isEditing: true,
-          },
-          stubs: {
-            CustomStageFields,
           },
         });
       });
@@ -562,13 +490,12 @@ describe('ValueStreamFormContent', () => {
       });
 
       it('validates existing fields when clicked', async () => {
-        const fieldTestId = 'create-value-stream-name';
-        expect(findFieldErrors(fieldTestId)).toBeUndefined();
+        expect(findNameInput().props().state).toBe(true);
 
         await findNameInput().vm.$emit('input', '');
         await clickAddStage();
 
-        expectFieldError(fieldTestId, 'Name is required');
+        expect(findNameInput().props().state).toBe(false);
       });
     });
 
@@ -581,32 +508,15 @@ describe('ValueStreamFormContent', () => {
         unmockTracking();
       });
 
-      describe('form submitting', () => {
-        beforeEach(() => {
-          wrapper = createComponent({
-            props: {
-              initialPreset,
-              initialData,
-              isEditing: true,
-            },
-            state: {
-              isEditingValueStream: true,
-            },
-          });
-        });
-
-        it("enables form header's loading state", () => {
-          expect(findFormActions().props('isLoading')).toBe(true);
-        });
-      });
-
       describe('form submitted successfully', () => {
         beforeEach(() => {
           wrapper = createComponent({
             props: {
-              initialPreset,
               initialData,
               isEditing: true,
+            },
+            state: {
+              selectedValueStream: mockValueStream,
             },
           });
 
@@ -622,12 +532,12 @@ describe('ValueStreamFormContent', () => {
           });
         });
 
-        it('form header should be in loading state', () => {
+        it('form actions should be in loading state', () => {
           expect(findFormActions().props('isLoading')).toBe(true);
         });
 
         it('redirects to the updated value stream page', () => {
-          expect(visitUrlWithAlerts).toHaveBeenCalledWith(valueStreamPath, [
+          expect(visitUrlWithAlerts).toHaveBeenCalledWith('/mockPath?value_stream_id=13', [
             {
               id: 'vsa-settings-form-submission-success',
               message: `'${initialData.name}' Value Stream has been successfully saved.`,
@@ -647,17 +557,16 @@ describe('ValueStreamFormContent', () => {
         beforeEach(() => {
           wrapper = createComponent({
             props: {
-              initialFormErrors: formSubmissionErrors,
               initialData,
-              initialPreset,
               isEditing: true,
             },
-            stubs: {
-              CustomStageFields,
+            state: {
+              selectedValueStream: mockValueStream,
             },
           });
 
           clickSubmit();
+          wrapper.vm.$store.commit('setCreateValueStreamErrors', formSubmissionErrors);
         });
 
         it('calls the updateValueStreamMock action', () => {
@@ -670,24 +579,24 @@ describe('ValueStreamFormContent', () => {
           expect(findNameInput().attributes('value')).toBe(name);
         });
 
-        it('does not display a toast message', () => {
-          expect(mockToastShow).not.toHaveBeenCalled();
-        });
-
         it('does not redirect to the value stream page', () => {
           expect(visitUrlWithAlerts).not.toHaveBeenCalled();
         });
 
-        it('form header should not be in loading state', () => {
+        it('form actions should not be in loading state', () => {
           expect(findFormActions().props('isLoading')).toBe(false);
         });
 
         it('renders errors for the name field', () => {
-          expectFieldError('create-value-stream-name', formSubmissionErrors.name[0]);
+          expect(findNameFormGroup().attributes('invalid-feedback')).toBe(
+            formSubmissionErrors.name[0],
+          );
         });
 
         it('renders errors for a custom stage field', () => {
-          expectFieldError('custom-stage-name-0', formSubmissionErrors.stages[0].name[0]);
+          expect(findCustomStages().at(0).props().errors.name[0]).toBe(
+            formSubmissionErrors.stages[0].name[0],
+          );
         });
 
         it('renders a dismissible generic alert error', async () => {

@@ -7,7 +7,7 @@ import { filterStagesByHiddenStatus } from '~/analytics/cycle_analytics/utils';
 import { swapArrayItems } from '~/lib/utils/array_utility';
 import { sprintf } from '~/locale';
 import Tracking from '~/tracking';
-import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
+import { visitUrlWithAlerts, mergeUrlParams } from '~/lib/utils/url_utility';
 import { getLabelEventsIdentifiers } from 'ee/analytics/cycle_analytics/utils';
 import {
   validateValueStreamName,
@@ -59,18 +59,9 @@ export default {
     ValueStreamFormContentActions,
   },
   mixins: [Tracking.mixin()],
+  inject: ['vsaPath'],
   props: {
     initialData: {
-      type: Object,
-      required: false,
-      default: () => ({}),
-    },
-    initialPreset: {
-      type: String,
-      required: false,
-      default: PRESET_OPTIONS_DEFAULT,
-    },
-    initialFormErrors: {
       type: Object,
       required: false,
       default: () => ({}),
@@ -84,59 +75,43 @@ export default {
       required: false,
       default: false,
     },
-    valueStreamPath: {
-      type: String,
-      required: true,
-    },
   },
   data() {
     const {
       defaultStageConfig = [],
       initialData: { name: initialName, stages: initialStages = [] },
-      initialFormErrors,
-      initialPreset,
     } = this;
-    const { name: nameErrors = [], stages: stageErrors = [{}] } = initialFormErrors;
-    const additionalFields = {
-      stages: this.isEditing
-        ? initializeEditingStages(initialStages)
-        : initializeStages(defaultStageConfig, initialPreset),
-      stageErrors:
-        cloneDeep(stageErrors) || initializeStageErrors(defaultStageConfig, initialPreset),
-    };
 
     return {
       hiddenStages: filterStagesByHiddenStatus(initialStages),
-      selectedPreset: initialPreset,
+      selectedPreset: PRESET_OPTIONS_DEFAULT,
       presetOptions: PRESET_OPTIONS,
       name: initialName,
-      nameErrors,
-      stageErrors,
+      nameErrors: [],
+      stageErrors: [{}],
       showSubmitError: false,
-      isRedirecting: false,
-      ...additionalFields,
+      isSubmitting: false,
+      stages: this.isEditing
+        ? initializeEditingStages(initialStages)
+        : initializeStages(defaultStageConfig),
     };
   },
   computed: {
-    ...mapState({
-      isCreating: 'isCreatingValueStream',
-      isSaving: 'isEditingValueStream',
-      isFetchingGroupLabels: 'isFetchingGroupLabels',
-      formEvents: 'formEvents',
-      defaultGroupLabels: 'defaultGroupLabels',
-    }),
+    ...mapState([
+      'isFetchingGroupLabels',
+      'formEvents',
+      'defaultGroupLabels',
+      'createValueStreamErrors',
+      'selectedValueStream',
+    ]),
+    selectedValueStreamId() {
+      return this.selectedValueStream?.id || -1;
+    },
     isValueStreamNameValid() {
       return !this.nameErrors?.length;
     },
     invalidNameFeedback() {
       return this.nameErrors?.length ? this.nameErrors.join('\n\n') : null;
-    },
-    hasInitialFormErrors() {
-      const { initialFormErrors } = this;
-      return Boolean(Object.keys(initialFormErrors).length);
-    },
-    isSubmitting() {
-      return this.isCreating || this.isSaving;
     },
     hasFormErrors() {
       return Boolean(
@@ -168,12 +143,18 @@ export default {
       return { id, message, variant: 'success' };
     },
   },
+  watch: {
+    createValueStreamErrors: 'refreshErrors',
+  },
+  created() {
+    this.refreshErrors();
+  },
   methods: {
     ...mapActions(['createValueStream', 'updateValueStream']),
-    onSubmit() {
+    async onSubmit() {
       this.showSubmitError = false;
       this.validate();
-      if (this.hasFormErrors) return false;
+      if (this.hasFormErrors) return;
 
       let req = this.createValueStream;
       let params = {
@@ -188,27 +169,22 @@ export default {
         };
       }
 
-      return req(params).then(() => {
-        if (this.hasInitialFormErrors) {
-          const { name: nameErrors = [], stages: stageErrors = [{}] } = this.initialFormErrors;
+      this.isSubmitting = true;
 
-          this.isRedirecting = false;
-          this.nameErrors = nameErrors;
-          this.stageErrors = stageErrors;
-          this.showSubmitError = true;
+      const response = await req(params);
 
-          return;
-        }
+      if (this.hasFormErrors) {
+        this.isSubmitting = false;
+        this.showSubmitError = true;
+        return;
+      }
 
-        this.nameErrors = [];
-        this.stageErrors = initializeStageErrors(this.defaultStageConfig, this.selectedPreset);
-        this.track('submit_form', {
-          label: this.isEditing ? 'edit_value_stream' : 'create_value_stream',
-        });
-        this.isRedirecting = true;
-
-        visitUrlWithAlerts(this.valueStreamPath, [this.submissionSuccessfulAlert]);
+      this.track('submit_form', {
+        label: this.isEditing ? 'edit_value_stream' : 'create_value_stream',
       });
+
+      const redirectPath = mergeUrlParams({ value_stream_id: response.data.id }, this.vsaPath);
+      visitUrlWithAlerts(redirectPath, [this.submissionSuccessfulAlert]);
     },
     stageGroupLabel(index) {
       return sprintf(this.$options.i18n.STAGE_INDEX, { index: index + 1 });
@@ -227,6 +203,13 @@ export default {
           labelEvents: getLabelEventsIdentifiers(this.formEvents),
         }),
       );
+    },
+    refreshErrors() {
+      const { defaultStageConfig, selectedPreset, createValueStreamErrors = {} } = this;
+      const { name = [], stages = [{}] } = createValueStreamErrors;
+      this.nameErrors = name;
+      this.stageErrors =
+        cloneDeep(stages) || initializeStageErrors(defaultStageConfig, selectedPreset);
     },
     validate() {
       const { name } = this;
@@ -437,8 +420,8 @@ export default {
           <hr class="gl-mb-5 gl-mt-2" />
           <value-stream-form-content-actions
             :is-editing="isEditing"
-            :is-loading="isSubmitting || isRedirecting"
-            :value-stream-path="valueStreamPath"
+            :is-loading="isSubmitting"
+            :value-stream-id="selectedValueStreamId"
             @clickPrimaryAction="onSubmit"
             @clickAddStageAction="onAddStage"
           />

@@ -73,7 +73,6 @@ export default {
       'selectedValueStream',
       'pagination',
       'aggregation',
-      'isCreatingAggregation',
       'groupPath',
       'features',
       'canEdit',
@@ -100,10 +99,10 @@ export default {
       return Boolean(this.selectedValueStream && !this.aggregation.lastRunAt);
     },
     shouldRenderEmptyState() {
-      return this.isLoadingValueStreams || (!this.isCreatingAggregation && !this.hasValueStreams);
+      return this.isLoadingValueStreams || !this.hasValueStreams;
     },
     shouldRenderAggregationWarning() {
-      return this.isCreatingAggregation || this.isWaitingForNextAggregation;
+      return this.isWaitingForNextAggregation;
     },
     shouldRenderStageTable() {
       return !this.isOverviewStageSelected && this.selectedStageEvents.length;
@@ -115,8 +114,7 @@ export default {
       return Boolean(
         this.enableCustomizableStages &&
           !this.shouldRenderEmptyState &&
-          !this.isLoadingValueStreams &&
-          !this.isCreatingAggregation,
+          !this.isLoadingValueStreams,
       );
     },
     hasDateRangeSet() {
