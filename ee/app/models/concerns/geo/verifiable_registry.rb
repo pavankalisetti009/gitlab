@@ -50,7 +50,7 @@ module Geo
 
         self.verification_failure = "#{message} #{details}".truncate(255)
         self.verification_checksum = checksum
-        self.verification_checksum_mismatched = checksum
+        self.verification_checksum_mismatched = primary_checksum
         self.checksum_mismatch = true
 
         self.verification_failed!
