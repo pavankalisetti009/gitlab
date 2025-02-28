@@ -171,7 +171,6 @@ RSpec.describe API::Internal::Observability, :cloud_licenses, feature_category: 
       context 'when the feature flag is disabled' do
         before do
           stub_feature_flags(observability_features: false)
-          stub_feature_flags(observability_tracing: false)
         end
 
         it { expect_status(:not_found) }
