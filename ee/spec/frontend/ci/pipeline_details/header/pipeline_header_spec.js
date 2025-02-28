@@ -56,6 +56,9 @@ describe('Pipeline header', () => {
       provide: { ...defaultProvideOptions, ...provideOptions },
       propsData: defaultProps,
       apolloProvider: createMockApolloProvider(handlers),
+      stubs: {
+        HeaderMergeTrainsLink,
+      },
     });
 
     return waitForPromises();

@@ -266,11 +266,15 @@ describe('RunnerUsage', () => {
     createWrapper({ mountFn: mountExtended });
     await waitForPromises();
 
-    const [, projectRow] = findTopProjects().wrappers.map((w) => w.text());
-    expect(projectRow).toBe('Other projects -');
+    const projectData = findTopProjectsTable()
+      .findAll('td')
+      .wrappers.map((w) => w.text());
+    expect(projectData).toEqual(['Other projects', '-']);
 
-    const [, runnerRow] = findTopRunners().wrappers.map((w) => w.text());
-    expect(runnerRow).toBe('Other runners -');
+    const runnerData = findTopRunnersTable()
+      .findAll('td')
+      .wrappers.map((w) => w.text());
+    expect(runnerData).toEqual(['Other runners', '-']);
   });
 
   describe('CSV export', () => {
