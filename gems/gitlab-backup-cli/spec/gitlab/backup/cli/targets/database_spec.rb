@@ -101,16 +101,14 @@ RSpec.describe Gitlab::Backup::Cli::Targets::Database do
 
         mock_databases_collection('main') do |db|
           FileUtils.touch(source.join('database.sql.gz'))
-
-          expect(database).to receive(:drop_tables).with(db)
         end
+
+        expect(database).to receive(:drop_tables!)
 
         database.restore(source)
       end
 
       it 'restores the database' do
-        allow(database).to receive(:drop_tables)
-
         mock_databases_collection('main') do |db|
           filepath = source.join('database.sql.gz')
           FileUtils.touch(filepath)
