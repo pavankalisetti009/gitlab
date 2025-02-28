@@ -102,7 +102,8 @@ module Search
       end
 
       def initialize_index(node)
-        Index.new(reserved_storage_bytes: node.unclaimed_storage_bytes * Node::WATERMARK_LIMIT_LOW, node: node)
+        Index.new(reserved_storage_bytes: node.unclaimed_storage_bytes_deprecated * Node::WATERMARK_LIMIT_LOW,
+          node: node)
       end
 
       def index_required_bytes(index_bytes, project_stats)

@@ -378,13 +378,18 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
   end
 
   describe '#refresh_reserved_storage_bytes' do
-    let_it_be(:zoekt_node) { build(:zoekt_node, total_bytes: 100_000) }
-    let_it_be(:idx) do
-      build(:zoekt_index, used_storage_bytes: 90, reserved_storage_bytes: 100, node: zoekt_node)
+    let(:zoekt_node) { create(:zoekt_node, total_bytes: 1000, used_bytes: 300, indexed_bytes: 200) }
+    let(:idx) do
+      create(:zoekt_index, used_storage_bytes: 90, reserved_storage_bytes: 100, node: zoekt_node)
+    end
+
+    before do
+      zoekt_node.save! # This triggers update_usable_storage_bytes to set usable_storage_bytes to 900
+      # Make sure we properly stub both indices and reserved_storage_bytes
+      allow(zoekt_node).to receive_messages(indices: [], reserved_storage_bytes: 0)
     end
 
     it 'updates reserved_storage_bytes with the ideal storage based on used bytes' do
-      allow(zoekt_node).to receive_messages(indices: [], reserved_storage_bytes: 0)
       ideal_reserved_storage = idx.used_storage_bytes / described_class::STORAGE_IDEAL_PERCENT_USED
 
       expect do
@@ -395,36 +400,54 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
     end
 
     context 'when the node has limited storage' do
-      let_it_be(:zoekt_node) { build(:zoekt_node, total_bytes: 300, used_bytes: 198, indexed_bytes: 0) }
-      let_it_be(:idx) do
-        build(:zoekt_index, used_storage_bytes: 90, reserved_storage_bytes: 100, node: zoekt_node)
+      let(:zoekt_node) { create(:zoekt_node, total_bytes: 300, used_bytes: 198, indexed_bytes: 0) }
+      let(:idx) do
+        create(:zoekt_index, used_storage_bytes: 90, reserved_storage_bytes: 100, node: zoekt_node)
       end
 
-      let_it_be(:other_index) { build(:zoekt_index, node: zoekt_node, reserved_storage_bytes: 100) }
+      let(:other_index) { create(:zoekt_index, node: zoekt_node, reserved_storage_bytes: 100) }
 
       before do
+        zoekt_node.save! # This triggers update_usable_storage_bytes to set usable_storage_bytes to 102
         allow(zoekt_node).to receive_messages(indices: [other_index], reserved_storage_bytes: 100)
       end
 
       it 'increases the reserved storage only up to available node storage' do
+        # With the new formula:
+        # unclaimed_storage_bytes = usable_storage_bytes - reserved_storage_bytes
+        # unclaimed_storage_bytes = 102 - 100 = 2
+        #
+        # Available space for this index = unclaimed_storage_bytes + this index's current reserved_storage_bytes
+        # Available space = 2 + 100 = 102
+
         expect do
           idx.refresh_reserved_storage_bytes
         end.to change {
           idx.reserved_storage_bytes
-        }.from(100).to(102) # 300 total - 198 used - 100 other_index + 100 current = 102 available
+        }.from(100).to(102)
       end
     end
 
     context 'when the node does not have any more storage' do
-      let_it_be(:zoekt_node) { build(:zoekt_node, total_bytes: 300, used_bytes: 200, indexed_bytes: 0) }
-      let_it_be(:idx) do
-        build(:zoekt_index, used_storage_bytes: 90, reserved_storage_bytes: 100, node: zoekt_node)
+      let(:zoekt_node) { create(:zoekt_node, total_bytes: 300, used_bytes: 300, indexed_bytes: 0) }
+      let(:idx) do
+        create(:zoekt_index, used_storage_bytes: 90, reserved_storage_bytes: 100, node: zoekt_node)
       end
 
-      let_it_be(:other_index) { build(:zoekt_index, node: zoekt_node, reserved_storage_bytes: 100) }
-
       before do
-        allow(zoekt_node).to receive_messages(indices: [other_index], reserved_storage_bytes: 100)
+        zoekt_node.save! # This triggers update_usable_storage_bytes to set usable_storage_bytes to 0
+
+        # Set up the node to indicate it has no more available storage
+        # This means: usable_storage_bytes <= reserved_storage_bytes
+        # which gives unclaimed_storage_bytes <= 0
+        allow(zoekt_node).to receive_messages(usable_storage_bytes: 0, indices: [], reserved_storage_bytes: 0)
+
+        # Important: unclaimed_storage_bytes + current reserved space is now 0,
+        # so there's no room to grow beyond current reserved space
+
+        # Additionally, stub the index's ideal size determination to ensure
+        # it doesn't trigger the change
+        allow(idx).to receive(:ideal_reserved_storage_bytes).and_return(200)
       end
 
       it 'does not change reserved_storage_bytes' do
@@ -435,7 +458,7 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
     end
 
     context 'when used_storage_bytes is 0' do
-      let_it_be(:idx) { build(:zoekt_index, used_storage_bytes: 0) }
+      let(:idx) { create(:zoekt_index, used_storage_bytes: 0) }
 
       it 'sets reserved_storage_bytes to DEFAULT_RESERVED_STORAGE_BYTES' do
         expect do
