@@ -1,5 +1,6 @@
 <script>
 import { GlCollapsibleListbox, GlTruncate } from '@gitlab/ui';
+import { uniqBy } from 'lodash';
 import { __ } from '~/locale';
 import { renderMultiSelectText } from 'ee/security_orchestration/components/policy_editor/utils';
 
@@ -75,6 +76,11 @@ export default {
       default: __('projects'),
     },
   },
+  data() {
+    return {
+      initialCollection: this.items,
+    };
+  },
   computed: {
     formattedSelectedIds() {
       return this.multiple ? this.selected : [this.selected];
@@ -83,7 +89,7 @@ export default {
       return this.items.map(({ value }) => value);
     },
     labelItems() {
-      return this.items?.reduce((acc, { value, text }) => {
+      return this.initialCollection?.reduce((acc, { value, text }) => {
         acc[value] = text;
         return acc;
       }, {});
@@ -98,6 +104,17 @@ export default {
     },
     resetButtonLabel() {
       return this.multiple ? this.$options.i18n.clearAllLabel : '';
+    },
+  },
+  watch: {
+    /**
+     * In order to preserve selected toggle text
+     * when searched text should be created from
+     * initial and not filtered collection
+     * @param newCollection
+     */
+    items(newCollection) {
+      this.initialCollection = uniqBy([...this.initialCollection, ...newCollection], 'value');
     },
   },
   methods: {
