@@ -1113,7 +1113,7 @@ Gitlab.ee do
   # The os/arch for which duo-workflow-executor binary is build: https://gitlab.com/gitlab-org/duo-workflow/duo-workflow-executor/-/packages/35054593
   executor_binary_urls = %w[
     linux/arm linux/amd64 linux/arm64 linux/386 linux/ppc64le darwin/arm64 darwin/amd64
-    freebsd/arm freebsd/386 freebsd/amd64 windows/amd64 windows/386
+    freebsd/arm freebsd/386 freebsd/amd64 windows/amd64 windows/386 windows/arm64
   ].index_with do |os_info|
     "https://gitlab.com/api/v4/projects/58711783/packages/generic/duo-workflow-executor/#{executor_version}/#{os_info.sub('/', '-')}-duo-workflow-executor.tar.gz"
   end
