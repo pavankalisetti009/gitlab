@@ -194,6 +194,11 @@ msgid_plural "%d characters over limit"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "%d character over limit."
+msgid_plural "%d characters over limit."
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "%d character remaining"
 msgid_plural "%d characters remaining"
 msgstr[0] ""
@@ -54638,6 +54643,9 @@ msgid "SetStatusModal|Set yourself as busy"
 msgstr ""
 
 msgid "SetStatusModal|Sorry, we weren't able to set your status. Please try again later."
+msgstr ""
+
+msgid "SetStatusModal|Status message"
 msgstr ""
 
 msgid "SetStatusModal|Status updated"
