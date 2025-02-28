@@ -11,6 +11,7 @@ RSpec.describe AntiAbuse::BanDuplicateUsersWorker, :clean_gitlab_redis_shared_st
   # The banned user cannot be instantiated as banned because validators prevent users from
   # being created that have similar characteristics of previously banned users.
   before do
+    stub_application_setting(enforce_email_subaddress_restrictions: true)
     banned_user.ban!
   end
 
