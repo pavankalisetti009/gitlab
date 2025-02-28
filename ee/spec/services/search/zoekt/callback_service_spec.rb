@@ -162,7 +162,7 @@ RSpec.describe Search::Zoekt::CallbackService, feature_category: :global_search 
         end
 
         it 'publishes a TaskFailed event with zoekt_repository_id' do
-          expected_data = { zoekt_repository_id: zoekt_task.zoekt_repository_id }
+          expected_data = { zoekt_repository_id: zoekt_task.zoekt_repository_id, task_id: zoekt_task.id }
 
           expect { service.execute }.to publish_event(Search::Zoekt::TaskFailedEvent).with(expected_data)
         end
