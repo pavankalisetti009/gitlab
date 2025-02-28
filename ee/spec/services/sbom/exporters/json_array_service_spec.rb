@@ -1,10 +1,43 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require './ee/spec/services/sbom/exporters/file_helper'
 
 RSpec.describe Sbom::Exporters::JsonArrayService, feature_category: :dependency_management do
+  include FileHelper
+
+  let_it_be(:group) { create(:group) }
+  let_it_be(:project) { create(:project, :public, group: group) }
+
+  describe '.combine_parts' do
+    let(:part_1) do
+      stub_file('{"a": "b"}')
+    end
+
+    let(:part_2) do
+      stub_file('{"b": "c"}')
+    end
+
+    subject(:combined_parts) { described_class.combine_parts([part_1, part_2]) }
+
+    after do
+      part_1.close!
+      part_2.close!
+    end
+
+    it 'combines the parts into a flat array' do
+      expect(combined_parts).to eq(
+        <<~JSON
+        [
+          {"a": "b"},
+          {"b": "c"}
+        ]
+        JSON
+      )
+    end
+  end
+
   describe '#generate' do
-    let_it_be(:group) { create(:group) }
     let(:sbom_occurrences) { Sbom::Occurrence.for_namespace_and_descendants(group).order_by_id }
     let(:service_class) { described_class.new(nil, sbom_occurrences) }
 
@@ -19,8 +52,6 @@ RSpec.describe Sbom::Exporters::JsonArrayService, feature_category: :dependency_
     end
 
     context 'when the group has dependencies' do
-      let_it_be(:project) { create(:project, :public, group: group) }
-
       let_it_be(:bundler) { create(:sbom_component, :bundler) }
       let_it_be(:bundler_v1) { create(:sbom_component_version, component: bundler, version: "1.0.0") }
 
@@ -75,6 +106,47 @@ RSpec.describe Sbom::Exporters::JsonArrayService, feature_category: :dependency_
           }
         ])
       end
+    end
+  end
+
+  describe '#generate_part' do
+    let_it_be(:occurrences_by_name) do
+      [
+        create(:sbom_occurrence, :mit, project: project),
+        create(:sbom_occurrence, :apache_2, project: project)
+      ].index_by(&:component_name)
+    end
+
+    subject(:data) { described_class.new(nil, project.sbom_occurrences).generate_part }
+
+    def json_data(object)
+      occurrence = occurrences_by_name[object['name']]
+
+      {
+        'name' => occurrence.component_name,
+        'packager' => occurrence.package_manager,
+        'version' => occurrence.version,
+        'licenses' => occurrence.licenses,
+        'location' => occurrence.location.stringify_keys
+      }
+    end
+
+    it 'writes data with one JSON object per line' do
+      # JSON does not have ordering guarantees so we need to parse the
+      # data to ensure a consistent result.
+      stream = StringIO.new(data)
+      stream.each_line do |line|
+        object = Gitlab::Json.parse(line)
+        expect(object).to eq(json_data(object))
+      end
+    end
+
+    it 'does not have N+1 queries' do
+      control = ActiveRecord::QueryRecorder.new { described_class.new(nil, project.sbom_occurrences).generate_part }
+
+      create(:sbom_occurrence, :mit, project: project)
+
+      expect { described_class.new(nil, project.sbom_occurrences).generate_part }.not_to exceed_query_limit(control)
     end
   end
 end

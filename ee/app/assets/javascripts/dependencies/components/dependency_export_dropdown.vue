@@ -31,7 +31,7 @@ const exportFormats = [
   {
     type: EXPORT_FORMATS.csv,
     buttonText: s__('Dependencies|Export as CSV'),
-    availableFor: [NAMESPACE_PROJECT, NAMESPACE_ORGANIZATION],
+    availableFor: [NAMESPACE_PROJECT, NAMESPACE_GROUP, NAMESPACE_ORGANIZATION],
     testid: 'csv-item',
   },
 ];
