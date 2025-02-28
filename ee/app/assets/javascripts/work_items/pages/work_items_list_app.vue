@@ -77,6 +77,9 @@ export default {
   },
   computed: {
     allowedWorkItemTypes() {
+      if (this.isGroup) {
+        return [];
+      }
       if (this.workItemTypeName === WORK_ITEM_TYPE_ENUM_ISSUE) {
         return BASE_ALLOWED_CREATE_TYPES;
       }

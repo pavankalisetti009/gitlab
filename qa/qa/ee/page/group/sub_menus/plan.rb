@@ -9,7 +9,11 @@ module QA
             extend QA::Page::PageConcern
 
             def go_to_epics
-              open_plan_submenu("Epics")
+              if has_element?('nav-item-link', submenu_item: 'Work items')
+                open_plan_submenu("Work items")
+              else
+                open_plan_submenu("Epics")
+              end
             end
 
             def go_to_roadmap

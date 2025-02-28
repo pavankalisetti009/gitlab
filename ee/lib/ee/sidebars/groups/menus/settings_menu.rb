@@ -228,14 +228,14 @@ module EE
 
           def group_work_items_menu_item
             unless show_group_work_items_settings_menu_item?
-              return ::Sidebars::NilMenuItem.new(item_id: :group_work_items)
+              return ::Sidebars::NilMenuItem.new(item_id: :group_work_items_settings)
             end
 
             ::Sidebars::MenuItem.new(
               title: _('Issues'),
               link: group_settings_issues_path(context.group),
-              active_routes: { controller: :work_items },
-              item_id: :group_work_items
+              active_routes: { controller: 'groups/settings/work_items' },
+              item_id: :group_work_items_settings
             )
           end
 

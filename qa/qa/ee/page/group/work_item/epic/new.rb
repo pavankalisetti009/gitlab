@@ -27,6 +27,12 @@ module QA
               def set_title(title)
                 fill_element('work-item-title-input', title)
               end
+
+              def select_epic_type
+                return unless has_element?('work-item-types-select')
+
+                select 'Epic', from: 'Type'
+              end
             end
           end
         end

@@ -30,7 +30,7 @@ module QA
       end
 
       it 'shows four assignees in the issues list', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347960' do
-        Page::Project::Menu.perform(&:go_to_issues)
+        Page::Project::Menu.perform(&:go_to_work_items)
 
         Page::Project::Issue::Index.perform do |index|
           expect(index).to have_assignee_link_count(4)

@@ -353,7 +353,7 @@ RSpec.describe Sidebars::Groups::Menus::SettingsMenu, feature_category: :navigat
       subject { menu.renderable_items.find { |e| e.item_id == item_id } }
 
       describe 'Issues menu item' do
-        let(:item_id) { :group_work_items }
+        let(:item_id) { :group_work_items_settings }
         let(:custom_fields_licensed) { true }
         let(:feature_flag_enabled) { true }
 
