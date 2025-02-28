@@ -121,20 +121,23 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
     end
 
     describe '.negative_unclaimed_storage_bytes' do
-      let_it_be(:negative_node) { create(:zoekt_node, :enough_free_space) }
-      let_it_be(:_negative_index) do
-        create(:zoekt_index, reserved_storage_bytes: negative_node.total_bytes * 2, node: negative_node)
-      end
+      let_it_be(:node_with_negative_storage) { create(:zoekt_node) }
+      let_it_be(:node_with_positive_storage) { create(:zoekt_node) }
 
-      let_it_be(:positive_node) { create(:zoekt_node, :enough_free_space) }
-      let_it_be(:_positive_index) { create(:zoekt_index, node: positive_node) }
+      before do
+        node_with_negative_storage.update!(total_bytes: 1000, used_bytes: 0, indexed_bytes: 0)
+        node_with_positive_storage.update!(total_bytes: 2000, used_bytes: 0, indexed_bytes: 0)
+
+        node_with_negative_storage.update!(usable_storage_bytes: 1000)
+        node_with_positive_storage.update!(usable_storage_bytes: 2000)
+
+        create(:zoekt_index, node: node_with_negative_storage, reserved_storage_bytes: 2000)
+        create(:zoekt_index, node: node_with_positive_storage, reserved_storage_bytes: 500)
+      end
 
       it 'includes only nodes with negative unclaimed storage' do
-        expect(described_class.negative_unclaimed_storage_bytes).to contain_exactly(node, negative_node)
-      end
-
-      it 'does not include nodes with positive unclaimed storage' do
-        expect(described_class.negative_unclaimed_storage_bytes).not_to include(positive_node)
+        expect(described_class.negative_unclaimed_storage_bytes.to_a).to include(node_with_negative_storage)
+        expect(described_class.negative_unclaimed_storage_bytes.to_a).not_to include(node_with_positive_storage)
       end
     end
 
@@ -172,13 +175,12 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
         expect(result.unclaimed_storage_bytes).to be > 0
       end
 
-      it 'calculates unclaimed_storage_bytes correctly' do
+      it 'calculates unclaimed_storage_bytes correctly using SQL formula' do
         result = described_class.with_positive_unclaimed_storage_bytes.find(node_with_positive_storage.id)
 
-        # Manual calculation to verify the scope's calculation
-        expected_unclaimed_bytes = node_with_positive_storage.total_bytes -
-          node_with_positive_storage.used_bytes +
-          node_with_positive_storage.indexed_bytes -
+        # The SQL unclaimed_storage_bytes formula should match:
+        # usable_storage_bytes - COALESCE(sum(zoekt_indices.reserved_storage_bytes), 0)
+        expected_unclaimed_bytes = node_with_positive_storage.usable_storage_bytes -
           node_with_positive_storage.indices.sum(:reserved_storage_bytes)
 
         expect(result.unclaimed_storage_bytes).to eq(expected_unclaimed_bytes)
@@ -445,14 +447,44 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
   end
 
   describe '#unclaimed_storage_bytes' do
-    it 'returns reservable storage' do
-      allow(node).to receive(:reserved_storage_bytes).and_return(500)
+    let(:test_node) { create(:zoekt_node) }
 
-      node.total_bytes = 1000
-      node.used_bytes = 100
-      node.indexed_bytes = 200
+    it 'returns the difference between usable and reserved storage' do
+      test_node.update!(total_bytes: 1000, used_bytes: 300, indexed_bytes: 200)
+      test_node.save! # This triggers update_usable_storage_bytes
 
-      expect(node.unclaimed_storage_bytes).to eq(600)
+      allow(test_node).to receive(:reserved_storage_bytes).and_return(300)
+
+      # usable_storage_bytes should be free_bytes + indexed_bytes = (1000 - 300) + 200 = 900
+      # unclaimed_storage_bytes should be usable_storage_bytes - reserved_storage_bytes = 900 - 300 = 600
+      expect(test_node.unclaimed_storage_bytes).to eq(600)
+    end
+
+    it 'returns usable_storage_bytes when there are no reserved bytes' do
+      test_node.update!(total_bytes: 1000, used_bytes: 300, indexed_bytes: 200)
+      test_node.save! # This triggers update_usable_storage_bytes
+
+      allow(test_node).to receive(:reserved_storage_bytes).and_return(0)
+
+      # usable_storage_bytes should be free_bytes + indexed_bytes = (1000 - 300) + 200 = 900
+      # unclaimed_storage_bytes should be usable_storage_bytes - reserved_storage_bytes = 900 - 0 = 900
+      expect(test_node.unclaimed_storage_bytes).to eq(900)
+    end
+  end
+
+  describe '#unclaimed_storage_bytes_deprecated' do
+    let(:test_node) { create(:zoekt_node) }
+
+    it 'uses the old formula for calculating unclaimed storage' do
+      test_node.update!(total_bytes: 1000, used_bytes: 300, indexed_bytes: 200)
+
+      allow(test_node).to receive(:reserved_storage_bytes).and_return(500)
+
+      # The old formula: free_bytes - (reserved_storage_bytes - indexed_bytes)
+      # free_bytes = 1000 - 300 = 700
+      # reserved_storage_bytes - indexed_bytes = 500 - 200 = 300
+      # unclaimed_storage_bytes_deprecated = 700 - 300 = 400
+      expect(test_node.unclaimed_storage_bytes_deprecated).to eq(400)
     end
   end
 
@@ -543,6 +575,100 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
       it 'calls save' do
         expect(new_node).to receive(:save)
         new_node.save_debounce
+      end
+    end
+  end
+
+  describe '#usable_storage_bytes' do
+    let_it_be_with_reload(:test_node) { create(:zoekt_node) }
+
+    before do
+      test_node.update!(total_bytes: 1000, used_bytes: 300, indexed_bytes: 200)
+    end
+
+    it 'must be a numerical value' do
+      expect(test_node).to be_valid
+
+      test_node.usable_storage_bytes = 'foo'
+      expect(test_node).not_to be_valid
+    end
+
+    it 'must not be nil' do
+      expect(test_node).to be_valid
+      test_node.usable_storage_bytes = nil
+      test_node.total_bytes = nil
+      test_node.used_bytes = nil
+      test_node.indexed_bytes = nil
+      expect(test_node).not_to be_valid
+    end
+
+    it 'is set to free_bytes plus indexed_bytes on save' do
+      test_node.save!
+      expect(test_node.usable_storage_bytes).to eq(900) # (1000 - 300) + 200
+    end
+
+    context 'when usable_storage_bytes_locked_until is in the future' do
+      it 'does not change whenever a node is saved' do
+        node.usable_storage_bytes = 123
+        node.usable_storage_bytes_locked_until = 1.hour.from_now
+        node.save!
+        expect(node.usable_storage_bytes).to eq(123)
+      end
+    end
+  end
+
+  describe '#usable_storage_bytes_locked_until' do
+    context 'when in the future' do
+      it 'does not change whenever the node is saved' do
+        ttl = 1.hour.from_now
+        node.usable_storage_bytes_locked_until = ttl
+        node.save!
+        expect(node.usable_storage_bytes_locked_until).to eq(ttl)
+      end
+    end
+
+    context 'when in the past' do
+      it 'changes whenever the node is saved' do
+        node.usable_storage_bytes_locked_until = 1.hour.ago
+        node.save!
+        expect(node.usable_storage_bytes_locked_until).to be_nil
+      end
+    end
+  end
+
+  describe '#update_usable_storage_bytes' do
+    it 'sets usable_storage_bytes to free_bytes plus indexed_bytes' do
+      node.total_bytes = 1000
+      node.used_bytes = 300
+      node.indexed_bytes = 200
+
+      node.save!
+
+      expect(node.usable_storage_bytes).to eq(900) # (1000 - 300) + 200
+    end
+
+    context 'when usable_storage_bytes_locked_until is set' do
+      it 'does not update when lock is in the future' do
+        original_value = 500
+        node.usable_storage_bytes = original_value
+        node.usable_storage_bytes_locked_until = 1.hour.from_now
+
+        node.save!
+
+        expect(node.usable_storage_bytes).to eq(original_value)
+      end
+
+      it 'updates when lock is in the past' do
+        node.usable_storage_bytes = 500
+        node.usable_storage_bytes_locked_until = 1.hour.ago
+        node.total_bytes = 1000
+        node.used_bytes = 300
+        node.indexed_bytes = 200
+
+        node.save!
+
+        expect(node.usable_storage_bytes).to eq(900)
+        expect(node.usable_storage_bytes_locked_until).to be_nil
       end
     end
   end

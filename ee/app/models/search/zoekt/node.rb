@@ -17,8 +17,10 @@ module Search
       TASK_PULL_FREQUENCY_INCREASED = '500ms'
       DEBOUNCE_DELAY = 5.seconds
 
+      before_save :set_usable_storage_bytes, unless: -> { usable_storage_bytes_locked_until&.future? }
+
       UNCLAIMED_STORAGE_BYTES_FORMULA = <<~SQL
-        (zoekt_nodes.total_bytes - zoekt_nodes.used_bytes + zoekt_nodes.indexed_bytes - COALESCE(sum(zoekt_indices.reserved_storage_bytes), 0))
+        (zoekt_nodes.usable_storage_bytes - COALESCE(sum(zoekt_indices.reserved_storage_bytes), 0))
       SQL
 
       has_many :indices,
@@ -37,6 +39,7 @@ module Search
       validates :used_bytes, presence: true
       validates :total_bytes, presence: true
       validates :metadata, json_schema: { filename: 'zoekt_node_metadata' }
+      validates :usable_storage_bytes, presence: true, numericality: { only_integer: true }
 
       attribute :metadata, ::Gitlab::Database::Type::IndifferentJsonb.new # for indifferent access
 
@@ -138,6 +141,10 @@ module Search
       end
 
       def unclaimed_storage_bytes
+        usable_storage_bytes - reserved_storage_bytes
+      end
+
+      def unclaimed_storage_bytes_deprecated
         free_bytes - (reserved_storage_bytes - indexed_bytes)
       end
 
@@ -166,6 +173,11 @@ module Search
 
       def reserved_storage_bytes
         indices.sum(:reserved_storage_bytes)
+      end
+
+      def set_usable_storage_bytes
+        self.usable_storage_bytes = free_bytes + indexed_bytes
+        self.usable_storage_bytes_locked_until = nil
       end
     end
   end
