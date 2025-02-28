@@ -1,11 +1,60 @@
 export const mockDefaultPermissions = [
-  { value: 'A', name: 'A', description: 'A', requirements: null },
-  { value: 'B', name: 'B', description: 'B', requirements: ['A'] },
-  { value: 'C', name: 'C', description: 'C', requirements: ['B'] }, // Nested dependency: C -> B -> A
-  { value: 'D', name: 'D', description: 'D', requirements: ['C'] }, // Nested dependency: D -> C -> B -> A
-  { value: 'E', name: 'E', description: 'E', requirements: ['F'] }, // Circular dependency
-  { value: 'F', name: 'F', description: 'F', requirements: ['E'] }, // Circular dependency
-  { value: 'G', name: 'G', description: 'G', requirements: ['A', 'B', 'C'] }, // Multiple dependencies
+  {
+    value: 'A',
+    name: 'A',
+    description: 'A',
+    requirements: null,
+    enabledForGroupAccessLevels: null,
+    enabledForProjectAccessLevels: null,
+  },
+  {
+    value: 'B',
+    name: 'B',
+    description: 'B',
+    requirements: ['A'],
+    enabledForGroupAccessLevels: null,
+    enabledForProjectAccessLevels: null,
+  },
+  {
+    value: 'C',
+    name: 'C',
+    description: 'C',
+    requirements: ['B'],
+    enabledForGroupAccessLevels: null,
+    enabledForProjectAccessLevels: null,
+  }, // Nested dependency: C -> B -> A
+  {
+    value: 'D',
+    name: 'D',
+    description: 'D',
+    requirements: ['C'],
+    enabledForGroupAccessLevels: ['DEVELOPER'],
+    enabledForProjectAccessLevels: ['MAINTAINER'],
+  }, // Nested dependency: D -> C -> B -> A
+  {
+    value: 'E',
+    name: 'E',
+    description: 'E',
+    requirements: ['F'],
+    enabledForGroupAccessLevels: ['DEVELOPER'],
+    enabledForProjectAccessLevels: ['DEVELOPER', 'MAINTAINER'],
+  }, // Circular dependency
+  {
+    value: 'F',
+    name: 'F',
+    description: 'F',
+    requirements: ['E'],
+    enabledForGroupAccessLevels: ['DEVELOPER'],
+    enabledForProjectAccessLevels: null,
+  }, // Circular dependency
+  {
+    value: 'G',
+    name: 'G',
+    description: 'G',
+    requirements: ['A', 'B', 'C'],
+    enabledForGroupAccessLevels: null,
+    enabledForProjectAccessLevels: ['DEVELOPER'],
+  }, // Multiple dependencies
 ];
 
 export const mockPermissionsResponse = {

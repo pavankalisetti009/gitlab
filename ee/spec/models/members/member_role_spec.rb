@@ -217,22 +217,73 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
       context 'when requirement is not met' do
         it 'creates a validation error' do
           member_role.base_access_level = Gitlab::Access::GUEST
-          member_role.read_code = false
-          member_role.manage_merge_request_settings = true
+          member_role.read_vulnerability = false
+          member_role.admin_vulnerability = true
 
           expect(member_role).not_to be_valid
           expect(member_role.errors[:base])
-            .to include(s_("MemberRole|Read code has to be enabled in order to enable Manage merge request settings"))
+            .to include(s_("MemberRole|Read vulnerability has to be enabled in order to enable Admin vulnerability"))
         end
       end
 
       context 'when requirement is met via base access level' do
         it 'is valid' do
           member_role.base_access_level = Gitlab::Access::REPORTER
-          member_role.read_code = false
-          member_role.manage_merge_request_settings = true
+          member_role.read_vulnerability = true
+          member_role.admin_vulnerability = true
 
           expect(member_role).to be_valid
+        end
+      end
+
+      describe 'enabled for access levels' do
+        let(:project_levels) { [30, 40, 50] }
+        let(:group_levels) { [30, 40, 50] }
+
+        before do
+          allow(described_class).to receive(:all_customizable_permissions).and_return(
+            admin_vulnerability: {
+              requirements: ['read_vulnerability']
+            },
+            read_vulnerability: {
+              enabled_for_project_access_levels: project_levels,
+              enabled_for_group_access_levels: group_levels
+            }.compact
+          )
+
+          member_role.base_access_level = Gitlab::Access::DEVELOPER
+          member_role.admin_vulnerability = true
+        end
+
+        context 'when group and project access levels are configured' do
+          it 'is valid' do
+            expect(member_role).to be_valid
+          end
+        end
+
+        context 'when only project access levels are configured' do
+          let(:group_levels) { nil }
+
+          it 'is valid' do
+            expect(member_role).to be_valid
+          end
+        end
+
+        context 'when only group access levels are configured' do
+          let(:project_levels) { nil }
+
+          it 'is valid' do
+            expect(member_role).to be_valid
+          end
+        end
+
+        context 'when neither project nor group access levels are configured' do
+          let(:project_levels) { nil }
+          let(:group_levels) { nil }
+
+          it 'is invalid' do
+            expect(member_role).not_to be_valid
+          end
         end
       end
     end

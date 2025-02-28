@@ -23,10 +23,11 @@ describe('Permissions Selector component', () => {
     mountFn = shallowMountExtended,
     permissions = [],
     isValid = true,
+    selectedBaseRole = null,
     availablePermissionsHandler = defaultAvailablePermissionsHandler,
   } = {}) => {
     wrapper = mountFn(PermissionsSelector, {
-      propsData: { permissions, isValid },
+      propsData: { permissions, isValid, selectedBaseRole },
       apolloProvider: createMockApollo([[memberRolePermissionsQuery, availablePermissionsHandler]]),
       stubs: {
         GlSprintf,
@@ -38,6 +39,10 @@ describe('Permissions Selector component', () => {
   };
 
   const findTable = () => wrapper.findComponent(GlTable);
+  const findTableRow = (idx) => findTable().findAll('tbody > tr').at(idx);
+  const findTableRowData = (idx) => findTableRow(idx).findAll('td');
+  const findCheckboxes = () => wrapper.findAllByTestId('permission-checkbox');
+  const findToggleAllCheckbox = () => wrapper.findByTestId('permission-checkbox-all');
   const findPermissionsSelectedMessage = () => wrapper.findByTestId('permissions-selected-message');
   const findAlert = () => wrapper.findComponent(GlAlert);
 
@@ -93,6 +98,40 @@ describe('Permissions Selector component', () => {
 
       it('does not show the error message', () => {
         expect(findAlert().exists()).toBe(false);
+      });
+    });
+
+    describe('when base access role is selected', () => {
+      beforeEach(() => {
+        return createComponent({
+          mountFn: mountExtended,
+          selectedBaseRole: 'DEVELOPER',
+        });
+      });
+
+      it('shows the permissions selected message', () => {
+        expect(findPermissionsSelectedMessage().text()).toBe('3 of 7 permissions selected');
+      });
+
+      it('disables the included permissions and adds a badge', () => {
+        const notIncludedIndexes = [0, 1, 2, 3];
+        const includedIndexes = [4, 5, 6];
+
+        notIncludedIndexes.forEach((i) => {
+          expect(findTableRowData(i).at(1).text()).not.toContain('Added from');
+          expect(findCheckboxes().at(i).attributes('disabled')).toBeUndefined();
+        });
+
+        includedIndexes.forEach((i) => {
+          expect(findTableRowData(i).at(1).text()).toContain('Added from Developer');
+          expect(findCheckboxes().at(i).attributes('disabled')).toBeDefined();
+        });
+      });
+
+      it('does not emit `change` event for included permissions when all permissions are selected', async () => {
+        await findToggleAllCheckbox().trigger('change');
+
+        expect(wrapper.emitted('change')[0][0]).toEqual(['A', 'B', 'C', 'D']);
       });
     });
 

@@ -202,9 +202,8 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
       next unless requirements.present? # skipping permissions that have no requirements
 
       requirements.each do |requirement|
-        available_from = self.class.all_customizable_permissions[requirement.to_sym][:available_from_access_level]
-        next if available_from && base_access_level >= available_from
         next if self[requirement] # the requirement is met
+        next if requirement_included_in_base_access_level?(requirement)
 
         errors.add(:base,
           format(s_("MemberRole|%{requirement} has to be enabled in order to enable %{permission}"),
@@ -212,6 +211,23 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
         )
       end
     end
+  end
+
+  def requirement_included_in_base_access_level?(requirement)
+    return false unless base_access_level
+
+    permission = self.class.all_customizable_permissions[requirement.to_sym]
+
+    group_levels = permission[:enabled_for_group_access_levels]
+    project_levels = permission[:enabled_for_project_access_levels]
+
+    enabled_for = if group_levels && project_levels
+                    group_levels & project_levels
+                  else
+                    group_levels || project_levels || []
+                  end
+
+    enabled_for.include?(base_access_level)
   end
 
   def ensure_at_least_one_permission_is_enabled
