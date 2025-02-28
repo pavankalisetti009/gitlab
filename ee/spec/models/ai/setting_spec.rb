@@ -153,4 +153,18 @@ RSpec.describe Ai::Setting, feature_category: :ai_abstraction_layer do
 
     it { is_expected.to validate_length_of(:amazon_q_role_arn).is_at_most(2048).allow_nil }
   end
+
+  describe '.self_hosted?' do
+    subject(:setting) { described_class.self_hosted? }
+
+    context 'when self-hosted models exist' do
+      let!(:self_hosted_model) { create(:ai_self_hosted_model) }
+
+      it { is_expected.to be true }
+    end
+
+    context 'when no self-hosted models exist' do
+      it { is_expected.to be false }
+    end
+  end
 end
