@@ -1,7 +1,7 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlCollapsibleListbox } from '@gitlab/ui';
-import { mount } from '@vue/test-utils';
+import { mountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import searchDescendantGroups from 'ee/security_orchestration/graphql/queries/get_descendant_groups.query.graphql';
 import searchNamespaceGroups from 'ee/security_orchestration/graphql/queries/get_namespace_groups.query.graphql';
@@ -25,6 +25,14 @@ const group = {
   __typename: 'Group',
 };
 
+const group2 = {
+  avatarUrl: null,
+  id: 'gid://gitlab/Group/3',
+  fullName: 'Name 3',
+  fullPath: 'path/to/name-3',
+  __typename: 'Group',
+};
+
 const DESCENDANT_GROUP_RESPONSE = {
   data: {
     group: {
@@ -33,6 +41,9 @@ const DESCENDANT_GROUP_RESPONSE = {
         nodes: [
           {
             ...group,
+          },
+          {
+            ...group2,
           },
         ],
         __typename: 'GroupConnection',
@@ -48,6 +59,9 @@ const NAMESPACE_GROUP_RESPONSE = {
       nodes: [
         {
           ...group,
+        },
+        {
+          ...group2,
         },
       ],
       __typename: 'GroupConnection',
@@ -71,7 +85,7 @@ describe('GroupSelect component', () => {
       [searchNamespaceGroups, searchNamespaceGroupsQueryHandlerSuccess],
     ]);
 
-    wrapper = mount(GroupSelect, {
+    wrapper = mountExtended(GroupSelect, {
       apolloProvider: fakeApollo,
       propsData: {
         existingApprovers: [],
@@ -178,7 +192,11 @@ describe('GroupSelect component', () => {
       await waitForApolloAndVue();
       await waitForPromises();
 
-      const items = [expect.objectContaining(rootGroup), expect.objectContaining(group)];
+      const items = [
+        expect.objectContaining(rootGroup),
+        expect.objectContaining(group),
+        expect.objectContaining(group2),
+      ];
       expect(findListbox().props('items')).toEqual(items);
     });
 
@@ -245,6 +263,30 @@ describe('GroupSelect component', () => {
       findListbox().vm.$emit('reset');
 
       expect(wrapper.emitted('select-items')).toEqual([[{ group_approvers_ids: [] }]]);
+    });
+  });
+
+  describe('preserving selection', () => {
+    it('preserves initial selection after search', async () => {
+      createComponent({
+        propsData: {
+          selected: [group.id],
+        },
+      });
+
+      await waitForApolloAndVue();
+      await waitForPromises();
+
+      expect(findListbox().props('items')).toHaveLength(2);
+      expect(findListbox().props('toggleText')).toBe(group.fullName);
+
+      await findListbox().vm.$emit('search', group2.fullName);
+
+      expect(findListbox().props('items')).toHaveLength(1);
+      expect(findListbox().props('selected')).toEqual([group.id]);
+      await wrapper.findByTestId(`listbox-item-${group2.id}`).vm.$emit('select', true);
+
+      expect(wrapper.emitted('select-items')).toEqual([[{ group_approvers_ids: [2, 3] }]]);
     });
   });
 });

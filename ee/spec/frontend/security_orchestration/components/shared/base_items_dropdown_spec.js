@@ -135,4 +135,22 @@ describe('BaseItemsDropdown', () => {
       expect(wrapper.emitted('search')).toEqual([['abc']]);
     });
   });
+
+  describe('search', () => {
+    it('renders correct text when search is performed with selected items', async () => {
+      createComponent({
+        propsData: {
+          items: mockedItems,
+          selected: [mockedItemsIds[0], mockedItemsIds[1]],
+        },
+      });
+
+      expect(findDropdown().props('toggleText')).toEqual('text_1, text_2');
+
+      await wrapper.setProps({ items: [mockedItems[2]] });
+      await findDropdown().vm.$emit('search', 'text_3');
+
+      expect(findDropdown().props('toggleText')).toEqual('text_1, text_2');
+    });
+  });
 });

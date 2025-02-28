@@ -1,5 +1,6 @@
 <script>
 import { GlCollapsibleListbox, GlAvatarLabeled } from '@gitlab/ui';
+import { uniqBy } from 'lodash';
 import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_GROUP } from '~/graphql_shared/constants';
 import searchNamespaceGroups from 'ee/security_orchestration/graphql/queries/get_namespace_groups.query.graphql';
@@ -7,6 +8,7 @@ import searchDescendantGroups from 'ee/security_orchestration/graphql/queries/ge
 import { renderMultiSelectText } from 'ee/security_orchestration/components/policy_editor/utils';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import { __ } from '~/locale';
+import { searchInItemsProperties } from '~/lib/utils/search_utils';
 
 const createGroupObject = (group) => ({
   ...group,
@@ -43,10 +45,11 @@ export default {
           if (!rootGroupMatches) return descendantGroups;
 
           const rootGroup = createGroupObject({ __typename, avatarUrl, id, fullName, fullPath });
-          return [rootGroup, ...descendantGroups];
+          return uniqBy([...this.groups, rootGroup, ...descendantGroups], 'id');
         }
 
-        return (data?.groups?.nodes || []).map(createGroupObject);
+        const groups = (data?.groups?.nodes || []).map(createGroupObject);
+        return uniqBy([...this.groups, ...groups], 'id');
       },
       debounce: DEFAULT_DEBOUNCE_AND_THROTTLE_MS,
     },
@@ -76,6 +79,13 @@ export default {
     };
   },
   computed: {
+    listBoxItems() {
+      return searchInItemsProperties({
+        items: this.groups,
+        properties: ['text', 'fullPath', 'fullName'],
+        searchQuery: this.search,
+      });
+    },
     selectedGraphQlIds() {
       const getGraphQLIds = (ids) => ids.map((id) => convertToGraphQLId(TYPENAME_GROUP, id));
       const getGroupsByNames = (names) => {
@@ -140,12 +150,12 @@ export default {
 
 <template>
   <gl-collapsible-listbox
-    :items="groups"
     block
     searchable
     is-check-centered
     multiple
     :header-text="__('Groups')"
+    :items="listBoxItems"
     :reset-button-label="__('Clear all')"
     :toggle-class="[{ '!gl-shadow-inner-1-red-500': !state }]"
     :searching="$apollo.loading"
