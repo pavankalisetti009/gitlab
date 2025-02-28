@@ -68,6 +68,84 @@ export const mockProjectBranches = {
   },
 };
 
+export const mockProjectSecretsData = [
+  {
+    cursor: 'MQ',
+    node: {
+      branch: 'main',
+      description: 'This is the first secret',
+      environment: '*',
+      name: 'SECRET_1',
+      project: {
+        id: 'gid://gitlab/Project/19',
+        __typename: 'Project',
+      },
+      __typename: 'ProjectSecret',
+    },
+    __typename: 'ProjectSecretEdge',
+  },
+  {
+    cursor: 'Mg',
+    node: {
+      branch: 'main',
+      description: 'This is the second secret',
+      environment: '*',
+      name: 'SECRET_2',
+      project: {
+        id: 'gid://gitlab/Project/19',
+        __typename: 'Project',
+      },
+      __typename: 'ProjectSecret',
+    },
+    __typename: 'ProjectSecretEdge',
+  },
+  {
+    cursor: 'Mw',
+    node: {
+      branch: 'main',
+      description: 'This is the third secret',
+      environment: '*',
+      name: 'SECRET_3',
+      project: {
+        id: 'gid://gitlab/Project/19',
+        __typename: 'Project',
+      },
+      __typename: 'ProjectSecret',
+    },
+    __typename: 'ProjectSecretEdge',
+  },
+  {
+    cursor: 'NA',
+    node: {
+      branch: 'main',
+      description: 'This is the fourth secret',
+      environment: '*',
+      name: 'SECRET_4',
+      project: {
+        id: 'gid://gitlab/Project/19',
+        __typename: 'Project',
+      },
+      __typename: 'ProjectSecret',
+    },
+    __typename: 'ProjectSecretEdge',
+  },
+  {
+    cursor: 'NQ',
+    node: {
+      branch: 'main',
+      description: 'This is the fifth secret',
+      environment: '*',
+      name: 'SECRET_5',
+      project: {
+        id: 'gid://gitlab/Project/19',
+        __typename: 'Project',
+      },
+      __typename: 'ProjectSecret',
+    },
+    __typename: 'ProjectSecretEdge',
+  },
+];
+
 export const mockSecretId = 44;
 
 export const mockSecret = ({ customSecret } = {}) => ({
