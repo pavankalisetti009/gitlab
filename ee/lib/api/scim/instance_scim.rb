@@ -22,6 +22,15 @@ module API
           unauthorized! unless token && ScimOauthAccessToken.token_matches_for_instance?(token)
         end
 
+        def check_instance_requirements!
+          not_found! if Gitlab.com?
+
+          # This is only for self-managed, we have only one organization
+          ::Current.organization = ::Organizations::Organization.first
+          check_instance_saml_configured
+          not_found! unless ::License.feature_available?(:instance_level_scim)
+        end
+
         def find_user_identity(extern_uid)
           ScimIdentity.for_instance.with_extern_uid(extern_uid).first
         end
@@ -57,14 +66,7 @@ module API
 
       namespace 'application' do
         resource :Users do
-          before do
-            # This is only for self-managed, we have only one organization
-            ::Current.organization = ::Organizations::Organization.first
-
-            not_found! if Gitlab.com?
-            check_instance_saml_configured
-            not_found! unless ::License.feature_available?(:instance_level_scim)
-          end
+          before { check_instance_requirements! }
 
           desc 'Get SCIM users' do
             success ::EE::API::Entities::Scim::Users
@@ -156,6 +158,44 @@ module API
             scim_not_found!(message: "Resource #{params[:id]} not found") unless identity
             patch_deprovision(identity)
             no_content!
+          end
+        end
+
+        resource :Groups do
+          helpers do
+            def check_groups_feature_enabled!
+              not_found! unless Feature.enabled?(:self_managed_scim_group_sync, :instance)
+            end
+          end
+
+          before do
+            check_groups_feature_enabled!
+            check_instance_requirements!
+          end
+
+          desc 'Create a SCIM group' do
+            detail 'Associates SCIM group ID with existing SAML group link'
+            success ::EE::API::Entities::Scim::Group
+          end
+          params do
+            requires :displayName, type: String, desc: 'Name of the group as configured in GitLab'
+            requires :externalId, type: String, desc: 'SCIM group ID'
+          end
+          post do
+            check_access!
+
+            result = ::EE::Gitlab::Scim::GroupSyncProvisioningService.new(
+              saml_group_name: params[:displayName],
+              scim_group_uid: params[:externalId]
+            ).execute
+
+            case result.status
+            when :success
+              status 201
+              present result.group_link, with: ::EE::API::Entities::Scim::Group
+            when :error
+              scim_error!(message: result.message)
+            end
           end
         end
       end

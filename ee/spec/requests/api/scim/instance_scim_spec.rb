@@ -524,4 +524,123 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
 
     it_behaves_like 'SCIM API endpoints'
   end
+
+  describe 'resource :Groups' do
+    before do
+      stub_feature_flags(self_managed_scim_group_sync: true)
+    end
+
+    shared_examples 'Groups feature flag check' do
+      context 'when self_managed_scim_group_sync feature flag is disabled' do
+        before do
+          stub_feature_flags(self_managed_scim_group_sync: false)
+        end
+
+        it 'returns not found' do
+          api_request
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+    end
+
+    describe 'POST api/scim/v2/application/Groups' do
+      let(:group_name) { 'Engineering' }
+      let(:scim_group_uid) { SecureRandom.uuid }
+      let!(:saml_group_link) { create(:saml_group_link, saml_group_name: group_name) }
+      let(:post_params) do
+        {
+          displayName: group_name,
+          externalId: scim_group_uid
+        }
+      end
+
+      subject(:api_request) do
+        post api('scim/v2/application/Groups', user, version: '', access_token: scim_token), params: post_params
+      end
+
+      it_behaves_like 'Groups feature flag check'
+      it_behaves_like 'Not available to SaaS customers'
+      it_behaves_like 'Instance level SCIM license required'
+      it_behaves_like 'SCIM token authenticated'
+      it_behaves_like 'SAML SSO must be enabled'
+      it_behaves_like 'sets current organization'
+
+      context 'with valid parameters' do
+        it 'responds with 201 and the group attributes' do
+          api_request
+
+          expect(response).to have_gitlab_http_status(:created)
+          expect(json_response['id']).to eq(scim_group_uid)
+          expect(json_response['displayName']).to eq(group_name)
+        end
+
+        it 'updates the existing group link with SCIM group uid' do
+          expect { api_request }.to change { saml_group_link.reload.scim_group_uid }.from(nil).to(scim_group_uid)
+        end
+
+        context 'with multiple matching group links' do
+          let!(:another_group_link) { create(:saml_group_link, saml_group_name: group_name) }
+
+          it 'updates all matching group links' do
+            api_request
+
+            expect(saml_group_link.reload.scim_group_uid).to eq(scim_group_uid)
+            expect(another_group_link.reload.scim_group_uid).to eq(scim_group_uid)
+          end
+        end
+      end
+
+      context 'when no matching SAML group exists' do
+        let(:post_params) do
+          {
+            displayName: 'nonexistent',
+            externalId: scim_group_uid
+          }
+        end
+
+        it 'returns a 412 precondition failed' do
+          api_request
+
+          expect(response).to have_gitlab_http_status(:precondition_failed)
+          expect(json_response['detail']).to include('No matching SAML group found')
+        end
+      end
+
+      context 'with invalid parameters' do
+        context 'when displayName is missing' do
+          let(:post_params) { { externalId: scim_group_uid } }
+
+          it 'returns a 400 bad request' do
+            api_request
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(json_response['error']).to include('displayName is missing')
+          end
+        end
+
+        context 'when externalId is missing' do
+          let(:post_params) { { displayName: group_name } }
+
+          it 'returns a 400 bad request' do
+            api_request
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(json_response['error']).to include('externalId is missing')
+          end
+        end
+
+        context 'when externalId is not a valid UUID' do
+          let(:post_params) { { displayName: group_name, externalId: 'not-a-valid-uuid' } }
+
+          it 'returns a 412 precondition failed' do
+            api_request
+
+            expect(response).to have_gitlab_http_status(:precondition_failed)
+            expect(json_response['detail']).to include('Invalid UUID for scim_group_uid')
+          end
+        end
+      end
+    end
+  end
 end
