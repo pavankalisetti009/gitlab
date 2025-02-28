@@ -53,14 +53,8 @@ describe('Value Stream Analytics mutations', () => {
     ${types.REQUEST_GROUP_STAGES}                | ${'stages'}                  | ${[]}
     ${types.REQUEST_STAGE_MEDIANS}               | ${'medians'}                 | ${{}}
     ${types.RECEIVE_STAGE_MEDIANS_ERROR}         | ${'medians'}                 | ${{}}
-    ${types.REQUEST_CREATE_VALUE_STREAM}         | ${'isCreatingValueStream'}   | ${true}
-    ${types.RECEIVE_CREATE_VALUE_STREAM_SUCCESS} | ${'isCreatingValueStream'}   | ${false}
     ${types.REQUEST_CREATE_VALUE_STREAM}         | ${'createValueStreamErrors'} | ${{}}
-    ${types.RECEIVE_CREATE_VALUE_STREAM_SUCCESS} | ${'createValueStreamErrors'} | ${{}}
-    ${types.REQUEST_UPDATE_VALUE_STREAM}         | ${'isEditingValueStream'}    | ${true}
-    ${types.RECEIVE_UPDATE_VALUE_STREAM_SUCCESS} | ${'isEditingValueStream'}    | ${false}
     ${types.REQUEST_UPDATE_VALUE_STREAM}         | ${'createValueStreamErrors'} | ${{}}
-    ${types.RECEIVE_UPDATE_VALUE_STREAM_SUCCESS} | ${'createValueStreamErrors'} | ${{}}
     ${types.REQUEST_DELETE_VALUE_STREAM}         | ${'isDeletingValueStream'}   | ${true}
     ${types.RECEIVE_DELETE_VALUE_STREAM_SUCCESS} | ${'isDeletingValueStream'}   | ${false}
     ${types.REQUEST_DELETE_VALUE_STREAM}         | ${'deleteValueStreamError'}  | ${null}
@@ -95,22 +89,20 @@ describe('Value Stream Analytics mutations', () => {
   const pagination = { page: 10, hasNextPage: true, sort: null, direction: null };
 
   it.each`
-    mutation                                     | payload                                                  | expectedState
-    ${types.SET_SELECTED_PROJECTS}               | ${selectedProjects}                                      | ${{ selectedProjects }}
-    ${types.SET_DATE_RANGE}                      | ${{ createdAfter, createdBefore }}                       | ${{ createdAfter, createdBefore }}
-    ${types.SET_PREDEFINED_DATE_RANGE}           | ${predefinedDateRange}                                   | ${{ predefinedDateRange }}
-    ${types.SET_SELECTED_STAGE}                  | ${{ id: 'first-stage' }}                                 | ${{ selectedStage: { id: 'first-stage' } }}
-    ${types.RECEIVE_CREATE_VALUE_STREAM_ERROR}   | ${valueStreamErrors}                                     | ${{ createValueStreamErrors: expectedValueStreamErrors, isCreatingValueStream: false }}
-    ${types.RECEIVE_UPDATE_VALUE_STREAM_ERROR}   | ${valueStreamErrors}                                     | ${{ createValueStreamErrors: expectedValueStreamErrors, isEditingValueStream: false }}
-    ${types.RECEIVE_DELETE_VALUE_STREAM_ERROR}   | ${'Some error occurred'}                                 | ${{ deleteValueStreamError: 'Some error occurred' }}
-    ${types.RECEIVE_VALUE_STREAMS_SUCCESS}       | ${valueStreams}                                          | ${{ valueStreams, isLoadingValueStreams: false }}
-    ${types.SET_SELECTED_VALUE_STREAM}           | ${valueStreams[1].id}                                    | ${{ selectedValueStream: {} }}
-    ${types.RECEIVE_CREATE_VALUE_STREAM_SUCCESS} | ${valueStreams[1]}                                       | ${{ selectedValueStream: valueStreams[1] }}
-    ${types.RECEIVE_UPDATE_VALUE_STREAM_SUCCESS} | ${valueStreams[1]}                                       | ${{ selectedValueStream: valueStreams[1] }}
-    ${types.RECEIVE_GROUP_LABELS_SUCCESS}        | ${groupLabels}                                           | ${{ defaultGroupLabels: groupLabels }}
-    ${types.SET_PAGINATION}                      | ${pagination}                                            | ${{ pagination: { ...pagination, sort: PAGINATION_SORT_FIELD_DURATION, direction: PAGINATION_SORT_DIRECTION_DESC } }}
-    ${types.SET_PAGINATION}                      | ${{ ...pagination, sort: 'duration', direction: 'asc' }} | ${{ pagination: { ...pagination, sort: 'duration', direction: 'asc' } }}
-    ${types.SET_STAGE_EVENTS}                    | ${rawCustomStageEvents}                                  | ${{ formEvents: camelCasedStageEvents }}
+    mutation                                   | payload                                                  | expectedState
+    ${types.SET_SELECTED_PROJECTS}             | ${selectedProjects}                                      | ${{ selectedProjects }}
+    ${types.SET_DATE_RANGE}                    | ${{ createdAfter, createdBefore }}                       | ${{ createdAfter, createdBefore }}
+    ${types.SET_PREDEFINED_DATE_RANGE}         | ${predefinedDateRange}                                   | ${{ predefinedDateRange }}
+    ${types.SET_SELECTED_STAGE}                | ${{ id: 'first-stage' }}                                 | ${{ selectedStage: { id: 'first-stage' } }}
+    ${types.RECEIVE_CREATE_VALUE_STREAM_ERROR} | ${valueStreamErrors}                                     | ${{ createValueStreamErrors: expectedValueStreamErrors }}
+    ${types.RECEIVE_UPDATE_VALUE_STREAM_ERROR} | ${valueStreamErrors}                                     | ${{ createValueStreamErrors: expectedValueStreamErrors }}
+    ${types.RECEIVE_DELETE_VALUE_STREAM_ERROR} | ${'Some error occurred'}                                 | ${{ deleteValueStreamError: 'Some error occurred' }}
+    ${types.RECEIVE_VALUE_STREAMS_SUCCESS}     | ${valueStreams}                                          | ${{ valueStreams, isLoadingValueStreams: false }}
+    ${types.SET_SELECTED_VALUE_STREAM}         | ${valueStreams[1].id}                                    | ${{ selectedValueStream: {} }}
+    ${types.RECEIVE_GROUP_LABELS_SUCCESS}      | ${groupLabels}                                           | ${{ defaultGroupLabels: groupLabels }}
+    ${types.SET_PAGINATION}                    | ${pagination}                                            | ${{ pagination: { ...pagination, sort: PAGINATION_SORT_FIELD_DURATION, direction: PAGINATION_SORT_DIRECTION_DESC } }}
+    ${types.SET_PAGINATION}                    | ${{ ...pagination, sort: 'duration', direction: 'asc' }} | ${{ pagination: { ...pagination, sort: 'duration', direction: 'asc' } }}
+    ${types.SET_STAGE_EVENTS}                  | ${rawCustomStageEvents}                                  | ${{ formEvents: camelCasedStageEvents }}
   `(
     '$mutation with payload $payload will update state with $expectedState',
     ({ mutation, payload, expectedState }) => {

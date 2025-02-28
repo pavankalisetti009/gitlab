@@ -85,18 +85,12 @@ describe('Value Stream Analytics actions / value streams', () => {
         mock.onPost(endpoints.valueStreamData).replyOnce(HTTP_STATUS_OK, createResp);
       });
 
-      it(`commits the ${types.REQUEST_CREATE_VALUE_STREAM} and ${types.RECEIVE_CREATE_VALUE_STREAM_SUCCESS} actions`, () => {
-        return testAction(
-          actions.createValueStream,
-          payload,
-          state,
-          [
-            {
-              type: types.REQUEST_CREATE_VALUE_STREAM,
-            },
-          ],
-          [{ type: 'receiveCreateValueStreamSuccess', payload: createResp }],
-        );
+      it(`commits ${types.REQUEST_CREATE_VALUE_STREAM}`, () => {
+        return testAction(actions.createValueStream, payload, state, [
+          {
+            type: types.REQUEST_CREATE_VALUE_STREAM,
+          },
+        ]);
       });
     });
 
@@ -126,24 +120,6 @@ describe('Value Stream Analytics actions / value streams', () => {
     });
   });
 
-  describe('receiveCreateValueStreamSuccess', () => {
-    beforeEach(() => {
-      state = { ...state, valueStream: {} };
-    });
-
-    it(`will dispatch the "fetchCycleAnalyticsData" action and commit the ${types.RECEIVE_CREATE_VALUE_STREAM_SUCCESS} mutation`, () => {
-      return testAction({
-        action: actions.receiveCreateValueStreamSuccess,
-        payload: selectedValueStream,
-        state,
-        expectedMutations: [
-          { type: types.RECEIVE_CREATE_VALUE_STREAM_SUCCESS, payload: selectedValueStream },
-          { type: types.SET_CREATING_AGGREGATION, payload: true },
-        ],
-      });
-    });
-  });
-
   describe('updateValueStream', () => {
     const payload = {
       name: 'cool value stream',
@@ -164,10 +140,9 @@ describe('Value Stream Analytics actions / value streams', () => {
         mock.onPut(endpoints.valueStreamData).replyOnce(HTTP_STATUS_OK, updateResp);
       });
 
-      it(`commits the ${types.REQUEST_UPDATE_VALUE_STREAM} and ${types.RECEIVE_UPDATE_VALUE_STREAM_SUCCESS} mutations`, () => {
+      it(`commits the ${types.REQUEST_UPDATE_VALUE_STREAM} mutation`, () => {
         return testAction(actions.updateValueStream, payload, state, [
           { type: types.REQUEST_UPDATE_VALUE_STREAM },
-          { type: types.RECEIVE_UPDATE_VALUE_STREAM_SUCCESS, payload: updateResp },
         ]);
       });
     });

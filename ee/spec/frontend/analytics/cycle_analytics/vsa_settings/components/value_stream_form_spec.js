@@ -10,8 +10,6 @@ import {
   rawCustomStage,
   valueStreams,
   defaultStageConfig,
-  vsaPath,
-  valueStreamPath,
   groupLabels as defaultGroupLabels,
 } from 'ee_jest/analytics/cycle_analytics/mock_data';
 
@@ -30,7 +28,6 @@ describe('ValueStreamForm', () => {
   const fakeStore = ({ state }) =>
     new Vuex.Store({
       state: {
-        createValueStreamErrors: {},
         defaultStageConfig,
         defaultGroupLabels,
         isLoading: false,
@@ -50,9 +47,6 @@ describe('ValueStreamForm', () => {
         defaultStageConfig,
         ...props,
       },
-      provide: {
-        vsaPath,
-      },
     });
   };
 
@@ -69,7 +63,6 @@ describe('ValueStreamForm', () => {
         defaultStageConfig,
         initialData,
         isEditing: false,
-        valueStreamPath: vsaPath,
       });
     });
 
@@ -100,7 +93,6 @@ describe('ValueStreamForm', () => {
         defaultStageConfig,
         initialData: populatedInitialData,
         isEditing: true,
-        valueStreamPath,
       });
     });
   });
@@ -121,19 +113,6 @@ describe('ValueStreamForm', () => {
       });
     },
   );
-
-  describe('with createValueStreamErrors', () => {
-    const nameError = "Name can't be blank";
-    beforeEach(() => {
-      createComponent({
-        state: { createValueStreamErrors: { name: nameError } },
-      });
-    });
-
-    it(`sets the form content component's initialFormErrors prop`, () => {
-      expect(findFormContent().props('initialFormErrors')).toEqual({ name: nameError });
-    });
-  });
 
   describe('when there are no defaultGroupLabels', () => {
     beforeEach(() => {

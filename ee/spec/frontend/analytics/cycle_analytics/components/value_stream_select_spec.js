@@ -35,7 +35,6 @@ describe('ValueStreamSelect', () => {
   const fakeStore = ({ initialState = {} }) =>
     new Vuex.Store({
       state: {
-        isCreatingValueStream: false,
         isDeletingValueStream: false,
         createValueStreamErrors: {},
         deleteValueStreamError: null,

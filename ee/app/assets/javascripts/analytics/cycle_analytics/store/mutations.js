@@ -150,35 +150,18 @@ export default {
     state.isLoading = false;
   },
   [types.REQUEST_CREATE_VALUE_STREAM](state) {
-    state.isCreatingValueStream = true;
     state.createValueStreamErrors = {};
   },
   [types.RECEIVE_CREATE_VALUE_STREAM_ERROR](state, { data: { stages = [] }, errors = {} }) {
     const { stages: stageErrors = {}, ...rest } = errors;
     state.createValueStreamErrors = { ...rest, stages: prepareStageErrors(stages, stageErrors) };
-    state.isCreatingValueStream = false;
-  },
-  [types.RECEIVE_CREATE_VALUE_STREAM_SUCCESS](state, valueStream = {}) {
-    state.isCreatingValueStream = false;
-    state.createValueStreamErrors = {};
-    state.selectedValueStream = convertObjectPropsToCamelCase(valueStream, { deep: true });
-
-    const { stages = [] } = valueStream;
-    state.stages = transformRawStages(stages);
   },
   [types.REQUEST_UPDATE_VALUE_STREAM](state) {
-    state.isEditingValueStream = true;
     state.createValueStreamErrors = {};
   },
   [types.RECEIVE_UPDATE_VALUE_STREAM_ERROR](state, { data: { stages = [] }, errors = {} }) {
     const { stages: stageErrors = {}, ...rest } = errors;
     state.createValueStreamErrors = { ...rest, stages: prepareStageErrors(stages, stageErrors) };
-    state.isEditingValueStream = false;
-  },
-  [types.RECEIVE_UPDATE_VALUE_STREAM_SUCCESS](state, valueStream) {
-    state.isEditingValueStream = false;
-    state.createValueStreamErrors = {};
-    state.selectedValueStream = convertObjectPropsToCamelCase(valueStream, { deep: true });
   },
   [types.REQUEST_DELETE_VALUE_STREAM](state) {
     state.isDeletingValueStream = true;
@@ -221,8 +204,5 @@ export default {
       sort: sort || PAGINATION_SORT_FIELD_DURATION,
       direction: direction || PAGINATION_SORT_DIRECTION_DESC,
     };
-  },
-  [types.SET_CREATING_AGGREGATION](state, value) {
-    state.isCreatingAggregation = value;
   },
 };
