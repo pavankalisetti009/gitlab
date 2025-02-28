@@ -1,6 +1,4 @@
 <script>
-// eslint-disable-next-line no-restricted-imports
-import { mapGetters, mapState } from 'vuex';
 import { GlLink, GlTooltipDirective, GlSkeletonLoader } from '@gitlab/ui';
 import { PROMO_URL } from '~/constants';
 import { __, s__, sprintf } from '~/locale';
@@ -16,7 +14,7 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  inject: ['hasNoSubscription', 'maxFreeNamespaceSeats'],
+  inject: ['hasNoSubscription', 'maxFreeNamespaceSeats', 'namespaceId', 'hasLimitedFreePlan'],
   props: {
     billableMembersCount: {
       type: Number,
@@ -27,6 +25,16 @@ export default {
       type: Boolean,
       required: false,
       default: false,
+    },
+    activeTrial: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    seatsInSubscription: {
+      type: Number,
+      required: false,
+      default: 0,
     },
   },
   data() {
@@ -52,8 +60,6 @@ export default {
     },
   },
   computed: {
-    ...mapGetters(['isLoading']),
-    ...mapState(['activeTrial', 'hasLimitedFreePlan', 'namespaceId', 'seatsInSubscription']),
     freeNamespaceSeatsLimitText() {
       return sprintf(s__('Billings|Free groups are limited to %{number} seats.'), {
         number: this.maxFreeNamespaceSeats,
@@ -61,9 +67,6 @@ export default {
     },
     hasNoSeatsInSubscription() {
       return this.totalSeatsUsed == null;
-    },
-    isDataLoading() {
-      return this.isLoading || this.$apollo.loading;
     },
     percentage() {
       if (this.hasFreePlan || this.hasNoSeatsInSubscription || this.activeTrial) {
@@ -116,7 +119,7 @@ export default {
     class="gl-border gl-rounded-base gl-border-section gl-bg-section gl-p-5"
     data-testid="container"
   >
-    <div v-if="isDataLoading">
+    <div v-if="$apollo.loading">
       <gl-skeleton-loader :height="64">
         <rect width="140" height="30" x="5" y="0" rx="4" />
         <rect width="240" height="10" x="5" y="40" rx="4" />

@@ -81,6 +81,7 @@ export const getSeatTabMetadata = ({ includeEl = false } = {}) => {
         seatUsageExportPath,
         hasNoSubscription,
         maxFreeNamespaceSeats,
+        hasLimitedFreePlan: enforcementFreeUserCapEnabled,
       },
       store,
       render(createElement) {

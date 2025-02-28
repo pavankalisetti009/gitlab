@@ -23,7 +23,6 @@ Vue.use(Vuex);
 const providedFields = {
   explorePlansPath: '/groups/test_group/-/billings',
   hasNoSubscription: false,
-  hasLimitedFreePlan: false,
   activeTrial: false,
   addSeatsHref: '/groups/test_group/-/seat_usage.csv',
 };
@@ -114,6 +113,7 @@ describe('Subscription Seats', () => {
           addSeatsHref,
           namespaceId: 1,
           hasNoSubscription: null,
+          hasLimitedFreePlan: false,
           ...provide,
         },
       }),
@@ -165,6 +165,7 @@ describe('Subscription Seats', () => {
     it('renders <subscription-seats-statistics-card> with the necessary props', () => {
       expect(findSubscriptionSeatsStatisticsCard().props()).toMatchObject({
         billableMembersCount: 2,
+        seatsInSubscription: 0,
       });
     });
 
@@ -195,9 +196,9 @@ describe('Subscription Seats', () => {
     describe('for free namespace with limit', () => {
       beforeEach(() => {
         return createComponent({
-          initialState: { hasLimitedFreePlan: true },
           provide: {
             hasNoSubscription: true,
+            hasLimitedFreePlan: true,
           },
         });
       });

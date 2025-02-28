@@ -52,6 +52,7 @@ export default {
       },
       update(data) {
         this.$store.commit(types.RECEIVE_GITLAB_SUBSCRIPTION_SUCCESS, data?.subscription);
+        this.usage = data?.subscription?.usage;
         return data?.subscription?.plan;
       },
       error: (error) => {
@@ -70,15 +71,17 @@ export default {
     'addSeatsHref',
     'hasNoSubscription',
     'namespaceId',
+    'hasLimitedFreePlan',
   ],
   data() {
     return {
       plan: {},
+      usage: {},
       billableMembersCount: 0,
     };
   },
   computed: {
-    ...mapState(['hasError', 'maxSeatsUsed', 'seatsOwed', 'hasLimitedFreePlan', 'activeTrial']),
+    ...mapState(['hasError', 'maxSeatsUsed', 'seatsOwed']),
     ...mapGetters(['isLoading']),
     isPublicFreeNamespace() {
       return this.hasFreePlan && this.isPublicNamespace;
@@ -94,6 +97,12 @@ export default {
     },
     hasFreePlan() {
       return this.plan.code === PLAN_CODE_FREE;
+    },
+    seatsInSubscription() {
+      return this.usage?.seats_in_subscription;
+    },
+    activeTrial() {
+      return Boolean(this.plan?.trial);
     },
   },
   methods: {
@@ -134,6 +143,8 @@ export default {
         <subscription-seats-statistics-card
           :billable-members-count="billableMembersCount"
           :has-free-plan="hasFreePlan"
+          :active-trial="activeTrial"
+          :seats-in-subscription="seatsInSubscription"
         />
         <subscription-upgrade-info-card
           v-if="showUpgradeInfoCard"
