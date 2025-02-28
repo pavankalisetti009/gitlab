@@ -27,7 +27,7 @@ module QA
 
           Flow::Login.sign_in
           test_project.visit!
-          Flow::Pipeline.wait_for_latest_pipeline(status: 'Passed', wait: 600)
+          Flow::Pipeline.wait_for_latest_pipeline_to_have_status(project: test_project, status: 'success', wait: 600)
           Page::Project::Menu.perform(&:go_to_vulnerability_report)
         end
 
