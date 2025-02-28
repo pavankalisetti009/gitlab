@@ -39,7 +39,7 @@ module Gitlab
             feature_category: :ai_abstraction_layer,
             execute_method: ::Llm::MergeRequests::SummarizeReviewService,
             maturity: :experimental,
-            self_managed: false,
+            self_managed: true,
             internal: false
           },
           measure_comment_temperature: {
