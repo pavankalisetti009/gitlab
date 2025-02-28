@@ -39,6 +39,7 @@ module QA
           QA::EE::Page::Group::WorkItem::Epic::Index.perform(&:click_new_epic)
 
           QA::EE::Page::Group::WorkItem::Epic::New.perform do |new_epic_page|
+            new_epic_page.select_epic_type
             new_epic_page.set_title(title)
             new_epic_page.enable_confidential_epic if @confidential
             new_epic_page.create_new_epic

@@ -77,11 +77,6 @@ RSpec.describe 'Group navbar', :js, feature_category: :groups_and_projects do
         stub_licensed_features(epics: true)
 
         insert_after_sub_nav_item(
-          _('Issues'),
-          within: _('Plan'),
-          new_sub_nav_item_name: _('Epics')
-        )
-        insert_after_sub_nav_item(
           _('Issue board'),
           within: _('Plan'),
           new_sub_nav_item_name: _('Epic boards')
@@ -96,6 +91,27 @@ RSpec.describe 'Group navbar', :js, feature_category: :groups_and_projects do
       end
 
       it_behaves_like 'verified navigation bar'
+
+      context 'when work_item_planning_view feature flag is disabled' do
+        let(:plan_nav_items) do
+          [_("Issues"), _("Issue board"), _("Milestones"), (_('Iterations') if Gitlab.ee?)]
+        end
+
+        before do
+          stub_licensed_features(epics: true)
+          stub_feature_flags(work_item_planning_view: false)
+
+          insert_after_sub_nav_item(
+            _('Issues'),
+            within: _('Plan'),
+            new_sub_nav_item_name: _('Epics')
+          )
+
+          visit group_path(group)
+        end
+
+        it_behaves_like 'verified navigation bar'
+      end
     end
 
     context 'when packages are available' do

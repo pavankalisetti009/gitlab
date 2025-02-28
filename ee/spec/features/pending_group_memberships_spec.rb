@@ -145,8 +145,27 @@ RSpec.describe 'Pending group memberships', :js, feature_category: :groups_and_p
 
       expect(page).to have_content project.name
       expect(page).to have_content 'Manage'
-      expect(page).to have_content 'Issues'
+      expect(page).to have_content 'Work items'
       expect(page).not_to have_content 'Settings'
+    end
+
+    context 'when the work_item_planning_view feature flag is disabled' do
+      before do
+        stub_feature_flags(work_item_planning_view: false)
+      end
+
+      it 'a member with an active group membership and a pending subgroup membership sees a subgroup project as if the pending membership does not exist' do
+        project = create(:project, :private, namespace: subgroup)
+        create(:group_member, :guest, source: group, user: developer)
+        create(:group_member, :awaiting, :maintainer, source: subgroup, user: developer)
+
+        visit project_path(project)
+
+        expect(page).to have_content project.name
+        expect(page).to have_content 'Manage'
+        expect(page).to have_content 'Issues'
+        expect(page).not_to have_content 'Settings'
+      end
     end
   end
 

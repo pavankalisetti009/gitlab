@@ -10,10 +10,17 @@ module EE
         def configure_menus
           super
 
-          insert_menu_after(
-            context.is_super_sidebar ? ::Sidebars::Groups::Menus::SettingsMenu : ::Sidebars::Groups::Menus::GroupInformationMenu,
-            ::Sidebars::Groups::Menus::EpicsMenu.new(context)
-          )
+          if ::Feature.enabled?(:work_item_planning_view, context.group)
+            insert_menu_after(
+              context.is_super_sidebar ? ::Sidebars::Groups::Menus::SettingsMenu : ::Sidebars::Groups::Menus::GroupInformationMenu,
+              ::Sidebars::Groups::Menus::WorkItemEpicsMenu.new(context)
+            )
+          else
+            insert_menu_after(
+              context.is_super_sidebar ? ::Sidebars::Groups::Menus::SettingsMenu : ::Sidebars::Groups::Menus::GroupInformationMenu,
+              ::Sidebars::Groups::Menus::EpicsMenu.new(context)
+            )
+          end
 
           insert_menu_after(
             context.is_super_sidebar ? ::Sidebars::Groups::Menus::CiCdMenu : ::Sidebars::Groups::Menus::MergeRequestsMenu,
