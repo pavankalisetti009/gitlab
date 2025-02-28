@@ -7,6 +7,7 @@ module EE
         include ::API::Helpers::RelatedResourcesHelpers
 
         expose :id
+        expose :status_name, as: :status
         expose :finished?, as: :has_finished
         expose :export_type
         expose :send_email

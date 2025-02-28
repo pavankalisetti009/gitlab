@@ -12,6 +12,7 @@ RSpec.describe ::EE::API::Entities::DependencyListExport, feature_category: :dep
 
   it 'contains a small set of dependency list export properties', :aggregate_failures do
     expect(subject[:id]).to eq(dependency_list_export.id)
+    expect(subject[:status]).to eq(dependency_list_export.status_name)
     expect(subject[:has_finished]).to eq(dependency_list_export.finished?)
     expect(subject[:export_type]).to eq(dependency_list_export.export_type)
     expect(subject[:send_email]).to eq(dependency_list_export.send_email)

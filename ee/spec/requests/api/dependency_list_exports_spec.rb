@@ -229,6 +229,20 @@ RSpec.describe API::DependencyListExports, feature_category: :dependency_managem
 
     subject(:fetch_dependency_list_export) { get api(request_path, user) }
 
+    shared_examples 'shows export data' do
+      it 'fetches and returns a dependency_list_export' do
+        fetch_dependency_list_export
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response['id']).to eq(dependency_list_export.id)
+        expect(json_response['status']).to eq(dependency_list_export.status_name.to_s)
+        expect(json_response['has_finished']).to eq(dependency_list_export.finished?)
+        expect(json_response['self']).to match("/api/v4/dependency_list_exports/#{dependency_list_export.id}")
+        expect(json_response['download'])
+          .to match("/api/v4/dependency_list_exports/#{dependency_list_export.id}/download")
+      end
+    end
+
     context 'with user without permission' do
       before do
         stub_licensed_features(dependency_scanning: true)
@@ -264,24 +278,36 @@ RSpec.describe API::DependencyListExports, feature_category: :dependency_managem
           stub_licensed_features(dependency_scanning: true)
         end
 
-        it 'fetches and returns a dependency_list_export' do
-          fetch_dependency_list_export
+        context 'when record does not exist' do
+          let(:request_path) { "/dependency_list_exports/#{non_existing_record_id}" }
 
-          expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response).to have_key('id')
-          expect(json_response).to have_key('has_finished')
-          expect(json_response).to have_key('self')
-          expect(json_response).to have_key('download')
-        end
-
-        context 'with dependency list export not finished' do
-          let(:dependency_list_export) { create(:dependency_list_export, author: user, project: project) }
-
-          it 'sets polling and returns accepted' do
+          it 'returns not found' do
             fetch_dependency_list_export
 
-            expect(response).to have_gitlab_http_status(:accepted)
-            expect(response.headers[Gitlab::PollingInterval::HEADER_NAME]).to match(/\d+/)
+            expect(response).to have_gitlab_http_status(:not_found)
+          end
+        end
+
+        it_behaves_like 'shows export data'
+
+        context 'when export is failed' do
+          let(:dependency_list_export) { create(:dependency_list_export, :failed, author: user, project: project) }
+
+          it_behaves_like 'shows export data'
+        end
+
+        context 'with dependency list export not completed' do
+          let(:dependency_list_export) { create(:dependency_list_export, status, author: user, project: project) }
+
+          where(:status) { [:created, :running] }
+
+          with_them do
+            it 'sets polling and returns accepted' do
+              fetch_dependency_list_export
+
+              expect(response).to have_gitlab_http_status(:accepted)
+              expect(response.headers[Gitlab::PollingInterval::HEADER_NAME]).to match(/\d+/)
+            end
           end
         end
       end
@@ -327,6 +353,16 @@ RSpec.describe API::DependencyListExports, feature_category: :dependency_managem
       context 'with license feature enabled' do
         before do
           stub_licensed_features(dependency_scanning: true)
+        end
+
+        context 'when record does not exist' do
+          let(:request_path) { "/dependency_list_exports/#{non_existing_record_id}/download" }
+
+          it 'returns not found' do
+            download_dependency_list_export
+
+            expect(response).to have_gitlab_http_status(:not_found)
+          end
         end
 
         it 'returns file content' do
