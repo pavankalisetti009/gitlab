@@ -66,6 +66,11 @@ export default {
       type: String,
       required: true,
     },
+    isDrawer: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
     isModal: {
       type: Boolean,
       required: false,
@@ -138,6 +143,9 @@ export default {
     };
   },
   computed: {
+    shouldLoadPreviewNote() {
+      return this.previewNoteId && !this.isDrawer && !this.isModal;
+    },
     initialLoading() {
       return this.$apollo.queries.workItemNotes.loading && !this.isLoadingMore;
     },
@@ -258,14 +266,14 @@ export default {
     },
   },
   mounted() {
-    if (this.targetNoteHash) {
-      this.cleanup = scrollToTargetOnResize();
+    if (this.shouldLoadPreviewNote) {
+      this.cleanupScrollListener = scrollToTargetOnResize();
     }
   },
   apollo: {
     previewNote: {
       skip() {
-        return !this.previewNoteId;
+        return !this.shouldLoadPreviewNote;
       },
       query: workItemNoteQuery,
       variables() {
@@ -284,8 +292,6 @@ export default {
         // make sure skeleton notes are placed below the preview note
         if (result?.data?.note && this.$apollo.queries.workItemNotes?.loading) {
           this.isLoadingMore = true;
-        } else {
-          this.cleanup?.();
         }
       },
       error(error) {
@@ -317,6 +323,8 @@ export default {
         this.isLoadingMore = false;
         if (this.hasNextPage) {
           this.fetchMoreNotes();
+        } else {
+          this.cleanupScrollListener?.();
         }
       },
       subscribeToMore: [
