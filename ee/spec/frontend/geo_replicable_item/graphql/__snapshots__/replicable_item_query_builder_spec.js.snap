@@ -8,7 +8,6 @@ exports[`buildReplicableItemQuery query fields shows correct fields when verific
         id
         checksumMismatch
         createdAt
-        forceToRedownload
         lastSyncFailure
         lastSyncedAt
         missingOnPrimary
@@ -39,7 +38,6 @@ exports[`buildReplicableItemQuery query fields shows correct fields when verific
         id
         checksumMismatch
         createdAt
-        forceToRedownload
         lastSyncFailure
         lastSyncedAt
         missingOnPrimary

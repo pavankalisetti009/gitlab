@@ -10,7 +10,12 @@ module Types
 
         field :checksum_mismatch, GraphQL::Types::Boolean, null: true, description: "Indicate if the checksums of the #{graphql_name} do not match on the primary and secondary."
         field :created_at, Types::TimeType, null: true, description: "Timestamp when the #{graphql_name} was created"
-        field :force_to_redownload, GraphQL::Types::Boolean, null: true, fallback_value: nil, description: "Indicate if a forced redownload is to be performed."
+        field :force_to_redownload,
+          GraphQL::Types::Boolean,
+          null: true,
+          fallback_value: nil,
+          description: "Indicate if a forced redownload is to be performed.",
+          deprecated: { reason: 'Removed from registry tables in the database in favor of the newer reusable framework', milestone: '17.10' }
         field :id, GraphQL::Types::ID, null: false, description: "ID of the #{graphql_name}"
         field :last_sync_failure, GraphQL::Types::String, null: true, description: "Error message during sync of the #{graphql_name}"
         field :last_synced_at, Types::TimeType, null: true, description: "Timestamp of the most recent successful sync of the #{graphql_name}"
