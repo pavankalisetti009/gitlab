@@ -4,6 +4,7 @@ module EE
   module AntiAbuse
     module UniqueDetumbledEmailValidator
       extend ::Gitlab::Utils::Override
+      include ::GitlabSubscriptions::SubscriptionHelper
 
       private
 
@@ -13,7 +14,7 @@ module EE
       end
 
       def paid_verified_domain?(email)
-        return false unless ::Gitlab::Saas.feature_available?(:limit_normalized_email_reuse)
+        return false unless gitlab_com_subscription?
 
         email_domain = Mail::Address.new(email).domain.downcase
 

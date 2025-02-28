@@ -3848,6 +3848,7 @@ RSpec.describe User, feature_category: :system_access do
     subject(:new_user) { build(:user, email: tumbled_email).tap(&:valid?) }
 
     before do
+      stub_application_setting(enforce_email_subaddress_restrictions: true)
       stub_const("::AntiAbuse::UniqueDetumbledEmailValidator::NORMALIZED_EMAIL_ACCOUNT_LIMIT", 1)
       create(:user, email: normalized_email)
     end
