@@ -18,21 +18,21 @@ module Elastic
 
       mappings dynamic: 'strict' do
         indexes :type, type: :keyword
-        indexes :id, type: :integer
+        indexes :id, type: :long
         indexes :iid, type: :integer
 
         indexes :title, type: :text, index_options: 'positions', analyzer: :title_analyzer
         indexes :description, type: :text, index_options: 'positions', analyzer: :code_analyzer
         indexes :state, type: :keyword
-        indexes :project_id, type: :integer
-        indexes :author_id, type: :integer
+        indexes :project_id, type: :long
+        indexes :author_id, type: :long
         indexes :traversal_ids, type: :keyword
 
         indexes :target_branch, type: :keyword
         indexes :source_branch, type: :keyword
         indexes :merge_status, type: :keyword
-        indexes :source_project_id, type: :integer
-        indexes :target_project_id, type: :integer
+        indexes :source_project_id, type: :long
+        indexes :target_project_id, type: :long
 
         indexes :created_at, type: :date
         indexes :updated_at, type: :date
