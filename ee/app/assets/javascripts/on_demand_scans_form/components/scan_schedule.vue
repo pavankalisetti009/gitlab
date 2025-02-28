@@ -72,7 +72,9 @@ export default {
     }
   },
   methods: {
-    handleInput() {
+    handleInput(value, key) {
+      if (key) this.form[key] = value;
+
       const { startDate, startTime, cadence } = this.form;
       let startsAt;
       try {
@@ -101,10 +103,10 @@ export default {
   <div class="row">
     <div class="col-12 col-md-6">
       <gl-toggle
-        v-model="form.isScheduledScan"
+        :value="form.isScheduledScan"
         class="gl-mb-3"
         :label="$options.i18n.scanScheduleToggleText"
-        @change="handleInput"
+        @change="handleInput($event, 'isScheduledScan')"
       />
       <transition name="fade">
         <gl-form-group v-if="form.isScheduledScan" data-testid="profile-schedule-form-group">
@@ -137,13 +139,13 @@ export default {
           />
 
           <dropdown-input
-            v-model="form.cadence"
+            :value="form.cadence"
             :label="$options.i18n.scanScheduleRepeatDefaultLabel"
             :default-text="$options.i18n.scanScheduleRepeatDefaultLabel"
             :options="$options.SCAN_CADENCE_OPTIONS"
             :disabled="!form.isScheduledScan"
             field="repeat-input"
-            @input="handleInput"
+            @input="handleInput($event, 'cadence')"
           />
         </gl-form-group>
       </transition>
