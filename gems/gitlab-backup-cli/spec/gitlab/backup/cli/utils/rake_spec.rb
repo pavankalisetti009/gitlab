@@ -32,20 +32,22 @@ RSpec.describe Gitlab::Backup::Cli::Utils::Rake do
       let(:tmpdir) { Dir.mktmpdir }
 
       after do
-        FileUtils.rmdir(tmpdir)
+        FileUtils.rm_rf(tmpdir)
       end
 
-      subject(:rake) { described_class.new('version', chdir: tmpdir) }
+      subject(:rake) { described_class.new('current_pwd', chdir: tmpdir) }
 
       it 'runs rake in the provided chdir directory' do
         expect_next_instance_of(Gitlab::Backup::Cli::Shell::Command) do |shell|
           expect(shell.chdir).to eq(tmpdir)
         end
 
+        FileUtils.cp_r(fixtures_path.join('gitlab_fake').glob('*'), tmpdir)
+
         rake.execute
 
-        expect(rake.success?).to eq(false)
-        expect(rake.stderr).to match('Could not locate Gemfile or .bundle/ directory')
+        expect(rake.success?).to eq(true)
+        expect(rake.output).to match(/#{tmpdir}/)
       end
     end
   end
