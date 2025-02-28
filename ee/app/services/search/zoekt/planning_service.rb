@@ -109,7 +109,8 @@ module Search
 
           fetch_project_namespaces.find_each do |project_namespace|
             project = project_namespace.project
-            stats = project.statistics
+            stats = project&.statistics
+            next unless stats
 
             if replica_indices.size >= max_indices_per_replica
               log_error(replica_plans.size, :index_limit_exceeded,

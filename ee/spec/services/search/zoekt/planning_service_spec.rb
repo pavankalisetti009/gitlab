@@ -145,4 +145,29 @@ RSpec.describe Search::Zoekt::PlanningService, feature_category: :global_search 
       expect(project_ids).to match_array(group1.projects.pluck(:id))
     end
   end
+
+  context 'when a project has nil statistics' do
+    let(:num_replicas) { 1 }
+    let(:buffer_factor) { 1.5 }
+    let_it_be(:project_with_nil_statistics) { create(:project, namespace: group1) }
+
+    before do
+      project_with_nil_statistics.statistics.delete
+    end
+
+    it 'skips the project with nil statistics and continues processing other projects' do
+      result = described_class.plan(
+        enabled_namespaces: [enabled_namespace1],
+        nodes: nodes,
+        num_replicas: num_replicas,
+        buffer_factor: buffer_factor
+      )
+
+      expected_storage = projects_namespace1.sum { |p| p.statistics.repository_size * buffer_factor * num_replicas }
+      expect(result[:total_required_storage_bytes]).to eq(expected_storage)
+
+      namespace_plan = result[:namespaces].find { |n| n[:namespace_id] == group1.id }
+      expect(namespace_plan[:errors]).to be_empty
+    end
+  end
 end
