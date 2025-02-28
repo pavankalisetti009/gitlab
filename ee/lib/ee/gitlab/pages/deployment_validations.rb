@@ -27,7 +27,7 @@ module EE
           return if project.pages_parallel_deployments_limit > project.pages_domain_level_parallel_deployments_count
 
           docs_link = Rails.application.routes.url_helpers.help_page_url(
-            'user/project/pages/_index.md',
+            'user/project/pages/parallel_deployments.md',
             anchor: 'limits'
           )
 

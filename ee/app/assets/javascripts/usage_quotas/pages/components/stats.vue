@@ -23,7 +23,7 @@ export default {
     'domain',
   ],
   static: {
-    helpLink: `${DOCS_URL_IN_EE_DIR}/user/project/pages/#limits`,
+    helpLink: `${DOCS_URL_IN_EE_DIR}/user/project/pages/parallel_deployments#limits`,
   },
   i18n: {
     description: s__('PagesUsageQuota|Active parallel deployments'),
