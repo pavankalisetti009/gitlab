@@ -25,7 +25,7 @@ RSpec.describe Gitlab::Duo::Administration::VerifySelfHostedSetup, :gitlab_duo, 
 
     create_current_license_without_expiration(plan: License::ULTIMATE_PLAN)
 
-    stub_env('AI_GATEWAY_URL', ai_gateway_url)
+    allow(Ai::Setting).to receive(:instance).and_return(Ai::Setting.new(ai_gateway_url: ai_gateway_url))
     stub_env('CLOUD_CONNECTOR_SELF_SIGN_TOKENS', use_self_signed_token)
     stub_licensed_features(code_suggestions: license_provides_code_suggestions)
     allow(Ability).to receive(:allowed?).and_call_original
@@ -61,7 +61,7 @@ RSpec.describe Gitlab::Duo::Administration::VerifySelfHostedSetup, :gitlab_duo, 
     end
   end
 
-  context 'when AI_GATEWAY_URL is not set' do
+  context 'when ai_gateway_url is not set' do
     let(:ai_gateway_url) { nil }
 
     it 'raises error' do

@@ -409,14 +409,14 @@ export const MOCK_AI_GATEWAY_PROBES = {
     {
       name: 'ai_gateway_url_presence_probe',
       success: true,
-      message: 'Environment variable AI_GATEWAY_URL is set to http://aigw.example.com.',
+      message: 'Ai::Setting.instance.ai_gateway_url is set to http://aigw.example.com.',
     },
   ],
   error: [
     {
       name: 'ai_gateway_url_presence_probe',
       success: false,
-      message: 'Environment variable AI_GATEWAY_URL is not set',
+      message: 'AI::Setting.instance.ai_gateway_url is not set',
     },
   ],
 };

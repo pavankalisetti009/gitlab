@@ -19,17 +19,17 @@ module Gitlab
 
           MSG
 
-          verify_environmental_variables!
+          verify_ai_gateway_url!
           verify_license_access!
           verify_aigateway_access!
         end
 
-        def verify_environmental_variables!
-          puts "Verifying environmental variables..."
+        def verify_ai_gateway_url!
+          puts "Verifying AI Gateway url..."
 
-          raise "Set 'AI_GATEWAY_URL' to point to your AI Gateway Instance" unless ai_gateway_url
+          raise "Set 'Ai::Setting.instance.ai_gateway_url' to point to your AI Gateway instance" unless ai_gateway_url
 
-          puts ">> 'AI_GATEWAY_URL' set to #{ai_gateway_url} ✔"
+          puts ">> 'Ai::Setting.instance.ai_gateway_url' set to #{ai_gateway_url} ✔"
 
           puts ""
         end
@@ -72,7 +72,7 @@ module Gitlab
           raise <<~MSG
               Cannot access AI Gateway. Possible causes:
               - AI Gateway is not running
-              - 'AI_GATEWAY_URL' has an incorrect value
+              - 'Ai::Setting.instance.ai_gateway_url' has an incorrect value
               - the network configuration doesn't allow communication between GitLab and AI Gateway.
 
           MSG

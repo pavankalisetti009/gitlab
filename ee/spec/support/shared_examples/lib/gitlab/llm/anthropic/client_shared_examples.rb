@@ -57,8 +57,7 @@ RSpec.shared_examples 'anthropic client' do
   let(:ai_gateway_url) { 'https://cloud.example.com/ai' }
 
   before do
-    stub_env('AI_GATEWAY_URL', ai_gateway_url)
-
+    Ai::Setting.instance.update!(ai_gateway_url: ai_gateway_url)
     available_service_data = instance_double(CloudConnector::BaseAvailableServiceData, name: service_name,
       access_token: api_key)
     allow(::CloudConnector::AvailableServices).to receive(:find_by_name).with(service_name)
