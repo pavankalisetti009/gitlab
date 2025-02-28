@@ -4,6 +4,8 @@ module Preloaders
   class UserMemberRolesInProjectsPreloader
     include Gitlab::Utils::StrongMemoize
 
+    attr_reader :projects, :projects_relation, :user
+
     def initialize(projects:, user:)
       @projects = projects
       @user = user
@@ -51,6 +53,8 @@ module Preloaders
       grouped_by_project = ApplicationRecord.connection.execute(sql).to_a.group_by do |h|
         h['project_id']
       end
+
+      log_statistics
 
       grouped_by_project.transform_values do |values|
         project_permissions = values.map do |value|
@@ -137,6 +141,12 @@ module Preloaders
       end
     end
 
-    attr_reader :projects, :projects_relation, :user
+    def log_statistics
+      ::Gitlab::AppLogger.info(
+        class: self.class.name,
+        user_id: user.id,
+        projects_count: projects.count
+      )
+    end
   end
 end

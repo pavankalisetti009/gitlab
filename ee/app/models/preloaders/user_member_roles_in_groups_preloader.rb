@@ -4,6 +4,8 @@ module Preloaders
   class UserMemberRolesInGroupsPreloader
     include Gitlab::Utils::StrongMemoize
 
+    attr_reader :groups, :group_relation, :user
+
     def initialize(groups:, user:)
       @groups = groups
       @user = user
@@ -51,6 +53,8 @@ module Preloaders
       grouped_by_group = ApplicationRecord.connection.execute(sql).to_a.group_by do |h|
         h['namespace_id']
       end
+
+      log_statistics
 
       grouped_by_group.transform_values do |values|
         group_permissions = values.map do |value|
@@ -118,6 +122,12 @@ module Preloaders
       end
     end
 
-    attr_reader :groups, :group_relation, :user
+    def log_statistics
+      ::Gitlab::AppLogger.info(
+        class: self.class.name,
+        user_id: user.id,
+        groups_count: groups.count
+      )
+    end
   end
 end

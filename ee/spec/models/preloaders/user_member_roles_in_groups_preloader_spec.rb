@@ -59,6 +59,16 @@ RSpec.describe Preloaders::UserMemberRolesInGroupsPreloader, feature_category: :
               expect(result[sub_group_2.id]).to match_array(expected_abilities_2)
             end
 
+            it 'logs the query' do
+              expect(Gitlab::AppLogger).to receive(:info).with({
+                class: described_class.name,
+                user_id: user.id,
+                groups_count: 2
+              })
+
+              result
+            end
+
             it 'avoids N+1 queries' do
               control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
                 described_class.new(groups: [sub_group_1], user: user).execute
