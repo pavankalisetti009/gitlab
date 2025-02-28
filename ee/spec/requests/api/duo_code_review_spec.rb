@@ -51,7 +51,8 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
         ::Gitlab::Llm::Templates::ReviewMergeRequest,
         new_path,
         diff,
-        hunk
+        hunk,
+        authorized_user
       ) do |prompt|
         allow(prompt).to receive(:to_prompt).and_return(review_prompt)
       end

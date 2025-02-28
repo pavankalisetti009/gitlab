@@ -29,7 +29,7 @@ module API
         end
         post do
           prompt = ::Gitlab::Llm::Templates::ReviewMergeRequest
-            .new(declared_params[:new_path], declared_params[:diff], declared_params[:hunk])
+            .new(declared_params[:new_path], declared_params[:diff], declared_params[:hunk], current_user)
             .to_prompt
 
           response = ::Gitlab::Llm::Anthropic::Client.new(
