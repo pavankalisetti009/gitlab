@@ -3443,6 +3443,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: vulnerabilities_archival_archive
+  :worker_name: Vulnerabilities::Archival::ArchiveWorker
+  :feature_category: :vulnerability_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: vulnerabilities_mark_dropped_as_resolved
   :worker_name: Vulnerabilities::MarkDroppedAsResolvedWorker
   :feature_category: :static_application_security_testing

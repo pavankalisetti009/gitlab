@@ -2,6 +2,8 @@
 
 module Vulnerabilities
   class ArchivedRecord < Gitlab::Database::SecApplicationRecord
+    include BulkInsertSafe
+
     self.table_name = 'vulnerability_archived_records'
 
     belongs_to :project, optional: false
