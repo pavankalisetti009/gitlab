@@ -51,6 +51,14 @@ describe('ProjectLimitsExcessStorageBreakdownCard', () => {
         target: '_blank',
       });
     });
+
+    it('does not render buy storage button if subjectToHighLimit is true', () => {
+      createComponent({
+        provide: { subjectToHighLimit: true },
+      });
+
+      expect(findGlButton().exists()).toBe(false);
+    });
   });
 
   describe('when limitedAccessModeEnabled prop is true', () => {

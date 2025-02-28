@@ -29,6 +29,7 @@ export default {
     GlModalDirective,
   },
   inject: [
+    'subjectToHighLimit',
     'purchaseStorageUrl',
     'buyAddonTargetAttr',
     'totalRepositorySizeExcess',
@@ -75,12 +76,6 @@ export default {
       });
     },
   },
-  i18n: {
-    PROJECT_ENFORCEMENT_PURCHASE_CARD_TITLE: s__('UsageQuota|Excess storage usage'),
-    PROJECT_ENFORCEMENT_PURCHASE_CARD_SUBTITLE: s__(
-      'UsageQuota|This namespace is under project-level limits, so only repository and LFS storage usage above the limit included in the plan is counted as excess storage. You can increase excess storage limit by purchasing storage packages.',
-    ),
-  },
 };
 </script>
 
@@ -94,7 +89,7 @@ export default {
     <div v-else>
       <div class="gl-flex gl-items-center gl-justify-between">
         <div class="gl-font-bold" data-testid="purchased-storage-card-title">
-          {{ $options.i18n.PROJECT_ENFORCEMENT_PURCHASE_CARD_TITLE }}
+          {{ s__('UsageQuota|Excess storage usage') }}
 
           <help-page-link
             href="user/storage_usage_quotas"
@@ -106,7 +101,7 @@ export default {
             <help-icon />
           </help-page-link>
         </div>
-        <template v-if="purchaseStorageUrl">
+        <template v-if="purchaseStorageUrl && !subjectToHighLimit">
           <gl-button
             v-if="!limitedAccessModeEnabled"
             :href="purchaseStorageUrl"
@@ -151,7 +146,13 @@ export default {
         </div>
       </template>
       <hr class="gl-my-4" />
-      <p>{{ $options.i18n.PROJECT_ENFORCEMENT_PURCHASE_CARD_SUBTITLE }}</p>
+      <p>
+        {{
+          s__(
+            'UsageQuota|This namespace is under project-level limits, so only repository and LFS storage usage above the limit included in the plan is counted as excess storage. You can increase excess storage limit by purchasing storage packages.',
+          )
+        }}
+      </p>
       <p v-if="perProjectStorageLimit">
         <strong><number-to-human-size :value="perProjectStorageLimit" /></strong>
 
