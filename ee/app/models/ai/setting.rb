@@ -27,6 +27,10 @@ module Ai
       { ai_gateway_url: ENV['AI_GATEWAY_URL'] }
     end
 
+    def self.self_hosted?
+      ::Ai::SelfHostedModel.any?
+    end
+
     private
 
     def validates_singleton

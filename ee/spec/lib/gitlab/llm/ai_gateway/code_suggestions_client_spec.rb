@@ -36,13 +36,14 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
     end
   end
 
-  shared_context 'with tests requests' do
+  shared_context 'with tests requests' do |expected_service_name|
     before do
       stub_request(:post, /#{Gitlab::AiGateway.url}/)
         .to_return(status: code, body: body.to_json, headers: { "Content-Type" => "application/json" })
     end
 
     it 'returns nil if there is no error' do
+      expect(::CloudConnector::AvailableServices).to receive(:find_by_name).with(expected_service_name)
       expect(result).to be_nil
     end
 
@@ -70,7 +71,7 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
   describe "#test_completion" do
     subject(:result) { described_class.new(user).test_completion }
 
-    include_examples 'with tests requests' do
+    include_examples 'with tests requests', :code_suggestions do
       include_examples 'with completions'
     end
 
@@ -83,7 +84,7 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
   end
 
   describe '#test_model_connection', :with_cloud_connector do
-    let(:self_hosted_model) { build(:ai_self_hosted_model) }
+    let(:self_hosted_model) { create(:ai_self_hosted_model) }
     let(:endpoint) { "#{Gitlab::AiGateway.url}/v1/prompts/model_configuration%2Fcheck" }
 
     subject(:result) { described_class.new(user).test_model_connection(self_hosted_model) }
@@ -121,7 +122,7 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
       it_behaves_like 'error response', 'AI Gateway returned code 401: model configuration error'
     end
 
-    include_examples 'with tests requests'
+    include_examples 'with tests requests', :self_hosted_models
   end
 
   describe '#direct_access_token', :with_cloud_connector do
