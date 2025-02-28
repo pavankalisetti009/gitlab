@@ -46643,7 +46643,7 @@ Attributes for defining an input.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="ciinputsinputtypekey"></a>`key` | [`String!`](#string) | Name of the input. |
+| <a id="ciinputsinputtypename"></a>`name` | [`String!`](#string) | Name of the input. |
 | <a id="ciinputsinputtypevalue"></a>`value` | [`CiInputsValueInputType!`](#ciinputsvalueinputtype) | Value of the input. |
 
 ### `CiVariableInput`
