@@ -19,6 +19,8 @@ module Elastic
         query_hash[:query][:bool][:filter] ||= []
         query_hash[:query][:bool][:filter] += filters
 
+        query_hash = current_user_authorization_filters(query_hash, options)
+
         query_hash[:size] = 0 if options[:count_only]
         query_hash = apply_sort(query_hash, options)
 
@@ -93,6 +95,31 @@ module Elastic
             should: shoulds
           }
         }
+      end
+
+      def current_user_authorization_filters(query_hash, options)
+        user = options[:current_user]
+
+        return query_hash unless user
+        return query_hash if options[:project_id].present? || options[:group_id].present?
+        return query_hash unless options[:autocomplete]
+        return query_hash unless Feature.enabled?(:users_search_scoped_to_authorized_namespaces_advanced_search, user)
+
+        authorized_groups = ::Search::GroupsFinder.new(user: user).execute
+        group_authorized_traversal_ids = ::Namespaces::Traversal::TrieNode.build(authorized_groups.map(&:traversal_ids))
+
+        authorized_projects = ::Search::ProjectsFinder.new(user: user).execute
+        project_authorized_traversal_ids = authorized_projects.map(&:elastic_namespace_ancestry)
+
+        traversal_ids_from_groups_and_projects = group_authorized_traversal_ids.to_a + project_authorized_traversal_ids
+
+        return query_hash if traversal_ids_from_groups_and_projects.empty?
+
+        Search::Elastic::Filters.by_traversal_ids(
+          query_hash: query_hash,
+          traversal_ids: traversal_ids_from_groups_and_projects.flatten,
+          options: options.merge(traversal_ids_prefix: :namespace_ancestry_ids)
+        )
       end
 
       # rubocop: disable CodeReuse/ActiveRecord

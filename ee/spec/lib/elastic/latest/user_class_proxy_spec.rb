@@ -7,6 +7,9 @@ RSpec.describe Elastic::Latest::UserClassProxy, feature_category: :global_search
 
   let(:query) { 'bob' }
   let(:options) { {} }
+  let_it_be(:user) { create(:user) }
+  let_it_be_with_reload(:project) { create(:project) }
+  let_it_be_with_reload(:group) { create(:group) }
   let(:elastic_search) { subject.elastic_search(query, options: options) }
   let(:response) do
     Elasticsearch::Model::Response::Response.new(User, Elasticsearch::Model::Searching::SearchRequest.new(User, '*'))
@@ -28,10 +31,11 @@ RSpec.describe Elastic::Latest::UserClassProxy, feature_category: :global_search
         allow(subject).to receive(:search).and_return(response)
       end
 
-      it 'calls fuzzy_query_hash, namespace_query and forbidden_states_filter' do
+      it 'calls fuzzy_query_hash, namespace_query, current_user_authorization_filters and forbidden_states_filter' do
         expect(subject).to receive(:fuzzy_query_hash).and_call_original.once
         expect(subject).to receive(:namespace_query).and_call_original.once
         expect(subject).to receive(:forbidden_states_filter).and_call_original.once
+        expect(subject).to receive(:current_user_authorization_filters).and_call_original.once
 
         elastic_search
       end
@@ -39,10 +43,11 @@ RSpec.describe Elastic::Latest::UserClassProxy, feature_category: :global_search
       context 'when the query contains simple query string syntax characters' do
         let(:query) { 'bo*' }
 
-        it 'calls basic_query_hash, namespace_query and forbidden_states_filter' do
+        it 'calls basic_query_hash, namespace_query, current_user_authorization_filters and forbidden_states_filter' do
           expect(subject).to receive(:basic_query_hash).and_call_original.once
           expect(subject).to receive(:namespace_query).and_call_original.once
           expect(subject).to receive(:forbidden_states_filter).and_call_original.once
+          expect(subject).to receive(:current_user_authorization_filters).and_call_original.once
 
           elastic_search
         end
@@ -91,6 +96,42 @@ RSpec.describe Elastic::Latest::UserClassProxy, feature_category: :global_search
             )
           end
         end
+
+        context 'with autocomplete passed in arguments' do
+          let(:options) { { autocomplete: true, current_user: user } }
+
+          context 'when the user does not have authorized groups or projects' do
+            it 'does not have a filter for authorized groups and projects' do
+              elastic_search.response
+
+              assert_named_queries(without: ['namespace:ancestry_filter:descendants'])
+            end
+          end
+
+          context 'when the user has authorized projects' do
+            before_all do
+              project.add_developer(user)
+            end
+
+            it 'has a filter for authorized groups and projects' do
+              elastic_search.response
+
+              assert_named_queries('namespace:ancestry_filter:descendants')
+            end
+          end
+
+          context 'when the user has authorized groups' do
+            before_all do
+              group.add_developer(user)
+            end
+
+            it 'has a filter for authorized groups and projects' do
+              elastic_search.response
+
+              assert_named_queries('namespace:ancestry_filter:descendants')
+            end
+          end
+        end
       end
     end
 
@@ -114,14 +155,12 @@ RSpec.describe Elastic::Latest::UserClassProxy, feature_category: :global_search
     let(:query_hash) { subject.namespace_query(musts, options) }
     let(:musts) { [] }
     let(:options) { { current_user: user } }
-    let_it_be(:user) { create(:user) }
 
     it 'returns musts if no groups or projects are passed in' do
       expect(query_hash).to eq(musts)
     end
 
     context 'with a project' do
-      let_it_be(:project) { create(:project) }
       let(:options) { { current_user: user, project_id: project.id } }
 
       it 'has a terms query with the full ancestry and its namespace' do
@@ -155,7 +194,6 @@ RSpec.describe Elastic::Latest::UserClassProxy, feature_category: :global_search
     end
 
     context 'with a group' do
-      let_it_be(:group) { create(:group) }
       let(:options) { { current_user: user, group_id: group.id } }
 
       it 'has a prefix query with the group ancestry' do
@@ -182,6 +220,165 @@ RSpec.describe Elastic::Latest::UserClassProxy, feature_category: :global_search
 
           expected_hash = { bool: { should: [expected_prefix_hash, expected_terms_hash] } }
           expect(query_hash).to match_array([expected_hash])
+        end
+      end
+    end
+  end
+
+  describe '#current_user_authorization_filters' do
+    let(:query_hash) { subject.current_user_authorization_filters(original_query_hash, options) }
+    let(:original_query_hash) { { query: { bool: { filter: [] } } } }
+    let(:options) { { current_user: user, autocomplete: true } }
+
+    context 'when the user has an authorized project' do
+      before_all do
+        project.add_developer(user)
+      end
+
+      it 'adds a prefix filter for the project' do
+        expected_query = {
+          query: {
+            bool: {
+              filter: [
+                bool: {
+                  should: [
+                    prefix: {
+                      namespace_ancestry_ids: {
+                        _name: "namespace:ancestry_filter:descendants",
+                        value: "#{project.namespace.id}-p#{project.id}-"
+                      }
+                    }
+                  ],
+                  minimum_should_match: 1
+                }
+              ]
+            }
+          }
+        }
+        expect(query_hash).to eq(expected_query)
+      end
+
+      context 'when the user has an authorized group' do
+        before_all do
+          group.add_developer(user)
+        end
+
+        it 'adds another prefix filter for the group' do
+          expected_query = {
+            query: {
+              bool: {
+                filter: [
+                  bool: {
+                    should: [
+                      {
+                        prefix: {
+                          namespace_ancestry_ids: {
+                            _name: "namespace:ancestry_filter:descendants",
+                            value: group.id
+                          }
+                        }
+                      },
+                      {
+                        prefix: {
+                          namespace_ancestry_ids: {
+                            _name: "namespace:ancestry_filter:descendants",
+                            value: "#{project.namespace.id}-p#{project.id}-"
+                          }
+                        }
+                      }
+                    ],
+                    minimum_should_match: 1
+                  }
+                ]
+              }
+            }
+          }
+
+          expect(query_hash).to eq(expected_query)
+        end
+      end
+
+      context 'when the user belongs to a subgroup' do
+        let_it_be(:sub_group) { create(:group, parent: group) }
+
+        before_all do
+          sub_group.add_developer(user)
+        end
+
+        it 'adds another prefix filter for the sub_group and parent of the sub_group' do
+          expected_query = {
+            query: {
+              bool: {
+                filter: [
+                  bool: {
+                    should: [
+                      {
+                        prefix: {
+                          namespace_ancestry_ids: {
+                            _name: "namespace:ancestry_filter:descendants",
+                            value: group.id
+                          }
+                        }
+                      },
+                      {
+                        prefix: {
+                          namespace_ancestry_ids: {
+                            _name: "namespace:ancestry_filter:descendants",
+                            value: sub_group.id
+                          }
+                        }
+                      },
+                      {
+                        prefix: {
+                          namespace_ancestry_ids: {
+                            _name: "namespace:ancestry_filter:descendants",
+                            value: "#{project.namespace.id}-p#{project.id}-"
+                          }
+                        }
+                      }
+                    ],
+                    minimum_should_match: 1
+                  }
+                ]
+              }
+            }
+          }
+
+          expect(query_hash).to eq(expected_query)
+        end
+      end
+
+      context 'when project_id or group_id is present in options' do
+        let(:options) { { current_user: user, autocomplete: true, project_id: 1 } }
+
+        it 'returns query_hash as is' do
+          expect(query_hash).to eq(original_query_hash)
+        end
+      end
+
+      context 'when autocomplete option is not present' do
+        let(:options) { { current_user: user } }
+
+        it 'returns query_hash as is' do
+          expect(query_hash).to eq(original_query_hash)
+        end
+      end
+
+      context 'when current user is not present' do
+        let(:options) { { autocomplete: true } }
+
+        it 'returns query_hash as is' do
+          expect(query_hash).to eq(original_query_hash)
+        end
+      end
+
+      context 'when users_search_scoped_to_authorized_namespaces_advanced_search flag is disabled' do
+        before do
+          stub_feature_flags(users_search_scoped_to_authorized_namespaces_advanced_search: false)
+        end
+
+        it 'returns query_hash as is' do
+          expect(query_hash).to eq(original_query_hash)
         end
       end
     end
