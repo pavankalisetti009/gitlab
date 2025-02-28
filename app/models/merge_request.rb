@@ -39,6 +39,7 @@ class MergeRequest < ApplicationRecord
   SORTING_PREFERENCE_FIELD = :merge_requests_sort
   CI_MERGE_REQUEST_DESCRIPTION_MAX_LENGTH = 2700
   MERGE_LEASE_TIMEOUT = 15.minutes.to_i
+  DIFF_VERSION_LIMIT = 1_000
 
   belongs_to :target_project, class_name: "Project"
   belongs_to :source_project, class_name: "Project"
@@ -2453,6 +2454,12 @@ class MergeRequest < ApplicationRecord
   end
 
   delegate :squash_always?, :squash_never?, :squash_enabled_by_default?, :squash_readonly?, to: :squash_option
+
+  def reached_versions_limit?
+    return false if Feature.disabled?(:merge_requests_diffs_limit, target_project)
+
+    merge_request_diffs.count >= DIFF_VERSION_LIMIT
+  end
 
   private
 
