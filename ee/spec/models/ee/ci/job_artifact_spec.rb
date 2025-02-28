@@ -13,8 +13,13 @@ RSpec.describe Ci::JobArtifact, feature_category: :geo_replication do
       stub_artifacts_object_storage
     end
 
-    let(:verifiable_model_record) { build(:ci_job_artifact, job: job, partition_id: job.partition_id) } # add extra params if needed to make sure the record is included in `available_verifiables`
-    let(:unverifiable_model_record) { build(:ci_job_artifact, :remote_store, job: job, partition_id: job.partition_id) } # add extra params if needed to make sure the record is NOT included in `available_verifiables`
+    let(:verifiable_model_record) do
+      build(:ci_job_artifact, job: job, partition_id: job.partition_id)
+    end
+
+    let(:unverifiable_model_record) do
+      build(:ci_job_artifact, :remote_store, job: job, partition_id: job.partition_id)
+    end
   end
 
   describe '#destroy' do
@@ -64,7 +69,9 @@ RSpec.describe Ci::JobArtifact, feature_category: :geo_replication do
 
     context 'when given an unrecognized report type' do
       it 'raises error' do
-        expect { described_class.file_types_for_report(:blah) }.to raise_error(ArgumentError, "Unrecognized report type: blah")
+        expect do
+          described_class.file_types_for_report(:blah)
+        end.to raise_error(ArgumentError, "Unrecognized report type: blah")
       end
     end
   end
@@ -430,7 +437,10 @@ RSpec.describe Ci::JobArtifact, feature_category: :geo_replication do
       end
 
       let(:mock_parser) { double(:parser, parse!: true) }
-      let(:expected_parser_args) { ['sast', instance_of(String), instance_of(::Gitlab::Ci::Reports::Security::Report), { signatures_enabled: false, validate: validate }] }
+      let(:expected_parser_args) do
+        ['sast', instance_of(String), instance_of(::Gitlab::Ci::Reports::Security::Report),
+          { signatures_enabled: false, validate: validate }]
+      end
 
       context 'when validate is false' do
         let(:validate) { false }
@@ -450,6 +460,18 @@ RSpec.describe Ci::JobArtifact, feature_category: :geo_replication do
 
           expect(::Gitlab::Ci::Parsers).to have_received(:fabricate!).with(*expected_parser_args)
         end
+      end
+    end
+
+    context 'with cyclonedx' do
+      let(:job_artifact) { create(:ee_ci_job_artifact, :cyclonedx, job: job) }
+
+      it 'considers multiple reports via Sbom::Reports' do
+        expect(::Gitlab::VulnerabilityScanning::SecurityReportBuilder).to receive(:new)
+          .with(sbom_reports: be_a(::Gitlab::Ci::Reports::Sbom::Reports), project: job.project, pipeline: job.pipeline)
+          .and_call_original
+
+        security_report
       end
     end
   end

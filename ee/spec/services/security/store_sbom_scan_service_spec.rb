@@ -32,11 +32,11 @@ RSpec.describe Security::StoreSbomScanService, feature_category: :dependency_man
     let(:deduplicate) { false }
     let(:service_object) { described_class.new(artifact, known_keys, deduplicate) }
     let_it_be(:affected_package) do
-      create(:pm_affected_package, purl_type: :gem, package_name: 'activesupport', affected_range: "<5.1.5")
+      create(:pm_affected_package, purl_type: :npm, package_name: 'yargs-parser', affected_range: "<9.1")
     end
 
     let_it_be(:affected_package_2) do
-      create(:pm_affected_package, purl_type: :gem, package_name: 'byebug', affected_range: "<10.0.1")
+      create(:pm_affected_package, purl_type: :npm, package_name: 'yargs-parser', affected_range: "<9.5")
     end
 
     let_it_be(:report_findings) { artifact.security_report.findings }

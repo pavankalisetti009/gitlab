@@ -355,7 +355,7 @@ RSpec.describe Security::StoreScansService, feature_category: :vulnerability_man
         let_it_be(:cyclonedx_findings_count) { 1 }
         let_it_be(:ds_findings_count) { 4 }
         let_it_be(:affected_package) do
-          create(:pm_affected_package, purl_type: :gem, package_name: 'activesupport', affected_range: "<5.1.5")
+          create(:pm_affected_package, purl_type: :npm, package_name: 'yargs-parser', affected_range: "<9.1")
         end
 
         let_it_be(:security_report) { dependency_scanning_artifact.security_report }
@@ -399,7 +399,7 @@ RSpec.describe Security::StoreScansService, feature_category: :vulnerability_man
         let_it_be(:cyclonedx_artifact) { create(:ee_ci_job_artifact, :cyclonedx, job: build) }
         let_it_be(:cyclonedx_findings_count) { 1 }
         let_it_be(:affected_package) do
-          create(:pm_affected_package, purl_type: :gem, package_name: 'activesupport', affected_range: "<5.1.5")
+          create(:pm_affected_package, purl_type: :npm, package_name: 'yargs-parser', affected_range: "<9.1")
         end
 
         before do

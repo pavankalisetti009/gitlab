@@ -1368,7 +1368,6 @@ Layout/LineLength:
     - 'ee/spec/models/dora/time_to_restore_service_metric_spec.rb'
     - 'ee/spec/models/ee/alert_management/alert_spec.rb'
     - 'ee/spec/models/ee/audit_event_spec.rb'
-    - 'ee/spec/models/ee/ci/job_artifact_spec.rb'
     - 'ee/spec/models/ee/ci/pipeline_artifact_spec.rb'
     - 'ee/spec/models/ee/group_member_spec.rb'
     - 'ee/spec/models/ee/group_spec.rb'

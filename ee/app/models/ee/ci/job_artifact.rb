@@ -148,18 +148,21 @@ module EE
 
     def build_security_report(signatures_enabled:, validate:)
       if file_type == 'cyclonedx'
-        sbom_report = parse_sbom_report
+        sbom_reports = parse_sbom_reports
         return ::Gitlab::VulnerabilityScanning::SecurityReportBuilder.new(
-          sbom_report: sbom_report, project: project, pipeline: job.pipeline).execute
+          sbom_reports: sbom_reports, project: project, pipeline: job.pipeline).execute
       end
 
       parse_security_report(signatures_enabled: signatures_enabled, validate: validate)
     end
 
-    def parse_sbom_report
-      ::Gitlab::Ci::Reports::Sbom::Report.new.tap do |report|
+    def parse_sbom_reports
+      ::Gitlab::Ci::Reports::Sbom::Reports.new.tap do |sbom_reports|
         each_blob do |blob|
-          ::Gitlab::Ci::Parsers.fabricate!(file_type).parse!(blob, report)
+          ::Gitlab::Ci::Reports::Sbom::Report.new.tap do |report|
+            ::Gitlab::Ci::Parsers.fabricate!(file_type).parse!(blob, report)
+            sbom_reports.add_report(report)
+          end
         end
       end
     end
