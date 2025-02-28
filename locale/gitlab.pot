@@ -12556,13 +12556,13 @@ msgstr ""
 msgid "CiVariables|Run job again"
 msgstr ""
 
-msgid "CiVariables|SSelect the default minimum role to use in new projects, to run a new pipeline with pipeline variables."
-msgstr ""
-
 msgid "CiVariables|Scope"
 msgstr ""
 
 msgid "CiVariables|Search values"
+msgstr ""
+
+msgid "CiVariables|Select the default minimum role to use in new projects, to run a new pipeline with pipeline variables."
 msgstr ""
 
 msgid "CiVariables|Select the minimum role that is allowed to run a new pipeline with pipeline variables."
