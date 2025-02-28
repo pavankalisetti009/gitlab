@@ -1015,22 +1015,6 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
         it "doesn't mark for deletion" do
           expect { delete_project }.not_to change { project.reload.marked_for_deletion? }.from(false)
         end
-
-        context 'with feature disabled' do
-          before do
-            stub_feature_flags(reject_security_policy_project_deletion: false)
-          end
-
-          it "doesn't alert" do
-            delete_project
-
-            expect(flash[:alert]).to be_nil
-          end
-
-          it 'marks for deletion' do
-            expect { delete_project }.to change { project.reload.marked_for_deletion? }.from(false).to(true)
-          end
-        end
       end
 
       context 'when feature is not available for the project' do
