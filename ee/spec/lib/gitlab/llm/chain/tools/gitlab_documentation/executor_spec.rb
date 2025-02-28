@@ -18,13 +18,15 @@ RSpec.describe Gitlab::Llm::Chain::Tools::GitlabDocumentation::Executor, :saas, 
       Gitlab::Llm::Anthropic::ResponseModifiers::TanukiBot.new(completion, user, search_documents: search_documents)
     end
 
+    let(:ai_request_double) { instance_double(Gitlab::Llm::Chain::Requests::AiGateway) }
+
     let(:options) { { input: "how to reset the password?" } }
     let(:context) do
       Gitlab::Llm::Chain::GitlabContext.new(
         container: group,
         resource: nil,
         current_user: user,
-        ai_request: double
+        ai_request: ai_request_double
       )
     end
 

@@ -14,6 +14,13 @@ RSpec.describe ::Gitlab::Llm::Chain::Tools::EmbeddingsCompletion, feature_catego
   let(:attrs) { search_documents.pluck(:id).map { |x| "CNT-IDX-#{x}" }.join(", ") }
   let(:completion_response) { { 'response' => "#{answer} ATTRS: #{attrs}" } }
   let(:model) { ::Gitlab::Llm::Anthropic::Client::CLAUDE_3_5_SONNET }
+  let(:inputs) do
+    {
+      question: question,
+      content_id: Gitlab::Llm::Anthropic::Templates::TanukiBot::CONTENT_ID_FIELD,
+      documents: search_documents
+    }
+  end
 
   describe '#execute' do
     subject(:execute) { instance.execute }
@@ -29,12 +36,15 @@ RSpec.describe ::Gitlab::Llm::Chain::Tools::EmbeddingsCompletion, feature_catego
       allow(::Gitlab::Llm::Chain::Requests::AiGateway).to receive(:new).and_return(ai_gateway_request)
 
       allow(ai_gateway_request).to receive(:request).and_return(completion_response)
+
+      stub_feature_flags(prompt_migration_documentation_search: false)
     end
 
     it 'executes calls and returns ResponseModifier' do
       expect(ai_gateway_request).to receive(:request)
         .with({ prompt: instance_of(Array),
-          options: { model: model, max_tokens: 256 } })
+          options: { inputs: inputs, model: model, max_tokens: 256,
+                     use_ai_gateway_agent_prompt: false } }, unit_primitive: nil)
         .once.and_return(completion_response)
 
       expect(execute).to be_an_instance_of(::Gitlab::Llm::Anthropic::ResponseModifiers::TanukiBot)
@@ -45,8 +55,9 @@ RSpec.describe ::Gitlab::Llm::Chain::Tools::EmbeddingsCompletion, feature_catego
 
       expect(ai_gateway_request)
         .to receive(:request)
-        .with({ prompt: instance_of(Array), options:
-          { model: model, max_tokens: 256 } })
+        .with({ prompt: instance_of(Array),
+          options: { inputs: inputs, model: model, max_tokens: 256,
+                     use_ai_gateway_agent_prompt: false } }, unit_primitive: nil)
         .once
         .and_yield(answer)
         .and_return(completion_response)
@@ -60,6 +71,36 @@ RSpec.describe ::Gitlab::Llm::Chain::Tools::EmbeddingsCompletion, feature_catego
                                                     .and_raise(::Gitlab::Llm::AiGateway::Client::ConnectionError.new)
 
       execute
+    end
+
+    context "when tool calls agent registry" do
+      before do
+        stub_feature_flags(prompt_migration_documentation_search: true)
+      end
+
+      let(:options) do
+        {
+          inputs: {
+            question: question,
+            content_id: "ATTRS",
+            documents: search_documents
+          },
+          use_ai_gateway_agent_prompt: true,
+          model: model,
+          max_tokens: 256
+        }
+      end
+
+      it "yields streamed response and returns correct response" do
+        expect(ai_gateway_request)
+          .to receive(:request)
+          .with({ options: options, prompt: instance_of(Array) }, unit_primitive: :documentation_search)
+          .once
+          .and_yield(answer)
+          .and_return(completion_response)
+
+        expect(execute).to be_an_instance_of(::Gitlab::Llm::Anthropic::ResponseModifiers::TanukiBot)
+      end
     end
   end
 end
