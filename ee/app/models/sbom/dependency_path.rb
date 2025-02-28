@@ -1,0 +1,102 @@
+# frozen_string_literal: true
+
+module Sbom
+  class DependencyPath < ::Gitlab::Database::SecApplicationRecord
+    include IgnorableColumns
+
+    self.table_name = 'sbom_occurrences'
+    ignore_columns %w[created_at updated_at component_version_id pipeline_id source_id commit_sha
+      component_id uuid package_manager component_name input_file_path licenses highest_severity vulnerability_count
+      source_package_id archived traversal_ids ancestors reachability], remove_never: true
+
+    MAX_DEPTH = 20
+
+    attribute :id, :integer
+    attribute :dependency_name, :string
+    attribute :project_id, :integer
+    attribute :full_path, :string, array: true
+    attribute :version, :string, array: true
+    attribute :is_cyclic, :boolean
+    attribute :max_depth_reached, :boolean
+
+    def self.find(id:, project_id:)
+      query = <<-SQL
+        WITH RECURSIVE dependency_tree AS (
+          SELECT
+              so.component_id as id,
+              so.component_name as dependency_name,
+              so.project_id,
+              ARRAY [a->>'name', so.component_name] as full_path,
+              ARRAY [a->>'version', versions.version] as version,
+              ARRAY [concat_ws('@', a->>'name', a->>'version'), concat_ws('@', so.component_name, versions.version)] as combined_path,
+              false as is_cyclic,
+              false as max_depth_reached
+          FROM
+              sbom_occurrences so
+              inner join sbom_component_versions versions on versions.id = so.component_version_id
+              CROSS JOIN LATERAL jsonb_array_elements(so.ancestors) as a
+          where
+              so.component_id = :id
+              and so.project_id = :project_id
+          UNION
+          ALL
+          SELECT
+              dt.id,
+              dt.dependency_name,
+              dt.project_id,
+              ARRAY [a->>'name'] || dt.full_path,
+              ARRAY [a->>'version'] || dt.version,
+              ARRAY [concat_ws('@', a->>'name', a->>'version')] || dt.combined_path,
+              dt.combined_path && ARRAY[concat_ws('@', a->>'name', a->>'version')],
+              array_length(dt.full_path, 1) = :max_depth
+          FROM
+              dependency_tree dt
+              JOIN sbom_occurrences so ON so.component_name = dt.full_path [1]
+              join sbom_component_versions versions on versions.id = so.component_version_id and versions.version = dt.version [1]
+              CROSS JOIN LATERAL jsonb_array_elements(so.ancestors) as a
+          WHERE
+              array_length(dt.full_path, 1) <= :max_depth
+              and so.project_id = :project_id
+              and not dt.is_cyclic
+        )
+        SELECT
+            id,
+            dependency_name,
+            project_id,
+            full_path,
+            combined_path,
+            version,
+            is_cyclic,
+            max_depth_reached
+        FROM
+          dependency_tree
+        WHERE NOT EXISTS (  -- Remove partial paths
+            SELECT 1
+            FROM dependency_tree dt2
+            WHERE dependency_tree.combined_path <@ dt2.combined_path -- Current path is a sub-path of another path
+            AND dependency_tree.combined_path <> dt2.combined_path -- Don't remove yourself!
+            AND NOT dependency_tree.is_cyclic -- Keep cyclic paths
+        );
+      SQL
+
+      query_params = {
+        project_id: project_id,
+        id: id,
+        max_depth: MAX_DEPTH
+      }
+
+      sql = sanitize_sql_array([query, query_params])
+
+      DependencyPath.find_by_sql(sql)
+    end
+
+    def path
+      full_path.each_with_index.map do |path, index|
+        {
+          name: path,
+          version: version[index]
+        }
+      end
+    end
+  end
+end
