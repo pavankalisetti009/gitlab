@@ -17,17 +17,5 @@ RSpec.describe JwksController, feature_category: :system_access do
         satisfy { |jwk| key_match?(jwk, rsa_key_2) }
       ])
     end
-
-    context 'when cloud_connector_expose_keys FF is disabled' do
-      it 'does not include Cloud Connector keys' do
-        stub_feature_flags(cloud_connector_expose_keys: false)
-
-        expect(Rails.application.credentials).to receive(:openid_connect_signing_key).and_return(nil)
-        expect(Gitlab::CurrentSettings).to receive(:ci_jwt_signing_key).and_return(nil)
-        expect(CloudConnector::Keys).not_to receive(:all_as_pem)
-
-        expect(jwks.size).to eq(0)
-      end
-    end
   end
 end
