@@ -73,6 +73,20 @@ export const SaasWithProjectLimits = {
   }),
 };
 
+export const SaasWithHighProjectLimits = {
+  render: createTemplate({
+    provide: {
+      aboveSizeLimit: true,
+      subjectToHighLimit: true,
+      isUsingNamespaceEnforcement: false,
+      isUsingProjectEnforcementWithLimits: true,
+      isUsingProjectEnforcementWithNoLimits: false,
+      totalRepositorySizeExcess: 3 * GIBIBYTE,
+      customSortKey: 'EXCESS_REPO_STORAGE_SIZE_DESC',
+    },
+  }),
+};
+
 export const SaasWithNoLimits = {
   render: createTemplate({
     provide: {
