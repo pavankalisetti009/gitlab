@@ -147,6 +147,44 @@ module Integrations
 end
 ```
 
+### Define event attribute defaults
+
+Integrations have a problem, tracked in [issue #382999](https://gitlab.com/gitlab-org/gitlab/-/issues/382999),
+where due to the default for most
+[event attributes](https://gitlab.com/gitlab-org/gitlab/-/blob/cd5edf7d6fe31db22d0f3a024ee1c704d817535b/app/models/concerns/integrations/base/integration.rb#L490-504)
+being `true`, we load integrations more frequently than necessary.
+Until we address that issue integrations must define all event `attribute` properties in the following way:
+
+- For notification integrations (ones that include `Integrations::Base::ChatNotification`), set all event attributes to `false`.
+  This presents a form with checkboxes per event trigger that are unchecked by default.
+- For other integrations:
+  - Set event attributes that match the integration's [trigger events](#define-trigger-events) to `true`.
+  - Set all other event `attributes` to `false`.
+
+For example, an integration that responds to only commit and merge request [trigger events](#define-trigger-events) should set its event attributes as below:
+
+```ruby
+attribute :commit_events, default: true
+attribute :merge_requests_events, default: true
+
+attribute :alert_events, default: false
+attribute :incident_events, default: false
+attribute :confidential_issues_events, default: false
+attribute :confidential_note_events, default: false
+attribute :issues_events, default: false
+attribute :job_events, default: false
+attribute :note_events, default: false
+attribute :pipeline_events, default: false
+attribute :push_events, default: false
+attribute :tag_push_events, default: false
+attribute :wiki_page_events, default: false
+```
+
+#### Changing event attribute defaults
+
+If an event attribute for an existing integration changes to `true`,
+this requires a data migration to back-fill the attribute value for old records.
+
 ### Security enhancement features
 
 #### Masking channel values
