@@ -173,19 +173,18 @@ RSpec.describe Security::Orchestration::UnassignService, :sidekiq_inline, featur
           end
         end
 
-        it 'unassigns policy project and enqueues OrchestrationConfigurationRemoveBotForNamespaceWorker',
+        it 'does not unassign the policy project and enqueues OrchestrationConfigurationRemoveBotForNamespaceWorker',
           :aggregate_failures do
           expect(Security::OrchestrationConfigurationRemoveBotForNamespaceWorker).to receive(:perform_async).with(
             container.id, current_user.id)
 
           expect(result).to be_success
+
           exists = Security::OrchestrationPolicyConfiguration.exists?(
             container.security_orchestration_policy_configuration.id)
-          expect(exists).to be(false)
+          expect(exists).to be(true)
         end
       end
-
-      it_behaves_like 'unassigns policy project'
     end
   end
 end

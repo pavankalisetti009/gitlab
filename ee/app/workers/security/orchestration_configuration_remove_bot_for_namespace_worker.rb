@@ -3,30 +3,35 @@
 module Security
   class OrchestrationConfigurationRemoveBotForNamespaceWorker
     include ApplicationWorker
+    include Security::OrchestrationConfigurationBotManagementForNamespaces
 
-    PROJECTS_BATCH_SYNC_DELAY = 1.second
-
-    feature_category :security_policy_management
     data_consistency :sticky
-    urgency :low
     idempotent!
 
-    concurrency_limit -> { 200 }
+    def worker
+      Security::OrchestrationConfigurationRemoveBotWorker
+    end
 
-    def perform(namespace_id, current_user_id)
-      namespace = Namespace.find_by_id(namespace_id)
-      return unless namespace
+    def after_perform(namespace, current_user_id)
+      delete_configuration(namespace, current_user_id)
+    end
 
-      return unless User.id_exists?(current_user_id)
+    private
 
-      project_ids = namespace.security_orchestration_policy_configuration.all_project_ids
+    def delete_configuration(namespace, current_user_id)
+      old_policy_project = old_policy_project(namespace)
+      configuration = configuration(namespace)
 
-      Security::OrchestrationConfigurationRemoveBotWorker.bulk_perform_in_with_contexts(
-        PROJECTS_BATCH_SYNC_DELAY,
-        project_ids,
-        arguments_proc: ->(project_id) { [project_id, current_user_id] },
-        context_proc: ->(namespace) { { namespace: namespace } }
-      )
+      Security::DeleteOrchestrationConfigurationWorker.perform_async(
+        configuration.id, current_user_id, old_policy_project.id)
+    end
+
+    def configuration(namespace)
+      namespace.security_orchestration_policy_configuration
+    end
+
+    def old_policy_project(namespace)
+      namespace.security_orchestration_policy_configuration.security_policy_management_project
     end
   end
 end
