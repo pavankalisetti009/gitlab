@@ -223,8 +223,7 @@ RSpec.describe SearchService, feature_category: :global_search do
       end
 
       it 'returns an error if scope is not blobs' do
-        allow(search_service).to receive(:use_zoekt?).and_return(true)
-        allow(search_service).to receive(:scope).and_return('issues')
+        allow(search_service).to receive_messages(use_zoekt?: true, scope: 'issues')
 
         expect(search_service.search_type_errors).to eq('Zoekt can only be used for blobs')
       end
