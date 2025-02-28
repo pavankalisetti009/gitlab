@@ -51914,6 +51914,9 @@ msgstr ""
 msgid "SecurityConfiguration|Using custom settings. You won't receive automatic updates on this variable. %{anchorStart}Restore to default%{anchorEnd}"
 msgstr ""
 
+msgid "SecurityConfiguration|Vulnerabilities"
+msgstr ""
+
 msgid "SecurityConfiguration|Vulnerabilities are retained in the database for one year after the last update. After one year of inactivity, vulnerabilities are archived on the first of each month. Archives are removed after five years."
 msgstr ""
 
