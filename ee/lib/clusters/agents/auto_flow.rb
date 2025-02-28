@@ -16,6 +16,15 @@ module Clusters
           autoflow_enabled?(actor) && Feature.enabled?(:autoflow_issue_events_enabled, actor)
         end
 
+        def merge_request_events_enabled?(merge_request_id)
+          merge_request = ::MergeRequest.find_by_id(merge_request_id)
+          return false unless merge_request
+
+          actor = merge_request.target_project
+
+          autoflow_enabled?(actor) && Feature.enabled?(:autoflow_merge_request_events_enabled, actor)
+        end
+
         private
 
         def autoflow_enabled?(actor)

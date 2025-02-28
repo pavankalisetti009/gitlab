@@ -43,6 +43,13 @@ RSpec.describe MergeRequests::ReopenService, feature_category: :code_review_work
       end
     end
 
+    it 'publishes reopened event' do
+      expect { merge_request_reopen_service }
+        .to publish_event(::MergeRequests::ReopenedEvent).with(
+          merge_request_id: merge_request.id
+        )
+    end
+
     context 'when the MR contains approvals' do
       let(:user) { create(:user) }
       let(:user2) { create(:user) }

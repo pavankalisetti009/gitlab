@@ -1483,6 +1483,56 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: clusters_agents_auto_flow_merge_requests_closed_event
+  :worker_name: Clusters::Agents::AutoFlow::MergeRequests::ClosedEventWorker
+  :feature_category: :deployment_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
+- :name: clusters_agents_auto_flow_merge_requests_created_event
+  :worker_name: Clusters::Agents::AutoFlow::MergeRequests::CreatedEventWorker
+  :feature_category: :deployment_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
+- :name: clusters_agents_auto_flow_merge_requests_merged_event
+  :worker_name: Clusters::Agents::AutoFlow::MergeRequests::MergedEventWorker
+  :feature_category: :deployment_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
+- :name: clusters_agents_auto_flow_merge_requests_reopened_event
+  :worker_name: Clusters::Agents::AutoFlow::MergeRequests::ReopenedEventWorker
+  :feature_category: :deployment_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
+- :name: clusters_agents_auto_flow_merge_requests_updated_event
+  :worker_name: Clusters::Agents::AutoFlow::MergeRequests::UpdatedEventWorker
+  :feature_category: :deployment_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: clusters_agents_auto_flow_work_items_closed_event
   :worker_name: Clusters::Agents::AutoFlow::WorkItems::ClosedEventWorker
   :feature_category: :deployment_management

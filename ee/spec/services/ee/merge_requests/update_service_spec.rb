@@ -61,6 +61,13 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
       described_class.new(project: project, current_user: current_user, params: opts).execute(merge_request)
     end
 
+    it 'publishes updated event' do
+      expect { update_merge_request(title: 'New title') }
+        .to publish_event(::MergeRequests::UpdatedEvent).with(
+          merge_request_id: merge_request.id
+        )
+    end
+
     context 'when code owners changes' do
       let(:code_owner) { create(:user) }
 

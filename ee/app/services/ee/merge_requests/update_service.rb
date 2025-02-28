@@ -44,6 +44,11 @@ module EE
         merge_request.run_after_commit do
           ::MergeRequests::SyncCodeOwnerApprovalRulesWorker.perform_async(merge_request.id)
         end
+
+        event = ::MergeRequests::UpdatedEvent.new(data: { merge_request_id: merge_request.id })
+        merge_request.run_after_commit_or_now do
+          ::Gitlab::EventStore.publish(event)
+        end
       end
 
       override :delete_approvals_on_target_branch_change

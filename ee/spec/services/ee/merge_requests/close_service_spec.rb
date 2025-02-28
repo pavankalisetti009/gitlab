@@ -19,6 +19,13 @@ RSpec.describe MergeRequests::CloseService, feature_category: :code_review_workf
       service.execute(merge_request)
     end
 
+    it 'publishes closed event' do
+      expect { service.execute(merge_request) }
+        .to publish_event(::MergeRequests::ClosedEvent).with(
+          merge_request_id: merge_request.id
+        )
+    end
+
     context 'when a temporary unapproval is needed for the MR' do
       it 'removes the unmergeable flag after the service is run' do
         merge_request.approval_state.temporarily_unapprove!
