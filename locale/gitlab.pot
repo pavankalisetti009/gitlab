@@ -42790,6 +42790,9 @@ msgstr ""
 msgid "Pipelines|If you are unsure, please ask a project maintainer to review it for you."
 msgstr ""
 
+msgid "Pipelines|Inputs"
+msgstr ""
+
 msgid "Pipelines|It is recommended the code is reviewed thoroughly before running this pipeline with the parent project's CI resource."
 msgstr ""
 
@@ -56005,6 +56008,9 @@ msgstr ""
 msgid "Specify an email address regex pattern to identify default internal users."
 msgstr ""
 
+msgid "Specify the input values to use in this pipeline."
+msgstr ""
+
 msgid "Spent at can't be a future date and time."
 msgstr ""
 
@@ -59289,6 +59295,12 @@ msgid "This is a private email address %{helpIcon} generated just for you. Anyon
 msgstr ""
 
 msgid "This is a security log of authentication events involving your account."
+msgstr ""
+
+msgid "This is a username."
+msgstr ""
+
+msgid "This is an ID."
 msgstr ""
 
 msgid "This is an archived project. Repository and other project resources are read-only."
