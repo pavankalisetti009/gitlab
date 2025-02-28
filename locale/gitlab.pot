@@ -52874,7 +52874,7 @@ msgstr ""
 msgid "SecurityOrchestration|This %{namespaceType} does not contain any security policies."
 msgstr ""
 
-msgid "SecurityOrchestration|This %{namespaceType} is not linked to a security policy project"
+msgid "SecurityOrchestration|This %{namespaceType} is not linked to a security policy project. Either link it to an existing project or create a new policy, which will create a new project that you can use as a security policy project. For help, see %{linkStart}policies%{linkEnd}."
 msgstr ""
 
 msgid "SecurityOrchestration|This applies to following compliance frameworks:"
