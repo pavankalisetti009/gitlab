@@ -154,7 +154,7 @@ RSpec.describe Gitlab::GitAccessProject do
           end
 
           context 'when repository size is above the limit' do
-            let(:repository_size) { 3.megabyte }
+            let(:repository_size) { 3.megabytes }
             let(:repository_size_limit) { 2.megabytes }
 
             it_behaves_like 'a push to repository over the limit'
@@ -225,7 +225,7 @@ RSpec.describe Gitlab::GitAccessProject do
           end
 
           context 'when repository size is above the limit' do
-            let(:repository_size) { 3.megabyte }
+            let(:repository_size) { 3.megabytes }
             let(:repository_size_limit) { 2.megabytes }
 
             context 'when new change size exceeds the namespace storage limit' do

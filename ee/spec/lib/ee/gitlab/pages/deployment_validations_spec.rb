@@ -13,7 +13,7 @@ RSpec.describe Gitlab::Pages::DeploymentValidations, feature_category: :pages do
     instance_double(
       ::Gitlab::Ci::Build::Artifacts::Metadata::Entry,
       entries: [],
-      total_size: 50.megabyte
+      total_size: 50.megabytes
     )
   end
 
@@ -52,7 +52,7 @@ RSpec.describe Gitlab::Pages::DeploymentValidations, feature_category: :pages do
 
       context "when size is below the limit" do
         before do
-          allow(metadata_entry).to receive(:total_size).and_return(249.megabyte)
+          allow(metadata_entry).to receive(:total_size).and_return(249.megabytes)
         end
 
         include_examples "valid pages deployment"
@@ -60,7 +60,7 @@ RSpec.describe Gitlab::Pages::DeploymentValidations, feature_category: :pages do
 
       context "when size is above the limit" do
         before do
-          allow(metadata_entry).to receive(:total_size).and_return(251.megabyte)
+          allow(metadata_entry).to receive(:total_size).and_return(251.megabytes)
         end
 
         include_examples "invalid pages deployment",
@@ -75,7 +75,7 @@ RSpec.describe Gitlab::Pages::DeploymentValidations, feature_category: :pages do
 
       context "when size is below the limit" do
         before do
-          allow(metadata_entry).to receive(:total_size).and_return(99.megabyte)
+          allow(metadata_entry).to receive(:total_size).and_return(99.megabytes)
         end
 
         include_examples "valid pages deployment"
@@ -83,7 +83,7 @@ RSpec.describe Gitlab::Pages::DeploymentValidations, feature_category: :pages do
 
       context "when size is above the limit" do
         before do
-          allow(metadata_entry).to receive(:total_size).and_return(101.megabyte)
+          allow(metadata_entry).to receive(:total_size).and_return(101.megabytes)
         end
 
         include_examples "invalid pages deployment",
