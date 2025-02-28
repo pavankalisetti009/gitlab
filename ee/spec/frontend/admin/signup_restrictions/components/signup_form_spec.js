@@ -1,5 +1,6 @@
 import { nextTick } from 'vue';
 import { GlButton, GlModal } from '@gitlab/ui';
+import waitForPromises from 'helpers/wait_for_promises';
 import { SEAT_CONTROL } from 'ee/pages/admin/application_settings/general/constants';
 import SeatControlSection from 'ee_component/pages/admin/application_settings/general/components/seat_control_section.vue';
 import { stubComponent } from 'helpers/stub_component';
@@ -19,12 +20,12 @@ describe('SignUpRestrictionsApp', () => {
     wrapper.find('[name="application_setting[auto_approve_pending_users]"]');
   const findFormSubmitButton = () => findForm().findComponent(GlButton);
 
-  const mountComponent = ({ injectedProps = {} } = {}) => {
+  const mountComponent = ({ provide = {} } = {}) => {
     wrapper = mountExtended(SignupForm, {
       provide: {
         glFeatures: { passwordComplexity: true, seatControl: true },
         ...mockData,
-        ...injectedProps,
+        ...provide,
       },
       stubs: {
         SignupCheckbox: true,
@@ -37,13 +38,15 @@ describe('SignUpRestrictionsApp', () => {
   });
 
   describe('form data', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       mountComponent({
-        injectedProps: {
+        provide: {
           canDisableMemberPromotionManagement: false,
           rolePromotionRequestsPath: '',
         },
       });
+
+      await waitForPromises();
     });
 
     it.each`
@@ -83,7 +86,7 @@ describe('SignUpRestrictionsApp', () => {
         const INITIAL_SEAT_CONTROL = SEAT_CONTROL.USER_CAP;
 
         mountComponent({
-          injectedProps: {
+          provide: {
             newUserSignupsCap: INITIAL_USER_CAP,
             seatControl: INITIAL_SEAT_CONTROL,
             pendingUserCount: 5,
