@@ -42,16 +42,6 @@ RSpec.describe ApprovalRulePresenter, feature_category: :compliance_management d
       end
 
       it { is_expected.to contain_exactly(private_member.user, public_member.user) }
-
-      context 'when mr_approvers_filter_hidden_users is disabled' do
-        before do
-          stub_feature_flags(mr_approvers_filter_hidden_users: false)
-        end
-
-        context 'when user cannot see one of the groups' do
-          it { is_expected.to be_empty }
-        end
-      end
     end
   end
 
