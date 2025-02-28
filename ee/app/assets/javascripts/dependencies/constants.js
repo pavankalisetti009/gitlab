@@ -20,3 +20,9 @@ export const DEPENDENCIES_TABLE_I18N = {
   toggleVulnerabilityList: s__('Dependencies|Toggle vulnerability list'),
   dependencyPathButtonText: s__('Dependencies|View dependency paths'),
 };
+
+export const EXPORT_FORMATS = {
+  csv: 'csv',
+  dependencyList: 'dependency_list',
+  jsonArray: 'json_array',
+};
