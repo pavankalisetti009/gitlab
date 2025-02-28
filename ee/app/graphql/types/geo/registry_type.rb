@@ -7,6 +7,7 @@ module Types
 
       included do
         authorize :read_geo_registry
+        connection_type_class Types::LimitedCountableConnectionType
 
         field :checksum_mismatch, GraphQL::Types::Boolean, null: true, description: "Indicate if the checksums of the #{graphql_name} do not match on the primary and secondary."
         field :created_at, Types::TimeType, null: true, description: "Timestamp when the #{graphql_name} was created"
