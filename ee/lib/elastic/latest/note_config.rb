@@ -22,7 +22,7 @@ module Elastic
         indexes :id, type: :long
 
         indexes :note, type: :text, index_options: 'positions', analyzer: :code_analyzer
-        indexes :project_id, type: :integer
+        indexes :project_id, type: :long
 
         indexes :noteable_type, type: :keyword
         indexes :noteable_id, type: :keyword
@@ -40,8 +40,8 @@ module Elastic
         indexes :snippets_access_level, type: :integer
 
         indexes :issue do
-          indexes :assignee_id, type: :integer
-          indexes :author_id, type: :integer
+          indexes :assignee_id, type: :long
+          indexes :author_id, type: :long
           indexes :confidential, type: :boolean
         end
 

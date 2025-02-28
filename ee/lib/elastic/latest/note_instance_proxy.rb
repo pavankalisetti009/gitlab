@@ -3,8 +3,6 @@
 module Elastic
   module Latest
     class NoteInstanceProxy < ApplicationInstanceProxy
-      # Schema version. The format is Date.today.strftime('%y_%m')
-      # Please update if you're changing the schema of the document
       SCHEMA_VERSION = 23_08
 
       delegate :noteable, to: :target
