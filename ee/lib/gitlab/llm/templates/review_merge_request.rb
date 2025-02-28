@@ -80,10 +80,11 @@ module Gitlab
           PROMPT
         )
 
-        def initialize(new_path, raw_diff, hunk)
+        def initialize(new_path, raw_diff, hunk, user)
           @new_path = new_path
           @raw_diff = raw_diff
           @hunk = hunk
+          @user = user
         end
 
         def to_prompt
@@ -92,8 +93,16 @@ module Gitlab
               Gitlab::Llm::Chain::Utils::Prompt.format_conversation([USER_MESSAGE], variables)
             ),
             system: Gitlab::Llm::Chain::Utils::Prompt.no_role_text([SYSTEM_MESSAGE], {}),
-            model: ::Gitlab::Llm::Anthropic::Client::CLAUDE_3_5_SONNET
+            model: model_version
           }
+        end
+
+        def model_version
+          if Feature.enabled?(:duo_code_review_claude_3_7_sonnet, user)
+            ::Gitlab::Llm::Anthropic::Client::CLAUDE_3_7_SONNET
+          else
+            ::Gitlab::Llm::Anthropic::Client::CLAUDE_3_5_SONNET
+          end
         end
 
         def variables
@@ -115,7 +124,7 @@ module Gitlab
           end.join("\n")
         end
 
-        attr_reader :new_path, :raw_diff, :hunk
+        attr_reader :new_path, :raw_diff, :hunk, :user
       end
     end
   end
