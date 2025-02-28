@@ -5,6 +5,8 @@ query memberRolePermissions($includeDescription: Boolean = true) {
       name
       value
       requirements
+      enabledForGroupAccessLevels
+      enabledForProjectAccessLevels
     }
   }
 }

@@ -1,14 +1,17 @@
 <script>
-import { GlTab, GlButton, GlIcon, GlSprintf, GlSkeletonLoader } from '@gitlab/ui';
+import { GlTab, GlButton, GlIcon, GlSprintf, GlSkeletonLoader, GlBadge } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { createAlert } from '~/alert';
 import memberRolePermissionsQuery from '../../graphql/member_role_permissions.query.graphql';
-import { isCustomRole } from '../../utils';
+import { isCustomRole, isPermissionPreselected } from '../../utils';
 
 export default {
-  components: { GlTab, GlButton, GlIcon, GlSprintf, GlSkeletonLoader },
+  i18n: {
+    badgeText: s__('MemberRole|Added from %{role}'),
+  },
+  components: { GlTab, GlButton, GlIcon, GlSprintf, GlSkeletonLoader, GlBadge },
   props: {
     role: {
       type: Object,
@@ -25,10 +28,18 @@ export default {
       query: memberRolePermissionsQuery,
       variables: { includeDescription: false },
       update(data) {
-        return data.memberRolePermissions.nodes.map((permission) => ({
-          ...permission,
-          checked: this.enabledPermissions.has(permission.value),
-        }));
+        return data.memberRolePermissions.nodes.map((permission) => {
+          const isPreselected = isPermissionPreselected(
+            permission,
+            this.role.baseAccessLevel.stringValue,
+          );
+
+          return {
+            ...permission,
+            checked: this.enabledPermissions.has(permission.value) || isPreselected,
+            isPreselected,
+          };
+        });
       },
       error() {
         createAlert({ message: s__('MemberRole|Could not fetch available permissions.') });
@@ -42,6 +53,9 @@ export default {
   computed: {
     enabledPermissions() {
       return new Set(this.role.enabledPermissions.nodes.map(({ value }) => value));
+    },
+    checkedPermissionsCount() {
+      return this.allPermissions.filter(({ checked }) => checked).length;
     },
     isCustomRole() {
       return isCustomRole(this.role);
@@ -102,7 +116,7 @@ export default {
           data-testid="custom-permissions-value"
         >
           <gl-sprintf :message="s__('MemberRole|%{count} of %{total} permissions added')">
-            <template #count>{{ enabledPermissions.size }}</template>
+            <template #count>{{ checkedPermissionsCount }}</template>
             <template #total>{{ allPermissions.length }}</template>
           </gl-sprintf>
         </dd>
@@ -119,6 +133,11 @@ export default {
             <gl-icon v-else name="merge-request-close-m" variant="disabled" />
 
             <span class="gl-ml-2">{{ permission.name }}</span>
+            <gl-badge v-if="permission.isPreselected" variant="info" class="-gl-my-1 gl-ml-2">
+              <gl-sprintf :message="$options.i18n.badgeText">
+                <template #role>{{ role.baseAccessLevel.humanAccess }}</template>
+              </gl-sprintf>
+            </gl-badge>
           </div>
         </div>
       </template>

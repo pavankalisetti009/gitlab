@@ -1,9 +1,19 @@
 <script>
-import { GlFormCheckbox, GlLoadingIcon, GlTable, GlSprintf, GlLink, GlAlert } from '@gitlab/ui';
+import {
+  GlFormCheckbox,
+  GlLoadingIcon,
+  GlTable,
+  GlSprintf,
+  GlLink,
+  GlAlert,
+  GlBadge,
+} from '@gitlab/ui';
 import { pull } from 'lodash';
 import { s__ } from '~/locale';
 import memberRolePermissionsQuery from 'ee/roles_and_permissions/graphql/member_role_permissions.query.graphql';
 import { helpPagePath } from '~/helpers/help_page_helper';
+import { BASE_ROLES } from '~/access_level/constants';
+import { isPermissionPreselected } from '../utils';
 
 export const FIELDS = [
   { key: 'checkbox', label: '' },
@@ -20,6 +30,7 @@ export default {
     permissionsFetchError: s__('MemberRole|Could not fetch available permissions.'),
     permissionsSelected: s__('MemberRole|%{count} of %{total} permissions selected'),
     permissionsSelectionError: s__('MemberRole|Select at least one permission.'),
+    badgeText: s__('MemberRole|Added from %{role}'),
   },
   components: {
     GlFormCheckbox,
@@ -28,6 +39,7 @@ export default {
     GlSprintf,
     GlTable,
     GlAlert,
+    GlBadge,
   },
   model: {
     prop: 'permissions',
@@ -41,6 +53,11 @@ export default {
     isValid: {
       type: Boolean,
       required: true,
+    },
+    selectedBaseRole: {
+      type: String,
+      required: false,
+      default: null,
     },
   },
   data() {
@@ -77,21 +94,22 @@ export default {
     },
     isAllPermissionsSelected() {
       return (
-        !this.isLoadingPermissions && this.permissions.length >= this.availablePermissions.length
+        !this.isLoadingPermissions && this.permissions.length >= this.selectablePermissions.length
       );
     },
     parentPermissionsLookup() {
-      return this.availablePermissions.reduce((acc, { value, requirements }) => {
-        if (requirements) {
-          acc[value] = requirements;
+      return this.selectablePermissions.reduce((acc, { value, requirements }) => {
+        const required = this.getSelectableValues(requirements);
+        if (required?.length) {
+          acc[value] = required;
         }
 
         return acc;
       }, {});
     },
     childPermissionsLookup() {
-      return this.availablePermissions.reduce((acc, { value, requirements }) => {
-        requirements?.forEach((requirement) => {
+      return this.selectablePermissions.reduce((acc, { value, requirements }) => {
+        this.getSelectableValues(requirements)?.forEach((requirement) => {
           // Create the array if it doesn't exist, then add the requirement to it.
           acc[requirement] = acc[requirement] || [];
           acc[requirement].push(value);
@@ -100,11 +118,31 @@ export default {
         return acc;
       }, {});
     },
+    permissionsList() {
+      return this.availablePermissions.map((permission) => {
+        const isPreselected = isPermissionPreselected(permission, this.selectedBaseRole);
+
+        return {
+          ...permission,
+          checked: this.permissions.includes(permission.value) || isPreselected,
+          disabled: isPreselected,
+        };
+      });
+    },
+    baseRoleName() {
+      return BASE_ROLES.find(({ value }) => value === this.selectedBaseRole)?.text;
+    },
+    selectablePermissions() {
+      return this.permissionsList.filter((item) => !item.disabled);
+    },
+    selectablePermissionValues() {
+      return new Set(this.selectablePermissions.map(({ value }) => value));
+    },
+    checkedPermissionsCount() {
+      return this.permissionsList.filter(({ checked }) => checked).length;
+    },
   },
   methods: {
-    isSelected({ value }) {
-      return this.permissions.includes(value);
-    },
     updatePermissions({ value }) {
       const selected = [...this.permissions];
 
@@ -121,7 +159,7 @@ export default {
       this.emitPermissionsUpdate(selected);
     },
     toggleAllPermissions() {
-      const permissions = this.isAllPermissionsSelected ? [] : this.availablePermissions;
+      const permissions = this.isAllPermissionsSelected ? [] : this.selectablePermissions;
       this.emitPermissionsUpdate(permissions.map(({ value }) => value));
     },
     emitPermissionsUpdate(permissions) {
@@ -151,6 +189,9 @@ export default {
         }
       });
     },
+    getSelectableValues(values) {
+      return values?.filter((value) => this.selectablePermissionValues.has(value));
+    },
   },
   FIELDS,
 };
@@ -166,7 +207,7 @@ export default {
         data-testid="permissions-selected-message"
       >
         <gl-sprintf :message="$options.i18n.permissionsSelected">
-          <template #count>{{ permissions.length }}</template>
+          <template #count>{{ checkedPermissionsCount }}</template>
           <template #total>{{ availablePermissions.length }}</template>
         </gl-sprintf>
       </span>
@@ -193,7 +234,7 @@ export default {
 
     <gl-table
       v-else
-      :items="availablePermissions"
+      :items="permissionsList"
       :fields="$options.FIELDS"
       :busy="isLoadingPermissions"
       hover
@@ -212,14 +253,17 @@ export default {
           :checked="isAllPermissionsSelected"
           :indeterminate="isSomePermissionsSelected"
           class="gl-min-h-0"
+          data-testid="permission-checkbox-all"
           @change="toggleAllPermissions"
         />
       </template>
 
       <template #cell(checkbox)="{ item }">
         <gl-form-checkbox
-          :checked="isSelected(item)"
+          :disabled="item.disabled"
+          :checked="item.checked"
           class="gl-min-h-0"
+          data-testid="permission-checkbox"
           @change="updatePermissions(item)"
         />
       </template>
@@ -227,6 +271,12 @@ export default {
       <template #cell(name)="{ item }">
         <span :class="{ 'gl-text-red-500': !isValid }" class="gl-whitespace-nowrap">
           {{ item.name }}
+
+          <gl-badge v-if="item.disabled" variant="info" class="gl-ml-2">
+            <gl-sprintf :message="$options.i18n.badgeText">
+              <template #role>{{ baseRoleName }}</template>
+            </gl-sprintf>
+          </gl-badge>
         </span>
       </template>
     </gl-table>

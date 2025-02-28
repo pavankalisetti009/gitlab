@@ -22,7 +22,8 @@ jest.mock('~/helpers/help_page_helper', () => ({
 const defaultPermissionsHandler = jest.fn().mockResolvedValue(mockPermissionsResponse);
 
 const enabledPermissions = mockDefaultPermissions.slice(0, 2);
-const disabledPermissions = mockDefaultPermissions.slice(2);
+const disabledPermissions = mockDefaultPermissions.slice(2, 4);
+const includedPermissions = mockDefaultPermissions.slice(5);
 
 describe('Role details tab', () => {
   let wrapper;
@@ -161,7 +162,7 @@ describe('Role details tab', () => {
         });
 
         it('shows custom permissions count', () => {
-          expect(findValueText('custom-permissions')).toBe('2 of 7 permissions added');
+          expect(findValueText('custom-permissions')).toBe('5 of 7 permissions added');
         });
 
         describe.each(enabledPermissions)('for permission $name', ({ name, value }) => {
@@ -195,6 +196,20 @@ describe('Role details tab', () => {
 
           it('has light gray text color', () => {
             expect(findPermissionFor(value).classes('gl-text-subtle')).toBe(true);
+          });
+        });
+
+        describe.each(includedPermissions)('for permission $name', ({ name, value }) => {
+          it('shows icon', () => {
+            expect(findPermissionIconFor(value).props()).toMatchObject({
+              name: 'check-sm',
+              variant: 'success',
+            });
+          });
+
+          it('shows permission name', () => {
+            expect(findPermissionFor(value).text()).toContain(name);
+            expect(findPermissionFor(value).text()).toContain('Added from Developer');
           });
         });
       });

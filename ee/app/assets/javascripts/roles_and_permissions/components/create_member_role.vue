@@ -286,7 +286,11 @@ export default {
       />
     </gl-form-group>
 
-    <permissions-selector v-model="memberRole.permissions" :is-valid="isPermissionsValid" />
+    <permissions-selector
+      v-model="memberRole.permissions"
+      :is-valid="isPermissionsValid"
+      :selected-base-role="memberRole.baseAccessLevel"
+    />
 
     <div class="gl-flex gl-flex-wrap gl-gap-3">
       <gl-button
