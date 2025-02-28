@@ -28,7 +28,6 @@ import {
 } from '~/work_items/utils';
 import { TYPENAME_MERGE_REQUEST } from '~/graphql_shared/constants';
 import {
-  I18N_WORK_ITEM_CREATE_BUTTON_LABEL,
   I18N_WORK_ITEM_ERROR_CREATING,
   sprintfWorkItem,
   i18n,
@@ -375,7 +374,7 @@ export default {
       return sprintfWorkItem(I18N_WORK_ITEM_ERROR_CREATING, this.selectedWorkItemTypeName);
     },
     createWorkItemText() {
-      return sprintfWorkItem(I18N_WORK_ITEM_CREATE_BUTTON_LABEL, this.selectedWorkItemTypeName);
+      return sprintfWorkItem(s__('WorkItem|Create %{workItemType}'), this.selectedWorkItemTypeName);
     },
     makeConfidentialText() {
       return sprintfWorkItem(
