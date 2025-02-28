@@ -7,11 +7,16 @@ import {
   parseBoolean,
 } from '~/lib/utils/common_utils';
 import {
+  filterToQueryObject,
+  urlQueryToFilter,
+} from '~/vue_shared/components/filtered_search_bar/filtered_search_utils';
+import {
   START_DATES,
   DATE_RANGE_OPTIONS,
   DATE_RANGE_OPTION_CUSTOM,
   DATE_RANGE_OPTION_KEYS,
   DEFAULT_SELECTED_DATE_RANGE_OPTION,
+  FILTERED_SEARCH_SUPPORTED_TOKENS,
 } from './constants';
 
 const isCustomOption = (option) => option && option === DATE_RANGE_OPTION_CUSTOM;
@@ -32,7 +37,11 @@ export const buildDefaultDashboardFilters = (queryString, dashboardDefaultFilter
   const { dateRangeOption, startDate, endDate, filterAnonUsers } = convertObjectPropsToCamelCase(
     queryToObject(queryString, { gatherArrays: true }),
   );
+  const searchFilters = urlQueryToFilter(queryString, {
+    filterNamesAllowList: FILTERED_SEARCH_SUPPORTED_TOKENS,
+  });
 
+  const isDateRangeFilterEnabled = dashboardDefaultFilters?.dateRange?.enabled;
   const optionKey = dateRangeOption || dashboardDefaultFilters?.dateRange?.defaultOption;
   const dateRangeOverride = DATE_RANGE_OPTION_KEYS.includes(optionKey)
     ? dateRangeOptionToFilter(getDateRangeOption(optionKey))
@@ -41,20 +50,30 @@ export const buildDefaultDashboardFilters = (queryString, dashboardDefaultFilter
   const customDateRange = isCustomOption(optionKey);
 
   return {
-    ...DEFAULT_FILTER,
-    // Override default filter with user defined option
-    ...dateRangeOverride,
-    // Override date range when selected option is custom date range
-    ...(customDateRange && { startDate: newDate(startDate) }),
-    ...(customDateRange && { endDate: newDate(endDate) }),
+    ...(isDateRangeFilterEnabled && {
+      ...DEFAULT_FILTER,
+      // Override default filter with user defined option
+      ...dateRangeOverride,
+      // Override date range when selected option is custom date range
+      ...(customDateRange && { startDate: newDate(startDate) }),
+      ...(customDateRange && { endDate: newDate(endDate) }),
+    }),
     filterAnonUsers: parseBoolean(filterAnonUsers),
+    searchFilters,
   };
 };
 
-export const filtersToQueryParams = ({ dateRangeOption, startDate, endDate, filterAnonUsers }) => {
+export const filtersToQueryParams = ({
+  dateRangeOption,
+  startDate,
+  endDate,
+  filterAnonUsers,
+  searchFilters,
+}) => {
   const customDateRange = isCustomOption(dateRangeOption);
 
-  return convertObjectPropsToSnakeCase({
+  const searchFiltersQueryObj = filterToQueryObject(searchFilters);
+  const additionalFiltersQueryObj = convertObjectPropsToSnakeCase({
     dateRangeOption,
     // Clear the date range unless the custom date range is selected
     startDate: customDateRange ? formatDate(startDate, ISO_SHORT_FORMAT) : null,
@@ -62,6 +81,8 @@ export const filtersToQueryParams = ({ dateRangeOption, startDate, endDate, filt
     // Clear the anon users filter unless truthy
     filterAnonUsers: filterAnonUsers || null,
   });
+
+  return { ...additionalFiltersQueryObj, ...searchFiltersQueryObj };
 };
 
 export function isDashboardFilterEnabled(filter) {

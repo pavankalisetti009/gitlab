@@ -49,7 +49,10 @@ import {
 } from 'jest/vue_shared/components/customizable_dashboard/mock_data';
 import { stubComponent } from 'helpers/stub_component';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
-import UrlSync, { HISTORY_REPLACE_UPDATE_METHOD } from '~/vue_shared/components/url_sync.vue';
+import UrlSync, {
+  HISTORY_REPLACE_UPDATE_METHOD,
+  URL_SET_PARAMS_STRATEGY,
+} from '~/vue_shared/components/url_sync.vue';
 import FilteredSearchFilter from 'ee/analytics/analytics_dashboards/components/filters/filtered_search_filter.vue';
 import {
   TEST_CUSTOM_DASHBOARDS_GROUP,
@@ -939,6 +942,7 @@ describe('AnalyticsDashboard', () => {
       it('synchronizes the filters with the URL', () => {
         expect(findUrlSync().props()).toMatchObject({
           historyUpdateMethod: HISTORY_REPLACE_UPDATE_METHOD,
+          urlParamsUpdateStrategy: URL_SET_PARAMS_STRATEGY,
           query: filtersToQueryParams(defaultFilters),
         });
       });
@@ -1036,6 +1040,10 @@ describe('AnalyticsDashboard', () => {
     });
 
     describe('date range filter', () => {
+      const defaultDateRangeFilters = buildDefaultDashboardFilters('', {
+        dateRange: { enabled: true },
+      });
+
       beforeEach(async () => {
         await setupDashboardWithFilters({ dateRange: { enabled: true } });
       });
@@ -1043,15 +1051,16 @@ describe('AnalyticsDashboard', () => {
       it('synchronizes the filters with the URL', () => {
         expect(findUrlSync().props()).toMatchObject({
           historyUpdateMethod: HISTORY_REPLACE_UPDATE_METHOD,
-          query: filtersToQueryParams(defaultFilters),
+          urlParamsUpdateStrategy: URL_SET_PARAMS_STRATEGY,
+          query: filtersToQueryParams(defaultDateRangeFilters),
         });
       });
 
       it('shows the date range filter and passes the default options and filters', () => {
         expect(findDateRangeFilter().props()).toMatchObject({
-          startDate: defaultFilters.startDate,
-          endDate: defaultFilters.endDate,
-          defaultOption: defaultFilters.dateRangeOption,
+          startDate: defaultDateRangeFilters.startDate,
+          endDate: defaultDateRangeFilters.endDate,
+          defaultOption: defaultDateRangeFilters.dateRangeOption,
           dateRangeLimit: 0,
         });
       });
@@ -1092,9 +1101,9 @@ describe('AnalyticsDashboard', () => {
 
       it('sets the panel filters', () => {
         expect(findAllPanels().at(0).props('filters')).toMatchObject({
-          dateRangeOption: defaultFilters.dateRangeOption,
-          startDate: defaultFilters.startDate,
-          endDate: defaultFilters.endDate,
+          dateRangeOption: defaultDateRangeFilters.dateRangeOption,
+          startDate: defaultDateRangeFilters.startDate,
+          endDate: defaultDateRangeFilters.endDate,
         });
       });
 
@@ -1113,6 +1122,7 @@ describe('AnalyticsDashboard', () => {
         it('synchronizes the updated filters with the URL', () => {
           expect(findUrlSync().props()).toMatchObject({
             historyUpdateMethod: HISTORY_REPLACE_UPDATE_METHOD,
+            urlParamsUpdateStrategy: URL_SET_PARAMS_STRATEGY,
             query: filtersToQueryParams(mockDateRangeFilterChangePayload),
           });
         });
@@ -1124,8 +1134,18 @@ describe('AnalyticsDashboard', () => {
         await setupDashboardWithFilters({ filteredSearch: { enabled: true } });
       });
 
+      it('synchronizes the filters with the URL', () => {
+        expect(findUrlSync().props()).toMatchObject({
+          historyUpdateMethod: HISTORY_REPLACE_UPDATE_METHOD,
+          urlParamsUpdateStrategy: URL_SET_PARAMS_STRATEGY,
+          query: filtersToQueryParams(defaultFilters),
+        });
+      });
+
       it('shows the filtered search filter', () => {
-        expect(findFilteredSearchFilter().exists()).toBe(true);
+        expect(findFilteredSearchFilter().props()).toMatchObject({
+          initialFilterValue: defaultFilters.searchFilters,
+        });
       });
 
       it('sets the filtered search options when they are present', async () => {
@@ -1150,6 +1170,20 @@ describe('AnalyticsDashboard', () => {
           expect(findAllPanels().at(0).props('filters')).toMatchObject({
             searchFilters: mockFilteredSearchChangePayload,
           });
+        });
+
+        it('synchronizes the updated filters with the URL', () => {
+          expect(findUrlSync().props()).toMatchObject({
+            historyUpdateMethod: HISTORY_REPLACE_UPDATE_METHOD,
+            urlParamsUpdateStrategy: URL_SET_PARAMS_STRATEGY,
+            query: filtersToQueryParams({ searchFilters: mockFilteredSearchChangePayload }),
+          });
+        });
+
+        it(`updates the search filter's initial value with the updated filters`, () => {
+          expect(findFilteredSearchFilter().props('initialFilterValue')).toEqual(
+            mockFilteredSearchChangePayload,
+          );
         });
       });
     });

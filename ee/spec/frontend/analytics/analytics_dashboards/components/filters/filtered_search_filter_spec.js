@@ -21,6 +21,7 @@ import {
   OPERATORS_IS_NOT,
   OPERATORS_IS_NOT_OR,
   TOKEN_TYPE_ASSIGNEE,
+  TOKEN_TYPE_AUTHOR,
   TOKEN_TYPE_LABEL,
   TOKEN_TYPE_MILESTONE,
 } from '~/vue_shared/components/filtered_search_bar/constants';
@@ -135,6 +136,27 @@ describe('FilteredSearchFilter', () => {
       await nextTick();
 
       expect(wrapper.emitted('change')).toEqual([[mockFilteredSearchChangePayload]]);
+    });
+  });
+
+  describe('initial filter value', () => {
+    const initialFilterValue = {
+      [TOKEN_TYPE_AUTHOR]: [
+        {
+          operator: '=',
+          value: 'john_smith',
+        },
+      ],
+    };
+
+    beforeEach(() => {
+      createWrapper({ props: { initialFilterValue } });
+    });
+
+    it('passes initial filter value to filtered search bar', () => {
+      expect(findFilteredSearchBar().props('initialFilterValue')).toEqual([
+        { type: TOKEN_TYPE_AUTHOR, value: { data: 'john_smith', operator: '=' } },
+      ]);
     });
   });
 

@@ -16,7 +16,10 @@ import {
 import { saveCustomDashboard } from 'ee/analytics/analytics_dashboards/api/dashboards_api';
 import { BUILT_IN_PRODUCT_ANALYTICS_DASHBOARDS } from 'ee/analytics/dashboards/constants';
 import UsageOverviewBackgroundAggregationWarning from 'ee/analytics/dashboards/components/usage_overview_background_aggregation_warning.vue';
-import UrlSync, { HISTORY_REPLACE_UPDATE_METHOD } from '~/vue_shared/components/url_sync.vue';
+import UrlSync, {
+  HISTORY_REPLACE_UPDATE_METHOD,
+  URL_SET_PARAMS_STRATEGY,
+} from '~/vue_shared/components/url_sync.vue';
 import { updateApolloCache } from '../utils';
 import {
   AI_IMPACT_DASHBOARD,
@@ -494,6 +497,7 @@ export default {
   AI_IMPACT_DOCUMENTATION_LINK: helpPagePath('user/analytics/ai_impact_analytics'),
   DUO_PRO_SUBSCRIPTION_ADD_ON_LINK: helpPagePath('subscriptions/subscription-add-ons'),
   HISTORY_REPLACE_UPDATE_METHOD,
+  URL_SET_PARAMS_STRATEGY,
 };
 </script>
 
@@ -564,6 +568,7 @@ export default {
           <filtered-search-filter
             v-if="showFilteredSearchFilter"
             class="gl-basis-full"
+            :initial-filter-value="filters.searchFilters"
             :options="filteredSearchOptions"
             @change="setFilteredSearchFilter"
           />
@@ -588,6 +593,7 @@ export default {
           />
           <url-sync
             :query="queryParams"
+            :url-params-update-strategy="$options.URL_SET_PARAMS_STRATEGY"
             :history-update-method="$options.HISTORY_REPLACE_UPDATE_METHOD"
           />
         </template>
