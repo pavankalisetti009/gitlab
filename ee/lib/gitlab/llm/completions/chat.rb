@@ -161,6 +161,7 @@ module Gitlab
           end
 
           Gitlab::AiGateway.push_feature_flag(:duo_chat_react_agent_claude_3_7, user)
+          Gitlab::AiGateway.push_feature_flag(:duo_chat_docs_qa_claude_3_7, user)
 
           return if ::CloudConnector.self_managed_cloud_connected?
 
