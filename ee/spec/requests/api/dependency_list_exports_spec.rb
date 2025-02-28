@@ -178,6 +178,17 @@ RSpec.describe API::DependencyListExports, feature_category: :dependency_managem
       it_behaves_like 'supports export type', 'csv'
       it_behaves_like 'does not support export type', 'json_array'
       it_behaves_like 'does not support export type', 'sbom'
+
+      context 'with no export_type' do
+        let(:export_type) { nil }
+
+        it 'creates export with dependency_list type' do
+          post api(request_path, user), params: params
+
+          expect(response).to have_gitlab_http_status(:created)
+          expect(json_response['export_type']).to eq('dependency_list')
+        end
+      end
     end
   end
 
@@ -199,6 +210,17 @@ RSpec.describe API::DependencyListExports, feature_category: :dependency_managem
       it_behaves_like 'does not support export type', 'csv'
       it_behaves_like 'does not support export type', 'dependency_list'
       it_behaves_like 'does not support export type', 'sbom'
+
+      context 'with no export_type' do
+        let(:export_type) { nil }
+
+        it 'creates export with json_array type' do
+          post api(request_path, user), params: params
+
+          expect(response).to have_gitlab_http_status(:created)
+          expect(json_response['export_type']).to eq('json_array')
+        end
+      end
     end
   end
 
@@ -220,6 +242,17 @@ RSpec.describe API::DependencyListExports, feature_category: :dependency_managem
       it_behaves_like 'does not support export type', 'csv'
       it_behaves_like 'does not support export type', 'dependency_list'
       it_behaves_like 'does not support export type', 'json_array'
+
+      context 'with no export_type' do
+        let(:export_type) { nil }
+
+        it 'creates export with sbom type' do
+          post api(request_path, user), params: params
+
+          expect(response).to have_gitlab_http_status(:created)
+          expect(json_response['export_type']).to eq('sbom')
+        end
+      end
     end
   end
 
