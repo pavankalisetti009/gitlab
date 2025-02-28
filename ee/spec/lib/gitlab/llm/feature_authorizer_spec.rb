@@ -28,6 +28,10 @@ RSpec.describe Gitlab::Llm::FeatureAuthorizer, feature_category: :ai_abstraction
       end
 
       context 'when ai_global_switch is turned off' do
+        before do
+          stub_const("::Gitlab::Llm::Utils::AiFeaturesCatalogue::LIST", feature_name => { self_managed: false })
+        end
+
         it 'returns false' do
           stub_feature_flags(ai_global_switch: false)
 
