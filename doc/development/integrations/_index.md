@@ -185,7 +185,30 @@ attribute :wiki_page_events, default: false
 If an event attribute for an existing integration changes to `true`,
 this requires a data migration to back-fill the attribute value for old records.
 
-### Security enhancement features
+#### Do not add Ruby gems
+
+GitLab integrations must not add Ruby gems to our `Gemfile`.
+Instead, any required HTTP clients or small abstractions must be implemented in GitLab.
+
+Gems that wrap interactions with third-party services may look convenient at first glance,
+but they offer minimal benefit compared to the costs involved:
+
+- They increase the potential surface area of security problems and the effort required to fix them.
+- Often these gems make HTTP calls on your behalf. As integrations can make HTTP calls to remote
+  servers configured by users, it is critical that we
+  [fully control the network calls](#all-http-calls-must-use-gitlabhttp).
+- There is a maintenance cost of managing gem upgrades.
+- They can block us from using newer features.
+
+### Security requirements
+
+#### All HTTP calls must use `Gitlab::HTTP`
+
+Integrations must always make HTTP calls using `Gitlab::HTTP`, which:
+
+- Ensures that [network settings](../../security/webhooks.md) are enforced for HTTP calls.
+- Has additional [security hardening](../../security/webhooks.md#enforce-dns-rebinding-attack-protection) features.
+- Is our single source of truth for making secure HTTP calls.
 
 #### Masking channel values
 
