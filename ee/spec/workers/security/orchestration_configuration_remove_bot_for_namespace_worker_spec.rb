@@ -3,62 +3,26 @@
 require 'spec_helper'
 
 RSpec.describe Security::OrchestrationConfigurationRemoveBotForNamespaceWorker, feature_category: :security_policy_management do
-  describe '#perform' do
-    let_it_be(:namespace, reload: true) { create(:group, :with_security_orchestration_policy_configuration) }
-    let_it_be(:namespace_projects) { create_list(:project, 2, group: namespace) }
-    let_it_be(:user) { create(:user) }
-    let(:current_user_id) { nil }
-    let(:namespace_project_ids) { namespace_projects.map(&:id) }
+  let(:management_worker) { Security::OrchestrationConfigurationRemoveBotWorker }
 
-    subject(:run_worker) { described_class.new.perform(namespace_id, current_user_id) }
+  it_behaves_like 'bot management worker examples'
 
-    before_all do
-      namespace_projects.each do |project|
-        project.add_owner(user)
-      end
-    end
-
-    shared_examples_for 'worker exits without error' do
-      it 'does not enqueues the Security::OrchestrationConfigurationRemoveBotWorker' do
-        expect(Security::OrchestrationConfigurationRemoveBotWorker).not_to receive(:bulk_perform_in_with_contexts)
-
-        run_worker
-      end
-
-      it 'exits without error' do
-        expect { run_worker }.not_to raise_error
-      end
-    end
-
-    context 'with invalid namespace_id' do
-      let(:namespace_id) { non_existing_record_id }
-
-      it_behaves_like 'worker exits without error'
-    end
-
+  describe 'delete_configuration' do
     context 'with valid project_id' do
+      let_it_be(:namespace, reload: true) { create(:group, :with_security_orchestration_policy_configuration) }
       let(:namespace_id) { namespace.id }
 
-      context 'when user with given current_user_id does not exist' do
-        let(:current_user_id) { non_existing_record_id }
-
-        it_behaves_like 'worker exits without error'
-      end
-
       context 'when current user is provided' do
-        let(:current_user_id) { user.id }
+        let_it_be(:current_user) { create(:user) }
+        let(:current_user_id) { current_user.id }
 
-        it 'enqueues the OrchestrationConfigurationRemoveBotWorker for all projects', :aggregate_failures do
-          expect(Security::OrchestrationConfigurationRemoveBotWorker)
-            .to receive(:bulk_perform_in_with_contexts)
-            .with(kind_of(Integer), namespace_project_ids,
-              { arguments_proc: kind_of(Proc), context_proc: kind_of(Proc) })
+        let(:policy_configuration) { namespace.security_orchestration_policy_configuration }
 
-          run_worker
-        end
+        it 'enqueues for deletion' do
+          expect(Security::DeleteOrchestrationConfigurationWorker).to receive(:perform_async).with(
+            policy_configuration.id, current_user_id, policy_configuration.security_policy_management_project.id)
 
-        it_behaves_like 'an idempotent worker' do
-          let(:job_args) { [namespace_id, current_user_id] }
+          described_class.new.perform(namespace_id, current_user_id)
         end
       end
     end

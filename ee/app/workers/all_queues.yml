@@ -3043,6 +3043,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: security_orchestration_configuration_create_bot_for_namespace
+  :worker_name: Security::OrchestrationConfigurationCreateBotForNamespaceWorker
+  :feature_category: :security_policy_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: security_orchestration_configuration_remove_bot
   :worker_name: Security::OrchestrationConfigurationRemoveBotWorker
   :feature_category: :security_policy_management

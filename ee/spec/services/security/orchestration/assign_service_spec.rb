@@ -281,8 +281,29 @@ RSpec.describe Security::Orchestration::AssignService, feature_category: :securi
       let(:another_container) { another_namespace }
 
       it_behaves_like 'executes assign service'
-      it_behaves_like 'triggers bot user create worker' do
-        let!(:expected_projects) { create_list(:project, 2, group: container) }
+
+      context 'when the `security_policy_bot_worker` feature flag is disabled' do
+        before do
+          stub_feature_flags(security_policy_bot_worker: false)
+        end
+
+        it_behaves_like 'triggers bot user create worker' do
+          let!(:expected_projects) { create_list(:project, 2, group: container) }
+        end
+      end
+
+      context 'when the `security_policy_bot_worker` feature flag is enabled' do
+        context 'with owner access' do
+          before do
+            container.add_owner(current_user)
+          end
+
+          it 'triggers the project bot user create for namespace worker' do
+            expect(Security::OrchestrationConfigurationCreateBotForNamespaceWorker).to receive(:perform_async).with(container.id, current_user.id)
+
+            expect(service).to be_success
+          end
+        end
       end
 
       describe 'redundant policy configurations within namespace' do
