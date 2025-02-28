@@ -74,16 +74,6 @@ RSpec.describe Projects::MarkForDeletionService do
         expect { result }.not_to change { project.marked_for_deletion? }.from(false)
       end
 
-      context 'with feature disabled' do
-        before do
-          stub_feature_flags(reject_security_policy_project_deletion: false)
-        end
-
-        it 'marks the project for deletion' do
-          expect { result }.to change { project.marked_for_deletion? }.from(false).to(true)
-        end
-      end
-
       context 'without licensed feature' do
         before do
           stub_licensed_features(

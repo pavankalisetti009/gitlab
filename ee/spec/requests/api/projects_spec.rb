@@ -2141,14 +2141,6 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
             expect(response).to have_gitlab_http_status(:bad_request)
             expect(json_response["message"]).to eq('Project cannot be deleted because it is linked as a security policy project')
           end
-
-          context 'with feature disabled' do
-            before do
-              stub_feature_flags(reject_security_policy_project_deletion: false)
-            end
-
-            it_behaves_like 'marks project for deletion'
-          end
         end
       end
 

@@ -1,9 +1,0 @@
----
-name: reject_security_policy_project_deletion
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/507845
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/176601
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/510982
-milestone: '17.8'
-group: group::security policies
-type: beta
-default_enabled: true

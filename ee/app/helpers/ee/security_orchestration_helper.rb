@@ -147,9 +147,6 @@ module EE::SecurityOrchestrationHelper
   end
 
   def security_configurations_preventing_project_deletion(project)
-    return ::Security::OrchestrationPolicyConfiguration.none unless ::Feature.enabled?(
-      :reject_security_policy_project_deletion, project)
-
     unless project.licensed_feature_available?(:security_orchestration_policies)
       return ::Security::OrchestrationPolicyConfiguration.none
     end
