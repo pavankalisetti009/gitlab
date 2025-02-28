@@ -4,7 +4,7 @@ module EE
   module Resolvers
     module WorkItems
       module Widgets
-        module CustomStatusResolver
+        module StatusResolver
           extend ::Gitlab::Utils::Override
 
           override :resolve

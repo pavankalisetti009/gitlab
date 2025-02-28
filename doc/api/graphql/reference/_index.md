@@ -19341,28 +19341,28 @@ The edge type for [`WorkItemType`](#workitemtype).
 | <a id="workitemtypeedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
 | <a id="workitemtypeedgenode"></a>`node` | [`WorkItemType`](#workitemtype) | The item at the end of the edge. |
 
-#### `WorkItemWidgetCustomStatusConnection`
+#### `WorkItemWidgetStatusConnection`
 
-The connection type for [`WorkItemWidgetCustomStatus`](#workitemwidgetcustomstatus).
-
-##### Fields
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| <a id="workitemwidgetcustomstatusconnectionedges"></a>`edges` | [`[WorkItemWidgetCustomStatusEdge]`](#workitemwidgetcustomstatusedge) | A list of edges. |
-| <a id="workitemwidgetcustomstatusconnectionnodes"></a>`nodes` | [`[WorkItemWidgetCustomStatus]`](#workitemwidgetcustomstatus) | A list of nodes. |
-| <a id="workitemwidgetcustomstatusconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
-
-#### `WorkItemWidgetCustomStatusEdge`
-
-The edge type for [`WorkItemWidgetCustomStatus`](#workitemwidgetcustomstatus).
+The connection type for [`WorkItemWidgetStatus`](#workitemwidgetstatus).
 
 ##### Fields
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="workitemwidgetcustomstatusedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
-| <a id="workitemwidgetcustomstatusedgenode"></a>`node` | [`WorkItemWidgetCustomStatus`](#workitemwidgetcustomstatus) | The item at the end of the edge. |
+| <a id="workitemwidgetstatusconnectionedges"></a>`edges` | [`[WorkItemWidgetStatusEdge]`](#workitemwidgetstatusedge) | A list of edges. |
+| <a id="workitemwidgetstatusconnectionnodes"></a>`nodes` | [`[WorkItemWidgetStatus]`](#workitemwidgetstatus) | A list of nodes. |
+| <a id="workitemwidgetstatusconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `WorkItemWidgetStatusEdge`
+
+The edge type for [`WorkItemWidgetStatus`](#workitemwidgetstatus).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="workitemwidgetstatusedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="workitemwidgetstatusedgenode"></a>`node` | [`WorkItemWidgetStatus`](#workitemwidgetstatus) | The item at the end of the edge. |
 
 #### `WorkspaceConnection`
 
@@ -26404,7 +26404,7 @@ GPG signature for a signed commit.
 | <a id="groupadditionalpurchasedstoragesize"></a>`additionalPurchasedStorageSize` | [`Float`](#float) | Additional storage purchased for the root namespace in bytes. |
 | <a id="groupaiusagedata"></a>`aiUsageData` {{< icon name="warning-solid" >}} | [`AiUsageData`](#aiusagedata) | **Introduced** in GitLab 17.5. **Status**: Experiment. AI-related data. |
 | <a id="groupallowstalerunnerpruning"></a>`allowStaleRunnerPruning` | [`Boolean!`](#boolean) | Indicates whether to regularly prune stale group runners. Defaults to false. |
-| <a id="groupallowedcustomstatuses"></a>`allowedCustomStatuses` {{< icon name="warning-solid" >}} | [`WorkItemWidgetCustomStatusConnection`](#workitemwidgetcustomstatusconnection) | **Introduced** in GitLab 17.8. **Status**: Experiment. Allowed custom statuses for the group. |
+| <a id="groupallowedstatuses"></a>`allowedStatuses` {{< icon name="warning-solid" >}} | [`WorkItemWidgetStatusConnection`](#workitemwidgetstatusconnection) | **Introduced** in GitLab 17.8. **Status**: Experiment. Allowed statuses for the group. |
 | <a id="groupamazons3configurations"></a>`amazonS3Configurations` | [`AmazonS3ConfigurationTypeConnection`](#amazons3configurationtypeconnection) | Amazon S3 configurations that receive audit events belonging to the group. (see [Connections](#connections)) |
 | <a id="groupautodevopsenabled"></a>`autoDevopsEnabled` | [`Boolean`](#boolean) | Indicates whether Auto DevOps is enabled for all projects within this group. |
 | <a id="groupavatarurl"></a>`avatarUrl` | [`String`](#string) | Avatar URL of the group. |
@@ -31701,7 +31701,7 @@ Product analytics events for a specific month and year.
 | <a id="namespaceactualrepositorysizelimit"></a>`actualRepositorySizeLimit` | [`Float`](#float) | Size limit for repositories in the namespace in bytes. This limit only applies to namespaces under Project limit enforcement. |
 | <a id="namespaceactualsizelimit"></a>`actualSizeLimit` | [`Float`](#float) | The actual storage size limit (in bytes) based on the enforcement type of either repository or namespace. This limit is agnostic of enforcement type. |
 | <a id="namespaceadditionalpurchasedstoragesize"></a>`additionalPurchasedStorageSize` | [`Float`](#float) | Additional storage purchased for the root namespace in bytes. |
-| <a id="namespaceallowedcustomstatuses"></a>`allowedCustomStatuses` {{< icon name="warning-solid" >}} | [`WorkItemWidgetCustomStatusConnection`](#workitemwidgetcustomstatusconnection) | **Introduced** in GitLab 17.8. **Status**: Experiment. Allowed custom statuses for the namespace. |
+| <a id="namespaceallowedstatuses"></a>`allowedStatuses` {{< icon name="warning-solid" >}} | [`WorkItemWidgetStatusConnection`](#workitemwidgetstatusconnection) | **Introduced** in GitLab 17.8. **Status**: Experiment. Allowed statuses for the namespace. |
 | <a id="namespaceavatarurl"></a>`avatarUrl` | [`String`](#string) | URL to avatar image file of the namespace. |
 | <a id="namespacecicdsettings"></a>`ciCdSettings` {{< icon name="warning-solid" >}} | [`CiCdSettings`](#cicdsettings) | **Introduced** in GitLab 17.9. **Status**: Experiment. Namespace CI/CD settings for the namespace. |
 | <a id="namespacecontainslockedprojects"></a>`containsLockedProjects` | [`Boolean`](#boolean) | Includes at least one project where the repository size exceeds the limit. This only applies to namespaces under Project limit enforcement. |
@@ -33501,7 +33501,7 @@ Project-level settings for product analytics provider.
 | <a id="projectaiusagedata"></a>`aiUsageData` {{< icon name="warning-solid" >}} | [`AiUsageData`](#aiusagedata) | **Introduced** in GitLab 17.5. **Status**: Experiment. AI-related data. |
 | <a id="projectaixrayreports"></a>`aiXrayReports` {{< icon name="warning-solid" >}} | [`AiXrayReportConnection!`](#aixrayreportconnection) | **Introduced** in GitLab 17.8. **Status**: Experiment. X-ray reports of the project. |
 | <a id="projectallowmergeonskippedpipeline"></a>`allowMergeOnSkippedPipeline` | [`Boolean`](#boolean) | If `only_allow_merge_if_pipeline_succeeds` is true, indicates if merge requests of the project can also be merged with skipped jobs. |
-| <a id="projectallowedcustomstatuses"></a>`allowedCustomStatuses` {{< icon name="warning-solid" >}} | [`WorkItemWidgetCustomStatusConnection`](#workitemwidgetcustomstatusconnection) | **Introduced** in GitLab 17.8. **Status**: Experiment. Allowed custom statuses for the project. |
+| <a id="projectallowedstatuses"></a>`allowedStatuses` {{< icon name="warning-solid" >}} | [`WorkItemWidgetStatusConnection`](#workitemwidgetstatusconnection) | **Introduced** in GitLab 17.8. **Status**: Experiment. Allowed statuses for the project. |
 | <a id="projectallowsmultiplemergerequestassignees"></a>`allowsMultipleMergeRequestAssignees` | [`Boolean!`](#boolean) | Project allows assigning multiple users to a merge request. |
 | <a id="projectallowsmultiplemergerequestreviewers"></a>`allowsMultipleMergeRequestReviewers` | [`Boolean!`](#boolean) | Project allows assigning multiple reviewers to a merge request. |
 | <a id="projectapifuzzingciconfiguration"></a>`apiFuzzingCiConfiguration` | [`ApiFuzzingCiConfiguration`](#apifuzzingciconfiguration) | API fuzzing configuration for the project. |
@@ -39893,21 +39893,6 @@ Represents a custom fields widget.
 | <a id="workitemwidgetcustomfieldscustomfieldvalues"></a>`customFieldValues` {{< icon name="warning-solid" >}} | [`[WorkItemCustomFieldValue!]`](#workitemcustomfieldvalue) | **Introduced** in GitLab 17.9. **Status**: Experiment. Custom field values associated to the work item. |
 | <a id="workitemwidgetcustomfieldstype"></a>`type` | [`WorkItemWidgetType`](#workitemwidgettype) | Widget type. |
 
-### `WorkItemWidgetCustomStatus`
-
-Represents Custom Status widget.
-
-#### Fields
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| <a id="workitemwidgetcustomstatuscolor"></a>`color` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 17.10. **Status**: Experiment. Color of the custom status. |
-| <a id="workitemwidgetcustomstatusiconname"></a>`iconName` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 17.8. **Status**: Experiment. Icon name of the custom status. |
-| <a id="workitemwidgetcustomstatusid"></a>`id` {{< icon name="warning-solid" >}} | [`GlobalID`](#globalid) | **Introduced** in GitLab 17.8. **Status**: Experiment. ID of the custom status. |
-| <a id="workitemwidgetcustomstatusname"></a>`name` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 17.8. **Status**: Experiment. Name of the custom status. |
-| <a id="workitemwidgetcustomstatusposition"></a>`position` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Introduced** in GitLab 17.10. **Status**: Experiment. Position of the custom status within its category. |
-| <a id="workitemwidgetcustomstatustype"></a>`type` | [`WorkItemWidgetType`](#workitemwidgettype) | Widget type. |
-
 ### `WorkItemWidgetDefinitionAssignees`
 
 Represents an assignees widget definition.
@@ -39930,17 +39915,6 @@ Represents a custom fields widget definition.
 | ---- | ---- | ----------- |
 | <a id="workitemwidgetdefinitioncustomfieldscustomfields"></a>`customFields` {{< icon name="warning-solid" >}} | [`[CustomField!]`](#customfield) | **Introduced** in GitLab 17.10. **Status**: Experiment. Custom fields available for the work item type. Available only when feature flag `custom_fields_feature` is enabled. |
 | <a id="workitemwidgetdefinitioncustomfieldstype"></a>`type` | [`WorkItemWidgetType!`](#workitemwidgettype) | Widget type. |
-
-### `WorkItemWidgetDefinitionCustomStatus`
-
-Represents an Custom Status widget definition.
-
-#### Fields
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| <a id="workitemwidgetdefinitioncustomstatusallowedcustomstatuses"></a>`allowedCustomStatuses` {{< icon name="warning-solid" >}} | [`WorkItemWidgetCustomStatusConnection`](#workitemwidgetcustomstatusconnection) | **Introduced** in GitLab 17.8. **Status**: Experiment. Allowed custom statuses for the work item type. |
-| <a id="workitemwidgetdefinitioncustomstatustype"></a>`type` | [`WorkItemWidgetType!`](#workitemwidgettype) | Widget type. |
 
 ### `WorkItemWidgetDefinitionGeneric`
 
@@ -39974,6 +39948,17 @@ Represents a labels widget definition.
 | ---- | ---- | ----------- |
 | <a id="workitemwidgetdefinitionlabelsallowsscopedlabels"></a>`allowsScopedLabels` | [`Boolean!`](#boolean) | Indicates whether scoped labels are available. |
 | <a id="workitemwidgetdefinitionlabelstype"></a>`type` | [`WorkItemWidgetType!`](#workitemwidgettype) | Widget type. |
+
+### `WorkItemWidgetDefinitionStatus`
+
+Represents a Status widget definition.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="workitemwidgetdefinitionstatusallowedstatuses"></a>`allowedStatuses` {{< icon name="warning-solid" >}} | [`WorkItemWidgetStatusConnection`](#workitemwidgetstatusconnection) | **Introduced** in GitLab 17.8. **Status**: Experiment. Allowed statuses for the work item type. |
+| <a id="workitemwidgetdefinitionstatustype"></a>`type` | [`WorkItemWidgetType!`](#workitemwidgettype) | Widget type. |
 
 ### `WorkItemWidgetDefinitionWeight`
 
@@ -40279,6 +40264,21 @@ Represents a start and due date widget.
 | <a id="workitemwidgetstartandduedatestartdatesourcingmilestone"></a>`startDateSourcingMilestone` | [`Milestone`](#milestone) | Indicates which milestone sources the rolled up start date. |
 | <a id="workitemwidgetstartandduedatestartdatesourcingworkitem"></a>`startDateSourcingWorkItem` | [`WorkItem`](#workitem) | Indicates which work_item sources the rolled up start date. |
 | <a id="workitemwidgetstartandduedatetype"></a>`type` | [`WorkItemWidgetType`](#workitemwidgettype) | Widget type. |
+
+### `WorkItemWidgetStatus`
+
+Represents status widget.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="workitemwidgetstatuscolor"></a>`color` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 17.10. **Status**: Experiment. Color of the status. |
+| <a id="workitemwidgetstatusiconname"></a>`iconName` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 17.8. **Status**: Experiment. Icon name of the status. |
+| <a id="workitemwidgetstatusid"></a>`id` {{< icon name="warning-solid" >}} | [`GlobalID`](#globalid) | **Introduced** in GitLab 17.8. **Status**: Experiment. ID of the status. |
+| <a id="workitemwidgetstatusname"></a>`name` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 17.8. **Status**: Experiment. Name of the status. |
+| <a id="workitemwidgetstatusposition"></a>`position` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Introduced** in GitLab 17.10. **Status**: Experiment. Position of the status within its category. |
+| <a id="workitemwidgetstatustype"></a>`type` | [`WorkItemWidgetType`](#workitemwidgettype) | Widget type. |
 
 ### `WorkItemWidgetTestReports`
 
@@ -44202,7 +44202,6 @@ Type of a work item widget.
 | <a id="workitemwidgettypecrm_contacts"></a>`CRM_CONTACTS` | Crm Contacts widget. |
 | <a id="workitemwidgettypecurrent_user_todos"></a>`CURRENT_USER_TODOS` | Current User Todos widget. |
 | <a id="workitemwidgettypecustom_fields"></a>`CUSTOM_FIELDS` | Custom Fields widget. |
-| <a id="workitemwidgettypecustom_status"></a>`CUSTOM_STATUS` | Custom Status widget. |
 | <a id="workitemwidgettypedescription"></a>`DESCRIPTION` | Description widget. |
 | <a id="workitemwidgettypedesigns"></a>`DESIGNS` | Designs widget. |
 | <a id="workitemwidgettypedevelopment"></a>`DEVELOPMENT` | Development widget. |
@@ -44221,6 +44220,7 @@ Type of a work item widget.
 | <a id="workitemwidgettypeprogress"></a>`PROGRESS` | Progress widget. |
 | <a id="workitemwidgettyperequirement_legacy"></a>`REQUIREMENT_LEGACY` | Requirement Legacy widget. |
 | <a id="workitemwidgettypestart_and_due_date"></a>`START_AND_DUE_DATE` | Start And Due Date widget. |
+| <a id="workitemwidgettypestatus"></a>`STATUS` | Status widget. |
 | <a id="workitemwidgettypetest_reports"></a>`TEST_REPORTS` | Test Reports widget. |
 | <a id="workitemwidgettypetime_tracking"></a>`TIME_TRACKING` | Time Tracking widget. |
 | <a id="workitemwidgettypeverification_status"></a>`VERIFICATION_STATUS` | Verification Status widget. |
@@ -46609,7 +46609,6 @@ Implementations:
 - [`WorkItemWidgetCrmContacts`](#workitemwidgetcrmcontacts)
 - [`WorkItemWidgetCurrentUserTodos`](#workitemwidgetcurrentusertodos)
 - [`WorkItemWidgetCustomFields`](#workitemwidgetcustomfields)
-- [`WorkItemWidgetCustomStatus`](#workitemwidgetcustomstatus)
 - [`WorkItemWidgetDescription`](#workitemwidgetdescription)
 - [`WorkItemWidgetDesigns`](#workitemwidgetdesigns)
 - [`WorkItemWidgetDevelopment`](#workitemwidgetdevelopment)
@@ -46628,6 +46627,7 @@ Implementations:
 - [`WorkItemWidgetProgress`](#workitemwidgetprogress)
 - [`WorkItemWidgetRequirementLegacy`](#workitemwidgetrequirementlegacy)
 - [`WorkItemWidgetStartAndDueDate`](#workitemwidgetstartandduedate)
+- [`WorkItemWidgetStatus`](#workitemwidgetstatus)
 - [`WorkItemWidgetTestReports`](#workitemwidgettestreports)
 - [`WorkItemWidgetTimeTracking`](#workitemwidgettimetracking)
 - [`WorkItemWidgetVerificationStatus`](#workitemwidgetverificationstatus)
@@ -46645,10 +46645,10 @@ Implementations:
 
 - [`WorkItemWidgetDefinitionAssignees`](#workitemwidgetdefinitionassignees)
 - [`WorkItemWidgetDefinitionCustomFields`](#workitemwidgetdefinitioncustomfields)
-- [`WorkItemWidgetDefinitionCustomStatus`](#workitemwidgetdefinitioncustomstatus)
 - [`WorkItemWidgetDefinitionGeneric`](#workitemwidgetdefinitiongeneric)
 - [`WorkItemWidgetDefinitionHierarchy`](#workitemwidgetdefinitionhierarchy)
 - [`WorkItemWidgetDefinitionLabels`](#workitemwidgetdefinitionlabels)
+- [`WorkItemWidgetDefinitionStatus`](#workitemwidgetdefinitionstatus)
 - [`WorkItemWidgetDefinitionWeight`](#workitemwidgetdefinitionweight)
 
 ##### Fields

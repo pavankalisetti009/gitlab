@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Resolvers::WorkItems::Widgets::CustomStatusResolver, feature_category: :team_planning do
+RSpec.describe Resolvers::WorkItems::Widgets::StatusResolver, feature_category: :team_planning do
   include GraphqlHelpers
 
   let_it_be(:group) { create(:group) }
@@ -10,20 +10,20 @@ RSpec.describe Resolvers::WorkItems::Widgets::CustomStatusResolver, feature_cate
   let_it_be(:current_user) { create(:user) }
   let_it_be(:task_type) { create(:work_item_type, :task) }
   let_it_be(:widget_definition) do
-    create(:widget_definition, widget_type: :custom_status, work_item_type: task_type, name: 'TesT Widget')
+    create(:widget_definition, widget_type: :status, work_item_type: task_type, name: 'TesT Widget')
   end
 
   shared_examples 'returns system defined statuses' do
-    it 'fetches allowed custom statuses for a given work item type' do
+    it 'fetches allowed statuses for a given work item type' do
       system_defined_statuses = ::WorkItems::Statuses::SystemDefined::Status.all
 
-      expect(resolve_custom_statuses.items.map(&:name)).to eq(system_defined_statuses.map(&:name))
+      expect(resolve_statuses.items.map(&:name)).to eq(system_defined_statuses.map(&:name))
     end
   end
 
   shared_examples 'does not return system defined statuses' do
     it 'returns an empty array' do
-      expect(resolve_custom_statuses&.items).to eq([])
+      expect(resolve_statuses&.items).to eq([])
     end
   end
 
@@ -53,7 +53,7 @@ RSpec.describe Resolvers::WorkItems::Widgets::CustomStatusResolver, feature_cate
     context 'when work item type is not supported' do
       let_it_be(:epic_type) { create(:work_item_type, :epic) }
       let_it_be(:widget_definition) do
-        create(:widget_definition, widget_type: :custom_status, work_item_type: epic_type, name: 'TesT Widget')
+        create(:widget_definition, widget_type: :status, work_item_type: epic_type, name: 'TesT Widget')
       end
 
       it_behaves_like 'does not return system defined statuses'
@@ -76,7 +76,7 @@ RSpec.describe Resolvers::WorkItems::Widgets::CustomStatusResolver, feature_cate
     end
   end
 
-  def resolve_custom_statuses(args = {}, context = { current_user: current_user, resource_parent: resource_parent })
+  def resolve_statuses(args = {}, context = { current_user: current_user, resource_parent: resource_parent })
     resolve(described_class, obj: widget_definition, args: args, ctx: context)
   end
 end
