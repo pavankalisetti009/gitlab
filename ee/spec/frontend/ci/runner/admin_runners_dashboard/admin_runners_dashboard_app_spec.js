@@ -19,13 +19,16 @@ describe('AdminRunnersDashboardApp', () => {
   let wrapper;
 
   const { bindInternalEventDocument } = useMockInternalEventsTracking();
-  const createComponent = (options) => {
+  const createComponent = (options = {}) => {
+    const { props = {}, ...rest } = options;
     wrapper = shallowMountExtended(AdminRunnersDashboardApp, {
       propsData: {
         adminRunnersPath: mockAdminRunnersPath,
         newRunnerPath: mockNewRunnerPath,
+        canAdminRunners: true,
+        ...props,
       },
-      ...options,
+      ...rest,
     });
   };
 
@@ -41,6 +44,14 @@ describe('AdminRunnersDashboardApp', () => {
 
     expect(newBtn.text()).toBe('New instance runner');
     expect(newBtn.attributes('href')).toBe(mockNewRunnerPath);
+  });
+
+  describe('when canAdminRunners is false', () => {
+    it('does not show new instance runner button', () => {
+      createComponent({ props: { canAdminRunners: false } });
+
+      expect(wrapper.findByText('New instance runner').exists()).toBe(false);
+    });
   });
 
   it('should track that the admin runner fleet dashboard has been viewed', () => {

@@ -38,6 +38,10 @@ export default {
       type: String,
       required: true,
     },
+    canAdminRunners: {
+      type: Boolean,
+      required: true,
+    },
   },
   mounted() {
     this.trackEvent('view_runner_fleet_dashboard_pageload', {
@@ -60,7 +64,7 @@ export default {
         <gl-button variant="link" :href="adminRunnersPath" class="gl-mr-2">{{
           s__('Runners|View runners list')
         }}</gl-button>
-        <gl-button variant="confirm" :href="newRunnerPath">
+        <gl-button v-if="canAdminRunners" variant="confirm" :href="newRunnerPath">
           {{ s__('Runners|New instance runner') }}
         </gl-button>
       </template>
