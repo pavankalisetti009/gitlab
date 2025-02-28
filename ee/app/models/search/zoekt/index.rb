@@ -28,7 +28,6 @@ module Search
       validates :metadata, json_schema: { filename: 'zoekt_indices_metadata' }
 
       before_save :set_watermark_level, if: :storage_bytes_changed?
-      after_commit :delete_from_index, on: :destroy
 
       enum state: {
         pending: 0,
@@ -182,10 +181,6 @@ module Search
 
       def storage_bytes_changed?
         reserved_storage_bytes_changed? || used_storage_bytes_changed?
-      end
-
-      def delete_from_index
-        ::Search::Zoekt::NamespaceIndexerWorker.perform_async(namespace_id, 'delete', zoekt_node_id)
       end
 
       def logger
