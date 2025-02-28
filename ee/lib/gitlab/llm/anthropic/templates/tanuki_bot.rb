@@ -61,10 +61,16 @@ module Gitlab
                 content: content)),
               Gitlab::Llm::Chain::Utils::Prompt.as_assistant("FINAL ANSWER:")
             ])
-
             {
               prompt: conversation,
-              options: { model: ::Gitlab::Llm::Anthropic::Client::CLAUDE_3_5_SONNET }.merge(OPTIONS)
+              options: {
+                model: ::Gitlab::Llm::Anthropic::Client::CLAUDE_3_5_SONNET,
+                inputs: {
+                  question: question,
+                  content_id: CONTENT_ID_FIELD,
+                  documents: documents
+                }
+              }.merge(OPTIONS)
             }
           end
 

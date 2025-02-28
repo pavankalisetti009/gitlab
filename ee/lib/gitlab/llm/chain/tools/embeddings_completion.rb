@@ -35,7 +35,14 @@ module Gitlab
               .final_prompt(question: question, documents: search_documents)
 
             final_prompt_result = ai_gateway_request.request(
-              { prompt: final_prompt[:prompt], options: final_prompt[:options] }
+              {
+                prompt: final_prompt[:prompt],
+                options: final_prompt[:options].merge(
+                  use_ai_gateway_agent_prompt: Feature.enabled?(:prompt_migration_documentation_search, current_user)
+                )
+              },
+              unit_primitive:
+              (:documentation_search if Feature.enabled?(:prompt_migration_documentation_search, current_user))
             ) do |data|
               yield data if block_given?
             end
