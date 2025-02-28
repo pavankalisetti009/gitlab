@@ -69,6 +69,7 @@ module RemoteDevelopment
 
     private
 
+    # @return [void]
     def validate_sum_of_delayed_termination_fields_does_not_exceed_max_hours_before_termination_limit
       max_hours_before_termination = WorkspaceOperations::MaxHoursBeforeTermination::MAX_HOURS_BEFORE_TERMINATION
 
@@ -78,20 +79,23 @@ module RemoteDevelopment
         "%{maximum_hours_before_termination} hours"
 
       errors.add(:base, format(_(msg), maximum_hours_before_termination: max_hours_before_termination))
-      false
+
+      nil
     end
 
     # allow_privilege_escalation is allowed to be set to true only if
     # - either use_kubernetes_user_namespaces is true
     # - or default_runtime_class is set to a non-empty value
     # This ensures that unsafe usage of allow_privilege_escalation is not allowed.
+    # @return [void]
     def validate_allow_privilege_escalation
-      return if allow_privilege_escalation == false
-      return if use_kubernetes_user_namespaces == true || default_runtime_class.present?
+      return unless allow_privilege_escalation
+      return if use_kubernetes_user_namespaces || default_runtime_class.present?
 
       msg = 'can be true only if either use_kubernetes_user_namespaces is true or default_runtime_class is non-empty'
       errors.add(:allow_privilege_escalation, format(_(msg)))
-      false
+
+      nil
     end
   end
 end

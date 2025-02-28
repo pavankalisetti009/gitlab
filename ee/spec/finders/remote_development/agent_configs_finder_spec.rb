@@ -2,6 +2,7 @@
 
 require "spec_helper"
 
+# noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
 RSpec.describe RemoteDevelopment::AgentConfigsFinder, feature_category: :workspaces do
   let_it_be(:current_user) { create(:user) }
 

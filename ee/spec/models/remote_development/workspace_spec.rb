@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 # rubocop:disable RSpec/ MultipleMemoizedHelpers -- this is a complex model, it requires many helpers for thorough testing
+# noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
 RSpec.describe RemoteDevelopment::Workspace, feature_category: :workspaces do
   let_it_be(:user) { create(:user) }
   let(:workspaces_agent_config_enabled) { true }
@@ -108,6 +109,7 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :workspaces do
 
     context 'when devfile_path is nil' do
       before do
+        # noinspection RubyMismatchedArgumentType - RubyMine thinks devfile_path can't be nilable, but it can
         workspace.devfile_path = nil
       end
 

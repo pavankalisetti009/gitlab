@@ -3,6 +3,7 @@
 require 'spec_helper'
 require_relative './shared'
 
+# noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
 RSpec.describe 'Query.workspace.workspaceVariables (with no arguments)', feature_category: :workspaces do
   include_context 'for a Query.workspace.workspaceVariables query'
 

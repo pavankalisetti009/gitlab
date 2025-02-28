@@ -70,6 +70,7 @@ module Mutations
           description: 'Variables to inject into the workspace.'
 
         # @param [Hash] args
+        # @return [Hash]
         def resolve(args)
           unless License.feature_available?(:remote_development)
             raise_resource_not_available_error!("'remote_development' licensed feature is not available")
@@ -96,6 +97,8 @@ module Mutations
           # has the :create_workspace ability on the _agent's_ project, which will be true if the user is a developer
           # on the agent's project.
           agent = authorized_find!(id: cluster_agent_id)
+          # noinspection RubyNilAnalysis - RubyMine thinks project or agent may be nil, but this is not possible
+          #                                because authorized_find! would have thrown an exception.
           relevant_mappings =
             ::RemoteDevelopment::RemoteDevelopmentNamespaceClusterAgentMapping
               .for_namespaces(project.project_namespace.traversal_ids)

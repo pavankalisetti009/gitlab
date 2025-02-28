@@ -6,6 +6,7 @@ require_relative './shared'
 # NOTE: Even though this single-workspace spec only has one field scenario to test, we still use similar
 #       shared examples patterns and structure as the other multi-workspace query specs, for consistency.
 
+# noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
 RSpec.describe 'Query.workspace(id: RemoteDevelopmentWorkspaceID!)', feature_category: :workspaces do
   include_context 'with id arg'
   include_context 'for a Query.workspace query'

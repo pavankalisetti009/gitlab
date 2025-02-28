@@ -4,6 +4,7 @@ require 'spec_helper'
 
 Messages = RemoteDevelopment::Messages
 
+# noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
 RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Creator, feature_category: :workspaces do
   let(:rop_steps) do
     [

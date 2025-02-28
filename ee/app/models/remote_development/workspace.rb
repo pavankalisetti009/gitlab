@@ -232,6 +232,7 @@ module RemoteDevelopment
 
     # rubocop:enable Layout/LineLength  -- Long messages for UI
 
+    # @return [Time]
     def touch_desired_state_updated_at
       self.desired_state_updated_at = Time.current.utc
     end

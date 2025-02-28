@@ -3,6 +3,7 @@
 require 'spec_helper'
 require_relative "../../support/helpers/remote_development/integration_spec_helpers"
 
+# noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
 RSpec.describe 'Remote Development workspaces', :freeze_time, :api, :js, feature_category: :workspaces do
   include RemoteDevelopment::IntegrationSpecHelpers
 
@@ -34,14 +35,18 @@ RSpec.describe 'Remote Development workspaces', :freeze_time, :api, :js, feature
   let(:workspaces_group_settings_path) { "/groups/#{group.name}/-/settings/workspaces" }
 
   # @param [String] state
+  # @return [void]
   def expect_workspace_state_indicator(state)
     indicator = find_by_testid('workspace-state-indicator')
 
     expect(indicator).to have_text(state)
+
+    nil
   end
 
   # @param [String] agent_name
   # @param [String] group_name
+  # @return [void]
   def do_create_mapping(agent_name:, group_name:)
     workspaces_group_settings_path = "/groups/#{group_name}/-/settings/workspaces"
     gitlab_badge_selector = '.gl-badge-content'
@@ -59,6 +64,8 @@ RSpec.describe 'Remote Development workspaces', :freeze_time, :api, :js, feature
     end
     click_button 'Allow agent'
     expect(page).to have_selector(gitlab_badge_selector, text: 'Allowed')
+
+    nil
   end
 
   # @param [Hash] params
@@ -283,6 +290,7 @@ RSpec.describe 'Remote Development workspaces', :freeze_time, :api, :js, feature
     end
   end
 
+  # @return [Object]
   def find_open_workspace_button
     page.first('[data-testid="workspace-open-button"]', minimum: 0)
   end

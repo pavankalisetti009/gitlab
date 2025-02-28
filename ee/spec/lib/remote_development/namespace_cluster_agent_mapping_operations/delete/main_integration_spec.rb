@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-# noinspection RubyArgCount -- Rubymine is detecting wrong classes here
+# noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
 RSpec.describe ::RemoteDevelopment::NamespaceClusterAgentMappingOperations::Delete::Main, feature_category: :workspaces do
   let_it_be(:namespace_cluster_agent_mapping) do
     create(:remote_development_namespace_cluster_agent_mapping)
