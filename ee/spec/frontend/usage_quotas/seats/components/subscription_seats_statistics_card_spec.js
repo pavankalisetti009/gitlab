@@ -1,7 +1,5 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-// eslint-disable-next-line no-restricted-imports
-import Vuex from 'vuex';
 import { GlLink, GlSkeletonLoader } from '@gitlab/ui';
 import { PROMO_URL } from '~/constants';
 import UsageStatistics from 'ee/usage_quotas/components/usage_statistics.vue';
@@ -12,7 +10,6 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 
 Vue.use(VueApollo);
-Vue.use(Vuex);
 
 describe('SubscriptionSeatsStatisticsCard', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
@@ -35,42 +32,23 @@ describe('SubscriptionSeatsStatisticsCard', () => {
     return new VueApollo({ clients: { customersDotClient: mockCustomersDotClient } });
   };
 
-  const fakeStore = (initialGetters = {}, initialState = {}) =>
-    new Vuex.Store({
-      getters: {
-        isLoading: () => false,
-        ...initialGetters,
-      },
-      state: {
-        activeTrial: false,
-        hasLimitedFreePlan: false,
-        hasError: false,
-        namespaceId: 13,
-        seatsInSubscription: 13,
-        ...initialState,
-      },
-    });
-
-  const createWrapper = ({
-    initialApolloData = {},
-    initialGetters = {},
-    initialState = {},
-    props = {},
-    provide = {},
-  } = {}) => {
+  const createWrapper = ({ initialApolloData = {}, props = {}, provide = {} } = {}) => {
     const apolloProvider = createMockApolloProvider(initialApolloData);
     wrapper = shallowMountExtended(SubscriptionSeatsStatisticsCard, {
       apolloProvider,
       propsData: {
         billableMembersCount: 3,
+        activeTrial: false,
+        seatsInSubscription: 13,
         ...props,
       },
       provide: {
         hasNoSubscription: true,
         maxFreeNamespaceSeats: 5,
+        namespaceId: 13,
+        hasLimitedFreePlan: false,
         ...provide,
       },
-      store: fakeStore(initialGetters, initialState),
     });
   };
 
@@ -79,18 +57,6 @@ describe('SubscriptionSeatsStatisticsCard', () => {
   const findUsageStatistics = () => wrapper.findComponent(UsageStatistics);
   const findUnlimitedSeatCountText = () => wrapper.findByText('You have unlimited seat count.');
   const findSeatsInfo = () => wrapper.findByTestId('seats-info');
-
-  describe('when store data is loading', () => {
-    it('renders <skeleton-loader> component', async () => {
-      const initialGetters = { isLoading: () => true };
-
-      createWrapper({ initialGetters });
-
-      await waitForPromises();
-
-      expect(findSkeletonLoader().exists()).toBe(true);
-    });
-  });
 
   describe('when GraphQL data is loading', () => {
     it('renders <skeleton-loader> component', () => {
@@ -136,8 +102,8 @@ describe('SubscriptionSeatsStatisticsCard', () => {
 
   describe('with a limited free plan', () => {
     beforeEach(() => {
-      const initialState = { hasLimitedFreePlan: true };
-      createWrapper({ initialState });
+      const provide = { hasLimitedFreePlan: true };
+      createWrapper({ provide });
       return waitForPromises();
     });
 
@@ -170,8 +136,8 @@ describe('SubscriptionSeatsStatisticsCard', () => {
 
   describe('with an active trial', () => {
     beforeEach(() => {
-      const initialState = { activeTrial: true, hasLimitedFreePlan: true };
-      createWrapper({ initialState });
+      const provide = { hasLimitedFreePlan: true };
+      createWrapper({ provide, props: { activeTrial: true } });
       return waitForPromises();
     });
 
