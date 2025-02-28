@@ -123,7 +123,9 @@ describe('PagesDeploymentsStats', () => {
     it('displays the help link', () => {
       const link = wrapper.getComponent(GlLink);
 
-      expect(link.attributes('href')).toBe(`${DOCS_URL_IN_EE_DIR}/user/project/pages/#limits`);
+      expect(link.attributes('href')).toBe(
+        `${DOCS_URL_IN_EE_DIR}/user/project/pages/parallel_deployments#limits`,
+      );
       expect(link.attributes('title')).toBe('Learn about limits for Pages deployments');
       expect(link.attributes('aria-label')).toBe('Learn about limits for Pages deployments');
     });
