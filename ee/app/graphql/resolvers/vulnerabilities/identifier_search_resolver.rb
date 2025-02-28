@@ -37,12 +37,6 @@ module Resolvers
       private
 
       def validate_args(args)
-        if object.is_a?(::Group) && Feature.disabled?(:vulnerability_filtering_by_identifier_group, object,
-          type: :beta)
-          raise ::Gitlab::Graphql::Errors::ArgumentError,
-            'Feature flag `vulnerability_filtering_by_identifier_group` is disabled for the group.'
-        end
-
         return unless args[:name].length < 3
 
         raise ::Gitlab::Graphql::Errors::ArgumentError,
