@@ -62,7 +62,6 @@ module Search
           dispatch: { event: OrphanedRepoEvent }
         },
         repo_to_index_check: {
-          period: 10.minutes,
           if: -> { Search::Zoekt::Repository.pending.exists? },
           dispatch: { event: RepoToIndexEvent }
         },
