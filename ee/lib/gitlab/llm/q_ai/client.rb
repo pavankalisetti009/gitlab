@@ -43,14 +43,15 @@ module Gitlab
           end
         end
 
-        def create_event(payload:, role_arn:)
+        def create_event(payload:, role_arn:, event_id:)
           with_response_logger do
             Gitlab::HTTP.post(
               url(path: "/v1/amazon_q/events"),
               body: {
                 payload: payload,
                 code: create_auth_grant_new,
-                role_arn: role_arn
+                role_arn: role_arn,
+                event_id: event_id
               }.to_json,
               headers: request_headers
             )

@@ -51,7 +51,8 @@ RSpec.describe Ai::AmazonQ::AmazonQTriggerService, feature_category: :ai_agents 
 
       shared_examples 'successful dev execution' do
         it 'creates an auth grant with the correct scopes', :aggregate_failures do
-          expect(client).to receive(:create_event).with(payload: a_hash_including(command: command), role_arn: role_arn)
+          expect(client).to receive(:create_event).with(payload: a_hash_including(command: command),
+            role_arn: role_arn, event_id: "Quick Action")
 
           execution
         end

@@ -11,6 +11,7 @@ module Ai
       MissingPrerequisiteError = Class.new(StandardError)
 
       REVIEW_FINDING_KEYWORDS = ["We detected", "We recommend", "Severity:"].freeze
+      EVENT_ID = "Quick Action"
 
       def initialize(user:, command:, source:, note: nil, discussion_id: nil, input: nil)
         @user = user
@@ -50,7 +51,8 @@ module Ai
 
         client.create_event(
           payload: payload,
-          role_arn: ai_settings.amazon_q_role_arn
+          role_arn: ai_settings.amazon_q_role_arn,
+          event_id: EVENT_ID
         )
       end
 

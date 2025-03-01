@@ -14,6 +14,7 @@ RSpec.describe Gitlab::Llm::QAi::Client, feature_category: :ai_agents do
   let(:cc_token) { 'cc_token' }
   let(:response) { 'response' }
   let(:role_arn) { 'role_arn' }
+  let(:event_id) { 'Quick Action' }
   let(:secret) { 'secret' }
   let(:logger) { instance_double(Gitlab::Llm::Logger) }
 
@@ -27,7 +28,8 @@ RSpec.describe Gitlab::Llm::QAi::Client, feature_category: :ai_agents do
       described_class.new(user)
         .create_event(
           payload: {},
-          role_arn: '5678'
+          role_arn: '5678',
+          event_id: event_id
         )
     end
 
@@ -40,7 +42,8 @@ RSpec.describe Gitlab::Llm::QAi::Client, feature_category: :ai_agents do
         .with(body: {
           payload: {},
           code: '1234',
-          role_arn: '5678'
+          role_arn: '5678',
+          event_id: event_id
         }.to_json).to_return(body: body, status: status, headers: headers)
 
       ai_settings.update!(
