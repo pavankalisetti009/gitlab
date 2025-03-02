@@ -12,7 +12,10 @@ import { GENIE_CHAT_RESET_MESSAGE, GENIE_CHAT_CLEAR_MESSAGE } from 'ee/ai/consta
 import { TANUKI_BOT_TRACKING_EVENT_NAME, WIDTH_OFFSET } from 'ee/ai/tanuki_bot/constants';
 import chatMutation from 'ee/ai/graphql/chat.mutation.graphql';
 import duoUserFeedbackMutation from 'ee/ai/graphql/duo_user_feedback.mutation.graphql';
+import deleteConversationThreadMutation from 'ee/ai/graphql/delete_conversation_thread.mutation.graphql';
 import getAiMessages from 'ee/ai/graphql/get_ai_messages.query.graphql';
+import getAiMessagesWithThread from 'ee/ai/graphql/get_ai_messages_with_thread.query.graphql';
+import getAiConversationThreads from 'ee/ai/graphql/get_ai_conversation_threads.query.graphql';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { getMarkdown } from '~/rest_api';
@@ -31,6 +34,9 @@ import {
   GENERATE_MOCK_TANUKI_RES,
   MOCK_CHAT_CACHED_MESSAGES_RES,
   MOCK_SLASH_COMMANDS,
+  MOCK_TANUKI_MESSAGE,
+  MOCK_THREADS,
+  MOCK_THREADS_RESPONSE,
 } from '../mock_data';
 
 Vue.use(Vuex);
@@ -58,7 +64,10 @@ describeSkipVue3(skipReason, () => {
 
   const chatMutationHandlerMock = jest.fn().mockResolvedValue(MOCK_TANUKI_BOT_MUTATATION_RES);
   const duoUserFeedbackMutationHandlerMock = jest.fn().mockResolvedValue({});
+  const deleteConversationThreadMutationHandlerMock = jest.fn().mockResolvedValue({});
   const queryHandlerMock = jest.fn().mockResolvedValue(MOCK_CHAT_CACHED_MESSAGES_RES);
+  const threadQueryHandlerMock = jest.fn().mockResolvedValue({});
+  const conversationThreadsQueryHandlerMock = jest.fn().mockResolvedValue({});
   const slashCommandsQueryHandlerMock = jest.fn().mockResolvedValue(MOCK_SLASH_COMMANDS);
 
   const feedbackData = {
@@ -94,7 +103,10 @@ describeSkipVue3(skipReason, () => {
     const apolloProvider = createMockApollo([
       [chatMutation, chatMutationHandlerMock],
       [duoUserFeedbackMutation, duoUserFeedbackMutationHandlerMock],
+      [deleteConversationThreadMutation, deleteConversationThreadMutationHandlerMock],
       [getAiMessages, queryHandlerMock],
+      [getAiMessagesWithThread, threadQueryHandlerMock],
+      [getAiConversationThreads, conversationThreadsQueryHandlerMock],
       [getAiSlashCommands, slashCommandsQueryHandlerMock],
     ]);
 
@@ -744,6 +756,239 @@ describeSkipVue3(skipReason, () => {
       const duoChat = findDuoChat();
       expect(duoChat.exists()).toBe(true);
       expect(duoChat.props('shouldRenderResizable')).toBe(true);
+    });
+  });
+
+  describe('with duoChatMultiThread disabled', () => {
+    beforeEach(() => {
+      duoChatGlobalState.isShown = true;
+      createComponent({
+        glFeatures: { duoChatMultiThread: false },
+      });
+    });
+
+    it('includes all slash commands', async () => {
+      await waitForPromises();
+      const allCommands = findDuoChat().props().slashCommands;
+      expect(allCommands.some((cmd) => cmd.name === '/reset')).toBe(true);
+      expect(allCommands.some((cmd) => cmd.name === '/clear')).toBe(true);
+    });
+  });
+
+  describe('with duoChatMultiThread enabled', () => {
+    beforeEach(async () => {
+      duoChatGlobalState.isShown = true;
+      createComponent({
+        glFeatures: { duoChatMultiThread: true },
+      });
+      await waitForPromises();
+    });
+
+    it('filters out reset and clear commands', () => {
+      const filteredCommands = findDuoChat().props().slashCommands;
+      expect(filteredCommands.some((cmd) => cmd.name === '/reset')).toBe(false);
+      expect(filteredCommands.some((cmd) => cmd.name === '/clear')).toBe(false);
+    });
+
+    describe('thread handling', () => {
+      describe('onThreadSelected', () => {
+        const mockThreadId = 'thread-123';
+        const mockMessagesData = {
+          data: {
+            aiMessages: {
+              nodes: [MOCK_USER_MESSAGE, MOCK_TANUKI_MESSAGE],
+            },
+          },
+        };
+
+        it('loads messages for selected thread', async () => {
+          threadQueryHandlerMock.mockResolvedValue(mockMessagesData);
+          createComponent();
+          await waitForPromises();
+
+          findDuoChat().vm.$emit('thread-selected', { id: mockThreadId });
+          await waitForPromises();
+
+          expect(threadQueryHandlerMock).toHaveBeenCalledWith(
+            expect.objectContaining({
+              threadId: mockThreadId,
+            }),
+          );
+
+          expect(actionSpies.setMessages).toHaveBeenCalledWith(
+            expect.anything(),
+            mockMessagesData.data.aiMessages.nodes,
+          );
+        });
+
+        it('handles errors when loading thread messages', async () => {
+          const error = new Error('Failed to load thread');
+          threadQueryHandlerMock.mockRejectedValue(error);
+          createComponent();
+          await waitForPromises();
+
+          findDuoChat().vm.$emit('thread-selected', { id: mockThreadId });
+          await waitForPromises();
+
+          expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
+            expect.anything(),
+            expect.objectContaining({
+              errors: [error.toString()],
+            }),
+          );
+        });
+      });
+
+      describe('onNewChat', () => {
+        it('resets chat state for new conversation', async () => {
+          findDuoChat().vm.$emit('new-chat');
+          await nextTick();
+
+          const duoChat = findDuoChat();
+          expect(duoChat.props('activeThreadId')).toBe('');
+          expect(actionSpies.setMessages).toHaveBeenCalledWith(expect.anything(), []);
+          expect(duoChat.props('multiThreadedView')).toBe('chat');
+          expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), false);
+          expect(duoChat.props('canceledRequestIds')).toEqual([]);
+        });
+      });
+
+      describe('onBackToList', () => {
+        it('returns to thread list view', async () => {
+          conversationThreadsQueryHandlerMock.mockResolvedValue(MOCK_THREADS_RESPONSE);
+
+          createComponent({
+            glFeatures: { duoChatMultiThread: true },
+          });
+          const duoChat = findDuoChat();
+          await waitForPromises();
+
+          findDuoChat().vm.$emit('back-to-list');
+          await nextTick();
+          await waitForPromises();
+
+          expect(duoChat.props('multiThreadedView')).toBe('list');
+          expect(duoChat.props('activeThreadId')).toBe('');
+          expect(actionSpies.setMessages).toHaveBeenCalledWith(expect.anything(), []);
+          expect(threadQueryHandlerMock).toHaveBeenCalled();
+        });
+      });
+
+      describe('onDeleteThread', () => {
+        const mockThreadId = 'thread-123';
+
+        it('successfully deletes thread', async () => {
+          // Setup mock response that matches the mutation schema
+          deleteConversationThreadMutationHandlerMock.mockResolvedValue({
+            data: {
+              deleteConversationThread: {
+                success: true,
+                errors: [],
+              },
+            },
+          });
+
+          findDuoChat().vm.$emit('delete-thread', mockThreadId);
+          await nextTick();
+
+          // Verify mutation was called with correct variables
+          expect(deleteConversationThreadMutationHandlerMock).toHaveBeenCalledWith({
+            input: { threadId: mockThreadId },
+          });
+
+          // Verify thread list is refetched after successful deletion
+          expect(conversationThreadsQueryHandlerMock).toHaveBeenCalled();
+        });
+      });
+
+      describe('thread list loading', () => {
+        beforeEach(() => {
+          duoChatGlobalState.isShown = true;
+        });
+
+        it('auto-selects the most recent thread when in chat view', async () => {
+          conversationThreadsQueryHandlerMock.mockResolvedValue(MOCK_THREADS_RESPONSE);
+          threadQueryHandlerMock.mockResolvedValue({
+            data: {
+              aiMessages: {
+                nodes: [MOCK_USER_MESSAGE, MOCK_TANUKI_MESSAGE],
+              },
+            },
+          });
+
+          createComponent({
+            glFeatures: { duoChatMultiThread: true },
+          });
+          const duoChat = findDuoChat();
+          await waitForPromises();
+          await nextTick();
+
+          expect(duoChat.props('threadList')).toEqual(MOCK_THREADS);
+          expect(duoChat.props('activeThreadId')).toBe(MOCK_THREADS[0].id);
+        });
+
+        it('does not auto-select thread when in list view', async () => {
+          conversationThreadsQueryHandlerMock.mockResolvedValue(MOCK_THREADS_RESPONSE);
+          threadQueryHandlerMock.mockResolvedValue({
+            data: {
+              aiMessages: {
+                nodes: [MOCK_USER_MESSAGE, MOCK_TANUKI_MESSAGE],
+              },
+            },
+          });
+
+          createComponent({
+            glFeatures: { duoChatMultiThread: true },
+          });
+          const duoChat = findDuoChat();
+
+          duoChat.vm.$emit('back-to-list');
+          await nextTick();
+          await waitForPromises();
+          expect(duoChat.props('activeThreadId')).toBe('');
+          expect(duoChat.props('multiThreadedView')).toBe('list');
+          expect(duoChat.props('threadList')).toEqual(MOCK_THREADS);
+        });
+
+        it('does not auto-select when there are no threads', async () => {
+          conversationThreadsQueryHandlerMock.mockResolvedValue({
+            data: {
+              aiConversationThreads: {
+                nodes: [],
+                __typename: 'AiConversationsThreadConnection',
+              },
+            },
+          });
+
+          createComponent({
+            glFeatures: { duoChatMultiThread: true },
+          });
+          const duoChat = findDuoChat();
+
+          await nextTick();
+          await waitForPromises();
+          expect(duoChat.props('activeThreadId')).toBe('');
+          expect(duoChat.props('threadList')).toHaveLength(0);
+        });
+      });
+    });
+  });
+
+  describe('aiConversationThreads query', () => {
+    it.each`
+      isShown  | hasMultiThread | shouldSkip | description
+      ${false} | ${false}       | ${true}    | ${'when chat is hidden and multi-thread is disabled'}
+      ${false} | ${true}        | ${true}    | ${'when chat is hidden and multi-thread is enabled'}
+      ${true}  | ${false}       | ${true}    | ${'when chat is shown and multi-thread is disabled'}
+      ${true}  | ${true}        | ${false}   | ${'when chat is shown and multi-thread is enabled'}
+    `('skips query=$shouldSkip $description', async ({ isShown, hasMultiThread, shouldSkip }) => {
+      duoChatGlobalState.isShown = isShown;
+      createComponent({
+        glFeatures: { duoChatMultiThread: hasMultiThread },
+      });
+      await waitForPromises();
+
+      expect(conversationThreadsQueryHandlerMock).toHaveBeenCalledTimes(shouldSkip ? 0 : 1);
     });
   });
 });

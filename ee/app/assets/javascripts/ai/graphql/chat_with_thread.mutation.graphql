@@ -1,10 +1,11 @@
-mutation chat(
+mutation chatWithThread(
   $question: String!
   $resourceId: AiModelID!
   $agentVersionId: AiAgentVersionID
   $clientSubscriptionId: String
   $projectId: ProjectID
   $currentFileContext: AiCurrentFileInput
+  $threadId: AiConversationThreadID!
 ) {
   aiAction(
     input: {
@@ -17,6 +18,7 @@ mutation chat(
       projectId: $projectId
       clientSubscriptionId: $clientSubscriptionId
       conversationType: DUO_CHAT
+      threadId: $threadId
     }
   ) {
     requestId
