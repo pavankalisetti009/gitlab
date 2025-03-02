@@ -135,9 +135,43 @@ export const MOCK_CHAT_CACHED_MESSAGES_RES = {
 };
 
 export const MOCK_TANUKI_BOT_MUTATATION_RES = {
-  data: { aiAction: { errors: [], requestId: '123' } },
+  data: { aiAction: { errors: [], requestId: '123', threadId: 'thread-123' } },
 };
 
 export const MOCK_USER_ID = 'gid://gitlab/User/1';
 export const MOCK_CLIENT_SUBSCRIPTION_ID = '123';
 export const MOCK_RESOURCE_ID = 'gid://gitlab/Issue/1';
+
+export const MOCK_THREADS = [
+  {
+    __typename: 'AiConversationsThread',
+    id: 'gid://gitlab/Ai::Conversation::Thread/121',
+    lastUpdatedAt: '2025-02-14T15:26:11Z',
+    createdAt: '2025-02-14T15:14:02Z',
+    conversationType: 'DUO_CHAT',
+    title: 'ddd',
+  },
+  {
+    __typename: 'AiConversationsThread',
+    id: 'gid://gitlab/Ai::Conversation::Thread/120',
+    lastUpdatedAt: '2025-02-14T15:13:57Z',
+    createdAt: '2025-02-14T15:13:57Z',
+    conversationType: 'DUO_CHAT',
+    title: null,
+  },
+];
+
+export const MOCK_THREADS_RESPONSE = {
+  data: {
+    aiConversationThreads: {
+      __typename: 'AiConversationsThreadConnection',
+      nodes: MOCK_THREADS,
+      pageInfo: {
+        __typename: 'PageInfo',
+        endCursor:
+          'eyJsYXN0X3VwZGF0ZWRfYXQiOiIyMDI1LTAyLTE0IDE1OjEzOjU3LjkzMDgzNDAwMCArMDAwMCIsImlkIjoiMTIwIn0',
+        hasNextPage: false,
+      },
+    },
+  },
+};

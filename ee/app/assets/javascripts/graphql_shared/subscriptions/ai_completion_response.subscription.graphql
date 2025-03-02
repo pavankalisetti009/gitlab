@@ -19,6 +19,7 @@ subscription aiCompletionResponse(
     contentHtml @include(if: $htmlResponse)
     errors
     role
+    threadId
     timestamp
     type
     chunkId

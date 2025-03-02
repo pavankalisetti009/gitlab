@@ -44,6 +44,7 @@ const subscriptionResponsePartial = {
   extras: null,
   type: null,
   chunkId: null,
+  threadId: null,
 };
 
 const findButton = () => wrapper.findByTestId('mutation-trigger');
