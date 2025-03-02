@@ -3,7 +3,6 @@ import VueApollo from 'vue-apollo';
 import { map } from 'lodash';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
-import { createMockDirective } from 'helpers/vue_mock_directive';
 import workItemByIidQuery from '~/work_items/graphql/work_item_by_iid.query.graphql';
 import workItemDevelopmentQuery from '~/work_items/graphql/work_item_development.query.graphql';
 import workItemDevelopmentUpdatedSubscription from '~/work_items/graphql/work_item_development.subscription.graphql';
@@ -21,71 +20,68 @@ import {
 import WorkItemDevelopment from '~/work_items/components/work_item_development/work_item_development.vue';
 import WorkItemDevelopmentRelationshipList from '~/work_items/components/work_item_development/work_item_development_relationship_list.vue';
 
-/*
-  MR list is available for CE and EE
-  Related feature flags is only available for EE
-*/
+/**
+ * MR list is available for CE and EE
+ * Related feature flags is only available for EE
+ */
 describe('WorkItemDevelopment EE', () => {
   Vue.use(VueApollo);
 
   let wrapper;
-  let mockApollo;
 
-  const workItemSuccessQueryHandler = jest
-    .fn()
-    .mockResolvedValue(workItemByIidResponseFactory({ canUpdate: true }));
+  const workItemResponse = workItemByIidResponseFactory({ canUpdate: true });
 
-  const devWidgetWithMRListOnly = workItemDevelopmentResponse({
-    developmentItems: workItemDevelopmentFragmentResponse({
-      mrNodes: workItemDevelopmentMRNodes,
-      willAutoCloseByMergeRequest: true,
-      featureFlagNodes: [],
-      branchNodes: [],
-      relatedMergeRequests: [],
-    }),
+  const workItemSuccessQueryHandler = jest.fn().mockResolvedValue(workItemResponse);
+
+  const createWorkItemDevelopmentResponse = (config) =>
+    workItemDevelopmentResponse({
+      widgets: [
+        ...workItemResponse.data.workspace.workItem.widgets,
+        workItemDevelopmentFragmentResponse(config),
+      ],
+    });
+
+  const devWidgetWithMRListOnly = createWorkItemDevelopmentResponse({
+    mrNodes: workItemDevelopmentMRNodes,
+    willAutoCloseByMergeRequest: true,
+    featureFlagNodes: [],
+    branchNodes: [],
+    relatedMergeRequests: [],
   });
 
-  const devWidgetWithFlagListOnly = workItemDevelopmentResponse({
-    developmentItems: workItemDevelopmentFragmentResponse({
-      mrNodes: [],
-      willAutoCloseByMergeRequest: false,
-      featureFlagNodes: workItemDevelopmentFeatureFlagNodes,
-      branchNodes: [],
-      relatedMergeRequests: [],
-    }),
+  const devWidgetWithFlagListOnly = createWorkItemDevelopmentResponse({
+    mrNodes: [],
+    willAutoCloseByMergeRequest: false,
+    featureFlagNodes: workItemDevelopmentFeatureFlagNodes,
+    branchNodes: [],
+    relatedMergeRequests: [],
   });
 
-  const devWidgetWithBranchListOnly = workItemDevelopmentResponse({
-    developmentItems: workItemDevelopmentFragmentResponse({
-      mrNodes: [],
-      willAutoCloseByMergeRequest: false,
-      featureFlagNodes: [],
-      branchNodes: workItemRelatedBranchNodes,
-      relatedMergeRequests: [],
-    }),
+  const devWidgetWithBranchListOnly = createWorkItemDevelopmentResponse({
+    mrNodes: [],
+    willAutoCloseByMergeRequest: false,
+    featureFlagNodes: [],
+    branchNodes: workItemRelatedBranchNodes,
+    relatedMergeRequests: [],
   });
 
-  const devWidgetWithRelatedMRListOnly = workItemDevelopmentResponse({
-    developmentItems: workItemDevelopmentFragmentResponse({
-      mrNodes: [],
-      willAutoCloseByMergeRequest: false,
-      featureFlagNodes: [],
-      branchNodes: [],
-      relatedMergeRequests: map(workItemDevelopmentMRNodes, 'mergeRequest'),
-    }),
+  const devWidgetWithRelatedMRListOnly = createWorkItemDevelopmentResponse({
+    mrNodes: [],
+    willAutoCloseByMergeRequest: false,
+    featureFlagNodes: [],
+    branchNodes: [],
+    relatedMergeRequests: map(workItemDevelopmentMRNodes, 'mergeRequest'),
   });
 
-  const devWidgetWithNoDevItems = workItemDevelopmentResponse({
-    developmentItems: workItemDevelopmentFragmentResponse({
-      mrNodes: [],
-      willAutoCloseByMergeRequest: false,
-      featureFlagNodes: [],
-      branchNodes: [],
-      relatedMergeRequests: [],
-    }),
+  const devWidgetWithNoDevItems = createWorkItemDevelopmentResponse({
+    mrNodes: [],
+    willAutoCloseByMergeRequest: false,
+    featureFlagNodes: [],
+    branchNodes: [],
+    relatedMergeRequests: [],
   });
 
-  const devWidgetsuccessQueryHandler = jest.fn().mockResolvedValue(devWidgetWithMRListOnly);
+  const devWidgetSuccessQueryHandler = jest.fn().mockResolvedValue(devWidgetWithMRListOnly);
 
   const devWidgetSuccessQueryHandlerWithOnlyMRList = jest
     .fn()
@@ -112,33 +108,19 @@ describe('WorkItemDevelopment EE', () => {
     .mockResolvedValue({ data: { workItemUpdated: null } });
 
   const createComponent = ({
-    workItemId = 'gid://gitlab/WorkItem/1',
-    workItemIid = '1',
-    workItemFullPath = 'full-path',
-    workItemType = 'Issue',
     workItemQueryHandler = workItemSuccessQueryHandler,
-    workItemDevelopmentQueryHandler = devWidgetsuccessQueryHandler,
+    workItemDevelopmentQueryHandler = devWidgetSuccessQueryHandler,
   } = {}) => {
-    mockApollo = createMockApollo([
-      [workItemByIidQuery, workItemQueryHandler],
-      [workItemDevelopmentQuery, workItemDevelopmentQueryHandler],
-      [workItemDevelopmentUpdatedSubscription, workItemDevelopmentUpdatedSubscriptionHandler],
-    ]);
-
     wrapper = shallowMountExtended(WorkItemDevelopment, {
-      apolloProvider: mockApollo,
-      directives: {
-        GlModal: createMockDirective('gl-modal'),
-        GlTooltip: createMockDirective('gl-tooltip'),
-      },
+      apolloProvider: createMockApollo([
+        [workItemByIidQuery, workItemQueryHandler],
+        [workItemDevelopmentQuery, workItemDevelopmentQueryHandler],
+        [workItemDevelopmentUpdatedSubscription, workItemDevelopmentUpdatedSubscriptionHandler],
+      ]),
       propsData: {
-        workItemId,
-        workItemIid,
-        workItemFullPath,
-        workItemType,
-      },
-      stubs: {
-        WorkItemCreateBranchMergeRequestModal: true,
+        workItemId: 'gid://gitlab/WorkItem/1',
+        workItemIid: '1',
+        workItemFullPath: 'full-path',
       },
     });
   };
@@ -154,9 +136,7 @@ describe('WorkItemDevelopment EE', () => {
   `(
     'should show the relationship list when there is only a list of $description',
     async ({ successQueryResolveHandler }) => {
-      createComponent({
-        workItemDevelopmentQueryHandler: successQueryResolveHandler,
-      });
+      createComponent({ workItemDevelopmentQueryHandler: successQueryResolveHandler });
       await waitForPromises();
 
       expect(findRelationshipList().exists()).toBe(true);
@@ -164,9 +144,7 @@ describe('WorkItemDevelopment EE', () => {
   );
 
   it('should not show the widget when any of the dev item is not available', async () => {
-    createComponent({
-      workItemDevelopmentQueryHandler: devWidgetSuccessQueryHandlerWithNoDevItem,
-    });
+    createComponent({ workItemDevelopmentQueryHandler: devWidgetSuccessQueryHandlerWithNoDevItem });
     await waitForPromises();
 
     expect(findRelationshipList().exists()).toBe(false);
