@@ -16,7 +16,10 @@ RSpec.describe 'admin/application_settings/_amazon_q', feature_category: :ai_abs
   context 'when feature available' do
     it 'renders settings' do
       expect(rendered).to have_css('#js-amazon-q-settings')
-      expect(rendered).to have_link(s_('AmazonQ|View configuration setup'), href: admin_ai_amazon_q_settings_path)
+      expect(rendered).to have_link(
+        s_('AmazonQ|View configuration setup'),
+        href: edit_admin_application_settings_integration_path(:amazon_q)
+      )
     end
   end
 

@@ -52,6 +52,10 @@ module EE
         form_data[:jwt_claims] = ::Integrations::GoogleCloudPlatform::WorkloadIdentityFederation.jwt_claim_mapping_script_value
       end
 
+      if integration.is_a?(::Integrations::AmazonQ)
+        form_data[:amazon_q] = amazon_q_data
+      end
+
       form_data
     end
 
@@ -89,6 +93,31 @@ module EE
         issues_show_path: project_integrations_zentao_issue_path(@project, params[:id], format: :json),
         issues_list_path: project_integrations_zentao_issues_path(@project)
       }
+    end
+
+    def amazon_q_data
+      result = ::Ai::AmazonQ::IdentityProviderPayloadFactory.new.execute
+
+      identity_provider =
+        case result
+        in { ok: payload }
+          payload
+        in { err: err }
+          flash[:alert] = [
+            s_('AmazonQ|Something went wrong retrieving the identity provider payload.'),
+            err[:message]
+          ].join(' ').squish
+
+          {}
+        end
+
+      {
+        submit_url: admin_ai_amazon_q_settings_path,
+        disconnect_url: disconnect_admin_ai_amazon_q_settings_path,
+        ready: ::Ai::Setting.instance.amazon_q_ready.to_s,
+        role_arn: ::Ai::Setting.instance.amazon_q_role_arn,
+        availability: ::Gitlab::CurrentSettings.duo_availability
+      }.merge(identity_provider)
     end
 
     def integrations_allow_list_data

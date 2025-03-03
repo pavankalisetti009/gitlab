@@ -28,7 +28,7 @@ module Admin
                   end
 
         redirect_to(
-          admin_ai_amazon_q_settings_path,
+          edit_admin_application_settings_integration_path(:amazon_q),
           **message
         )
       end

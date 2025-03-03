@@ -125,7 +125,7 @@ RSpec.describe Admin::Ai::AmazonQSettingsController, :enable_admin_mode, feature
 
         perform_request
 
-        expect(response).to redirect_to(admin_ai_amazon_q_settings_path)
+        expect(response).to redirect_to(edit_admin_application_settings_integration_path(:amazon_q))
       end
     end
 
@@ -138,7 +138,7 @@ RSpec.describe Admin::Ai::AmazonQSettingsController, :enable_admin_mode, feature
         perform_request
 
         expect(flash[:alert]).to be_nil
-        expect(response).to redirect_to(admin_ai_amazon_q_settings_path)
+        expect(response).to redirect_to(edit_admin_application_settings_integration_path(:amazon_q))
       end
     end
   end

@@ -36,4 +36,11 @@ FactoryBot.define do
     active { true }
     token { 'git_guardian-token' }
   end
+
+  factory :amazon_q_integration, class: 'Integrations::AmazonQ' do
+    type { 'Integrations::AmazonQ' }
+    active { true }
+    instance { true }
+    role_arn { 'q' }
+  end
 end

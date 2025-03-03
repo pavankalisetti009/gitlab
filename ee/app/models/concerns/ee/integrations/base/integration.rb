@@ -21,6 +21,10 @@ module EE
           google_cloud_platform_artifact_registry
         ].freeze
 
+        EE_INSTANCE_LEVEL_ONLY_INTEGRATION_NAMES = %w[
+          amazon_q
+        ].freeze
+
         GOOGLE_CLOUD_PLATFORM_INTEGRATION_NAMES = %w[
           google_cloud_platform_artifact_registry
           google_cloud_platform_workload_identity_federation
@@ -49,6 +53,18 @@ module EE
             end
 
             names
+          end
+
+          override :instance_specific_integration_names
+          def instance_specific_integration_names
+            EE_INSTANCE_LEVEL_ONLY_INTEGRATION_NAMES + super
+          end
+
+          override :disabled_integration_names
+          def disabled_integration_names
+            disabled = super
+            disabled += ['amazon_q'] unless ::Ai::AmazonQ.feature_available?
+            disabled
           end
 
           override :project_specific_integration_names
