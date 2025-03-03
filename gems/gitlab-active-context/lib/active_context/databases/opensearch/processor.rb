@@ -2,14 +2,14 @@
 
 module ActiveContext
   module Databases
-    module Elasticsearch
+    module Opensearch
       class Processor
         include Concerns::ElasticProcessor
 
-        # Transforms a query node into Elasticsearch query DSL
+        # Transforms a query node into Opensearch query DSL
         #
         # @param node [ActiveContext::Query] The query node to transform
-        # @return [Hash] The Elasticsearch query DSL
+        # @return [Hash] The Opensearch query DSL
         # @example
         #   Processor.transform(ActiveContext::Query.filter(status: 'active'))
         def self.transform(node)
@@ -33,10 +33,19 @@ module ActiveContext
         #   #    }
         def process_knn(node)
           knn_params = extract_knn_params(node)
-          base_query = node.children.any? ? process(node.children.first) : nil
-          knn_params[:filter] = extract_query(base_query) if base_query
 
-          { knn: knn_params }
+          query = build_bool_query(:should) do |queries|
+            queries << { knn: knn_params }
+          end
+
+          base_query = node.children.any? ? process(node.children.first) : nil
+
+          if base_query
+            filter = extract_query(base_query)
+            query[:query][:bool][:must] = filter[:bool][:must]
+          end
+
+          query
         end
 
         # Processes OR conditions that include a KNN query
@@ -51,10 +60,17 @@ module ActiveContext
         #   #    }
         def process_or_with_knn(node)
           knn_child = find_knn_child(node)
-          other_conditions = build_or_conditions(node, knn_child)
-          knn_params = extract_knn_params(knn_child)
+          query = build_or_conditions(node, knn_child)
+          knn_query = { knn: extract_knn_params(knn_child) }
 
-          other_conditions.empty? ? { knn: knn_params } : { knn: knn_params, query: extract_query(other_conditions) }
+          if query.empty?
+            build_bool_query(:should) do |queries|
+              queries << knn_query
+            end
+          else
+            query[:query][:bool][:should] << knn_query
+            query
+          end
         end
 
         # Extracts KNN parameters from a node into the expected format
@@ -63,19 +79,20 @@ module ActiveContext
         # @return [Hash] The formatted KNN parameters
         # @example
         #   # => {
-        #   #      field: 'embedding',
-        #   #      query_vector: [0.1, 0.2],
-        #   #      k: 5,
-        #   #      num_candidates: 50
+        #   #      'embedding': {
+        #   #        vector: [0.1, 0.2],
+        #   #        k: 5
+        #   #      }
         #   #    }
         def extract_knn_params(node)
           knn_params = node.value
           k = knn_params[:limit]
+
           {
-            field: knn_params[:target],
-            query_vector: knn_params[:vector],
-            k: k,
-            num_candidates: k * 10
+            knn_params[:target] => {
+              k: k,
+              vector: knn_params[:vector]
+            }
           }
         end
       end
