@@ -1,7 +1,7 @@
 import { isEmpty, uniqueId } from 'lodash';
 import { s__, sprintf } from '~/locale';
 import Api from 'ee/api';
-import { SEVERITY_LEVELS, REPORT_TYPES_DEFAULT } from 'ee/security_dashboard/constants';
+import { SEVERITY_LEVELS_KEYS, REPORT_TYPES_DEFAULT } from 'ee/security_dashboard/constants';
 import { isPositiveInteger } from '~/lib/utils/number_utils';
 import {
   ALL_PROTECTED_BRANCHES,
@@ -106,7 +106,7 @@ const invalidRuleValues = (rules, key, allowedValues, areDuplicatesAllowed = fal
 export const invalidScanners = (rules) => invalidRuleValues(rules, 'scanners', REPORT_TYPES_KEYS);
 
 export const invalidSeverities = (rules) =>
-  invalidRuleValues(rules, 'severity_levels', Object.keys(SEVERITY_LEVELS));
+  invalidRuleValues(rules, 'severity_levels', SEVERITY_LEVELS_KEYS);
 
 export const invalidVulnerabilityStates = (rules) =>
   invalidRuleValues(rules, 'vulnerability_states', VULNERABILITY_STATE_KEYS);
