@@ -76,8 +76,8 @@ module EE
       super
     end
 
-    def jira_issue_breadcrumb_link(issue_reference)
-      external_issue_breadcrumb_link('illustrations/logos/jira.svg', issue_reference, '')
+    def external_issue_breadcrumb_title(issue_reference)
+      strip_tags(issue_reference)
     end
 
     def zentao_issue_breadcrumb_link(issue)

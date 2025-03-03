@@ -202,16 +202,16 @@ RSpec.describe EE::IntegrationsHelper, feature_category: :integrations do
     end
   end
 
-  describe '#jira_issue_breadcrumb_link' do
-    let(:expected_html) { '<img width="15" height="15" class="gl-mr-2 lazy" data-src="/assets/illustrations/logos/jira-d90a9462f8323a5a2d9aef3c3bbb5c8a40275419aabf3cfbe6826113162b18a1.svg" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" /><a rel="noopener noreferrer" class="gl-flex gl-items-center gl-whitespace-nowrap" href="">my-ref</a>' }
+  describe '#external_issue_breadcrumb_title' do
+    let(:expected_title) { 'my-ref' }
 
-    subject { helper.jira_issue_breadcrumb_link(issue_reference) }
+    subject { helper.external_issue_breadcrumb_title(issue_reference) }
 
     context 'with a valid issue_reference' do
       let(:issue_reference) { 'my-ref' }
 
       it 'returns the correct HTML' do
-        is_expected.to eq(expected_html)
+        is_expected.to eq(expected_title)
       end
     end
 
@@ -219,7 +219,7 @@ RSpec.describe EE::IntegrationsHelper, feature_category: :integrations do
       let(:issue_reference) { "<script>alert('XSS')</script>my-ref" }
 
       it 'strips all tags' do
-        is_expected.to eq(expected_html)
+        is_expected.to eq(expected_title)
       end
     end
   end
