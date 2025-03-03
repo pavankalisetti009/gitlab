@@ -19861,7 +19861,7 @@ msgstr ""
 msgid "DependencyProxy|All items in the cache are scheduled for removal."
 msgstr ""
 
-msgid "DependencyProxy|Base URL of the external registry."
+msgid "DependencyProxy|Base URL of the external registry. Must begin with %{codeStart}http%{codeEnd} or %{codeStart}https%{codeEnd}"
 msgstr ""
 
 msgid "DependencyProxy|Cached %{time}"
@@ -19909,7 +19909,7 @@ msgstr ""
 msgid "DependencyProxy|Image list"
 msgstr ""
 
-msgid "DependencyProxy|Password for your external registry."
+msgid "DependencyProxy|Password of the external registry."
 msgstr ""
 
 msgid "DependencyProxy|Pull image by digest example"
@@ -40974,6 +40974,9 @@ msgid "PackageRegistry|Conan"
 msgstr ""
 
 msgid "PackageRegistry|Conan Command"
+msgstr ""
+
+msgid "PackageRegistry|Configure external Maven registry"
 msgstr ""
 
 msgid "PackageRegistry|Configure in settings"

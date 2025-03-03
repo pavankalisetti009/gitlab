@@ -1,5 +1,5 @@
 <script>
-import { GlAlert, GlButton, GlToggle } from '@gitlab/ui';
+import { GlAlert, GlButton, GlFormCheckbox } from '@gitlab/ui';
 import { __ } from '~/locale';
 import Tracking from '~/tracking';
 import MavenForm from 'ee_component/packages_and_registries/settings/project/components/maven_form.vue';
@@ -10,7 +10,7 @@ export default {
   components: {
     GlAlert,
     GlButton,
-    GlToggle,
+    GlFormCheckbox,
     MavenForm,
   },
   mixins: [Tracking.mixin()],
@@ -95,7 +95,9 @@ export default {
     >
       {{ alertMessage }}
     </gl-alert>
-    <gl-toggle v-model="enabled" :label="s__('DependencyProxy|Enable Dependency Proxy')" />
+    <gl-form-checkbox v-model="enabled">
+      {{ s__('DependencyProxy|Enable Dependency Proxy') }}
+    </gl-form-checkbox>
     <maven-form v-model="mavenFormData" />
     <div class="gl-mt-6 gl-flex gl-items-center">
       <gl-button

@@ -21,7 +21,7 @@ RSpec.describe 'Project > Settings > Packages and registries > Dependency proxy 
     wait_for_requests
 
     expect(page).to be_axe_clean.within('[data-testid="packages-and-registries-project-settings"]') # rubocop:todo Capybara/TestidFinders -- Doesn't cover use case, see https://gitlab.com/gitlab-org/gitlab/-/issues/442224
-                                .skipping :'heading-order', :'link-in-text-block'
+                                .skipping :'link-in-text-block'
   end
 
   shared_examples 'dependency proxy settings' do
@@ -37,7 +37,7 @@ RSpec.describe 'Project > Settings > Packages and registries > Dependency proxy 
       visit_method
 
       within_testid('dependency-proxy-settings') do
-        click_button class: 'gl-toggle'
+        check('Enable Dependency Proxy')
         fill_in('URL', with: 'http://example.com')
         click_button 'Save changes'
       end
@@ -49,7 +49,7 @@ RSpec.describe 'Project > Settings > Packages and registries > Dependency proxy 
       visit_method
 
       within_testid('dependency-proxy-settings') do
-        click_button class: 'gl-toggle'
+        check('Enable Dependency Proxy')
         fill_in('URL', with: 'http://example.com')
         fill_in('Username', with: 'username')
         fill_in('Password', with: 'password')
