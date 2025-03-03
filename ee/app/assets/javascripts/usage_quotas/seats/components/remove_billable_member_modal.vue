@@ -78,7 +78,6 @@ export default {
     data-testid="remove-billable-member-modal"
     :ok-disabled="!canSubmit"
     @primary="$emit('removeBillableMember', billableMemberToRemove.id)"
-    @hide="$emit('clearBillableMemberToRemove')"
   >
     <p>
       <gl-sprintf :message="modalText">
