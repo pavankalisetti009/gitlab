@@ -50,30 +50,6 @@ RSpec.describe Users::BuildService, feature_category: :user_management do
             expect(service.execute.provisioned_by_group_id).to eq(group.id)
           end
         end
-
-        context 'when separate_group_scim_table feature flag is disabled' do
-          let_it_be(:group) { create(:group) }
-          let_it_be(:scim_identity_params) { { extern_uid: 'uid', provider: 'group_scim', group_id: group.id } }
-
-          before do
-            stub_feature_flags(separate_group_scim_table: false)
-            params.merge!(scim_identity_params)
-          end
-
-          it 'passes allowed attributes to both scim and saml identity' do
-            scim_params = scim_identity_params.dup
-            scim_params.delete(:provider)
-
-            expect(ScimIdentity).to receive(:new).with(hash_including(scim_params)).and_call_original
-            expect(Identity).to receive(:new).with(hash_including(identity_params)).and_call_original
-
-            service.execute
-          end
-
-          it 'marks the user as provisioned by group' do
-            expect(service.execute.provisioned_by_group_id).to eq(group.id)
-          end
-        end
       end
 
       context 'with auditor as allowed params' do

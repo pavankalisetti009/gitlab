@@ -73,7 +73,7 @@ module EE
       def build_identity
         return super unless params[:provider] == GROUP_SCIM_PROVIDER
 
-        build_scim_identity
+        build_group_scim_identity
         identity_params[:provider] = GROUP_SAML_PROVIDER
 
         user.provisioned_by_group_id = params[:group_id]
@@ -109,14 +109,10 @@ module EE
         user.smartcard_identities.build(subject: params[:certificate_subject], issuer: params[:certificate_issuer])
       end
 
-      def build_scim_identity
+      def build_group_scim_identity
         scim_identity_params = params.slice(*scim_identity_attributes)
 
-        if ::Feature.enabled?(:separate_group_scim_table, ::Group.find(params[:group_id]))
-          user.group_scim_identities.build(scim_identity_params.merge(active: true))
-        else
-          user.instance_scim_identities.build(scim_identity_params.merge(active: true))
-        end
+        user.group_scim_identities.build(scim_identity_params.merge(active: true))
       end
 
       def set_pending_approval_state

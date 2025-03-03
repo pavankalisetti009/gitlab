@@ -98,21 +98,6 @@ RSpec.describe Groups::SamlProvidersController, feature_category: :system_access
         expect(assigns(:scim_token_url)).to eq("http://localhost/api/scim/v2/groups/#{group.full_path}")
       end
 
-      context 'when the flag separate_group_scim_table is disabled' do
-        before do
-          stub_feature_flags(separate_group_scim_table: false)
-        end
-
-        it 'has the SCIM token URL when it exists' do
-          create(:scim_oauth_access_token, group: group)
-          group.add_owner(user)
-
-          subject
-
-          expect(assigns(:scim_token_url)).to eq("http://localhost/api/scim/v2/groups/#{group.full_path}")
-        end
-      end
-
       context 'not on a top level group' do
         let(:group) { create(:group, :nested) }
 

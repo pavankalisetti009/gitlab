@@ -18,11 +18,7 @@ class Groups::SamlProvidersController < Groups::ApplicationController
     @saml_provider = @group.saml_provider || @group.build_saml_provider
     @saml_response_check = load_test_response if @saml_provider.persisted?
 
-    scim_token = if Feature.enabled?(:separate_group_scim_table, @group)
-                   GroupScimAuthAccessToken.find_by_group_id(@group.id)
-                 else
-                   ScimOauthAccessToken.find_by_group_id(@group.id)
-                 end
+    scim_token = GroupScimAuthAccessToken.find_by_group_id(@group.id)
 
     @scim_token_url = scim_token.as_entity_json[:scim_api_url] if scim_token
   end

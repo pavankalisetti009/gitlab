@@ -30,7 +30,7 @@ module API
               current_request,
               *Doorkeeper.configuration.access_token_methods
             )
-            unauthorized! unless token && token_model(group).token_matches_for_group?(token, group)
+            unauthorized! unless token && GroupScimAuthAccessToken.token_matches_for_group?(token, group)
           end
 
           # Instance variable `@group` is necessary for the
@@ -100,18 +100,6 @@ module API
 
             false
           end
-
-          def scim_finder(group)
-            return Authn::GroupScimFinder if Feature.enabled?(:separate_group_scim_table, group)
-
-            ScimFinder
-          end
-
-          def token_model(group)
-            return GroupScimAuthAccessToken if Feature.enabled?(:separate_group_scim_table, group)
-
-            ScimOauthAccessToken
-          end
         end
 
         resource :Users do
@@ -124,7 +112,7 @@ module API
           end
           get do
             group = find_and_authenticate_group!(params[:group])
-            results = scim_finder(group).new(group).search(params)
+            results = Authn::GroupScimFinder.new(group).search(params)
             response_page = scim_paginate(results)
 
             status 200

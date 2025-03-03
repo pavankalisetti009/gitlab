@@ -14,15 +14,15 @@ RSpec.describe Admin::IdentitiesHelper do
   end
 
   let_it_be(:user_without_scim_identities) { create(:user) }
+
+  let_it_be(:user_with_scim_identities) { create(:user) }
   let_it_be(:scim_identity) do
-    create(:scim_identity, group: group, extern_uid: 'scim-uid')
+    create(:group_scim_identity, group: group, extern_uid: 'scim-uid', user: user_with_scim_identities)
   end
 
   let_it_be(:instance_scim_identity) do
-    create(:scim_identity, group: nil, extern_uid: 'scim-uid')
+    create(:scim_identity, group: nil, extern_uid: 'scim-uid', user: user_with_scim_identities)
   end
-
-  let_it_be(:user_with_scim_identities) { scim_identity.user }
 
   describe '#provider_id_cell_testid' do
     context 'without SAML provider ID' do
@@ -96,7 +96,8 @@ RSpec.describe Admin::IdentitiesHelper do
 
   describe '#scim_identities_collection' do
     it 'returns SCIM identities' do
-      expect(helper.scim_identities_collection(user_with_scim_identities)).to match_array [scim_identity]
+      expect(helper.scim_identities_collection(user_with_scim_identities)).to match_array [scim_identity,
+        instance_scim_identity]
     end
   end
 

@@ -88,6 +88,8 @@ RSpec.describe User, feature_category: :system_access do
 
     it { is_expected.to have_one(:pipl_user).class_name('ComplianceManagement::PiplUser') }
     it { is_expected.to have_many(:user_member_roles) }
+    it { is_expected.to have_many(:group_scim_identities).class_name('GroupScimIdentity') }
+    it { is_expected.to have_many(:instance_scim_identities).class_name('ScimIdentity') }
   end
 
   describe 'nested attributes' do
@@ -3773,69 +3775,6 @@ RSpec.describe User, feature_category: :system_access do
         end
 
         it { is_expected.to be_empty }
-      end
-    end
-  end
-
-  describe '#scim_identities' do
-    context "For instance scim" do
-      let(:scim_identity_instance) { create(:scim_identity) }
-      let(:user) { scim_identity_instance.user }
-
-      it "returns instance scim identities" do
-        expect(user.scim_identities).to match_array([scim_identity_instance])
-      end
-    end
-
-    context "In SaaS", :saas do
-      let(:group_scim_identity) { create(:group_scim_identity) }
-      let(:user) { group_scim_identity.user }
-
-      it "returns instance scim identities" do
-        expect(user.scim_identities).to match_array([group_scim_identity])
-      end
-
-      context "when the feature flag separate_group_scim_table is disabled", :sidekiq_inline do
-        let(:user) { create(:user) }
-        let(:group_1) { create(:group) }
-        let(:group_2) { create(:group) }
-
-        let!(:group_scim_identity) { create(:group_scim_identity, user: user, group: group_1) }
-        let!(:instance_scim_identity) { create(:scim_identity, user: user, group: group_2) }
-
-        before do
-          group_1.add_developer(user)
-          group_2.add_developer(user)
-          stub_feature_flags(separate_group_scim_table: group_1)
-        end
-
-        it "returns scim identities" do
-          expected_identities = [
-            {
-              "user_id" => group_scim_identity.user_id,
-              "active" => group_scim_identity.active,
-              "group_id" => group_scim_identity.group_id,
-              "extern_uid" => group_scim_identity.extern_uid
-            },
-            {
-              "user_id" => instance_scim_identity.user_id,
-              "active" => instance_scim_identity.active,
-              "group_id" => instance_scim_identity.group_id,
-              "extern_uid" => instance_scim_identity.extern_uid
-            }
-          ]
-
-          actual_identities = user.scim_identities.map do |identity|
-            {
-              "user_id" => identity.user_id,
-              "active" => identity.active,
-              "group_id" => identity.group_id,
-              "extern_uid" => identity.extern_uid
-            }
-          end
-
-          expect(actual_identities).to match_array(expected_identities)
-        end
       end
     end
   end

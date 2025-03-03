@@ -63,11 +63,8 @@ module EE
 
       has_many :allowed_email_domains, -> { order(id: :asc) }, autosave: true
 
-      # extra association can be removed with deletion of feature flag separate_group_scim_table
-      has_many :instance_scim_identities, class_name: 'ScimIdentity'
-      has_many :group_scim_identities
-      has_one :instance_scim_oauth_access_token, class_name: 'ScimOauthAccessToken'
-      has_one :group_scim_auth_access_token
+      has_many :scim_identities, class_name: 'GroupScimIdentity'
+      has_one :scim_auth_access_token, class_name: 'GroupScimAuthAccessToken'
 
       # We cannot simply set `has_many :audit_events, as: :entity, dependent: :destroy`
       # here since Group inherits from Namespace, the entity_type would be set to `Namespace`.
@@ -315,18 +312,6 @@ module EE
 
     def work_item_epics_ssot_enabled?
       ::Feature.enabled?(:work_item_epics_ssot, root_ancestor)
-    end
-
-    def scim_identities
-      return group_scim_identities if ::Feature.enabled?(:separate_group_scim_table, self)
-
-      instance_scim_identities
-    end
-
-    def scim_oauth_access_token
-      return group_scim_auth_access_token if ::Feature.enabled?(:separate_group_scim_table, self)
-
-      instance_scim_oauth_access_token
     end
 
     def ai_review_merge_request_allowed?(user)

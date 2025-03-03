@@ -557,7 +557,7 @@ RSpec.describe API::Users, :with_current_organization, :aggregate_failures, feat
   describe 'GET /api/users?extern_uid=:extern_uid&provider=scim' do
     context 'querying users by SCIM identity as an admin' do
       let(:instance_scim_user) { create(:user) }
-      let!(:instance_scim_identity) { create(:scim_identity, user: instance_scim_user, extern_uid: 'test_uid') }
+      let!(:instance_scim_identity) { create(:scim_identity, user: instance_scim_user, extern_uid: 'test_uid', group_id: nil) }
 
       let(:group) { create(:group) }
       let(:group_scim_user) { create(:user) }
