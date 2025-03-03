@@ -52,6 +52,8 @@ module Gitlab
               )
             ].freeze
 
+            PROMPT_VERSION = '^1.0.0'
+
             SLASH_COMMANDS = {
               '/fix' => {
                 description: 'Fix any errors in the code',
@@ -84,6 +86,13 @@ module Gitlab
             override :context_options
             def context_options
               { libraries: context.libraries }
+            end
+
+            override :prompt_version
+            def prompt_version
+              return '0.0.1-dev' if Feature.enabled?(:code_creation_slash_commands_claude_3_7, context.current_user)
+
+              PROMPT_VERSION
             end
 
             def selected_text_options

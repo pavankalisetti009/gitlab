@@ -11,6 +11,7 @@
 # - unit_primitive
 RSpec.shared_examples 'uses ai gateway agent prompt' do
   let(:inputs) { tool.send(:prompt_options) }
+  let(:prompt_version) { '^1.0.0' }
   let(:default_unit_primitive) { nil }
 
   before do
@@ -27,7 +28,8 @@ RSpec.shared_examples 'uses ai gateway agent prompt' do
     prompt[:options] ||= {}
     prompt[:options].merge!({
       use_ai_gateway_agent_prompt: true,
-      inputs: inputs
+      inputs: inputs,
+      prompt_version: prompt_version
     })
 
     expect(ai_request_double).to receive(:request).with(prompt, unit_primitive: unit_primitive)

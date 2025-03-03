@@ -78,7 +78,10 @@ RSpec.describe Gitlab::Llm::Chain::Concerns::AiDependent, feature_category: :duo
 
   describe '#request' do
     let(:tool) { ::Gitlab::Llm::Chain::Tools::IssueReader::Executor.new(context: context, options: options) }
-    let(:prompt_options) { tool.prompt.deep_merge({ options: { inputs: options, use_ai_gateway_agent_prompt: true } }) }
+    let(:prompt_options) do
+      tool.prompt.deep_merge({ options: { inputs: options, use_ai_gateway_agent_prompt: true,
+                                          prompt_version: '^1.0.0' } })
+    end
 
     before do
       allow(Gitlab::Llm::Logger).to receive(:build).and_return(logger)
@@ -126,7 +129,8 @@ RSpec.describe Gitlab::Llm::Chain::Concerns::AiDependent, feature_category: :duo
             inputs: {
               field: :test_field
             },
-            use_ai_gateway_agent_prompt: true
+            use_ai_gateway_agent_prompt: true,
+            prompt_version: '^1.0.0'
           }
         ),
         unit_primitive: :test

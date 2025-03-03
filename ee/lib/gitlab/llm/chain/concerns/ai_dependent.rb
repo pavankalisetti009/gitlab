@@ -25,7 +25,8 @@ module Gitlab
               prompt_str[:options] ||= {}
               prompt_str[:options].merge!({
                 use_ai_gateway_agent_prompt: true,
-                inputs: prompt_options
+                inputs: prompt_options,
+                prompt_version: prompt_version
               })
             end
 
