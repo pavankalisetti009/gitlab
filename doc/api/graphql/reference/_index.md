@@ -409,6 +409,12 @@ Returns [`CiConfig`](#ciconfig).
 | <a id="queryciconfigsha"></a>`sha` | [`String`](#string) | Sha for the pipeline. |
 | <a id="queryciconfigskipverifyprojectsha"></a>`skipVerifyProjectSha` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 16.5. **Status**: Experiment. If the provided `sha` is found in the project's repository but is not associated with a Git reference (a detached commit), the verification fails and a validation error is returned. Otherwise, verification passes, even if the `sha` is invalid. Set to `true` to skip this verification process. |
 
+### `Query.ciDedicatedHostedRunnerFilters`
+
+Returns available filters for GitLab Dedicated runner usage data.
+
+Returns [`CiDedicatedHostedRunnerFilters`](#cidedicatedhostedrunnerfilters).
+
 ### `Query.ciDedicatedHostedRunnerUsage`
 
 Compute usage data for runners across namespaces on GitLab Dedicated. Defaults to the current year if no year or billing month is specified. Ultimate only.
@@ -21721,6 +21727,17 @@ CI/CD config variables.
 | <a id="ciconfigvariablekey"></a>`key` | [`String`](#string) | Name of the variable. |
 | <a id="ciconfigvariablevalue"></a>`value` | [`String`](#string) | Value of the variable. |
 | <a id="ciconfigvariablevalueoptions"></a>`valueOptions` | [`[String!]`](#string) | Value options for the variable. |
+
+### `CiDedicatedHostedRunnerFilters`
+
+Filter options available for GitLab Dedicated runner usage data.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="cidedicatedhostedrunnerfiltersrunners"></a>`runners` | [`CiRunnerConnection`](#cirunnerconnection) | List of unique runners with usage data. (see [Connections](#connections)) |
+| <a id="cidedicatedhostedrunnerfiltersyears"></a>`years` | [`[Int!]`](#int) | List of years with available usage data. |
 
 ### `CiDedicatedHostedRunnerUsage`
 

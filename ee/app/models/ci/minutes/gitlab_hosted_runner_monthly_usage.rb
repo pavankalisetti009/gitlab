@@ -6,6 +6,7 @@ module Ci
     # For gitlab dedicated hosted runners only
     class GitlabHostedRunnerMonthlyUsage < Ci::ApplicationRecord
       include Ci::NamespacedModelName
+      include LooseIndexScan
 
       belongs_to :project, inverse_of: :hosted_runner_monthly_usages
       belongs_to :root_namespace, class_name: 'Namespace', inverse_of: :hosted_runner_monthly_usages
@@ -55,6 +56,22 @@ module Ci
         query = query.where(runner_id: runner_id) if runner_id.present?
         query
       end
+
+      # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- This will be done on GitLab dedicated only. Result set would be small.
+      scope :distinct_runner_ids, -> do
+        loose_index_scan(column: :runner_id)
+          .joins(:runner)
+          .pluck(:runner_id)
+      end
+      # rubocop:enable Database/AvoidUsingPluckWithoutLimit
+
+      # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- Result set is small.
+      scope :distinct_years, -> do
+        distinct
+          .pluck(Arel.sql('EXTRACT(YEAR FROM billing_month)::integer'))
+          .sort
+      end
+      # rubocop:enable Database/AvoidUsingPluckWithoutLimit
 
       private
 

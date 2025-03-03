@@ -33,6 +33,10 @@ module EE
             required: false,
             description: 'Date for which to retrieve the usage data, should be the first day of a month.'
         end
+        field :ci_dedicated_hosted_runner_filters, Types::Ci::Minutes::DedicatedRunnerFiltersType,
+          null: true,
+          fallback_value: {},
+          description: 'Returns available filters for GitLab Dedicated runner usage data.'
         field :ci_dedicated_hosted_runner_usage, Types::Ci::Minutes::DedicatedMonthlyUsageType.connection_type,
           null: true,
           resolver: EE::Resolvers::Ci::Minutes::DedicatedMonthlyUsageResolver,
