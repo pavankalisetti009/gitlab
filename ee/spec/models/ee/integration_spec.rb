@@ -182,6 +182,22 @@ RSpec.describe Integration, feature_category: :integrations do
         expect(described_class.integration_name_to_type(Integrations::Asana.to_param)).to eq('Integrations::Asana')
       end
     end
+
+    context 'with amazon q integration' do
+      it 'does not include amazon q integration' do
+        expect(described_class.available_integration_names).not_to include('amazon_q')
+      end
+
+      context 'when it is enabled' do
+        before do
+          stub_licensed_features(amazon_q: true)
+        end
+
+        it 'includes amazon q integration' do
+          expect(described_class.available_integration_names).to include('amazon_q')
+        end
+      end
+    end
   end
 
   describe '.available_integration_names' do
@@ -354,5 +370,11 @@ RSpec.describe Integration, feature_category: :integrations do
 
       integration_class.new.blocked_by_settings?
     end
+  end
+
+  describe '.instance_specific_integration_types' do
+    subject { described_class.instance_specific_integration_types }
+
+    it { is_expected.to eq(['Integrations::AmazonQ', 'Integrations::BeyondIdentity']) }
   end
 end

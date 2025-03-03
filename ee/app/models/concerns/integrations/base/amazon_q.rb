@@ -53,6 +53,10 @@ module Integrations
         false
       end
 
+      def manual_activation?
+        false
+      end
+
       class_methods do
         def title
           s_('AmazonQ|Amazon Q')

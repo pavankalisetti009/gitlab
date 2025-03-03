@@ -8,5 +8,5 @@
     = safe_format(s_('AmazonQ|Use GitLab Duo with Amazon Q to create and review merge requests and upgrade Java. %{link_start}Learn more%{link_end}.'), tag_pair(link, :link_start, :link_end))
   - c.with_body do
     .gl-mt-3
-      = render Pajamas::ButtonComponent.new(variant: :confirm, href: admin_ai_amazon_q_settings_path) do
+      = render Pajamas::ButtonComponent.new(variant: :confirm, href: edit_admin_application_settings_integration_path(:amazon_q)) do
         = s_('AmazonQ|View configuration setup')

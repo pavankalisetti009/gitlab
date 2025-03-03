@@ -152,6 +152,53 @@ RSpec.describe EE::IntegrationsHelper, feature_category: :integrations do
         end
       end
     end
+
+    context 'when integration is at the instance level' do
+      subject(:form_data) { helper.integration_form_data(build(:amazon_q_integration)) }
+
+      context 'with Amazon Q integration' do
+        before do
+          ::Ai::Setting.instance.update!(
+            amazon_q_ready: true,
+            amazon_q_role_arn: 'role-arn'
+          )
+        end
+
+        it 'returns the data related to amazon q' do
+          identity_provider_params = {
+            instance_uid: 'instance_uid',
+            aws_provider_url: "https://auth.token.gitlab.com/cc/oidc/instance_uid",
+            aws_audience: "gitlab-cc-instance_uid"
+          }
+
+          expect_next_instance_of(::Ai::AmazonQ::IdentityProviderPayloadFactory) do |instance|
+            expect(instance).to receive(:execute).and_return({ ok: identity_provider_params })
+          end
+
+          is_expected.to include({
+            amazon_q: {
+              submit_url: admin_ai_amazon_q_settings_path,
+              disconnect_url: disconnect_admin_ai_amazon_q_settings_path,
+              ready: "true",
+              role_arn: "role-arn",
+              availability: :default_on
+            }.merge(identity_provider_params)
+          })
+
+          expect(flash[:alert]).to be_nil
+        end
+
+        it 'adds an error to flash if identity provider factory fails' do
+          expect_next_instance_of(::Ai::AmazonQ::IdentityProviderPayloadFactory) do |instance|
+            expect(instance).to receive(:execute).and_return({ err: { message: 'failure' } })
+          end
+
+          amazon_q_data
+
+          expect(flash[:alert]).to eq('Something went wrong retrieving the identity provider payload. failure')
+        end
+      end
+    end
   end
 
   describe '#integrations_allow_list_data' do
