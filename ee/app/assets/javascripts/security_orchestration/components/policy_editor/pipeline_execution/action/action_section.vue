@@ -68,7 +68,7 @@ export default {
       }
     },
     setStrategy(strategy) {
-      this.$emit('changed', 'pipeline_config_strategy', strategy);
+      this.$emit('update-strategy', strategy);
     },
     setSelectedRef(ref) {
       this.setCiConfigurationPath({ ...this.ciConfigurationPath, ref });

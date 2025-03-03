@@ -22,7 +22,7 @@ import DisabledSection from '../disabled_section.vue';
 import ActionSection from './action/action_section.vue';
 import RuleSection from './rule/rule_section.vue';
 import { createPolicyObject, getInitialPolicy } from './utils';
-import { CONDITIONS_LABEL, DEFAULT_PIPELINE_EXECUTION_POLICY } from './constants';
+import { CONDITIONS_LABEL, DEFAULT_PIPELINE_EXECUTION_POLICY, SCHEDULE } from './constants';
 
 export default {
   ACTION: 'actions',
@@ -173,6 +173,18 @@ export default {
       this.policy[property] = value;
       this.updateYamlEditorValue(this.policy);
     },
+    handleUpdateStrategy(value) {
+      this.handleUpdateProperty('pipeline_config_strategy', value);
+
+      if (value === SCHEDULE) {
+        this.policy = { ...this.policy, schedules: {} };
+      } else {
+        const { schedules, ...policy } = this.policy;
+        this.policy = policy;
+      }
+
+      this.updateYamlEditorValue(this.policy);
+    },
     handleUpdateYaml(manifest) {
       const { policy, parsingError } = createPolicyObject(manifest);
 
@@ -210,7 +222,7 @@ export default {
         <template #title>
           <h4>{{ $options.i18n.CONDITIONS_LABEL }}</h4>
         </template>
-        <rule-section class="gl-mb-4" />
+        <rule-section class="gl-mb-4" :strategy="strategy" />
       </disabled-section>
     </template>
 
@@ -230,6 +242,7 @@ export default {
           :strategy="strategy"
           :suffix="policy.suffix"
           @changed="handleUpdateProperty"
+          @update-strategy="handleUpdateStrategy"
         />
       </disabled-section>
     </template>

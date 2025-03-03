@@ -182,6 +182,34 @@ describe('EditorComponent', () => {
     });
   });
 
+  describe('rule section', () => {
+    it('passes the strategy to rule section', () => {
+      factory();
+      expect(findRuleSection().props('strategy')).toBe('inject_policy');
+    });
+  });
+
+  describe('action section', () => {
+    it('adds "schedules" property if strategy is updated to "schedule"', async () => {
+      factory();
+      expect(findPolicyEditorLayout().props('policy')).not.toHaveProperty('schedules');
+      await findActionSection().vm.$emit('update-strategy', 'schedule');
+      expect(findPolicyEditorLayout().props('policy')).toEqual(
+        expect.objectContaining({ pipeline_config_strategy: 'schedule', schedules: {} }),
+      );
+    });
+
+    it('removes "schedules" property if strategy is updated to "inject_policy" from "schedule"', async () => {
+      factory();
+      await findActionSection().vm.$emit('update-strategy', 'schedule');
+      await findActionSection().vm.$emit('update-strategy', 'inject_policy');
+      expect(findPolicyEditorLayout().props('policy')).toEqual(
+        expect.objectContaining({ pipeline_config_strategy: 'inject_policy' }),
+      );
+      expect(findPolicyEditorLayout().props('policy')).not.toHaveProperty('schedules');
+    });
+  });
+
   describe('yaml mode', () => {
     it('updates the policy', async () => {
       factory();
