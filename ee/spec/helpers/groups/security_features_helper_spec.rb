@@ -124,6 +124,25 @@ RSpec.describe Groups::SecurityFeaturesHelper, feature_category: :user_managemen
     end
   end
 
+  describe '#group_level_security_inventory_data' do
+    let_it_be(:group) { create(:group) }
+
+    let(:expected_group_level_security_inventory_data) do
+      {
+        group_full_path: group.full_path,
+        group_name: group.name
+      }
+    end
+
+    subject(:group_level_security_inventory_data) do
+      helper.group_level_security_inventory_data(group)
+    end
+
+    it 'builds correct hash' do
+      expect(group_level_security_inventory_data).to eq(expected_group_level_security_inventory_data)
+    end
+  end
+
   describe '#group_security_discover_data' do
     let_it_be(:group) { create(:group) }
 

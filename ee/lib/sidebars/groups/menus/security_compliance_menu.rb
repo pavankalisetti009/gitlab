@@ -8,6 +8,7 @@ module Sidebars
         def configure_menu_items
           add_item(security_dashboard_menu_item)
           add_item(vulnerability_report_menu_item)
+          add_item(security_inventory_menu_item)
           add_item(dependencies_menu_item)
           add_item(compliance_menu_item)
           add_item(credentials_menu_item)
@@ -78,6 +79,20 @@ module Sidebars
             super_sidebar_parent: ::Sidebars::Groups::SuperSidebarMenus::SecureMenu,
             active_routes: { path: 'vulnerabilities#index' },
             item_id: :vulnerability_report
+          )
+        end
+
+        def security_inventory_menu_item
+          unless can_access_security_inventory_dashboard?
+            return ::Sidebars::NilMenuItem.new(item_id: :security_inventory)
+          end
+
+          ::Sidebars::MenuItem.new(
+            title: _('Security inventory'),
+            link: group_security_inventory_path(context.group),
+            super_sidebar_parent: ::Sidebars::Groups::SuperSidebarMenus::SecureMenu,
+            active_routes: { path: 'inventory#show' },
+            item_id: :security_inventory
           )
         end
 
@@ -177,6 +192,11 @@ module Sidebars
         def can_access_group_security_dashboard_and_vulnerability_report?
           context.group.licensed_feature_available?(:security_dashboard) &&
             can?(context.current_user, :read_vulnerability, context.group)
+        end
+
+        def can_access_security_inventory_dashboard?
+          context.group.licensed_feature_available?(:security_inventory) &&
+            ::Feature.enabled?(:security_inventory_dashboard, context.group, type: :wip)
         end
       end
     end

@@ -51751,6 +51751,9 @@ msgstr ""
 msgid "Security dashboard"
 msgstr ""
 
+msgid "Security inventory"
+msgstr ""
+
 msgid "Security policy"
 msgstr ""
 
@@ -52053,6 +52056,12 @@ msgid "SecurityExclusions|ex: glpat-1234567890"
 msgstr ""
 
 msgid "SecurityExclusions|ex: spec/**/*.rb"
+msgstr ""
+
+msgid "SecurityInventory|Security inventory"
+msgstr ""
+
+msgid "SecurityInventory|View security coverage and vulnerabilities for all the projects in this group. Data is refreshed and may be upto 24 hours behind."
 msgstr ""
 
 msgid "SecurityOrchestration| and "

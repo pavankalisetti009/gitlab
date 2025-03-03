@@ -29,6 +29,13 @@ module Groups::SecurityFeaturesHelper
     }
   end
 
+  def group_level_security_inventory_data(group)
+    {
+      group_full_path: group.full_path,
+      group_name: group.name
+    }
+  end
+
   def group_security_discover_data(group)
     content = 'discover-group-security'
 
