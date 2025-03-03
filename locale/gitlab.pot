@@ -33835,7 +33835,7 @@ msgstr ""
 msgid "Latest changes"
 msgstr ""
 
-msgid "Latest pipeline for the most recent commit on this branch"
+msgid "Latest pipeline for the most recent commit on this ref"
 msgstr ""
 
 msgid "Launch a ready-to-code development environment for your project."
@@ -42944,6 +42944,12 @@ msgstr ""
 msgid "Pipelines|This pipeline is stuck"
 msgstr ""
 
+msgid "Pipelines|This pipeline ran for a branch."
+msgstr ""
+
+msgid "Pipelines|This pipeline ran for a tag."
+msgstr ""
+
 msgid "Pipelines|This pipeline ran on the contents of the merge request combined with the contents of all other merge requests queued for merging into the target branch."
 msgstr ""
 
@@ -43031,6 +43037,9 @@ msgstr ""
 msgid "Pipelines|Your changes have been successfully committed. Now redirecting to the new merge request page."
 msgstr ""
 
+msgid "Pipelines|branch"
+msgstr ""
+
 msgid "Pipelines|error"
 msgstr ""
 
@@ -43053,6 +43062,9 @@ msgid "Pipelines|merged results"
 msgstr ""
 
 msgid "Pipelines|stuck"
+msgstr ""
+
+msgid "Pipelines|tag"
 msgstr ""
 
 msgid "Pipelines|yaml invalid"
@@ -43214,6 +43226,12 @@ msgstr ""
 msgid "Pipeline|This change will not change the overall test coverage if merged."
 msgstr ""
 
+msgid "Pipeline|This pipeline ran for a branch."
+msgstr ""
+
+msgid "Pipeline|This pipeline ran for a tag."
+msgstr ""
+
 msgid "Pipeline|This pipeline ran on the contents of the merge request combined with the contents of all other merge requests queued for merging into the target branch."
 msgstr ""
 
@@ -43256,6 +43274,9 @@ msgstr ""
 msgid "Pipeline|api"
 msgstr ""
 
+msgid "Pipeline|branch"
+msgstr ""
+
 msgid "Pipeline|for"
 msgstr ""
 
@@ -43269,6 +43290,9 @@ msgid "Pipeline|merged results"
 msgstr ""
 
 msgid "Pipeline|on"
+msgstr ""
+
+msgid "Pipeline|tag"
 msgstr ""
 
 msgid "PivotalTrackerService|Add commit messages as comments to Pivotal Tracker stories."
