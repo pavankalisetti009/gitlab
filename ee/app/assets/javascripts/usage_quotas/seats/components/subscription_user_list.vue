@@ -38,8 +38,6 @@ import SubscriptionSeatDetails from './subscription_seat_details.vue';
 
 export const FIVE_MINUTES_IN_MS = 1000 * 60 * 5;
 
-const now = () => new Date().getTime();
-
 export default {
   name: 'SubscriptionUserList',
   directives: {
@@ -79,7 +77,7 @@ export default {
       billableMembers: [],
       billableMemberToRemove: null,
       isRemovingBillableMember: false,
-      removedBillableMemberId: null,
+      billableMemberIdBeingRemoved: null,
     };
   },
   apollo: {
@@ -133,18 +131,6 @@ export default {
       return !this.hasFreePlan;
     },
   },
-  watch: {
-    removedBillableMemberId(value) {
-      const uniqueMembersIds = Array.from(new Set([...this.recentlyDeletedMembersIds, value]));
-      try {
-        const deleteMembersString = JSON.stringify(uniqueMembersIds);
-        localStorage.setItem(this.deletedMembersExpireKey, now() + FIVE_MINUTES_IN_MS);
-        localStorage.setItem(this.deletedMembersKey, deleteMembersString);
-      } finally {
-        this.recentlyDeletedMembersIds = uniqueMembersIds;
-      }
-    },
-  },
   mounted() {
     this.recentlyDeletedMembersIds = this.getRecentlyDeletedMembersIds();
   },
@@ -176,7 +162,7 @@ export default {
     hasLocalStorageExpired() {
       const expire = localStorage.getItem(this.deletedMembersExpireKey);
       if (!expire) return true;
-      return now() > expire;
+      return Date.now() > expire;
     },
     isGroupInvite(user) {
       return user.membership_type === 'group_invite';
@@ -185,7 +171,8 @@ export default {
       return user.membership_type === 'project_invite';
     },
     isUserRemoved(user) {
-      if (this.removedBillableMemberId === user?.id) return true;
+      if (this.billableMemberIdBeingRemoved === user?.id) return true;
+
       return this.recentlyDeletedMembersIds.includes(user?.id);
     },
     isLastOwner(user) {
@@ -205,12 +192,27 @@ export default {
     removeButtonDisabled(user) {
       return this.isUserRemoved(user) || this.isLastOwner(user);
     },
+    updateDeletedMembersStorage(memberId) {
+      const uniqueMembersIds = Array.from(new Set([...this.recentlyDeletedMembersIds, memberId]));
+      this.recentlyDeletedMembersIds = uniqueMembersIds;
+
+      try {
+        const deleteMembersString = JSON.stringify(uniqueMembersIds);
+        localStorage.setItem(this.deletedMembersExpireKey, Date.now() + FIVE_MINUTES_IN_MS);
+        localStorage.setItem(this.deletedMembersKey, deleteMembersString);
+      } catch (error) {
+        Sentry.captureException(error);
+      }
+    },
     removeBillableMember(memberId) {
-      this.removedBillableMemberId = memberId;
+      this.billableMemberIdBeingRemoved = memberId;
+
       this.isRemovingBillableMember = true;
 
       return GroupsApi.removeBillableMemberFromGroup(this.namespaceId, memberId)
         .then(() => {
+          this.updateDeletedMembersStorage(memberId);
+
           this.$apollo.queries.billableMembers.refetch();
           this.$emit('refetchData');
 
@@ -227,15 +229,11 @@ export default {
           createAlert({
             message: s__('Billing|An error occurred while removing a billable member.'),
           });
-
-          this.clearRemovedBillableMemberId();
         })
         .finally(() => {
+          this.billableMemberIdBeingRemoved = null;
           this.isRemovingBillableMember = false;
         });
-    },
-    clearRemovedBillableMemberId() {
-      this.removedBillableMemberId = null;
     },
   },
   i18n: {
@@ -394,7 +392,6 @@ export default {
     <remove-billable-member-modal
       :billable-member-to-remove="billableMemberToRemove"
       @removeBillableMember="removeBillableMember"
-      @clearBillableMemberToRemove="clearRemovedBillableMemberId"
     />
 
     <gl-modal

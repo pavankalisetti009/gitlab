@@ -206,33 +206,53 @@ describe('SubscriptionUserList', () => {
     describe('when removing a billable user', () => {
       const user = mockTableItems[0];
 
-      beforeEach(async () => {
-        GroupsApi.removeBillableMemberFromGroup.mockResolvedValue();
+      describe('when the request succeed', () => {
+        beforeEach(async () => {
+          GroupsApi.removeBillableMemberFromGroup.mockResolvedValue();
 
-        await createComponent({ provide: { namespaceId: 13 } });
-        // call removeBillableMember from the modal
-        await findRemoveBillableMemberModal().vm.$emit('removeBillableMember', user.id);
+          await createComponent({ provide: { namespaceId: 13 } });
+          // call removeBillableMember from the modal
+          await findRemoveBillableMemberModal().vm.$emit('removeBillableMember', user.id);
+        });
+
+        it('sets the local storage key for the member id', () => {
+          expect(localStorage.setItem).toHaveBeenCalledWith(localStorageKey, `[${user.id}]`);
+        });
+
+        it('sets the local storage key for expiration', () => {
+          expect(localStorage.setItem).toHaveBeenCalledWith(
+            localStorageExpireKey,
+            fiveMinutesFromNow(),
+          );
+        });
       });
 
-      it('sets the local storage key for the member id', () => {
-        expect(localStorage.setItem).toHaveBeenCalledWith(localStorageKey, `[${user.id}]`);
-      });
+      describe('when the request fails', () => {
+        beforeEach(async () => {
+          GroupsApi.removeBillableMemberFromGroup.mockRejectedValueOnce();
 
-      it('sets the local storage key for expiration', () => {
-        expect(localStorage.setItem).toHaveBeenCalledWith(
-          localStorageExpireKey,
-          fiveMinutesFromNow(),
-        );
+          await createComponent({ provide: { namespaceId: 13 } });
+        });
+
+        it('does not adds the memberId to local storage', async () => {
+          localStorage.clear();
+          // call removeBillableMember from the modal
+          await findRemoveBillableMemberModal().vm.$emit('removeBillableMember', user.id);
+          expect(localStorage.setItem).not.toHaveBeenCalled();
+        });
       });
 
       describe('when removing another member', () => {
-        beforeEach(() => findRemoveBillableMemberModal().vm.$emit('removeBillableMember', 13));
+        beforeEach(async () => {
+          GroupsApi.removeBillableMemberFromGroup.mockResolvedValue();
 
-        it('sets the local storage key for the member id', async () => {
-          // TODO: consider removing the next line
-          await nextTick();
+          await createComponent({ provide: { namespaceId: 13 } });
+          await findRemoveBillableMemberModal().vm.$emit('removeBillableMember', user.id);
+          await findRemoveBillableMemberModal().vm.$emit('removeBillableMember', 3);
+        });
 
-          expect(localStorage.setItem).toHaveBeenLastCalledWith(localStorageKey, `[${user.id},13]`);
+        it('sets the local storage key for the member id', () => {
+          expect(localStorage.setItem).toHaveBeenCalledWith(localStorageKey, `[${user.id},3]`);
         });
 
         it('sets the local storage key for expiration', () => {
