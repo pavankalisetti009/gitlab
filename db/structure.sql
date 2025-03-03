@@ -31155,6 +31155,8 @@ CREATE UNIQUE INDEX idx_external_audit_event_destination_id_key_uniq ON audit_ev
 
 CREATE INDEX idx_external_status_checks_on_id_and_project_id ON external_status_checks USING btree (id, project_id);
 
+CREATE INDEX idx_gitlab_hosted_runner_monthly_usages_on_billing_month_year ON ci_gitlab_hosted_runner_monthly_usages USING btree (EXTRACT(year FROM billing_month));
+
 CREATE INDEX idx_gpg_keys_on_user_externally_verified ON gpg_keys USING btree (user_id) WHERE (externally_verified = true);
 
 CREATE INDEX idx_group_audit_events_on_author_id_created_at_id ON ONLY group_audit_events USING btree (author_id, created_at, id);

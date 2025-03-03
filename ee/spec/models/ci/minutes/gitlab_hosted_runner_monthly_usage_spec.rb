@@ -142,4 +142,35 @@ RSpec.describe Ci::Minutes::GitlabHostedRunnerMonthlyUsage, factory_default: :ke
       end
     end
   end
+
+  describe '.distinct_runner_ids' do
+    let_it_be(:runner1) { create(:ci_runner) }
+    let_it_be(:runner2) { create(:ci_runner) }
+
+    before do
+      create(:ci_hosted_runner_monthly_usage, runner: runner1)
+      create(:ci_hosted_runner_monthly_usage, runner: runner1) # Duplicate usage for same runner
+      create(:ci_hosted_runner_monthly_usage, runner: runner2)
+    end
+
+    it 'returns distinct runner IDs' do
+      expect(described_class.distinct_runner_ids).to contain_exactly(runner1.id, runner2.id)
+    end
+  end
+
+  describe '.distinct_years' do
+    before do
+      create(:ci_hosted_runner_monthly_usage, billing_month: Date.new(2023, 1, 1))
+      create(:ci_hosted_runner_monthly_usage, billing_month: Date.new(2023, 2, 1)) # Same year
+      create(:ci_hosted_runner_monthly_usage, billing_month: Date.new(2024, 1, 1))
+    end
+
+    it 'returns distinct years' do
+      expect(described_class.distinct_years).to contain_exactly(2023, 2024)
+    end
+
+    it 'returns years in ascending order' do
+      expect(described_class.distinct_years).to eq([2023, 2024])
+    end
+  end
 end
