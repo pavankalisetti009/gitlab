@@ -1,8 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-// eslint-disable-next-line no-restricted-imports
-import Vuex from 'vuex';
 import getBillableMembersCountQuery from 'ee/subscriptions/graphql/queries/billable_members_count.query.graphql';
 import SubscriptionSeatsStatisticsCard from 'ee/usage_quotas/seats/components/subscription_seats_statistics_card.vue';
 import PublicNamespacePlanInfoCard from 'ee/usage_quotas/seats/components/public_namespace_plan_info_card.vue';
@@ -10,7 +8,7 @@ import StatisticsSeatsCard from 'ee/usage_quotas/seats/components/statistics_sea
 import SubscriptionUpgradeInfoCard from 'ee/usage_quotas/seats/components/subscription_upgrade_info_card.vue';
 import SubscriptionSeats from 'ee/usage_quotas/seats/components/subscription_seats.vue';
 import SubscriptionUserList from 'ee/usage_quotas/seats/components/subscription_user_list.vue';
-import { getMockSubscriptionData, mockDataSeats } from 'ee_jest/usage_quotas/seats/mock_data';
+import { getMockSubscriptionData } from 'ee_jest/usage_quotas/seats/mock_data';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -18,35 +16,12 @@ import { createAlert } from '~/alert';
 
 jest.mock('~/alert');
 
-Vue.use(Vuex);
-
 const providedFields = {
   explorePlansPath: '/groups/test_group/-/billings',
   hasNoSubscription: false,
   activeTrial: false,
   addSeatsHref: '/groups/test_group/-/seat_usage.csv',
 };
-
-const fakeStore = ({ initialState, initialGetters }) =>
-  new Vuex.Store({
-    mutations: {
-      RECEIVE_GITLAB_SUBSCRIPTION_SUCCESS: jest.fn(),
-    },
-    getters: {
-      isLoading: () => false,
-      ...initialGetters,
-    },
-    state: {
-      hasError: false,
-      members: [...mockDataSeats.data],
-      total: 300,
-      page: 1,
-      perPage: 5,
-      sort: 'last_activity_on_desc',
-      ...providedFields,
-      ...initialState,
-    },
-  });
 
 Vue.use(VueApollo);
 
@@ -67,15 +42,11 @@ describe('Subscription Seats', () => {
     },
   });
 
-  const defaultInitialState = {
-    total: 2,
-    maxSeatsUsed: 3,
-    seatsOwed: 1,
-  };
-
   const defaultSubscriptionPlanData = getMockSubscriptionData({
     code: 'ultimate',
     name: 'Ultimate',
+    maxSeatsUsed: 3,
+    seatsOwed: 1,
   }).subscription;
 
   const freeSubscriptionPlanData = getMockSubscriptionData({
@@ -85,12 +56,9 @@ describe('Subscription Seats', () => {
   }).subscription;
 
   const createComponent = ({
-    initialState = {},
-    initialGetters = {},
     provide = {},
     subscriptionData = () => defaultSubscriptionPlanData,
   } = {}) => {
-    const { isPublicNamespace = false } = initialState;
     const resolvers = {
       Query: {
         subscription: subscriptionData,
@@ -104,11 +72,10 @@ describe('Subscription Seats', () => {
 
     wrapper = extendedWrapper(
       shallowMount(SubscriptionSeats, {
-        store: fakeStore({ initialState, initialGetters }),
         apolloProvider,
         provide: {
           fullPath,
-          isPublicNamespace,
+          isPublicNamespace: false,
           explorePlansPath,
           addSeatsHref,
           namespaceId: 1,
@@ -127,7 +94,6 @@ describe('Subscription Seats', () => {
     wrapper.findComponent(SubscriptionSeatsStatisticsCard);
   const findStatisticsSeatsCard = () => wrapper.findComponent(StatisticsSeatsCard);
   const findSubscriptionUpgradeCard = () => wrapper.findComponent(SubscriptionUpgradeInfoCard);
-  const findSkeletonLoaderCards = () => wrapper.findByTestId('skeleton-loader-cards');
   const findSubscriptionUserList = () => wrapper.findComponent(SubscriptionUserList);
 
   describe('actions', () => {
@@ -159,7 +125,7 @@ describe('Subscription Seats', () => {
 
   describe('statistics', () => {
     beforeEach(() => {
-      return createComponent({ initialState: defaultInitialState });
+      return createComponent();
     });
 
     it('renders <subscription-seats-statistics-card> with the necessary props', () => {
@@ -212,26 +178,6 @@ describe('Subscription Seats', () => {
           explorePlansPath: providedFields.explorePlansPath,
           activeTrial: false,
         });
-      });
-    });
-  });
-
-  describe('Loading state', () => {
-    describe.each([
-      [true, false],
-      [false, true],
-    ])('Busy when isLoading=%s and hasError=%s', (isLoading, hasError) => {
-      beforeEach(() => {
-        return createComponent({
-          initialGetters: { isLoading: () => isLoading },
-          initialState: { hasError },
-        });
-      });
-
-      it('displays loading skeletons instead of statistics cards', () => {
-        expect(findSkeletonLoaderCards().exists()).toBe(true);
-        expect(findSubscriptionSeatsStatisticsCard().exists()).toBe(false);
-        expect(findStatisticsSeatsCard().exists()).toBe(false);
       });
     });
   });
