@@ -1,7 +1,14 @@
 <script>
-import { GlAvatar, GlButton, GlLink, GlTableLite } from '@gitlab/ui';
+import {
+  GlAvatar,
+  GlButton,
+  GlLink,
+  GlTableLite,
+  GlLoadingIcon,
+  GlDaterangePicker,
+} from '@gitlab/ui';
 import { createAlert } from '~/alert';
-import { s__, formatNumber } from '~/locale';
+import { s__, sprintf, n__, formatNumber } from '~/locale';
 import { confirmAction } from '~/lib/utils/confirm_via_gl_modal/confirm_via_gl_modal';
 import { INSTANCE_TYPE, GROUP_TYPE } from '~/ci/runner/constants';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -14,6 +21,18 @@ import RunnerUsageExportMutation from '../graphql/performance/runner_usage_expor
 
 const thClass = ['!gl-text-sm', '!gl-text-subtle'];
 
+const defaultDatetimeRange = () => {
+  const now = new Date();
+
+  // Use UTC times, daily aggregates we use daily aggregates for large time windows
+  const beginningOfPrevMonth = new Date(Date.UTC(now.getFullYear(), now.getMonth() - 1, 1));
+  const endOfPrevMonth = new Date(Date.UTC(now.getFullYear(), now.getMonth(), 0));
+
+  return { fromDate: beginningOfPrevMonth, toDate: endOfPrevMonth, maxToDate: now };
+};
+
+const DAYS_PER_YEAR = 365;
+
 export default {
   name: 'RunnerUsage',
   components: {
@@ -21,6 +40,8 @@ export default {
     GlButton,
     GlLink,
     GlTableLite,
+    GlLoadingIcon,
+    GlDaterangePicker,
   },
   directives: {
     TooltipOnTruncate,
@@ -37,8 +58,12 @@ export default {
     },
   },
   data() {
+    const { fromDate, toDate, maxToDate } = defaultDatetimeRange();
     return {
-      loading: false,
+      fromDate,
+      toDate,
+      maxToDate,
+      exporting: false,
       topProjects: [],
       topRunners: [],
     };
@@ -71,18 +96,28 @@ export default {
   },
   computed: {
     queryVariables() {
+      const ISODateRange = {
+        fromDate: this.fromDate?.toISOString(),
+        toDate: this.toDate?.toISOString(),
+      };
+
       if (this.scope === INSTANCE_TYPE) {
         return {
+          ...ISODateRange,
           runnerType: INSTANCE_TYPE,
         };
       }
       if (this.scope === GROUP_TYPE) {
         return {
+          ...ISODateRange,
           fullPath: this.groupFullPath,
           runnerType: GROUP_TYPE,
         };
       }
       return null;
+    },
+    loading() {
+      return this.$apollo.queries.topProjects.loading || this.$apollo.queries.topRunners.loading;
     },
     runnerField() {
       const labels = {
@@ -123,6 +158,11 @@ export default {
     topProjectsFields() {
       return [this.projectField, this.ciMinutesUsedField];
     },
+    dateRangeTooltip() {
+      return sprintf(s__('Runners|Date range limited to %{dateRange} days'), {
+        dateRange: DAYS_PER_YEAR,
+      });
+    },
   },
   methods: {
     formatBigIntString(value) {
@@ -142,13 +182,17 @@ export default {
       }
       return `#${id} (${shortSha})`;
     },
+    onDaterangeInput({ startDate, endDate }) {
+      this.fromDate = startDate;
+      this.toDate = endDate;
+    },
     async onClick() {
       const confirmed = await confirmAction(
         s__(
-          'Runner|The CSV export contains a list of projects, the number of minutes used by instance runners, and the number of jobs that ran in the previous month. When the export is completed, it is sent as an attachment to your email.',
+          'Runner|The CSV export contains a list of projects, the number of minutes used by instance runners, and the number of jobs that ran. When the export is completed, it is sent as an attachment to your email.',
         ),
         {
-          title: s__('Runner|Export runner usage for previous month'),
+          title: s__('Runner|Export runner usage for selected dates'),
           primaryBtnText: s__('Runner|Export runner usage'),
         },
       );
@@ -158,7 +202,7 @@ export default {
       }
 
       try {
-        this.loading = true;
+        this.exporting = true;
 
         const {
           data: {
@@ -190,21 +234,48 @@ export default {
         });
         Sentry.captureException(e);
       } finally {
-        this.loading = false;
+        this.exporting = false;
       }
     },
+    dateRangeLabel(daysSelected) {
+      if (typeof daysSelected === 'number' && daysSelected > 0) {
+        return n__('Runner|1 day selected', 'Runner|%d days selected', daysSelected);
+      }
+      return '';
+    },
   },
+  DAYS_PER_YEAR,
 };
 </script>
 <template>
   <div class="gl-border gl-rounded-base gl-p-5">
     <div class="gl-mb-4 gl-flex gl-items-center">
       <h2 class="gl-m-0 gl-grow gl-text-lg">
-        {{ s__('Runners|Runner Usage (previous month)') }}
+        {{ s__('Runners|Runner Usage') }}
       </h2>
-      <gl-button :loading="loading" size="small" @click="onClick">
-        {{ s__('Runners|Export as CSV') }}
-      </gl-button>
+      <gl-loading-icon v-if="loading" class="gl-ml-auto" />
+    </div>
+
+    <div class="-gl-mx-5 gl-mb-4 gl-flex gl-gap-4 gl-bg-neutral-10 gl-px-5 gl-py-4">
+      <gl-daterange-picker
+        class="gl-grow"
+        :default-start-date="fromDate"
+        :default-end-date="toDate"
+        :default-max-date="maxToDate"
+        :max-date-range="$options.DAYS_PER_YEAR"
+        :tooltip="dateRangeTooltip"
+        @input="onDaterangeInput"
+      >
+        <template #default="{ daysSelected }">
+          <span class="gl-hidden lg:gl-inline">{{ dateRangeLabel(daysSelected) }}</span>
+        </template>
+      </gl-daterange-picker>
+
+      <div class="gl-self-end">
+        <gl-button :loading="exporting" @click="onClick">
+          {{ s__('Runners|Export as CSV') }}
+        </gl-button>
+      </div>
     </div>
 
     <div class="gl-items-start gl-justify-between gl-gap-4 md:gl-flex">
