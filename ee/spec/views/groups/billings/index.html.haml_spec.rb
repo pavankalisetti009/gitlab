@@ -115,7 +115,7 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
     end
 
     context 'with a paid plan' do
-      let_it_be(:group) { create(:group_with_plan, plan: :premium_plan) }
+      let_it_be(:group) { create(:group_with_plan, plan: :ultimate_plan) }
 
       it 'renders the billing plans' do
         render

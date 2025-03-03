@@ -66,8 +66,15 @@ RSpec.describe GitlabSubscriptions::Trials, feature_category: :subscription_mana
     end
   end
 
-  describe '.namespace_eligible?', :saas do
-    subject { described_class.namespace_eligible?(namespace) }
+  describe '.namespace_eligible?', :saas, :use_clean_rails_memory_store_caching do
+    let(:trial_types) { described_class::TRIAL_TYPES }
+    let_it_be(:namespace) { create(:group) }
+
+    before do
+      Rails.cache.write("namespaces:eligible_trials:#{namespace.id}", trial_types)
+    end
+
+    subject { described_class.namespace_eligible?(namespace, build(:user)) }
 
     context 'with a plan that is eligible for a trial' do
       where(plan: ::Plan::PLANS_ELIGIBLE_FOR_TRIAL)
@@ -79,27 +86,6 @@ RSpec.describe GitlabSubscriptions::Trials, feature_category: :subscription_mana
       end
     end
 
-    context 'with add_on concerns' do
-      let_it_be(:namespace) { create(:group) }
-      let_it_be(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :gitlab_duo_pro) }
-
-      context 'when eligible' do
-        before do
-          create(:gitlab_subscription_add_on_purchase, add_on: duo_pro_add_on, namespace: namespace)
-        end
-
-        it { is_expected.to be(true) }
-      end
-
-      context 'when ineligible' do
-        before do
-          create(:gitlab_subscription_add_on_purchase, :active_trial, add_on: duo_pro_add_on, namespace: namespace)
-        end
-
-        it { is_expected.to be false }
-      end
-    end
-
     context 'with a plan that is ineligible for a trial' do
       where(plan: ::Plan::PAID_HOSTED_PLANS.without(::Plan::PREMIUM))
 
@@ -107,6 +93,40 @@ RSpec.describe GitlabSubscriptions::Trials, feature_category: :subscription_mana
         let(:namespace) { create(:group_with_plan, plan: "#{plan}_plan") }
 
         it { is_expected.to be(false) }
+      end
+    end
+
+    context 'with namespace that is ineligible for a trial due to trial_types' do
+      let(:trial_types) { ['gitlab_duo_pro'] }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when use_ssot_for_ultimate_trial_eligibility is disabled' do
+      before do
+        stub_feature_flags(use_ssot_for_ultimate_trial_eligibility: false)
+      end
+
+      it { is_expected.to be(true) }
+
+      context 'with add_on concerns' do
+        let_it_be(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :gitlab_duo_pro) }
+
+        context 'when eligible' do
+          before do
+            create(:gitlab_subscription_add_on_purchase, add_on: duo_pro_add_on, namespace: namespace)
+          end
+
+          it { is_expected.to be(true) }
+        end
+
+        context 'when ineligible' do
+          before do
+            create(:gitlab_subscription_add_on_purchase, :active_trial, add_on: duo_pro_add_on, namespace: namespace)
+          end
+
+          it { is_expected.to be false }
+        end
       end
     end
   end
@@ -135,58 +155,90 @@ RSpec.describe GitlabSubscriptions::Trials, feature_category: :subscription_mana
     end
   end
 
-  describe '.namespace_add_on_eligible?' do
-    subject(:execute) { described_class.namespace_add_on_eligible?(namespace) }
-
+  describe '.namespace_add_on_eligible?', :use_clean_rails_memory_store_caching do
+    let(:trial_types) { [GitlabSubscriptions::Trials::FREE_TRIAL_TYPE] }
     let_it_be(:namespace) { create(:group) }
-    let_it_be(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :gitlab_duo_pro) }
 
-    context 'when namespace is nil' do
-      let(:namespace) { nil }
-
-      it 'raises an error' do
-        expect { execute }.to raise_error(ArgumentError, 'User or Namespace must be provided')
-      end
+    before do
+      Rails.cache.write("namespaces:eligible_trials:#{namespace.id}", trial_types)
     end
 
-    context 'when eligible' do
-      before do
-        create(:gitlab_subscription_add_on_purchase, add_on: duo_pro_add_on, namespace: namespace)
-      end
+    subject(:execute) { described_class.namespace_add_on_eligible?(namespace, build(:user)) }
 
-      it { is_expected.to be(true) }
-    end
+    it { is_expected.to be(true) }
 
     context 'when ineligible' do
+      let(:trial_types) { ['gitlab_duo_pro'] }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when use_ssot_for_ultimate_trial_eligibility is disabled' do
+      let_it_be(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :gitlab_duo_pro) }
+
       before do
-        create(:gitlab_subscription_add_on_purchase, :active_trial, add_on: duo_pro_add_on, namespace: namespace)
+        stub_feature_flags(use_ssot_for_ultimate_trial_eligibility: false)
       end
 
-      it { is_expected.to be false }
+      context 'when eligible' do
+        before do
+          create(:gitlab_subscription_add_on_purchase, add_on: duo_pro_add_on, namespace: namespace)
+        end
+
+        it { is_expected.to be(true) }
+      end
+
+      context 'when ineligible' do
+        before do
+          create(:gitlab_subscription_add_on_purchase, :active_trial, add_on: duo_pro_add_on, namespace: namespace)
+        end
+
+        it { is_expected.to be(false) }
+      end
     end
   end
 
-  describe '.eligible_namespaces_for_user' do
+  describe '.eligible_namespaces_for_user', :use_clean_rails_memory_store_caching do
+    let(:trial_types) { [GitlabSubscriptions::Trials::FREE_TRIAL_TYPE] }
     let_it_be(:user) { create(:user) }
     let_it_be(:namespace) { create(:group, owners: user) }
-    let_it_be(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :gitlab_duo_pro) }
+
+    before do
+      Rails.cache.write("namespaces:eligible_trials:#{namespace.id}", trial_types)
+    end
 
     subject(:execute) { described_class.eligible_namespaces_for_user(user) }
 
-    context 'when eligible' do
-      before do
-        create(:gitlab_subscription_add_on_purchase, add_on: duo_pro_add_on, namespace: namespace)
-      end
-
-      it { is_expected.to eq([namespace]) }
-    end
+    it { is_expected.to eq([namespace]) }
 
     context 'when ineligible' do
-      before do
-        create(:gitlab_subscription_add_on_purchase, :active_trial, add_on: duo_pro_add_on, namespace: namespace)
-      end
+      let(:trial_types) { ['gitlab_duo_pro'] }
 
       it { is_expected.to be_empty }
+    end
+
+    context 'when use_ssot_for_ultimate_trial_eligibility is disabled' do
+      let_it_be(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :gitlab_duo_pro) }
+
+      before do
+        stub_feature_flags(use_ssot_for_ultimate_trial_eligibility: false)
+      end
+
+      context 'when eligible' do
+        before do
+          create(:gitlab_subscription_add_on_purchase, add_on: duo_pro_add_on, namespace: namespace)
+        end
+
+        it { is_expected.to eq([namespace]) }
+      end
+
+      context 'when ineligible' do
+        before do
+          create(:gitlab_subscription_add_on_purchase, :active_trial, add_on: duo_pro_add_on, namespace: namespace)
+        end
+
+        it { is_expected.to be_empty }
+      end
     end
   end
 

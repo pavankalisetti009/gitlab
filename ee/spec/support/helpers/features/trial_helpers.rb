@@ -38,6 +38,7 @@ module Features
     end
 
     def expect_to_be_on_namespace_selection
+      expect(page).to have_content('Apply your trial to a new or existing group')
       expect(page).to have_content('This trial is for')
     end
 
@@ -396,6 +397,14 @@ module Features
       stub_duo_landing_page_data
 
       click_button 'Activate my trial'
+    end
+
+    def stub_cdot_namespace_eligible_trials
+      allow(Gitlab::SubscriptionPortal::Client).to receive(:namespace_eligible_trials) do |params|
+        namespaces_response = params[:namespace_ids].to_h { |id| [id.to_s, GitlabSubscriptions::Trials::TRIAL_TYPES] }
+
+        { success: true, data: { namespaces: namespaces_response } }
+      end
     end
   end
 end

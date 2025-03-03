@@ -2,89 +2,97 @@
 
 require 'spec_helper'
 
-RSpec.shared_examples 'when on the lead step' do |plan_name|
-  context 'when lead creation is successful' do
-    context 'when there is only one trial eligible namespace' do
-      let_it_be(:group) { create(:group_with_plan, plan: plan_name, name: 'gitlab', owners: user) }
+RSpec.shared_examples 'successful lead creation for one eligible namespace' do |plan_name|
+  context 'when there is only one trial eligible namespace' do
+    let_it_be(:group) { create(:group_with_plan, plan: plan_name, name: 'gitlab', owners: user) }
 
-      it 'starts a trial and tracks the event' do
-        expect_create_lead_success(trial_user_params)
-        expect_apply_trial_success(user, group, extra_params: existing_group_attrs(group))
+    it 'starts a trial and tracks the event' do
+      expect_create_lead_success(trial_user_params)
+      expect_apply_trial_success(user, group, extra_params: existing_group_attrs(group))
 
-        expect(execute).to be_success
-        expect(execute.payload).to eq({ namespace: group, add_on_purchase: add_on_purchase })
-        expect_snowplow_event(category: described_class.name, action: 'create_trial', namespace: group, user: user)
-      end
-
-      it 'errors when trying to apply a trial' do
-        expect_create_lead_success(trial_user_params)
-        expect_apply_trial_fail(user, group, extra_params: existing_group_attrs(group))
-
-        expect(execute).to be_error
-        expect(execute.reason).to eq(:trial_failed)
-        expect(execute.payload).to eq({ namespace_id: group.id })
-        expect_no_snowplow_event(
-          category: described_class.name, action: 'create_trial', namespace: group, user: user
-        )
-      end
+      expect(execute).to be_success
+      expect(execute.payload).to eq({ namespace: group, add_on_purchase: add_on_purchase })
+      expect_snowplow_event(category: described_class.name, action: 'create_trial', namespace: group, user: user)
     end
 
-    context 'when there are no trial eligible namespaces' do
-      it 'does not create a trial and returns that there is no namespace' do
-        stub_lead_without_trial(trial_user_params)
+    it 'errors when trying to apply a trial' do
+      expect_create_lead_success(trial_user_params)
+      expect_apply_trial_fail(user, group, extra_params: existing_group_attrs(group))
 
-        expect_to_trigger_trial_step(execute, extra_lead_params, trial_params)
-      end
+      expect(execute).to be_error
+      expect(execute.reason).to eq(:trial_failed)
+      expect(execute.payload).to eq({ namespace_id: group.id })
+      expect_no_snowplow_event(
+        category: described_class.name, action: 'create_trial', namespace: group, user: user
+      )
+    end
+  end
+end
 
-      context 'with glm params' do
-        let(:extra_lead_params) { { glm_content: '_glm_content_', glm_source: '_glm_source_' } }
+RSpec.shared_examples 'successful lead creation for no eligible namespaces' do
+  context 'when there are no trial eligible namespaces' do
+    it 'does not create a trial and returns that there is no namespace' do
+      stub_lead_without_trial(trial_user_params)
 
-        it 'does not create a trial and returns that there is no namespace' do
-          stub_lead_without_trial(trial_user_params)
-
-          expect_to_trigger_trial_step(execute, extra_lead_params, trial_params)
-        end
-      end
+      expect_to_trigger_trial_step(execute, extra_lead_params, trial_params)
     end
 
-    context 'when there are multiple trial eligible namespaces' do
-      let_it_be(:group) do
-        create(:group_with_plan, plan: plan_name, owners: user)
-        create(:group_with_plan, plan: plan_name, name: 'gitlab', owners: user)
-      end
+    context 'with glm params' do
+      let(:extra_lead_params) { { glm_content: '_glm_content_', glm_source: '_glm_source_' } }
 
       it 'does not create a trial and returns that there is no namespace' do
         stub_lead_without_trial(trial_user_params)
 
         expect_to_trigger_trial_step(execute, extra_lead_params, trial_params)
-      end
-
-      context 'with glm params' do
-        let(:extra_lead_params) { { glm_content: '_glm_content_', glm_source: '_glm_source_' } }
-
-        it 'does not create a trial and returns that there is no namespace' do
-          stub_lead_without_trial(trial_user_params)
-
-          expect_to_trigger_trial_step(execute, extra_lead_params, trial_params)
-        end
-      end
-    end
-
-    context 'when lead creation fails' do
-      it 'returns and error indicating lead failed' do
-        expect_create_lead_fail(trial_user_params)
-        expect(apply_trial_service_class).not_to receive(:new)
-
-        expect(execute).to be_error
-        expect(execute.reason).to eq(:lead_failed)
       end
     end
   end
 end
 
-RSpec.shared_examples 'when on trial step' do |plan_name|
-  let(:step) { described_class::TRIAL }
+RSpec.shared_examples 'successful lead creation for multiple eligible namespaces' do |plan_name|
+  context 'when there are multiple trial eligible namespaces' do
+    let_it_be(:group) { create(:group_with_plan, plan: plan_name, name: 'gitlab', owners: user) }
+    # Caching case needs all groups named for reference
+    let_it_be(:another_group) { create(:group_with_plan, plan: plan_name, owners: user) }
 
+    it 'does not create a trial and returns that there is no namespace' do
+      stub_lead_without_trial(trial_user_params)
+
+      expect_to_trigger_trial_step(execute, extra_lead_params, trial_params)
+    end
+
+    context 'with glm params' do
+      let(:extra_lead_params) { { glm_content: '_glm_content_', glm_source: '_glm_source_' } }
+
+      it 'does not create a trial and returns that there is no namespace' do
+        stub_lead_without_trial(trial_user_params)
+
+        expect_to_trigger_trial_step(execute, extra_lead_params, trial_params)
+      end
+    end
+  end
+end
+
+RSpec.shared_examples 'lead creation fails' do
+  context 'when lead creation fails' do
+    it 'returns and error indicating lead failed' do
+      expect_create_lead_fail(trial_user_params)
+      expect(apply_trial_service_class).not_to receive(:new)
+
+      expect(execute).to be_error
+      expect(execute.reason).to eq(:lead_failed)
+    end
+  end
+end
+
+RSpec.shared_examples 'performing the lead step' do |plan_name|
+  it_behaves_like 'successful lead creation for one eligible namespace', plan_name
+  it_behaves_like 'successful lead creation for no eligible namespaces'
+  it_behaves_like 'successful lead creation for multiple eligible namespaces', plan_name
+  it_behaves_like 'lead creation fails'
+end
+
+RSpec.shared_examples 'trial step existing namespace flow' do |plan_name|
   context 'in the existing namespace flow' do
     let_it_be(:group) { create(:group_with_plan, plan: plan_name, name: 'gitlab', owners: user) }
     let(:namespace_id) { group.id.to_s }
@@ -149,7 +157,9 @@ RSpec.shared_examples 'when on trial step' do |plan_name|
       it_behaves_like 'returns an error of not_found and does not apply a trial'
     end
   end
+end
 
+RSpec.shared_examples 'trial step error conditions' do
   context 'when namespace_id is 0 without a new_group_name' do
     let(:trial_params) { { namespace_id: '0' } }
 
@@ -173,13 +183,20 @@ RSpec.shared_examples 'when on trial step' do |plan_name|
   end
 end
 
-RSpec.shared_examples 'with an unknown step' do
+RSpec.shared_examples 'performing the trial step' do |plan_name|
+  let(:step) { described_class::TRIAL }
+
+  it_behaves_like 'trial step existing namespace flow', plan_name
+  it_behaves_like 'trial step error conditions'
+end
+
+RSpec.shared_examples 'unknown step for trials' do
   let(:step) { 'bogus' }
 
   it_behaves_like 'returns an error of not_found and does not create lead or apply a trial'
 end
 
-RSpec.shared_examples 'with no step' do
+RSpec.shared_examples 'no step for trials' do
   let(:step) { nil }
 
   it_behaves_like 'returns an error of not_found and does not create lead or apply a trial'

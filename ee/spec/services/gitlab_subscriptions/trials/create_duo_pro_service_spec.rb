@@ -29,10 +29,10 @@ RSpec.describe GitlabSubscriptions::Trials::CreateDuoProService, feature_categor
       ).execute
     end
 
-    it_behaves_like 'when on the lead step', :premium_plan
-    it_behaves_like 'when on trial step', :premium_plan
-    it_behaves_like 'with an unknown step'
-    it_behaves_like 'with no step'
+    it_behaves_like 'performing the lead step', :premium_plan
+    it_behaves_like 'performing the trial step', :premium_plan
+    it_behaves_like 'unknown step for trials'
+    it_behaves_like 'no step for trials'
 
     it_behaves_like 'for tracking the lead step', :premium_plan, 'duo_pro_'
     it_behaves_like 'for tracking the trial step', :premium_plan, 'duo_pro_'

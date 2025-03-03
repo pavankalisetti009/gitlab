@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Trial lead submission, group and trial creation', :with_current_organization, :saas_trial, :js, feature_category: :acquisition do
+RSpec.describe 'Trial lead submission, group and trial creation', :with_current_organization, :saas_trial, :js, :use_clean_rails_memory_store_caching, feature_category: :acquisition do
   let_it_be(:user) { create(:user, organizations: [current_organization]) } # rubocop:disable Gitlab/RSpec/AvoidSetup -- We need to ensure user is member of current organization
 
   before_all do
@@ -159,6 +159,8 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
       fill_in_trial_form_for_new_group
 
       # trial failure
+      stub_cdot_namespace_eligible_trials
+
       submit_new_group_trial_selection_form(result: trial_failure, extra_params: new_group_attrs)
 
       expect_to_be_on_namespace_selection_with_errors
@@ -167,6 +169,34 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
       submit_new_group_trial_selection_form(extra_params: new_group_attrs)
 
       expect_to_be_on_gitlab_duo_page
+    end
+
+    context 'when use_ssot_for_ultimate_trial_eligibility is disabled' do
+      it 'fills out form, submits and is sent to select namespace with errors and is then resolved' do
+        stub_feature_flags(use_ssot_for_ultimate_trial_eligibility: false)
+
+        sign_in(user)
+
+        visit new_trial_path
+
+        fill_in_company_information
+
+        submit_company_information_form
+
+        expect_to_be_on_namespace_creation
+
+        fill_in_trial_form_for_new_group
+
+        # trial failure
+        submit_new_group_trial_selection_form(result: trial_failure, extra_params: new_group_attrs)
+
+        expect_to_be_on_namespace_selection_with_errors
+
+        # success
+        submit_new_group_trial_selection_form(extra_params: new_group_attrs)
+
+        expect_to_be_on_gitlab_duo_page
+      end
     end
   end
 

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Trial lead submission and creation with multiple eligible namespaces', :saas_trial, :js, feature_category: :acquisition do
+RSpec.describe 'Trial lead submission and creation with multiple eligible namespaces', :saas_trial, :js, :use_clean_rails_memory_store_caching, feature_category: :acquisition do
   let_it_be(:user) { create(:user) } # rubocop:disable Gitlab/RSpec/AvoidSetup -- to skip registration and creating group
   let_it_be(:group) do # rubocop:disable Gitlab/RSpec/AvoidSetup -- to skip registration and creating group
     create(:group, owners: user)
@@ -17,6 +17,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
     it 'fills out form, submits and lands on the duo page' do
       sign_in(user)
 
+      stub_cdot_namespace_eligible_trials
       visit new_trial_path
 
       fill_in_company_information
@@ -38,6 +39,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
 
         sign_in(user)
 
+        stub_cdot_namespace_eligible_trials
         visit new_trial_path(namespace_id: group.id, **glm_params)
 
         fill_in_company_information
@@ -58,6 +60,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
       it 'fills out form, submits and lands on the group security dashboard page' do
         sign_in(user)
 
+        stub_cdot_namespace_eligible_trials
         visit new_trial_path(glm_content: 'discover-group-security')
 
         fill_in_company_information
@@ -79,6 +82,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
     it 'fills out form, submits and lands on the duo page with a unique path' do
       sign_in(user)
 
+      stub_cdot_namespace_eligible_trials
       visit new_trial_path
 
       fill_in_company_information
@@ -104,6 +108,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
     it 'fills out form, submits and is presented with error then fills out valid name' do
       sign_in(user)
 
+      stub_cdot_namespace_eligible_trials
       visit new_trial_path
 
       fill_in_company_information
@@ -137,6 +142,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
       # setup
       sign_in(user)
 
+      stub_cdot_namespace_eligible_trials
       visit new_trial_path
 
       fill_in_company_information
@@ -164,6 +170,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
       # setup
       sign_in(user)
 
+      stub_cdot_namespace_eligible_trials
       visit new_trial_path
 
       fill_in_company_information
@@ -185,6 +192,35 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
       submit_trial_selection_form
 
       expect_to_be_on_gitlab_duo_page
+    end
+  end
+
+  context 'when use_ssot_for_ultimate_trial_eligibility is disabled' do
+    context 'when selecting to create a new group with an existing group name' do
+      it 'fills out form, submits and lands on the duo page with a unique path' do
+        stub_feature_flags(use_ssot_for_ultimate_trial_eligibility: false)
+
+        sign_in(user)
+
+        visit new_trial_path
+
+        fill_in_company_information
+
+        submit_company_information_form
+
+        expect_to_be_on_namespace_selection
+
+        select_from_listbox 'Create group', from: 'Select a group'
+        wait_for_requests
+
+        # success
+        group_name = 'gitlab1'
+        fill_in_trial_selection_form_for_new_group
+
+        submit_new_group_trial_selection_form(extra_params: new_group_attrs(path: group_name))
+
+        expect_to_be_on_gitlab_duo_page(path: group_name)
+      end
     end
   end
 
