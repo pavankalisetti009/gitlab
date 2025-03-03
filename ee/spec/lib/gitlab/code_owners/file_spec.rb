@@ -484,6 +484,11 @@ RSpec.describe Gitlab::CodeOwners::File, feature_category: :source_code_manageme
         CONTENT
       end
 
+      before do
+        allow(Gitlab::CodeOwners::UserPermissionCheck).to receive(:new).and_return(instance_double(
+          Gitlab::CodeOwners::UserPermissionCheck, errors: []))
+      end
+
       it 'matches non-excluded files to default owner' do
         entry = file.entries_for_path('file.txt').first
 
@@ -502,6 +507,12 @@ RSpec.describe Gitlab::CodeOwners::File, feature_category: :source_code_manageme
         entries = file.entries_for_path('config/database.rb')
 
         expect(entries).to be_empty
+      end
+
+      it 'does not require owners for exclusion patterns' do
+        expect(file.valid?).to eq(true)
+
+        expect(file.errors).to be_empty
       end
 
       context 'with nested exclusions' do

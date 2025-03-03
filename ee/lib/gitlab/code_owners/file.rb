@@ -65,7 +65,7 @@ module Gitlab
         matches = []
 
         parsed_data.each do |_, section_entries|
-          if Feature.enabled?(:codeowners_file_exclusions, project)
+          if codeowners_file_exclusions_enabled?
             matching_patterns = section_entries.keys.reverse.select { |pattern| path_matches?(pattern, path) }
             matching_entries = matching_patterns.map { |pattern| section_entries[pattern] }
 
@@ -92,6 +92,10 @@ module Gitlab
       end
 
       private
+
+      def codeowners_file_exclusions_enabled?
+        Feature.enabled?(:codeowners_file_exclusions, project)
+      end
 
       def project
         @blob&.repository&.project
@@ -150,22 +154,9 @@ module Gitlab
       end
 
       def parse_entry(line, parsed, section, line_number)
-        pattern, _separator, entry_owners = line.partition(/(?<!\\)\s+/)
-
-        if Feature.enabled?(:codeowners_file_exclusions, project)
-          is_exclusion = pattern.start_with?('!')
-          pattern = pattern[1..] if is_exclusion
-        end
-
+        pattern, entry_owners, is_exclusion_pattern = extract_entry_info(line)
         normalized_pattern = normalize_pattern(pattern)
-
-        if entry_owners.split.any? { |owner| invalid_owner?(owner) }
-          add_error(Error::MALFORMED_ENTRY_OWNER, line_number)
-        end
-
-        owners = entry_owners.presence || section.default_owners
-
-        add_error(Error::MISSING_ENTRY_OWNER, line_number) if owners.blank?
+        owners = validate_and_get_owners(entry_owners, section, line_number) unless is_exclusion_pattern
 
         parsed[section.name][normalized_pattern] = Entry.new(
           pattern,
@@ -173,9 +164,29 @@ module Gitlab
           section: section.name,
           optional: section.optional,
           approvals_required: section.approvals,
-          exclusion: Feature.enabled?(:codeowners_file_exclusions, project) && is_exclusion,
+          exclusion: is_exclusion_pattern,
           line_number: line_number
         )
+      end
+
+      def extract_entry_info(line)
+        pattern, _separator, entry_owners = line.partition(/(?<!\\)\s+/)
+
+        is_exclusion_pattern = codeowners_file_exclusions_enabled? && pattern.start_with?('!')
+        pattern = pattern[1..] if is_exclusion_pattern
+
+        [pattern, entry_owners, is_exclusion_pattern]
+      end
+
+      def validate_and_get_owners(entry_owners, section, line_number)
+        if entry_owners.split.any? { |owner| invalid_owner?(owner) }
+          add_error(Error::MALFORMED_ENTRY_OWNER, line_number)
+        end
+
+        owners = entry_owners.presence || section.default_owners
+        add_error(Error::MISSING_ENTRY_OWNER, line_number) if owners.blank?
+
+        owners
       end
 
       def invalid_owner?(owner)
