@@ -59545,6 +59545,9 @@ msgstr ""
 msgid "This merge request does not have codequality reports"
 msgstr ""
 
+msgid "This merge request has reached the maximum limit of %{limit} versions and cannot be updated further. Close this merge request and create a new one instead."
+msgstr ""
+
 msgid "This merge request is closed. To apply this suggestion, edit this file directly."
 msgstr ""
 
