@@ -1,11 +1,16 @@
 <script>
-import { GlCollapsibleListbox } from '@gitlab/ui';
+import { GlCollapsibleListbox, GlTooltipDirective, GlButton, GlIcon } from '@gitlab/ui';
 import { s__ } from '~/locale';
 
 export default {
   name: 'SortingField',
   components: {
     GlCollapsibleListbox,
+    GlIcon,
+    GlButton,
+  },
+  directives: {
+    GlTooltip: GlTooltipDirective,
   },
   props: {
     sortBy: {
@@ -50,8 +55,25 @@ export default {
     is-check-centered
     :items="sortingItems"
     :header-text="$options.i18n.sorting_title"
-    :toggle-text="selectedItem.text"
     :selected="selectedItem.value"
     @select="onItemSelect"
-  />
+  >
+    <template #toggle>
+      <gl-button
+        v-gl-tooltip="$options.i18n.sorting_title"
+        data-testid="selected-date-range"
+        :aria-label="`${$options.i18n.sorting_title} ${selectedItem.text}`"
+        :title="$options.i18n.sorting_title"
+        class="gl-w-full"
+        button-text-classes="gl-mr-[-4px] !gl-flex !gl-justify-between gl-w-full"
+        ><span class="gl-flex-grow-1 gl-text-left">{{ selectedItem.text }}</span>
+        <gl-icon
+          aria-hidden="true"
+          name="chevron-down"
+          :size="16"
+          variant="current"
+          class="gl-flex-shrink-0"
+      /></gl-button>
+    </template>
+  </gl-collapsible-listbox>
 </template>

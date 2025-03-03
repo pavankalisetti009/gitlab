@@ -70,11 +70,15 @@ RSpec.describe 'Group value stream analytics filters and data', :js, feature_cat
 
   def select_predefined_date_range(label)
     page.within(predefined_date_ranges_dropdown_selector) do
-      toggle_listbox
+      toggle_custom_toggle_listbox('[data-testid="selected-date-range"]')
       select_listbox_item(label, exact_text: true)
     end
 
     wait_for_requests
+  end
+
+  def toggle_custom_toggle_listbox(toggle_selector)
+    find(toggle_selector).click
   end
 
   before do
@@ -156,7 +160,8 @@ RSpec.describe 'Group value stream analytics filters and data', :js, feature_cat
 
       it 'shows the predefined date ranges dropdown with `Last 30 days` selected' do
         page.within(predefined_date_ranges_dropdown_selector) do
-          expect(page).to have_button('Last 30 days')
+          toggle_custom_toggle_listbox('[data-testid="selected-date-range"]')
+          expect(page).to have_selector('[aria-selected="true"]', text: 'Last 30 days')
         end
       end
 
@@ -297,7 +302,8 @@ RSpec.describe 'Group value stream analytics filters and data', :js, feature_cat
 
         it 'shows predefined date ranges dropdown with `Custom` option selected' do
           page.within(predefined_date_ranges_dropdown_selector) do
-            expect(page).to have_button('Custom')
+            toggle_custom_toggle_listbox('[data-testid="selected-date-range"]')
+            expect(page).to have_selector('[aria-selected="true"]', text: 'Custom')
           end
         end
 
