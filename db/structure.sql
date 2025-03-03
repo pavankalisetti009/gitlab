@@ -8572,6 +8572,7 @@ CREATE TABLE approval_merge_request_rules (
     role_approvers integer[] DEFAULT '{}'::integer[] NOT NULL,
     approval_policy_action_idx smallint DEFAULT 0 NOT NULL,
     CONSTRAINT check_6fca5928b2 CHECK ((char_length(section) <= 255)),
+    CONSTRAINT check_90caab37e0 CHECK ((project_id IS NOT NULL)),
     CONSTRAINT check_approval_m_r_rules_allowed_role_approvers_valid_entries CHECK (((role_approvers = '{}'::integer[]) OR (role_approvers <@ ARRAY[20, 30, 40, 50, 60])))
 );
 
@@ -27287,9 +27288,6 @@ ALTER TABLE ONLY project_type_ci_runners_e59bb2812d
 
 ALTER TABLE ONLY group_type_ci_runners_e59bb2812d
     ADD CONSTRAINT check_81b90172a6 UNIQUE (id);
-
-ALTER TABLE approval_merge_request_rules
-    ADD CONSTRAINT check_90caab37e0 CHECK ((project_id IS NOT NULL)) NOT VALID;
 
 ALTER TABLE approvals
     ADD CONSTRAINT check_9da7c942dc CHECK ((project_id IS NOT NULL)) NOT VALID;
