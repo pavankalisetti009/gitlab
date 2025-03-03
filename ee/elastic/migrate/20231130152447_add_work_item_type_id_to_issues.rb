@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class AddWorkItemTypeIdToIssues < Elastic::Migration
-  include Elastic::MigrationUpdateMappingsHelper
+  include ::Search::Elastic::MigrationUpdateMappingsHelper
 
   private
 

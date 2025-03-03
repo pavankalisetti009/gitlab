@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class AddEmbeddingToIssues < Elastic::Migration
-  include Elastic::MigrationUpdateMappingsHelper
+  include ::Search::Elastic::MigrationUpdateMappingsHelper
 
   skip_if -> { !Gitlab::Elastic::Helper.default.vectors_supported?(:elasticsearch) }
 
