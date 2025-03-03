@@ -27,7 +27,6 @@ module Gitlab
         client: nil,
         operation: nil,
         target_name: nil)
-
         proxy = self.class.create_proxy(version)
 
         @client = client || proxy.client(operation)
@@ -41,7 +40,7 @@ module Gitlab
         end
 
         def default
-          self.new
+          new
         end
 
         def connection_settings(uri:, user: nil, password: nil)
@@ -166,7 +165,7 @@ module Gitlab
 
       def create_standalone_indices(with_alias: true, options: {}, target_classes: nil)
         proxies = standalone_indices_proxies(target_classes: target_classes)
-        proxies.each_with_object({}) do |proxy, indices|
+        indices = proxies.each_with_object({}) do |proxy, indices|
           alias_name = proxy.index_name
           new_index_name = index_name_with_timestamp(alias_name, suffix: options[:name_suffix])
 
@@ -180,6 +179,9 @@ module Gitlab
           )
           indices[new_index_name] = alias_name
         end
+
+        ::Search::ClusterHealthCheck::IndexValidationService.execute(target_classes: target_classes)
+        indices
       end
 
       def delete_standalone_indices
@@ -211,6 +213,7 @@ module Gitlab
           options: options
         )
 
+        ::Search::ClusterHealthCheck::IndexValidationService.execute(target_classes: [Repository])
         {
           new_index_name => target_name
         }

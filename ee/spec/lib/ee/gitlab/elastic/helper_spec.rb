@@ -189,9 +189,28 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
         change { helper.index_exists?(index_name: proxy.index_name) }.from(false).to(true)
       end
 
+      expect(::Search::ClusterHealthCheck::IndexValidationService).to receive(:execute)
+        .with(target_classes: nil).and_call_original
+
       expect { helper.create_standalone_indices }.to aggregate_changes.reduce(&:and)
 
       delete_all_standalone_indices
+    end
+
+    context 'when target_classes are provided' do
+      it 'creates standalone indices' do
+        delete_all_standalone_indices
+
+        proxy = helper.standalone_indices_proxies.first
+
+        expect(::Search::ClusterHealthCheck::IndexValidationService)
+          .to receive(:execute).with(target_classes: [proxy.target])
+
+        expect { helper.create_standalone_indices(target_classes: [proxy.target]) }
+          .to change { helper.index_exists?(index_name: proxy.index_name) }.from(false).to(true)
+
+        delete_all_standalone_indices
+      end
     end
 
     context 'when indices already exist' do
@@ -244,6 +263,17 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
 
   describe '#create_empty_index' do
     context 'with an empty cluster' do
+      it 'calls the index validation service' do
+        helper.delete_index(index_name: helper.target_name) if helper.index_exists?(index_name: helper.target_name)
+
+        expect(::Search::ClusterHealthCheck::IndexValidationService).to receive(:execute)
+          .with(target_classes: [Repository]).once.and_call_original
+
+        helper.create_empty_index(with_alias: true)
+
+        helper.delete_index(index_name: helper.target_name)
+      end
+
       context 'with alias and index' do
         include_context 'with an existing index and alias'
 
