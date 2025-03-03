@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, :saas, feature_category: :acquisition do
+RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, :saas, :use_clean_rails_memory_store_caching, feature_category: :acquisition do
   let_it_be(:namespace) { create(:group_with_plan) }
   let_it_be(:user) { create(:user, owner_of: namespace) }
 
@@ -12,6 +12,10 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, :saas, feature_ca
       uid: user.id,
       trial_user_information: trial_user_information
     }
+  end
+
+  before do
+    Rails.cache.write("namespaces:eligible_trials:#{namespace.id}", GitlabSubscriptions::Trials::TRIAL_TYPES)
   end
 
   describe '.execute' do
@@ -169,8 +173,6 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, :saas, feature_ca
   end
 
   describe '#valid_to_generate_trial?' do
-    let_it_be(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :gitlab_duo_pro) }
-
     subject(:valid_to_generate_trial) { described_class.new(**apply_trial_params).valid_to_generate_trial? }
 
     context 'when it is valid to generate a trial' do
@@ -189,31 +191,9 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyTrialService, :saas, feature_ca
       it { is_expected.to be false }
     end
 
-    context 'when namespace is already on a trial' do
-      let_it_be(:namespace) do
-        create(
-          :group_with_plan,
-          plan: :free_plan,
-          trial: true,
-          trial_starts_on: 2.years.ago,
-          trial_ends_on: 1.year.ago
-        )
-      end
-
-      it { is_expected.to be true }
-    end
-
-    context 'when eligible with add_on concerns' do
+    context 'when ineligible' do
       before do
-        create(:gitlab_subscription_add_on_purchase, add_on: duo_pro_add_on, namespace: namespace)
-      end
-
-      it { is_expected.to be true }
-    end
-
-    context 'when ineligible due to add_on concerns' do
-      before do
-        create(:gitlab_subscription_add_on_purchase, :active_trial, add_on: duo_pro_add_on, namespace: namespace)
+        Rails.cache.write("namespaces:eligible_trials:#{namespace.id}", ['gitlab_duo_pro'])
       end
 
       it { is_expected.to be false }

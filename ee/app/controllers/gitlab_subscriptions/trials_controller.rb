@@ -76,7 +76,8 @@ module GitlabSubscriptions
 
         render GitlabSubscriptions::Trials::TrialFormWithErrorsComponent
                  .new(
-                   eligible_namespaces: @eligible_namespaces,
+                   # Sometimes there is a new group created here, so we'll need to recalculate the eligible namespaces.
+                   eligible_namespaces: eligible_namespaces,
                    params: trial_form_params,
                    reason: @result.reason,
                    errors: @result.errors

@@ -88,10 +88,14 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
         end
       end
 
-      context 'when on the trial step' do
+      context 'when on the trial step', :use_clean_rails_memory_store_caching do
         let(:base_params) { { step: 'trial' } }
 
         let_it_be(:group) { create(:group, owners: user) }
+
+        before do
+          Rails.cache.write("namespaces:eligible_trials:#{group.id}", [GitlabSubscriptions::Trials::FREE_TRIAL_TYPE])
+        end
 
         it { is_expected.to render_select_namespace }
 
@@ -154,8 +158,11 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
       end
     end
 
-    context 'when authenticated' do
+    context 'when authenticated', :use_clean_rails_memory_store_caching do
       before do
+        Rails.cache.write(
+          "namespaces:eligible_trials:#{group_for_trial.id}", [GitlabSubscriptions::Trials::FREE_TRIAL_TYPE]
+        )
         login_as(user)
       end
 
@@ -211,12 +218,18 @@ RSpec.describe GitlabSubscriptions::TrialsController, :saas, feature_category: :
         end
 
         context 'when the namespace applying is on the premium plan' do
-          let_it_be(:group_for_trial) { create(:group_with_plan, plan: :premium_plan, owners: user) }
+          let_it_be(:premium_group_for_trial) { create(:group_with_plan, plan: :premium_plan, owners: user) }
           let_it_be(:ultimate_trial_paid_customer_plan) { create(:ultimate_trial_paid_customer_plan) }
 
           context 'when add_on_purchase exists' do
             before do
-              expect_create_with_premium_success(group_for_trial)
+              Rails.cache.write_multi(
+                "namespaces:eligible_trials:#{group_for_trial.id}" => [GitlabSubscriptions::Trials::FREE_TRIAL_TYPE],
+                "namespaces:eligible_trials:#{premium_group_for_trial.id}" =>
+                  [GitlabSubscriptions::Trials::PREMIUM_TRIAL_TYPE]
+              )
+
+              expect_create_with_premium_success(premium_group_for_trial)
             end
 
             it 'shows valid flash message', :freeze_time do

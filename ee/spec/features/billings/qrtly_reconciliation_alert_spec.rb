@@ -8,7 +8,7 @@ RSpec.describe 'Billings > Qrtly Reconciliation Alert', :js, :saas, feature_cate
   let_it_be(:user) { create(:user) }
   let_it_be(:namespace) { create(:group) }
   let_it_be(:group_member) { create(:group_member, :owner, group: namespace, user: user) }
-  let_it_be(:plan) { create(:premium_plan) }
+  let_it_be(:plan) { create(:ultimate_plan) }
   let_it_be(:plans_data) do
     Gitlab::Json.parse(File.read(Rails.root.join('ee/spec/fixtures/gitlab_com_plans.json'))).map do |data|
       data.deep_symbolize_keys

@@ -9,7 +9,7 @@ RSpec.describe GitlabSubscriptions::Trials::CreateService, feature_category: :pl
   let_it_be(:organization) { create(:organization, users: [user]) }
   let(:step) { described_class::LEAD }
 
-  describe '#execute', :saas do
+  describe '#execute', :saas, :use_clean_rails_memory_store_caching do
     let(:trial_params) { {} }
     let(:extra_lead_params) { {} }
     let(:trial_user_params) do
@@ -20,105 +20,78 @@ RSpec.describe GitlabSubscriptions::Trials::CreateService, feature_category: :pl
     let(:apply_trial_service_class) { GitlabSubscriptions::Trials::ApplyTrialService }
     let(:add_on_purchase) { build(:gitlab_subscription_add_on_purchase) }
 
-    let_it_be(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :code_suggestions) }
-    let_it_be(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
-
     subject(:execute) do
       described_class.new(
         step: step, lead_params: lead_params(user, extra_lead_params), trial_params: trial_params, user: user
       ).execute
     end
 
-    it_behaves_like 'when on the lead step', :free_plan
-    it_behaves_like 'when on trial step', :free_plan
-    it_behaves_like 'when on trial step', :premium_plan
-    it_behaves_like 'with an unknown step'
-    it_behaves_like 'with no step'
-
-    it_behaves_like 'for tracking the lead step', :free_plan, ''
-    it_behaves_like 'for tracking the trial step', :free_plan, ''
-
-    context 'with an expired legacy trial' do
-      let_it_be(:group) do
-        create(:gitlab_subscription, :premium, :expired_trial, :with_group, trial: false).namespace
+    context 'when on the lead step' do
+      it_behaves_like 'successful lead creation for one eligible namespace', :free_plan do
+        before do
+          Rails.cache.write("namespaces:eligible_trials:#{group.id}", GitlabSubscriptions::Trials::TRIAL_TYPES)
+        end
       end
 
+      it_behaves_like 'successful lead creation for no eligible namespaces'
+      it_behaves_like 'successful lead creation for multiple eligible namespaces', :free_plan do
+        before do
+          Rails.cache.write("namespaces:eligible_trials:#{group.id}", GitlabSubscriptions::Trials::TRIAL_TYPES)
+          Rails.cache.write("namespaces:eligible_trials:#{another_group.id}", GitlabSubscriptions::Trials::TRIAL_TYPES)
+        end
+      end
+
+      it_behaves_like 'lead creation fails'
+    end
+
+    it_behaves_like 'unknown step for trials'
+    it_behaves_like 'no step for trials'
+
+    context 'when on trial step' do
       let(:step) { described_class::TRIAL }
-      let(:namespace_id) { group.id.to_s }
-      let(:trial_params) { { namespace_id: namespace_id } }
 
-      before_all do
-        group.add_owner(user)
+      it_behaves_like 'trial step existing namespace flow', :free_plan do
+        before do
+          Rails.cache.write("namespaces:eligible_trials:#{group.id}", GitlabSubscriptions::Trials::TRIAL_TYPES)
+        end
       end
 
-      it 'applies the trial successfully' do
-        expect_apply_trial_success(user, group, extra_params: existing_group_attrs(group))
+      it_behaves_like 'trial step existing namespace flow', :premium_plan do
+        before do
+          Rails.cache.write("namespaces:eligible_trials:#{group.id}", GitlabSubscriptions::Trials::TRIAL_TYPES)
+        end
+      end
 
-        expect(execute).to be_success
-        expect(execute.payload).to eq({ namespace: group, add_on_purchase: add_on_purchase })
+      it_behaves_like 'trial step error conditions'
+    end
+
+    it_behaves_like 'for tracking the lead step', :free_plan, '' do
+      before do
+        Rails.cache.write("namespaces:eligible_trials:#{namespace.id}", GitlabSubscriptions::Trials::TRIAL_TYPES)
       end
     end
 
-    context 'with an existing duo enterprise add on' do
-      let_it_be(:group) do
-        create(:gitlab_subscription_add_on_purchase, add_on: duo_enterprise_add_on).namespace
+    it_behaves_like 'for tracking the trial step', :free_plan, '' do
+      before do
+        Rails.cache.write("namespaces:eligible_trials:#{namespace.id}", GitlabSubscriptions::Trials::TRIAL_TYPES)
       end
+    end
 
+    context 'with an ineligible namespace' do
+      let_it_be(:group) { create(:group, owners: user) }
       let(:step) { described_class::TRIAL }
       let(:namespace_id) { group.id.to_s }
       let(:trial_params) { { namespace_id: namespace_id } }
 
-      before_all do
-        group.add_owner(user)
+      before do
+        Rails.cache.write("namespaces:eligible_trials:#{namespace_id}", ['gitlab_duo_pro'])
       end
 
-      it 'returns an error for ineligible namespace' do
+      it 'returns an error' do
         expect(apply_trial_service_class).not_to receive(:new)
 
         expect(execute).to be_error
         expect(execute.reason).to eq(:not_found)
-      end
-    end
-
-    context 'with an active duo pro trial' do
-      let_it_be(:group) do
-        create(:gitlab_subscription_add_on_purchase, :active_trial, add_on: duo_pro_add_on).namespace
-      end
-
-      let(:step) { described_class::TRIAL }
-      let(:namespace_id) { group.id.to_s }
-      let(:trial_params) { { namespace_id: namespace_id } }
-
-      before_all do
-        group.add_owner(user)
-      end
-
-      it 'returns an error for ineligible namespace' do
-        expect(apply_trial_service_class).not_to receive(:new)
-
-        expect(execute).to be_error
-        expect(execute.reason).to eq(:not_found)
-      end
-    end
-
-    context 'with an expired duo pro trial' do
-      let_it_be(:group) do
-        create(:gitlab_subscription_add_on_purchase, :expired_trial, add_on: duo_pro_add_on).namespace
-      end
-
-      let(:step) { described_class::TRIAL }
-      let(:namespace_id) { group.id.to_s }
-      let(:trial_params) { { namespace_id: namespace_id } }
-
-      before_all do
-        group.add_owner(user)
-      end
-
-      it 'applies the trial successfully' do
-        expect_apply_trial_success(user, group, extra_params: existing_group_attrs(group))
-
-        expect(execute).to be_success
-        expect(execute.payload).to eq({ namespace: group, add_on_purchase: add_on_purchase })
       end
     end
 
