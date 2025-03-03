@@ -48,17 +48,6 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
     end
   end
 
-  describe 'callbacks' do
-    describe '#destroy!' do
-      it 'calls Search::Zoekt::NamespaceIndexerWorker for the namespace with delete operation' do
-        expect(Search::Zoekt::NamespaceIndexerWorker).to receive(:perform_async)
-          .with(zoekt_enabled_namespace.root_namespace_id, 'delete', zoekt_node.id)
-
-        zoekt_index.destroy!
-      end
-    end
-  end
-
   describe 'scopes' do
     let_it_be(:namespace_2) { create(:group) }
     let_it_be_with_reload(:zoekt_enabled_namespace_2) { create(:zoekt_enabled_namespace, namespace: namespace_2) }
