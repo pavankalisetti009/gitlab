@@ -188,7 +188,6 @@ module Search
       # An initial implementation of eviction logic. For now, it's a .com-only task
       def eviction
         return false unless ::Gitlab::Saas.feature_available?(:exact_code_search)
-        return false if Feature.disabled?(:zoekt_reallocation_task, Feature.current_request)
 
         execute_every 5.minutes do
           nodes = ::Search::Zoekt::Node.online.find_each.to_a
