@@ -30,6 +30,7 @@ describe('DependencyExportDropdown component', () => {
   const findDisclosure = () => wrapper.findByTestId('export-disclosure');
   const findDependencyListItem = () => wrapper.findByTestId('dependency-list-item');
   const findCsvItem = () => wrapper.findByTestId('csv-item');
+  const findJsonArrayItem = () => wrapper.findByTestId('json-array-item');
   const findButton = () => wrapper.findComponent(GlButton);
 
   const itHasCorrectLoadingLogic = (selector) => {
@@ -86,17 +87,25 @@ describe('DependencyExportDropdown component', () => {
       factory({ props: { container: NAMESPACE_GROUP } });
     });
 
-    itHasCorrectLoadingLogic(() => findButton());
+    itHasCorrectLoadingLogic(() => findDisclosure());
 
-    it('shows button that dispatches JSON export', () => {
-      const button = findButton();
+    it('shows disclosure with expected items', () => {
+      expect(findDisclosure().exists()).toBe(true);
+      expect(findJsonArrayItem().exists()).toBe(true);
+      expect(findCsvItem().exists()).toBe(true);
+    });
 
-      expect(button.exists()).toBe(true);
-
-      button.vm.$emit('click');
-
+    it('dispatches json array export when item is clicked', () => {
+      findJsonArrayItem().vm.$emit('action');
       expect(store.dispatch).toHaveBeenCalledWith(`${allNamespace}/fetchExport`, {
         export_type: EXPORT_FORMATS.jsonArray,
+      });
+    });
+
+    it('dispatches CSV export when item is clicked', () => {
+      findCsvItem().vm.$emit('action');
+      expect(store.dispatch).toHaveBeenCalledWith(`${allNamespace}/fetchExport`, {
+        export_type: EXPORT_FORMATS.csv,
       });
     });
   });
