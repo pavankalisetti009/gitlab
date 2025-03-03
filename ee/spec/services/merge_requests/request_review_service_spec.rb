@@ -13,10 +13,16 @@ RSpec.describe ::MergeRequests::RequestReviewService, feature_category: :code_re
   end
 
   context 'when requesting review from duo code review bot' do
+    before do
+      allow(merge_request.merge_request_diff).to receive(:persisted?).and_return(persisted)
+      allow(merge_request).to receive(:ai_review_merge_request_allowed?)
+        .with(current_user)
+        .and_return(ai_review_allowed)
+    end
+
     context 'when AI review feature is not allowed' do
-      before do
-        allow(merge_request).to receive(:ai_review_merge_request_allowed?).with(current_user).and_return(false)
-      end
+      let(:ai_review_allowed) { false }
+      let(:persisted) { true }
 
       it 'does not call ::Llm::ReviewMergeRequestService' do
         expect(Llm::ReviewMergeRequestService).not_to receive(:new)
@@ -26,16 +32,28 @@ RSpec.describe ::MergeRequests::RequestReviewService, feature_category: :code_re
     end
 
     context 'when AI review feature is allowed' do
-      before do
-        allow(merge_request).to receive(:ai_review_merge_request_allowed?).with(current_user).and_return(true)
+      let(:ai_review_allowed) { true }
+
+      context 'when merge_request_diff is not persisted yet' do
+        let(:persisted) { false }
+
+        it 'does not call ::Llm::ReviewMergeRequestService' do
+          expect(Llm::ReviewMergeRequestService).not_to receive(:new)
+
+          service.execute(merge_request, user)
+        end
       end
 
-      it 'does not call ::Llm::ReviewMergeRequestService' do
-        expect_next_instance_of(Llm::ReviewMergeRequestService, current_user, merge_request) do |svc|
-          expect(svc).to receive(:execute)
-        end
+      context 'when merge_request_diff is persisted' do
+        let(:persisted) { true }
 
-        service.execute(merge_request, user)
+        it 'calls ::Llm::ReviewMergeRequestService' do
+          expect_next_instance_of(Llm::ReviewMergeRequestService, current_user, merge_request) do |svc|
+            expect(svc).to receive(:execute)
+          end
+
+          service.execute(merge_request, user)
+        end
       end
     end
   end
