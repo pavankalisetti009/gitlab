@@ -9,37 +9,6 @@ module EE
         include ::Gitlab::QuickActions::Dsl
 
         included do
-          desc { _('Add to epic') }
-          explanation { _('Adds an issue to an epic.') }
-          types Issue
-          condition do
-            quick_action_target.supports_epic? &&
-              quick_action_target.project.group&.feature_available?(:epics) &&
-              current_user.can?(:"admin_#{quick_action_target.to_ability_name}_relation", quick_action_target)
-          end
-          params '<&epic | group&epic | Epic URL>'
-          command :epic do |epic_param|
-            epic = extract_epic(epic_param)
-            issue = quick_action_target
-
-            message =
-              if epic && current_user.can?(:read_epic, epic)
-                if issue&.epic == epic
-                  _('Issue %{issue_reference} has already been added to epic %{epic_reference}.') %
-                    { issue_reference: issue.to_reference, epic_reference: epic.to_reference }
-                elsif epic.confidential? && !issue.confidential?
-                  _("Cannot assign a confidential epic to a non-confidential issue. Make the issue confidential and try again")
-                else
-                  @updates[:epic] = epic
-                  _('Added an issue to an epic.')
-                end
-              else
-                _("This epic does not exist or you don't have sufficient permission.")
-              end
-
-            @execution_message[:epic] = message
-          end
-
           desc { _('Remove from epic') }
           explanation { _('Removes an issue from an epic.') }
           execution_message { _('Removed an issue from an epic.') }
@@ -121,12 +90,6 @@ module EE
           end
           command :remove_iteration do
             @updates[:iteration] = nil
-          end
-
-          def extract_epic(params)
-            return if params.nil?
-
-            extract_references(params, :epic).first
           end
 
           desc { _('Publish to status page') }

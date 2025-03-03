@@ -3603,9 +3603,6 @@ msgstr ""
 msgid "Add to board"
 msgstr ""
 
-msgid "Add to epic"
-msgstr ""
-
 msgid "Add to merge train"
 msgstr ""
 
@@ -3762,9 +3759,6 @@ msgid "Adds a timeline event to incident."
 msgstr ""
 
 msgid "Adds a to-do item."
-msgstr ""
-
-msgid "Adds an issue to an epic."
 msgstr ""
 
 msgid "Adds email participants that don't have a GitLab account."

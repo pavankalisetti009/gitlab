@@ -14,6 +14,7 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
   let_it_be(:merge_request, reload: true) { create(:merge_request, source_project: project, target_project: project) }
   let_it_be(:epic, reload: true) { create(:epic, group: group) }
   let_it_be(:private_epic) { create(:epic, group: private_group) }
+  let_it_be(:work_item, reload: true) { create(:work_item, project: project) }
 
   let(:service) { described_class.new(project, user) }
 
@@ -37,12 +38,26 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
     end
 
     context 'when epics are not enabled' do
-      it 'does not assign the epic' do
-        content, message = execute(note, include_message: true)
+      context 'on an issue' do
+        it 'does not assign the epic' do
+          content, message = execute(note, include_message: true)
 
-        expect(content).to be_empty
-        expect(message).to eq('Could not apply epic command.')
-        expect(issue.epic).to be_nil
+          expect(content).to be_empty
+          expect(message).to eq('Could not apply set_parent command.')
+          expect(issue.epic).to be_nil
+        end
+      end
+
+      context 'on a work_item' do
+        let(:note) { create(:note_on_issue, noteable: work_item, project: project, note: note_text) }
+
+        it 'does not assign the epic' do
+          content, message = execute(note, include_message: true)
+
+          expect(content).to be_empty
+          expect(message).to eq('Could not apply set_parent command.')
+          expect(issue.epic).to be_nil
+        end
       end
     end
 
@@ -61,7 +76,7 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
           content, message  = execute(note, include_message: true)
 
           expect(content).to be_empty
-          expect(message).to eq('Could not apply epic command.')
+          expect(message).to eq('Could not apply set_parent command.')
           expect(issue.epic).to be_nil
         end
       end
@@ -81,6 +96,22 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
       context 'on an issue' do
         it 'assigns the issue to the epic' do
           expect { execute(note) }.to change { issue.reload.epic }.from(nil).to(epic)
+        end
+
+        it 'leaves the note empty' do
+          expect(execute(note)).to eq('')
+        end
+
+        it 'creates a system note', :sidekiq_inline do
+          expect { execute(note) }.to change { Note.system.count }.from(0).to(2)
+        end
+      end
+
+      context 'on a work item' do
+        let(:note) { create(:note_on_work_item, noteable: work_item, project: project, note: note_text) }
+
+        it 'assigns the work item to the parent' do
+          expect { execute(note) }.to change { work_item.reload.work_item_parent }.from(nil).to(epic.work_item)
         end
 
         it 'leaves the note empty' do
@@ -278,6 +309,20 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
         let_it_be(:note_text) { "/set_parent #{url}" }
 
         it_behaves_like 'sets work item parent'
+      end
+
+      context 'with subepics disabled' do
+        before do
+          stub_licensed_features(subepics: false)
+        end
+
+        it 'does not assign a parent epic' do
+          content, message = execute(note, include_message: true)
+
+          expect(content).to be_empty
+          expect(message).to eq('Could not apply set_parent command.')
+          expect(issue.epic).to be_nil
+        end
       end
     end
 
@@ -597,8 +642,8 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
         context 'with a double promote' do
           let(:note_text) do
             <<~HEREDOC
-            /promote
-            /promote
+              /promote
+              /promote
             HEREDOC
           end
 
