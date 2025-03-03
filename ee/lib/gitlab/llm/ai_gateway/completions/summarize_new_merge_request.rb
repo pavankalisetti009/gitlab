@@ -33,6 +33,11 @@ module Gitlab
             super && extracted_diff.present?
           end
 
+          override :prompt_version
+          def prompt_version
+            '2.0.0' if Feature.enabled?(:summarize_merge_request_claude_3_7_sonnet, user)
+          end
+
           def source_project
             return resource unless options[:source_project_id]
 

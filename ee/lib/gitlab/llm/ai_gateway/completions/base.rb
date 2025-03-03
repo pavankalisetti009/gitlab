@@ -27,6 +27,12 @@ module Gitlab
 
           private
 
+          # Can be overridden by subclasses to specify the prompt template version.
+          # If not overridden or returns nil, no prompt_version will be sent in the request.
+          def prompt_version
+            nil
+          end
+
           # Can be overwritten by child classes to perform additional validations
           def valid?
             true
@@ -40,9 +46,13 @@ module Gitlab
           def request!
             ai_client = ::Gitlab::Llm::AiGateway::Client.new(user, service_name: service_name,
               tracking_context: tracking_context)
+
+            request_body = { 'inputs' => inputs }
+            request_body['prompt_version'] = prompt_version unless prompt_version.nil?
+
             response = ai_client.complete(
               url: "#{::Gitlab::AiGateway.url}/v1/prompts/#{prompt_message.ai_action}",
-              body: { 'inputs' => inputs }
+              body: request_body
             )
 
             return if response&.body.blank?
