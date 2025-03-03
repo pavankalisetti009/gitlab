@@ -33,14 +33,16 @@ module QA
         include_context 'Web IDE test prep'
 
         before do
-          # add file to the project
-          Resource::Repository::ProjectPush.fabricate! do |push|
-            push.project = project
-            push.file_name = file_name
-            push.commit_message = 'Add newfile'
-            push.branch_name = 'main'
-            push.new_branch = false
-          end
+          create(:commit,
+            project: project,
+            branch: project.default_branch,
+            commit_message: 'Commit new file',
+            actions: [
+              {
+                action: 'create',
+                file_path: file_name
+              }
+            ])
         end
 
         let(:file_name) { 'new_file.text' }
