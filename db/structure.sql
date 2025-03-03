@@ -1990,6 +1990,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_4c320a13bc8d() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."project_id"
+  FROM "security_orchestration_policy_configurations"
+  WHERE "security_orchestration_policy_configurations"."id" = NEW."security_orchestration_policy_configuration_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_4cc5c3ac4d7f() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -3164,6 +3180,22 @@ IF NEW."namespace_id" IS NULL THEN
   INTO NEW."namespace_id"
   FROM "issues"
   WHERE "issues"."id" = NEW."issue_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
+CREATE FUNCTION trigger_b83b7e51e2f5() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."namespace_id" IS NULL THEN
+  SELECT "namespace_id"
+  INTO NEW."namespace_id"
+  FROM "security_orchestration_policy_configurations"
+  WHERE "security_orchestration_policy_configurations"."id" = NEW."security_orchestration_policy_configuration_id";
 END IF;
 
 RETURN NEW;
@@ -21177,6 +21209,7 @@ CREATE TABLE scan_result_policies (
     action_idx smallint DEFAULT 0 NOT NULL,
     custom_roles bigint[] DEFAULT '{}'::bigint[] NOT NULL,
     licenses jsonb DEFAULT '{}'::jsonb NOT NULL,
+    namespace_id bigint,
     CONSTRAINT age_value_null_or_positive CHECK (((age_value IS NULL) OR (age_value >= 0))),
     CONSTRAINT check_scan_result_policies_rule_idx_positive CHECK (((rule_idx IS NULL) OR (rule_idx >= 0))),
     CONSTRAINT custom_roles_array_check CHECK ((array_position(custom_roles, NULL::bigint) IS NULL))
@@ -35045,6 +35078,8 @@ CREATE UNIQUE INDEX index_scan_execution_policy_rules_on_unique_policy_rule_inde
 
 CREATE UNIQUE INDEX index_scan_result_policies_on_configuration_action_and_rule_idx ON scan_result_policies USING btree (security_orchestration_policy_configuration_id, project_id, orchestration_policy_idx, rule_idx, action_idx);
 
+CREATE INDEX index_scan_result_policies_on_namespace_id ON scan_result_policies USING btree (namespace_id);
+
 CREATE INDEX index_scan_result_policies_on_project_id ON scan_result_policies USING btree (project_id);
 
 CREATE INDEX index_scan_result_policy_violations_on_approval_policy_rule_id ON scan_result_policy_violations USING btree (approval_policy_rule_id);
@@ -38485,6 +38520,8 @@ CREATE TRIGGER trigger_4ad9a52a6614 BEFORE INSERT OR UPDATE ON sbom_occurrences_
 
 CREATE TRIGGER trigger_4b43790d717f BEFORE INSERT OR UPDATE ON protected_environment_approval_rules FOR EACH ROW EXECUTE FUNCTION trigger_4b43790d717f();
 
+CREATE TRIGGER trigger_4c320a13bc8d BEFORE INSERT OR UPDATE ON scan_result_policies FOR EACH ROW EXECUTE FUNCTION trigger_4c320a13bc8d();
+
 CREATE TRIGGER trigger_4cc5c3ac4d7f BEFORE INSERT OR UPDATE ON bulk_import_export_uploads FOR EACH ROW EXECUTE FUNCTION trigger_4cc5c3ac4d7f();
 
 CREATE TRIGGER trigger_4dc8ec48e038 BEFORE INSERT OR UPDATE ON requirements_management_test_reports FOR EACH ROW EXECUTE FUNCTION trigger_4dc8ec48e038();
@@ -38636,6 +38673,8 @@ CREATE TRIGGER trigger_b4520c29ea74 BEFORE INSERT OR UPDATE ON approval_merge_re
 CREATE TRIGGER trigger_b75e5731e305 BEFORE INSERT OR UPDATE ON dast_profiles_pipelines FOR EACH ROW EXECUTE FUNCTION trigger_b75e5731e305();
 
 CREATE TRIGGER trigger_b7abb8fc4cf0 BEFORE INSERT OR UPDATE ON work_item_progresses FOR EACH ROW EXECUTE FUNCTION trigger_b7abb8fc4cf0();
+
+CREATE TRIGGER trigger_b83b7e51e2f5 BEFORE INSERT OR UPDATE ON scan_result_policies FOR EACH ROW EXECUTE FUNCTION trigger_b83b7e51e2f5();
 
 CREATE TRIGGER trigger_b8eecea7f351 BEFORE INSERT OR UPDATE ON dependency_proxy_manifest_states FOR EACH ROW EXECUTE FUNCTION trigger_b8eecea7f351();
 
@@ -39809,6 +39848,9 @@ ALTER TABLE ONLY push_rules
 
 ALTER TABLE ONLY merge_request_diffs
     ADD CONSTRAINT fk_8483f3258f FOREIGN KEY (merge_request_id) REFERENCES merge_requests(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY scan_result_policies
+    ADD CONSTRAINT fk_84d4bc9abe FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY requirements
     ADD CONSTRAINT fk_85044baef0 FOREIGN KEY (issue_id) REFERENCES issues(id) ON DELETE CASCADE;
