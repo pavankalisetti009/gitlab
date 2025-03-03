@@ -95,7 +95,7 @@ RSpec.describe Admin::GitlabDuoController, :cloud_licenses, feature_category: :a
 
       context 'when instance is on GitLab.com' do
         before do
-          allow(Gitlab).to receive(:com?).and_return(true)
+          stub_saas_features(gitlab_com_subscriptions: true)
         end
 
         it_behaves_like 'hides gitlab duo path'
