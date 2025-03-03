@@ -170,11 +170,17 @@ RSpec.describe ::Search::Zoekt::Task, feature_category: :global_search do
         create(:zoekt_task, task_type: :delete_repo, project: project_pending_delete)
       end
 
-      it 'marks indexing tasks as skipped and processes delete tasks' do
-        expect do
-          described_class.each_task_for_processing(limit: 10) { |t| t }
-        end.to change { task_with_pending_delete.reload.state }.from('pending').to('skipped')
-        expect(delete_task_with_pending_delete.reload).to be_processing
+      context 'when zoekt_index_pending_delete_repos feature flag is disabled' do
+        before do
+          stub_feature_flags(zoekt_index_pending_delete_repos: false)
+        end
+
+        it 'marks indexing tasks as skipped and processes delete tasks' do
+          expect do
+            described_class.each_task_for_processing(limit: 10) { |t| t }
+          end.to change { task_with_pending_delete.reload.state }.from('pending').to('skipped')
+          expect(delete_task_with_pending_delete.reload).to be_processing
+        end
       end
     end
   end
