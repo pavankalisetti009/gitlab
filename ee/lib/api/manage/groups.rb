@@ -87,9 +87,9 @@ module API
               documentation: { example: '2022-01-01' }
             optional :created_after, type: DateTime, desc: 'Filter ssh keys which were created after given datetime',
               documentation: { example: '2021-01-01' }
-            optional :expires_before, type: DateTime, desc: 'Filter ssh keys which were created before given datetime',
+            optional :expires_before, type: DateTime, desc: 'Filter ssh keys which expire before given datetime',
               documentation: { example: '2022-01-01' }
-            optional :expires_after, type: DateTime, desc: 'Filter ssh keys which were created after given datetime',
+            optional :expires_after, type: DateTime, desc: 'Filter ssh keys which expire after given datetime',
               documentation: { example: '2021-01-01' }
             use :pagination
           end
