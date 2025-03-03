@@ -122,6 +122,8 @@ describe('resolvers', () => {
     });
 
     describe('billableMemberDetails', () => {
+      const mockIndirectMemberDetails = { ...mockMemberDetails, hasIndirectMembership: true };
+
       let billableMemberDetailsResult;
 
       beforeEach(async () => {
@@ -155,6 +157,36 @@ describe('resolvers', () => {
           ],
         });
       });
+
+      describe.each`
+        membershipApiRes       | indirectMembershipApiRes       | hasIndirectMembership
+        ${[]}                  | ${[]}                          | ${false}
+        ${[mockMemberDetails]} | ${[]}                          | ${false}
+        ${[]}                  | ${[mockIndirectMemberDetails]} | ${true}
+        ${[mockMemberDetails]} | ${[mockIndirectMemberDetails]} | ${false}
+      `(
+        'return the corrct hasIndirectMembership value',
+        ({ membershipApiRes, indirectMembershipApiRes, hasIndirectMembership }) => {
+          beforeEach(async () => {
+            GroupsApi.fetchBillableGroupMemberMemberships.mockResolvedValue({
+              data: membershipApiRes,
+            });
+            GroupsApi.fetchBillableGroupMemberIndirectMemberships.mockResolvedValue({
+              data: indirectMembershipApiRes,
+            });
+            billableMemberDetailsResult = await resolvers.Query.billableMemberDetails(null, {
+              namespaceId: 1,
+              memberId: 2,
+            });
+          });
+
+          it(`commits the correct mutation when response ${membershipApiRes.length ? 'does' : 'does not'} include membership and ${indirectMembershipApiRes.length ? 'does' : 'does not'} include indirect membership`, () => {
+            expect(billableMemberDetailsResult).toMatchObject({
+              hasIndirectMembership,
+            });
+          });
+        },
+      );
     });
   });
 });

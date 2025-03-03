@@ -1,7 +1,5 @@
 <script>
 import { GlTooltipDirective, GlSkeletonLoader } from '@gitlab/ui';
-// eslint-disable-next-line no-restricted-imports
-import { mapActions, mapState, mapGetters } from 'vuex';
 import getBillableMembersCountQuery from 'ee/subscriptions/graphql/queries/billable_members_count.query.graphql';
 import SubscriptionSeatsStatisticsCard from 'ee/usage_quotas/seats/components/subscription_seats_statistics_card.vue';
 import StatisticsSeatsCard from 'ee/usage_quotas/seats/components/statistics_seats_card.vue';
@@ -11,7 +9,6 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { PLAN_CODE_FREE } from 'ee/usage_quotas/seats/constants';
 import { createAlert } from '~/alert';
 import { s__ } from '~/locale';
-import * as types from '../store/mutation_types';
 import SubscriptionUpgradeInfoCard from './subscription_upgrade_info_card.vue';
 import SubscriptionUserList from './subscription_user_list.vue';
 
@@ -40,7 +37,9 @@ export default {
         return data.group.billableMembersCount;
       },
       error() {
-        this.receiveBillableMembersListError();
+        createAlert({
+          message: s__('Billing|An error occurred while loading billable members list.'),
+        });
       },
     },
     plan: {
@@ -51,7 +50,6 @@ export default {
         };
       },
       update(data) {
-        this.$store.commit(types.RECEIVE_GITLAB_SUBSCRIPTION_SUCCESS, data?.subscription);
         this.usage = data?.subscription?.usage;
         return data?.subscription?.plan;
       },
@@ -81,8 +79,6 @@ export default {
     };
   },
   computed: {
-    ...mapState(['hasError', 'maxSeatsUsed', 'seatsOwed']),
-    ...mapGetters(['isLoading']),
     isPublicFreeNamespace() {
       return this.hasFreePlan && this.isPublicNamespace;
     },
@@ -93,7 +89,7 @@ export default {
       return this.hasLimitedFreePlan;
     },
     isLoaderShown() {
-      return this.$apollo.loading || this.isLoading || this.hasError;
+      return this.$apollo.loading;
     },
     hasFreePlan() {
       return this.plan.code === PLAN_CODE_FREE;
@@ -104,9 +100,14 @@ export default {
     activeTrial() {
       return Boolean(this.plan?.trial);
     },
+    seatsOwed() {
+      return this.usage?.seats_owed ?? 0;
+    },
+    maxSeatsUsed() {
+      return this.usage?.max_seats_used ?? 0;
+    },
   },
   methods: {
-    ...mapActions(['receiveBillableMembersListError']),
     refetchData() {
       this.$apollo.queries.plan.refetch();
       this.$apollo.queries.billableMembersCount.refetch();

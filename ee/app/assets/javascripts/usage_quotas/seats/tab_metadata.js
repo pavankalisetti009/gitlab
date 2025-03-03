@@ -1,9 +1,6 @@
-// eslint-disable-next-line no-restricted-imports
-import Vuex from 'vuex';
 import { __ } from '~/locale';
 import { parseBoolean } from '~/lib/utils/common_utils';
 import apolloProvider from '../shared/provider';
-import initialSeatUsageStore from './store';
 import SeatUsageApp from './components/subscription_seats.vue';
 
 export const parseProvideData = (el) => {
@@ -55,14 +52,6 @@ export const getSeatTabMetadata = ({ includeEl = false } = {}) => {
     enforcementFreeUserCapEnabled,
   } = parseProvideData(el);
 
-  const store = new Vuex.Store(
-    initialSeatUsageStore({
-      namespaceId,
-      maxFreeNamespaceSeats,
-      enforcementFreeUserCapEnabled,
-    }),
-  );
-
   const seatTabMetadata = {
     title: __('Seats'),
     hash: '#seats-quota-tab',
@@ -83,7 +72,6 @@ export const getSeatTabMetadata = ({ includeEl = false } = {}) => {
         maxFreeNamespaceSeats,
         hasLimitedFreePlan: enforcementFreeUserCapEnabled,
       },
-      store,
       render(createElement) {
         return createElement(SeatUsageApp);
       },
