@@ -13822,7 +13822,8 @@ ALTER SEQUENCE fork_network_members_id_seq OWNED BY fork_network_members.id;
 CREATE TABLE fork_networks (
     id bigint NOT NULL,
     root_project_id bigint,
-    deleted_root_project_name character varying
+    deleted_root_project_name character varying,
+    organization_id bigint
 );
 
 CREATE SEQUENCE fork_networks_id_seq
@@ -33122,6 +33123,8 @@ CREATE INDEX index_fork_network_members_on_fork_network_id ON fork_network_membe
 CREATE INDEX index_fork_network_members_on_forked_from_project_id ON fork_network_members USING btree (forked_from_project_id);
 
 CREATE UNIQUE INDEX index_fork_network_members_on_project_id ON fork_network_members USING btree (project_id);
+
+CREATE INDEX index_fork_networks_on_organization_id ON fork_networks USING btree (organization_id);
 
 CREATE UNIQUE INDEX index_fork_networks_on_root_project_id ON fork_networks USING btree (root_project_id);
 
