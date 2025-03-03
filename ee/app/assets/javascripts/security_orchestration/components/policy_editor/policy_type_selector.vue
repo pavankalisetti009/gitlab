@@ -155,7 +155,7 @@ export default {
               </template>
             </gl-sprintf>
           </div>
-          <div>
+          <div :class="{ 'gl-mt-auto': !option.hasMax }">
             <gl-button
               v-if="!option.hasMax"
               variant="confirm"
