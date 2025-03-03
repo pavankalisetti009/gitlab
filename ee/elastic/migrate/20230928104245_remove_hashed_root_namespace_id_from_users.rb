@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class RemoveHashedRootNamespaceIdFromUsers < Elastic::Migration
-  include Elastic::MigrationRemoveFieldsHelper
+  include ::Search::Elastic::MigrationRemoveFieldsHelper
 
   batched!
   throttle_delay 1.minute
