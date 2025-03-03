@@ -103,7 +103,7 @@ export default {
           <gl-badge variants="neutral" class="gl-ml-2">{{ __('Beta') }}</gl-badge>
           <template #help>{{
             s__(
-              'ApplicationSettings|New users cannot be added or request access. Restricts the occurrence of seat overages.',
+              'ApplicationSettings|Prevent the billable user count from exceeding the number of seats in the license.',
             )
           }}</template>
         </gl-form-radio>

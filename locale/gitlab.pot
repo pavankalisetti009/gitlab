@@ -7443,9 +7443,6 @@ msgstr ""
 msgid "ApplicationSettings|New users can sign up without confirming their email address."
 msgstr ""
 
-msgid "ApplicationSettings|New users cannot be added or request access. Restricts the occurrence of seat overages."
-msgstr ""
-
 msgid "ApplicationSettings|Off"
 msgstr ""
 
@@ -7453,6 +7450,9 @@ msgid "ApplicationSettings|Only users with e-mail addresses that match these dom
 msgstr ""
 
 msgid "ApplicationSettings|Open access"
+msgstr ""
+
+msgid "ApplicationSettings|Prevent the billable user count from exceeding the number of seats in the license."
 msgstr ""
 
 msgid "ApplicationSettings|Proceed and approve %d user"
