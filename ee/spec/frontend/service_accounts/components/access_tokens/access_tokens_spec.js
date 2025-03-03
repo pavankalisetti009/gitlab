@@ -1,4 +1,4 @@
-import { GlFilteredSearch, GlPagination } from '@gitlab/ui';
+import { GlFilteredSearch, GlPagination, GlSorting } from '@gitlab/ui';
 import { createTestingPinia } from '@pinia/testing';
 import Vue from 'vue';
 import { PiniaVuePlugin } from 'pinia';
@@ -36,6 +36,7 @@ describe('AccessTokens', () => {
 
   const findFilteredSearch = () => wrapper.findComponent(GlFilteredSearch);
   const findPagination = () => wrapper.findComponent(GlPagination);
+  const findSorting = () => wrapper.findComponent(GlSorting);
 
   it('fetches tokens when it is rendered', () => {
     createComponent();
@@ -64,6 +65,34 @@ describe('AccessTokens', () => {
     expect(store.fetchTokens).toHaveBeenCalledTimes(1);
     findFilteredSearch().vm.$emit('submit', ['my token']);
 
+    expect(store.fetchTokens).toHaveBeenCalledTimes(2);
+  });
+
+  it('sets the sorting and fetches tokens when sorting option is changed', () => {
+    createComponent();
+    expect(store.fetchTokens).toHaveBeenCalledTimes(1);
+    findSorting().vm.$emit('sortByChange', 'name');
+
+    expect(store.setSorting).toHaveBeenCalledWith(expect.objectContaining({ value: 'name' }));
+    expect(store.fetchTokens).toHaveBeenCalledTimes(2);
+  });
+
+  it('ignores changes in sorting direction if sorting value is `expires`', () => {
+    createComponent();
+    expect(store.fetchTokens).toHaveBeenCalledTimes(1);
+    findSorting().vm.$emit('sortDirectionChange', false);
+
+    expect(store.setSorting).not.toHaveBeenCalledWith(expect.objectContaining({ isAsc: false }));
+    expect(store.fetchTokens).toHaveBeenCalledTimes(1);
+  });
+
+  it('sets the sorting and fetches tokens when sorting direction is changed', () => {
+    createComponent();
+    expect(store.fetchTokens).toHaveBeenCalledTimes(1);
+    store.sorting = { value: 'name', isAsc: true };
+    findSorting().vm.$emit('sortDirectionChange', false);
+
+    expect(store.setSorting).toHaveBeenCalledWith(expect.objectContaining({ isAsc: false }));
     expect(store.fetchTokens).toHaveBeenCalledTimes(2);
   });
 });

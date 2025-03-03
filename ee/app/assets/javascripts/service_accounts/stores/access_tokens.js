@@ -8,6 +8,7 @@ import {
   parseIntPagination,
 } from '~/lib/utils/common_utils';
 import { s__ } from '~/locale';
+import { SORT_OPTIONS, DEFAULT_SORT } from '~/access_tokens/constants';
 
 /**
  * Fetch access tokens
@@ -15,10 +16,11 @@ import { s__ } from '~/locale';
  * @param {string} url
  * @param {string|number} id
  * @param {Object<string, string|number>} params
+ * @param {string} sort
  */
-const fetchTokens = async (url, id, params) => {
+const fetchTokens = async ({ url, id, params, sort }) => {
   const { data, headers } = await axios.get(url, {
-    params: { user_id: id, sort: 'expires_at_asc_id_desc', ...params },
+    params: { user_id: id, sort, ...params },
   });
   const { perPage, total } = parseIntPagination(normalizeHeaders(headers));
 
@@ -40,6 +42,7 @@ export const useAccessTokens = defineStore('accessTokens', {
       urlRevoke: '',
       urlRotate: '',
       urlShow: '',
+      sorting: DEFAULT_SORT,
     };
   },
   actions: {
@@ -49,7 +52,12 @@ export const useAccessTokens = defineStore('accessTokens', {
       }
       this.busy = true;
       try {
-        const { data, perPage, total } = await fetchTokens(this.urlShow, this.id, this.params);
+        const { data, perPage, total } = await fetchTokens({
+          url: this.urlShow,
+          id: this.id,
+          params: this.params,
+          sort: this.sort,
+        });
         this.tokens = convertObjectPropsToCamelCase(data, { deep: true });
         this.perPage = perPage;
         this.total = total;
@@ -121,6 +129,9 @@ export const useAccessTokens = defineStore('accessTokens', {
     setToken(token) {
       this.token = token;
     },
+    setSorting(sorting) {
+      this.sorting = sorting;
+    },
   },
   getters: {
     params() {
@@ -139,6 +150,12 @@ export const useAccessTokens = defineStore('accessTokens', {
       });
 
       return newParams;
+    },
+    sort() {
+      const { value, isAsc } = this.sorting;
+      const sortOption = SORT_OPTIONS.find((option) => option.value === value);
+
+      return isAsc ? sortOption.sort.asc : sortOption.sort.desc;
     },
   },
 });

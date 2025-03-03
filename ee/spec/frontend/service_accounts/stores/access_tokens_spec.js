@@ -9,6 +9,7 @@ import {
   HTTP_STATUS_OK,
   HTTP_STATUS_INTERNAL_SERVER_ERROR,
 } from '~/lib/utils/http_status';
+import { DEFAULT_SORT } from '~/access_tokens/constants';
 
 const mockAlertDismiss = jest.fn();
 jest.mock('~/alert', () => ({
@@ -41,6 +42,7 @@ describe('useAccessTokens store', () => {
       expect(store.urlRevoke).toBe('');
       expect(store.urlRotate).toBe('');
       expect(store.urlShow).toBe('');
+      expect(store.sorting).toEqual(DEFAULT_SORT);
     });
   });
 
@@ -370,6 +372,26 @@ describe('useAccessTokens store', () => {
         store.setToken(2);
 
         expect(store.token).toBe(2);
+      });
+    });
+
+    describe('setSorting', () => {
+      it('sets the sorting', () => {
+        store.setSorting({ value: 'name', isAsc: false });
+
+        expect(store.sorting).toEqual({ value: 'name', isAsc: false });
+      });
+    });
+
+    describe('getters', () => {
+      describe('sort', () => {
+        it('returns correct value', () => {
+          expect(store.sort).toBe('expires_at_asc_id_desc');
+
+          store.sorting = { value: 'name', isAsc: false };
+
+          expect(store.sort).toBe('name_desc');
+        });
       });
     });
   });

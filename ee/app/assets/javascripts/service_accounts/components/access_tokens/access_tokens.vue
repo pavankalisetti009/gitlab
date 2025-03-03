@@ -1,5 +1,5 @@
 <script>
-import { GlFilteredSearch, GlFilteredSearchToken, GlPagination } from '@gitlab/ui';
+import { GlFilteredSearch, GlFilteredSearchToken, GlPagination, GlSorting } from '@gitlab/ui';
 import { mapActions, mapState } from 'pinia';
 import { __, s__ } from '~/locale';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
@@ -8,6 +8,7 @@ import {
   OPERATORS_IS,
 } from '~/vue_shared/components/filtered_search_bar/constants';
 import DateToken from '~/vue_shared/components/filtered_search_bar/tokens/date_token.vue';
+import { SORT_OPTIONS } from '~/access_tokens/constants';
 
 import { useAccessTokens } from '../../stores/access_tokens';
 import AccessToken from './access_token.vue';
@@ -17,6 +18,7 @@ export default {
   components: {
     GlFilteredSearch,
     GlPagination,
+    GlSorting,
     PageHeading,
     AccessToken,
     AccessTokenTable,
@@ -29,7 +31,15 @@ export default {
     },
   },
   computed: {
-    ...mapState(useAccessTokens, ['busy', 'filters', 'page', 'perPage', 'tokens', 'total']),
+    ...mapState(useAccessTokens, [
+      'busy',
+      'filters',
+      'page',
+      'perPage',
+      'tokens',
+      'total',
+      'sorting',
+    ]),
   },
   created() {
     this.setup({
@@ -50,7 +60,7 @@ export default {
     this.fetchTokens();
   },
   methods: {
-    ...mapActions(useAccessTokens, ['fetchTokens', 'setPage', 'setFilters', 'setup']),
+    ...mapActions(useAccessTokens, ['fetchTokens', 'setPage', 'setFilters', 'setup', 'setSorting']),
     search(filters) {
       this.setFilters(filters);
       this.setPage(1);
@@ -60,6 +70,17 @@ export default {
       this.setPage(page);
       await this.fetchTokens();
       window.scrollTo({ top: 0 });
+    },
+    handleSortChange(value) {
+      this.setSorting({ value, isAsc: this.sorting.isAsc });
+      this.fetchTokens();
+    },
+    handleSortDirectionChange(isAsc) {
+      if (this.sorting.value === 'expires') {
+        return;
+      }
+      this.setSorting({ value: this.sorting.value, isAsc });
+      this.fetchTokens();
     },
   },
   fields: [
@@ -112,6 +133,7 @@ export default {
       unique: true,
     },
   ],
+  SORT_OPTIONS,
 };
 </script>
 
@@ -119,15 +141,26 @@ export default {
   <div>
     <page-heading :heading="s__('AccessTokens|Personal access tokens')" />
     <access-token />
-    <gl-filtered-search
-      :value="filters"
-      :placeholder="s__('AccessTokens|Search or filter access tokens...')"
-      :available-tokens="$options.fields"
-      filtered-search-term-key="search"
-      terms-as-tokens
-      class="gl-my-5"
-      @submit="search"
-    />
+    <div class="gl-flex gl-flex-col gl-gap-3 gl-py-5 md:gl-flex-row">
+      <gl-filtered-search
+        class="gl-min-w-0 gl-grow"
+        :value="filters"
+        :placeholder="s__('AccessTokens|Search or filter access tokens...')"
+        :available-tokens="$options.fields"
+        filtered-search-term-key="search"
+        terms-as-tokens
+        @submit="search"
+      />
+      <gl-sorting
+        block
+        dropdown-class="gl-w-full  !gl-flex"
+        :is-ascending="sorting.isAsc"
+        :sort-by="sorting.value"
+        :sort-options="$options.SORT_OPTIONS"
+        @sortByChange="handleSortChange"
+        @sortDirectionChange="handleSortDirectionChange"
+      />
+    </div>
     <access-token-table :busy="busy" :tokens="tokens" />
     <gl-pagination
       :value="page"
