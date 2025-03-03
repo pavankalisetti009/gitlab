@@ -46,6 +46,11 @@ module Gitlab
             super && draft_notes.any?
           end
 
+          override :prompt_version
+          def prompt_version
+            '2.0.0' if Feature.enabled?(:summarize_code_review_claude_3_7_sonnet, user)
+          end
+
           def draft_notes_content
             content = []
 
