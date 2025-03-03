@@ -4,6 +4,7 @@ import { debounce } from 'lodash';
 import { n__, s__, sprintf } from '~/locale';
 import axios from '~/lib/utils/axios_utils';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { filterPathBySearchTerm } from '../store/utils';
 import { SEARCH_MIN_THRESHOLD } from './constants';
 
@@ -22,6 +23,7 @@ export default {
     GlCollapsibleListbox,
     GlLink,
   },
+  mixins: [glFeatureFlagMixin()],
   inject: ['locationsEndpoint'],
   props: {
     locationCount: {
@@ -62,6 +64,7 @@ export default {
   },
   i18n: {
     unknownPath: s__('Dependencies|Unknown path'),
+    dependencyPathButtonText: s__('Dependencies|View dependency paths'),
   },
   created() {
     this.search = debounce((searchTerm) => {
@@ -93,6 +96,9 @@ export default {
 
       this.loading = false;
       this.locations = locations.map(mapItemToListboxFormat);
+    },
+    onDependencyPathClick(item) {
+      this.$emit('click-dependency-path', item);
     },
   },
 };
@@ -136,6 +142,14 @@ export default {
           </div>
         </div>
         <gl-truncate :text="item.project.name" class="gl-mt-2 gl-pl-6 gl-text-subtle" />
+        <gl-button
+          v-if="glFeatures.dependencyPaths"
+          class="gl-mt-2"
+          size="small"
+          data-testid="dependency-path-button"
+          @click="onDependencyPathClick(item)"
+          >{{ $options.i18n.dependencyPathButtonText }}</gl-button
+        >
       </div>
     </template>
   </gl-collapsible-listbox>

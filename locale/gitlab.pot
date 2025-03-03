@@ -64607,6 +64607,9 @@ msgstr ""
 msgid "Vulnerability|Namespace:"
 msgstr ""
 
+msgid "Vulnerability|Project"
+msgstr ""
+
 msgid "Vulnerability|Project:"
 msgstr ""
 

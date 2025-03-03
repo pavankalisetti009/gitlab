@@ -30,51 +30,67 @@ describe('DependencyPathDrawer component', () => {
   const findDrawer = () => wrapper.findComponent(GlDrawer);
   const findTitle = () => wrapper.findByTestId('dependency-path-drawer-title');
   const findHeader = () => wrapper.findByTestId('dependency-path-drawer-header');
+  const findProject = () => wrapper.findByTestId('dependency-path-drawer-project');
 
-  describe('default behaviour', () => {
-    const mockHeaderHeight = '50px';
+  describe('default', () => {
+    it('configures the drawer with header height and z-index', () => {
+      const mockHeaderHeight = '50px';
 
-    beforeEach(() => {
       getContentWrapperHeight.mockReturnValue(mockHeaderHeight);
       createComponent();
-    });
 
-    it('configures the drawer with header height and z-index', () => {
       expect(findDrawer().props()).toMatchObject({
         headerHeight: mockHeaderHeight,
         zIndex: DRAWER_Z_INDEX,
       });
     });
-  });
-
-  describe('when closed', () => {
-    beforeEach(() => {
-      createComponent({ showDrawer: false });
-    });
 
     it('the drawer is not shown', () => {
+      createComponent({ showDrawer: false });
       expect(findDrawer().props('open')).toBe(false);
-    });
-  });
-
-  describe('when opened', () => {
-    beforeEach(() => {
-      createComponent({ showDrawer: true });
     });
 
     it('the drawer is shown', () => {
+      createComponent({ showDrawer: true });
       expect(findDrawer().props('open')).toBe(true);
     });
 
     it('has the drawer title', () => {
+      createComponent({ showDrawer: false });
       expect(findTitle().text()).toEqual('Dependency paths');
     });
+  });
 
-    it('has the header text', () => {
+  describe('with header section', () => {
+    it('shows header text when component exists', () => {
+      createComponent({ showDrawer: true });
+
       const header = findHeader();
-
       expect(header.text()).toContain(defaultDependency.name);
       expect(header.text()).toContain(defaultDependency.version);
+    });
+
+    it('does not show header text when component does not exist', () => {
+      createComponent({ showDrawer: true, dependency: {} });
+      expect(findHeader().exists()).toBe(false);
+    });
+  });
+
+  describe('with project section', () => {
+    it('shows project info when project exists', () => {
+      const projectName = 'Project Foo';
+
+      createComponent({
+        showDrawer: true,
+        dependency: { ...defaultDependency, project: { name: projectName } },
+      });
+
+      expect(findProject().text()).toContain(`Project: ${projectName}`);
+    });
+
+    it('does not show project info when project does not exist', () => {
+      createComponent({ showDrawer: true });
+      expect(findProject().exists()).toBe(false);
     });
   });
 });
