@@ -19,7 +19,7 @@ RSpec.describe API::Conan::V1::ProjectPackages, feature_category: :package_regis
     "/:package_channel/:recipe_revision/package/:conan_package_reference/:package_revision/:file_name" do
     let(:url) do
       "/projects/#{project.id}/packages/conan/v1/files/#{package.conan_recipe_path}" \
-        "/#{metadata.recipe_revision_value}/package/#{metadata.conan_package_reference}" \
+        "/#{metadata.recipe_revision_value}/package/#{metadata.package_reference_value}" \
         "/#{metadata.package_revision_value}/#{package_file.file_name}"
     end
 
