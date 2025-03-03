@@ -35,6 +35,7 @@ FactoryBot.define do
 
     transient do
       plan { License::PREMIUM_PLAN }
+      seats { nil }
     end
 
     starts_at { Date.new(1970, 1, 1) }
@@ -52,6 +53,8 @@ FactoryBot.define do
     end
 
     restrictions do
+      seats_attrs = seats ? { active_user_count: seats } : {}
+
       {
         add_ons: {
           'GitLab_FileLocks' => 1,
@@ -59,7 +62,7 @@ FactoryBot.define do
         },
         plan: plan,
         subscription_id: '0000'
-      }
+      }.merge(seats_attrs)
     end
   end
 end

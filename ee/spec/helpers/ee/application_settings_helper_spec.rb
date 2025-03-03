@@ -174,13 +174,13 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
       it { is_expected.to match(hash_including({ licensed_user_count: '' })) }
 
       context 'with a license' do
-        let(:active_user_count) { 10 }
+        let(:seats) { 10 }
 
         before do
-          create_current_license(plan: License::ULTIMATE_PLAN, restrictions: { active_user_count: active_user_count })
+          create_current_license(plan: License::ULTIMATE_PLAN, seats: seats)
         end
 
-        it { is_expected.to match(hash_including({ licensed_user_count: active_user_count.to_s })) }
+        it { is_expected.to match(hash_including({ licensed_user_count: seats.to_s })) }
       end
     end
   end

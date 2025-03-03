@@ -173,7 +173,7 @@ RSpec.describe 'Admin::Users', :with_current_organization, feature_category: :us
 
     context 'when generating overages' do
       before do
-        create_current_license(plan: License::ULTIMATE_PLAN, restrictions: { active_user_count: 1 })
+        create_current_license(plan: License::PREMIUM_PLAN, seats: 1)
       end
 
       it 'creates a new user' do

@@ -6,6 +6,7 @@ FactoryBot.define do
       plan { nil }
       expired { false }
       trial { false }
+      seats { nil }
     end
 
     data do
@@ -14,7 +15,7 @@ FactoryBot.define do
       attrs << :expired if expired
       attrs << :cloud if cloud
 
-      build(*attrs, plan: plan).export
+      build(*attrs, plan: plan, seats: seats).export
     end
 
     # Disable validations when creating an expired license key
