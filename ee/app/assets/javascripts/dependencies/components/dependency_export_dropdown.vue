@@ -9,27 +9,29 @@ import {
 import { mapActions, mapState } from 'vuex';
 import { s__ } from '~/locale';
 import {
-  EXPORT_FORMATS,
+  EXPORT_FORMAT_CSV,
+  EXPORT_FORMAT_DEPENDENCY_LIST,
+  EXPORT_FORMAT_JSON_ARRAY,
   NAMESPACE_GROUP,
   NAMESPACE_ORGANIZATION,
   NAMESPACE_PROJECT,
-} from '../constants';
+} from 'ee/dependencies/constants';
 
 const exportFormats = [
   {
-    type: EXPORT_FORMATS.dependencyList,
+    type: EXPORT_FORMAT_DEPENDENCY_LIST,
     buttonText: s__('Dependencies|Export as JSON'),
     availableFor: [NAMESPACE_PROJECT],
     testid: 'dependency-list-item',
   },
   {
-    type: EXPORT_FORMATS.jsonArray,
+    type: EXPORT_FORMAT_JSON_ARRAY,
     buttonText: s__('Dependencies|Export as JSON'),
     availableFor: [NAMESPACE_GROUP],
     testid: 'json-array-item',
   },
   {
-    type: EXPORT_FORMATS.csv,
+    type: EXPORT_FORMAT_CSV,
     buttonText: s__('Dependencies|Export as CSV'),
     availableFor: [NAMESPACE_PROJECT, NAMESPACE_GROUP, NAMESPACE_ORGANIZATION],
     testid: 'csv-item',

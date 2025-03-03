@@ -4,7 +4,9 @@ import DependencyExportDropdown from 'ee/dependencies/components/dependency_expo
 import createStore from 'ee/dependencies/store';
 import { DEPENDENCY_LIST_TYPES } from 'ee/dependencies/store/constants';
 import {
-  EXPORT_FORMATS,
+  EXPORT_FORMAT_CSV,
+  EXPORT_FORMAT_DEPENDENCY_LIST,
+  EXPORT_FORMAT_JSON_ARRAY,
   NAMESPACE_GROUP,
   NAMESPACE_ORGANIZATION,
   NAMESPACE_PROJECT,
@@ -28,10 +30,20 @@ describe('DependencyExportDropdown component', () => {
   };
 
   const findDisclosure = () => wrapper.findByTestId('export-disclosure');
-  const findDependencyListItem = () => wrapper.findByTestId('dependency-list-item');
-  const findCsvItem = () => wrapper.findByTestId('csv-item');
-  const findJsonArrayItem = () => wrapper.findByTestId('json-array-item');
   const findButton = () => wrapper.findComponent(GlButton);
+
+  const dependencyListItem = {
+    testId: 'dependency-list-item',
+    exportType: EXPORT_FORMAT_DEPENDENCY_LIST,
+  };
+  const csvItem = {
+    testId: 'csv-item',
+    exportType: EXPORT_FORMAT_CSV,
+  };
+  const jsonArrayItem = {
+    testId: 'json-array-item',
+    exportType: EXPORT_FORMAT_JSON_ARRAY,
+  };
 
   const itHasCorrectLoadingLogic = (selector) => {
     it('shows export icon in default state', () => {
@@ -54,32 +66,31 @@ describe('DependencyExportDropdown component', () => {
     });
   };
 
+  const itShowsDisclosureWithItems = (items) => {
+    it('shows disclosure with expected items', () => {
+      expect(findDisclosure().exists()).toBe(true);
+      items.forEach((item) => {
+        expect(wrapper.findByTestId(item.testId).exists()).toBe(true);
+      });
+    });
+
+    it('dispatches export when item is clicked', () => {
+      items.forEach((item) => {
+        wrapper.findByTestId(item.testId).vm.$emit('action');
+        expect(store.dispatch).toHaveBeenCalledWith(`${allNamespace}/fetchExport`, {
+          export_type: item.exportType,
+        });
+      });
+    });
+  };
+
   describe('when container is a project', () => {
     beforeEach(() => {
       factory({ props: { container: NAMESPACE_PROJECT } });
     });
 
     itHasCorrectLoadingLogic(() => findDisclosure());
-
-    it('shows disclosure with expected items', () => {
-      expect(findDisclosure().exists()).toBe(true);
-      expect(findDependencyListItem().exists()).toBe(true);
-      expect(findCsvItem().exists()).toBe(true);
-    });
-
-    it('dispatches dependency list export when item is clicked', () => {
-      findDependencyListItem().vm.$emit('action');
-      expect(store.dispatch).toHaveBeenCalledWith(`${allNamespace}/fetchExport`, {
-        export_type: EXPORT_FORMATS.dependencyList,
-      });
-    });
-
-    it('dispatches CSV export when item is clicked', () => {
-      findCsvItem().vm.$emit('action');
-      expect(store.dispatch).toHaveBeenCalledWith(`${allNamespace}/fetchExport`, {
-        export_type: EXPORT_FORMATS.csv,
-      });
-    });
+    itShowsDisclosureWithItems([dependencyListItem, csvItem]);
   });
 
   describe('when container is a group', () => {
@@ -88,26 +99,7 @@ describe('DependencyExportDropdown component', () => {
     });
 
     itHasCorrectLoadingLogic(() => findDisclosure());
-
-    it('shows disclosure with expected items', () => {
-      expect(findDisclosure().exists()).toBe(true);
-      expect(findJsonArrayItem().exists()).toBe(true);
-      expect(findCsvItem().exists()).toBe(true);
-    });
-
-    it('dispatches json array export when item is clicked', () => {
-      findJsonArrayItem().vm.$emit('action');
-      expect(store.dispatch).toHaveBeenCalledWith(`${allNamespace}/fetchExport`, {
-        export_type: EXPORT_FORMATS.jsonArray,
-      });
-    });
-
-    it('dispatches CSV export when item is clicked', () => {
-      findCsvItem().vm.$emit('action');
-      expect(store.dispatch).toHaveBeenCalledWith(`${allNamespace}/fetchExport`, {
-        export_type: EXPORT_FORMATS.csv,
-      });
-    });
+    itShowsDisclosureWithItems([jsonArrayItem, csvItem]);
   });
 
   describe('when container is an organization', () => {
@@ -125,7 +117,7 @@ describe('DependencyExportDropdown component', () => {
       button.vm.$emit('click');
 
       expect(store.dispatch).toHaveBeenCalledWith(`${allNamespace}/fetchExport`, {
-        export_type: EXPORT_FORMATS.csv,
+        export_type: EXPORT_FORMAT_CSV,
       });
     });
   });
