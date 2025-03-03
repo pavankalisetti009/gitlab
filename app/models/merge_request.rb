@@ -333,6 +333,11 @@ class MergeRequest < ApplicationRecord
     includes(:target_project)
   end
   scope :by_commit_sha, ->(sha) do
+    Gitlab::AppLogger.info(
+      event: 'merge_request_by_commit_sha_call',
+      message: "MergeRequest.by_commit_sha called via #{caller_locations.reject { |line| line.path.include?('/gems/') }.first}"
+    )
+
     where('EXISTS (?)', MergeRequestDiff.select(1).where('merge_requests.latest_merge_request_diff_id = merge_request_diffs.id').by_commit_sha(sha)).reorder(nil)
   end
   scope :by_merge_commit_sha, ->(sha) do
@@ -348,6 +353,11 @@ class MergeRequest < ApplicationRecord
     from_union([by_squash_commit_sha(sha), by_merge_commit_sha(sha), by_merged_commit_sha(sha)])
   end
   scope :by_related_commit_sha, ->(sha) do
+    Gitlab::AppLogger.info(
+      event: 'merge_request_by_related_commit_sha_call',
+      message: "MergeRequest.by_related_commit_sha called via #{caller_locations.reject { |line| line.path.include?('/gems/') }.first}"
+    )
+
     from_union(
       [
         by_commit_sha(sha),
