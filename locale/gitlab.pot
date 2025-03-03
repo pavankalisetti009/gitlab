@@ -3045,6 +3045,9 @@ msgstr ""
 msgid "AccessTokens|Revoke"
 msgstr ""
 
+msgid "AccessTokens|Revoke %{name}"
+msgstr ""
+
 msgid "AccessTokens|Revoke the token \"%{tokenName}\"?"
 msgstr ""
 
