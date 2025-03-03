@@ -16,6 +16,10 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeNewMergeRequest, fe
   subject(:summarize_new_merge_request) { described_class.new(prompt_message, prompt_class, options).execute }
 
   describe '#execute' do
+    before do
+      stub_feature_flags(summarize_merge_request_claude_3_7_sonnet: false)
+    end
+
     shared_examples 'makes AI request and publishes response' do
       it 'makes AI request and publishes response' do
         extracted_diff = Gitlab::Llm::Utils::MergeRequestTool.extract_diff(
@@ -78,6 +82,42 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeNewMergeRequest, fe
       end
 
       it_behaves_like 'makes AI request and publishes response'
+    end
+
+    context 'with feature flag enabled' do
+      let(:options) do
+        {
+          source_branch: 'feature',
+          target_branch: project.default_branch,
+          source_project: project
+        }
+      end
+
+      before do
+        stub_feature_flags(summarize_merge_request_claude_3_7_sonnet: true)
+      end
+
+      it 'includes prompt_version in the request' do
+        extracted_diff = Gitlab::Llm::Utils::MergeRequestTool.extract_diff(
+          source_project: project,
+          source_branch: 'feature',
+          target_project: project,
+          target_branch: project.default_branch,
+          character_limit: described_class::CHARACTER_LIMIT
+        )
+
+        expect_next_instance_of(Gitlab::Llm::AiGateway::Client) do |client|
+          expect(client)
+            .to receive(:complete)
+            .with(
+              url: "#{Gitlab::AiGateway.url}/v1/prompts/summarize_new_merge_request",
+              body: { 'inputs' => { extracted_diff: extracted_diff }, 'prompt_version' => '2.0.0' }
+            )
+            .and_return(example_response)
+        end
+
+        summarize_new_merge_request
+      end
     end
   end
 end

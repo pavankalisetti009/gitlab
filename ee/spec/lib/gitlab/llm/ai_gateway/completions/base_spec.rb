@@ -122,5 +122,26 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::Base, feature_category: :ai_
 
       it_behaves_like 'executing successfully'
     end
+
+    context 'when prompt_version is provided' do
+      before do
+        allow(completion).to receive(:prompt_version).and_return('2.0.0')
+      end
+
+      it 'includes prompt_version in the request body' do
+        expect(client).to receive(:complete).with(
+          url: "#{Gitlab::AiGateway.url}/v1/prompts/#{ai_action}",
+          body: { 'inputs' => inputs, 'prompt_version' => '2.0.0' }
+        ).and_return(http_response)
+
+        expect(response_modifier_class).to receive(:new).with(processed_response)
+          .and_return(response_modifier)
+        expect(Gitlab::Llm::GraphqlSubscriptionResponseService).to receive(:new)
+          .with(user, resource, response_modifier, options: response_options).and_return(response_service)
+        expect(response_service).to receive(:execute).and_return(result)
+
+        is_expected.to be(result)
+      end
+    end
   end
 end
