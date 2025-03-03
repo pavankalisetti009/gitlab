@@ -16,7 +16,6 @@ mutation chat(
       }
       projectId: $projectId
       clientSubscriptionId: $clientSubscriptionId
-      conversationType: DUO_CHAT
     }
   ) {
     requestId
