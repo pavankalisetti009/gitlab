@@ -7,7 +7,7 @@ RSpec.describe LicenseMailer do
 
   let(:recipients) { %w[admin@example.com another_admin@example.com] }
 
-  let_it_be(:license) { create_current_license({ plan: License::STARTER_PLAN, restrictions: { active_user_count: 21 } }) }
+  let_it_be(:license) { create_current_license({ plan: License::STARTER_PLAN, seats: 21 }) }
 
   describe '#approaching_active_user_count_limit' do
     let(:subject_text) { 'Your subscription is nearing its user limit' }

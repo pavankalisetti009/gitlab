@@ -79,19 +79,19 @@ RSpec.describe Users::CreateService, feature_category: :user_management do
   end
 
   describe 'with a subscription' do
-    let(:active_user_count) { 0 }
+    let(:seats) { 0 }
 
     before do
-      create_current_license(plan: License::ULTIMATE_PLAN, restrictions: { active_user_count: active_user_count })
+      create_current_license(plan: License::PREMIUM_PLAN, seats: seats)
 
       stub_ee_application_setting(seat_control: ::ApplicationSetting::SEAT_CONTROL_BLOCK_OVERAGES)
     end
 
     describe 'with licensed users' do
-      let(:active_user_count) { 10 }
+      let(:seats) { 10 }
 
       describe 'when licensed user count reached' do
-        let(:active_user_count) { 1 }
+        let(:seats) { 1 }
 
         it 'does not create a user' do
           expect { service.execute }.not_to change(User, :count)

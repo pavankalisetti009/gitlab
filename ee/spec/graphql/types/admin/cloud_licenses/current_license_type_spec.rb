@@ -48,7 +48,7 @@ RSpec.describe GitlabSchema.types['CurrentLicense'], :enable_admin_mode, feature
 
     it 'returns the number of users over the paid users in the license' do
       create(:historical_data, active_user_count: 15)
-      create_current_license(licensee: licensee, restrictions: { active_user_count: 10 })
+      create_current_license(licensee: licensee, seats: 10)
 
       result_as_json = query_field('usersOverLicenseCount')
 
