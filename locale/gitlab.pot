@@ -9743,6 +9743,9 @@ msgstr ""
 msgid "Blame|Older"
 msgstr ""
 
+msgid "BlobViewer|Copy contents"
+msgstr ""
+
 msgid "BlobViewer|If you delete the file, it will be removed from the branch %{branch}."
 msgstr ""
 
@@ -24963,6 +24966,9 @@ msgstr ""
 msgid "File Tree"
 msgstr ""
 
+msgid "File actions"
+msgstr ""
+
 msgid "File added"
 msgstr ""
 
@@ -34472,9 +34478,6 @@ msgid "Lock directory?"
 msgstr ""
 
 msgid "Lock discussion"
-msgstr ""
-
-msgid "Lock file"
 msgstr ""
 
 msgid "Lock file?"
@@ -48348,9 +48351,6 @@ msgstr ""
 msgid "Replace all labels"
 msgstr ""
 
-msgid "Replace file"
-msgstr ""
-
 msgid "Replaced all labels with %{label_references} %{label_text}."
 msgstr ""
 
@@ -61995,9 +61995,6 @@ msgid "Unlock account"
 msgstr ""
 
 msgid "Unlock discussion"
-msgstr ""
-
-msgid "Unlock file"
 msgstr ""
 
 msgid "Unlock file?"

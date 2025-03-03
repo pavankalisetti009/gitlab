@@ -7,8 +7,6 @@ import { DEFAULT_BLOB_INFO } from '~/repository/constants';
 
 export default {
   i18n: {
-    lockFile: __('Lock file'),
-    unlockFile: __('Unlock file'),
     lock: __('Lock'),
     unlock: __('Unlock'),
     modalTitle: __('Lock file?'),
@@ -56,21 +54,18 @@ export default {
     };
   },
   computed: {
-    lockItemTitle() {
-      return this.isLocked ? this.$options.i18n.unlockFile : this.$options.i18n.lockFile;
-    },
-    confirmationButtonText() {
+    lockButtonTitle() {
       return this.isLocked ? this.$options.i18n.unlock : this.$options.i18n.lock;
     },
     lockConfirmText() {
       return sprintf(__('Are you sure you want to %{action} %{name}?'), {
-        action: this.confirmationButtonText.toLowerCase(),
+        action: this.lockButtonTitle.toLowerCase(),
         name: this.name,
       });
     },
     lockFileItem() {
       return {
-        text: this.lockItemTitle,
+        text: this.lockButtonTitle,
         extraAttrs: {
           disabled: !this.canLock || this.isLoading || this.isUpdating,
         },
@@ -79,7 +74,7 @@ export default {
     modalActions() {
       return {
         primary: {
-          text: this.confirmationButtonText,
+          text: this.lockButtonTitle,
           attributes: { variant: 'confirm', 'data-testid': 'confirm-ok-button' },
         },
         cancel: {
