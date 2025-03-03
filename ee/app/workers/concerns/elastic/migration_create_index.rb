@@ -2,7 +2,7 @@
 
 module Elastic
   module MigrationCreateIndex
-    include Elastic::MigrationHelper
+    include ::Search::Elastic::MigrationHelper
 
     def migrate
       reindexing_cleanup!
