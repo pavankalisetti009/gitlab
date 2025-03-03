@@ -11,24 +11,24 @@ module Ai
     def self.commands
       {
         base: [
-          { name: _('/reset'), description: _('Reset conversation and ignore previous messages.'),
+          { name: '/reset', description: _('Reset conversation and ignore previous messages.'),
             should_submit: true },
-          { name: _('/clear'), description: _('Delete all messages in the current conversation.'),
+          { name: '/clear', description: _('Delete all messages in the current conversation.'),
             should_submit: true },
-          { name: _('/help'), description: _('Learn what Duo Chat can do.'), should_submit: true }
+          { name: '/help', description: _('Learn what Duo Chat can do.'), should_submit: true }
         ],
         issue: [
-          { name: _('/summarize_comments'),
+          { name: '/summarize_comments',
             description: _('Summarize the comments in the current issue.'),
             should_submit: true }
         ],
         job: [
-          { name: _('/troubleshoot'),
+          { name: '/troubleshoot',
             description: _('Troubleshoot failed CI/CD jobs with Root Cause Analysis.'),
             should_submit: true }
         ],
         vulnerability: [
-          { name: _('/vulnerability_explain'),
+          { name: '/vulnerability_explain',
             description: _('Explain current vulnerability.'),
             should_submit: true }
         ]
