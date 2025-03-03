@@ -10,14 +10,14 @@ RSpec.describe Packages::CreateAuditEventService, feature_category: :package_reg
 
   let(:current_user) { nil }
   let(:event_name) { 'package_registry_package_published' }
-  let(:service) { described_class.new(package, current_user: current_user, event_name: event_name) }
+  let(:service) { described_class.new(package, current_user:, event_name:) }
 
   describe '#execute' do
     subject(:execute) { service.execute }
 
     let(:operation) { execute }
     let(:event_type) { event_name }
-    let(:fail_condition!) { stub_feature_flags(package_registry_audit_events: false) }
+    let(:fail_condition!) { allow(service).to receive(:audit_events_enabled?).and_return(false) }
     let(:attributes) do
       {
         author_id: user.id,
@@ -34,6 +34,10 @@ RSpec.describe Packages::CreateAuditEventService, feature_category: :package_reg
           auth_token_type: auth_token_type
         }
       }
+    end
+
+    before do
+      allow(service).to receive(:audit_events_enabled?).and_return(true)
     end
 
     context 'for package_registry_package_published event' do
@@ -159,6 +163,14 @@ RSpec.describe Packages::CreateAuditEventService, feature_category: :package_reg
           end
         end
       end
+    end
+
+    context 'when package_registry_audit_events feature flag is disabled' do
+      before do
+        stub_feature_flags(package_registry_audit_events: false)
+      end
+
+      it { is_expected.to be_error.and have_attributes(message: 'Feature flag is not enabled') }
     end
   end
 end

@@ -3,11 +3,14 @@
 module Packages
   class AuditEventsBaseService
     FEATURE_FLAG_DISABLED_ERROR = ServiceResponse.error(message: 'Feature flag is not enabled').freeze
+    NOT_ELIGIBLE_ERROR = ServiceResponse.error(message: 'Not eligible for audit events').freeze
 
     def execute
       if ::Feature.disabled?(:package_registry_audit_events, ::Feature.current_request)
         return FEATURE_FLAG_DISABLED_ERROR
       end
+
+      return NOT_ELIGIBLE_ERROR unless audit_events_enabled?
 
       yield
 
@@ -15,6 +18,10 @@ module Packages
     end
 
     private
+
+    def audit_events_enabled?
+      raise NotImplementedError
+    end
 
     def auth_token_type
       ::Current.token_info&.dig(:token_type) || token_type_from_current_user

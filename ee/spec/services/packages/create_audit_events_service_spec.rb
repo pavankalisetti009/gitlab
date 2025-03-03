@@ -3,12 +3,21 @@
 require 'spec_helper'
 
 RSpec.describe Packages::CreateAuditEventsService, feature_category: :package_registry do
-  let_it_be(:group_project) { build_stubbed(:project, :in_group) }
-  let_it_be(:namespace_project) { build_stubbed(:project) }
+  let_it_be(:group) { build_stubbed(:group) }
+  let_it_be(:namespace) { build_stubbed(:namespace) }
+  let_it_be(:group_project) { build_stubbed(:project, group:) }
+  let_it_be(:namespace_project) { build_stubbed(:project, namespace:) }
   let_it_be(:user) { build_stubbed(:user, maintainer_of: [group_project, namespace_project]) }
   let_it_be(:group_packages) { build_list(:nuget_package, 2, project: group_project) }
   let_it_be(:namespace_packages) { build_list(:npm_package, 2, project: namespace_project) }
   let_it_be(:packages) { group_packages + namespace_packages }
+  let_it_be(:group_package_setting) do
+    build_stubbed(:namespace_package_setting, audit_events_enabled: true, namespace: group)
+  end
+
+  let_it_be(:namespace_package_setting) do
+    build_stubbed(:namespace_package_setting, audit_events_enabled: true, namespace: namespace)
+  end
 
   let(:service) { described_class.new(packages, current_user: user) }
 
@@ -18,7 +27,7 @@ RSpec.describe Packages::CreateAuditEventsService, feature_category: :package_re
     let(:operation) { execute }
     let(:event_type) { 'package_registry_package_deleted' }
     let(:event_count) { packages.size }
-    let(:fail_condition!) { stub_feature_flags(package_registry_audit_events: false) }
+    let(:fail_condition!) { allow(service).to receive(:audit_events_enabled?).and_return(false) }
 
     let(:attributes) do
       packages.map do |package|
@@ -40,6 +49,20 @@ RSpec.describe Packages::CreateAuditEventsService, feature_category: :package_re
       end
     end
 
+    before do
+      allow(::Namespace::PackageSetting).to receive(:with_audit_events_enabled)
+        .and_return([group_package_setting, namespace_package_setting])
+      allow(::Group).to receive(:id_in).and_return([group])
+    end
+
     include_examples 'audit event logging'
+
+    context 'when package_registry_audit_events feature flag is disabled' do
+      before do
+        stub_feature_flags(package_registry_audit_events: false)
+      end
+
+      it { is_expected.to be_error.and have_attributes(message: 'Feature flag is not enabled') }
+    end
   end
 end
