@@ -15,7 +15,7 @@ import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import RefSelector from '~/ref/components/ref_selector.vue';
 import GroupProjectsDropdown from 'ee/security_orchestration/components/shared/group_projects_dropdown.vue';
 import { isGroup } from 'ee/security_orchestration/components/utils';
-import { DEPRECATED_INJECT, INJECT, OVERRIDE, SUFFIX_ON_CONFLICT } from '../constants';
+import { DEPRECATED_INJECT, INJECT, OVERRIDE, SCHEDULE, SUFFIX_ON_CONFLICT } from '../constants';
 import SuffixSelector from '../suffix_selector.vue';
 import { validateStrategyValues } from './utils';
 import CodeBlockStrategySelector from './code_block_strategy_selector.vue';
@@ -32,6 +32,9 @@ export default {
       ),
       [OVERRIDE]: s__(
         'ScanExecutionPolicy|%{strategySelector}the %{boldStart}.gitlab-ci.yml%{boldEnd} with the following %{boldStart}pipeline execution file%{boldEnd} from %{projectSelector}',
+      ),
+      [SCHEDULE]: s__(
+        'ScanExecutionPolicy|%{strategySelector} pipeline file to run from %{projectSelector}',
       ),
     },
     filePathPrependLabel: __('No project selected'),
@@ -52,6 +55,9 @@ export default {
       ),
       [OVERRIDE]: s__(
         'ScanExecutionPolicy|The content of this pipeline execution YAML file overrides the .gitlab-ci.yml file of the target project. All GitLab CI/CD features are supported.',
+      ),
+      [SCHEDULE]: s__(
+        'ScanExecutionPolicy|The content of this pipeline execution YAML file of the target project is run at the scheduled time. All GitLab CI/CD features are supported.',
       ),
     },
     tooltipText: s__('ScanExecutionPolicy|Select project first, and then insert a file path'),

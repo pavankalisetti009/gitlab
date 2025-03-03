@@ -64,6 +64,9 @@ content:
 
 export const CONDITIONS_LABEL = s__('ScanExecutionPolicy|Conditions');
 
+export const SCHEDULE = 'schedule';
+export const SCHEDULE_TEXT = s__('SecurityOrchestration|Schedule a new');
+
 export const DEPRECATED_INJECT = 'inject_ci';
 export const INJECT = 'inject_policy';
 export const OVERRIDE = 'override_project_ci';
@@ -78,7 +81,10 @@ export const CUSTOM_STRATEGY_OPTIONS_WITH_DEPRECATED = {
   [DEPRECATED_INJECT]: s__('ScanExecutionPolicy|Inject without custom stages'),
 };
 
-export const CUSTOM_STRATEGY_OPTIONS_KEYS = Object.keys(CUSTOM_STRATEGY_OPTIONS_WITH_DEPRECATED);
+export const CUSTOM_STRATEGY_OPTIONS_KEYS = [
+  ...Object.keys(CUSTOM_STRATEGY_OPTIONS_WITH_DEPRECATED),
+  SCHEDULE,
+];
 export const CUSTOM_STRATEGY_OPTIONS_LISTBOX_ITEMS = mapToListboxItems(CUSTOM_STRATEGY_OPTIONS);
 export const CUSTOM_STRATEGY_OPTIONS_WITH_DEPRECATED_LISTBOX_ITEMS = mapToListboxItems(
   CUSTOM_STRATEGY_OPTIONS_WITH_DEPRECATED,

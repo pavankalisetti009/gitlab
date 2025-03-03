@@ -15,6 +15,7 @@ import RefSelector from '~/ref/components/ref_selector.vue';
 import {
   INJECT,
   OVERRIDE,
+  SCHEDULE,
   SUFFIX_ON_CONFLICT,
   SUFFIX_NEVER,
   DEPRECATED_INJECT,
@@ -99,6 +100,13 @@ describe('CodeBlockFilePath', () => {
     );
   });
 
+  it('renders message for "schedule"', () => {
+    createComponent({ propsData: { strategy: SCHEDULE }, includeStubs: false });
+    expect(findGlSprintf().attributes('message')).toBe(
+      '%{strategySelector} pipeline file to run from %{projectSelector}',
+    );
+  });
+
   it('renders icon tooltip message for "inject_policy"', () => {
     createComponent();
     expect(findIcon().attributes('title')).toBe(
@@ -120,6 +128,12 @@ describe('CodeBlockFilePath', () => {
     );
   });
 
+  it('renders icon tooltip message for "schedule"', () => {
+    createComponent({ propsData: { strategy: SCHEDULE } });
+    expect(findIcon().attributes('title')).toBe(
+      'The content of this pipeline execution YAML file of the target project is run at the scheduled time. All GitLab CI/CD features are supported.',
+    );
+  });
   it('renders the help icon', () => {
     createComponent();
     expect(findIcon().exists()).toBe(true);

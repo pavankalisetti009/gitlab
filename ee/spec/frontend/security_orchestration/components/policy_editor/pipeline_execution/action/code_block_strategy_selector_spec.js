@@ -7,17 +7,19 @@ import {
   DEPRECATED_INJECT,
   OVERRIDE,
   CUSTOM_STRATEGY_OPTIONS,
+  SCHEDULE,
 } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/constants';
 
 describe('CodeBlockStrategySelector', () => {
   let wrapper;
 
-  const createComponent = ({ propsData = {} } = {}) => {
+  const createComponent = ({ propsData = {}, provide = {} } = {}) => {
     wrapper = shallowMount(CodeBlockStrategySelector, {
       propsData,
       stubs: {
         GlCollapsibleListbox,
       },
+      provide,
     });
   };
 
@@ -102,6 +104,30 @@ describe('CodeBlockStrategySelector', () => {
       });
 
       expect(findDeprecatedBadge().exists()).toBe(expectedExists);
+    });
+  });
+  describe('schedule strategy', () => {
+    describe('without the feature flag', () => {
+      it('does not render the "schedule" strategy in the listbox items', () => {
+        createComponent();
+
+        expect(findListBox().props('items')).toEqual([
+          { text: 'Inject', value: INJECT },
+          { text: 'Override', value: OVERRIDE },
+        ]);
+      });
+    });
+
+    describe('with the feature flag', () => {
+      it('renders "schedule" strategy in the listbox items', () => {
+        createComponent({ provide: { glFeatures: { scheduledPipelineExecutionPolicies: true } } });
+
+        expect(findListBox().props('items')).toEqual([
+          { text: 'Inject', value: INJECT },
+          { text: 'Override', value: OVERRIDE },
+          { text: 'Schedule a new', value: SCHEDULE },
+        ]);
+      });
     });
   });
 });

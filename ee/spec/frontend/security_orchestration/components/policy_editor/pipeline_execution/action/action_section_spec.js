@@ -144,7 +144,7 @@ describe('ActionSection', () => {
       'updates strategy when the value is %o',
       async ({ strategy }) => {
         await findCodeBlockFilePath().vm.$emit('select-strategy', strategy);
-        expect(wrapper.emitted('changed')).toEqual([['pipeline_config_strategy', strategy]]);
+        expect(wrapper.emitted('update-strategy')).toEqual([[strategy]]);
       },
     );
 
