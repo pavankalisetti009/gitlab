@@ -97,6 +97,57 @@ module EE
 
           epics.map(&:sync_object) + issues_and_work_items
         end
+
+        # rubocop:disable Gitlab/ModuleWithInstanceVariables -- @updates is already defined and part of
+        # Gitlab::QuickActions::Dsl implementation
+        override :handle_set_epic
+        def handle_set_epic(parent_param)
+          epic = extract_epic(parent_param) || extract_references(parent_param, :work_item).first&.sync_object
+          issue = quick_action_target
+
+          message =
+            if epic && current_user.can?(:read_epic, epic)
+              if issue&.epic == epic
+                format(_('Issue %{issue_reference} has already been added to epic %{epic_reference}.'),
+                  issue_reference: issue.to_reference, epic_reference: epic.to_reference)
+              elsif epic.confidential? && !issue.confidential?
+                _("Cannot assign a confidential epic to a non-confidential issue. Make the issue confidential and " \
+                  "try again")
+              else
+                @updates[:epic] = epic
+                _('Added an issue to an epic.')
+              end
+            else
+              _("This epic does not exist or you don't have sufficient permission.")
+            end
+
+          @execution_message[:set_parent] = message
+        end
+        # rubocop:enable Gitlab/ModuleWithInstanceVariables
+
+        override :can_user_link_issue_to_epic?
+        def can_user_link_issue_to_epic?
+          quick_action_target.supports_epic? &&
+            quick_action_target.project.group&.feature_available?(:epics) &&
+            current_user.can?(:"admin_#{quick_action_target.to_ability_name}_relation", quick_action_target)
+        end
+
+        override :show_epic_alias?
+        def show_epic_alias?
+          # We also check that the quick action target is an instance of an issue here, since the work_item_type
+          # relationship is only created after save for legacy issues
+          (quick_action_target.instance_of?(::Issue) || quick_action_target.work_item_type&.issue?) &&
+            quick_action_target.licensed_feature_available?(:epics)
+        end
+
+        override :supports_parent?
+        def supports_parent?
+          target_item = quick_action_target
+          return false if target_item.work_item_type.issue? && !target_item.licensed_feature_available?(:epics)
+          return false if target_item.work_item_type.epic? && !target_item.licensed_feature_available?(:subepics)
+
+          super
+        end
       end
     end
   end

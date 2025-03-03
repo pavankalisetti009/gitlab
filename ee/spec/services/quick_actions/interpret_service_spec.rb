@@ -837,7 +837,7 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
             _, updates, message = service.execute(content, issue)
 
             expect(updates).to be_empty
-            expect(message).to eq('Could not apply epic command.')
+            expect(message).to eq('Could not apply set_parent command.')
           end
         end
       end
@@ -1511,6 +1511,36 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
         it 'includes the value' do
           _, explanations = service.explain(content, issue)
           expect(explanations).to eq(['Sets health status to on_track.'])
+        end
+      end
+    end
+
+    describe 'epic command' do
+      before do
+        stub_licensed_features(epics: true)
+      end
+
+      context 'for an issue' do
+        let(:issue) { create(:issue, project: project) }
+        let(:epic) { create(:epic, group: project.group) }
+
+        let(:content) { "/epic #{epic.to_reference}" }
+
+        it 'applies the correct explanation' do
+          _, explanations = service.explain(content, issue)
+          expect(explanations).to eq(["Change item's parent to #{epic.to_reference}."])
+        end
+      end
+
+      context 'for a work_item' do
+        let(:issue_work_item) { create(:work_item, :issue, project: project) }
+        let(:epic_work_item) { create(:work_item, :epic, namespace: project.group) }
+
+        let(:content) { "/epic #{epic_work_item.to_reference}" }
+
+        it 'applies the correct explanation' do
+          _, explanations = service.explain(content, issue_work_item)
+          expect(explanations).to eq(["Change item's parent to #{epic_work_item.to_reference}."])
         end
       end
     end
