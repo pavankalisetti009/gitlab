@@ -32961,6 +32961,9 @@ msgstr ""
 msgid "Jobs|Stage"
 msgstr ""
 
+msgid "Jobs|Status for job %{id}"
+msgstr ""
+
 msgid "Jobs|There was a problem fetching the failed jobs."
 msgstr ""
 
