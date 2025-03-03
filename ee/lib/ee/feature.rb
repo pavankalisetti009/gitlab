@@ -11,7 +11,7 @@ module EE
       def register_feature_groups
         super
 
-        Flipper.register(:gitlab_team_members) { |actor| ::Gitlab::Com.gitlab_com_group_member?(actor.thing) }
+        Flipper.register(:gitlab_team_members) { |actor| ::Gitlab::Com.gitlab_com_group_member?(actor.actor) }
       end
     end
 
