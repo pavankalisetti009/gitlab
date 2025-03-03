@@ -26,6 +26,7 @@ module Sbom
               so.component_id as id,
               so.component_name as dependency_name,
               so.project_id,
+              so.traversal_ids,
               ARRAY [a->>'name', so.component_name] as full_path,
               ARRAY [a->>'version', versions.version] as version,
               ARRAY [concat_ws('@', a->>'name', a->>'version'), concat_ws('@', so.component_name, versions.version)] as combined_path,
@@ -44,6 +45,7 @@ module Sbom
               dt.id,
               dt.dependency_name,
               dt.project_id,
+              dt.traversal_ids,
               ARRAY [a->>'name'] || dt.full_path,
               ARRAY [a->>'version'] || dt.version,
               ARRAY [concat_ws('@', a->>'name', a->>'version')] || dt.combined_path,
@@ -51,7 +53,7 @@ module Sbom
               array_length(dt.full_path, 1) = :max_depth
           FROM
               dependency_tree dt
-              JOIN sbom_occurrences so ON so.component_name = dt.full_path [1]
+              JOIN sbom_occurrences so ON so.traversal_ids = dt.traversal_ids and so.component_name = dt.full_path [1]
               join sbom_component_versions versions on versions.id = so.component_version_id and versions.version = dt.version [1]
               CROSS JOIN LATERAL jsonb_array_elements(so.ancestors) as a
           WHERE
@@ -63,6 +65,7 @@ module Sbom
             id,
             dependency_name,
             project_id,
+            traversal_ids,
             full_path,
             combined_path,
             version,
