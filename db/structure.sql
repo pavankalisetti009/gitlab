@@ -16925,6 +16925,7 @@ CREATE TABLE namespace_package_settings (
     nuget_symbol_server_enabled boolean DEFAULT false NOT NULL,
     terraform_module_duplicates_allowed boolean DEFAULT false NOT NULL,
     terraform_module_duplicate_exception_regex text DEFAULT ''::text NOT NULL,
+    audit_events_enabled boolean DEFAULT false NOT NULL,
     CONSTRAINT check_31340211b1 CHECK ((char_length(generic_duplicate_exception_regex) <= 255)),
     CONSTRAINT check_d63274b2b6 CHECK ((char_length(maven_duplicate_exception_regex) <= 255)),
     CONSTRAINT check_eedcf85c48 CHECK ((char_length(nuget_duplicate_exception_regex) <= 255)),

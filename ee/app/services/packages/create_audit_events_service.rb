@@ -2,6 +2,8 @@
 
 module Packages
   class CreateAuditEventsService < ::Packages::AuditEventsBaseService
+    include ::Gitlab::Utils::StrongMemoize
+
     def initialize(packages, current_user: nil, event_name: 'package_registry_package_deleted')
       @packages = packages
       @current_user = current_user
@@ -11,8 +13,7 @@ module Packages
     def execute
       super do
         ::Gitlab::Audit::Auditor.audit(initial_audit_context) do
-          preload_groups
-          packages.each { |pkg| send_event(pkg) }
+          eligible_packages.each { |pkg| send_event(pkg) }
         end
       end
     end
@@ -20,6 +21,24 @@ module Packages
     private
 
     attr_reader :packages, :current_user, :event_name
+
+    def audit_events_enabled?
+      eligible_packages.any?
+    end
+
+    def eligible_packages
+      packages.select { |pkg| package_settings[pkg.project.namespace_id] }
+    end
+    strong_memoize_attr :eligible_packages
+
+    def package_settings
+      ::Namespace::PackageSetting
+        .select(:namespace_id)
+        .namespace_id_in(packages.map { |pkg| pkg.project.namespace_id })
+        .with_audit_events_enabled
+        .index_by(&:namespace_id)
+    end
+    strong_memoize_attr :package_settings
 
     def initial_audit_context
       {
@@ -31,21 +50,12 @@ module Packages
       }
     end
 
-    def preload_groups
-      ::Group
-        .select(:id)
-        .include_route
-        .id_in(packages.map { |pkg| pkg.project.namespace_id })
-        .index_by(&:id)
-        .then do |groups|
-          packages.each { |pkg| pkg.project.group = groups[pkg.project.namespace_id] }
-        end
-    end
-
     def send_event(package)
+      scope = groups[package.project.namespace_id] || package.project
+
       package.run_after_commit_or_now do
         event = {
-          scope: project.group || project,
+          scope: scope,
           target: self,
           target_details: "#{project.full_path}/#{name}-#{version}",
           message: "#{package_type.humanize} package deleted"
@@ -53,5 +63,14 @@ module Packages
         push_audit_event(event, after_commit: false)
       end
     end
+
+    def groups
+      ::Group
+        .select(:id)
+        .include_route
+        .id_in(eligible_packages.map { |pkg| pkg.project.namespace_id })
+        .index_by(&:id)
+    end
+    strong_memoize_attr :groups
   end
 end

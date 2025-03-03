@@ -20,6 +20,13 @@ module Packages
 
     attr_reader :package, :current_user, :event_name
 
+    def audit_events_enabled?
+      ::Namespace::PackageSetting
+        .namespace_id_in(project.namespace_id)
+        .with_audit_events_enabled
+        .exists?
+    end
+
     def audit_context
       {
         name: event_name,
