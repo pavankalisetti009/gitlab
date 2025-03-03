@@ -12,44 +12,13 @@ RSpec.describe ScimIdentity, feature_category: :system_access do
     let_it_be(:user) { create(:user) }
     let_it_be(:group) { create(:group) }
 
-    context 'with existing user and group' do
-      before do
-        create(:scim_identity, user: user, group: group, extern_uid: user.email)
-      end
-
-      it 'returns false for a duplicate identity with the same extern_uid' do
-        identity = user.scim_identities.build(group: group, extern_uid: user.email)
-
-        expect(identity.validate).to eq(false)
-      end
-
-      it 'returns false for a duplicate identity with different extern_uid' do
-        identity = user.scim_identities.build(group: group, extern_uid: '1234abcd')
-
-        expect(identity.validate).to eq(false)
-      end
-
-      it 'returns true when a different group is used' do
-        other_group = create(:group)
-        identity = user.scim_identities.build(group: other_group, extern_uid: user.email)
-
-        expect(identity.validate).to eq(true)
-      end
-
-      it 'returns false for a duplicate extern_uid with different case' do
-        identity = user.scim_identities.build(group: group, extern_uid: user.email.upcase)
-
-        expect(identity.validate).to eq(false)
-      end
-    end
-
-    context 'with existing user and not associated with group' do
+    context 'with existing user' do
       before do
         create(:scim_identity, user: user, extern_uid: user.email, group: nil)
       end
 
       it 'returns false for a duplicate identity with the same extern_uid' do
-        identity = user.scim_identities.build(extern_uid: user.email)
+        identity = user.instance_scim_identities.build(extern_uid: user.email)
 
         expect(identity.validate).to eq(false)
       end
@@ -60,7 +29,7 @@ RSpec.describe ScimIdentity, feature_category: :system_access do
     it 'finds identity regardless of case' do
       user = create(:user)
 
-      identity = user.scim_identities.create!(extern_uid: user.email)
+      identity = user.instance_scim_identities.create!(extern_uid: user.email)
 
       expect(described_class.with_extern_uid(user.email.upcase).first).to eq identity
     end

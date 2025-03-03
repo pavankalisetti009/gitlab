@@ -34,7 +34,7 @@ RSpec.describe 'admin/identities/index.html.haml', :aggregate_failures do
 
   context 'with SCIM identities' do
     before_all do
-      create(:scim_identity, group: group, extern_uid: 'scim-uid', user: saml_user, active: true)
+      create(:group_scim_identity, group: group, extern_uid: 'scim-uid', user: saml_user, active: true)
       assign(:identities, [])
     end
 

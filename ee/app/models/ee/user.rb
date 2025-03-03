@@ -108,9 +108,8 @@ module EE
 
       has_many :smartcard_identities
 
-      # extra association can be removed with deletion of feature flag separate_group_scim_table
-      has_many :instance_scim_identities, class_name: 'ScimIdentity'
-      has_many :group_scim_identities
+      has_many :group_scim_identities, class_name: 'GroupScimIdentity'
+      has_many :instance_scim_identities, -> { where(group_id: nil) }, class_name: 'ScimIdentity'
 
       has_many :board_preferences, class_name: 'BoardUserPreference', inverse_of: :user
 
@@ -695,12 +694,6 @@ module EE
         .reorder(nil)
 
       ::Group.where(id: contributed_group_ids).not_aimed_for_deletion
-    end
-
-    def scim_identities
-      return group_scim_identities if ::Gitlab.com? && ::Feature.enabled?(:separate_group_scim_table, :instance)
-
-      instance_scim_identities
     end
 
     protected

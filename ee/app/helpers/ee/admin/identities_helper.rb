@@ -33,12 +33,12 @@ module EE
       end
 
       def identity_cells_to_render?(identities, user)
-        super || user.scim_identities.present?
+        super || user.group_scim_identities.present? || user.instance_scim_identities.present?
       end
 
       override :scim_identities_collection
       def scim_identities_collection(user)
-        user.scim_identities
+        user.group_scim_identities + user.instance_scim_identities
       end
 
       def scim_group_link(scim_identity)

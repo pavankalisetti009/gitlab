@@ -541,17 +541,6 @@ RSpec.describe API::Scim::GroupScim, feature_category: :system_access do
     let(:scim_token) { create(:group_scim_auth_access_token, group: group) }
 
     it_behaves_like 'SCIM API endpoints'
-
-    context 'when separate_group_scim_table feature flag is disabled' do
-      let(:scim_token) { create(:scim_oauth_access_token, group: group) }
-      let(:identity) { create(:scim_identity, user: user, extern_uid: user.email) }
-
-      before do
-        stub_feature_flags(separate_group_scim_table: false)
-      end
-
-      it_behaves_like 'SCIM API endpoints'
-    end
   end
 
   context 'when user with an email extern_uid' do
@@ -559,16 +548,5 @@ RSpec.describe API::Scim::GroupScim, feature_category: :system_access do
     let(:scim_token) { create(:group_scim_auth_access_token, group: group) }
 
     it_behaves_like 'SCIM API endpoints'
-
-    context 'when separate_group_scim_table feature flag is disabled' do
-      let(:scim_token) { create(:scim_oauth_access_token, group: group) }
-      let(:identity) { create(:scim_identity, user: user, extern_uid: user.email) }
-
-      before do
-        stub_feature_flags(separate_group_scim_table: false)
-      end
-
-      it_behaves_like 'SCIM API endpoints'
-    end
   end
 end

@@ -74,22 +74,6 @@ RSpec.describe Groups::ScimOauthController, feature_category: :system_access do
           end
         end
       end
-
-      context 'when the feature flag separate_group_scim_table is disabled' do
-        before do
-          stub_feature_flags(separate_group_scim_table: false)
-        end
-
-        let!(:scim_token) { create(:scim_oauth_access_token, group: group) }
-
-        it 'does not create a new SCIM token record' do
-          expect { subject }.not_to change { ScimOauthAccessToken.count }
-        end
-
-        it 'updates the token' do
-          expect { subject }.to change { scim_token.reload.token }
-        end
-      end
     end
   end
 end

@@ -31,7 +31,7 @@ module EE
       end
 
       def saml_provider_or_scim_token_present?
-        group.saml_provider.present? || group.scim_oauth_access_token.present?
+        group.saml_provider.present? || group.scim_auth_access_token.present?
       end
 
       override :post_update_hooks
