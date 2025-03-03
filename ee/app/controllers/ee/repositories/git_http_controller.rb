@@ -20,7 +20,7 @@ module EE
         super
       end
 
-      # This is reached on a primary for a request orignating on a secondary
+      # This is reached on a primary for a request originating on a secondary
       # only when the repository on the secondary is out of date with that on
       # the primary
       override :git_upload_pack
@@ -30,7 +30,7 @@ module EE
         super
       end
 
-      # This is reached on a primary for a request orignating on a secondary
+      # This is reached on a primary for a request originating on a secondary
       # only when the repository on the secondary is out of date with that on
       # the primary
       override :ssh_upload_pack
@@ -44,7 +44,7 @@ module EE
         end
       end
 
-      # This is reached on a primary for a request orignating on a secondary
+      # This is reached on a primary for a request originating on a secondary
       # only when the repository on the secondary is out of date with that on
       # the primary
       override :ssh_receive_pack
