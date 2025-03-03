@@ -9,6 +9,33 @@ module API
       expose :link_type, documentation: { type: "string", example: "relates_to" }
       expose :created_at, documentation: { type: "dateTime", example: "2022-01-31T15:10:45.080Z" }
       expose :updated_at, documentation: { type: "dateTime", example: "2022-01-31T15:10:45.080Z" }
+
+      def id
+        case object
+        when ::Epic::RelatedEpicLink
+          object.id
+        when ::WorkItems::RelatedWorkItemLink
+          object.related_epic_link.id
+        end
+      end
+
+      def source
+        case object.source
+        when ::Epic
+          object.source
+        when ::WorkItem
+          object.source.synced_epic
+        end
+      end
+
+      def target
+        case object.target
+        when ::Epic
+          object.target
+        when ::WorkItem
+          object.target.synced_epic
+        end
+      end
     end
   end
 end
