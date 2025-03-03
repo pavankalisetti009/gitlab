@@ -111,7 +111,8 @@ module Gitlab
 
           def body(prompt, options, unit_primitive: nil)
             if options[:use_ai_gateway_agent_prompt]
-              request_body_agent(inputs: options[:inputs], unit_primitive: unit_primitive)
+              request_body_agent(inputs: options[:inputs], unit_primitive: unit_primitive,
+                prompt_version: options[:prompt_version])
             else
               request_body(prompt: prompt[:prompt], options: options)
             end
@@ -133,11 +134,13 @@ module Gitlab
             }
           end
 
-          def request_body_agent(inputs:, unit_primitive: nil)
+          def request_body_agent(inputs:, unit_primitive: nil, prompt_version: nil)
             params = {
               stream: true,
               inputs: inputs
             }
+
+            params[:prompt_version] = prompt_version if prompt_version.present?
 
             feature_setting = chat_feature_setting(unit_primitive: unit_primitive)
 

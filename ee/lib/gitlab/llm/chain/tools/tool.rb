@@ -13,6 +13,8 @@ module Gitlab
           DESCRIPTION = 'Base Tool description'
           EXAMPLE = 'Example description'
 
+          DEFAULT_PROMPT_VERSION = '^1.0.0'
+
           attr_reader :context, :options
 
           delegate :resource, :resource=, to: :context
@@ -149,6 +151,10 @@ module Gitlab
 
           def prompt_options
             options
+          end
+
+          def prompt_version
+            DEFAULT_PROMPT_VERSION
           end
 
           def access_forbidden(_error)

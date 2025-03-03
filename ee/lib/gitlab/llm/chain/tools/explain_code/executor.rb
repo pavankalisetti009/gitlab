@@ -45,6 +45,8 @@ module Gitlab
               )
             ].freeze
 
+            PROMPT_VERSION = '^1.0.0'
+
             SLASH_COMMANDS = {
               '/explain' => {
                 description: 'Explain the code',
@@ -72,6 +74,13 @@ module Gitlab
 
             def allow_blank_message?
               false
+            end
+
+            override :prompt_version
+            def prompt_version
+              return '0.0.1-dev' if Feature.enabled?(:code_creation_slash_commands_claude_3_7, context.current_user)
+
+              PROMPT_VERSION
             end
 
             def authorize
