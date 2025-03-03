@@ -1,6 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlAlert, GlButton, GlToggle } from '@gitlab/ui';
+import { GlAlert, GlButton, GlFormCheckbox } from '@gitlab/ui';
 import { mockTracking, unmockTracking } from 'helpers/tracking_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -38,7 +38,7 @@ describe('Dependency proxy packages settings form', () => {
   };
 
   const findAlert = () => wrapper.findComponent(GlAlert);
-  const findEnableProxyToggle = () => wrapper.findComponent(GlToggle);
+  const findEnableProxyCheckbox = () => wrapper.findComponent(GlFormCheckbox);
   const findForm = () => wrapper.find('form');
   const findMavenForm = () => wrapper.findComponent(MavenForm);
   const findSubmitButton = () => wrapper.findComponent(GlButton);
@@ -75,10 +75,8 @@ describe('Dependency proxy packages settings form', () => {
     });
 
     it('renders the fields', () => {
-      expect(findEnableProxyToggle().props()).toMatchObject({
-        label: 'Enable Dependency Proxy',
-        value: enabled,
-      });
+      expect(findEnableProxyCheckbox().attributes('checked')).toBe(String(enabled));
+      expect(findEnableProxyCheckbox().text()).toBe('Enable Dependency Proxy');
       expect(findMavenForm().props('value')).toStrictEqual({
         mavenExternalRegistryUrl,
         mavenExternalRegistryUsername,
@@ -107,7 +105,7 @@ describe('Dependency proxy packages settings form', () => {
           },
         });
 
-        expect(findEnableProxyToggle().props('value')).toBe(false);
+        expect(findEnableProxyCheckbox().attributes('checked')).not.toBeDefined();
       });
     });
   });
