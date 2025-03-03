@@ -68,7 +68,7 @@ RSpec.describe Elastic::DataMigrationService, :elastic, :clean_gitlab_redis_shar
       it 'ensure all update migrations run before backfill migrations', :aggregate_failures do
         error_message = <<~DOC
           Migrations should be ordered so all migrations that use ::Elastic::MigrationUpdateMappingsHelper
-          run before any migrations that use ::Elastic::MigrationBackfillHelper. If this spec fails, rename the
+          run before any migrations that use ::Search::Elastic::MigrationBackfillHelper. If this spec fails, rename the
           `YYYYMMDDHHMMSS` part of the migration filename with a datetime before the last backfill migration for the
           index_name.
           Ref: https://docs.gitlab.com/ee/development/search/advanced_search_migration_styleguide.html#best-practices-for-advanced-search-migrations
@@ -78,14 +78,15 @@ RSpec.describe Elastic::DataMigrationService, :elastic, :clean_gitlab_redis_shar
 
         filtered_migrations = non_obsolete_migrations.filter do |m|
           klass = m.class
-          klass.include?(::Elastic::MigrationUpdateMappingsHelper) || klass.include?(::Elastic::MigrationBackfillHelper)
+          klass.include?(::Elastic::MigrationUpdateMappingsHelper) ||
+            klass.include?(::Search::Elastic::MigrationBackfillHelper)
         end
 
         migrations_grouped_by_index = filtered_migrations.group_by { |m| m.send(:index_name) }
 
         migrations_grouped_by_index.each_key do |index_name|
           backfill_versions = non_obsolete_migrations.filter do |m|
-            m.class.include?(::Elastic::MigrationBackfillHelper) && m.send(:index_name) == index_name
+            m.class.include?(::Search::Elastic::MigrationBackfillHelper) && m.send(:index_name) == index_name
           end.map(&:version)
 
           mapping_versions = non_obsolete_migrations.filter do |m|

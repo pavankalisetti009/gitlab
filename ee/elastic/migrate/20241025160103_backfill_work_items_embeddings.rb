@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class BackfillWorkItemsEmbeddings < Elastic::Migration
-  include Elastic::MigrationBackfillHelper
+  include ::Search::Elastic::MigrationBackfillHelper
 
   skip_if -> { !Gitlab::Saas.feature_available?(:ai_vertex_embeddings) }
 

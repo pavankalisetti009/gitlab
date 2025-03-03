@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class BackfillTraversalIdsOnMergeRequests < Elastic::Migration
-  include Elastic::MigrationBackfillHelper
+  include ::Search::Elastic::MigrationBackfillHelper
 
   batched!
   batch_size 9_000
