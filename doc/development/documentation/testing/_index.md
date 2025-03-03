@@ -45,7 +45,7 @@ The `docs-lint markdown` job fails if any of these `lint-doc.sh` tests fail:
 - Documentation pages must contain front matter indicating ownership of the page.
 - `CHANGELOG.md` must not contain duplicate versions.
 - No files in the `doc/` directory may be executable.
-- Use `index.md` instead of `README.md`.
+- Use `_index.md` instead of `README.md`.
 - Directories and filenames must use underscores instead of dashes.
 - Directories and filenames must be in lower case.
 - Mermaid charts must render without errors.
