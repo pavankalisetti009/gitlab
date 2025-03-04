@@ -1,4 +1,4 @@
-#import "ee_else_ce/work_items/graphql/work_item_widgets.fragment.graphql"
+#import "./work_item_widgets.fragment.graphql"
 #import "~/graphql_shared/fragments/author.fragment.graphql"
 
 fragment WorkItem on WorkItem {
@@ -14,6 +14,7 @@ fragment WorkItem on WorkItem {
   webUrl
   reference(full: true)
   createNoteEmail
+  promotedToEpicUrl
   movedToWorkItemUrl
   duplicatedToWorkItemUrl
   project {
