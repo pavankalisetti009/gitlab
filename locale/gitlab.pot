@@ -64697,6 +64697,9 @@ msgstr ""
 msgid "Vulnerability|Comments"
 msgstr ""
 
+msgid "Vulnerability|Component"
+msgstr ""
+
 msgid "Vulnerability|Crash address:"
 msgstr ""
 

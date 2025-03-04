@@ -38,6 +38,7 @@ export default {
   i18n: {
     drawerTitle: s__('Vulnerability|Dependency paths'),
     projectTitle: s__('Vulnerability|Project'),
+    componentTitle: s__('Vulnerability|Component'),
   },
   getContentWrapperHeight,
   DRAWER_Z_INDEX,
@@ -60,8 +61,9 @@ export default {
     </template>
     <template v-if="showHeader" #header>
       <div class="gl-mt-3" data-testid="dependency-path-drawer-header">
-        <strong>{{ dependency.name }}</strong>
-        <span class="gl-ml-2">{{ dependency.version }}</span>
+        <strong>{{ $options.i18n.componentTitle }}:</strong>
+        <span>{{ dependency.name }}</span>
+        <span>{{ dependency.version }}</span>
       </div>
     </template>
     <div v-if="showProject" data-testid="dependency-path-drawer-project">
