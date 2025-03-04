@@ -32,11 +32,7 @@ module EE
       def finder_params(args)
         super(args)
           .merge(args.slice(:aimed_for_deletion, :include_hidden, :marked_for_deletion_on))
-          .merge(
-            filter_expired_saml_session_projects: ::Feature.enabled?(
-              :filter_saml_enforced_resources_from_graphql, current_user
-            )
-          )
+          .merge(filter_expired_saml_session_projects: true)
       end
     end
   end
