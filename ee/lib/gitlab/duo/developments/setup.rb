@@ -4,6 +4,16 @@
 module Gitlab
   module Duo
     module Developments
+      def self.seed_data
+        if Group.find_by_full_path(@namespace)
+          puts "Gitlab Duo data already seeded."
+        else
+          puts "Seeding GitLab Duo data..."
+          ENV['FILTER'] = 'gitlab_duo'
+          Rake::Task['db:seed_fu'].invoke
+        end
+      end
+
       class SelfManagedStrategy
         def execute
           puts <<~TXT.strip
@@ -14,6 +24,8 @@ module Gitlab
           TXT
 
           require_self_managed!
+
+          Developments.seed_data
         end
 
         private
@@ -44,6 +56,8 @@ module Gitlab
 
           require_dot_com!
           ensure_application_settings!
+
+          Developments.seed_data
 
           group = ensure_group
           ensure_group_subscription!(group)

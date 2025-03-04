@@ -173,4 +173,45 @@ RSpec.describe Gitlab::Duo::Developments::Setup, :gitlab_duo, :silence_stdout, f
     it_behaves_like 'errors when there is no license'
     it_behaves_like 'creates add-on purchases'
   end
+
+  context 'when seeding Gitlab Duo data' do
+    before do
+      allow(rake_task).to receive(:invoke)
+      allow($stdout).to receive(:puts)
+    end
+
+    let(:rake_task) { instance_double(Rake::Task, :seed_fu) }
+
+    context 'when Gitlab Duo data is not seeded' do
+      it 'prints a message indicating data is alreadyy seeded' do
+        expect($stdout).to receive(:puts).with('Seeding GitLab Duo data...')
+
+        ::Gitlab::Duo::Developments.seed_data
+      end
+
+      it 'invokes the db:seed_fu rake task' do
+        ::Gitlab::Duo::Developments.seed_data
+
+        expect(rake_task).to have_received(:invoke)
+      end
+    end
+
+    context 'when Gitlab Duo data is already seeded' do
+      before do
+        allow(Group).to receive(:find_by_full_path).with(nil).and_return(group)
+      end
+
+      it 'prints a message indicating data is alreadyy seeded' do
+        expect($stdout).to receive(:puts).with('Gitlab Duo data already seeded.')
+
+        ::Gitlab::Duo::Developments.seed_data
+      end
+
+      it 'does not invoke the db:seed_fu rake task' do
+        ::Gitlab::Duo::Developments.seed_data
+
+        expect(rake_task).not_to have_received(:invoke)
+      end
+    end
+  end
 end
