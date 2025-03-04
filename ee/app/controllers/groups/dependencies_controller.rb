@@ -7,7 +7,7 @@ module Groups
 
     before_action only: :index do
       push_frontend_feature_flag(:group_level_dependencies_filtering_by_packager, group)
-      push_frontend_feature_flag(:version_filtering_on_dependency_list, group)
+      push_frontend_feature_flag(:version_filtering_on_group_level_dependency_list, group)
       push_frontend_feature_flag(:dependency_paths, group)
     end
 
