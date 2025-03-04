@@ -107,36 +107,39 @@ describe('CodeBlockFilePath', () => {
     );
   });
 
-  it('renders icon tooltip message for "inject_policy"', () => {
-    createComponent();
-    expect(findIcon().attributes('title')).toBe(
-      'The content of this pipeline execution YAML file is injected into the .gitlab-ci.yml file of the target project. All GitLab CI/CD features are supported.',
-    );
-  });
+  describe('information icon', () => {
+    it('renders the help icon', () => {
+      createComponent();
+      expect(findIcon().exists()).toBe(true);
+    });
 
-  it('renders icon tooltip message for "inject_ci"', () => {
-    createComponent({ propsData: { strategy: DEPRECATED_INJECT } });
-    expect(findIcon().attributes('title')).toBe(
-      'The content of this pipeline execution YAML file is injected into the .gitlab-ci.yml file of the target project. Custom stages used in the pipeline execution YAML are ignored, unless they are defined in the `.gitlab-ci.yml` file of the target project. All GitLab CI/CD features are supported.',
-    );
-  });
+    it('renders icon tooltip message for "inject_policy"', () => {
+      createComponent();
+      expect(findIcon().attributes('title')).toBe(
+        'The content of this pipeline execution YAML file is injected into the .gitlab-ci.yml file of the target project. All GitLab CI/CD features are supported.',
+      );
+    });
 
-  it('renders icon tooltip message for "override_project_ci"', () => {
-    createComponent({ propsData: { strategy: OVERRIDE } });
-    expect(findIcon().attributes('title')).toBe(
-      'The content of this pipeline execution YAML file overrides the .gitlab-ci.yml file of the target project. All GitLab CI/CD features are supported.',
-    );
-  });
+    it('renders icon tooltip message for "inject_ci"', () => {
+      createComponent({ propsData: { strategy: DEPRECATED_INJECT } });
+      expect(findIcon().attributes('title')).toBe(
+        'The content of this pipeline execution YAML file is injected into the .gitlab-ci.yml file of the target project. Custom stages used in the pipeline execution YAML are ignored, unless they are defined in the `.gitlab-ci.yml` file of the target project. All GitLab CI/CD features are supported.',
+      );
+    });
 
-  it('renders icon tooltip message for "schedule"', () => {
-    createComponent({ propsData: { strategy: SCHEDULE } });
-    expect(findIcon().attributes('title')).toBe(
-      'The content of this pipeline execution YAML file of the target project is run at the scheduled time. All GitLab CI/CD features are supported.',
-    );
-  });
-  it('renders the help icon', () => {
-    createComponent();
-    expect(findIcon().exists()).toBe(true);
+    it('renders icon tooltip message for "override_project_ci"', () => {
+      createComponent({ propsData: { strategy: OVERRIDE } });
+      expect(findIcon().attributes('title')).toBe(
+        'The content of this pipeline execution YAML file overrides the .gitlab-ci.yml file of the target project. All GitLab CI/CD features are supported.',
+      );
+    });
+
+    it('renders icon tooltip message for "schedule"', () => {
+      createComponent({ propsData: { strategy: SCHEDULE } });
+      expect(findIcon().attributes('title')).toBe(
+        'The content of this pipeline execution YAML file of the target project is run at the scheduled time. All GitLab CI/CD features are supported.',
+      );
+    });
   });
 
   it('renders ref selector', () => {
