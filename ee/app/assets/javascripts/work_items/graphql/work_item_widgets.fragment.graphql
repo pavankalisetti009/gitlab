@@ -162,4 +162,7 @@ fragment WorkItemWidgets on WorkItemWidget {
       }
     }
   }
+  ... on WorkItemWidgetErrorTracking {
+    identifier
+  }
 }

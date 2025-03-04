@@ -1345,6 +1345,7 @@ export const workItemResponseFactory = ({
   discussionLocked = false,
   canInviteMembers = false,
   labelsWidgetPresent = true,
+  errorTrackingWidgetPresent = true,
   hierarchyWidgetPresent = true,
   linkedItemsWidgetPresent = true,
   crmContactsWidgetPresent = true,
@@ -1587,6 +1588,13 @@ export const workItemResponseFactory = ({
                 },
                 nodes: [],
               },
+            }
+          : { type: 'MOCK TYPE' },
+        errorTrackingWidgetPresent
+          ? {
+              __typename: 'WorkItemWidgetErrorTracking',
+              type: 'ERROR_TRACKING',
+              identifier: '1',
             }
           : { type: 'MOCK TYPE' },
         hierarchyWidgetPresent
