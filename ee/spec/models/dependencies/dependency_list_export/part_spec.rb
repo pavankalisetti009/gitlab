@@ -53,6 +53,10 @@ RSpec.describe Dependencies::DependencyListExport::Part, feature_category: :depe
     it_behaves_like 'cleanup by a loose foreign key' do
       let_it_be(:parent) { create(:organization) }
       let_it_be(:model) { create(:dependency_list_export_part, organization: parent) }
+
+      before do
+        parent.users.delete_all
+      end
     end
   end
 
