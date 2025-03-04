@@ -27,7 +27,7 @@ RSpec.describe Projects::ImportsController, feature_category: :importers do
       end
 
       context 'when developer is allowed to create projects' do
-        let(:group) { create(:group, project_creation_level: Gitlab::Access::DEVELOPER_MAINTAINER_PROJECT_ACCESS) }
+        let(:group) { create(:group, project_creation_level: Gitlab::Access::DEVELOPER_PROJECT_ACCESS) }
 
         before do
           group.add_developer(user)
