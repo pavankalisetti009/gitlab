@@ -59,14 +59,6 @@ export default {
       @click="$emit('clickPrimaryAction')"
       >{{ primaryButtonText }}</gl-button
     >
-    <gl-button
-      data-testid="add-button"
-      category="secondary"
-      variant="confirm"
-      :disabled="isLoading"
-      @click="$emit('clickAddStageAction')"
-      >{{ $options.i18n.addStageAction }}</gl-button
-    >
     <gl-button data-testid="cancel-button" :href="cancelHref" :disabled="isLoading">{{
       $options.i18n.cancelAction
     }}</gl-button>

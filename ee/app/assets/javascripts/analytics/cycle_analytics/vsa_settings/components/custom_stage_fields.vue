@@ -1,20 +1,23 @@
 <script>
-import { GlAlert, GlFormGroup, GlFormInput } from '@gitlab/ui';
+import { GlAlert, GlBadge, GlFormGroup, GlFormInput } from '@gitlab/ui';
 import { isLabelEvent, getLabelEventsIdentifiers } from '../../utils';
 import { i18n } from '../constants';
 import { startEventOptions, endEventOptions } from '../utils';
 import CustomStageEventField from './custom_stage_event_field.vue';
 import CustomStageEventLabelField from './custom_stage_event_label_field.vue';
+import StageFieldMove from './stage_field_move.vue';
 import StageFieldActions from './stage_field_actions.vue';
 
 export default {
   name: 'CustomStageFields',
   components: {
     GlAlert,
+    GlBadge,
     GlFormGroup,
     GlFormInput,
     CustomStageEventField,
     CustomStageEventLabelField,
+    StageFieldMove,
     StageFieldActions,
   },
   props: {
@@ -96,17 +99,30 @@ export default {
     <gl-alert v-if="formError" class="gl-mb-4" variant="danger" @dismiss="setFormError">
       {{ formError }}
     </gl-alert>
-    <div class="gl-flex gl-flex-col sm:gl-flex-row">
-      <div class="gl-mr-2 gl-grow">
+    <div class="gl-flex gl-gap-5">
+      <stage-field-move
+        v-if="hasMultipleStages"
+        :index="index"
+        :stage-count="totalStages"
+        @move="$emit('move', $event)"
+      />
+
+      <div class="gl-grow">
         <gl-form-group
-          :label="stageLabel"
           :state="isFieldValid('name')"
           :invalid-feedback="fieldErrorMessage('name')"
           :data-testid="`custom-stage-name-${index}`"
         >
+          <template #label>
+            <span class="gl-heading-3 gl-mb-0 gl-inline-flex gl-flex-wrap gl-items-center gl-gap-3">
+              {{ stageLabel }}: {{ stage.name }}
+              <gl-badge variant="muted">{{ $options.i18n.CUSTOM_BADGE_LABEL }}</gl-badge>
+            </span>
+          </template>
           <!-- eslint-disable vue/no-mutating-props -->
           <gl-form-input
             v-model.trim="stage.name"
+            autofocus
             :name="`custom-stage-name-${index}`"
             :placeholder="$options.i18n.FORM_FIELD_STAGE_NAME_PLACEHOLDER"
             :state="isFieldValid('name')"
@@ -115,7 +131,8 @@ export default {
           />
           <!-- eslint-enable vue/no-mutating-props -->
         </gl-form-group>
-        <div class="gl-justify-content-between gl-mt-3 gl-flex">
+
+        <div class="gl-justify-content-between gl-flex">
           <custom-stage-event-field
             event-type="start-event"
             :index="index"
@@ -168,13 +185,12 @@ export default {
           />
         </div>
       </div>
+
       <stage-field-actions
         v-if="hasMultipleStages"
-        class="gl-mt-0 sm:!gl-mt-6"
+        class="gl-mt-3 sm:!gl-mt-7"
         :index="index"
-        :stage-count="totalStages"
         :can-remove="true"
-        @move="$emit('move', $event)"
         @remove="$emit('remove', $event)"
       />
     </div>

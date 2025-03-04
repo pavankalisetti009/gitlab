@@ -8,7 +8,6 @@ describe('ValueStreamFormContentActions', () => {
 
   const findPrimaryBtn = () => wrapper.findByTestId('primary-button');
   const findCancelBtn = () => wrapper.findByTestId('cancel-button');
-  const findAddStageBtn = () => wrapper.findByTestId('add-button');
 
   const createComponent = ({ props = {} } = {}) => {
     wrapper = shallowMountExtended(ValueStreamFormContentActions, {
@@ -46,20 +45,6 @@ describe('ValueStreamFormContentActions', () => {
         expect(wrapper.emitted('clickPrimaryAction')).toHaveLength(1);
       });
 
-      it('renders add stage action correctly', () => {
-        expect(findAddStageBtn().props()).toMatchObject({
-          category: 'secondary',
-          variant: 'confirm',
-          disabled: false,
-        });
-      });
-
-      it('emits `clickAddStageAction` event when add stage action is selected', () => {
-        findAddStageBtn().vm.$emit('click');
-
-        expect(wrapper.emitted('clickAddStageAction')).toHaveLength(1);
-      });
-
       it('renders cancel button link correctly', () => {
         expect(findCancelBtn().props('disabled')).toBe(false);
         expect(findCancelBtn().attributes('href')).toBe(cancelHref);
@@ -75,7 +60,6 @@ describe('ValueStreamFormContentActions', () => {
         });
 
         it('disables all other actions', () => {
-          expect(findAddStageBtn().props('disabled')).toBe(true);
           expect(findCancelBtn().props('disabled')).toBe(true);
         });
       });

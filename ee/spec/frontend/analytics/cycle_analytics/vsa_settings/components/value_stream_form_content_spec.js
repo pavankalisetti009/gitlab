@@ -2,6 +2,7 @@ import { GlAlert } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import {
   PRESET_OPTIONS_BLANK,
@@ -82,8 +83,12 @@ describe('ValueStreamFormContent', () => {
         defaultStageConfig,
         ...props,
       },
+      stubs: {
+        CrudComponent,
+      },
     });
 
+  const findAddStageBtn = () => wrapper.findByTestId('add-button');
   const findFormActions = () => wrapper.findComponent(ValueStreamFormContentActions);
   const findDefaultStages = () => wrapper.findAllComponents(DefaultStageFields);
   const findCustomStages = () => wrapper.findAllComponents(CustomStageFields);
@@ -175,6 +180,14 @@ describe('ValueStreamFormContent', () => {
     describe('Add stage button', () => {
       beforeEach(() => {
         wrapper = createComponent();
+      });
+
+      it('renders add stage action correctly', () => {
+        expect(findAddStageBtn().props()).toMatchObject({
+          category: 'primary',
+          variant: 'default',
+          disabled: false,
+        });
       });
 
       it('adds a blank custom stage when clicked', async () => {
