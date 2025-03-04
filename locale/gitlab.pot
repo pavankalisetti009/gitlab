@@ -1225,6 +1225,26 @@ msgstr ""
 msgid "%{project_path} is a project that you can use to add a README to your GitLab profile. Create a public project and initialize the repository with a README to get started. %{help_link_start}Learn more%{help_link_end}."
 msgstr ""
 
+msgid "%{project} has %{number} fork"
+msgid_plural "%{project} has %{number} forks"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "%{project} has %{number} merge request"
+msgid_plural "%{project} has %{number} merge requests"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "%{project} has %{number} open issues"
+msgid_plural "%{project} has %{number} open issues"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "%{project} has %{number} star"
+msgid_plural "%{project} has %{number} stars"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "%{redirect_link_start} Click here to redirect to %{redirect_uri_val} %{redirect_link_end}"
 msgstr ""
 
@@ -63928,10 +63948,16 @@ msgstr ""
 msgid "View all"
 msgstr ""
 
+msgid "View all activity"
+msgstr ""
+
 msgid "View all environments."
 msgstr ""
 
 msgid "View all issues"
+msgstr ""
+
+msgid "View all personal projects"
 msgstr ""
 
 msgid "View blame"
