@@ -167,7 +167,8 @@ describe('CustomFieldsTable', () => {
 
     it('toggles details when detail button is clicked', async () => {
       expect(wrapper.text()).not.toContain('Last updated');
-      await findDetailsButton().vm.$emit('click');
+      findDetailsButton().vm.$emit('click');
+      await nextTick();
 
       expect(wrapper.text()).toContain('Last updated');
     });
@@ -272,7 +273,7 @@ describe('CustomFieldsTable', () => {
 
     expect(findAlert().exists()).toBe(false);
 
-    await findArchiveButton().vm.$emit('click');
+    findArchiveButton().vm.$emit('click');
     await waitForPromises();
 
     expect(findAlert().exists()).toBe(true);
@@ -284,7 +285,8 @@ describe('CustomFieldsTable', () => {
 
     expect(findTitle().text()).toContain('Active custom fields');
 
-    await findArchivedFilterButton().vm.$emit('click');
+    findArchivedFilterButton().vm.$emit('click');
+    await nextTick();
 
     expect(findTitle().text()).toContain('Archived custom fields');
   });
@@ -311,7 +313,7 @@ describe('CustomFieldsTable', () => {
       active: true,
     });
 
-    await findArchivedFilterButton().vm.$emit('click');
+    findArchivedFilterButton().vm.$emit('click');
     await waitForPromises();
 
     // Second call should be for archived fields
@@ -337,7 +339,7 @@ describe('CustomFieldsTable', () => {
     createComponent({ customFieldsResponse });
     await waitForPromises();
 
-    await findArchivedFilterButton().vm.$emit('click');
+    findArchivedFilterButton().vm.$emit('click');
     await waitForPromises();
 
     wrapper.findComponent(CustomFieldForm).vm.$emit('created');

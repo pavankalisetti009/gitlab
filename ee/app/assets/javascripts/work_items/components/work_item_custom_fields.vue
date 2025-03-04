@@ -106,10 +106,12 @@ export default {
       v-for="customFieldData in workItemCustomFields"
       :key="customFieldData.customField.id"
       class="gl-border-t gl-mb-5 gl-border-subtle gl-pt-5"
+      :work-item-id="workItemId"
       :custom-field="customFieldData"
       :can-update="canUpdate"
       :work-item-type="workItemType"
       :full-path="fullPath"
+      @error="$emit('error', $event)"
     />
   </div>
 </template>

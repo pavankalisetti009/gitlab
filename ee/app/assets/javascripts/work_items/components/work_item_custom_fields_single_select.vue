@@ -3,8 +3,14 @@ import { GlTruncate, GlTooltipDirective } from '@gitlab/ui';
 import fuzzaldrinPlus from 'fuzzaldrin-plus';
 import { __, sprintf } from '~/locale';
 import { formatSelectOptionForCustomField } from '~/work_items/utils';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import {
+  CUSTOM_FIELDS_TYPE_SINGLE_SELECT,
+  sprintfWorkItem,
+  I18N_WORK_ITEM_ERROR_UPDATING,
+} from '~/work_items/constants';
+import updateWorkItemCustomFieldsMutation from 'ee/work_items/graphql/update_work_item_custom_fields.mutation.graphql';
 import WorkItemSidebarDropdownWidget from '~/work_items/components/shared/work_item_sidebar_dropdown_widget.vue';
-import { CUSTOM_FIELDS_TYPE_SINGLE_SELECT } from '~/work_items/constants';
 
 export default {
   components: {
@@ -15,6 +21,10 @@ export default {
     GlTooltip: GlTooltipDirective,
   },
   props: {
+    workItemId: {
+      type: String,
+      required: true,
+    },
     workItemType: {
       type: String,
       required: false,
@@ -42,7 +52,6 @@ export default {
       searchStarted: false,
       isUpdating: false,
       selectedOption: null,
-      selectedOptionCache: null,
     };
   },
   computed: {
@@ -101,19 +110,16 @@ export default {
     },
   },
   watch: {
-    searchTerm(newVal, oldVal) {
-      if (newVal === '' && oldVal !== '') {
-        this.selectedOption = this.selectedOptionCache;
-      }
+    customField: {
+      immediate: true,
+      handler(customField) {
+        if (this.isValueValid) {
+          this.selectedOption = customField.selectedOptions?.map(
+            formatSelectOptionForCustomField,
+          )?.[0];
+        }
+      },
     },
-  },
-  beforeMount() {
-    if (this.isValueValid) {
-      this.selectedOption =
-        this.customField.selectedOptions?.map(formatSelectOptionForCustomField)?.[0] || null;
-
-      this.selectedOptionCache = this.selectedOption;
-    }
   },
   methods: {
     onDropdownShown() {
@@ -124,11 +130,41 @@ export default {
       this.searchTerm = searchTerm;
       this.searchStarted = true;
     },
-    async updateSelectedOption(selectedOption) {
-      this.selectedOption = selectedOption;
-      this.selectedOptionCache = selectedOption;
+    async updateSelectedOption(selectedOptionId) {
+      if (!this.canUpdate) return;
 
-      // @todo add mutation logic
+      this.isUpdating = true;
+
+      this.selectedOption = selectedOptionId
+        ? this.defaultOptions.find(({ value }) => value === selectedOptionId)
+        : null;
+
+      this.$apollo
+        .mutate({
+          mutation: updateWorkItemCustomFieldsMutation,
+          variables: {
+            input: {
+              id: this.workItemId,
+              customFieldsWidget: {
+                customFieldId: this.customFieldId,
+                selectedOptionIds: [selectedOptionId],
+              },
+            },
+          },
+        })
+        .then(({ data }) => {
+          if (data.workItemUpdate.errors.length) {
+            throw new Error(data.workItemUpdate.errors.join('\n'));
+          }
+        })
+        .catch((error) => {
+          const msg = sprintfWorkItem(I18N_WORK_ITEM_ERROR_UPDATING, this.workItemType);
+          this.$emit('error', msg);
+          Sentry.captureException(error);
+        })
+        .finally(() => {
+          this.isUpdating = false;
+        });
     },
   },
 };
@@ -146,7 +182,6 @@ export default {
     :toggle-dropdown-text="editingValueText"
     :header-text="headerText"
     :update-in-progress="isUpdating"
-    show-footer
     clear-search-on-item-select
     @dropdownShown="onDropdownShown"
     @searchStarted="search"
