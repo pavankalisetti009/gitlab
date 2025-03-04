@@ -19,16 +19,19 @@ module AuditEvents
     end
 
     def stream_to_destinations
-      streamable_strategies.each(&:execute)
-      return unless feature_flag_enabled?
-
-      streamers.each(&:execute)
+      if feature_flag_enabled? && streamers.any?(&:streamable?)
+        streamers.each(&:execute)
+      else
+        streamable_strategies.each(&:execute)
+      end
     end
 
     def streamable?
-      return !streamable_strategies.empty? unless feature_flag_enabled?
-
-      !streamable_strategies.empty? || streamers.any?(&:streamable?)
+      if feature_flag_enabled?
+        streamers.any?(&:streamable?) || streamable_strategies.any?
+      else
+        streamable_strategies.any?
+      end
     end
 
     private
