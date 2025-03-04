@@ -53,11 +53,11 @@ export default {
       }));
     },
     isSupportedNamespace() {
-      if (this.namespaceType === NAMESPACE_GROUP) {
+      if (this.namespaceType === NAMESPACE_GROUP || this.namespaceType === NAMESPACE_PROJECT) {
         return true;
       }
 
-      return this.glFeatures.projectComponentFilter && this.namespaceType === NAMESPACE_PROJECT;
+      return false;
     },
     dependenciesFilteredSearchComponent() {
       return this.namespaceType === NAMESPACE_PROJECT
