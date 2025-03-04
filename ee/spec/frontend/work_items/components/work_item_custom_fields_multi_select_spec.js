@@ -1,13 +1,22 @@
-import { nextTick } from 'vue';
+import Vue, { nextTick } from 'vue';
+import VueApollo from 'vue-apollo';
 import { shallowMount } from '@vue/test-utils';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import waitForPromises from 'helpers/wait_for_promises';
+import createMockApollo from 'helpers/mock_apollo_helper';
 import WorkItemSidebarDropdownWidget from '~/work_items/components/shared/work_item_sidebar_dropdown_widget.vue';
 import WorkItemCustomFieldsMultiSelect from 'ee/work_items/components/work_item_custom_fields_multi_select.vue';
 import { CUSTOM_FIELDS_TYPE_MULTI_SELECT, CUSTOM_FIELDS_TYPE_NUMBER } from '~/work_items/constants';
+import updateWorkItemCustomFieldsMutation from 'ee/work_items/graphql/update_work_item_custom_fields.mutation.graphql';
+import { customFieldsWidgetResponseFactory } from 'jest/work_items/mock_data';
 
 describe('WorkItemCustomFieldsMultiSelect', () => {
   let wrapper;
 
+  Vue.use(VueApollo);
+
   const defaultWorkItemType = 'Issue';
+  const defaultWorkItemId = 'gid://gitlab/WorkItem/1';
 
   const defaultField = {
     customField: {
@@ -41,6 +50,18 @@ describe('WorkItemCustomFieldsMultiSelect', () => {
     ],
   };
 
+  const mutationSuccessHandler = jest.fn().mockResolvedValue({
+    data: {
+      workItemUpdate: {
+        workItem: {
+          id: defaultWorkItemId,
+          widgets: [customFieldsWidgetResponseFactory],
+        },
+        errors: [],
+      },
+    },
+  });
+
   const findComponent = () => wrapper.findComponent(WorkItemCustomFieldsMultiSelect);
   const findSidebarDropdownWidget = () => wrapper.findComponent(WorkItemSidebarDropdownWidget);
 
@@ -48,12 +69,16 @@ describe('WorkItemCustomFieldsMultiSelect', () => {
     canUpdate = true,
     workItemType = defaultWorkItemType,
     customField = defaultField,
+    workItemId = defaultWorkItemId,
+    mutationHandler = mutationSuccessHandler,
   } = {}) => {
     wrapper = shallowMount(WorkItemCustomFieldsMultiSelect, {
+      apolloProvider: createMockApollo([[updateWorkItemCustomFieldsMutation, mutationHandler]]),
       propsData: {
         canUpdate,
         customField,
         workItemType,
+        workItemId,
       },
     });
   };
@@ -232,6 +257,96 @@ describe('WorkItemCustomFieldsMultiSelect', () => {
           textSrOnly: true,
         },
       ]);
+    });
+  });
+
+  describe('updating the selection', () => {
+    it('sends mutation with correct variables when selecting an option', async () => {
+      createComponent();
+      await nextTick();
+
+      const newSelectedIds = ['select-1', 'select-2'];
+      findSidebarDropdownWidget().vm.$emit('updateValue', newSelectedIds);
+
+      expect(mutationSuccessHandler).toHaveBeenCalledWith({
+        input: {
+          id: defaultWorkItemId,
+          customFieldsWidget: {
+            customFieldId: defaultField.customField.id,
+            selectedOptionIds: newSelectedIds,
+          },
+        },
+      });
+    });
+
+    it('sends null when clearing the selection', async () => {
+      createComponent();
+      await nextTick();
+
+      findSidebarDropdownWidget().vm.$emit('updateValue', []);
+
+      expect(mutationSuccessHandler).toHaveBeenCalledWith({
+        input: {
+          id: defaultWorkItemId,
+          customFieldsWidget: {
+            customFieldId: defaultField.customField.id,
+            selectedOptionIds: [],
+          },
+        },
+      });
+    });
+
+    it('shows loading state while updating', async () => {
+      const mutationHandler = jest.fn().mockImplementation(() => new Promise(() => {}));
+
+      createComponent({ mutationHandler });
+      await nextTick();
+
+      findSidebarDropdownWidget().vm.$emit('updateValue', ['select-1', 'select-2']);
+      await nextTick();
+
+      expect(findSidebarDropdownWidget().props('updateInProgress')).toBe(true);
+    });
+
+    it('emits error event when mutation returns an error', async () => {
+      jest.spyOn(Sentry, 'captureException');
+
+      const errorMessage = 'Failed to update';
+      const mutationHandler = jest.fn().mockResolvedValue({
+        data: {
+          workItemUpdate: {
+            errors: [errorMessage],
+          },
+        },
+      });
+
+      createComponent({ mutationHandler });
+      await nextTick();
+
+      findSidebarDropdownWidget().vm.$emit('updateValue', ['select-1', 'select-2']);
+      await waitForPromises();
+
+      expect(wrapper.emitted('error')).toEqual([
+        ['Something went wrong while updating the issue. Please try again.'],
+      ]);
+      expect(Sentry.captureException).toHaveBeenCalled();
+    });
+
+    it('emits error event when mutation catches error', async () => {
+      jest.spyOn(Sentry, 'captureException');
+
+      const errorHandler = jest.fn().mockRejectedValue(new Error());
+
+      createComponent({ mutationHandler: errorHandler });
+      await nextTick();
+
+      findSidebarDropdownWidget().vm.$emit('updateValue', ['select-1', 'select-2']);
+      await waitForPromises();
+
+      expect(wrapper.emitted('error')).toEqual([
+        ['Something went wrong while updating the issue. Please try again.'],
+      ]);
+      expect(Sentry.captureException).toHaveBeenCalled();
     });
   });
 });

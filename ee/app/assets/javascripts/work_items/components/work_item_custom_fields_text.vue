@@ -8,7 +8,13 @@ import {
   GlTooltipDirective,
   GlTruncate,
 } from '@gitlab/ui';
-import { CUSTOM_FIELDS_TYPE_TEXT } from '~/work_items/constants';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import {
+  CUSTOM_FIELDS_TYPE_TEXT,
+  sprintfWorkItem,
+  I18N_WORK_ITEM_ERROR_UPDATING,
+} from '~/work_items/constants';
+import updateWorkItemCustomFieldsMutation from 'ee/work_items/graphql/update_work_item_custom_fields.mutation.graphql';
 import { isValidURL } from '~/lib/utils/url_utility';
 
 export const CHARACTER_LIMIT = 540;
@@ -33,6 +39,15 @@ export default {
       required: false,
       default: false,
     },
+    workItemId: {
+      type: String,
+      required: true,
+    },
+    workItemType: {
+      type: String,
+      required: false,
+      default: '',
+    },
     customField: {
       type: Object,
       required: true,
@@ -55,6 +70,9 @@ export default {
     };
   },
   computed: {
+    customFieldId() {
+      return this.customField.customField?.id;
+    },
     label() {
       return this.customField.customField?.name;
     },
@@ -78,6 +96,14 @@ export default {
     },
   },
   watch: {
+    // Need this check to manage the update, specifically when clearing the value
+    customField: {
+      immediate: true,
+      handler(customField) {
+        this.value = customField.value;
+      },
+    },
+    // Need this check to manage the characters limit warning
     value: {
       immediate: true,
       handler() {
@@ -109,20 +135,48 @@ export default {
       // only display warning if we're over 90% the characters limit
       this.displayCharsLeft = this.charsLeft <= CHARACTER_LIMIT * 0.1;
     },
-    updateTextFromInput(event) {
-      if (event.target.value === '') {
+    updateTextFromInput() {
+      if (this.value?.trim() === '') {
         this.updateText(null);
         return;
       }
 
-      const value = String(event.target.value);
+      const value = String(this.value);
       this.updateText(value);
     },
     updateText(text) {
-      // @todo add mutation logic
-      this.value = text;
-      this.isEditing = false;
-      this.isUpdating = false;
+      if (this.clickingClearButton) return;
+      if (!this.canUpdate) return;
+
+      this.isUpdating = true;
+
+      this.$apollo
+        .mutate({
+          mutation: updateWorkItemCustomFieldsMutation,
+          variables: {
+            input: {
+              id: this.workItemId,
+              customFieldsWidget: {
+                customFieldId: this.customFieldId,
+                textValue: text,
+              },
+            },
+          },
+        })
+        .then(({ data }) => {
+          if (data.workItemUpdate.errors.length) {
+            throw new Error(data.workItemUpdate.errors.join('\n'));
+          }
+        })
+        .catch((error) => {
+          const msg = sprintfWorkItem(I18N_WORK_ITEM_ERROR_UPDATING, this.workItemType);
+          this.$emit('error', msg);
+          Sentry.captureException(error);
+        })
+        .finally(() => {
+          this.isUpdating = false;
+          this.isEditing = false;
+        });
     },
   },
 };
@@ -160,7 +214,7 @@ export default {
         >
       </div>
       <!-- wrapper for the form input so the borders fit inside the sidebar -->
-      <div class="gl-flex gl-items-center gl-gap-2 gl-px-2">
+      <div class="gl-relative gl-px-2">
         <gl-form-input
           :id="$options.inputId"
           ref="input"
@@ -171,8 +225,19 @@ export default {
           :placeholder="__('Enter text')"
           autofocus
           @blur="updateTextFromInput"
-          @focus="handleFocus"
-          @keydown.exact.esc.stop="blurInput"
+        />
+        <gl-button
+          v-if="showRemoveValue"
+          v-gl-tooltip
+          category="tertiary"
+          size="small"
+          icon="clear"
+          class="gl-clear-icon-button gl-absolute gl-right-3 gl-top-2"
+          :title="__('Remove text')"
+          :aria-label="__('Remove text')"
+          @mousedown="clickingClearButton = true"
+          @mouseup="clickingClearButton = false"
+          @click="updateText(null)"
         />
       </div>
       <span v-if="displayCharsLeft" class="gl-text-subtle">{{
@@ -204,3 +269,9 @@ export default {
     </template>
   </div>
 </template>
+
+<style scoped>
+input {
+  padding-right: 28px !important;
+}
+</style>

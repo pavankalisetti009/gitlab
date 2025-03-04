@@ -1,6 +1,12 @@
 <script>
 import { GlButton, GlForm, GlFormInput, GlLoadingIcon, GlTooltipDirective } from '@gitlab/ui';
-import { CUSTOM_FIELDS_TYPE_NUMBER } from '~/work_items/constants';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import {
+  CUSTOM_FIELDS_TYPE_NUMBER,
+  sprintfWorkItem,
+  I18N_WORK_ITEM_ERROR_UPDATING,
+} from '~/work_items/constants';
+import updateWorkItemCustomFieldsMutation from 'ee/work_items/graphql/update_work_item_custom_fields.mutation.graphql';
 
 export default {
   inputId: 'custom-field-number-input',
@@ -14,6 +20,15 @@ export default {
     GlLoadingIcon,
   },
   props: {
+    workItemId: {
+      type: String,
+      required: true,
+    },
+    workItemType: {
+      type: String,
+      required: false,
+      default: '',
+    },
     canUpdate: {
       type: Boolean,
       required: false,
@@ -38,6 +53,9 @@ export default {
     };
   },
   computed: {
+    customFieldId() {
+      return this.customField.customField?.id;
+    },
     label() {
       return this.customField.customField?.name;
     },
@@ -51,6 +69,14 @@ export default {
       return this.customField.customField?.fieldType === CUSTOM_FIELDS_TYPE_NUMBER;
     },
   },
+  watch: {
+    customField: {
+      immediate: true,
+      handler(customField) {
+        this.value = customField.value;
+      },
+    },
+  },
   methods: {
     blurInput() {
       this.$refs.input.$el.blur();
@@ -58,20 +84,54 @@ export default {
     handleFocus() {
       this.isEditing = true;
     },
-    updateNumberFromInput(event) {
-      if (event.target.value.trim() === '') {
+    updateNumberFromInput() {
+      if (this.value === '') {
         this.updateNumber(null);
         return;
       }
 
-      const value = Number(event.target.value);
+      const value = Number(this.value);
       this.updateNumber(value);
     },
     updateNumber(number) {
-      // @todo add mutation logic
-      this.value = number;
-      this.isEditing = false;
-      this.isUpdating = false;
+      if (this.clickingClearButton) return;
+      if (!this.canUpdate) return;
+
+      if (this.value === number) {
+        this.isEditing = false;
+        return;
+      }
+
+      this.isUpdating = true;
+
+      this.$apollo
+        .mutate({
+          mutation: updateWorkItemCustomFieldsMutation,
+          variables: {
+            input: {
+              id: this.workItemId,
+              customFieldsWidget: {
+                customFieldId: this.customFieldId,
+                numberValue: number,
+              },
+            },
+          },
+        })
+        .then(({ data }) => {
+          if (data.workItemUpdate.errors.length) {
+            throw new Error(data.workItemUpdate.errors.join('\n'));
+          }
+        })
+        .catch((error) => {
+          const msg = sprintfWorkItem(I18N_WORK_ITEM_ERROR_UPDATING, this.workItemType);
+          // Send error event up to work_item_detail to show alert on page
+          this.$emit('error', msg);
+          Sentry.captureException(error);
+        })
+        .finally(() => {
+          this.isUpdating = false;
+          this.isEditing = false;
+        });
     },
   },
 };
@@ -113,16 +173,29 @@ export default {
         <gl-form-input
           :id="$options.inputId"
           ref="input"
+          v-model="value"
           min="0"
           class="hide-unfocused-input-decoration gl-block"
           type="number"
           :disabled="isUpdating"
           :placeholder="__('Enter a number')"
-          :value="value"
           autofocus
           @blur="updateNumberFromInput"
           @focus="handleFocus"
           @keydown.exact.esc.stop="blurInput"
+        />
+        <gl-button
+          v-if="showRemoveValue"
+          v-gl-tooltip
+          category="tertiary"
+          size="small"
+          icon="clear"
+          class="gl-clear-icon-button gl-absolute gl-right-7 gl-top-2"
+          :title="__('Remove number')"
+          :aria-label="__('Remove number')"
+          @mousedown="clickingClearButton = true"
+          @mouseup="clickingClearButton = false"
+          @click="updateNumber(null)"
         />
       </div>
     </gl-form>

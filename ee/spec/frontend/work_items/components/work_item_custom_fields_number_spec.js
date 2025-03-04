@@ -1,13 +1,22 @@
-import { GlForm, GlFormInput } from '@gitlab/ui';
-import { nextTick } from 'vue';
+import Vue, { nextTick } from 'vue';
+import VueApollo from 'vue-apollo';
+import { GlForm, GlFormInput, GlLoadingIcon } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import createMockApollo from 'helpers/mock_apollo_helper';
+import waitForPromises from 'helpers/wait_for_promises';
 import WorkItemCustomFieldNumber from 'ee/work_items/components/work_item_custom_fields_number.vue';
 import { CUSTOM_FIELDS_TYPE_NUMBER, CUSTOM_FIELDS_TYPE_TEXT } from '~/work_items/constants';
+import updateWorkItemCustomFieldsMutation from 'ee/work_items/graphql/update_work_item_custom_fields.mutation.graphql';
+import { customFieldsWidgetResponseFactory } from 'jest/work_items/mock_data';
 
 describe('WorkItemCustomFieldsNumber', () => {
   let wrapper;
 
+  Vue.use(VueApollo);
+
   const defaultWorkItemType = 'Task';
+  const defaultWorkItemId = 'gid://gitlab/WorkItem/1';
 
   const defaultField = {
     customField: {
@@ -18,6 +27,18 @@ describe('WorkItemCustomFieldsNumber', () => {
     value: 5,
   };
 
+  const mutationSuccessHandler = jest.fn().mockResolvedValue({
+    data: {
+      workItemUpdate: {
+        workItem: {
+          id: defaultWorkItemId,
+          widgets: [customFieldsWidgetResponseFactory],
+        },
+        errors: [],
+      },
+    },
+  });
+
   const findComponent = () => wrapper.findComponent(WorkItemCustomFieldNumber);
   const findHeader = () => wrapper.find('h3');
   const findEditButton = () => wrapper.find('[data-testid="edit-number"]');
@@ -26,17 +47,22 @@ describe('WorkItemCustomFieldsNumber', () => {
   const findForm = () => wrapper.findComponent(GlForm);
   const findInput = () => wrapper.findComponent(GlFormInput);
   const findValue = () => wrapper.find('[data-testid="custom-field-value"]');
+  const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
 
   const createComponent = ({
     canUpdate = true,
     workItemType = defaultWorkItemType,
+    workItemId = defaultWorkItemId,
     customField = defaultField,
+    mutationHandler = mutationSuccessHandler,
   } = {}) => {
     wrapper = shallowMount(WorkItemCustomFieldNumber, {
+      apolloProvider: createMockApollo([[updateWorkItemCustomFieldsMutation, mutationHandler]]),
       propsData: {
         canUpdate,
         customField,
         workItemType,
+        workItemId,
       },
     });
   };
@@ -174,7 +200,7 @@ describe('WorkItemCustomFieldsNumber', () => {
     });
   });
 
-  describe('form', () => {
+  describe('form and input', () => {
     it('is not shown while not editing', () => {
       createComponent();
 
@@ -190,16 +216,14 @@ describe('WorkItemCustomFieldsNumber', () => {
 
       expect(findForm().exists()).toBe(true);
     });
-  });
 
-  describe('custom field number input', () => {
-    it('is not shown while not editing', () => {
+    it('input element is not shown while not editing', () => {
       createComponent();
 
       expect(findInput().exists()).toBe(false);
     });
 
-    it('has number-y attributes', async () => {
+    it('input has number-y attributes', async () => {
       createComponent();
 
       findEditButton().vm.$emit('click');
@@ -212,6 +236,114 @@ describe('WorkItemCustomFieldsNumber', () => {
           type: 'number',
         }),
       );
+    });
+  });
+
+  describe('updating the value', () => {
+    it('sends mutation with correct variables when updating number', async () => {
+      createComponent();
+      await nextTick();
+
+      const newValue = '10';
+
+      await findEditButton().vm.$emit('click');
+      findInput().vm.$emit('input', newValue);
+      findInput().vm.$emit('blur');
+
+      await waitForPromises();
+
+      expect(mutationSuccessHandler).toHaveBeenCalledWith({
+        input: {
+          id: defaultWorkItemId,
+          customFieldsWidget: {
+            customFieldId: defaultField.customField.id,
+            numberValue: 10,
+          },
+        },
+      });
+    });
+
+    it('sends null when clearing the field', async () => {
+      createComponent();
+      await nextTick();
+
+      await findEditButton().vm.$emit('click');
+      findInput().vm.$emit('input', '');
+      findInput().vm.$emit('blur');
+
+      await waitForPromises();
+
+      expect(mutationSuccessHandler).toHaveBeenCalledWith({
+        input: {
+          id: defaultWorkItemId,
+          customFieldsWidget: {
+            customFieldId: defaultField.customField.id,
+            numberValue: null,
+          },
+        },
+      });
+    });
+
+    it('shows loading state while updating', async () => {
+      const mutationHandler = jest.fn().mockImplementation(() => new Promise(() => {}));
+
+      createComponent({ mutationHandler });
+      await nextTick();
+
+      await findEditButton().vm.$emit('click');
+      findInput().vm.$emit('input', '10');
+      findInput().vm.$emit('blur');
+      await nextTick();
+
+      expect(findLoadingIcon().exists()).toBe(true);
+      expect(findInput().props('disabled')).toBe(true);
+    });
+
+    it('emits error event when mutation returns an error', async () => {
+      jest.spyOn(Sentry, 'captureException');
+
+      const errorMessage = 'Failed to update';
+      const mutationHandler = jest.fn().mockResolvedValue({
+        data: {
+          workItemUpdate: {
+            errors: [errorMessage],
+          },
+        },
+      });
+
+      createComponent({ mutationHandler });
+      await nextTick();
+
+      await findEditButton().vm.$emit('click');
+      findInput().vm.$emit('input', '10');
+      findInput().vm.$emit('blur');
+
+      await waitForPromises();
+
+      expect(wrapper.emitted('error')).toEqual([
+        ['Something went wrong while updating the task. Please try again.'],
+      ]);
+      expect(Sentry.captureException).toHaveBeenCalled();
+    });
+
+    it('emits error event when mutation catches error', async () => {
+      jest.spyOn(Sentry, 'captureException');
+
+      const errorHandler = jest.fn().mockRejectedValue(new Error());
+
+      createComponent({ mutationHandler: errorHandler });
+      await nextTick();
+
+      await findEditButton().vm.$emit('click');
+      findInput().vm.$emit('input', '200');
+      findInput().vm.$emit('blur');
+
+      await waitForPromises();
+
+      expect(wrapper.emitted('error')).toEqual([
+        ['Something went wrong while updating the task. Please try again.'],
+      ]);
+      expect(Sentry.captureException).toHaveBeenCalled();
     });
   });
 });
