@@ -25,7 +25,15 @@ module Security
         return unless security_policy.enabled
         return unless security_policy.scope_applicable?(project)
 
-        security_policy.link_project!(project)
+        security_policy.transaction do
+          security_policy.link_project!(project)
+
+          next unless security_policy.type_pipeline_execution_schedule_policy?
+
+          Security::SecurityOrchestrationPolicies::PipelineExecutionPolicies::CreateProjectSchedulesService
+            .new(project: project, policy: security_policy)
+            .execute
+        end
 
         return unless security_policy.type_approval_policy?
 

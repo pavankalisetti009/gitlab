@@ -59,6 +59,12 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncPolicyEventService, 
         end
 
         it_behaves_like 'when policy scope does not match compliance_framework'
+
+        it_behaves_like 'creates PEP project schedules' do
+          before do
+            security_policy.update!(scope: policy_scope)
+          end
+        end
       end
 
       context 'when framework is removed' do

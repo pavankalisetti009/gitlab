@@ -37,6 +37,10 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectService, feat
           expect { service.execute }.to change { project.approval_rules.count }.by(1)
         end
 
+        include_examples 'creates PEP project schedules' do
+          subject(:execute) { service.execute }
+        end
+
         context 'when policy_scope is not applicable' do
           before do
             allow_next_found_instance_of(Security::Policy) do |instance|
