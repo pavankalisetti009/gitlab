@@ -119,7 +119,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
 
     context 'with tasks that have cache periods configured' do
       it 'is formatted correctly based on task name and cache period' do
-        %i[lost_nodes_check update_replica_states].each do |task|
+        %i[lost_nodes_check].each do |task|
           svc = described_class.new(task)
           expect(svc.cache_key).to eq("search/zoekt/scheduling_service:execute_every:#{svc.cache_period}:#{task}")
         end
@@ -130,7 +130,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
   describe '#cache_period' do
     context 'with a task from CONFIG' do
       it 'returns the period when configured' do
-        expect(described_class.new(:update_replica_states).cache_period).to eq(2.minutes)
+        expect(described_class.new(:lost_nodes_check).cache_period).to eq(10.minutes)
       end
 
       it 'returns nil when not configured' do
