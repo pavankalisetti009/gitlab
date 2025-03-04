@@ -17,6 +17,7 @@ describe('Agents', () => {
   const agentProject = {
     id: '1',
     fullPath: 'path/to/project',
+    webUrl: 'https://gdk.test/path/to/project',
   };
 
   const agents = [
@@ -126,7 +127,7 @@ describe('Agents', () => {
     wrapper = shallowMount(Agents, {
       apolloProvider,
       propsData: { defaultBranchName: 'default' },
-      provide: { projectPath: 'path/to/project' },
+      provide: { fullPath: 'path/to/project', isGroup: false },
     });
   };
 

@@ -13315,6 +13315,9 @@ msgstr ""
 msgid "ClusterAgents|Give feedback"
 msgstr ""
 
+msgid "ClusterAgents|Group agents"
+msgstr ""
+
 msgid "ClusterAgents|How do I update an agent?"
 msgstr ""
 
@@ -13387,6 +13390,9 @@ msgid "ClusterAgents|Optionally, for additional configuration settings, a %{link
 msgstr ""
 
 msgid "ClusterAgents|Premium"
+msgstr ""
+
+msgid "ClusterAgents|Project"
 msgstr ""
 
 msgid "ClusterAgents|Project agents"

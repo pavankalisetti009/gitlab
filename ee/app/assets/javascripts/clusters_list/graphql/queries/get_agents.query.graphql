@@ -1,7 +1,17 @@
 #import "~/clusters_list/graphql/fragments/cluster_agent.fragment.graphql"
 
-query getAgentsEE($projectPath: ID!) {
-  project(fullPath: $projectPath) {
+query getAgentsEE($fullPath: ID!, $isGroup: Boolean = false) {
+  project(fullPath: $fullPath) @skip(if: $isGroup) {
+    id
+    clusterAgents {
+      nodes {
+        ...ClusterAgentFragment
+        isReceptive
+      }
+      count
+    }
+  }
+  group(fullPath: $fullPath) @include(if: $isGroup) {
     id
     clusterAgents {
       nodes {
