@@ -34,7 +34,7 @@ module MemberRoles
         target_details: {
           name: member_role.name,
           description: member_role.description,
-          abilities: member_role.enabled_permissions.join(', ')
+          abilities: member_role.enabled_permissions(current_user).keys.join(', ')
         },
         message: "Member role was #{action}"
       }

@@ -68,7 +68,7 @@ module GitlabSubscriptions
 
       return false unless member_role
 
-      (MemberRole.elevating_permissions & member_role.enabled_permissions).present?
+      member_role.occupies_seat
     end
 
     def valid_member_role(member_role_id)

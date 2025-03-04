@@ -57,7 +57,7 @@ RSpec.describe MemberRoles::DeleteService, feature_category: :system_access do
                 target_details: {
                   name: member_role.name,
                   description: member_role.description,
-                  abilities: member_role.enabled_permissions.join(', ')
+                  abilities: "read_code"
                 }.to_s,
                 custom_message: 'Member role was deleted',
                 author_class: user.class.name

@@ -12,7 +12,7 @@ module Types
         ::Types::Members::CustomizableAdminPermissionType.connection_type,
         null: false,
         experiment: { milestone: '17.7' },
-        description: 'Array of all permissions enabled for the custom role.'
+        description: 'Array of all permissions enabled for the custom role.', method: :enabled_admin_permissions
     end
   end
 end

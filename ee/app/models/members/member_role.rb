@@ -118,26 +118,30 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
       MemberRole.all_customizable_permissions.select { |_k, v| v[:skip_seat_consumption] }.keys
     end
 
-    def permission_enabled?(permission, user = nil)
-      if ::Feature.disabled?(:custom_admin_roles, :instance) &&
-          all_customizable_admin_permission_keys.include?(permission)
-        return false
-      end
-
+    def permission_enabled?(permission, user)
       return true unless ::Feature::Definition.get("custom_ability_#{permission}")
 
       ::Feature.enabled?("custom_ability_#{permission}", user)
     end
-  end
 
-  def enabled_permission_items
-    MemberRole.all_customizable_permissions.filter do |permission|
-      attributes[permission.to_s] && self.class.permission_enabled?(permission)
+    def admin_permission_enabled?(permission)
+      return false unless ::Feature.enabled?(:custom_admin_roles, :instance)
+      return true unless ::Feature::Definition.get("custom_ability_#{permission}")
+
+      ::Feature.enabled?("custom_ability_#{permission}", :instance)
     end
   end
 
-  def enabled_permissions
-    enabled_permission_items.keys
+  def enabled_permissions(user)
+    MemberRole.all_customizable_permissions.filter do |permission|
+      attributes[permission.to_s] && self.class.permission_enabled?(permission, user)
+    end
+  end
+
+  def enabled_admin_permissions
+    MemberRole.all_customizable_admin_permissions.filter do |permission|
+      attributes[permission.to_s] && self.class.admin_permission_enabled?(permission)
+    end
   end
 
   def dependent_security_policies
@@ -152,9 +156,7 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
   end
 
   def admin_related_role?
-    admin_related_permissions.present? && admin_related_permissions.all? do |permission|
-      self.class.permission_enabled?(permission)
-    end
+    enabled_admin_permissions.present?
   end
 
   private
@@ -163,10 +165,6 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
     return !namespace.licensed_feature_available?(:security_orchestration_policies) if gitlab_com_subscription?
 
     !License.feature_available?(:security_orchestration_policies)
-  end
-
-  def admin_related_permissions
-    self.class.all_customizable_admin_permission_keys & enabled_permissions
   end
 
   def belongs_to_top_level_namespace

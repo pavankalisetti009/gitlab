@@ -136,17 +136,27 @@ RSpec.describe Authz::CustomAbility, feature_category: :permissions do
           let_it_be(:role) { create(:admin_role, :read_admin_dashboard, user: user) }
 
           it { is_expected.to be_allowed(user, :read_admin_dashboard) }
+
+          context 'when the ability is disabled' do
+            before do
+              stub_feature_flag_definition("custom_ability_read_admin_dashboard")
+              stub_feature_flags(custom_ability_read_admin_dashboard: false)
+            end
+
+            it { is_expected.not_to be_allowed(user, :read_admin_dashboard) }
+          end
         end
 
         context 'with a nil user' do
           it { is_expected.not_to be_allowed(nil, ability, root_group) }
         end
 
-        context 'when the permission is disabled' do
+        context 'when the ability is disabled' do
           let_it_be(:membership) { create(:group_member, :guest, member_role: role, user: user, source: root_group) }
 
           before do
-            allow(::MemberRole).to receive(:permission_enabled?).with(ability, user).and_return(false)
+            stub_feature_flag_definition("custom_ability_admin_runners")
+            stub_feature_flags(custom_ability_admin_runners: false)
           end
 
           it { is_expected.not_to be_allowed(user, ability, root_group) }
