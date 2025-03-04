@@ -1489,7 +1489,7 @@ GEM
     pyu-ruby-sasl (0.0.3.3)
     raabro (1.4.0)
     racc (1.8.1)
-    rack (2.2.11)
+    rack (2.2.12)
     rack-accept (0.4.5)
       rack (>= 0.4)
     rack-attack (6.7.0)
@@ -2366,4 +2366,4 @@ DEPENDENCIES
   yajl-ruby (~> 1.4.3)
 
 BUNDLED WITH
-   2.5.11
+   2.6.5
