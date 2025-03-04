@@ -126,7 +126,7 @@ export default {
     },
   },
   i18n: {
-    label: s__('SecurityReports|Report Type'),
+    label: s__('SecurityReports|Report type'),
     allItemsText: s__('SecurityReports|All report types'),
   },
   ALL_REPORT_TYPES_ID,
