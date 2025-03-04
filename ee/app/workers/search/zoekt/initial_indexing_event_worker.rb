@@ -22,7 +22,11 @@ module Search
         namespace = find_namespace(index.namespace_id)
         return if namespace.nil?
 
-        index.initializing! if create_repositories(namespace: namespace, index: index)
+        if create_repositories(namespace: namespace, index: index)
+          index.initializing!
+        else
+          reemit_event(index_id: index.id)
+        end
       end
 
       private
@@ -83,6 +87,12 @@ module Search
           { zoekt_index_id: index.id, project_id: p_id, project_identifier: p_id }
         end
         Repository.insert_all(data)
+      end
+
+      def reemit_event(index_id:)
+        Gitlab::EventStore.publish(
+          Search::Zoekt::InitialIndexingEvent.new(data: { index_id: index_id })
+        )
       end
     end
   end
