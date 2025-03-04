@@ -295,6 +295,10 @@ RSpec.describe Vulnerabilities::Export, feature_category: :vulnerability_managem
     it_behaves_like 'cleanup by a loose foreign key' do
       let_it_be(:parent) { create(:organization) }
       let_it_be(:model) { create(:vulnerability_export, organization: parent) }
+
+      before do
+        parent.users.delete_all
+      end
     end
   end
 
