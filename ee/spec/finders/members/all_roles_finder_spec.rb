@@ -26,6 +26,16 @@ RSpec.describe Members::AllRolesFinder, feature_category: :system_access do
     end
   end
 
+  context 'when custom_admin_roles feature flag is off' do
+    before do
+      stub_feature_flags(custom_admin_roles: false)
+    end
+
+    it 'returns standard roles', :enable_admin_mode do
+      expect(find_member_roles).to eq([member_role_standard])
+    end
+  end
+
   context 'when on SaaS' do
     let_it_be(:params) { { parent: create(:group) } }
 

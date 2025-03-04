@@ -26,6 +26,16 @@ RSpec.describe Members::AdminRolesFinder, feature_category: :system_access do
         expect(find_member_roles).to be_empty
       end
     end
+
+    context 'when custom_admin_roles feature flag is off' do
+      before do
+        stub_feature_flags(custom_admin_roles: false)
+      end
+
+      it 'returns an empty array', :enable_admin_mode do
+        expect(find_member_roles).to be_empty
+      end
+    end
   end
 
   context 'when on SaaS' do
