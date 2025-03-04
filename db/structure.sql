@@ -21726,6 +21726,28 @@ CREATE TABLE snippet_repositories (
     CONSTRAINT snippet_repositories_verification_failure_text_limit CHECK ((char_length(verification_failure) <= 255))
 );
 
+CREATE TABLE snippet_repository_states (
+    id bigint NOT NULL,
+    verification_started_at timestamp with time zone,
+    verification_retry_at timestamp with time zone,
+    verified_at timestamp with time zone,
+    snippet_repository_id bigint NOT NULL,
+    verification_state smallint DEFAULT 0 NOT NULL,
+    verification_retry_count smallint DEFAULT 0,
+    verification_checksum bytea,
+    verification_failure text,
+    CONSTRAINT check_0dabaefb7f CHECK ((char_length(verification_failure) <= 255))
+);
+
+CREATE SEQUENCE snippet_repository_states_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE snippet_repository_states_id_seq OWNED BY snippet_repository_states.id;
+
 CREATE TABLE snippet_repository_storage_moves (
     id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
@@ -26214,6 +26236,8 @@ ALTER TABLE ONLY slack_integrations_scopes ALTER COLUMN id SET DEFAULT nextval('
 
 ALTER TABLE ONLY smartcard_identities ALTER COLUMN id SET DEFAULT nextval('smartcard_identities_id_seq'::regclass);
 
+ALTER TABLE ONLY snippet_repository_states ALTER COLUMN id SET DEFAULT nextval('snippet_repository_states_id_seq'::regclass);
+
 ALTER TABLE ONLY snippet_repository_storage_moves ALTER COLUMN id SET DEFAULT nextval('snippet_repository_storage_moves_id_seq'::regclass);
 
 ALTER TABLE ONLY snippet_user_mentions ALTER COLUMN id SET DEFAULT nextval('snippet_user_mentions_id_seq'::regclass);
@@ -29130,6 +29154,9 @@ ALTER TABLE ONLY smartcard_identities
 
 ALTER TABLE ONLY snippet_repositories
     ADD CONSTRAINT snippet_repositories_pkey PRIMARY KEY (snippet_id);
+
+ALTER TABLE ONLY snippet_repository_states
+    ADD CONSTRAINT snippet_repository_states_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY snippet_repository_storage_moves
     ADD CONSTRAINT snippet_repository_storage_moves_pkey PRIMARY KEY (id);
@@ -35213,6 +35240,16 @@ CREATE INDEX index_snippet_repositories_pending_verification ON snippet_reposito
 
 CREATE INDEX index_snippet_repositories_verification_state ON snippet_repositories USING btree (verification_state);
 
+CREATE INDEX index_snippet_repository_states_failed_verification ON snippet_repository_states USING btree (verification_retry_at NULLS FIRST) WHERE (verification_state = 3);
+
+CREATE INDEX index_snippet_repository_states_needs_verification ON snippet_repository_states USING btree (verification_state) WHERE ((verification_state = 0) OR (verification_state = 3));
+
+CREATE UNIQUE INDEX index_snippet_repository_states_on_snippet_repository_id ON snippet_repository_states USING btree (snippet_repository_id);
+
+CREATE INDEX index_snippet_repository_states_on_verification_state ON snippet_repository_states USING btree (verification_state);
+
+CREATE INDEX index_snippet_repository_states_pending_verification ON snippet_repository_states USING btree (verified_at NULLS FIRST) WHERE (verification_state = 0);
+
 CREATE INDEX index_snippet_repository_storage_moves_on_snippet_id ON snippet_repository_storage_moves USING btree (snippet_id);
 
 CREATE INDEX index_snippet_repository_storage_moves_on_snippet_organization_ ON snippet_repository_storage_moves USING btree (snippet_organization_id);
@@ -39589,6 +39626,9 @@ ALTER TABLE ONLY csv_issue_imports
 
 ALTER TABLE ONLY milestone_releases
     ADD CONSTRAINT fk_5e73b8cad2 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY snippet_repository_states
+    ADD CONSTRAINT fk_5f750f3182 FOREIGN KEY (snippet_repository_id) REFERENCES snippet_repositories(snippet_id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY packages_conan_package_revisions
     ADD CONSTRAINT fk_5f7c6a9244 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
