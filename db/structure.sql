@@ -2515,6 +2515,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_80578cfbdaf9() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."project_id"
+  FROM "events"
+  WHERE "events"."id" = NEW."event_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_81b4c93e7133() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -20522,7 +20538,8 @@ CREATE TABLE push_event_payloads (
     ref text,
     commit_title character varying(70),
     ref_count integer,
-    event_id bigint NOT NULL
+    event_id bigint NOT NULL,
+    project_id bigint
 );
 
 CREATE TABLE push_rules (
@@ -38589,6 +38606,8 @@ CREATE TRIGGER trigger_7f41427eda69 BEFORE UPDATE OF pre_receive_secret_detectio
 CREATE TRIGGER trigger_7f84f9c7b945 BEFORE INSERT OR UPDATE ON bulk_import_trackers FOR EACH ROW EXECUTE FUNCTION trigger_7f84f9c7b945();
 
 CREATE TRIGGER trigger_7fbecfcdf89a BEFORE UPDATE OF secret_push_protection_enabled ON project_security_settings FOR EACH ROW EXECUTE FUNCTION function_for_trigger_7fbecfcdf89a();
+
+CREATE TRIGGER trigger_80578cfbdaf9 BEFORE INSERT OR UPDATE ON push_event_payloads FOR EACH ROW EXECUTE FUNCTION trigger_80578cfbdaf9();
 
 CREATE TRIGGER trigger_81b4c93e7133 BEFORE INSERT OR UPDATE ON pages_deployment_states FOR EACH ROW EXECUTE FUNCTION trigger_81b4c93e7133();
 
