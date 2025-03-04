@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe 'Admin Dashboard', feature_category: :shared do
+  include VersionCheckHelpers
+
   before do
     admin = create(:admin)
     sign_in(admin)
@@ -101,6 +103,10 @@ RSpec.describe 'Admin Dashboard', feature_category: :shared do
   end
 
   describe 'Version check', :js do
+    before do
+      stub_version_check({ "severity" => "success" })
+    end
+
     it 'shows badge on EE' do
       visit admin_root_path
 
