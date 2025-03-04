@@ -17374,6 +17374,9 @@ msgstr ""
 msgid "CreateValueStreamForm|Create from no template"
 msgstr ""
 
+msgid "CreateValueStreamForm|Default stage"
+msgstr ""
+
 msgid "CreateValueStreamForm|Default stages"
 msgstr ""
 
@@ -17474,6 +17477,9 @@ msgid "CreateValueStreamForm|Update stage"
 msgstr ""
 
 msgid "CreateValueStreamForm|Value Stream name"
+msgstr ""
+
+msgid "CreateValueStreamForm|Value stream stages"
 msgstr ""
 
 msgid "Created"

@@ -1,6 +1,7 @@
 <script>
 import { GlFormGroup, GlFormInput } from '@gitlab/ui';
 import { i18n, ADDITIONAL_DEFAULT_STAGE_EVENTS } from '../constants';
+import StageFieldMove from './stage_field_move.vue';
 import StageFieldActions from './stage_field_actions.vue';
 
 const findStageEvent = (stageEvents = [], eid = null) => {
@@ -16,6 +17,7 @@ const eventIdToName = (stageEvents = [], eid) => {
 export default {
   name: 'DefaultStageFields',
   components: {
+    StageFieldMove,
     StageFieldActions,
     GlFormGroup,
     GlFormInput,
@@ -63,15 +65,18 @@ export default {
 </script>
 <template>
   <div class="gl-mb-4" data-testid="value-stream-stage-fields">
-    <div class="gl-flex gl-flex-col sm:gl-flex-row">
-      <div class="gl-mr-2 gl-grow">
+    <div class="gl-flex gl-gap-5">
+      <stage-field-move :index="index" :stage-count="totalStages" @move="$emit('move', $event)" />
+
+      <div class="gl-grow">
         <gl-form-group
-          :label="stageLabel"
           :state="isValid('name')"
           :invalid-feedback="renderError('name')"
           :data-testid="`default-stage-name-${index}`"
-          :description="$options.i18n.DEFAULT_STAGE_FEATURES"
         >
+          <template #label>
+            <span class="gl-heading-3">{{ stageLabel }}: {{ stage.name }}</span>
+          </template>
           <!-- eslint-disable vue/no-mutating-props -->
           <gl-form-input
             v-model.trim="stage.name"
@@ -82,24 +87,26 @@ export default {
           />
           <!-- eslint-enable vue/no-mutating-props -->
         </gl-form-group>
-        <div class="gl-flex gl-items-center" :data-testid="`stage-start-event-${index}`">
-          <span class="gl-mr-2 gl-font-bold">{{
-            $options.i18n.DEFAULT_FIELD_START_EVENT_LABEL
-          }}</span>
-          <span>{{ eventName(stage.startEventIdentifier) }}</span>
-        </div>
-        <div class="gl-flex gl-items-center" :data-testid="`stage-end-event-${index}`">
-          <span class="gl-mr-2 gl-font-bold">{{
-            $options.i18n.DEFAULT_FIELD_END_EVENT_LABEL
-          }}</span>
-          <span>{{ eventName(stage.endEventIdentifier) }}</span>
+
+        <div class="gl-flex gl-flex-col gl-gap-2">
+          <div class="gl-flex gl-flex-wrap gl-gap-2" :data-testid="`stage-start-event-${index}`">
+            <span class="gl-shrink-0 gl-font-bold">{{
+              $options.i18n.DEFAULT_FIELD_START_EVENT_LABEL
+            }}</span>
+            <span>{{ eventName(stage.startEventIdentifier) }}</span>
+          </div>
+          <div class="gl-flex gl-flex-wrap gl-gap-2" :data-testid="`stage-end-event-${index}`">
+            <span class="gl-shrink-0 gl-font-bold">{{
+              $options.i18n.DEFAULT_FIELD_END_EVENT_LABEL
+            }}</span>
+            <span>{{ eventName(stage.endEventIdentifier) }}</span>
+          </div>
         </div>
       </div>
+
       <stage-field-actions
-        class="gl-mt-3 sm:!gl-mt-6"
+        class="gl-mt-3 sm:!gl-mt-7"
         :index="index"
-        :stage-count="totalStages"
-        @move="$emit('move', $event)"
         @hide="$emit('hide', $event)"
       />
     </div>

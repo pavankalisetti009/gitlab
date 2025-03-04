@@ -18,10 +18,12 @@ export const i18n = {
   RECOVER_HIDDEN_STAGE: s__('CreateValueStreamForm|Recover hidden stage'),
   RESTORE_HIDDEN_STAGE: s__('CreateValueStreamForm|Restore stage'),
   RESTORE_DEFAULTS: s__('CreateValueStreamForm|Restore defaults'),
+  DEFAULT_STAGE_LABEL: s__('CreateValueStreamForm|Default stage'),
   RECOVER_STAGE_TITLE: s__('CreateValueStreamForm|Default stages'),
   RECOVER_STAGES_VISIBLE: s__('CreateValueStreamForm|All default stages are currently visible'),
   SELECT_START_EVENT: s__('CreateValueStreamForm|Select start event'),
   SELECT_END_EVENT: s__('CreateValueStreamForm|Select end event'),
+  STAGES: s__('CreateValueStreamForm|Value stream stages'),
   FORM_FIELD_NAME_LABEL: s__('CreateValueStreamForm|Value Stream name'),
   FORM_FIELD_NAME_PLACEHOLDER: s__('CreateValueStreamForm|Enter value stream name'),
   FORM_FIELD_STAGE_NAME_PLACEHOLDER: s__('CreateValueStreamForm|Enter stage name'),
@@ -49,6 +51,7 @@ export const i18n = {
   SUBMIT_FAILED: s__(
     'CreateValueStreamForm|An error occurred while creating the custom value stream. Try again.',
   ),
+  CUSTOM_BADGE_LABEL: __('Custom'),
 };
 
 export const ERRORS = {

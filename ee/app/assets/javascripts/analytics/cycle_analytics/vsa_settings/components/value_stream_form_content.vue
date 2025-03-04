@@ -7,6 +7,7 @@ import { filterStagesByHiddenStatus } from '~/analytics/cycle_analytics/utils';
 import { swapArrayItems } from '~/lib/utils/array_utility';
 import { sprintf } from '~/locale';
 import Tracking from '~/tracking';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import { visitUrlWithAlerts, mergeUrlParams } from '~/lib/utils/url_utility';
 import { getLabelEventsIdentifiers } from 'ee/analytics/cycle_analytics/utils';
 import {
@@ -48,6 +49,7 @@ const initializeEditingStages = (stages = []) =>
 export default {
   name: 'ValueStreamFormContent',
   components: {
+    CrudComponent,
     GlAlert,
     GlButton,
     GlForm,
@@ -285,6 +287,7 @@ export default {
     },
     resetAllFieldsToDefault() {
       this.stages = initializeStages(this.defaultStageConfig, this.selectedPreset);
+      this.hiddenStages = [];
       this.stageErrors = initializeStageErrors(this.defaultStageConfig, this.selectedPreset);
     },
     handleResetDefaults() {
@@ -315,100 +318,103 @@ export default {
 };
 </script>
 <template>
-  <div>
-    <gl-alert
-      v-if="showSubmitError"
-      variant="danger"
-      class="gl-mb-3"
-      @dismiss="showSubmitError = false"
-    >
+  <div class="gl-flex gl-flex-col gl-gap-5">
+    <gl-alert v-if="showSubmitError" variant="danger" @dismiss="showSubmitError = false">
       {{ $options.i18n.SUBMIT_FAILED }}
     </gl-alert>
+
     <gl-form>
-      <gl-form-group
-        data-testid="create-value-stream-name"
-        label-for="create-value-stream-name"
-        :label="$options.i18n.FORM_FIELD_NAME_LABEL"
-        :invalid-feedback="invalidNameFeedback"
-        :state="isValueStreamNameValid"
+      <crud-component
+        :title="$options.i18n.STAGES"
+        :description="$options.i18n.DEFAULT_STAGE_FEATURES"
+        body-class="!gl-mx-0"
       >
-        <div class="gl-flex gl-justify-between">
-          <gl-form-input
-            id="create-value-stream-name"
-            v-model.trim="name"
-            name="create-value-stream-name"
-            data-testid="create-value-stream-name-input"
-            :placeholder="$options.i18n.FORM_FIELD_NAME_PLACEHOLDER"
-            :state="isValueStreamNameValid"
-            required
-          />
+        <template v-if="canRestore" #actions>
           <transition name="fade">
-            <gl-button
-              v-if="canRestore"
-              data-testid="vsa-reset-button"
-              class="gl-ml-3"
-              variant="link"
-              @click="handleResetDefaults"
-              >{{ $options.i18n.RESTORE_DEFAULTS }}</gl-button
-            >
+            <gl-button data-testid="vsa-reset-button" variant="link" @click="handleResetDefaults">{{
+              $options.i18n.RESTORE_DEFAULTS
+            }}</gl-button>
           </transition>
-        </div>
-      </gl-form-group>
-      <gl-form-radio-group
-        v-if="!isEditing"
-        v-model="selectedPreset"
-        class="gl-mb-4"
-        data-testid="vsa-preset-selector"
-        :options="presetOptions"
-        name="preset"
-        @input="onSelectPreset"
-      />
-      <div data-testid="extended-form-fields">
-        <transition-group name="stage-list" tag="div">
-          <div
-            v-for="(stage, activeStageIndex) in stages"
-            ref="formStages"
-            :key="stage.id || stage.transitionKey"
+        </template>
+
+        <div class="gl-px-5">
+          <gl-form-group
+            data-testid="create-value-stream-name"
+            label-for="create-value-stream-name"
+            :label="$options.i18n.FORM_FIELD_NAME_LABEL"
+            :invalid-feedback="invalidNameFeedback"
+            :state="isValueStreamNameValid"
           >
-            <hr class="gl-my-5" />
-            <custom-stage-fields
-              v-if="stage.custom"
-              :stage-label="stageGroupLabel(activeStageIndex)"
-              :stage="stage"
-              :stage-events="formEvents"
-              :index="activeStageIndex"
-              :total-stages="stages.length"
-              :errors="fieldErrors(activeStageIndex)"
-              :default-group-labels="defaultGroupLabels"
-              @move="handleMove"
-              @remove="onRemove"
-              @input="onFieldInput(activeStageIndex, $event)"
-            />
-            <default-stage-fields
-              v-else
-              :stage-label="stageGroupLabel(activeStageIndex)"
-              :stage="stage"
-              :stage-events="formEvents"
-              :index="activeStageIndex"
-              :total-stages="stages.length"
-              :errors="fieldErrors(activeStageIndex)"
-              @move="handleMove"
-              @hide="onHide"
-              @input="validateStageFields(activeStageIndex)"
-            />
-          </div>
-        </transition-group>
-        <div>
-          <div v-if="hiddenStages.length">
-            <hr class="gl-mb-2 gl-mt-5" />
+            <div class="gl-flex gl-justify-between">
+              <gl-form-input
+                id="create-value-stream-name"
+                v-model.trim="name"
+                name="create-value-stream-name"
+                data-testid="create-value-stream-name-input"
+                :placeholder="$options.i18n.FORM_FIELD_NAME_PLACEHOLDER"
+                :state="isValueStreamNameValid"
+                required
+              />
+            </div>
+          </gl-form-group>
+          <gl-form-radio-group
+            v-if="!isEditing"
+            v-model="selectedPreset"
+            class="gl-mb-4"
+            data-testid="vsa-preset-selector"
+            :options="presetOptions"
+            name="preset"
+            @input="onSelectPreset"
+          />
+        </div>
+
+        <div class="gl-border-t gl-pt-5" data-testid="extended-form-fields">
+          <transition-group name="stage-list" tag="div">
+            <div
+              v-for="(stage, activeStageIndex) in stages"
+              ref="formStages"
+              :key="stage.id || stage.transitionKey"
+              class="gl-border-b gl-mb-5 gl-px-5 gl-pb-3"
+            >
+              <custom-stage-fields
+                v-if="stage.custom"
+                :stage-label="stageGroupLabel(activeStageIndex)"
+                :stage="stage"
+                :stage-events="formEvents"
+                :index="activeStageIndex"
+                :total-stages="stages.length"
+                :errors="fieldErrors(activeStageIndex)"
+                :default-group-labels="defaultGroupLabels"
+                @move="handleMove"
+                @remove="onRemove"
+                @input="onFieldInput(activeStageIndex, $event)"
+              />
+              <default-stage-fields
+                v-else
+                :stage-label="stageGroupLabel(activeStageIndex)"
+                :stage="stage"
+                :stage-events="formEvents"
+                :index="activeStageIndex"
+                :total-stages="stages.length"
+                :errors="fieldErrors(activeStageIndex)"
+                @move="handleMove"
+                @hide="onHide"
+                @input="validateStageFields(activeStageIndex)"
+              />
+            </div>
+          </transition-group>
+          <div v-if="hiddenStages.length" class="gl-flex gl-flex-col">
             <gl-form-group
               v-for="(stage, hiddenStageIndex) in hiddenStages"
               :key="stage.id"
+              class="gl-border-b gl-flex gl-pb-3 gl-pr-6"
+              label-class="gl-flex gl-gap-5 gl-float-left"
               data-testid="vsa-hidden-stage"
             >
-              <span class="gl-m-0 gl-mr-3 gl-align-middle gl-font-bold">{{
-                recoverStageTitle(stage.name)
-              }}</span>
+              <template #label>
+                <div class="gl-w-8">&nbsp;</div>
+                <span class="gl-heading-4 gl-mb-0">{{ recoverStageTitle(stage.name) }}</span>
+              </template>
               <gl-button
                 variant="link"
                 :data-testid="restoreActionTestId(hiddenStageIndex)"
@@ -417,16 +423,26 @@ export default {
               >
             </gl-form-group>
           </div>
-          <hr class="gl-mb-5 gl-mt-2" />
-          <value-stream-form-content-actions
-            :is-editing="isEditing"
-            :is-loading="isSubmitting"
-            :value-stream-id="selectedValueStreamId"
-            @clickPrimaryAction="onSubmit"
-            @clickAddStageAction="onAddStage"
-          />
         </div>
-      </div>
+
+        <gl-button
+          class="gl-ml-5"
+          icon="plus"
+          data-testid="add-button"
+          :disabled="isSubmitting"
+          @click="onAddStage"
+          >{{ $options.i18n.BTN_ADD_STAGE }}</gl-button
+        >
+      </crud-component>
+
+      <value-stream-form-content-actions
+        class="gl-mt-6"
+        :is-editing="isEditing"
+        :is-loading="isSubmitting"
+        :value-stream-id="selectedValueStreamId"
+        @clickPrimaryAction="onSubmit"
+        @clickAddStageAction="onAddStage"
+      />
     </gl-form>
   </div>
 </template>
