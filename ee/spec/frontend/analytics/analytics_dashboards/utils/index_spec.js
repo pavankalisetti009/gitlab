@@ -135,13 +135,10 @@ describe('Analytics dashboard utils', () => {
 
     describe('dashboard details cache', () => {
       it('updates an existing dashboard', () => {
-        const existingDashboard = getGraphQLDashboard(
-          {
-            slug: 'some_existing_dash',
-            title: 'some existing title',
-          },
-          false,
-        );
+        const existingDashboard = getGraphQLDashboard({
+          slug: 'some_existing_dash',
+          title: 'some existing title',
+        });
         const existingDetailsCache = {
           ...TEST_CUSTOM_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE.data,
         };

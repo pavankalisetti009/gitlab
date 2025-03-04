@@ -70,7 +70,7 @@ import {
   TEST_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE,
   TEST_CUSTOM_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE,
   TEST_VISUALIZATIONS_GRAPHQL_SUCCESS_RESPONSE,
-  getGraphQLDashboard,
+  getGraphQLDashboardWithPanels,
   mockDateRangeFilterChangePayload,
   mockFilteredSearchChangePayload,
 } from '../mock_data';
@@ -589,7 +589,9 @@ describe('AnalyticsDashboard', () => {
       ({ userDefined, slug, editingEnabled }) => {
         beforeEach(async () => {
           setupDashboard(
-            createDashboardGraphqlSuccessResponse(getGraphQLDashboard({ userDefined, slug })),
+            createDashboardGraphqlSuccessResponse(
+              getGraphQLDashboardWithPanels({ userDefined, slug }),
+            ),
             slug,
           );
 
@@ -854,7 +856,9 @@ describe('AnalyticsDashboard', () => {
   `('when a dashboard is userDefined=$userDefined is viewed', ({ userDefined, event, title }) => {
     beforeEach(() => {
       setupDashboard(
-        createDashboardGraphqlSuccessResponse(getGraphQLDashboard({ userDefined, title })),
+        createDashboardGraphqlSuccessResponse(
+          getGraphQLDashboardWithPanels({ userDefined, title }),
+        ),
       );
 
       return waitForPromises();
@@ -894,7 +898,9 @@ describe('AnalyticsDashboard', () => {
       'when the dashboard slug is "$slug" and userDefined is $userDefined then the banner is $showsBanner',
       async ({ slug, userDefined, showsBanner }) => {
         setupDashboard(
-          createDashboardGraphqlSuccessResponse(getGraphQLDashboard({ slug, userDefined })),
+          createDashboardGraphqlSuccessResponse(
+            getGraphQLDashboardWithPanels({ slug, userDefined }),
+          ),
         );
 
         await waitForPromises();
@@ -910,7 +916,7 @@ describe('AnalyticsDashboard', () => {
 
     const setupGroupDashboardWithFilters = (filters) => {
       setupDashboard(
-        createGroupDashboardGraphqlSuccessResponse(getGraphQLDashboard({ filters })),
+        createGroupDashboardGraphqlSuccessResponse(getGraphQLDashboardWithPanels({ filters })),
         'test-dashboard-with-filters',
       );
 
@@ -927,7 +933,7 @@ describe('AnalyticsDashboard', () => {
 
     const setupDashboardWithFilters = (filters) => {
       setupDashboard(
-        createDashboardGraphqlSuccessResponse(getGraphQLDashboard({ filters })),
+        createDashboardGraphqlSuccessResponse(getGraphQLDashboardWithPanels({ filters })),
         'test-dashboard-with-filters',
       );
       createWrapper({});
