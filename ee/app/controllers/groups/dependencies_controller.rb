@@ -9,6 +9,7 @@ module Groups
       push_frontend_feature_flag(:group_level_dependencies_filtering_by_packager, group)
       push_frontend_feature_flag(:version_filtering_on_group_level_dependency_list, group)
       push_frontend_feature_flag(:dependency_paths, group)
+      push_frontend_feature_flag(:group_dependency_list_csv_export, group)
     end
 
     before_action :authorize_read_dependency_list!
