@@ -21327,6 +21327,7 @@ CREATE TABLE security_orchestration_policy_configurations (
     updated_at timestamp with time zone NOT NULL,
     configured_at timestamp with time zone,
     namespace_id bigint,
+    experiments jsonb DEFAULT '{}'::jsonb NOT NULL,
     CONSTRAINT cop_configs_project_or_namespace_existence CHECK (((project_id IS NULL) <> (namespace_id IS NULL)))
 );
 

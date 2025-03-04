@@ -71,7 +71,7 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
   end
 
   describe 'validations' do
-    subject { create(:security_orchestration_policy_configuration) }
+    subject(:configuration) { create(:security_orchestration_policy_configuration) }
 
     context 'when created for project' do
       it { is_expected.not_to validate_presence_of(:namespace) }
@@ -88,6 +88,40 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
     end
 
     it { is_expected.to validate_presence_of(:security_policy_management_project) }
+
+    describe 'experiments field' do
+      context 'when provided nil as experiments value' do
+        it 'is valid' do
+          configuration.experiments = nil
+
+          expect(configuration).to be_valid
+        end
+      end
+
+      context 'when provided {} as experiments value' do
+        it 'is valid' do
+          configuration.experiments = {}
+
+          expect(configuration).to be_valid
+        end
+      end
+
+      context 'when provided invalid experiments value' do
+        it 'is invalid' do
+          configuration.experiments = { test_feature: true }
+
+          expect(configuration).to be_invalid
+        end
+      end
+
+      context 'when provided valid experiments value' do
+        it 'is valid' do
+          configuration.experiments = { test_feature: { enabled: true, configuration: { key: 'value' } } }
+
+          expect(configuration).to be_valid
+        end
+      end
+    end
   end
 
   describe '.for_project' do
@@ -674,12 +708,14 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
     let(:scan_execution_policy) { nil }
     let(:scan_result_policy) { nil }
     let(:pipeline_execution_policy) { nil }
+    let(:experiments) { {} }
 
     let(:policy_yaml) do
       {
         scan_execution_policy: [scan_execution_policy].compact,
         scan_result_policy: [scan_result_policy].compact,
-        pipeline_execution_policy: [pipeline_execution_policy].compact
+        pipeline_execution_policy: [pipeline_execution_policy].compact,
+        experiments: experiments
       }
     end
 
@@ -787,6 +823,71 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
             projects: [
               { id: 3 }
             ]
+          }
+        end
+
+        specify { expect(errors).not_to be_empty }
+      end
+    end
+
+    describe 'experiments' do
+      context 'with empty object' do
+        let(:experiments) { {} }
+
+        specify { expect(errors).to be_empty }
+      end
+
+      context 'with valid experiments configuration' do
+        let(:experiments) do
+          {
+            'test_feature' => {
+              'enabled' => true,
+              'configuration' => {
+                'option1' => 'value1',
+                'option2' => 42
+              }
+            },
+            'another_feature' => {
+              'enabled' => false
+            }
+          }
+        end
+
+        specify { expect(errors).to be_empty }
+      end
+
+      context 'with invalid feature name format' do
+        let(:experiments) do
+          {
+            'Invalid-Feature' => {
+              'enabled' => true
+            }
+          }
+        end
+
+        specify { expect(errors).not_to be_empty }
+      end
+
+      context 'with missing enabled field' do
+        let(:experiments) do
+          {
+            'test_feature' => {
+              'configuration' => {
+                'option1' => 'value1'
+              }
+            }
+          }
+        end
+
+        specify { expect(errors).not_to be_empty }
+      end
+
+      context 'with invalid enabled field type' do
+        let(:experiments) do
+          {
+            'test_feature' => {
+              'enabled' => 'yes'
+            }
           }
         end
 
@@ -3133,6 +3234,83 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
 
     it 'excludes the scheduled policies' do
       expect(active_scan_policies).to contain_exactly(dast_policy, container_scanning_policy)
+    end
+  end
+
+  describe '#experiment_enabled?' do
+    let(:name_of_the_feature) { 'test_feature' }
+
+    before do
+      security_orchestration_policy_configuration.experiments = experiments
+    end
+
+    context 'when experiments field is empty' do
+      let(:experiments) { {} }
+
+      it { expect(security_orchestration_policy_configuration.experiment_enabled?(name_of_the_feature)).to be_falsey }
+    end
+
+    context 'when experiments field is nil' do
+      let(:experiments) { nil }
+
+      it { expect(security_orchestration_policy_configuration.experiment_enabled?(name_of_the_feature)).to be_falsey }
+    end
+
+    context 'when feature is not present in experiments' do
+      let(:experiments) { { 'other_feature' => { 'enabled' => true } } }
+
+      it { expect(security_orchestration_policy_configuration.experiment_enabled?(name_of_the_feature)).to be_falsey }
+    end
+
+    context 'when feature is disabled' do
+      let(:experiments) { { 'test_feature' => { 'enabled' => false } } }
+
+      it { expect(security_orchestration_policy_configuration.experiment_enabled?(name_of_the_feature)).to be_falsey }
+    end
+
+    context 'when feature is enabled' do
+      let(:experiments) { { 'test_feature' => { 'enabled' => true } } }
+
+      it { expect(security_orchestration_policy_configuration.experiment_enabled?(name_of_the_feature)).to be_truthy }
+    end
+  end
+
+  describe '#experiment_configuration' do
+    let(:name_of_the_feature) { 'test_feature' }
+
+    before do
+      security_orchestration_policy_configuration.experiments = experiments
+    end
+
+    context 'when experiments field is empty' do
+      let(:experiments) { {} }
+
+      it { expect(security_orchestration_policy_configuration.experiment_configuration(name_of_the_feature)).to eq({}) }
+    end
+
+    context 'when experiments field is nil' do
+      let(:experiments) { nil }
+
+      it { expect(security_orchestration_policy_configuration.experiment_configuration(name_of_the_feature)).to eq({}) }
+    end
+
+    context 'when feature is not present in experiments' do
+      let(:experiments) { { 'other_feature' => { 'configuration' => { 'option' => 'value' } } } }
+
+      it { expect(security_orchestration_policy_configuration.experiment_configuration(name_of_the_feature)).to eq({}) }
+    end
+
+    context 'when feature has no configuration' do
+      let(:experiments) { { 'test_feature' => { 'enabled' => true } } }
+
+      it { expect(security_orchestration_policy_configuration.experiment_configuration(name_of_the_feature)).to eq({}) }
+    end
+
+    context 'when feature has configuration' do
+      let(:configuration) { { 'option' => 'value', 'another_option' => 123 } }
+      let(:experiments) { { 'test_feature' => { 'enabled' => true, 'configuration' => configuration } } }
+
+      it { expect(security_orchestration_policy_configuration.experiment_configuration(name_of_the_feature)).to eq(configuration) }
     end
   end
 

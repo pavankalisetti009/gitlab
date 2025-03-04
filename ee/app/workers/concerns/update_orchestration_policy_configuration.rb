@@ -12,6 +12,8 @@ module UpdateOrchestrationPolicyConfiguration
       return
     end
 
+    update_experiments_configuration!(configuration)
+
     unless configuration.policies_changed?
       update_configuration_timestamp!(configuration)
       return
@@ -31,6 +33,12 @@ module UpdateOrchestrationPolicyConfiguration
   end
 
   private
+
+  def update_experiments_configuration!(configuration)
+    Security::SecurityOrchestrationPolicies::UpdateExperimentsService.new(
+      policy_configuration: configuration
+    ).execute
+  end
 
   def update_configuration_timestamp!(configuration)
     configuration.update!(configured_at: Time.current)
