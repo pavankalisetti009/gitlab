@@ -14,7 +14,7 @@ title: Interactive web terminals
 
 Interactive web terminals give the user access to a terminal in GitLab for
 running one-off commands for their CI pipeline. You can think of it like a method for
-debugging with SSH, but done directly from the job page. Since this is giving the user
+debugging with SSH, but done directly from the job page. Because this is giving the user
 shell access to the environment where [GitLab Runner](https://docs.gitlab.com/runner/)
 is deployed, some [security precautions](../../administration/integration/terminal.md#security) were
 taken to protect the users.
