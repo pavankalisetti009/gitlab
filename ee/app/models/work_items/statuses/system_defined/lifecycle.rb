@@ -13,13 +13,21 @@ module WorkItems
           {
             id: 1,
             name: 'Default',
-            work_item_base_types: [:issue, :task]
+            work_item_base_types: [:issue, :task],
+            status_ids: [1, 2, 3, 4, 5],
+            default_open_status_id: 1,
+            default_closed_status_id: 3,
+            default_duplicate_status_id: 5
           }
         ].freeze
 
         attribute :id, :integer
         attribute :name, :string
         attribute :work_item_base_types
+        attribute :status_ids
+        attribute :default_open_status_id, :integer
+        attribute :default_closed_status_id, :integer
+        attribute :default_duplicate_status_id, :integer
 
         class << self
           def of_work_item_base_type(base_type)
@@ -36,11 +44,23 @@ module WorkItems
         end
 
         def statuses
-          Status.where(lifecycle_id: id)
+          Status.where(id: status_ids)
         end
 
         def find_available_status_by_name(name)
           statuses.find { |status| status.matches_name?(name) }
+        end
+
+        def default_open_status
+          Status.find(default_open_status_id)
+        end
+
+        def default_closed_status
+          Status.find(default_closed_status_id)
+        end
+
+        def default_duplicate_status
+          Status.find(default_duplicate_status_id)
         end
       end
     end

@@ -15,40 +15,32 @@ module WorkItems
             id: 1,
             name: 'To do',
             color: '#737278',
-            category: :to_do,
-            default_open: true,
-            lifecycle_id: 1
+            category: :to_do
           },
           {
             id: 2,
             name: 'In progress',
             color: '#1f75cb',
-            category: :in_progress,
-            lifecycle_id: 1
+            category: :in_progress
           },
           {
             id: 3,
             name: 'Done',
             color: '#108548',
-            category: :done,
-            default_closed: true,
-            lifecycle_id: 1
+            category: :done
           },
           {
             id: 4,
             name: "Won't do",
             color: '#DD2B0E',
-            category: :cancelled,
-            lifecycle_id: 1
+            category: :cancelled
           },
           {
             id: 5,
             name: 'Duplicate',
             color: '#DD2B0E',
             category: :cancelled,
-            default_duplicated: true,
-            position: 10,
-            lifecycle_id: 1
+            position: 10
           }
         ].freeze
 
@@ -56,11 +48,10 @@ module WorkItems
         attribute :name, :string
         attribute :color, :string
         attribute :category
+        # For custom statuses position will be on the join model between
+        # custom lifecycle and custom status to allow modification per lifecycle.
+        # We don't plan to change the position of the status for system defined lifecycles.
         attribute :position, :integer, default: 0
-        attribute :default_open, :boolean, default: false
-        attribute :default_closed, :boolean, default: false
-        attribute :default_duplicated, :boolean, default: false
-        attribute :lifecycle_id, :integer
 
         def icon_name
           CATEGORY_ICONS[category]
