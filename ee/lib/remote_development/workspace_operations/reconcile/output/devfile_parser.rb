@@ -11,11 +11,11 @@ module RemoteDevelopment
           include ReconcileConstants
 
           # @param [String] processed_devfile
-          # @param [Hash] k8s_resources_params
+          # @param [Hash] params
           # @param [RemoteDevelopment::Logger] logger
           # @return [Array<Hash>]
-          def self.get_all(processed_devfile:, k8s_resources_params:, logger:)
-            k8s_resources_params => {
+          def self.get_all(processed_devfile:, params:, logger:)
+            params => {
               name: String => name,
               namespace: String => namespace,
               replicas: Integer => replicas,

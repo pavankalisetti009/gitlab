@@ -450,10 +450,10 @@ RSpec.shared_context 'with remote development shared fixtures' do
     unless core_resources_only
       resources << workspace_service_account
       resources << workspace_network_policy if include_network_policy
+      resources << workspace_secrets_inventory if include_inventory
 
       if include_all_resources
         resources << workspace_resource_quota unless max_resources_per_workspace.blank?
-        resources << workspace_secrets_inventory if include_inventory
         resources << workspace_secret_environment
         resources << workspace_secret_file
       end

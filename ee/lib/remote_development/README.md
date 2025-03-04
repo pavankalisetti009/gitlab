@@ -368,6 +368,43 @@ end
 
 You can choose which is more appropriate for your use case.
 
+#### Usage of variables in pattern matching
+
+You can also use variables in pattern matching. In the following example, `id_to_find` is used in
+the pattern match via
+[the `^` pattern operator](https://docs.ruby-lang.org/en/master/syntax/pattern_matching_rdoc.html#label-Appendix+A.+Pattern+syntax)
+
+```ruby
+id_to_find = 2
+hash = [{ id: 1, value: "a" }, { id: 2, value: "b" }, { id: 3, value: "c" }]
+hash => [
+  *_,
+  {
+    id: ^id_to_find,
+    value: value
+  },
+  *_
+]
+puts value # => b
+```
+
+You can also use expressions via the `^(....)` pattern operator:
+
+```ruby
+major_release = 1
+minor_release = 2
+hash = [{ id: "1.1", value: "a" }, { id: "1.2", value: "b" }, { id: "1.3", value: "c" }]
+hash => [
+  *_,
+  {
+    id: ^("#{major_release}.#{minor_release}"),
+    value: value
+  },
+  *_
+]
+puts value # => b
+```
+
 #### Do not use type safety on unvalidated user-provided values
 
 We do not want to use type safety on values which come directly from user input, and have not yet been validated.
