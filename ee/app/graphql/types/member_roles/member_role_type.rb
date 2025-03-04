@@ -62,6 +62,10 @@ module Types
       def details_path
         member_role_details_path(object)
       end
+
+      def enabled_permissions
+        object.enabled_permissions(current_user).keys
+      end
     end
     # rubocop: enable Graphql/AuthorizeTypes
   end

@@ -33,7 +33,7 @@ module Authz
       return false if resource.is_a?(::Group) && !ability.group_ability_enabled?
       return false if resource.is_a?(::Project) && !ability.project_ability_enabled?
       return false if resource.blank? && !ability.admin_ability_enabled?
-      return false unless ::MemberRole.permission_enabled?(ability.name, user)
+      return false unless permission_enabled?(ability)
 
       custom_roles_enabled?
     end
@@ -44,6 +44,12 @@ module Authz
       return true unless resource.respond_to?(:custom_roles_enabled?)
 
       resource.custom_roles_enabled?
+    end
+
+    def permission_enabled?(ability)
+      return ::MemberRole.admin_permission_enabled?(ability.name) if ability.admin_ability_enabled?
+
+      ::MemberRole.permission_enabled?(ability.name, user)
     end
 
     def abilities_for_projects(projects)

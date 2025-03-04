@@ -94,10 +94,14 @@ module EE
       return false if ::Gitlab::Access::OWNER == group.max_member_access_for_user(current_user)
 
       current_member = group.highest_group_member(current_user)
-      current_member_enabled_abilities = current_member.member_role&.enabled_permissions
-      new_member_enabled_abilities = MemberRole.find_by_id(member_role_id)&.enabled_permissions
 
-      (new_member_enabled_abilities - current_member_enabled_abilities).present?
+      current_member_role = current_member.member_role
+      current_member_role_abilities = member_role_abilities(current_member_role, current_user)
+
+      new_member_role = MemberRole.find_by_id(member_role_id)
+      new_member_role_abilities = member_role_abilities(new_member_role, current_user)
+
+      (new_member_role_abilities - current_member_role_abilities).present?
     end
 
     private
@@ -140,6 +144,12 @@ module EE
       return unless user&.security_policy_bot?
 
       errors.add(:member_user_type, _("Security policy bot cannot be added as a group member"))
+    end
+
+    def member_role_abilities(member_role, current_user)
+      return [] unless member_role
+
+      member_role.enabled_permissions(current_user).keys
     end
   end
 end

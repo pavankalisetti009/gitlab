@@ -39,8 +39,8 @@ module Types
 
       def available_for
         result = []
-        result << :project if MemberRole.all_customizable_project_permissions.include?(object)
-        result << :group if MemberRole.all_customizable_group_permissions.include?(object)
+        result << :project if permission[:project_ability]
+        result << :group if permission[:group_ability]
 
         result
       end

@@ -420,9 +420,9 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
 
   describe '.permission_enabled?' do
     let(:user) { build(:user) }
-    let(:ability) { :my_custom_ability }
+    let(:ability) { :read_code }
 
-    subject { described_class.permission_enabled?(ability, user) }
+    subject(:permission_enabled) { described_class.permission_enabled?(ability, user) }
 
     where(:flag_exists, :flag_enabled, :expected_result) do
       true  | false | false
@@ -433,26 +433,60 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
     with_them do
       before do
         if flag_exists
-          stub_feature_flag_definition("custom_ability_#{ability}")
-          stub_feature_flags("custom_ability_#{ability}" => flag_enabled ? user : flag_enabled)
+          stub_feature_flag_definition("custom_ability_read_code")
+          stub_feature_flags("custom_ability_read_code" => flag_enabled ? user : false)
         end
       end
 
       it { is_expected.to eq(expected_result) }
     end
+  end
 
-    context 'with an admin permission' do
-      let(:ability) { :read_admin_dashboard }
+  describe '.admin_permission_enabled?' do
+    let(:ability) { :read_admin_dashboard }
 
+    subject(:admin_permission_enabled) { described_class.admin_permission_enabled?(ability) }
+
+    where(:flag_exists, :flag_enabled, :expected_result) do
+      true  | false | false
+      true  | true  | true
+      false | true  | true
+    end
+
+    with_them do
       before do
-        allow(described_class).to receive_messages(
-          all_customizable_permissions: {
-            read_code: { description: 'Test permission' },
-            read_admin_dashboard: { description: 'Test admin permission' }
-          },
-          all_customizable_admin_permissions: { read_admin_dashboard: { description: 'Test admin permission' } }
-        )
+        if flag_exists
+          stub_feature_flag_definition("custom_ability_read_admin_dashboard")
+          stub_feature_flags(custom_ability_read_admin_dashboard: flag_enabled)
+        end
       end
+
+      context 'when the custom_admin_roles feature flag is disabled' do
+        before do
+          stub_feature_flags(custom_admin_roles: false)
+        end
+
+        it { is_expected.to be false }
+      end
+
+      context 'when the custom_admin_roles feature flag is enabled' do
+        before do
+          stub_feature_flags(custom_admin_roles: true)
+        end
+
+        it { is_expected.to eq(expected_result) }
+      end
+    end
+  end
+
+  describe '#admin_related_role?' do
+    let_it_be(:admin_member_role) { build(:member_role, :admin) }
+    let_it_be(:standard_member_role) { build(:member_role, :instance) }
+
+    subject(:admin_related_role) { member_role.admin_related_role? }
+
+    context 'when member role has admin permissions enabled' do
+      let(:member_role) { admin_member_role }
 
       it { is_expected.to be true }
 
@@ -463,18 +497,46 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
 
         it { is_expected.to be false }
       end
+
+      context 'when the admin permission is behind a disabled feature flag' do
+        before do
+          stub_feature_flag_definition("custom_ability_read_admin_dashboard")
+          stub_feature_flags(custom_ability_read_admin_dashboard: false)
+        end
+
+        it { is_expected.to be false }
+      end
+
+      context 'when member role has multiple admin permissions enabled' do
+        let(:member_role) { build(:member_role, :read_code, :read_admin_dashboard, :read_admin_monitoring) }
+
+        before do
+          stub_feature_flag_definition("custom_ability_read_admin_dashboard")
+          stub_feature_flag_definition("custom_ability_read_admin_monitoring")
+
+          stub_feature_flags(custom_ability_read_admin_dashboard: true)
+          stub_feature_flags(custom_ability_read_admin_monitoring: false)
+        end
+
+        it { is_expected.to be true }
+      end
+    end
+
+    context 'when member role has standard permissions enabled' do
+      let(:member_role) { standard_member_role }
+
+      it { is_expected.to be false }
     end
   end
 
-  describe '#enabled_permission_items' do
-    let(:member_role) { build_stubbed(:member_role, read_code: true, read_vulnerability: true, read_dependency: false) }
+  describe '#enabled_permissions' do
+    let_it_be(:user) { build(:user) }
+    let_it_be(:member_role) { build(:member_role, read_code: true, read_vulnerability: true, read_dependency: false) }
+
+    subject(:enabled_permissions) { member_role.enabled_permissions(user) }
 
     it 'returns the list of enabled permissions' do
-      expect(member_role.enabled_permission_items).to match_array([
-        [:read_code, hash_including(:name, :description)],
-        [:read_vulnerability,
-          hash_including(:name, :description)]
-      ])
+      expect(enabled_permissions.keys).to match_array([:read_code, :read_vulnerability])
     end
 
     context 'when a permission is behind a disabled feature flag' do
@@ -484,16 +546,8 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
       end
 
       it 'does not include the ability' do
-        expect(member_role.enabled_permission_items).not_to include(:read_vulnerability)
+        expect(enabled_permissions.keys).to match_array([:read_code])
       end
-    end
-  end
-
-  describe '#enabled_permissions' do
-    let(:member_role) { build_stubbed(:member_role, read_code: true, read_vulnerability: true, read_dependency: false) }
-
-    it 'returns the list of enabled permission keys' do
-      expect(member_role.enabled_permissions).to match_array([:read_code, :read_vulnerability])
     end
   end
 

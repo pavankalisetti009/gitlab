@@ -10,8 +10,9 @@ RSpec.describe MemberRoles::CreateService, feature_category: :system_access do
     let(:params) do
       {
         namespace: group,
-        name: 'new name', read_vulnerability: true,
-        admin_merge_request: true, base_access_level: Gitlab::Access::GUEST
+        name: 'new name',
+        read_vulnerability: true, admin_merge_request: true,
+        base_access_level: Gitlab::Access::GUEST
       }
     end
 
@@ -75,7 +76,7 @@ RSpec.describe MemberRoles::CreateService, feature_category: :system_access do
                 target_details: {
                   name: operation.name,
                   description: operation.description,
-                  abilities: operation.enabled_permissions.join(', ')
+                  abilities: "admin_merge_request, read_vulnerability"
                 }.to_s,
                 custom_message: 'Member role was created',
                 author_class: user.class.name

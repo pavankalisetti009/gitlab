@@ -9,6 +9,8 @@ RSpec.describe Preloaders::UserMemberRolesForAdminPreloader, feature_category: :
   subject(:result) { described_class.new(user: user).execute }
 
   shared_examples 'custom roles' do |ability|
+    let_it_be(:member_role) { create(:admin_role, ability, user: user) }
+
     let(:expected_abilities) { [ability].compact }
 
     context 'when custom_roles license is enabled' do
@@ -16,27 +18,19 @@ RSpec.describe Preloaders::UserMemberRolesForAdminPreloader, feature_category: :
         stub_licensed_features(custom_roles: true)
       end
 
-      context 'when group has custom role' do
-        let_it_be(:member_role) do
-          create(:admin_role, ability, user: user)
+      context 'when ability is enabled' do
+        it 'returns all allowed abilities' do
+          expect(result).to eq({ admin: expected_abilities })
+        end
+      end
+
+      context 'when ability is disabled' do
+        before do
+          stub_feature_flag_definition("custom_ability_#{ability}")
+          stub_feature_flags("custom_ability_#{ability}" => false)
         end
 
-        context 'when custom role has ability: true' do
-          it 'returns all allowed abilities' do
-            expect(result).to eq({ admin: expected_abilities })
-          end
-
-          context "when `#{ability}` is disabled" do
-            before do
-              allow(::MemberRole).to receive(:permission_enabled?)
-                .and_call_original
-              allow(::MemberRole).to receive(:permission_enabled?)
-                .with(ability, user).and_return(false)
-            end
-
-            it { expect(result).to eq({ admin: [] }) }
-          end
-        end
+        it { expect(result).to eq({ admin: [] }) }
       end
     end
   end

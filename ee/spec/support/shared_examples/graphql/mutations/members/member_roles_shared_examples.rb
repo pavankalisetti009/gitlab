@@ -15,7 +15,8 @@ RSpec.shared_examples 'a mutation that creates a member role' do
       .to change { MemberRole.count }.by(1)
 
     member_role = MemberRole.last
+    enabled_permissions = member_role.enabled_permissions(current_user).keys
 
-    expect(member_role.enabled_permissions).to match_array(enabled_permissions_result)
+    expect(enabled_permissions).to match_array(enabled_permissions_result)
   end
 end
