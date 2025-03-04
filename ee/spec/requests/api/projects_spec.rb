@@ -2237,7 +2237,7 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
 
     shared_context 'same namespace' do
       let_it_be_with_reload(:target_namespace) do
-        create(:group, parent: source_group, project_creation_level: ::Gitlab::Access::DEVELOPER_MAINTAINER_PROJECT_ACCESS)
+        create(:group, parent: source_group, project_creation_level: ::Gitlab::Access::DEVELOPER_PROJECT_ACCESS)
       end
 
       let_it_be_with_reload(:project_fork_target) { create(:project, :public, namespace: target_namespace) }
@@ -2245,7 +2245,7 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
 
     shared_context 'different namespace' do
       let_it_be_with_reload(:target_namespace) do
-        create(:group, project_creation_level: ::Gitlab::Access::DEVELOPER_MAINTAINER_PROJECT_ACCESS)
+        create(:group, project_creation_level: ::Gitlab::Access::DEVELOPER_PROJECT_ACCESS)
       end
 
       let_it_be_with_reload(:project_fork_target) { create(:project, :public, namespace: target_namespace) }

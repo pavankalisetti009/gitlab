@@ -78,7 +78,7 @@ RSpec.describe Projects::CreateService, '#execute', feature_category: :groups_an
     end
 
     context 'when the user is allowed to create projects within the namespace' do
-      let(:project_creation_level) { Gitlab::Access::DEVELOPER_MAINTAINER_PROJECT_ACCESS }
+      let(:project_creation_level) { Gitlab::Access::DEVELOPER_PROJECT_ACCESS }
 
       it 'creates a project' do
         expect(created_project).to be_persisted

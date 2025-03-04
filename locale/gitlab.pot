@@ -45129,22 +45129,22 @@ msgstr ""
 msgid "ProjectCreationLevel|Administrators"
 msgstr ""
 
-msgid "ProjectCreationLevel|Default project creation protection"
+msgid "ProjectCreationLevel|Default minimum role required to create projects"
 msgstr ""
 
-msgid "ProjectCreationLevel|Developers + Maintainers"
+msgid "ProjectCreationLevel|Developers"
 msgstr ""
 
 msgid "ProjectCreationLevel|Maintainers"
+msgstr ""
+
+msgid "ProjectCreationLevel|Minimum role required to create projects"
 msgstr ""
 
 msgid "ProjectCreationLevel|No one"
 msgstr ""
 
 msgid "ProjectCreationLevel|Owners"
-msgstr ""
-
-msgid "ProjectCreationLevel|Roles allowed to create projects"
 msgstr ""
 
 msgid "ProjectFileTree|Name"
