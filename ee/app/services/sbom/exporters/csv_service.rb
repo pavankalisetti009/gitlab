@@ -54,8 +54,6 @@ module Sbom
         end
 
         def write_part(export, file)
-          # Tempfile doesn't support passing a block to open
-          # What class is this on Rails?
           file.open do |stream|
             # Read past the CSV header
             stream.readline
