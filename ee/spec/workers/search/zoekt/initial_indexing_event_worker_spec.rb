@@ -70,6 +70,34 @@ RSpec.describe Search::Zoekt::InitialIndexingEventWorker, :zoekt_settings_enable
           expect(zoekt_repositories_for_index(zoekt_index).pluck(:project_id)).to contain_exactly(first_project_id)
           expect(zoekt_repositories_for_index(zoekt_index).all?(&:pending?)).to be true
         end
+
+        it 're-emits the event when not all repositories are created' do
+          # Since we limited BATCH_SIZE and INSERT_LIMIT to 1, and we have more than one project,
+          # create_repositories should return false, triggering a reemission
+          expect(Gitlab::EventStore).to receive(:publish) do |event|
+            expect(event).to be_a(Search::Zoekt::InitialIndexingEvent)
+            expect(event.data[:index_id]).to eq(zoekt_index.id)
+          end
+
+          consume_event(subscriber: described_class, event: event)
+        end
+
+        it 'calls create_repositories with correct parameters and re-emits when false is returned' do
+          # We want to verify the actual call to create_repositories without mocking it
+          worker = described_class.new
+          allow(worker).to receive_messages(find_index: zoekt_index, find_namespace: namespace)
+
+          # Spy on create_repositories to verify parameters
+          expect(worker).to receive(:create_repositories)
+            .with(namespace: namespace, index: zoekt_index)
+            .and_call_original
+
+          # The test environment will use our stubbed constants, returning false
+          # from create_repositories, which should trigger reemit_event
+          expect(worker).to receive(:reemit_event).with(index_id: zoekt_index.id)
+
+          worker.handle_event(event)
+        end
       end
     end
 
@@ -118,6 +146,83 @@ RSpec.describe Search::Zoekt::InitialIndexingEventWorker, :zoekt_settings_enable
         consume_event(subscriber: described_class, event: event)
         expect(zoekt_repositories_for_index(zoekt_index).count).to eq 0
       end
+    end
+  end
+
+  describe 'event reemission' do
+    context 'when create_repositories returns false' do
+      before do
+        # Mock create_repositories to return false, simulating not all repos being created
+        allow_next_instance_of(described_class) do |instance|
+          allow(instance).to receive(:create_repositories).and_return(false)
+        end
+      end
+
+      it 'reemits the event and does not set the index to initializing' do
+        expect(Gitlab::EventStore).to receive(:publish) do |event|
+          expect(event).to be_a(Search::Zoekt::InitialIndexingEvent)
+          expect(event.data[:index_id]).to eq(zoekt_index.id)
+        end
+
+        # The index should remain in pending state
+        expect { consume_event(subscriber: described_class, event: event) }
+          .not_to change { zoekt_index.reload.state }.from('pending')
+      end
+    end
+
+    context 'with a low INSERT_LIMIT and multiple projects' do
+      before do
+        # Create more projects than our INSERT_LIMIT to trigger reemission
+        5.times { create(:project, namespace: namespace) }
+        stub_const("#{described_class}::INSERT_LIMIT", 2)
+      end
+
+      it 'creates some repositories and reemits the event' do
+        # Expect the event to be published
+        expect(Gitlab::EventStore).to receive(:publish) do |event|
+          expect(event).to be_a(Search::Zoekt::InitialIndexingEvent)
+          expect(event.data[:index_id]).to eq(zoekt_index.id)
+        end
+
+        # The index should remain in pending state
+        expect { consume_event(subscriber: described_class, event: event) }
+          .not_to change { zoekt_index.reload.state }.from('pending')
+
+        # Some repositories should be created - the exact count depends on implementation
+        # but they should be created up to the INSERT_LIMIT
+        created_repos = zoekt_repositories_for_index(zoekt_index)
+        expect(created_repos.count).to be > 0
+      end
+    end
+
+    it 'reemits the event when create_repositories returns false' do
+      worker = described_class.new
+      allow(worker).to receive_messages(find_index: zoekt_index, find_namespace: namespace, create_repositories: false)
+
+      expect(worker).to receive(:reemit_event).with(index_id: zoekt_index.id)
+
+      worker.handle_event(event)
+    end
+
+    it 'does not reemit the event when create_repositories returns true' do
+      worker = described_class.new
+      allow(worker).to receive_messages(find_index: zoekt_index, find_namespace: namespace, create_repositories: true)
+
+      expect(worker).not_to receive(:reemit_event)
+      expect(zoekt_index).to receive(:initializing!)
+
+      worker.handle_event(event)
+    end
+
+    it 'publishes the initial indexing event with the same index_id' do
+      worker = described_class.new
+
+      expect(Gitlab::EventStore).to receive(:publish) do |published_event|
+        expect(published_event).to be_a(Search::Zoekt::InitialIndexingEvent)
+        expect(published_event.data[:index_id]).to eq(zoekt_index.id)
+      end
+
+      worker.send(:reemit_event, index_id: zoekt_index.id)
     end
   end
 
