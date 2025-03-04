@@ -329,6 +329,28 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
     end
   end
 
+  describe '#require_dpop_for_manage_api_endpoints?' do
+    context 'when require_dpop_for_manage_api_endpoints = true' do
+      before do
+        setting.require_dpop_for_manage_api_endpoints = true
+      end
+
+      it 'returns true' do
+        expect(setting.require_dpop_for_manage_api_endpoints?).to eq(true)
+      end
+    end
+
+    context 'when require_dpop_for_manage_api_endpoints = false' do
+      before do
+        setting.require_dpop_for_manage_api_endpoints = false
+      end
+
+      it 'returns false' do
+        expect(setting.require_dpop_for_manage_api_endpoints?).to eq(false)
+      end
+    end
+  end
+
   describe '#user_cap_enabled?', feature_category: :consumables_cost_management do
     where(:seat_control, :new_user_signups_cap, :root_namespace, :expectation) do
       :off      | nil | false | false
