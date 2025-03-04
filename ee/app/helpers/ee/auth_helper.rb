@@ -118,6 +118,8 @@ module EE
           docs_path: help_page_path('user/profile/service_accounts.md')
         },
         access_token: {
+          **expires_at_field_data,
+          create: expose_url(api_v4_users_personal_access_tokens_path(user_id: ':id')),
           revoke: expose_url(api_v4_personal_access_tokens_path),
           rotate: expose_url(api_v4_personal_access_tokens_path),
           show: expose_url(api_v4_personal_access_tokens_path)
@@ -133,6 +135,8 @@ module EE
           docs_path: help_page_path('user/profile/service_accounts.md')
         },
         access_token: {
+          **expires_at_field_data,
+          create: expose_url(api_v4_groups_service_accounts_personal_access_tokens_path(id: group.id, user_id: ':id')),
           revoke: expose_url(api_v4_groups_service_accounts_personal_access_tokens_path(id: group.id, user_id: ':id')),
           rotate: expose_url(api_v4_groups_service_accounts_personal_access_tokens_path(id: group.id, user_id: ':id')),
           show: expose_url(api_v4_personal_access_tokens_path)
