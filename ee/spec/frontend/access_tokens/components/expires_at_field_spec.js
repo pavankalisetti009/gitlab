@@ -1,9 +1,9 @@
 import { mount } from '@vue/test-utils';
-import { nextTick } from 'vue';
 import { GlDatepicker } from '@gitlab/ui';
 
 import ExpiresAtField from '~/access_tokens/components/expires_at_field.vue';
 import MaxExpirationDateMessage from 'ee/access_tokens/components/max_expiration_date_message.vue';
+import waitForPromises from 'helpers/wait_for_promises';
 
 describe('~/access_tokens/components/expires_at_field', () => {
   let wrapper;
@@ -42,7 +42,7 @@ describe('~/access_tokens/components/expires_at_field', () => {
 
   it('renders `MaxExpirationDateMessage` message component', async () => {
     createComponent();
-    await nextTick();
+    await waitForPromises();
 
     expect(findMaxExpirationDateMessage().exists()).toBe(true);
   });

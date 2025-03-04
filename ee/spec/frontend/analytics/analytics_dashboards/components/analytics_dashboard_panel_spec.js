@@ -45,7 +45,11 @@ describe('AnalyticsDashboardPanel', () => {
         queryOverrides: mockPanel.queryOverrides,
         ...props,
       },
-      stubs: { PanelsBase, GlSprintf },
+      stubs: {
+        PanelsBase,
+        GlSprintf,
+        LineChart,
+      },
     });
   };
 
