@@ -20909,7 +20909,9 @@ CREATE TABLE resource_milestone_events (
     action smallint NOT NULL,
     state smallint NOT NULL,
     created_at timestamp with time zone NOT NULL,
-    imported_from smallint DEFAULT 0 NOT NULL
+    imported_from smallint DEFAULT 0 NOT NULL,
+    namespace_id bigint DEFAULT 0 NOT NULL,
+    CONSTRAINT check_fa0260b82e CHECK ((num_nonnulls(issue_id, merge_request_id) = 1))
 );
 
 CREATE SEQUENCE resource_milestone_events_id_seq
@@ -31428,6 +31430,8 @@ CREATE INDEX idx_protected_branch_merge_access_levels_protected_branch_proje ON 
 
 CREATE INDEX idx_reminder_frequency_on_work_item_progresses ON work_item_progresses USING btree (reminder_frequency);
 
+CREATE INDEX idx_resource_milestone_events_on_namespace_id ON resource_milestone_events USING btree (namespace_id);
+
 CREATE UNIQUE INDEX idx_sbom_components_on_name_purl_type_component_type_and_org_id ON sbom_components USING btree (name, purl_type, component_type, organization_id);
 
 CREATE INDEX idx_sbom_occurr_on_project_component_version_input_file_path ON sbom_occurrences USING btree (project_id, component_version_id, input_file_path);
@@ -39218,6 +39222,9 @@ ALTER TABLE ONLY issuable_slas
 
 ALTER TABLE ONLY work_item_dates_sources
     ADD CONSTRAINT fk_283fb4ad36 FOREIGN KEY (start_date_sourcing_milestone_id) REFERENCES milestones(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY resource_milestone_events
+    ADD CONSTRAINT fk_2867e9284c FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE NOT VALID;
 
 ALTER TABLE ONLY project_group_links
     ADD CONSTRAINT fk_28a1244b01 FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE NOT VALID;

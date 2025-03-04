@@ -29,7 +29,9 @@ module EE
             return unless both_respond_to?(:resource_weight_events)
 
             copy_events(ResourceWeightEvent.table_name, original_entity.resource_weight_events) do |event|
-              event.attributes.except('id').merge('issue_id' => new_entity.id)
+              event.attributes
+                   .except('id')
+                   .merge('issue_id' => new_entity.id, 'namespace_id' => new_entity.namespace_id)
             end
           end
 

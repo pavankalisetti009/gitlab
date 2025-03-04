@@ -24,6 +24,7 @@ RSpec.describe Gitlab::Issuable::Clone::CopyResourceEventsService do
       subject.execute
 
       expect(new_issue.resource_weight_events.map(&:weight)).to contain_exactly(1, 42, 5)
+      expect(new_issue.resource_weight_events.map(&:namespace_id)).to match_array([new_issue.namespace_id] * 3)
     end
   end
 
