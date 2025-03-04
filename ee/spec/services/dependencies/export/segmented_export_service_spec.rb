@@ -52,6 +52,12 @@ RSpec.describe Dependencies::Export::SegmentedExportService, feature_category: :
 
         expect(export_part.file.file.read).to eq(content)
       end
+
+      it 'writes content when calling original implementation' do
+        export_segment
+
+        expect(export_part.file.file.read.size).to be > 0
+      end
     end
 
     it 'creates the file for the export part' do
@@ -108,6 +114,12 @@ RSpec.describe Dependencies::Export::SegmentedExportService, feature_category: :
         finalise_export
 
         expect(export.file.read).to eq(content)
+      end
+
+      it 'writes content when calling original implementation' do
+        finalise_export
+
+        expect(export.file.read.size).to be > 0
       end
     end
 
