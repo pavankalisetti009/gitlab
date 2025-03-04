@@ -427,4 +427,75 @@ RSpec.describe IssuesFinder, feature_category: :team_planning do
       end
     end
   end
+
+  describe 'filtering by custom fields' do
+    include_context 'with group configured with custom fields'
+
+    let_it_be(:current_user) { create(:user) }
+    let_it_be(:project) { create(:project, group: group, developers: [current_user]) }
+    let_it_be(:issues) { create_list(:issue, 5, project: project) }
+
+    let(:results) { described_class.new(current_user, params).execute }
+
+    before do
+      stub_licensed_features(custom_fields: true)
+    end
+
+    context 'when filtering on a select field' do
+      let(:params) { { project_id: project.id, custom_field: { select_field.id => select_option_2.id } } }
+
+      before_all do
+        create(:work_item_select_field_value, work_item_id: issues[0].id, custom_field: select_field, custom_field_select_option: select_option_1)
+        create(:work_item_select_field_value, work_item_id: issues[1].id, custom_field: select_field, custom_field_select_option: select_option_2)
+        create(:work_item_select_field_value, work_item_id: issues[2].id, custom_field: select_field, custom_field_select_option: select_option_2)
+      end
+
+      it 'returns issues matching the custom field value' do
+        expect(results).to contain_exactly(issues[1], issues[2])
+      end
+
+      context 'when filtering without a parent' do
+        let(:params) { { custom_field: { select_field.id => select_option_2.id } } }
+
+        it 'returns issues matching the custom field value' do
+          expect(results).to contain_exactly(issues[1], issues[2])
+        end
+      end
+
+      context 'when feature is unlicensed' do
+        before do
+          stub_licensed_features(custom_fields: false)
+        end
+
+        it 'does not apply the custom field filter' do
+          expect(results).to match_array(issues)
+        end
+      end
+
+      context 'when custom_fields_feature is disabled' do
+        before do
+          stub_feature_flags(custom_fields_feature: false)
+        end
+
+        it 'does not apply the custom field filter' do
+          expect(results).to match_array(issues)
+        end
+      end
+    end
+
+    context 'filtering on a multi-select field' do
+      let(:params) { { project_id: project.id, custom_field: { multi_select_field.id => [multi_select_option_1.id, multi_select_option_2.id] } } }
+
+      before do
+        create(:work_item_select_field_value, work_item_id: issues[0].id, custom_field: multi_select_field, custom_field_select_option: multi_select_option_1)
+        create(:work_item_select_field_value, work_item_id: issues[1].id, custom_field: multi_select_field, custom_field_select_option: multi_select_option_2)
+        create(:work_item_select_field_value, work_item_id: issues[2].id, custom_field: multi_select_field, custom_field_select_option: multi_select_option_1)
+        create(:work_item_select_field_value, work_item_id: issues[2].id, custom_field: multi_select_field, custom_field_select_option: multi_select_option_2)
+      end
+
+      it 'returns issues matching all the custom field values' do
+        expect(results).to contain_exactly(issues[2])
+      end
+    end
+  end
 end

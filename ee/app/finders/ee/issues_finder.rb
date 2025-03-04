@@ -14,6 +14,11 @@ module EE
         @scalar_params ||= super + [:weight, :epic_id, :include_subepics, :iteration_id, :iteration_title]
       end
 
+      override :array_params
+      def array_params
+        @array_params ||= super.merge({ custom_field: {} })
+      end
+
       override :negatable_params
       def negatable_params
         @negatable_params ||= super + [:iteration_title, :weight]
@@ -26,6 +31,7 @@ module EE
       issues = by_epic(issues)
       issues = by_iteration(issues)
       issues = by_iteration_cadence(issues)
+      issues = by_custom_field(issues)
       by_health_status(issues)
     end
 
@@ -77,6 +83,13 @@ module EE
       return items unless params.by_iteration_cadence?
 
       items.in_iteration_cadences(params.iteration_cadence_id)
+    end
+
+    def by_custom_field(items)
+      ::WorkItems::CustomFieldFilter.new(
+        params: original_params,
+        parent: params.parent
+      ).filter(items)
     end
 
     def by_health_status(items)

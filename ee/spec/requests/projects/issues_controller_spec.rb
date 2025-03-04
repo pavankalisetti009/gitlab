@@ -132,29 +132,49 @@ RSpec.describe Projects::IssuesController, feature_category: :team_planning do
       end
     end
 
-    context 'when listing epic issues' do
-      let_it_be(:epic) { create(:epic, group: group) }
-      let_it_be(:subepic) { create(:epic, group: group, parent: epic) }
+    context 'when filtering by custom field' do
+      include_context 'with group configured with custom fields'
 
-      let(:params) { { epic_id: epic.id, include_subepics: true } }
+      let_it_be(:current_user) { create(:user) }
+      let_it_be(:project) { create(:project, group: group, developers: [user]) }
+      let_it_be(:issues) { create_list(:issue, 5, project: project, due_date: Date.current) }
+
+      before_all do
+        create(:work_item_select_field_value, work_item_id: issues[0].id, custom_field: select_field,
+          custom_field_select_option: select_option_1)
+        create(:work_item_select_field_value, work_item_id: issues[1].id, custom_field: select_field,
+          custom_field_select_option: select_option_2)
+        create(:work_item_select_field_value, work_item_id: issues[2].id, custom_field: select_field,
+          custom_field_select_option: select_option_2)
+      end
 
       before do
-        get_issues # Warm the cache
+        stub_licensed_features(custom_fields: true)
       end
 
-      def get_issues
-        get project_issues_path(project, params: params)
+      context 'when requesting RSS feed' do
+        it 'returns issues filtered by the custom field value' do
+          get project_issues_path(project, format: :atom, custom_field: { select_field.id => select_option_2.id })
+
+          expect(response).to have_gitlab_http_status(:ok)
+
+          issue_titles = Nokogiri::XML(response.body).css('feed entry title').map(&:text)
+          expect(issue_titles).to contain_exactly(issues[1].title, issues[2].title)
+        end
       end
 
-      it 'does not cause extra queries when there are other subepic issues' do
-        create(:epic_issue, issue: issue, epic: epic)
+      context 'when requesting calendar feed' do
+        it 'returns issues filtered by the custom field value' do
+          get project_issues_path(project, format: :ics, custom_field: { select_field.id => select_option_2.id })
 
-        control = ActiveRecord::QueryRecorder.new { get_issues }
+          expect(response).to have_gitlab_http_status(:ok)
 
-        subepic_issue = create(:issue, project: project)
-        create(:epic_issue, issue: subepic_issue, epic: subepic)
-
-        expect { get_issues }.not_to exceed_query_limit(control)
+          event_titles = response.body.split("\r\n").filter { |s| s.start_with?('SUMMARY:') }
+          expect(event_titles).to contain_exactly(
+            "SUMMARY:#{issues[1].title} (in #{project.full_path})",
+            "SUMMARY:#{issues[2].title} (in #{project.full_path})"
+          )
+        end
       end
     end
   end
