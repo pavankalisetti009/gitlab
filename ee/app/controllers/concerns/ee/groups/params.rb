@@ -85,6 +85,11 @@ module EE
               current_group.licensed_feature_available?(:group_webhooks)
             params_ee << :extended_grat_expiry_webhooks_execute
           end
+
+          if ::Feature.enabled?(:manage_pat_by_group_owners_ready, current_group) &&
+              can?(current_user, :admin_group, current_group)
+            params_ee << :require_dpop_for_manage_api_endpoints
+          end
         end
       end
       # rubocop:enable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/AbcSize

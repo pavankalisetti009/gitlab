@@ -12,7 +12,7 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
       login_as(user)
     end
 
-    subject do
+    subject(:request) do
       put(group_path(group), params: params)
     end
 
@@ -31,7 +31,7 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
           context 'valid param' do
             shared_examples 'creates ip restrictions' do
               it 'creates ip restrictions' do
-                expect { subject }
+                expect { request }
                   .to change { group.reload.ip_restrictions.map(&:range) }
                     .from([]).to(contain_exactly(*range.split(',')))
                 expect(response).to have_gitlab_http_status(:found)
@@ -55,7 +55,7 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
             let(:range) { 'boom!' }
 
             it 'adds error message' do
-              expect { subject }
+              expect { request }
                 .not_to(change { group.reload.ip_restrictions.count }.from(0))
               expect(response).to have_gitlab_http_status(:ok)
               expect(response.body).to include('Ip restrictions range is an invalid IP address range')
@@ -71,7 +71,7 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
             context 'valid param' do
               shared_examples 'updates ip restrictions' do
                 it 'updates ip restrictions' do
-                  expect { subject }
+                  expect { request }
                     .to change { group.reload.ip_restrictions.map(&:range) }
                       .from(['10.0.0.0/8']).to(contain_exactly(*range.split(',')))
                   expect(response).to have_gitlab_http_status(:found)
@@ -102,13 +102,13 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
             context 'invalid param' do
               shared_examples 'does not update existing ip restrictions' do
                 it 'does not change ip restriction records' do
-                  expect { subject }
+                  expect { request }
                     .not_to(change { group.reload.ip_restrictions.map(&:range) }
                       .from(['10.0.0.0/8']))
                 end
 
                 it 'adds error message' do
-                  subject
+                  request
 
                   expect(response).to have_gitlab_http_status(:ok)
                   expect(response.body).to include('Ip restrictions range is an invalid IP address range')
@@ -135,7 +135,7 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
             let(:range) { '' }
 
             it 'deletes ip restriction' do
-              expect { subject }
+              expect { request }
                 .to(change { group.reload.ip_restrictions.count }.to(0))
               expect(response).to have_gitlab_http_status(:found)
             end
@@ -147,7 +147,7 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
         let(:group) { create(:group, :nested) }
 
         it 'does not create ip restriction' do
-          expect { subject }
+          expect { request }
             .not_to change { group.reload.ip_restrictions.count }.from(0)
           expect(response).to have_gitlab_http_status(:ok)
           expect(response.body).to include('Ip restrictions IP subnet restriction only allowed for top-level groups')
@@ -161,13 +161,13 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
         end
 
         it 'updates group setting' do
-          expect { subject }
+          expect { request }
             .to change { group.reload.two_factor_grace_period }.from(48).to(42)
           expect(response).to have_gitlab_http_status(:found)
         end
 
         it 'does not create ip restriction' do
-          expect { subject }.not_to change { IpRestriction.count }
+          expect { request }.not_to change { IpRestriction.count }
         end
       end
 
@@ -177,7 +177,7 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
         end
 
         it 'does not create ip restriction' do
-          expect { subject }
+          expect { request }
             .not_to change { group.reload.ip_restrictions.count }.from(0)
           expect(response).to have_gitlab_http_status(:found)
         end
@@ -196,7 +196,7 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
           context 'valid param' do
             shared_examples 'creates email domain restrictions' do
               it 'creates email domain restrictions' do
-                subject
+                request
 
                 expect(response).to have_gitlab_http_status(:found)
                 expect(group.reload.allowed_email_domains.domain_names).to match_array(domains.split(","))
@@ -220,7 +220,7 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
             let(:domains) { 'boom!' }
 
             it 'adds error message' do
-              expect { subject }
+              expect { request }
                 .not_to(change { group.reload.allowed_email_domains.count }.from(0))
               expect(response).to have_gitlab_http_status(:ok)
               expect(response.body).to include('The domain you entered is misformatted')
@@ -235,7 +235,7 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
             context 'valid param' do
               shared_examples 'updates allowed email domain restrictions' do
                 it 'updates allowed email domain restrictions' do
-                  subject
+                  request
 
                   expect(response).to have_gitlab_http_status(:found)
                   expect(group.reload.allowed_email_domains.domain_names).to match_array(domains.split(","))
@@ -266,13 +266,13 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
             context 'invalid param' do
               shared_examples 'does not update existing email domain restrictions' do
                 it 'does not change allowed_email_domains records' do
-                  expect { subject }
+                  expect { request }
                     .not_to(change { group.reload.allowed_email_domains.domain_names }
                       .from(['gitlab.com']))
                 end
 
                 it 'adds error message' do
-                  subject
+                  request
 
                   expect(response).to have_gitlab_http_status(:ok)
                   expect(response.body).to include('The domain you entered is misformatted')
@@ -299,7 +299,7 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
             let(:domains) { '' }
 
             it 'deletes all email domain restrictions' do
-              expect { subject }
+              expect { request }
                 .to(change { group.reload.allowed_email_domains.count }.to(0))
               expect(response).to have_gitlab_http_status(:found)
             end
@@ -312,7 +312,7 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
         let(:domains) { 'gitlab.com' }
 
         it 'does not create email domain restriction' do
-          expect { subject }
+          expect { request }
             .not_to change { group.reload.allowed_email_domains.count }.from(0)
           expect(response).to have_gitlab_http_status(:ok)
           expect(response.body).to include('Allowed email domain restriction only permitted for top-level groups')
@@ -327,7 +327,7 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
         end
 
         it 'does not create email domain restrictions' do
-          expect { subject }
+          expect { request }
             .not_to change { group.reload.allowed_email_domains.count }.from(0)
           expect(response).to have_gitlab_http_status(:found)
         end
@@ -338,7 +338,7 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
       let(:params) { { group: { enforce_ssh_certificates: true } } }
 
       it 'does not change the column' do
-        expect { subject }.not_to change { group.reload.enforce_ssh_certificates? }
+        expect { request }.not_to change { group.reload.enforce_ssh_certificates? }
         expect(response).to have_gitlab_http_status(:found)
       end
 
@@ -348,7 +348,7 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
         end
 
         it 'successfully changes the column' do
-          expect { subject }.to change { group.reload.enforce_ssh_certificates? }
+          expect { request }.to change { group.reload.enforce_ssh_certificates? }
           expect(response).to have_gitlab_http_status(:found)
         end
 
@@ -356,9 +356,53 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
           let(:group) { create(:group, :nested) }
 
           it 'does not change the column' do
-            expect { subject }.not_to change { group.reload.enforce_ssh_certificates? }
+            expect { request }.not_to change { group.reload.enforce_ssh_certificates? }
             expect(response).to have_gitlab_http_status(:found)
           end
+        end
+      end
+    end
+
+    context 'when settings require_dpop_for_manage_api_endpoints' do
+      let(:params) { { group: { require_dpop_for_manage_api_endpoints: false } } }
+
+      context 'when feature flag is enabled' do
+        before do
+          stub_feature_flags(manage_pat_by_group_owners_ready: true)
+        end
+
+        context 'when not group owner' do
+          let(:user) { create(:user) }
+
+          before do
+            group.add_developer(user)
+            login_as(user)
+          end
+
+          it 'does not change the column and returns not_found' do
+            expect(group.require_dpop_for_manage_api_endpoints?).to be(true)
+
+            request
+
+            expect(response).to have_gitlab_http_status(:not_found)
+            expect(group.reload.require_dpop_for_manage_api_endpoints?).to be(true)
+          end
+        end
+
+        it 'successfully changes the column' do
+          expect { request }.to change { group.reload.require_dpop_for_manage_api_endpoints? }
+          expect(response).to have_gitlab_http_status(:found)
+        end
+      end
+
+      context 'when feature flag is disabled' do
+        before do
+          stub_feature_flags(manage_pat_by_group_owners_ready: false)
+        end
+
+        it 'does not change the column' do
+          expect { request }.not_to change { group.reload.require_dpop_for_manage_api_endpoints? }
+          expect(response).to have_gitlab_http_status(:found)
         end
       end
     end
@@ -372,7 +416,7 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
         end
 
         it 'does not change the column' do
-          expect { subject }.not_to change { group.reload.extended_grat_expiry_webhooks_execute? }
+          expect { request }.not_to change { group.reload.extended_grat_expiry_webhooks_execute? }
           expect(response).to have_gitlab_http_status(:found)
         end
       end
@@ -383,7 +427,7 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
         end
 
         it 'successfully changes the column' do
-          expect { subject }.to change { group.reload.extended_grat_expiry_webhooks_execute? }
+          expect { request }.to change { group.reload.extended_grat_expiry_webhooks_execute? }
           expect(response).to have_gitlab_http_status(:found)
         end
 
@@ -393,7 +437,7 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
           end
 
           it 'does not change the column' do
-            expect { subject }.not_to change { group.reload.extended_grat_expiry_webhooks_execute? }
+            expect { request }.not_to change { group.reload.extended_grat_expiry_webhooks_execute? }
             expect(response).to have_gitlab_http_status(:found)
           end
         end
@@ -411,7 +455,7 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
       end
 
       it 'does not change the column' do
-        expect { subject }.not_to change { group.reload.enterprise_users_extensions_marketplace_enabled? }
+        expect { request }.not_to change { group.reload.enterprise_users_extensions_marketplace_enabled? }
         expect(response).to have_gitlab_http_status(:found)
       end
 
@@ -421,7 +465,7 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
         end
 
         it 'successfully changes the column' do
-          expect { subject }.to change { group.reload.enterprise_users_extensions_marketplace_enabled? }
+          expect { request }.to change { group.reload.enterprise_users_extensions_marketplace_enabled? }
           expect(response).to have_gitlab_http_status(:found)
         end
       end
@@ -439,7 +483,7 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
           it 'does not change the column' do
             expect(group.enable_auto_assign_gitlab_duo_pro_seats?).to be_falsy
 
-            subject
+            request
 
             expect(response).to have_gitlab_http_status(:found)
             expect(group.reload.enable_auto_assign_gitlab_duo_pro_seats?).to be_falsy
@@ -460,7 +504,7 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
           it 'does not change the column' do
             expect(group.enable_auto_assign_gitlab_duo_pro_seats?).to be_falsy
 
-            subject
+            request
 
             expect(response).to have_gitlab_http_status(:found)
             expect(group.reload.enable_auto_assign_gitlab_duo_pro_seats?).to be_falsy
@@ -475,7 +519,7 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
           it 'does not change the column' do
             expect(group.enable_auto_assign_gitlab_duo_pro_seats?).to be_falsy
 
-            subject
+            request
 
             expect(response).to have_gitlab_http_status(:found)
             expect(group.reload.enable_auto_assign_gitlab_duo_pro_seats?).to be_falsy
@@ -493,7 +537,7 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
           it 'does not change the column and returns not_found' do
             expect(group.enable_auto_assign_gitlab_duo_pro_seats?).to be_falsy
 
-            subject
+            request
 
             expect(response).to have_gitlab_http_status(:not_found)
             expect(group.reload.enable_auto_assign_gitlab_duo_pro_seats?).to be_falsy
@@ -508,7 +552,7 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
           it 'does not change the column' do
             expect(group.enable_auto_assign_gitlab_duo_pro_seats?).to be_falsy
 
-            subject
+            request
 
             expect(response).to have_gitlab_http_status(:found)
             expect(group.reload.enable_auto_assign_gitlab_duo_pro_seats?).to be_falsy
@@ -524,7 +568,7 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
           it 'successfully updates the column' do
             expect(group.enable_auto_assign_gitlab_duo_pro_seats?).to be_falsy
 
-            subject
+            request
 
             expect(response).to have_gitlab_http_status(:found)
             expect(group.reload.enable_auto_assign_gitlab_duo_pro_seats?).to be_truthy
