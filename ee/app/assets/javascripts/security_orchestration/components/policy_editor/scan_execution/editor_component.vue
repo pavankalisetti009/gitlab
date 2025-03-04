@@ -52,6 +52,7 @@ export default {
   RULE: 'rules',
   EDITOR_MODE_RULE,
   EDITOR_MODE_YAML,
+  POLICY_TYPE: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
   SECURITY_POLICY_ACTIONS,
   i18n: {
     ACTIONS_LABEL,
@@ -141,7 +142,7 @@ export default {
   },
   data() {
     const yamlEditorValue = this.existingPolicy
-      ? policyToYaml(this.existingPolicy, POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter)
+      ? policyToYaml(this.existingPolicy, this.$options.POLICY_TYPE)
       : getPolicyYaml({ isGroup: isGroup(this.namespaceType) });
 
     const { policy, parsingError } = createPolicyObject(yamlEditorValue);
@@ -168,6 +169,9 @@ export default {
     };
   },
   computed: {
+    hasNewSplitView() {
+      return this.glFeatures.securityPoliciesSplitView;
+    },
     hasSkipCiConfiguration() {
       return this.glFeatures.securityPoliciesSkipCi;
     },
@@ -211,6 +215,10 @@ export default {
     },
   },
   methods: {
+    areManifestsEqual(manifest) {
+      const policyManifest = policyToYaml(this.policy, this.$options.POLICY_TYPE);
+      return policyManifest === manifest && this.hasNewSplitView;
+    },
     addAction() {
       if (!this.policy.actions?.length) {
         this.policy = {
@@ -282,24 +290,27 @@ export default {
        * policy body is extracted
        * and policy type is added to a policy body
        */
-      const type = POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter;
-      const policy = extractPolicyContent({ manifest: this.yamlEditorValue, type, withType: true });
+      const policy = extractPolicyContent({
+        manifest: this.yamlEditorValue,
+        type: this.$options.POLICY_TYPE,
+        withType: true,
+      });
 
       this.$emit('save', { action, policy: policyBodyToYaml(policy) });
     },
     updateYaml(manifest) {
-      const { policy, parsingError } = createPolicyObject(manifest);
+      if (this.areManifestsEqual(manifest)) {
+        return;
+      }
 
+      const { policy, parsingError } = createPolicyObject(manifest);
       this.yamlEditorValue = manifest;
       this.policy = policy;
       this.parsingError = parsingError;
       this.specificActionSectionError = '';
     },
     updateYamlEditorValue(policy) {
-      this.yamlEditorValue = policyToYaml(
-        policy,
-        POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
-      );
+      this.yamlEditorValue = policyToYaml(policy, this.$options.POLICY_TYPE);
     },
   },
 };
