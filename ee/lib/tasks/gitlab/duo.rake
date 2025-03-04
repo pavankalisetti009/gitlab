@@ -2,8 +2,9 @@
 
 namespace :gitlab do
   namespace :duo do
-    desc 'GitLab | Duo | Enable GitLab Duo features on the specified group'
-    task :setup, [:root_group_path, :add_on] => :environment do |_, args|
+    desc 'GitLab | Duo | Enable GitLab Duo features'
+    task :setup, [:add_on] => :environment do |_, args|
+      args[:root_group_path] = 'gitlab_duo'
       Gitlab::Duo::Developments::Setup.new(args).execute
     end
 
