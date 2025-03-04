@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 
+# noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
 RSpec.describe 'Creating a workspace', feature_category: :workspaces do
   include GraphqlHelpers
 
@@ -75,9 +76,12 @@ RSpec.describe 'Creating a workspace', feature_category: :workspaces do
 
   let(:expected_service_args) do
     params = all_mutation_args.except(:cluster_agent_id, :project_id)
+    # noinspection RubyMismatchedArgumentType - RubyMine is misinterpreting types for Hash values
     params[:variables] = service_class_expected_variables
+    # noinspection RubyMismatchedArgumentType - RubyMine is misinterpreting types for Hash values
     params[:agent] = agent
     params[:user] = current_user
+    # noinspection RubyMismatchedArgumentType - RubyMine is misinterpreting types for Hash values
     params[:project] = workspace_project
 
     {
@@ -99,6 +103,7 @@ RSpec.describe 'Creating a workspace', feature_category: :workspaces do
     ServiceResponse.success(payload: stub_service_payload)
   end
 
+  # @return [Object]
   def mutation_response
     graphql_mutation_response(:workspace_create)
   end

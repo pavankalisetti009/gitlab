@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 
+# noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
 RSpec.describe 'Updating a workspace', feature_category: :workspaces do
   include GraphqlHelpers
 
@@ -57,6 +58,7 @@ RSpec.describe 'Updating a workspace', feature_category: :workspaces do
     ServiceResponse.success(payload: stub_service_payload)
   end
 
+  # @return [String]
   def mutation_response
     graphql_mutation_response(:workspace_update)
   end

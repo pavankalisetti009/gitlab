@@ -2,7 +2,8 @@
 
 require 'spec_helper'
 
-# rubocop:disable RSpec/MultipleMemoizedHelpers -- Can we have less?
+# rubocop:disable RSpec/MultipleMemoizedHelpers -- Can we have fewer?
+# noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
 RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_category: :workspaces do
   include ResultMatchers
 
@@ -62,7 +63,9 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
     remote_development_config = {
       'dns_zone' => dns_zone_in_config
     }
+    # noinspection RubyMismatchedArgumentType - RubyMine is misinterpreting types for Hash values
     remote_development_config['enabled'] = enabled if enabled_present
+    # noinspection RubyMismatchedArgumentType - RubyMine is misinterpreting types for Hash values
     remote_development_config['network_policy'] = network_policy if network_policy_present
 
     remote_development_config['gitlab_workspaces_proxy'] =
@@ -76,6 +79,7 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
     remote_development_config['max_resources_per_workspace'] = max_resources_per_workspace
 
     if max_active_hours_before_stop_present
+      # noinspection RubyMismatchedArgumentType - RubyMine is misinterpreting types for Hash values
       remote_development_config['max_active_hours_before_stop'] = max_active_hours_before_stop
     end
 
@@ -88,11 +92,13 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
       remote_development_config['workspaces_per_user_quota'] = quota
     end
 
+    # noinspection RubyMismatchedArgumentType - RubyMine is misinterpreting types for Hash values
     remote_development_config['allow_privilege_escalation'] = allow_privilege_escalation if allow_privilege_escalation
     remote_development_config['use_kubernetes_user_namespaces'] = use_kubernetes_user_namespaces
     remote_development_config['default_runtime_class'] = default_runtime_class
     remote_development_config['annotations'] = annotations
     remote_development_config['labels'] = labels
+    # noinspection RubyMismatchedArgumentType - RubyMine is misinterpreting types for Hash values
     remote_development_config['image_pull_secrets'] = image_pull_secrets
 
     {

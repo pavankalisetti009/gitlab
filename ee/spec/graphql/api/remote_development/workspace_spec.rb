@@ -9,6 +9,7 @@ require 'spec_helper'
 #
 #################################################################################################################
 
+# noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
 RSpec.describe 'workspaces', feature_category: :workspaces do
   let_it_be(:group) { create(:group, :private) }
   let(:result) { execute['data'] }

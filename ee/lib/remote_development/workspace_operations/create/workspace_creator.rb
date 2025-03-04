@@ -84,6 +84,7 @@ module RemoteDevelopment
           uri = URI::HTTPS.build(host: host, query: query)
 
           workspace.url_prefix = uri.hostname.gsub(".#{agent_dns_zone}", '')
+          # noinspection RubyMismatchedArgumentType - RubyMine thinks this is nilable for some reason
           workspace.url_query_string = uri.query
         end
         private_class_method :set_workspace_url

@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 
+# noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
 RSpec.describe 'Remote Development workspaces dropdown group', :api, :js, feature_category: :workspaces do
   include_context 'with remote development shared fixtures'
   include_context 'file upload requests helpers'
@@ -112,10 +113,13 @@ RSpec.describe 'Remote Development workspaces dropdown group', :api, :js, featur
       end
 
       # @param [String] state
+      # @return [void]
       def expect_workspace_state_indicator(state)
         indicator = find_by_testid("workspace-state-indicator")
 
         expect(indicator).to have_text(state)
+
+        nil
       end
     end
   end

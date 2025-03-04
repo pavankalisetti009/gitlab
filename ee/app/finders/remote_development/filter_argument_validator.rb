@@ -24,7 +24,7 @@ module RemoteDevelopment
     #
     # Validate that at least one filter argument is provided.
     #
-    # @param [Hash] **filter_arguments Filter arguments to be validated
+    # @param [Hash] filter_arguments Filter arguments to be validated
     #
     # @return [Boolean] Whether at least one filter argument is provided
     #

@@ -3,6 +3,7 @@
 require "spec_helper"
 
 # TODO: clusterAgent.remoteDevelopmentAgentConfig GraphQL is deprecated - remove in 17.10 - https://gitlab.com/gitlab-org/gitlab/-/issues/480769
+# noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
 RSpec.describe RemoteDevelopment::RemoteDevelopmentAgentConfigsFinder, feature_category: :workspaces do
   let_it_be(:current_user) { create(:user) }
 

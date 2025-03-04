@@ -7,6 +7,7 @@ require 'spec_helper'
 #       https://gitlab.com/gitlab-org/remote-development/gitlab-remote-development-docs/-/blob/main/doc/workspace-updates.md
 #       are not yet implemented - most or all are related to ERROR or FAILURE states, because the fixtures are not yet
 #       implemented.
+# noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
 RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, 'Partial Update Scenarios', feature_category: :workspaces do
   include_context 'with remote development shared fixtures'
 
