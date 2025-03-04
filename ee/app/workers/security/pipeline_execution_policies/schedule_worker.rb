@@ -35,9 +35,7 @@ module Security
                 next
               end
 
-              with_context(project: schedule.project_id) do
-                Security::PipelineExecutionPolicies::RunScheduleWorker.perform_async(schedule.id)
-              end
+              enqueue_within_time_window(schedule)
 
               schedule.schedule_next_run!
             end
@@ -46,6 +44,14 @@ module Security
       end
 
       private
+
+      def enqueue_within_time_window(schedule)
+        delay = Random.rand(schedule.time_window_seconds)
+
+        with_context(project: schedule.project_id) do
+          Security::PipelineExecutionPolicies::RunScheduleWorker.perform_in(delay, schedule.id)
+        end
+      end
 
       def lease_key
         LEASE_KEY

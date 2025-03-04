@@ -6,17 +6,25 @@ RSpec.describe Security::PipelineExecutionPolicies::ScheduleWorker, feature_cate
   include ExclusiveLeaseHelpers
 
   describe '#perform' do
-    let_it_be(:schedule) { create(:security_pipeline_execution_project_schedule) }
+    let_it_be(:time_window) { 3.hours.to_i }
+    let_it_be(:delay) { 42.minutes.to_i }
+    let_it_be_with_refind(:schedule) do
+      create(:security_pipeline_execution_project_schedule, time_window_seconds: time_window)
+    end
 
-    subject(:perform) { described_class.new.perform }
+    let(:worker) { described_class.new }
+
+    subject(:perform) { worker.perform }
 
     before do
+      allow(Random).to receive(:rand).with(time_window).and_return(delay)
+
       schedule.update!(next_run_at: 1.hour.ago)
     end
 
     it_behaves_like 'an idempotent worker' do
       it 'enqueues the run worker' do
-        expect(Security::PipelineExecutionPolicies::RunScheduleWorker).to receive(:perform_async).with(schedule.id)
+        expect(Security::PipelineExecutionPolicies::RunScheduleWorker).to receive(:perform_in).with(delay, schedule.id)
 
         perform
       end
@@ -44,7 +52,7 @@ RSpec.describe Security::PipelineExecutionPolicies::ScheduleWorker, feature_cate
       control_count = ActiveRecord::QueryRecorder.new { described_class.new.perform }.count
 
       schedule.update!(next_run_at: 1.hour.ago)
-      schedule_2 = create(:security_pipeline_execution_project_schedule)
+      schedule_2 = create(:security_pipeline_execution_project_schedule, time_window_seconds: time_window)
       schedule_2.update!(next_run_at: 1.hour.ago)
 
       # +4 queries to update next_run_at for one additional schedule
@@ -57,7 +65,7 @@ RSpec.describe Security::PipelineExecutionPolicies::ScheduleWorker, feature_cate
       let(:lease) { Gitlab::ExclusiveLease.new(lease_key, timeout: timeout).try_obtain }
 
       it 'does not enqueue the run worker' do
-        expect(Security::PipelineExecutionPolicies::RunScheduleWorker).not_to receive(:perform_async)
+        expect(Security::PipelineExecutionPolicies::RunScheduleWorker).not_to receive(:perform_in)
         expect(lease).not_to be_nil
 
         perform
@@ -66,30 +74,75 @@ RSpec.describe Security::PipelineExecutionPolicies::ScheduleWorker, feature_cate
       end
     end
 
-    context 'if cadence is invalid' do
-      let_it_be(:security_policy) { create(:security_policy, :pipeline_execution_schedule_policy) }
-      let_it_be(:invalid_schedule) do
-        create(:security_pipeline_execution_project_schedule, security_policy: security_policy)
+    context 'if cron is valid' do
+      before do
+        schedule.update!(cron: cron)
+      end
+
+      shared_examples 'schedules' do
+        specify do
+          expect { perform }.to change { schedule.reload.next_run_at }
+        end
+
+        it 'enqueues the run worker' do
+          expect(Security::PipelineExecutionPolicies::RunScheduleWorker)
+            .to receive(:perform_in).with(delay, schedule.id)
+
+          perform
+        end
+
+        specify do
+          expect(Gitlab::AppJsonLogger).not_to receive(:info)
+        end
+      end
+
+      context 'when daily' do
+        let(:cron) { '0 9 * * *' }
+
+        it_behaves_like 'schedules'
+      end
+
+      context 'when weekly' do
+        let(:cron) { '30 10 * * 1,3,5' }
+
+        it_behaves_like 'schedules'
+      end
+
+      context 'when monthly' do
+        let(:cron) { '0 3 1,15,30 * *' }
+
+        it_behaves_like 'schedules'
+      end
+    end
+
+    context 'if cron is invalid' do
+      let_it_be(:valid_schedule) do
+        create(:security_pipeline_execution_project_schedule, time_window_seconds: time_window)
       end
 
       before do
-        invalid_schedule.update_column(:cron, 'foobar')
-        invalid_schedule.update_column(:next_run_at, 1.hour.ago)
+        schedule.cron = 'foobar'
+        schedule.save!(validate: false)
+
+        valid_schedule.update!(next_run_at: schedule.next_run_at)
       end
 
-      it 'does not updates next_run_at for invalid schedules' do
-        expect { perform }.not_to change { invalid_schedule.reload.next_run_at }
+      it 'does not update next_run_at' do
+        expect { perform }.not_to change { schedule.reload.next_run_at }
       end
 
-      it 'still updates next_run_at for valid schedules' do
-        expect { perform }.to change { schedule.reload.next_run_at }
-      end
-
-      it 'does not enqueues the run worker' do
+      it 'does not enqueue the run worker for invalid schedules' do
         expect(Security::PipelineExecutionPolicies::RunScheduleWorker).not_to(
-          receive(:perform_async).with(invalid_schedule.id)
+          receive(:perform_in).with(delay, schedule.id)
         )
-        expect(Security::PipelineExecutionPolicies::RunScheduleWorker).to receive(:perform_async).with(schedule.id)
+
+        perform
+      end
+
+      it 'enqueues the run worker for valid schedules' do
+        expect(Security::PipelineExecutionPolicies::RunScheduleWorker).to(
+          receive(:perform_in).with(delay, valid_schedule.id)
+        )
 
         perform
       end
@@ -98,8 +151,8 @@ RSpec.describe Security::PipelineExecutionPolicies::ScheduleWorker, feature_cate
         expect(Gitlab::AppJsonLogger).to receive(:info).with(
           event: 'scheduled_scan_execution_policy_validation',
           message: 'Invalid cadence',
-          project_id: invalid_schedule.project_id,
-          cadence: invalid_schedule.cron
+          project_id: schedule.project_id,
+          cadence: schedule.cron
         )
 
         perform
