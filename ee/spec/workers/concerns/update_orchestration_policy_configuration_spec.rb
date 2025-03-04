@@ -45,6 +45,7 @@ RSpec.describe UpdateOrchestrationPolicyConfiguration, feature_category: :securi
 
       let(:active_policies) do
         {
+          experiments: policy_experiments,
           scan_execution_policy: [
             {
               name: 'Scheduled DAST 1',
@@ -65,6 +66,15 @@ RSpec.describe UpdateOrchestrationPolicyConfiguration, feature_category: :securi
               ]
             }
           ]
+        }
+      end
+
+      let(:policy_experiments) do
+        {
+          'test_feature' => {
+            'enabled' => true,
+            'configuration' => { 'option' => 'value' }
+          }
         }
       end
 
@@ -100,6 +110,20 @@ RSpec.describe UpdateOrchestrationPolicyConfiguration, feature_category: :securi
         expect(configuration).to receive(:invalidate_policy_yaml_cache)
 
         execute
+      end
+
+      it 'persists experiments from policy' do
+        expect { execute }.to change { configuration.reload.experiments }.from({}).to(policy_experiments)
+      end
+
+      context 'when policy has no experiments' do
+        let(:policy_experiments) { nil }
+
+        it 'does not invoke Security::SecurityOrchestrationPolicies::UpdateExperimentsService' do
+          expect(Security::SecurityOrchestrationPolicies::UpdateExperimentsService).not_to receive(:new)
+
+          execute
+        end
       end
 
       describe "policy persistence" do

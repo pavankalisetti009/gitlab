@@ -43,6 +43,7 @@ module Security
     validates :namespace, uniqueness: true, if: :namespace
     validates :namespace, presence: true, unless: :project
     validates :security_policy_management_project, presence: true
+    validates :experiments, json_schema: { filename: 'security_policy_experiments' }, allow_blank: true
 
     scope :for_project, ->(project_id) { where(project_id: project_id) }
     scope :for_namespace, ->(namespace_id) { where(namespace_id: namespace_id) }
@@ -214,6 +215,18 @@ module Security
       else
         group_configurations_ids(namespace)
       end
+    end
+
+    def experiment_enabled?(experimental_feature_name)
+      return false if experiments.blank?
+
+      experiments.dig(experimental_feature_name.to_s, 'enabled') == true
+    end
+
+    def experiment_configuration(experimental_feature_name)
+      return {} if experiments.blank?
+
+      experiments.dig(experimental_feature_name.to_s, 'configuration') || {}
     end
 
     private
