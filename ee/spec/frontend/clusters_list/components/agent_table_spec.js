@@ -12,7 +12,7 @@ describe('AgentTable', () => {
       propsData: {
         agents,
       },
-      provide: { projectPath: 'path/to/project', canAdminCluster: true },
+      provide: { fullPath: 'path/to/project', canAdminCluster: true, isGroup: false },
     });
   };
 
