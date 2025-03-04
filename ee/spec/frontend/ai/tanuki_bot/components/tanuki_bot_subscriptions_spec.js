@@ -44,7 +44,6 @@ describe('Ai Response Subscriptions', () => {
       propsData: {
         userId: MOCK_USER_ID,
         clientSubscriptionId: MOCK_CLIENT_SUBSCRIPTION_ID,
-        activeThreadId: 'thread-1',
         ...propsData,
       },
     });
@@ -86,12 +85,7 @@ describe('Ai Response Subscriptions', () => {
       it('emits message stream event', async () => {
         const requestId = '123';
         const firstChunk = {
-          data: {
-            aiCompletionResponse: {
-              ...MOCK_CHUNK_MESSAGE('first chunk', 1, requestId),
-              threadId: 'thread-1',
-            },
-          },
+          data: { aiCompletionResponse: MOCK_CHUNK_MESSAGE('first chunk', 1, requestId) },
         };
 
         createComponent();
@@ -109,12 +103,7 @@ describe('Ai Response Subscriptions', () => {
       it('emits response-received event', async () => {
         const requestId = '123';
         const firstChunk = {
-          data: {
-            aiCompletionResponse: {
-              ...MOCK_CHUNK_MESSAGE('first chunk', 1, requestId),
-              threadId: 'thread-1',
-            },
-          },
+          data: { aiCompletionResponse: MOCK_CHUNK_MESSAGE('first chunk', 1, requestId) },
         };
 
         createComponent();
@@ -128,38 +117,13 @@ describe('Ai Response Subscriptions', () => {
         expect(emittedEvents).toHaveLength(1);
         expect(emittedEvents[0]).toEqual([requestId]);
       });
-
-      it('does not emit message-stream event when threadId does not match activeThreadId', async () => {
-        const requestId = '123';
-        const firstChunk = {
-          data: {
-            aiCompletionResponse: {
-              ...MOCK_CHUNK_MESSAGE('first chunk', 1, requestId),
-              threadId: 'thread-2', // Different thread ID
-            },
-          },
-        };
-
-        createComponent();
-        await waitForPromises();
-
-        mockSubscriptionStream.next(firstChunk);
-        await waitForPromises();
-
-        expect(wrapper.emitted('message-stream')).toBe(undefined);
-      });
     });
 
     describe('aiCompletionResponse', () => {
       it('emits message event', async () => {
         const requestId = '123';
         const successResponse = {
-          data: {
-            aiCompletionResponse: {
-              ...GENERATE_MOCK_TANUKI_RES('', requestId),
-              threadId: 'thread-1',
-            },
-          },
+          data: { aiCompletionResponse: GENERATE_MOCK_TANUKI_RES('', requestId) },
         };
         createComponent();
         await waitForPromises();
@@ -171,25 +135,6 @@ describe('Ai Response Subscriptions', () => {
         const emittedEvents = wrapper.emitted('message');
         expect(emittedEvents).toHaveLength(1);
         expect(emittedEvents[0]).toEqual([successResponse.data.aiCompletionResponse]);
-      });
-
-      it('does not emit message event when threadId does not match activeThreadId', async () => {
-        const requestId = '123';
-        const successResponse = {
-          data: {
-            aiCompletionResponse: {
-              ...GENERATE_MOCK_TANUKI_RES('', requestId),
-              threadId: 'thread-2', // Different thread ID
-            },
-          },
-        };
-        createComponent();
-        await waitForPromises();
-
-        mockSubscriptionComplete.next(successResponse);
-        await waitForPromises();
-
-        expect(wrapper.emitted('message')).toBe(undefined);
       });
     });
   });

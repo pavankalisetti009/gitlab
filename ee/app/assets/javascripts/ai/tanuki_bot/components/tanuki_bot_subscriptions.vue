@@ -17,11 +17,6 @@ export default {
       default: () => [],
       required: false,
     },
-    activeThreadId: {
-      type: String,
-      required: false,
-      default: '',
-    },
   },
   render() {
     return null;
@@ -39,13 +34,8 @@ export default {
         },
         result({ data }) {
           const requestId = data?.aiCompletionResponse?.requestId;
-          const threadId = data?.aiCompletionResponse?.threadId;
 
-          if (
-            requestId &&
-            !this.cancelledRequestIds.includes(requestId) &&
-            (!threadId || threadId === this.activeThreadId)
-          ) {
+          if (requestId && !this.cancelledRequestIds.includes(requestId)) {
             this.$emit('message', data.aiCompletionResponse);
           }
         },
@@ -64,13 +54,8 @@ export default {
         },
         result({ data }) {
           const requestId = data?.aiCompletionResponse?.requestId;
-          const threadId = data?.aiCompletionResponse?.threadId;
 
-          if (
-            requestId &&
-            !this.cancelledRequestIds.includes(requestId) &&
-            (!threadId || threadId === this.activeThreadId)
-          ) {
+          if (requestId && !this.cancelledRequestIds.includes(requestId)) {
             this.$emit('message-stream', data.aiCompletionResponse);
           }
 

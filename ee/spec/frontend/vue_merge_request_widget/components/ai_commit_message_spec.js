@@ -28,7 +28,6 @@ describe('Ai Commit Message component', () => {
     type: null,
     chunkId: null,
     extras: null,
-    threadId: null,
   };
 
   const createComponent = () => {
