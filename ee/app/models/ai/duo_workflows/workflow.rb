@@ -79,8 +79,12 @@ module Ai
           transition running: :input_required
         end
 
+        event :require_plan_approval do
+          transition running: :plan_approval_required
+        end
+
         event :resume do
-          transition [:paused, :input_required] => :running
+          transition [:paused, :input_required, :plan_approval_required] => :running
         end
 
         event :retry do
@@ -92,11 +96,11 @@ module Ai
         end
 
         event :drop do
-          transition [:created, :running, :paused, :input_required] => :failed
+          transition [:created, :running, :paused, :input_required, :plan_approval_required] => :failed
         end
 
         event :stop do
-          transition [:created, :running, :paused, :input_required] => :stopped
+          transition [:created, :running, :paused, :input_required, :plan_approval_required] => :stopped
         end
 
         state :created, value: 0
@@ -106,6 +110,7 @@ module Ai
         state :failed, value: 4
         state :stopped, value: 5
         state :input_required, value: 6
+        state :plan_approval_required, value: 7
       end
     end
   end
