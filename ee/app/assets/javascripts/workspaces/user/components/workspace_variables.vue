@@ -33,7 +33,7 @@ export default {
       required: true,
       validator: (v) => {
         return v.every((variable) => {
-          return ['key', 'value', 'type', 'valid'].every((k) => {
+          return ['key', 'value', 'variableType', 'valid'].every((k) => {
             return Object.keys(variable).some((key) => {
               return key === k;
             });
@@ -57,7 +57,7 @@ export default {
       label: __('Value'),
     },
     {
-      key: 'type',
+      key: 'variableType',
       label: __('Type'),
     },
     {
@@ -88,7 +88,7 @@ export default {
           {
             key: '',
             value: '',
-            type: WORKSPACE_VARIABLE_INPUT_TYPE_ENUM.env,
+            variableType: WORKSPACE_VARIABLE_INPUT_TYPE_ENUM.env,
             valid: false,
           },
         ]),
@@ -163,7 +163,7 @@ export default {
           </gl-form-group>
         </template>
         <template #cell(type)="{ item }">
-          <gl-badge variant="neutral">{{ item.type }}</gl-badge>
+          <gl-badge variant="neutral">{{ item.variableType }}</gl-badge>
         </template>
         <template #cell(action)="{ item }">
           <gl-button

@@ -66,13 +66,13 @@ describe('workspaces/user/components/workspace_variables.vue', () => {
       {
         key: 'foo1',
         value: 'bar1',
-        type: WORKSPACE_VARIABLE_INPUT_TYPE_ENUM.env,
+        variableType: WORKSPACE_VARIABLE_INPUT_TYPE_ENUM.env,
         valid: false,
       },
       {
         key: 'foo2',
         value: 'bar2',
-        type: WORKSPACE_VARIABLE_INPUT_TYPE_ENUM.env,
+        variableType: WORKSPACE_VARIABLE_INPUT_TYPE_ENUM.env,
         valid: false,
       },
     ];
@@ -93,7 +93,7 @@ describe('workspaces/user/components/workspace_variables.vue', () => {
       {
         key: 'foo1',
         value: 'bar1',
-        type: WORKSPACE_VARIABLE_INPUT_TYPE_ENUM.env,
+        variableType: WORKSPACE_VARIABLE_INPUT_TYPE_ENUM.env,
         valid: false,
       },
     ];
@@ -112,19 +112,19 @@ describe('workspaces/user/components/workspace_variables.vue', () => {
       {
         key: 'foo1',
         value: 'bar1',
-        type: WORKSPACE_VARIABLE_INPUT_TYPE_ENUM.env,
+        variableType: WORKSPACE_VARIABLE_INPUT_TYPE_ENUM.env,
         valid: false,
       },
       {
         key: 'foo2',
         value: 'bar2',
-        type: WORKSPACE_VARIABLE_INPUT_TYPE_ENUM.env,
+        variableType: WORKSPACE_VARIABLE_INPUT_TYPE_ENUM.env,
         valid: false,
       },
       {
         key: 'foo3',
         value: 'bar3',
-        type: WORKSPACE_VARIABLE_INPUT_TYPE_ENUM.env,
+        variableType: WORKSPACE_VARIABLE_INPUT_TYPE_ENUM.env,
         valid: false,
       },
     ];
@@ -140,7 +140,7 @@ describe('workspaces/user/components/workspace_variables.vue', () => {
       {
         key: '',
         value: '',
-        type: WORKSPACE_VARIABLE_INPUT_TYPE_ENUM.env,
+        variableType: WORKSPACE_VARIABLE_INPUT_TYPE_ENUM.env,
         valid: false,
       },
     ];
@@ -148,7 +148,7 @@ describe('workspaces/user/components/workspace_variables.vue', () => {
       {
         key: 'foo1',
         value: '',
-        type: WORKSPACE_VARIABLE_INPUT_TYPE_ENUM.env,
+        variableType: WORKSPACE_VARIABLE_INPUT_TYPE_ENUM.env,
         valid: true,
       },
     ];
@@ -165,7 +165,7 @@ describe('workspaces/user/components/workspace_variables.vue', () => {
       {
         key: '',
         value: '',
-        type: WORKSPACE_VARIABLE_INPUT_TYPE_ENUM.env,
+        variableType: WORKSPACE_VARIABLE_INPUT_TYPE_ENUM.env,
         valid: false,
       },
     ];
@@ -173,7 +173,7 @@ describe('workspaces/user/components/workspace_variables.vue', () => {
       {
         key: '',
         value: 'bar1',
-        type: WORKSPACE_VARIABLE_INPUT_TYPE_ENUM.env,
+        variableType: WORKSPACE_VARIABLE_INPUT_TYPE_ENUM.env,
         valid: false,
       },
     ];
@@ -190,13 +190,13 @@ describe('workspaces/user/components/workspace_variables.vue', () => {
       {
         key: '',
         value: '',
-        type: WORKSPACE_VARIABLE_INPUT_TYPE_ENUM.env,
+        variableType: WORKSPACE_VARIABLE_INPUT_TYPE_ENUM.env,
         valid: false,
       },
       {
         key: 'foo2',
         value: '',
-        type: WORKSPACE_VARIABLE_INPUT_TYPE_ENUM.env,
+        variableType: WORKSPACE_VARIABLE_INPUT_TYPE_ENUM.env,
         valid: true,
       },
     ];
