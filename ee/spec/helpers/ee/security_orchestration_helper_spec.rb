@@ -673,15 +673,5 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
         expect(preventing_configurations).to contain_exactly(config)
       end
     end
-
-    context 'when the feature flag is disabled' do
-      before do
-        stub_feature_flags(reject_security_policy_project_deletion_groups: false)
-      end
-
-      it 'is an empty relation' do
-        expect(preventing_configurations).to be_empty
-      end
-    end
   end
 end
