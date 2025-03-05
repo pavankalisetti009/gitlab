@@ -155,8 +155,7 @@ module EE::SecurityOrchestrationHelper
   end
 
   def security_configurations_preventing_group_deletion(group)
-    unless ::Feature.enabled?(:reject_security_policy_project_deletion_groups, group) &&
-        group.licensed_feature_available?(:security_orchestration_policies)
+    unless group.licensed_feature_available?(:security_orchestration_policies)
       return ::Security::OrchestrationPolicyConfiguration.none
     end
 

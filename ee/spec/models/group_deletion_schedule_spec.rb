@@ -35,16 +35,6 @@ RSpec.describe GroupDeletionSchedule do
           expect(deletion_schedule.errors[:base])
             .to include('Group cannot be deleted because it has projects that are linked as a security policy project')
         end
-
-        context 'with feature disabled' do
-          before do
-            stub_feature_flags(reject_security_policy_project_deletion_groups: false)
-          end
-
-          specify do
-            expect(deletion_schedule.errors[:base]).to be_empty
-          end
-        end
       end
 
       context 'without licensed feature' do
