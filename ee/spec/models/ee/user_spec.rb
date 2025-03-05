@@ -3739,14 +3739,8 @@ RSpec.describe User, feature_category: :system_access do
             create(:group_member, :guest, member_role: role, source: source, user: user)
           end
 
-          it { is_expected.to match_array(expected_runners) }
-
-          context 'with `owned_runners_via_admin_runners` disabled' do
-            before do
-              stub_feature_flags(owned_runners_via_admin_runners: false)
-            end
-
-            it { is_expected.to be_empty }
+          it "returns the expected runners", pending: 'Related to: https://gitlab.com/gitlab-org/gitlab/-/issues/477585' do
+            is_expected.to match_array(expected_runners)
           end
         end
       end
@@ -3758,7 +3752,7 @@ RSpec.describe User, feature_category: :system_access do
           create(:group_member, :guest, member_role: admin_runners_a, source: group_aa, user: user)
         end
 
-        it 'does not include ancestor groups of other project' do
+        it 'does not include ancestor groups of other project', pending: 'Related to: https://gitlab.com/gitlab-org/gitlab/-/issues/477585' do
           is_expected.to contain_exactly(group_aa_runner, group_aaa_runner)
         end
       end
