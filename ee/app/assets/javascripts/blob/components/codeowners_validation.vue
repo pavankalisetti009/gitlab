@@ -4,7 +4,6 @@ import {
   GlCollapse,
   GlLink,
   GlButton,
-  GlCollapseToggleDirective,
   GlAccordion,
   GlAccordionItem,
   GlSkeletonLoader,
@@ -22,9 +21,6 @@ export default {
     GlAccordion,
     GlAccordionItem,
     GlSkeletonLoader,
-  },
-  directives: {
-    CollapseToggle: GlCollapseToggleDirective,
   },
   props: {
     projectPath: {
@@ -95,10 +91,12 @@ export default {
         <gl-icon name="status_warning" class="gl-mr-2" variant="danger" />
         <span data-testid="invalid-syntax-text">{{ $options.i18n.syntaxErrors(errorsTotal) }}</span>
         <gl-button
-          v-collapse-toggle="$options.collapseId"
           variant="link"
           data-testid="collapse-toggle"
           class="gl-ml-2"
+          :aria-expanded="isValidationVisible ? 'true' : 'false'"
+          :aria-controls="$options.collapseId"
+          @click="isValidationVisible = !isValidationVisible"
         >
           <gl-icon :name="collapseIcon" />
           {{ toggleText }}

@@ -1,11 +1,5 @@
 <script>
-import {
-  GlButton,
-  GlCard,
-  GlCollapseToggleDirective,
-  GlSprintf,
-  GlModalDirective,
-} from '@gitlab/ui';
+import { GlButton, GlCollapse, GlCard, GlSprintf, GlModalDirective } from '@gitlab/ui';
 import { COLLAPSE_SECURITY_REPORTS_SUMMARY_LOCAL_STORAGE_KEY as LOCAL_STORAGE_KEY } from 'ee/security_dashboard/constants';
 import { getFormattedSummary } from 'ee/security_dashboard/helpers';
 import Modal from 'ee/vue_shared/security_reports/components/dast_modal.vue';
@@ -24,12 +18,12 @@ export default {
   components: {
     GlButton,
     GlCard,
+    GlCollapse,
     GlSprintf,
     Modal,
     SecurityReportDownloadDropdown,
   },
   directives: {
-    collapseToggle: GlCollapseToggleDirective,
     GlModal: GlModalDirective,
   },
   props: {
@@ -120,6 +114,7 @@ export default {
       this.isVisible = !this.isVisible;
     },
   },
+  collapseId: 'SECURITY_REPORTS_SUMMARY_COLLAPSE',
 };
 </script>
 
@@ -133,67 +128,73 @@ export default {
     <template #header>
       <strong>{{ $options.i18n.scanDetails }}</strong>
       <div v-if="localStorageUsable">
-        <gl-button data-testid="collapse-button" @click="toggleCollapse">
+        <gl-button
+          data-testid="collapse-button"
+          :aria-expanded="isVisible ? 'true' : 'false'"
+          :aria-controls="$options.collapseId"
+          @click="toggleCollapse"
+        >
           {{ collapseButtonLabel }}
         </gl-button>
       </div>
     </template>
-    <div
-      v-if="isVisible"
-      class="scan-reports-summary-grid gl-my-3 gl-grid gl-items-center gl-gap-y-2"
-    >
-      <template v-for="[scanType, scanSummary] in formattedSummary">
-        <div :key="scanType" class="gl-leading-24">
-          {{ scanType }}
-        </div>
-        <div :key="`${scanType}-count`" class="gl-leading-24">
-          <gl-sprintf :message="$options.i18n.vulnerabilities(scanSummary.vulnerabilitiesCount)" />
-        </div>
-        <div
-          :key="`${scanType}-download`"
-          class="gl-text-right"
-          :data-testid="`artifact-download-${normalizeScanType(scanType)}`"
-        >
-          <template v-if="scanSummary.scannedResourcesCount !== undefined">
-            <gl-button
-              v-if="hasScannedResources(scanSummary)"
-              v-gl-modal.dastUrl
-              icon="download"
-              size="small"
-              data-testid="modal-button"
-            >
-              {{ $options.i18n.downloadUrls }}
-            </gl-button>
+    <gl-collapse :id="$options.collapseId" v-model="isVisible">
+      <div class="scan-reports-summary-grid gl-my-3 gl-grid gl-items-center gl-gap-y-2">
+        <template v-for="[scanType, scanSummary] in formattedSummary">
+          <div :key="scanType" class="gl-leading-24">
+            {{ scanType }}
+          </div>
+          <div :key="`${scanType}-count`" class="gl-leading-24">
+            <gl-sprintf
+              :message="$options.i18n.vulnerabilities(scanSummary.vulnerabilitiesCount)"
+            />
+          </div>
+          <div
+            :key="`${scanType}-download`"
+            class="gl-text-right"
+            :data-testid="`artifact-download-${normalizeScanType(scanType)}`"
+          >
+            <template v-if="scanSummary.scannedResourcesCount !== undefined">
+              <gl-button
+                v-if="hasScannedResources(scanSummary)"
+                v-gl-modal.dastUrl
+                icon="download"
+                size="small"
+                data-testid="modal-button"
+              >
+                {{ $options.i18n.downloadUrls }}
+              </gl-button>
 
-            <template v-else>
-              (<gl-sprintf
-                :message="$options.i18n.scannedUrls(scanSummary.scannedResourcesCount)"
-              />)
+              <template v-else>
+                (<gl-sprintf
+                  :message="$options.i18n.scannedUrls(scanSummary.scannedResourcesCount)"
+                />)
+              </template>
+
+              <modal
+                v-if="hasScannedResources(scanSummary)"
+                :scanned-urls="scanSummary.scannedResources.nodes"
+                :scanned-resources-count="scanSummary.scannedResourcesCount"
+                :download-link="downloadLink(scanSummary)"
+              />
             </template>
 
-            <modal
-              v-if="hasScannedResources(scanSummary)"
-              :scanned-urls="scanSummary.scannedResources.nodes"
-              :scanned-resources-count="scanSummary.scannedResourcesCount"
-              :download-link="downloadLink(scanSummary)"
-            />
-          </template>
+            <template v-else-if="hasDastArtifactDownload(scanType, scanSummary)">
+              <security-report-download-dropdown
+                :text="$options.i18n.downloadResults"
+                :artifacts="buildDastArtifacts(scanSummary)"
+                data-testid="download-link"
+              />
+            </template>
 
-          <template v-else-if="hasDastArtifactDownload(scanType, scanSummary)">
             <security-report-download-dropdown
+              v-else
               :text="$options.i18n.downloadResults"
-              :artifacts="buildDastArtifacts(scanSummary)"
-              data-testid="download-link"
+              :artifacts="findArtifacts(scanType)"
             />
-          </template>
-
-          <security-report-download-dropdown
-            v-else
-            :text="$options.i18n.downloadResults"
-            :artifacts="findArtifacts(scanType)"
-          />
-        </div>
-      </template>
-    </div>
+          </div>
+        </template>
+      </div>
+    </gl-collapse>
   </gl-card>
 </template>
