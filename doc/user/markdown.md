@@ -1168,7 +1168,7 @@ Do not change it back to a markdown codeblocks.
 -->
 
 <!--
-DO NOT change the name of markdown_logo.png. This file is used for a test in
+DO NOT change the name of markdown_logo_v17_11.png. This file is used for a test in
 spec/controllers/help_controller_spec.rb.
 -->
 
@@ -1181,18 +1181,18 @@ Inline-style:
 
 <!-- markdownlint-disable proper-names -->
 
-<pre class="highlight"><code>![alt text](img/markdown_logo.png "Title Text")
+<pre class="highlight"><code>![alt text](img/markdown_logo_v17_11.png "Title Text")
 </code></pre>
 
-![alt text](img/markdown_logo.png "Title Text")
+![alt text](img/markdown_logo_v17_11.png "Title Text")
 
 Reference-style:
 
 <pre class="highlight"><code>![alt text1][logo]
-&#91;logo]: img/markdown_logo.png "Title Text"
+&#91;logo]: img/markdown_logo_v17_11.png "Title Text"
 </code></pre>
 
-![alt text](img/markdown_logo.png "Title Text")
+![alt text](img/markdown_logo_v17_11.png "Title Text")
 
 <!-- markdownlint-enable proper-names -->
 
@@ -1229,12 +1229,12 @@ The value must an integer with a unit of either `px` (default) or `%`.
 For example
 
 ```markdown
-![alt text](img/markdown_logo.png "Title Text"){width=100 height=100px}
+![alt text](img/markdown_logo_v17_11.png "Title Text"){width=100 height=100px}
 
-![alt text](img/markdown_logo.png "Title Text"){width=75%}
+![alt text](img/markdown_logo_v17_11.png "Title Text"){width=75%}
 ```
 
-![alt text](img/markdown_logo.png "Title Text"){width=100 height=100px}
+![alt text](img/markdown_logo_v17_11.png "Title Text"){width=100 height=100px}
 
 You can also use the `img` HTML tag instead of Markdown and set its `height` and
 `width` parameters.
