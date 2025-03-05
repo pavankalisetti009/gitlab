@@ -63,12 +63,12 @@ module Security
       end
 
       def process_rule(rule, rule_index, approval_action = nil, action_index = 0)
-        scan_result_policy_read = create_scan_result_policy(
-          rule, approval_action, rule_index, action_index
-        )
-
         approval_policy_rule = Security::ApprovalPolicyRule.by_policy_rule_index(
           policy_configuration, policy_index: real_policy_index, rule_index: rule_index
+        )
+
+        scan_result_policy_read = create_scan_result_policy(
+          rule, approval_policy_rule, approval_action, rule_index, action_index
         )
 
         if create_licenses?(rule)
@@ -138,7 +138,7 @@ module Security
         end
       end
 
-      def create_scan_result_policy(rule, approval_action, rule_index, action_index = 0)
+      def create_scan_result_policy(rule, approval_policy_rule, approval_action, rule_index, action_index = 0)
         policy_configuration.scan_result_policy_reads.create!(
           orchestration_policy_idx: policy_index,
           rule_idx: rule_index,
@@ -157,7 +157,8 @@ module Security
           send_bot_message: send_bot_message_action&.slice(:enabled) || {},
           fallback_behavior: policy.fetch(:fallback_behavior, {}),
           policy_tuning: policy.fetch(:policy_tuning, {}),
-          licenses: rule.fetch(:licenses, {})
+          licenses: rule.fetch(:licenses, {}),
+          approval_policy_rule_id: approval_policy_rule&.id
         )
       end
 

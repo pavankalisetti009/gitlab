@@ -243,7 +243,8 @@ module Security
           project_approval_settings: policy_content.fetch(:approval_settings, {}),
           send_bot_message: send_bot_message_action&.slice(:enabled) || {},
           fallback_behavior: policy_content.fetch(:fallback_behavior, {}),
-          policy_tuning: policy_content.fetch(:policy_tuning, {})
+          policy_tuning: policy_content.fetch(:policy_tuning, {}),
+          approval_policy_rule_id: approval_policy_rule.id
         }
       end
 
