@@ -4,7 +4,7 @@ description: A project's setting for allowing merge only when all discussions ar
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/369286
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/106652
 milestone: '15.7'
-feature_category: groups_and_projects
+feature_category: code_review_workflow
 saved_to_database: true
 streamed: true
 scope: [Project]
