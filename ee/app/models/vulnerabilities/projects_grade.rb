@@ -30,7 +30,7 @@ module Vulnerabilities
         # Disabling this feature flag would break GitLab.com post Secure Decomposition, so we are ensuring it's
         # always active for GitLab.com. See https://gitlab.com/gitlab-org/gitlab/-/issues/523212 for more info.
         # rubocop:disable Gitlab/AvoidGitlabInstanceChecks -- Intentional Platform disable
-        if vulnerable.is_a?(Group) && (Feature.enabled?(:remove_cross_join_from_vulnerabilities_projects_grade, vulnerable) || Gitlab.com?)
+        if vulnerable.is_a?(Group) && (::Feature.enabled?(:remove_cross_join_from_vulnerabilities_projects_grade, vulnerable) || ::Gitlab.com?)
           if include_subgroups
             ::Vulnerabilities::Statistic.by_group(vulnerable).unarchived
           else

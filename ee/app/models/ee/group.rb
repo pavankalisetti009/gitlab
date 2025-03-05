@@ -701,7 +701,7 @@ module EE
       # Disabling this feature flag would break GitLab.com post Secure Decomposition, so we are ensuring it's
       # always active for GitLab.com. See https://gitlab.com/gitlab-org/gitlab/-/issues/523212 for more info.
       # rubocop:disable Gitlab/AvoidGitlabInstanceChecks -- Intentional Platform disable
-      if ::Feature.enabled?(:group_vulnerability_scanners_using_statistics, self) || Gitlab.com?
+      if ::Feature.enabled?(:group_vulnerability_scanners_using_statistics, self) || ::Gitlab.com?
         return ::Vulnerabilities::Scanner.where(project: Vulnerabilities::Statistic.by_group(self).unarchived.select(:project_id))
       end
       # rubocop:enable Gitlab/AvoidGitlabInstanceChecks
