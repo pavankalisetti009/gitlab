@@ -74,9 +74,9 @@ export default {
     deleteRoleItem() {
       return {
         text: this.$options.i18n.deleteRoleText,
+        variant: this.hasAssignedUsers ? null : 'danger',
         extraAttrs: {
           disabled: this.hasAssignedUsers || this.hasDependentSecurityPolicies,
-          class: this.hasAssignedUsers ? '' : '!gl-text-red-500',
         },
       };
     },

@@ -143,10 +143,7 @@ export default {
     copy: { text: __('Copy to clipboard') },
     remove: {
       text: __('Remove summary'),
-      extraAttrs: {
-        variant: 'danger',
-        class: '!gl-text-red-500',
-      },
+      variant: 'danger',
     },
   },
 };

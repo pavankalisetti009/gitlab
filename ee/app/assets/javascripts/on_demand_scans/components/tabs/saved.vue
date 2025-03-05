@@ -159,10 +159,10 @@ export default {
         {
           text: this.$options.i18n.deleteButtonLabel,
           action: () => this.prepareProfileDeletion(item.id),
+          variant: 'danger',
           extraAttrs: {
             'aria-label': this.$options.i18n.deleteProfile,
             'data-testid': 'delete-scan-button-desktop',
-            class: '!gl-text-red-500',
             boundary: 'viewport',
             variant: 'danger',
           },

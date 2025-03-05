@@ -94,9 +94,7 @@ export default {
       return {
         text: __('Delete'),
         action: () => this.prepareExclusionDeletion(item),
-        extraAttrs: {
-          class: '!gl-text-danger',
-        },
+        variant: 'danger',
       };
     },
     async toggleExclusionStatus(item) {

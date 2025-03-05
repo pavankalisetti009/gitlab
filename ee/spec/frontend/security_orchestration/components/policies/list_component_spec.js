@@ -377,9 +377,7 @@ describe('List component', () => {
 
       const DELETE_ACTION = {
         action: expect.anything(),
-        extraAttrs: {
-          class: '!gl-text-danger',
-        },
+        variant: 'danger',
         text: 'Delete',
       };
 
