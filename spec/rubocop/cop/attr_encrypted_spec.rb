@@ -12,7 +12,7 @@ RSpec.describe RuboCop::Cop::AttrEncrypted, feature_category: :shared do
     expect_offense(<<~RUBY)
       class Dummy < ApplicationRecord
         attr_encrypted :value,
-        ^^^^^^^^^^^^^^^^^^^^^^ Do not use `attr_encrypted` to encrypt a column, as it's deprecated. Use `encrypts` which takes advantage of Active Record Encryption: https://guides.rubyonrails.org/active_record_encryption.html
+        ^^^^^^^^^^^^^^^^^^^^^^ Do not use `attr_encrypted` to encrypt a column, as it's deprecated. Use `encrypts` which takes advantage of Active Record Encryption: https://docs.gitlab.com/development/migration_style_guide/#encrypted-attributes
           mode: :per_attribute_iv_and_salt,
           insecure_mode: true,
           key: Settings.attr_encrypted_db_key_base,

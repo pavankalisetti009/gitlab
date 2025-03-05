@@ -14,7 +14,7 @@ module RuboCop
     #
     class AttrEncrypted < RuboCop::Cop::Base
       MSG = "Do not use `attr_encrypted` to encrypt a column, as it's deprecated. Use `encrypts` which takes " \
-        "advantage of Active Record Encryption: https://guides.rubyonrails.org/active_record_encryption.html"
+        "advantage of Active Record Encryption: https://docs.gitlab.com/development/migration_style_guide/#encrypted-attributes"
 
       def_node_matcher :attr_encrypted?, <<~PATTERN
         (send nil? :attr_encrypted ...)
