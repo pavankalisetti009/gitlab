@@ -7,7 +7,6 @@ module Search
 
       CONFIG = {
         indices_to_evict_check: {
-          period: 10.minutes,
           if: -> { Index.pending_eviction.exists? },
           dispatch: { event: IndexToEvictEvent }
         },
@@ -23,7 +22,6 @@ module Search
           }
         },
         index_should_be_marked_as_orphaned_check: {
-          period: 10.minutes,
           if: -> { Index.should_be_marked_as_orphaned.exists? },
           dispatch: { event: OrphanedIndexEvent }
         },
@@ -32,7 +30,6 @@ module Search
           dispatch: { event: IndexMarkPendingEvictionEvent }
         },
         index_to_delete_check: {
-          period: 10.minutes,
           if: -> { Index.should_be_deleted.exists? },
           dispatch: { event: IndexMarkedAsToDeleteEvent }
         },
@@ -66,7 +63,6 @@ module Search
           dispatch: { event: RepoToIndexEvent }
         },
         repo_to_delete_check: {
-          period: 10.minutes,
           if: -> { ::Search::Zoekt::Repository.should_be_deleted.exists? },
           dispatch: { event: RepoMarkedAsToDeleteEvent }
         },
@@ -75,7 +71,6 @@ module Search
           dispatch: { event: UpdateIndexUsedStorageBytesEvent }
         },
         update_replica_states: {
-          period: 2.minutes,
           execute: -> { ReplicaStateService.execute }
         },
         saas_rollout: {
@@ -345,11 +340,9 @@ module Search
         return if Gitlab::Saas.feature_available?(:exact_code_search)
         return unless Gitlab::CurrentSettings.zoekt_auto_index_root_namespace?
 
-        execute_every 10.minutes do
-          Namespace.group_namespaces.root_namespaces_without_zoekt_enabled_namespace.each_batch do |batch|
-            data = batch.pluck_primary_key.map { |id| { root_namespace_id: id } }
-            Search::Zoekt::EnabledNamespace.insert_all(data)
-          end
+        Namespace.group_namespaces.root_namespaces_without_zoekt_enabled_namespace.each_batch do |batch|
+          data = batch.pluck_primary_key.map { |id| { root_namespace_id: id } }
+          Search::Zoekt::EnabledNamespace.insert_all(data)
         end
       end
 
