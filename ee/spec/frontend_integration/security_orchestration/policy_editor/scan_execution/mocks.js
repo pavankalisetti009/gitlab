@@ -87,6 +87,20 @@ export const mockScheduleScanExecutionManifest = `scan_execution_policy:
       - scan: secret_detection
 `;
 
+export const mockSkipCiScanExecutionManifest = `scan_execution_policy:
+  - name: ''
+    description: ''
+    enabled: true
+    rules:
+      - type: pipeline
+        branches:
+          - '*'
+    actions:
+      - scan: secret_detection
+    skip_ci:
+      allowed: false
+`;
+
 export const mockScanExecutionObject = fromYaml({
   manifest: mockScanExecutionManifest,
   type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,

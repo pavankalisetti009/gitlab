@@ -21,6 +21,33 @@ export const mockPipelineExecutionOverrideActionManifest = `pipeline_execution_p
         - project: ''
 `;
 
+export const mockPipelineExecutionSkipCiManifest = `pipeline_execution_policy:
+  - name: ''
+    description: ''
+    enabled: true
+    pipeline_config_strategy: inject_policy
+    content:
+      include:
+        - project: ''
+    skip_ci:
+      allowed: true
+`;
+
+export const mockPipelineExecutionSkipCiWithUsersManifest = `pipeline_execution_policy:
+  - name: ''
+    description: ''
+    enabled: true
+    pipeline_config_strategy: inject_policy
+    content:
+      include:
+        - project: ''
+    skip_ci:
+      allowed: false
+      allowlist:
+        users:
+          - id: 1
+`;
+
 export const mockPipelineExecutionObject = fromYaml({
   manifest: mockPipelineExecutionActionManifest,
   type: POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter,
