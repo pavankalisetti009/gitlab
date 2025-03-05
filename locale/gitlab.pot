@@ -59413,6 +59413,9 @@ msgstr ""
 msgid "This is some information. %{linkStart}Learn more%{linkEnd}."
 msgstr ""
 
+msgid "This is something else."
+msgstr ""
+
 msgid "This is the highest peak of users on your installation since the license started."
 msgstr ""
 
@@ -70460,6 +70463,9 @@ msgid "terraform states"
 msgstr ""
 
 msgid "test case"
+msgstr ""
+
+msgid "testing a boolean"
 msgstr ""
 
 msgid "the correct format."
