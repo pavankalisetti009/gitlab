@@ -219,7 +219,12 @@ export default {
             :state="projectAndRefState"
             @select="setSelectedProject"
           />
-          <gl-icon v-gl-tooltip name="information-o" :title="selectedProjectInformationText" />
+          <gl-icon
+            v-if="selectedProjectInformationText"
+            v-gl-tooltip
+            name="information-o"
+            :title="selectedProjectInformationText"
+          />
         </template>
 
         <template #refSelector>
