@@ -53,7 +53,7 @@ export default {
         return false;
       }
 
-      const userRoleIndex = this.$options.USER_ROLES.indexOf(this.userRole);
+      const userRoleIndex = this.$options.USER_ROLES.indexOf(this.userRole?.toLowerCase());
       const minRoleIndex = this.$options.USER_ROLES.indexOf(this.minimumRole);
 
       return userRoleIndex >= minRoleIndex || false;
