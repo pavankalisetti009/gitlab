@@ -1,5 +1,10 @@
 import { GlSprintf, GlLink } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import {
+  DEFAULT_SCHEDULE,
+  INJECT,
+  SCHEDULE,
+} from 'ee/security_orchestration/components/policy_editor/pipeline_execution/constants';
 import RuleSection from 'ee/security_orchestration/components/policy_editor/pipeline_execution/rule/rule_section.vue';
 import ScheduleForm from 'ee/security_orchestration/components/policy_editor/pipeline_execution/rule/schedule_form.vue';
 
@@ -23,29 +28,55 @@ describe('RuleSection', () => {
   describe('rendering', () => {
     describe('when feature flag is off', () => {
       it('renders inject/override message when schedule is not selected', () => {
-        createComponent({ propsData: { strategy: 'inject' } });
+        createComponent({ propsData: { strategy: INJECT } });
         expect(wrapper.findComponent(GlSprintf).exists()).toBe(true);
         expect(findScheduleForm().exists()).toBe(false);
       });
     });
 
     describe('when feature flag is on', () => {
-      it('renders schedule form when schedule is selected', () => {
-        createComponent({
-          propsData: { strategy: 'schedule' },
-          provide: { glFeatures: { scheduledPipelineExecutionPolicies: true } },
-        });
-        expect(wrapper.findComponent(GlSprintf).exists()).toBe(false);
-        expect(findScheduleForm().exists()).toBe(true);
-      });
-
       it('renders inject/override message when schedule is not selected', () => {
         createComponent({
-          propsData: { strategy: 'inject' },
+          propsData: { strategy: INJECT },
           provide: { glFeatures: { scheduledPipelineExecutionPolicies: true } },
         });
         expect(wrapper.findComponent(GlSprintf).exists()).toBe(true);
         expect(findScheduleForm().exists()).toBe(false);
+      });
+
+      describe('schedule form', () => {
+        it('renders schedule form when schedule is selected', () => {
+          createComponent({
+            propsData: { strategy: SCHEDULE },
+            provide: { glFeatures: { scheduledPipelineExecutionPolicies: true } },
+          });
+          expect(wrapper.findComponent(GlSprintf).exists()).toBe(false);
+          expect(findScheduleForm().exists()).toBe(true);
+          expect(findScheduleForm().props('schedule')).toEqual(DEFAULT_SCHEDULE);
+        });
+
+        it('passes schedule prop to ScheduleForm component', () => {
+          const customSchedule = { type: 'weekly', days: 'monday' };
+          createComponent({
+            propsData: { schedules: [customSchedule], strategy: SCHEDULE },
+            provide: { glFeatures: { scheduledPipelineExecutionPolicies: true } },
+          });
+
+          expect(findScheduleForm().props(SCHEDULE)).toEqual(customSchedule);
+        });
+
+        it('listens for changed event from schedule form', async () => {
+          createComponent({
+            propsData: { strategy: SCHEDULE },
+            provide: { glFeatures: { scheduledPipelineExecutionPolicies: true } },
+          });
+
+          const updatedSchedule = { type: 'monthly', days_of_month: '15' };
+          await findScheduleForm().vm.$emit('changed', updatedSchedule);
+
+          expect(wrapper.emitted('changed')).toHaveLength(1);
+          expect(wrapper.emitted('changed')[0][0]).toEqual(updatedSchedule);
+        });
       });
     });
   });

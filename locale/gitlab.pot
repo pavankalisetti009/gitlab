@@ -11464,6 +11464,9 @@ msgstr ""
 msgid "CVS|Only a project maintainer or owner can toggle this feature."
 msgstr ""
 
+msgid "Cadence"
+msgstr ""
+
 msgid "Cadence is not automated"
 msgstr ""
 
@@ -18403,6 +18406,9 @@ msgid "DPoP preference updated."
 msgstr ""
 
 msgid "DSN"
+msgstr ""
+
+msgid "Daily"
 msgstr ""
 
 msgid "Dashboard"
@@ -37392,6 +37398,9 @@ msgstr ""
 msgid "Month"
 msgstr ""
 
+msgid "Monthly"
+msgstr ""
+
 msgid "Months"
 msgstr ""
 
@@ -52980,7 +52989,7 @@ msgstr ""
 msgid "SecurityOrchestration|Schedule a new"
 msgstr ""
 
-msgid "SecurityOrchestration|Schedules"
+msgid "SecurityOrchestration|Schedule a pipeline on a %{cadenceSelector} cadence for branches"
 msgstr ""
 
 msgid "SecurityOrchestration|Scope"
@@ -65325,6 +65334,9 @@ msgid "Week"
 msgstr ""
 
 msgid "Weekday"
+msgstr ""
+
+msgid "Weekly"
 msgstr ""
 
 msgid "Weeks"
