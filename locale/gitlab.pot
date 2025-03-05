@@ -15529,6 +15529,9 @@ msgstr ""
 msgid "Configure custom rules for Jira issue key matching"
 msgstr ""
 
+msgid "Configure feature \"%{name}\""
+msgstr ""
+
 msgid "Configure import sources and settings related to import and export features."
 msgstr ""
 
@@ -21510,6 +21513,9 @@ msgid "Dockerfile"
 msgstr ""
 
 msgid "Documentation"
+msgstr ""
+
+msgid "Documentation about the \"%{name}\" feature"
 msgstr ""
 
 msgid "Documentation for popular identity providers"
