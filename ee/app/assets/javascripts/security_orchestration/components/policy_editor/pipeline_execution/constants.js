@@ -62,6 +62,18 @@ content:
     - project: ''
 `;
 
+export const HOUR_IN_SECONDS = 3600;
+export const DAILY = 'daily';
+export const DEFAULT_SCHEDULE = {
+  type: DAILY,
+  start_time: '00:00',
+  time_window: {
+    value: HOUR_IN_SECONDS,
+    distribution: 'random',
+  },
+  timezone: 'America/New_York',
+};
+
 export const CONDITIONS_LABEL = s__('ScanExecutionPolicy|Conditions');
 
 export const SCHEDULE = 'schedule';

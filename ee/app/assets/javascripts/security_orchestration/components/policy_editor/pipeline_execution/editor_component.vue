@@ -22,7 +22,12 @@ import DisabledSection from '../disabled_section.vue';
 import ActionSection from './action/action_section.vue';
 import RuleSection from './rule/rule_section.vue';
 import { createPolicyObject, getInitialPolicy } from './utils';
-import { CONDITIONS_LABEL, DEFAULT_PIPELINE_EXECUTION_POLICY, SCHEDULE } from './constants';
+import {
+  CONDITIONS_LABEL,
+  DEFAULT_SCHEDULE,
+  DEFAULT_PIPELINE_EXECUTION_POLICY,
+  SCHEDULE,
+} from './constants';
 
 export default {
   ACTION: 'actions',
@@ -118,6 +123,9 @@ export default {
     content() {
       return this.policy?.content || {};
     },
+    schedules() {
+      return this.policy?.schedules;
+    },
   },
   watch: {
     content(newVal) {
@@ -169,6 +177,10 @@ export default {
         this.disableSubmit = true;
       }
     },
+    handleUpdateSchedules(schedule) {
+      this.policy = { ...this.policy, schedules: [schedule] };
+      this.updateYamlEditorValue(this.policy);
+    },
     handleUpdateProperty(property, value) {
       this.policy[property] = value;
       this.updateYamlEditorValue(this.policy);
@@ -177,7 +189,7 @@ export default {
       this.handleUpdateProperty('pipeline_config_strategy', value);
 
       if (value === SCHEDULE) {
-        this.policy = { ...this.policy, schedules: {} };
+        this.policy = { ...this.policy, schedules: [DEFAULT_SCHEDULE] };
       } else {
         const { schedules, ...policy } = this.policy;
         this.policy = policy;
@@ -222,7 +234,12 @@ export default {
         <template #title>
           <h4>{{ $options.i18n.CONDITIONS_LABEL }}</h4>
         </template>
-        <rule-section class="gl-mb-4" :strategy="strategy" />
+        <rule-section
+          class="gl-mb-4"
+          :strategy="strategy"
+          :schedules="schedules"
+          @changed="handleUpdateSchedules"
+        />
       </disabled-section>
     </template>
 

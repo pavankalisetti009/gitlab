@@ -9,6 +9,9 @@ import EditorLayout from 'ee/security_orchestration/components/policy_editor/edi
 import SkipCiSelector from 'ee/security_orchestration/components/policy_editor/skip_ci_selector.vue';
 import {
   DEFAULT_PIPELINE_EXECUTION_POLICY,
+  DEFAULT_SCHEDULE,
+  INJECT,
+  SCHEDULE,
   SUFFIX_NEVER,
   SUFFIX_ON_CONFLICT,
 } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/constants';
@@ -50,6 +53,7 @@ describe('EditorComponent', () => {
   const policyEditorEmptyStateSvgPath = 'path/to/svg';
   const scanPolicyDocumentationPath = 'path/to/docs';
   const defaultProjectPath = 'path/to/project';
+  const defaultSchedules = [{ type: 'weekly', days: 'monday' }];
 
   const factory = ({ propsData = {}, provide = {} } = {}) => {
     wrapper = shallowMountExtended(EditorComponent, {
@@ -185,7 +189,30 @@ describe('EditorComponent', () => {
   describe('rule section', () => {
     it('passes the strategy to rule section', () => {
       factory();
-      expect(findRuleSection().props('strategy')).toBe('inject_policy');
+      expect(findRuleSection().props('strategy')).toBe(INJECT);
+    });
+
+    it('passes schedules prop', () => {
+      factoryWithExistingPolicy({ policy: { schedules: defaultSchedules } });
+      expect(findRuleSection().props('schedules')).toEqual(defaultSchedules);
+    });
+
+    it('updates "schedules" in policy', async () => {
+      factory();
+      expect(findPolicyEditorLayout().props('policy')).not.toContain('schedules');
+      await findRuleSection().vm.$emit('changed', defaultSchedules[0]);
+      expect(findPolicyEditorLayout().props('policy')).toEqual(
+        expect.objectContaining({ schedules: [defaultSchedules[0]] }),
+      );
+    });
+
+    it('updates "schedules" in YAML', async () => {
+      factory();
+      expect(findPolicyEditorLayout().props('yamlEditorValue')).not.toContain('schedules');
+      await findRuleSection().vm.$emit('changed', defaultSchedules[0]);
+      expect(findPolicyEditorLayout().props('yamlEditorValue')).toContain(
+        '    schedules:\n      - type: weekly\n        days: monday',
+      );
     });
   });
 
@@ -193,18 +220,21 @@ describe('EditorComponent', () => {
     it('adds "schedules" property if strategy is updated to "schedule"', async () => {
       factory();
       expect(findPolicyEditorLayout().props('policy')).not.toHaveProperty('schedules');
-      await findActionSection().vm.$emit('update-strategy', 'schedule');
+      await findActionSection().vm.$emit('update-strategy', SCHEDULE);
       expect(findPolicyEditorLayout().props('policy')).toEqual(
-        expect.objectContaining({ pipeline_config_strategy: 'schedule', schedules: {} }),
+        expect.objectContaining({
+          pipeline_config_strategy: SCHEDULE,
+          schedules: [DEFAULT_SCHEDULE],
+        }),
       );
     });
 
     it('removes "schedules" property if strategy is updated to "inject_policy" from "schedule"', async () => {
       factory();
-      await findActionSection().vm.$emit('update-strategy', 'schedule');
-      await findActionSection().vm.$emit('update-strategy', 'inject_policy');
+      await findActionSection().vm.$emit('update-strategy', SCHEDULE);
+      await findActionSection().vm.$emit('update-strategy', INJECT);
       expect(findPolicyEditorLayout().props('policy')).toEqual(
-        expect.objectContaining({ pipeline_config_strategy: 'inject_policy' }),
+        expect.objectContaining({ pipeline_config_strategy: INJECT }),
       );
       expect(findPolicyEditorLayout().props('policy')).not.toHaveProperty('schedules');
     });

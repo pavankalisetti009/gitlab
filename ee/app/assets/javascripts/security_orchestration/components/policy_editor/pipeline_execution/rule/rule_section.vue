@@ -3,7 +3,7 @@ import { GlLink, GlSprintf } from '@gitlab/ui';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
-import { INJECT, SCHEDULE } from '../constants';
+import { DEFAULT_SCHEDULE, INJECT, SCHEDULE } from '../constants';
 import ScheduleForm from './schedule_form.vue';
 
 export default {
@@ -20,6 +20,11 @@ export default {
   },
   mixins: [glFeatureFlagsMixin()],
   props: {
+    schedules: {
+      type: Array,
+      required: false,
+      default: () => [DEFAULT_SCHEDULE],
+    },
     strategy: {
       type: String,
       required: false,
@@ -30,8 +35,16 @@ export default {
     hasScheduledPipelines() {
       return this.glFeatures.scheduledPipelineExecutionPolicies;
     },
+    schedule() {
+      return this.schedules[0];
+    },
     showTriggeredMessage() {
       return !this.hasScheduledPipelines || this.strategy !== SCHEDULE;
+    },
+  },
+  methods: {
+    handleUpdateSchedules(schedule) {
+      this.$emit('changed', schedule);
     },
   },
 };
@@ -46,6 +59,6 @@ export default {
         <gl-link :href="$options.i18n.helpPageLink" target="_blank">{{ content }}</gl-link>
       </template>
     </gl-sprintf>
-    <schedule-form v-else />
+    <schedule-form v-else :schedule="schedule" @changed="handleUpdateSchedules" />
   </div>
 </template>
