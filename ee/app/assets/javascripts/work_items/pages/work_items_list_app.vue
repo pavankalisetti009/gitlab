@@ -6,7 +6,6 @@ import { s__ } from '~/locale';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_LABEL } from '~/graphql_shared/constants';
 import EmptyStateWithAnyIssues from '~/issues/list/components/empty_state_with_any_issues.vue';
-import EmptyStateWithoutAnyIssues from '~/issues/list/components/empty_state_without_any_issues.vue';
 import {
   WORK_ITEM_TYPE_ENUM_EPIC,
   WORK_ITEM_TYPE_ENUM_ISSUE,
@@ -26,7 +25,6 @@ export default {
   components: {
     CreateWorkItemModal,
     EmptyStateWithAnyIssues,
-    EmptyStateWithoutAnyIssues,
     GlEmptyState,
     GlButton,
     WorkItemsListApp,
@@ -219,17 +217,6 @@ export default {
           />
         </template>
       </gl-empty-state>
-    </template>
-    <template v-else #page-empty-state>
-      <empty-state-without-any-issues>
-        <template #new-issue-button>
-          <create-work-item-modal
-            :is-group="isGroup"
-            :work-item-type-name="workItemTypeName"
-            @workItemCreated="incrementUpdateCount"
-          />
-        </template>
-      </empty-state-without-any-issues>
     </template>
     <template v-if="allowEpicBulkEditing" #bulk-edit-actions="{ checkedIssuables }">
       <gl-button
