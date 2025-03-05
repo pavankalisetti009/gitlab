@@ -50,9 +50,7 @@ module Issuables
       def with_work_item_types(work_item_types)
         return without_any_work_item_types if work_item_types.empty?
 
-        work_item_types.inject(self) do |relation, work_item_type|
-          relation.where_exists(associated_work_item_type_relation(work_item_type: work_item_type))
-        end
+        where_exists(associated_work_item_type_relation(work_item_type: work_item_types))
       end
 
       private

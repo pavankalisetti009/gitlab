@@ -88,8 +88,8 @@ RSpec.describe Issuables::CustomFieldsFinder, feature_category: :team_planning d
     context 'with multiple work item type IDs' do
       let(:params) { { work_item_type_ids: [issue_type.id, task_type.id] } }
 
-      it 'returns custom fields that match all work item types' do
-        expect(custom_fields).to contain_exactly(custom_field_1)
+      it 'returns custom fields that match any of the work item types' do
+        expect(custom_fields).to contain_exactly(custom_field_1, custom_field_2)
       end
     end
 

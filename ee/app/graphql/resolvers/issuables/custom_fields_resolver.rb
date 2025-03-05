@@ -22,7 +22,7 @@ module Resolvers
 
       argument :work_item_type_ids, [Types::GlobalIDType[::WorkItems::Type]],
         required: false,
-        description: 'Filter custom fields associated to the given work item types. ' \
+        description: 'Filter custom fields associated to any of the given work item types. ' \
           'If empty, returns custom fields not associated to any work item type.',
         prepare: ->(global_ids, _ctx) { global_ids.map(&:model_id) }
 

@@ -8,12 +8,14 @@ module EE
 
         EE_ORPHAN_TYPES = [
           ::Types::WorkItems::WidgetDefinitions::LabelsType,
-          ::Types::WorkItems::WidgetDefinitions::WeightType
+          ::Types::WorkItems::WidgetDefinitions::WeightType,
+          ::Types::WorkItems::WidgetDefinitions::CustomFieldsType
         ].freeze
 
         EE_TYPE_MAPPING = {
           ::WorkItems::Widgets::Labels => ::Types::WorkItems::WidgetDefinitions::LabelsType,
-          ::WorkItems::Widgets::Weight => ::Types::WorkItems::WidgetDefinitions::WeightType
+          ::WorkItems::Widgets::Weight => ::Types::WorkItems::WidgetDefinitions::WeightType,
+          ::WorkItems::Widgets::CustomFields => ::Types::WorkItems::WidgetDefinitions::CustomFieldsType
         }.freeze
 
         class_methods do
