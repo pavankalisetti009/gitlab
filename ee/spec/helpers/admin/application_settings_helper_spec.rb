@@ -88,7 +88,7 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
             enabled_expanded_logging: enabled_expanded_logging.to_s,
             disabled_direct_connection_method: disabled_direct_code_suggestions.to_s,
             beta_self_hosted_models_enabled: terms_accepted.to_s,
-            toggle_beta_models_path: toggle_beta_models_admin_ai_self_hosted_models_path,
+            toggle_beta_models_path: admin_ai_duo_self_hosted_toggle_beta_models_path,
             duo_pro_visible: expected_duo_pro_visible_value,
             can_manage_self_hosted_models: can_manage_self_hosted_models.to_s,
             ai_gateway_url: ai_gateway_url

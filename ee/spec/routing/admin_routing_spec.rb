@@ -40,6 +40,22 @@ RSpec.describe 'EE-specific admin routing' do
     end
   end
 
+  describe Admin::Ai::DuoSelfHostedController, 'routing' do
+    it 'routes /duo_self_hosted to #index' do
+      expect(get('/admin/ai/duo_self_hosted/')).to route_to('admin/ai/duo_self_hosted#index')
+    end
+
+    it 'routes /duo_self_hosted with vue route params to #index' do
+      expect(get('/admin/ai/duo_self_hosted/features')).to route_to('admin/ai/duo_self_hosted#index',
+        vueroute: 'features')
+    end
+
+    it 'routes /duo_self_hosted/toggle_beta_models to terms_and_conditions#toggle_beta_models' do
+      expect(post('/admin/ai/duo_self_hosted/toggle_beta_models'))
+        .to route_to('admin/ai/terms_and_conditions#toggle_beta_models')
+    end
+  end
+
   describe Admin::Geo::SettingsController, 'routing' do
     it 'routes / to #show' do
       expect(get('/admin/geo/settings')).to route_to('admin/geo/settings#show')

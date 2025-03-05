@@ -12,7 +12,7 @@ export default {
   i18n: {
     title: s__('AdminSelfHostedModels|Add self-hosted model'),
     description: s__(
-      'AdminSelfHostedModels|Add a new AI model that can be used for GitLab Duo features.',
+      'AdminSelfHostedModels|Add a new AI model that can be used for GitLab Duo self-hosted features.',
     ),
   },
   mutationData: {

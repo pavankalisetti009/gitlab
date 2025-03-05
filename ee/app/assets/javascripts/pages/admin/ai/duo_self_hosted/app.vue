@@ -17,7 +17,7 @@ export default {
     PageHeading,
   },
   i18n: {
-    title: s__('AdminSelfHostedModels|Self-hosted models'),
+    title: s__('AdminSelfHostedModels|GitLab Duo Self-Hosted'),
     description: s__(
       'AdminSelfHostedModels|Manage GitLab Duo by configuring and assigning self-hosted models to AI-powered features.',
     ),
