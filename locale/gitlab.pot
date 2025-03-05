@@ -22300,9 +22300,6 @@ msgstr ""
 msgid "Edit snippet"
 msgstr ""
 
-msgid "Edit table"
-msgstr ""
-
 msgid "Edit template"
 msgstr ""
 
@@ -54042,6 +54039,9 @@ msgid "Select a role"
 msgstr ""
 
 msgid "Select a template repository"
+msgstr ""
+
+msgid "Select action"
 msgstr ""
 
 msgid "Select all"
