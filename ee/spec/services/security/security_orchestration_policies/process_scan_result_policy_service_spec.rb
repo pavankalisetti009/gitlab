@@ -61,6 +61,21 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
 
     subject { service.execute }
 
+    context 'when security_policy is not present in database' do
+      before do
+        security_policy.destroy!
+        approval_policy_rule.destroy!
+      end
+
+      let(:policy) { build(:scan_result_policy, name: 'Test Policy', actions: [{ type: 'another_one' }]) }
+
+      it 'creates scan_result_policy_read without approval_policy_rule_id' do
+        expect { subject }.to change { Security::ScanResultPolicyRead.count }.by(1)
+
+        expect(project.scan_result_policy_reads.first.approval_policy_rule_id).to be_nil
+      end
+    end
+
     context 'when actions are not provided' do
       let(:policy) { build(:scan_result_policy, name: 'Test Policy', actions: nil) }
 
@@ -186,6 +201,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
         scan_result_policy_read = project.scan_result_policy_reads.first
         expect(scan_result_policy_read.custom_roles).to match_array([custom_role.id])
         expect(scan_result_policy_read.role_approvers).to match_array([Gitlab::Access::DEVELOPER])
+        expect(scan_result_policy_read.approval_policy_rule_id).to be(approval_policy_rule.id)
       end
     end
 
@@ -638,6 +654,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
           expect(scan_result_policy_read.match_on_inclusion_license).to be_truthy
           expect(scan_result_policy_read.license_states).to match_array(%w[newly_detected detected])
           expect(scan_result_policy_read.rule_idx).to be(0)
+          expect(scan_result_policy_read.approval_policy_rule_id).to be(approval_policy_rule.id)
         end
 
         it 'creates software_license_policies' do
@@ -766,6 +783,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
         expect(scan_result_policy_read).to eq(Security::ScanResultPolicyRead.first)
         expect(scan_result_policy_read).to be_commits_unsigned
         expect(scan_result_policy_read.rule_idx).to be(0)
+        expect(scan_result_policy_read.approval_policy_rule_id).to be(approval_policy_rule.id)
       end
 
       context 'when rule has no actions' do

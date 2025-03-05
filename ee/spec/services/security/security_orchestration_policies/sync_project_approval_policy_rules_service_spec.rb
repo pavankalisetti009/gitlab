@@ -141,6 +141,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectApprovalPolic
           scan_result_policy_read = project.scan_result_policy_reads.first
           expect(scan_result_policy_read.custom_roles).to match_array([custom_role.id])
           expect(scan_result_policy_read.role_approvers).to match_array([Gitlab::Access::DEVELOPER])
+          expect(scan_result_policy_read.approval_policy_rule_id).to be(approval_policy_rule.id)
         end
       end
 
@@ -548,6 +549,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectApprovalPolic
         expect(scan_result_policy_read.greater_than?).to be_truthy
         expect(scan_result_policy_read.day?).to be_truthy
         expect(scan_result_policy_read.age_value).to eq(1)
+        expect(scan_result_policy_read.approval_policy_rule_id).to be(approval_policy_rule.id)
       end
     end
 
@@ -599,6 +601,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectApprovalPolic
         expect(scan_result_policy_read.reload.match_on_inclusion_license).to be_truthy
         expect(scan_result_policy_read.license_states).to match_array(%w[newly_detected detected])
         expect(scan_result_policy_read.rule_idx).to be(approval_policy_rule.rule_index)
+        expect(scan_result_policy_read.approval_policy_rule_id).to be(approval_policy_rule.id)
       end
     end
   end
