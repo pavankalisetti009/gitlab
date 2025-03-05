@@ -750,7 +750,7 @@ GEM
       mime-types
       net-http-persistent (~> 4.0)
       nokogiri (~> 1, >= 1.10.8)
-    gitlab-glfm-markdown (0.0.27)
+    gitlab-glfm-markdown (0.0.28)
       rb_sys (~> 0.9.109)
     gitlab-kas-grpc (17.9.1)
       grpc (~> 1.0)
@@ -2366,4 +2366,4 @@ DEPENDENCIES
   yajl-ruby (~> 1.4.3)
 
 BUNDLED WITH
-   2.5.11
+   2.6.5
