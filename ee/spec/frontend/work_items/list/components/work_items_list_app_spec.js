@@ -114,6 +114,7 @@ describeSkipVue3(skipReason, () => {
         workItemType,
         glFeatures: {
           bulkUpdateWorkItemsMutation: bulkUpdateMutationEnabled,
+          workItemClientsideBoards: false,
         },
         ...baseProvide,
         ...extendedProvide,

@@ -29313,6 +29313,9 @@ msgstr ""
 msgid "Hide details"
 msgstr ""
 
+msgid "Hide empty"
+msgstr ""
+
 msgid "Hide file browser"
 msgstr ""
 
@@ -33981,6 +33984,9 @@ msgstr ""
 msgid "Launch a ready-to-code development environment for your project."
 msgstr ""
 
+msgid "Launch board"
+msgstr ""
+
 msgid "Layout|Fixed"
 msgstr ""
 
@@ -38367,6 +38373,9 @@ msgstr ""
 msgid "No AI gateway available."
 msgstr ""
 
+msgid "No Author"
+msgstr ""
+
 msgid "No Epic"
 msgstr ""
 
@@ -38524,6 +38533,9 @@ msgid "No groups or projects found"
 msgstr ""
 
 msgid "No issues found"
+msgstr ""
+
+msgid "No items"
 msgstr ""
 
 msgid "No iteration"
@@ -55080,6 +55092,9 @@ msgid "Show current status of indexing"
 msgstr ""
 
 msgid "Show details"
+msgstr ""
+
+msgid "Show empty"
 msgstr ""
 
 msgid "Show file browser"
