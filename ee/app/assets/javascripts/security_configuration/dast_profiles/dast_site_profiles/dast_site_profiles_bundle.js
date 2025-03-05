@@ -28,6 +28,9 @@ export default () => {
   // eslint-disable-next-line no-new
   new Vue({
     el,
+    provide: {
+      additionalVariableOptions: JSON.parse(el.dataset.additionalVariableOptions),
+    },
     apolloProvider,
     render(h) {
       return h(DastSiteProfileForm, {

@@ -19,6 +19,7 @@ describe('DastProfilesDrawerList', () => {
       },
       provide: {
         projectPath: 'group/project',
+        additionalVariableOptions: {},
       },
     });
   };

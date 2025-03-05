@@ -22,6 +22,7 @@ describe('ProjectDastProfileSelector', () => {
         apolloProvider: createMockApolloProvider(handlers),
         provide: {
           namespacePath: 'path/to/project',
+          additionalVariableOptions: {},
         },
         stubs: {
           SectionLayout,

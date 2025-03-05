@@ -107,7 +107,8 @@ RSpec.describe Projects::Security::DastProfilesHelper do
           project_full_path: "foo/bar",
           on_demand_scan_form_path: "/#{project.full_path}/-/on_demand_scans/new",
           dast_configuration_path: "/#{project.full_path}/-/security/configuration/dast",
-          profiles_library_path: "/#{project.full_path}/-/security/configuration/profile_library#site-profiles"
+          profiles_library_path: "/#{project.full_path}/-/security/configuration/profile_library#site-profiles",
+          additional_variable_options: Gitlab::Security::DastVariables.additional_site_variables.to_json
         }
       )
     end
@@ -131,7 +132,8 @@ RSpec.describe Projects::Security::DastProfilesHelper do
           on_demand_scan_form_path: "/#{project.full_path}/-/on_demand_scans/new",
           dast_configuration_path: "/#{project.full_path}/-/security/configuration/dast",
           profiles_library_path: "/#{project.full_path}/-/security/configuration/profile_library#site-profiles",
-          site_profile: site_profile.to_json
+          site_profile: site_profile.to_json,
+          additional_variable_options: Gitlab::Security::DastVariables.additional_site_variables.to_json
         }
       )
     end

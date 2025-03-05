@@ -22,6 +22,7 @@ export default () => {
   const dastScan = el.dataset.dastScan ? JSON.parse(el.dataset.dastScan) : null;
   const timezones = JSON.parse(el.dataset.timezones);
   const canEditRunnerTagsParsed = parseBoolean(canEditRunnerTags);
+  const additionalVariableOptions = JSON.parse(el.dataset.additionalVariableOptions);
 
   return new Vue({
     el,
@@ -36,6 +37,7 @@ export default () => {
       newScannerProfilePath,
       newSiteProfilePath,
       timezones,
+      additionalVariableOptions,
     },
     render(h) {
       return h(OnDemandScansForm, {

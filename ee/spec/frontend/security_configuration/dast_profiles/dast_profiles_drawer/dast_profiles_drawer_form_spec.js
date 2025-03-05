@@ -18,6 +18,7 @@ describe('DastProfilesDrawerForm', () => {
       },
       provide: {
         projectPath,
+        additionalVariableOptions: {},
       },
       listeners,
     });
