@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class AddEmbeddingToWorkItems < Elastic::Migration
-  include Elastic::MigrationUpdateMappingsHelper
+  include ::Search::Elastic::MigrationUpdateMappingsHelper
 
   skip_if -> { !elasticsearch_8_plus? }
 

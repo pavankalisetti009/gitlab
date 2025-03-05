@@ -101,7 +101,7 @@ To apply setting changes, for example adding an analyzer, either:
 To apply mapping changes, either:
 
 - Use a [zero-downtime reindexing migration](#zero-downtime-reindex-migration).
-- Use an [update mapping migration](#elasticmigrationupdatemappingshelper) to change the mapping for the existing index and optionally a follow-up [backfill migration](#searchelasticmigrationbackfillhelper) to ensure all documents in the index has this field populated.
+- Use an [update mapping migration](#searchelasticmigrationupdatemappingshelper) to change the mapping for the existing index and optionally a follow-up [backfill migration](#searchelasticmigrationbackfillhelper) to ensure all documents in the index has this field populated.
 
 #### Zero-downtime reindex migration
 
@@ -159,7 +159,7 @@ class MigrationName < Elastic::Migration
 end
 ```
 
-#### `Elastic::MigrationUpdateMappingsHelper`
+#### `Search::Elastic::MigrationUpdateMappingsHelper`
 
 Updates a mapping in an index by calling `put_mapping` with the mapping specified.
 
@@ -167,7 +167,7 @@ Requires the `new_mappings` method and `DOCUMENT_TYPE` constant.
 
 ```ruby
 class MigrationName < Elastic::Migration
-  include Elastic::MigrationUpdateMappingsHelper
+  include ::Search::Elastic::MigrationUpdateMappingsHelper
 
   DOCUMENT_TYPE = Issue
 
@@ -180,6 +180,14 @@ class MigrationName < Elastic::Migration
       }
     }
   end
+end
+```
+
+You can test this migration with the `'migration adds mapping'` shared examples.
+
+```ruby
+describe 'migration', :elastic, :sidekiq_inline do
+  include_examples 'migration adds mapping'
 end
 ```
 
@@ -486,7 +494,7 @@ Use the following formula to calculate the runtime:
 Follow these best practices for best results:
 
 - Order all migrations for each document type so that any migrations that use
-  [`Elastic::MigrationUpdateMappingsHelper`](#elasticmigrationupdatemappingshelper)
+  [`Search::Elastic::MigrationUpdateMappingsHelper`](#searchelasticmigrationupdatemappingshelper)
   are executed before migrations that use the
   [`Search::Elastic::MigrationBackfillHelper`](#searchelasticmigrationbackfillhelper). This avoids
   reindexing the same documents multiple times if all of the migrations are unapplied

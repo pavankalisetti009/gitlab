@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class AddRootNamespaceIdToWorkItem < Elastic::Migration
-  include Elastic::MigrationUpdateMappingsHelper
+  include ::Search::Elastic::MigrationUpdateMappingsHelper
 
   private
 

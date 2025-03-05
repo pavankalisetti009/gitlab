@@ -67,7 +67,7 @@ RSpec.describe Elastic::DataMigrationService, :elastic, :clean_gitlab_redis_shar
     describe 'migrations order optimization' do
       it 'ensure all update migrations run before backfill migrations', :aggregate_failures do
         error_message = <<~DOC
-          Migrations should be ordered so all migrations that use ::Elastic::MigrationUpdateMappingsHelper
+          Migrations should be ordered so all migrations that use ::Search::Elastic::MigrationUpdateMappingsHelper
           run before any migrations that use ::Search::Elastic::MigrationBackfillHelper. If this spec fails, rename the
           `YYYYMMDDHHMMSS` part of the migration filename with a datetime before the last backfill migration for the
           index_name.
@@ -78,7 +78,7 @@ RSpec.describe Elastic::DataMigrationService, :elastic, :clean_gitlab_redis_shar
 
         filtered_migrations = non_obsolete_migrations.filter do |m|
           klass = m.class
-          klass.include?(::Elastic::MigrationUpdateMappingsHelper) ||
+          klass.include?(::Search::Elastic::MigrationUpdateMappingsHelper) ||
             klass.include?(::Search::Elastic::MigrationBackfillHelper)
         end
 
@@ -90,7 +90,7 @@ RSpec.describe Elastic::DataMigrationService, :elastic, :clean_gitlab_redis_shar
           end.map(&:version)
 
           mapping_versions = non_obsolete_migrations.filter do |m|
-            m.class.include?(::Elastic::MigrationUpdateMappingsHelper) && m.send(:index_name) == index_name
+            m.class.include?(::Search::Elastic::MigrationUpdateMappingsHelper) && m.send(:index_name) == index_name
           end.map(&:version)
 
           backfill_ranges = backfill_versions.each_cons(2).map { |a, b| a..b }
