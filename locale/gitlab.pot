@@ -16816,6 +16816,9 @@ msgstr ""
 msgid "Copy link URL"
 msgstr ""
 
+msgid "Copy permalink"
+msgstr ""
+
 msgid "Copy reference"
 msgstr ""
 
@@ -42053,6 +42056,9 @@ msgid "Period in seconds"
 msgstr ""
 
 msgid "Permalink"
+msgstr ""
+
+msgid "Permalink copied to clipboard."
 msgstr ""
 
 msgid "Permissions"

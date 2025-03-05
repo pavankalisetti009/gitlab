@@ -10,6 +10,7 @@ import { DEFAULT_BLOB_INFO } from '~/repository/constants';
 import BlobDefaultActionsGroup from './blob_default_actions_group.vue';
 import BlobButtonGroup from './blob_button_group.vue';
 import BlobDeleteFileGroup from './blob_delete_file_group.vue';
+import PermalinkDropdownItem from './permalink_dropdown_item.vue';
 
 export const i18n = {
   dropdownLabel: __('Actions'),
@@ -19,6 +20,7 @@ export const i18n = {
 export default {
   i18n,
   components: {
+    PermalinkDropdownItem,
     GlDisclosureDropdown,
     BlobDefaultActionsGroup,
     BlobButtonGroup,
@@ -124,6 +126,7 @@ export default {
     :toggle-text="$options.i18n.dropdownLabel"
     text-sr-only
   >
+    <permalink-dropdown-item :permalink-path="blobInfo.permalinkPath" />
     <blob-button-group
       v-if="isLoggedIn && !blobInfo.archived"
       :current-ref="currentRef"

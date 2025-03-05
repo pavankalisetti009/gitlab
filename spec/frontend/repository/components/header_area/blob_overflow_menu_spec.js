@@ -9,6 +9,7 @@ import { createAlert } from '~/alert';
 import projectInfoQuery from 'ee_else_ce/repository/queries/project_info.query.graphql';
 import BlobOverflowMenu from '~/repository/components/header_area/blob_overflow_menu.vue';
 import BlobDefaultActionsGroup from '~/repository/components/header_area/blob_default_actions_group.vue';
+import PermalinkDropdownItem from '~/repository/components/header_area/permalink_dropdown_item.vue';
 import BlobButtonGroup from '~/repository/components/header_area/blob_button_group.vue';
 import BlobDeleteFileGroup from '~/repository/components/header_area/blob_delete_file_group.vue';
 import createRouter from '~/repository/router';
@@ -62,6 +63,7 @@ describe('Blob Overflow Menu', () => {
 
   const findBlobDefaultActionsGroup = () => wrapper.findComponent(BlobDefaultActionsGroup);
   const findBlobButtonGroup = () => wrapper.findComponent(BlobButtonGroup);
+  const findPermalinkDropdownItem = () => wrapper.findComponent(PermalinkDropdownItem);
   const findBlobDeleteFileGroup = () => wrapper.findComponent(BlobDeleteFileGroup);
 
   beforeEach(async () => {
@@ -160,6 +162,12 @@ describe('Blob Overflow Menu', () => {
       createComponent();
 
       expect(findBlobDeleteFileGroup().exists()).toBe(false);
+    });
+  });
+
+  describe('Permalink Dropdown Item', () => {
+    it('renders component', () => {
+      expect(findPermalinkDropdownItem().exists()).toBe(true);
     });
   });
 });
