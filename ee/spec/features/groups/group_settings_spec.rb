@@ -723,33 +723,6 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
             expect(page).to have_content 'Restricted access and user cap cannot be turned on. ' \
               'The group or one of its subgroups or projects is shared externally.'
           end
-
-          context 'when the block_seat_overages flag is disabled' do
-            before do
-              stub_feature_flags(block_seat_overages: false)
-            end
-
-            it 'mentions only user caps in the help text' do
-              visit edit_group_path(group)
-
-              expect(page).to have_content 'User cap cannot be turned on. ' \
-                'The group or one of its subgroups or projects is shared externally.'
-            end
-          end
-        end
-
-        context 'when the block_seat_overages flag is disabled' do
-          before do
-            stub_feature_flags(block_seat_overages: false)
-          end
-
-          it 'shows user cap, but not restricted access' do
-            visit edit_group_path(group)
-
-            expect(page).to have_content('Seat control')
-            expect(page).not_to have_content('Restricted access')
-            expect(page).to have_content('Set user cap')
-          end
         end
       end
     end

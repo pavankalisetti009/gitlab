@@ -2354,7 +2354,7 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
 
       context 'when block seat overages is disabled' do
         before do
-          stub_feature_flags(block_seat_overages: false)
+          group.namespace_settings.update!(seat_control: :off)
         end
 
         it 'accepts adding more members than there are available seats' do

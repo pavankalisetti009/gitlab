@@ -53,10 +53,8 @@ RSpec.describe Namespaces::BlockSeatOverages::AllSeatsUsedAlertComponent, type: 
           it { is_expected.to be false }
         end
 
-        describe 'when block seats overages is false' do
-          before do
-            stub_feature_flags(block_seat_overages: false)
-          end
+        describe 'when block seats overages is disabled' do
+          let_it_be(:namespace) { build(:group, namespace_settings: build(:namespace_settings, seat_control: :off)) }
 
           it { is_expected.to be false }
         end

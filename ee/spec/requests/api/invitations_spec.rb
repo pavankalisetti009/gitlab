@@ -197,7 +197,6 @@ RSpec.describe API::Invitations, 'EE Invitations', :aggregate_failures, feature_
 
       before do
         stub_saas_features(gitlab_com_subscriptions: true)
-        stub_feature_flags(block_seat_overages: true)
         group.namespace_settings.update!(seat_control: :block_overages)
       end
 
@@ -233,22 +232,6 @@ RSpec.describe API::Invitations, 'EE Invitations', :aggregate_failures, feature_
           'message' => 'There are not enough available seats to invite this many users.',
           'reason' => 'seat_limit_exceeded_error'
         })
-      end
-
-      context 'when the feature flag is disabled' do
-        before do
-          stub_feature_flags(block_seat_overages: false)
-        end
-
-        it 'adds the member even when there are not enough seats in the subscription' do
-          group.gitlab_subscription.update!(seats: 1)
-
-          post api(url, owner), params: { access_level: Member::DEVELOPER, user_id: user.id }
-
-          expect(group.members.map(&:user_id)).to contain_exactly(owner.id, user.id)
-          expect(response).to have_gitlab_http_status(:created)
-          expect(json_response).to eq({ 'status' => 'success' })
-        end
       end
     end
 
@@ -366,10 +349,6 @@ RSpec.describe API::Invitations, 'EE Invitations', :aggregate_failures, feature_
       end
 
       context 'on saas', :saas do
-        before do
-          stub_feature_flags(block_seat_overages: false)
-        end
-
         it_behaves_like "posts invitation successfully"
       end
     end
@@ -532,7 +511,6 @@ RSpec.describe API::Invitations, 'EE Invitations', :aggregate_failures, feature_
 
       before do
         stub_saas_features(gitlab_com_subscriptions: true)
-        stub_feature_flags(block_seat_overages: true)
         group.namespace_settings.update!(seat_control: :block_overages)
       end
 
@@ -613,22 +591,6 @@ RSpec.describe API::Invitations, 'EE Invitations', :aggregate_failures, feature_
         expect(project.members.flat_map { |m| [m.user_id, m.access_level] }).to eq([user.id, Member::DEVELOPER])
         expect(response).to have_gitlab_http_status(:created)
         expect(json_response).to eq({ 'status' => 'success' })
-      end
-
-      context 'when the feature flag is disabled' do
-        before do
-          stub_feature_flags(block_seat_overages: false)
-        end
-
-        it 'adds the member even when there are not enough seats in the subscription' do
-          group.gitlab_subscription.update!(seats: 1)
-
-          post api(url, owner), params: { access_level: Member::DEVELOPER, user_id: user.id }
-
-          expect(project.members.map(&:user_id)).to contain_exactly(user.id)
-          expect(response).to have_gitlab_http_status(:created)
-          expect(json_response).to eq({ 'status' => 'success' })
-        end
       end
     end
 

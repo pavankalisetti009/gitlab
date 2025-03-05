@@ -90,7 +90,6 @@ RSpec.describe Members::InviteService, :aggregate_failures, feature_category: :g
 
         before do
           stub_saas_features(gitlab_com_subscriptions: true)
-          stub_feature_flags(block_seat_overages: true)
           root_ancestor.namespace_settings.update!(seat_control: :block_overages)
         end
 
@@ -112,10 +111,6 @@ RSpec.describe Members::InviteService, :aggregate_failures, feature_category: :g
       context 'without a plan' do
         let(:plan) { nil }
 
-        before do
-          stub_feature_flags(block_seat_overages: false)
-        end
-
         it 'successfully creates members' do
           expect { result }.to change(ProjectMember, :count).by(2)
           expect(result[:status]).to eq(:success)
@@ -123,10 +118,6 @@ RSpec.describe Members::InviteService, :aggregate_failures, feature_category: :g
       end
 
       context 'with Audit Event logging' do
-        before do
-          stub_feature_flags(block_seat_overages: false)
-        end
-
         context 'when there are valid members created' do
           it 'creates audit events' do
             expect { result }.to change { AuditEvent.count }.by(2)

@@ -3969,25 +3969,18 @@ RSpec.describe Group, feature_category: :groups_and_projects do
   end
 
   describe '#block_seat_overages?', :saas do
-    where(:subscriptions, :seat_control, :user_cap, :flag, :result) do
-      true  | :off            | nil | true  | false
-      true  | :user_cap       | 1   | true  | false
-      true  | :block_overages | nil | true  | true
-      true  | :off            | nil | false | false
-      true  | :user_cap       | 1   | false | false
-      true  | :block_overages | nil | false | false
-      false | :off            | nil | true  | false
-      false | :user_cap       | 1   | true  | false
-      false | :block_overages | nil | true  | false
-      false | :off            | nil | false | false
-      false | :user_cap       | 1   | false | false
-      false | :block_overages | nil | false | false
+    where(:subscriptions, :seat_control, :user_cap, :result) do
+      true  | :off            | nil | false
+      true  | :user_cap       | 1   | false
+      true  | :block_overages | nil | true
+      false | :off            | nil | false
+      false | :user_cap       | 1   | false
+      false | :block_overages | nil | false
     end
 
     with_them do
       before do
         stub_saas_features(gitlab_com_subscriptions: subscriptions)
-        stub_feature_flags(block_seat_overages: flag)
         group.namespace_settings.update!(seat_control: seat_control, new_user_signups_cap: user_cap)
       end
 

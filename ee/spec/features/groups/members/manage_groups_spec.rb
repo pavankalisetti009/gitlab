@@ -78,7 +78,6 @@ RSpec.describe 'Groups > Members > Manage groups', :js, :saas, feature_category:
     stub_application_setting(check_namespace_plan: true)
     stub_subscription_request_seat_usage(true)
     stub_reconciliation_request(true)
-    stub_feature_flags(block_seat_overages: false)
     create(:callout, user: user, feature_name: :duo_chat_callout)
   end
 
