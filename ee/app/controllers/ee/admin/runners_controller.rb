@@ -13,7 +13,7 @@ module EE
         end
         before_action(only: [:new, :show, :edit]) { push_licensed_feature(:runner_maintenance_note) }
 
-        authorize! :read_admin_cicd, only: %i[index show]
+        authorize! :read_admin_cicd, only: %i[index show dashboard]
       end
 
       def dashboard

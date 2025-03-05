@@ -3,8 +3,4 @@
 - page_title s_('Runners|Fleet dashboard'), s_('Runners|Runners')
 - add_page_specific_style 'page_bundles/runners'
 
-#js-admin-runners-dashboard{ data: {
-  admin_runners_path: admin_runners_path,
-  new_runner_path: new_admin_runner_path,
-  clickhouse_ci_analytics_available: ::Gitlab::ClickHouse.configured?.to_s
-} }
+#js-admin-runners-dashboard{ data: admin_runners_fleet_dashboard_data }

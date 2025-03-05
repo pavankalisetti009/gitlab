@@ -9,7 +9,7 @@ RSpec.describe Admin::RunnersController, feature_category: :fleet_visibility do
   subject { response }
 
   before do
-    stub_licensed_features(custom_roles: true)
+    stub_licensed_features(custom_roles: true, runner_performance_insights: true)
 
     sign_in(user)
   end
@@ -51,6 +51,20 @@ RSpec.describe Admin::RunnersController, feature_category: :fleet_visibility do
   describe 'GET #show' do
     before do
       get admin_runner_path(runner)
+    end
+
+    context 'with a non-admin user' do
+      let_it_be(:user) { non_admin_user }
+
+      it { is_expected.to have_gitlab_http_status(:not_found) }
+
+      it_behaves_like 'accessible when user has read_admin_cicd ability through a custom role'
+    end
+  end
+
+  describe 'GET #dashboard' do
+    before do
+      get dashboard_admin_runners_path
     end
 
     context 'with a non-admin user' do
