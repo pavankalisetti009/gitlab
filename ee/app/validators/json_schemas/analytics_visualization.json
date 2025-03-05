@@ -23,7 +23,8 @@
             "ContributionsByUserTable",
             "ContributionsPushesChart",
             "ContributionsIssuesChart",
-            "ContributionsMergeRequestsChart"
+            "ContributionsMergeRequestsChart",
+            "NamespaceMetadata"
           ]
         },
         "slug": {
@@ -68,7 +69,8 @@
             "dora_metrics",
             "dora_metrics_by_project",
             "ai_impact_over_time",
-            "contributions"
+            "contributions",
+            "namespace_metadata"
           ]
         },
         "query": {

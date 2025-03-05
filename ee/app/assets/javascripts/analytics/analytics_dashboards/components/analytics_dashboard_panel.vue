@@ -57,6 +57,8 @@ export default {
       import(
         'ee/analytics/analytics_dashboards/components/visualizations/contributions/contributions_by_user_table.vue'
       ),
+    NamespaceMetadata: () =>
+      import('ee/analytics/analytics_dashboards/components/visualizations/namespace_metadata.vue'),
   },
   inject: [
     'namespaceId',

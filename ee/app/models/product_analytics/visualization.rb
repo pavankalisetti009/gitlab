@@ -48,6 +48,7 @@ module ProductAnalytics
       usage_overview
       dora_performers_score
       dora_projects_comparison
+      namespace_metadata
     ].freeze
 
     AI_IMPACT_DASHBOARD_PATH = 'ee/lib/gitlab/analytics/ai_impact_dashboard/visualizations'

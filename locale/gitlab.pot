@@ -6878,6 +6878,9 @@ msgstr ""
 msgid "Analytics settings"
 msgstr ""
 
+msgid "AnalyticsDashboards|Failed to load namespace metadata."
+msgstr ""
+
 msgid "Analytics| Last updated: %{recordedAt}"
 msgstr ""
 

@@ -24,6 +24,7 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
       vsd_dora_metrics_table
       vsd_lifecycle_metrics_table
       vsd_security_metrics_table
+      namespace_metadata
     ]
   end
 
@@ -282,6 +283,7 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
         merge_requests
         issues
         contributions_by_user
+        namespace_metadata
       ]
     end
 
@@ -318,7 +320,7 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
   describe '.value_stream_dashboard_visualizations' do
     subject { described_class.value_stream_dashboard_visualizations }
 
-    num_builtin_visualizations = 7
+    num_builtin_visualizations = 8
 
     it 'returns the value stream dashboard builtin visualizations' do
       expect(subject.count).to eq(num_builtin_visualizations)
@@ -405,7 +407,7 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
                   "[\"LineChart\", \"ColumnChart\", \"DataTable\", \"SingleStat\", " \
                   "\"DORAChart\", \"UsageOverview\", \"DoraPerformersScore\", \"DoraProjectsComparison\", " \
                   "\"AiImpactTable\", \"ContributionsByUserTable\", \"ContributionsPushesChart\", " \
-                  "\"ContributionsIssuesChart\", \"ContributionsMergeRequestsChart\"]"]
+                  "\"ContributionsIssuesChart\", \"ContributionsMergeRequestsChart\", \"NamespaceMetadata\"]"]
       expect(vis&.errors).to match_array(expected)
     end
   end
