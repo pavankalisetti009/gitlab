@@ -153,7 +153,9 @@ RSpec.describe Groups::SyncService, feature_category: :system_access do
 
           context 'when member promotion management is enabled' do
             let(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
-            let!(:member_approval) { create(:member_approval, :to_maintainer, user: user) }
+            let!(:member_approval) do
+              create(:gitlab_subscription_member_management_member_approval, :to_maintainer, user: user)
+            end
 
             before do
               stub_application_setting(enable_member_promotion_management: true)

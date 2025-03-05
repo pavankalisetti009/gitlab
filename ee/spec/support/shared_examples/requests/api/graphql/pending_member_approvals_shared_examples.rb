@@ -5,8 +5,10 @@ RSpec.shared_examples 'graphql pending members approval list spec' do
 
   let_it_be(:member_approvals) do
     [
-      create(:member_approval, member_namespace: members.first.member_namespace, member: members.first),
-      create(:member_approval, member_namespace: members.second.member_namespace, member: members.second)
+      create(:gitlab_subscription_member_management_member_approval, member_namespace: members.first.member_namespace,
+        member: members.first),
+      create(:gitlab_subscription_member_management_member_approval, member_namespace: members.second.member_namespace,
+        member: members.second)
     ]
   end
 

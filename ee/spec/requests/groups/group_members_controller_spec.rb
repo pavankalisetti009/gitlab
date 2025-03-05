@@ -87,7 +87,7 @@ RSpec.describe Groups::GroupMembersController, feature_category: :groups_and_pro
 
     context 'with member pending promotions' do
       let!(:pending_member_approvals) do
-        create_list(:member_approval, 2, :for_group_member, member_namespace: group)
+        create_list(:gitlab_subscription_member_management_member_approval, 2, :for_group_member, member_namespace: group)
       end
 
       let(:feature_flag) { true }

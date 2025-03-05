@@ -19,7 +19,9 @@ module GitlabSubscriptions
         member_user = User.find_by_id(event.data[:member_user_id])
         return unless member_user.present?
 
-        return unless ::Members::MemberApproval.pending_member_approvals_for_user(member_user.id).exists?
+        return unless ::GitlabSubscriptions::MemberManagement::MemberApproval
+                        .pending_member_approvals_for_user(member_user.id)
+                        .exists?
 
         ::GitlabSubscriptions::MemberManagement::ProcessUserBillablePromotionService
           .new(nil, member_user, :approved, true).execute

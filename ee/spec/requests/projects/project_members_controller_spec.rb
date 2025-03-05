@@ -21,7 +21,8 @@ RSpec.describe Projects::ProjectMembersController, feature_category: :groups_and
 
     context 'with member pending promotions' do
       let_it_be(:pending_member_approvals) do
-        create_list(:member_approval, 2, :for_project_member, member_namespace: project.project_namespace)
+        create_list(:gitlab_subscription_member_management_member_approval, 2, :for_project_member,
+          member_namespace: project.project_namespace)
       end
 
       let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }

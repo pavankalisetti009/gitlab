@@ -13,7 +13,8 @@ RSpec.describe 'Update MemberApproval User Status', feature_category: :seat_cost
   let(:project) { create(:project) }
   let(:project_namespace) { project.project_namespace }
   let!(:member_approval) do
-    create(:member_approval, user: user, member_namespace: group, member: nil, old_access_level: nil)
+    create(:gitlab_subscription_member_management_member_approval, user: user, member_namespace: group, member: nil,
+      old_access_level: nil)
   end
 
   let(:mutation) { graphql_mutation(:process_user_billable_promotion_request, input) }
@@ -145,7 +146,7 @@ RSpec.describe 'Update MemberApproval User Status', feature_category: :seat_cost
           let!(:existing_member_in_another_src) { create(:group_member, :guest, group: another_group, user: user) }
 
           let!(:another_member_approval) do
-            create(:member_approval,
+            create(:gitlab_subscription_member_management_member_approval,
               user: user,
               member_namespace: another_group,
               member: existing_member_in_another_src,
@@ -160,7 +161,8 @@ RSpec.describe 'Update MemberApproval User Status', feature_category: :seat_cost
       context 'for project' do
         let(:source) { project }
         let!(:member_approval) do
-          create(:member_approval, user: user, member_namespace: project_namespace, member: nil, old_access_level: nil)
+          create(:gitlab_subscription_member_management_member_approval, user: user,
+            member_namespace: project_namespace, member: nil, old_access_level: nil)
         end
 
         context 'with existing member user' do
@@ -177,7 +179,7 @@ RSpec.describe 'Update MemberApproval User Status', feature_category: :seat_cost
           end
 
           let!(:another_member_approval) do
-            create(:member_approval,
+            create(:gitlab_subscription_member_management_member_approval,
               user: user,
               member_namespace: another_project_namespace,
               member: existing_member_in_another_src,
@@ -204,7 +206,8 @@ RSpec.describe 'Update MemberApproval User Status', feature_category: :seat_cost
 
     context 'when update! fails' do
       before do
-        allow(::Members::MemberApproval).to receive_message_chain(:pending_member_approvals_for_user, :find_each)
+        allow(::GitlabSubscriptions::MemberManagement::MemberApproval).to receive_message_chain(
+          :pending_member_approvals_for_user, :find_each)
                                             .and_yield(member_approval)
         allow(member_approval).to receive(:update!).and_raise(ActiveRecord::RecordInvalid)
       end

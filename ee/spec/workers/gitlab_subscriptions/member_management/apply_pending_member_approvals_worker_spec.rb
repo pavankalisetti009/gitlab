@@ -15,7 +15,8 @@ RSpec.describe GitlabSubscriptions::MemberManagement::ApplyPendingMemberApproval
   let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
 
   let!(:member_approval) do
-    create(:member_approval, user: member_user, member_namespace: group, member: nil, old_access_level: nil)
+    create(:gitlab_subscription_member_management_member_approval, user: member_user, member_namespace: group,
+      member: nil, old_access_level: nil)
   end
 
   before do

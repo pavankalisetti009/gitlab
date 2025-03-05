@@ -85,6 +85,9 @@ module EE
       has_many :minimal_access_groups, through: :minimal_access_group_members, source: :group
       has_many :elevated_members, -> { elevated_guests }, class_name: 'Member'
 
+      has_many :requested_member_approvals, class_name: '::GitlabSubscriptions::MemberManagement::MemberApproval', foreign_key: 'requested_by_id'
+      has_many :reviewed_member_approvals, class_name: '::GitlabSubscriptions::MemberManagement::MemberApproval', foreign_key: 'reviewed_by_id'
+
       has_many :users_ops_dashboard_projects
       has_many :ops_dashboard_projects, through: :users_ops_dashboard_projects, source: :project
       has_many :users_security_dashboard_projects

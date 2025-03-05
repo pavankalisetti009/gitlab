@@ -14,7 +14,7 @@ module GitlabSubscriptions
       end
 
       def execute
-        model = ::Members::MemberApproval
+        model = ::GitlabSubscriptions::MemberManagement::MemberApproval
         return model.none unless member_promotion_management_enabled?
         return model.none unless allowed_to_query_member_approvals?
 

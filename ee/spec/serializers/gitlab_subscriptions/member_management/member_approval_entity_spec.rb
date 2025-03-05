@@ -5,7 +5,12 @@ require 'spec_helper'
 RSpec.describe GitlabSubscriptions::MemberManagement::MemberApprovalEntity,
   feature_category: :seat_cost_management do
   let(:group) { build_stubbed(:group) }
-  let(:pending_member_approval) { build_stubbed(:member_approval, member_namespace: group) }
+  let(:pending_member_approval) do
+    build_stubbed(
+      :gitlab_subscription_member_management_member_approval,
+      member_namespace: group
+    )
+  end
 
   subject(:member_approval_entity) { described_class.new(pending_member_approval) }
 
@@ -25,7 +30,7 @@ RSpec.describe GitlabSubscriptions::MemberManagement::MemberApprovalEntity,
 
   describe 'when assigning the member presenter' do
     it 'is only set once' do
-      expect(::Members::MemberApprovalPresenter).to receive(:new)
+      expect(::GitlabSubscriptions::MemberManagement::MemberApprovalPresenter).to receive(:new)
                                          .with(pending_member_approval)
                                          .and_call_original
                                          .once

@@ -38,9 +38,14 @@ RSpec.describe GitlabSubscriptions::MemberManagement::MemberApprovalFinder, feat
 
   describe '#execute' do
     shared_examples 'when feature and settings are enabled' do
-      let!(:pending_approval) { create(:member_approval, type, member_namespace: member_namespace) }
+      let!(:pending_approval) do
+        create(:gitlab_subscription_member_management_member_approval, type, member_namespace: member_namespace)
+      end
 
-      let!(:rejected_approval) { create(:member_approval, type, member_namespace: member_namespace, status: 2) }
+      let!(:rejected_approval) do
+        create(:gitlab_subscription_member_management_member_approval, type, member_namespace: member_namespace,
+          status: 2)
+      end
 
       context 'when user has admin access' do
         before do

@@ -28,7 +28,10 @@ module GitlabSubscriptions
       def trigger_event_to_promote_pending_members!(member)
         return unless member_promotion_management_enabled?
         return unless member_eligible_for_admin_event?(member)
-        return unless ::Members::MemberApproval.pending_member_approvals_for_user(member.user_id).exists?
+
+        return unless ::GitlabSubscriptions::MemberManagement::MemberApproval
+                        .pending_member_approvals_for_user(member.user_id)
+                        .exists?
 
         ::Gitlab::EventStore.publish(
           ::Members::MembershipModifiedByAdminEvent.new(data: {

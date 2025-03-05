@@ -801,7 +801,11 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
     context 'queues member for admin approval' do
       it { expect { execute_service }.not_to change { project.members.count } }
 
-      it { expect { execute_service }.to change { ::Members::MemberApproval.count }.by(2) }
+      it do
+        expect { execute_service }.to change {
+          ::GitlabSubscriptions::MemberManagement::MemberApproval.count
+        }.by(2)
+      end
 
       it 'returns queued_users in the response' do
         expect(execute_service).to eq({

@@ -167,7 +167,7 @@ module EE
       def pending_promotion_members_count
         return unless can?(current_user, :admin_group_member, group)
 
-        GitlabSubscriptions::MemberManagement::MemberApprovalFinder
+        ::GitlabSubscriptions::MemberManagement::MemberApprovalFinder
           .new(current_user: current_user, params: params, source: group)
           .execute
           .count

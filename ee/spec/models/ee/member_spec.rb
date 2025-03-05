@@ -15,6 +15,7 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
 
   describe 'Associations' do
     it { is_expected.to belong_to(:member_role) }
+    it { is_expected.to have_many(:member_approvals).class_name('::GitlabSubscriptions::MemberManagement::MemberApproval').inverse_of(:member) }
   end
 
   describe 'Validation' do

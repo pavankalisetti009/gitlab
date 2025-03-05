@@ -123,7 +123,9 @@ RSpec.describe GitlabSubscriptions::MemberManagement::PromotionManagementUtils, 
   describe '#trigger_event_to_promote_pending_members!' do
     let(:user) { create(:user) }
     let(:member) { create(:group_member, :developer, user: user) }
-    let!(:member_approval) { create(:member_approval, :to_maintainer, user: user) }
+    let!(:member_approval) do
+      create(:gitlab_subscription_member_management_member_approval, :to_maintainer, user: user)
+    end
 
     subject(:trigger_event) { trigger_event_to_promote_pending_members!(member) }
 
@@ -152,7 +154,7 @@ RSpec.describe GitlabSubscriptions::MemberManagement::PromotionManagementUtils, 
     context 'when there are no pending member approvals' do
       before do
         pending_approvals = instance_double(ActiveRecord::Relation, exists?: false)
-        allow(::Members::MemberApproval).to receive(:pending_member_approvals_for_user)
+        allow(::GitlabSubscriptions::MemberManagement::MemberApproval).to receive(:pending_member_approvals_for_user)
                                             .with(member.user_id)
                                             .and_return(pending_approvals)
       end
