@@ -135,7 +135,7 @@ RSpec.describe GitlabSubscriptions::MemberManagement::QueueNonBillableToBillable
             response = nil
             expect do
               response = create_service
-            end.to change { ::Members::MemberApproval.count }.by(2)
+            end.to change { ::GitlabSubscriptions::MemberManagement::MemberApproval.count }.by(2)
 
             expect(response.payload[:non_billable_to_billable_members].count).to eq(2)
             expect(response.payload[:queued_member_approvals].count).to eq(2)
@@ -155,7 +155,7 @@ RSpec.describe GitlabSubscriptions::MemberManagement::QueueNonBillableToBillable
             response = nil
             expect do
               response = create_service
-            end.to change { ::Members::MemberApproval.count }.by(1)
+            end.to change { ::GitlabSubscriptions::MemberManagement::MemberApproval.count }.by(1)
 
             expect(response.payload[:non_billable_to_billable_members].count).to eq(1)
             expect(response.payload[:queued_member_approvals].count).to eq(1)
@@ -178,7 +178,7 @@ RSpec.describe GitlabSubscriptions::MemberManagement::QueueNonBillableToBillable
             response = nil
             expect do
               response = create_service
-            end.to change { ::Members::MemberApproval.count }.by(2)
+            end.to change { ::GitlabSubscriptions::MemberManagement::MemberApproval.count }.by(2)
 
             expect(response.payload[:non_billable_to_billable_members].count).to eq(2)
             expect(response.payload[:queued_member_approvals].count).to eq(2)
@@ -270,9 +270,11 @@ RSpec.describe GitlabSubscriptions::MemberManagement::QueueNonBillableToBillable
           context 'when MemberApproval raises ActiveRecord::RecordInvalid' do
             before do
               add_non_billable_members(users_with_membership, source)
-              allow(::Members::MemberApproval).to receive(:create_or_update_pending_approval).and_raise(
-                ActiveRecord::RecordInvalid
-              )
+              allow(::GitlabSubscriptions::MemberManagement::MemberApproval)
+                .to receive(:create_or_update_pending_approval)
+                      .and_raise(
+                        ActiveRecord::RecordInvalid
+                      )
             end
 
             it 'returns error' do
@@ -317,7 +319,9 @@ RSpec.describe GitlabSubscriptions::MemberManagement::QueueNonBillableToBillable
                 let(:email_users) { non_billable_users }
 
                 it 'queues all email list users' do
-                  expect { create_service }.to change { ::Members::MemberApproval.count }.by(1)
+                  expect { create_service }.to change {
+                    ::GitlabSubscriptions::MemberManagement::MemberApproval.count
+                  }.by(1)
                   expect(create_service.payload[:emails_not_queued_for_approval]).to be_empty
                 end
               end
@@ -326,7 +330,9 @@ RSpec.describe GitlabSubscriptions::MemberManagement::QueueNonBillableToBillable
                 let(:email_users) { billable_users }
 
                 it 'returns emails as emails_not_queued_for_approval' do
-                  expect { create_service }.not_to change { ::Members::MemberApproval.count }
+                  expect { create_service }.not_to change {
+                    ::GitlabSubscriptions::MemberManagement::MemberApproval.count
+                  }
                   expect(create_service.payload[:emails_not_queued_for_approval]).to match_array(emails)
                 end
               end
@@ -336,7 +342,9 @@ RSpec.describe GitlabSubscriptions::MemberManagement::QueueNonBillableToBillable
                 let(:users_by_emails) { { "test@test.com": nil } }
 
                 it 'returns email as emails_not_queued_for_approval' do
-                  expect { create_service }.not_to change { ::Members::MemberApproval.count }
+                  expect { create_service }.not_to change {
+                    ::GitlabSubscriptions::MemberManagement::MemberApproval.count
+                  }
                   expect(create_service.payload[:emails_not_queued_for_approval]).to match_array(emails)
                 end
               end
@@ -348,7 +356,9 @@ RSpec.describe GitlabSubscriptions::MemberManagement::QueueNonBillableToBillable
                 let(:email_users) { non_billable_users }
 
                 it 'queues all email list users' do
-                  expect { create_service }.to change { ::Members::MemberApproval.count }.by(1)
+                  expect { create_service }.to change {
+                    ::GitlabSubscriptions::MemberManagement::MemberApproval.count
+                  }.by(1)
 
                   expect(
                     create_service.payload[:non_billable_to_billable_members].map(&:user)
@@ -367,7 +377,9 @@ RSpec.describe GitlabSubscriptions::MemberManagement::QueueNonBillableToBillable
                 let(:email_users) { billable_users }
 
                 it 'queues the user list' do
-                  expect { create_service }.to change { ::Members::MemberApproval.count }.by(1)
+                  expect { create_service }.to change {
+                    ::GitlabSubscriptions::MemberManagement::MemberApproval.count
+                  }.by(1)
 
                   expect(create_service.payload[:non_billable_to_billable_members].map(&:user)).to match_array(users)
                   expect(create_service.payload[:billable_members]).to be_empty
@@ -388,7 +400,9 @@ RSpec.describe GitlabSubscriptions::MemberManagement::QueueNonBillableToBillable
                 end
 
                 it 'queues both users list and email list users' do
-                  expect { create_service }.to change { ::Members::MemberApproval.count }.by(2)
+                  expect { create_service }.to change {
+                    ::GitlabSubscriptions::MemberManagement::MemberApproval.count
+                  }.by(2)
 
                   expect(
                     create_service.payload[:non_billable_to_billable_members].map(&:user)
@@ -414,7 +428,9 @@ RSpec.describe GitlabSubscriptions::MemberManagement::QueueNonBillableToBillable
                 end
 
                 it 'does not queue any users' do
-                  expect { create_service }.not_to change { ::Members::MemberApproval.count }
+                  expect { create_service }.not_to change {
+                    ::GitlabSubscriptions::MemberManagement::MemberApproval.count
+                  }
                 end
 
                 it 'returns both users list and email list' do
@@ -429,7 +445,9 @@ RSpec.describe GitlabSubscriptions::MemberManagement::QueueNonBillableToBillable
                 let(:email_users) { new_user }
 
                 it 'queues all email list users' do
-                  expect { create_service }.to change { ::Members::MemberApproval.count }.by(1)
+                  expect { create_service }.to change {
+                    ::GitlabSubscriptions::MemberManagement::MemberApproval.count
+                  }.by(1)
 
                   expect(
                     create_service.payload[:non_billable_to_billable_members].map(&:user)

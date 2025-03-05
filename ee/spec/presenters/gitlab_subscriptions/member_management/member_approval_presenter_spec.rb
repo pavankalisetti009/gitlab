@@ -2,12 +2,17 @@
 
 require 'spec_helper'
 
-RSpec.describe EE::Members::MemberApprovalPresenter, feature_category: :seat_cost_management do
+RSpec.describe GitlabSubscriptions::MemberManagement::MemberApprovalPresenter, feature_category: :seat_cost_management do
   let(:project_namespace) { build_stubbed(:project_namespace) }
   let(:project) { build_stubbed(:project, project_namespace: project_namespace) }
   let(:group) { build_stubbed(:group) }
   let(:namespace) { project.project_namespace }
-  let(:member_approval) { build_stubbed(:member_approval, member_namespace: namespace) }
+  let(:member_approval) do
+    build_stubbed(
+      :gitlab_subscription_member_management_member_approval,
+      member_namespace: namespace
+    )
+  end
 
   let(:user) { build_stubbed(:user) }
   let(:presenter) { member_approval.present(current_user: user) }

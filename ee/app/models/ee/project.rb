@@ -222,6 +222,8 @@ module EE
       has_many :v2_approval_rules_projects, class_name: 'MergeRequests::ApprovalRulesProject', inverse_of: :project
       has_many :v2_approval_rules, through: :v2_approval_rules_projects, class_name: 'MergeRequests::ApprovalRule', source: :approval_rule
 
+      has_many :member_approvals, through: :members_and_requesters, class_name: '::GitlabSubscriptions::MemberManagement::MemberApproval'
+
       elastic_index_dependant_association :issues, on_change: :visibility_level
       elastic_index_dependant_association :issues, on_change: :archived
       elastic_index_dependant_association :work_items, on_change: :visibility_level

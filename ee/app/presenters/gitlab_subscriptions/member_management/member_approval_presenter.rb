@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-module EE
-  module Members
-    module MemberApprovalPresenter
-      extend ActiveSupport::Concern
+module GitlabSubscriptions
+  module MemberManagement
+    class MemberApprovalPresenter < ::Gitlab::View::Presenter::Delegated
+      presents GitlabSubscriptions::MemberManagement::MemberApproval, as: :member_approval
 
       def human_new_access_level
         ::Gitlab::Access.human_access(new_access_level)

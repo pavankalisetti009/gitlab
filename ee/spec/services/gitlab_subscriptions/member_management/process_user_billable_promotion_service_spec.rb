@@ -15,12 +15,12 @@ RSpec.describe GitlabSubscriptions::MemberManagement::ProcessUserBillablePromoti
   let(:project) { create(:project, group: group) }
   let(:another_group) { create(:group) }
   let!(:member_approval) do
-    create(:member_approval, :to_owner,
+    create(:gitlab_subscription_member_management_member_approval, :to_owner,
       member_namespace: project.project_namespace, user: user, member: nil, old_access_level: nil)
   end
 
   let!(:another_member_approval) do
-    create(:member_approval, :to_developer,
+    create(:gitlab_subscription_member_management_member_approval, :to_developer,
       member_namespace: another_group, user: user, member: nil, old_access_level: nil)
   end
 
@@ -118,7 +118,7 @@ RSpec.describe GitlabSubscriptions::MemberManagement::ProcessUserBillablePromoti
             old_access_level = Gitlab::Access::GUEST if existing_access_level == :guest
 
             create(
-              :member_approval,
+              :gitlab_subscription_member_management_member_approval,
               to_new_access_level,
               old_access_level: old_access_level,
               member_namespace: member_namespace,
@@ -232,7 +232,8 @@ RSpec.describe GitlabSubscriptions::MemberManagement::ProcessUserBillablePromoti
 
       context 'when there is failure during update!' do
         before do
-          allow(::Members::MemberApproval).to receive_message_chain(:pending_member_approvals_for_user, :find_each)
+          allow(::GitlabSubscriptions::MemberManagement::MemberApproval).to receive_message_chain(
+            :pending_member_approvals_for_user, :find_each)
                                               .and_yield(member_approval).and_yield(another_member_approval)
           allow(member_approval).to receive(:update!).and_raise(ActiveRecord::RecordInvalid)
         end

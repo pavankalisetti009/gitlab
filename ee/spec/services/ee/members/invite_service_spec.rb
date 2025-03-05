@@ -164,7 +164,7 @@ RSpec.describe Members::InviteService, :aggregate_failures, feature_category: :g
       context 'queues members for admin approval' do
         it { expect { result }.not_to change { project.members.count } }
 
-        it { expect { result }.to change { ::Members::MemberApproval.count }.by(2) }
+        it { expect { result }.to change { ::GitlabSubscriptions::MemberManagement::MemberApproval.count }.by(2) }
 
         it 'returns queued_users in the response' do
           params[:email] = project_users[0].email

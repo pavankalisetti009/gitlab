@@ -27,6 +27,9 @@ module EE
         state :active, value: ::Member::STATE_ACTIVE
       end
 
+      has_many :member_approvals, inverse_of: :member,
+        class_name: '::GitlabSubscriptions::MemberManagement::MemberApproval'
+
       validate :seat_available, on: :create
 
       scope :awaiting, -> { where(state: ::Member::STATE_AWAITING) }

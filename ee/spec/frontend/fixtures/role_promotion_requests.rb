@@ -18,11 +18,19 @@ RSpec.describe 'Role promotion requests EE (JavaScript fixtures)', feature_categ
 
   let_it_be(:member_approvals) do
     [
-      create(:member_approval, member_namespace: project_members.first.member_namespace, member: project_members.first),
-      create(:member_approval, member_namespace: project_members.second.member_namespace,
-        member: project_members.second),
-      create(:member_approval, member_namespace: group_members.first.member_namespace, member: group_members.first),
-      create(:member_approval, member_namespace: group_members.second.member_namespace, member: group_members.second)
+      create(:gitlab_subscription_member_management_member_approval,
+        member_namespace: project_members.first.member_namespace,
+        member: project_members.first),
+      create(:gitlab_subscription_member_management_member_approval,
+        member_namespace: project_members.second.member_namespace,
+        member: project_members.second
+      ),
+      create(:gitlab_subscription_member_management_member_approval,
+        member_namespace: group_members.first.member_namespace,
+        member: group_members.first),
+      create(:gitlab_subscription_member_management_member_approval,
+        member_namespace: group_members.second.member_namespace,
+        member: group_members.second)
     ]
   end
 

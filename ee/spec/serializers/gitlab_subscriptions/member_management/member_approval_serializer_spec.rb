@@ -16,7 +16,10 @@ RSpec.describe GitlabSubscriptions::MemberManagement::MemberApprovalSerializer,
     context 'when there are member approvals' do
       it 'returns member approval attributes' do
         group = build_stubbed(:group)
-        pending_member_approval = build_stubbed(:member_approval, member_namespace: group)
+        pending_member_approval = build_stubbed(
+          :gitlab_subscription_member_management_member_approval,
+          member_namespace: group
+        )
         pending_member_approvals = [pending_member_approval]
 
         result = described_class.new.represent(pending_member_approvals)

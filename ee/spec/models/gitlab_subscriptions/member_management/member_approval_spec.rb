@@ -2,9 +2,17 @@
 
 require 'spec_helper'
 
-RSpec.describe Members::MemberApproval, feature_category: :groups_and_projects do
+RSpec.describe GitlabSubscriptions::MemberManagement::MemberApproval, feature_category: :groups_and_projects do
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
+
+  describe 'associations' do
+    it { is_expected.to belong_to(:member) }
+    it { is_expected.to belong_to(:member_namespace) }
+    it { is_expected.to belong_to(:reviewed_by) }
+    it { is_expected.to belong_to(:requested_by) }
+    it { is_expected.to belong_to(:user) }
+  end
 
   describe '.create_or_update_approval' do
     let_it_be(:requested_user) { create(:user) }
@@ -39,7 +47,10 @@ RSpec.describe Members::MemberApproval, feature_category: :groups_and_projects d
     end
 
     context 'when pending record exists' do
-      let!(:member_approval) { create(:member_approval, user: user, member_namespace: group, status: :pending) }
+      let!(:member_approval) do
+        create(:gitlab_subscription_member_management_member_approval, user: user, member_namespace: group,
+          status: :pending)
+      end
 
       shared_examples 'pending record was updated' do
         it 'updates the record with passed fields' do
@@ -84,8 +95,107 @@ RSpec.describe Members::MemberApproval, feature_category: :groups_and_projects d
   end
 
   describe 'validations' do
+    it { is_expected.to validate_presence_of(:new_access_level) }
+    it { is_expected.to validate_presence_of(:user) }
+    it { is_expected.to validate_presence_of(:member_namespace) }
+
+    context 'with metadata' do
+      subject { build(:gitlab_subscription_member_management_member_approval, metadata: attribute_mapping) }
+
+      context 'with valid JSON schemas' do
+        let(:attribute_mapping) do
+          {
+            expires_at: expiry,
+            member_role_id: nil
+          }
+        end
+
+        context 'with empty metadata' do
+          let(:attribute_mapping) { {} }
+
+          it { is_expected.to be_valid }
+        end
+
+        context 'with date expiry' do
+          let(:expiry) { "1970-01-01" }
+
+          it { is_expected.to be_valid }
+        end
+
+        context 'with empty expiry' do
+          let(:expiry) { "" }
+
+          it { is_expected.to be_valid }
+        end
+
+        context 'with nil expiry' do
+          let(:expiry) { nil }
+
+          it { is_expected.to be_valid }
+        end
+
+        context 'with not null member_role_id' do
+          let(:attribute_mapping) do
+            {
+              member_role_id: 3
+            }
+          end
+
+          it { is_expected.to be_valid }
+        end
+
+        context 'when property has extra attributes' do
+          let(:attribute_mapping) do
+            { access_level: 20 }
+          end
+
+          it { is_expected.to be_valid }
+        end
+      end
+
+      context 'with invalid JSON schemas' do
+        shared_examples 'is invalid record' do
+          it 'returns an error message' do
+            expect(subject).to be_invalid
+            expect(subject.errors.messages[:metadata]).to eq(['must be a valid json schema'])
+          end
+        end
+
+        context 'when property is not an object' do
+          let(:attribute_mapping) do
+            "That is not a valid schema"
+          end
+
+          it_behaves_like 'is invalid record'
+        end
+
+        context 'with invalid expiry' do
+          let(:attribute_mapping) do
+            {
+              expires_at: "1242"
+            }
+          end
+
+          it_behaves_like 'is invalid record'
+        end
+
+        context 'with member_role_id' do
+          let(:attribute_mapping) do
+            {
+              member_role_id: "some role"
+            }
+          end
+
+          it_behaves_like 'is invalid record'
+        end
+      end
+    end
+
     context 'when uniqness is enforced' do
-      let!(:member_approval) { create(:member_approval, user: user, member_namespace: group, status: :pending) }
+      let!(:member_approval) do
+        create(:gitlab_subscription_member_management_member_approval, user: user, member_namespace: group,
+          status: :pending)
+      end
 
       context 'with same user, namespace' do
         let(:message) { 'A pending approval for the same user and namespace already exists.' }
@@ -95,7 +205,8 @@ RSpec.describe Members::MemberApproval, feature_category: :groups_and_projects d
             let(:status) { :pending }
 
             it 'is not valid' do
-              duplicate_approval = build(:member_approval, user: user, member_namespace: group, status: status)
+              duplicate_approval = build(:gitlab_subscription_member_management_member_approval, user: user,
+                member_namespace: group, status: status)
 
               expect(duplicate_approval).not_to be_valid
               expect(duplicate_approval.errors[:base]).to include(message)
@@ -106,7 +217,8 @@ RSpec.describe Members::MemberApproval, feature_category: :groups_and_projects d
             let(:status) { :approved }
 
             it 'is valid' do
-              duplicate_approval = build(:member_approval, user: user, member_namespace: group, status: :approved)
+              duplicate_approval = build(:gitlab_subscription_member_management_member_approval, user: user,
+                member_namespace: group, status: :approved)
 
               expect(duplicate_approval).to be_valid
             end
@@ -116,7 +228,8 @@ RSpec.describe Members::MemberApproval, feature_category: :groups_and_projects d
             let(:status) { :denied }
 
             it 'is valid' do
-              duplicate_approval = build(:member_approval, user: user, member_namespace: group, status: :denied)
+              duplicate_approval = build(:gitlab_subscription_member_management_member_approval, user: user,
+                member_namespace: group, status: :denied)
 
               expect(duplicate_approval).to be_valid
             end
@@ -163,7 +276,8 @@ RSpec.describe Members::MemberApproval, feature_category: :groups_and_projects d
 
             context 'when updating from others to pending' do
               let!(:approved_member_approval) do
-                build(:member_approval, user: user, member_namespace: group, status: :approved)
+                build(:gitlab_subscription_member_management_member_approval, user: user, member_namespace: group,
+                  status: :approved)
               end
 
               it 'is not allowed' do
@@ -179,18 +293,30 @@ RSpec.describe Members::MemberApproval, feature_category: :groups_and_projects d
   end
 
   describe '#pending_member_approvals_with_max_new_access_level' do
-    let_it_be(:project_member_pending_dev) { create(:member_approval, :for_project_member) }
+    let_it_be(:project_member_pending_dev) do
+      create(:gitlab_subscription_member_management_member_approval, :for_project_member)
+    end
+
     let_it_be(:project_member_pending_maintainer) do
-      create(:member_approval, user: project_member_pending_dev.user, new_access_level: Gitlab::Access::MAINTAINER)
+      create(:gitlab_subscription_member_management_member_approval, user: project_member_pending_dev.user,
+        new_access_level: Gitlab::Access::MAINTAINER)
     end
 
-    let_it_be(:group_member_pending_dev) { create(:member_approval, :for_group_member) }
+    let_it_be(:group_member_pending_dev) do
+      create(:gitlab_subscription_member_management_member_approval, :for_group_member)
+    end
+
     let_it_be(:group_member_pending_owner) do
-      create(:member_approval, :for_group_member, user: group_member_pending_dev.user,
-        new_access_level: Gitlab::Access::OWNER)
+      create(:gitlab_subscription_member_management_member_approval,
+        :for_group_member,
+        user: group_member_pending_dev.user,
+        new_access_level: Gitlab::Access::OWNER
+      )
     end
 
-    let_it_be(:denied_approval_dev) { create(:member_approval, :for_group_member, status: :denied) }
+    let_it_be(:denied_approval_dev) do
+      create(:gitlab_subscription_member_management_member_approval, :for_group_member, status: :denied)
+    end
 
     it 'returns records corresponding to pending users with max new_access_level' do
       expect(described_class.pending_member_approvals_with_max_new_access_level).to contain_exactly(
@@ -203,12 +329,17 @@ RSpec.describe Members::MemberApproval, feature_category: :groups_and_projects d
     let_it_be(:user) { create(:user) }
     let_it_be(:another_user) { create(:user) }
 
-    let_it_be(:group_approval) { create(:member_approval, :for_group_member, user: user) }
-    let_it_be(:project_approval) { create(:member_approval, :for_project_member, user: user) }
+    let_it_be(:group_approval) do
+      create(:gitlab_subscription_member_management_member_approval, :for_group_member, user: user)
+    end
+
+    let_it_be(:project_approval) do
+      create(:gitlab_subscription_member_management_member_approval, :for_project_member, user: user)
+    end
 
     before do
-      create(:member_approval, :for_group_member, user: user, status: :denied)
-      create(:member_approval, user: another_user, status: :pending)
+      create(:gitlab_subscription_member_management_member_approval, :for_group_member, user: user, status: :denied)
+      create(:gitlab_subscription_member_management_member_approval, user: another_user, status: :pending)
     end
 
     it 'returns pending approvals for the given user' do

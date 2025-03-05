@@ -4,18 +4,31 @@ require 'spec_helper'
 
 RSpec.describe GitlabSubscriptions::MemberManagement::SelfManaged::MaxAccessLevelMemberApprovalsFinder, feature_category: :seat_cost_management do
   let_it_be(:admin_user) { create(:user) }
-  let_it_be(:project_member_pending_dev) { create(:member_approval, :for_project_member) }
+  let_it_be(:project_member_pending_dev) do
+    create(:gitlab_subscription_member_management_member_approval, :for_project_member)
+  end
+
   let_it_be(:project_member_pending_maintainer) do
-    create(:member_approval, user: project_member_pending_dev.user, new_access_level: Gitlab::Access::MAINTAINER)
+    create(:gitlab_subscription_member_management_member_approval, user: project_member_pending_dev.user,
+      new_access_level: Gitlab::Access::MAINTAINER)
   end
 
-  let_it_be(:group_member_pending_dev) { create(:member_approval, :for_group_member) }
+  let_it_be(:group_member_pending_dev) do
+    create(:gitlab_subscription_member_management_member_approval, :for_group_member)
+  end
+
   let_it_be(:group_member_pending_owner) do
-    create(:member_approval, :for_group_member, user: group_member_pending_dev.user,
-      new_access_level: Gitlab::Access::OWNER)
+    create(:gitlab_subscription_member_management_member_approval,
+      :for_group_member,
+      user: group_member_pending_dev.user,
+      new_access_level: Gitlab::Access::OWNER
+    )
   end
 
-  let_it_be(:denied_approval_dev) { create(:member_approval, :for_group_member, status: :denied) }
+  let_it_be(:denied_approval_dev) do
+    create(:gitlab_subscription_member_management_member_approval, :for_group_member, status: :denied)
+  end
+
   let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
   let_it_be(:feature_flag) { true }
   let_it_be(:feature_setting) { true }

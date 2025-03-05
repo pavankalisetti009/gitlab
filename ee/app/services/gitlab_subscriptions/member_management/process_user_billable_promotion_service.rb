@@ -72,7 +72,7 @@ module GitlabSubscriptions
       end
 
       def pending_approvals
-        ::Members::MemberApproval.pending_member_approvals_for_user(user.id)
+        ::GitlabSubscriptions::MemberManagement::MemberApproval.pending_member_approvals_for_user(user.id)
       end
 
       def all_promotions_failed?

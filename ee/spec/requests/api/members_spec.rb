@@ -2342,7 +2342,7 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
         it 'queues users memberships for admin approval' do
           expect { post_request }.not_to change { ::Member.count }
 
-          expect(::Members::MemberApproval.count).to eq(2)
+          expect(::GitlabSubscriptions::MemberManagement::MemberApproval.count).to eq(2)
 
           expect(response).to have_gitlab_http_status(:created)
           expect(json_response).to eq({
@@ -2381,7 +2381,7 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
         it 'queues user membership for admin approval' do
           expect { post_request }.not_to change { ::Member.count }
 
-          expect(::Members::MemberApproval.count).to eq(1)
+          expect(::GitlabSubscriptions::MemberManagement::MemberApproval.count).to eq(1)
 
           expect(response).to have_gitlab_http_status(:accepted)
           expect(json_response).to eq({
