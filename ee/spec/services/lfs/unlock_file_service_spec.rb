@@ -16,7 +16,8 @@ RSpec.describe Lfs::UnlockFileService, feature_category: :source_code_management
       end
 
       describe 'File Locking integraction' do
-        let(:params) { { id: lock.id } }
+        let(:destroy_path_lock) { true }
+        let(:params) { { id: lock.id, destroy_path_lock: destroy_path_lock } }
         let(:current_user) { lock_author }
         let(:file_locks_license) { true }
 
@@ -30,6 +31,24 @@ RSpec.describe Lfs::UnlockFileService, feature_category: :source_code_management
         context 'when File Locking is available' do
           it 'deletes the Path Lock' do
             expect { subject.execute }.to change { PathLock.count }.to(0)
+          end
+
+          context 'when the lfs file was not unlocked successfully' do
+            before do
+              allow(subject).to receive(:unlock_file).and_return({ status: :error })
+            end
+
+            it 'does not create a Path Lock' do
+              expect { subject.execute }.not_to change { PathLock.count }
+            end
+          end
+
+          context 'when destroy_path_lock is false' do
+            let(:destroy_path_lock) { false }
+
+            it 'does not delete the Path Lock' do
+              expect { subject.execute }.not_to change { PathLock.count }
+            end
           end
         end
 

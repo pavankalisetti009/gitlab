@@ -6,19 +6,21 @@ module EE
       def execute
         result = super
 
-        if (result[:status] == :success) &&
-            create_path_lock? &&
-            project.feature_available?(:file_locks)
-          PathLocks::LockService.new(project, current_user).execute(result[:lock].path)
-        end
+        create_path_lock(result[:lock].path) if create_path_lock?(result[:status])
 
         result
       end
 
       private
 
-      def create_path_lock?
-        params[:create_path_lock] != false
+      def create_path_lock?(lfs_lock_status)
+        lfs_lock_status == :success &&
+          params[:create_path_lock] != false &&
+          project.feature_available?(:file_locks)
+      end
+
+      def create_path_lock(path)
+        PathLocks::LockService.new(project, current_user).execute(path)
       end
     end
   end

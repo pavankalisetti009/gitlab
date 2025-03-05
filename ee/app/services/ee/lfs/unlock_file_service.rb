@@ -3,19 +3,29 @@
 module EE
   module Lfs
     module UnlockFileService
-      # rubocop: disable CodeReuse/ActiveRecord
       def execute
         result = super
 
-        if (result[:status] == :success) && project.feature_available?(:file_locks)
-          if path_lock = project.path_locks.find_by(path: result[:lock].path)
-            PathLocks::UnlockService.new(project, current_user).execute(path_lock)
-          end
-        end
+        destroy_path_lock(result[:lock].path) if destroy_path_lock?(result[:status])
 
         result
       end
-      # rubocop: enable CodeReuse/ActiveRecord
+
+      private
+
+      def destroy_path_lock?(lfs_lock_status)
+        lfs_lock_status == :success &&
+          params[:destroy_path_lock] != false &&
+          project.feature_available?(:file_locks)
+      end
+
+      def destroy_path_lock(path)
+        path_lock = project.path_locks.for_path(path)
+
+        return unless path_lock
+
+        PathLocks::UnlockService.new(project, current_user).execute(path_lock)
+      end
     end
   end
 end
