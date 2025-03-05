@@ -11,7 +11,7 @@ describe('ComplianceStandardsAdherenceReport component', () => {
   const groupPath = 'example-group';
   const projectPath = 'example-project';
 
-  const findErrorMessage = () => wrapper.findComponent(GlAlert);
+  const findAlert = () => wrapper.findComponent(GlAlert);
   const findAdherencesTable = () => wrapper.findComponent(ComplianceStandardsAdherenceTable);
 
   const createComponent = (customProvide = {}) => {
@@ -20,7 +20,7 @@ describe('ComplianceStandardsAdherenceReport component', () => {
         groupPath,
         projectPath,
       },
-      provide: { activeComplianceFrameworks: false, ...customProvide },
+      provide: { adherenceV2Enabled: false, activeComplianceFrameworks: false, ...customProvide },
     });
   };
 
@@ -29,8 +29,8 @@ describe('ComplianceStandardsAdherenceReport component', () => {
       createComponent();
     });
 
-    it('does not render an error message', () => {
-      expect(findErrorMessage().exists()).toBe(false);
+    it('does not render the alert message', () => {
+      expect(findAlert().exists()).toBe(false);
     });
 
     it('renders the standards adherence table component', () => {
@@ -69,6 +69,15 @@ describe('ComplianceStandardsAdherenceReport component', () => {
           property: 'with_active_compliance_frameworks',
         });
       });
+    });
+  });
+  describe('with v2 Report active', () => {
+    beforeEach(() => {
+      createComponent({ adherenceV2Enabled: true });
+    });
+
+    it('shows alert banner', () => {
+      expect(findAlert().exists()).toBe(true);
     });
   });
 });
