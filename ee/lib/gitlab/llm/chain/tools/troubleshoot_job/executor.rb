@@ -95,6 +95,13 @@ module Gitlab
               PROMPT_TEMPLATE
             end
 
+            override :prompt_version
+            def prompt_version
+              return '0.0.1-dev' if Feature.enabled?(:upgrade_troubleshoot_job_to_3_7, context.current_user)
+
+              DEFAULT_PROMPT_VERSION
+            end
+
             override :perform
             def perform
               error_message = if !job.failed?

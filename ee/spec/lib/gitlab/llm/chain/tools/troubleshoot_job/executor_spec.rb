@@ -185,6 +185,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::TroubleshootJob::Executor, feature_cat
         let(:prompt_class) { Gitlab::Llm::Chain::Tools::TroubleshootJob::Prompts::Anthropic }
         let(:unit_primitive) { 'troubleshoot_job' }
         let(:default_unit_primitive) { unit_primitive }
+        let(:prompt_version) { '0.0.1-dev' }
       end
     end
 
@@ -245,6 +246,47 @@ RSpec.describe Gitlab::Llm::Chain::Tools::TroubleshootJob::Executor, feature_cat
 
         it 'returns the correct language information' do
           expect(tool.send(:language_info)).to eq('The repository code is written in Ruby.')
+        end
+      end
+    end
+
+    context 'when using claude 3.7 FF' do
+      include_context 'with stubbed LLM authorizer', allowed: true
+
+      before do
+        allow(tool).to receive(:provider_prompt_class).and_return(prompt_class)
+
+        allow(Gitlab::Llm::Chain::Requests::AiGateway).to receive(:new).with(user, {
+          service_name: :troubleshoot_job,
+          tracking_context: { request_id: nil, action: 'troubleshoot_job' }
+        }).and_return(ai_request_double)
+      end
+
+      context 'when FF is enabled' do
+        before do
+          stub_feature_flags(upgrade_troubleshoot_job_to_3_7: true)
+        end
+
+        it 'receives the new prompt version' do
+          expect(ai_request_double).to receive(:request).with(
+            hash_including(options: hash_including(prompt_version: '0.0.1-dev')), unit_primitive: 'troubleshoot_job'
+          )
+
+          tool.execute
+        end
+      end
+
+      context 'when FF disabled' do
+        before do
+          stub_feature_flags(upgrade_troubleshoot_job_to_3_7: false)
+        end
+
+        it 'uses the old prompt version' do
+          expect(ai_request_double).to receive(:request).with(
+            hash_including(options: hash_including(prompt_version: '^1.0.0')), unit_primitive: 'troubleshoot_job'
+          )
+
+          tool.execute
         end
       end
     end
