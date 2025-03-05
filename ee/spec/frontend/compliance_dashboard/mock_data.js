@@ -1,3 +1,13 @@
+import {
+  ROUTE_STANDARDS_ADHERENCE,
+  ROUTE_VIOLATIONS,
+  ROUTE_FRAMEWORKS,
+  ROUTE_PROJECTS,
+  ROUTE_NEW_FRAMEWORK,
+  ROUTE_NEW_FRAMEWORK_SUCCESS,
+  ROUTE_EDIT_FRAMEWORK,
+} from 'ee/compliance_dashboard/constants';
+
 export const createUser = (id) => ({
   id: `gid://gitlab/User/${id}`,
   avatarUrl: `https://${id}`,
@@ -544,4 +554,14 @@ export const mockRequirementControls = [
     },
     __typename: 'ControlExpression',
   },
+];
+
+export const mockedRoutes = [
+  { name: ROUTE_STANDARDS_ADHERENCE, fullPath: `/${ROUTE_STANDARDS_ADHERENCE}` },
+  { name: ROUTE_VIOLATIONS, fullPath: `/${ROUTE_VIOLATIONS}` },
+  { name: ROUTE_FRAMEWORKS, fullPath: `/${ROUTE_FRAMEWORKS}` },
+  { name: ROUTE_PROJECTS, fullPath: `/${ROUTE_PROJECTS}` },
+  { name: ROUTE_NEW_FRAMEWORK, fullPath: `/${ROUTE_FRAMEWORKS}/new` },
+  { name: ROUTE_NEW_FRAMEWORK_SUCCESS, fullPath: `/${ROUTE_FRAMEWORKS}/new/success` },
+  { name: ROUTE_EDIT_FRAMEWORK, fullPath: `/${ROUTE_FRAMEWORKS}/123` },
 ];
