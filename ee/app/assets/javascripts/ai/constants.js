@@ -32,8 +32,3 @@ export const COMMENT_TEMPERATURE_EVENTS = {
   REPEATED_HIGH_TEMP: 'detected_repeated_high_comment_temperature',
   FORCED_COMMENT: 'forced_high_temperature_commenting',
 };
-
-export const DUO_CHAT_VIEWS = {
-  CHAT: 'chat',
-  LIST: 'list',
-};

@@ -112,7 +112,6 @@ describe('Merge request summarize code changes', () => {
             extras: {
               sources: [],
             },
-            threadId: null,
           },
         },
       });
@@ -152,7 +151,6 @@ describe('Merge request summarize code changes', () => {
             extras: {
               sources: [],
             },
-            threadId: null,
           },
         },
       });

@@ -1,6 +1,0 @@
-mutation deleteConversationThread($input: DeleteConversationThreadInput!) {
-  deleteConversationThread(input: $input) {
-    success
-    errors
-  }
-}

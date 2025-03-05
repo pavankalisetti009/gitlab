@@ -133,7 +133,6 @@ export const getAiSubscriptionResponse = (content = 'response text') => ({
   type: null,
   chunkId: null,
   extras: null,
-  threadId: null,
 });
 
 export const AI_SUBSCRIPTION_ERROR_RESPONSE = {
