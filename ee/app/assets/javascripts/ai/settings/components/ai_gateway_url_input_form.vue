@@ -14,7 +14,7 @@ export default {
   i18n: {
     label: s__('AiPowered|Local AI Gateway URL'),
     description: s__(
-      'AiPowered|Enter the URL for your local AI Gateway. This endpoint is used for self-hosted models requests.%{br}The URL must be a complete URL, including either the "http://" or "https://" protocol. For example "http://EXAMPLE-URL".%{br}For more information, see how to %{linkStart}install the GitLab AI Gateway.%{linkEnd}',
+      'AiPowered|Enter the URL for your local AI Gateway. This endpoint is used for GitLab Duo Self-Hosted requests.%{br}The URL must be a complete URL, including either the "http://" or "https://" protocol. For example "http://EXAMPLE-URL".%{br}For more information, see how to %{linkStart}install the GitLab AI Gateway.%{linkEnd}',
     ),
   },
   aiGatewaySetupUrl: helpPagePath('install/install_ai_gateway'),

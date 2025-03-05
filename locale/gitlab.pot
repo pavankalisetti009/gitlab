@@ -4064,7 +4064,7 @@ msgstr ""
 msgid "AdminSelfHostedModels|API token"
 msgstr ""
 
-msgid "AdminSelfHostedModels|Add a new AI model that can be used for GitLab Duo features."
+msgid "AdminSelfHostedModels|Add a new AI model that can be used for GitLab Duo self-hosted features."
 msgstr ""
 
 msgid "AdminSelfHostedModels|Add self-hosted model"
@@ -4097,10 +4097,13 @@ msgstr ""
 msgid "AdminSelfHostedModels|Edit self-hosted model"
 msgstr ""
 
-msgid "AdminSelfHostedModels|Edit the AI model that can be used for GitLab Duo features."
+msgid "AdminSelfHostedModels|Edit the AI model that can be used for GitLab Duo self-hosted features."
 msgstr ""
 
 msgid "AdminSelfHostedModels|Endpoint"
+msgstr ""
+
+msgid "AdminSelfHostedModels|GitLab Duo Self-Hosted"
 msgstr ""
 
 msgid "AdminSelfHostedModels|If required, provide the API token that grants access to your self-hosted model deployment."
@@ -5183,6 +5186,9 @@ msgstr ""
 msgid "Admin|Geo"
 msgstr ""
 
+msgid "Admin|GitLab Duo Self-Hosted"
+msgstr ""
+
 msgid "Admin|Kubernetes"
 msgstr ""
 
@@ -5208,9 +5214,6 @@ msgid "Admin|Push rules"
 msgstr ""
 
 msgid "Admin|Quarterly reconciliation will occur on %{qrtlyDate}"
-msgstr ""
-
-msgid "Admin|Self-hosted models"
 msgstr ""
 
 msgid "Admin|Settings"
@@ -5426,7 +5429,7 @@ msgstr ""
 msgid "AiPowered|Enroll in the Early Access Program"
 msgstr ""
 
-msgid "AiPowered|Enter the URL for your local AI Gateway. This endpoint is used for self-hosted models requests.%{br}The URL must be a complete URL, including either the \"http://\" or \"https://\" protocol. For example \"http://EXAMPLE-URL\".%{br}For more information, see how to %{linkStart}install the GitLab AI Gateway.%{linkEnd}"
+msgid "AiPowered|Enter the URL for your local AI Gateway. This endpoint is used for GitLab Duo Self-Hosted requests.%{br}The URL must be a complete URL, including either the \"http://\" or \"https://\" protocol. For example \"http://EXAMPLE-URL\".%{br}For more information, see how to %{linkStart}install the GitLab AI Gateway.%{linkEnd}"
 msgstr ""
 
 msgid "AiPowered|Experiment and beta features"

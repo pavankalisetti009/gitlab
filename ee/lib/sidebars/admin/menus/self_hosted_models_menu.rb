@@ -6,12 +6,12 @@ module Sidebars
       class SelfHostedModelsMenu < ::Sidebars::Admin::BaseMenu
         override :link
         def link
-          admin_ai_self_hosted_models_path
+          admin_ai_duo_self_hosted_path
         end
 
         override :title
         def title
-          s_('Admin|Self-hosted models')
+          s_('Admin|GitLab Duo Self-Hosted')
         end
 
         override :sprite_icon
@@ -21,7 +21,7 @@ module Sidebars
 
         override :active_routes
         def active_routes
-          { controller: :self_hosted_models }
+          { controller: :duo_self_hosted }
         end
       end
     end

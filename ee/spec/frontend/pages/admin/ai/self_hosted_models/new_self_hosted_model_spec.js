@@ -22,7 +22,9 @@ describe('NewSelfHostedModel', () => {
   });
 
   it('has a description', () => {
-    expect(wrapper.text()).toMatch('Add a new AI model that can be used for GitLab Duo features.');
+    expect(wrapper.text()).toMatch(
+      'Add a new AI model that can be used for GitLab Duo self-hosted features.',
+    );
   });
 
   it('renders the self-hosted model form and passes the correct props', () => {

@@ -30,7 +30,7 @@ RSpec.describe Admin::Ai::TermsAndConditionsController, :enable_admin_mode, feat
 
   describe 'POST #toggle_beta_models' do
     subject :perform_request do
-      post toggle_beta_models_admin_ai_self_hosted_models_path
+      post admin_ai_duo_self_hosted_toggle_beta_models_path
     end
 
     context 'if a testing terms acceptance record exists' do

@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
-import createRouter from '../duo_self_hosted/router';
+import createRouter from './router';
 
 Vue.use(VueApollo);
 
@@ -10,7 +10,7 @@ const apolloProvider = new VueApollo({
 });
 
 function mountSelfHostedModelsApp() {
-  const el = document.getElementById('js-self-hosted-models');
+  const el = document.getElementById('js-duo-self-hosted');
 
   if (!el) {
     return null;

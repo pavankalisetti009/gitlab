@@ -89,7 +89,7 @@ module Admin
         duo_pro_visible: code_suggestions_purchased.to_s,
         disabled_direct_connection_method: disabled_direct_code_suggestions.to_s,
         beta_self_hosted_models_enabled: beta_self_hosted_models_enabled.to_s,
-        toggle_beta_models_path: toggle_beta_models_admin_ai_self_hosted_models_path,
+        toggle_beta_models_path: admin_ai_duo_self_hosted_toggle_beta_models_path,
         can_manage_self_hosted_models: can_manage_self_hosted_models.to_s,
         ai_gateway_url: ai_gateway_url
       }

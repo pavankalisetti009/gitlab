@@ -27,7 +27,7 @@ let wrapper;
 let axiosMock;
 
 const aiGatewayUrl = 'http://localhost:5052';
-const toggleBetaModelsPath = '/admin/ai/self_hosted_models/terms_and_condition';
+const toggleBetaModelsPath = '/admin/ai/duo_self_hosted/terms_and_condition';
 const updateAiSettingsSuccessHandler = jest.fn().mockResolvedValue({
   data: {
     duoSettings: {

@@ -21,7 +21,7 @@ export default {
   i18n: {
     title: s__('AdminSelfHostedModels|Edit self-hosted model'),
     description: s__(
-      'AdminSelfHostedModels|Edit the AI model that can be used for GitLab Duo features.',
+      'AdminSelfHostedModels|Edit the AI model that can be used for GitLab Duo self-hosted features.',
     ),
     errorMessage: s__(
       'AdminSelfHostedModels|An error occurred while loading the self-hosted model. Please try again.',

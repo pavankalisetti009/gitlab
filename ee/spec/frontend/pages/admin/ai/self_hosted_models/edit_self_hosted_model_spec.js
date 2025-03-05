@@ -53,7 +53,9 @@ describe('EditSelfHostedModel', () => {
   it('has a description', () => {
     createComponent();
 
-    expect(wrapper.text()).toMatch('Edit the AI model that can be used for GitLab Duo features.');
+    expect(wrapper.text()).toMatch(
+      'Edit the AI model that can be used for GitLab Duo self-hosted features.',
+    );
   });
 
   it('fetches self-hosted model data', () => {

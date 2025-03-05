@@ -2,7 +2,7 @@
 
 module Admin
   module Ai
-    class SelfHostedModelsController < Admin::ApplicationController
+    class DuoSelfHostedController < Admin::ApplicationController
       feature_category :"self-hosted_models"
       urgency :low
 

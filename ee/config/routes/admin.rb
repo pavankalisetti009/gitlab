@@ -53,11 +53,8 @@ namespace :admin do
   get '/code_suggestions', to: redirect('admin/gitlab_duo/seat_utilization')
 
   namespace :ai do
-    resources :self_hosted_models, only: [:index], path: 'self_hosted_models(/*vueroute)' do
-      collection do
-        post 'toggle_beta_models', to: 'terms_and_conditions#toggle_beta_models'
-      end
-    end
+    get 'duo_self_hosted(/*vueroute)', to: 'duo_self_hosted#index', as: :duo_self_hosted
+    post 'duo_self_hosted/toggle_beta_models', to: 'terms_and_conditions#toggle_beta_models'
 
     resources :amazon_q_settings, only: [:index, :create] do
       collection do
