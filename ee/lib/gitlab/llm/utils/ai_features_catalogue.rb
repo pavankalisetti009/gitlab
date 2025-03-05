@@ -70,6 +70,16 @@ module Gitlab
             self_managed: true,
             internal: false
           },
+          description_composer: {
+            service_class: ::Gitlab::Llm::Anthropic::Completions::DescriptionComposer,
+            aigw_service_class: nil,
+            prompt_class: ::Gitlab::Llm::Anthropic::Templates::DescriptionComposer,
+            feature_category: :code_review_workflow,
+            execute_method: ::Llm::DescriptionComposerService,
+            maturity: :experimental,
+            self_managed: true,
+            internal: false
+          },
           chat: {
             service_class: ::Gitlab::Llm::Completions::Chat,
             prompt_class: nil,
