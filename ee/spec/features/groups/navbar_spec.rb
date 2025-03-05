@@ -126,7 +126,7 @@ RSpec.describe 'Group navbar', :js, feature_category: :groups_and_projects do
           stub_config(registry: { enabled: true })
 
           insert_after_sub_nav_item(
-            _('Package Registry'),
+            _('Package registry'),
             within: _('Deploy'),
             new_sub_nav_item_name: _('Container Registry')
           )
