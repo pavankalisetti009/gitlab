@@ -26,6 +26,7 @@ module Gitlab
 
           if valid_sign_in?
             update_group_membership
+            finish_onboarding
             update_duo_pro_add_on_assignment
           end
 
@@ -55,6 +56,16 @@ module Gitlab
           strong_memoize(:identity) do
             ::Auth::GroupSamlIdentityFinder.new(saml_provider, auth_hash).first
           end
+        end
+
+        def finish_onboarding
+          # We only need to finish onboarding for existing saml users since we skip
+          # starting onboarding for new users in the callbacks controller.
+          # We also let enterprise groups/user process handle finishing onboarding
+          # separately, so we can focus only on saml here.
+          return unless identity&.user
+
+          Onboarding::FinishService.new(gl_user).execute
         end
 
         def find_enterprise_user_by_email

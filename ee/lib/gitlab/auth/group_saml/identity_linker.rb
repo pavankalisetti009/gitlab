@@ -19,6 +19,7 @@ module Gitlab
           super
 
           update_extern_uid if extern_uid_update_required?
+          finish_onboarding unless failed?
         end
 
         override :failed?
@@ -49,6 +50,10 @@ module Gitlab
         def update_group_membership
           auth_hash = AuthHash.new(oauth)
           MembershipUpdater.new(current_user, saml_provider, auth_hash).execute
+        end
+
+        def finish_onboarding
+          Onboarding::FinishService.new(current_user).execute
         end
 
         def update_extern_uid

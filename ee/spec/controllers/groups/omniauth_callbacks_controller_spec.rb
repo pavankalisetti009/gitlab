@@ -223,6 +223,19 @@ RSpec.describe Groups::OmniauthCallbacksController, :with_current_organization, 
         end
       end
 
+      context 'when user is in onboarding' do
+        before do
+          stub_saas_features(onboarding: true)
+          user.update!(onboarding_in_progress: true)
+        end
+
+        it 'finishes onboarding' do
+          expect do
+            post provider, params: { group_id: group }
+          end.to change { user.reload.onboarding_in_progress }.to(false)
+        end
+      end
+
       context 'with 2FA' do
         before do
           user.update!(otp_required_for_login: true)
