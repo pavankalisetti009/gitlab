@@ -6,7 +6,10 @@ module Gitlab
       module ResponseModifiers
         class Embeddings < ::Gitlab::Llm::BaseResponseModifier
           def response_body
-            @response_body ||= ai_response&.dig(:predictions, 0, :embeddings, :values)
+            @response_body ||= if predictions&.any?
+                                 results = predictions.map { |res| res['embeddings']['values'] }
+                                 results.size == 1 ? results.first : results
+                               end
           end
 
           def errors
@@ -22,6 +25,12 @@ module Gitlab
                 [error_response[:message]].compact
               end
             end
+          end
+
+          private
+
+          def predictions
+            ai_response&.dig('predictions')
           end
         end
       end
