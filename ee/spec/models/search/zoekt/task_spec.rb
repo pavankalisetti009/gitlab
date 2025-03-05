@@ -147,6 +147,36 @@ RSpec.describe ::Search::Zoekt::Task, feature_category: :global_search do
       end
     end
 
+    context 'with failed zoekt task' do
+      it 'does not mark tasks as processing even with retries left' do
+        # Create a failed task that still has retries left
+        failed_task = create(:zoekt_task,
+          project: project_with_repo_1,
+          perform_at: 1.minute.ago,
+          state: :failed,
+          retries_left: 2)
+
+        # Run the task processing
+        expect do
+          described_class.each_task_for_processing(limit: 10) { |t| t }
+        end.not_to change { failed_task.reload.state }.from('failed')
+      end
+
+      it 'does not mark tasks as processing with no retries left' do
+        # Create a failed task with no retries left
+        failed_task = create(:zoekt_task,
+          project: project_with_repo_1,
+          perform_at: 1.minute.ago,
+          state: :failed,
+          retries_left: 0)
+
+        # Run the task processing
+        expect do
+          described_class.each_task_for_processing(limit: 10) { |t| t }
+        end.not_to change { failed_task.reload.state }.from('failed')
+      end
+    end
+
     context 'with missing gitaly repo' do
       let_it_be(:project_without_repo) { create(:project) }
       let_it_be(:task_with_invalid_repo) { create(:zoekt_task, project: project_without_repo) }

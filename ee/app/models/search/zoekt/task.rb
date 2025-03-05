@@ -143,7 +143,7 @@ module Search
         Search::Zoekt::Task.id_in(states[:skipped]).update_all(state: :skipped) if states[:skipped].any?
 
         if states[:valid].any?
-          Search::Zoekt::Task.id_in(states[:valid]).where.not(state: [:orphaned, :skipped, :done])
+          Search::Zoekt::Task.id_in(states[:valid]).where.not(state: [:orphaned, :skipped, :done, :failed])
                              .update_all(state: :processing)
         end
 
