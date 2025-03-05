@@ -198,9 +198,10 @@ describe('Vulnerability related issues component', () => {
         data: {
           inputValue: 'some input value',
           isFormVisible: true,
-          state: { pendingReferences: ['135', '246'] },
+          state: { pendingReferences: ['135', '246'], relatedIssues: [] },
         },
       });
+
       blockEmit('addIssuableFormCancel');
       await nextTick();
 
@@ -215,7 +216,7 @@ describe('Vulnerability related issues component', () => {
       const pendingReferences = ['135', '246'];
       const untouchedRawReferences = ['357', '468'];
       const touchedReference = 'touchedReference';
-      createWrapper({ data: { state: { pendingReferences } } });
+      createWrapper({ data: { state: { pendingReferences, relatedIssues: [] } } });
       blockEmit('addIssuableFormInput', { untouchedRawReferences, touchedReference });
       await nextTick();
 
@@ -235,7 +236,9 @@ describe('Vulnerability related issues component', () => {
     });
 
     it('removes pending reference', async () => {
-      createWrapper({ data: { state: { pendingReferences: ['135', '246', '357'] } } });
+      createWrapper({
+        data: { state: { pendingReferences: ['135', '246', '357'], relatedIssues: [] } },
+      });
       blockEmit('pendingIssuableRemoveRequest', 1);
       await nextTick();
 
