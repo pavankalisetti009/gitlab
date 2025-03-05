@@ -17,6 +17,10 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeReview, feature_cat
   subject(:summarize_review) { described_class.new(prompt_message, prompt_class, options).execute }
 
   describe '#execute' do
+    before do
+      stub_feature_flags(summarize_code_review_claude_3_7_sonnet: false)
+    end
+
     context 'when there are no draft notes authored by user' do
       it 'does not make AI request' do
         expect(Gitlab::Llm::AiGateway::Client).not_to receive(:new)
@@ -69,6 +73,28 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeReview, feature_cat
         end
 
         it_behaves_like 'summarize review'
+      end
+
+      context 'with feature flag enabled' do
+        let(:draft_notes_content) { "Comment: #{draft_note_by_current_user.note}\n" }
+
+        before do
+          stub_feature_flags(summarize_code_review_claude_3_7_sonnet: true)
+        end
+
+        it 'includes prompt_version in the request' do
+          expect_next_instance_of(Gitlab::Llm::AiGateway::Client) do |client|
+            expect(client)
+              .to receive(:complete)
+              .with(
+                url: "#{Gitlab::AiGateway.url}/v1/prompts/summarize_review",
+                body: { 'inputs' => { draft_notes_content: draft_notes_content }, 'prompt_version' => '2.0.0' }
+              )
+              .and_return(example_response)
+          end
+
+          summarize_review
+        end
       end
     end
   end
