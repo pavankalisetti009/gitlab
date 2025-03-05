@@ -186,7 +186,7 @@ RSpec.describe Gitlab::Ci::Variables::Builder, feature_category: :ci_variables d
         environment: environment_name,
         kubernetes_namespace: kubernetes_namespace,
         user: job.user,
-        trigger_request: nil
+        trigger_or_request: nil
       )
     end
 
