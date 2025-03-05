@@ -90,7 +90,7 @@ RSpec.describe 'getting a list of work item types for a group EE', feature_categ
             ... on WorkItemWidgetDefinitionCustomFields {
               customFields {
                 id
-                createdBy { name }
+                selectOptions { value }
               }
             }
           }
