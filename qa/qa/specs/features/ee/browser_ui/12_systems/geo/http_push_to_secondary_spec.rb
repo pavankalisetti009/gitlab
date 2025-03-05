@@ -2,7 +2,7 @@
 
 module QA
   RSpec.describe 'Systems', :orchestrated, :geo, product_group: :geo do
-    let(:git_push_http_path_prefix) { '/-/push_from_secondary' }
+    let(:git_push_http_path_prefix) { '/-/from_secondary' }
 
     describe 'GitLab Geo HTTP push secondary' do
       let(:file_content_primary) { 'This is a Geo project! Commit from primary.' }

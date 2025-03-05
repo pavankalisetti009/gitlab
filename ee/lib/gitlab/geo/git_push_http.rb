@@ -3,7 +3,7 @@
 module Gitlab
   module Geo
     class GitPushHttp
-      PATH_PREFIX = '/-/push_from_secondary'
+      PATH_PREFIX = '/-/from_secondary'
       CACHE_KEY_PREFIX = 'git_receive_pack:geo_node_id'
       EXPIRES_IN = 5.minutes
 
