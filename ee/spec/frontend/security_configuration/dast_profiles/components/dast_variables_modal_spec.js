@@ -7,20 +7,16 @@ import {
   GlFormRadio,
   GlFormTextarea,
   GlSprintf,
-  GlLink,
 } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import DastVariablesModal from 'ee/security_configuration/dast_profiles/components/dast_variables_modal.vue';
+import { mockAdditionalVariableOptions } from 'ee_jest/security_configuration/dast_profiles/mocks/mock_data';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
 describe('DastVariablesModal', () => {
   let wrapper;
 
-  const descriptionLinkMock = {
-    message: 'More details %{linkStart}here%{linkEnd}',
-    path: 'https://example.com',
-  };
-
+  const descriptionLinkMock = 'More details [here](https://example.com)';
   const descriptionMock = {
     message: 'More details',
   };
@@ -35,6 +31,9 @@ describe('DastVariablesModal', () => {
   const createComponent = (props = {}, stubs = {}) => {
     wrapper = shallowMountExtended(DastVariablesModal, {
       propsData: props,
+      provide: {
+        additionalVariableOptions: mockAdditionalVariableOptions,
+      },
       stubs: {
         GlFormGroup,
         GlSprintf,
@@ -50,8 +49,6 @@ describe('DastVariablesModal', () => {
   const findRadioGroup = () => wrapper.findComponent(GlFormRadioGroup);
   const findAllFormRadio = () => wrapper.findAllComponents(GlFormRadio);
   const findFormTextArea = () => wrapper.findComponent(GlFormTextarea);
-  const findLink = () => wrapper.findComponent(GlLink);
-  const findLabelDescription = () => wrapper.findByTestId('label-description');
   const findDeleteButton = () => wrapper.findByTestId('delete-btn');
   const findSubmitButton = () => wrapper.findByTestId('submit-btn');
 
@@ -103,10 +100,7 @@ describe('DastVariablesModal', () => {
     });
 
     expect(findAllFormsGroups().at(1).attributes('label')).toBe('Value');
-    expect(findLabelDescription().text()).toBe('More details here');
-    expect(findLink().exists()).toBe(true);
-    expect(findLink().attributes('href')).toBe(descriptionLinkMock.path);
-    expect(findLink().text()).toBe('here');
+    expect(wrapper.html()).toContain('More details <a href="https://example.com">here</a>');
   });
 
   it('renders the description without a link', () => {
@@ -115,8 +109,7 @@ describe('DastVariablesModal', () => {
     });
 
     expect(findAllFormsGroups().at(1).attributes('label')).toBe('Value');
-    expect(findLabelDescription().text()).toBe('More details');
-    expect(findLink().exists()).toBe(false);
+    expect(wrapper.html()).not.toContain('<a href');
   });
 
   it('displays variable items with secondary text as description.message', () => {

@@ -7,6 +7,7 @@ import App from 'ee/security_configuration/dast_profiles/dast_profile_selector/s
 import {
   siteProfiles,
   mockVariables,
+  mockAdditionalVariableOptions,
 } from 'ee_jest/security_configuration/dast_profiles/mocks/mock_data';
 import DastSiteValidationModal from 'ee/security_configuration/dast_site_validation/components/dast_site_validation_modal.vue';
 import DastProfileSummaryCard from 'ee/security_configuration/dast_profiles/dast_profile_selector/dast_profile_summary_card.vue';
@@ -50,6 +51,7 @@ describe('DastSiteProfileSummary', () => {
 
   const defaultProvide = {
     projectPath,
+    additionalVariableOptions: mockAdditionalVariableOptions,
   };
 
   const createMockApolloProvider = (handlers) => {

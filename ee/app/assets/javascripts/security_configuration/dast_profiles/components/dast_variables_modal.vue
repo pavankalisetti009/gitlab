@@ -12,7 +12,8 @@ import {
   GlButton,
 } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import DAST_VARIABLES from '../dast_variables';
+import { renderMarkdown } from '~/notes/utils';
+import SafeHtml from '~/vue_shared/directives/safe_html';
 import { booleanOptions, getEmptyVariable } from '../constants';
 
 export default {
@@ -29,6 +30,8 @@ export default {
     GlLink,
     GlButton,
   },
+  directives: { SafeHtml },
+  inject: ['additionalVariableOptions'],
   props: {
     preSelectedVariables: {
       type: Array,
@@ -62,7 +65,7 @@ export default {
     items() {
       let filteredVariables = {};
       if (this.isEdit) {
-        filteredVariables = Object.entries(DAST_VARIABLES);
+        filteredVariables = Object.entries(this.additionalVariableOptions);
       } else {
         const preSelectedVariablesNames = this.preSelectedVariables
           .map((existVariable) => existVariable.variable)
@@ -70,7 +73,7 @@ export default {
 
         const searchTermLower = this.searchTerm?.toLowerCase() || '';
 
-        filteredVariables = Object.entries(DAST_VARIABLES).filter(
+        filteredVariables = Object.entries(this.additionalVariableOptions).filter(
           ([id]) =>
             (!searchTermLower || id.toLowerCase().includes(searchTermLower)) &&
             !preSelectedVariablesNames.includes(id),
@@ -79,7 +82,7 @@ export default {
       return filteredVariables.map(([id, { description }]) => ({
         value: id,
         text: id,
-        secondaryText: description.message || '',
+        description: description || '',
       }));
     },
     componentByType() {
@@ -112,7 +115,8 @@ export default {
   },
   methods: {
     extendSelectedVariable() {
-      const { type, description, example } = DAST_VARIABLES[this.selectedVariable.id] || {};
+      const { type, description, example } =
+        this.additionalVariableOptions[this.selectedVariable.id] || {};
       this.selectedVariable.type = type || null;
       this.selectedVariable.description = description || '';
       this.selectedVariable.example = example || '';
@@ -183,6 +187,7 @@ export default {
     },
   },
   booleanOptions,
+  renderMarkdown,
 };
 </script>
 
@@ -215,38 +220,24 @@ export default {
         @search="onSearch"
         @select="onSelect($event)"
       >
-        <template #list-item="{ item: { text, secondaryText } }">
+        <template #list-item="{ item: { text, description } }">
           <strong>{{ text }}</strong>
-          <div class="gl-text-sm gl-text-subtle">
-            <gl-sprintf :message="secondaryText">
-              <template #link="{ content }">
-                {{ content }}
-              </template>
-            </gl-sprintf>
-          </div>
+          <div
+            v-safe-html="$options.renderMarkdown(description)"
+            class="-gl-mb-5 gl-text-sm gl-text-subtle"
+          ></div>
         </template>
       </gl-collapsible-listbox>
     </gl-form-group>
     <gl-form-group
       v-if="selectedVariable.type"
       :label="i18n.valueLabel"
-      :label-description="selectedVariable.description.message"
       label-for="dast_value_input"
       :invalid-feedback="i18n.requiredFieldFeedback"
       :state="selectedValueValid"
     >
       <template v-if="selectedVariable.description" #label-description>
-        <gl-sprintf :message="selectedVariable.description.message">
-          <template #link="{ content }">
-            <gl-link
-              v-if="selectedVariable.description.path"
-              :href="selectedVariable.description.path"
-              target="_blank"
-              >{{ content }}</gl-link
-            >
-            <span v-else>{{ content }}</span>
-          </template>
-        </gl-sprintf>
+        <span v-safe-html="$options.renderMarkdown(selectedVariable.description)"></span>
       </template>
 
       <gl-form-radio-group

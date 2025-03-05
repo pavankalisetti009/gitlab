@@ -65,6 +65,7 @@ RSpec.describe Projects::OnDemandScansHelper do
         'site-profiles-library-path' => "/#{project.full_path}/-/security/configuration/profile_library#site-profiles",
         'new-scanner-profile-path' => "/#{project.full_path}/-/security/configuration/profile_library/dast_scanner_profiles/new",
         'new-site-profile-path' => "/#{project.full_path}/-/security/configuration/profile_library/dast_site_profiles/new",
+        'additional-variable-options' => Gitlab::Security::DastVariables.additional_site_variables.to_json,
         'timezones' => timezones.to_json
       )
     end

@@ -33,6 +33,7 @@ module Projects::Security::DastProfilesHelper
 
   def dast_site_profile_form_data(project)
     dast_profile_forms_common_data(project).merge({
+      additional_variable_options: Gitlab::Security::DastVariables.additional_site_variables.to_json,
       profiles_library_path: project_security_configuration_profile_library_path(project, anchor: 'site-profiles')
     })
   end

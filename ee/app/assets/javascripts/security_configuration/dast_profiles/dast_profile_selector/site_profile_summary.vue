@@ -10,7 +10,6 @@ import {
   DAST_SITE_VALIDATION_POLLING_INTERVAL,
   DAST_SITE_VALIDATION_ALLOWED_TIMELINE_IN_MINUTES,
 } from 'ee/security_configuration/dast_site_validation/constants';
-import DAST_VARIABLES from 'ee/security_configuration/dast_profiles/dast_variables';
 import {
   EXCLUDED_URLS_SEPARATOR,
   TARGET_TYPES,
@@ -72,7 +71,7 @@ export default {
     GlTooltip: GlTooltipDirective,
   },
   mixins: [glFeatureFlagsMixin()],
-  inject: ['projectPath'],
+  inject: ['projectPath', 'additionalVariableOptions'],
   props: {
     profile: {
       type: Object,
@@ -180,7 +179,7 @@ export default {
       return validationStatus;
     },
     getVariableName(variable) {
-      return DAST_VARIABLES[variable]?.name || variable;
+      return this.additionalVariableOptions[variable]?.name || variable;
     },
     isPendingValidation(status) {
       return [PENDING, INPROGRESS].includes(status);

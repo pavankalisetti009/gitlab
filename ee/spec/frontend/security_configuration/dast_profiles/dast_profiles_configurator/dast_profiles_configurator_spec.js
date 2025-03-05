@@ -73,6 +73,7 @@ describe('DastProfilesConfigurator', () => {
               },
               provide: {
                 projectPath,
+                additionalVariableOptions: {},
               },
             },
             { ...options, apolloProvider },

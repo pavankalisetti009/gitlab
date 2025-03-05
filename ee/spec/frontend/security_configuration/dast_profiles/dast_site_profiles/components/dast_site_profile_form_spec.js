@@ -111,9 +111,10 @@ describe('DastSiteProfileForm', () => {
         {},
         {
           propsData: defaultProps,
-        },
-        {
           apolloProvider,
+          provide: {
+            additionalVariableOptions: {},
+          },
         },
         options,
       );
