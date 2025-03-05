@@ -315,6 +315,72 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
     end
   end
 
+  context 'with jobs using rules:changes' do
+    let(:project_policy_content) do
+      {
+        project_policy_job: {
+          stage: 'test',
+          script: 'project script',
+          rules: [
+            {
+              changes: [
+                'development.txt'
+              ]
+            }
+          ]
+        }
+      }
+    end
+
+    it 'includes the job' do
+      builds = execute.payload.builds
+
+      expect(builds.map(&:name)).to include('project_policy_job')
+    end
+
+    context 'when a file is touched in a commit' do
+      before_all do
+        group.add_owner(user)
+      end
+
+      let(:before_sha) { project.repository.commit.sha }
+      let(:opts) do
+        { origin_ref: project.default_branch_or_main, before_sha: before_sha, source_sha: before_sha,
+          target_sha: new_sha }
+      end
+
+      let(:new_sha) do
+        create_file_in_repo(
+          project,
+          project.default_branch_or_main,
+          project.default_branch_or_main,
+          touched_tile_name, 'This is a test',
+          commit_message: 'Touch file'
+        )[:result]
+      end
+
+      context 'when the file listed in changes is not touched' do
+        let(:touched_tile_name) { 'production.txt' }
+
+        it 'does not include the job' do
+          builds = execute.payload.builds
+
+          expect(builds.map(&:name)).not_to include('project_policy_job')
+        end
+      end
+
+      context 'when the file listed in changes is touched' do
+        let(:touched_tile_name) { 'development.txt' }
+
+        it 'includes the job' do
+          builds = execute.payload.builds
+
+          expect(builds.map(&:name)).to include('project_policy_job')
+        end
+      end
+    end
+  end
+
   context 'when any policy contains `override_project_ci` strategy' do
     let(:project_policy) do
       build(:pipeline_execution_policy, :override_project_ci,

@@ -70,6 +70,17 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
       end
     end
 
+    it 'passes the right shas to the pipeline' do
+      perform
+
+      context.policy_pipelines.each do |policy_pipeline|
+        expect(policy_pipeline.pipeline.ref).to eq(pipeline.ref)
+        expect(policy_pipeline.pipeline.before_sha).to eq(pipeline.before_sha)
+        expect(policy_pipeline.pipeline.source_sha).to eq(pipeline.source_sha)
+        expect(policy_pipeline.pipeline.target_sha).to eq(pipeline.target_sha)
+      end
+    end
+
     it 'propagates partition_id to policy pipelines' do
       perform
 

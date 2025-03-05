@@ -130,6 +130,8 @@ module Gitlab
               ::Ci::CreatePipelineService
                 .new(project, command.current_user,
                   ref: command.ref,
+                  before: command.before_sha,
+                  after: command.after_sha,
                   source_sha: command.source_sha,
                   checkout_sha: command.checkout_sha,
                   target_sha: command.target_sha,
