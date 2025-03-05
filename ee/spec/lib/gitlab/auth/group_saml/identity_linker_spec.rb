@@ -3,12 +3,12 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Auth::GroupSaml::IdentityLinker do
-  let(:user) { create(:user) }
+  let_it_be(:user) { create(:user) }
   let(:provider) { 'group_saml' }
   let(:uid) { user.email }
   let(:in_response_to) { '12345' }
   let(:saml_response) { instance_double(OneLogin::RubySaml::Response, in_response_to: in_response_to) }
-  let(:saml_provider) { create(:saml_provider) }
+  let_it_be(:saml_provider) { create(:saml_provider) }
   let(:session) { {} }
   let(:oauth) do
     OmniAuth::AuthHash.new(provider: provider, uid: uid,
@@ -17,14 +17,34 @@ RSpec.describe Gitlab::Auth::GroupSaml::IdentityLinker do
 
   subject(:identity_linker) { described_class.new(user, oauth, session, saml_provider) }
 
-  context 'linked identity exists' do
+  context 'when a linked identity exists' do
+    let(:extern_uid) { uid }
     let!(:identity) do
       user.identities.create!(provider: provider, extern_uid: extern_uid, saml_provider: saml_provider)
     end
 
-    context 'when the extern_uid matches' do
-      let(:extern_uid) { uid }
+    context 'with user onboarding' do
+      before do
+        stub_saas_features(onboarding: true)
+        user.update!(onboarding_in_progress: true)
+      end
 
+      it 'finishes user onboarding' do
+        expect { identity_linker.link }.to change { user.reload.onboarding_in_progress }.to(false)
+      end
+
+      context 'when linking fails' do
+        before do
+          allow(identity_linker).to receive(:failed?).and_return(true)
+        end
+
+        it 'does not finish user onboarding' do
+          expect { identity_linker.link }.not_to change { user.reload.onboarding_in_progress }
+        end
+      end
+    end
+
+    context 'when the extern_uid matches' do
       it "doesn't create new identity" do
         expect { subject.link }.not_to change { Identity.count }
       end

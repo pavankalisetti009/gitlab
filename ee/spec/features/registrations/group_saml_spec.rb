@@ -23,7 +23,7 @@ RSpec.describe 'Group-saml single-sign on registration flow', :js, :saas, featur
     with_omniauth_full_host { example.run }
   end
 
-  shared_examples 'auto accepts terms and redirects to the group path' do
+  shared_examples 'auto accepts terms and redirects to the group path' do |additional_expectations = -> {}|
     it 'auto accepts terms and redirects to the group path' do
       visit sso_group_saml_providers_path(group, token: group.saml_discovery_token)
 
@@ -31,6 +31,7 @@ RSpec.describe 'Group-saml single-sign on registration flow', :js, :saas, featur
 
       expect(page).to have_current_path(group_path(group))
       expect(page).to have_content('Signed in with SAML')
+      instance_exec(&additional_expectations)
     end
   end
 
@@ -44,9 +45,17 @@ RSpec.describe 'Group-saml single-sign on registration flow', :js, :saas, featur
     end
 
     context 'when user exists in gitlab with group-saml identity linked' do
-      let!(:user) { create(:omniauth_user, extern_uid: extern_uid, saml_provider: saml_provider) }
+      let!(:user) do
+        create(:omniauth_user, provider: :group_saml, extern_uid: extern_uid, saml_provider: saml_provider)
+      end
 
-      it_behaves_like 'auto accepts terms and redirects to the group path'
+      it 'redirects to terms page' do
+        visit sso_group_saml_providers_path(group, token: group.saml_discovery_token)
+
+        click_link 'Sign in'
+
+        expect_to_be_on_terms_page
+      end
     end
 
     context 'when user exists in gitlab without group-saml identity linked' do
@@ -79,9 +88,13 @@ RSpec.describe 'Group-saml single-sign on registration flow', :js, :saas, featur
     end
 
     context 'when user exists in gitlab with group-saml identity linked' do
-      let!(:user) { create(:omniauth_user, extern_uid: extern_uid, saml_provider: saml_provider) }
+      let!(:user) do
+        create(:omniauth_user, provider: :group_saml, extern_uid: extern_uid, saml_provider: saml_provider)
+      end
 
-      it_behaves_like 'auto accepts terms and redirects to the group path'
+      it_behaves_like 'auto accepts terms and redirects to the group path', -> do
+        expect(page).to have_link(href: user_path(user), visible: :hidden)
+      end
     end
 
     context 'when user exists in gitlab without group-saml identity linked' do

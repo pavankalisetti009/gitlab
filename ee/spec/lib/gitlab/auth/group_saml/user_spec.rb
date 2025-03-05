@@ -4,7 +4,7 @@ require 'spec_helper'
 RSpec.describe Gitlab::Auth::GroupSaml::User, :aggregate_failures, feature_category: :system_access do
   let_it_be(:organization) { create(:organization) }
   let(:uid) { '1234' }
-  let(:saml_provider) { create(:saml_provider) }
+  let_it_be(:saml_provider) { create(:saml_provider) }
   let(:group) { saml_provider.group }
   let(:auth_hash) { OmniAuth::AuthHash.new(uid: uid, provider: 'group_saml', info: info_hash, extra: { raw_info: OneLogin::RubySaml::Attributes.new }) }
   let(:info_hash) do
@@ -66,6 +66,19 @@ RSpec.describe Gitlab::Auth::GroupSaml::User, :aggregate_failures, feature_categ
         find_and_update
       end
 
+      context 'when user is onboarding' do
+        let(:user) { identity.user }
+
+        before do
+          stub_saas_features(onboarding: true)
+          user.update!(onboarding_in_progress: true)
+        end
+
+        it 'finishes onboarding' do
+          expect { find_and_update }.to change { user.reload.onboarding_in_progress }.to(false)
+        end
+      end
+
       context 'when user attributes are present' do
         before do
           identity.user.update!(can_create_group: false, projects_limit: 10)
@@ -123,6 +136,12 @@ RSpec.describe Gitlab::Auth::GroupSaml::User, :aggregate_failures, feature_categ
 
         it 'updates group membership' do
           expect { find_and_update }.to change { group.members.count }.by(1)
+        end
+
+        it 'does not attempt to finish onboarding' do
+          expect(Onboarding::FinishService).not_to receive(:new)
+
+          find_and_update
         end
 
         it 'does not confirm the user' do
