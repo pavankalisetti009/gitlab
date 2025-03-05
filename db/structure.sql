@@ -11247,9 +11247,9 @@ CREATE TABLE ci_runners_e59bb2812d (
     maintainer_note text,
     allowed_plans text[] DEFAULT '{}'::text[] NOT NULL,
     allowed_plan_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
+    CONSTRAINT check_030ad0773d CHECK ((char_length(token_encrypted) <= 512)),
     CONSTRAINT check_1f8618ab23 CHECK ((char_length(name) <= 256)),
     CONSTRAINT check_24b281f5bf CHECK ((char_length(maintainer_note) <= 1024)),
-    CONSTRAINT check_31c16b2a99 CHECK ((char_length(token_encrypted) <= 128)),
     CONSTRAINT check_5db8ae9d30 CHECK ((char_length(description) <= 1024)),
     CONSTRAINT check_af25130d5a CHECK ((char_length(token) <= 128))
 )
@@ -14486,9 +14486,9 @@ CREATE TABLE group_type_ci_runners_e59bb2812d (
     maintainer_note text,
     allowed_plans text[] DEFAULT '{}'::text[] NOT NULL,
     allowed_plan_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
+    CONSTRAINT check_030ad0773d CHECK ((char_length(token_encrypted) <= 512)),
     CONSTRAINT check_1f8618ab23 CHECK ((char_length(name) <= 256)),
     CONSTRAINT check_24b281f5bf CHECK ((char_length(maintainer_note) <= 1024)),
-    CONSTRAINT check_31c16b2a99 CHECK ((char_length(token_encrypted) <= 128)),
     CONSTRAINT check_5db8ae9d30 CHECK ((char_length(description) <= 1024)),
     CONSTRAINT check_af25130d5a CHECK ((char_length(token) <= 128)),
     CONSTRAINT check_sharding_key_id_nullness CHECK ((sharding_key_id IS NOT NULL))
@@ -15083,9 +15083,9 @@ CREATE TABLE instance_type_ci_runners_e59bb2812d (
     maintainer_note text,
     allowed_plans text[] DEFAULT '{}'::text[] NOT NULL,
     allowed_plan_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
+    CONSTRAINT check_030ad0773d CHECK ((char_length(token_encrypted) <= 512)),
     CONSTRAINT check_1f8618ab23 CHECK ((char_length(name) <= 256)),
     CONSTRAINT check_24b281f5bf CHECK ((char_length(maintainer_note) <= 1024)),
-    CONSTRAINT check_31c16b2a99 CHECK ((char_length(token_encrypted) <= 128)),
     CONSTRAINT check_5db8ae9d30 CHECK ((char_length(description) <= 1024)),
     CONSTRAINT check_af25130d5a CHECK ((char_length(token) <= 128)),
     CONSTRAINT check_sharding_key_id_nullness CHECK ((sharding_key_id IS NULL))
@@ -20271,9 +20271,9 @@ CREATE TABLE project_type_ci_runners_e59bb2812d (
     maintainer_note text,
     allowed_plans text[] DEFAULT '{}'::text[] NOT NULL,
     allowed_plan_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
+    CONSTRAINT check_030ad0773d CHECK ((char_length(token_encrypted) <= 512)),
     CONSTRAINT check_1f8618ab23 CHECK ((char_length(name) <= 256)),
     CONSTRAINT check_24b281f5bf CHECK ((char_length(maintainer_note) <= 1024)),
-    CONSTRAINT check_31c16b2a99 CHECK ((char_length(token_encrypted) <= 128)),
     CONSTRAINT check_5db8ae9d30 CHECK ((char_length(description) <= 1024)),
     CONSTRAINT check_af25130d5a CHECK ((char_length(token) <= 128)),
     CONSTRAINT check_sharding_key_id_nullness CHECK ((sharding_key_id IS NOT NULL))
