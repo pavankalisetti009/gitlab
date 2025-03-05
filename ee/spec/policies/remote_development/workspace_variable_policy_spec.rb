@@ -94,6 +94,13 @@ RSpec.describe RemoteDevelopment::WorkspaceVariablePolicy, feature_category: :wo
   #       https://docs.gitlab.com/ee/development/permissions/custom_roles.html#refactoring-abilities
   # This may be generalized in the future for use across all policy specs
   # Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/463453
+  #
+  # @param user [User] the user making the request.
+  # @param workspace_variable [RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES]
+  # the workspace variable that is the subject of the request.
+  # @param policy_class [RemoteDevelopment::WorkspaceVariablePolicy] the policy class.
+  # @param ability [Symbol] the ability needed by the user to allow the request.
+  # @return [nil] This method does not return any value.
   def debug_policies(user, workspace_variable, policy_class, ability)
     puts "\n\nPolicy debug for #{policy_class} policy:\n"
     puts "user: #{user.username} (id: #{user.id}, admin: #{user.admin?}, " \

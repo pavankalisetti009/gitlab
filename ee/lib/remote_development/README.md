@@ -40,7 +40,6 @@
   - [Passing information along the ROP chain](#passing-information-along-the-rop-chain)
 - [Enforcement of patterns](#enforcement-of-patterns)
 - [Testing levels for the Workspaces feature](#testing-levels-for-the-workspaces-feature)
-- [Testing DeclarativePolicy authorization policies](#testing-declarativepolicy-authorization-policies)
 - [Testing ROP main classes](#testing-rop-main-classes)
   - [Matcher API](#matcher-api)
     - [Matcher entry](#matcher-entry)
@@ -64,6 +63,10 @@
   - [Usage of ENV vars to override settings at the instance level](#usage-of-env-vars-to-override-settings-at-the-instance-level)
 - [`workspaces_agent_configs` versioning](#workspaces_agent_configs-versioning)
   - [How is `workspaces` linked with versioned `workspaces_agent_configs`?](#how-is-workspaces-linked-with-versioned-workspaces_agent_configs)
+- [Using the DeclarativePolicy authorization framework](#using-the-declarativepolicy-authorization-framework)
+  - [DeclarativePolicy guidelines](#declarativepolicy-guidelines)
+  - [Testing DeclarativePolicy authorization policies](#testing-declarativepolicy-authorization-policies)
+  - [Guidelines for writing tests using this pattern](#guidelines-for-writing-tests-using-this-pattern)
 - [FAQ](#faq)
   - [Why is the Result class in the top level lib directory?](#why-is-the-result-class-in-the-top-level-lib-directory)
   - [What are all the `noinspection` comments in the code?](#what-are-all-the-noinspection-comments-in-the-code)
@@ -794,73 +797,6 @@ We also have a video of a pairing session where we discuss the testing pyramid a
 
 * **[Video of pairing session discussing Workspaces feature testing levels](https://youtu.be/wFI9ijOP-98?si=JdNc1JJYQd84hM_Q&t=418)**
 
-## Testing DeclarativePolicy authorization policies
-
-The matrix pattern is our standard approach for testing policies in the remote development domain. This pattern helps test different permission combinations systematically and ensures consistent test coverage across policy changes.
-
-Use this pattern when testing policies that require checking multiple permission combinations and edge cases, especially those involving:
-
-- User roles and permissions
-- Feature flags and licenses
-- Administrative access levels
-- Project based permissions
-
-Define your test matrix using the `where` block
-
-Example:
-```ruby
-  # Test matrix
-  where(:admin, :admin_mode, :licensed, :role_on_project, :allowed) do
-    true  | true  | true  | :none       | true  | # admin with admin mode: allowed
-    true  | false | true  | :none       | false | # admin without admin mode: not allowed
-    false | false | true  | :maintainer | true  | # maintainer access: allowed
-    false | false | true  | :developer  | false | # insufficient access: not allowed
-    false | false | false | :maintainer | false | # not licensed: not allowed
-  end
-```
-
-The spec matrix should include columns for:
-
-- Administrative flags (admin role, admin mode)
-- Feature flags and licensing (if applicable)
-- User role on a specific project
-- Expected outcome (:allowed -> true/false)
-- Comment explaining each test case
-
-For available user roles, refer to: https://docs.gitlab.com/ee/user/permissions.html#roles
-
-### Guidelines for writing tests using this pattern
-- Users can have multiple roles so it is important to test all edge cases such as insufficient permissions, missing licenses, conflicting roles
-- Order columns logically (admin → roles → outcome)
-- Group related scenarios together
-- Test both positive and negative cases
-- Verify fixture relationships in sanity checks
-- Include the `debug_policies` helper for troubleshooting
-- Note that the `debug_policies` is specific to each policy, so each spec/context has its own version.
-  It would likely introduce unnecessary complexity to try to generalize/abstract it, so we leave it inline in each spec file.
-- We are also OK with permanently committing this "debug code" to each of the policy spec files, because it's not intuitive
-  or straightforward to figure out how to recreate it. So, we leave it here to make it easier for future devs to easily enable
-  and use if needed.
-
-
-```ruby
-  # NOTE: Leaving this method here for future use. You can also set GITLAB_DEBUG_POLICIES=1. For more details, see:
-  #       https://docs.gitlab.com/ee/development/permissions/custom_roles.html#refactoring-abilities
-  # This may be generalized in the future for use across all policy specs
-  # Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/463453
-  def debug_policies(user, workspace, policy_class, ability)
-    puts "\n\nPolicy debug for #{policy_class} policy:\n"
-    puts "user: #{user.username} (id: #{user.id}, admin: #{user.admin?}, " \
-      "admin_mode: #{user && Gitlab::Auth::CurrentUserMode.new(user).admin_mode?}" \
-      ")\n"
-
-    policy = policy_class.new(user, workspace)
-    puts "debugging :#{ability} ability:\n\n"
-    pp policy.debug(ability)
-    puts "\n\n"
-  end
-```
-
 ## Testing ROP main classes
 
 The ROP main class called by the service layer depends on ROP step classes chained together to execute functionality. Testing the ROP main class which mainly entails asserting the right
@@ -1284,6 +1220,92 @@ foo.save! # => A new agent version is created
 
 bar.reload.workspaces_agent_config # => workspaces_per_user_quota: 10
 ```
+
+## Using the DeclarativePolicy authorization framework
+
+### DeclarativePolicy guidelines
+
+We use the following guidelines to make policies more performant and easier to debug:
+
+1. Avoid booleans when composing rules, prefer one policy block per condition
+1. Avoid delegating to indirect policies we depend on; prefer explicit checks. See [this comment](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180565#note_2369173516) and [this thread](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180565#note_2371102626) for rationale
+1. Place prevent rules first (for performance)
+1. Place less-expensive rules first (for performance)
+
+Additional notes:
+
+- All "prevent" rules which check conditions for non-anonymous users must be prepended with `~admin &`
+- For documentation on the Declarative Policy framework, see: https://docs.gitlab.com/ee/development/policies.html
+- For instructions on debugging policies, see: https://docs.gitlab.com/ee/development/permissions/custom_roles.html#refactoring-abilities
+
+### Testing DeclarativePolicy authorization policies
+
+The matrix pattern is our standard approach for testing policies in the remote development domain. This pattern helps test different permission combinations systematically and ensures consistent test coverage across policy changes.
+
+Use this pattern when testing policies that require checking multiple permission combinations and edge cases, especially those involving:
+
+- User roles and permissions
+- Feature flags and licenses
+- Administrative access levels
+- Project based permissions
+
+Define your test matrix using the `where` block
+
+Example:
+```ruby
+  # Test matrix
+  where(:admin, :admin_mode, :licensed, :role_on_project, :allowed) do
+    true  | true  | true  | :none       | true  | # admin with admin mode: allowed
+    true  | false | true  | :none       | false | # admin without admin mode: not allowed
+    false | false | true  | :maintainer | true  | # maintainer access: allowed
+    false | false | true  | :developer  | false | # insufficient access: not allowed
+    false | false | false | :maintainer | false | # not licensed: not allowed
+  end
+```
+
+The spec matrix should include columns for:
+
+- Administrative flags (admin role, admin mode)
+- Feature flags and licensing (if applicable)
+- User role on a specific project
+- Expected outcome (:allowed -> true/false)
+- Comment explaining each test case
+
+For available user roles, refer to: https://docs.gitlab.com/ee/user/permissions.html#roles
+
+### Guidelines for writing tests using this pattern
+
+- Users can have multiple roles so it is important to test all edge cases such as insufficient permissions, missing licenses, conflicting roles
+- Order columns logically (admin → roles → outcome)
+- Group related scenarios together
+- Test both positive and negative cases
+- Verify fixture relationships in sanity checks
+- Include the `debug_policies` helper for troubleshooting
+- Note that the `debug_policies` is specific to each policy, so each spec/context has its own version.
+  It would likely introduce unnecessary complexity to try to generalize/abstract it, so we leave it inline in each spec file.
+- We are also OK with permanently committing this "debug code" to each of the policy spec files, because it's not intuitive
+  or straightforward to figure out how to recreate it. So, we leave it here to make it easier for future devs to easily enable
+  and use if needed.
+
+
+```ruby
+  # NOTE: Leaving this method here for future use. You can also set GITLAB_DEBUG_POLICIES=1. For more details, see:
+  #       https://docs.gitlab.com/ee/development/permissions/custom_roles.html#refactoring-abilities
+  # This may be generalized in the future for use across all policy specs
+  # Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/463453
+  def debug_policies(user, workspace, policy_class, ability)
+    puts "\n\nPolicy debug for #{policy_class} policy:\n"
+    puts "user: #{user.username} (id: #{user.id}, admin: #{user.admin?}, " \
+      "admin_mode: #{user && Gitlab::Auth::CurrentUserMode.new(user).admin_mode?}" \
+      ")\n"
+
+    policy = policy_class.new(user, workspace)
+    puts "debugging :#{ability} ability:\n\n"
+    pp policy.debug(ability)
+    puts "\n\n"
+  end
+```
+
 
 ## FAQ
 

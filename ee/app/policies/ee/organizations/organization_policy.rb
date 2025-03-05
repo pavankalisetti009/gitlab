@@ -7,6 +7,8 @@ module EE
       extend ::Gitlab::Utils::Override
 
       prepended do
+        include RemoteDevelopment::OrganizationPolicy
+
         condition(:dependency_scanning_enabled) do
           License.feature_available?(:dependency_scanning)
         end
