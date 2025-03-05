@@ -19,4 +19,4 @@ class ReindexAllIssues < Elastic::Migration
   end
 end
 
-ReindexAllIssues.prepend ::Elastic::MigrationObsolete
+ReindexAllIssues.prepend ::Search::Elastic::MigrationObsolete

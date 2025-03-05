@@ -26,4 +26,4 @@ class BackfillWorkItems < Elastic::Migration
   end
 end
 
-BackfillWorkItems.prepend ::Elastic::MigrationObsolete
+BackfillWorkItems.prepend ::Search::Elastic::MigrationObsolete

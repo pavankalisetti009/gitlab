@@ -102,4 +102,4 @@ class BackfillWorkItemsEmbeddings < Elastic::Migration
   end
 end
 
-BackfillWorkItemsEmbeddings.prepend ::Elastic::MigrationObsolete
+BackfillWorkItemsEmbeddings.prepend ::Search::Elastic::MigrationObsolete

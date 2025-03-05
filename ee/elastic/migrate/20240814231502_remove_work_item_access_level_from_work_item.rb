@@ -21,4 +21,4 @@ class RemoveWorkItemAccessLevelFromWorkItem < Elastic::Migration
   end
 end
 
-RemoveWorkItemAccessLevelFromWorkItem.prepend ::Elastic::MigrationObsolete
+RemoveWorkItemAccessLevelFromWorkItem.prepend ::Search::Elastic::MigrationObsolete

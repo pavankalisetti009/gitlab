@@ -18,4 +18,4 @@ class RemoveWorkItemFromIssuesIndex < Elastic::Migration
   end
 end
 
-RemoveWorkItemFromIssuesIndex.prepend ::Elastic::MigrationObsolete
+RemoveWorkItemFromIssuesIndex.prepend ::Search::Elastic::MigrationObsolete

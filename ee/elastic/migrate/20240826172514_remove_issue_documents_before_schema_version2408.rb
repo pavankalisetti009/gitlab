@@ -15,4 +15,4 @@ class RemoveIssueDocumentsBeforeSchemaVersion2408 < Elastic::Migration
   end
 end
 
-RemoveIssueDocumentsBeforeSchemaVersion2408.prepend ::Elastic::MigrationObsolete
+RemoveIssueDocumentsBeforeSchemaVersion2408.prepend ::Search::Elastic::MigrationObsolete

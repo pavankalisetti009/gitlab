@@ -25,4 +25,4 @@ class AddFieldsToProjectsIndex < Elastic::Migration
   end
 end
 
-AddFieldsToProjectsIndex.prepend ::Elastic::MigrationObsolete
+AddFieldsToProjectsIndex.prepend ::Search::Elastic::MigrationObsolete

@@ -21,4 +21,4 @@ class AddNotesToWorkItems < Elastic::Migration
   end
 end
 
-AddNotesToWorkItems.prepend ::Elastic::MigrationObsolete
+AddNotesToWorkItems.prepend ::Search::Elastic::MigrationObsolete

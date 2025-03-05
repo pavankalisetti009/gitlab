@@ -239,17 +239,20 @@ include_examples 'migration removes field' do
 end
 ```
 
-#### `Elastic::MigrationObsolete`
+#### `Search::Elastic::MigrationObsolete`
 
 Marks a migration as obsolete when it's no longer required.
 
 ```ruby
 class MigrationName < Elastic::Migration
-  include Elastic::MigrationObsolete
+  include ::Search::Elastic::MigrationObsolete
 end
 ```
 
 When marking a skippable migration as obsolete, you must keep the `skip_if` condition.
+
+You can test this migration with the `'a deprecated Advanced Search migration'`
+shared examples. Follow the [process for marking migrations as obsolete](#process-for-marking-migrations-as-obsolete).
 
 #### `Elastic::MigrationCreateIndex`
 
@@ -548,7 +551,7 @@ the Keep:
 1. Retains the content of the migration and adds a prepend to the bottom:
 
    ```ruby
-    ClassName.prepend ::Elastic::MigrationObsolete
+    ClassName.prepend ::Search::Elastic::MigrationObsolete
    ```
 
 1. Replaces the spec file content with the `'a deprecated Advanced Search migration'` shared example.

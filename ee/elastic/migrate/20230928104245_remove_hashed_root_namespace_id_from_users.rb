@@ -21,4 +21,4 @@ class RemoveHashedRootNamespaceIdFromUsers < Elastic::Migration
   end
 end
 
-RemoveHashedRootNamespaceIdFromUsers.prepend ::Elastic::MigrationObsolete
+RemoveHashedRootNamespaceIdFromUsers.prepend ::Search::Elastic::MigrationObsolete

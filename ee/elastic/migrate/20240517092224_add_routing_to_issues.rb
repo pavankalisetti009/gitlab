@@ -12,4 +12,4 @@ class AddRoutingToIssues < Elastic::Migration
   end
 end
 
-AddRoutingToIssues.prepend ::Elastic::MigrationObsolete
+AddRoutingToIssues.prepend ::Search::Elastic::MigrationObsolete

@@ -19,4 +19,4 @@ class AddCountFieldsToProjects < Elastic::Migration
   end
 end
 
-AddCountFieldsToProjects.prepend ::Elastic::MigrationObsolete
+AddCountFieldsToProjects.prepend ::Search::Elastic::MigrationObsolete
