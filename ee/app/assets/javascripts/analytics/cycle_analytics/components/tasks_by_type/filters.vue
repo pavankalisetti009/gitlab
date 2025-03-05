@@ -1,7 +1,7 @@
 <script>
 import { GlCollapsibleListbox, GlSegmentedControl } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
-import { mapState, mapGetters } from 'vuex';
+import { mapGetters } from 'vuex';
 import { difference, debounce } from 'lodash';
 import { createAlert, VARIANT_INFO } from '~/alert';
 import { __, s__, n__, sprintf } from '~/locale';
@@ -41,7 +41,6 @@ export default {
     };
   },
   computed: {
-    ...mapState(['defaultGroupLabels']),
     ...mapGetters(['namespaceRestApiRequestPath']),
     subjectFilterOptions() {
       return Object.entries(TASKS_BY_TYPE_SUBJECT_FILTER_OPTIONS).map(([value, text]) => ({
@@ -88,13 +87,9 @@ export default {
   async mounted() {
     this.debouncedSearch = debounce(this.search, DATA_REFETCH_DELAY);
 
-    if (!this.defaultGroupLabels?.length) {
-      this.loading = true;
-      await this.fetchLabels();
-      this.loading = false;
-    } else {
-      this.labels = this.defaultGroupLabels;
-    }
+    this.loading = true;
+    await this.fetchLabels();
+    this.loading = false;
   },
   methods: {
     async fetchLabels() {

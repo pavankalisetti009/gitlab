@@ -137,10 +137,10 @@ describe('TasksByTypeFilters', () => {
     });
   });
 
-  describe('with no default labels', () => {
+  describe('labels', () => {
     beforeEach(() => {
       mockGroupLabelsRequest();
-      createWrapper({ state: { defaultGroupLabels: [] } });
+      createWrapper();
     });
 
     it('will show loading state while request is pending', () => {
@@ -165,7 +165,7 @@ describe('TasksByTypeFilters', () => {
   describe('default labels fail to load', () => {
     beforeEach(() => {
       mockGroupLabelsRequest({ status: HTTP_STATUS_NOT_FOUND });
-      return createWrapper({ state: { defaultGroupLabels: [] } });
+      return createWrapper();
     });
 
     it('stops the loading state', () => {
