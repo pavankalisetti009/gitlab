@@ -52,6 +52,19 @@ RSpec.describe Gitlab::Llm::VertexAi::Embeddings::Text, feature_category: :ai_ab
       end
     end
 
+    context 'when requesting more than the limit' do
+      let(:text) { Array.new(limit + 1) { 'text' } }
+      let(:limit) { 5 }
+
+      before do
+        stub_const("#{described_class}::BULK_LIMIT", limit)
+      end
+
+      it 'raises an error' do
+        expect { execute }.to raise_error(StandardError, /Cannot generate embeddings for more than 5 texts at once/)
+      end
+    end
+
     context 'when the API returns an error response' do
       let(:error_hash) { { error: { message: 'error' } }.to_json }
 

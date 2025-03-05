@@ -18,11 +18,26 @@ RSpec.describe Gitlab::Llm::VertexAi::ModelConfigurations::TextEmbeddings, featu
 
   describe '#payload' do
     it 'returns default payload' do
-      expect(subject.payload('some content')).to eq(
+      expect(subject.payload(['some content'])).to eq(
         {
           instances: [
             {
               content: 'some content'
+            }
+          ]
+        }
+      )
+    end
+
+    it 'returns default payload for multiple contents' do
+      expect(subject.payload(['some content', 'other content'])).to eq(
+        {
+          instances: [
+            {
+              content: 'some content'
+            },
+            {
+              content: 'other content'
             }
           ]
         }

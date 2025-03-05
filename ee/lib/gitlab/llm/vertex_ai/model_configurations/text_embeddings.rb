@@ -9,11 +9,7 @@ module Gitlab
 
           def payload(content)
             {
-              instances: [
-                {
-                  content: content
-                }
-              ]
+              instances: content.map { |instance| { content: instance } }
             }
           end
         end

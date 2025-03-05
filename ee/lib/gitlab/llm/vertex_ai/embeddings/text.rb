@@ -5,6 +5,8 @@ module Gitlab
     module VertexAi
       module Embeddings
         class Text
+          BULK_LIMIT = 250
+
           def initialize(text, user:, tracking_context:, unit_primitive:)
             @text = text
             @user = user
@@ -15,7 +17,13 @@ module Gitlab
           attr_reader :user, :text, :tracking_context, :unit_primitive
 
           def execute
-            result = client.text_embeddings(content: text)
+            content = Array.wrap(text)
+
+            if content.count > BULK_LIMIT
+              raise StandardError, "Cannot generate embeddings for more than #{BULK_LIMIT} texts at once"
+            end
+
+            result = client.text_embeddings(content: content)
 
             response_modifier = ::Gitlab::Llm::VertexAi::ResponseModifiers::Embeddings.new(result)
 

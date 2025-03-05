@@ -4,14 +4,23 @@ require 'spec_helper'
 
 RSpec.describe Gitlab::Llm::VertexAi::ResponseModifiers::Embeddings, feature_category: :ai_abstraction_layer do
   let(:values) { [1, 2, 3] }
+  let(:values_2) { [4, 5, 6] }
 
   describe '#response_body' do
     subject(:response_body) { described_class.new(ai_response.to_json).response_body }
 
-    context 'when AI response predictions has embeddings' do
+    context 'when AI response predictions has multiple embeddings' do
+      let(:ai_response) { { predictions: [{ embeddings: { values: values } }, { embeddings: { values: values_2 } }] } }
+
+      it 'returns an array of embeddings' do
+        expect(response_body).to match_array([values, values_2])
+      end
+    end
+
+    context 'when AI response predictions has one set of embeddings' do
       let(:ai_response) { { predictions: [{ embeddings: { values: values } }] } }
 
-      it 'returns embeddings' do
+      it 'returns the embeddings' do
         expect(response_body).to eq(values)
       end
     end
