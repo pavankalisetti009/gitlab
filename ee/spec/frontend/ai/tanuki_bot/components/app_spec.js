@@ -9,7 +9,11 @@ import TanukiBotChatApp from 'ee/ai/tanuki_bot/components/app.vue';
 import DuoChatCallout from 'ee/ai/components/global_callout/duo_chat_callout.vue';
 import TanukiBotSubscriptions from 'ee/ai/tanuki_bot/components/tanuki_bot_subscriptions.vue';
 import { GENIE_CHAT_RESET_MESSAGE, GENIE_CHAT_CLEAR_MESSAGE } from 'ee/ai/constants';
-import { TANUKI_BOT_TRACKING_EVENT_NAME, WIDTH_OFFSET } from 'ee/ai/tanuki_bot/constants';
+import {
+  TANUKI_BOT_TRACKING_EVENT_NAME,
+  WIDTH_OFFSET,
+  PREDEFINED_PROMPTS,
+} from 'ee/ai/tanuki_bot/constants';
 import chatMutation from 'ee/ai/graphql/chat.mutation.graphql';
 import duoUserFeedbackMutation from 'ee/ai/graphql/duo_user_feedback.mutation.graphql';
 import deleteConversationThreadMutation from 'ee/ai/graphql/delete_conversation_thread.mutation.graphql';
@@ -19,11 +23,11 @@ import getAiConversationThreads from 'ee/ai/graphql/get_ai_conversation_threads.
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { getMarkdown } from '~/rest_api';
-import { mockTracking, unmockTracking } from 'helpers/tracking_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { describeSkipVue3, SkipReason } from 'helpers/vue3_conditional';
 import getAiSlashCommands from 'ee/ai/graphql/get_ai_slash_commands.query.graphql';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 
 import {
   MOCK_USER_MESSAGE,
@@ -69,6 +73,7 @@ describeSkipVue3(skipReason, () => {
   const threadQueryHandlerMock = jest.fn().mockResolvedValue({});
   const conversationThreadsQueryHandlerMock = jest.fn().mockResolvedValue({});
   const slashCommandsQueryHandlerMock = jest.fn().mockResolvedValue(MOCK_SLASH_COMMANDS);
+  const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
   const feedbackData = {
     feedbackChoices: ['useful', 'not_relevant'],
@@ -250,7 +255,6 @@ describeSkipVue3(skipReason, () => {
   describe('when new commands are added to the global state', () => {
     beforeEach(() => {
       createComponent();
-      mockTracking(undefined, wrapper.element, jest.spyOn);
       performance.mark = jest.fn();
     });
 
@@ -296,12 +300,7 @@ describeSkipVue3(skipReason, () => {
 
     describe('@send-chat-prompt', () => {
       beforeEach(() => {
-        mockTracking(undefined, wrapper.element, jest.spyOn);
         performance.mark = jest.fn();
-      });
-
-      afterEach(() => {
-        unmockTracking();
       });
 
       it('does set loading to `true` for a message other than the reset or clear messages', () => {
@@ -422,40 +421,63 @@ describeSkipVue3(skipReason, () => {
       );
 
       describe('tracking on mutation', () => {
-        let trackingSpy;
-
-        beforeEach(() => {
-          trackingSpy = mockTracking(undefined, wrapper.element, jest.spyOn);
-        });
-
-        afterEach(() => {
-          unmockTracking();
-        });
+        const expectedCategory = undefined;
+        const expectedAction = 'submit_gitlab_duo_question';
+        const defaultTrackingOption = {
+          property: MOCK_TANUKI_BOT_MUTATATION_RES.data.aiAction.requestId,
+        };
+        const predefinedPrompts = PREDEFINED_PROMPTS.map((prompt) => prompt.text);
 
         it('tracks the submission for prompts by default', async () => {
           createComponent();
+          const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
           findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
 
           await waitForPromises();
-          expect(trackingSpy).toHaveBeenCalled();
+          expect(trackEventSpy).toHaveBeenCalledWith(
+            expectedAction,
+            defaultTrackingOption,
+            expectedCategory,
+          );
         });
+
+        it.each(predefinedPrompts)(
+          'tracks the submission with label for prompts if prompt is predefined',
+          async (question) => {
+            const expectedTrackingOption = {
+              ...defaultTrackingOption,
+              label: PREDEFINED_PROMPTS.find(({ text }) => text === question).eventLabel,
+            };
+
+            createComponent();
+            const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+            findDuoChat().vm.$emit('send-chat-prompt', question);
+
+            await waitForPromises();
+            expect(trackEventSpy).toHaveBeenCalledWith(
+              expectedAction,
+              expectedTrackingOption,
+              expectedCategory,
+            );
+          },
+        );
+
         it.each([GENIE_CHAT_RESET_MESSAGE, GENIE_CHAT_CLEAR_MESSAGE])(
           'does not track if the sent message is "%s"',
           async (msg) => {
             createComponent();
+            const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
             findDuoChat().vm.$emit('send-chat-prompt', msg);
 
             await waitForPromises();
-            expect(trackingSpy).not.toHaveBeenCalled();
+            expect(trackEventSpy).not.toHaveBeenCalled();
           },
         );
       });
     });
 
     describe('@response-received', () => {
-      let trackingSpy;
       beforeEach(() => {
-        trackingSpy = mockTracking(undefined, wrapper.element, jest.spyOn);
         performance.mark = jest.fn();
         performance.measure = jest.fn();
         performance.getEntriesByName = jest.fn(() => [{ duration: 123 }]);
@@ -463,27 +485,29 @@ describeSkipVue3(skipReason, () => {
         performance.clearMeasures = jest.fn();
       });
 
-      afterEach(() => {
-        unmockTracking();
-      });
-
       it('tracks time to response on first response-received', () => {
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
         findSubscriptions().vm.$emit('response-received', 'request-id-123');
 
         expect(performance.mark).toHaveBeenCalledWith('response-received');
 
-        expect(trackingSpy).toHaveBeenCalledWith(undefined, 'ai_response_time', {
-          requestId: 'request-id-123',
-          value: 123,
-        });
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          'ai_response_time',
+          {
+            property: 'request-id-123',
+            value: 123,
+          },
+          undefined,
+        );
       });
 
       it('does not track time to response after first chunk was tracked', () => {
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
         findSubscriptions().vm.$emit('response-received', 'request-id-123');
         findSubscriptions().vm.$emit('response-received', 'request-id-123');
 
         expect(performance.mark).toHaveBeenCalledTimes(1);
-        expect(trackingSpy).toHaveBeenCalledTimes(1);
+        expect(trackEventSpy).toHaveBeenCalledTimes(1);
       });
     });
 
@@ -611,7 +635,6 @@ describeSkipVue3(skipReason, () => {
       beforeEach(() => {
         duoChatGlobalState.isShown = true;
         createComponent();
-        mockTracking(undefined, wrapper.element, jest.spyOn);
         performance.mark = jest.fn();
       });
 

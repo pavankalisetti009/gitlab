@@ -16,4 +16,5 @@ tiers:
 additional_properties:
   property:
     description: Ai Action request Id that can be used to connect this event to others that happen when request is resolved.
-
+  label:
+    description: Which predefined prompt user picked

@@ -21650,6 +21650,18 @@ msgstr ""
 msgid "DuoChat|Give feedback"
 msgstr ""
 
+msgid "DuoChat|How do I change my password in GitLab?"
+msgstr ""
+
+msgid "DuoChat|How do I clone a repository?"
+msgstr ""
+
+msgid "DuoChat|How do I create a template?"
+msgstr ""
+
+msgid "DuoChat|How do I fork a project?"
+msgstr ""
+
 msgid "DuoChat|How to use GitLab"
 msgstr ""
 
@@ -29256,22 +29268,10 @@ msgstr ""
 msgid "How can I make my variables more secure?"
 msgstr ""
 
-msgid "How do I change my password in GitLab?"
-msgstr ""
-
-msgid "How do I clone a repository?"
-msgstr ""
-
 msgid "How do I configure Akismet?"
 msgstr ""
 
 msgid "How do I configure this integration?"
-msgstr ""
-
-msgid "How do I create a template?"
-msgstr ""
-
-msgid "How do I fork a project?"
 msgstr ""
 
 msgid "How do I generate it?"
