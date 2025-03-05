@@ -119,6 +119,30 @@ RSpec.describe GitlabSubscriptions::HandRaiseLeadsHelper, feature_category: :acq
       end
     end
 
+    describe '#group_trial_status' do
+      let_it_be(:group) { build_stubbed(:group) }
+
+      context 'when trial is active' do
+        before do
+          allow(group).to receive(:trial_active?).and_return(true)
+        end
+
+        it 'returns correct status' do
+          expect(helper.group_trial_status(group)).to eq 'trial_active'
+        end
+      end
+
+      context 'when trial is expired' do
+        before do
+          allow(group).to receive(:trial_active?).and_return(false)
+        end
+
+        it 'returns correct status' do
+          expect(helper.group_trial_status(group)).to eq 'trial_expired'
+        end
+      end
+    end
+
     describe '#duo_pro_trial_status_cta_label' do
       let(:namespace) { build_stubbed(:namespace) }
 
