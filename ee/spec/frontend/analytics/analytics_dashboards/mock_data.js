@@ -1262,3 +1262,25 @@ export const mockGroupLabelsResponse = {
     },
   },
 };
+
+export const mockGroupNamespaceMetadata = {
+  id: 225,
+  avatarUrl: '/avatar.png',
+  fullName: 'GitLab Org',
+  namespaceType: 'Group',
+  namespaceTypeIcon: 'group',
+  visibilityLevelIcon: 'earth',
+  visibilityLevelTooltip:
+    'Public - The group and any public projects can be viewed without any authentication.',
+};
+
+export const mockProjectNamespaceMetadata = {
+  id: 7,
+  avatarUrl: '/avatar.png',
+  fullName: 'GitLab Org / GitLab',
+  namespaceType: 'Project',
+  namespaceTypeIcon: 'project',
+  visibilityLevelIcon: 'shield',
+  visibilityLevelTooltip:
+    'Internal - The project can be accessed by any logged in user except external users.',
+};

@@ -649,13 +649,19 @@ export const filterLabelsProjectQuery = `query ($fullPath: ID!) {
 export const mockGroup = {
   id: 'gid://gitlab/Group/10',
   name: 'Group 10',
+  fullName: 'Group 10',
   webUrl: 'gdk.test/groups/group-10',
+  avatarUrl: 'avatar.png',
+  visibility: 'Public',
   __typename: TYPENAME_GROUP,
 };
 
 export const mockProject = {
   id: 'gid://gitlab/Project/20',
   name: 'Project 20',
+  fullName: 'Group 10 / Project 20',
   webUrl: 'gdk.test/group-10/project-20',
+  avatarUrl: 'avatar.png',
+  visibility: 'Private',
   __typename: TYPENAME_PROJECT,
 };

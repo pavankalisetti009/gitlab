@@ -123,7 +123,8 @@ RSpec.describe 'Query.project(id).dashboards.panels(id).visualization', feature_
                  "[\"LineChart\", \"ColumnChart\", \"DataTable\", \"SingleStat\", " \
                  "\"DORAChart\", \"UsageOverview\", \"DoraPerformersScore\", " \
                  "\"DoraProjectsComparison\", \"AiImpactTable\", \"ContributionsByUserTable\", " \
-                 "\"ContributionsPushesChart\", \"ContributionsIssuesChart\", \"ContributionsMergeRequestsChart\"]")
+                 "\"ContributionsPushesChart\", \"ContributionsIssuesChart\", " \
+                   "\"ContributionsMergeRequestsChart\", \"NamespaceMetadata\"]")
       end
     end
   end
