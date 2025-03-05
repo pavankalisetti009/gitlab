@@ -18,6 +18,7 @@ module Gitlab
         def link
           super
 
+          update_duo_pro_add_on_assignment
           update_extern_uid if extern_uid_update_required?
           finish_onboarding unless failed?
         end
@@ -48,8 +49,11 @@ module Gitlab
 
         override :update_group_membership
         def update_group_membership
-          auth_hash = AuthHash.new(oauth)
           MembershipUpdater.new(current_user, saml_provider, auth_hash).execute
+        end
+
+        def update_duo_pro_add_on_assignment
+          DuoAddOnAssignmentUpdater.new(current_user, saml_provider.group, auth_hash).execute
         end
 
         def finish_onboarding

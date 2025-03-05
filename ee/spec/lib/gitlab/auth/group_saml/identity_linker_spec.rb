@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Auth::GroupSaml::IdentityLinker do
+RSpec.describe Gitlab::Auth::GroupSaml::IdentityLinker, feature_category: :system_access do
   let_it_be(:user) { create(:user) }
   let(:provider) { 'group_saml' }
   let(:uid) { user.email }
@@ -59,6 +59,13 @@ RSpec.describe Gitlab::Auth::GroupSaml::IdentityLinker do
         subject.link
 
         expect(saml_provider.group.member?(user)).to eq(true)
+      end
+
+      it 'calls Duo assignment updater' do
+        expect(::Gitlab::Auth::GroupSaml::DuoAddOnAssignmentUpdater)
+          .to receive(:new).with(user, saml_provider.group, anything).and_call_original
+
+        identity_linker.link
       end
     end
 
