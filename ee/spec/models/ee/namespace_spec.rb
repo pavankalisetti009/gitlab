@@ -1279,6 +1279,52 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
     end
   end
 
+  describe '#trial_active?', :saas do
+    let(:namespace) do
+      build(:namespace,
+        gitlab_subscription: build(:gitlab_subscription,
+          trial: trial,
+          trial_starts_on: trial_starts_on,
+          trial_ends_on: trial_ends_on
+        )
+      )
+    end
+
+    where(:trial, :trial_starts_on, :trial_ends_on, :result) do
+      false  | 60.days.ago  | Date.tomorrow | false
+      true   | nil          | Date.tomorrow | false
+      true   | 60.days.ago  | nil           | false
+      true   | 60.days.ago  | Date.current  | false
+      true   | 60.days.ago  | Date.tomorrow | true
+    end
+
+    subject { namespace.trial_active? }
+
+    with_them do
+      it { is_expected.to eq(result) }
+    end
+  end
+
+  describe '#trial_expired?', :saas do
+    let(:namespace) do
+      build(:namespace,
+        gitlab_subscription: build(:gitlab_subscription, trial_ends_on: trial_ends_on)
+      )
+    end
+
+    where(:trial_ends_on, :result) do
+      nil           | false
+      Date.tomorrow | false
+      Date.current  | true
+    end
+
+    subject { namespace.trial_expired? }
+
+    with_them do
+      it { is_expected.to eq(result) }
+    end
+  end
+
   describe '#file_template_project_id' do
     it 'is cleared before validation' do
       project = create(:project, namespace: namespace)
