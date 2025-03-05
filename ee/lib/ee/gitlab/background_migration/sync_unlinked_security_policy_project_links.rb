@@ -211,6 +211,8 @@ module EE
           policy_configuration = security_policy.security_orchestration_policy_configuration
           applicable_project_ids = find_applicable_project_ids(policy_configuration, security_policy)
 
+          return if applicable_project_ids.blank?
+
           applicable_project_ids.each_slice(1000) do |project_ids|
             create_policy_links(security_policy, project_ids)
             create_approval_policy_links(security_policy, project_ids) if security_policy.type_approval_policy?
@@ -228,6 +230,8 @@ module EE
             { security_policy_id: security_policy.id, project_id: project_id }
           end
 
+          return if records.blank?
+
           SecurityPolicyProjectLink.insert_all(records, unique_by: [:security_policy_id, :project_id])
         end
 
@@ -237,6 +241,8 @@ module EE
               { approval_policy_rule_id: rule.id, project_id: project_id }
             end
           end
+
+          return if policy_rules_records.blank?
 
           ApprovalPolicyRuleProjectLink.insert_all(policy_rules_records,
             unique_by: [:approval_policy_rule_id, :project_id])

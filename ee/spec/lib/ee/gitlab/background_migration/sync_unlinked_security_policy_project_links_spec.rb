@@ -155,7 +155,7 @@ RSpec.describe Gitlab::BackgroundMigration::SyncUnlinkedSecurityPolicyProjectLin
     end
 
     context 'without approval_policy_rules' do
-      let!(:policy) { create_policy(:scan_execution_policy, policy_hash, 0) }
+      let!(:policy) { create_policy(:approval_policy, policy_hash, 0) }
 
       it_behaves_like 'creates only policy project links'
     end
@@ -270,6 +270,29 @@ RSpec.describe Gitlab::BackgroundMigration::SyncUnlinkedSecurityPolicyProjectLin
             project_id: project_in_sub_group.id)).not_to exist
           expect(security_policy_project_links.where(security_policy_id: policy.id,
             project_id: another_project.id)).to exist
+        end
+      end
+
+      context 'with no projects in the scope' do
+        let!(:compliance_management_framework) do
+          compliance_management_frameworks.create!(
+            name: 'new framework',
+            color: '#000000',
+            description: 'description',
+            namespace_id: group_namespace.id
+          )
+        end
+
+        let(:policy_scope) do
+          {
+            compliance_frameworks: [
+              { id: compliance_management_framework.id }
+            ]
+          }
+        end
+
+        it 'does not create new links' do
+          expect { perform_migration }.not_to change { security_policy_project_links.count }
         end
       end
     end
