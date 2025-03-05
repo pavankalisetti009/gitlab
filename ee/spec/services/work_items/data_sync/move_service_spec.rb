@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe WorkItems::DataSync::MoveService, feature_category: :team_planning do
+  let_it_be(:support_bot) { Users::Internal.support_bot }
   let_it_be(:parent_group) { create(:group) }
   let_it_be(:group) { create(:group) }
   let_it_be(:target_group) { create(:group, parent: parent_group) }
@@ -20,6 +21,13 @@ RSpec.describe WorkItems::DataSync::MoveService, feature_category: :team_plannin
       target_namespace: target_namespace,
       current_user: current_user
     )
+  end
+
+  before_all do
+    # Ensure support bot user is created so creation doesn't count towards query limit
+    # and we don't try to obtain an exclusive lease within a transaction.
+    # See https://gitlab.com/gitlab-org/gitlab/-/issues/509629
+    Users::Internal.support_bot_id
   end
 
   before do
