@@ -55,7 +55,10 @@ module Vulnerabilities
     end
 
     def self.search_identifier_name_in_group(group, search_pattern)
-      if Feature.enabled?(:search_identifier_name_in_group_using_vulnerability_statistics, group)
+      # Disabling this feature flag would break GitLab.com post Secure Decomposition, so we are ensuring it's
+      # always active for GitLab.com. See https://gitlab.com/gitlab-org/gitlab/-/issues/523212 for more info.
+      # rubocop:disable Gitlab/AvoidGitlabInstanceChecks -- Intentional Platform disable
+      if Feature.enabled?(:search_identifier_name_in_group_using_vulnerability_statistics, group) || Gitlab.com?
         project_ids = ::Vulnerabilities::Statistic.by_group(group).unarchived.select(:project_id)
         return where(project_id: project_ids)
           .distinct
@@ -64,6 +67,7 @@ module Vulnerabilities
           .limit(SEARCH_RESULTS_LIMIT)
           .pluck(:name)
       end
+      # rubocop:enable Gitlab/AvoidGitlabInstanceChecks
 
       # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- there is a limit
       where(project_id: group.all_project_ids)

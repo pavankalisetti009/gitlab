@@ -7,3 +7,6 @@ milestone: '17.7'
 group: group::security infrastructure
 type: gitlab_com_derisk
 default_enabled: false
+
+# Disabling this feature flag would break GitLab.com post Secure Decomposition, so disabling it 
+# does nothing for GitLab.com. See https://gitlab.com/gitlab-org/gitlab/-/issues/523212 for more info.
