@@ -4,7 +4,7 @@ description: The CI/CD merge trains settings for a project is updated
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/369317
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/107428
 milestone: '15.8'
-feature_category: groups_and_projects
+feature_category: merge_trains
 saved_to_database: true
 streamed: true
 scope: [Project]

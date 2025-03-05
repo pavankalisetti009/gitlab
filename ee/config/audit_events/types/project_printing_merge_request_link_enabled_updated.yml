@@ -4,7 +4,7 @@ description: The setting for projects for enabling printing merge request link i
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/369283
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/106652
 milestone: '15.7'
-feature_category: groups_and_projects
+feature_category: source_code_management
 saved_to_database: true
 streamed: true
 scope: [Project]
