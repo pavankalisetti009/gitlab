@@ -438,7 +438,7 @@ module EE
     # Be sure to call this on root_ancestor since plans are only associated
     # with the top-level namespace, not with subgroups.
     def trial_active?
-      trial? && trial_starts_on.present? && trial_ends_on.present? && trial_ends_on >= Date.today
+      trial? && trial_starts_on.present? && trial_ends_on.present? && trial_ends_on > Date.current
     end
 
     def never_had_trial?
@@ -446,7 +446,7 @@ module EE
     end
 
     def trial_expired?
-      trial_ends_on.present? && trial_ends_on < Date.today
+      trial_ends_on.present? && trial_ends_on <= Date.current
     end
 
     # A namespace may not have a file template project

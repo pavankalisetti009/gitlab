@@ -34,7 +34,7 @@ RSpec.describe Namespaces::FreeUserCap::UsageQuotaTrialAlertComponent, :saas, :a
     stub_ee_application_setting(dashboard_limit_enabled: true)
     stub_ee_application_setting(dashboard_limit: 5)
     namespace.add_owner(user)
-    travel_to(trial_ends_on)
+    travel_to(trial_ends_on - 1)
   end
 
   shared_examples 'does not render the banner' do
