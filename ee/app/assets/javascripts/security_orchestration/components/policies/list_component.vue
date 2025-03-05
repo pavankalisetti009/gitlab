@@ -240,9 +240,7 @@ export default {
         {
           text: __('Delete'),
           action: () => this.handleDelete(policy),
-          extraAttrs: {
-            class: '!gl-text-danger',
-          },
+          variant: 'danger',
         },
       ];
     },

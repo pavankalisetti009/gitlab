@@ -124,8 +124,8 @@ export default {
         {
           text: i18n.deleteCadence,
           action: this.showModal,
+          variant: 'danger',
           extraAttrs: {
-            class: '!gl-text-danger',
             'data-testid': 'delete-cadence',
           },
         },

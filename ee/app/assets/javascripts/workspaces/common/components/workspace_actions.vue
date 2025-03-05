@@ -32,9 +32,7 @@ const ACTIONS = [
       ![WORKSPACE_STATES.terminated, WORKSPACE_STATES.terminating].includes(displayState),
     desiredState: WORKSPACE_DESIRED_STATES.terminated,
     title: s__('Workspaces|Terminate'),
-    extraAttrs: {
-      class: '!gl-text-red-500',
-    },
+    variant: 'danger',
   },
 ];
 

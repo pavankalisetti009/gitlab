@@ -112,7 +112,8 @@ describe('Role actions', () => {
         it('shows item', () => {
           expect(findDeleteRoleItem().props('item')).toMatchObject({
             text: 'Delete role',
-            extraAttrs: { disabled: false, class: '!gl-text-red-500' },
+            variant: 'danger',
+            extraAttrs: { disabled: false },
           });
         });
 
@@ -133,7 +134,7 @@ describe('Role actions', () => {
 
         it('shows item', () => {
           expect(findDeleteRoleItem().props('item')).toMatchObject({
-            extraAttrs: { disabled: true, class: '' },
+            extraAttrs: { disabled: true },
           });
         });
 
@@ -156,7 +157,7 @@ describe('Role actions', () => {
 
         it('disables the delete button', () => {
           expect(findDeleteRoleItem().props('item')).toMatchObject({
-            extraAttrs: { disabled: true, class: '' },
+            extraAttrs: { disabled: true },
           });
         });
 

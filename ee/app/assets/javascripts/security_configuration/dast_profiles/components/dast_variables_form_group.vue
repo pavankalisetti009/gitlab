@@ -114,9 +114,7 @@ export default {
       return {
         text: __('Delete'),
         action: () => this.deleteVariableFromList(item),
-        extraAttrs: {
-          class: '!gl-text-danger',
-        },
+        variant: 'danger',
       };
     },
   },

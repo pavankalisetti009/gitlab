@@ -140,11 +140,11 @@ export default {
     navigateToProfile({ editPath }) {
       return visitUrl(editPath);
     },
+    deleteActionVariant(item) {
+      return this.isPolicyProfile(item) ? '' : 'danger';
+    },
     cssDeleteActionClasses(item) {
-      // eslint-disable-next-line @gitlab/require-i18n-strings
-      return `!gl-text-red-500 ${
-        this.isPolicyProfile(item) ? 'disabled !gl-cursor-default gl-button' : ''
-      }`;
+      return this.isPolicyProfile(item) ? 'disabled !gl-cursor-default' : '';
     },
     actionDisclosureItemsConfig(item) {
       return {
@@ -159,6 +159,7 @@ export default {
         [DAST_DELETE_ACTION]: {
           text: __('Delete'),
           action: () => this.prepareProfileDeletion(item.id),
+          variant: this.deleteActionVariant(item),
           extraAttrs: {
             class: this.cssDeleteActionClasses(item),
             disabled: this.isPolicyProfile(item),
