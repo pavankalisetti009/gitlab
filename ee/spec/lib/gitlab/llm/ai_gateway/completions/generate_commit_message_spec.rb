@@ -30,7 +30,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::GenerateCommitMessage, featu
         )
         expect(ai_client).to receive(:complete).with(
           url: "#{Gitlab::AiGateway.url}/v1/prompts/generate_commit_message",
-          body: { 'inputs' => { diff: expected_diff } }
+          body: body
         ).and_return(ai_response)
 
         expect(::Gitlab::Llm::GraphqlSubscriptionResponseService).to receive(:new).and_call_original
@@ -39,6 +39,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::GenerateCommitMessage, featu
       end
     end
 
+    let(:body) { { 'inputs' => { diff: expected_diff }, 'prompt_version' => '1.1.0' } }
     let(:expected_diff) { merge_request.raw_diffs.to_a.map(&:diff).join("\n").truncate_words(10000) }
 
     before do
@@ -91,6 +92,16 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::GenerateCommitMessage, featu
             )
           ])
       end
+
+      it_behaves_like 'successful completion request'
+    end
+
+    context 'when generate_commit_message_claude_3_7 FF is disabled' do
+      before do
+        stub_feature_flags(generate_commit_message_claude_3_7: false)
+      end
+
+      let(:body) { { 'inputs' => { diff: expected_diff }, 'prompt_version' => '1.0.0' } }
 
       it_behaves_like 'successful completion request'
     end
