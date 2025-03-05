@@ -67,14 +67,14 @@ export const i18n = {
   tooltipMessageNoAccess: s__(
     'ComplianceFrameworks|You must have the Owner role for the top-level group %{strongStart}namespace%{strongEnd}',
   ),
-  frameworksTab: s__('Compliance Center|Frameworks'),
-  projectsTab: __('Projects'),
-  projectTab: __('Project'),
   heading: __('Compliance center'),
-  standardsAdherenceTab: s__('Compliance Center|Standards Adherence'),
   subheading: s__(
     'Compliance Center|Report and manage standards adherence, violations, and compliance frameworks for the group. %{linkStart}Learn more%{linkEnd}.',
   ),
+  frameworksTab: s__('Compliance Center|Frameworks'),
+  projectsTab: __('Projects'),
+  projectTab: __('Project'),
+  standardsAdherenceTab: s__('Compliance Center|Standards Adherence'),
   violationsTab: s__('Compliance Center|Violations'),
 };
 

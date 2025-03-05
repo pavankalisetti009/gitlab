@@ -39,7 +39,7 @@ export function createRouter(basePath, props) {
 
   const availableTabRoutes = [
     {
-      path: 'standards_adherence',
+      path: ROUTE_STANDARDS_ADHERENCE,
       name: ROUTE_STANDARDS_ADHERENCE,
       component: StandardsReport,
       props: {
@@ -49,7 +49,7 @@ export function createRouter(basePath, props) {
       },
     },
     {
-      path: 'violations',
+      path: ROUTE_VIOLATIONS,
       name: ROUTE_VIOLATIONS,
       component: ViolationsReport,
       props: {
@@ -59,7 +59,7 @@ export function createRouter(basePath, props) {
       },
     },
     {
-      path: 'frameworks',
+      path: ROUTE_FRAMEWORKS,
       name: ROUTE_FRAMEWORKS,
       component: FrameworksReport,
       props: {
@@ -73,7 +73,7 @@ export function createRouter(basePath, props) {
       },
     },
     {
-      path: '/projects',
+      path: ROUTE_PROJECTS,
       name: ROUTE_PROJECTS,
       component: ProjectsReport,
       props: {
@@ -96,17 +96,17 @@ export function createRouter(basePath, props) {
 
   const routes = [
     {
-      path: '/frameworks/new',
+      path: `/${ROUTE_FRAMEWORKS}/new`,
       name: ROUTE_NEW_FRAMEWORK,
       component: EditFramework,
     },
     {
-      path: '/frameworks/new/success',
+      path: `/${ROUTE_FRAMEWORKS}/new/success`,
       name: ROUTE_NEW_FRAMEWORK_SUCCESS,
       component: NewFrameworkSuccess,
     },
     {
-      path: '/frameworks/:id',
+      path: `/${ROUTE_FRAMEWORKS}/:id`,
       name: ROUTE_EDIT_FRAMEWORK,
       component: EditFramework,
     },

@@ -3,6 +3,8 @@ import VueApollo from 'vue-apollo';
 import VueRouter from 'vue-router';
 import createDefaultClient from '~/lib/graphql';
 import { parseBoolean } from '~/lib/utils/common_utils';
+import { injectVueAppBreadcrumbs } from '~/lib/utils/breadcrumbs';
+import ComplianceDashboardBreadcrumbs from './components/compliance_dashboard_breadcrumbs.vue';
 import { createRouter } from './router';
 import {
   ROUTE_FRAMEWORKS,
@@ -75,6 +77,8 @@ export default () => {
   const apolloProvider = new VueApollo({
     defaultClient: createDefaultClient(),
   });
+
+  injectVueAppBreadcrumbs(router, ComplianceDashboardBreadcrumbs);
 
   return new Vue({
     el,
