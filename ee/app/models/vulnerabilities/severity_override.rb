@@ -18,7 +18,34 @@ module Vulnerabilities
     enum original_severity: ::Enums::Vulnerability.severity_levels, _prefix: true
     enum new_severity: ::Enums::Vulnerability.severity_levels, _prefix: true
 
+    scope :latest, -> do
+      joins(<<~SQL)
+        JOIN LATERAL(
+          SELECT
+            *
+          FROM
+            vulnerability_severity_overrides vso
+          WHERE
+            vso.vulnerability_id = vulnerability_severity_overrides.vulnerability_id
+          ORDER BY id DESC
+          LIMIT 1
+        ) AS vso ON vso.id = vulnerability_severity_overrides.id
+      SQL
+    end
+
     scope :with_author, -> { includes(:author) }
+
+    def author_data
+      return unless author
+
+      @author_data ||=
+        {
+          author: {
+            name: author.name,
+            web_url: Gitlab::Routing.url_helpers.user_path(username: author.username)
+          }
+        }
+    end
 
     private
 

@@ -756,6 +756,28 @@ FactoryBot.define do
       end
     end
 
+    trait :with_severity_override do
+      transient do
+        original_severity { "low" }
+        new_severity { "high" }
+        override_author { association(:user) }
+        override_created_at { Time.current }
+      end
+
+      after(:create) do |finding, evaluator|
+        create(:vulnerability, :detected, project: finding.project, findings: [finding]) do |vulnerability|
+          create(:vulnerability_severity_override,
+            vulnerability: vulnerability,
+            project: finding.project,
+            author: evaluator.override_author,
+            original_severity: evaluator.original_severity,
+            new_severity: evaluator.new_severity,
+            created_at: evaluator.override_created_at
+          )
+        end
+      end
+    end
+
     ::Enums::Vulnerability.report_types.keys.each do |security_report_type|
       trait security_report_type do
         report_type { security_report_type }

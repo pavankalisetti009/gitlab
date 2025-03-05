@@ -64,4 +64,101 @@ RSpec.describe Vulnerabilities::SeverityOverride, feature_category: :vulnerabili
       let_it_be(:model) { create(:vulnerability_severity_override, project_id: parent.id) }
     end
   end
+
+  describe '#author_data' do
+    let_it_be(:user) { create(:user, name: 'Test User') }
+    let_it_be(:project) { create(:project) }
+    let_it_be(:vulnerability) { create(:vulnerability, project: project) }
+
+    context 'when author exists' do
+      let(:author) { user }
+      let(:expected_author_data) do
+        {
+          author: {
+            name: user.name,
+            web_url: Gitlab::Routing.url_helpers.user_path(username: user.username)
+          }
+        }
+      end
+
+      subject(:severity_override) do
+        create(:vulnerability_severity_override,
+          vulnerability: vulnerability,
+          project: project,
+          author: author,
+          original_severity: :low,
+          new_severity: :critical
+        )
+      end
+
+      it 'returns author data hash with name and web_url' do
+        expect(severity_override.author_data).to eq(expected_author_data)
+      end
+    end
+
+    context 'when author does not exist' do
+      subject(:severity_override) do
+        build(:vulnerability_severity_override,
+          vulnerability: vulnerability,
+          project: project,
+          author: nil,
+          original_severity: :low,
+          new_severity: :critical
+        )
+      end
+
+      it 'returns nil' do
+        expect(severity_override.author_data).to be_nil
+      end
+    end
+  end
+
+  describe '.latest' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:vulnerability1) { create(:vulnerability, project: project) }
+    let_it_be(:vulnerability2) { create(:vulnerability, project: project) }
+    let_it_be(:old_override1) do
+      create(:vulnerability_severity_override,
+        vulnerability: vulnerability1,
+        project: project,
+        original_severity: :low,
+        new_severity: :medium,
+        created_at: 2.days.ago
+      )
+    end
+
+    let_it_be(:new_override1) do
+      create(:vulnerability_severity_override,
+        vulnerability: vulnerability1,
+        project: project,
+        original_severity: :medium,
+        new_severity: :high,
+        created_at: 1.day.ago
+      )
+    end
+
+    let_it_be(:old_override2) do
+      create(:vulnerability_severity_override,
+        vulnerability: vulnerability2,
+        project: project,
+        original_severity: :low,
+        new_severity: :medium,
+        created_at: 2.days.ago
+      )
+    end
+
+    let_it_be(:new_override2) do
+      create(:vulnerability_severity_override,
+        vulnerability: vulnerability2,
+        project: project,
+        original_severity: :medium,
+        new_severity: :high,
+        created_at: 1.day.ago
+      )
+    end
+
+    it 'returns only the latest override for each vulnerability' do
+      expect(described_class.latest).to contain_exactly(new_override1, new_override2)
+    end
+  end
 end

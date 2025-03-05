@@ -38,23 +38,39 @@ module Security
 
     def set_states_and_severities_of!(findings)
       findings.each do |finding|
-        finding['state'] = state_for(finding['uuid'])
-        finding['severity'] = severity_for(finding)
+        vulnerability_data = existing_vulnerabilities[finding['uuid']]
+        finding['state'] = vulnerability_data&.dig(:state) || DEFAULT_FINDING_STATE
+        finding['severity'] = vulnerability_data&.dig(:severity) || finding['severity']
+        finding['severity_override'] = vulnerability_data&.dig(:severity_override)
       end
     end
 
-    def state_for(uuid)
-      existing_vulnerabilities[uuid]&.dig(:state) || DEFAULT_FINDING_STATE
-    end
-
-    def severity_for(finding)
-      existing_vulnerabilities[finding['uuid']]&.dig(:severity) || finding['severity']
-    end
-
     def existing_vulnerabilities
-      @existing_vulnerabilities ||= Vulnerability.with_findings_by_uuid(finding_uuids)
-        .pluck(:uuid, :severity, :state) # rubocop:disable CodeReuse/ActiveRecord -- specific use case
-        .to_h { |uuid, severity, state| [uuid, { severity: severity, state: state }] }
+      @existing_vulnerabilities ||=
+        Vulnerability
+        .with_findings_by_uuid(finding_uuids)
+        .with_latest_severity_override
+        .to_h do |vulnerability|
+          [
+            vulnerability.finding.uuid,
+            {
+              severity: vulnerability.severity,
+              state: vulnerability.state,
+              id: vulnerability.id,
+              severity_override: latest_severity_override(vulnerability)
+            }
+          ]
+        end
+    end
+
+    def latest_severity_override(vulnerability)
+      latest_override = vulnerability.latest_severity_override
+      return unless latest_override
+
+      latest_override.as_json(
+        only: [:vulnerability_id, :created_at, :original_severity, :new_severity],
+        methods: [:author_data]
+      )
     end
 
     def finding_uuids
