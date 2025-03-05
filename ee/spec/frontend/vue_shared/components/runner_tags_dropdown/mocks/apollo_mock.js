@@ -19,6 +19,29 @@ const defaultHandlerValue = (type = 'project') =>
     },
   });
 
+export const multipleTagListRequests = jest
+  .fn()
+  .mockResolvedValueOnce({
+    data: {
+      project: {
+        id: PROJECT_ID,
+        runners: {
+          nodes: [{ id: 'gid://gitlab/Ci::Runner/1', status: 'ONLINE', tagList: ['lion'] }],
+        },
+      },
+    },
+  })
+  .mockResolvedValueOnce({
+    data: {
+      project: {
+        id: PROJECT_ID,
+        runners: {
+          nodes: [{ id: 'gid://gitlab/Ci::Runner/2', status: 'ONLINE', tagList: ['xp'] }],
+        },
+      },
+    },
+  });
+
 export const createMockApolloProvider = ({ handlers = undefined }) => {
   Vue.use(VueApollo);
 
