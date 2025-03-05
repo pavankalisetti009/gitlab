@@ -427,7 +427,6 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
       before do
         stub_ee_application_setting(dashboard_limit: 3)
         stub_ee_application_setting(dashboard_limit_enabled: dashboard_limit_enabled)
-        stub_feature_flags(block_seat_overages: false)
       end
 
       subject(:execute_service) { described_class.new(user, params.merge({ source: invited_group })).execute }

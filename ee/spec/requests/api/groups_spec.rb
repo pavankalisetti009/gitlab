@@ -636,7 +636,6 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
 
         before do
           stub_saas_features(gitlab_com_subscriptions: true)
-          stub_feature_flags(block_seat_overages: true)
           group.namespace_settings.update!(seat_control: :block_overages)
         end
 
@@ -2185,7 +2184,6 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
 
       before do
         stub_saas_features(gitlab_com_subscriptions: true)
-        stub_feature_flags(block_seat_overages: true)
         group.namespace_settings.update!(seat_control: :block_overages)
       end
 

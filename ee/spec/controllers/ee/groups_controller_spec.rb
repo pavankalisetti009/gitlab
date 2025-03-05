@@ -711,21 +711,6 @@ RSpec.describe GroupsController, :with_current_organization, feature_category: :
             expect(group.reload.new_user_signups_cap).to eq(new_user_signups_cap)
           end
         end
-
-        context 'when block_seat_overages feature flag is disabled' do
-          before do
-            stub_feature_flags(block_seat_overages: false)
-          end
-
-          it 'does not save block_overages for seat_control' do
-            params = { id: group.to_param, group: { seat_control: :block_overages } }
-
-            put :update, params: params
-
-            expect(response).to have_gitlab_http_status(:found)
-            expect(group.reload.seat_control).to eq('off')
-          end
-        end
       end
     end
 

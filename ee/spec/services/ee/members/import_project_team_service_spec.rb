@@ -53,6 +53,16 @@ RSpec.describe Members::ImportProjectTeamService, feature_category: :groups_and_
       end
     end
 
+    it 'imports the additional members even if there are no seats left in the subscription' do
+      group.add_developer(create(:user))
+
+      result = import.execute
+
+      expect(result.success?).to be(true)
+      expect(result.message).to eq('Successfully imported')
+      expect(target_project.reload.members.map(&:user_id)).to contain_exactly(user.id, source_project.owner.id)
+    end
+
     context 'when block seat overages is enabled', :saas, :use_clean_rails_memory_store_caching do
       let_it_be(:subscription) { create(:gitlab_subscription, :ultimate, namespace: group, seats: 2) }
 
@@ -63,7 +73,6 @@ RSpec.describe Members::ImportProjectTeamService, feature_category: :groups_and_
       end
 
       before do
-        stub_feature_flags(block_seat_overages: group)
         group.namespace_settings.update!(seat_control: :block_overages)
       end
 
@@ -142,22 +151,6 @@ RSpec.describe Members::ImportProjectTeamService, feature_category: :groups_and_
           expect(result.reason).to eq(:seat_limit_exceeded_error)
           expect(subgroup_project.reload.members.map(&:user_id)).to contain_exactly(user.id)
         end
-      end
-    end
-
-    context 'when block seat overages is disabled' do
-      before do
-        stub_feature_flags(block_seat_overages: false)
-      end
-
-      it 'imports the additional members even if there are no seats left in the subscription' do
-        group.add_developer(create(:user))
-
-        result = import.execute
-
-        expect(result.success?).to be(true)
-        expect(result.message).to eq('Successfully imported')
-        expect(target_project.reload.members.map(&:user_id)).to contain_exactly(user.id, source_project.owner.id)
       end
     end
   end

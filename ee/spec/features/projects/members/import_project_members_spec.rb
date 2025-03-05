@@ -82,7 +82,7 @@ RSpec.describe 'Projects > Members > Import project members', :js, feature_categ
       end
 
       before do
-        stub_feature_flags(block_seat_overages: false)
+        group.namespace_settings.update!(seat_control: :off)
       end
 
       it 'allows adding the users' do

@@ -612,10 +612,6 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
         json_response
       end
 
-      before do
-        stub_feature_flags(block_seat_overages: false)
-      end
-
       context 'for regular user' do
         let(:user) { create(:user) }
 
@@ -638,7 +634,6 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
 
       context 'when block seat overages is enabled and there are no seats left in the group' do
         before do
-          stub_feature_flags(block_seat_overages: true)
           group.namespace_settings.update!(seat_control: :block_overages)
 
           create(:gitlab_subscription, :premium, namespace: group, seats: 1)
@@ -976,10 +971,6 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
         post api(url, owner), params: { user_id: user.id, access_level: Gitlab::Access::GUEST }
         expect(response).to have_gitlab_http_status(:created)
         json_response
-      end
-
-      before do
-        stub_feature_flags(block_seat_overages: false)
       end
 
       context 'for regular user' do
