@@ -6,10 +6,12 @@ module Gitlab
       module Tools
         class Identifier < Tool
           include Concerns::AiDependent
+          extend ::Gitlab::Utils::Override
 
           attr_accessor :retries
 
           MAX_RETRIES = 3
+          PROMPT_VERSION = '^1.0.0'
 
           def initialize(context:, options:, stream_response_handler: nil)
             super
@@ -154,6 +156,13 @@ module Gitlab
 
             project_path = text.match(reference_pattern_by_type[type])&.values_at(:namespace, :project)
             context.current_user.authorized_projects.find_by_full_path(project_path.join('/')) if project_path
+          end
+
+          override :prompt_version
+          def prompt_version
+            return '1.0.1-dev' if Feature.enabled?(:duo_chat_identifier_parsers_claude_3_7, context.current_user)
+
+            PROMPT_VERSION
           end
         end
       end
