@@ -1193,6 +1193,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace: :security_scans
+- :name: security_scans:security_process_scan_events
+  :worker_name: Security::ProcessScanEventsWorker
+  :feature_category: :vulnerability_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :cpu
+  :weight: 2
+  :idempotent: true
+  :tags: []
+  :queue_namespace: :security_scans
 - :name: security_scans:security_scan_result_policies_sync_findings_to_approval_rules
   :worker_name: Security::ScanResultPolicies::SyncFindingsToApprovalRulesWorker
   :feature_category: :security_policy_management

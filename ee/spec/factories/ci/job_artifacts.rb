@@ -99,6 +99,16 @@ FactoryBot.define do
       end
     end
 
+    trait :dast_observability do
+      file_format { :raw }
+      file_type { :dast }
+
+      after(:build) do |artifact, _|
+        artifact.file = fixture_file_upload(
+          Rails.root.join('ee/spec/fixtures/security_reports/master/gl-dast-report-observability.json'), 'application/json')
+      end
+    end
+
     trait :dast_missing_version do
       file_format { :raw }
       file_type { :dast }
