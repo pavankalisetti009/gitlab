@@ -37,23 +37,6 @@ module EE
           super
         end
 
-        override :find_user_from_access_token
-        def find_user_from_access_token
-          user = super
-
-          # Since we added the same check to PersonalAccessToken.find_by_token
-          # method, it is redundant for disabling PATs. However, we discovered
-          # that this setting unintentionally disables OAuth tokens,
-          # see https://gitlab.com/gitlab-org/gitlab/-/issues/479191.
-          # We want to resolve that issue securely and without any disruptions.
-          # That is why we should temporarily retain this check here.
-          disable_personal_access_tokens = user&.enterprise_user? &&
-            user.enterprise_group.disable_personal_access_tokens?
-          return user unless disable_personal_access_tokens
-
-          raise ::Gitlab::Auth::UnauthorizedError
-        end
-
         def scim_request?
           current_request.path.starts_with?("/api/scim/")
         end
