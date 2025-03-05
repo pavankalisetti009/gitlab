@@ -12,6 +12,7 @@ module Users
 
     skip_before_action :authenticate_user!
 
+    urgency :low, [:verify_arkose_labs_session]
     before_action :require_unverified_user!, except: [:verification_state, :success, :restricted]
     before_action :require_arkose_verification!, except: [:arkose_labs_challenge, :verify_arkose_labs_session,
       :restricted]
