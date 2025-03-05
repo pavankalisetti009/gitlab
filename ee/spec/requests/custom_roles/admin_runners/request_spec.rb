@@ -12,11 +12,11 @@ RSpec.describe "User with admin_runners custom role", feature_category: :runner 
     stub_licensed_features(custom_roles: true)
   end
 
-  describe Groups::RunnersController do
+  describe Groups::RunnersController, :freeze_time do
     let_it_be(:membership) { create(:group_member, :guest, member_role: role, user: user, source: group) }
 
     let_it_be(:runner) do
-      create(:ci_runner, :group, groups: [group], registration_type: :authenticated_user)
+      create(:ci_runner, :group, :unregistered, groups: [group], registration_type: :authenticated_user)
     end
 
     before do
@@ -79,8 +79,8 @@ RSpec.describe "User with admin_runners custom role", feature_category: :runner 
       expect(response).to have_gitlab_http_status(:ok)
     end
 
-    it "#register" do
-      runner = create(:ci_runner, :project, projects: [project], registration_type: :authenticated_user)
+    it "#register", :freeze_time do
+      runner = create(:ci_runner, :project, :unregistered, projects: [project], registration_type: :authenticated_user)
 
       get register_namespace_project_runner_path(group, project, runner)
 
