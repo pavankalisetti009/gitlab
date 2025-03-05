@@ -16,16 +16,21 @@ import chatMutation from 'ee/ai/graphql/chat.mutation.graphql';
 import chatWithThreadMutation from 'ee/ai/graphql/chat_with_thread.mutation.graphql';
 import duoUserFeedbackMutation from 'ee/ai/graphql/duo_user_feedback.mutation.graphql';
 import deleteConversationThreadMutation from 'ee/ai/graphql/delete_conversation_thread.mutation.graphql';
-import Tracking from '~/tracking';
 import {
   i18n,
   GENIE_CHAT_RESET_MESSAGE,
   GENIE_CHAT_CLEAR_MESSAGE,
   DUO_CHAT_VIEWS,
 } from 'ee/ai/constants';
+import { InternalEvents } from '~/tracking';
 import getAiSlashCommands from 'ee/ai/graphql/get_ai_slash_commands.query.graphql';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import { TANUKI_BOT_TRACKING_EVENT_NAME, MESSAGE_TYPES, WIDTH_OFFSET } from '../constants';
+import {
+  TANUKI_BOT_TRACKING_EVENT_NAME,
+  MESSAGE_TYPES,
+  WIDTH_OFFSET,
+  PREDEFINED_PROMPTS,
+} from '../constants';
 import TanukiBotSubscriptions from './tanuki_bot_subscriptions.vue';
 
 export default {
@@ -39,12 +44,7 @@ export default {
     exampleQuestion: s__('DuoChat|For example, %{linkStart}what is a fork%{linkEnd}?'),
     whatIsAForkQuestion: s__('DuoChat|What is a fork?'),
     GENIE_CHAT_LEGAL_GENERATED_BY_AI: i18n.GENIE_CHAT_LEGAL_GENERATED_BY_AI,
-    predefinedPrompts: [
-      __('How do I change my password in GitLab?'),
-      __('How do I fork a project?'),
-      __('How do I clone a repository?'),
-      __('How do I create a template?'),
-    ],
+    predefinedPrompts: PREDEFINED_PROMPTS.map((prompt) => prompt.text),
   },
   helpPagePath: helpPagePath('policy/development_stages_support', { anchor: 'beta' }),
   components: {
@@ -52,7 +52,7 @@ export default {
     DuoChatCallout,
     TanukiBotSubscriptions,
   },
-  mixins: [Tracking.mixin(), glFeatureFlagsMixin()],
+  mixins: [InternalEvents.mixin(), glFeatureFlagsMixin()],
   provide() {
     return {
       renderGFM,
@@ -263,6 +263,9 @@ export default {
       this.completedRequestId = null;
       this.cancelledRequestIds = [];
     },
+    findPredefinedPrompt(question) {
+      return PREDEFINED_PROMPTS.find(({ text }) => text === question);
+    },
     onChatCancel() {
       // pushing last requestId of messages to canceled Request Id's
       this.cancelledRequestIds.push(this.messages[this.messages.length - 1].requestId);
@@ -289,8 +292,8 @@ export default {
       performance.measure('prompt-to-response', 'prompt-sent', 'response-received');
       const [{ duration }] = performance.getEntriesByName('prompt-to-response');
 
-      this.track('ai_response_time', {
-        requestId,
+      this.trackEvent('ai_response_time', {
+        property: requestId,
         value: duration,
       });
 
@@ -332,9 +335,12 @@ export default {
         })
         .then(({ data: { aiAction = {} } = {} }) => {
           if (!this.isClearOrResetMessage(question)) {
-            this.track('submit_gitlab_duo_question', {
+            const trackingOptions = {
               property: aiAction.requestId,
-            });
+              label: this.findPredefinedPrompt(question)?.eventLabel,
+            };
+
+            this.trackEvent('submit_gitlab_duo_question', trackingOptions);
           }
 
           if (aiAction.threadId && !this.activeThread) {
