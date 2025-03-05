@@ -28,4 +28,4 @@ class AddEmbeddingToWorkItems < Elastic::Migration
   end
 end
 
-AddEmbeddingToWorkItems.prepend ::Elastic::MigrationObsolete
+AddEmbeddingToWorkItems.prepend ::Search::Elastic::MigrationObsolete

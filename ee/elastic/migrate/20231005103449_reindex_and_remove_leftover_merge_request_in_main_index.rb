@@ -52,4 +52,4 @@ class ReindexAndRemoveLeftoverMergeRequestInMainIndex < Elastic::Migration
   end
 end
 
-ReindexAndRemoveLeftoverMergeRequestInMainIndex.prepend ::Elastic::MigrationObsolete
+ReindexAndRemoveLeftoverMergeRequestInMainIndex.prepend ::Search::Elastic::MigrationObsolete

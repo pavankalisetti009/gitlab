@@ -106,4 +106,4 @@ class ReindexProjectsToApplyRouting < Elastic::Migration
   end
 end
 
-ReindexProjectsToApplyRouting.prepend ::Elastic::MigrationObsolete
+ReindexProjectsToApplyRouting.prepend ::Search::Elastic::MigrationObsolete

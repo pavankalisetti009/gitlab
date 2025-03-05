@@ -18,4 +18,4 @@ class AddRootNamespaceIdToWorkItem < Elastic::Migration
   end
 end
 
-AddRootNamespaceIdToWorkItem.prepend ::Elastic::MigrationObsolete
+AddRootNamespaceIdToWorkItem.prepend ::Search::Elastic::MigrationObsolete

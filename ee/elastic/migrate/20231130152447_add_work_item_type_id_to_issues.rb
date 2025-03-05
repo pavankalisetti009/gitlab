@@ -18,4 +18,4 @@ class AddWorkItemTypeIdToIssues < Elastic::Migration
   end
 end
 
-AddWorkItemTypeIdToIssues.prepend ::Elastic::MigrationObsolete
+AddWorkItemTypeIdToIssues.prepend ::Search::Elastic::MigrationObsolete

@@ -11,4 +11,4 @@ class ReindexEpicsToFixLabelIds < Elastic::Migration
   NEW_SCHEMA_VERSION = 2310
 end
 
-ReindexEpicsToFixLabelIds.prepend ::Elastic::MigrationObsolete
+ReindexEpicsToFixLabelIds.prepend ::Search::Elastic::MigrationObsolete

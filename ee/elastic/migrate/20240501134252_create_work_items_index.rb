@@ -14,4 +14,4 @@ class CreateWorkItemsIndex < Elastic::Migration
   end
 end
 
-CreateWorkItemsIndex.prepend ::Elastic::MigrationObsolete
+CreateWorkItemsIndex.prepend ::Search::Elastic::MigrationObsolete

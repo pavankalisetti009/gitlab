@@ -12,4 +12,4 @@ class ReindexMergeRequestsToBackfillLabelIds < Elastic::Migration
   UPDATE_BATCH_SIZE = 100
 end
 
-ReindexMergeRequestsToBackfillLabelIds.prepend ::Elastic::MigrationObsolete
+ReindexMergeRequestsToBackfillLabelIds.prepend ::Search::Elastic::MigrationObsolete

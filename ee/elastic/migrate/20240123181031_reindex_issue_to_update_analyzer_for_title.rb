@@ -10,4 +10,4 @@ class ReindexIssueToUpdateAnalyzerForTitle < Elastic::Migration
   end
 end
 
-ReindexIssueToUpdateAnalyzerForTitle.prepend ::Elastic::MigrationObsolete
+ReindexIssueToUpdateAnalyzerForTitle.prepend ::Search::Elastic::MigrationObsolete

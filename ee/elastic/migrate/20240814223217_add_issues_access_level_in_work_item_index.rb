@@ -18,4 +18,4 @@ class AddIssuesAccessLevelInWorkItemIndex < Elastic::Migration
   end
 end
 
-AddIssuesAccessLevelInWorkItemIndex.prepend ::Elastic::MigrationObsolete
+AddIssuesAccessLevelInWorkItemIndex.prepend ::Search::Elastic::MigrationObsolete

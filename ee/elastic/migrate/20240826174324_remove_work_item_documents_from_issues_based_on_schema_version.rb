@@ -18,4 +18,4 @@ class RemoveWorkItemDocumentsFromIssuesBasedOnSchemaVersion < Elastic::Migration
   end
 end
 
-RemoveWorkItemDocumentsFromIssuesBasedOnSchemaVersion.prepend ::Elastic::MigrationObsolete
+RemoveWorkItemDocumentsFromIssuesBasedOnSchemaVersion.prepend ::Search::Elastic::MigrationObsolete

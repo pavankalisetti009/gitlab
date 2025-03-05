@@ -10,4 +10,4 @@ class ReindexMergeRequestToUpdateAnalyzer < Elastic::Migration
   end
 end
 
-ReindexMergeRequestToUpdateAnalyzer.prepend ::Elastic::MigrationObsolete
+ReindexMergeRequestToUpdateAnalyzer.prepend ::Search::Elastic::MigrationObsolete

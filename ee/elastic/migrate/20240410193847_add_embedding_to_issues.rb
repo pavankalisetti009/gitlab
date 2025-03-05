@@ -24,4 +24,4 @@ class AddEmbeddingToIssues < Elastic::Migration
   end
 end
 
-AddEmbeddingToIssues.prepend ::Elastic::MigrationObsolete
+AddEmbeddingToIssues.prepend ::Search::Elastic::MigrationObsolete

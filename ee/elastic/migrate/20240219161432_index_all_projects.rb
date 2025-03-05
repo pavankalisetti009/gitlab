@@ -29,4 +29,4 @@ class IndexAllProjects < Elastic::Migration
   end
 end
 
-IndexAllProjects.prepend ::Elastic::MigrationObsolete
+IndexAllProjects.prepend ::Search::Elastic::MigrationObsolete

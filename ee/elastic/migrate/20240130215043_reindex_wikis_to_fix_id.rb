@@ -63,4 +63,4 @@ class ReindexWikisToFixId < Elastic::Migration
   end
 end
 
-ReindexWikisToFixId.prepend ::Elastic::MigrationObsolete
+ReindexWikisToFixId.prepend ::Search::Elastic::MigrationObsolete

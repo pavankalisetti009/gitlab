@@ -26,4 +26,4 @@ class ReindexAllIssuesFromDatabase < Elastic::Migration
   # rubocop:enable CodeReuse/ActiveRecord
 end
 
-ReindexAllIssuesFromDatabase.prepend ::Elastic::MigrationObsolete
+ReindexAllIssuesFromDatabase.prepend ::Search::Elastic::MigrationObsolete

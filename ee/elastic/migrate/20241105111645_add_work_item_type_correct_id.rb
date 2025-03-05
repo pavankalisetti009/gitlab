@@ -20,4 +20,4 @@ class AddWorkItemTypeCorrectId < Elastic::Migration
   end
 end
 
-AddWorkItemTypeCorrectId.prepend ::Elastic::MigrationObsolete
+AddWorkItemTypeCorrectId.prepend ::Search::Elastic::MigrationObsolete

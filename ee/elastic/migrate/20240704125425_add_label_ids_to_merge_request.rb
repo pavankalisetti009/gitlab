@@ -12,4 +12,4 @@ class AddLabelIdsToMergeRequest < Elastic::Migration
   end
 end
 
-AddLabelIdsToMergeRequest.prepend ::Elastic::MigrationObsolete
+AddLabelIdsToMergeRequest.prepend ::Search::Elastic::MigrationObsolete
