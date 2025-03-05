@@ -6,8 +6,8 @@ RSpec.describe RemoteDevelopment::AgentPolicy, feature_category: :workspaces do
   include AdminModeHelper
   using RSpec::Parameterized::TableSyntax
 
-  let_it_be(:agent) { create(:ee_cluster_agent) }
-  let_it_be(:project) { agent.project }
+  let_it_be(:agent, reload: true) { create(:ee_cluster_agent) }
+  let_it_be(:project, reload: true) { agent.project }
   let_it_be(:admin_in_non_admin_mode) { create(:admin) }
   let_it_be(:admin_in_admin_mode) { create(:admin) }
   let_it_be(:owner) { create(:user, owner_of: [project]) }
@@ -27,6 +27,35 @@ RSpec.describe RemoteDevelopment::AgentPolicy, feature_category: :workspaces do
       ref(:owner)                   | true
       ref(:admin_in_non_admin_mode) | false
       ref(:admin_in_admin_mode)     | true
+    end
+
+    with_them do
+      subject(:policy_instance) { Clusters::AgentPolicy.new(user, agent) }
+
+      before do
+        enable_admin_mode!(admin_in_admin_mode) if user == admin_in_admin_mode
+
+        debug = false # Set to true to enable debugging of policies, but change back to false before committing
+        debug_policies(user, agent, Clusters::AgentPolicy, ability) if debug
+      end
+
+      it { expect(policy_instance.allowed?(ability)).to eq(result) }
+    end
+  end
+
+  describe ':admin_organization_cluster_agent_mapping' do
+    let(:ability) { :admin_organization_cluster_agent_mapping }
+    let_it_be(:organization_owner) { create(:user, owner_of: project.organization) }
+
+    where(:user, :result) do
+      ref(:guest)                   | false
+      ref(:reporter)                | false
+      ref(:developer)               | false
+      ref(:maintainer)              | false
+      ref(:owner)                   | true
+      ref(:admin_in_non_admin_mode) | false
+      ref(:admin_in_admin_mode)     | true
+      ref(:organization_owner)      | true
     end
 
     with_them do
@@ -74,13 +103,21 @@ RSpec.describe RemoteDevelopment::AgentPolicy, feature_category: :workspaces do
   #       https://docs.gitlab.com/ee/development/permissions/custom_roles.html#refactoring-abilities
   # This may be generalized in the future for use across all policy specs
   # Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/463453
+  #
+  # @param user [User] the user making the request.
+  # @param agent [Clusters::Agent] the agent that is the subject of the request.
+  # @param policy_class [Clusters::AgentPolicy] the policy class.
+  # @param ability [Symbol] the ability needed by the user to allow the request.
+  # @return [nil] This method does not return any value.
   def debug_policies(user, agent, policy_class, ability)
     puts "\n\nPolicy debug for #{policy_class} policy:\n"
     puts "user: #{user.username} (id: #{user.id}, admin: #{user.admin?}, " \
       "admin_mode: #{user && Gitlab::Auth::CurrentUserMode.new(user).admin_mode?}, " \
       "agent.project.owners: #{agent.project.owners.to_a}, " \
+      "agent.project.organization.organization_users.owners: " \
+      "#{agent.project.organization.organization_users.owners.to_a}, " \
       "agent.project.maintainers: #{agent.project.maintainers.to_a}" \
-      ")\n"
+      ")"
 
     policy = policy_class.new(user, agent)
     puts "debugging :#{ability} ability:\n\n"

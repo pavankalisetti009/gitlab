@@ -7,18 +7,6 @@ module RemoteDevelopment
     condition(:can_admin_cluster_agent_for_workspace) { can?(:admin_cluster, workspace.agent) }
     condition(:can_admin_owned_workspace) { workspace_owner? && has_developer_access_to_workspace_project? }
 
-    # NOTE: We use the following guidelines to make this policy more performant and easier to debug
-    #
-    # 1. Avoid booleans when composing rules, prefer one policy block per condition
-    # 2. Place prevent rules first (for performance)
-    # 3. Place less-expensive rules first (for performance)
-    #
-    # ADDITIONAL NOTES:
-    #
-    # - All "prevent" rules which check conditions for non-anonymous users must be prepended with `~admin &`
-    # - For documentation on the Declarative Policy framework, see: https://docs.gitlab.com/ee/development/policies.html
-    # - For instructions on debugging policies, see: https://docs.gitlab.com/ee/development/permissions/custom_roles.html#refactoring-abilities
-
     rule { ~can_access_workspaces_feature }.policy do
       prevent :read_workspace
       prevent :update_workspace

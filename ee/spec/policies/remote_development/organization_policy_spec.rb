@@ -2,21 +2,26 @@
 
 require 'spec_helper'
 
-RSpec.describe RemoteDevelopment::GroupPolicy, feature_category: :workspaces do
+# noinspection RubyArgCount -- https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
+RSpec.describe RemoteDevelopment::OrganizationPolicy, feature_category: :workspaces do
   include AdminModeHelper
   using RSpec::Parameterized::TableSyntax
 
-  let_it_be(:group) { create(:group) }
-  let_it_be(:admin_in_non_admin_mode) { create(:admin) }
-  let_it_be(:admin_in_admin_mode) { create(:admin) }
-  let_it_be(:owner) { create(:user, owner_of: [group]) }
-  let_it_be(:maintainer) { create(:user, maintainer_of: [group]) }
-  let_it_be(:developer) { create(:user, developer_of: [group]) }
-  let_it_be(:reporter) { create(:user, reporter_of: [group]) }
-  let_it_be(:guest) { create(:user, guest_of: [group]) }
+  let_it_be(:organization) { create(:organization) }
+  let_it_be(:non_org_user) { create(:user) }
 
-  describe ':admin_remote_development_cluster_agent_mapping' do
-    let(:ability) { :admin_remote_development_cluster_agent_mapping }
+  let_it_be(:organization_user) do
+    user = create(:user)
+    create(:organization_user, organization: organization, user: user)
+    user
+  end
+
+  let_it_be(:organization_owner) { create(:user, owner_of: organization) }
+  let_it_be(:admin_in_admin_mode) { create(:user, :admin) }
+  let_it_be(:admin_not_in_admin_mode) { create(:user, :admin) }
+
+  describe ':admin_organization_cluster_agent_mapping' do
+    let(:ability) { :admin_organization_cluster_agent_mapping }
 
     where(:policy_class, :user, :result) do
       # In the future, there is a possibility that a common policy module may have to be mixed in to multiple
@@ -26,31 +31,28 @@ RSpec.describe RemoteDevelopment::GroupPolicy, feature_category: :workspaces do
       # See the following issues for more details:
       #   - https://gitlab.com/gitlab-org/gitlab/-/issues/417894
       #   - https://gitlab.com/gitlab-org/gitlab/-/issues/454934#note_1867678918
-      GroupPolicy | ref(:guest)                   | false
-      GroupPolicy | ref(:reporter)                | false
-      GroupPolicy | ref(:developer)               | false
-      GroupPolicy | ref(:maintainer)              | false
-      GroupPolicy | ref(:owner)                   | true
-      GroupPolicy | ref(:admin_in_admin_mode)     | true
-      GroupPolicy | ref(:admin_in_non_admin_mode) | false
+      Organizations::OrganizationPolicy | ref(:organization_user)        | false
+      Organizations::OrganizationPolicy | ref(:admin_not_in_admin_mode)  | false
+      Organizations::OrganizationPolicy | ref(:non_org_user)             | false
+      Organizations::OrganizationPolicy | ref(:admin_in_admin_mode)      | true
+      Organizations::OrganizationPolicy | ref(:organization_owner)       | true
     end
 
     with_them do
-      subject(:policy_instance) { policy_class.new(user, group) }
+      subject(:policy_instance) { policy_class.new(user, organization) }
 
       before do
         enable_admin_mode!(admin_in_admin_mode) if user == admin_in_admin_mode
-
         debug = false # Set to true to enable debugging of policies, but change back to false before committing
-        debug_policies(user, group, policy_class, ability) if debug
+        debug_policies(user, organization, policy_class, ability) if debug
       end
 
       it { expect(policy_instance.allowed?(ability)).to eq(result) }
     end
   end
 
-  describe ':read_remote_development_cluster_agent_mapping' do
-    let(:ability) { :read_remote_development_cluster_agent_mapping }
+  describe ':read_organization_cluster_agent_mapping' do
+    let(:ability) { :read_organization_cluster_agent_mapping }
 
     where(:policy_class, :user, :result) do
       # In the future, there is a possibility that a common policy module may have to be mixed in to multiple
@@ -60,23 +62,20 @@ RSpec.describe RemoteDevelopment::GroupPolicy, feature_category: :workspaces do
       # See the following issues for more details:
       #   - https://gitlab.com/gitlab-org/gitlab/-/issues/417894
       #   - https://gitlab.com/gitlab-org/gitlab/-/issues/454934#note_1867678918
-      GroupPolicy | ref(:guest)                   | false
-      GroupPolicy | ref(:reporter)                | false
-      GroupPolicy | ref(:developer)               | false
-      GroupPolicy | ref(:maintainer)              | true
-      GroupPolicy | ref(:owner)                   | true
-      GroupPolicy | ref(:admin_in_admin_mode)     | true
-      GroupPolicy | ref(:admin_in_non_admin_mode) | false
+      Organizations::OrganizationPolicy | ref(:organization_user)        | true
+      Organizations::OrganizationPolicy | ref(:organization_owner)       | true
+      Organizations::OrganizationPolicy | ref(:admin_in_admin_mode)      | true
+      Organizations::OrganizationPolicy | ref(:admin_not_in_admin_mode)  | false
+      Organizations::OrganizationPolicy | ref(:non_org_user)             | false
     end
 
     with_them do
-      subject(:policy_instance) { policy_class.new(user, group) }
+      subject(:policy_instance) { policy_class.new(user, organization) }
 
       before do
         enable_admin_mode!(admin_in_admin_mode) if user == admin_in_admin_mode
-
         debug = false # Set to true to enable debugging of policies, but change back to false before committing
-        debug_policies(user, group, policy_class, ability) if debug
+        debug_policies(user, organization, policy_class, ability) if debug
       end
 
       it { expect(policy_instance.allowed?(ability)).to eq(result) }
@@ -89,21 +88,22 @@ RSpec.describe RemoteDevelopment::GroupPolicy, feature_category: :workspaces do
   # Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/463453
   #
   # @param user [User] the user making the request.
-  # @param group [Group] the group that is the subject of the request.
-  # @param policy_class [GroupPolicy] the policy class.
+  # @param org [Organizations::Organization] the organization that is the subject of the request.
+  # @param policy_class [Organizations::OrganizationPolicy] the policy class.
   # @param ability [Symbol] the ability needed by the user to allow the request.
   # @return [nil] This method does not return any value.
-  def debug_policies(user, group, policy_class, ability)
+  def debug_policies(user, org, policy_class, ability)
+    org_user = user.organization_users.find { |org_user| org_user.organization.id == org.id }
+    org_owners = Organizations::OrganizationUser.owners.filter { |owner| owner.organization_id == org.id }
     puts "\n\nPolicy debug for #{policy_class} policy:\n"
     puts "user: #{user.username} (id: #{user.id}, admin: #{user.admin?}, " \
       "admin_mode: #{user && Gitlab::Auth::CurrentUserMode.new(user).admin_mode?}" \
       ")\n"
-    puts "group: #{group.name} (id: #{group.id}, " \
-      "owners: #{group.owners.to_a}" \
-      "max_member_access_for_user(user) (from lib/gitlab/access.rb): #{group.max_member_access_for_user(user)}" \
-      ")\n"
+    puts "org: #{org.name} (id: #{org.id}, " \
+      "owners: #{org_owners} " \
+      "user access level in org: #{org_user&.access_level || 'not in org'}" \
 
-    policy = policy_class.new(user, group)
+    policy = policy_class.new(user, org)
     puts "debugging :#{ability} ability:\n\n"
     pp policy.debug(ability)
     puts "\n\n"

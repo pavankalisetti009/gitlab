@@ -14,6 +14,7 @@ module RemoteDevelopment
             cluster_agent: Clusters::Agent => cluster_agent,
           }
 
+          # Verify the agent's project is in the same namespace as the namespace we intend to map it to.
           unless cluster_agent.project.project_namespace.traversal_ids.exclude?(namespace.id)
             return Gitlab::Fp::Result.ok(context)
           end

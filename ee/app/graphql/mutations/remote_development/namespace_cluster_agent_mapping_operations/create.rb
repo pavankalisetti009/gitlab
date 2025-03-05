@@ -25,9 +25,13 @@ module Mutations
             raise_resource_not_available_error!("'remote_development' licensed feature is not available")
           end
 
+          # Authorize the user on the Group as the subject for the ability
           namespace_id = args.delete(:namespace_id)
           namespace = authorized_find!(id: namespace_id)
 
+          # Authorize the user on the Agent(which delegates to the Project) as the subject for the ability,
+          # this second call is needed as the agent might not be in the same namespace that
+          # we previously authorized against.
           cluster_agent_id = args.delete(:cluster_agent_id)
           cluster_agent = authorized_find!(id: cluster_agent_id)
 
