@@ -79,7 +79,6 @@ export default {
   data() {
     return {
       isPolicyVisible: this.index === 0,
-      bodyClass: '',
     };
   },
   computed: {
@@ -143,7 +142,7 @@ export default {
     <gl-card
       class="gl-mt-5"
       :class="{ 'gl-border-b-0': !isPolicyVisible }"
-      :body-class="bodyClass"
+      body-class="gl-p-0"
       :header-class="{ 'gl-py-3': true, 'gl-rounded-base': !isPolicyVisible }"
     >
       <template #header>
@@ -178,76 +177,74 @@ export default {
           </gl-button-group>
         </div>
       </template>
-      <gl-collapse
-        :visible="isPolicyVisible"
-        @hidden="bodyClass = 'gl-p-0'"
-        @show="bodyClass = 'gl-p-5'"
-      >
-        <p v-if="policy.description" class="gl-mb-5 gl-text-subtle">
-          {{ policy.description }}
-        </p>
-        <div class="gl-rounded-base gl-border-1 gl-border-solid gl-border-default gl-p-5">
-          <div v-if="!policy.rules.length" class="gl-text-red-500">
-            <gl-icon name="status_warning" class="gl-mr-3" /> {{ $options.i18n.noRules }}
-          </div>
-          <template v-else>
-            <div
-              v-for="(rule, ruleIndex) in policy.rules"
-              :key="rule.id"
-              :class="{ 'gl-mb-5': ruleIndex !== policy.rules.length - 1 }"
-              class="escalation-rule-row gl-flex gl-items-center"
-            >
-              <span class="rule-condition md:gl-w-full">
-                <gl-sprintf :message="$options.i18n.escalationRuleCondition">
-                  <template #clockIcon>
-                    <gl-icon name="clock" class="gl-mr-3" />
-                  </template>
-                  <template #alertStatus>
-                    {{ $options.ALERT_STATUSES[rule.status].toLowerCase() }}
-                  </template>
-                  <template #minutes>
-                    <span class="gl-font-bold">
-                      {{ rule.elapsedTimeMinutes }}&nbsp;{{ $options.i18n.minutes }}
-                    </span>
-                  </template>
-                </gl-sprintf>
-              </span>
-
-              <span
-                class="right-arrow gl-relative gl-mx-5 gl-hidden gl-min-w-7 gl-shrink-0 gl-bg-gray-900 lg:gl-block"
-                :style="{ width: getArrowLength(ruleIndex) }"
+      <gl-collapse :visible="isPolicyVisible">
+        <div class="gl-p-5">
+          <p v-if="policy.description" class="gl-mb-5 gl-text-subtle">
+            {{ policy.description }}
+          </p>
+          <div class="gl-rounded-base gl-border-1 gl-border-solid gl-border-default gl-p-5">
+            <div v-if="!policy.rules.length" class="gl-text-red-500">
+              <gl-icon name="status_warning" class="gl-mr-3" /> {{ $options.i18n.noRules }}
+            </div>
+            <template v-else>
+              <div
+                v-for="(rule, ruleIndex) in policy.rules"
+                :key="rule.id"
+                :class="{ 'gl-mb-5': ruleIndex !== policy.rules.length - 1 }"
+                class="escalation-rule-row gl-flex gl-items-center"
               >
-                <i class="right-arrow-head gl-absolute gl-border-solid gl-p-1"></i>
-              </span>
-
-              <span class="gl-flex gl-min-w-0 gl-items-center">
-                <span v-gl-tooltip class="gl-truncate" :title="getActionTooltip(rule)">
-                  <gl-sprintf :message="$options.i18n.escalationRuleAction">
-                    <template #notificationIcon>
-                      <gl-icon name="notifications" class="gl-mr-3" />
+                <span class="rule-condition md:gl-w-full">
+                  <gl-sprintf :message="$options.i18n.escalationRuleCondition">
+                    <template #clockIcon>
+                      <gl-icon name="clock" class="gl-mr-3" />
                     </template>
-                    <template #doAction>
-                      {{ getActionName(rule) }}
+                    <template #alertStatus>
+                      {{ $options.ALERT_STATUSES[rule.status].toLowerCase() }}
                     </template>
-                    <template #forScheduleOrUser>
-                      <span v-if="hasEscalationSchedule(rule)" class="gl-font-bold">
-                        {{ rule.oncallSchedule.name }}
+                    <template #minutes>
+                      <span class="gl-font-bold">
+                        {{ rule.elapsedTimeMinutes }}&nbsp;{{ $options.i18n.minutes }}
                       </span>
-                      <gl-token
-                        v-else-if="hasEscalationUser(rule)"
-                        view-only
-                        :style="getBackgroundStyle(rule)"
-                        :class="getTextClass(rule)"
-                      >
-                        <gl-avatar :src="rule.user.avatarUrl" :size="16" />
-                        {{ rule.user.name }}
-                      </gl-token>
                     </template>
                   </gl-sprintf>
                 </span>
-              </span>
-            </div>
-          </template>
+
+                <span
+                  class="right-arrow gl-relative gl-mx-5 gl-hidden gl-min-w-7 gl-shrink-0 gl-bg-gray-900 lg:gl-block"
+                  :style="{ width: getArrowLength(ruleIndex) }"
+                >
+                  <i class="right-arrow-head gl-absolute gl-border-solid gl-p-1"></i>
+                </span>
+
+                <span class="gl-flex gl-min-w-0 gl-items-center">
+                  <span v-gl-tooltip class="gl-truncate" :title="getActionTooltip(rule)">
+                    <gl-sprintf :message="$options.i18n.escalationRuleAction">
+                      <template #notificationIcon>
+                        <gl-icon name="notifications" class="gl-mr-3" />
+                      </template>
+                      <template #doAction>
+                        {{ getActionName(rule) }}
+                      </template>
+                      <template #forScheduleOrUser>
+                        <span v-if="hasEscalationSchedule(rule)" class="gl-font-bold">
+                          {{ rule.oncallSchedule.name }}
+                        </span>
+                        <gl-token
+                          v-else-if="hasEscalationUser(rule)"
+                          view-only
+                          :style="getBackgroundStyle(rule)"
+                          :class="getTextClass(rule)"
+                        >
+                          <gl-avatar :src="rule.user.avatarUrl" :size="16" />
+                          {{ rule.user.name }}
+                        </gl-token>
+                      </template>
+                    </gl-sprintf>
+                  </span>
+                </span>
+              </div>
+            </template>
+          </div>
         </div>
       </gl-collapse>
     </gl-card>
