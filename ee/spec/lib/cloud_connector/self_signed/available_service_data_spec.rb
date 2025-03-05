@@ -55,54 +55,6 @@ RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, feature_categor
         expect(access_token).to eq(encoded_token_string)
       end
 
-      context 'when cloud_connector_new_keys FF is disabled' do
-        let_it_be(:expected_key_data) { Rails.application.credentials.openid_connect_signing_key }
-
-        before do
-          stub_feature_flags(cloud_connector_new_keys: false)
-
-          allow(OpenSSL::PKey::RSA).to receive(:new).with(expected_key_data).and_return(rsa_key)
-        end
-
-        it 'uses RFC 7638 thumbprint key generator to compute kid' do
-          jwk = ::JWT::JWK.new(rsa_key, kid_generator: ::JWT::JWK::Thumbprint)
-          _, token_header = *::JWT.decode(access_token, nil, false)
-
-          actual_kid = token_header['kid']
-          expected_kid = jwk.kid
-
-          expect(actual_kid).to eq(expected_kid)
-        end
-
-        it 'does not repeatedly load the validation key' do
-          expect(CloudConnector::Keys).not_to receive(:current_as_jwk)
-          expect(OpenSSL::PKey::RSA).to receive(:new)
-            .with(expected_key_data)
-            .at_most(:once)
-            .and_return(rsa_key)
-
-          3.times { described_class.new(:duo_chat, cut_off_date, bundled_with, backend).access_token }
-        end
-
-        context 'when FF state flips from false to true' do
-          it 'reloads the validation key' do
-            expect(CloudConnector::Keys).to receive(:current_as_jwk)
-            expect(OpenSSL::PKey::RSA).to receive(:new)
-              .with(expected_key_data)
-              .at_most(:once)
-              .and_return(rsa_key)
-
-            # 1st call
-            described_class.new(:duo_chat, cut_off_date, bundled_with, backend).access_token
-
-            stub_feature_flags(cloud_connector_new_keys: true)
-
-            # 2nd call
-            described_class.new(:duo_chat, cut_off_date, bundled_with, backend).access_token
-          end
-        end
-      end
-
       it 'does not repeatedly load the validation key' do
         expect(::CloudConnector::Keys).to receive(:current_as_jwk)
           .at_most(:once)
@@ -116,7 +68,6 @@ RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, feature_categor
       let(:fake_key_loader) do
         Class.new(described_class::CachingKeyLoader) do
           def self.signing_key
-            @use_new_cc_keys = Feature.enabled?(:cloud_connector_new_keys, Feature.current_request)
             load_signing_key # don't actually cache the key
           end
         end
@@ -128,17 +79,6 @@ RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, feature_categor
           fake_key_loader
         )
         allow(CloudConnector::Keys).to receive(:current_as_jwk).and_return(nil)
-      end
-
-      context 'when cloud_connector_new_keys FF is disabled' do
-        before do
-          stub_feature_flags(cloud_connector_new_keys: false)
-          allow(Rails.application.credentials).to receive(:openid_connect_signing_key).and_return(nil)
-        end
-
-        it 'raises NoSigningKeyError' do
-          expect { access_token }.to raise_error(StandardError, 'Cloud Connector: no key found')
-        end
       end
 
       it 'raises NoSigningKeyError' do

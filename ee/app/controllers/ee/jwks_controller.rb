@@ -8,8 +8,6 @@ module EE
 
     override :load_keys
     def load_keys
-      return super unless ::Feature.enabled?(:cloud_connector_expose_keys, ::Feature.current_request)
-
       super + CloudConnector::Keys.all_as_pem
     end
   end
