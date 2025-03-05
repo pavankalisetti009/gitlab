@@ -7,7 +7,7 @@ module Vulnerabilities
 
     def initialize(project, vulnerability_ids, budget)
       @project = project
-      @vulnerability_reads = Vulnerabilities::Read.by_vulnerabilities(vulnerability_ids).unresolved
+      @vulnerability_ids = vulnerability_ids
       @budget = budget
     end
 
@@ -25,7 +25,15 @@ module Vulnerabilities
 
     private
 
-    attr_reader :project, :vulnerability_reads, :budget
+    attr_reader :project, :vulnerability_ids, :budget
+
+    def vulnerability_reads
+      Vulnerabilities::Read.by_vulnerabilities(vulnerability_ids).with_states(auto_resolve_states)
+    end
+
+    def auto_resolve_states
+      ::Enums::Vulnerability.vulnerability_states.except(:resolved, :dismissed).values
+    end
 
     def vulnerabilities_to_resolve
       rules_by_vulnerability.keys.first(budget)

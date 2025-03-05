@@ -8,6 +8,7 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
   let_it_be_with_reload(:project) { create(:project, namespace: namespace) }
   let_it_be(:vulnerability) { create(:vulnerability, :with_findings, :detected, :high_severity, project: project) }
   let_it_be(:resolved_vulnerability) { create(:vulnerability, :with_findings, :resolved, project: project) }
+  let_it_be(:dismissed_vulnerability) { create(:vulnerability, :with_findings, :dismissed, project: project) }
   let_it_be(:policy) { create(:security_policy, :vulnerability_management_policy, linked_projects: [project]) }
   let_it_be(:policy_rule) do
     create(:vulnerability_management_policy_rule,
@@ -41,7 +42,7 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
   end
 
   describe '#execute' do
-    it 'resolves unresolved vulnerabilities', :freeze_time do
+    it 'resolves vulnerabilities that are not resolved or dismissed', :freeze_time do
       service.execute
 
       vulnerability.reload
@@ -54,6 +55,7 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
       # This causes the timestamp to be rounded down to the nearest microsecond when the record is reloaded.
       # We need to make the comparison in microseconds to avoid a false-negative.
       expect { resolved_vulnerability.reload }.not_to change { resolved_vulnerability.updated_at.floor(6) }
+      expect { dismissed_vulnerability.reload }.not_to change { dismissed_vulnerability.updated_at.floor(6) }
     end
 
     it 'inserts a state transition for each vulnerability' do
