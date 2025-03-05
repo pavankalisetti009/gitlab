@@ -82,6 +82,8 @@ export const POLICY_SCOPES_DOCS_URL = `${DOCS_URL_IN_EE_DIR}/user/application_se
 
 export const CREATE_FRAMEWORKS_DOCS_URL = `${DOCS_URL_IN_EE_DIR}/user/group/compliance_frameworks.html#prerequisites`;
 
+export const STANDARDS_ADHERENCE_DOCS_URL = `${DOCS_URL_IN_EE_DIR}/user/compliance/compliance_center/compliance_standards_adherence_dashboard/`;
+
 export const FEEDBACK_ISSUE_URL = 'https://gitlab.com/gitlab-org/gitlab/-/issues/481586';
 
 export const GRAPHQL_FIELD_MISSING_ERROR_MESSAGE = __(
