@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe SeatCountAlertHelper, :saas do
+RSpec.describe SeatCountAlertHelper, :saas, feature_category: :seat_cost_management do
   let(:user) { create(:user) }
 
   let(:seat_count_data) do
@@ -60,6 +60,24 @@ RSpec.describe SeatCountAlertHelper, :saas do
 
       it 'sets total seats count to the correct number' do
         expect(helper.total_seat_count).to eq(15)
+      end
+    end
+  end
+
+  describe '#seat_count_text' do
+    let(:namespace) { create(:group) }
+
+    it 'returns the correct copy' do
+      expect(helper.seat_count_text).to eq('Even if you reach the number of seats in your subscription, ' \
+        'you can continue to add users, and GitLab will bill you for the overage.')
+    end
+
+    context 'when restricted access is active' do
+      it 'returns the correct copy' do
+        namespace.namespace_settings.update!(seat_control: :block_overages)
+
+        expect(helper.seat_count_text).to eq('Once you reach the number of seats in your subscription, ' \
+          'you can no longer invite or add users to the namespace.')
       end
     end
   end

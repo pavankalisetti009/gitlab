@@ -40284,6 +40284,9 @@ msgstr ""
 msgid "Once imported, repositories can be mirrored over SSH. Read more %{link_start}here%{link_end}."
 msgstr ""
 
+msgid "Once you reach the number of seats in your subscription, you can no longer invite or add users to the namespace."
+msgstr ""
+
 msgid "One and only one of %{params} is required"
 msgstr ""
 
