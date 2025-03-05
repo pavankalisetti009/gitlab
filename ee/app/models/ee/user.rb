@@ -698,24 +698,6 @@ module EE
 
     protected
 
-    override :ci_owned_group_runners
-    def ci_owned_group_runners
-      return super unless ::Feature.enabled?(:owned_runners_via_admin_runners, self)
-
-      cte_namespace_ids = ::Gitlab::SQL::CTE.new(
-        :cte_namespace_ids,
-        ::Ci::NamespaceMirror.from_union([
-          ci_namespace_mirrors_for_group_members(::Gitlab::Access::OWNER).select(:namespace_id),
-          ci_namespace_mirrors_permitted_to(:admin_runners).select(:namespace_id)
-        ])
-      )
-
-      ::Ci::Runner
-        .with(cte_namespace_ids.to_arel)
-        .joins(:runner_namespaces)
-        .where('ci_runner_namespaces.namespace_id IN (SELECT namespace_id FROM cte_namespace_ids)')
-    end
-
     override :password_required?
     def password_required?(*)
       return false if service_account? || group_managed_account?
