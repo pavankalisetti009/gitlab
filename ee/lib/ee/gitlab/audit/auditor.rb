@@ -13,8 +13,8 @@ module EE
           return_value = yield
 
           ::Gitlab::Audit::EventQueue.current
-                                     .map { |message| build_event(message) }
-                                     .then { |events| record(events) }
+            .map { |audit| audit.is_a?(AuditEvent) ? audit : build_event(audit) }
+            .then { |events| record(events) }
 
           return_value
         ensure

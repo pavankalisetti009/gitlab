@@ -6,7 +6,8 @@ RSpec.describe Vulnerabilities::BulkSeverityOverrideService, feature_category: :
   let_it_be(:user) { create(:user) }
   let_it_be(:namespace) { create(:namespace) }
   let_it_be(:project) { create(:project, namespace: namespace) }
-  let_it_be(:vulnerability) { create(:vulnerability, :with_findings, :high_severity, project: project) }
+  let_it_be(:original_severity) { :high }
+  let_it_be(:vulnerability) { create(:vulnerability, :with_findings, project: project, severity: original_severity) }
   let(:vulnerability_ids) { [vulnerability.id] }
   let(:comment) { "Severity needs to be updated." }
   let(:new_severity) { 'critical' }
@@ -63,7 +64,7 @@ RSpec.describe Vulnerabilities::BulkSeverityOverrideService, feature_category: :
         vulnerability.reload
         last_override = Vulnerabilities::SeverityOverride.last
         expect(last_override.vulnerability_id).to eq(vulnerability.id)
-        expect(last_override.original_severity).to eq('high')
+        expect(last_override.original_severity).to eq(original_severity.to_s)
         expect(last_override.new_severity).to eq(new_severity)
         expect(last_override.author).to eq(user)
       end
@@ -77,7 +78,7 @@ RSpec.describe Vulnerabilities::BulkSeverityOverrideService, feature_category: :
         expect(last_note.project).to eq(project)
         expect(last_note.namespace_id).to eq(project.project_namespace_id)
         expect(last_note.note).to eq(
-          "changed vulnerability severity from High to #{new_severity.titleize} " \
+          "changed vulnerability severity from #{original_severity.to_s.titleize} to #{new_severity.titleize} " \
             "with the following comment: \"#{comment}\"")
         expect(last_note).to be_system
 
@@ -90,6 +91,22 @@ RSpec.describe Vulnerabilities::BulkSeverityOverrideService, feature_category: :
         result = service.execute
 
         expect(result.payload[:vulnerabilities].count).to eq(vulnerability_ids.count)
+      end
+
+      it 'creates audit events for each vulnerability', :request_store do
+        expect { service.execute }.to change { AuditEvent.count }.by(1)
+
+        last_audit_event = AuditEvent.last&.details
+
+        expect(last_audit_event[:name]).to eq('vulnerability_severity_override')
+        expect(last_audit_event[:author_name]).to eq(user.name)
+        expect(last_audit_event[:target_id]).to eq(project.id)
+        expect(last_audit_event[:target_details]).to eq(
+          ::Gitlab::Routing.url_helpers.project_security_vulnerability_url(project, vulnerability)
+        )
+        expect(last_audit_event[:custom_message]).to eq(
+          "Vulnerability severity was changed from #{original_severity.to_s.titleize} to #{new_severity.capitalize}"
+        )
       end
 
       context 'when an error occurs during update' do
