@@ -7,7 +7,7 @@ RSpec.describe ::Types::WorkItems::WidgetInterface, feature_category: :team_plan
   using RSpec::Parameterized::TableSyntax
 
   where(:widget_class, :widget_type_name) do
-    WorkItems::Widgets::Status             | Types::WorkItems::Widgets::StatusType
+    WorkItems::Widgets::VerificationStatus | Types::WorkItems::Widgets::VerificationStatusType
     WorkItems::Widgets::Weight             | Types::WorkItems::Widgets::WeightType
     WorkItems::Widgets::HealthStatus       | Types::WorkItems::Widgets::HealthStatusType
     WorkItems::Widgets::Progress           | Types::WorkItems::Widgets::ProgressType

@@ -11,7 +11,7 @@ module EE
         iterations: ::WorkItems::Widgets::Iteration,
         issue_weights: ::WorkItems::Widgets::Weight,
         requirements: [
-          ::WorkItems::Widgets::Status,
+          ::WorkItems::Widgets::VerificationStatus,
           ::WorkItems::Widgets::RequirementLegacy,
           ::WorkItems::Widgets::TestReports
         ],

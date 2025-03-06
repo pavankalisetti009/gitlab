@@ -247,7 +247,7 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
         end
       end
 
-      describe 'status widget' do
+      context 'with verification status widget' do
         let_it_be(:work_item) { create(:work_item, :requirement, project: project) }
 
         let(:work_item_fields) do
@@ -255,8 +255,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
             id
             widgets {
               type
-              ... on WorkItemWidgetStatus {
-                status
+              ... on WorkItemWidgetVerificationStatus {
+                verificationStatus
               }
             }
           GRAPHQL
@@ -269,14 +269,14 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
             post_graphql(query, current_user: current_user)
           end
 
-          shared_examples 'response with status information' do
+          shared_examples 'response with verification status information' do
             it 'returns correct data' do
               expect(work_item_data).to include(
                 'id' => work_item.to_gid.to_s,
                 'widgets' => include(
                   hash_including(
-                    'type' => 'STATUS',
-                    'status' => status
+                    'type' => 'VERIFICATION_STATUS',
+                    'verificationStatus' => verification_status
                   )
                 )
               )
@@ -286,22 +286,22 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
           context 'when latest test report status is satisfied' do
             let_it_be(:test_report) { create(:test_report, requirement_issue: work_item, state: :passed) }
 
-            it_behaves_like 'response with status information' do
-              let(:status) { 'satisfied' }
+            it_behaves_like 'response with verification status information' do
+              let(:verification_status) { 'satisfied' }
             end
           end
 
           context 'when latest test report status is failed' do
             let_it_be(:test_report) { create(:test_report, requirement_issue: work_item, state: :failed) }
 
-            it_behaves_like 'response with status information' do
-              let(:status) { 'failed' }
+            it_behaves_like 'response with verification status information' do
+              let(:verification_status) { 'failed' }
             end
           end
 
           context 'with no test report' do
-            it_behaves_like 'response with status information' do
-              let(:status) { 'unverified' }
+            it_behaves_like 'response with verification status information' do
+              let(:verification_status) { 'unverified' }
             end
           end
         end
@@ -313,10 +313,10 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
             post_graphql(query, current_user: current_user)
           end
 
-          it 'returns no status information' do
+          it 'returns no verification status information' do
             expect(work_item_data['widgets']).not_to include(
               hash_including(
-                'type' => 'STATUS'
+                'type' => 'VERIFICATION_STATUS'
               )
             )
           end

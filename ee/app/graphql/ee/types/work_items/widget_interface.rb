@@ -18,7 +18,7 @@ module EE
         prepended do
           EE_TYPE_MAPPINGS = {
             ::WorkItems::Widgets::Weight => ::Types::WorkItems::Widgets::WeightType,
-            ::WorkItems::Widgets::Status => ::Types::WorkItems::Widgets::StatusType,
+            ::WorkItems::Widgets::VerificationStatus => ::Types::WorkItems::Widgets::VerificationStatusType,
             ::WorkItems::Widgets::Iteration => ::Types::WorkItems::Widgets::IterationType,
             ::WorkItems::Widgets::HealthStatus => ::Types::WorkItems::Widgets::HealthStatusType,
             ::WorkItems::Widgets::Progress => ::Types::WorkItems::Widgets::ProgressType,

@@ -2,23 +2,23 @@
 
 require 'spec_helper'
 
-RSpec.describe WorkItems::Widgets::Status do
+RSpec.describe WorkItems::Widgets::VerificationStatus, feature_category: :requirements_management do
   let_it_be_with_reload(:work_item) { create(:work_item, :requirement, description: 'A description') }
 
   describe '.type' do
     subject { described_class.type }
 
-    it { is_expected.to eq(:status) }
+    it { is_expected.to eq(:verification_status) }
   end
 
   describe '#type' do
     subject { described_class.new(work_item).type }
 
-    it { is_expected.to eq(:status) }
+    it { is_expected.to eq(:verification_status) }
   end
 
-  describe '#status' do
-    subject { described_class.new(work_item).status }
+  describe '#verification_status' do
+    subject { described_class.new(work_item).verification_status }
 
     context 'when last test report status is `failed`' do
       before do

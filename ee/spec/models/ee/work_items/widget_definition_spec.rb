@@ -15,7 +15,7 @@ RSpec.describe WorkItems::WidgetDefinition, feature_category: :team_planning do
         ::WorkItems::Widgets::Assignees,
         ::WorkItems::Widgets::Weight,
         ::WorkItems::Widgets::StartAndDueDate,
-        ::WorkItems::Widgets::Status,
+        ::WorkItems::Widgets::VerificationStatus,
         ::WorkItems::Widgets::HealthStatus,
         ::WorkItems::Widgets::Milestone,
         ::WorkItems::Widgets::Notes,

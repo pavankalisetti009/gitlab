@@ -3,9 +3,9 @@
 module WorkItems
   module DataSync
     module Widgets
-      class Status < Base
+      class VerificationStatus < Base
         def after_save_commit
-          # copy Status
+          # copy VerificationStatus
         end
 
         def post_move_cleanup
