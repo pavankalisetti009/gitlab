@@ -83,6 +83,8 @@ module SecretsManagement
           puts "OpenBao #{service} started..."
         end
       rescue Timeout::Error
+        puts "Check log/test-openbao-server.log for more information."
+        puts "You may need to setup the environment variable export BAO_ADDR='http://127.0.0.1:9800'"
         raise "Timed out waiting for OpenBao #{service} to start."
       end
     end
