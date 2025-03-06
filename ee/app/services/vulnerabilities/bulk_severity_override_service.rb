@@ -25,6 +25,8 @@ module Vulnerabilities
         notes_ids = Note.insert_all!(db_attributes[:system_notes], returning: %w[id])
         SystemNoteMetadata.insert_all!(system_note_metadata_attributes_for(notes_ids))
       end
+
+      audit_severity_changes(vulnerability_attrs)
     end
 
     def authorized_for_project(project)
@@ -43,6 +45,23 @@ module Vulnerabilities
           updated_at: now
         }
       end
+    end
+
+    def audit_severity_changes(vulnerability_attrs)
+      vulnerabilities_audit_attrs = vulnerability_attrs.map do |_, severity, _, _, project, vulnerability|
+        {
+          old_severity: severity,
+          project: project,
+          vulnerability: vulnerability
+        }
+      end
+
+      SeverityOverrideAuditService.new(
+        vulnerabilities_audit_attrs: vulnerabilities_audit_attrs,
+        now: now,
+        current_user: user,
+        new_severity: @new_severity
+      ).execute
     end
 
     def db_attributes_for(vulnerability_attrs)
@@ -65,9 +84,8 @@ module Vulnerabilities
     end
 
     def vulnerabilities_attributes(vulnerabilities)
-      vulnerabilities
-        .select(:id, :severity, :project_id).with_projects
-        .map { |v| [v.id, v.severity, v.project_id, v.project.project_namespace_id] }
+      attributes_relation = vulnerabilities.select(:id, :severity, :project_id).with_projects
+      attributes_relation.map { |v| [v.id, v.severity, v.project_id, v.project.project_namespace_id, v.project, v] }
     end
 
     def vulnerabilities_update_attributes
