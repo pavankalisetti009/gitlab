@@ -28,7 +28,9 @@ import {
   OPERATOR_IS,
   TOKEN_TYPE_ASSIGNEE,
   TOKEN_TYPE_AUTHOR,
+  TOKEN_TYPE_CLOSED,
   TOKEN_TYPE_CONFIDENTIAL,
+  TOKEN_TYPE_CREATED,
   TOKEN_TYPE_GROUP,
   TOKEN_TYPE_LABEL,
   TOKEN_TYPE_MILESTONE,
@@ -116,6 +118,7 @@ describeSkipVue3(skipReason, () => {
         isGroup: true,
         isSignedIn: true,
         workItemType: null,
+        hasIssueDateFilterFeature: false,
         ...provide,
       },
       propsData: {
@@ -790,6 +793,19 @@ describeSkipVue3(skipReason, () => {
           }),
         );
       });
+    });
+  });
+
+  describe('when issue_date_filter is enabled', () => {
+    it('includes created and closed date in searchTokens', async () => {
+      mountComponent({ provide: { hasIssueDateFilterFeature: true } });
+      await waitForPromises();
+
+      const tokenTypes = findIssuableList()
+        .props('searchTokens')
+        .map((token) => token.type);
+
+      expect(tokenTypes).toEqual(expect.arrayContaining([TOKEN_TYPE_CLOSED, TOKEN_TYPE_CREATED]));
     });
   });
 });

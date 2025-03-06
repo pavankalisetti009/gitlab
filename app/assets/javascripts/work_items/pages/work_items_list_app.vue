@@ -44,9 +44,12 @@ import {
   OPERATOR_IS,
   OPERATORS_IS,
   OPERATORS_IS_NOT_OR,
+  OPERATORS_AFTER_BEFORE,
   TOKEN_TITLE_ASSIGNEE,
   TOKEN_TITLE_AUTHOR,
+  TOKEN_TITLE_CLOSED,
   TOKEN_TITLE_CONFIDENTIAL,
+  TOKEN_TITLE_CREATED,
   TOKEN_TITLE_GROUP,
   TOKEN_TITLE_LABEL,
   TOKEN_TITLE_MILESTONE,
@@ -56,7 +59,9 @@ import {
   TOKEN_TITLE_STATE,
   TOKEN_TYPE_ASSIGNEE,
   TOKEN_TYPE_AUTHOR,
+  TOKEN_TYPE_CLOSED,
   TOKEN_TYPE_CONFIDENTIAL,
+  TOKEN_TYPE_CREATED,
   TOKEN_TYPE_GROUP,
   TOKEN_TYPE_LABEL,
   TOKEN_TYPE_MILESTONE,
@@ -69,6 +74,7 @@ import IssuableList from '~/vue_shared/issuable/list/components/issuable_list_ro
 import WorkItemDrawer from '~/work_items/components/work_item_drawer.vue';
 import { DEFAULT_PAGE_SIZE, issuableListTabs } from '~/vue_shared/issuable/list/constants';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import DateToken from '~/vue_shared/components/filtered_search_bar/tokens/date_token.vue';
 import { getParameterByName, removeParams, updateHistory } from '~/lib/utils/url_utility';
 import {
   STATE_CLOSED,
@@ -117,6 +123,7 @@ export default {
     'isGroup',
     'isSignedIn',
     'workItemType',
+    'hasIssueDateFilterFeature',
   ],
   props: {
     eeWorkItemUpdateCount: {
@@ -405,6 +412,26 @@ export default {
             { value: STATUS_OPEN, title: __('Open') },
             { value: STATUS_CLOSED, title: __('Closed') },
           ],
+        });
+      }
+
+      if (this.hasIssueDateFilterFeature) {
+        tokens.push({
+          type: TOKEN_TYPE_CLOSED,
+          title: TOKEN_TITLE_CLOSED,
+          icon: 'history',
+          unique: true,
+          token: DateToken,
+          operators: OPERATORS_AFTER_BEFORE,
+        });
+
+        tokens.push({
+          type: TOKEN_TYPE_CREATED,
+          title: TOKEN_TITLE_CREATED,
+          icon: 'history',
+          unique: true,
+          token: DateToken,
+          operators: OPERATORS_AFTER_BEFORE,
         });
       }
 
