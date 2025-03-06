@@ -2,7 +2,7 @@
 
 module QA
   # This test requires several feature flags, user settings, and instance configuration.
-  # See https://docs.gitlab.com/ee/development/code_suggestions/#code-suggestions-development-setup
+  # See https://docs.gitlab.com/ee/development/ai_features/code_suggestions/#code-suggestions-development-setup
   RSpec.describe 'Create', product_group: :code_creation do
     describe 'Code Suggestions in Web IDE' do
       include_context "Web IDE test prep"
