@@ -10,10 +10,18 @@ import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { clearDuoChatCommands } from 'ee/ai/utils';
 import DuoChatCallout from 'ee/ai/components/global_callout/duo_chat_callout.vue';
 import getAiMessages from 'ee/ai/graphql/get_ai_messages.query.graphql';
+import getAiConversationThreads from 'ee/ai/graphql/get_ai_conversation_threads.query.graphql';
+import getAiMessagesWithThread from 'ee/ai/graphql/get_ai_messages_with_thread.query.graphql';
 import chatMutation from 'ee/ai/graphql/chat.mutation.graphql';
 import duoUserFeedbackMutation from 'ee/ai/graphql/duo_user_feedback.mutation.graphql';
-import { i18n, GENIE_CHAT_RESET_MESSAGE, GENIE_CHAT_CLEAR_MESSAGE } from 'ee/ai/constants';
 import { InternalEvents } from '~/tracking';
+import deleteConversationThreadMutation from 'ee/ai/graphql/delete_conversation_thread.mutation.graphql';
+import {
+  i18n,
+  GENIE_CHAT_RESET_MESSAGE,
+  GENIE_CHAT_CLEAR_MESSAGE,
+  DUO_CHAT_VIEWS,
+} from 'ee/ai/constants';
 import getAiSlashCommands from 'ee/ai/graphql/get_ai_slash_commands.query.graphql';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import {
@@ -21,6 +29,7 @@ import {
   MESSAGE_TYPES,
   WIDTH_OFFSET,
   PREDEFINED_PROMPTS,
+  MULTI_THREADED_CONVERSATION_TYPE,
 } from '../constants';
 import TanukiBotSubscriptions from './tanuki_bot_subscriptions.vue';
 
@@ -81,6 +90,29 @@ export default {
         this.onError(err);
       },
     },
+    aiConversationThreads: {
+      query: getAiConversationThreads,
+      skip() {
+        return !this.duoChatGlobalState.isShown || !this.glFeatures.duoChatMultiThread;
+      },
+      update(data) {
+        return data?.aiConversationThreads?.nodes || [];
+      },
+      async result() {
+        // Only auto-select if we don't have an active thread AND we're not in list view
+        if (
+          !this.activeThread &&
+          this.multithreadedView === 'chat' &&
+          this.aiConversationThreads.length > 0
+        ) {
+          const latestThread = this.selectLatestThread(this.aiConversationThreads);
+          await this.onThreadSelected({ id: latestThread.id });
+        }
+      },
+      error(err) {
+        this.onError(err);
+      },
+    },
     aiSlashCommands: {
       query: getAiSlashCommands,
       skip() {
@@ -93,7 +125,17 @@ export default {
       },
       result({ data }) {
         if (data?.aiSlashCommands) {
-          this.aiSlashCommands = data.aiSlashCommands;
+          if (this.glFeatures.duoChatMultiThread) {
+            // Filter out reset and clear commands in multi-thread mode
+            // this is a temporary fix hack until: https://gitlab.com/gitlab-org/gitlab/-/issues/470818
+            // is resolved.
+            this.aiSlashCommands = data.aiSlashCommands.filter(
+              (command) =>
+                ![GENIE_CHAT_RESET_MESSAGE, GENIE_CHAT_CLEAR_MESSAGE].includes(command.name),
+            );
+          } else {
+            this.aiSlashCommands = data.aiSlashCommands;
+          }
         }
       },
       error(err) {
@@ -118,6 +160,9 @@ export default {
       // Explicitly initializing `left` as null to ensure Vue makes it reactive.
       // This allows computed properties and watchers dependent on `left` to work correctly.
       left: null,
+      activeThread: undefined,
+      multithreadedView: DUO_CHAT_VIEWS.CHAT,
+      aiConversationThreads: [],
     };
   },
   computed: {
@@ -192,6 +237,31 @@ export default {
     findPredefinedPrompt(question) {
       return PREDEFINED_PROMPTS.find(({ text }) => text === question);
     },
+    async onThreadSelected(e) {
+      try {
+        const { data } = await this.$apollo.query({
+          query: getAiMessagesWithThread,
+          variables: { threadId: e.id },
+          fetchPolicy: 'network-only',
+        });
+
+        if (data?.aiMessages?.nodes?.length > 0) {
+          this.setMessages(data.aiMessages.nodes);
+          this.multithreadedView = DUO_CHAT_VIEWS.CHAT;
+          this.activeThread = e.id;
+        }
+      } catch (err) {
+        this.onError(err);
+      }
+    },
+    onNewChat() {
+      this.activeThread = undefined;
+      this.setMessages([]);
+      this.multithreadedView = DUO_CHAT_VIEWS.CHAT;
+      this.setLoading(false);
+      this.completedRequestId = null;
+      this.cancelledRequestIds = [];
+    },
     onChatCancel() {
       // pushing last requestId of messages to canceled Request Id's
       this.cancelledRequestIds.push(this.messages[this.messages.length - 1].requestId);
@@ -232,19 +302,26 @@ export default {
       this.completedRequestId = null;
       this.isResponseTracked = false;
 
-      if (!this.isClearOrResetMessage(question)) {
-        this.setLoading();
+      if (!this.loading && !this.isClearOrResetMessage(question)) {
+        this.setLoading(true);
       }
+
+      const mutationVariables = {
+        question,
+        resourceId: this.computedResourceId,
+        clientSubscriptionId: this.clientSubscriptionId,
+        projectId: this.projectId,
+        threadId: this.glFeatures.duoChatMultiThread ? this.activeThread : null,
+        conversationType: this.glFeatures.duoChatMultiThread
+          ? MULTI_THREADED_CONVERSATION_TYPE
+          : null,
+        ...variables,
+      };
+
       this.$apollo
         .mutate({
           mutation: chatMutation,
-          variables: {
-            question,
-            resourceId: this.computedResourceId,
-            projectId: this.projectId,
-            clientSubscriptionId: this.clientSubscriptionId,
-            ...variables,
-          },
+          variables: mutationVariables,
           context: {
             headers: {
               'X-GitLab-Interface': 'duo_chat',
@@ -261,6 +338,11 @@ export default {
 
             this.trackEvent('submit_gitlab_duo_question', trackingOptions);
           }
+
+          if (aiAction.threadId && !this.activeThread) {
+            this.activeThread = aiAction.threadId;
+          }
+
           if ([GENIE_CHAT_CLEAR_MESSAGE].includes(question)) {
             this.$apollo.queries.aiMessages.refetch();
           } else {
@@ -322,6 +404,33 @@ export default {
     onError(err) {
       this.addDuoChatMessage({ errors: [err.toString()] });
     },
+    onBackToList() {
+      this.multithreadedView = DUO_CHAT_VIEWS.LIST;
+      this.activeThread = undefined;
+      this.setMessages([]);
+      this.$apollo.queries.aiConversationThreads.refetch();
+    },
+    onDeleteThread(threadId) {
+      this.$apollo
+        .mutate({
+          mutation: deleteConversationThreadMutation,
+          variables: { input: { threadId } },
+        })
+        .then(({ data }) => {
+          if (data?.deleteConversationThread?.success) {
+            this.$apollo.queries.aiConversationThreads.refetch();
+          } else {
+            const errors = data?.deleteConversationThread?.errors;
+            this.onError(new Error(errors.join(', ')));
+          }
+        })
+        .catch(this.onError);
+    },
+    selectLatestThread(threads) {
+      return threads.reduce((latest, thread) => {
+        return !latest || thread.updatedAt > latest.updatedAt ? thread : latest;
+      });
+    },
   },
 };
 </script>
@@ -334,6 +443,7 @@ export default {
         :user-id="userId"
         :client-subscription-id="clientSubscriptionId"
         :cancelled-request-ids="cancelledRequestIds"
+        :active-thread-id="activeThread"
         @message="onMessageReceived"
         @message-stream="onMessageStreamReceived"
         @response-received="onResponseReceived"
@@ -342,6 +452,10 @@ export default {
 
       <duo-chat
         id="duo-chat"
+        :thread-list="aiConversationThreads"
+        :multi-threaded-view="multithreadedView"
+        :active-thread-id="activeThread"
+        :is-multithreaded="glFeatures.duoChatMultiThread"
         :slash-commands="aiSlashCommands"
         :title="$options.i18n.gitlabChat"
         :dimensions="dimensions"
@@ -354,6 +468,10 @@ export default {
         :tool-name="toolName"
         :canceled-request-ids="cancelledRequestIds"
         class="duo-chat-container"
+        @thread-selected="onThreadSelected"
+        @new-chat="onNewChat"
+        @back-to-list="onBackToList"
+        @delete-thread="onDeleteThread"
         @chat-cancel="onChatCancel"
         @send-chat-prompt="onSendChatPrompt"
         @chat-hidden="onChatClose"

@@ -48,3 +48,4 @@ export const PREDEFINED_PROMPTS = [
     eventLabel: 'how_do_i_create_a_template',
   },
 ];
+export const MULTI_THREADED_CONVERSATION_TYPE = 'DUO_CHAT';

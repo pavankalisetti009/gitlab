@@ -1,8 +1,10 @@
 <script>
 import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
 import aiResponseStreamSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response_stream.subscription.graphql';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 
 export default {
+  mixins: [glFeatureFlagsMixin()],
   props: {
     userId: {
       type: String,
@@ -16,6 +18,28 @@ export default {
       type: Array,
       default: () => [],
       required: false,
+    },
+    activeThreadId: {
+      type: String,
+      required: false,
+      default: '',
+    },
+  },
+  methods: {
+    isValidMessage(requestId, threadId) {
+      // check if requestId was cancelled
+      if (!requestId || this.cancelledRequestIds.includes(requestId)) {
+        return false;
+      }
+
+      // In single-threaded mode, we ignore threadId checks since the API still includes threadIds
+      // and they can change (e.g., on /clear). Only check threadId matching in multi-threaded mode.
+      if (!this.glFeatures?.duoChatMultiThread) {
+        return true;
+      }
+
+      // if we're running multi-threaded, check if the threadId is the same as the active thread
+      return !threadId || threadId === this.activeThreadId;
     },
   },
   render() {
@@ -34,8 +58,9 @@ export default {
         },
         result({ data }) {
           const requestId = data?.aiCompletionResponse?.requestId;
+          const threadId = data?.aiCompletionResponse?.threadId;
 
-          if (requestId && !this.cancelledRequestIds.includes(requestId)) {
+          if (this.isValidMessage(requestId, threadId)) {
             this.$emit('message', data.aiCompletionResponse);
           }
         },
@@ -54,8 +79,9 @@ export default {
         },
         result({ data }) {
           const requestId = data?.aiCompletionResponse?.requestId;
+          const threadId = data?.aiCompletionResponse?.threadId;
 
-          if (requestId && !this.cancelledRequestIds.includes(requestId)) {
+          if (this.isValidMessage(requestId, threadId)) {
             this.$emit('message-stream', data.aiCompletionResponse);
           }
 

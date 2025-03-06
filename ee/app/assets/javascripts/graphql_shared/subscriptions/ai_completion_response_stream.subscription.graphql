@@ -10,6 +10,7 @@ subscription aiCompletionResponseStream($userId: UserID, $clientSubscriptionId: 
     errors
     role
     timestamp
+    threadId
     type
     chunkId
     extras {
