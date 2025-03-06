@@ -102,6 +102,16 @@ module EE
           work_item_id: original_entity.id
         )
       end
+
+      override :verify_can_move_issue!
+      def verify_can_move_issue!(issue, _target_project)
+        if issue.is_a?(WorkItem) && issue.work_item_type.epic?
+          raise ::Issues::MoveService::MoveError,
+            format(s_('CloneIssue|Cannot clone issues of \'%{issue_type}\' type.'), issue_type: issue.issue_type)
+        end
+
+        super
+      end
     end
   end
 end

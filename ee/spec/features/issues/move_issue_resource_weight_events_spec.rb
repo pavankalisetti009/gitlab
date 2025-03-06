@@ -34,7 +34,7 @@ RSpec.describe 'Resource weight events', :js, feature_category: :team_planning d
       end
 
       it "creates expected weight events on the moved issue" do
-        expect(page).to have_content "Moved this issue to #{target_project.full_path}."
+        expect(page).to have_content "Moved this item to #{target_project.full_path}."
         expect(issue.reload).to be_closed
 
         visit project_issue_path(target_project, issue)
