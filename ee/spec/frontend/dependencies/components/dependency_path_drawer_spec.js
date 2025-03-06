@@ -65,9 +65,8 @@ describe('DependencyPathDrawer component', () => {
     it('shows header text when component exists', () => {
       createComponent({ showDrawer: true });
 
-      const header = findHeader();
-      expect(header.text()).toContain(defaultDependency.name);
-      expect(header.text()).toContain(defaultDependency.version);
+      const { name, version } = defaultDependency;
+      expect(findHeader().text()).toBe(`Component: ${name} ${version}`);
     });
 
     it('does not show header text when component does not exist', () => {
