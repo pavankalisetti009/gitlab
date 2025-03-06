@@ -29,10 +29,7 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
     end
 
     it 'contains zoekt parameters' do
-      expected_fields = %i[
-        zoekt_auto_delete_lost_nodes zoekt_auto_index_root_namespace zoekt_indexing_enabled
-        zoekt_indexing_paused zoekt_search_enabled zoekt_cpu_to_tasks_ratio zoekt_rollout_batch_size
-      ]
+      expected_fields = ::Search::Zoekt::Settings.all_settings.keys
       expect(visible_attributes).to include(*expected_fields)
     end
 
@@ -296,12 +293,12 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
     it 'returns correctly checked checkboxes' do
       helper.gitlab_ui_form_for(application_setting, url: search_admin_application_settings_path) do |form|
         result = helper.zoekt_settings_checkboxes(form)
-        expect(result[0]).to have_checked_field(
-          "Delete offline nodes automatically after #{::Search::Zoekt::Node::LOST_DURATION_THRESHOLD.inspect}", with: 1)
-        expect(result[1]).not_to have_checked_field('Index all the namespaces', with: 1)
-        expect(result[2]).to have_checked_field('Enable indexing for exact code search', with: 1)
-        expect(result[3]).not_to have_checked_field('Pause indexing for exact code search', with: 1)
-        expect(result[4]).to have_checked_field('Enable exact code search', with: 1)
+        expect(result[0]).to have_checked_field('Enable indexing', with: 1)
+        expect(result[1]).to have_checked_field('Enable searching', with: 1)
+        expect(result[2]).not_to have_checked_field('Pause indexing', with: 1)
+        expect(result[3]).not_to have_checked_field('Index root namespaces automatically', with: 1)
+        expect(result[4]).to have_checked_field(
+          "Delete offline nodes after #{::Search::Zoekt::Node::LOST_DURATION_THRESHOLD.inspect}", with: 1)
       end
     end
   end
@@ -324,6 +321,110 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
         expect(result[2]).to have_selector('label', text: 'Batch size of namespaces for initial indexing')
         expect(result[3])
           .to have_selector('input[type="number"][name="application_setting[zoekt_rollout_batch_size]"][value="100"]')
+      end
+    end
+
+    context 'with custom input options' do
+      before do
+        allow(::Search::Zoekt::Settings).to receive(:numeric_settings).and_return({
+          zoekt_cpu_to_tasks_ratio: {
+            label: -> { 'Custom Label' },
+            input_type: :number_field,
+            input_options: { min: 0, max: 10, step: 0.1 }
+          }
+        })
+      end
+
+      it 'includes the custom input options' do
+        helper.gitlab_ui_form_for(application_setting, url: search_admin_application_settings_path) do |form|
+          result = helper.zoekt_settings_inputs(form)
+          expect(result[0]).to have_selector('label', text: 'Custom Label')
+          expect(result[1]).to have_selector('input[type="number"][min="0"][max="10"][step="0.1"]')
+        end
+      end
+    end
+
+    context 'with an unknown input type' do
+      before do
+        # Mock Search::Zoekt::Settings to return our test configuration
+        allow(::Search::Zoekt::Settings).to receive(:numeric_settings).and_return({
+          zoekt_test_setting: {
+            label: -> { "Test Setting" },
+            input_type: :unknown_type
+          }
+        })
+
+        # Make application_setting respond to our test setting
+        allow(application_setting).to receive(:zoekt_test_setting).and_return(42)
+      end
+
+      it 'raises an ArgumentError for unknown input types' do
+        # Use a real form builder
+        helper.gitlab_ui_form_for(application_setting, url: search_admin_application_settings_path) do |form|
+          # This should execute the actual method including line 319
+          expect { helper.zoekt_settings_inputs(form) }.to raise_error(ArgumentError, /Unknown input_type:/)
+        end
+      end
+    end
+  end
+
+  describe '#identity_verification_attributes', feature_category: :user_management do
+    subject { helper.send(:identity_verification_attributes) }
+
+    context 'when identity verification is available' do
+      before do
+        stub_saas_features(identity_verification: true)
+      end
+
+      it 'returns the identity verification attributes' do
+        is_expected.to contain_exactly(
+          :arkose_labs_client_secret,
+          :arkose_labs_client_xid,
+          :arkose_labs_enabled,
+          :arkose_labs_data_exchange_enabled,
+          :arkose_labs_namespace,
+          :arkose_labs_private_api_key,
+          :arkose_labs_public_api_key,
+          :ci_requires_identity_verification_on_free_plan,
+          :credit_card_verification_enabled,
+          :phone_verification_enabled,
+          :telesign_api_key,
+          :telesign_customer_xid
+        )
+      end
+    end
+
+    context 'when identity verification is not available' do
+      before do
+        stub_saas_features(identity_verification: false)
+      end
+
+      it 'returns an empty array' do
+        is_expected.to eq([])
+      end
+    end
+  end
+
+  describe '#enable_promotion_management_attributes', feature_category: :user_management do
+    subject { helper.send(:enable_promotion_management_attributes) }
+
+    context 'when gitlab_com_subscriptions feature is available' do
+      before do
+        stub_saas_features(gitlab_com_subscriptions: true)
+      end
+
+      it 'returns an empty array' do
+        is_expected.to eq([])
+      end
+    end
+
+    context 'when gitlab_com_subscriptions feature is not available' do
+      before do
+        stub_saas_features(gitlab_com_subscriptions: false)
+      end
+
+      it 'returns the promotion management attributes' do
+        is_expected.to contain_exactly(:enable_member_promotion_management)
       end
     end
   end

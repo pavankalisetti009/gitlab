@@ -24,6 +24,7 @@ module Search
       scope :preload_storage_statistics, -> { includes(namespace: :root_storage_statistics) }
       scope :recent, -> { order(id: :desc) }
       scope :search_enabled, -> { where(search: true) }
+      scope :search_disabled, -> { where(search: false) }
       scope :with_limit, ->(maximum) { limit(maximum) }
       scope :with_missing_indices, -> { left_joins(:indices).where(zoekt_indices: { zoekt_enabled_namespace_id: nil }) }
       scope :with_all_ready_indices, -> do

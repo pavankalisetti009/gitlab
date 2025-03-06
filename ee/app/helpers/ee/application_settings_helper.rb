@@ -79,13 +79,8 @@ module EE
         :lock_duo_features_enabled,
         :duo_availability,
         :enabled_expanded_logging,
-        :zoekt_auto_delete_lost_nodes,
-        :zoekt_auto_index_root_namespace,
-        :zoekt_cpu_to_tasks_ratio,
-        :zoekt_rollout_batch_size,
-        :zoekt_indexing_enabled,
-        :zoekt_indexing_paused,
-        :zoekt_search_enabled,
+        # Add all Zoekt settings automatically
+        *::Search::Zoekt::Settings.all_settings.keys,
         :duo_workflow_oauth_application_id,
         :scan_execution_policies_action_limit,
         :secret_detection_service_auth_token,
@@ -298,59 +293,37 @@ module EE
     end
 
     def zoekt_settings_checkboxes(form)
-      [
+      ::Search::Zoekt::Settings.boolean_settings.map do |setting_name, config|
         form.gitlab_ui_checkbox_component(
-          :zoekt_auto_delete_lost_nodes,
-          format(_("Delete offline nodes automatically after %{label}"),
-            label: ::Search::Zoekt::Node::LOST_DURATION_THRESHOLD.inspect),
-          checkbox_options: { checked: @application_setting.zoekt_auto_delete_lost_nodes, multiple: false }
-        ),
-        form.gitlab_ui_checkbox_component(
-          :zoekt_auto_index_root_namespace,
-          _('Index root namespaces automatically'),
-          checkbox_options: { checked: @application_setting.zoekt_auto_index_root_namespace, multiple: false }
-        ),
-        form.gitlab_ui_checkbox_component(
-          :zoekt_indexing_enabled,
-          _('Enable indexing for exact code search'),
-          checkbox_options: { checked: @application_setting.zoekt_indexing_enabled, multiple: false }
-        ),
-        form.gitlab_ui_checkbox_component(
-          :zoekt_indexing_paused,
-          _('Pause indexing for exact code search'),
-          checkbox_options: { checked: @application_setting.zoekt_indexing_paused, multiple: false }
-        ),
-        form.gitlab_ui_checkbox_component(
-          :zoekt_search_enabled,
-          _('Enable exact code search'),
-          checkbox_options: { checked: @application_setting.zoekt_search_enabled, multiple: false }
+          setting_name,
+          instance_exec(&config[:label]),
+          checkbox_options: {
+            checked: @application_setting.public_send(setting_name), # rubocop:disable GitlabSecurity/PublicSend -- we control `setting_name` in source code
+            multiple: false
+          }
         )
-      ]
+      end
     end
 
     def zoekt_settings_inputs(form)
-      [
+      ::Search::Zoekt::Settings.numeric_settings.flat_map do |setting_name, config|
+        options = {
+          value: @application_setting.public_send(setting_name), # rubocop:disable GitlabSecurity/PublicSend -- we control `setting_name` in source code
+          class: 'form-control gl-form-input'
+        }.merge(config[:input_options] || {})
+
+        input_field = case config[:input_type]
+                      when :number_field
+                        form.number_field(setting_name, options)
+                      else
+                        raise ArgumentError, "Unknown input_type: #{config[:input_type]}"
+                      end
+
         [
-          form.label(:zoekt_cpu_to_tasks_ratio, _('Indexing CPU to tasks multiplier'),
-            class: 'label-bold'),
-          form.number_field(
-            :zoekt_cpu_to_tasks_ratio,
-            step: 0.1,
-            value: @application_setting.zoekt_cpu_to_tasks_ratio,
-            class: 'form-control gl-form-input'
-          )
-        ],
-        [
-          form.label(:zoekt_rollout_batch_size, _('Batch size of namespaces for initial indexing'),
-            class: 'label-bold'),
-          form.number_field(
-            :zoekt_rollout_batch_size,
-            step: 1,
-            value: @application_setting.zoekt_rollout_batch_size,
-            class: 'form-control gl-form-input'
-          )
+          form.label(setting_name, instance_exec(&config[:label]), class: 'label-bold'),
+          input_field
         ]
-      ].flatten
+      end
     end
 
     private
