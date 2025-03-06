@@ -21,7 +21,7 @@ import {
   RELEASE_STATES,
   CLOUD_PROVIDER_MODELS,
 } from '../constants';
-import ModelSelectDropdown from '../../duo_self_hosted/shared/model_select_dropdown.vue';
+import ModelSelectDropdown from '../../shared/model_select_dropdown.vue';
 import TestConnectionButton from './test_connection_button.vue';
 
 const bedrockIdentifierPrefix = 'bedrock/';
