@@ -8,10 +8,16 @@ RSpec.describe Gitlab::Llm::Tracking, feature_category: :ai_abstraction_layer do
   let(:ai_action_name) { 'chat' }
   let(:request_id) { 'uuid' }
   let(:user_agent) { nil }
+  let(:platform_origin) { 'web' }
 
   let(:ai_message) do
     build(:ai_message,
-      user: user, resource: resource, ai_action: ai_action_name, request_id: request_id, user_agent: user_agent
+      user: user,
+      resource: resource,
+      ai_action: ai_action_name,
+      request_id: request_id,
+      user_agent: user_agent,
+      platform_origin: platform_origin
     )
   end
 
@@ -20,17 +26,58 @@ RSpec.describe Gitlab::Llm::Tracking, feature_category: :ai_abstraction_layer do
       described_class.event_for_ai_message('Category', 'my_action', ai_message: ai_message)
     end
 
-    it 'tracks event with correct params' do
-      event_for_ai_message
+    context 'when it is a web IDE request' do
+      let(:user_agent) { 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)' }
+      let(:platform_origin) { 'vs_code_extension' }
 
-      expect_snowplow_event(
-        category: 'Category',
-        action: 'my_action',
-        label: ai_action_name,
-        property: request_id,
-        user: user,
-        client: nil
-      )
+      it 'tracks event with web_ide client' do
+        event_for_ai_message
+
+        expect_snowplow_event(
+          category: 'Category',
+          action: 'my_action',
+          label: ai_action_name,
+          property: request_id,
+          user: user,
+          client: 'web_ide'
+        )
+      end
+    end
+
+    context 'when it is a regular web request' do
+      let(:user_agent) { 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)' }
+      let(:platform_origin) { 'web' }
+
+      it 'tracks event with web client' do
+        event_for_ai_message
+
+        expect_snowplow_event(
+          category: 'Category',
+          action: 'my_action',
+          label: ai_action_name,
+          property: request_id,
+          user: user,
+          client: 'web'
+        )
+      end
+    end
+
+    context 'when it is a real VS Code extension request' do
+      let(:user_agent) { 'vs-code-gitlab-workflow/3.11.1 VSCode/1.52.1 Node.js/12.14.1 (darwin; x64)' }
+      let(:platform_origin) { 'vs_code_extension' }
+
+      it 'tracks event with vscode client' do
+        event_for_ai_message
+
+        expect_snowplow_event(
+          category: 'Category',
+          action: 'my_action',
+          label: ai_action_name,
+          property: request_id,
+          user: user,
+          client: 'vscode'
+        )
+      end
     end
   end
 
