@@ -33018,6 +33018,9 @@ msgstr ""
 msgid "Job|Are you sure you want to erase this job log and artifacts?"
 msgstr ""
 
+msgid "Job|Are you sure you want to force cancel this job? This will immediately mark the job as canceled, even if the runner is unresponsive."
+msgstr ""
+
 msgid "Job|Browse"
 msgstr ""
 
@@ -33052,6 +33055,12 @@ msgid "Job|Failed"
 msgstr ""
 
 msgid "Job|Finished at"
+msgstr ""
+
+msgid "Job|Force cancel"
+msgstr ""
+
+msgid "Job|Force cancel a job stuck in `canceling` state"
 msgstr ""
 
 msgid "Job|Full log viewer"
