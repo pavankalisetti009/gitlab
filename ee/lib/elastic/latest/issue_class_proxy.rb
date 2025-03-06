@@ -15,7 +15,6 @@ module Elastic
       override :preload_indexing_data
       def preload_indexing_data(relation)
         relation.includes(
-          :correct_work_item_type,
           :author,
           :sync_object,
           :namespace,
