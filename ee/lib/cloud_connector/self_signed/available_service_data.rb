@@ -19,8 +19,10 @@ module CloudConnector
           private
 
           def load_signing_key
-            jwk = ::CloudConnector::Keys.current_as_jwk
+            jwk = ::CloudConnector::Keys.current&.to_jwk
             raise 'Cloud Connector: no key found' unless jwk
+
+            ::Gitlab::AppLogger.info(message: 'Cloud Connector key loaded', cc_kid: jwk.kid)
 
             jwk
           end
@@ -39,6 +41,10 @@ module CloudConnector
 
       override :access_token
       def access_token(resource = nil, extra_claims: {})
+        jwk = @key_loader.signing_key
+
+        token_counter.increment(kid: jwk.kid)
+
         ::Gitlab::CloudConnector::JsonWebToken.new(
           issuer: Doorkeeper::OpenidConnect.configuration.issuer,
           audience: backend,
@@ -47,10 +53,18 @@ module CloudConnector
           scopes: scopes_for(resource),
           ttl: 1.hour,
           extra_claims: extra_claims
-        ).encode(@key_loader.signing_key)
+        ).encode(jwk)
       end
 
       private
+
+      def token_counter
+        ::Gitlab::Metrics.counter(
+          :cloud_connector_tokens_issued_total,
+          'Total number of Cloud Connector tokens issued',
+          worker_id: ::Prometheus::PidProvider.worker_id
+        )
+      end
 
       def gitlab_org_group
         @gitlab_org_group ||= Group.find_by_path_or_name('gitlab-org')

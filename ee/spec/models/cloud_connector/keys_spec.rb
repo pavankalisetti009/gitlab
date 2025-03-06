@@ -102,46 +102,6 @@ RSpec.describe CloudConnector::Keys, :models, feature_category: :cloud_connector
     end
   end
 
-  describe '.current_as_jwk' do
-    subject(:jwk) { described_class.current_as_jwk }
-
-    context 'when there are no records' do
-      it { is_expected.to be_nil }
-    end
-
-    context 'when there are records' do
-      let_it_be(:key_record) { create(:cloud_connector_keys) }
-
-      context 'and there is exactly one record' do
-        it { is_expected.to be_a(JWT::JWK::RSA) }
-
-        it 'uses RFC 7638 thumbprint key generator to compute kid' do
-          expect(::JWT::JWK).to receive(:new)
-            .with(kind_of(OpenSSL::PKey::RSA), kid_generator: ::JWT::JWK::Thumbprint)
-            .and_call_original
-
-          expect(jwk.kid).to be_an_instance_of(String)
-        end
-      end
-
-      context 'and there are multiple records', :freeze_time do
-        it 'returns the oldest record as JWK' do
-          oldest_record = create(:cloud_connector_keys, created_at: key_record.created_at - 1.day)
-
-          expect(jwk.signing_key.to_pem).to eq(oldest_record.secret_key)
-        end
-
-        it 'does not send more than one query' do
-          queries = ActiveRecord::QueryRecorder.new do
-            described_class.current_as_jwk
-          end
-
-          expect(queries.count).to eq(1)
-        end
-      end
-    end
-  end
-
   describe '.create_new_key!' do
     it 'creates a new valid key' do
       expect { described_class.create_new_key! }.to change { described_class.valid.count }.from(0).to(1)
@@ -201,10 +161,36 @@ RSpec.describe CloudConnector::Keys, :models, feature_category: :cloud_connector
   end
 
   describe '#truncated_pem' do
-    subject(:short_pem) { create(:cloud_connector_keys).truncated_pem }
+    subject(:short_pem) { build(:cloud_connector_keys).truncated_pem }
 
     it 'truncates the PEM string to 90 characters' do
       expect(short_pem.length).to eq(90)
+    end
+  end
+
+  describe '#to_jwk' do
+    let(:key) { build(:cloud_connector_keys) }
+
+    subject(:jwk) { key.to_jwk }
+
+    it 'returns the key as JWK' do
+      expect(jwk).to be_instance_of(JWT::JWK::RSA)
+    end
+
+    it 'uses RFC 7638 thumbprint key generator to compute kid' do
+      expect(::JWT::JWK).to receive(:new)
+        .with(kind_of(OpenSSL::PKey::RSA), kid_generator: ::JWT::JWK::Thumbprint)
+        .and_call_original
+
+      expect(jwk.kid).to be_an_instance_of(String)
+    end
+
+    context 'when the stored key is null' do
+      before do
+        key.secret_key = nil
+      end
+
+      it { is_expected.to be_nil }
     end
   end
 end

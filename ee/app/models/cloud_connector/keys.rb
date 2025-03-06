@@ -15,10 +15,6 @@ module CloudConnector
         ordered_by_date.first
       end
 
-      def current_as_jwk
-        current&.secret_key&.then { |keydata| pem_to_jwk(keydata) }
-      end
-
       def all_as_pem
         valid.map(&:secret_key)
       end
@@ -53,14 +49,16 @@ module CloudConnector
       def new_private_key
         OpenSSL::PKey::RSA.new(2048)
       end
-
-      def pem_to_jwk(key_data)
-        ::JWT::JWK.new(OpenSSL::PKey::RSA.new(key_data), kid_generator: ::JWT::JWK::Thumbprint)
-      end
     end
 
     def truncated_pem
       secret_key&.truncate(90)
+    end
+
+    def to_jwk
+      return unless secret_key
+
+      ::JWT::JWK.new(OpenSSL::PKey::RSA.new(secret_key), kid_generator: ::JWT::JWK::Thumbprint)
     end
   end
 end
