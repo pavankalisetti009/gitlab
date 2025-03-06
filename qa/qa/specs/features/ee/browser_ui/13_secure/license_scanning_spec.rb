@@ -90,10 +90,12 @@ module QA
             mr.merge_immediately!
           end
 
-          Flow::Pipeline.wait_for_latest_pipeline(status: 'Passed', wait: 600)
+          Flow::Pipeline.wait_for_pipeline_creation_via_api(project: test_project)
+          Flow::Pipeline.wait_for_latest_pipeline_to_have_status(project: test_project, status: 'success')
 
-          test_project.visit!
-          Flow::Pipeline.visit_latest_pipeline
+          # Visit pipeline in UI to verify licenses appear in the license report
+          test_project.visit_latest_pipeline
+
           Page::Project::Pipeline::Show.perform do |pipeline|
             pipeline.click_on_licenses
             licenses.each do |license|
