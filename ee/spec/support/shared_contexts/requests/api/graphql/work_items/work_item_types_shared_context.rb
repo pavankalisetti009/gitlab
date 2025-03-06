@@ -31,7 +31,7 @@ RSpec.shared_context 'with work item types request context EE' do
         }
         ... on WorkItemWidgetDefinitionCustomStatus {
           allowedCustomStatuses {
-            nodes { id name iconName }
+            nodes { id name iconName color position }
           }
         }
       }
