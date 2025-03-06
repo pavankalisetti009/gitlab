@@ -19,7 +19,7 @@ module EE
 
           override :awardable_id_desc
           def awardable_id_desc
-            "The ID of an Issue, Merge Request, Epic or Snippet"
+            'ID (`iid` for merge requests/issues/epics, `id` for snippets) of an awardable.'
           end
         end
 
