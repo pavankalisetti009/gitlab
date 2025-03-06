@@ -2,7 +2,7 @@
 
 module QA
   RSpec.describe 'Data Stores' do
-    describe 'Group with members', product_group: :tenant_scale do
+    describe 'Group with members', product_group: :organizations do
       let(:source_group_with_members) { create(:group, path: "source-group-with-members_#{SecureRandom.hex(8)}") }
       let(:target_group_with_project) { create(:group, path: "target-group-with-project_#{SecureRandom.hex(8)}") }
 
