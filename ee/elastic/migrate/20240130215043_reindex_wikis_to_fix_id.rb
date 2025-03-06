@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class ReindexWikisToFixId < Elastic::Migration
-  include Elastic::MigrationHelper
+  include ::Search::Elastic::MigrationHelper
 
   batched!
   throttle_delay 5.minutes

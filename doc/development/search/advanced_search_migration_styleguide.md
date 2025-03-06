@@ -418,13 +418,13 @@ class MigrationName < Elastic::Migration
 end
 ```
 
-#### `Elastic::MigrationHelper`
+#### `Search::Elastic::MigrationHelper`
 
 Contains methods you can use when a migration doesn't fit the previous examples.
 
 ```ruby
 class MigrationName < Elastic::Migration
-  include Elastic::MigrationHelper
+  include ::Search::Elastic::MigrationHelper
 
   def migrate
   ...
