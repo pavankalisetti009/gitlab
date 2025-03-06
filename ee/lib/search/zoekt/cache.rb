@@ -23,9 +23,7 @@ module Search
       end
 
       def enabled?
-        return false unless valid_arguments?
-
-        Feature.enabled?(:zoekt_cache_search_responses, current_user, type: :ops)
+        project_ids.is_a?(Array) && project_ids.present? && per_page <= max_per_page
       end
 
       def fetch
@@ -49,10 +47,6 @@ module Search
       end
 
       private
-
-      def valid_arguments?
-        project_ids.is_a?(Array) && project_ids.present? && per_page <= max_per_page
-      end
 
       def with_redis(&block)
         Gitlab::Redis::Cache.with(&block) # rubocop:disable CodeReuse/ActiveRecord -- this has nothing to do with AR
