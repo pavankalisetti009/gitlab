@@ -28,7 +28,11 @@ module Admin
     end
 
     def admin_display_duo_addon_settings?
-      CloudConnector::AvailableServices.find_by_name(:code_suggestions)&.purchased?
+      if ::Ai::Setting.self_hosted?
+        GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_enterprise.active.any?
+      else
+        GitlabSubscriptions::AddOnPurchase.for_duo_pro_or_duo_enterprise.active.any?
+      end
     end
 
     def admin_duo_home_app_data
