@@ -5,9 +5,11 @@ require 'spec_helper'
 RSpec.describe Projects::SecretsController, type: :request, feature_category: :secrets_management do
   let_it_be(:user) { create(:user) }
   let_it_be(:project) { create(:project) }
+  let_it_be(:secrets_manager) { build(:project_secrets_manager, project: project) }
 
   shared_examples 'renders the project secrets index template' do
     it do
+      secrets_manager.save!
       subject
 
       expect(response).to have_gitlab_http_status(:ok)
@@ -39,7 +41,13 @@ RSpec.describe Projects::SecretsController, type: :request, feature_category: :s
         stub_feature_flags(ci_tanukey_ui: project)
       end
 
-      it_behaves_like 'renders the project secrets index template'
+      context 'when secrets manager is not enabled' do
+        it_behaves_like 'returns a "not found" response'
+      end
+
+      context 'when secrets manager is enabled' do
+        it_behaves_like 'renders the project secrets index template'
+      end
     end
 
     context 'when feature flag "ci_tanukey_ui" is disabled' do
