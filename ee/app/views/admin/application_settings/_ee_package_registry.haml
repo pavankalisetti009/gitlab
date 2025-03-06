@@ -10,7 +10,7 @@
       - docs_link = link_to('', help_page_path('user/packages/package_registry/supported_functionality.md', { anchor: 'deleting-packages' }))
       = safe_format(s_('PackageRegistry|There are security risks if packages are deleted while request forwarding is enabled. %{docs_link_start}What are the risks?%{docs_link_end}'), tag_pair(docs_link, :docs_link_start, :docs_link_end))
 
-    %fieldset
+    %fieldset{ class: '!gl-mb-0' }
       .form-group
         = f.gitlab_ui_checkbox_component :npm_package_requests_forwarding,
           s_('PackageRegistry|Forward %{package_type} package requests') % { package_type: 'npm' }
