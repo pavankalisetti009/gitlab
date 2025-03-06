@@ -10,18 +10,18 @@ module Resolvers
       authorize :read_dependency
       authorizes_object!
 
-      argument :component, Types::GlobalIDType[::Sbom::Component],
+      argument :occurrence, Types::GlobalIDType[::Sbom::Occurrence],
         required: true,
-        description: 'Dependency path for component.'
+        description: 'Dependency path for occurrence.'
 
       alias_method :project, :object
 
-      def resolve(component:)
+      def resolve(occurrence:)
         return if Feature.disabled?(:dependency_graph_graphql, project)
 
-        component_id = resolve_gid(component, ::Sbom::Component)
+        occurrence_id = resolve_gid(occurrence, ::Sbom::Occurrence)
         result = Gitlab::Metrics.measure(:dependency_path_cte) do
-          ::Sbom::DependencyPath.find(id: component_id, project_id: project.id)
+          ::Sbom::DependencyPath.find(occurrence_id: occurrence_id, project_id: project.id)
         end
         record_metrics(result)
         result

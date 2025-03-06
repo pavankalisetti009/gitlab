@@ -19,11 +19,11 @@ module Sbom
     attribute :is_cyclic, :boolean
     attribute :max_depth_reached, :boolean
 
-    def self.find(id:, project_id:)
+    def self.find(occurrence_id:, project_id:)
       query = <<-SQL
         WITH RECURSIVE dependency_tree AS (
           SELECT
-              so.component_id as id,
+              so.id,
               so.component_name as dependency_name,
               so.project_id,
               so.traversal_ids,
@@ -37,7 +37,7 @@ module Sbom
               inner join sbom_component_versions versions on versions.id = so.component_version_id
               CROSS JOIN LATERAL jsonb_array_elements(so.ancestors) as a
           where
-              so.component_id = :id
+              so.id = :occurrence_id
               and so.project_id = :project_id
           UNION
           ALL
@@ -84,7 +84,7 @@ module Sbom
 
       query_params = {
         project_id: project_id,
-        id: id,
+        occurrence_id: occurrence_id,
         max_depth: MAX_DEPTH
       }
 
