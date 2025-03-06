@@ -1,4 +1,4 @@
-import { GlLabel } from '@gitlab/ui';
+import { GlLabel, GlPopover } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import ComplianceFrameworksToggleList from 'ee/security_orchestration/components/policy_drawer/compliance_frameworks_toggle_list.vue';
 import { complianceFrameworksResponse as defaultNodes } from 'ee_jest/security_orchestration/mocks/mock_apollo';
@@ -16,6 +16,7 @@ describe('ComplianceFrameworksToggleList', () => {
   };
 
   const findAllLabels = () => wrapper.findAllComponents(GlLabel);
+  const findAllPopovers = () => wrapper.findAllComponents(GlPopover);
   const findHeader = () => wrapper.findByTestId('compliance-frameworks-header');
   const findHiddenLabelText = () => wrapper.findByTestId('hidden-labels-text');
 
@@ -26,12 +27,25 @@ describe('ComplianceFrameworksToggleList', () => {
 
     it('should render all labels', () => {
       expect(findAllLabels().exists()).toBe(true);
-
+      expect(findAllPopovers()).toHaveLength(defaultNodes.length);
       expect(findAllLabels()).toHaveLength(defaultNodes.length);
     });
 
     it('renders header for all compliance frameworks', () => {
       expect(findHeader().text()).toBe('2 projects which have compliance framework:');
+    });
+
+    it('sets the correct attributes on popovers', () => {
+      const popovers = findAllPopovers();
+
+      defaultNodes.forEach((node, index) => {
+        expect(popovers.at(index).props()).toMatchObject({
+          title: node.name,
+          target: node.id,
+        });
+
+        expect(popovers.at(index).text()).toBe(node.description);
+      });
     });
   });
 
@@ -59,6 +73,7 @@ describe('ComplianceFrameworksToggleList', () => {
     it('renders header for single compliance frameworks', () => {
       expect(findHeader().text()).toBe('1 project which has compliance framework:');
       expect(findAllLabels()).toHaveLength(1);
+      expect(findAllPopovers()).toHaveLength(1);
     });
   });
 
