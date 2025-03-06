@@ -1,0 +1,287 @@
+# frozen_string_literal: true
+
+module Search
+  module Zoekt
+    class InfoService
+      include ActionView::Helpers::NumberHelper
+      include ActionView::Helpers::DateHelper
+
+      def self.execute(...)
+        new(...).execute
+      end
+
+      def initialize(logger:)
+        @logger = logger
+        @entries = []
+      end
+
+      def execute
+        display_settings_section
+        display_nodes_section
+        display_indexing_status_section
+        display_feature_flags_sections
+      end
+
+      private
+
+      attr_reader :logger, :entries
+
+      def display_feature_flags_sections
+        log_header("Feature Flags (Non-Default Values)")
+        log_custom_feature_flags
+        display_entries
+
+        log_header("Feature Flags (Default Values)")
+        log_default_feature_flags
+        display_entries
+      end
+
+      # Find and display all zoekt-related feature flags with custom values (non-default)
+      def log_custom_feature_flags
+        persisted_flags = Feature.persisted_names.select { |name| name.start_with?('zoekt_') }
+
+        if persisted_flags.empty?
+          log("Feature flags", value: Rainbow('none').yellow)
+          return
+        end
+
+        # Get the state of each persisted flag
+        flag_states = {}
+        persisted_flags.each do |flag|
+          enabled = Feature.enabled?(flag, Feature.current_request)
+          state_text = enabled ? 'enabled' : 'disabled'
+          state_color = enabled ? :green : :red
+          flag_states[flag] = Rainbow(state_text).color(state_color)
+        end
+
+        # Sort flags alphabetically and log each flag and its state
+        flag_states.sort.each do |flag, state|
+          log("- #{flag}", value: state)
+        end
+      end
+
+      # Display default feature flags section - shows all flags using default values
+      def log_default_feature_flags
+        # Get all zoekt-related feature flags
+        all_flags = Feature::Definition.definitions.keys
+        zoekt_flags = all_flags.select { |name| name.to_s.start_with?('zoekt_') }
+
+        # Filter for only those using default values
+        default_flags = zoekt_flags.reject { |flag| Feature.persisted_name?(flag.to_s) }
+
+        if default_flags.empty?
+          log("Feature flags", value: Rainbow('none').yellow)
+          return
+        end
+
+        # Get the state of each default flag
+        flag_states = {}
+        default_flags.each do |flag|
+          enabled = Feature.enabled?(flag, Feature.current_request)
+          state_text = enabled ? 'enabled' : 'disabled'
+          state_color = enabled ? :green : :red
+          flag_states[flag] = Rainbow(state_text).color(state_color)
+        end
+
+        # Sort flags alphabetically and log each flag and its state
+        flag_states.sort_by { |k, _| k.to_s }.each do |flag, state|
+          log("- #{flag}", value: state)
+        end
+      end
+
+      # Display general settings section including GitLab version and Zoekt settings
+      def display_settings_section
+        setting = ::ApplicationSetting.current
+
+        log_header("Exact Code Search")
+        log("GitLab version", value: Gitlab.version_info)
+
+        # Automatically log all Zoekt settings
+        ::Search::Zoekt::Settings.all_settings.each do |setting_name, value|
+          log(value[:label].call, value: setting.public_send(setting_name)) # rubocop:disable GitlabSecurity/PublicSend -- we control `setting_name` in source code
+        end
+
+        display_entries
+      end
+
+      def display_nodes_section
+        log_header("Nodes")
+        log_node_counts
+        log_last_seen
+        log_indexed_data
+        log_node_watermark_levels
+        display_entries
+      end
+
+      def display_indexing_status_section
+        log_header("Indexing status")
+        log_enabled_namespaces
+        log_model_counts
+        display_entries
+      end
+
+      def log_node_counts
+        total_count = Search::Zoekt::Node.count
+        online_count = Search::Zoekt::Node.online.count
+        offline_count = total_count - online_count
+        log("Node count",
+          value: "#{total_count} (online: #{Rainbow(online_count).green}, offline: #{Rainbow(offline_count).red})")
+      end
+
+      def log_node_watermark_levels
+        nodes = Search::Zoekt::Node.online.to_a
+
+        watermark_counts = Hash.new(0)
+
+        nodes.each do |node|
+          if node.watermark_exceeded_critical?
+            watermark_counts[:critical] += 1
+          elsif node.watermark_exceeded_high?
+            watermark_counts[:high] += 1
+          elsif node.watermark_exceeded_low?
+            watermark_counts[:low] += 1
+          else
+            watermark_counts[:normal] += 1
+          end
+        end
+
+        total = watermark_counts.values.sum
+        if total > 0
+          # Create a colored version of the watermark counts for display
+          # We're not using color-coding here since it's being handled differently in display_nested_value
+          colored_counts = watermark_counts.clone
+
+          log("Online node watermark levels", value: total, nested: colored_counts)
+        else
+          log("Online node watermark levels", value: Rainbow('(none)').yellow)
+        end
+      end
+
+      def log_indexed_data
+        usable_bytes = Search::Zoekt::Node.sum(:usable_storage_bytes)
+        indexed_bytes = Search::Zoekt::Node.sum(:indexed_bytes)
+        reserved_bytes = Search::Zoekt::Index.sum(:reserved_storage_bytes)
+        used_bytes = Search::Zoekt::Node.sum(:used_bytes)
+        total_bytes = Search::Zoekt::Node.sum(:total_bytes)
+
+        # Calculate percentages with proper handling for zero values
+        reserved_percentage = usable_bytes == 0 ? 0 : (reserved_bytes.to_f / usable_bytes * 100).round(2)
+        indexed_percentage = reserved_bytes == 0 ? 0 : (indexed_bytes.to_f / reserved_bytes * 100).round(2)
+        usage_percentage = total_bytes == 0 ? 0 : (used_bytes.to_f / total_bytes * 100).round(2)
+
+        log("Storage reserved / usable", value: "#{number_to_human_size(reserved_bytes)} / " \
+                                           "#{number_to_human_size(usable_bytes)} (#{reserved_percentage}%)")
+        log("Storage indexed / reserved", value: "#{number_to_human_size(indexed_bytes)} / " \
+                                            "#{number_to_human_size(reserved_bytes)} (#{indexed_percentage}%)")
+        log("Storage used / total", value: "#{number_to_human_size(used_bytes)} / " \
+                                      "#{number_to_human_size(total_bytes)} (#{usage_percentage}%)")
+      end
+
+      def log_last_seen
+        log("Last seen at", value: Search::Zoekt::Node.maximum(:last_seen_at))
+      end
+
+      def log_enabled_namespaces
+        total_count = Search::Zoekt::EnabledNamespace.count
+        with_missing_indices = Search::Zoekt::EnabledNamespace.with_missing_indices.count
+        with_search_disabled = Search::Zoekt::EnabledNamespace.search_disabled.count
+        log("EnabledNamespace count", value: "#{total_count} (without indices: #{Rainbow(with_missing_indices).red}, " \
+                                        "with search disabled: #{Rainbow(with_search_disabled).yellow})")
+      end
+
+      def log_model_counts
+        log_model_count(Search::Zoekt::Replica, "Replicas count")
+        log_model_count(Search::Zoekt::Index, "Indices count")
+        log_model_count(Search::Zoekt::Index, "Indices watermark levels", group_by: :watermark_level)
+        log_model_count(Search::Zoekt::Repository, "Repositories count")
+        log_model_count(Search::Zoekt::Task, "Tasks count")
+        log_model_count(Search::Zoekt::Task.pending_or_processing, "Tasks pending/processing by type",
+          group_by: :task_type)
+      end
+
+      # rubocop:disable CodeReuse/ActiveRecord -- we need to use group(:state).count here without a scope
+      def log_model_count(model, label, group_by: :state)
+        counts = model.group(group_by).count
+        log(label, value: counts.values.sum, nested: counts)
+      end
+      # rubocop:enable CodeReuse/ActiveRecord
+
+      def format_value(value)
+        case value
+        when TrueClass
+          Rainbow('yes').green
+        when FalseClass
+          'no'
+        when ActiveSupport::TimeWithZone, Time
+          utc_time = value.utc
+          relative_time = time_ago_in_words(utc_time)
+          "#{utc_time} (#{relative_time} ago)"
+        when NilClass
+          Rainbow('(never)').yellow
+        else
+          value.to_s
+        end
+      end
+
+      def log_header(message)
+        display_entries # Display any collected entries before the new header
+        logger.info("\n#{Rainbow(message).bright.yellow.underline}")
+        @entries = [] # Start a new section
+      end
+
+      def log(key, value: nil, nested: nil)
+        entries << {
+          key: key,
+          value: value,
+          nested: nested
+        }
+      end
+
+      def display_entries
+        return if entries.empty?
+
+        # Calculate padding based only on current section's entries
+        max_length = entries.map { |entry| entry[:key].length }.max
+        padding = max_length + 2 # Add 2 for the colon and space
+
+        entries.each do |entry|
+          key_with_padding = "#{entry[:key]}:#{' ' * (padding - entry[:key].length)}"
+
+          if entry[:nested]
+            if entry[:nested].empty?
+              logger.info("#{key_with_padding}#{Rainbow('(none)').yellow}")
+            else
+              logger.info("#{key_with_padding}#{entry[:value]}")
+              display_nested_value(entry[:nested])
+            end
+          else
+            formatted_value = format_value(entry[:value])
+            logger.info("#{key_with_padding}#{formatted_value}")
+          end
+        end
+        @entries = []
+      end
+
+      def display_nested_value(value, indent = 2)
+        # Sort by key to ensure consistent order
+        value.sort.each do |k, v|
+          # For watermark levels and states, apply special coloring
+          colored_value = case k.to_sym
+                          when :critical, :failed, :critical_watermark_exceeded
+                            Rainbow(v).red.bright
+                          when :high, :evicted, :high_watermark_exceeded
+                            Rainbow(v).red
+                          when :low, :overprovisioned, :low_watermark_exceeded
+                            Rainbow(v).yellow
+                          when :normal, :done, :ready, :healthy
+                            Rainbow(v).green
+                          else
+                            v
+                          end
+
+          logger.info("#{' ' * indent}- #{k}: #{colored_value}")
+        end
+      end
+    end
+  end
+end
