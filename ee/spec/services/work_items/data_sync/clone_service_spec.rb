@@ -36,13 +36,13 @@ RSpec.describe WorkItems::DataSync::CloneService, feature_category: :team_planni
     context 'when user cannot read original work item' do
       let_it_be(:current_user) { target_namespace_member }
 
-      it_behaves_like 'fails to transfer work item', 'Cannot clone work item due to insufficient permissions'
+      it_behaves_like 'fails to transfer work item', 'Unable to clone. You have insufficient permissions.'
     end
 
     context 'when user cannot create work items in target namespace' do
       let_it_be(:current_user) { source_namespace_member }
 
-      it_behaves_like 'fails to transfer work item', 'Cannot clone work item due to insufficient permissions'
+      it_behaves_like 'fails to transfer work item', 'Unable to clone. You have insufficient permissions.'
     end
   end
 
@@ -54,7 +54,7 @@ RSpec.describe WorkItems::DataSync::CloneService, feature_category: :team_planni
         stub_licensed_features(epics: false)
       end
 
-      it_behaves_like 'fails to transfer work item', 'Cannot clone work item due to insufficient permissions'
+      it_behaves_like 'fails to transfer work item', 'Unable to clone. You have insufficient permissions.'
     end
 
     context 'when cloning to a pending delete group' do
@@ -71,7 +71,7 @@ RSpec.describe WorkItems::DataSync::CloneService, feature_category: :team_planni
       end
 
       it_behaves_like 'fails to transfer work item',
-        'Cannot clone work item to target namespace as it is pending deletion'
+        'Unable to clone. Target namespace is pending deletion.'
     end
 
     context 'when cloning work item with success', :freeze_time do
