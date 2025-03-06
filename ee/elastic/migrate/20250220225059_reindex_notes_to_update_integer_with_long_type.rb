@@ -1,11 +1,9 @@
 # frozen_string_literal: true
 
 class ReindexNotesToUpdateIntegerWithLongType < Elastic::Migration
-  def migrate
-    Search::Elastic::ReindexingTask.create!(targets: %w[Note], options: { skip_pending_migrations_check: true })
-  end
+  include ::Search::Elastic::MigrationReindexTaskHelper
 
-  def completed?
-    true
+  def targets
+    %w[Note]
   end
 end
