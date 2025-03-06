@@ -2,8 +2,11 @@ import { GlAlert } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
+import axios from 'axios';
+import MockAdapter from 'axios-mock-adapter';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import waitForPromises from 'helpers/wait_for_promises';
 import {
   PRESET_OPTIONS_BLANK,
   PRESET_OPTIONS_DEFAULT,
@@ -12,6 +15,7 @@ import CustomStageFields from 'ee/analytics/cycle_analytics/vsa_settings/compone
 import DefaultStageFields from 'ee/analytics/cycle_analytics/vsa_settings/components/default_stage_fields.vue';
 import ValueStreamFormContent from 'ee/analytics/cycle_analytics/vsa_settings/components/value_stream_form_content.vue';
 import { mockTracking, unmockTracking } from 'helpers/tracking_helper';
+import { HTTP_STATUS_OK, HTTP_STATUS_NOT_FOUND } from '~/lib/utils/http_status';
 import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
 import {
   convertObjectPropsToCamelCase,
@@ -23,6 +27,7 @@ import {
   defaultStageConfig,
   rawCustomStage,
   groupLabels as defaultGroupLabels,
+  endpoints,
 } from '../../mock_data';
 
 jest.mock('~/lib/utils/url_utility', () => ({
@@ -33,12 +38,12 @@ jest.mock('~/lib/utils/url_utility', () => ({
 Vue.use(Vuex);
 
 describe('ValueStreamFormContent', () => {
+  let mock;
   let wrapper = null;
   let trackingSpy = null;
 
   const mockValueStream = { id: 13 };
-  const createValueStreamMock = jest.fn(() => Promise.resolve({ data: mockValueStream }));
-  const updateValueStreamMock = jest.fn(() => Promise.resolve({ data: mockValueStream }));
+  const namespacePath = 'fake/group/path';
   const streamName = 'Cool stream';
   const formSubmissionErrors = {
     name: ['has already been taken'],
@@ -50,8 +55,8 @@ describe('ValueStreamFormContent', () => {
   };
 
   const initialData = {
+    ...mockValueStream,
     stages: [convertObjectPropsToCamelCase(rawCustomStage)],
-    id: 1337,
     name: 'Editable value stream',
   };
 
@@ -60,18 +65,11 @@ describe('ValueStreamFormContent', () => {
       state: {
         formEvents,
         defaultGroupLabels,
-        createValueStreamErrors: {},
         selectedValueStream: undefined,
         ...stateOverrides,
       },
-      mutations: {
-        setCreateValueStreamErrors(state, value) {
-          state.createValueStreamErrors = value;
-        },
-      },
-      actions: {
-        createValueStream: createValueStreamMock,
-        updateValueStream: updateValueStreamMock,
+      getters: {
+        namespaceRestApiRequestPath: () => namespacePath,
       },
     });
 
@@ -114,6 +112,14 @@ describe('ValueStreamFormContent', () => {
   const changeToDefaultStages = () =>
     findPresetSelector().vm.$emit('input', PRESET_OPTIONS_DEFAULT);
   const changeToCustomStages = () => findPresetSelector().vm.$emit('input', PRESET_OPTIONS_BLANK);
+
+  beforeEach(() => {
+    mock = new MockAdapter(axios);
+  });
+
+  afterEach(() => {
+    mock.restore();
+  });
 
   describe('when creating value stream', () => {
     beforeEach(() => {
@@ -243,47 +249,6 @@ describe('ValueStreamFormContent', () => {
       });
     });
 
-    describe('initial form stage errors', () => {
-      const createValueStreamErrors = {
-        stages: [
-          {
-            name: ['Name field is required'],
-            startEventIdentifier: ['Start event is required'],
-          },
-        ],
-      };
-
-      beforeEach(() => {
-        wrapper = createComponent({
-          state: { createValueStreamErrors },
-        });
-      });
-
-      it('renders errors for a default stage field', () => {
-        expect(findDefaultStages().at(0).props().errors).toEqual(createValueStreamErrors.stages[0]);
-      });
-    });
-
-    describe('initial form name errors', () => {
-      const nameError = 'Name field required';
-
-      beforeEach(() => {
-        wrapper = createComponent({
-          state: {
-            createValueStreamErrors: { name: [nameError] },
-          },
-        });
-      });
-
-      it('sets the feedback for the name form group', () => {
-        expect(findNameFormGroup().attributes('invalid-feedback')).toBe(nameError);
-      });
-
-      it('sets the state for the name input', () => {
-        expect(findNameInput().props().state).toBe(false);
-      });
-    });
-
     describe('with valid fields', () => {
       beforeEach(() => {
         trackingSpy = mockTracking(undefined, wrapper.element, jest.spyOn);
@@ -295,14 +260,18 @@ describe('ValueStreamFormContent', () => {
 
       describe('form submitted successfully', () => {
         beforeEach(async () => {
+          mock.onPost(endpoints.valueStreamData).replyOnce(HTTP_STATUS_OK, mockValueStream);
           wrapper = createComponent();
 
           await findNameInput().vm.$emit('input', streamName);
           clickSubmit();
+
+          await waitForPromises();
         });
 
-        it('calls the "createValueStream" event when submitted', () => {
-          expect(createValueStreamMock).toHaveBeenCalledWith(expect.any(Object), {
+        it('sends a create request', () => {
+          expect(mock.history.post).toHaveLength(1);
+          expect(JSON.parse(mock.history.post[0].data)).toEqual({
             name: streamName,
             stages: [
               {
@@ -344,16 +313,20 @@ describe('ValueStreamFormContent', () => {
 
       describe('form submission fails', () => {
         beforeEach(async () => {
+          mock.onPost(endpoints.valueStreamData).replyOnce(HTTP_STATUS_NOT_FOUND, {
+            payload: { errors: formSubmissionErrors },
+          });
+
           wrapper = createComponent();
 
           await findNameInput().vm.$emit('input', streamName);
           clickSubmit();
 
-          wrapper.vm.$store.commit('setCreateValueStreamErrors', formSubmissionErrors);
+          await waitForPromises();
         });
 
-        it('calls the createValueStream action', () => {
-          expect(createValueStreamMock).toHaveBeenCalled();
+        it('sends a create request', () => {
+          expect(mock.history.post).toHaveLength(1);
         });
 
         it('does not clear the name field', () => {
@@ -523,6 +496,8 @@ describe('ValueStreamFormContent', () => {
 
       describe('form submitted successfully', () => {
         beforeEach(() => {
+          mock.onPut(endpoints.valueStreamData).replyOnce(HTTP_STATUS_OK, mockValueStream);
+
           wrapper = createComponent({
             props: {
               initialData,
@@ -534,11 +509,16 @@ describe('ValueStreamFormContent', () => {
           });
 
           clickSubmit();
+          return waitForPromises();
         });
 
-        it('calls the "updateValueStreamMock" event when submitted', () => {
-          expect(updateValueStreamMock).toHaveBeenCalledWith(expect.any(Object), {
-            ...initialData,
+        it('sends an update request', () => {
+          expect(mock.history.put).toHaveLength(1);
+          expect(mock.history.put[0].url).toBe(
+            '/fake/group/path/-/analytics/value_stream_analytics/value_streams/13',
+          );
+          expect(JSON.parse(mock.history.put[0].data)).toEqual({
+            name: initialData.name,
             stages: initialData.stages.map((stage) =>
               convertObjectPropsToSnakeCase(stage, { deep: true }),
             ),
@@ -568,6 +548,10 @@ describe('ValueStreamFormContent', () => {
 
       describe('form submission fails', () => {
         beforeEach(() => {
+          mock.onPut(endpoints.valueStreamData).replyOnce(HTTP_STATUS_NOT_FOUND, {
+            payload: { errors: formSubmissionErrors },
+          });
+
           wrapper = createComponent({
             props: {
               initialData,
@@ -579,11 +563,11 @@ describe('ValueStreamFormContent', () => {
           });
 
           clickSubmit();
-          wrapper.vm.$store.commit('setCreateValueStreamErrors', formSubmissionErrors);
+          return waitForPromises();
         });
 
-        it('calls the updateValueStreamMock action', () => {
-          expect(updateValueStreamMock).toHaveBeenCalled();
+        it('sends an update request', () => {
+          expect(mock.history.put).toHaveLength(1);
         });
 
         it('does not clear the name field', () => {

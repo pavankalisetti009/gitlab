@@ -30,7 +30,6 @@ export default () => ({
   isFetchingGroupLabels: false,
   isFetchingGroupStagesAndEvents: false,
 
-  createValueStreamErrors: {},
   deleteValueStreamError: null,
 
   stages: [],

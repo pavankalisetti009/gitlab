@@ -36,7 +36,6 @@ describe('ValueStreamSelect', () => {
     new Vuex.Store({
       state: {
         isDeletingValueStream: false,
-        createValueStreamErrors: {},
         deleteValueStreamError: null,
         valueStreams: [],
         selectedValueStream: {},

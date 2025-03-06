@@ -169,12 +169,3 @@ export const selectedValueStreamStages = ({ hideStages = false, addCustomStage =
   ...(addCustomStage ? [customStage] : []),
   ...defaultStageConfig.map(({ custom, name }) => ({ custom, name, hidden: hideStages })),
 ];
-
-export const formSubmissionErrors = {
-  name: ['has already been taken'],
-  stages: [
-    {
-      name: ['has already been taken'],
-    },
-  ],
-};

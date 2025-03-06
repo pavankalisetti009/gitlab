@@ -5,7 +5,6 @@ import {
   formEvents,
   selectedValueStream,
   selectedValueStreamStages,
-  formSubmissionErrors as createValueStreamErrors,
 } from './stories_constants';
 import ValueStreamForm from './value_stream_form.vue';
 
@@ -71,19 +70,6 @@ export const EditValueStreamWithHiddenStages = {
     state: {
       selectedValueStream,
       stages: selectedValueStreamStages({ addCustomStage: true, hideStages: true }),
-    },
-  }),
-  args: {
-    isEditing: true,
-  },
-};
-
-export const WithFormSubmissionErrors = {
-  render: createStoryWithState({
-    state: {
-      selectedValueStream,
-      stages: selectedValueStreamStages({ addCustomStage: true }),
-      createValueStreamErrors,
     },
   }),
   args: {

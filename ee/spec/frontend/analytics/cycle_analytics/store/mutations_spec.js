@@ -37,54 +37,39 @@ describe('Value Stream Analytics mutations', () => {
   });
 
   it.each`
-    mutation                                     | stateKey                     | value
-    ${types.REQUEST_VALUE_STREAMS}               | ${'valueStreams'}            | ${[]}
-    ${types.RECEIVE_VALUE_STREAMS_ERROR}         | ${'valueStreams'}            | ${[]}
-    ${types.REQUEST_VALUE_STREAMS}               | ${'isLoadingValueStreams'}   | ${true}
-    ${types.RECEIVE_VALUE_STREAMS_ERROR}         | ${'isLoadingValueStreams'}   | ${false}
-    ${types.REQUEST_STAGE_DATA}                  | ${'isLoadingStage'}          | ${true}
-    ${types.REQUEST_STAGE_DATA}                  | ${'selectedStageEvents'}     | ${[]}
-    ${types.REQUEST_STAGE_DATA}                  | ${'pagination'}              | ${{}}
-    ${types.RECEIVE_STAGE_DATA_ERROR}            | ${'isLoadingStage'}          | ${false}
-    ${types.RECEIVE_STAGE_DATA_ERROR}            | ${'selectedStageEvents'}     | ${[]}
-    ${types.RECEIVE_STAGE_DATA_ERROR}            | ${'pagination'}              | ${{}}
-    ${types.REQUEST_VALUE_STREAM_DATA}           | ${'isLoading'}               | ${true}
-    ${types.RECEIVE_GROUP_STAGES_ERROR}          | ${'stages'}                  | ${[]}
-    ${types.REQUEST_GROUP_STAGES}                | ${'stages'}                  | ${[]}
-    ${types.REQUEST_STAGE_MEDIANS}               | ${'medians'}                 | ${{}}
-    ${types.RECEIVE_STAGE_MEDIANS_ERROR}         | ${'medians'}                 | ${{}}
-    ${types.REQUEST_CREATE_VALUE_STREAM}         | ${'createValueStreamErrors'} | ${{}}
-    ${types.REQUEST_UPDATE_VALUE_STREAM}         | ${'createValueStreamErrors'} | ${{}}
-    ${types.REQUEST_DELETE_VALUE_STREAM}         | ${'isDeletingValueStream'}   | ${true}
-    ${types.RECEIVE_DELETE_VALUE_STREAM_SUCCESS} | ${'isDeletingValueStream'}   | ${false}
-    ${types.REQUEST_DELETE_VALUE_STREAM}         | ${'deleteValueStreamError'}  | ${null}
-    ${types.RECEIVE_DELETE_VALUE_STREAM_SUCCESS} | ${'deleteValueStreamError'}  | ${null}
-    ${types.RECEIVE_DELETE_VALUE_STREAM_SUCCESS} | ${'selectedValueStream'}     | ${null}
-    ${types.RECEIVE_DELETE_VALUE_STREAM_SUCCESS} | ${'stages'}                  | ${[]}
-    ${types.INITIALIZE_VALUE_STREAM_SUCCESS}     | ${'isLoading'}               | ${false}
-    ${types.REQUEST_STAGE_COUNTS}                | ${'stageCounts'}             | ${{}}
-    ${types.RECEIVE_STAGE_COUNTS_ERROR}          | ${'stageCounts'}             | ${{}}
-    ${types.REQUEST_GROUP_LABELS}                | ${'defaultGroupLabels'}      | ${[]}
-    ${types.RECEIVE_GROUP_LABELS_ERROR}          | ${'defaultGroupLabels'}      | ${[]}
-    ${types.SET_STAGE_EVENTS}                    | ${'formEvents'}              | ${[]}
+    mutation                                     | stateKey                    | value
+    ${types.REQUEST_VALUE_STREAMS}               | ${'valueStreams'}           | ${[]}
+    ${types.RECEIVE_VALUE_STREAMS_ERROR}         | ${'valueStreams'}           | ${[]}
+    ${types.REQUEST_VALUE_STREAMS}               | ${'isLoadingValueStreams'}  | ${true}
+    ${types.RECEIVE_VALUE_STREAMS_ERROR}         | ${'isLoadingValueStreams'}  | ${false}
+    ${types.REQUEST_STAGE_DATA}                  | ${'isLoadingStage'}         | ${true}
+    ${types.REQUEST_STAGE_DATA}                  | ${'selectedStageEvents'}    | ${[]}
+    ${types.REQUEST_STAGE_DATA}                  | ${'pagination'}             | ${{}}
+    ${types.RECEIVE_STAGE_DATA_ERROR}            | ${'isLoadingStage'}         | ${false}
+    ${types.RECEIVE_STAGE_DATA_ERROR}            | ${'selectedStageEvents'}    | ${[]}
+    ${types.RECEIVE_STAGE_DATA_ERROR}            | ${'pagination'}             | ${{}}
+    ${types.REQUEST_VALUE_STREAM_DATA}           | ${'isLoading'}              | ${true}
+    ${types.RECEIVE_GROUP_STAGES_ERROR}          | ${'stages'}                 | ${[]}
+    ${types.REQUEST_GROUP_STAGES}                | ${'stages'}                 | ${[]}
+    ${types.REQUEST_STAGE_MEDIANS}               | ${'medians'}                | ${{}}
+    ${types.RECEIVE_STAGE_MEDIANS_ERROR}         | ${'medians'}                | ${{}}
+    ${types.REQUEST_DELETE_VALUE_STREAM}         | ${'isDeletingValueStream'}  | ${true}
+    ${types.RECEIVE_DELETE_VALUE_STREAM_SUCCESS} | ${'isDeletingValueStream'}  | ${false}
+    ${types.REQUEST_DELETE_VALUE_STREAM}         | ${'deleteValueStreamError'} | ${null}
+    ${types.RECEIVE_DELETE_VALUE_STREAM_SUCCESS} | ${'deleteValueStreamError'} | ${null}
+    ${types.RECEIVE_DELETE_VALUE_STREAM_SUCCESS} | ${'selectedValueStream'}    | ${null}
+    ${types.RECEIVE_DELETE_VALUE_STREAM_SUCCESS} | ${'stages'}                 | ${[]}
+    ${types.INITIALIZE_VALUE_STREAM_SUCCESS}     | ${'isLoading'}              | ${false}
+    ${types.REQUEST_STAGE_COUNTS}                | ${'stageCounts'}            | ${{}}
+    ${types.RECEIVE_STAGE_COUNTS_ERROR}          | ${'stageCounts'}            | ${{}}
+    ${types.REQUEST_GROUP_LABELS}                | ${'defaultGroupLabels'}     | ${[]}
+    ${types.RECEIVE_GROUP_LABELS_ERROR}          | ${'defaultGroupLabels'}     | ${[]}
+    ${types.SET_STAGE_EVENTS}                    | ${'formEvents'}             | ${[]}
   `('$mutation will set $stateKey=$value', ({ mutation, stateKey, value }) => {
     mutations[mutation](state);
 
     expect(state[stateKey]).toEqual(value);
   });
-
-  const valueStreamErrors = {
-    data: { stages },
-    errors: {
-      name: ['is required'],
-      stages: { 1: { name: "Can't be blank" } },
-    },
-  };
-
-  const expectedValueStreamErrors = {
-    name: ['is required'],
-    stages: [{}, { name: "Can't be blank" }, {}, {}, {}, {}, {}, {}],
-  };
 
   const pagination = { page: 10, hasNextPage: true, sort: null, direction: null };
 
@@ -94,8 +79,6 @@ describe('Value Stream Analytics mutations', () => {
     ${types.SET_DATE_RANGE}                    | ${{ createdAfter, createdBefore }}                       | ${{ createdAfter, createdBefore }}
     ${types.SET_PREDEFINED_DATE_RANGE}         | ${predefinedDateRange}                                   | ${{ predefinedDateRange }}
     ${types.SET_SELECTED_STAGE}                | ${{ id: 'first-stage' }}                                 | ${{ selectedStage: { id: 'first-stage' } }}
-    ${types.RECEIVE_CREATE_VALUE_STREAM_ERROR} | ${valueStreamErrors}                                     | ${{ createValueStreamErrors: expectedValueStreamErrors }}
-    ${types.RECEIVE_UPDATE_VALUE_STREAM_ERROR} | ${valueStreamErrors}                                     | ${{ createValueStreamErrors: expectedValueStreamErrors }}
     ${types.RECEIVE_DELETE_VALUE_STREAM_ERROR} | ${'Some error occurred'}                                 | ${{ deleteValueStreamError: 'Some error occurred' }}
     ${types.RECEIVE_VALUE_STREAMS_SUCCESS}     | ${valueStreams}                                          | ${{ valueStreams, isLoadingValueStreams: false }}
     ${types.SET_SELECTED_VALUE_STREAM}         | ${valueStreams[1].id}                                    | ${{ selectedValueStream: {} }}
