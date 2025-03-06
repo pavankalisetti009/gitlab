@@ -2,6 +2,8 @@
 
 module Onboarding
   class StatusCreateService
+    include Groups::EnterpriseUsers::Associable
+
     def initialize(params, user_return_to, user, step_url)
       @params = params
       @user_return_to = user_return_to
@@ -11,6 +13,11 @@ module Onboarding
 
     def execute
       return ServiceResponse.error(message: 'Onboarding is not enabled', payload: payload) unless ::Onboarding.enabled?
+
+      if ::Feature.enabled?(:no_onboarding_enterprise_users, ::Feature.current_request) &&
+          user_eligible_or_already_enterprise_user?
+        return ServiceResponse.error(message: 'User is not eligible due to Enterprise group', payload: payload)
+      end
 
       if user.update(user_attributes)
         ServiceResponse.success(payload: payload)
