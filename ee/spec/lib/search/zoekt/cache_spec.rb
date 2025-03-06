@@ -72,75 +72,61 @@ RSpec.describe Search::Zoekt::Cache, :clean_gitlab_redis_cache, feature_category
     end
   end
 
-  context 'when feature flag is disabled' do
-    before do
-      stub_feature_flags(zoekt_cache_search_responses: false)
+  describe '#enabled?' do
+    it 'returns true' do
+      expect(cache.enabled?).to be true
     end
 
-    describe '#enabled?' do
+    context 'when per_page is more than max_per_page' do
+      let(:default_options) do
+        { per_page: 40, max_per_page: 20, search_mode: :regex }
+      end
+
       it 'returns false' do
         expect(cache.enabled?).to be false
       end
     end
 
-    describe '#fetch' do
-      it 'does not use cache' do
-        expect(cache).not_to receive(:read_cache)
-        expect(response).to receive(:length)
+    context 'when project_ids is not array' do
+      let(:project_ids) { nil }
 
-        data = cache.fetch do
-          response.length
-          response
-        end
+      it 'returns false' do
+        expect(cache.enabled?).to be false
+      end
+    end
 
-        expect(data).to eq(response)
+    context 'when project_ids is empty' do
+      let(:project_ids) { [] }
+
+      it 'returns false' do
+        expect(cache.enabled?).to be false
       end
     end
   end
 
-  context 'when feature flag is enabled' do
-    before do
-      stub_feature_flags(zoekt_cache_search_responses: true)
-    end
+  describe '#fetch' do
+    it 'reads and updates cache' do
+      expect(cache).to receive(:read_cache)
+      expect(cache).to receive(:update_cache!)
 
-    describe '#enabled?' do
-      it 'returns true' do
-        expect(cache.enabled?).to be true
+      data = cache.fetch do |page_limit|
+        expect(page_limit).to eq(described_class::MAX_PAGES)
+        response
       end
 
-      context 'when project_ids is empty' do
-        let(:project_ids) { [] }
-
-        it 'returns false' do
-          expect(cache.enabled?).to be false
-        end
-      end
+      expect(data).to eq(response)
     end
 
-    describe '#fetch' do
-      it 'reads and updates cache' do
-        expect(cache).to receive(:read_cache)
-        expect(cache).to receive(:update_cache!)
+    context 'when page is higher than the limit' do
+      let(:page) { 3 }
 
+      it 'sets the correct page limit' do
         data = cache.fetch do |page_limit|
-          expect(page_limit).to eq(described_class::MAX_PAGES)
+          expect(page_limit).to eq(page)
           response
         end
 
         expect(data).to eq(response)
-      end
-
-      context 'when page is higher than the limit' do
-        let(:page) { 3 }
-
-        it 'sets the correct page limit' do
-          data = cache.fetch do |page_limit|
-            expect(page_limit).to eq(page)
-            response
-          end
-
-          expect(data).to eq(response)
-        end
       end
     end
   end
