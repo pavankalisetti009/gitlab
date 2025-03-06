@@ -301,6 +301,7 @@ build:
   stage: build
   image: "python:latest"
   script:
+    - "pip install -r requirements.txt"
     - "pip install pipdeptree"
     - "pipdeptree --json > pipdeptree.json"
   artifacts:
