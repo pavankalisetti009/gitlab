@@ -501,7 +501,7 @@ export default {
       return [];
     },
     enableClientSideBoardsExperiment() {
-      return this.glFeatures.workItemClientSideBoards;
+      return this.glFeatures.workItemsClientSideBoards;
     },
     workItemTypeName() {
       return this.workItemType === WORK_ITEM_TYPE_ENUM_EPIC
