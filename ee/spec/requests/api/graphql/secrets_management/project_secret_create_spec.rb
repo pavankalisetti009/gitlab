@@ -32,6 +32,7 @@ RSpec.describe 'Create project secret', :gitlab_secrets_manager, feature_categor
     stub_application_setting(ci_jwt_signing_key: rsa_key)
 
     provision_project_secrets_manager(secrets_manager)
+    stub_last_activity_update
   end
 
   context 'when current user is not part of the project' do
@@ -51,6 +52,14 @@ RSpec.describe 'Create project secret', :gitlab_secrets_manager, feature_categor
       project.add_owner(current_user)
     end
 
+    it_behaves_like 'internal event tracking' do
+      let(:event) { 'create_ci_secret' }
+      let(:user) { current_user }
+      let(:namespace) { project.namespace }
+      let(:additional_properties) { { label: 'graphql' } }
+      let(:category) { 'Mutations::SecretsManagement::ProjectSecretCreate' }
+    end
+
     it 'creates the project secret', :aggregate_failures do
       post_mutation
 
@@ -68,6 +77,12 @@ RSpec.describe 'Create project secret', :gitlab_secrets_manager, feature_categor
     end
 
     context 'and service results to a failure' do
+      before do
+        allow_next_instance_of(SecretsManagement::CreateProjectSecretService) do |service|
+          allow(service).to receive(:execute).and_return(ServiceResponse.error(message: 'some error'))
+        end
+      end
+
       it 'returns the service error' do
         expect_next_instance_of(SecretsManagement::CreateProjectSecretService) do |service|
           project_secret = SecretsManagement::ProjectSecret.new
@@ -81,6 +96,8 @@ RSpec.describe 'Create project secret', :gitlab_secrets_manager, feature_categor
 
         expect(mutation_response['errors']).to include('some error')
       end
+
+      it_behaves_like 'internal event not tracked'
     end
 
     context 'and secrets_manager feature flag is disabled' do
