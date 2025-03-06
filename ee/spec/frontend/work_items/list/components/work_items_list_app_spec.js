@@ -56,6 +56,7 @@ describeSkipVue3(skipReason, () => {
     hasOkrsFeature: true,
     hasQualityManagementFeature: true,
     hasIssuableHealthStatusFeature: true,
+    hasIssueDateFilterFeature: false,
   };
 
   const mountComponent = ({
