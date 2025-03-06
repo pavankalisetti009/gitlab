@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class CreateWorkItemsIndex < Elastic::Migration
-  include Elastic::MigrationCreateIndex
+  include ::Search::Elastic::MigrationCreateIndexHelper
 
   retry_on_failure
 
