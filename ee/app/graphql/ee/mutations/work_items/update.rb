@@ -19,9 +19,9 @@ module EE
             required: false,
             description: 'Input for progress widget.'
 
-          argument :status_widget, ::Types::WorkItems::Widgets::StatusInputType,
+          argument :verification_status_widget, ::Types::WorkItems::Widgets::VerificationStatusInputType,
             required: false,
-            description: 'Input for status widget.'
+            description: 'Input for verification status widget.'
 
           argument :health_status_widget, ::Types::WorkItems::Widgets::HealthStatusInputType,
             required: false,

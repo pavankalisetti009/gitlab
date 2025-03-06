@@ -7,9 +7,9 @@ module EE
       extend ::Gitlab::Utils::Override
 
       prepended do
-        argument :status_widget, ::Types::WorkItems::Widgets::StatusFilterInputType,
+        argument :verification_status_widget, ::Types::WorkItems::Widgets::VerificationStatusFilterInputType,
           required: false,
-          description: 'Input for status widget filter. Ignored if `work_items_alpha` is disabled.'
+          description: 'Input for verification status widget filter. Ignored if `work_items_alpha` is disabled.'
         argument :requirement_legacy_widget, ::Types::WorkItems::Widgets::RequirementLegacyFilterInputType,
           required: false,
           deprecated: { reason: 'Use work item IID filter instead', milestone: '15.9' },
@@ -24,7 +24,7 @@ module EE
 
       override :resolve_with_lookahead
       def resolve_with_lookahead(**args)
-        args.delete(:status_widget) unless resource_parent&.work_items_alpha_feature_flag_enabled?
+        args.delete(:verification_status_widget) unless resource_parent&.work_items_alpha_feature_flag_enabled?
 
         super
       end
@@ -34,7 +34,7 @@ module EE
       override :widget_preloads
       def widget_preloads
         super.merge(
-          status: { requirement: :recent_test_reports },
+          verification_status: { requirement: :recent_test_reports },
           progress: :progress,
           color: :color,
           test_reports: :test_reports

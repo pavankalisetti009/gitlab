@@ -60,7 +60,7 @@ module Resolvers
           # Last test report state is a widget on work items
           # We need to parse the parameter here to filter work items correctly
           if values[:last_test_report_state].present?
-            values[:status_widget] = { status: args.delete(:last_test_report_state) }
+            values[:verification_status_widget] = { verification_status: args.delete(:last_test_report_state) }
           end
         end
       end

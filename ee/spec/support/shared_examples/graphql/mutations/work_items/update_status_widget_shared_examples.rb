@@ -1,17 +1,17 @@
 # frozen_string_literal: true
 
-RSpec.shared_examples 'update work item status widget' do
-  it 'updates the status widget' do
+RSpec.shared_examples 'update work item verification status widget' do
+  it 'updates the verification status widget' do
     expect do
       post_graphql_mutation(mutation, current_user: current_user)
       work_item.reload
-    end.to change { work_item_status }.from("satisfied").to(new_status.downcase)
+    end.to change { work_item_verification_status }.from("satisfied").to(new_verification_status.downcase)
 
     expect(response).to have_gitlab_http_status(:success)
     expect(mutation_response['workItem']['widgets']).to include(
       {
-        'status' => new_status.downcase,
-        'type' => 'STATUS'
+        'verificationStatus' => new_verification_status.downcase,
+        'type' => 'VERIFICATION_STATUS'
       }
     )
   end

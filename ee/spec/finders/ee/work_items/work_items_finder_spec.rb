@@ -12,11 +12,11 @@ RSpec.describe WorkItems::WorkItemsFinder, feature_category: :team_planning do
       described_class.new(user, params).execute
     end
 
-    context 'with status widget' do
+    context 'with verification status widget' do
       let_it_be(:work_item1) { create(:work_item, project: project) }
       let_it_be(:work_item2) { create(:work_item, :satisfied_status, project: project) }
 
-      let(:params) { { status_widget: { status: 'passed' } } }
+      let(:params) { { verification_status_widget: { verification_status: 'passed' } } }
 
       before do
         project.add_reporter(user)

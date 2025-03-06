@@ -2,14 +2,14 @@
 
 module WorkItems
   module Callbacks
-    class Status < Base
+    class VerificationStatus < Base
       def before_update
         return remove_test_report_associations if excluded_in_new_type?
 
         return unless has_permission?(:create_requirement_test_report)
-        return unless params&.has_key?(:status)
+        return unless params&.has_key?(:verification_status)
 
-        status_param = params[:status]
+        status_param = params[:verification_status]
 
         test_report =
           RequirementsManagement::TestReport.build_report(

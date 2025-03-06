@@ -667,9 +667,9 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
     end
   end
 
-  context 'with status widget input' do
-    let(:new_status) { 'FAILED' }
-    let(:input) { { 'statusWidget' => { 'status' => new_status } } }
+  context 'with verification status widget input' do
+    let(:new_verification_status) { 'FAILED' }
+    let(:input) { { 'verificationStatusWidget' => { 'verification_status' => new_verification_status } } }
 
     let_it_be_with_refind(:work_item) { create(:work_item, :satisfied_status, project: project) }
 
@@ -678,8 +678,8 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
         workItem {
           widgets {
             type
-            ... on WorkItemWidgetStatus {
-              status
+            ... on WorkItemWidgetVerificationStatus {
+              verificationStatus
             }
           }
         }
@@ -687,9 +687,9 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
       FIELDS
     end
 
-    def work_item_status
+    def work_item_verification_status
       state = work_item.requirement&.last_test_report_state
-      ::WorkItems::Widgets::Status::STATUS_MAP[state]
+      ::WorkItems::Widgets::VerificationStatus::STATUS_MAP[state]
     end
 
     context 'when requirements is unlicensed' do
@@ -700,7 +700,7 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
       end
 
       it_behaves_like 'work item is not updated' do
-        let(:work_item_change) { -> { work_item_status } }
+        let(:work_item_change) { -> { work_item_verification_status } }
       end
     end
 
@@ -712,13 +712,13 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
       context 'when user has permissions to admin a work item' do
         let(:current_user) { reporter }
 
-        it_behaves_like 'update work item status widget'
+        it_behaves_like 'update work item verification status widget'
 
         context 'when the work item has synced epic' do
           let_it_be(:work_item) { synced_epic.work_item }
 
           it_behaves_like 'work item is not updated' do
-            let(:work_item_change) { -> { work_item_status } }
+            let(:work_item_change) { -> { work_item_verification_status } }
           end
         end
 
@@ -727,33 +727,33 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
           # it can't be directly set that way
 
           let(:input) do
-            { 'statusWidget' => { 'status' => 'UNVERIFIED' } }
+            { 'verificationStatusWidget' => { 'verificationStatus' => 'UNVERIFIED' } }
           end
 
           it "does not update the work item's status" do
             # due to 'passed' internally and 'satisfied' externally, map it here
-            expect(work_item_status).to eq("satisfied")
+            expect(work_item_verification_status).to eq("satisfied")
 
             expect do
               post_graphql_mutation(mutation, current_user: current_user)
               work_item.reload
-            end.not_to change { work_item_status }
+            end.not_to change { work_item_verification_status }
 
-            expect(work_item_status).to eq("satisfied")
+            expect(work_item_verification_status).to eq("satisfied")
           end
         end
       end
 
       it_behaves_like 'work item is not updated' do
         let(:current_user) { guest }
-        let(:work_item_change) { -> { work_item_status } }
+        let(:work_item_change) { -> { work_item_verification_status } }
       end
 
       context 'when the user does not have permission to update the work item' do
         let(:current_user) { guest }
 
         it_behaves_like 'work item is not updated' do
-          let(:work_item_change) { -> { work_item_status } }
+          let(:work_item_change) { -> { work_item_verification_status } }
         end
 
         context 'when a base attribute is present' do

@@ -13,11 +13,16 @@ RSpec.describe Resolvers::WorkItemsResolver do
     let_it_be(:work_item2) { create(:work_item, :failed_status, project: project, health_status: :at_risk, weight: 1) }
     let_it_be(:work_item3) { create(:work_item, :requirement, project: project, health_status: :on_track, weight: 2) }
 
-    context 'with status widget arguments', feature_category: :requirements_management do
-      it 'filters work items by status' do
-        expect(resolve_items(status_widget: { status: 'passed' })).to contain_exactly(work_item1)
-        expect(resolve_items(status_widget: { status: 'failed' })).to contain_exactly(work_item2)
-        expect(resolve_items(status_widget: { status: 'missing' })).to contain_exactly(work_item3)
+    context 'with verification status widget arguments', feature_category: :requirements_management do
+      it 'filters work items by verification status' do
+        expect(resolve_items(verification_status_widget: { verification_status: 'passed' }))
+          .to contain_exactly(work_item1)
+
+        expect(resolve_items(verification_status_widget: { verification_status: 'failed' }))
+          .to contain_exactly(work_item2)
+
+        expect(resolve_items(verification_status_widget: { verification_status: 'missing' }))
+          .to contain_exactly(work_item3)
       end
 
       context 'when work_items_alpha flag is disabled' do
@@ -25,8 +30,8 @@ RSpec.describe Resolvers::WorkItemsResolver do
           stub_feature_flags(work_items_alpha: false)
         end
 
-        it 'ignores status_widget argument' do
-          expect(resolve_items(status_widget: { status: 'passed' }))
+        it 'ignores verification_status_widget argument' do
+          expect(resolve_items(verification_status_widget: { verification_status: 'passed' }))
             .to contain_exactly(work_item1, work_item2, work_item3)
         end
       end

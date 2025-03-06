@@ -3,18 +3,18 @@
 module WorkItems
   module Widgets
     module Filters
-      class Status
+      class VerificationStatus
         def self.filter(relation, params)
-          status = params.dig(:status_widget, :status)
+          verification_status = params.dig(:verification_status_widget, :verification_status)
 
-          return relation unless status
+          return relation unless verification_status
 
           relation = relation.with_issue_type(:requirement)
 
-          if status == 'missing'
+          if verification_status == 'missing'
             relation.without_test_reports
           else
-            relation.with_last_test_report_state(status)
+            relation.with_last_test_report_state(verification_status)
           end
         end
       end

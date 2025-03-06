@@ -130,7 +130,7 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
       end
     end
 
-    context 'for status widget', feature_category: :requirements_management do
+    context 'for verification status widget', feature_category: :requirements_management do
       subject { build(:work_item, :requirement).widgets }
 
       context 'when requirements is licensed' do
@@ -139,17 +139,17 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
         end
 
         it 'returns an instance of the status widget' do
-          is_expected.to include(instance_of(WorkItems::Widgets::Status))
+          is_expected.to include(instance_of(WorkItems::Widgets::VerificationStatus))
         end
       end
 
-      context 'when status is unlicensed' do
+      context 'when verification status is unlicensed' do
         before do
           stub_licensed_features(requirements: false)
         end
 
-        it 'omits an instance of the status widget' do
-          is_expected.not_to include(instance_of(WorkItems::Widgets::Status))
+        it 'omits an instance of the verification status widget' do
+          is_expected.not_to include(instance_of(WorkItems::Widgets::VerificationStatus))
         end
       end
     end
