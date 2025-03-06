@@ -44,7 +44,21 @@ RSpec.describe 'Initialize secrets manager on a project', feature_category: :sec
         ))
     end
 
+    it_behaves_like 'internal event tracking' do
+      let(:event) { 'enable_ci_secrets_manager_for_project' }
+      let(:namespace) { project.namespace }
+      let(:user) { current_user }
+      let(:category) { 'Mutations::SecretsManagement::ProjectSecretsManagerInitialize' }
+      let(:additional_properties) { { label: 'graphql' } }
+    end
+
     context 'and service results to a failure' do
+      before do
+        allow_next_instance_of(SecretsManagement::InitializeProjectSecretsManagerService) do |service|
+          allow(service).to receive(:execute).and_return(ServiceResponse.error(message: 'some error'))
+        end
+      end
+
       it 'returns the service error' do
         expect_next_instance_of(SecretsManagement::InitializeProjectSecretsManagerService) do |service|
           result = ServiceResponse.error(message: 'some error')
@@ -55,6 +69,8 @@ RSpec.describe 'Initialize secrets manager on a project', feature_category: :sec
 
         expect(mutation_response['errors']).to include('some error')
       end
+
+      it_behaves_like 'internal event not tracked'
     end
 
     context 'and secrets_manager feature flag is disabled' do
