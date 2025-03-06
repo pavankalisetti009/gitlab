@@ -1840,6 +1840,9 @@ msgstr ""
 msgid "."
 msgstr ""
 
+msgid ".git-blame-ignore-revs is not a file"
+msgstr ""
+
 msgid ".gitlab-ci.yml with aliases/anchors is not supported. Please change the CI configuration manually."
 msgstr ""
 
@@ -34829,6 +34832,9 @@ msgid "Make sure you trust %{strong_start}%{client_name}%{strong_end} before aut
 msgstr ""
 
 msgid "Makes this %{type} confidential."
+msgstr ""
+
+msgid "Malformed .git-blame-ignore-revs"
 msgstr ""
 
 msgid "Manage"
