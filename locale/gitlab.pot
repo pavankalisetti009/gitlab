@@ -36873,9 +36873,6 @@ msgstr ""
 msgid "MlExperimentTracking|Create an experiment using MLflow"
 msgstr ""
 
-msgid "MlExperimentTracking|Created at"
-msgstr ""
-
 msgid "MlExperimentTracking|Creating an experiment"
 msgstr ""
 
