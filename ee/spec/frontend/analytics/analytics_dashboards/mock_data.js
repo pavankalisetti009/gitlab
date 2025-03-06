@@ -35,77 +35,71 @@ export const TEST_CUSTOM_DASHBOARDS_PROJECT = {
   defaultBranch: 'some-branch',
 };
 
-export const getGraphQLDashboard = (options = {}, withPanels = true) => {
-  const newDashboard = {
-    slug: '',
-    title: '',
-    userDefined: false,
-    status: null,
-    description: 'Understand your audience',
-    __typename: 'CustomizableDashboard',
-    errors: [],
-    filters: {},
-    ...options,
-  };
+export const getGraphQLDashboard = (options = {}) => ({
+  slug: '',
+  title: '',
+  userDefined: false,
+  status: null,
+  description: 'Understand your audience',
+  __typename: 'CustomizableDashboard',
+  errors: [],
+  filters: {},
+  ...options,
+});
 
-  if (withPanels) {
-    return {
-      ...newDashboard,
-      panels: {
-        nodes: [
-          {
-            title: 'Daily Active Users',
-            gridAttributes: {
-              yPos: 1,
-              xPos: 0,
-              width: 6,
-              height: 5,
+export const getGraphQLDashboardWithPanels = (options = {}) => ({
+  ...getGraphQLDashboard(options),
+  panels: {
+    nodes: [
+      {
+        title: 'Daily Active Users',
+        gridAttributes: {
+          yPos: 1,
+          xPos: 0,
+          width: 6,
+          height: 5,
+        },
+        queryOverrides: {
+          limit: 200,
+        },
+        visualization: {
+          slug: 'line_chart',
+          type: 'LineChart',
+          options: {
+            xAxis: {
+              name: 'Time',
+              type: 'time',
             },
-            queryOverrides: {
-              limit: 200,
+            yAxis: {
+              name: 'Counts',
+              type: 'time',
             },
-            visualization: {
-              slug: 'line_chart',
-              type: 'LineChart',
-              options: {
-                xAxis: {
-                  name: 'Time',
-                  type: 'time',
-                },
-                yAxis: {
-                  name: 'Counts',
-                  type: 'time',
-                },
-              },
-              data: {
-                type: 'cube_analytics',
-                query: {
-                  measures: ['TrackedEvents.uniqueUsersCount'],
-                  timeDimensions: [
-                    {
-                      dimension: 'TrackedEvents.derivedTstamp',
-                      granularity: 'day',
-                    },
-                  ],
-                  limit: 100,
-                  timezone: 'UTC',
-                  filters: [],
-                  dimensions: [],
-                },
-              },
-              errors: null,
-              __typename: 'CustomizableDashboardVisualization',
-            },
-            __typename: 'CustomizableDashboardPanel',
           },
-        ],
-        __typename: 'CustomizableDashboardPanelConnection',
+          data: {
+            type: 'cube_analytics',
+            query: {
+              measures: ['TrackedEvents.uniqueUsersCount'],
+              timeDimensions: [
+                {
+                  dimension: 'TrackedEvents.derivedTstamp',
+                  granularity: 'day',
+                },
+              ],
+              limit: 100,
+              timezone: 'UTC',
+              filters: [],
+              dimensions: [],
+            },
+          },
+          errors: null,
+          __typename: 'CustomizableDashboardVisualization',
+        },
+        __typename: 'CustomizableDashboardPanel',
       },
-    };
-  }
-
-  return newDashboard;
-};
+    ],
+    __typename: 'CustomizableDashboardPanelConnection',
+  },
+});
 
 export const TEST_DASHBOARD_GRAPHQL_404_RESPONSE = {
   data: {
@@ -125,15 +119,7 @@ export const TEST_AUDIENCE_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE = {
     project: {
       id: 'gid://gitlab/Project/1',
       customizableDashboards: {
-        nodes: [
-          getGraphQLDashboard(
-            {
-              slug: 'audience',
-              title: 'Audience',
-            },
-            true,
-          ),
-        ],
+        nodes: [getGraphQLDashboardWithPanels({ slug: 'audience', title: 'Audience' })],
         __typename: 'CustomizableDashboardConnection',
       },
       __typename: 'Project',
@@ -147,7 +133,7 @@ export const TEST_CUSTOM_VSD_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE = {
       id: 'gid://gitlab/Project/1',
       customizableDashboards: {
         nodes: [
-          getGraphQLDashboard({
+          getGraphQLDashboardWithPanels({
             slug: 'value_streams_dashboard',
             title: 'Value Streams Dashboard',
             userDefined: false,
@@ -166,15 +152,12 @@ export const TEST_CUSTOM_GROUP_VSD_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE = {
       id: 'gid://gitlab/Group/1',
       customizableDashboards: {
         nodes: [
-          getGraphQLDashboard(
-            {
-              slug: 'value_streams_dashboard',
-              title: 'Value Streams Dashboard',
-              userDefined: false,
-              panels: [],
-            },
-            false,
-          ),
+          getGraphQLDashboard({
+            slug: 'value_streams_dashboard',
+            title: 'Value Streams Dashboard',
+            userDefined: false,
+            panels: [],
+          }),
         ],
         __typename: 'CustomizableDashboardConnection',
       },
@@ -189,7 +172,7 @@ export const TEST_AI_IMPACT_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE = {
       id: 'gid://gitlab/Project/1',
       customizableDashboards: {
         nodes: [
-          getGraphQLDashboard({
+          getGraphQLDashboardWithPanels({
             slug: 'ai_impact',
             title: 'AI impact analytics',
             userDefined: false,
@@ -239,18 +222,15 @@ export const TEST_DASHBOARD_WITH_USAGE_OVERVIEW_GRAPHQL_SUCCESS_RESPONSE = {
       id: 'gid://gitlab/Project/1',
       customizableDashboards: {
         nodes: [
-          getGraphQLDashboard(
-            {
-              slug: 'value_streams_dashboard',
-              title: 'Value Streams Dashboard',
-              userDefined: false,
-              panels: {
-                nodes: [mockUsageOverviewPanel],
-                __typename: 'CustomizableDashboardPanelConnection',
-              },
+          getGraphQLDashboard({
+            slug: 'value_streams_dashboard',
+            title: 'Value Streams Dashboard',
+            userDefined: false,
+            panels: {
+              nodes: [mockUsageOverviewPanel],
+              __typename: 'CustomizableDashboardPanelConnection',
             },
-            false,
-          ),
+          }),
         ],
         __typename: 'CustomizableDashboardConnection',
       },
@@ -275,7 +255,7 @@ export const TEST_INVALID_CUSTOM_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE = {
       id: 'gid://gitlab/Project/1',
       customizableDashboards: {
         nodes: [
-          getGraphQLDashboard({
+          getGraphQLDashboardWithPanels({
             slug: 'custom_dashboard',
             title: 'Custom Dashboard',
             userDefined: true,
@@ -985,7 +965,7 @@ export const invalidVisualization = {
 };
 
 export const mockPanel = {
-  ...getGraphQLDashboard({ slug: 'behavior', title: 'Behavior' }, true).panels.nodes[0],
+  ...getGraphQLDashboardWithPanels({ slug: 'behavior', title: 'Behavior' }).panels.nodes[0],
   id: getUniquePanelId(),
 };
 
@@ -995,16 +975,14 @@ export const TEST_ALL_DASHBOARDS_GRAPHQL_SUCCESS_RESPONSE = {
       id: 'gid://gitlab/Project/1',
       customizableDashboards: {
         nodes: [
-          getGraphQLDashboard({ slug: 'audience', title: 'Audience' }, false),
-          getGraphQLDashboard({ slug: 'behavior', title: 'Behavior' }, false),
-          getGraphQLDashboard(
-            { slug: 'new_dashboard', title: 'new_dashboard', userDefined: true },
-            false,
-          ),
-          getGraphQLDashboard(
-            { slug: 'audience_copy', title: 'Audience (Copy)', userDefined: true },
-            false,
-          ),
+          getGraphQLDashboard({ slug: 'audience', title: 'Audience' }),
+          getGraphQLDashboard({ slug: 'behavior', title: 'Behavior' }),
+          getGraphQLDashboard({ slug: 'new_dashboard', title: 'new_dashboard', userDefined: true }),
+          getGraphQLDashboard({
+            slug: 'audience_copy',
+            title: 'Audience (Copy)',
+            userDefined: true,
+          }),
         ],
         __typename: 'CustomizableDashboardConnection',
       },
@@ -1018,7 +996,7 @@ export const TEST_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE = {
     project: {
       id: 'gid://gitlab/Project/1',
       customizableDashboards: {
-        nodes: [getGraphQLDashboard({ slug: 'audience', title: 'Audience' })],
+        nodes: [getGraphQLDashboardWithPanels({ slug: 'audience', title: 'Audience' })],
         __typename: 'CustomizableDashboardConnection',
       },
       __typename: 'Project',
@@ -1032,7 +1010,7 @@ export const TEST_CUSTOM_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE = {
       id: 'gid://gitlab/Project/1',
       customizableDashboards: {
         nodes: [
-          getGraphQLDashboard({
+          getGraphQLDashboardWithPanels({
             slug: 'custom_dashboard',
             title: 'Custom Dashboard',
             userDefined: true,
