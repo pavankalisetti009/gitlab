@@ -38,35 +38,31 @@ RSpec.describe WorkItems::DataSync::MoveService, feature_category: :team_plannin
     context 'when user cannot read original work item' do
       let_it_be(:current_user) { target_namespace_member }
 
-      it_behaves_like 'fails to transfer work item', 'Cannot move work item due to insufficient permissions'
+      it_behaves_like 'fails to transfer work item', 'Unable to move. You have insufficient permissions.'
     end
 
     context 'when user cannot create work items in target namespace' do
       let_it_be(:current_user) { source_namespace_member }
 
-      it_behaves_like 'fails to transfer work item', 'Cannot move work item due to insufficient permissions'
+      it_behaves_like 'fails to transfer work item', 'Unable to move. You have insufficient permissions.'
     end
   end
 
   context 'when user has permission to move work item' do
     let_it_be(:current_user) { namespaces_member }
 
-    context 'when moving a group level work item to same group' do
-      let(:target_namespace) { group }
-
-      it_behaves_like 'fails to transfer work item', 'Cannot move work item to same project or group it originates from'
-    end
-
     context 'when moving group level work item to a project' do
       let(:target_namespace) { project }
 
-      it_behaves_like 'fails to transfer work item', 'Cannot move work item between Projects and Groups'
+      it_behaves_like 'fails to transfer work item',
+        'Unable to move. Moving across projects and groups is not supported.'
     end
 
     context 'when moving group level work item to a project namespace' do
       let_it_be(:target_namespace) { project.project_namespace }
 
-      it_behaves_like 'fails to transfer work item', 'Cannot move work item between Projects and Groups'
+      it_behaves_like 'fails to transfer work item',
+        'Unable to move. Moving across projects and groups is not supported.'
     end
 
     context 'without group level work item license' do
@@ -74,7 +70,7 @@ RSpec.describe WorkItems::DataSync::MoveService, feature_category: :team_plannin
         stub_licensed_features(epics: false)
       end
 
-      it_behaves_like 'fails to transfer work item', 'Cannot move work item due to insufficient permissions'
+      it_behaves_like 'fails to transfer work item', 'Unable to move. You have insufficient permissions.'
     end
 
     context 'when moving to a pending delete group' do
@@ -90,8 +86,7 @@ RSpec.describe WorkItems::DataSync::MoveService, feature_category: :team_plannin
         target_namespace.deletion_schedule.destroy!
       end
 
-      it_behaves_like 'fails to transfer work item',
-        'Cannot move work item to target namespace as it is pending deletion'
+      it_behaves_like 'fails to transfer work item', 'Unable to move. Target namespace is pending deletion.'
     end
 
     context 'when cloning work item with success', :freeze_time do
@@ -132,6 +127,17 @@ RSpec.describe WorkItems::DataSync::MoveService, feature_category: :team_plannin
       end
 
       it_behaves_like 'cloneable and moveable work item'
+
+      context 'when moving a group level work item to same group' do
+        let(:target_namespace) { group }
+
+        it 'does nothing' do
+          expect(service).to receive(:data_sync_action).and_call_original
+          expect(service).not_to receive(:move_work_item)
+
+          service.execute
+        end
+      end
 
       context 'when cleanup original data is enabled' do
         before do
