@@ -75,6 +75,54 @@ RSpec.describe Groups::EnterpriseUsers::AssociateService, :saas, feature_categor
         service.execute
       end
 
+      context 'for onboarding' do
+        before do
+          user.update!(onboarding_in_progress: true)
+        end
+
+        context 'when onboarding saas feature is not available' do
+          before do
+            stub_saas_features(onboarding: false)
+          end
+
+          it 'does not finish onboarding for the user' do
+            service.execute
+
+            user.reload
+
+            expect(user).to be_onboarding_in_progress
+          end
+        end
+
+        context 'when onboarding saas feature is available' do
+          before do
+            stub_saas_features(onboarding: true)
+          end
+
+          it 'finishes onboarding for the user' do
+            service.execute
+
+            user.reload
+
+            expect(user).not_to be_onboarding_in_progress
+          end
+
+          context 'when no_onboarding_enterprise_users feature is disabled' do
+            before do
+              stub_feature_flags(no_onboarding_enterprise_users: false)
+            end
+
+            it 'does not finish onboarding for the user' do
+              service.execute
+
+              user.reload
+
+              expect(user).to be_onboarding_in_progress
+            end
+          end
+        end
+      end
+
       context 'when the user detail update fails' do
         before do
           user.user_detail.pronouns = 'x' * 51

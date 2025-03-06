@@ -819,6 +819,7 @@ module EE
     end
 
     def associate_with_enterprise_group
+      # see callback reasoning: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/130735#note_1556734817
       run_after_commit do
         ::Groups::EnterpriseUsers::AssociateWorker.perform_async(id)
       end

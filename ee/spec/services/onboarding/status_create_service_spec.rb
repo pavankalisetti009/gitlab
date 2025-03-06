@@ -29,6 +29,12 @@ RSpec.describe Onboarding::StatusCreateService, feature_category: :onboarding do
         stub_saas_features(onboarding: true)
       end
 
+      it 'places the user into onboarding' do
+        expect(execute[:user]).to be_onboarding_in_progress
+        expect(execute).to be_a(ServiceResponse)
+        expect(execute).to be_success
+      end
+
       context 'when update is successful' do
         let_it_be(:user_with_members, reload: true) { create(:group_member).user }
         let(:subscription_return) { ::Gitlab::Routing.url_helpers.new_subscriptions_path }
@@ -153,6 +159,171 @@ RSpec.describe Onboarding::StatusCreateService, feature_category: :onboarding do
           expect(execute).to be_a(ServiceResponse)
           expect(execute).to be_error
           expect(execute[:user].onboarding_status).to eq({})
+        end
+      end
+
+      context 'with enterprise user concerns', :saas do
+        context 'when the user is an enterprise user' do
+          let_it_be(:user) { create(:enterprise_user) }
+
+          it 'does not enter the user into onboarding' do
+            expect(execute[:user]).not_to be_onboarding_in_progress
+            expect(execute).to be_a(ServiceResponse)
+            expect(execute).to be_error
+          end
+
+          context 'when no_onboarding_enterprise_users feature is disabled' do
+            before do
+              stub_feature_flags(no_onboarding_enterprise_users: false)
+            end
+
+            it 'places the user into onboarding' do
+              expect(execute[:user]).to be_onboarding_in_progress
+              expect(execute).to be_a(ServiceResponse)
+              expect(execute).to be_success
+            end
+          end
+        end
+
+        context 'when the user qualifies to be an enterprise user' do
+          let_it_be(:group) { create(:group) }
+          let_it_be(:project) { create(:project, group: group) }
+          let_it_be(:pages_domain, reload: true) { create(:pages_domain, project: project) }
+          let_it_be(:user, reload: true) { create(:user, email: "example@#{pages_domain.domain}") }
+
+          before do
+            stub_licensed_features(domain_verification: true)
+          end
+
+          context 'with a verified domain' do
+            it 'does not enter the user into onboarding' do
+              expect(execute[:user]).not_to be_onboarding_in_progress
+              expect(execute).to be_a(ServiceResponse)
+              expect(execute).to be_error
+            end
+
+            context 'when no_onboarding_enterprise_users feature is disabled' do
+              before do
+                stub_feature_flags(no_onboarding_enterprise_users: false)
+              end
+
+              it 'places the user into onboarding' do
+                expect(execute[:user]).to be_onboarding_in_progress
+                expect(execute).to be_a(ServiceResponse)
+                expect(execute).to be_success
+              end
+            end
+          end
+
+          context 'with non verified domain' do
+            before do
+              pages_domain.update!(verified_at: nil)
+            end
+
+            it 'places the user into onboarding' do
+              expect(execute[:user]).to be_onboarding_in_progress
+              expect(execute).to be_a(ServiceResponse)
+              expect(execute).to be_success
+            end
+          end
+
+          context 'when pages domain is on a personal project' do
+            before do
+              pages_domain.update!(project: create(:project))
+            end
+
+            it 'places the user into onboarding' do
+              expect(execute[:user]).to be_onboarding_in_progress
+              expect(execute).to be_a(ServiceResponse)
+              expect(execute).to be_success
+            end
+          end
+
+          context 'when user is not human' do
+            before do
+              user.update!(user_type: :alert_bot)
+            end
+
+            it 'places the user into onboarding' do
+              expect(execute[:user]).to be_onboarding_in_progress
+              expect(execute).to be_a(ServiceResponse)
+              expect(execute).to be_success
+            end
+          end
+
+          context 'when enterprise group is not eligible to be owner of the email' do
+            before do
+              allow(::Gitlab).to receive(:com?).and_return(false)
+            end
+
+            it 'places the user into onboarding' do
+              expect(execute[:user]).to be_onboarding_in_progress
+              expect(execute).to be_a(ServiceResponse)
+              expect(execute).to be_success
+            end
+          end
+
+          context 'when user is created before the eligibility date' do
+            before_all do
+              user.update!(created_at: Date.new(2021, 2, 1) - 1.second)
+            end
+
+            it 'places the user into onboarding' do
+              expect(execute[:user]).to be_onboarding_in_progress
+              expect(execute).to be_a(ServiceResponse)
+              expect(execute).to be_success
+            end
+
+            context 'and they have saml tied to group' do
+              before_all do
+                saml_provider = create(:saml_provider, group: group)
+                create(:group_saml_identity, saml_provider: saml_provider, user: user)
+              end
+
+              it 'does not enter the user into onboarding' do
+                expect(execute[:user]).not_to be_onboarding_in_progress
+                expect(execute).to be_a(ServiceResponse)
+                expect(execute).to be_error
+              end
+            end
+
+            context 'and they have scim identity tied to group' do
+              before_all do
+                create(:group_scim_identity, group: group, user: user)
+              end
+
+              it 'does not enter the user into onboarding' do
+                expect(execute[:user]).not_to be_onboarding_in_progress
+                expect(execute).to be_a(ServiceResponse)
+                expect(execute).to be_error
+              end
+            end
+
+            context 'and were provisioned by the verified enterprise group' do
+              before_all do
+                user.update!(provisioned_by_group: group)
+              end
+
+              it 'does not enter the user into onboarding' do
+                expect(execute[:user]).not_to be_onboarding_in_progress
+                expect(execute).to be_a(ServiceResponse)
+                expect(execute).to be_error
+              end
+            end
+
+            context 'and is subscription eligible' do
+              before_all do
+                group.add_developer(user)
+                create(:gitlab_subscription, :ultimate, namespace: group)
+              end
+
+              it 'does not enter the user into onboarding' do
+                expect(execute[:user]).not_to be_onboarding_in_progress
+                expect(execute).to be_a(ServiceResponse)
+                expect(execute).to be_error
+              end
+            end
+          end
         end
       end
     end

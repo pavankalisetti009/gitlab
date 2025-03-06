@@ -3,9 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe Onboarding::FinishService, feature_category: :onboarding do
-  describe '#execute' do
-    let_it_be(:user, reload: true) { create(:user, onboarding_in_progress: true) }
+  let_it_be(:user, reload: true) { create(:user, onboarding_in_progress: true) }
 
+  describe '#execute' do
     subject(:execute) { described_class.new(user).execute }
 
     context 'when user qualifies as onboarding' do
@@ -27,6 +27,26 @@ RSpec.describe Onboarding::FinishService, feature_category: :onboarding do
         expect { execute }.not_to change { user.onboarding_in_progress }
         expect(user).to be_onboarding_in_progress
       end
+    end
+  end
+
+  describe '#onboarding_attributes' do
+    subject { described_class.new(user).onboarding_attributes }
+
+    context 'when user qualifies as onboarding' do
+      before do
+        stub_saas_features(onboarding: true)
+      end
+
+      it { is_expected.to eq({ onboarding_in_progress: false }) }
+    end
+
+    context 'when user does not qualify as onboarding' do
+      before do
+        stub_saas_features(onboarding: false)
+      end
+
+      it { is_expected.to eq({}) }
     end
   end
 end

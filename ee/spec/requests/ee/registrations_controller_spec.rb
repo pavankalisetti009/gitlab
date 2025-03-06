@@ -250,6 +250,25 @@ RSpec.describe RegistrationsController, :with_current_organization, type: :reque
           created_user = User.find_by(email: user_attrs[:email])
           expect(created_user.onboarding_in_progress).to be_truthy
         end
+
+        context 'and the user is eligible to be an enterprise user', :saas do
+          let_it_be(:pages_domain) { create(:pages_domain, project: create(:project, group: create(:group))) }
+          let_it_be(:user_attrs) do
+            build_stubbed(:user)
+              .slice(:first_name, :last_name, :username, :password).merge(email: "example@#{pages_domain.domain}")
+          end
+
+          before do
+            stub_licensed_features(domain_verification: true)
+          end
+
+          it 'does not set onboarding' do
+            create_user
+
+            created_user = User.find_by(email: user_attrs[:email])
+            expect(created_user.onboarding_in_progress).to be_falsey
+          end
+        end
       end
 
       context 'when onboarding feature is not available' do

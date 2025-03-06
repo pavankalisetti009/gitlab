@@ -4,23 +4,23 @@ module Groups
   module EnterpriseUsers
     class AssociateWorker
       include ApplicationWorker
+      include Groups::EnterpriseUsers::Associable
 
       idempotent!
       feature_category :user_management
       data_consistency :always
 
       def perform(user_id)
-        user = User.find_by_id(user_id)
+        @user = User.find_by_id(user_id)
         return unless user
+        return unless enterprise_group_eligible?
 
-        pages_domain = PagesDomain.verified.find_by_domain_case_insensitive(user.email_domain)
-        return unless pages_domain
-
-        group = pages_domain.root_group
-        return unless group
-
-        Groups::EnterpriseUsers::AssociateService.new(group: group, user: user).execute
+        Groups::EnterpriseUsers::AssociateService.new(group: enterprise_group, user: user).execute
       end
+
+      private
+
+      attr_reader :user
     end
   end
 end
