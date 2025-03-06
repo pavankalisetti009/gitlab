@@ -3,7 +3,7 @@ import {
   PAGINATION_SORT_DIRECTION_DESC,
 } from '~/analytics/cycle_analytics/constants';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
-import { transformRawStages, prepareStageErrors, formatMedianValues } from '../utils';
+import { transformRawStages, formatMedianValues } from '../utils';
 import * as types from './mutation_types';
 
 export default {
@@ -148,20 +148,6 @@ export default {
   },
   [types.INITIALIZE_VALUE_STREAM_SUCCESS](state) {
     state.isLoading = false;
-  },
-  [types.REQUEST_CREATE_VALUE_STREAM](state) {
-    state.createValueStreamErrors = {};
-  },
-  [types.RECEIVE_CREATE_VALUE_STREAM_ERROR](state, { data: { stages = [] }, errors = {} }) {
-    const { stages: stageErrors = {}, ...rest } = errors;
-    state.createValueStreamErrors = { ...rest, stages: prepareStageErrors(stages, stageErrors) };
-  },
-  [types.REQUEST_UPDATE_VALUE_STREAM](state) {
-    state.createValueStreamErrors = {};
-  },
-  [types.RECEIVE_UPDATE_VALUE_STREAM_ERROR](state, { data: { stages = [] }, errors = {} }) {
-    const { stages: stageErrors = {}, ...rest } = errors;
-    state.createValueStreamErrors = { ...rest, stages: prepareStageErrors(stages, stageErrors) };
   },
   [types.REQUEST_DELETE_VALUE_STREAM](state) {
     state.isDeletingValueStream = true;

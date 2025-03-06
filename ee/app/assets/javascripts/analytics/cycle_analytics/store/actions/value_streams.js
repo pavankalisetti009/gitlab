@@ -1,30 +1,5 @@
-import {
-  createValueStream as apiCreateValueStream,
-  updateValueStream as apiUpdateValueStream,
-  deleteValueStream as apiDeleteValueStream,
-  getValueStreams,
-} from 'ee/api/analytics_api';
+import { deleteValueStream as apiDeleteValueStream, getValueStreams } from 'ee/api/analytics_api';
 import * as types from '../mutation_types';
-
-export const createValueStream = ({ commit, getters }, data) => {
-  const { namespaceRestApiRequestPath } = getters;
-  commit(types.REQUEST_CREATE_VALUE_STREAM);
-
-  return apiCreateValueStream(namespaceRestApiRequestPath, data).catch(({ response } = {}) => {
-    const { data: { message, payload: { errors } } = null } = response;
-    commit(types.RECEIVE_CREATE_VALUE_STREAM_ERROR, { message, errors, data });
-  });
-};
-
-export const updateValueStream = ({ commit, getters }, { id: valueStreamId, ...data }) => {
-  const { namespaceRestApiRequestPath: namespacePath } = getters;
-  commit(types.REQUEST_UPDATE_VALUE_STREAM);
-
-  return apiUpdateValueStream({ namespacePath, valueStreamId, data }).catch(({ response } = {}) => {
-    const { data: { message, payload: { errors } } = null } = response;
-    commit(types.RECEIVE_UPDATE_VALUE_STREAM_ERROR, { message, errors, data });
-  });
-};
 
 export const deleteValueStream = ({ commit, dispatch, getters }, valueStreamId) => {
   const { namespaceRestApiRequestPath } = getters;

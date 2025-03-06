@@ -1,5 +1,8 @@
 import { isEqual, pick } from 'lodash';
-import { convertObjectPropsToSnakeCase } from '~/lib/utils/common_utils';
+import {
+  convertObjectPropsToCamelCase,
+  convertObjectPropsToSnakeCase,
+} from '~/lib/utils/common_utils';
 import {
   isStartEvent,
   getAllowedEndEvents,
@@ -224,6 +227,19 @@ const prepareDefaultStage = (defaultStageConfig, { name, ...rest }) => {
     isDefault: true,
   };
 };
+
+/**
+ * Prepares the stage errors for use in the create value stream form
+ *
+ * The JSON error response returns a key value pair, the key corresponds to the
+ * index of the stage with errors and the value is the returned error(s)
+ *
+ * @param {Array} stages - Array of value stream stages
+ * @param {Object} errors - Key value pair of stage errors
+ * @returns {Array} Returns and array of stage error objects
+ */
+export const prepareStageErrors = (stages, errors) =>
+  stages.map((_, index) => convertObjectPropsToCamelCase(errors[index]) || {});
 
 const generateHiddenDefaultStages = (defaultStageConfig, stageNames) => {
   // We use the stage name to check for any default stages that might be hidden

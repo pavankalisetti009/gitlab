@@ -2,7 +2,7 @@
 import { GlAlert, GlButton, GlForm, GlFormInput, GlFormGroup, GlFormRadioGroup } from '@gitlab/ui';
 import { cloneDeep, uniqueId } from 'lodash';
 // eslint-disable-next-line no-restricted-imports
-import { mapState, mapActions } from 'vuex';
+import { mapState, mapGetters } from 'vuex';
 import { filterStagesByHiddenStatus } from '~/analytics/cycle_analytics/utils';
 import { swapArrayItems } from '~/lib/utils/array_utility';
 import { sprintf } from '~/locale';
@@ -10,12 +10,14 @@ import Tracking from '~/tracking';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import { visitUrlWithAlerts, mergeUrlParams } from '~/lib/utils/url_utility';
 import { getLabelEventsIdentifiers } from 'ee/analytics/cycle_analytics/utils';
+import { createValueStream, updateValueStream } from 'ee/api/analytics_api';
 import {
   validateValueStreamName,
   cleanStageName,
   validateStage,
   formatStageDataForSubmission,
   hasDirtyStage,
+  prepareStageErrors,
 } from '../utils';
 import {
   STAGE_SORT_DIRECTION,
@@ -99,13 +101,8 @@ export default {
     };
   },
   computed: {
-    ...mapState([
-      'isFetchingGroupLabels',
-      'formEvents',
-      'defaultGroupLabels',
-      'createValueStreamErrors',
-      'selectedValueStream',
-    ]),
+    ...mapState(['formEvents', 'defaultGroupLabels', 'selectedValueStream']),
+    ...mapGetters(['namespaceRestApiRequestPath']),
     selectedValueStreamId() {
       return this.selectedValueStream?.id || -1;
     },
@@ -144,49 +141,53 @@ export default {
 
       return { id, message, variant: 'success' };
     },
-  },
-  watch: {
-    createValueStreamErrors: 'refreshErrors',
-  },
-  created() {
-    this.refreshErrors();
+    submitParams() {
+      const { name, stages, isEditing } = this;
+      return {
+        name,
+        stages: formatStageDataForSubmission(stages, isEditing),
+      };
+    },
   },
   methods: {
-    ...mapActions(['createValueStream', 'updateValueStream']),
-    async onSubmit() {
+    onSubmit() {
       this.showSubmitError = false;
       this.validate();
       if (this.hasFormErrors) return;
 
-      let req = this.createValueStream;
-      let params = {
-        name: this.name,
-        stages: formatStageDataForSubmission(this.stages, this.isEditing),
-      };
-      if (this.isEditing) {
-        req = this.updateValueStream;
-        params = {
-          ...params,
-          id: this.initialData.id,
-        };
-      }
-
       this.isSubmitting = true;
 
-      const response = await req(params);
+      this.submitRequest()
+        .then(({ data: { id } }) => {
+          this.track('submit_form', {
+            label: this.isEditing ? 'edit_value_stream' : 'create_value_stream',
+          });
 
-      if (this.hasFormErrors) {
-        this.isSubmitting = false;
-        this.showSubmitError = true;
-        return;
-      }
+          const redirectPath = mergeUrlParams({ value_stream_id: id }, this.vsaPath);
+          visitUrlWithAlerts(redirectPath, [this.submissionSuccessfulAlert]);
+        })
+        .catch(({ response: { data } }) => {
+          this.isSubmitting = false;
+          this.showSubmitError = true;
 
-      this.track('submit_form', {
-        label: this.isEditing ? 'edit_value_stream' : 'create_value_stream',
-      });
-
-      const redirectPath = mergeUrlParams({ value_stream_id: response.data.id }, this.vsaPath);
-      visitUrlWithAlerts(redirectPath, [this.submissionSuccessfulAlert]);
+          const {
+            payload: { errors: { name, stages = {} } = {} },
+          } = data;
+          this.setErrors({
+            name,
+            stages: prepareStageErrors(this.submitParams.stages, stages),
+          });
+        });
+    },
+    submitRequest() {
+      const { isEditing, namespaceRestApiRequestPath, initialData, submitParams } = this;
+      return isEditing
+        ? updateValueStream({
+            namespacePath: namespaceRestApiRequestPath,
+            valueStreamId: initialData.id,
+            data: submitParams,
+          })
+        : createValueStream(namespaceRestApiRequestPath, submitParams);
     },
     stageGroupLabel(index) {
       return sprintf(this.$options.i18n.STAGE_INDEX, { index: index + 1 });
@@ -206,9 +207,8 @@ export default {
         }),
       );
     },
-    refreshErrors() {
-      const { defaultStageConfig, selectedPreset, createValueStreamErrors = {} } = this;
-      const { name = [], stages = [{}] } = createValueStreamErrors;
+    setErrors({ name = [], stages = [{}] }) {
+      const { defaultStageConfig, selectedPreset } = this;
       this.nameErrors = name;
       this.stageErrors =
         cloneDeep(stages) || initializeStageErrors(defaultStageConfig, selectedPreset);
