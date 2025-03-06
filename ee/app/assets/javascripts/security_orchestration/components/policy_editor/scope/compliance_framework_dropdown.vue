@@ -43,13 +43,13 @@ export default {
         };
       },
       update(data) {
-        return this.getUniqueFrameworks(data.namespace?.complianceFrameworks.nodes);
+        return this.getUniqueFrameworks(data.namespace?.complianceFrameworks?.nodes);
       },
       result({ data }) {
         this.pageInfo = data?.namespace?.complianceFrameworks?.pageInfo || {};
 
         if (this.selectedButNotLoadedComplianceIds.length > 0) {
-          this.fetchComplianceFramoworksByIds();
+          this.fetchComplianceFrameworksByIds();
         }
       },
       error() {
@@ -179,7 +179,7 @@ export default {
     this.debouncedSearch.cancel();
   },
   methods: {
-    async fetchComplianceFramoworksByIds() {
+    async fetchComplianceFrameworksByIds() {
       try {
         const { data } = await this.$apollo.query({
           query: getComplianceFrameworkQuery,
@@ -190,7 +190,7 @@ export default {
         });
 
         this.complianceFrameworks = this.getUniqueFrameworks(
-          data?.namespace?.complianceFrameworks.nodes,
+          data?.namespace?.complianceFrameworks?.nodes,
         );
       } catch {
         this.emitError();
