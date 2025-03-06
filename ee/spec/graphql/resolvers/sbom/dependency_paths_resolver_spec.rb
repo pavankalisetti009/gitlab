@@ -14,6 +14,7 @@ RSpec.describe Resolvers::Sbom::DependencyPathsResolver, feature_category: :vuln
   let_it_be(:project) { create(:project, namespace: namespace) }
 
   let_it_be(:component) { create(:sbom_component, name: "activestorage") }
+  let_it_be(:occurrence) { create(:sbom_occurrence, component: component) }
 
   subject(:get_paths) { sync(resolve_dependency_paths(args: args)) }
 
@@ -27,7 +28,7 @@ RSpec.describe Resolvers::Sbom::DependencyPathsResolver, feature_category: :vuln
 
       let(:args) do
         {
-          component: component.to_gid
+          occurrence: occurrence.to_gid
         }
       end
 
@@ -45,13 +46,13 @@ RSpec.describe Resolvers::Sbom::DependencyPathsResolver, feature_category: :vuln
 
       let(:args) do
         {
-          component: component.to_gid
+          occurrence: occurrence.to_gid
         }
       end
 
       let(:result) do
         [Sbom::DependencyPath.new(
-          id: component.id,
+          id: occurrence.id,
           project_id: project.id,
           dependency_name: component.name,
           full_path: %w[ancestor_1 ancestor_2 dependency],
@@ -63,14 +64,14 @@ RSpec.describe Resolvers::Sbom::DependencyPathsResolver, feature_category: :vuln
 
       it 'returns data from DependencyPath.find' do
         expect(::Sbom::DependencyPath).to receive(:find)
-          .with(id: component.id.to_s, project_id: project.id)
+          .with(occurrence_id: occurrence.id.to_s, project_id: project.id)
           .and_return(result)
         is_expected.to eq(result)
       end
 
       it 'records execution time' do
         expect(::Sbom::DependencyPath).to receive(:find)
-          .with(id: component.id.to_s, project_id: project.id)
+          .with(occurrence_id: occurrence.id.to_s, project_id: project.id)
           .and_return(result)
         expect(Gitlab::Metrics).to receive(:measure)
           .with(:dependency_path_cte)
@@ -81,7 +82,7 @@ RSpec.describe Resolvers::Sbom::DependencyPathsResolver, feature_category: :vuln
 
       it 'records metrics' do
         expect(::Sbom::DependencyPath).to receive(:find)
-          .with(id: component.id.to_s, project_id: project.id)
+          .with(occurrence_id: occurrence.id.to_s, project_id: project.id)
           .and_return(result)
         counter_double = instance_double(Prometheus::Client::Counter)
         expect(Gitlab::Metrics).to receive(:counter)

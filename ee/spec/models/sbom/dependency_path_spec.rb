@@ -16,7 +16,7 @@ RSpec.describe Sbom::DependencyPath, feature_category: :vulnerability_management
   let_it_be(:component_3) { create(:sbom_component, name: "activejob") }
   let_it_be(:component_version_3) { create(:sbom_component_version, component: component_3, version: '3.4.5') }
 
-  subject(:find_dependencies) { described_class.find(id: id, project_id: project.id) }
+  subject(:find_dependencies) { described_class.find(occurrence_id: occurrence_id, project_id: project.id) }
 
   context 'when given a project' do
     context 'without cycles or exceeding the max depth' do
@@ -43,18 +43,18 @@ RSpec.describe Sbom::DependencyPath, feature_category: :vulnerability_management
       end
 
       context 'when ancestors can be found' do
-        let(:id) do
-          component_3.id
+        let(:occurrence_id) do
+          occurrence_3.id
         end
 
         context 'for a dependency with children' do
-          let(:id) do
-            component_2.id
+          let(:occurrence_id) do
+            occurrence_2.id
           end
 
           it 'traverses until it finds no more ancestors, and skips children' do
             is_expected.to eq([described_class.new(
-              id: component_2.id,
+              id: occurrence_2.id,
               project_id: project.id,
               dependency_name: component_2.name,
               full_path: [component_1.name, component_2.name],
@@ -73,13 +73,13 @@ RSpec.describe Sbom::DependencyPath, feature_category: :vulnerability_management
         end
 
         context 'for a dependency with no children' do
-          let(:id) do
-            component_3.id
+          let(:occurrence_id) do
+            occurrence_3.id
           end
 
           it 'traverses until it finds no more ancestors' do
             is_expected.to eq([described_class.new(
-              id: component_3.id,
+              id: occurrence_3.id,
               project_id: project.id,
               dependency_name: component_3.name,
               full_path: [component_1.name, component_2.name, component_3.name],
@@ -100,8 +100,8 @@ RSpec.describe Sbom::DependencyPath, feature_category: :vulnerability_management
       end
 
       context 'when ancestors cannot be found' do
-        let(:id) do
-          component_1.id
+        let(:occurrence_id) do
+          occurrence_1.id
         end
 
         it 'returns an empty array' do
@@ -138,13 +138,13 @@ RSpec.describe Sbom::DependencyPath, feature_category: :vulnerability_management
         )
       end
 
-      let(:id) do
-        component_3.id
+      let(:occurrence_id) do
+        occurrence_3.id
       end
 
       it 'traverses until it finds the cycle and stops' do
         is_expected.to eq([described_class.new(
-          id: component_3.id,
+          id: occurrence_3.id,
           project_id: project.id,
           dependency_name: component_3.name,
           full_path: [component_3.name, component_1.name, component_2.name, component_3.name],
@@ -197,13 +197,13 @@ RSpec.describe Sbom::DependencyPath, feature_category: :vulnerability_management
         )
       end
 
-      let(:id) do
-        component_3.id
+      let(:occurrence_id) do
+        occurrence_3.id
       end
 
       it 'traverses until it reaches max depth and stops' do
         is_expected.to eq([described_class.new(
-          id: component_3.id,
+          id: occurrence_3.id,
           project_id: project.id,
           dependency_name: component_3.name,
           full_path: [component_2.name, component_3.name],
