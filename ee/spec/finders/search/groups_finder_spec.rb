@@ -24,6 +24,14 @@ RSpec.describe Search::GroupsFinder, feature_category: :global_search do
       end
     end
 
+    context 'when features and min_access_level are both provided' do
+      let(:params) { { features: [:foo], min_access_level: ::Gitlab::Access::GUEST } }
+
+      it 'raises an exception' do
+        expect { execute }.to raise_error(ArgumentError)
+      end
+    end
+
     context 'when user has direct membership with default role' do
       it 'returns that group' do
         group.add_developer(user)
@@ -31,23 +39,35 @@ RSpec.describe Search::GroupsFinder, feature_category: :global_search do
         expect(execute).to contain_exactly(group)
       end
 
-      context 'and user does not have access level required for feature' do
-        let(:params) { { features: [:repository] } }
+      context 'when features is provided' do
+        context 'and user does not have access level required for feature' do
+          let(:params) { { features: [:repository] } }
+
+          it 'returns nothing' do
+            group.add_guest(user)
+
+            expect(execute).to be_empty
+          end
+        end
+
+        context 'and user has access level required for feature' do
+          let(:params) { { features: [:repository] } }
+
+          it 'returns that group' do
+            group.add_developer(user)
+
+            expect(execute).to contain_exactly(group)
+          end
+        end
+      end
+
+      context 'when min_access_level higher than GUEST is provided' do
+        let(:params) { { min_access_level: ::Gitlab::Access::OWNER } }
 
         it 'returns nothing' do
           group.add_guest(user)
 
           expect(execute).to be_empty
-        end
-      end
-
-      context 'and user has access level required for feature' do
-        let(:params) { { features: [:repository] } }
-
-        it 'returns that group' do
-          group.add_developer(user)
-
-          expect(execute).to contain_exactly(group)
         end
       end
     end
@@ -101,6 +121,16 @@ RSpec.describe Search::GroupsFinder, feature_category: :global_search do
           group_group_link.update!(expires_at: 1.day.ago)
 
           expect(execute).to contain_exactly(shared_with_group)
+        end
+      end
+
+      context 'and user does not have min_access_level required' do
+        let(:params) { { min_access_level: ::Gitlab::Access::OWNER } }
+
+        it 'returns nothing' do
+          shared_with_group.add_guest(user)
+
+          expect(execute).to be_empty
         end
       end
 

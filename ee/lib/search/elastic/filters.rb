@@ -228,30 +228,89 @@ module Search
 
         def by_group_level_confidentiality(query_hash:, options:)
           user = options[:current_user]
-          query_hash = search_level_filter(query_hash: query_hash, options: options)
-          return query_hash if user.nil? || user&.can_read_all_resources?
-
-          confidential_group_ids = group_ids_user_has_min_access_as(
-            access_level: ::Gitlab::Access::REPORTER, user: options[:current_user], group_ids: options[:group_ids]
-          )
+          traversal_id_field_prefix = options.fetch(:traversal_ids_prefix, :traversal_ids)
+          return query_hash if user&.can_read_all_resources?
 
           context.name(:filters) do
-            should = [{ term: { confidential: { value: false, _name: context.name(:non_confidential, :groups) } } }]
+            filter = Search::Elastic::BoolExpr.new
+            filter.minimum_should_match = 1
 
-            unless confidential_group_ids.empty?
-              should << {
+            # anonymous user, public groups, non-confidential
+            add_filter(filter, :should) do
+              {
                 bool: {
+                  _name: context.name(:non_confidential, :groups, :public),
                   must: [
-                    { term: { confidential: { value: true, _name: context.name(:confidential, :groups) } } },
-                    { terms: { namespace_id: confidential_group_ids,
-                               _name: context.name(:confidential, :groups, "can_read_confidential_work_items") } }
+                    { term: { confidential: { value: false } } },
+                    { term: { namespace_visibility_level: { value: ::Gitlab::VisibilityLevel::PUBLIC } } }
                   ]
                 }
               }
             end
 
+            if user && !user.external?
+              # logged in user, public groups, non-confidential
+              add_filter(filter, :should) do
+                {
+                  bool: {
+                    _name: context.name(:non_confidential, :groups, :internal),
+                    must: [
+                      { term: { confidential: { value: false } } },
+                      { term: { namespace_visibility_level: { value: ::Gitlab::VisibilityLevel::INTERNAL } } }
+                    ]
+                  }
+                }
+              end
+            end
+
+            if user
+              # logged in user, private groups, non-confidential
+              add_filter(filter, :should) do
+                min_access_for_non_confidential = options[:min_access_level_non_confidential]
+                non_confidential_options = options.merge(min_access_level: min_access_for_non_confidential)
+                traversal_ids = traversal_ids_for_user(user, non_confidential_options)
+                next if traversal_ids.empty?
+
+                context.name(:non_confidential, :groups, :private) do
+                  {
+                    bool: {
+                      _name: context.name,
+                      must: [
+                        { term: { confidential: { value: false } } }
+                      ],
+                      should: ancestry_filter(traversal_ids, traversal_id_field: traversal_id_field_prefix),
+                      minimum_should_match: 1
+                    }
+                  }
+                end
+              end
+
+              # logged in user, private groups, confidential
+              add_filter(filter, :should) do
+                min_access_for_confidential = options[:min_access_level_confidential]
+                confidential_options = options.merge(min_access_level: min_access_for_confidential)
+                traversal_ids = traversal_ids_for_user(user, confidential_options)
+                next if traversal_ids.empty?
+
+                context.name(:confidential, :groups, :private) do
+                  {
+                    bool: {
+                      _name: context.name,
+                      must: [
+                        { term: { confidential: { value: true } } }
+                      ],
+                      should: ancestry_filter(traversal_ids, traversal_id_field: traversal_id_field_prefix),
+                      minimum_should_match: 1
+                    }
+                  }
+                end
+              end
+            end
+
             add_filter(query_hash, :query, :bool, :filter) do
-              { bool: { should: should } }
+              {
+                bool: filter.to_h
+              }
             end
           end
         end
@@ -499,28 +558,31 @@ module Search
           return [] unless user
 
           search_level = options.fetch(:search_level).to_sym
-          features = Array.wrap(options[:features])
+          finder_params = {
+            features: Array.wrap(options[:features]),
+            min_access_level: options[:min_access_level]
+          }
 
           allowed_traversal_ids = case search_level
                                   when :global
-                                    authorized_traversal_ids_for_global(user, features)
+                                    authorized_traversal_ids_for_global(user, finder_params)
                                   when :group
-                                    authorized_traversal_ids_for_groups(user, options[:group_ids], features)
+                                    authorized_traversal_ids_for_groups(user, options[:group_ids], finder_params)
                                   when :project
-                                    authorized_traversal_ids_for_projects(user, options[:project_ids], features)
+                                    authorized_traversal_ids_for_projects(user, options[:project_ids], finder_params)
                                   end
 
           allowed_traversal_ids.map { |id| "#{id.join('-')}-" }
         end
 
-        def authorized_traversal_ids_for_global(user, features)
-          authorized_groups = ::Search::GroupsFinder.new(user: user, params: { features: features }).execute
+        def authorized_traversal_ids_for_global(user, finder_params)
+          authorized_groups = ::Search::GroupsFinder.new(user: user, params: finder_params).execute
 
           ::Namespaces::Traversal::TrieNode.build(authorized_groups.map(&:traversal_ids)).to_a
         end
 
-        def authorized_traversal_ids_for_groups(user, namespace_ids, features)
-          authorized_groups = ::Search::GroupsFinder.new(user: user, params: { features: features }).execute
+        def authorized_traversal_ids_for_groups(user, namespace_ids, finder_params)
+          authorized_groups = ::Search::GroupsFinder.new(user: user, params: finder_params).execute
           namespaces = Namespace.id_in(namespace_ids)
 
           return namespaces.map(&:traversal_ids) unless namespaces.id_not_in(authorized_groups).exists?
@@ -540,8 +602,8 @@ module Search
           end
         end
 
-        def authorized_traversal_ids_for_projects(user, project_ids, features)
-          authorized_groups = ::Search::GroupsFinder.new(user: user, params: { features: features }).execute
+        def authorized_traversal_ids_for_projects(user, project_ids, finder_params)
+          authorized_groups = ::Search::GroupsFinder.new(user: user, params: finder_params).execute
           namespace_ids = Project.id_in(project_ids).select(:namespace_id)
           namespaces = Namespace.id_in(namespace_ids)
 

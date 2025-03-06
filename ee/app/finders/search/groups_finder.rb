@@ -15,13 +15,17 @@ module Search
   class GroupsFinder
     include Gitlab::Utils::StrongMemoize
 
+    DEFAULT_MIN_ACCESS_LEVEL = ::Gitlab::Access::GUEST
     FEATURE_TO_ABILITY_MAP = {
       repository: :read_code
     }.freeze
 
     # user - The currently logged in user, if any.
     # params
-    #  * features (optional) - Sets minimum access level required to access project features.
+    #  * features (optional, default GUEST) - Sets minimum access level required to access project features.
+    #    Cannot be provided with min_access_level
+    #  * min_access_level (optional, default GUEST) - Sets minimum access level.
+    #    Cannot be provided with features
     def initialize(user:, params: {})
       @user = user
       @params = params
@@ -29,6 +33,8 @@ module Search
 
     def execute
       return Group.none unless user
+
+      validate_arguments!
 
       Group.unscoped do
         Group.from_union([
@@ -42,6 +48,12 @@ module Search
     private
 
     attr_reader :user, :params
+
+    def validate_arguments!
+      return unless params[:min_access_level].present? && params[:features].present?
+
+      raise ArgumentError, 'only min_access_level or features can be provided, not both'
+    end
 
     def direct_groups_with_min_access_level
       Group.id_in(direct_groups.with_at_least_access_level(min_access_level).select(:source_id))
@@ -82,7 +94,7 @@ module Search
 
     def min_access_level
       features = params[:features]
-      return ::Gitlab::Access::GUEST if features.blank?
+      return params.fetch(:min_access_level, DEFAULT_MIN_ACCESS_LEVEL) if features.blank?
 
       features.map do |feature|
         ProjectFeature.required_minimum_access_level_for_private_project(feature)
