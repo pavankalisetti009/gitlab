@@ -62,21 +62,11 @@ module Search
       end
 
       def get_authorization_filter(query_hash:, options:)
-        if options[:group_level_authorization]
-          return ::Search::Elastic::Filters.by_group_level_authorization(query_hash: query_hash, options: options)
-        end
-
         ::Search::Elastic::Filters.by_search_level_and_membership(query_hash: query_hash, options: options)
       end
 
       def get_confidentiality_filter(query_hash:, options:)
-        if options[:group_level_confidentiality]
-          return ::Search::Elastic::Filters.by_group_level_confidentiality(query_hash: query_hash,
-            options: options)
-        end
-
-        ::Search::Elastic::Filters.by_project_confidentiality(query_hash: query_hash,
-          options: options)
+        ::Search::Elastic::Filters.by_project_confidentiality(query_hash: query_hash, options: options)
       end
 
       # rubocop: disable Gitlab/FeatureFlagWithoutActor -- global flags

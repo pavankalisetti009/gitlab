@@ -301,7 +301,10 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
         assert_named_queries(
           'work_item:match:search_terms',
           'filters:level:group:ancestry_filter:descendants',
-          'filters:non_confidential:groups'
+          'filters:non_confidential:groups:public',
+          'filters:non_confidential:groups:internal',
+          'filters:non_confidential:groups:private',
+          without: %w[filters:confidential:groups:private]
         )
       end
 
@@ -321,7 +324,10 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
           assert_named_queries(
             'work_item:match:search_terms',
             'filters:level:group:ancestry_filter:descendants',
-            'filters:non_confidential:groups'
+            'filters:non_confidential:groups:public',
+            'filters:non_confidential:groups:internal',
+            'filters:non_confidential:groups:private',
+            'filters:confidential:groups:private'
           )
         end
       end
