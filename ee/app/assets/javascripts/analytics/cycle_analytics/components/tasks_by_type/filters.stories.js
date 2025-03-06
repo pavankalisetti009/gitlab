@@ -1,6 +1,6 @@
 import { withVuexStore } from 'storybook_addons/vuex_store';
 import { TASKS_BY_TYPE_MAX_LABELS } from '../../constants';
-import { defaultGroupLabels, subjectFilter } from './stories_constants';
+import { subjectFilter } from './stories_constants';
 import TasksByTypeFilters from './filters.vue';
 
 export default {
@@ -14,9 +14,6 @@ const Template = (args, { argTypes, createVuexStore }) => ({
   props: Object.keys(argTypes),
   template: '<tasks-by-type-filters v-bind="$props" />',
   store: createVuexStore({
-    state: {
-      defaultGroupLabels,
-    },
     getters: {
       namespaceRestApiRequestPath: () => 'fake/namespace/path',
     },
@@ -27,12 +24,5 @@ export const Default = Template.bind({});
 Default.args = {
   maxLabels: TASKS_BY_TYPE_MAX_LABELS,
   selectedLabelNames: [],
-  subjectFilter,
-};
-
-export const SelectedLabels = Template.bind({});
-SelectedLabels.args = {
-  maxLabels: TASKS_BY_TYPE_MAX_LABELS,
-  selectedLabelNames: ['ready', 'done'],
   subjectFilter,
 };

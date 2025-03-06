@@ -2,30 +2,6 @@ import { TASKS_BY_TYPE_FILTERS } from '../../constants';
 
 export const subjectFilter = TASKS_BY_TYPE_FILTERS.SUBJECT;
 
-export const defaultGroupLabels = [
-  {
-    id: 1,
-    title: 'in-review',
-    color: '#4018cc',
-    project_id: null,
-    text_color: '#FFFFFF',
-  },
-  {
-    id: 2,
-    title: 'ready',
-    color: '#48b29d',
-    project_id: null,
-    text_color: '#FFFFFF',
-  },
-  {
-    id: 3,
-    title: 'done',
-    color: '#4c20e8',
-    project_id: null,
-    text_color: '#FFFFFF',
-  },
-];
-
 export const tasksByTypeData = [
   {
     label: { title: 'in-review' },
