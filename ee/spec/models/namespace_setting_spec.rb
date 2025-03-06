@@ -449,7 +449,8 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
 
       it 'returns the expected response' do
         expect(setting.valid?).to be expectation
-        expect(setting.errors.messages[:new_user_signups_cap]).to include("cannot be enabled") unless expectation
+
+        expect(setting.errors.messages[:seat_control]).to include("cannot be set to user cap") unless expectation
       end
     end
 
@@ -466,7 +467,7 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
       shared_examples 'user cap is not available' do
         it 'is invalid' do
           expect(setting.valid?).to be false
-          expect(setting.errors.messages[:new_user_signups_cap]).to include("cannot be enabled")
+          expect(setting.errors.messages[:seat_control]).to include("cannot be set to user cap")
         end
       end
 
