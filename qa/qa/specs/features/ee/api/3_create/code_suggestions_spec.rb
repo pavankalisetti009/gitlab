@@ -5,7 +5,7 @@ module QA
     include Support::API
 
     # These tests require several feature flags, user settings, and instance configurations.
-    # See https://docs.gitlab.com/ee/development/code_suggestions/#code-suggestions-development-setup
+    # See https://docs.gitlab.com/ee/development/ai_features/code_suggestions/#code-suggestions-development-setup
     # https://docs.gitlab.com/ee/api/code_suggestions.html
     describe 'Code Suggestions' do
       let(:expected_v3_response_data) do
