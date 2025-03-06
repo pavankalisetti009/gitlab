@@ -85,7 +85,7 @@ module Gitlab
             prompt_class: ::Gitlab::Llm::Templates::SummarizeNewMergeRequest,
             feature_category: :code_review_workflow,
             execute_method: ::Llm::SummarizeNewMergeRequestService,
-            maturity: :experimental,
+            maturity: :beta,
             self_managed: false,
             internal: false
           },
