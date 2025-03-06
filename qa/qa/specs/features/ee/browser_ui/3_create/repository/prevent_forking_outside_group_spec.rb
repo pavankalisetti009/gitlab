@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Data Stores' do
+  RSpec.describe 'Create' do
     describe 'prevent forking outside group',
-      except: { subdomain: %i[staging staging-canary] }, product_group: :tenant_scale do
+      except: { subdomain: %i[staging staging-canary] }, product_group: :source_code do
       let!(:group_for_fork) do
         Resource::Sandbox.fabricate! do |sandbox_group|
           sandbox_group.path = "group_for_fork_#{SecureRandom.hex(8)}"
@@ -35,6 +35,10 @@ module QA
           Page::Project::Fork::New.perform do |fork_new|
             fork_new.fork_project(group_for_fork.path)
           end
+
+          Page::Project::Show.perform do |project_page|
+            expect(project_page.forked_from?(project.name)).to be_truthy
+          end
         end
       end
 
@@ -64,7 +68,7 @@ module QA
         project.group.sandbox.visit!
         Page::Group::Menu.perform(&:go_to_general_settings)
         Page::Group::Settings::General.perform do |general_setting|
-          general_setting.send("set_prevent_forking_outside_group_#{enabled_or_disabled}")
+          general_setting.send(:"set_prevent_forking_outside_group_#{enabled_or_disabled}")
         end
       end
     end
