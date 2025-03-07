@@ -2,6 +2,8 @@
   "private": true,
   "scripts": {
     "check-dependencies": "scripts/frontend/check_dependencies.sh",
+    "deps:check": "depcruise --config config/dependency_cruiser.js --no-ignore-known",
+    "deps:check:all": "yarn run deps:check .",
     "clean": "rm -rf public/assets tmp/cache/*-loader",
     "dev-server": "NODE_OPTIONS=\"${NODE_OPTIONS:=--max-old-space-size=5120}\" node scripts/frontend/webpack_dev_server.js",
     "file-coverage": "scripts/frontend/file_test_coverage.js",
@@ -271,6 +273,7 @@
     "chokidar": "^3.5.3",
     "crypto": "^1.0.1",
     "custom-jquery-matchers": "^2.1.0",
+    "dependency-cruiser": "^16.9.0",
     "eslint": "9.21.0",
     "eslint-formatter-gitlab": "^5.1.0",
     "eslint-import-resolver-jest": "3.0.2",
