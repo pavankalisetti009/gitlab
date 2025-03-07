@@ -7,7 +7,7 @@ RSpec.describe WorkItems::Statuses::SystemDefined::Status, feature_category: :te
 
   describe 'validations' do
     it 'has the correct minimal structure for each item' do
-      expect(described_class::ITEMS).to all(include(:id, :name, :color, :category, :lifecycle_id))
+      expect(described_class::ITEMS).to all(include(:id, :name, :color, :category))
     end
 
     it 'has unique names for all statuses' do
@@ -46,19 +46,12 @@ RSpec.describe WorkItems::Statuses::SystemDefined::Status, feature_category: :te
       name: 'To do',
       color: '#737278',
       category: :to_do,
-      position: 0,
-      default_open: true,
-      lifecycle_id: 1
+      position: 0
     )
   end
 
-  it 'has default values for some attributes' do
-    expect(described_class.new).to have_attributes(
-      position: 0,
-      default_open: false,
-      default_closed: false,
-      default_duplicated: false
-    )
+  it 'has default value for position' do
+    expect(described_class.new.position).to eq(0)
   end
 
   describe 'included modules' do

@@ -7,8 +7,14 @@ RSpec.describe WorkItems::Statuses::SystemDefined::Lifecycle, feature_category: 
 
   describe 'validations' do
     it 'has the correct structure for each item' do
+      expected_attributes = [
+        :id, :name, :work_item_base_types, :status_ids,
+        :default_open_status_id, :default_closed_status_id,
+        :default_duplicate_status_id
+      ]
       described_class::ITEMS.each do |item|
-        expect(item).to include(:id, :name, :work_item_base_types)
+        expect(item).to include(*expected_attributes)
+        expect(item[:status_ids]).to be_an(Array)
         expect(item[:work_item_base_types]).to be_an(Array)
       end
     end
@@ -44,10 +50,9 @@ RSpec.describe WorkItems::Statuses::SystemDefined::Lifecycle, feature_category: 
     let(:statuses) { lifecycle.statuses }
 
     it 'returns statuses for the lifecycle' do
-      # We could make this more explicit and check for concrete statuses
-      # but this would increase coupling.
       expect(statuses).to be_an(Array)
       expect(statuses.first).to be_an(WorkItems::Statuses::SystemDefined::Status)
+      expect(statuses.map(&:id)).to contain_exactly(1, 2, 3, 4, 5)
     end
   end
 
@@ -59,6 +64,20 @@ RSpec.describe WorkItems::Statuses::SystemDefined::Lifecycle, feature_category: 
 
     it 'returns nil if no status matches the given name' do
       expect(lifecycle.find_available_status_by_name('some_name')).to be_nil
+    end
+  end
+
+  describe 'default status methods' do
+    {
+      default_open_status: 1,
+      default_closed_status: 3,
+      default_duplicate_status: 5
+    }.each do |method_name, expected_id|
+      it "returns assigned status for ##{method_name}" do
+        status = lifecycle.public_send(method_name)
+        expect(status).to be_an(WorkItems::Statuses::SystemDefined::Status)
+        expect(status.id).to eq(expected_id)
+      end
     end
   end
 
