@@ -41,3 +41,11 @@ RSpec.shared_examples 'maven virtual registry authenticated endpoint' do |succes
     end
   end
 end
+
+RSpec.shared_examples 'maven virtual registry feature not licensed' do
+  before do
+    stub_licensed_features(packages_virtual_registry: false)
+  end
+
+  it_behaves_like 'returning response status', :not_found
+end

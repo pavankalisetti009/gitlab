@@ -80,6 +80,10 @@ module EE
         mount ::API::Chat
         mount ::API::DuoCodeReview
         mount ::API::SecurityScans
+        mount ::API::VirtualRegistries::Packages::Maven::Registries
+        mount ::API::VirtualRegistries::Packages::Maven::Upstreams
+        mount ::API::VirtualRegistries::Packages::Maven::Cache::Entries
+        mount ::API::VirtualRegistries::Packages::Maven::Endpoints
 
         mount ::API::Internal::AppSec::Dast::SiteValidations
         mount ::API::Internal::Search::Zoekt

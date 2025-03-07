@@ -150,6 +150,7 @@ module GitlabSubscriptions
       microsoft_group_sync
       operations_dashboard
       package_forwarding
+      packages_virtual_registry
       pages_size_limit
       pages_multiple_versions
       productivity_analytics

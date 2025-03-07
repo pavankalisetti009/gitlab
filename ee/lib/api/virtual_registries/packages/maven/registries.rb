@@ -5,19 +5,14 @@ module API
     module Packages
       module Maven
         class Registries < ::API::Base
-          include ::API::Helpers::Authentication
-
-          feature_category :virtual_registry
-          urgency :low
-
-          authenticate_with do |accept|
-            accept.token_types(:personal_access_token).sent_through(:http_private_token_header)
-            accept.token_types(:deploy_token).sent_through(:http_deploy_token_header)
-            accept.token_types(:job_token).sent_through(:http_job_token_header)
-          end
+          include ::API::Concerns::VirtualRegistries::Packages::Maven::SharedSetup
 
           helpers do
             include ::Gitlab::Utils::StrongMemoize
+
+            def target_group
+              request.path.include?('/groups') ? group : registry.group
+            end
 
             def group
               find_group!(params[:id])
@@ -32,18 +27,6 @@ module API
             def policy_subject
               ::VirtualRegistries::Packages::Policies::Group.new(group)
             end
-
-            def require_dependency_proxy_enabled!
-              not_found! unless ::Gitlab.config.dependency_proxy.enabled
-            end
-          end
-
-          after_validation do
-            not_found! unless Feature.enabled?(:virtual_registry_maven, current_user)
-
-            require_dependency_proxy_enabled!
-
-            authenticate!
           end
 
           resource :groups, requirements: API::NAMESPACE_OR_PROJECT_REQUIREMENTS do

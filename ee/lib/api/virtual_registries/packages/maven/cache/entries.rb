@@ -6,23 +6,14 @@ module API
       module Maven
         module Cache
           class Entries < ::API::Base
-            include ::API::Helpers::Authentication
+            include ::API::Concerns::VirtualRegistries::Packages::Maven::SharedSetup
             include ::API::PaginationParams
-
-            feature_category :virtual_registry
-            urgency :low
-
-            authenticate_with do |accept|
-              accept.token_types(:personal_access_token).sent_through(:http_private_token_header)
-              accept.token_types(:deploy_token).sent_through(:http_deploy_token_header)
-              accept.token_types(:job_token).sent_through(:http_job_token_header)
-            end
 
             helpers do
               include ::Gitlab::Utils::StrongMemoize
 
-              def require_dependency_proxy_enabled!
-                not_found! unless ::Gitlab.config.dependency_proxy.enabled
+              def target_group
+                request.path.include?('/upstreams') ? upstream.group : cache_entry.group
               end
 
               def upstream
@@ -40,14 +31,6 @@ module API
                   .find_by_upstream_id_and_relative_path!(*declared_params[:id].split)
               end
               strong_memoize_attr :cache_entry
-            end
-
-            after_validation do
-              not_found! unless Feature.enabled?(:virtual_registry_maven, current_user)
-
-              require_dependency_proxy_enabled!
-
-              authenticate!
             end
 
             namespace 'virtual_registries/packages/maven' do

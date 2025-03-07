@@ -212,6 +212,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Endpoints, :aggregate_fa
     end
 
     it_behaves_like 'maven virtual registry not authenticated user'
+    it_behaves_like 'maven virtual registry feature not licensed'
   end
 
   describe 'POST /api/v4/virtual_registries/packages/maven/:id/*path/upload' do
@@ -311,5 +312,6 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Endpoints, :aggregate_fa
     end
 
     it_behaves_like 'maven virtual registry not authenticated user'
+    it_behaves_like 'maven virtual registry feature not licensed'
   end
 end

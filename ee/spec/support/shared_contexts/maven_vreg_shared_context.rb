@@ -23,6 +23,7 @@ RSpec.shared_context 'for maven virtual registry api setup' do
 
   before do
     stub_config(dependency_proxy: { enabled: true }) # not enabled by default
+    stub_licensed_features(packages_virtual_registry: true)
   end
 
   def token_header(token)
