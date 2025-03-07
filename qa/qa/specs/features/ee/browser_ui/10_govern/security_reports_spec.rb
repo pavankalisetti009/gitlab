@@ -268,7 +268,9 @@ module QA
 
         yield
 
-        if page.has_element?("filtered-search-term", wait: 1)
+        if page.has_element?("report-type-token", wait: 1)
+          page.clear_filter_token('report type')
+        elsif page.has_element?("filtered-search-term", wait: 1)
           page.clear_filter_token('tool')
         else
           page.filter_report_type(filter_report)
