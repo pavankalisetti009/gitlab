@@ -13286,7 +13286,7 @@ CREATE TABLE duo_workflows_events (
     message text,
     correlation_id_value text,
     CONSTRAINT check_5e35596b00 CHECK ((char_length(correlation_id_value) <= 128)),
-    CONSTRAINT check_d96965e118 CHECK ((char_length(message) <= 255))
+    CONSTRAINT check_9422e6deb0 CHECK ((char_length(message) <= 4096))
 );
 
 CREATE SEQUENCE duo_workflows_events_id_seq
