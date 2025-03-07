@@ -17,7 +17,7 @@ RSpec.describe ::RemoteDevelopment::NamespaceClusterAgentMappingOperations::Dele
 
   context 'when params are valid' do
     it 'deletes an existing mapping for a given namespace and cluster_agent' do
-      expect { response }.to change { RemoteDevelopment::RemoteDevelopmentNamespaceClusterAgentMapping.count }.by(-1)
+      expect { response }.to change { RemoteDevelopment::NamespaceClusterAgentMapping.count }.by(-1)
 
       expect(response.fetch(:status)).to eq(:success)
       expect(response[:message]).to be_nil
@@ -32,7 +32,7 @@ RSpec.describe ::RemoteDevelopment::NamespaceClusterAgentMappingOperations::Dele
       end
 
       it 'does not create the mapping and returns an error' do
-        expect { response }.not_to change { RemoteDevelopment::RemoteDevelopmentNamespaceClusterAgentMapping.count }
+        expect { response }.not_to change { RemoteDevelopment::NamespaceClusterAgentMapping.count }
 
         expect(response).to eq({
           status: :error,

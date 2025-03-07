@@ -20,7 +20,7 @@ RSpec.describe 'Map a cluster agent to a group', feature_category: :workspaces d
   let(:stub_service_response) { ServiceResponse.success(payload: stub_service_payload) }
 
   let(:created_mapping) do
-    instance_double(RemoteDevelopment::RemoteDevelopmentNamespaceClusterAgentMapping)
+    instance_double(RemoteDevelopment::NamespaceClusterAgentMapping)
   end
 
   let(:all_mutation_args) do

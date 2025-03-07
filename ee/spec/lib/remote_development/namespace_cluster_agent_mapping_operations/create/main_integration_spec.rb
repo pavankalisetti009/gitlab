@@ -19,7 +19,7 @@ RSpec.describe ::RemoteDevelopment::NamespaceClusterAgentMappingOperations::Crea
 
   context 'when params are valid' do
     it 'creates a new mapping for the given namespace and cluster agent and returns success' do
-      expect { response }.to change { RemoteDevelopment::RemoteDevelopmentNamespaceClusterAgentMapping.count }.by(1)
+      expect { response }.to change { RemoteDevelopment::NamespaceClusterAgentMapping.count }.by(1)
 
       expect(response.fetch(:status)).to eq(:success)
       expect(response[:message]).to be_nil
@@ -44,7 +44,7 @@ RSpec.describe ::RemoteDevelopment::NamespaceClusterAgentMappingOperations::Crea
       let(:cluster_agent) { create(:cluster_agent) }
 
       it 'does not create the mapping and returns an error' do
-        expect { response }.not_to change { RemoteDevelopment::RemoteDevelopmentNamespaceClusterAgentMapping.count }
+        expect { response }.not_to change { RemoteDevelopment::NamespaceClusterAgentMapping.count }
 
         expect(response).to eq({
           status: :error,
@@ -61,7 +61,7 @@ RSpec.describe ::RemoteDevelopment::NamespaceClusterAgentMappingOperations::Crea
       end
 
       it 'does not create the mapping and returns an error' do
-        expect { response }.not_to change { RemoteDevelopment::RemoteDevelopmentNamespaceClusterAgentMapping.count }
+        expect { response }.not_to change { RemoteDevelopment::NamespaceClusterAgentMapping.count }
 
         expect(response).to eq({
           status: :error,

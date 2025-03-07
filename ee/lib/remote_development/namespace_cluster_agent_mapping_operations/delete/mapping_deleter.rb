@@ -14,7 +14,7 @@ module RemoteDevelopment
             cluster_agent: Clusters::Agent => cluster_agent
           }
 
-          delete_count = RemoteDevelopmentNamespaceClusterAgentMapping.delete_by(
+          delete_count = NamespaceClusterAgentMapping.delete_by(
             namespace_id: namespace.id,
             cluster_agent_id: cluster_agent.id
           )

@@ -136,8 +136,8 @@ module EE
       has_many :assigned_add_ons, class_name: 'GitlabSubscriptions::UserAddOnAssignment', inverse_of: :user, dependent: :destroy
       # rubocop:enable Cop/ActiveRecordDependent -- legacy usage
 
-      has_many :created_remote_development_namespace_cluster_agent_mappings,
-        class_name: 'RemoteDevelopment::RemoteDevelopmentNamespaceClusterAgentMapping',
+      has_many :created_namespace_cluster_agent_mappings,
+        class_name: 'RemoteDevelopment::NamespaceClusterAgentMapping',
         inverse_of: :user
 
       has_many :created_organization_cluster_agent_mappings,
