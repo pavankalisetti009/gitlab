@@ -36,18 +36,16 @@ export const resolvers = {
       });
     },
     billableMembers(_, { namespaceId, page, search, sort }) {
-      return GroupsApi.fetchBillableGroupMembersList(namespaceId, { page, search, sort })
-        .then(({ data, headers }) => {
+      return GroupsApi.fetchBillableGroupMembersList(namespaceId, { page, search, sort }).then(
+        ({ data, headers }) => {
           return {
             total: Number(headers[HEADER_TOTAL_ENTRIES]),
             page: Number(headers[HEADER_PAGE_NUMBER]),
             perPage: Number(headers[HEADER_ITEMS_PER_PAGE]),
             members: data || [],
           };
-        })
-        .catch((error) => {
-          throw error;
-        });
+        },
+      );
     },
     async billableMemberDetails(_, { namespaceId, memberId }) {
       const [{ data: memberships }, { data: indirectMembership }] = await Promise.all([

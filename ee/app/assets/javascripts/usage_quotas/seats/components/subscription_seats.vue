@@ -36,10 +36,12 @@ export default {
       update(data) {
         return data.group.billableMembersCount;
       },
-      error() {
+      error(error) {
         createAlert({
           message: s__('Billing|An error occurred while loading billable members list.'),
         });
+
+        Sentry.captureException(error);
       },
     },
     plan: {

@@ -13,8 +13,12 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 
 jest.mock('~/alert');
+jest.mock('~/sentry/sentry_browser_wrapper');
+
+Vue.use(VueApollo);
 
 const providedFields = {
   explorePlansPath: '/groups/test_group/-/billings',
@@ -23,50 +27,40 @@ const providedFields = {
   addSeatsHref: '/groups/test_group/-/seat_usage.csv',
 };
 
-Vue.use(VueApollo);
+const { subscription: defaultSubscriptionPlanData } = getMockSubscriptionData({
+  code: 'ultimate',
+  name: 'Ultimate',
+  maxSeatsUsed: 3,
+  seatsOwed: 1,
+});
 
-describe('Subscription Seats', () => {
+const { subscription: freeSubscriptionPlanData } = getMockSubscriptionData({
+  id: 2,
+  code: 'free',
+  name: 'Free',
+});
+
+describe('SubscriptionSeats', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
 
   const fullPath = 'group-path';
   const { explorePlansPath, addSeatsHref } = providedFields;
 
-  const defaultBillableMembersCountMockHandler = jest.fn().mockResolvedValue({
-    data: {
-      group: {
-        id: 'gid://gitlab/Group/13',
-        billableMembersCount: 2,
-        enforceFreeUserCap: false,
-      },
-    },
-  });
+  /** @type { jest.Mock } */
+  let subscriptionQueryResolver;
+  /** @type { jest.Mock } */
+  let getBillableMembersCountQueryHandler;
 
-  const defaultSubscriptionPlanData = getMockSubscriptionData({
-    code: 'ultimate',
-    name: 'Ultimate',
-    maxSeatsUsed: 3,
-    seatsOwed: 1,
-  }).subscription;
-
-  const freeSubscriptionPlanData = getMockSubscriptionData({
-    id: 2,
-    code: 'free',
-    name: 'Free',
-  }).subscription;
-
-  const createComponent = ({
-    provide = {},
-    subscriptionData = () => defaultSubscriptionPlanData,
-  } = {}) => {
+  const createComponent = ({ provide = {} } = {}) => {
     const resolvers = {
       Query: {
-        subscription: subscriptionData,
+        subscription: subscriptionQueryResolver,
       },
     };
 
     const apolloProvider = createMockApollo(
-      [[getBillableMembersCountQuery, defaultBillableMembersCountMockHandler]],
+      [[getBillableMembersCountQuery, getBillableMembersCountQueryHandler]],
       resolvers,
     );
 
@@ -95,35 +89,23 @@ describe('Subscription Seats', () => {
   const findStatisticsSeatsCard = () => wrapper.findComponent(StatisticsSeatsCard);
   const findSubscriptionUpgradeCard = () => wrapper.findComponent(SubscriptionUpgradeInfoCard);
   const findSubscriptionUserList = () => wrapper.findComponent(SubscriptionUserList);
+  const findSkeletonLoaderCards = () => wrapper.findByTestId('skeleton-loader-cards');
 
-  describe('actions', () => {
-    it('calls createAlert when gitlab subscription query fails', async () => {
-      createComponent({
-        subscriptionData: () => new Error('Failed'),
-      });
-      await waitForPromises();
-
-      expect(createAlert).toHaveBeenCalled();
-    });
-  });
-
-  describe('when is a public namespace', () => {
-    beforeEach(() => {
-      return createComponent({
-        subscriptionData: () => freeSubscriptionPlanData,
-        provide: {
-          hasNoSubscription: true,
-          isPublicNamespace: true,
+  beforeEach(() => {
+    getBillableMembersCountQueryHandler = jest.fn().mockResolvedValue({
+      data: {
+        group: {
+          id: 'gid://gitlab/Group/13',
+          billableMembersCount: 2,
+          enforceFreeUserCap: false,
         },
-      });
+      },
     });
 
-    it('renders <public-namespace-plan-info-card>', () => {
-      expect(findPublicNamespacePlanInfoCard().exists()).toBe(true);
-    });
+    subscriptionQueryResolver = jest.fn().mockResolvedValue(defaultSubscriptionPlanData);
   });
 
-  describe('statistics', () => {
+  describe('statistics cards', () => {
     beforeEach(() => {
       return createComponent();
     });
@@ -149,9 +131,8 @@ describe('Subscription Seats', () => {
 
     describe('when on free namespace', () => {
       beforeEach(() => {
-        return createComponent({
-          subscriptionData: () => freeSubscriptionPlanData,
-        });
+        subscriptionQueryResolver.mockResolvedValue(freeSubscriptionPlanData);
+        return createComponent();
       });
 
       it('renders <statistics-seats-card> with hasFreePlan as true', () => {
@@ -180,31 +161,100 @@ describe('Subscription Seats', () => {
         });
       });
     });
+
+    describe('when is a public namespace', () => {
+      beforeEach(() => {
+        subscriptionQueryResolver.mockResolvedValue(freeSubscriptionPlanData);
+        return createComponent({
+          provide: {
+            hasNoSubscription: true,
+            isPublicNamespace: true,
+          },
+        });
+      });
+
+      it('renders <public-namespace-plan-info-card>', () => {
+        expect(findPublicNamespacePlanInfoCard().exists()).toBe(true);
+      });
+    });
   });
 
   describe('subscription user list', () => {
     it('renders subscription users', async () => {
       await createComponent();
-
       expect(findSubscriptionUserList().exists()).toBe(true);
     });
 
     it('refetches data when findSubscriptionUserList emits refetchData', async () => {
-      const subscriptionQueryHandler = jest.fn().mockResolvedValue(defaultSubscriptionPlanData);
-
-      createComponent({ subscriptionData: subscriptionQueryHandler });
-
-      await waitForPromises();
+      await createComponent();
 
       // Initial queries should have been called once
-      expect(subscriptionQueryHandler).toHaveBeenCalledTimes(1);
-      expect(defaultBillableMembersCountMockHandler).toHaveBeenCalledTimes(1);
+      expect(subscriptionQueryResolver).toHaveBeenCalledTimes(1);
+      expect(getBillableMembersCountQueryHandler).toHaveBeenCalledTimes(1);
 
       await findSubscriptionUserList().vm.$emit('refetchData');
 
       // After refetch, queries should have been called twice more
-      expect(subscriptionQueryHandler).toHaveBeenCalledTimes(2);
-      expect(defaultBillableMembersCountMockHandler).toHaveBeenCalledTimes(2);
+      expect(subscriptionQueryResolver).toHaveBeenCalledTimes(2);
+      expect(getBillableMembersCountQueryHandler).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('Loading state', () => {
+    beforeEach(() => {
+      getBillableMembersCountQueryHandler.mockImplementation(() => new Promise(() => {}));
+      subscriptionQueryResolver.mockImplementation(() => new Promise(() => {}));
+      return createComponent();
+    });
+
+    it('displays the loading skeleton', () => {
+      expect(findSkeletonLoaderCards().exists()).toBe(true);
+    });
+
+    it('hides the <subscription-seats-statistics-card>', () => {
+      expect(findSubscriptionSeatsStatisticsCard().exists()).toBe(false);
+    });
+
+    it('hides the <statistics-seats-card>', () => {
+      expect(findStatisticsSeatsCard().exists()).toBe(false);
+    });
+  });
+
+  describe('Error handling', () => {
+    const ERROR = new Error('error');
+
+    describe('when getBillableMembersCount query fails', () => {
+      beforeEach(() => {
+        getBillableMembersCountQueryHandler.mockRejectedValue(ERROR);
+        return createComponent();
+      });
+
+      it('calls createAlert when gitlab subscription query fails', () => {
+        expect(createAlert).toHaveBeenCalledWith({
+          message: 'An error occurred while loading billable members list.',
+        });
+      });
+
+      it('logs the error to Sentry', () => {
+        expect(Sentry.captureException).toHaveBeenCalledWith(ERROR);
+      });
+    });
+
+    describe('when gitlab subscription query fails', () => {
+      beforeEach(() => {
+        subscriptionQueryResolver.mockRejectedValue(ERROR);
+        return createComponent();
+      });
+
+      it('calls createAlert when gitlab subscription query fails', () => {
+        expect(createAlert).toHaveBeenCalledWith({
+          message: 'An error occurred while loading GitLab subscription details.',
+        });
+      });
+
+      it('logs the error to Sentry', () => {
+        expect(Sentry.captureException).toHaveBeenCalledWith(ERROR);
+      });
     });
   });
 });

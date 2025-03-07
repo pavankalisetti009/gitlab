@@ -29,9 +29,11 @@ import RemoveBillableMemberModal from 'ee/usage_quotas/seats/components/remove_b
 import waitForPromises from 'helpers/wait_for_promises';
 import * as GroupsApi from 'ee/api/groups_api';
 import { createAlert } from '~/alert';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 
 jest.mock('~/alert');
 jest.mock('ee/api/groups_api');
+jest.mock('~/sentry/sentry_browser_wrapper');
 
 Vue.use(VueApollo);
 
@@ -52,19 +54,15 @@ describe('SubscriptionUserList', () => {
   useLocalStorageSpy();
   useFakeDate('2025-03-16T15:00:00.000Z');
 
+  /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
+  /** @type { jest.Mock } */
+  let billableMembersMockHandler;
 
   const localStorageKey = `13-${DELETED_BILLABLE_MEMBERS_STORAGE_KEY_SUFFIX}`;
   const localStorageExpireKey = `13-${DELETED_BILLABLE_MEMBERS_EXPIRES_STORAGE_KEY_SUFFIX}`;
   const fiveMinutesBeforeNow = () => new Date().getTime() - FIVE_MINUTES_IN_MS;
   const fiveMinutesFromNow = () => new Date().getTime() + FIVE_MINUTES_IN_MS;
-
-  const billableMembersMockHandler = jest.fn().mockResolvedValue({
-    total: mockTableItems.length,
-    page: 1,
-    perPage: 5,
-    members: mockTableItems,
-  });
 
   const createComponent = ({ mountFn = shallowMount, provide = {}, props = {} } = {}) => {
     const resolvers = {
@@ -132,6 +130,15 @@ describe('SubscriptionUserList', () => {
     return tableWrapper.findAll('tbody tr').wrappers.map(serializeTableRow);
   };
 
+  beforeEach(() => {
+    billableMembersMockHandler = jest.fn().mockResolvedValue({
+      total: mockTableItems.length,
+      page: 1,
+      perPage: 5,
+      members: mockTableItems,
+    });
+  });
+
   afterEach(() => {
     localStorage.clear();
   });
@@ -178,6 +185,10 @@ describe('SubscriptionUserList', () => {
 
         expect(serializedTable).toMatchSnapshot();
       });
+    });
+
+    it('does not display the table in busy state', () => {
+      expect(findTable().attributes('busy')).toBeUndefined();
     });
 
     it('pagination is rendered and passed correct values', () => {
@@ -459,34 +470,26 @@ describe('SubscriptionUserList', () => {
     });
   });
 
-  describe('Loading state', () => {
-    beforeEach(() => {
-      createComponent();
-    });
-
-    it('displays table in busy state', () => {
-      // the table is in busy state when $apollo.loading since we didn't wait for the promise to resolve
-      expect(findTable().attributes('busy')).toBe('true');
-    });
-
-    it('does not display the table in busy state after the query has loaded', async () => {
-      await waitForPromises();
-
-      expect(findTable().attributes('busy')).toBeUndefined();
-    });
-  });
-
   describe('search box', () => {
     beforeEach(() => {
       return createComponent();
     });
 
     it('input event changes search property', async () => {
-      expect(billableMembersMockHandler).toHaveBeenCalledTimes(1);
-
+      billableMembersMockHandler.mockClear();
       findSearchAndSortBar().vm.$emit('onFilter', 'search string');
       await nextTick();
-      expect(billableMembersMockHandler).toHaveBeenCalledTimes(2);
+      expect(billableMembersMockHandler).toHaveBeenCalledWith(
+        expect.any(Object),
+        {
+          namespaceId: 1,
+          page: 1,
+          search: 'search string',
+          sort: 'last_activity_on_desc',
+        },
+        expect.any(Object),
+        expect.any(Object),
+      );
     });
 
     it('contains the correct sort options', () => {
@@ -507,6 +510,30 @@ describe('SubscriptionUserList', () => {
           variant: 'success',
         });
       });
+    });
+  });
+
+  describe('Loading state', () => {
+    beforeEach(() => {
+      billableMembersMockHandler.mockImplementation(() => new Promise(() => {}));
+      createComponent();
+    });
+
+    it('displays table in busy state', () => {
+      expect(findTable().attributes('busy')).toBe('true');
+    });
+  });
+
+  describe('Error handling', () => {
+    const ERROR = new Error('error');
+
+    beforeEach(() => {
+      billableMembersMockHandler.mockRejectedValue(ERROR);
+      return createComponent();
+    });
+
+    it('logs the error to Sentry', () => {
+      expect(Sentry.captureException).toHaveBeenCalledWith(ERROR);
     });
   });
 });
