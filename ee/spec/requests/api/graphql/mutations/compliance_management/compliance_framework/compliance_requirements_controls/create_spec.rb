@@ -72,7 +72,8 @@ RSpec.describe 'Create a Compliance Requirement Control', feature_category: :com
               name: 'external_control',
               control_type: 'external',
               external_url: 'https://example.com',
-              secret_token: 'secret_token'
+              secret_token: 'secret_token',
+              expression: ""
             }
           )
         end
@@ -87,7 +88,7 @@ RSpec.describe 'Create a Compliance Requirement Control', feature_category: :com
           expect(control.control_type).to eq('external')
           expect(control.external_url).to eq('https://example.com')
           expect(control.secret_token).to eq('secret_token')
-          expect(control.expression).to be_nil
+          expect(control.expression).to be_empty
         end
 
         it 'returns the correct response', :aggregate_failures do
@@ -96,7 +97,7 @@ RSpec.describe 'Create a Compliance Requirement Control', feature_category: :com
           expect(mutation_response['requirementsControl']['name']).to eq('external_control')
           expect(mutation_response['requirementsControl']['controlType']).to eq('external')
           expect(mutation_response['requirementsControl']['externalUrl']).to eq('https://example.com')
-          expect(mutation_response['requirementsControl']['expression']).to be_nil
+          expect(mutation_response['requirementsControl']['expression']).to be_empty
           expect(mutation_response['requirementsControl']['secretToken']).to be_nil
           expect(mutation_response['requirementsControl'].keys).not_to include('secretToken')
         end

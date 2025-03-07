@@ -103,7 +103,8 @@ RSpec.describe 'Update a compliance requirement control', feature_category: :com
         let(:mutation_params) do
           {
             params: {
-              name: 'invalid_name'
+              name: 'invalid_name',
+              expression: 'invalid_expression'
             }
           }
         end
@@ -130,7 +131,7 @@ RSpec.describe 'Update a compliance requirement control', feature_category: :com
               control_type: 'external',
               external_url: 'https://example.com',
               secret_token: 'secret_token',
-              expression: nil
+              expression: ""
             }
           }
         end
@@ -148,7 +149,7 @@ RSpec.describe 'Update a compliance requirement control', feature_category: :com
           mutate
 
           expect(mutation_response['requirementsControl']['name']).to eq 'external_control'
-          expect(mutation_response['requirementsControl']['expression']).to be_nil
+          expect(mutation_response['requirementsControl']['expression']).to be_empty
           expect(mutation_response['requirementsControl']['controlType']).to eq 'external'
           expect(mutation_response['requirementsControl']['externalUrl']).to eq 'https://example.com'
           expect(mutation_response['requirementsControl']['secretToken']).to be_nil

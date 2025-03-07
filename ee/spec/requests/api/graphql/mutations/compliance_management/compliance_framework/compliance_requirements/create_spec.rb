@@ -8,6 +8,18 @@ RSpec.describe 'Create a Compliance Requirement', feature_category: :compliance_
   let_it_be(:namespace) { create(:group) }
   let_it_be(:framework) { create(:compliance_framework, namespace: namespace) }
   let_it_be(:current_user) { create(:user) }
+  let_it_be(:controls) do
+    [
+      {
+        expression: "{\"operator\":\"=\",\"field\":\"project_visibility\",\"value\":\"private\"}",
+        name: "project_visibility_not_internal"
+      },
+      {
+        expression: "{\"operator\":\"=\",\"field\":\"minimum_approvals_required\",\"value\":2}",
+        name: "minimum_approvals_required_2"
+      }
+    ]
+  end
 
   let(:mutation) do
     graphql_mutation(
@@ -16,7 +28,8 @@ RSpec.describe 'Create a Compliance Requirement', feature_category: :compliance_
       params: {
         name: 'Custom framework requirement',
         description: 'Example Description'
-      }
+      },
+      controls: controls
     )
   end
 
@@ -36,6 +49,11 @@ RSpec.describe 'Create a Compliance Requirement', feature_category: :compliance_
 
       expect(mutation_response['requirement']['name']).to eq 'Custom framework requirement'
       expect(mutation_response['requirement']['description']).to eq 'Example Description'
+    end
+
+    it 'creates compliance requirements controls' do
+      expect { mutate }
+        .to change { ComplianceManagement::ComplianceFramework::ComplianceRequirementsControl.count }.by 2
     end
   end
 
