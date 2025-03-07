@@ -14592,6 +14592,9 @@ msgstr ""
 msgid "Commits|No related merge requests found"
 msgstr ""
 
+msgid "Commits|Something went wrong while fetching commit details"
+msgstr ""
+
 msgid "Committed by"
 msgstr ""
 
