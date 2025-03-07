@@ -8,6 +8,7 @@ import LicenseToken from './tokens/license_token.vue';
 import ProjectToken from './tokens/project_token.vue';
 import ComponentToken from './tokens/component_token.vue';
 import PackagerToken from './tokens/package_manager_token.vue';
+import VersionToken from './tokens/version_token.vue';
 import DependenciesFilteredSearch from './dependencies_filtered_search.vue';
 
 export default {
@@ -57,6 +58,18 @@ export default {
                 multiSelect: true,
                 unique: true,
                 token: PackagerToken,
+                operators: OPERATORS_IS,
+              },
+            ]
+          : []),
+        ...(this.glFeatures.versionFilteringOnGroupLevelDependencyList
+          ? [
+              {
+                type: 'version',
+                title: __('Version'),
+                multiSelect: true,
+                unique: true,
+                token: VersionToken,
                 operators: OPERATORS_IS,
               },
             ]
