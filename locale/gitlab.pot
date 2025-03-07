@@ -25560,6 +25560,9 @@ msgstr ""
 msgid "Fork project?"
 msgstr ""
 
+msgid "Fork to make changes"
+msgstr ""
+
 msgid "ForkProject|A fork is a copy of a project."
 msgstr ""
 
@@ -67402,9 +67405,6 @@ msgstr ""
 msgid "You can't approve because you added one or more commits to this merge request."
 msgstr ""
 
-msgid "You can't edit files directly in this project. Fork this project and submit a merge request with your changes."
-msgstr ""
-
 msgid "You can't follow more than %{limit} users. To follow more users, unfollow some others."
 msgstr ""
 
@@ -67850,6 +67850,9 @@ msgid "You're not allowed to make changes to this project directly. A fork of th
 msgstr ""
 
 msgid "You're not allowed to make changes to this project directly. A fork of this project is being created that you can make changes in, so you can submit a merge request."
+msgstr ""
+
+msgid "You're not allowed to make changes to this project directly. Create a fork to make changes and submit a merge request."
 msgstr ""
 
 msgid "You're receiving this email because of your account on %{host}."
