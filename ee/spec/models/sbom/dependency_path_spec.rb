@@ -110,6 +110,72 @@ RSpec.describe Sbom::DependencyPath, feature_category: :vulnerability_management
       end
     end
 
+    context 'with overlapping paths' do
+      let_it_be(:occurrence_1) do
+        create(:sbom_occurrence, component: component_1, project: project, component_version: component_version_1)
+      end
+
+      let_it_be(:occurrence_2) do
+        create(:sbom_occurrence,
+          component: component_2,
+          project: project,
+          component_version: component_version_2,
+          ancestors: [{ name: component_1.name, version: component_version_1.version }]
+        )
+      end
+
+      let_it_be(:occurrence_3) do
+        create(:sbom_occurrence,
+          component: component_3,
+          project: project,
+          component_version: component_version_3,
+          ancestors: [
+            { name: component_2.name, version: component_version_2.version },
+            { name: component_1.name, version: component_version_1.version }
+          ]
+        )
+      end
+
+      let(:occurrence_id) do
+        occurrence_3.id
+      end
+
+      it 'emits correct overlapping paths' do
+        is_expected.to eq([
+          described_class.new(
+            id: occurrence_3.id,
+            project_id: project.id,
+            dependency_name: component_3.name,
+            full_path: [component_1.name, component_3.name],
+            version: [component_version_1.version, component_version_3.version],
+            is_cyclic: false,
+            max_depth_reached: false
+          ),
+          described_class.new(
+            id: occurrence_3.id,
+            project_id: project.id,
+            dependency_name: component_3.name,
+            full_path: [component_1.name, component_2.name, component_3.name],
+            version: [component_version_1.version, component_version_2.version, component_version_3.version],
+            is_cyclic: false,
+            max_depth_reached: false
+          )
+        ])
+      end
+
+      it 'returns expected ancestors' do
+        expect(find_dependencies[0].path).to eq([
+          { name: component_1.name, version: component_version_1.version },
+          { name: component_3.name, version: component_version_3.version }
+        ])
+        expect(find_dependencies[1].path).to eq([
+          { name: component_1.name, version: component_version_1.version },
+          { name: component_2.name, version: component_version_2.version },
+          { name: component_3.name, version: component_version_3.version }
+        ])
+      end
+    end
+
     context 'if there is a cycle' do
       let_it_be(:occurrence_1) do
         create(:sbom_occurrence,

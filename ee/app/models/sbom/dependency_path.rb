@@ -29,7 +29,7 @@ module Sbom
               so.traversal_ids,
               ARRAY [a->>'name', so.component_name] as full_path,
               ARRAY [a->>'version', versions.version] as version,
-              ARRAY [concat_ws('@', a->>'name', a->>'version'), concat_ws('@', so.component_name, versions.version)] as combined_path,
+              concat_ws('>', concat_ws('@', a->>'name', a->>'version'), concat_ws('@', so.component_name, versions.version)) as combined_path,
               false as is_cyclic,
               false as max_depth_reached
           FROM
@@ -48,8 +48,8 @@ module Sbom
               dt.traversal_ids,
               ARRAY [a->>'name'] || dt.full_path,
               ARRAY [a->>'version'] || dt.version,
-              ARRAY [concat_ws('@', a->>'name', a->>'version')] || dt.combined_path,
-              dt.combined_path && ARRAY[concat_ws('@', a->>'name', a->>'version')],
+              concat_ws('>', concat_ws('@', a->>'name', a->>'version'), dt.combined_path),
+              position(concat_ws('@', a->>'name', a->>'version') in dt.combined_path) > 0,
               array_length(dt.full_path, 1) = :max_depth
           FROM
               dependency_tree dt
@@ -76,7 +76,7 @@ module Sbom
         WHERE NOT EXISTS (  -- Remove partial paths
             SELECT 1
             FROM dependency_tree dt2
-            WHERE dependency_tree.combined_path <@ dt2.combined_path -- Current path is a sub-path of another path
+            WHERE position(dependency_tree.combined_path in dt2.combined_path) > 0 -- Current path is a sub-path of another path
             AND dependency_tree.combined_path <> dt2.combined_path -- Don't remove yourself!
             AND NOT dependency_tree.is_cyclic -- Keep cyclic paths
         );
