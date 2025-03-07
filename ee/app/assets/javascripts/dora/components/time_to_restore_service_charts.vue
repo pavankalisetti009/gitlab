@@ -4,7 +4,10 @@ import * as DoraApi from 'ee/api/dora_api';
 import ValueStreamMetrics from '~/analytics/shared/components/value_stream_metrics.vue';
 import { createAlert } from '~/alert';
 import { s__, sprintf } from '~/locale';
-import { DORA_METRICS_QUERY_TYPE } from '~/analytics/shared/constants';
+import {
+  DORA_METRICS_QUERY_TYPE,
+  TIME_TO_RESTORE_SERVICE_SECONDARY_SERIES_NAME,
+} from '~/analytics/shared/constants';
 import CiCdAnalyticsCharts from '~/vue_shared/components/ci_cd_analytics/ci_cd_analytics_charts.vue';
 import { buildNullSeries } from '../../analytics/shared/utils';
 import ChartTooltipText from '../../analytics/shared/components/chart_tooltip_text.vue';
@@ -13,7 +16,6 @@ import {
   allChartDefinitions,
   areaChartOptions,
   averageSeriesOptions,
-  medianSeriesName,
   chartDescriptionText,
   chartDocumentationHref,
   LAST_WEEK,
@@ -138,7 +140,9 @@ export default {
             ...averageSeriesOptions,
             ...seriesToMedianSeries(
               data,
-              sprintf(medianSeriesName, { days: this.$options.chartInDays[id] }),
+              sprintf(TIME_TO_RESTORE_SERVICE_SECONDARY_SERIES_NAME, {
+                days: this.$options.chartInDays[id],
+              }),
             ),
           };
 

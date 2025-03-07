@@ -55,6 +55,13 @@ export const averageSeriesOptions = {
   },
 };
 
+export const medianSeriesOptions = {
+  areaStyle: {
+    opacity: 0,
+  },
+  showSymbol: false,
+};
+
 const formatDateRangeString = (startDate) => {
   const start = dateFormat(startDate, dateFormats.defaultDate, true);
   const end = dateFormat(startOfToday, dateFormats.defaultDate, true);

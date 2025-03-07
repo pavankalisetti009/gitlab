@@ -3,8 +3,6 @@ import { s__ } from '~/locale';
 
 export * from './shared';
 
-export const averageSeriesName = s__('DORA4Metrics|Average (last %{days}d)');
-
 export const CHART_TITLE = s__('DORA4Metrics|Deployment frequency');
 
 export const areaChartOptions = {

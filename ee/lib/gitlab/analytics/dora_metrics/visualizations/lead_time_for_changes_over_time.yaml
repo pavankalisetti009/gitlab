@@ -12,5 +12,5 @@ options:
     name: Date
     type: time
   yAxis:
-    name: "Days from merge to deploy"
+    name: "Time from merge to deploy"
     type: value

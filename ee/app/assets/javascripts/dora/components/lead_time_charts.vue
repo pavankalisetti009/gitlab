@@ -1,5 +1,9 @@
 <script>
 import * as DoraApi from 'ee/api/dora_api';
+import {
+  LEAD_TIME_NO_DATA_MESSAGE,
+  LEAD_TIME_FOR_CHANGES_SECONDARY_SERIES_NAME,
+} from '~/analytics/shared/constants';
 import { createAlert } from '~/alert';
 import { s__, sprintf } from '~/locale';
 import CiCdAnalyticsCharts from '~/vue_shared/components/ci_cd_analytics/ci_cd_analytics_charts.vue';
@@ -10,7 +14,6 @@ import {
   allChartDefinitions,
   areaChartOptions,
   averageSeriesOptions,
-  medianSeriesTitle,
   chartDescriptionText,
   chartDocumentationHref,
   LAST_WEEK,
@@ -18,7 +21,6 @@ import {
   LAST_90_DAYS,
   LAST_180_DAYS,
   CHART_TITLE,
-  NO_DATA_MESSAGE,
 } from './static_data/lead_time';
 import { apiDataToChartSeries, seriesToMedianSeries, extractTimeSeriesTooltip } from './util';
 
@@ -95,7 +97,9 @@ export default {
           ...averageSeriesOptions,
           ...seriesToMedianSeries(
             data,
-            sprintf(medianSeriesTitle, { days: this.$options.chartInDays[id] }),
+            sprintf(LEAD_TIME_FOR_CHANGES_SECONDARY_SERIES_NAME, {
+              days: this.$options.chartInDays[id],
+            }),
           ),
         };
 
@@ -159,7 +163,7 @@ export default {
     alertMessage: s__('DORA4Metrics|Something went wrong while getting lead time data.'),
     chartHeaderText: CHART_TITLE,
     medianLeadTime: CHART_TITLE,
-    noMergeRequestsDeployed: NO_DATA_MESSAGE,
+    noMergeRequestsDeployed: LEAD_TIME_NO_DATA_MESSAGE,
   },
 };
 </script>
