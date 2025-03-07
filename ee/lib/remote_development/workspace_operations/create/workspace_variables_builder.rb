@@ -3,9 +3,10 @@
 module RemoteDevelopment
   module WorkspaceOperations
     module Create
-      class WorkspaceVariables
+      class WorkspaceVariablesBuilder
         include CreateConstants
         include Files
+        include Enums::WorkspaceVariable
 
         # @param [String] name
         # @param [String] dns_zone
@@ -13,123 +14,143 @@ module RemoteDevelopment
         # @param [String] user_name
         # @param [String] user_email
         # @param [Integer] workspace_id
+        # @param [Integer] workspace_actual_state
         # @param [Hash] vscode_extension_marketplace
         # @param [Array<Hash>] variables
         # @return [Array<Hash>]
-        def self.variables(
+        def self.build(
           name:, dns_zone:, personal_access_token_value:, user_name:, user_email:, workspace_id:,
           vscode_extension_marketplace:, variables:
         )
           vscode_extension_marketplace => {
-            service_url: String => vscode_extensions_gallery_service_url,
-            item_url: String => vscode_extensions_gallery_item_url,
-            resource_url_template: String => vscode_extensions_gallery_resource_url_template,
+            service_url: String => vscode_extension_marketplace_service_url,
+            item_url: String => vscode_extension_marketplace_item_url,
+            resource_url_template: String => vscode_extension_marketplace_resource_url_template,
           }
 
           internal_variables = [
+
+            #-------------------------------------------------------------------
+            # The user's workspace-specific personal access token which is injected into the workspace, and used for
+            # authentication. For example, in the credential.helper script below.
             {
               key: File.basename(TOKEN_FILE),
               value: personal_access_token_value,
-              variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:file],
-              workspace_id: workspace_id
-            },
-            {
-              key: File.basename(GIT_CREDENTIAL_STORE_SCRIPT_FILE),
-              value: WORKSPACE_VARIABLES_GIT_CREDENTIAL_STORE_SCRIPT,
-              variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:file],
-              workspace_id: workspace_id
-            },
-            {
-              key: "GIT_CONFIG_COUNT",
-              value: "3",
-              variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
-              workspace_id: workspace_id
-            },
-            {
-              key: "GIT_CONFIG_KEY_0",
-              value: "credential.helper",
-              variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
-              workspace_id: workspace_id
-            },
-            {
-              key: "GIT_CONFIG_VALUE_0",
-              value: GIT_CREDENTIAL_STORE_SCRIPT_FILE,
-              variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
-              workspace_id: workspace_id
-            },
-            {
-              key: "GIT_CONFIG_KEY_1",
-              value: "user.name",
-              variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
-              workspace_id: workspace_id
-            },
-            {
-              key: "GIT_CONFIG_VALUE_1",
-              value: user_name,
-              variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
-              workspace_id: workspace_id
-            },
-            {
-              key: "GIT_CONFIG_KEY_2",
-              value: "user.email",
-              variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
-              workspace_id: workspace_id
-            },
-            {
-              key: "GIT_CONFIG_VALUE_2",
-              value: user_email,
-              variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
-              workspace_id: workspace_id
-            },
-            {
-              key: "GL_GIT_CREDENTIAL_STORE_SCRIPT_FILE",
-              value: GIT_CREDENTIAL_STORE_SCRIPT_FILE,
-              variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
+              variable_type: FILE_TYPE,
               workspace_id: workspace_id
             },
             {
               key: "GL_TOKEN_FILE_PATH",
               value: TOKEN_FILE,
-              variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
+              variable_type: ENVIRONMENT_TYPE,
               workspace_id: workspace_id
             },
+            #-------------------------------------------------------------------
+
+            #-------------------------------------------------------------------
+            # Standard git ENV vars which configure git on the workspace. See https://git-scm.com/docs/git-config
+            {
+              # This script is set as the value of `credential.helper` below in `GIT_CONFIG_VALUE_0`
+              key: File.basename(GIT_CREDENTIAL_STORE_SCRIPT_FILE),
+              value: WORKSPACE_VARIABLES_GIT_CREDENTIAL_STORE_SCRIPT,
+              variable_type: FILE_TYPE,
+              workspace_id: workspace_id
+            },
+            {
+              key: "GIT_CONFIG_COUNT",
+              value: "3",
+              variable_type: ENVIRONMENT_TYPE,
+              workspace_id: workspace_id
+            },
+            {
+              key: "GIT_CONFIG_KEY_0",
+              value: "credential.helper",
+              variable_type: ENVIRONMENT_TYPE,
+              workspace_id: workspace_id
+            },
+            {
+              key: "GIT_CONFIG_VALUE_0",
+              value: GIT_CREDENTIAL_STORE_SCRIPT_FILE,
+              variable_type: ENVIRONMENT_TYPE,
+              workspace_id: workspace_id
+            },
+            {
+              key: "GIT_CONFIG_KEY_1",
+              value: "user.name",
+              variable_type: ENVIRONMENT_TYPE,
+              workspace_id: workspace_id
+            },
+            {
+              key: "GIT_CONFIG_VALUE_1",
+              value: user_name,
+              variable_type: ENVIRONMENT_TYPE,
+              workspace_id: workspace_id
+            },
+            {
+              key: "GIT_CONFIG_KEY_2",
+              value: "user.email",
+              variable_type: ENVIRONMENT_TYPE,
+              workspace_id: workspace_id
+            },
+            {
+              key: "GIT_CONFIG_VALUE_2",
+              value: user_email,
+              variable_type: ENVIRONMENT_TYPE,
+              workspace_id: workspace_id
+            },
+            #-------------------------------------------------------------------
+
+            #-------------------------------------------------------------------
+            # The GL_WORKSPACE_DOMAIN_TEMPLATE variable is used by the GitLab Development Kit (GDK) script to configure
+            # the GDK in a workspce: `support/gitlab-remote-development/setup_workspace.rb`
             {
               key: "GL_WORKSPACE_DOMAIN_TEMPLATE",
               value: "${PORT}-#{name}.#{dns_zone}",
-              variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
+              variable_type: ENVIRONMENT_TYPE,
               workspace_id: workspace_id
             },
+            #-------------------------------------------------------------------
+
+            #-------------------------------------------------------------------
+            # Variables with prefix `GL_EDITOR_EXTENSIONS_GALLERY` are used for configuring the
+            # GitLab fork of VS Code which is injected into the workspace.
+            # TODO: Rename these to be `GL_VSCODE_EXTENSION_MARKETPLACE_*` to be consistent with the new naming standard
+            #       See https://gitlab.com/gitlab-org/gitlab/-/issues/520884
             {
               key: "GL_EDITOR_EXTENSIONS_GALLERY_SERVICE_URL",
-              value: vscode_extensions_gallery_service_url,
-              variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
+              value: vscode_extension_marketplace_service_url,
+              variable_type: ENVIRONMENT_TYPE,
               workspace_id: workspace_id
             },
             {
               key: "GL_EDITOR_EXTENSIONS_GALLERY_ITEM_URL",
-              value: vscode_extensions_gallery_item_url,
-              variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
+              value: vscode_extension_marketplace_item_url,
+              variable_type: ENVIRONMENT_TYPE,
               workspace_id: workspace_id
             },
             {
               key: "GL_EDITOR_EXTENSIONS_GALLERY_RESOURCE_URL_TEMPLATE",
-              value: vscode_extensions_gallery_resource_url_template,
-              variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
+              value: vscode_extension_marketplace_resource_url_template,
+              variable_type: ENVIRONMENT_TYPE,
               workspace_id: workspace_id
             },
-            # variables with prefix `GITLAB_WORKFLOW_` are used for configured GitLab Workflow extension for VS Code
+            #-------------------------------------------------------------------
+
+            #-------------------------------------------------------------------
+            # Variables with prefix `GITLAB_WORKFLOW_` are used for configured GitLab Workflow extension for VS Code
             {
               key: "GITLAB_WORKFLOW_INSTANCE_URL",
               value: Gitlab::Routing.url_helpers.root_url,
-              variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
+              variable_type: ENVIRONMENT_TYPE,
               workspace_id: workspace_id
             },
             {
               key: "GITLAB_WORKFLOW_TOKEN_FILE",
               value: TOKEN_FILE,
-              variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment],
+              variable_type: ENVIRONMENT_TYPE,
               workspace_id: workspace_id
             }
+            #-------------------------------------------------------------------
           ]
 
           user_provided_variables = variables.map do |variable|

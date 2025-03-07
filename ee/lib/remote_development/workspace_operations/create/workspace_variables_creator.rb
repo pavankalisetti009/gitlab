@@ -22,7 +22,7 @@ module RemoteDevelopment
           # When we have the ability to define variables for workspaces
           # at project/group/instance level, add them here.
           variables = user_provided_variables
-          workspace_variables = WorkspaceVariables.variables(
+          workspace_variables = WorkspaceVariablesBuilder.build(
             name: workspace.name,
             dns_zone: workspace.workspaces_agent_config.dns_zone,
             personal_access_token_value: personal_access_token.token,

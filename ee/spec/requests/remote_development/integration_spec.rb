@@ -88,6 +88,9 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
   let(:expected_internal_variables) do
     # rubocop:disable Layout/LineLength -- keep them on one line for easier readability and editability
     [
+      { key: "gl_token", type: :file, value: /glpat-.+/ },
+      { key: "GL_TOKEN_FILE_PATH", type: :environment, value: "/.workspace-data/variables/file/gl_token" },
+      { key: "gl_git_credential_store.sh", type: :file, value: RemoteDevelopment::Files::WORKSPACE_VARIABLES_GIT_CREDENTIAL_STORE_SCRIPT },
       { key: "GIT_CONFIG_COUNT", type: :environment, value: "3" },
       { key: "GIT_CONFIG_KEY_0", type: :environment, value: "credential.helper" },
       { key: "GIT_CONFIG_KEY_1", type: :environment, value: "user.name" },
@@ -98,13 +101,9 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
       { key: "GL_EDITOR_EXTENSIONS_GALLERY_ITEM_URL", type: :environment, value: "https://open-vsx.org/vscode/item" },
       { key: "GL_EDITOR_EXTENSIONS_GALLERY_RESOURCE_URL_TEMPLATE", type: :environment, value: "https://open-vsx.org/vscode/unpkg/{publisher}/{name}/{version}/{path}" },
       { key: "GL_EDITOR_EXTENSIONS_GALLERY_SERVICE_URL", type: :environment, value: "https://open-vsx.org/vscode/gallery" },
-      { key: "GL_GIT_CREDENTIAL_STORE_SCRIPT_FILE", type: :environment, value: "/.workspace-data/variables/file/gl_git_credential_store.sh" },
-      { key: "GL_TOKEN_FILE_PATH", type: :environment, value: "/.workspace-data/variables/file/gl_token" },
       { key: "GL_WORKSPACE_DOMAIN_TEMPLATE", type: :environment, value: "${PORT}-workspace-#{agent.id}-#{user.id}-#{random_string}.#{dns_zone}" },
       { key: "GITLAB_WORKFLOW_INSTANCE_URL", type: :environment, value: Gitlab::Routing.url_helpers.root_url },
-      { key: "GITLAB_WORKFLOW_TOKEN_FILE", type: :environment, value: "/.workspace-data/variables/file/gl_token" },
-      { key: "gl_git_credential_store.sh", type: :file, value: RemoteDevelopment::Files::WORKSPACE_VARIABLES_GIT_CREDENTIAL_STORE_SCRIPT },
-      { key: "gl_token", type: :file, value: /glpat-.+/ }
+      { key: "GITLAB_WORKFLOW_TOKEN_FILE", type: :environment, value: "/.workspace-data/variables/file/gl_token" }
     ]
     # rubocop:enable Layout/LineLength
   end
@@ -244,7 +243,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     all_expected_vars = (expected_internal_variables + user_provided_variables).sort_by { |v| v[:key] }
     # NOTE: We convert the actual records into hashes and sort them as a hash rather than ordering in
     #       ActiveRecord, to account for platform- or db-specific sorting differences.
-    types = RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES
+    types = RemoteDevelopment::Enums::WorkspaceVariable::WORKSPACE_VARIABLE_TYPES
     all_actual_vars = RemoteDevelopment::WorkspaceVariable.where(workspace: workspace)
 
     # noinspection RailsParamDefResolve -- RubyMine is incorrectly detecting this as ActiveRecord #select method

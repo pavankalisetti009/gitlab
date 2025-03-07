@@ -6,8 +6,8 @@ RSpec.describe RemoteDevelopment::WorkspaceVariable, feature_category: :workspac
   let(:key) { 'key_1' }
   let(:current_value) { 'value_1' }
   let(:value) { current_value }
-  let(:variable_type_environment) { RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:environment] }
-  let(:variable_type_file) { RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES[:file] }
+  let(:variable_type_environment) { RemoteDevelopment::Enums::WorkspaceVariable::ENVIRONMENT_TYPE }
+  let(:variable_type_file) { RemoteDevelopment::Enums::WorkspaceVariable::FILE_TYPE }
   let(:variable_type) { variable_type_file }
   let(:variable_type_values) do
     [
