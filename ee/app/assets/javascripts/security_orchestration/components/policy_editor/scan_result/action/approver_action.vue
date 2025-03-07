@@ -1,4 +1,5 @@
 <script>
+import { isNumber } from 'lodash';
 import { GlSprintf, GlIcon, GlFormInput, GlPopover, GlButton } from '@gitlab/ui';
 import SectionLayout from 'ee/security_orchestration/components/policy_editor/section_layout.vue';
 import {
@@ -77,8 +78,17 @@ export default {
     selectedRoles() {
       return this.initAction.role_approvers || [];
     },
+    approvalsRequiredValid() {
+      const { approvals_required: approvalsRequired } = this.initAction;
+      const isValidNumber = isNumber(approvalsRequired) && !Number.isNaN(approvalsRequired);
+
+      return isValidNumber && approvalsRequired >= 1;
+    },
     approvalsRequired() {
-      return this.initAction.approvals_required;
+      return this.approvalsRequiredValid ? this.initAction.approvals_required : 1;
+    },
+    approvalsRequiredFieldValid() {
+      return this.approvalsRequiredValid && this.isApproverFieldValid;
     },
     humanizedTemplate() {
       return this.isWarnType ? WARN_TEMPLATE : getDefaultHumanizedTemplate(this.approvalsRequired);
@@ -196,7 +206,7 @@ export default {
 
           <template #approvalsRequired>
             <gl-form-input
-              :state="isApproverFieldValid"
+              :state="approvalsRequiredFieldValid"
               :value="approvalsRequired"
               data-testid="approvals-required-input"
               type="number"
