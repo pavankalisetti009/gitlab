@@ -54,9 +54,8 @@ module QA
           ])
 
         # observe pipeline creation
-        Flow::Login.sign_in_unless_signed_in
-        test_project.visit!
-        Flow::Pipeline.wait_for_latest_pipeline(status: 'Passed', wait: 600)
+        Flow::Pipeline.wait_for_pipeline_creation_via_api(project: test_project)
+        Flow::Pipeline.wait_for_latest_pipeline_to_have_status(project: test_project, status: 'success')
       end
 
       after do
@@ -66,16 +65,13 @@ module QA
 
       context 'when a scan is ran' do
         it 'populates On Demand scan history and vulnerability report',
-          quarantine: {
-            issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/498151',
-            type: :investigating,
-            only: { job: /instance/ }
-          },
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/448336' do
           webgoat_url = "http://#{webgoat.ip_address}:8080/WebGoat/login"
           Flow::Login.sign_in_unless_signed_in
           test_project.visit!
           Page::Project::Menu.perform(&:go_to_on_demand_scans)
+
+          first_pipeline = test_project.latest_pipeline
 
           EE::Page::Project::Secure::OnDemandScans.perform(&:click_new_scan_link)
           EE::Page::Project::Secure::NewOnDemandScan.perform do |new_on_demand_scan|
@@ -85,18 +81,23 @@ module QA
             new_on_demand_scan.save_and_run_scan
           end
 
+          Flow::Pipeline.wait_for_pipeline_creation_via_api(project: test_project, size: 2)
+
+          latest_pipeline_id = nil
+
           Support::Waiter.wait_until(max_duration: 300, sleep_interval: 1) do
-            test_project.pipelines.length > 1
+            # It was observed that latest_pipeline would return the first pipeline ran by CI tagged as latest
+            # when an on-demand DAST pipeline has also been created. Get the latest pipeline by ID
+            latest_pipeline_id = test_project.pipelines.max_by { |p| p[:id] }[:id]
+
+            test_project.has_job?('dast') && latest_pipeline_id > first_pipeline[:id]
           end
 
-          Flow::Pipeline.visit_latest_pipeline
+          Flow::Pipeline.wait_for_pipeline_to_have_status_by_id(project: test_project, pipeline_id: latest_pipeline_id,
+            status: 'success')
 
-          Page::Project::Pipeline::Show.perform do |pipeline|
-            expect(pipeline).to have_job('dast')
-          end
-
-          Flow::Pipeline.wait_for_latest_pipeline(wait: 180)
           test_project.visit!
+
           Page::Project::Menu.perform(&:go_to_on_demand_scans)
 
           EE::Page::Project::Secure::OnDemandScans.perform do |on_demand_scans|

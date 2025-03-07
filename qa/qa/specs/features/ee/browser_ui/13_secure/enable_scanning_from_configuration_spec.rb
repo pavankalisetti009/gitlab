@@ -71,11 +71,9 @@ module QA
 
           Page::MergeRequest::Show.perform(&:merge_immediately!)
 
-          Flow::Pipeline.visit_latest_pipeline
+          Flow::Pipeline.wait_for_pipeline_creation_via_api(project: project)
 
-          Page::Project::Pipeline::Show.perform do |pipeline|
-            expect(pipeline).to have_job('gemnasium-dependency_scanning')
-          end
+          expect(project).to have_job('gemnasium-dependency_scanning')
 
           Page::Project::Menu.perform(&:go_to_security_configuration)
 
@@ -142,11 +140,9 @@ module QA
 
           Page::MergeRequest::Show.perform(&:merge_immediately!)
 
-          Flow::Pipeline.visit_latest_pipeline
+          Flow::Pipeline.wait_for_pipeline_creation_via_api(project: project)
 
-          Page::Project::Pipeline::Show.perform do |pipeline|
-            expect(pipeline).to have_job('semgrep-sast')
-          end
+          expect(project).to have_job('semgrep-sast')
 
           Page::Project::Menu.perform(&:go_to_security_configuration)
 
