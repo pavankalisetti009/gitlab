@@ -27,9 +27,9 @@ RSpec.describe CloudConnector::StatusChecks::StatusService, feature_category: :c
       end
     end
 
-    context 'when self-hosted AI Gateway is required' do
+    context 'when self-hosted AI Gateway is set up' do
       before do
-        allow(::Gitlab::Ai::SelfHosted::AiGateway).to receive(:required?).and_return(true)
+        allow(::Ai::Setting).to receive(:self_hosted?).and_return(true)
       end
 
       it 'uses a different set of probes' do
