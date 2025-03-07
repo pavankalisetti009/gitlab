@@ -2,7 +2,7 @@
 import { GlTabs, GlTab, GlButton } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import SelfHostedModelsTable from '../self_hosted_models/components/self_hosted_models_table.vue';
+import SelfHostedModelsTable from './self_hosted_models/components/self_hosted_models_table.vue';
 import FeatureSettingsTable from './feature_settings/components/feature_settings_table.vue';
 import { SELF_HOSTED_DUO_TABS } from './constants';
 

@@ -8,7 +8,7 @@ import FeatureSettingsModelSelector from 'ee/pages/admin/ai/duo_self_hosted/feat
 import ModelSelectDropdown from 'ee/pages/admin/ai/duo_self_hosted/shared/model_select_dropdown.vue';
 import updateAiFeatureSetting from 'ee/pages/admin/ai/duo_self_hosted/feature_settings/graphql/mutations/update_ai_feature_setting.mutation.graphql';
 import getAiFeatureSettingsQuery from 'ee/pages/admin/ai/duo_self_hosted/feature_settings/graphql/queries/get_ai_feature_settings.query.graphql';
-import getSelfHostedModelsQuery from 'ee/pages/admin/ai/self_hosted_models/graphql/queries/get_self_hosted_models.query.graphql';
+import getSelfHostedModelsQuery from 'ee/pages/admin/ai/duo_self_hosted/self_hosted_models/graphql/queries/get_self_hosted_models.query.graphql';
 import { createAlert } from '~/alert';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import { mockSelfHostedModels, mockAiFeatureSettings } from './mock_data';
