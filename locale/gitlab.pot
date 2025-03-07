@@ -785,6 +785,9 @@ msgstr ""
 msgid "%{count} of %{total}"
 msgstr ""
 
+msgid "%{count} open"
+msgstr ""
+
 msgid "%{count} project"
 msgid_plural "%{count} projects"
 msgstr[0] ""
