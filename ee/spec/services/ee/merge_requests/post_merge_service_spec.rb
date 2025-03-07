@@ -11,7 +11,7 @@ RSpec.describe MergeRequests::PostMergeService, feature_category: :code_review_w
   let(:params) { {} }
   let(:service) { described_class.new(project: project, current_user: current_user, params: params) }
 
-  subject { service.execute(merge_request) }
+  subject(:execute) { service.execute(merge_request) }
 
   describe '#execute' do
     context 'merged event' do
@@ -19,7 +19,7 @@ RSpec.describe MergeRequests::PostMergeService, feature_category: :code_review_w
         expect(::Gitlab::EventStore).to receive(:publish)
         expect(MergeRequests::MergedEvent).to receive(:new)
 
-        subject
+        execute
       end
     end
 
@@ -30,7 +30,7 @@ RSpec.describe MergeRequests::PostMergeService, feature_category: :code_review_w
         expect(ApprovalRules::FinalizeService).to receive(:new).and_return(finalize_service)
         expect(finalize_service).to receive(:execute)
 
-        subject
+        execute
       end
     end
 
@@ -39,7 +39,7 @@ RSpec.describe MergeRequests::PostMergeService, feature_category: :code_review_w
         it do
           expect(ComplianceManagement::MergeRequests::ComplianceViolationsWorker).not_to receive(:perform_async)
 
-          subject
+          execute
         end
       end
 
@@ -59,7 +59,7 @@ RSpec.describe MergeRequests::PostMergeService, feature_category: :code_review_w
         it 'calls the compliance violations worker asynchronously' do
           expect(ComplianceManagement::MergeRequests::ComplianceViolationsWorker).to receive(:perform_async).with(merge_request.id)
 
-          subject
+          execute
         end
       end
     end
@@ -90,7 +90,7 @@ RSpec.describe MergeRequests::PostMergeService, feature_category: :code_review_w
             expect(::Gitlab::Audit::Auditor).not_to receive(:audit)
             expect(Gitlab::UsageDataCounters::MergeRequestActivityUniqueCounter).not_to receive(:track_invalid_approvers)
 
-            subject
+            execute
           end
         end
 
@@ -101,7 +101,7 @@ RSpec.describe MergeRequests::PostMergeService, feature_category: :code_review_w
             expect(::Gitlab::Audit::Auditor).to receive(:audit).with(expected_params)
             expect(Gitlab::UsageDataCounters::MergeRequestActivityUniqueCounter).to receive(:track_invalid_approvers).with(merge_request: merge_request)
 
-            subject
+            execute
           end
         end
       end
@@ -126,7 +126,7 @@ RSpec.describe MergeRequests::PostMergeService, feature_category: :code_review_w
             expect(::Gitlab::Audit::Auditor).not_to receive(:audit)
             expect(Gitlab::UsageDataCounters::MergeRequestActivityUniqueCounter).not_to receive(:track_invalid_approvers)
 
-            subject
+            execute
           end
         end
 
@@ -137,7 +137,7 @@ RSpec.describe MergeRequests::PostMergeService, feature_category: :code_review_w
             expect(::Gitlab::Audit::Auditor).not_to receive(:audit)
             expect(Gitlab::UsageDataCounters::MergeRequestActivityUniqueCounter).not_to receive(:track_invalid_approvers)
 
-            subject
+            execute
           end
         end
       end
@@ -157,7 +157,7 @@ RSpec.describe MergeRequests::PostMergeService, feature_category: :code_review_w
       end
     end
 
-    context 'security orchestration policy configuration' do
+    context 'with security orchestration policy configuration' do
       let(:security_orchestration_enabled) { true }
       let(:policy_configuration) { create(:security_orchestration_policy_configuration, project: main_project, security_policy_management_project: project) }
 
@@ -173,13 +173,13 @@ RSpec.describe MergeRequests::PostMergeService, feature_category: :code_review_w
         expect(Security::SyncScanPoliciesWorker).to receive(:perform_async).with(policy_configuration.id)
         expect(Security::SyncScanPoliciesWorker).to receive(:perform_async).with(another_policy_configuration.id)
 
-        subject
+        execute
       end
 
       it 'executes Security::ScanResultPolicies::FailOpenTrackingService' do
         expect(Security::ScanResultPolicies::FallbackBehaviorTrackingWorker).to receive(:perform_async).with(merge_request.id)
 
-        subject
+        execute
       end
 
       context 'without licensed feature' do
@@ -188,13 +188,13 @@ RSpec.describe MergeRequests::PostMergeService, feature_category: :code_review_w
         it 'does not execute Security::SyncScanResultPolicyWorker for each configuration project' do
           expect(Security::SyncScanPoliciesWorker).not_to receive(:perform_async)
 
-          subject
+          execute
         end
 
         it 'does not execute Security::ScanResultPolicies::FailOpenTrackingService' do
           expect(Security::ScanResultPolicies::FallbackBehaviorTrackingWorker).not_to receive(:perform_async)
 
-          subject
+          execute
         end
       end
 
@@ -206,7 +206,46 @@ RSpec.describe MergeRequests::PostMergeService, feature_category: :code_review_w
         it 'does not execute Security::SyncScanResultPolicyWorker for each configuration project' do
           expect(Security::SyncScanPoliciesWorker).not_to receive(:perform_async).with(policy_configuration.id)
 
-          subject
+          execute
+        end
+      end
+
+      describe '#track_policies_running_violations' do
+        let(:policy) { create(:scan_result_policy_read, project: project) }
+
+        context 'with running_scan_result_policy_violations' do
+          let!(:violation) do
+            create(:scan_result_policy_violation, :running, project: project, merge_request: merge_request,
+              scan_result_policy_read: policy)
+          end
+
+          it 'logs a warning' do
+            expect(Gitlab::AppLogger).to receive(:warn).with(a_hash_including(
+              message: 'Running scan result policy violations after merge',
+              merge_request_id: merge_request.id,
+              violation_ids: [violation.id]
+            ))
+
+            execute
+          end
+
+          context 'when feature is not licensed' do
+            let(:security_orchestration_enabled) { false }
+
+            it 'does not log a warning' do
+              expect(Gitlab::AppLogger).not_to receive(:warn)
+
+              execute
+            end
+          end
+        end
+
+        context 'without running_scan_result_policy_violations' do
+          it 'does log a warning' do
+            expect(Gitlab::AppLogger).not_to receive(:warn)
+
+            execute
+          end
         end
       end
     end
@@ -225,19 +264,19 @@ RSpec.describe MergeRequests::PostMergeService, feature_category: :code_review_w
         expect(GraphqlTriggers).to receive(:merge_request_merge_status_updated).with(blocked_mr_1)
         expect(GraphqlTriggers).to receive(:merge_request_merge_status_updated).with(blocked_mr_2)
 
-        subject
+        execute
       end
 
       context 'when merge_when_checks_pass is enabled' do
         it 'sends an unblocked event for the first blocked merge request' do
-          expect { subject }.to publish_event(MergeRequests::UnblockedStateEvent).with({
+          expect { execute }.to publish_event(MergeRequests::UnblockedStateEvent).with({
             current_user_id: current_user.id,
             merge_request_id: blocked_mr_1.id
           })
         end
 
         it 'sends an unblocked event for the second blocked merge request' do
-          expect { subject }.to publish_event(MergeRequests::UnblockedStateEvent).with({
+          expect { execute }.to publish_event(MergeRequests::UnblockedStateEvent).with({
             current_user_id: current_user.id,
             merge_request_id: blocked_mr_2.id
           })
@@ -246,7 +285,7 @@ RSpec.describe MergeRequests::PostMergeService, feature_category: :code_review_w
         it 'does send any additional unblocked events' do
           expect(::Gitlab::EventStore).to receive(:publish).exactly(3).times
 
-          subject
+          execute
         end
       end
     end
@@ -255,7 +294,7 @@ RSpec.describe MergeRequests::PostMergeService, feature_category: :code_review_w
       it 'removes the unmergeable flag after the service is run' do
         merge_request.approval_state.temporarily_unapprove!
 
-        subject
+        execute
 
         merge_request.reload
 
@@ -268,7 +307,7 @@ RSpec.describe MergeRequests::PostMergeService, feature_category: :code_review_w
       let_it_be(:merge_request) { create(:merge_request, author: project_bot) }
 
       include_examples 'audit event logging' do
-        let(:operation) { subject }
+        let(:operation) { execute }
         let(:event_type) { 'merge_request_merged_by_project_bot' }
         let(:fail_condition!) { expect(project_bot).to receive(:project_bot?).and_return(false) }
         let(:attributes) do
