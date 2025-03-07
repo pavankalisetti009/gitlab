@@ -18324,6 +18324,9 @@ msgstr ""
 msgid "DORA4Metrics|No data available for Group: %{fullPath}"
 msgstr ""
 
+msgid "DORA4Metrics|No deployments during this period"
+msgstr ""
+
 msgid "DORA4Metrics|No incidents during this period"
 msgstr ""
 

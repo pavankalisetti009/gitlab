@@ -10,6 +10,7 @@ import {
   BUCKETING_INTERVAL_DAILY,
   BUCKETING_INTERVAL_MONTHLY,
 } from '~/analytics/shared/graphql/constants';
+import { dataSeries, medianSeries, nullSeries } from '../../mock_data';
 
 describe('Dora Metrics Data Source', () => {
   let res;
@@ -161,6 +162,8 @@ describe('Dora Metrics Data Source', () => {
       });
     });
 
+    const timeSeriesData = [dataSeries, medianSeries, nullSeries];
+
     describe.each`
       interval
       ${BUCKETING_INTERVAL_DAILY}
@@ -179,7 +182,15 @@ describe('Dora Metrics Data Source', () => {
       });
 
       it('returns a time series', () => {
-        expect(res).toEqual([{ data: [[null, 23508]], name: 'Lead time for changes' }]);
+        expect(res).toEqual(timeSeriesData);
+      });
+
+      it('returns the data, median and null series', () => {
+        expect(timeSeriesData.map(({ name }) => name)).toEqual([
+          'Lead time for changes',
+          'Median (last 180d)',
+          'No merge requests were deployed during this period',
+        ]);
       });
 
       it('calls setVisualizationOverrides', () => {

@@ -1262,3 +1262,45 @@ export const mockProjectNamespaceMetadata = {
   visibilityLevelTooltip:
     'Internal - The project can be accessed by any logged in user except external users.',
 };
+
+export const dataSeries = {
+  areaStyle: {
+    opacity: 0,
+  },
+  data: [[null, 23508]],
+  itemStyle: {
+    color: '#617ae2',
+  },
+  lineStyle: {
+    color: '#617ae2',
+  },
+  name: 'Lead time for changes',
+  showAllSymbol: true,
+  showSymbol: true,
+  symbolSize: 8,
+};
+
+export const medianSeries = {
+  areaStyle: {
+    opacity: 0,
+  },
+  showSymbol: false,
+  data: [[null, 23508]],
+  name: 'Median (last 180d)',
+};
+
+export const nullSeries = {
+  areaStyle: {
+    color: 'none',
+  },
+  data: [[null, null]],
+  itemStyle: {
+    color: '#a4a3a8',
+  },
+  lineStyle: {
+    color: '#a4a3a8',
+    type: 'dashed',
+  },
+  name: 'No merge requests were deployed during this period',
+  showSymbol: false,
+};

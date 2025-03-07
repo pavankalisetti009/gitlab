@@ -1,3 +1,5 @@
+import { getDayDifference } from '~/lib/utils/datetime_utility';
+import { __, sprintf } from '~/locale';
 import {
   BUCKETING_INTERVAL_ALL,
   BUCKETING_INTERVAL_MONTHLY,
@@ -5,7 +7,12 @@ import {
 } from '~/analytics/shared/graphql/constants';
 import DoraMetricsQuery from '~/analytics/shared/graphql/dora_metrics.query.graphql';
 import { extractQueryResponseFromNamespace, scaledValueForDisplay } from '~/analytics/shared/utils';
-import { VALUE_STREAM_METRIC_TILE_METADATA } from '~/analytics/shared/constants';
+import {
+  VALUE_STREAM_METRIC_TILE_METADATA,
+  DORA_METRICS_NULL_SERIES_TITLE,
+  DORA_METRICS_SECONDARY_SERIES_NAME,
+  DORA_METRICS,
+} from '~/analytics/shared/constants';
 import { TABLE_METRICS } from 'ee/analytics/dashboards/constants';
 import { DORA_METRICS_CHARTS_ADDITIONAL_OPTS } from 'ee/analytics/analytics_dashboards/constants';
 import {
@@ -13,8 +20,14 @@ import {
   DATE_RANGE_OPTION_KEYS,
   DATE_RANGE_OPTIONS,
 } from 'ee/analytics/analytics_dashboards/components/filters/constants';
+import { buildNullSeries } from 'ee/analytics/shared/utils';
 import { getStartDate } from 'ee/analytics/analytics_dashboards/components/filters/utils';
-import { startOfTomorrow } from 'ee/dora/components/static_data/shared';
+import {
+  startOfTomorrow,
+  averageSeriesOptions,
+  medianSeriesOptions,
+} from 'ee/dora/components/static_data/shared';
+import { seriesToMedianSeries, seriesToAverageSeries } from 'ee/dora/components/util';
 import { defaultClient } from '../graphql/client';
 
 const asValue = ({ metrics, targetMetric, units }) => {
@@ -24,13 +37,39 @@ const asValue = ({ metrics, targetMetric, units }) => {
   return scaledValueForDisplay(metricValue, units);
 };
 
-const asTimeSeries = ({ metrics, targetMetric }) => {
+const calculateAdditionalSeries = ({ targetMetric, rawData, daysCount }) => {
+  const seriesName = DORA_METRICS_SECONDARY_SERIES_NAME[targetMetric];
+
+  if (targetMetric === DORA_METRICS.DEPLOYMENT_FREQUENCY) {
+    return {
+      ...averageSeriesOptions,
+      ...seriesToAverageSeries(rawData, sprintf(seriesName, { days: daysCount })),
+    };
+  }
+
+  return {
+    ...medianSeriesOptions,
+    ...seriesToMedianSeries(rawData, sprintf(seriesName, { days: daysCount })),
+  };
+};
+
+const asTimeSeries = ({ metrics, targetMetric, daysCount, nullSeriesTitle = __('No data') }) => {
   // Extracts a date + value, returns an array of arrays [[date, value],[date, value]]
-  const data = metrics.map(({ date, ...rest }) => {
+  // Calculates a "null" series and returns all the series in the correct order for rendering
+  const rawData = metrics.map(({ date, ...rest }) => {
     return [date, rest[targetMetric]];
   });
 
-  return [{ name: VALUE_STREAM_METRIC_TILE_METADATA[targetMetric].label, data }];
+  const data = { name: VALUE_STREAM_METRIC_TILE_METADATA[targetMetric].label, data: rawData };
+  const [nullSeries, primarySeries] = buildNullSeries({ seriesData: [data], nullSeriesTitle });
+  const additionalSeries = calculateAdditionalSeries({ targetMetric, rawData, daysCount });
+
+  return [primarySeries, additionalSeries, nullSeries].map(
+    ({ data: seriesData, ...seriesRest }) => ({
+      data: seriesData.filter(([, n]) => !Number.isNaN(n)),
+      ...seriesRest,
+    }),
+  );
 };
 
 const fetchDoraMetricsQuery = async ({ metric, namespace, startDate, endDate, interval }) => {
@@ -46,9 +85,15 @@ const fetchDoraMetricsQuery = async ({ metric, namespace, startDate, endDate, in
 
   const { metrics } = extractQueryResponseFromNamespace({ result, resultKey: 'dora' });
   const { units } = TABLE_METRICS[metric];
+  const daysCount = getDayDifference(startDate, endDate);
 
   if ([BUCKETING_INTERVAL_DAILY, BUCKETING_INTERVAL_MONTHLY].includes(interval)) {
-    return asTimeSeries({ metrics, targetMetric: metric });
+    return asTimeSeries({
+      metrics,
+      targetMetric: metric,
+      nullSeriesTitle: DORA_METRICS_NULL_SERIES_TITLE[metric] ?? null,
+      daysCount,
+    });
   }
 
   return asValue({ metrics, targetMetric: metric, units });

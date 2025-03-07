@@ -5,10 +5,6 @@ import { humanizeTimeInterval } from '~/lib/utils/datetime_utility';
 export * from './shared';
 
 export const CHART_TITLE = s__('DORA4Metrics|Lead time for changes');
-export const NO_DATA_MESSAGE = s__(
-  'DORA4Metrics|No merge requests were deployed during this period',
-);
-export const medianSeriesTitle = s__('DORA4Metrics|Median (last %{days}d)');
 
 export const areaChartOptions = {
   grid: { containLabel: true },

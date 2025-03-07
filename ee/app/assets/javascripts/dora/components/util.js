@@ -64,7 +64,7 @@ export const apiDataToChartSeries = (apiData, startDate, endDate, seriesName, em
  * @returns {Object} An object containing the series name and an array of original data keys with the average of the dataset as each value.
  */
 export const seriesToAverageSeries = (chartSeriesData, seriesName) => {
-  if (!chartSeriesData) return {};
+  if (!chartSeriesData || !chartSeriesData.length) return {};
 
   const average =
     Math.round(

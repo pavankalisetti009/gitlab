@@ -4,8 +4,6 @@ import { secondsToDays } from '~/analytics/shared/utils';
 
 export * from './shared';
 
-export const medianSeriesName = s__('DORA4Metrics|Median time (last %{days}d)');
-
 export const CHART_TITLE = s__('DORA4Metrics|Time to restore service');
 
 export const areaChartOptions = {

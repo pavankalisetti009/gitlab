@@ -7,7 +7,10 @@ import * as DoraApi from 'ee/api/dora_api';
 import { linearRegression } from 'ee/analytics/shared/utils';
 import SafeHtml from '~/vue_shared/directives/safe_html';
 import ValueStreamMetrics from '~/analytics/shared/components/value_stream_metrics.vue';
-import { ALL_METRICS_QUERY_TYPE } from '~/analytics/shared/constants';
+import {
+  ALL_METRICS_QUERY_TYPE,
+  DEPLOYMENT_FREQUENCY_SECONDARY_SERIES_NAME,
+} from '~/analytics/shared/constants';
 import { createAlert } from '~/alert';
 import { s__, sprintf } from '~/locale';
 import { spriteIcon } from '~/lib/utils/common_utils';
@@ -20,7 +23,6 @@ import {
   allChartDefinitions,
   areaChartOptions,
   averageSeriesOptions,
-  averageSeriesName,
   chartDescriptionText,
   chartDocumentationHref,
   LAST_WEEK,
@@ -199,7 +201,9 @@ export default {
             ...averageSeriesOptions,
             ...seriesToAverageSeries(
               data,
-              sprintf(averageSeriesName, { days: this.$options.chartInDays[id] }),
+              sprintf(DEPLOYMENT_FREQUENCY_SECONDARY_SERIES_NAME, {
+                days: this.$options.chartInDays[id],
+              }),
             ),
           },
         ];
