@@ -150,10 +150,7 @@ module Mutations
 
           response = ::RemoteDevelopment::CommonService.execute(
             domain_main_class: ::RemoteDevelopment::WorkspaceOperations::Create::Main,
-            domain_main_class_args: domain_main_class_args,
-            auth_ability: :create_workspace,
-            auth_subject: project,
-            current_user: current_user
+            domain_main_class_args: domain_main_class_args
           )
 
           response_object = response.success? ? response.payload[:workspace] : nil

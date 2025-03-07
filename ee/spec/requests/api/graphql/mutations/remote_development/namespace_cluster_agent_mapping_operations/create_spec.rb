@@ -38,10 +38,7 @@ RSpec.describe 'Map a cluster agent to a group', feature_category: :workspaces d
         namespace: namespace,
         cluster_agent: agent,
         user: current_user
-      },
-      auth_ability: :admin_remote_development_cluster_agent_mapping,
-      auth_subject: agent,
-      current_user: current_user
+      }
     }
   end
 

@@ -36,10 +36,7 @@ RSpec.describe 'Remove existing mapping between a cluster and a group', feature_
       domain_main_class_args: {
         namespace: namespace,
         cluster_agent: agent
-      },
-      auth_ability: :admin_remote_development_cluster_agent_mapping,
-      auth_subject: agent,
-      current_user: current_user
+      }
     }
   end
 

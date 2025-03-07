@@ -43,8 +43,7 @@ module EE
 
                 ::RemoteDevelopment::CommonService.execute(
                   domain_main_class: ::RemoteDevelopment::AgentConfigOperations::Main,
-                  domain_main_class_args: domain_main_class_args,
-                  auth_ability: nil # NOTE: There is no user for this internal API, so we don't do any auth checks
+                  domain_main_class_args: domain_main_class_args
                 )
               end
 
@@ -88,8 +87,7 @@ module EE
 
                   response = ::RemoteDevelopment::CommonService.execute(
                     domain_main_class: ::RemoteDevelopment::WorkspaceOperations::Reconcile::Main,
-                    domain_main_class_args: domain_main_class_args,
-                    auth_ability: nil # NOTE: There is no user for this internal API, so we don't do any auth checks
+                    domain_main_class_args: domain_main_class_args
                   )
 
                   if response.success?
