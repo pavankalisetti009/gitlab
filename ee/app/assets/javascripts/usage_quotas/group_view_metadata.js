@@ -1,6 +1,7 @@
 import customApolloProvider from 'ee/usage_quotas/shared/provider';
 import { getStorageTabMetadata } from '~/usage_quotas/storage/tab_metadata';
 import { GROUP_VIEW_TYPE } from '~/usage_quotas/constants';
+import { mountUsageQuotasApp } from '~/usage_quotas/utils';
 import { getSeatTabMetadata } from './seats/tab_metadata';
 import { getCodeSuggestionsTabMetadata } from './code_suggestions/tab_metadata';
 import { getPipelineTabMetadata } from './pipelines/tab_metadata';
@@ -8,7 +9,7 @@ import { getTransferTabMetadata } from './transfer/tab_metadata';
 import { getProductAnalyticsTabMetadata } from './product_analytics/tab_metadata';
 import { getPagesTabMetadata } from './pages/tab_metadata';
 
-export const usageQuotasTabsMetadata = [
+const usageQuotasTabsMetadata = [
   getSeatTabMetadata(),
   getCodeSuggestionsTabMetadata(),
   getPipelineTabMetadata(),
@@ -17,3 +18,5 @@ export const usageQuotasTabsMetadata = [
   getProductAnalyticsTabMetadata(),
   getPagesTabMetadata(),
 ].filter(Boolean);
+
+export default () => mountUsageQuotasApp(usageQuotasTabsMetadata);
