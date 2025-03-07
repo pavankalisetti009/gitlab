@@ -34,7 +34,10 @@ To improve your workflow across the entire software development lifecycle, try t
 - [GitLab Duo Chat](../gitlab_duo_chat/_index.md): Write and understand code, get up to speed on the status of projects,
   and learn about GitLab by asking your questions in a chat window.
   <i class="fa fa-youtube-play youtube" aria-hidden="true"></i> [Watch overview](https://www.youtube.com/watch?v=ZQBAuf-CTAY)
+  <!-- Video published on 2024-04-18 -->
 - [GitLab Duo Self-Hosted](../../administration/gitlab_duo_self_hosted/_index.md): Host the language models that power AI features in GitLab.
+  <i class="fa fa-youtube-play youtube" aria-hidden="true"></i> [Watch overview](https://youtu.be/TQoO3sFnb28?si=w_gFAYLYIzPEbhEl)
+  <!-- Video published on 2025-02-20 -->
   Code Suggestions and Chat are supported. Use GitLab model vendors or self-host a supported language model.
 - [GitLab Duo Workflow](../duo_workflow/_index.md): Automate tasks and help increase productivity in your development workflow.
 - [AI Impact Dashboard](../analytics/ai_impact_analytics.md): Measure the AI effectiveness and impact on SDLC metrics.
