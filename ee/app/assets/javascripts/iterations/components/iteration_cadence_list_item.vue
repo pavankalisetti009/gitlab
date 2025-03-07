@@ -1,12 +1,5 @@
 <script>
-import {
-  GlAlert,
-  GlButton,
-  GlDisclosureDropdown,
-  GlIcon,
-  GlInfiniteScroll,
-  GlModal,
-} from '@gitlab/ui';
+import { GlAlert, GlDisclosureDropdown, GlIcon, GlInfiniteScroll, GlModal } from '@gitlab/ui';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { STATUS_CLOSED, WORKSPACE_GROUP, WORKSPACE_PROJECT } from '~/issues/constants';
 import { fetchPolicies } from '~/lib/graphql';
@@ -41,7 +34,6 @@ export default {
   i18n,
   components: {
     GlAlert,
-    GlButton,
     GlDisclosureDropdown,
     GlIcon,
     GlInfiniteScroll,
@@ -265,23 +257,15 @@ export default {
       @collapsed="expanded = false"
     >
       <template #title>
-        <gl-button
-          variant="link"
-          class="gl-grow !gl-no-underline !gl-shadow-none"
-          button-text-classes="gl-text-left !gl-whitespace-normal gl-inline-flex gl-flex-wrap gl-justify-between gl-gap-2 gl-w-full"
-          tabindex="-1"
-          @click="expanded = !expanded"
+        <span class="gl-grow">{{ title }}</span>
+        <span
+          v-if="showDurationBadget"
+          class="gl-shrink-0 gl-text-sm gl-font-normal gl-text-subtle"
+          data-testid="duration-badge"
         >
-          <span class="gl-text-strong">{{ title }}</span>
-          <span
-            v-if="showDurationBadget"
-            class="gl-shrink-0 gl-text-sm gl-text-subtle"
-            data-testid="duration-badge"
-          >
-            <gl-icon name="clock" class="gl-mr-2" />
-            {{ n__('Every week', 'Every %d weeks', durationInWeeks) }}</span
-          >
-        </gl-button>
+          <gl-icon name="clock" class="gl-mr-2" />
+          {{ n__('Every week', 'Every %d weeks', durationInWeeks) }}</span
+        >
       </template>
 
       <template #actions>

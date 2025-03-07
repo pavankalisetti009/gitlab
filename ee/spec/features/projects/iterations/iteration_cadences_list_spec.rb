@@ -32,7 +32,7 @@ RSpec.describe 'User views project iteration cadences', :js, feature_category: :
       expect(page).not_to have_content(iteration_period(iteration_in_cadence, use_thin_space: false))
       expect(page).not_to have_content(iteration_period(iteration_in_other_cadence, use_thin_space: false))
 
-      click_button cadence.title
+      find_by_testid('crud-collapse-toggle', match: :first).click
 
       expect(page).to have_content(iteration_period(iteration_in_cadence, use_thin_space: false))
       expect(page).not_to have_content(iteration_period(iteration_in_other_cadence, use_thin_space: false))
