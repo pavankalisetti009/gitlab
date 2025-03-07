@@ -23382,6 +23382,7 @@ The currently authenticated GitLab user.
 | <a id="currentuserpronouns"></a>`pronouns` | [`String`](#string) | Pronouns of the user. |
 | <a id="currentuserpublicemail"></a>`publicEmail` | [`String`](#string) | User's public email. |
 | <a id="currentuserrecentlyviewedissues"></a>`recentlyViewedIssues` {{< icon name="warning-solid" >}} | [`[Issue!]`](#issue) | **Introduced** in GitLab 17.9. **Status**: Experiment. Most-recently viewed issues for the current user. |
+| <a id="currentuserrecentlyviewedmergerequests"></a>`recentlyViewedMergeRequests` {{< icon name="warning-solid" >}} | [`[MergeRequest!]`](#mergerequest) | **Introduced** in GitLab 17.10. **Status**: Experiment. Most-recently viewed merge requests for the current user. |
 | <a id="currentusersavedreplies"></a>`savedReplies` | [`SavedReplyConnection`](#savedreplyconnection) | Saved replies authored by the user. (see [Connections](#connections)) |
 | <a id="currentuserstate"></a>`state` | [`UserState!`](#userstate) | State of the user. |
 | <a id="currentuserstatus"></a>`status` | [`UserStatus`](#userstatus) | User status. |
