@@ -46,8 +46,10 @@ module Search
     end
 
     def skip_api?
-      params[:source] == 'api' &&
-        Feature.disabled?(:zoekt_search_api, root_ancestor, type: :ops)
+      return false unless params[:source] == 'api'
+      return false if params[:search_type] == 'zoekt'
+
+      Feature.disabled?(:zoekt_search_api, root_ancestor, type: :ops)
     end
 
     def zoekt_search_results
