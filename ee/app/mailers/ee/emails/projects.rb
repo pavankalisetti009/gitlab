@@ -37,6 +37,18 @@ module EE
         )
       end
 
+      def project_scheduled_for_deletion(recipient_id, project_id)
+        @project = ::Project.find(project_id)
+        @user = ::User.find(recipient_id)
+        @deletion_due_in_days = ::Gitlab::CurrentSettings.deletion_adjourned_period.days
+        @deletion_date = @project.permanent_deletion_date(@project.marked_for_deletion_on)
+
+        email_with_layout(
+          to: @user.email,
+          subject: subject('Project scheduled for deletion')
+        )
+      end
+
       def user_escalation_rule_deleted_email(user, project, rules, recipient)
         @user = user
         @project = project
