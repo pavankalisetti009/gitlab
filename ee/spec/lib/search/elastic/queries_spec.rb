@@ -83,6 +83,20 @@ RSpec.describe ::Search::Elastic::Queries, feature_category: :global_search do
 
         expect(by_simple_query_string[:query][:bool][:must]).to eql(expected_must)
       end
+
+      context 'when fields is a frozen array' do
+        let(:fields) { %w[iid^3 title^2 description].freeze }
+
+        it 'applies custom analyzer fields' do
+          expected_must = [
+            { simple_query_string: { _name: 'my_type:match:search_terms',
+                                     fields: %w[iid^3 title^2 description title.smartcn description.smartcn],
+                                     query: 'foo bar', lenient: true, default_operator: :and } }
+          ]
+
+          expect(by_simple_query_string[:query][:bool][:must]).to eql(expected_must)
+        end
+      end
     end
 
     it 'applies highlight in query' do
@@ -194,6 +208,26 @@ RSpec.describe ::Search::Elastic::Queries, feature_category: :global_search do
         } }]
 
         expect(by_multi_match_query[:query][:bool][:must]).to eql(expected_must)
+      end
+
+      context 'when fields is a frozen array' do
+        let(:fields) { %w[iid^3 title^2 description].freeze }
+
+        it 'applies custom analyzer fields to multi_match_query' do
+          expected_must = [{ bool: {
+            should: [
+              { multi_match: { _name: 'my_type:multi_match:and:search_terms',
+                               fields: %w[iid^3 title^2 description title.smartcn description.smartcn],
+                               query: 'foo bar', operator: :and, lenient: true } },
+              { multi_match: { _name: 'my_type:multi_match_phrase:search_terms',
+                               type: :phrase, fields: %w[iid^3 title^2 description title.smartcn description.smartcn],
+                               query: 'foo bar', lenient: true } }
+            ],
+            minimum_should_match: 1
+          } }]
+
+          expect(by_multi_match_query[:query][:bool][:must]).to eql(expected_must)
+        end
       end
     end
 
