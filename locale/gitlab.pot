@@ -36954,9 +36954,6 @@ msgstr ""
 msgid "MlExperimentTracking|Model experiments"
 msgstr ""
 
-msgid "MlExperimentTracking|Model removed"
-msgstr ""
-
 msgid "MlExperimentTracking|Name"
 msgstr ""
 
@@ -37228,6 +37225,9 @@ msgid "MlModelRegistry|Model name"
 msgstr ""
 
 msgid "MlModelRegistry|Model registry"
+msgstr ""
+
+msgid "MlModelRegistry|Model removed"
 msgstr ""
 
 msgid "MlModelRegistry|Model version %{versionName} deleted successfully"
