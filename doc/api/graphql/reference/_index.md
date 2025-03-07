@@ -4023,6 +4023,7 @@ Input type: `CreateComplianceRequirementInput`
 | ---- | ---- | ----------- |
 | <a id="mutationcreatecompliancerequirementclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationcreatecompliancerequirementcomplianceframeworkid"></a>`complianceFrameworkId` | [`ComplianceManagementFrameworkID!`](#compliancemanagementframeworkid) | Global ID of the compliance framework of the new requirement. |
+| <a id="mutationcreatecompliancerequirementcontrols"></a>`controls` | [`[ComplianceRequirementsControlInput!]`](#compliancerequirementscontrolinput) | Controls to add to the compliance requirement. |
 | <a id="mutationcreatecompliancerequirementparams"></a>`params` | [`ComplianceRequirementInput!`](#compliancerequirementinput) | Parameters to update the compliance requirement with. |
 
 #### Fields
@@ -46913,9 +46914,9 @@ Attributes for defining a CI/CD variable.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="compliancerequirementscontrolinputcontroltype"></a>`controlType` | [`String`](#string) | Type of the compliance control. |
-| <a id="compliancerequirementscontrolinputexpression"></a>`expression` | [`String`](#string) | Expression of the compliance control. |
+| <a id="compliancerequirementscontrolinputexpression"></a>`expression` | [`String!`](#string) | Expression of the compliance control. |
 | <a id="compliancerequirementscontrolinputexternalurl"></a>`externalUrl` | [`String`](#string) | URL of the external control. |
-| <a id="compliancerequirementscontrolinputname"></a>`name` | [`String`](#string) | New name for the compliance requirement control. |
+| <a id="compliancerequirementscontrolinputname"></a>`name` | [`String!`](#string) | New name for the compliance requirement control. |
 | <a id="compliancerequirementscontrolinputsecrettoken"></a>`secretToken` | [`String`](#string) | Secret token for an external control. |
 
 ### `ComplianceStandardsAdherenceInput`

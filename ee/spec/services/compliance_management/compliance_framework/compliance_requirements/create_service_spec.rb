@@ -7,6 +7,24 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
   let_it_be_with_refind(:namespace) { create(:group) }
   let_it_be(:current_user) { create(:user, owner_of: namespace) }
   let_it_be(:framework) { create(:compliance_framework, namespace: namespace) }
+  let_it_be(:controls) do
+    [
+      {
+        expression: "{\"operator\":\"=\",\"field\":\"project_visibility\",\"value\":\"private\"}",
+        name: "project_visibility_not_internal"
+      },
+      {
+        expression: "{\"operator\":\"=\",\"field\":\"minimum_approvals_required\",\"value\":2}",
+        name: "minimum_approvals_required_2"
+      },
+      {
+        name: "external_control",
+        external_url: 'https://www.compliance-url.com',
+        secret_token: 'token123',
+        control_type: "external"
+      }
+    ]
+  end
 
   let(:params) do
     {
@@ -15,21 +33,21 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
     }
   end
 
+  subject(:requirement_creator_response) do
+    described_class.new(framework: framework, params: params, current_user: current_user, controls: controls).execute
+  end
+
   context 'when custom_compliance_frameworks is disabled' do
     before do
       stub_licensed_features(custom_compliance_frameworks: false)
     end
 
-    subject(:requirement_creator) do
-      described_class.new(framework: framework, params: params, current_user: current_user)
-    end
-
     it 'does not create a new compliance requirement' do
-      expect { requirement_creator.execute }.not_to change { framework.compliance_requirements.count }
+      expect { requirement_creator_response }.not_to change { framework.compliance_requirements.count }
     end
 
     it 'responds with an error message' do
-      expect(requirement_creator.execute.message).to eq('Not permitted to create requirement')
+      expect(requirement_creator_response.message).to eq('Not permitted to create requirement')
     end
   end
 
@@ -39,52 +57,153 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
     end
 
     context 'when using invalid parameters' do
-      subject(:requirement_creator) do
-        described_class.new(framework: framework, params: params.except(:name), current_user: current_user)
+      context 'when name is missing' do
+        let(:params) do
+          {
+            description: 'Description about the requirement'
+          }
+        end
+
+        it 'responds with an error service response' do
+          expect(requirement_creator_response.success?).to be_falsey
+          expect(requirement_creator_response.payload.messages[:name]).to contain_exactly "can't be blank"
+        end
       end
 
-      let(:response) { requirement_creator.execute }
+      context 'when one of the controls is invalid' do
+        context 'when the expression is invalid' do
+          let_it_be(:controls) do
+            [
+              {
+                expression: "{\"operator\":\"=\",\"field\":\"minimum_approvals_required\",\"value\":2}",
+                name: "minimum_approvals_required_2"
+              },
+              {
+                expression: "{\"operator\":\"=\",\"field\":\"project_visibility\",\"value\":\"invalid_value\"}",
+                name: "project_visibility_not_internal"
+              }
+            ]
+          end
 
-      it 'responds with an error service response' do
-        expect(response.success?).to be_falsey
-        expect(response.payload.messages[:name]).to contain_exactly "can't be blank"
+          it 'responds with an error message' do
+            expect(requirement_creator_response.message).to include(
+              "Failed to add compliance requirement control project_visibility_not_internal: Validation failed: " \
+                "Expression property '/value' is not one of: [\"private\", \"internal\", \"public\"]"
+            )
+          end
+        end
+
+        context 'when the control type is unknown' do
+          let_it_be(:controls) do
+            [
+              {
+                expression: "{\"operator\":\"=\",\"field\":\"project_visibility\",\"value\":\"private\"}",
+                name: "project_visibility_not_internal",
+                control_type: "invalid"
+              },
+              {
+                expression: "{\"operator\":\"=\",\"field\":\"minimum_approvals_required\",\"value\":2}",
+                name: "minimum_approvals_required_2"
+              }
+            ]
+          end
+
+          it 'responds with an error message' do
+            expect(requirement_creator_response.message)
+              .to include("Failed to add compliance requirement control project_visibility_not_internal: " \
+                "'invalid' is not a valid control_type")
+          end
+        end
+      end
+
+      context 'when two controls have same name' do
+        let_it_be(:controls) do
+          [
+            {
+              expression: "{\"operator\":\"=\",\"field\":\"minimum_approvals_required\",\"value\":2}",
+              name: "minimum_approvals_required_2"
+            },
+            {
+              expression: "{\"operator\":\"=\",\"field\":\"minimum_approvals_required\",\"value\":2}",
+              name: "minimum_approvals_required_2"
+            }
+          ]
+        end
+
+        it 'responds with an error message' do
+          expect(requirement_creator_response.message).to include(
+            "Duplicate entries found for compliance controls for the requirement."
+          )
+        end
+      end
+
+      context 'when number of controls exceeds the allowed number' do
+        before do
+          constant_name = "ComplianceManagement::ComplianceFramework::ComplianceRequirementsControl" \
+            "::MAX_COMPLIANCE_CONTROLS_PER_REQUIREMENT_COUNT"
+          stub_const(constant_name, 2)
+        end
+
+        let_it_be(:controls) do
+          [
+            {
+              expression: "{\"operator\":\"=\",\"field\":\"minimum_approvals_required\",\"value\":2}",
+              name: "minimum_approvals_required_2"
+            },
+            {
+              expression: "{\"operator\":\"=\",\"field\":\"project_visibility\",\"value\":\"private\"}",
+              name: "project_visibility_not_internal"
+            },
+            {
+              expression: "{\"operator\":\"=\",\"field\":\"scanner_sast_running\",\"value\":true}",
+              name: "scanner_sast_running"
+            }
+          ]
+        end
+
+        it 'does not create a new compliance requirement' do
+          expect { requirement_creator_response }.not_to change { framework.compliance_requirements.count }
+        end
+
+        it 'responds with an error message' do
+          expect(requirement_creator_response.message).to eq('More than 2 controls not allowed for a requirement.')
+        end
+
+        it 'does not audit the compliance requirement creation' do
+          expect { requirement_creator_response }
+            .not_to change { AuditEvent.where("details LIKE ?", "%created_compliance_requirement%").count }
+        end
       end
     end
 
     context 'when creating a compliance requirement for a namespace that current_user is not the owner of' do
-      subject(:requirement_creator) do
-        described_class.new(framework: framework, params: params, current_user: create(:user))
-      end
+      let_it_be(:current_user) { create(:user) }
 
       it 'responds with an error service response' do
-        expect(requirement_creator.execute.success?).to be false
+        expect(requirement_creator_response.success?).to be false
       end
 
       it 'does not create a new compliance requirement' do
-        expect { requirement_creator.execute }.not_to change { framework.compliance_requirements.count }
+        expect { requirement_creator_response }.not_to change { framework.compliance_requirements.count }
       end
     end
 
     context 'when using parameters for a valid compliance requirement' do
-      subject(:requirement_creator) do
-        described_class.new(framework: framework, params: params, current_user: current_user)
-      end
-
       it 'audits the changes' do
-        expect { requirement_creator.execute }
+        expect { requirement_creator_response }
           .to change { AuditEvent.where("details LIKE ?", "%created_compliance_requirement%").count }.by(1)
       end
 
       it 'creates a new compliance requirement' do
-        expect { requirement_creator.execute }.to change { framework.compliance_requirements.count }.by(1)
+        expect { requirement_creator_response }.to change { framework.compliance_requirements.count }.by(1)
       end
 
       it 'responds with a successful service response' do
-        expect(requirement_creator.execute.success?).to be true
+        expect(requirement_creator_response.success?).to be true
       end
 
       it 'has the expected attributes' do
-        requirement = requirement_creator.execute.payload[:requirement]
+        requirement = requirement_creator_response.payload[:requirement]
 
         expect(requirement.attributes).to include(
           "name" => "Custom framework requirement",
@@ -92,6 +211,43 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
           "framework_id" => framework.id,
           "namespace_id" => namespace.id
         )
+      end
+
+      it 'creates a requirement control for each control provided' do
+        requirement = requirement_creator_response.payload[:requirement]
+        compliance_requirements_controls = requirement.compliance_requirements_controls
+
+        expect(compliance_requirements_controls.count).to eq(3)
+
+        compliance_requirements_controls.first(2).each_with_index do |control, index|
+          expect(control.name).to eq(controls[index][:name])
+          expect(control.expression).to eq(controls[index][:expression])
+          expect(control.control_type).to eq('internal')
+        end
+
+        compliance_requirements_controls.last.tap do |external_control|
+          expect(external_control.external_url).to eq "https://www.compliance-url.com"
+          expect(external_control.secret_token).to eq('token123')
+          expect(external_control.control_type).to eq("external")
+        end
+      end
+
+      context 'when controls is empty' do
+        let_it_be(:controls) { [] }
+
+        it 'creates a new compliance requirement' do
+          expect { requirement_creator_response }.to change { framework.compliance_requirements.count }.by(1)
+        end
+
+        it 'responds with a successful service response' do
+          expect(requirement_creator_response.success?).to be true
+        end
+
+        it 'does not change the compliance requirement controls count' do
+          expect { requirement_creator_response }.not_to change {
+            ComplianceManagement::ComplianceFramework::ComplianceRequirementsControl.count
+          }
+        end
       end
     end
   end

@@ -7,12 +7,12 @@ module Types
 
       argument :name,
         GraphQL::Types::String,
-        required: false,
+        required: true,
         description: 'New name for the compliance requirement control.'
 
       argument :expression,
         GraphQL::Types::String,
-        required: false,
+        required: true,
         description: 'Expression of the compliance control.'
 
       argument :control_type,

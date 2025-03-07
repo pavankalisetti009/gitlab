@@ -22,13 +22,19 @@ module Mutations
             required: true,
             description: 'Parameters to update the compliance requirement with.'
 
+          argument :controls,
+            [::Types::ComplianceManagement::ComplianceRequirementsControlInputType],
+            required: false,
+            description: 'Controls to add to the compliance requirement.'
+
           def resolve(args)
             framework = authorized_find!(id: args[:compliance_framework_id])
 
             service = ::ComplianceManagement::ComplianceFramework::ComplianceRequirements::CreateService.new(
               framework: framework,
               params: args[:params].to_h,
-              current_user: current_user
+              current_user: current_user,
+              controls: args[:controls]
             ).execute
 
             service.success? ? success(service) : error(service)

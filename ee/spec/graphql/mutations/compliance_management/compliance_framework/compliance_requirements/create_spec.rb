@@ -10,6 +10,19 @@ RSpec.describe Mutations::ComplianceManagement::ComplianceFramework::ComplianceR
   let_it_be(:namespace) { create(:group) }
   let_it_be(:framework) { create(:compliance_framework, namespace: namespace) }
 
+  let_it_be(:controls) do
+    [
+      {
+        expression: "{\"operator\":\"=\",\"field\":\"minimum_approvals_required\",\"value\":2}",
+        name: "minimum_approvals_required_2"
+      },
+      {
+        expression: "{\"operator\":\"=\",\"field\":\"project_visibility\",\"value\":\"private\"}",
+        name: "project_visibility_not_internal"
+      }
+    ]
+  end
+
   let(:params) { valid_params }
   let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
@@ -73,7 +86,8 @@ RSpec.describe Mutations::ComplianceManagement::ComplianceFramework::ComplianceR
       params: {
         name: 'Custom framework requirement',
         description: 'Example Description'
-      }
+      },
+      controls: controls
     }
   end
 
@@ -83,7 +97,8 @@ RSpec.describe Mutations::ComplianceManagement::ComplianceFramework::ComplianceR
       params: {
         name: '',
         description: 'Example Description'
-      }
+      },
+      controls: controls
     }
   end
 end
