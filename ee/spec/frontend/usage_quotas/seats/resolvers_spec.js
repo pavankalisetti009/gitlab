@@ -160,10 +160,10 @@ describe('resolvers', () => {
 
       describe.each`
         membershipApiRes       | indirectMembershipApiRes       | hasIndirectMembership
-        ${[]}                  | ${[]}                          | ${false}
+        ${[mockMemberDetails]} | ${[mockIndirectMemberDetails]} | ${false}
         ${[mockMemberDetails]} | ${[]}                          | ${false}
         ${[]}                  | ${[mockIndirectMemberDetails]} | ${true}
-        ${[mockMemberDetails]} | ${[mockIndirectMemberDetails]} | ${false}
+        ${[]}                  | ${[]}                          | ${false}
       `(
         'return the corrct hasIndirectMembership value',
         ({ membershipApiRes, indirectMembershipApiRes, hasIndirectMembership }) => {

@@ -102,7 +102,7 @@ export default {
         // create new extensible objects from the members array, so we can use the gl-table details slot
         return members.map((member) => ({ ...member }));
       },
-      error: (error) => {
+      error(error) {
         createAlert({
           message: s__('Billing|An error occurred while loading billable members list.'),
         });
