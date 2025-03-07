@@ -35,6 +35,10 @@ module Admin
       def beta_models_enabled?
         ::Ai::TestingTermsAcceptance.has_accepted?
       end
+
+      def duo_chat_sub_features_enabled?
+        Feature.enabled?(:ai_duo_chat_sub_features_settings) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- global feature flag
+      end
     end
   end
 end
