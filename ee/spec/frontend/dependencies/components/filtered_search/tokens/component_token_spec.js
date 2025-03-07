@@ -9,6 +9,7 @@ import VueApollo from 'vue-apollo';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import ComponentToken from 'ee/dependencies/components/filtered_search/tokens/component_token.vue';
 import groupDependencies from 'ee/dependencies/graphql/group_components.query.graphql';
+import createStore from 'ee/dependencies/store';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
@@ -42,7 +43,13 @@ const TEST_COMPONENTS = [
 
 describe('ee/dependencies/components/filtered_search/tokens/component_token.vue', () => {
   let wrapper;
+  let store;
   let handlerMocks;
+
+  const createVuexStore = () => {
+    store = createStore();
+    jest.spyOn(store, 'dispatch').mockImplementation();
+  };
 
   const createMockApolloProvider = (handlers) => {
     const defaultHandlers = {
@@ -79,6 +86,7 @@ describe('ee/dependencies/components/filtered_search/tokens/component_token.vue'
     }
 
     wrapper = mountFn(ComponentToken, {
+      store,
       provide: {
         ...additionalInjections,
         groupFullPath: 'secure',
@@ -104,6 +112,11 @@ describe('ee/dependencies/components/filtered_search/tokens/component_token.vue'
       apolloProvider: createMockApolloProvider(handlers),
     });
   };
+
+  beforeEach(() => {
+    createVuexStore();
+  });
+
   const isLoadingSuggestions = () => wrapper.findComponent(GlLoadingIcon).exists();
   const findSuggestions = () => wrapper.findAllComponents(GlFilteredSearchSuggestion);
   const findFirstSearchSuggestionIcon = () => findSuggestions().at(0).findComponent(GlIcon);
@@ -202,6 +215,16 @@ describe('ee/dependencies/components/filtered_search/tokens/component_token.vue'
         expect(wrapper.findByTestId('selected-components').text()).toMatchInterpolatedText(
           `${TEST_COMPONENTS[0].name}, ${TEST_COMPONENTS[1].name}`,
         );
+      });
+
+      it('set the components ids', async () => {
+        await selectComponent(TEST_COMPONENTS[0]);
+        await selectComponent(TEST_COMPONENTS[1], true);
+
+        expect(store.dispatch).toHaveBeenCalledWith('allDependencies/setComponentIds', [
+          TEST_COMPONENTS[0].id,
+          TEST_COMPONENTS[1].id,
+        ]);
       });
     });
   });
