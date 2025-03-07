@@ -25,7 +25,7 @@ export default {
   },
   computed: {
     elapsedTimeParsedSeconds() {
-      return differenceInMilliseconds(this.lastUpdated, this.currentTime) / 1000;
+      return differenceInMilliseconds(this.lastUpdated, Date.now()) / 1000;
     },
     elapsedTimeText() {
       return sprintf(this.$options.i18n.LAST_UPDATED_AGO_TEXT, {
@@ -51,7 +51,6 @@ export default {
     NEXT_UPDATE_TEXT,
     POPOVER_TITLE,
   },
-  currentTime: Date.now(),
 };
 </script>
 <template>
