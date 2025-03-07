@@ -7,7 +7,7 @@ module Admin
     delegate :duo_availability,
       :instance_level_ai_beta_features_enabled,
       :enabled_expanded_logging,
-      to: :'Gitlab::CurrentSettings.current_application_settings'
+      to: :current_application_settings
 
     def ai_powered_testing_agreement
       safe_format(
@@ -100,6 +100,13 @@ module Admin
     end
 
     private
+
+    def current_application_settings
+      # clear cached settings so that duo_availability shows up correctly
+      Gitlab::CurrentSettings.expire_current_application_settings
+
+      Gitlab::CurrentSettings.current_application_settings
+    end
 
     # rubocop:disable Gitlab/DocumentationLinks/HardcodedUrl
     # We want to link SaaS docs for flexibility for every URL related to Code Suggestions on Self Managed.
