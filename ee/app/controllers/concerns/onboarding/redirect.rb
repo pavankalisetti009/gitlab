@@ -30,11 +30,31 @@ module Onboarding
       end
 
       return false unless path.present? && request.get?
+      return false if welcome_and_already_completed?
 
       gitlab_url = Gitlab.config.gitlab.url
       normalized_path = path.sub(/\A#{Regexp.escape(gitlab_url)}/, '')
 
       normalized_path != request.fullpath && valid_referer?(path)
+    end
+
+    def welcome_and_already_completed?
+      return false if ::Feature.disabled?(:stop_welcome_redirection, current_user)
+
+      step_url = current_user.onboarding_status_step_url
+      return false unless step_url.present?
+
+      if step_url.include?(users_sign_up_welcome_path) && ::Onboarding.completed_welcome_step?(current_user)
+        ::Gitlab::ErrorTracking.track_exception(
+          ::Onboarding::StepUrlError.new('User has already completed welcome step'),
+          onboarding_status: current_user.onboarding_status.to_json
+        )
+
+        Onboarding::FinishService.new(current_user).execute
+        return true
+      end
+
+      false
     end
 
     def valid_referer?(path)

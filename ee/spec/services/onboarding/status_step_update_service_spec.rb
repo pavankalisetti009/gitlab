@@ -36,6 +36,16 @@ RSpec.describe Onboarding::StatusStepUpdateService, feature_category: :onboardin
           expect(execute).to be_error
           expect(execute[:step_url]).to eq(original_step_url)
         end
+
+        it 'tracks the error' do
+          expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+            instance_of(::Onboarding::StepUrlError),
+            onboarding_status: user.onboarding_status.merge(step_url: step_url).to_json,
+            user_id: user.id
+          )
+
+          execute
+        end
       end
     end
 
