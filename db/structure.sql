@@ -32982,7 +32982,7 @@ CREATE UNIQUE INDEX index_dora_configurations_on_project_id ON dora_configuratio
 
 CREATE UNIQUE INDEX index_dora_daily_metrics_on_environment_id_and_date ON dora_daily_metrics USING btree (environment_id, date);
 
-CREATE INDEX index_dora_daily_metrics_on_project_id ON dora_daily_metrics USING btree (project_id);
+CREATE INDEX index_dora_daily_metrics_on_project_id_and_date ON dora_daily_metrics USING btree (project_id, date);
 
 CREATE UNIQUE INDEX index_dora_performance_scores_on_project_id_and_date ON dora_performance_scores USING btree (project_id, date);
 

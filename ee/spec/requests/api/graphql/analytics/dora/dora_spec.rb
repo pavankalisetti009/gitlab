@@ -2,7 +2,9 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Query.[project|group](fullPath).dora.metrics', feature_category: :dora_metrics do
+RSpec.describe 'Query.[project|group](fullPath).dora.metrics',
+  time_travel_to: '2021-02-01 13:00:00'.to_time,
+  feature_category: :dora_metrics do
   include GraphqlHelpers
 
   let_it_be(:reporter) { create(:user) }
@@ -17,7 +19,7 @@ RSpec.describe 'Query.[project|group](fullPath).dora.metrics', feature_category:
     QUERY
   end
 
-  let_it_be(:group) { create(:group) }
+  let_it_be(:group) { create(:group, reporters: [reporter]) }
   let_it_be(:project_1) { create(:project, group: group) }
   let_it_be(:project_2) { create(:project, group: group) }
   let_it_be(:project_not_in_group) { create(:project) }
@@ -30,15 +32,7 @@ RSpec.describe 'Query.[project|group](fullPath).dora.metrics', feature_category:
   let(:post_query) { post_graphql(query, current_user: reporter) }
   let(:data) { graphql_data.dig(*path_prefix) }
 
-  around do |example|
-    travel_to '2021-02-01 13:00:00'.to_time do
-      example.run
-    end
-  end
-
   before_all do
-    group.add_reporter(reporter)
-
     create(:dora_daily_metrics, deployment_frequency: 3, environment: production_in_project_1, date: '2021-01-01')
     create(:dora_daily_metrics, deployment_frequency: 3, environment: production_in_project_1, date: '2021-01-02')
     create(:dora_daily_metrics, deployment_frequency: 2, environment: production_in_project_1, date: '2021-01-03')
@@ -115,13 +109,13 @@ RSpec.describe 'Query.[project|group](fullPath).dora.metrics', feature_category:
     context 'when querying multiple metrics' do
       let(:query_body) do
         <<~QUERY
-      dora {
-        metrics(interval: ALL) {
-          date
-          deploymentFrequency
-          changeFailureRate
-        }
-      }
+          dora {
+            metrics(interval: ALL) {
+              date
+              deploymentFrequency
+              changeFailureRate
+            }
+          }
         QUERY
       end
 
@@ -195,13 +189,13 @@ RSpec.describe 'Query.[project|group](fullPath).dora.metrics', feature_category:
     context 'when querying multiple metrics' do
       let(:query_body) do
         <<~QUERY
-      dora {
-        metrics(interval: ALL) {
-          date
-          deploymentFrequency
-          changeFailureRate
-        }
-      }
+          dora {
+            metrics(interval: ALL) {
+              date
+              deploymentFrequency
+              changeFailureRate
+            }
+          }
         QUERY
       end
 
@@ -213,6 +207,47 @@ RSpec.describe 'Query.[project|group](fullPath).dora.metrics', feature_category:
           { 'deploymentFrequency' => be_within(0.01).of(df.fdiv(number_of_days)), 'changeFailureRate' => 3,
             'date' => nil }
         ])
+      end
+    end
+  end
+
+  context 'when querying group dora projects' do
+    let(:path_prefix) { %w[group dora projects nodes] }
+    let(:query) do
+      graphql_query_for(:group, { fullPath: group.full_path }, query_body)
+    end
+
+    let(:query_body) do
+      <<~QUERY
+        dora {
+          projects(startDate: "2021-01-07", endDate: "2021-01-08", includeSubgroups: true) {
+            nodes { id }
+          }
+        }
+      QUERY
+    end
+
+    it 'returns list of projects with at least 1 DORA metric record' do
+      post_query
+
+      expect(data.pluck('id')).to match_array([project_1.to_global_id.to_s])
+    end
+
+    context 'with date range too large' do
+      let(:query_body) do
+        <<~QUERY
+        dora {
+          projects(startDate: "2020-01-09", endDate: "2021-02-01") {
+            nodes { id }
+          }
+        }
+        QUERY
+      end
+
+      it 'raises argument error' do
+        post_query
+
+        expect(graphql_errors[0]['message']).to eq("maximum date range is 180 days.")
       end
     end
   end

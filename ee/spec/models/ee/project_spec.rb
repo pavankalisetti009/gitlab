@@ -1108,6 +1108,18 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     end
   end
 
+  describe '.with_existing_dora_records' do
+    it 'returns projects with existing DORA records for given timeframe' do
+      create(:dora_daily_metrics, date: 3.years.ago)
+      matched_dora = create(:dora_daily_metrics, date: 2.years.ago)
+      create(:dora_daily_metrics, date: 1.year.ago)
+      create(:project)
+
+      expect(described_class.with_existing_dora_records(2.years.ago - 1.day, 2.years.ago + 1.day))
+        .to contain_exactly(matched_dora.environment.project)
+    end
+  end
+
   describe '#can_store_security_reports?' do
     context 'when the feature is enabled for the namespace' do
       it 'returns true' do
