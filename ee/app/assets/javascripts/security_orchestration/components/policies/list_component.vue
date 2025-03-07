@@ -220,7 +220,8 @@ export default {
         },
         {
           key: 'actions',
-          label: '',
+          label: __('Actions'),
+          thClass: 'gl-sr-only',
           tdAttr: { 'data-testid': 'policy-action-cell' },
         },
       ];
