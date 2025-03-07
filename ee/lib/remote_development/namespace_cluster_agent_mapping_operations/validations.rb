@@ -7,8 +7,8 @@ module RemoteDevelopment
       # agents are excluded from the response. A cluster agent is said to reside within a namespace
       # if the namespace id is present in the traversal ids of the project bound to the cluster agent
       #
-      # @param [Array<RemoteDevelopmentNamespaceClusterAgentMapping>] namespace_cluster_agent_mappings
-      # @return [Array<RemoteDevelopment::RemoteDevelopmentNamespaceClusterAgentMapping>]
+      # @param [Array<NamespaceClusterAgentMapping>] namespace_cluster_agent_mappings
+      # @return [Array<RemoteDevelopment::NamespaceClusterAgentMapping>]
       def self.filter_valid_namespace_cluster_agent_mappings(namespace_cluster_agent_mappings:)
         agent_ids = namespace_cluster_agent_mappings.map(&:cluster_agent_id)
         traversal_ids_for_agents = traversal_ids_for_cluster_agents(cluster_agent_ids: agent_ids)

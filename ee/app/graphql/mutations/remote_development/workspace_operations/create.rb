@@ -100,7 +100,7 @@ module Mutations
           # noinspection RubyNilAnalysis - RubyMine thinks project or agent may be nil, but this is not possible
           #                                because authorized_find! would have thrown an exception.
           relevant_mappings =
-            ::RemoteDevelopment::RemoteDevelopmentNamespaceClusterAgentMapping
+            ::RemoteDevelopment::NamespaceClusterAgentMapping
               .for_namespaces(project.project_namespace.traversal_ids)
               .for_agents([agent.id])
 

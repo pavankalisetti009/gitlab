@@ -15,7 +15,7 @@ module RemoteDevelopment
             user: User => user
           }
 
-          new_mapping = RemoteDevelopmentNamespaceClusterAgentMapping.new(
+          new_mapping = NamespaceClusterAgentMapping.new(
             cluster_agent_id: cluster_agent.id,
             namespace_id: namespace.id,
             creator_id: user.id

@@ -66,8 +66,8 @@ module EE
 
       has_one :zoekt_enabled_namespace, class_name: '::Search::Zoekt::EnabledNamespace',
         foreign_key: :root_namespace_id, inverse_of: :namespace
-      has_many :remote_development_namespace_cluster_agent_mappings,
-        class_name: 'RemoteDevelopment::RemoteDevelopmentNamespaceClusterAgentMapping',
+      has_many :namespace_cluster_agent_mappings,
+        class_name: 'RemoteDevelopment::NamespaceClusterAgentMapping',
         foreign_key: 'namespace_id',
         inverse_of: :namespace
       has_many :hosted_runner_monthly_usages,

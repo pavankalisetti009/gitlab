@@ -24,7 +24,7 @@ RSpec.describe ::RemoteDevelopment::NamespaceClusterAgentMappingOperations::Dele
     let(:creator) { create(:user) }
 
     before do
-      RemoteDevelopment::RemoteDevelopmentNamespaceClusterAgentMapping.new(
+      RemoteDevelopment::NamespaceClusterAgentMapping.new(
         namespace_id: namespace.id,
         cluster_agent_id: agent.id,
         creator_id: creator.id

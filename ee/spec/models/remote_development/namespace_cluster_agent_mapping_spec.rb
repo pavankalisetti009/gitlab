@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 # noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
-RSpec.describe RemoteDevelopment::RemoteDevelopmentNamespaceClusterAgentMapping, feature_category: :workspaces do
+RSpec.describe RemoteDevelopment::NamespaceClusterAgentMapping, feature_category: :workspaces do
   let_it_be(:user) { create(:user) }
   let_it_be_with_reload(:namespace) { create(:group) }
   let_it_be_with_reload(:agent) { create(:cluster_agent) }
@@ -24,13 +24,13 @@ RSpec.describe RemoteDevelopment::RemoteDevelopmentNamespaceClusterAgentMapping,
           .to belong_to(:user)
             .class_name('User')
             .with_foreign_key(:creator_id)
-            .inverse_of(:created_remote_development_namespace_cluster_agent_mappings)
+            .inverse_of(:created_namespace_cluster_agent_mappings)
       end
 
       it "belongs to namespace" do
         is_expected
           .to belong_to(:namespace)
-            .inverse_of(:remote_development_namespace_cluster_agent_mappings)
+            .inverse_of(:namespace_cluster_agent_mappings)
       end
 
       it "belongs to agent" do
@@ -38,7 +38,7 @@ RSpec.describe RemoteDevelopment::RemoteDevelopmentNamespaceClusterAgentMapping,
           .to belong_to(:agent)
             .class_name('Clusters::Agent')
             .with_foreign_key(:cluster_agent_id)
-            .inverse_of(:remote_development_namespace_cluster_agent_mappings)
+            .inverse_of(:namespace_cluster_agent_mappings)
       end
     end
 

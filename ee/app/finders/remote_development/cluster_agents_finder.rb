@@ -15,7 +15,7 @@ module RemoteDevelopment
 
         # noinspection RailsParamDefResolve -- A symbol is a valid argument for 'select'
         existing_mapped_agents =
-          RemoteDevelopmentNamespaceClusterAgentMapping
+          NamespaceClusterAgentMapping
             .for_namespaces([namespace.id])
             .select(:cluster_agent_id)
 
@@ -28,7 +28,7 @@ module RemoteDevelopment
       when :directly_mapped
         return Clusters::Agent.none unless user_can_read_namespace_agent_mappings?(user: user, namespace: namespace)
 
-        relevant_mappings = RemoteDevelopmentNamespaceClusterAgentMapping.for_namespaces([namespace.id])
+        relevant_mappings = NamespaceClusterAgentMapping.for_namespaces([namespace.id])
         relevant_mappings =
           NamespaceClusterAgentMappingOperations::Validations.filter_valid_namespace_cluster_agent_mappings(
             namespace_cluster_agent_mappings: relevant_mappings.to_a
@@ -36,7 +36,7 @@ module RemoteDevelopment
 
         Clusters::Agent.id_in(relevant_mappings.map(&:cluster_agent_id))
       when :available
-        relevant_mappings = RemoteDevelopmentNamespaceClusterAgentMapping.for_namespaces(namespace.traversal_ids)
+        relevant_mappings = NamespaceClusterAgentMapping.for_namespaces(namespace.traversal_ids)
         relevant_mappings =
           NamespaceClusterAgentMappingOperations::Validations.filter_valid_namespace_cluster_agent_mappings(
             namespace_cluster_agent_mappings: relevant_mappings.to_a

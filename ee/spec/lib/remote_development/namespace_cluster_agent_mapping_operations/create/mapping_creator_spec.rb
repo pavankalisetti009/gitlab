@@ -28,7 +28,7 @@ RSpec.describe ::RemoteDevelopment::NamespaceClusterAgentMappingOperations::Crea
   context 'when the mapping creation fails' do
     shared_examples 'err result' do |expected_error_details:|
       it 'does not create the db records and returns an error result containing a failed message with model errors' do
-        expect { result }.not_to change { RemoteDevelopment::RemoteDevelopmentNamespaceClusterAgentMapping.count }
+        expect { result }.not_to change { RemoteDevelopment::NamespaceClusterAgentMapping.count }
 
         expect(result).to be_err_result do |message|
           expect(message).to be_a(RemoteDevelopment::Messages::NamespaceClusterAgentMappingCreateFailed)

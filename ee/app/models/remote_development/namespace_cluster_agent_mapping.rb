@@ -1,16 +1,17 @@
 # frozen_string_literal: true
 
 module RemoteDevelopment
-  class RemoteDevelopmentNamespaceClusterAgentMapping < ApplicationRecord
-    belongs_to :namespace, inverse_of: :remote_development_namespace_cluster_agent_mappings
+  # model
+  class NamespaceClusterAgentMapping < ApplicationRecord
+    belongs_to :namespace, inverse_of: :namespace_cluster_agent_mappings
     belongs_to :user,
       class_name: 'User',
       foreign_key: 'creator_id',
-      inverse_of: :created_remote_development_namespace_cluster_agent_mappings
+      inverse_of: :created_namespace_cluster_agent_mappings
     belongs_to :agent,
       class_name: 'Clusters::Agent',
       foreign_key: 'cluster_agent_id',
-      inverse_of: :remote_development_namespace_cluster_agent_mappings
+      inverse_of: :namespace_cluster_agent_mappings
 
     validates :namespace, presence: true
     validates :agent, presence: true

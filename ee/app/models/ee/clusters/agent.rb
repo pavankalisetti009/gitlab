@@ -36,8 +36,8 @@ module EE
           inverse_of: :agent,
           foreign_key: :cluster_agent_id
 
-        has_many :remote_development_namespace_cluster_agent_mappings,
-          class_name: 'RemoteDevelopment::RemoteDevelopmentNamespaceClusterAgentMapping',
+        has_many :namespace_cluster_agent_mappings,
+          class_name: 'RemoteDevelopment::NamespaceClusterAgentMapping',
           inverse_of: :agent,
           foreign_key: 'cluster_agent_id'
 
