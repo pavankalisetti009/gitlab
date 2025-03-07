@@ -20,6 +20,9 @@ export const setPageInfo = (handle, payload) =>
 export const setSortField = (handle, payload) =>
   dispatchForNamespaces(handle, 'setSortField', payload);
 
+export const setComponentIds = (handle, payload) =>
+  dispatchForNamespaces(handle, 'setComponentIds', payload);
+
 export const setCurrentList = ({ state, commit }, payload) => {
   if (state.listTypes.map(({ namespace }) => namespace).includes(payload)) {
     commit(types.SET_CURRENT_LIST, payload);

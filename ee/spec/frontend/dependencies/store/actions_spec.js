@@ -39,6 +39,7 @@ describe('Dependencies actions', () => {
     ${'setNamespaceType'}              | ${NAMESPACE_PROJECT}
     ${'setSortField'}                  | ${undefined}
     ${'setPageInfo'}                   | ${{ type: 'cursor' }}
+    ${'setComponentIds'}               | ${['gid://gitlab/Sbom::Component/1']}
   `('$actionName', ({ actionName, payload }) => {
     it(`dispatches the ${actionName} action on each list module`, () => {
       const state = createState();

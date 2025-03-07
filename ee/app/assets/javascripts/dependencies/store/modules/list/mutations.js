@@ -67,4 +67,7 @@ export default {
       state.vulnerabilityItemsLoading.push(item);
     }
   },
+  [types.SET_COMPONENT_IDS](state, item) {
+    state.componentIds = item;
+  },
 };

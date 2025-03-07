@@ -20,4 +20,5 @@ export default () => ({
   sortOrder: null,
   licenses: [],
   fetchingLicensesInProgress: false,
+  componentIds: [],
 });
