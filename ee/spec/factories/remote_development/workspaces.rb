@@ -77,7 +77,7 @@ FactoryBot.define do
         )
       else
         unless evaluator.without_workspace_variables
-          workspace_variables = RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariables.variables(
+          workspace_variables = RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariablesBuilder.build(
             name: workspace.name,
             dns_zone: workspace.workspaces_agent_config.dns_zone,
             personal_access_token_value: workspace.personal_access_token.token,

@@ -6,11 +6,11 @@ module Types
       graphql_name 'WorkspaceVariableInputType'
       description 'Enum for the type of the variable to be injected in a workspace.'
 
-      from_rails_enum(
-        ::RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES_FOR_GRAPHQL,
-        description: "#{%(name).capitalize} type."
-      )
+      include ::RemoteDevelopment::Enums::WorkspaceVariable
 
+      from_rails_enum(WORKSPACE_VARIABLE_TYPES_FOR_GRAPHQL, description: "#{%(name).capitalize} type.")
+
+      # @return [Integer]
       def self.environment
         enum[:environment]
       end

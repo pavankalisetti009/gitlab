@@ -135,7 +135,8 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
             RemoteDevelopment::WorkspaceVariable.where(
               workspace: workspace,
               key: variable[:key],
-              variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES_FOR_GRAPHQL[variable[:type]]
+              variable_type:
+                RemoteDevelopment::Enums::WorkspaceVariable::WORKSPACE_VARIABLE_TYPES_FOR_GRAPHQL[variable[:type]]
             ).first&.value
           ).to eq(variable[:value])
         end

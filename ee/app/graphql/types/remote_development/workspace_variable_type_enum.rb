@@ -6,7 +6,9 @@ module Types
       graphql_name 'WorkspaceVariableType'
       description 'Enum for the type of the variable injected in a workspace.'
 
-      ::RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES.slice(:environment).each do |name, value|
+      include ::RemoteDevelopment::Enums::WorkspaceVariable
+
+      WORKSPACE_VARIABLE_TYPES.slice(:environment).each do |name, value|
         value name.to_s.upcase, value: value, description: "#{name.to_s.capitalize} type."
       end
 

@@ -86,10 +86,10 @@ RSpec.shared_examples 'query returns an array containing all non-internal variab
 
   it 'includes only the correct type of workspace_variables' do
     expect(workspace_variable_types).to include(
-      ::RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES.key(0).to_s.upcase
+      ::RemoteDevelopment::Enums::WorkspaceVariable::WORKSPACE_VARIABLE_TYPES.key(0).to_s.upcase
     )
     expect(workspace_variable_types).not_to include(
-      ::RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES.key(1).to_s.upcase
+      ::RemoteDevelopment::Enums::WorkspaceVariable::WORKSPACE_VARIABLE_TYPES.key(1).to_s.upcase
     )
   end
 end
