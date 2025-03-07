@@ -46,7 +46,7 @@ module API
         requires :id, types: [String, Integer], desc: 'The ID or URL-encoded path of the group'
 
         optional :send_email, type: Boolean, default: false, desc: 'Send an email when the export completes'
-        optional :export_type, type: Symbol, values: %i[json_array], default: :json_array,
+        optional :export_type, type: Symbol, values: %i[json_array csv], default: :json_array,
           desc: 'File format of the export'
       end
       desc 'Generate a dependency list export on a group-level'

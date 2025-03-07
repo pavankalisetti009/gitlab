@@ -3,10 +3,25 @@
 require 'spec_helper'
 
 RSpec.describe Dependencies::Export::SegmentedExportService, feature_category: :dependency_management do
+  using RSpec::Parameterized::TableSyntax
+
   let_it_be(:group) { create(:group) }
 
-  let(:export) { create(:dependency_list_export, :running, exportable: group, project: nil) }
+  let(:export_type) { :json_array }
+  let(:export) { create(:dependency_list_export, :running, export_type: export_type, exportable: group, project: nil) }
   let(:service_object) { described_class.new(export) }
+
+  def stub_file(content)
+    file = Tempfile.new
+    file.write(content)
+    file.rewind
+    file
+  end
+
+  where(:export_type, :exporter_class) do
+    :json_array | ::Sbom::Exporters::JsonArrayService
+    :csv        | ::Sbom::Exporters::CsvService
+  end
 
   describe '#export_segment' do
     let_it_be(:sbom_occurrence) { create(:sbom_occurrence, traversal_ids: group.traversal_ids) }
@@ -18,45 +33,35 @@ RSpec.describe Dependencies::Export::SegmentedExportService, feature_category: :
         end_id: sbom_occurrence.id)
     end
 
+    let(:content) { "export part content" }
+    let(:file) { stub_file(content) }
+
     subject(:export_segment) { service_object.export_segment(export_part) }
 
     before_all do
       create(:sbom_occurrence, traversal_ids: group.traversal_ids)
     end
 
+    with_them do
+      it 'uses file from exporter' do
+        expect_next_instance_of(exporter_class, export, export_part.sbom_occurrences) do |instance|
+          expect(instance).to receive(:generate_part).and_yield(file)
+        end
+
+        export_segment
+
+        expect(export_part.file.file.read).to eq(content)
+      end
+
+      it 'writes content when calling original implementation' do
+        export_segment
+
+        expect(export_part.file.file.read.size).to be > 0
+      end
+    end
+
     it 'creates the file for the export part' do
       expect { export_segment }.to change { export_part.file.file }.from(nil)
-    end
-
-    it 'exports correct sbom occurrences' do
-      export_segment
-
-      exported_occurrence = Gitlab::Json.parse(export_part.file.read)
-
-      expect(exported_occurrence).to eq({
-        'name' => sbom_occurrence.component_name,
-        'packager' => sbom_occurrence.package_manager,
-        'version' => sbom_occurrence.version,
-        'licenses' => sbom_occurrence.licenses,
-        'location' => sbom_occurrence.location.stringify_keys
-      })
-    end
-
-    context 'when there are multiple SBOM occurrences related to export part' do
-      let(:other_sbom_occurrence) { create(:sbom_occurrence, traversal_ids: group.traversal_ids) }
-      let(:other_service_object) { described_class.new(export) }
-      let!(:other_export_part) do
-        create(:dependency_list_export_part,
-          dependency_list_export: export,
-          start_id: sbom_occurrence.id,
-          end_id: other_sbom_occurrence.id)
-      end
-
-      it 'does not cause N+1 query issue' do
-        control = ActiveRecord::QueryRecorder.new { export_segment }
-
-        expect { other_service_object.export_segment(other_export_part) }.not_to exceed_query_limit(control)
-      end
     end
 
     context 'when an error happens' do
@@ -84,9 +89,13 @@ RSpec.describe Dependencies::Export::SegmentedExportService, feature_category: :
   describe '#finalise_segmented_export' do
     subject(:finalise_export) { service_object.finalise_segmented_export }
 
-    before do
+    let(:content) { "combined export content" }
+    let(:file) { stub_file(content) }
+    let(:export_parts) do
       create_list(:dependency_list_export_part, 2, :exported, dependency_list_export: export)
+    end
 
+    before do
       allow(Dependencies::DestroyExportWorker).to receive(:perform_in)
     end
 
@@ -97,12 +106,21 @@ RSpec.describe Dependencies::Export::SegmentedExportService, feature_category: :
                                 .and change { export.finished? }.to(true)
     end
 
-    it 'combines export parts' do
-      finalise_export
+    with_them do
+      it 'uses exporter to combine export parts' do
+        expect(export_class).to receive(:combine_parts)
+          .with(export_parts.map(&:file)).and_yield(file)
 
-      export_content = Gitlab::Json.parse(export.file.read)
+        finalise_export
 
-      expect(export_content.length).to be(2)
+        expect(export.file.read).to eq(content)
+      end
+
+      it 'writes content when calling original implementation' do
+        finalise_export
+
+        expect(export.file.read.size).to be > 0
+      end
     end
 
     it 'schedules the export deletion' do

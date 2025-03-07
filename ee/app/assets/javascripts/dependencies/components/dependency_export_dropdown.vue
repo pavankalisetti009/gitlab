@@ -8,31 +8,44 @@ import {
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
 import { s__ } from '~/locale';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import {
-  EXPORT_FORMATS,
+  EXPORT_FORMAT_CSV,
+  EXPORT_FORMAT_DEPENDENCY_LIST,
+  EXPORT_FORMAT_JSON_ARRAY,
   NAMESPACE_GROUP,
   NAMESPACE_ORGANIZATION,
   NAMESPACE_PROJECT,
 } from '../constants';
 
+const availableForContainers = (supportedContainers) => {
+  return (component) => supportedContainers.includes(component.container);
+};
+
 const exportFormats = [
   {
-    type: EXPORT_FORMATS.dependencyList,
+    type: EXPORT_FORMAT_DEPENDENCY_LIST,
     buttonText: s__('Dependencies|Export as JSON'),
-    availableFor: [NAMESPACE_PROJECT],
     testid: 'dependency-list-item',
+    available: availableForContainers([NAMESPACE_PROJECT]),
   },
   {
-    type: EXPORT_FORMATS.jsonArray,
+    type: EXPORT_FORMAT_JSON_ARRAY,
     buttonText: s__('Dependencies|Export as JSON'),
-    availableFor: [NAMESPACE_GROUP],
     testid: 'json-array-item',
+    available: availableForContainers([NAMESPACE_GROUP]),
   },
   {
-    type: EXPORT_FORMATS.csv,
+    type: EXPORT_FORMAT_CSV,
     buttonText: s__('Dependencies|Export as CSV'),
-    availableFor: [NAMESPACE_PROJECT, NAMESPACE_ORGANIZATION],
     testid: 'csv-item',
+    available: (component) => {
+      if (component.container === NAMESPACE_GROUP) {
+        return component.glFeatures.groupDependencyListCsvExport;
+      }
+
+      return availableForContainers([NAMESPACE_PROJECT, NAMESPACE_ORGANIZATION])(component);
+    },
   },
 ];
 
@@ -46,7 +59,10 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
+  mixins: [glFeatureFlagMixin()],
   props: {
+    // Used in availability check.
+    // eslint-disable-next-line vue/no-unused-properties
     container: {
       type: String,
       required: true,
@@ -60,7 +76,7 @@ export default {
       },
     }),
     availableFormats() {
-      return exportFormats.filter((format) => format.availableFor.includes(this.container));
+      return exportFormats.filter((format) => format.available(this));
     },
     multipleFormats() {
       return this.availableFormats.length > 1;

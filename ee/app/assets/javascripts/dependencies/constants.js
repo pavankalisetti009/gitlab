@@ -4,6 +4,10 @@ export const NAMESPACE_PROJECT = 'project';
 export const NAMESPACE_GROUP = 'group';
 export const NAMESPACE_ORGANIZATION = 'organization';
 
+export const EXPORT_FORMAT_CSV = 'csv';
+export const EXPORT_FORMAT_DEPENDENCY_LIST = 'dependency_list';
+export const EXPORT_FORMAT_JSON_ARRAY = 'json_array';
+
 export const DEPENDENCIES_TABLE_I18N = {
   component: s__('Dependencies|Component'),
   packager: s__('Dependencies|Packager'),
@@ -19,10 +23,4 @@ export const DEPENDENCIES_TABLE_I18N = {
   locationDependencyTitle: s__('Dependencies|List of direct dependents'),
   toggleVulnerabilityList: s__('Dependencies|Toggle vulnerability list'),
   dependencyPathButtonText: s__('Dependencies|View dependency paths'),
-};
-
-export const EXPORT_FORMATS = {
-  csv: 'csv',
-  dependencyList: 'dependency_list',
-  jsonArray: 'json_array',
 };

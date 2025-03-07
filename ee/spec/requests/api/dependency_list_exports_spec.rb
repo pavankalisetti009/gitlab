@@ -207,7 +207,7 @@ RSpec.describe API::DependencyListExports, feature_category: :dependency_managem
       end
 
       it_behaves_like 'supports export type', 'json_array'
-      it_behaves_like 'does not support export type', 'csv'
+      it_behaves_like 'supports export type', 'csv'
       it_behaves_like 'does not support export type', 'dependency_list'
       it_behaves_like 'does not support export type', 'sbom'
 

@@ -1,20 +1,56 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require './ee/spec/services/sbom/exporters/file_helper'
 
 RSpec.describe Sbom::Exporters::CsvService, feature_category: :dependency_management do
+  include FileHelper
+
   let_it_be(:project) { create(:project) }
   let_it_be(:export) { build_stubbed(:dependency_list_export) }
   let_it_be(:sbom_occurrences) { Sbom::Occurrence.all }
 
   let(:service_class) { described_class.new(export, sbom_occurrences) }
 
-  describe '#header' do
-    subject { service_class.header }
+  describe '.header' do
+    subject { described_class.header }
 
     it 'returns correct headers' do
       is_expected.to eq(
         "Name,Version,Packager,Location,License Identifiers,Project,Vulnerabilities Detected,Vulnerability IDs\n")
+    end
+  end
+
+  describe '.combine_parts' do
+    let(:header) do
+      "Name,Version,Packager,Location,License Identifiers,Project,Vulnerabilities Detected,Vulnerability IDs"
+    end
+
+    let(:part_1) do
+      stub_file("#{header}\naccepts,1.3.5,npm,/enterprise/node/-/blob/" \
+        "9e800c181208cc6539b4d257096921af79c86653/package-lock.json,\"\",enterprise/node,0,\"\"\n")
+    end
+
+    let(:part_2) do
+      stub_file("#{header}\nacorn,3.3.0,npm,/enterprise/node/-/blob/" \
+        "9e800c181208cc6539b4d257096921af79c86653/package-lock.json,\"\",enterprise/node,0,\"\"\n")
+    end
+
+    subject(:combined_parts) { described_class.combine_parts([part_1, part_2]) }
+
+    after do
+      part_1.close!
+      part_2.close!
+    end
+
+    it 'combines the parts with header' do
+      expect(combined_parts).to eq(
+        <<~CSV
+        #{header}
+        accepts,1.3.5,npm,/enterprise/node/-/blob/9e800c181208cc6539b4d257096921af79c86653/package-lock.json,"",enterprise/node,0,""
+        acorn,3.3.0,npm,/enterprise/node/-/blob/9e800c181208cc6539b4d257096921af79c86653/package-lock.json,"",enterprise/node,0,""
+        CSV
+      )
     end
   end
 
