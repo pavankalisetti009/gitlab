@@ -226,6 +226,7 @@ export const blobControlsDataMock = {
           canCurrentUserPushToBranch: true,
           canModifyBlob: true,
           canModifyBlobWithWebIde: true,
+          forkAndViewPath: 'fork/view/path',
           simpleViewer: {
             __typename: 'BlobViewer',
             collapsed: false,
