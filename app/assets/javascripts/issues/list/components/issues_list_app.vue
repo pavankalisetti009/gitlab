@@ -636,7 +636,7 @@ export default {
     },
   },
   created() {
-    this.updateData(this.initialSort);
+    this.updateData(getParameterByName(PARAM_SORT) || this.initialSort);
     this.cache = {};
   },
   mounted() {
