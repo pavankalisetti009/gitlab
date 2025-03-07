@@ -111,7 +111,7 @@ module Gitlab
             prompt_class: ::Gitlab::Llm::Templates::ReviewMergeRequest,
             feature_category: :code_review_workflow,
             execute_method: ::Llm::ReviewMergeRequestService,
-            maturity: :experimental,
+            maturity: :beta,
             self_managed: true,
             internal: true
           },
