@@ -7,6 +7,8 @@ RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, feature_categor
   let(:bundled_with) { {} }
   let(:backend) { 'gitlab-ai-gateway' }
 
+  let_it_be(:cc_key) { create(:cloud_connector_keys) }
+
   subject(:available_service_data) { described_class.new(:duo_chat, cut_off_date, bundled_with, backend) }
 
   describe '#access_token' do
@@ -26,9 +28,6 @@ RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, feature_categor
     subject(:access_token) { available_service_data.access_token(resource) }
 
     shared_examples 'issue a token with scopes' do
-      let_it_be(:rsa_key) { OpenSSL::PKey::RSA.new(2048) }
-      let_it_be(:jwk) { ::JWT::JWK.new(rsa_key, kid_generator: ::JWT::JWK::Thumbprint) }
-
       let(:expected_token) do
         instance_double('Gitlab::CloudConnector::JsonWebToken')
       end
@@ -37,7 +36,8 @@ RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, feature_categor
         allow(Doorkeeper::OpenidConnect.configuration).to receive(:issuer).and_return(issuer)
         allow(Gitlab::CurrentSettings).to receive(:uuid).and_return(instance_id)
         allow(::CloudConnector).to receive(:gitlab_realm).and_return(gitlab_realm)
-        allow(::CloudConnector::Keys).to receive(:current_as_jwk).and_return(jwk)
+        # Ensure we do not write metrics to the file system
+        allow(::Gitlab::Metrics).to receive(:counter).and_return(Gitlab::Metrics::NullMetric.instance)
       end
 
       it 'returns the encoded token' do
@@ -50,17 +50,35 @@ RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, feature_categor
           ttl: ttl,
           extra_claims: extra_claims
         ).and_return(expected_token)
-        expect(expected_token).to receive(:encode).with(instance_of(::JWT::JWK::RSA)).and_return(encoded_token_string)
+        expect(expected_token).to receive(:encode).with(cc_key.to_jwk).and_return(encoded_token_string)
 
         expect(access_token).to eq(encoded_token_string)
       end
 
       it 'does not repeatedly load the validation key' do
-        expect(::CloudConnector::Keys).to receive(:current_as_jwk)
+        expect(::CloudConnector::Keys).to receive(:current)
           .at_most(:once)
-          .and_return(jwk)
+          .and_return(cc_key)
 
         3.times { described_class.new(:duo_chat, cut_off_date, bundled_with, backend).access_token }
+      end
+
+      it 'logs the key load event once' do
+        expect(::Gitlab::AppLogger).to receive(:info)
+          .at_most(:once)
+          .with(message: /Cloud Connector key loaded/, cc_kid: cc_key.to_jwk.kid)
+
+        3.times { described_class.new(:duo_chat, cut_off_date, bundled_with, backend).access_token }
+      end
+
+      it 'increments the token counter metric' do
+        token_counter = instance_double(Prometheus::Client::Counter)
+        expect(::Gitlab::Metrics).to receive(:counter)
+          .with(:cloud_connector_tokens_issued_total, instance_of(String), worker_id: instance_of(String))
+          .and_return(token_counter)
+        expect(token_counter).to receive(:increment).with(kid: cc_key.to_jwk.kid)
+
+        access_token
       end
     end
 
@@ -78,7 +96,7 @@ RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, feature_categor
           'CloudConnector::SelfSigned::AvailableServiceData::CachingKeyLoader',
           fake_key_loader
         )
-        allow(CloudConnector::Keys).to receive(:current_as_jwk).and_return(nil)
+        allow(CloudConnector::Keys).to receive(:current).and_return(nil)
       end
 
       it 'raises NoSigningKeyError' do
