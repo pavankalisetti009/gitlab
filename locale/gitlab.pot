@@ -43210,6 +43210,9 @@ msgstr ""
 msgid "Pipelines|Use template"
 msgstr ""
 
+msgid "Pipelines|Using %{codeStart}inputs%{codeEnd} to control pipeline behavior offers improved security and flexibility. Consider updating your pipelines to use %{codeStart}inputs%{codeEnd} instead."
+msgstr ""
+
 msgid "Pipelines|Validate"
 msgstr ""
 
