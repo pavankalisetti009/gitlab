@@ -91,10 +91,7 @@ RSpec.describe 'Creating a workspace', feature_category: :workspaces do
         params: params,
         vscode_extension_marketplace_metadata: { enabled: true },
         vscode_extension_marketplace: { some_setting: "some-value" }
-      },
-      auth_ability: :create_workspace,
-      auth_subject: workspace_project,
-      current_user: current_user
+      }
     }
   end
 

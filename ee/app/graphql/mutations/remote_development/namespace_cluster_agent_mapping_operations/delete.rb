@@ -38,10 +38,7 @@ module Mutations
 
           response = ::RemoteDevelopment::CommonService.execute(
             domain_main_class: ::RemoteDevelopment::NamespaceClusterAgentMappingOperations::Delete::Main,
-            domain_main_class_args: domain_main_class_args,
-            auth_ability: :admin_remote_development_cluster_agent_mapping,
-            auth_subject: cluster_agent,
-            current_user: current_user
+            domain_main_class_args: domain_main_class_args
           )
 
           {

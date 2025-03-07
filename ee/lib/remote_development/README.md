@@ -612,10 +612,7 @@ class Update < BaseMutation
   
     response = ::RemoteDevelopment::CommonService.execute(
       domain_main_class: ::RemoteDevelopment::WorkspaceOperations::Update::Main,
-      domain_main_class_args: domain_main_class_args,
-      auth_ability: :update_workspace,
-      auth_subject: workspace,
-      current_user: current_user
+      domain_main_class_args: domain_main_class_args
     )
   
     response_object = response.success? ? response.payload[:workspace] : nil
@@ -635,11 +632,14 @@ You will notice this looks very different than the [standard Service class patte
 
 Since all of our domain logic is in the domain layer and models, the Service layer is cohesive - it only has a limited set of explicit and specific responsibilities:
 
-1. Perform authorization, if necessary
 1. Accept the arguments passed from the API layer, and pass them to the correct `Main` class in the Domain Logic layer.
 1. Inject additional dependencies, such as [Remote Development Settings](#remote-development-settings) and logger, into the Domain Logic layer.
 1. Convert the "`response_hash`" return value from the Domain Logic layer into a `ServiceResponse` object.
 1. [Enforce at runtime](#enforcement-of-patterns) the [Functional Patterns](#functional-patterns) used within the domain.
+
+Currently, the only external entry point into the service layer (which is the only entry into our domain code) is via the GraphQL API layer.
+An internal rest endpoint [exists](https://gitlab.com/gitlab-org/gitlab/-/blob/ca57fdeefd84387919910644501f82ca5eb0b299/ee/lib/ee/api/internal/kubernetes.rb) which exercises domain logic, but it is internal with no user identity to authorize.
+We can leverage this setup to handle authorization centrally in the GraphQL API layer in line with [exceptions to defense-in-depth authorization](https://docs.gitlab.com/development/permissions/authorizations/#exceptions).
 
 Given this limited responsiblity and the strictly consistent patterns used in the Domain layer, this means we can use a single, generic `CommonService` class for the entire domain, and do not need to write (or test) individual service classes for each use case.
 The `GitLab::Fp` module stands for "Functional Programming", and contains helper methods used with these patterns. 
@@ -653,13 +653,7 @@ class CommonService
   extend Gitlab::Fp::RopHelpers
   extend ServiceResponseFactory
 
-  def self.execute(domain_main_class:, domain_main_class_args:, auth_ability:, auth_subject: nil, current_user: nil)
-    authorize!(
-      current_user: current_user,
-      auth_ability: auth_ability,
-      auth_subject: auth_subject
-    )
-
+  def self.execute(domain_main_class:, domain_main_class_args: )
     main_class_method = retrieve_single_public_singleton_method(domain_main_class)
 
     settings = ::RemoteDevelopment::Settings.get(RemoteDevelopment::Settings::DefaultSettings.default_settings.keys)
@@ -670,12 +664,6 @@ class CommonService
     )
 
     create_service_response(response_hash)
-  end
-
-  def self.authorize!(auth_ability:, auth_subject:, current_user:)
-    return unless auth_ability
-
-    raise "User is not authorized to perform this action" unless current_user.can?(auth_ability, auth_subject)
   end
 end
 ```
@@ -871,8 +859,8 @@ It expects the array to specify step classes in the same order as the chain of t
          ...
          with_err_result_for_step(
                     {
-                      step_class: RemoteDevelopment::WorkspaceOperations::Create::Authorizer,
-                      returned_message: RemoteDevelopment::Messages::Unauthorized.new(err_message_content)
+                      step_class: RemoteDevelopment::WorkspaceOperations::Create::Creator,
+                      returned_message: RemoteDevelopment::Messages::WorkspaceCreateFailed.new(err_message_content)
                     }
                   )
     ```
@@ -962,7 +950,7 @@ For example, the former approach is already being used to inject the existing Gi
 
 ### 'describe #method' RSpec blocks are usually unnecessary
 
-Since much of the Domain Logic layer logic is in classes with a single singleton (class) method entry point, there is no need to have `describe .method do` blocks in specs for these classes. Omitting it saves two characters worth of indentation line length. And most of these classes and methods are named with a standard and predictable convention anyway, such as `Authorizer.authorize` and `Creator.create`.
+Since much of the Domain Logic layer logic is in classes with a single singleton (class) method entry point, there is no need to have `describe .method do` blocks in specs for these classes. Omitting it saves two characters worth of indentation line length. And most of these classes and methods are named with a standard and predictable convention anyway, such as `DevfileFlattener.flatten` and `Creator.create`.
 
 We also tend to group all base `let` fixture declarations in the top-level global describe block rather than trying to sort them out into their specific contexts, for ease of writing/maintenance/readability/consistency. Only `let` declarations which override a global one of the same name are included in a specific context.
 
