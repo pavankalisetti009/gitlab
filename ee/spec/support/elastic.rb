@@ -4,12 +4,14 @@ module Elastic
   class TestHelpers
     include ElasticsearchHelpers
 
+    INDEX_PREFIX = 'gitlab-test*'
+
     def helper
       @helper ||= Gitlab::Elastic::Helper.default
     end
 
     def indices(include_migration_index: true)
-      aliases = helper.client.cat.aliases(format: 'json')
+      aliases = helper.client.cat.aliases(name: INDEX_PREFIX, format: 'json')
       indices = if aliases.empty?
                   []
                 else
