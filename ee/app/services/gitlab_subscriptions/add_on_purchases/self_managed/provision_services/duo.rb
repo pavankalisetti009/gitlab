@@ -6,6 +6,7 @@ module GitlabSubscriptions
       module ProvisionServices
         class Duo < Base
           LICENSE_ADD_ONS_ORDERED_BY_PRECEDENCE = [
+            LicenseAddOns::DuoAmazonQ,
             LicenseAddOns::DuoEnterprise,
             LicenseAddOns::DuoPro
           ].freeze
