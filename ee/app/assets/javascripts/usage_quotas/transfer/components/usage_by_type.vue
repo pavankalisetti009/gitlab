@@ -99,7 +99,7 @@ export default {
           id: EGRESS_TYPE_REGISTRY,
           label: s__('UsageQuota|Registry'),
           description: s__(
-            'UsageQuota|Gitlab-integrated Docker Container Registry for storing Docker Images.',
+            'UsageQuota|Gitlab-integrated Docker container registry for storing Docker Images.',
           ),
           icon: 'disk',
           helpPath: helpPagePath(

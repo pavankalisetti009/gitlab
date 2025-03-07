@@ -128,7 +128,7 @@ RSpec.describe 'Group navbar', :js, feature_category: :groups_and_projects do
           insert_after_sub_nav_item(
             _('Package registry'),
             within: _('Deploy'),
-            new_sub_nav_item_name: _('Container Registry')
+            new_sub_nav_item_name: _('Container registry')
           )
 
           visit group_path(group)
