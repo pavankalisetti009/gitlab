@@ -6,7 +6,7 @@ RSpec.describe 'gitlab_subscriptions/trials/duo_enterprise/_advantages_list.html
   it 'renders the list' do
     render 'gitlab_subscriptions/trials/duo_enterprise/advantages_list'
 
-    expect(rendered).to have_content('GitLab Duo Enterprise is is your end-to-end AI partner')
+    expect(rendered).to have_content('GitLab Duo Enterprise is your end-to-end AI partner')
     expect(rendered).to have_content('Stay on top of regulatory requirements')
     expect(rendered).to have_content('Enhance security and remediate')
     expect(rendered).to have_content('Quickly remedy broken pipelines')
