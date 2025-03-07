@@ -74,5 +74,48 @@ RSpec.describe 'getting an issue list for a project', feature_category: :team_pl
         expect(issues.first["id"]).to eq(issue_needs_attention.to_global_id.to_s)
       end
     end
+
+    context "for custom field" do
+      include_context 'with group configured with custom fields'
+
+      before_all do
+        create(:work_item_select_field_value, work_item_id: issue_a.id, custom_field: select_field,
+          custom_field_select_option: select_option_1)
+        create(:work_item_select_field_value, work_item_id: issue_b.id, custom_field: select_field,
+          custom_field_select_option: select_option_2)
+        create(:work_item_select_field_value, work_item_id: issue_c.id, custom_field: select_field,
+          custom_field_select_option: select_option_2)
+      end
+
+      before do
+        stub_licensed_features(custom_fields: true)
+      end
+
+      let(:query) do
+        graphql_query_for(:project, { full_path: project.full_path },
+          query_nodes(:issues, :id, args: params)
+        )
+      end
+
+      context "when filtering on a select field" do
+        let(:params) do
+          {
+            custom_field: [{
+              custom_field_id: select_field.to_global_id.to_s,
+              selected_option_ids: [select_option_2.to_global_id.to_s]
+            }]
+          }
+        end
+
+        it 'returns issues that match the custom field filter' do
+          post_graphql(query, current_user: current_user)
+
+          issues = graphql_data.dig('project', 'issues', 'nodes')
+
+          expect(issues.size).to eq(2)
+          expect(issues.pluck("id")).to contain_exactly(issue_b.to_global_id.to_s, issue_c.to_global_id.to_s)
+        end
+      end
+    end
   end
 end
