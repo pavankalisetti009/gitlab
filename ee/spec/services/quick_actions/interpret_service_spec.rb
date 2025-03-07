@@ -1545,6 +1545,29 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
       end
     end
 
+    describe 'milestone command' do
+      context 'on group-level work items' do
+        let_it_be(:group_milestone) { create(:milestone, group: group, title: 'Group Milestone') }
+        let_it_be(:group_work_item) { create(:work_item, :epic, :group_level, namespace: group) }
+        let_it_be(:group_service) { described_class.new(container: group, current_user: developer) }
+
+        before do
+          group.add_developer(developer)
+          stub_licensed_features(epics: true)
+        end
+
+        it 'includes the milestone command in available commands for group level work items' do
+          expect(group_service.available_commands(group_work_item)).to include(a_hash_including(name: :milestone))
+        end
+
+        it 'updates the milestone on a group level work item' do
+          _, updates, _ = group_service.execute("/milestone %\"#{group_milestone.title}\"", group_work_item)
+
+          expect(updates).to eq(milestone_id: group_milestone.id)
+        end
+      end
+    end
+
     describe 'unassign command' do
       let(:content) { '/unassign' }
       let(:issue) { create(:issue, project: project, assignees: [user, user2]) }
