@@ -29,12 +29,10 @@ module CloudConnector
       private
 
       def selected_probes
-        # An air-gapped instance, which requires that they run their own self-hosted AI Gateway,
-        # requires a different set of probes to be executed.
-        if ::Gitlab::Ai::SelfHosted::AiGateway.required?
+        if ::Ai::Setting.self_hosted?
           ::Gitlab::Ai::SelfHosted::AiGateway.probes(@user)
         elsif ::Gitlab::Utils.to_boolean(ENV['CLOUD_CONNECTOR_SELF_SIGN_TOKENS'])
-          self_hosted_probes
+          development_probes
         else
           default_probes
         end
@@ -51,7 +49,8 @@ module CloudConnector
         ]
       end
 
-      def self_hosted_probes
+      # Carries out minimal checks for development and testing purposes
+      def development_probes
         [
           CloudConnector::StatusChecks::Probes::HostProbe.new(::Gitlab::AiGateway.self_hosted_url),
           CloudConnector::StatusChecks::Probes::EndToEndProbe.new(@user)

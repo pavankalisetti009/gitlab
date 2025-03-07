@@ -24,17 +24,15 @@ module CloudConnector
           override :success_message
           def success_message
             format(_(
-              "Self hosted AI Gateway URL is set to %{url}." \
-                "To change it, in a rails console run: " \
-                "`Ai::Setting.instance.update!(ai_gateway_url: URL)`"
+              "Self hosted AI Gateway URL is set to %{url}. " \
+                "It can be changed in the Gitlab Duo configuration."
             ), url: self_hosted_url)
           end
 
           def failure_message
             format(_(
-              "Self hosted AI Gateway URL is not set." \
-                "To set it, in a rails console run: " \
-                "`Ai::Setting.instance.update!(ai_gateway_url: URL)`"
+              "Self hosted AI Gateway URL is not set. " \
+                "It can be changed in the Gitlab Duo configuration." \
             ))
           end
         end

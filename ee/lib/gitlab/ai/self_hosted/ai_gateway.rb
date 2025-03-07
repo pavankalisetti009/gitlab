@@ -6,14 +6,6 @@ module Gitlab
       module AiGateway
         extend self
 
-        # An instance having an offline cloud license is
-        # supposed to be an air-gapped instance.
-        # Air-gapped instances cannot connect to GitLab's default CloudConnector
-        # and are hence required to self-host their own AI Gateway (and the models)
-        def required?
-          ::License.current&.offline_cloud_license?
-        end
-
         def probes(user)
           [
             ::CloudConnector::StatusChecks::Probes::SelfHosted::AiGatewayUrlPresenceProbe.new,
