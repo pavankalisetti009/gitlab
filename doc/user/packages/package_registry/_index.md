@@ -36,7 +36,7 @@ Learn how to use the GitLab package registry to build your own custom package wo
 You can view packages for your project or group.
 
 1. Go to the project or group.
-1. Go to **Deploy > Package Registry**.
+1. Go to **Deploy > Package registry**.
 
 You can search, sort, and filter packages on this page. You can share your search results by copying
 and pasting the URL from your browser.
@@ -132,7 +132,7 @@ You can also remove the package registry for your project specifically:
    **Packages** feature.
 1. Select **Save changes**.
 
-The **Deploy > Package Registry** entry is removed from the sidebar.
+The **Deploy > Package registry** entry is removed from the sidebar.
 
 ## Package registry visibility permissions
 
@@ -172,7 +172,7 @@ To allow anyone to pull from the package registry, regardless of project visibil
 1. On the left sidebar, select **Search or go to** and find your private or internal project.
 1. Select **Settings > General**.
 1. Expand **Visibility, project features, permissions**.
-1. Turn on the **Allow anyone to pull from Package Registry** toggle.
+1. Turn on the **Allow anyone to pull from package registry** toggle.
 1. Select **Save changes**.
 
 Anyone on the internet can access the package registry for the project.
@@ -183,11 +183,11 @@ Prerequisites:
 
 - You must be an administrator.
 
-To hide the **Allow anyone to pull from Package Registry** toggle globally:
+To hide the **Allow anyone to pull from package registry** toggle globally:
 
 - [Update the application setting](../../../api/settings.md#update-application-settings) `package_registry_allow_anyone_to_pull_option` to `false`.
 
-Anonymous downloads are disabled, even for projects that turned on the **Allow anyone to pull from Package Registry** toggle.
+Anonymous downloads are disabled, even for projects that turned on the **Allow anyone to pull from package registry** toggle.
 
 Several known issues exist when you allow anyone to pull from the package registry:
 

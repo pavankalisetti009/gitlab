@@ -32481,7 +32481,7 @@ An organization user badge.
 
 ### `Package`
 
-Represents a package with pipelines in the Package Registry.
+Represents a package with pipelines in the package registry.
 
 #### Fields
 
@@ -32505,7 +32505,7 @@ Represents a package with pipelines in the Package Registry.
 
 ### `PackageBase`
 
-Represents a package in the Package Registry.
+Represents a package in the package registry.
 
 #### Fields
 
