@@ -11,15 +11,6 @@ module GitlabSubscriptions
       _lead_form_data(eligible_namespaces).merge(submit_path: submit_path)
     end
 
-    def create_duo_enterprise_lead_form_data(eligible_namespaces)
-      submit_path = trials_duo_enterprise_path(
-        step: GitlabSubscriptions::Trials::CreateDuoEnterpriseService::LEAD,
-        namespace_id: params[:namespace_id]
-      )
-
-      _lead_form_data(eligible_namespaces).merge(submit_path: submit_path)
-    end
-
     def duo_trial_namespace_selector_data(namespaces, namespace_create_errors)
       namespace_selector_data(namespace_create_errors).merge(
         any_trial_eligible_namespaces: namespaces.any?.to_s,

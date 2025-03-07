@@ -14,10 +14,15 @@ module GitlabSubscriptions
 
           render :step_namespace
         else
-          set_group_name
           track_event('render_duo_enterprise_lead_page')
 
-          render :step_lead
+          render GitlabSubscriptions::Trials::DuoEnterprise::LeadFormComponent
+                   .new(
+                     user: current_user,
+                     namespace_id: general_params[:namespace_id],
+                     eligible_namespaces: @eligible_namespaces,
+                     submit_path: trial_submit_path
+                   )
         end
       end
 
@@ -38,9 +43,17 @@ module GitlabSubscriptions
           # namespace not found/not permitted to create
           render_404
         elsif @result.reason == GitlabSubscriptions::Trials::CreateDuoEnterpriseService::LEAD_FAILED
-          set_group_name
 
-          render :step_lead_failed
+          render GitlabSubscriptions::Trials::DuoEnterprise::LeadFormWithErrorsComponent
+                   .new(
+                     user: current_user,
+                     namespace_id: general_params[:namespace_id],
+                     eligible_namespaces: @eligible_namespaces,
+                     submit_path: trial_submit_path,
+                     form_params: lead_form_params,
+                     errors: @result.errors
+                   )
+
         else
           # trial creation failed
           params[:namespace_id] = @result.payload[:namespace_id] # rubocop:disable Rails/StrongParams -- Not working for assignment
@@ -56,6 +69,19 @@ module GitlabSubscriptions
                                  .new(current_user, add_on: :duo_enterprise).execute
       end
       strong_memoize_attr :eligible_namespaces
+
+      def trial_submit_path
+        trials_duo_enterprise_path(
+          step: GitlabSubscriptions::Trials::CreateDuoEnterpriseService::LEAD,
+          **params.permit(*::Onboarding::StatusPresenter::GLM_PARAMS, :namespace_id)
+        )
+      end
+
+      def lead_form_params
+        params.permit(
+          :first_name, :last_name, :company_name, :company_size, :phone_number, :country, :state
+        ).to_h.symbolize_keys
+      end
 
       def trial_params
         params.permit(*::Onboarding::StatusPresenter::GLM_PARAMS, :namespace_id).to_h

@@ -21920,10 +21920,10 @@ msgstr ""
 msgid "DuoEnterpriseTrial|Gain deeper insights into GitLab Duo usage patterns"
 msgstr ""
 
-msgid "DuoEnterpriseTrial|GitLab Duo Enterprise is is your end-to-end AI partner for faster, more secure software development."
+msgid "DuoEnterpriseTrial|GitLab Duo Enterprise is only available for purchase for Ultimate customers."
 msgstr ""
 
-msgid "DuoEnterpriseTrial|GitLab Duo Enterprise is only available for purchase for Ultimate customers."
+msgid "DuoEnterpriseTrial|GitLab Duo Enterprise is your end-to-end AI partner for faster, more secure software development."
 msgstr ""
 
 msgid "DuoEnterpriseTrial|Maintain control and keep your data safe"

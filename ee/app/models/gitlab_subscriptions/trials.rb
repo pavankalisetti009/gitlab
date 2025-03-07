@@ -9,7 +9,7 @@ module GitlabSubscriptions
     def self.single_eligible_namespace?(eligible_namespaces)
       return false unless eligible_namespaces.any? # executes query and now relation is loaded
 
-      eligible_namespaces.count == 1
+      eligible_namespaces.one?
     end
 
     def self.creating_group_trigger?(namespace_id)
