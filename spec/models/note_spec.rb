@@ -727,31 +727,51 @@ RSpec.describe Note, feature_category: :team_planning do
   end
 
   describe '#last_edited_by' do
-    let(:user) { build(:user) }
+    let_it_be(:note, reload: true) do
+      create_timestamp = 1.day.ago
+      create(:note, created_at: create_timestamp, updated_at: create_timestamp)
+    end
 
-    context 'when last_edited_at is nil' do
-      let(:note) { build(:note, last_edited_at: nil, updated_by: user) }
+    let(:editor) { note.author }
 
+    context 'when the note is not edited' do
       it 'returns nil' do
         expect(note.last_edited_by).to be_nil
       end
     end
 
-    context 'when last_edited_at is set' do
-      context 'when updated_by is set' do
-        let(:note) { build(:note, last_edited_at: Time.current, updated_by: user) }
+    def update_note(note, **attributes)
+      # Update updated_at manually because of ThrottledTouch concern
+      note.update!(attributes.merge(updated_at: Time.current))
+    end
 
-        it 'returns the updated_by user' do
-          expect(note.last_edited_by).to eq(user)
-        end
+    context 'with an edited note' do
+      before do
+        update_note(note, last_edited_at: Time.current, updated_by: editor)
       end
 
-      context 'when updated_by is not set' do
-        let(:note) { build(:note, last_edited_at: Time.current, updated_by: nil) }
+      it 'returns the updated_by user' do
+        expect(note.last_edited_by).to eq(editor)
+      end
+    end
 
-        it 'returns the ghost user' do
-          expect(note.last_edited_by).to eq(Users::Internal.ghost)
-        end
+    context 'with an edited note by a deleted user' do
+      before do
+        update_note(note, last_edited_at: Time.current, updated_by: nil)
+      end
+
+      it 'returns the ghost user' do
+        expect(note.last_edited_by).to eq(Users::Internal.ghost)
+      end
+    end
+
+    context 'with a legacy edited note where last_edited_at is not set' do
+      before do
+        update_note(note, updated_by: editor)
+      end
+
+      it 'returns the updated_by user' do
+        expect(note.last_edited_by).to eq(editor)
       end
     end
   end
