@@ -9,7 +9,7 @@ module Issuables
         [:namespace]
       end
 
-      def preloads
+      def custom_field_preloads
         {
           created_by: [:created_by],
           updated_by: [:updated_by],

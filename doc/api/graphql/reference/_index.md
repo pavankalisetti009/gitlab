@@ -40272,7 +40272,7 @@ Represents a custom fields widget definition.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="workitemwidgetdefinitioncustomfieldscustomfields"></a>`customFields` {{< icon name="warning-solid" >}} | [`[CustomField!]`](#customfield) | **Introduced** in GitLab 17.10. **Status**: Experiment. Custom fields available for the work item type. Available only when feature flag `custom_fields_feature` is enabled. |
+| <a id="workitemwidgetdefinitioncustomfieldscustomfieldvalues"></a>`customFieldValues` {{< icon name="warning-solid" >}} | [`[WorkItemCustomFieldValue!]`](#workitemcustomfieldvalue) | **Introduced** in GitLab 17.10. **Status**: Experiment. Custom field values associated to the work item. |
 | <a id="workitemwidgetdefinitioncustomfieldstype"></a>`type` | [`WorkItemWidgetType!`](#workitemwidgettype) | Widget type. |
 
 ### `WorkItemWidgetDefinitionGeneric`

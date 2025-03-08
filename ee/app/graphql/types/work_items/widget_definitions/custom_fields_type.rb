@@ -10,11 +10,10 @@ module Types
 
         implements ::Types::WorkItems::WidgetDefinitionInterface
 
-        field :custom_fields, [::Types::Issuables::CustomFieldType],
+        field :custom_field_values,
           null: true,
-          description: 'Custom fields available for the work item type. ' \
-            'Available only when feature flag `custom_fields_feature` is enabled.',
-          resolver: ::Resolvers::WorkItems::TypeCustomFieldsResolver,
+          description: 'Custom field values associated to the work item.',
+          resolver: ::Resolvers::WorkItems::TypeCustomFieldValuesResolver,
           experiment: { milestone: '17.10' }
       end
       # rubocop:enable Graphql/AuthorizeTypes
