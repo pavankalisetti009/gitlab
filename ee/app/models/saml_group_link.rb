@@ -8,10 +8,11 @@ class SamlGroupLink < ApplicationRecord
 
   belongs_to :group
 
-  strip_attributes! :saml_group_name
+  strip_attributes! :saml_group_name, :provider
 
   validates :group, :access_level, presence: true
-  validates :saml_group_name, presence: true, uniqueness: { scope: [:group_id] }, length: { maximum: 255 }
+  validates :saml_group_name, presence: true, uniqueness: { scope: [:group_id, :provider] }, length: { maximum: 255 }
+  validates :provider, length: { maximum: 255 }, allow_nil: true
   validate :access_level_allowed
 
   scope :by_id_and_group_id, ->(id, group_id) { where(id: id, group_id: group_id) }
