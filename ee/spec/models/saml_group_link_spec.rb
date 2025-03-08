@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe SamlGroupLink do
+RSpec.describe SamlGroupLink, feature_category: :system_access do
   describe 'associations' do
     it { is_expected.to belong_to(:group) }
   end
@@ -12,13 +12,14 @@ RSpec.describe SamlGroupLink do
     it { is_expected.to validate_presence_of(:access_level) }
     it { is_expected.to validate_presence_of(:saml_group_name) }
     it { is_expected.to validate_length_of(:saml_group_name).is_at_most(255) }
+    it { is_expected.to validate_length_of(:provider).is_at_most(255) }
 
     context 'group name uniqueness' do
       before do
         create(:saml_group_link, group: create(:group))
       end
 
-      it { is_expected.to validate_uniqueness_of(:saml_group_name).scoped_to([:group_id]) }
+      it { is_expected.to validate_uniqueness_of(:saml_group_name).scoped_to([:group_id, :provider]) }
     end
 
     context 'saml_group_name with whitespaces' do
@@ -27,6 +28,15 @@ RSpec.describe SamlGroupLink do
         saml_group_link.valid?
 
         expect(saml_group_link.saml_group_name).to eq('group')
+      end
+    end
+
+    context 'provider with whitespaces' do
+      it 'saves provider without whitespace' do
+        saml_group_link = described_class.new(provider: '   idp-1   ')
+        saml_group_link.valid?
+
+        expect(saml_group_link.provider).to eq('idp-1')
       end
     end
 
