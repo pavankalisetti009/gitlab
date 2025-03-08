@@ -1,5 +1,5 @@
 <script>
-import { GlLabel } from '@gitlab/ui';
+import { GlLabel, GlPopover } from '@gitlab/ui';
 import { sprintf, __ } from '~/locale';
 import {
   COMPLIANCE_FRAMEWORKS_DESCRIPTION,
@@ -11,6 +11,7 @@ export default {
   name: 'ComplianceFrameworksToggleList',
   components: {
     GlLabel,
+    GlPopover,
   },
   props: {
     complianceFrameworks: {
@@ -91,13 +92,10 @@ export default {
     </p>
 
     <div class="gl-flex gl-flex-wrap gl-gap-3">
-      <gl-label
-        v-for="item in complianceFrameworksFormatted"
-        :key="item.id"
-        :background-color="item.color"
-        :description="item.description"
-        :title="item.name"
-      />
+      <div v-for="item in complianceFrameworksFormatted" :key="item.id">
+        <gl-label :id="item.id" :background-color="item.color" :title="item.name" />
+        <gl-popover :title="item.name" :target="item.id">{{ item.description }}</gl-popover>
+      </div>
     </div>
 
     <p v-if="hasHiddenLabels" data-testid="hidden-labels-text" class="gl-m-0 gl-mt-3">
