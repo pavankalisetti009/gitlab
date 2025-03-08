@@ -29,6 +29,8 @@ module ComplianceManagement
         class_name: 'ComplianceManagement::ComplianceFramework::ComplianceRequirementsControl'
       has_many :project_control_compliance_statuses,
         class_name: 'ComplianceManagement::ComplianceFramework::ProjectControlComplianceStatus'
+      has_many :project_requirement_compliance_statuses,
+        class_name: 'ComplianceManagement::ComplianceFramework::ProjectRequirementComplianceStatus'
 
       private
 

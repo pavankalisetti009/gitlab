@@ -217,6 +217,8 @@ module EE
 
       has_many :project_control_compliance_statuses,
         class_name: 'ComplianceManagement::ComplianceFramework::ProjectControlComplianceStatus'
+      has_many :project_requirement_compliance_statuses,
+        class_name: 'ComplianceManagement::ComplianceFramework::ProjectRequirementComplianceStatus'
 
       # WIP v2 approval rules as part of https://gitlab.com/groups/gitlab-org/-/epics/12955
       has_many :v2_approval_rules_projects, class_name: 'MergeRequests::ApprovalRulesProject', inverse_of: :project
