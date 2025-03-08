@@ -58,5 +58,6 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirement,
     it { is_expected.to have_many(:compliance_framework_security_policies).through(:security_policy_requirements) }
     it { is_expected.to have_many(:compliance_requirements_controls) }
     it { is_expected.to have_many(:project_control_compliance_statuses) }
+    it { is_expected.to have_many(:project_requirement_compliance_statuses) }
   end
 end
