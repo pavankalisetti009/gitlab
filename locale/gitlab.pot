@@ -43419,7 +43419,7 @@ msgstr ""
 msgid "Pipeline|Only the first 100 jobs per stage are displayed"
 msgstr ""
 
-msgid "Pipeline|Other"
+msgid "Pipeline|Other (Cancelled, Skipped)"
 msgstr ""
 
 msgid "Pipeline|Passed"
