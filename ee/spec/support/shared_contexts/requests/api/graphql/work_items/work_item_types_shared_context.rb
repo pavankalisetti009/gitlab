@@ -29,8 +29,8 @@ RSpec.shared_context 'with work item types request context EE' do
           editable
           rollUp
         }
-        ... on WorkItemWidgetDefinitionCustomStatus {
-          allowedCustomStatuses {
+        ... on WorkItemWidgetDefinitionStatus {
+          allowedStatuses {
             nodes { id name iconName color position }
           }
         }
