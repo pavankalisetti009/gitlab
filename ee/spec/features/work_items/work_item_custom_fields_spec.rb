@@ -20,62 +20,99 @@ RSpec.describe 'Work Item Custom Fields', :js, feature_category: :team_planning 
     sign_in(user)
   end
 
-  context 'when custom fields feature is enabled and fields have values' do
+  context 'when existing values exist' do
     before_all do
       # Create field values
       create(:work_item_text_field_value, work_item: work_item, custom_field: text_field, value: 'Sample text')
+
       create(:work_item_number_field_value, work_item: work_item, custom_field: number_field, value: 5)
+
       create(:work_item_select_field_value, work_item: work_item, custom_field: select_field,
         custom_field_select_option: select_option_1)
+
       create(:work_item_select_field_value, work_item: work_item, custom_field: multi_select_field,
         custom_field_select_option: multi_select_option_2)
       create(:work_item_select_field_value, work_item: work_item, custom_field: multi_select_field,
         custom_field_select_option: multi_select_option_3)
     end
 
-    before do
+    it 'displays fields as read-only for users without update permissions' do
+      project.add_guest(user)
+
       visit project_work_item_path(project, work_item)
-    end
 
-    it 'displays number type custom field value correctly' do
       within_testid('work-item-custom-field') do
-        expect(page).to have_text('Sample text')
+        expect(page).not_to have_text('Edit')
       end
     end
+  end
 
-    it 'displays text type custom field value correctly' do
-      within_testid('work-item-custom-field') do
-        expect(page).to have_text('5')
-      end
-    end
+  it 'persists custom field values correctly' do
+    visit project_work_item_path(project, work_item)
 
-    it 'displays single select custom field value correctly' do
-      within_testid('work-item-custom-field') do
+    within_testid('work-item-custom-field') do
+      page.within(':scope > :nth-child(1)') do
+        expect(page).to have_text('None')
+
+        click_button('Edit')
+        find('.gl-new-dropdown-item', text: select_option_1.value).click
+
         expect(page).to have_text(select_option_1.value)
       end
-    end
 
-    it 'displays multi select custom field values correctly' do
-      within_testid('work-item-custom-field') do
+      page.within(':scope > :nth-child(2)') do
+        expect(page).to have_text('None')
+
+        click_button('Edit')
+        find('input').fill_in(with: '5')
+        click_button('Apply')
+
+        expect(page).to have_text('5')
+      end
+
+      page.within(':scope > :nth-child(3)') do
+        expect(page).to have_text('None')
+
+        click_button('Edit')
+        find('input').fill_in(with: 'Sample text')
+        click_button('Apply')
+
+        expect(page).to have_text('Sample text')
+      end
+
+      page.within(':scope > :nth-child(4)') do
+        expect(page).to have_text('None')
+
+        click_button('Edit')
+        find('.gl-new-dropdown-item', text: multi_select_option_2.value).click
+        find('.gl-new-dropdown-item', text: multi_select_option_3.value).click
+        find('.gl-new-dropdown').click
+
         expect(page).to have_text(multi_select_option_2.value)
         expect(page).to have_text(multi_select_option_3.value)
       end
     end
 
-    it 'displays fields as read-only for users without update permissions' do
-      project.add_guest(user)
+    page.refresh
 
-      within_testid('work-item-custom-field') do
-        all('input').each do |input|
-          expect(input['disabled']).to eq('true')
-        end
-      end
+    within_testid('work-item-custom-field') do
+      expect(page).to have_css(':scope > :nth-child(1)', text: select_option_1.value)
+
+      expect(page).to have_css(':scope > :nth-child(2)', text: '5')
+
+      expect(page).to have_css(':scope > :nth-child(3)', text: 'Sample text')
+
+      expect(page).to have_css(':scope > :nth-child(4)', text: multi_select_option_2.value)
+      expect(page).to have_css(':scope > :nth-child(4)', text: multi_select_option_3.value)
     end
   end
 
   context 'when custom fields feature is disabled' do
-    it 'does not display custom fields section' do
+    before do
       stub_feature_flags(custom_fields_feature: false)
+    end
+
+    it 'does not display custom fields section' do
       visit project_work_item_path(project, work_item)
 
       expect(page).not_to have_selector('[data-testid="work-item-custom-field"]')
