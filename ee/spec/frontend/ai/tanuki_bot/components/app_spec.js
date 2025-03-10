@@ -1080,4 +1080,24 @@ describeSkipVue3(skipReason, () => {
       expect(conversationThreadsQueryHandlerMock).toHaveBeenCalledTimes(shouldSkip ? 0 : 1);
     });
   });
+
+  describe('aiMessages query', () => {
+    it.each`
+      hasMultiThread | expectedType  | description
+      ${false}       | ${null}       | ${'uses null conversation type when multi-thread is disabled'}
+      ${true}        | ${'DUO_CHAT'} | ${'uses DUO_CHAT conversation type when multi-thread is enabled'}
+    `('$description', async ({ hasMultiThread, expectedType }) => {
+      duoChatGlobalState.isShown = true;
+      createComponent({
+        glFeatures: { duoChatMultiThread: hasMultiThread },
+      });
+      await waitForPromises();
+
+      expect(queryHandlerMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          conversationType: expectedType,
+        }),
+      );
+    });
+  });
 });

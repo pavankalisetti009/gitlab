@@ -78,6 +78,11 @@ export default {
     // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     aiMessages: {
       query: getAiMessages,
+      variables() {
+        return {
+          conversationType: this.glFeatures.duoChatMultiThread ? 'DUO_CHAT' : null,
+        };
+      },
       skip() {
         return !this.duoChatGlobalState.isShown;
       },

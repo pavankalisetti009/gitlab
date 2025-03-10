@@ -106,6 +106,16 @@ RSpec.describe Gitlab::Llm::ChatStorage, feature_category: :duo_chat do
 
   it_behaves_like '#messages'
 
+  describe '#messages without thread, and thread_fallback false' do
+    subject { described_class.new(user, thread_fallback: false) }
+
+    it 'returns []' do
+      expect do
+        expect(subject.messages).to eq([])
+      end.not_to change { ::Ai::Conversation::Thread.count }
+    end
+  end
+
   shared_examples_for '#messages_by' do
     let(:filters) { {} }
 

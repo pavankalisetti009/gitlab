@@ -34,10 +34,19 @@ module Resolvers
         agent_version_id = args[:agent_version_id]&.model_id
         thread = find_thread(args)
 
-        ::Gitlab::Llm::ChatStorage.new(current_user, agent_version_id, thread).messages_by(args).map(&:to_h)
+        ::Gitlab::Llm::ChatStorage.new(
+          current_user,
+          agent_version_id,
+          thread,
+          thread_fallback: view_legacy_messages?(args[:conversation_type])
+        ).messages_by(args).map(&:to_h)
       end
 
       private
+
+      def view_legacy_messages?(conversation_type)
+        conversation_type.nil? || conversation_type == 'duo_chat_legacy'
+      end
 
       def find_thread(args)
         find_thread_by_id(args[:thread_id]) ||

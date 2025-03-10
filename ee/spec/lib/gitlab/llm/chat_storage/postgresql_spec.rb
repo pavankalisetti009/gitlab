@@ -153,6 +153,16 @@ RSpec.describe Gitlab::Llm::ChatStorage::Postgresql, :clean_gitlab_redis_chat, f
 
           expect(current_thread).to be_an_instance_of ::Ai::Conversation::Thread
         end
+
+        context 'when thread_fallback is false' do
+          subject(:storage) { described_class.new(user, thread_fallback: false) }
+
+          it 'does not create a new thread' do
+            expect { current_thread }.not_to change { user.ai_conversation_threads.count }
+
+            expect(current_thread).to be_nil
+          end
+        end
       end
 
       context 'when a thread exists for the user' do
