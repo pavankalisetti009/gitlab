@@ -759,6 +759,18 @@ RSpec.describe Sbom::Occurrence, type: :model, feature_category: :dependency_man
         it 'returns location data including ancestors' do
           expect(location[:ancestors]).to eq(ancestors)
         end
+
+        context 'when ancestors contains empty hash' do
+          let(:ancestors) { [{ 'name' => 'name', 'version' => 'version' }, {}] }
+
+          it 'returns location data including ancestors' do
+            expect(location[:ancestors]).to eq(ancestors)
+          end
+
+          it 'returns top_level set to true' do
+            expect(location[:top_level]).to be true
+          end
+        end
       end
 
       context 'when occurrence was found by trivy' do

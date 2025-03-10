@@ -17,7 +17,9 @@ class DependencyEntity < Grape::Entity
 
   class LocationEntity < Grape::Entity
     expose :blob_path, :path, :top_level
-    expose :ancestors, using: AncestorEntity
+    expose :ancestors, using: AncestorEntity do |location|
+      location[:ancestors].map(&:compact).reject(&:empty?)
+    end
   end
 
   class VulnerabilityEntity < Grape::Entity

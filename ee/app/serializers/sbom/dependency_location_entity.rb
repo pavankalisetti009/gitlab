@@ -5,7 +5,7 @@ module Sbom
     include RequestAwareEntity
 
     class LocationEntity < Grape::Entity
-      expose :blob_path, :path
+      expose :blob_path, :path, :top_level
     end
 
     class ProjectEntity < Grape::Entity
