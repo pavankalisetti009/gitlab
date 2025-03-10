@@ -25,6 +25,7 @@ RSpec.describe ProtectedBranch, feature_category: :source_code_management do
     end
 
     it { is_expected.to have_one(:squash_option) }
+    it { is_expected.to have_one(:merge_request_approval_setting) }
     it { is_expected.to accept_nested_attributes_for(:squash_option) }
   end
 

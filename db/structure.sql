@@ -20534,6 +20534,28 @@ CREATE SEQUENCE project_wiki_repositories_id_seq
 
 ALTER SEQUENCE project_wiki_repositories_id_seq OWNED BY project_wiki_repositories.id;
 
+CREATE TABLE projects_branch_rules_merge_request_approval_settings (
+    id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    protected_branch_id bigint NOT NULL,
+    project_id bigint NOT NULL,
+    prevent_author_approval boolean DEFAULT false NOT NULL,
+    prevent_committer_approval boolean DEFAULT false NOT NULL,
+    prevent_editing_approval_rules boolean DEFAULT false NOT NULL,
+    require_reauthentication_to_approve boolean DEFAULT false NOT NULL,
+    approval_removals smallint DEFAULT 1 NOT NULL
+);
+
+CREATE SEQUENCE projects_branch_rules_merge_request_approval_settings_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE projects_branch_rules_merge_request_approval_settings_id_seq OWNED BY projects_branch_rules_merge_request_approval_settings.id;
+
 CREATE TABLE projects_branch_rules_squash_options (
     id bigint NOT NULL,
     protected_branch_id bigint NOT NULL,
@@ -26393,6 +26415,8 @@ ALTER TABLE ONLY project_wiki_repositories ALTER COLUMN id SET DEFAULT nextval('
 
 ALTER TABLE ONLY projects ALTER COLUMN id SET DEFAULT nextval('projects_id_seq'::regclass);
 
+ALTER TABLE ONLY projects_branch_rules_merge_request_approval_settings ALTER COLUMN id SET DEFAULT nextval('projects_branch_rules_merge_request_approval_settings_id_seq'::regclass);
+
 ALTER TABLE ONLY projects_branch_rules_squash_options ALTER COLUMN id SET DEFAULT nextval('projects_branch_rules_squash_options_id_seq'::regclass);
 
 ALTER TABLE ONLY projects_sync_events ALTER COLUMN id SET DEFAULT nextval('projects_sync_events_id_seq'::regclass);
@@ -29230,6 +29254,9 @@ ALTER TABLE ONLY project_type_ci_runners
 ALTER TABLE ONLY project_wiki_repositories
     ADD CONSTRAINT project_wiki_repositories_pkey PRIMARY KEY (id);
 
+ALTER TABLE ONLY projects_branch_rules_merge_request_approval_settings
+    ADD CONSTRAINT projects_branch_rules_merge_request_approval_settings_pkey PRIMARY KEY (id);
+
 ALTER TABLE ONLY projects_branch_rules_squash_options
     ADD CONSTRAINT projects_branch_rules_squash_options_pkey PRIMARY KEY (id);
 
@@ -31447,6 +31474,10 @@ CREATE INDEX idx_audit_events_namespace_event_type_filters_on_group_id ON audit_
 CREATE INDEX idx_audit_events_part_on_entity_id_desc_author_id_created_at ON ONLY audit_events USING btree (entity_id, entity_type, id DESC, author_id, created_at);
 
 CREATE INDEX idx_award_emoji_on_user_emoji_name_awardable_type_awardable_id ON award_emoji USING btree (user_id, name, awardable_type, awardable_id);
+
+CREATE INDEX idx_branch_rules_mr_approval_settings_on_project_id ON projects_branch_rules_merge_request_approval_settings USING btree (project_id);
+
+CREATE UNIQUE INDEX idx_branch_rules_mr_approval_settings_on_protected_branch_id ON projects_branch_rules_merge_request_approval_settings USING btree (protected_branch_id);
 
 CREATE INDEX idx_build_artifacts_size_refreshes_state_updated_at ON project_build_artifacts_size_refreshes USING btree (state, updated_at);
 
@@ -39275,6 +39306,9 @@ ALTER TABLE ONLY ai_active_context_collections
 ALTER TABLE ONLY deployments
     ADD CONSTRAINT fk_009fd21147 FOREIGN KEY (environment_id) REFERENCES environments(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY projects_branch_rules_merge_request_approval_settings
+    ADD CONSTRAINT fk_00acf20382 FOREIGN KEY (protected_branch_id) REFERENCES protected_branches(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY epics
     ADD CONSTRAINT fk_013c9f36ca FOREIGN KEY (due_date_sourcing_epic_id) REFERENCES epics(id) ON DELETE SET NULL;
 
@@ -40708,6 +40742,9 @@ ALTER TABLE ONLY member_approvals
 
 ALTER TABLE ONLY related_epic_links
     ADD CONSTRAINT fk_b30520b698 FOREIGN KEY (issue_link_id) REFERENCES issue_links(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY projects_branch_rules_merge_request_approval_settings
+    ADD CONSTRAINT fk_b322a941f9 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY issues
     ADD CONSTRAINT fk_b37be69be6 FOREIGN KEY (work_item_type_id) REFERENCES work_item_types(id);
