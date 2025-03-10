@@ -143,7 +143,7 @@ module EE
         override :supports_parent?
         def supports_parent?
           target_item = quick_action_target
-          return false if target_item.work_item_type.issue? && !target_item.licensed_feature_available?(:epics)
+
           return false if target_item.work_item_type.epic? && !target_item.licensed_feature_available?(:subepics)
 
           super
