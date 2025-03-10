@@ -131,71 +131,24 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
   describe '#admin_display_duo_addon_settings?' do
     subject(:display_duo_pro_settings) { helper.admin_display_duo_addon_settings? }
 
-    let(:duo_start_date) { Date.current - 1.month }
-    let(:duo_end_date) { Date.current + 11.months }
-
-    let(:duo_enterprise_purchase) do
-      build(
-        :gitlab_subscription_add_on_purchase, :self_managed, :duo_enterprise,
-        started_at: duo_start_date,
-        expires_on: duo_end_date
-      )
-    end
-
-    let(:duo_pro_purchase) do
-      build(
-        :gitlab_subscription_add_on_purchase, :self_managed, :gitlab_duo_pro,
-        started_at: duo_start_date,
-        expires_on: duo_end_date
-      )
-    end
-
-    let(:duo_pro_purchased) { false }
-    let(:duo_enterprise_purchased) { false }
+    let(:duo_addon_purchased) { false }
 
     before do
       allow(GitlabSubscriptions::AddOnPurchase)
-        .to receive_message_chain(:for_duo_pro_or_duo_enterprise, :active, :any?)
-        .and_return(duo_pro_purchased)
-
-      allow(GitlabSubscriptions::AddOnPurchase)
-        .to receive_message_chain(:for_self_managed, :for_duo_enterprise, :active, :any?)
-        .and_return(duo_enterprise_purchased)
-
-      allow(::Ai::Setting).to receive(:self_hosted?).and_return(self_hosted)
+        .to receive_message_chain(:for_self_managed, :for_duo_pro_or_duo_enterprise, :active, :any?)
+        .and_return(duo_addon_purchased)
     end
 
-    context 'when using self-hosted models' do
-      let(:self_hosted) { true }
+    context 'when a self-managed duo_pro or duo_enterprise purchase exists' do
+      let(:duo_addon_purchased) { true }
 
-      context 'when duo_enterprise is purchased' do
-        let(:duo_enterprise_purchased) { true }
-
-        it { is_expected.to be true }
-      end
-
-      context 'when duo_enterprise is not purchased' do
-        let(:duo_enterprise_purchased) { false }
-
-        it { is_expected.to be false }
-      end
+      it { is_expected.to be true }
     end
 
-    context 'when not using self-hosted models' do
-      let(:self_hosted) { false }
+    context 'when no self-managed duo_pro or duo_enterprise purchase exists' do
+      let(:duo_addon_purchased) { false }
 
-      context 'when duo_pro is purchased' do
-        let(:duo_pro_purchased) { true }
-
-        it { is_expected.to be true }
-      end
-
-      context 'when neither duo_pro nor duo_enterprise is purchased' do
-        let(:duo_pro_purchased) { false }
-        let(:duo_enterprise_purchased) { false }
-
-        it { is_expected.to be false }
-      end
+      it { is_expected.to be false }
     end
   end
 
