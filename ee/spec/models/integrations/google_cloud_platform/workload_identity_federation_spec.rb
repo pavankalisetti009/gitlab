@@ -32,6 +32,14 @@ RSpec.describe Integrations::GoogleCloudPlatform::WorkloadIdentityFederation, fe
     it { is_expected.to validate_presence_of(:workload_identity_pool_provider_id) }
     it { is_expected.to validate_numericality_of(:workload_identity_federation_project_number).only_integer }
 
+    it { is_expected.to allow_value('my-sample-project-191923').for(:workload_identity_federation_project_id) }
+    it { is_expected.to allow_value('my-sample-project-191923').for(:workload_identity_pool_id) }
+    it { is_expected.to allow_value('my-sample-project-191923').for(:workload_identity_pool_provider_id) }
+
+    it { is_expected.not_to allow_value('My-Sample-Project-191923').for(:workload_identity_federation_project_id) }
+    it { is_expected.not_to allow_value('non allowed value').for(:workload_identity_pool_id) }
+    it { is_expected.not_to allow_value('"" only letters or numbers ""').for(:workload_identity_pool_provider_id) }
+
     context 'when inactive integration' do
       subject(:integration) do
         build_stubbed(:google_cloud_platform_workload_identity_federation_integration, :inactive)

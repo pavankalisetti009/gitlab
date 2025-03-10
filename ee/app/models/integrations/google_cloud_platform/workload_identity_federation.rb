@@ -21,6 +21,10 @@ module Integrations
       attribute :wiki_page_events, default: false
       attribute :comment_on_event_enabled, default: false
 
+      validates :workload_identity_federation_project_id, format: /\A[a-z0-9-]{6,30}\z/, allow_blank: true
+      validates :workload_identity_pool_id, format: /\A[a-z0-9-]{4,32}\z/, allow_blank: true
+      validates :workload_identity_pool_provider_id, format: /\A[a-z0-9-]{4,32}\z/, allow_blank: true
+
       with_options if: :activated? do
         validates :workload_identity_federation_project_id, presence: true
         validates :workload_identity_federation_project_number, presence: true, numericality: { only_integer: true }
