@@ -54,6 +54,9 @@ export default {
         ? s__('WorkItem|Active custom fields')
         : s__('WorkItem|Archived custom fields');
     },
+    archiveButtonIcon() {
+      return this.showActive ? 'archive' : 'redo';
+    },
   },
   apollo: {
     customFields: {
@@ -104,7 +107,7 @@ export default {
       return null;
     },
     archiveButtonText(item) {
-      return item.active
+      return this.showActive
         ? sprintf(s__('WorkItem|Archive %{itemName}'), { itemName: item.name })
         : sprintf(s__('WorkItem|Unarchive %{itemName}'), { itemName: item.name });
     },
@@ -272,10 +275,15 @@ export default {
       data-testid="table-title"
     >
       {{ titleText }}
-      <gl-badge v-if="!isLoading" class="gl-mx-4">
-        <!-- eslint-disable-next-line @gitlab/vue-require-i18n-strings -->
-        {{ customFields.count }}/50
-      </gl-badge>
+      <template v-if="!isLoading">
+        <gl-badge v-if="showActive" class="gl-mx-4">
+          <!-- eslint-disable-next-line @gitlab/vue-require-i18n-strings -->
+          {{ customFields.count }}/50
+        </gl-badge>
+        <gl-badge v-else class="gl-mx-4">
+          {{ customFields.count }}
+        </gl-badge>
+      </template>
 
       <custom-field-form class="gl-ml-auto" @created="$apollo.queries.customFields.refetch()" />
     </div>
@@ -324,14 +332,16 @@ export default {
       <template #cell(actions)="{ item }">
         <div class="gl-align-items-center gl-end gl-flex gl-justify-end gl-gap-1">
           <custom-field-form
+            v-if="showActive"
             :custom-field-id="item.id"
             :custom-field-name="item.name"
+            data-testid="editButton"
             @updated="$apollo.queries.customFields.refetch()"
           />
           <gl-button
             v-gl-tooltip="archiveButtonText(item)"
             :aria-label="archiveButtonText(item)"
-            icon="archive"
+            :icon="archiveButtonIcon"
             category="tertiary"
             data-testid="archiveButton"
             @click="archiveCustomField(item.id)"
