@@ -10,10 +10,11 @@ module Gitlab
 
       delegate :messages, :current_thread, :add, :set_has_feedback, :clear!, to: :postgres_storage
 
-      def initialize(user, agent_version_id = nil, thread = nil)
+      def initialize(user, agent_version_id = nil, thread = nil, thread_fallback: true)
         @user = user
         @agent_version_id = agent_version_id
         @thread = thread
+        @thread_fallback = thread_fallback
       end
 
       def update_message_extras(request_id, key, value)
@@ -67,7 +68,7 @@ module Gitlab
 
       def postgres_storage
         @postgres_storage ||= storage_class(POSTGRESQL_STORAGE)
-          .new(user, agent_version_id, thread)
+          .new(user, agent_version_id, thread, thread_fallback: @thread_fallback)
       end
     end
   end

@@ -62,15 +62,38 @@ RSpec.describe Resolvers::Ai::ChatMessagesResolver, feature_category: :duo_chat 
       end
 
       context 'when conversation_type is specified' do
-        let(:args) { { conversation_type: 'duo_chat' } }
+        let(:args) { { conversation_type: 'duo_chat_legacy' } }
 
         it_behaves_like 'message response'
 
-        context 'when thread is not found' do
-          let!(:thread) { create(:ai_conversation_thread, user: another_user) }
+        context 'when duo_chat_legacy thread is not found' do
+          let!(:thread) { create(:ai_conversation_thread, user: user, conversation_type: :duo_chat) }
 
-          it 'returns empty' do
-            expect(resolver).to eq([])
+          it 'returns empty and creates fallback thread' do
+            expect do
+              expect(resolver).to eq([])
+            end.to change { Ai::Conversation::Thread.count }.by(1)
+          end
+
+          context 'when conversation_type is not specified' do
+            let(:args) { { conversation_type: nil } }
+
+            it 'returns empty and creates fallback thread' do
+              expect do
+                expect(resolver).to eq([])
+              end.to change { Ai::Conversation::Thread.count }.by(1)
+            end
+          end
+        end
+
+        context 'when duo_chat thread is not found' do
+          let(:args) { { conversation_type: 'duo_chat' } }
+          let!(:thread) { create(:ai_conversation_thread, user: another_user, conversation_type: :duo_chat) }
+
+          it 'returns empty and does not create fallback thread' do
+            expect do
+              expect(resolver).to eq([])
+            end.not_to change { Ai::Conversation::Thread.count }
           end
         end
       end
