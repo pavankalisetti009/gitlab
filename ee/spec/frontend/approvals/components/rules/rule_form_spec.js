@@ -41,6 +41,16 @@ const nameTakenError = {
   },
 };
 
+const nameTooLongError = {
+  response: {
+    data: {
+      message: {
+        name: ['is too long (maximum is 1024 characters)'],
+      },
+    },
+  },
+};
+
 Vue.use(Vuex);
 
 describe('EE Approvals RuleForm', () => {
@@ -388,6 +398,19 @@ describe('EE Approvals RuleForm', () => {
           const nameGroup = findNameValidation();
           expect(nameGroup.props('state')).toBe(false);
           expect(nameGroup.props('invalidFeedback')).toBe('Rule name is already taken.');
+        });
+
+        it('when submitted with a name too long, shows the "ruleNameTooLong" validation', async () => {
+          actions.postRule.mockRejectedValueOnce(nameTooLongError);
+
+          await findForm().trigger('submit');
+          await waitForPromises();
+
+          const nameGroup = findNameValidation();
+          expect(nameGroup.props('state')).toBe(false);
+          expect(nameGroup.props('invalidFeedback')).toBe(
+            'Please enter a name with less than 1024 characters.',
+          );
         });
       });
 

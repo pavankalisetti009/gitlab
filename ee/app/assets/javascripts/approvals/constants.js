@@ -96,6 +96,7 @@ export const APPROVAL_DIALOG_I18N = {
     branchesRequired: __('Please select a valid target branch'),
     ruleNameTaken: __('Rule name is already taken.'),
     ruleNameMissing: __('Please provide a name'),
+    ruleNameTooLong: __('Please enter a name with less than %{number} characters.'),
   },
 };
 

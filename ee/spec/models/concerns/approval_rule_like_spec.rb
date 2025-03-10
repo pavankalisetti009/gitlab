@@ -371,6 +371,25 @@ RSpec.describe ApprovalRuleLike, feature_category: :source_code_management do
           end
         end
       end
+
+      context 'name attribute' do
+        it { is_expected.to validate_length_of(:name).is_at_most(described_class::NAME_LENGTH_LIMIT) }
+
+        context 'when name is above the length limit' do
+          it 'does not cause a validation error when the name is not changed' do
+            # Modify the name in the database directly to bypass validations
+            subject.class.where(id: subject.id).update_all(
+              name: 'x' * (described_class::NAME_LENGTH_LIMIT + 10)
+            )
+
+            subject.reload
+            expect(subject.name.length).to be > described_class::NAME_LENGTH_LIMIT
+
+            subject.update!(approvals_required: described_class::APPROVALS_REQUIRED_MAX)
+            expect(subject).to be_valid
+          end
+        end
+      end
     end
   end
 

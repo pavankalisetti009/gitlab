@@ -43698,6 +43698,9 @@ msgstr ""
 msgid "Please enter a name for the custom emoji."
 msgstr ""
 
+msgid "Please enter a name with less than %{number} characters."
+msgstr ""
+
 msgid "Please enter a non-negative number"
 msgstr ""
 

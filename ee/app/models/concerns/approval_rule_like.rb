@@ -13,6 +13,7 @@ module ApprovalRuleLike
   NEWLY_DETECTED = 'newly_detected'
   NEW_NEEDS_TRIAGE = 'new_needs_triage'
   NEW_DISMISSED = 'new_dismissed'
+  NAME_LENGTH_LIMIT = 1024
 
   NEWLY_DETECTED_STATUSES = [NEW_NEEDS_TRIAGE, NEW_DISMISSED].freeze
   DEFAULT_VULNERABILITY_STATUSES = [NEW_NEEDS_TRIAGE, NEW_DISMISSED].freeze
@@ -46,6 +47,7 @@ module ApprovalRuleLike
     }
 
     validates :name, presence: true
+    validates :name, length: { maximum: NAME_LENGTH_LIMIT }, if: -> { new_record? || name_changed? }
     validates :approvals_required, numericality: { less_than_or_equal_to: APPROVALS_REQUIRED_MAX, greater_than_or_equal_to: 0 }
     validates :report_type, presence: true, if: :report_approver?
 
