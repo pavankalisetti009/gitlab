@@ -145,8 +145,8 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
         expect(Ci::Minutes::UpdateBuildMinutesService)
           .to receive(:new).and_call_original
 
-        job.public_send(:cancel)
-        job.public_send(:drop)
+        job.cancel
+        job.drop
       end
     end
   end
