@@ -72,7 +72,7 @@ RSpec.describe API::RelatedEpicLinks, feature_category: :portfolio_management do
     describe 'GET /groups/:id/related_epic_links' do
       let_it_be(:created_at) { Date.new(2021, 10, 14) }
       let_it_be(:updated_at) { Date.new(2021, 10, 14) }
-      let_it_be(:group_2) { create(:group, :private) }
+      let_it_be_with_reload(:group_2) { create(:group, :private) }
 
       let_it_be(:related_epic_link_1) do
         create(
@@ -108,6 +108,22 @@ RSpec.describe API::RelatedEpicLinks, feature_category: :portfolio_management do
         end
       end
 
+      context 'when epics are public' do
+        before do
+          group.update!(visibility_level: Gitlab::VisibilityLevel::PUBLIC)
+        end
+
+        it 'returns related epic links' do
+          perform_request(user)
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response).to be_an Array
+          expect(json_response.length).to eq(1)
+          expect(json_response.pluck("id")).to match_array([related_epic_link_1.id])
+          expect(response).to match_response_schema('public_api/v4/related_epic_links', dir: 'ee')
+        end
+      end
+
       context 'when user has access to the group' do
         before do
           group.add_guest(user)
@@ -121,6 +137,7 @@ RSpec.describe API::RelatedEpicLinks, feature_category: :portfolio_management do
           expect(response).to have_gitlab_http_status(:ok)
           expect(json_response).to be_an Array
           expect(json_response.length).to eq(1)
+          expect(json_response.pluck("id")).to match_array([related_epic_link_1.id])
           expect(json_response[0]['source_epic']['id']).to eq(related_epic_link_1.source.id)
           expect(json_response[0]['target_epic']['id']).to eq(related_epic_link_1.target.id)
           expect(response).to match_response_schema('public_api/v4/related_epic_links', dir: 'ee')
@@ -283,6 +300,7 @@ RSpec.describe API::RelatedEpicLinks, feature_category: :portfolio_management do
           expect(json_response).to be_an Array
           expect(json_response.length).to eq(2)
           expect(response).to match_response_schema('public_api/v4/related_epics', dir: 'ee')
+          expect(json_response.pluck("related_epic_link_id")).to match_array([related_epic_link_1.id, related_epic_link_2.id])
         end
 
         it 'returns multiple links without N + 1' do

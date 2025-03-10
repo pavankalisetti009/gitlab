@@ -80,7 +80,7 @@ module API
         # EpicLinks can link to other Epics the user has no access to.
         # For these epics we need to check permissions.
         related_links = related_links.select do |related_link|
-          related_link.source.readable_by?(current_user) && related_link.target.readable_by?(current_user)
+          current_user.can?(:read_epic, related_link.source) && current_user.can?(:read_epic, related_link.target)
         end
 
         source_and_target_epics = related_links.reduce(Set.new) { |acc, link| acc << link.source << link.target }
