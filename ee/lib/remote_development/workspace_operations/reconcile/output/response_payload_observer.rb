@@ -23,8 +23,10 @@ module RemoteDevelopment
             }
 
             # NOTE: Do _NOT_ include any values in this logging which:
-            #  - Contain potentially sensitive data
-            #  - Contain a large amount of raw data which would unnecessarily fill up the logs
+            #  - Contain potentially sensitive data, such as the config_to_apply value.
+            #    You can set the GITLAB_DEBUG_WORKSPACES_OBSERVE_CONFIG_TO_APPLY ENV variable to log config_to_apply.
+            #    See documentation at ../../README.md#debugging for more information.
+            #  - Contain a large amount of raw data which would unnecessarily fill up the logs.
             logger.debug(
               message: 'Returning verified response_payload',
               agent_id: agent.id,
@@ -32,7 +34,11 @@ module RemoteDevelopment
               response_payload: {
                 workspace_rails_info_count: workspace_rails_infos.length,
                 workspace_rails_infos: workspace_rails_infos.map do |rails_info|
-                  rails_info.reject { |k, _| k == :config_to_apply }
+                  if ENV["GITLAB_DEBUG_WORKSPACES_OBSERVE_CONFIG_TO_APPLY"]
+                    rails_info
+                  else
+                    rails_info.reject { |k, _| k == :config_to_apply }
+                  end
                 end,
                 settings: {
                   full_reconciliation_interval_seconds: full_reconciliation_interval_seconds,
