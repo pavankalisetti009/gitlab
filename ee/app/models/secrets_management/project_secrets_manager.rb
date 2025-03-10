@@ -2,6 +2,8 @@
 
 module SecretsManagement
   class ProjectSecretsManager < ApplicationRecord
+    include Gitlab::InternalEventsTracking
+
     STATUSES = {
       provisioning: 0,
       active: 1,
@@ -93,6 +95,7 @@ module SecretsManagement
     end
 
     def ci_jwt(build)
+      track_ci_jwt_generation(build)
       Gitlab::Ci::JwtV2.for_build(build, aud: self.class.server_url)
     end
 
@@ -268,6 +271,15 @@ module SecretsManagement
         project.namespace.type.downcase,
         project.namespace.id.to_s
       ].join('_')
+    end
+
+    def track_ci_jwt_generation(build)
+      track_internal_event(
+        'generate_id_token_for_secrets_manager_authentication',
+        project: project,
+        namespace: project.namespace,
+        user: build.user
+      )
     end
   end
 end
