@@ -109,6 +109,19 @@ export default {
         if (!this.name) {
           return APPROVAL_DIALOG_I18N.validations.ruleNameMissing;
         }
+
+        const lengthError = this.serverValidationErrors.find((error) =>
+          /name is too long \(maximum is \d+ characters\)/.test(error),
+        );
+
+        if (lengthError) {
+          const match = lengthError.match(/name is too long \(maximum is (\d+) characters\)/);
+          const maxLength = match[1];
+
+          return sprintf(APPROVAL_DIALOG_I18N.validations.ruleNameTooLong, {
+            number: maxLength,
+          });
+        }
       }
 
       return '';
