@@ -137,7 +137,7 @@ RSpec.describe CloudConnector::SyncCloudConnectorAccessService, :freeze_time, fe
           create_current_license(cloud_licensing_enabled: true, restrictions: { trial: true })
         end
 
-        include_examples 'no Cloud Connector Access sync', 'License can\'t be on trial'
+        include_examples 'Cloud Connector Access sync'
       end
 
       context 'when the license has no expiration date' do

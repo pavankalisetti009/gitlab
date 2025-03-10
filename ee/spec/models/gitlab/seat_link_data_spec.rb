@@ -205,7 +205,7 @@ RSpec.describe Gitlab::SeatLinkData do
     context 'when license is trial' do
       let(:license) { build(:license, cloud: true, trial: true) }
 
-      it { is_expected.to be_falsey }
+      it { is_expected.to eq(true) }
     end
 
     context 'when timestamp is out of the range' do
