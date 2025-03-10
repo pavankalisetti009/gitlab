@@ -63,6 +63,7 @@ describe('CustomFieldsTable', () => {
   });
 
   const findTableItems = () => wrapper.findAll('tbody tr');
+  const findEditButton = () => wrapper.find('[data-testid="editButton"]');
   const findArchiveButton = () => wrapper.find('[data-testid="archiveButton"]');
   const findDetailsButton = () => wrapper.find('[data-testid="toggleDetailsButton"');
   const findAlert = () => wrapper.find('[data-testid="alert"]');
@@ -177,6 +178,19 @@ describe('CustomFieldsTable', () => {
       const timeagoComponents = wrapper.findAllComponents(TimeagoTooltip);
       expect(timeagoComponents.exists()).toBe(true);
       expect(timeagoComponents.at(0).props('time')).toBe(selectField.updatedAt);
+    });
+
+    it('shows archive icon and edit button for active fields', () => {
+      expect(findArchiveButton().props('icon')).toBe('archive');
+      expect(findEditButton().exists()).toBe(true);
+    });
+
+    it('shows redo icon and no edit button for archived fields', async () => {
+      await findArchivedFilterButton().vm.$emit('click');
+      await waitForPromises();
+
+      expect(findArchiveButton().props('icon')).toBe('redo');
+      expect(findEditButton().exists()).toBe(false);
     });
   });
 

@@ -170,6 +170,19 @@ export default {
         option.value.trim(),
       );
     },
+    resetForm() {
+      this.formData = {
+        fieldType: FIELD_TYPE_OPTIONS[0].value,
+        fieldName: '',
+        workItemTypes: [],
+        selectOptions: [{ value: '' }],
+      };
+      this.formState = {
+        fieldName: null,
+        selectOptions: null,
+      };
+      this.mutationError = '';
+    },
     async saveCustomField() {
       if (!this.validateForm()) {
         return;
@@ -211,6 +224,7 @@ export default {
 
         this.$emit(this.isEditing ? 'updated' : 'created');
         this.visible = false;
+        this.resetForm();
       } catch (error) {
         Sentry.captureException(error);
         this.mutationError =
@@ -311,6 +325,7 @@ export default {
             v-model="formData.fieldName"
             width="md"
             :state="formState.fieldName"
+            autocomplete="off"
             @input="validateFieldName"
           />
         </gl-form-group>

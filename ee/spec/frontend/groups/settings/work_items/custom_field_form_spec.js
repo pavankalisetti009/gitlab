@@ -158,6 +158,10 @@ describe('CustomFieldForm', () => {
       findToggleModalButton().vm.$emit('click');
     });
 
+    it('has autocomplete disabled on the name field', () => {
+      expect(findFieldNameInput().attributes('autocomplete')).toBe('off');
+    });
+
     it.each(['SINGLE_SELECT', 'MULTI_SELECT'])(
       `shows select options section when field type is %s`,
       async (type) => {
@@ -333,6 +337,30 @@ describe('CustomFieldForm', () => {
       await waitForPromises();
 
       expect(Sentry.captureException).toHaveBeenCalled();
+    });
+
+    it('resets form after successful creation', async () => {
+      const createFieldHandler = jest.fn().mockResolvedValue(mockCreateFieldResponse);
+      createComponent({ createFieldHandler });
+
+      await findToggleModalButton().vm.$emit('click');
+
+      findFieldTypeSelect().vm.$emit('input', 'TEXT');
+      findFieldNameInput().vm.$emit('input', 'Test Field');
+      findWorkItemTypeListbox().vm.$emit('select', [mockWorkItemTypes[2].id]);
+
+      await nextTick();
+
+      findSaveCustomFieldButton().vm.$emit('click');
+      await waitForPromises();
+
+      await findToggleModalButton().vm.$emit('click');
+      await waitForPromises();
+
+      expect(findFieldTypeSelect().attributes('value')).toBe('SINGLE_SELECT');
+      expect(findFieldNameInput().props('value')).toBe('');
+      expect(findWorkItemTypeListbox().props('selected')).toEqual([]);
+      expect(findWorkItemTypeListbox().props('toggleText')).toBe('Select types');
     });
   });
 
