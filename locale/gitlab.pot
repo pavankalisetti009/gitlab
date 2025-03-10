@@ -17049,6 +17049,9 @@ msgstr ""
 msgid "Could not find iteration"
 msgstr ""
 
+msgid "Could not find parent group with path %{path}"
+msgstr ""
+
 msgid "Could not load the user chart. Please refresh the page to try again."
 msgstr ""
 
