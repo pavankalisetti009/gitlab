@@ -11,11 +11,6 @@ export const SELF_HOSTED_MODEL_PLATFORMS = {
 // Temporary dummy endpoint for bedrock models
 export const BEDROCK_DUMMY_ENDPOINT = 'http://bedrockselfhostedmodel.com';
 
-export const RELEASE_STATES = {
-  GA: 'GA',
-  BETA: 'BETA',
-};
-
 // These are model identifiers that should not be translated as they are proper names
 /* eslint-disable @gitlab/require-i18n-strings */
 export const CLOUD_PROVIDER_MODELS = {

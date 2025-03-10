@@ -18,9 +18,9 @@ import InputCopyToggleVisibility from '~/vue_shared/components/input_copy_toggle
 import {
   SELF_HOSTED_MODEL_PLATFORMS,
   BEDROCK_DUMMY_ENDPOINT,
-  RELEASE_STATES,
   CLOUD_PROVIDER_MODELS,
 } from '../constants';
+import { RELEASE_STATES } from '../../constants';
 import ModelSelectDropdown from '../../shared/model_select_dropdown.vue';
 import TestConnectionButton from './test_connection_button.vue';
 
