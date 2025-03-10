@@ -166,6 +166,15 @@ module API
             def check_groups_feature_enabled!
               not_found! unless Feature.enabled?(:self_managed_scim_group_sync, :instance)
             end
+
+            def find_group_link(scim_group_uid)
+              # We only need one group link since they'll all have the same name and SCIM ID.
+              # Multiple links can exist if the same SAML group is linked to different GitLab groups.
+              group_link = SamlGroupLink.first_by_scim_group_uid(scim_group_uid)
+
+              scim_not_found!(message: "Group #{scim_group_uid} not found") unless group_link
+              group_link
+            end
           end
 
           before do
@@ -196,6 +205,20 @@ module API
             when :error
               scim_error!(message: result.message)
             end
+          end
+
+          desc 'Get a SCIM group' do
+            detail 'Retrieves a SCIM group by its ID'
+            success ::EE::API::Entities::Scim::Group
+          end
+          params do
+            requires :id, type: String, desc: 'The SCIM group ID'
+          end
+          get ':id' do
+            check_access!
+
+            group_link = find_group_link(params[:id])
+            present group_link, with: ::EE::API::Entities::Scim::Group
           end
         end
       end

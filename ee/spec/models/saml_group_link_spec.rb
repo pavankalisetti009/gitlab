@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe SamlGroupLink do
+RSpec.describe SamlGroupLink, feature_category: :system_access do
   describe 'associations' do
     it { is_expected.to belong_to(:group) }
   end
@@ -100,6 +100,34 @@ RSpec.describe SamlGroupLink do
       end
     end
 
+    describe '.by_scim_group_uid' do
+      let_it_be(:uid) { SecureRandom.uuid }
+      let_it_be(:group_link_with_uid) { create(:saml_group_link, group: group, scim_group_uid: uid) }
+
+      it 'finds the group link' do
+        results = described_class.by_scim_group_uid(uid)
+
+        expect(results).to match_array([group_link_with_uid])
+      end
+
+      it 'returns empty when no matches exist' do
+        results = described_class.by_scim_group_uid(SecureRandom.uuid)
+
+        expect(results).to be_empty
+      end
+
+      context 'with multiple groups and group links' do
+        let_it_be(:group2) { create(:group) }
+        let_it_be(:group_link2) { create(:saml_group_link, group: group2, scim_group_uid: uid) }
+
+        it 'finds all matching group links' do
+          results = described_class.by_scim_group_uid(uid)
+
+          expect(results).to match_array([group_link_with_uid, group_link2])
+        end
+      end
+    end
+
     describe '.by_assign_duo_seats' do
       let_it_be(:group_link_w_assign_duo_seats) { create(:saml_group_link, assign_duo_seats: true) }
 
@@ -121,6 +149,29 @@ RSpec.describe SamlGroupLink do
       end
 
       it { is_expected.to be_valid }
+    end
+  end
+
+  describe '.first_by_scim_group_uid' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:uid) { SecureRandom.uuid }
+    let_it_be(:group_link_with_uid) { create(:saml_group_link, group: group, scim_group_uid: uid) }
+
+    it 'returns the first matching group link' do
+      expect(described_class.first_by_scim_group_uid(uid)).to eq(group_link_with_uid)
+    end
+
+    it 'returns nil when no matches exist' do
+      expect(described_class.first_by_scim_group_uid(SecureRandom.uuid)).to be_nil
+    end
+
+    context 'when multiple matches exist' do
+      let_it_be(:group2) { create(:group) }
+      let_it_be(:another_group_link) { create(:saml_group_link, group: group2, scim_group_uid: uid) }
+
+      it 'returns only one group link' do
+        expect(described_class.first_by_scim_group_uid(uid)).to eq(group_link_with_uid)
+      end
     end
   end
 end

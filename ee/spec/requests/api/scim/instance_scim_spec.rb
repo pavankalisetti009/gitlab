@@ -642,5 +642,112 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
         end
       end
     end
+
+    describe 'GET api/scim/v2/application/Groups/:id' do
+      let(:scim_group_uid) { SecureRandom.uuid }
+      let!(:saml_group_link) do
+        create(:saml_group_link, saml_group_name: 'engineering', scim_group_uid: scim_group_uid)
+      end
+
+      subject(:api_request) do
+        get api("scim/v2/application/Groups/#{scim_group_uid}", user, version: '', access_token: scim_token)
+      end
+
+      it_behaves_like 'Groups feature flag check'
+      it_behaves_like 'Not available to SaaS customers'
+      it_behaves_like 'Instance level SCIM license required'
+      it_behaves_like 'SCIM token authenticated'
+      it_behaves_like 'SAML SSO must be enabled'
+      it_behaves_like 'sets current organization'
+
+      context 'with valid SCIM group ID' do
+        it 'responds with 200 and the group attributes' do
+          api_request
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['id']).to eq(scim_group_uid)
+          expect(json_response['displayName']).to eq(saml_group_link.saml_group_name)
+          expect(json_response['schemas']).to eq(['urn:ietf:params:scim:schemas:core:2.0:Group'])
+          expect(json_response['meta']['resourceType']).to eq('Group')
+        end
+
+        it 'uses the by_scim_group_uid scope' do
+          expect(SamlGroupLink).to receive(:by_scim_group_uid).with(scim_group_uid).and_call_original
+
+          api_request
+        end
+
+        it 'returns a valid SCIM Group schema' do
+          api_request
+
+          expect(json_response).to include(
+            'schemas' => ['urn:ietf:params:scim:schemas:core:2.0:Group'],
+            'id' => scim_group_uid,
+            'displayName' => saml_group_link.saml_group_name,
+            'members' => [],
+            'meta' => { 'resourceType' => 'Group' }
+          )
+        end
+      end
+
+      context 'with non-existent SCIM group ID' do
+        let(:non_existent_scim_group) { 123456789 }
+
+        subject(:api_request) do
+          get api("scim/v2/application/Groups/#{non_existent_scim_group}", user, version: '', access_token: scim_token)
+        end
+
+        it 'returns a 404 not found' do
+          api_request
+
+          expect(response).to have_gitlab_http_status(:not_found)
+          expect(json_response['detail']).to include("Group #{non_existent_scim_group} not found")
+        end
+      end
+
+      context 'with special characters in SCIM group ID' do
+        shared_examples 'returns not found' do |uid|
+          subject(:api_request) do
+            get api("scim/v2/application/Groups/#{ERB::Util.url_encode(uid)}", user, version: '',
+              access_token: scim_token)
+          end
+
+          it 'returns 404 not found' do
+            api_request
+
+            expect(response).to have_gitlab_http_status(:not_found)
+            expect(json_response['detail']).to include("Group #{uid} not found")
+          end
+        end
+
+        it_behaves_like 'returns not found', 'group/with/slashes'
+        it_behaves_like 'returns not found', 'group with spaces'
+        it_behaves_like 'returns not found', 'group@with@special@chars'
+      end
+
+      context 'when multiple groups have the same SCIM group ID' do
+        let!(:another_group_link) { create(:saml_group_link, scim_group_uid: scim_group_uid) }
+
+        it 'returns the first matching group' do
+          api_request
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['id']).to eq(scim_group_uid)
+        end
+      end
+
+      context 'with invalid SCIM group ID format' do
+        subject(:api_request) do
+          get api("scim/v2/application/Groups/invalid%20id", user, version: '', access_token: scim_token)
+        end
+
+        it 'returns a 404 not found' do
+          api_request
+
+          expect(response).to have_gitlab_http_status(:not_found)
+          expect(json_response['detail']).to include('Group invalid id not found')
+        end
+      end
+    end
   end
 end
