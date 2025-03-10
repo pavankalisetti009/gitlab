@@ -82,6 +82,9 @@ export default {
     hasLocationPath(item) {
       return item.location.blob_path && item.location.path;
     },
+    isTopLevelDependency(item) {
+      return item.location.top_level;
+    },
     async fetchData() {
       this.loading = true;
 
@@ -140,6 +143,9 @@ export default {
               class="gl-pl-6"
             />
           </div>
+        </div>
+        <div v-if="isTopLevelDependency(item)" class="gl-pl-6 gl-text-subtle">
+          {{ s__('Dependencies|(top level)') }}
         </div>
         <gl-truncate :text="item.project.name" class="gl-mt-2 gl-pl-6 gl-text-subtle" />
         <gl-button
