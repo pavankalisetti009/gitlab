@@ -1,0 +1,17 @@
+# frozen_string_literal: true
+
+module Vulnerabilities
+  class NamespaceStatistic < Gitlab::Database::SecApplicationRecord
+    self.table_name = 'vulnerability_namespace_statistics'
+
+    belongs_to :namespace
+    validates :total, numericality: { greater_than_or_equal_to: 0 }
+    validates :critical, numericality: { greater_than_or_equal_to: 0 }
+    validates :high, numericality: { greater_than_or_equal_to: 0 }
+    validates :medium, numericality: { greater_than_or_equal_to: 0 }
+    validates :low, numericality: { greater_than_or_equal_to: 0 }
+    validates :unknown, numericality: { greater_than_or_equal_to: 0 }
+    validates :info, numericality: { greater_than_or_equal_to: 0 }
+    validates :traversal_ids, presence: true
+  end
+end
