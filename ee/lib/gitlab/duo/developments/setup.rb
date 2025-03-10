@@ -10,6 +10,7 @@ module Gitlab
         else
           puts "Seeding GitLab Duo data..."
           ENV['FILTER'] = 'gitlab_duo'
+          ENV['SEED_GITLAB_DUO'] = '1'
           Rake::Task['db:seed_fu'].invoke
         end
       end
@@ -159,15 +160,20 @@ module Gitlab
 
         def initialize(args)
           @args = args
-          @namespace = args[:root_group_path]
-          @setup_strategy = @namespace.present? ? GitlabComStrategy.new(@namespace) : SelfManagedStrategy.new
+          @namespace = 'gitlab-duo' # Same with Gitlab::Seeder::GitLabDuo::GROUP_PATH
         end
 
         def execute
+          setup_strategy = if ::Gitlab::Utils.to_boolean(ENV['GITLAB_SIMULATE_SAAS'])
+                             GitlabComStrategy.new(@namespace)
+                           else
+                             SelfManagedStrategy.new
+                           end
+
           ensure_dev_mode!
           ensure_feature_flags!
           ensure_license!
-          @setup_strategy.execute
+          setup_strategy.execute
           create_add_on_purchases!
 
           print_result
