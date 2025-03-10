@@ -28,11 +28,7 @@ module Admin
     end
 
     def admin_display_duo_addon_settings?
-      if ::Ai::Setting.self_hosted?
-        GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_enterprise.active.any?
-      else
-        GitlabSubscriptions::AddOnPurchase.for_duo_pro_or_duo_enterprise.active.any?
-      end
+      GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_pro_or_duo_enterprise.active.any?
     end
 
     def admin_duo_home_app_data
