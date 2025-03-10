@@ -151,7 +151,7 @@ module EE
       def user_cap_allowed
         return if namespace.user_cap_available? && namespace.root? && !namespace.shared_externally?
 
-        errors.add(:new_user_signups_cap, _("cannot be enabled"))
+        errors.add(:seat_control, _("cannot be set to user cap"))
       end
 
       def clear_new_user_signups_cap
