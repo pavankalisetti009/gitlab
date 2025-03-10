@@ -5,12 +5,14 @@ module RemoteDevelopment
     module Reconcile
       module Output
         class DesiredConfigGenerator
+          include ReconcileConstants
           include States
 
           # @param [RemoteDevelopment::Workspace] workspace
           # @param [Boolean] include_all_resources
           # @param [RemoteDevelopment::Logger] logger
           # @return [Array<Hash>]
+          # rubocop:disable Metrics/AbcSize -- This is getting cleaned up in https://gitlab.com/gitlab-org/gitlab/-/merge_requests/185207
           def self.generate_desired_config(workspace:, include_all_resources:, logger:)
             # NOTE: update env_secret_name to "#{workspace.name}-environment". This is to ensure naming consistency.
             # Changing it now would require migration from old config version to a new one.
@@ -62,8 +64,10 @@ module RemoteDevelopment
               return desired_config
             end
 
+            processed_devfile_yaml = workspace.processed_devfile
+
             resources_from_devfile_parser = DevfileParser.get_all(
-              processed_devfile: workspace.processed_devfile,
+              processed_devfile_yaml: processed_devfile_yaml,
               params: get_devfile_parser_params(
                 workspace: workspace,
                 workspaces_agent_config: workspaces_agent_config,
@@ -101,9 +105,6 @@ module RemoteDevelopment
               labels: labels,
               annotations: workspace_inventory_annotations
             )
-
-            # NOTE: We will perform append_secret here in order to complete
-            #       https://gitlab.com/gitlab-org/gitlab/-/merge_requests/182392
 
             return desired_config unless include_all_resources
 
@@ -152,8 +153,15 @@ module RemoteDevelopment
               variables: workspace.workspace_variables.with_variable_type_file
             )
 
+            append_secret_data(
+              desired_config: desired_config,
+              secret_name: file_secret_name,
+              data: { File.basename(WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_PATH).to_sym => workspace.actual_state }
+            )
+
             desired_config
           end
+          # rubocop:enable Metrics/AbcSize
 
           # @param [RemoteDevelopment::Workspace] workspace
           # @param [RemoteDevelopment::WorkspacesAgentConfig] workspaces_agent_config

@@ -50,6 +50,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
           instance_double(
             "RemoteDevelopment::Workspace", # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
             id: 1, name: 'name', namespace: 'namespace', agent: agent,
+            actual_state: previous_actual_state,
             desired_config_generator_version:
               ::RemoteDevelopment::WorkspaceOperations::DesiredConfigGeneratorVersion::LATEST_VERSION
           )

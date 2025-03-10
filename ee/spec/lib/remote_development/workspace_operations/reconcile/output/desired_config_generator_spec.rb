@@ -72,6 +72,10 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
       )
     end
 
+    it "generates the expected config" do
+      expect(workspace_resources).to eq(expected_config)
+    end
+
     context 'when desired_state terminated' do
       let(:desired_state_is_terminated) { true }
       let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::TERMINATED }

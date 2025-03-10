@@ -279,6 +279,18 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
           )
         end
 
+        let(:expected_config_to_apply_yaml_stream) do
+          create_config_to_apply_yaml_stream(
+            workspace: workspace,
+            started: true,
+            include_all_resources: true,
+            egress_ip_rules: egress_ip_rules,
+            max_resources_per_workspace: max_resources_per_workspace,
+            default_resources_per_workspace_container: default_resources_per_workspace_container,
+            image_pull_secrets: workspace.workspaces_agent_config&.image_pull_secrets
+          )
+        end
+
         it 'returns proper workspace_rails_info entry with no config to apply' do
           # verify initial states in db (sanity check of match between factory and fixtures)
           expect(workspace.desired_state).to eq(desired_state)
@@ -299,8 +311,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
           # test the config to apply first to get a more specific diff if it fails
           provisioned_workspace_rails_info =
             workspace_rails_infos.detect { |info| info.fetch(:name) == workspace.name }
-          # Since the workspace is now in Error state, the config should not be returned to the agent
-          expect(provisioned_workspace_rails_info.fetch(:config_to_apply)).to eq("")
+          # Even though the workspace is now in Error state, we will continue returning the config to the agent
+          # if it would have been returned in the normal case, in case the error is transient
+          expect(provisioned_workspace_rails_info.fetch(:config_to_apply)).to eq(expected_config_to_apply_yaml_stream)
 
           # then test everything in the infos
           expect(workspace_rails_infos).to eq(expected_workspace_rails_infos)
@@ -382,10 +395,10 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
           expect(workspace.responded_to_agent_at).to be_before(Time.current)
         end
 
+        # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
         after do
           # After processing, the responded_to_agent_at should always have been updated
           workspace.reload
-          # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
           expect(workspace.responded_to_agent_at).not_to be_before(workspace.desired_state_updated_at)
           expect(workspace.responded_to_agent_at).not_to be_before(workspace.actual_state_updated_at)
         end
@@ -619,7 +632,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
           current_actual_state: RemoteDevelopment::WorkspaceOperations::States::STOPPED,
           workspace_exists: false,
           workspace_variables_environment: {},
-          workspace_variables_file: {}
+          workspace_variables_file: {},
+          workspace_variables_additional_data: {}
         )
       end
 
@@ -662,7 +676,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
           egress_ip_rules: egress_ip_rules,
           max_resources_per_workspace: max_resources_per_workspace,
           default_resources_per_workspace_container: default_resources_per_workspace_container,
-          image_pull_secrets: unprovisioned_workspace.workspaces_agent_config.image_pull_secrets
+          image_pull_secrets: unprovisioned_workspace.workspaces_agent_config&.image_pull_secrets
         )
       end
 

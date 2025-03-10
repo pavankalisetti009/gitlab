@@ -172,11 +172,17 @@ RSpec.describe 'Remote Development workspaces', :freeze_time, :api, :js, feature
       simulate_first_poll(
         workspace: workspace.reload,
         agent_token: agent_token,
+        actual_state: states::CREATION_REQUESTED,
         **additional_args_for_expected_config_to_apply
       )
 
       # SIMULATE RECONCILE REQUEST FROM AGENTK UPDATING WORKSPACE TO RUNNING ACTUAL_STATE
-      simulate_second_poll(workspace: workspace.reload, agent_token: agent_token)
+      simulate_second_poll(
+        workspace: workspace.reload,
+        agent_token: agent_token,
+        actual_state: states::RUNNING,
+        **additional_args_for_expected_config_to_apply
+      )
 
       # ASSERT WORKSPACE SHOWS RUNNING STATE IN UI AND UPDATES URL
       expect_workspace_state_indicator(states::RUNNING)
@@ -195,11 +201,17 @@ RSpec.describe 'Remote Development workspaces', :freeze_time, :api, :js, feature
       simulate_third_poll(
         workspace: workspace.reload,
         agent_token: agent_token,
+        actual_state: states::RUNNING,
         **additional_args_for_expected_config_to_apply
       )
 
       # SIMULATE RECONCILE REQUEST FROM AGENTK UPDATING WORKSPACE TO STOPPING ACTUAL_STATE
-      simulate_fourth_poll(workspace: workspace.reload, agent_token: agent_token)
+      simulate_fourth_poll(
+        workspace: workspace.reload,
+        agent_token: agent_token,
+        actual_state: states::STOPPING,
+        **additional_args_for_expected_config_to_apply
+      )
 
       # ASSERT WORKSPACE SHOWS STOPPING STATE IN UI
       expect_workspace_state_indicator(states::STOPPING)
@@ -209,7 +221,12 @@ RSpec.describe 'Remote Development workspaces', :freeze_time, :api, :js, feature
       expect(page).to have_button('Terminate')
 
       # SIMULATE RECONCILE REQUEST FROM AGENTK UPDATING WORKSPACE TO STOPPED ACTUAL_STATE
-      simulate_fifth_poll(workspace: workspace.reload, agent_token: agent_token)
+      simulate_fifth_poll(
+        workspace: workspace.reload,
+        agent_token: agent_token,
+        actual_state: states::STOPPED,
+        **additional_args_for_expected_config_to_apply
+      )
 
       # ASSERT WORKSPACE SHOWS STOPPED STATE IN UI
       expect_workspace_state_indicator(states::STOPPED)
@@ -225,6 +242,7 @@ RSpec.describe 'Remote Development workspaces', :freeze_time, :api, :js, feature
       simulate_seventh_poll(
         workspace: workspace.reload,
         agent_token: agent_token,
+        actual_state: states::STOPPED,
         **additional_args_for_expected_config_to_apply
       )
 
@@ -235,6 +253,7 @@ RSpec.describe 'Remote Development workspaces', :freeze_time, :api, :js, feature
       simulate_eighth_poll(
         workspace: workspace.reload,
         agent_token: agent_token,
+        actual_state: states::STOPPED,
         **additional_args_for_expected_config_to_apply
       )
 
@@ -242,8 +261,10 @@ RSpec.describe 'Remote Development workspaces', :freeze_time, :api, :js, feature
       simulate_ninth_poll(
         workspace: workspace.reload,
         agent_token: agent_token,
+        actual_state: states::RUNNING,
         # TRAVEL FORWARD IN TIME MAX_ACTIVE_HOURS_BEFORE_STOP HOURS
-        time_to_travel_after_poll: workspace.workspaces_agent_config.max_active_hours_before_stop.hours
+        time_to_travel_after_poll: workspace.workspaces_agent_config&.max_active_hours_before_stop&.hours,
+        **additional_args_for_expected_config_to_apply
       )
 
       # ASSERT WORKSPACE SHOWS RUNNING STATE IN UI AND UPDATES URL
@@ -253,11 +274,17 @@ RSpec.describe 'Remote Development workspaces', :freeze_time, :api, :js, feature
       simulate_tenth_poll(
         workspace: workspace.reload,
         agent_token: agent_token,
+        actual_state: states::RUNNING,
         **additional_args_for_expected_config_to_apply
       )
 
       # SIMULATE RECONCILE REQUEST FROM AGENTK UPDATING WORKSPACE TO STOPPING ACTUAL_STATE
-      simulate_eleventh_poll(workspace: workspace.reload, agent_token: agent_token)
+      simulate_eleventh_poll(
+        workspace: workspace.reload,
+        agent_token: agent_token,
+        actual_state: states::STOPPING,
+        **additional_args_for_expected_config_to_apply
+      )
 
       # ASSERT WORKSPACE SHOWS STOPPING STATE IN UI
       expect_workspace_state_indicator(states::STOPPING)
@@ -266,8 +293,10 @@ RSpec.describe 'Remote Development workspaces', :freeze_time, :api, :js, feature
       simulate_twelfth_poll(
         workspace: workspace.reload,
         agent_token: agent_token,
+        actual_state: states::STOPPED,
         # TRAVEL FORWARD IN TIME MAX_STOPPED_HOURS_BEFORE_TERMINATION HOURS
-        time_to_travel_after_poll: workspace.workspaces_agent_config.max_stopped_hours_before_termination.hours
+        time_to_travel_after_poll: workspace.workspaces_agent_config&.max_stopped_hours_before_termination&.hours,
+        **additional_args_for_expected_config_to_apply
       )
 
       # ASSERT WORKSPACE SHOWS STOPPED STATE IN UI
@@ -277,16 +306,24 @@ RSpec.describe 'Remote Development workspaces', :freeze_time, :api, :js, feature
       simulate_thirteenth_poll(
         workspace: workspace.reload,
         agent_token: agent_token,
+        actual_state: states::TERMINATED,
         **additional_args_for_expected_config_to_apply
       )
 
       # SIMULATE RECONCILE REQUEST FROM AGENTK UPDATING WORKSPACE TO TERMINATING ACTUAL_STATE
-      simulate_fourteenth_poll(workspace: workspace.reload,
-        agent_token: agent_token
+      simulate_fourteenth_poll(
+        workspace: workspace.reload,
+        agent_token: agent_token,
+        actual_state: states::TERMINATING,
+        **additional_args_for_expected_config_to_apply
       )
 
       # SIMULATE RECONCILE REQUEST FROM AGENTK UPDATING WORKSPACE TO TERMINATED ACTUAL_STATE
-      simulate_fifteenth_poll(workspace: workspace.reload, agent_token: agent_token)
+      simulate_fifteenth_poll(
+        workspace: workspace.reload,
+        agent_token: agent_token,
+        **additional_args_for_expected_config_to_apply
+      )
     end
   end
 

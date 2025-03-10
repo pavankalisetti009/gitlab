@@ -75,6 +75,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
       name: "workspace-991-990-fedcba",
       namespace: "gl-rd-ns-991-990-fedcba",
       desired_state: desired_state,
+      actual_state: RemoteDevelopment::WorkspaceOperations::States::RUNNING,
       workspace_variables: workspace_variables,
       processed_devfile: input_processed_devfile_yaml
     )
@@ -92,17 +93,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
 
   shared_examples "generated desired_config golden master checks" do
     it "exactly matches the generated desired_config", :unlimited_max_formatted_output_length do
-      desired_config_sorted =
-        desired_config
-          .map(&:deep_symbolize_keys)
-          .sort_by { |resource| [resource.fetch(:kind), resource.fetch(:metadata).fetch(:name)] }
-          .map { |hash| Gitlab::Utils.deep_sort_hash(hash) }
+      desired_config_sorted = desired_config.map(&:deep_symbolize_keys)
 
-      golden_master_desired_config_sorted =
-        golden_master_desired_config
-          .map(&:deep_symbolize_keys)
-          .sort_by { |resource| [resource.fetch(:kind), resource.fetch(:metadata).fetch(:name)] }
-          .map { |hash| Gitlab::Utils.deep_sort_hash(hash) }
+      golden_master_desired_config_sorted = golden_master_desired_config.map(&:deep_symbolize_keys)
 
       # compare the names and kinds of the resources
       expect(desired_config_sorted.map { |c| [c.fetch(:kind), c.fetch(:metadata).fetch(:name)] })
@@ -236,9 +229,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
             app: "workspace",
             tier: "development",
             "agent.gitlab.com/id": "991",
-            "cli-utils.sigs.k8s.io/inventory-id": "workspace-991-990-fedcba-secrets-inventory"
+            "cli-utils.sigs.k8s.io/inventory-id": "workspace-991-990-fedcba-workspace-inventory"
           },
-          name: "workspace-991-990-fedcba-secrets-inventory",
+          name: "workspace-991-990-fedcba-workspace-inventory",
           namespace: "gl-rd-ns-991-990-fedcba"
         }
       },
@@ -257,9 +250,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
             app: "workspace",
             tier: "development",
             "agent.gitlab.com/id": "991",
-            "cli-utils.sigs.k8s.io/inventory-id": "workspace-991-990-fedcba-workspace-inventory"
+            "cli-utils.sigs.k8s.io/inventory-id": "workspace-991-990-fedcba-secrets-inventory"
           },
-          name: "workspace-991-990-fedcba-workspace-inventory",
+          name: "workspace-991-990-fedcba-secrets-inventory",
           namespace: "gl-rd-ns-991-990-fedcba"
         }
       }
@@ -269,27 +262,6 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
   # @return [Array]
   def golden_master_desired_config_with_include_all_resources_true
     [
-      {
-        apiVersion: "v1",
-        kind: "ConfigMap",
-        metadata: {
-          annotations: {
-            environment: "production",
-            team: "engineering",
-            "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
-            "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
-          },
-          labels: {
-            app: "workspace",
-            tier: "development",
-            "agent.gitlab.com/id": "991",
-            "cli-utils.sigs.k8s.io/inventory-id": "workspace-991-990-fedcba-secrets-inventory"
-          },
-          name: "workspace-991-990-fedcba-secrets-inventory",
-          namespace: "gl-rd-ns-991-990-fedcba"
-        }
-      },
       {
         apiVersion: "v1",
         kind: "ConfigMap",
@@ -525,6 +497,105 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
         status: {}
       },
       {
+        apiVersion: "v1",
+        kind: "Service",
+        metadata: {
+          annotations: {
+            environment: "production",
+            team: "engineering",
+            "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
+            "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
+            "workspaces.gitlab.com/id": "993",
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+          },
+          creationTimestamp: nil,
+          labels: {
+            app: "workspace",
+            tier: "development",
+            "agent.gitlab.com/id": "991"
+          },
+          name: "workspace-991-990-fedcba",
+          namespace: "gl-rd-ns-991-990-fedcba"
+        },
+        spec: {
+          ports: [
+            {
+              name: "server",
+              port: 60001,
+              targetPort: 60001
+            }
+          ],
+          selector: {
+            app: "workspace",
+            tier: "development",
+            "agent.gitlab.com/id": "991"
+          }
+        },
+        status: {
+          loadBalancer: {}
+        }
+      },
+      {
+        apiVersion: "v1",
+        kind: "PersistentVolumeClaim",
+        metadata: {
+          annotations: {
+            environment: "production",
+            team: "engineering",
+            "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
+            "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
+            "workspaces.gitlab.com/id": "993",
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+          },
+          creationTimestamp: nil,
+          labels: {
+            app: "workspace",
+            tier: "development",
+            "agent.gitlab.com/id": "991"
+          },
+          name: "workspace-991-990-fedcba-gl-workspace-data",
+          namespace: "gl-rd-ns-991-990-fedcba"
+        },
+        spec: {
+          accessModes: [
+            "ReadWriteOnce"
+          ],
+          resources: {
+            requests: {
+              storage: "50Gi"
+            }
+          }
+        },
+        status: {}
+      },
+      {
+        apiVersion: "v1",
+        automountServiceAccountToken: false,
+        imagePullSecrets: [
+          {
+            name: "registry-secret"
+          }
+        ],
+        kind: "ServiceAccount",
+        metadata: {
+          annotations: {
+            environment: "production",
+            team: "engineering",
+            "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
+            "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
+            "workspaces.gitlab.com/id": "993",
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+          },
+          labels: {
+            app: "workspace",
+            tier: "development",
+            "agent.gitlab.com/id": "991"
+          },
+          name: "workspace-991-990-fedcba",
+          namespace: "gl-rd-ns-991-990-fedcba"
+        }
+      },
+      {
         apiVersion: "networking.k8s.io/v1",
         kind: "NetworkPolicy",
         metadata: {
@@ -609,36 +680,24 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
       },
       {
         apiVersion: "v1",
-        kind: "PersistentVolumeClaim",
+        kind: "ConfigMap",
         metadata: {
           annotations: {
             environment: "production",
             team: "engineering",
-            "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
             "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
           },
-          creationTimestamp: nil,
           labels: {
             app: "workspace",
             tier: "development",
-            "agent.gitlab.com/id": "991"
+            "agent.gitlab.com/id": "991",
+            "cli-utils.sigs.k8s.io/inventory-id": "workspace-991-990-fedcba-secrets-inventory"
           },
-          name: "workspace-991-990-fedcba-gl-workspace-data",
+          name: "workspace-991-990-fedcba-secrets-inventory",
           namespace: "gl-rd-ns-991-990-fedcba"
-        },
-        spec: {
-          accessModes: [
-            "ReadWriteOnce"
-          ],
-          resources: {
-            requests: {
-              storage: "50Gi"
-            }
-          }
-        },
-        status: {}
+        }
       },
       {
         apiVersion: "v1",
@@ -696,7 +755,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
       {
         apiVersion: "v1",
         data: {
-          FILE_VAR1: "ZmlsZS12YXItdmFsdWUx"
+          FILE_VAR1: "ZmlsZS12YXItdmFsdWUx",
+          "gl_workspace_reconciled_actual_state.txt": "UnVubmluZw=="
         },
         kind: "Secret",
         metadata: {
@@ -714,72 +774,6 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
             "agent.gitlab.com/id": "991"
           },
           name: "workspace-991-990-fedcba-file",
-          namespace: "gl-rd-ns-991-990-fedcba"
-        }
-      },
-      {
-        apiVersion: "v1",
-        kind: "Service",
-        metadata: {
-          annotations: {
-            environment: "production",
-            team: "engineering",
-            "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
-            "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
-            "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
-          },
-          creationTimestamp: nil,
-          labels: {
-            app: "workspace",
-            tier: "development",
-            "agent.gitlab.com/id": "991"
-          },
-          name: "workspace-991-990-fedcba",
-          namespace: "gl-rd-ns-991-990-fedcba"
-        },
-        spec: {
-          ports: [
-            {
-              name: "server",
-              port: 60001,
-              targetPort: 60001
-            }
-          ],
-          selector: {
-            app: "workspace",
-            tier: "development",
-            "agent.gitlab.com/id": "991"
-          }
-        },
-        status: {
-          loadBalancer: {}
-        }
-      },
-      {
-        apiVersion: "v1",
-        automountServiceAccountToken: false,
-        imagePullSecrets: [
-          {
-            name: "registry-secret"
-          }
-        ],
-        kind: "ServiceAccount",
-        metadata: {
-          annotations: {
-            environment: "production",
-            team: "engineering",
-            "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
-            "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
-            "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
-          },
-          labels: {
-            app: "workspace",
-            tier: "development",
-            "agent.gitlab.com/id": "991"
-          },
-          name: "workspace-991-990-fedcba",
           namespace: "gl-rd-ns-991-990-fedcba"
         }
       }
@@ -1024,6 +1018,105 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
         status: {}
       },
       {
+        apiVersion: "v1",
+        kind: "Service",
+        metadata: {
+          annotations: {
+            environment: "production",
+            team: "engineering",
+            "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
+            "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
+            "workspaces.gitlab.com/id": "993",
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+          },
+          creationTimestamp: nil,
+          labels: {
+            app: "workspace",
+            tier: "development",
+            "agent.gitlab.com/id": "991"
+          },
+          name: "workspace-991-990-fedcba",
+          namespace: "gl-rd-ns-991-990-fedcba"
+        },
+        spec: {
+          ports: [
+            {
+              name: "server",
+              port: 60001,
+              targetPort: 60001
+            }
+          ],
+          selector: {
+            app: "workspace",
+            tier: "development",
+            "agent.gitlab.com/id": "991"
+          }
+        },
+        status: {
+          loadBalancer: {}
+        }
+      },
+      {
+        apiVersion: "v1",
+        kind: "PersistentVolumeClaim",
+        metadata: {
+          annotations: {
+            environment: "production",
+            team: "engineering",
+            "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
+            "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
+            "workspaces.gitlab.com/id": "993",
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+          },
+          creationTimestamp: nil,
+          labels: {
+            app: "workspace",
+            tier: "development",
+            "agent.gitlab.com/id": "991"
+          },
+          name: "workspace-991-990-fedcba-gl-workspace-data",
+          namespace: "gl-rd-ns-991-990-fedcba"
+        },
+        spec: {
+          accessModes: [
+            "ReadWriteOnce"
+          ],
+          resources: {
+            requests: {
+              storage: "50Gi"
+            }
+          }
+        },
+        status: {}
+      },
+      {
+        apiVersion: "v1",
+        automountServiceAccountToken: false,
+        imagePullSecrets: [
+          {
+            name: "registry-secret"
+          }
+        ],
+        kind: "ServiceAccount",
+        metadata: {
+          annotations: {
+            environment: "production",
+            team: "engineering",
+            "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
+            "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
+            "workspaces.gitlab.com/id": "993",
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+          },
+          labels: {
+            app: "workspace",
+            tier: "development",
+            "agent.gitlab.com/id": "991"
+          },
+          name: "workspace-991-990-fedcba",
+          namespace: "gl-rd-ns-991-990-fedcba"
+        }
+      },
+      {
         apiVersion: "networking.k8s.io/v1",
         kind: "NetworkPolicy",
         metadata: {
@@ -1104,105 +1197,6 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
             "Ingress",
             "Egress"
           ]
-        }
-      },
-      {
-        apiVersion: "v1",
-        kind: "PersistentVolumeClaim",
-        metadata: {
-          annotations: {
-            environment: "production",
-            team: "engineering",
-            "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
-            "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
-            "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
-          },
-          creationTimestamp: nil,
-          labels: {
-            app: "workspace",
-            tier: "development",
-            "agent.gitlab.com/id": "991"
-          },
-          name: "workspace-991-990-fedcba-gl-workspace-data",
-          namespace: "gl-rd-ns-991-990-fedcba"
-        },
-        spec: {
-          accessModes: [
-            "ReadWriteOnce"
-          ],
-          resources: {
-            requests: {
-              storage: "50Gi"
-            }
-          }
-        },
-        status: {}
-      },
-      {
-        apiVersion: "v1",
-        kind: "Service",
-        metadata: {
-          annotations: {
-            environment: "production",
-            team: "engineering",
-            "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
-            "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
-            "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
-          },
-          creationTimestamp: nil,
-          labels: {
-            app: "workspace",
-            tier: "development",
-            "agent.gitlab.com/id": "991"
-          },
-          name: "workspace-991-990-fedcba",
-          namespace: "gl-rd-ns-991-990-fedcba"
-        },
-        spec: {
-          ports: [
-            {
-              name: "server",
-              port: 60001,
-              targetPort: 60001
-            }
-          ],
-          selector: {
-            app: "workspace",
-            tier: "development",
-            "agent.gitlab.com/id": "991"
-          }
-        },
-        status: {
-          loadBalancer: {}
-        }
-      },
-      {
-        apiVersion: "v1",
-        automountServiceAccountToken: false,
-        imagePullSecrets: [
-          {
-            name: "registry-secret"
-          }
-        ],
-        kind: "ServiceAccount",
-        metadata: {
-          annotations: {
-            environment: "production",
-            team: "engineering",
-            "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
-            "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
-            "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
-          },
-          labels: {
-            app: "workspace",
-            tier: "development",
-            "agent.gitlab.com/id": "991"
-          },
-          name: "workspace-991-990-fedcba",
-          namespace: "gl-rd-ns-991-990-fedcba"
         }
       }
     ]

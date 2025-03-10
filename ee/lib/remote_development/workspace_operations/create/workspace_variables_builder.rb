@@ -34,14 +34,14 @@ module RemoteDevelopment
             # The user's workspace-specific personal access token which is injected into the workspace, and used for
             # authentication. For example, in the credential.helper script below.
             {
-              key: File.basename(TOKEN_FILE),
+              key: File.basename(TOKEN_FILE_PATH),
               value: personal_access_token_value,
               variable_type: FILE_TYPE,
               workspace_id: workspace_id
             },
             {
               key: "GL_TOKEN_FILE_PATH",
-              value: TOKEN_FILE,
+              value: TOKEN_FILE_PATH,
               variable_type: ENVIRONMENT_TYPE,
               workspace_id: workspace_id
             },
@@ -51,8 +51,8 @@ module RemoteDevelopment
             # Standard git ENV vars which configure git on the workspace. See https://git-scm.com/docs/git-config
             {
               # This script is set as the value of `credential.helper` below in `GIT_CONFIG_VALUE_0`
-              key: File.basename(GIT_CREDENTIAL_STORE_SCRIPT_FILE),
-              value: WORKSPACE_VARIABLES_GIT_CREDENTIAL_STORE_SCRIPT,
+              key: File.basename(GIT_CREDENTIAL_STORE_SCRIPT_FILE_PATH),
+              value: GIT_CREDENTIAL_STORE_SCRIPT,
               variable_type: FILE_TYPE,
               workspace_id: workspace_id
             },
@@ -70,7 +70,7 @@ module RemoteDevelopment
             },
             {
               key: "GIT_CONFIG_VALUE_0",
-              value: GIT_CREDENTIAL_STORE_SCRIPT_FILE,
+              value: GIT_CREDENTIAL_STORE_SCRIPT_FILE_PATH,
               variable_type: ENVIRONMENT_TYPE,
               workspace_id: workspace_id
             },
@@ -146,7 +146,7 @@ module RemoteDevelopment
             },
             {
               key: "GITLAB_WORKFLOW_TOKEN_FILE",
-              value: TOKEN_FILE,
+              value: TOKEN_FILE_PATH,
               variable_type: ENVIRONMENT_TYPE,
               workspace_id: workspace_id
             }

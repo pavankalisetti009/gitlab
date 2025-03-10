@@ -10,11 +10,11 @@ module RemoteDevelopment
           include WorkspaceOperationsConstants
           include ReconcileConstants
 
-          # @param [String] processed_devfile
+          # @param [String] processed_devfile_yaml
           # @param [Hash] params
           # @param [RemoteDevelopment::Logger] logger
           # @return [Array<Hash>]
-          def self.get_all(processed_devfile:, params:, logger:)
+          def self.get_all(processed_devfile_yaml:, params:, logger:)
             params => {
               name: String => name,
               namespace: String => namespace,
@@ -33,7 +33,7 @@ module RemoteDevelopment
 
             begin
               workspace_resources_yaml = Devfile::Parser.get_all(
-                processed_devfile,
+                processed_devfile_yaml,
                 name,
                 namespace,
                 YAML.dump(labels.deep_stringify_keys),
@@ -219,7 +219,7 @@ module RemoteDevelopment
                   name: volume_name,
                   projected: {
                     defaultMode: 0o774,
-                    sources: file_secret_names.map { |v| { secret: { name: v } } }
+                    sources: file_secret_names.map { |name| { secret: { name: name } } }
                   }
                 }
               ]

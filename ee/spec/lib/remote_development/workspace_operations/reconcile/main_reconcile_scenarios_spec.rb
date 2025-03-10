@@ -49,7 +49,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, 'Partial
     [
       #
       # desired: Running / actual: CreationRequested -> desired: Running / actual: Running
-      [nil, :running, [nil, [:creation_requested, :starting, false], [:starting, :running, true]], [[true, false], [false, true], [false, true]], [[:running, :creation_requested], [:running, :creation_requested], [:running, :starting], [:running, :running]]],
+      [nil, :running, [nil, [:creation_requested, :starting, false], [:starting, :running, true]], [[true, false], [true, true], [true, true]], [[:running, :creation_requested], [:running, :creation_requested], [:running, :starting], [:running, :running]]],
       #
       # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/409784 - Fixture not yet implemented...
       # desired: Running / actual: CreationRequested -> desired: Running / actual: Failed
@@ -59,7 +59,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, 'Partial
       # desired: Running / actual: CreationRequested -> desired: Running / actual: Error
       #
       # desired: Running / actual: Running -> desired: Stopped / actual: Stopped
-      [[:running, :running], :stopped, [nil, [:running, :stopping, true], [:stopping, :stopped, false]], [[true, true], [false, true], [false, true]], [[:running, :running], [:stopped, :running], [:stopped, :running], [:stopped, :stopping], [:stopped, :stopped]]],
+      [[:running, :running], :stopped, [nil, [:running, :stopping, true], [:stopping, :stopped, false]], [[true, true], [true, true], [true, true]], [[:running, :running], [:stopped, :running], [:stopped, :running], [:stopped, :stopping], [:stopped, :stopped]]],
       #
       # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/409784 - Fixture not yet implemented...
       # desired: Running / actual: Running -> desired: Stopped / actual: Failed
@@ -76,7 +76,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, 'Partial
       # [[:running, :running], :terminated, [nil, [:running, :terminated, false]], [[true, true], [false, true]], [[:running, :running], [:terminated, :running], [:terminated, :running], [:terminated, :terminated]]],
       #
       # desired: Stopped / actual: Stopped -> desired: Running / actual: Running
-      [[:stopped, :stopped], :running, [nil, [:stopped, :starting, false], [:starting, :running, true]], [[true, true], [false, true], [false, true]], [[:stopped, :stopped], [:running, :stopped], [:running, :stopped], [:running, :starting], [:running, :running]]],
+      [[:stopped, :stopped], :running, [nil, [:stopped, :starting, false], [:starting, :running, true]], [[true, true], [true, true], [true, true]], [[:stopped, :stopped], [:running, :stopped], [:running, :stopped], [:running, :starting], [:running, :running]]],
       #
       # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/409784 - Fixture not yet implemented...
       # desired: Running / actual: Running -> desired: Terminated / actual: Failed
@@ -85,7 +85,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, 'Partial
       # desired: Running / actual: Running -> desired: Terminated / actual: Error
       #
       # desired: Stopped / actual: Stopped -> desired: Running / actual: Running
-      [[:stopped, :stopped], :running, [nil, [:stopped, :starting, false], [:starting, :running, true]], [[true, true], [false, true], [false, true]], [[:stopped, :stopped], [:running, :stopped], [:running, :stopped], [:running, :starting], [:running, :running]]],
+      [[:stopped, :stopped], :running, [nil, [:stopped, :starting, false], [:starting, :running, true]], [[true, true], [true, true], [true, true]], [[:stopped, :stopped], [:running, :stopped], [:running, :stopped], [:running, :starting], [:running, :running]]],
       #
       # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/409784 - Fixture not yet implemented...
       # desired: Stopped / actual: Stopped -> desired: Running / actual: Failed
@@ -138,7 +138,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, 'Partial
       # Agent reports update for a workspace and user has also updated desired state of the workspace
       #
       # Restarting a workspace
-      [[:running, :running], :restart_requested, [nil, [:running, :stopping, true], [:stopping, :stopped, false], [:stopped, :starting, false], [:starting, :running, true]], [[true, true], [false, true], [true, true], [false, true], [false, true]], [[:running, :running], [:restart_requested, :running], [:restart_requested, :running], [:restart_requested, :stopping], [:running, :stopped], [:running, :starting], [:running, :running]]],
+      [[:running, :running], :restart_requested, [nil, [:running, :stopping, true], [:stopping, :stopped, false], [:stopped, :starting, false], [:starting, :running, true]], [[true, true], [true, true], [true, true], [true, true], [true, true]], [[:running, :running], [:restart_requested, :running], [:restart_requested, :running], [:restart_requested, :stopping], [:running, :stopped], [:running, :starting], [:running, :running]]],
       #
       # No update for workspace from agentk or from user
       #
