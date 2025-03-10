@@ -1,6 +1,5 @@
 import { GlFilteredSearchToken, GlLoadingIcon } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
-import VueRouter from 'vue-router';
 import VueApollo from 'vue-apollo';
 import { createAlert } from '~/alert';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -8,19 +7,15 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import getClusterAgentsQuery from 'ee/security_dashboard/graphql/queries/cluster_agents.query.graphql';
 import ClusterToken from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/cluster_token.vue';
 import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_search_v2/components/search_suggestion.vue';
-import QuerystringSync from 'ee/security_dashboard/components/shared/filters/querystring_sync.vue';
-import eventHub from 'ee/security_dashboard/components/shared/filtered_search_v2/event_hub';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { projectClusters } from 'ee_jest/security_dashboard/components/mock_data';
 
-Vue.use(VueRouter);
 Vue.use(VueApollo);
 jest.mock('~/alert');
 
 describe('Cluster Token component', () => {
   let wrapper;
-  let router;
   const projectFullPath = 'test/path';
   const defaultProjectClustersQueryResolver = jest.fn().mockResolvedValue(projectClusters);
 
@@ -37,10 +32,7 @@ describe('Cluster Token component', () => {
     projectClustersQueryResolver = defaultProjectClustersQueryResolver,
     mountFn = shallowMountExtended,
   } = {}) => {
-    router = new VueRouter({ mode: 'history' });
-
     wrapper = mountFn(ClusterToken, {
-      router,
       apolloProvider: createMockApollo([[getClusterAgentsQuery, projectClustersQueryResolver]]),
       propsData: {
         config: mockConfig,
@@ -60,7 +52,6 @@ describe('Cluster Token component', () => {
     });
   };
 
-  const findQuerystringSync = () => wrapper.findComponent(QuerystringSync);
   const findFilteredSearchToken = () => wrapper.findComponent(GlFilteredSearchToken);
   const isOptionChecked = (v) => wrapper.findByTestId(`suggestion-${v}`).props('selected') === true;
 
@@ -109,6 +100,24 @@ describe('Cluster Token component', () => {
 
       expect(findLoadingIcon().exists()).toBe(false);
     });
+
+    it('transforms filters correclty', () => {
+      expect(
+        ClusterToken.transformFilters([
+          { value: 'test-agent-1', gid: 'gid://GitLab/Agent/4' },
+          { value: 'test-agent-2', gid: 'gid://GitLab/Agent/5' },
+        ]),
+      ).toEqual({ clusterAgentId: ['gid://GitLab/Agent/4', 'gid://GitLab/Agent/5'] });
+    });
+
+    it('transforms query parameters correclty', () => {
+      expect(
+        ClusterToken.transformQueryParams([
+          { value: 'test-agent-1', gid: 'gid://GitLab/Agent/4' },
+          { value: 'test-agent-2', gid: 'gid://GitLab/Agent/5' },
+        ]),
+      ).toEqual('test-agent-1,test-agent-2');
+    });
   });
 
   it('shows an alert on a failed GraphQL request', async () => {
@@ -150,18 +159,6 @@ describe('Cluster Token component', () => {
       expect(isOptionChecked('jason-bourne-agent')).toBe(false);
       expect(isOptionChecked('ALL')).toBe(true);
     });
-
-    it('emits filters-changed event when a filter is selected', async () => {
-      const spy = jest.fn();
-      eventHub.$on('filters-changed', spy);
-
-      // Select 2 cluster agents
-      await clickDropdownItem('primary-agent', 'james-bond-agent');
-
-      expect(spy).toHaveBeenCalledWith({
-        clusterAgentId: ['gid://gitlab/Clusters::Agent/2', 'gid://gitlab/Clusters::Agent/007'],
-      });
-    });
   });
 
   describe('toggle text', () => {
@@ -184,49 +181,6 @@ describe('Cluster Token component', () => {
     it('shows "primary-agent" when only primary-agent is selected', async () => {
       await clickDropdownItem('primary-agent');
       expect(findSlotView().text()).toBe('primary-agent');
-    });
-  });
-
-  describe('QuerystringSync component', () => {
-    beforeEach(() => {
-      createWrapper();
-    });
-
-    it('has expected props', () => {
-      expect(findQuerystringSync().props()).toMatchObject({
-        querystringKey: 'cluster',
-        value: ['ALL'],
-      });
-    });
-
-    it('receives "ALL" when All clusters option is clicked', async () => {
-      await clickDropdownItem('ALL');
-
-      expect(findQuerystringSync().props('value')).toEqual(['ALL']);
-    });
-
-    it('restores selected items', async () => {
-      findQuerystringSync().vm.$emit('input', ['primary-agent', 'james-bond-agent']);
-
-      await nextTick();
-
-      expect(isOptionChecked('primary-agent')).toBe(true);
-      expect(isOptionChecked('james-bond-agent')).toBe(true);
-      expect(isOptionChecked('jason-bourne-agent')).toBe(false);
-      expect(isOptionChecked('ALL')).toBe(false);
-    });
-
-    it('emits filters-changed event when restoring', async () => {
-      const spy = jest.fn();
-      eventHub.$on('filters-changed', spy);
-
-      findQuerystringSync().vm.$emit('input', ['primary-agent']);
-
-      await waitForPromises();
-
-      expect(spy).toHaveBeenCalledWith({
-        clusterAgentId: ['gid://gitlab/Clusters::Agent/2'],
-      });
     });
   });
 });
