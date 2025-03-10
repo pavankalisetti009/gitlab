@@ -54,7 +54,7 @@ the following:
 main: # 'main' is the GitLab 'provider ID' of this LDAP server
   label: 'LDAP'
   host: 'ldap.example.com'
-  ...
+  # ...
   group_base: 'cn=my_group,ou=groups,dc=example,dc=com'
   admin_group: 'my_admin_group'
 ```
