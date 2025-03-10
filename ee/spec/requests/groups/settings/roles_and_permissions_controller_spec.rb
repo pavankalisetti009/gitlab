@@ -144,20 +144,20 @@ RSpec.describe Groups::Settings::RolesAndPermissionsController, feature_category
     end
   end
 
-  describe 'GET #index' do
+  describe 'GET #index', :saas do
     subject(:get_method) { get(group_settings_roles_and_permissions_path(group)) }
 
     it_behaves_like 'access control', [:custom_roles, :default_roles_assignees]
   end
 
-  describe 'GET #show' do
+  describe 'GET #show', :saas do
     subject(:get_method) { get(group_settings_roles_and_permission_path(group, role_id)) }
 
     it_behaves_like 'access control', [:custom_roles, :default_roles_assignees]
     it_behaves_like 'role existence check'
   end
 
-  describe 'GET #edit' do
+  describe 'GET #edit', :saas do
     subject(:get_method) { get(edit_group_settings_roles_and_permission_path(group, role_id)) }
 
     it_behaves_like 'access control', [:custom_roles]

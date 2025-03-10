@@ -5,7 +5,6 @@ require 'spec_helper'
 RSpec.describe MemberRoles::DeleteService, feature_category: :system_access do
   let_it_be(:group) { create(:group) }
   let_it_be(:user) { create(:user) }
-  let_it_be_with_reload(:member_role) { create(:member_role, :guest, namespace: group) }
 
   subject(:service) { described_class.new(user) }
 
@@ -16,87 +15,117 @@ RSpec.describe MemberRoles::DeleteService, feature_category: :system_access do
   describe '#execute' do
     subject(:result) { service.execute(member_role) }
 
-    context 'with unauthorized user' do
-      it 'returns an error' do
-        expect(result).to be_error
+    shared_examples 'deleting member role' do
+      it 'is successful' do
+        expect(result).to be_success
+      end
+
+      it 'deletes the member role' do
+        result
+
+        expect(member_role).to be_destroyed
+      end
+
+      include_examples 'audit event logging' do
+        let(:licensed_features_to_stub) { { custom_roles: true } }
+        let(:event_type) { 'member_role_deleted' }
+        let(:operation) { result }
+        let(:fail_condition!) { allow(member_role).to receive(:destroy).and_return(false) }
+
+        let(:attributes) do
+          {
+            author_id: user.id,
+            entity_id: audit_entity_id,
+            entity_type: audit_entity_type,
+            details: {
+              author_name: user.name,
+              target_id: member_role.id,
+              target_type: member_role.class.name,
+              event_name: "member_role_deleted",
+              target_details: {
+                name: member_role.name,
+                description: member_role.description,
+                abilities: "read_code"
+              }.to_s,
+              custom_message: 'Member role was deleted',
+              author_class: user.class.name
+            }
+          }
+        end
       end
     end
 
-    context 'with owner' do
-      before_all do
-        group.add_owner(user)
+    context 'for self-managed' do
+      let_it_be_with_reload(:member_role) { create(:member_role, :guest, :instance) }
+
+      let(:audit_entity_id) { Gitlab::Audit::InstanceScope.new.id }
+      let(:audit_entity_type) { 'Gitlab::Audit::InstanceScope' }
+
+      context 'with unauthorized user' do
+        it 'returns an error' do
+          expect(result).to be_error
+        end
       end
 
-      context 'without existing members' do
-        it 'is successful' do
-          expect(result).to be_success
+      context 'with admin', :enable_admin_mode do
+        before_all do
+          user.update!(admin: true)
         end
 
-        it 'deletes the member role' do
-          result
+        it_behaves_like 'deleting member role'
 
-          expect(member_role).to be_destroyed
+        context 'when the member role is linked to a security policy' do
+          before do
+            create(:security_policy, content: {
+              actions: [{ type: 'require_approval', approvals_required: 1, role_approvers: [member_role.id] }]
+            })
+
+            stub_licensed_features(security_orchestration_policies: true, custom_roles: true)
+          end
+
+          it 'returns error with message' do
+            expect(result).to be_error
+            expect(result.message).to eq('Custom role linked with a security policy.')
+          end
         end
 
-        include_examples 'audit event logging' do
-          let(:licensed_features_to_stub) { { custom_roles: true } }
-          let(:event_type) { 'member_role_deleted' }
-          let(:operation) { result }
-          let(:fail_condition!) { allow(member_role).to receive(:destroy).and_return(false) }
+        context 'when failing to destroy the member role' do
+          before do
+            allow(member_role).to receive(:destroy).and_return(false)
+            errors = ActiveModel::Errors.new(member_role).tap { |e| e.add(:base, 'error message') }
+            allow(member_role).to receive(:errors).and_return(errors)
+          end
 
-          let(:attributes) do
-            {
-              author_id: user.id,
-              entity_id: group.id,
-              entity_type: group.class.name,
-              details: {
-                author_name: user.name,
-                target_id: member_role.id,
-                target_type: member_role.class.name,
-                event_name: "member_role_deleted",
-                target_details: {
-                  name: member_role.name,
-                  description: member_role.description,
-                  abilities: "read_code"
-                }.to_s,
-                custom_message: 'Member role was deleted',
-                author_class: user.class.name
-              }
-            }
+          it 'returns an array including the error message' do
+            expect(result).to be_error
+            expect(result.message).to match_array(['error message'])
+          end
+
+          it 'does not log an audit event' do
+            expect { result }.not_to change { AuditEvent.count }
           end
         end
       end
+    end
 
-      context 'when the member role is linked to a security policy' do
-        before do
-          create(:security_policy, content: {
-            actions: [{ type: 'require_approval', approvals_required: 1, role_approvers: [member_role.id] }]
-          })
+    context 'for SaaS', :saas do
+      let_it_be_with_reload(:member_role) { create(:member_role, :guest, namespace: group) }
 
-          stub_licensed_features(security_orchestration_policies: true, custom_roles: true)
-        end
+      let(:audit_entity_id) { group.id }
+      let(:audit_entity_type) { group.class.name }
 
-        it 'returns error with message' do
+      context 'with unauthorized user' do
+        it 'returns an error' do
           expect(result).to be_error
-          expect(result.message).to eq('Custom role linked with a security policy.')
         end
       end
 
-      context 'when failing to destroy the member role' do
-        before do
-          allow(member_role).to receive(:destroy).and_return(false)
-          errors = ActiveModel::Errors.new(member_role).tap { |e| e.add(:base, 'error message') }
-          allow(member_role).to receive(:errors).and_return(errors)
+      context 'with owner' do
+        before_all do
+          group.add_owner(user)
         end
 
-        it 'returns an array including the error message' do
-          expect(result).to be_error
-          expect(result.message).to match_array(['error message'])
-        end
-
-        it 'does not log an audit event' do
-          expect { result }.not_to change { AuditEvent.count }
-        end
+        it_behaves_like 'deleting member role'
       end
     end
   end

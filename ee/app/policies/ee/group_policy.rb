@@ -659,6 +659,8 @@ module EE
         enable :view_member_roles
       end
 
+      rule { ~is_gitlab_com }.prevent :admin_member_role
+
       rule { custom_role_enables_admin_cicd_variables }.policy do
         enable :admin_cicd_variables
       end

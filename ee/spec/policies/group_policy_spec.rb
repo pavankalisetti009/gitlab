@@ -2577,7 +2577,19 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     end
 
     describe 'custom roles' do
-      describe ':admin_member_role' do
+      let(:license) { :custom_roles }
+
+      context 'when on self-managed' do
+        let(:current_user) { owner }
+
+        before do
+          stub_licensed_features(license => true)
+        end
+
+        it { is_expected.to be_disallowed(:admin_member_role) }
+      end
+
+      describe ':admin_member_role', :saas do
         using RSpec::Parameterized::TableSyntax
 
         where(:role, :allowed) do
@@ -2599,7 +2611,6 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
           end
 
           context 'custom roles license' do
-            let(:license) { :custom_roles }
             let(:permissions) { [:admin_member_role, :view_member_roles] }
 
             context 'when licensed feature is enabled' do

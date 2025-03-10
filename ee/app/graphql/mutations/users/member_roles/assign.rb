@@ -8,8 +8,6 @@ module Mutations
 
         authorize :admin_member_role
 
-        include ::GitlabSubscriptions::SubscriptionHelper
-
         argument :user_id, Types::GlobalIDType[::User],
           required: true,
           description: 'Global ID of the user to be assigned to a custom role.'
@@ -23,8 +21,6 @@ module Mutations
           description: 'Created user member role or nil if the relation was deleted.', null: true
 
         def ready?(**args)
-          raise_resource_not_available_error! if gitlab_com_subscription?
-
           raise_resource_not_available_error! unless Feature.enabled?(:custom_admin_roles, :instance)
 
           raise_resource_not_available_error! unless current_user.can?(:admin_member_role)

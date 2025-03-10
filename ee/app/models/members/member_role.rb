@@ -22,7 +22,7 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
   validates :name, uniqueness: { scope: :namespace_id }
   validates :base_access_level, presence: true, inclusion: { in: LEVELS }, unless: :admin_related_role?
   validates :permissions, json_schema: { filename: 'member_role_permissions' }
-  validates :namespace, presence: true, if: :gitlab_com_subscription?
+  validates :namespace, presence: true, if: :namespace_required?
   validates :namespace, absence: true, if: :admin_related_role?
 
   validate :belongs_to_top_level_namespace
@@ -157,6 +157,12 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
 
   def admin_related_role?
     enabled_admin_permissions.present?
+  end
+
+  def namespace_required?
+    return false unless gitlab_com_subscription?
+
+    !admin_related_role?
   end
 
   private

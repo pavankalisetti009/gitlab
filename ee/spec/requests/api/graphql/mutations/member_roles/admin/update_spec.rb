@@ -50,16 +50,7 @@ RSpec.describe 'updating admin member role', :enable_admin_mode, feature_categor
       stub_licensed_features(custom_roles: true)
     end
 
-    context 'when on SaaS' do
-      before do
-        stub_saas_features(gitlab_com_subscriptions: true)
-      end
-
-      it_behaves_like 'a mutation that returns top-level errors',
-        errors: ['admin member roles are not available on SaaS instance.']
-    end
-
-    context 'when on self-managed' do
+    shared_examples 'updating custom role' do
       it 'returns success' do
         post_graphql_mutation(mutation, current_user: current_user)
 
@@ -84,6 +75,14 @@ RSpec.describe 'updating admin member role', :enable_admin_mode, feature_categor
         expect(member_role.read_admin_cicd).to be(true)
         expect(member_role.read_admin_dashboard).to be(false)
       end
+    end
+
+    context 'when on SaaS' do
+      it_behaves_like 'updating custom role'
+    end
+
+    context 'when on self-managed' do
+      it_behaves_like 'updating custom role'
 
       context 'when member role is not an admin role' do
         let(:member_role) { create(:member_role, :guest, :read_code, :instance) }

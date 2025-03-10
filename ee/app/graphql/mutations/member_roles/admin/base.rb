@@ -16,10 +16,6 @@ module Mutations
           null: true
 
         def ready?(**args)
-          if gitlab_com_subscription?
-            raise Gitlab::Graphql::Errors::ArgumentError, 'admin member roles are not available on SaaS instance.'
-          end
-
           raise_resource_not_available_error! unless Feature.enabled?(:custom_admin_roles, :instance)
 
           super

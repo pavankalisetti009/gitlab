@@ -60,11 +60,7 @@ RSpec.describe 'creating member role', feature_category: :permissions do
       stub_licensed_features(custom_roles: true)
     end
 
-    context 'when on SaaS' do
-      before do
-        stub_saas_features(gitlab_com_subscriptions: true)
-      end
-
+    context 'when on SaaS', :saas do
       context 'when creating a group level member role' do
         context 'when the current user is a maintainer' do
           before_all do

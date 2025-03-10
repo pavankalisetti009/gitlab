@@ -76,7 +76,7 @@ RSpec.describe 'Member Roles', feature_category: :permissions do
     end
   end
 
-  context 'when on SaaS', :js do
+  context 'when on SaaS', :js, :saas do
     before do
       stub_saas_features(gitlab_com_subscriptions: true)
 

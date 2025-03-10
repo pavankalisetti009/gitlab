@@ -7,13 +7,13 @@ RSpec.describe MemberRoles::CreateService, feature_category: :system_access do
   let_it_be(:user) { create(:user) }
 
   describe '#execute' do
+    let(:abilities) { { read_vulnerability: true } }
     let(:params) do
       {
         namespace: group,
         name: 'new name',
-        read_vulnerability: true, admin_merge_request: true,
         base_access_level: Gitlab::Access::GUEST
-      }
+      }.merge(abilities)
     end
 
     subject(:create_member_role) { described_class.new(user, params).execute }
@@ -55,7 +55,7 @@ RSpec.describe MemberRoles::CreateService, feature_category: :system_access do
 
           member_role = MemberRole.last
           expect(member_role.name).to eq('new name')
-          expect(member_role.read_vulnerability).to eq(true)
+          expect(member_role.permissions.select { |_k, v| v }.symbolize_keys).to eq(abilities)
         end
 
         include_examples 'audit event logging' do
@@ -76,25 +76,13 @@ RSpec.describe MemberRoles::CreateService, feature_category: :system_access do
                 target_details: {
                   name: operation.name,
                   description: operation.description,
-                  abilities: "admin_merge_request, read_vulnerability"
+                  abilities: abilities.keys.join(', ')
                 }.to_s,
                 custom_message: 'Member role was created',
                 author_class: user.class.name
               }
             }
           end
-        end
-      end
-
-      context 'with invalid params' do
-        context 'with a missing param' do
-          before do
-            params.delete(:base_access_level)
-          end
-
-          let(:error_message) { 'Base access level' }
-
-          it_behaves_like 'service returns error'
         end
       end
     end
@@ -124,6 +112,24 @@ RSpec.describe MemberRoles::CreateService, feature_category: :system_access do
         context 'with root group' do
           context 'when on SaaS', :saas do
             it_behaves_like 'member role creation'
+
+            context 'with a missing param' do
+              before do
+                params.delete(:base_access_level)
+              end
+
+              let(:error_message) { 'Base access level' }
+
+              it_behaves_like 'service returns error'
+            end
+
+            context 'with admin custom permissions' do
+              let(:abilities) { { read_admin_dashboard: true } }
+
+              let(:error_message) { 'Namespace must be blank' }
+
+              it_behaves_like 'service returns error'
+            end
           end
 
           context 'when on self-managed' do
@@ -138,7 +144,7 @@ RSpec.describe MemberRoles::CreateService, feature_category: :system_access do
             group.update!(parent: create(:group))
           end
 
-          let(:error_message) { 'Creation of member role is allowed only for root groups' }
+          let(:error_message) { 'Namespace must be top-level namespace' }
 
           it_behaves_like 'service returns error'
         end
@@ -173,12 +179,34 @@ RSpec.describe MemberRoles::CreateService, feature_category: :system_access do
 
         context 'when on self-managed' do
           it_behaves_like 'member role creation'
+
+          context 'with a missing param' do
+            before do
+              params.delete(:base_access_level)
+            end
+
+            let(:error_message) { 'Base access level' }
+
+            it_behaves_like 'service returns error'
+          end
         end
 
         context 'when on SaaS', :saas do
-          let(:error_message) { 'Operation not allowed' }
+          context 'when creating a regular custom role' do
+            let(:error_message) { "Namespace can't be blank" }
 
-          it_behaves_like 'service returns error'
+            it_behaves_like 'service returns error'
+          end
+
+          context 'when creating an admin custom role' do
+            let(:fail_condition!) do
+              allow(Ability).to receive(:allowed?).and_return(false)
+            end
+
+            let(:abilities) { { read_admin_dashboard: true } }
+
+            it_behaves_like 'member role creation'
+          end
         end
       end
     end
