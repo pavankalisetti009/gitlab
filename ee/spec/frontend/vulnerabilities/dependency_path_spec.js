@@ -11,8 +11,22 @@ jest.mock('~/lib/utils/dom_utils', () => ({ getContentWrapperHeight: jest.fn() }
 describe('Dependency paths drawer component', () => {
   let wrapper;
 
-  const createComponent = () => {
+  const defaultProps = {
+    dependency: {
+      component: {
+        name: 'uri',
+        version: '13.3',
+      },
+      dependencyPaths: [{ path: [{ name: 'jest', version: '29.7.0' }] }],
+    },
+  };
+
+  const createComponent = (props = {}) => {
     wrapper = shallowMountExtended(DependencyPath, {
+      propsData: {
+        ...defaultProps,
+        ...props,
+      },
       stubs: {
         GlDrawer: stubComponent(DependencyPathDrawer, { template: RENDER_ALL_SLOTS_TEMPLATE }),
         MountingPortal: stubComponent(MountingPortal),
@@ -73,17 +87,12 @@ describe('Dependency paths drawer component', () => {
     });
 
     it('renders the drawer on and passes the correct props', () => {
-      // This is temporary and will be deleted
-      // Will be replaced with proper API data once the BE completes
-      const TEST_DEPENDENCY = {
-        name: 'activerecord',
-        version: '5.2.3',
-        project: { name: 'gitlab-org/gitlab-ce' },
-      };
+      const { component, dependencyPaths } = defaultProps.dependency;
 
       expect(findDrawer().props()).toMatchObject({
         showDrawer: true,
-        dependency: TEST_DEPENDENCY,
+        dependencyPaths,
+        component,
       });
     });
 

@@ -1,5 +1,5 @@
 <script>
-import { GlDrawer } from '@gitlab/ui';
+import { GlDrawer, GlTruncateText } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
@@ -7,19 +7,40 @@ import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
 // This is temporary and will be deleted
 // Will be replaced with proper API data once the BE completes
 export const TEST_PATHS = [
-  ['@jest@1.2.3', '@jest-internal-whatever@1.2.3', '@babel/core@7.47.7'],
-  ['@react@0.13.1', '@babel/core@7.47.7'],
+  {
+    path: [
+      { name: 'jest', version: '29.7.0' },
+      { name: 'jest-cli', version: '29.7.0' },
+      { name: '@jest/core', version: '29.7.0' },
+      { name: '@jest/reporters', version: '29.7.0' },
+      { name: 'istanbul-lib-instrument', version: '6.0.3' },
+      { name: '@babel/core', version: '7.24.7' },
+    ],
+    isCyclic: false,
+    maxDepthReached: false,
+  },
 ];
 
 export default {
   name: 'DependencyPathDrawer',
   components: {
     GlDrawer,
+    GlTruncateText,
   },
   props: {
-    dependency: {
+    dependencyPaths: {
+      type: Array,
+      required: false,
+      default: () => TEST_PATHS,
+    },
+    component: {
       type: Object,
       required: true,
+    },
+    project: {
+      type: Object,
+      required: false,
+      default: () => {},
     },
     showDrawer: {
       type: Boolean,
@@ -28,11 +49,13 @@ export default {
     },
   },
   computed: {
-    showHeader() {
-      return this.dependency?.name;
-    },
     showProject() {
-      return this.dependency.project?.name;
+      return this.project && this.project.name;
+    },
+  },
+  methods: {
+    formatPath(paths) {
+      return paths.map((path) => `${path.name} @${path.version}`).join(' / ');
     },
   },
   i18n: {
@@ -42,7 +65,9 @@ export default {
   },
   getContentWrapperHeight,
   DRAWER_Z_INDEX,
-  TEST_PATHS,
+  truncateToggleButtonProps: {
+    class: 'gl-text-subtle gl-mt-3',
+  },
 };
 </script>
 
@@ -59,24 +84,31 @@ export default {
         {{ $options.i18n.drawerTitle }}
       </h4>
     </template>
-    <template v-if="showHeader" #header>
+    <template #header>
       <div class="gl-mt-3" data-testid="dependency-path-drawer-header">
         <strong>{{ $options.i18n.componentTitle }}:</strong>
-        <span>{{ dependency.name }}</span>
-        <span>{{ dependency.version }}</span>
+        <span>{{ component.name }}</span>
+        <span>{{ component.version }}</span>
       </div>
     </template>
     <div v-if="showProject" data-testid="dependency-path-drawer-project">
       <strong>{{ $options.i18n.projectTitle }}:</strong>
-      <span>{{ dependency.project.name }}</span>
+      <span>{{ project.name }}</span>
     </div>
     <ul class="gl-list-none gl-p-2">
       <li
-        v-for="(path, index) in $options.TEST_PATHS"
+        v-for="(dependencyPath, index) in dependencyPaths"
         :key="index"
         class="gl-border-b gl-py-5 first:!gl-pt-0"
       >
-        <div class="">{{ path.join(' / ') }}</div>
+        <gl-truncate-text
+          :toggle-button-props="$options.truncateToggleButtonProps"
+          :mobile-lines="3"
+        >
+          <div class="gl-leading-20">
+            {{ formatPath(dependencyPath.path) }}
+          </div>
+        </gl-truncate-text>
       </li>
     </ul>
   </gl-drawer>

@@ -1,4 +1,4 @@
-import { GlDrawer } from '@gitlab/ui';
+import { GlDrawer, GlTruncateText } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import DependencyPathDrawer from 'ee/dependencies/components/dependency_path_drawer.vue';
 import { RENDER_ALL_SLOTS_TEMPLATE, stubComponent } from 'helpers/stub_component';
@@ -10,15 +10,18 @@ jest.mock('~/lib/utils/dom_utils', () => ({ getContentWrapperHeight: jest.fn() }
 describe('DependencyPathDrawer component', () => {
   let wrapper;
 
-  const defaultDependency = {
-    name: 'activerecord',
-    version: '5.0.0',
+  const defaultProps = {
+    component: {
+      name: 'activerecord',
+      version: '5.0.0',
+    },
+    dependencyPaths: [{ path: [{ name: 'jest', version: '29.7.0' }] }],
   };
 
   const createComponent = (props) => {
     wrapper = shallowMountExtended(DependencyPathDrawer, {
       propsData: {
-        dependency: defaultDependency,
+        ...defaultProps,
         ...props,
       },
       stubs: {
@@ -31,6 +34,8 @@ describe('DependencyPathDrawer component', () => {
   const findTitle = () => wrapper.findByTestId('dependency-path-drawer-title');
   const findHeader = () => wrapper.findByTestId('dependency-path-drawer-header');
   const findProject = () => wrapper.findByTestId('dependency-path-drawer-project');
+  const findAllListItem = () => wrapper.findAll('li');
+  const getTruncateText = (index) => findAllListItem().at(index).findComponent(GlTruncateText);
 
   describe('default', () => {
     it('configures the drawer with header height and z-index', () => {
@@ -65,13 +70,8 @@ describe('DependencyPathDrawer component', () => {
     it('shows header text when component exists', () => {
       createComponent({ showDrawer: true });
 
-      const { name, version } = defaultDependency;
+      const { name, version } = defaultProps.component;
       expect(findHeader().text()).toBe(`Component: ${name} ${version}`);
-    });
-
-    it('does not show header text when component does not exist', () => {
-      createComponent({ showDrawer: true, dependency: {} });
-      expect(findHeader().exists()).toBe(false);
     });
   });
 
@@ -81,15 +81,43 @@ describe('DependencyPathDrawer component', () => {
 
       createComponent({
         showDrawer: true,
-        dependency: { ...defaultDependency, project: { name: projectName } },
+        project: { name: projectName },
       });
 
       expect(findProject().text()).toContain(`Project: ${projectName}`);
     });
 
     it('does not show project info when project does not exist', () => {
-      createComponent({ showDrawer: true });
+      createComponent({ showDrawer: true, project: undefined });
       expect(findProject().exists()).toBe(false);
+    });
+  });
+
+  describe('with dependency paths section', () => {
+    it('renders the correct length of dependency path items', () => {
+      createComponent();
+
+      const { dependencyPaths } = defaultProps;
+      expect(findAllListItem()).toHaveLength(dependencyPaths.length);
+    });
+
+    it('renders the truncate text with the correct props', () => {
+      createComponent();
+
+      expect(getTruncateText(0).props()).toMatchObject({
+        mobileLines: 3,
+        toggleButtonProps: {
+          class: 'gl-text-subtle gl-mt-3',
+        },
+      });
+    });
+
+    it('renders the paths text in the correct format', () => {
+      createComponent();
+
+      const index = 0;
+      const { name, version } = defaultProps.dependencyPaths[index].path[index];
+      expect(getTruncateText(index).text()).toBe(`${name} @${version}`);
     });
   });
 });
