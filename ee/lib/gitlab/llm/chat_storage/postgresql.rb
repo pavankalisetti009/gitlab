@@ -28,6 +28,8 @@ module Gitlab
         end
 
         def messages
+          return [] unless current_thread
+
           current_thread.messages.recent(MAX_MESSAGES).map do |message|
             data = message.as_json
 
@@ -58,7 +60,8 @@ module Gitlab
         end
 
         def current_thread
-          @current_thread ||= thread || find_default_thread || create_default_thread
+          @current_thread ||= thread
+          @current_thread ||= find_default_thread || create_default_thread if @thread_fallback
         end
 
         private

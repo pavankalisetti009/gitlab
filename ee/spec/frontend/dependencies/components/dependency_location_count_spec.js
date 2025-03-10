@@ -16,6 +16,8 @@ describe('Dependency Location Count component', () => {
   const projectName = 'test-project';
   const endpoint = 'endpoint';
   const unknownPath = 'Unknown path';
+  const topLevel = false;
+  const topLevelText = '(top level)';
 
   const locationsData = {
     locations: [
@@ -23,6 +25,7 @@ describe('Dependency Location Count component', () => {
         location: {
           blob_path: blobPath,
           path,
+          top_level: topLevel,
         },
         project: {
           name: projectName,
@@ -146,6 +149,27 @@ describe('Dependency Location Count component', () => {
       expect(findLocationInfo().attributes('href')).toBe(blobPath);
       expect(findLocationInfo().text()).toContain(path);
       expect(wrapper.text()).toContain(projectName);
+      expect(wrapper.text()).not.toContain(topLevelText);
+    });
+
+    describe('when top level is set to true', () => {
+      beforeEach(() => {
+        createComponent({
+          mountFn: mountExtended,
+        });
+        locationsData.locations[0].location.top_level = true;
+        mockAxios.onGet(endpoint).reply(HTTP_STATUS_OK, locationsData);
+      });
+
+      it('renders location information', async () => {
+        await findLocationList().vm.$emit('shown');
+        await waitForPromises();
+
+        expect(findLocationInfo().attributes('href')).toBe(blobPath);
+        expect(findLocationInfo().text()).toContain(path);
+        expect(wrapper.text()).toContain(projectName);
+        expect(wrapper.text()).toContain(topLevelText);
+      });
     });
 
     describe('with unknown path', () => {

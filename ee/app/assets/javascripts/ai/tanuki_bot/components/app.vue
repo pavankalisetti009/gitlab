@@ -20,6 +20,7 @@ import {
   i18n,
   GENIE_CHAT_RESET_MESSAGE,
   GENIE_CHAT_CLEAR_MESSAGE,
+  GENIE_CHAT_NEW_MESSAGE,
   DUO_CHAT_VIEWS,
 } from 'ee/ai/constants';
 import getAiSlashCommands from 'ee/ai/graphql/get_ai_slash_commands.query.graphql';
@@ -43,6 +44,7 @@ export default {
     askAQuestion: s__('DuoChat|Ask a question about GitLab'),
     exampleQuestion: s__('DuoChat|For example, %{linkStart}what is a fork%{linkEnd}?'),
     whatIsAForkQuestion: s__('DuoChat|What is a fork?'),
+    newSlashCommandDescription: s__('DuoChat|New chat conversation.'),
     GENIE_CHAT_LEGAL_GENERATED_BY_AI: i18n.GENIE_CHAT_LEGAL_GENERATED_BY_AI,
     predefinedPrompts: PREDEFINED_PROMPTS.map((prompt) => prompt.text),
   },
@@ -78,6 +80,11 @@ export default {
     // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     aiMessages: {
       query: getAiMessages,
+      variables() {
+        return {
+          conversationType: this.glFeatures.duoChatMultiThread ? 'DUO_CHAT' : null,
+        };
+      },
       skip() {
         return !this.duoChatGlobalState.isShown;
       },
@@ -125,17 +132,7 @@ export default {
       },
       result({ data }) {
         if (data?.aiSlashCommands) {
-          if (this.glFeatures.duoChatMultiThread) {
-            // Filter out reset and clear commands in multi-thread mode
-            // this is a temporary fix hack until: https://gitlab.com/gitlab-org/gitlab/-/issues/470818
-            // is resolved.
-            this.aiSlashCommands = data.aiSlashCommands.filter(
-              (command) =>
-                ![GENIE_CHAT_RESET_MESSAGE, GENIE_CHAT_CLEAR_MESSAGE].includes(command.name),
-            );
-          } else {
-            this.aiSlashCommands = data.aiSlashCommands;
-          }
+          this.aiSlashCommands = this.enhanceSlashCommands(data.aiSlashCommands);
         }
       },
       error(err) {
@@ -298,6 +295,16 @@ export default {
       this.isResponseTracked = true;
     },
     onSendChatPrompt(question, variables = {}) {
+      const CHAT_RESET_COMMANDS = [
+        GENIE_CHAT_NEW_MESSAGE,
+        GENIE_CHAT_RESET_MESSAGE,
+        GENIE_CHAT_CLEAR_MESSAGE,
+      ];
+
+      if (this.glFeatures.duoChatMultiThread && CHAT_RESET_COMMANDS.includes(question)) {
+        this.onNewChat();
+        return;
+      }
       performance.mark('prompt-sent');
       this.completedRequestId = null;
       this.isResponseTracked = false;
@@ -430,6 +437,28 @@ export default {
       return threads.reduce((latest, thread) => {
         return !latest || thread.updatedAt > latest.updatedAt ? thread : latest;
       });
+    },
+    enhanceSlashCommands(commands) {
+      if (this.glFeatures.duoChatMultiThread) {
+        const newCommand = {
+          description: this.$options.i18n.newSlashCommandDescription,
+          name: '/new',
+          shouldSubmit: true,
+        };
+
+        // Filter out reset and clear commands in multi-thread mode
+        // add new command to the list
+        // this is a temporary fix hack until: https://gitlab.com/gitlab-org/gitlab/-/issues/523865
+        // is resolved.
+        return [
+          ...commands.filter(
+            (command) =>
+              ![GENIE_CHAT_RESET_MESSAGE, GENIE_CHAT_CLEAR_MESSAGE].includes(command.name),
+          ),
+          newCommand,
+        ];
+      }
+      return commands;
     },
   },
 };

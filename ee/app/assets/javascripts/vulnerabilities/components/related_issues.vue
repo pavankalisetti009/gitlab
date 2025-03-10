@@ -58,16 +58,17 @@ export default {
     },
   },
   data() {
-    this.store = new RelatedIssuesStore();
+    const store = new RelatedIssuesStore();
 
     return {
       isProcessingAction: false,
-      state: this.store.state,
+      state: store.state,
       isFetching: false,
       isSubmitting: false,
       isFormVisible: false,
       errorMessage: null,
       inputValue: '',
+      store,
     };
   },
   computed: {

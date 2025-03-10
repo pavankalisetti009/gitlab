@@ -6,14 +6,10 @@ module Geo
 
     include ::Geo::VerifiableReplicator
 
-    EVENT_CREATED = 'created'
-    EVENT_UPDATED = 'updated'
-    EVENT_DELETED = 'deleted'
-
     included do
-      event EVENT_CREATED
-      event EVENT_UPDATED
-      event EVENT_DELETED
+      event ::Geo::ReplicatorEvents::EVENT_CREATED
+      event ::Geo::ReplicatorEvents::EVENT_DELETED
+      event ::Geo::ReplicatorEvents::EVENT_UPDATED
     end
 
     class_methods do
@@ -89,7 +85,10 @@ module Geo
     end
 
     def reschedule_sync
-      Geo::EventWorker.perform_async(replicable_name, EVENT_UPDATED, { 'model_record_id' => model_record.id })
+      Geo::EventWorker.perform_async(
+        replicable_name,
+        ::Geo::ReplicatorEvents::EVENT_UPDATED,
+        { 'model_record_id' => model_record.id })
     end
 
     # Schedules a verification job after a model record is created/updated

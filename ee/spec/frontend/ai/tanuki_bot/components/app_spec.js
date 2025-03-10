@@ -8,7 +8,11 @@ import { sendDuoChatCommand } from 'ee/ai/utils';
 import TanukiBotChatApp from 'ee/ai/tanuki_bot/components/app.vue';
 import DuoChatCallout from 'ee/ai/components/global_callout/duo_chat_callout.vue';
 import TanukiBotSubscriptions from 'ee/ai/tanuki_bot/components/tanuki_bot_subscriptions.vue';
-import { GENIE_CHAT_RESET_MESSAGE, GENIE_CHAT_CLEAR_MESSAGE } from 'ee/ai/constants';
+import {
+  GENIE_CHAT_RESET_MESSAGE,
+  GENIE_CHAT_CLEAR_MESSAGE,
+  GENIE_CHAT_NEW_MESSAGE,
+} from 'ee/ai/constants';
 import {
   TANUKI_BOT_TRACKING_EVENT_NAME,
   WIDTH_OFFSET,
@@ -305,6 +309,25 @@ describeSkipVue3(skipReason, () => {
         performance.mark = jest.fn();
       });
 
+      it.each([GENIE_CHAT_NEW_MESSAGE, GENIE_CHAT_RESET_MESSAGE, GENIE_CHAT_CLEAR_MESSAGE])(
+        'resets chat state when "%s" command is sent and multi-thread is enabled',
+        async (command) => {
+          createComponent({
+            glFeatures: { duoChatMultiThread: true },
+          });
+          findDuoChat().vm.$emit('send-chat-prompt', command);
+          await nextTick();
+
+          const duoChat = findDuoChat();
+          expect(duoChat.props('activeThreadId')).toBe('');
+          expect(actionSpies.setMessages).toHaveBeenCalledWith(expect.anything(), []);
+          expect(duoChat.props('multiThreadedView')).toBe('chat');
+          expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), false);
+          expect(duoChat.props('canceledRequestIds')).toEqual([]);
+          expect(chatMutationHandlerMock).not.toHaveBeenCalled();
+        },
+      );
+
       it('does set loading to `true` for a message other than the reset or clear messages', () => {
         findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
         expect(actionSpies.setLoading).toHaveBeenCalled();
@@ -378,7 +401,7 @@ describeSkipVue3(skipReason, () => {
       });
 
       it.each([GENIE_CHAT_RESET_MESSAGE, GENIE_CHAT_CLEAR_MESSAGE])(
-        'does not set loading to `true` for "%s" message',
+        'does not set loading to `true` for "%s" message in single-thread mode',
         async (msg) => {
           actionSpies.setLoading.mockReset();
           findDuoChat().vm.$emit('send-chat-prompt', msg);
@@ -818,18 +841,23 @@ describeSkipVue3(skipReason, () => {
       await waitForPromises();
     });
 
-    it('filters out reset and clear commands while preserving others', async () => {
+    it('filters out reset and clear commands while preserving others and adds new command', async () => {
       await waitForPromises();
       const filteredCommands = findDuoChat().props().slashCommands;
+
+      // Verify filtered commands
       expect(filteredCommands.some((cmd) => cmd.name === '/reset')).toBe(false);
       expect(filteredCommands.some((cmd) => cmd.name === '/clear')).toBe(false);
       expect(filteredCommands.some((cmd) => cmd.name === '/help')).toBe(true);
-    });
 
-    it('filters out reset and clear commands', () => {
-      const filteredCommands = findDuoChat().props().slashCommands;
-      expect(filteredCommands.some((cmd) => cmd.name === '/reset')).toBe(false);
-      expect(filteredCommands.some((cmd) => cmd.name === '/clear')).toBe(false);
+      // Verify new command is added
+      const newCommand = filteredCommands.find((cmd) => cmd.name === '/new');
+      expect(newCommand).toBeDefined();
+      expect(newCommand).toMatchObject({
+        description: 'New chat conversation.',
+        name: '/new',
+        shouldSubmit: true,
+      });
     });
 
     describe('chat mutation selection and conversation type', () => {
@@ -1078,6 +1106,26 @@ describeSkipVue3(skipReason, () => {
       await waitForPromises();
 
       expect(conversationThreadsQueryHandlerMock).toHaveBeenCalledTimes(shouldSkip ? 0 : 1);
+    });
+  });
+
+  describe('aiMessages query', () => {
+    it.each`
+      hasMultiThread | expectedType  | description
+      ${false}       | ${null}       | ${'uses null conversation type when multi-thread is disabled'}
+      ${true}        | ${'DUO_CHAT'} | ${'uses DUO_CHAT conversation type when multi-thread is enabled'}
+    `('$description', async ({ hasMultiThread, expectedType }) => {
+      duoChatGlobalState.isShown = true;
+      createComponent({
+        glFeatures: { duoChatMultiThread: hasMultiThread },
+      });
+      await waitForPromises();
+
+      expect(queryHandlerMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          conversationType: expectedType,
+        }),
+      );
     });
   });
 });

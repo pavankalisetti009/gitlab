@@ -15,10 +15,11 @@ module Gitlab
         # sufficient.
         MAX_TEXT_LIMIT = 20_000
 
-        def initialize(user, agent_version_id = nil, thread = nil)
+        def initialize(user, agent_version_id = nil, thread = nil, thread_fallback: true)
           @thread = thread
           @agent_version_id = agent_version_id
           @user = user
+          @thread_fallback = thread_fallback
         end
 
         def add(message)

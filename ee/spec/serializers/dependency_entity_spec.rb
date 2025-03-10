@@ -51,7 +51,8 @@ RSpec.describe DependencyEntity, feature_category: :dependency_management do
 
     context 'with an organization' do
       let_it_be(:project) { create(:project, organization: organization) }
-      let_it_be(:sbom_occurrence) { create(:sbom_occurrence, :mit, :bundler, project: project) }
+      let_it_be(:ancestor) { { 'name' => 'libc', 'version' => '1.2.3' } }
+      let_it_be(:sbom_occurrence) { create(:sbom_occurrence, :mit, :bundler, project: project, ancestors: [ancestor]) }
       let(:request_params) { { project: nil, group: nil, user: user, organization: organization } }
 
       it 'renders the proper representation' do
@@ -67,6 +68,19 @@ RSpec.describe DependencyEntity, feature_category: :dependency_management do
       it 'renders location' do
         expect(subject.dig(:location, :blob_path)).to eq(sbom_occurrence.location[:blob_path])
         expect(subject.dig(:location, :path)).to eq(sbom_occurrence.location[:path])
+        expect(subject.dig(:location, :ancestors).as_json).to eq([ancestor])
+        expect(subject.dig(:location, :top_level)).to be false
+      end
+
+      context 'when ancestors contains empty hash' do
+        let_it_be(:sbom_occurrence) do
+          create(:sbom_occurrence, :mit, :bundler, project: project, ancestors: [{}, ancestor])
+        end
+
+        it 'doesnt render empty hash as one of the ancestors' do
+          expect(subject.dig(:location, :ancestors).as_json).to eq([ancestor])
+          expect(subject.dig(:location, :top_level)).to be true
+        end
       end
 
       it 'renders each license' do

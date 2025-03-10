@@ -794,8 +794,7 @@ describe('Add On Eligible User List', () => {
     describe('when using select all option', () => {
       beforeEach(async () => {
         await createComponent({ mountFn: mount, isBulkAddOnAssignmentEnabled: true });
-
-        await findSelectAllUsersCheckbox().find('input').setChecked(true);
+        await findSelectAllUsersCheckbox().setChecked(true);
       });
 
       it('shows a summary of all users selected when select all users checkbox is clicked', () => {
@@ -805,7 +804,7 @@ describe('Add On Eligible User List', () => {
       });
 
       it('does not show a summary of users when unselect all users checkbox is clicked', async () => {
-        await findSelectAllUsersCheckbox().find('input').setChecked(false);
+        await findSelectAllUsersCheckbox().setChecked(false);
 
         expect(findSelectedUsersSummary().exists()).toBe(false);
       });
@@ -886,7 +885,7 @@ describe('Add On Eligible User List', () => {
       });
 
       it('hides the confirmation modal when cancelled', async () => {
-        await findSelectAllUsersCheckbox().find('input').setChecked(true);
+        await findSelectAllUsersCheckbox().setChecked(true);
 
         findAssignSeatsButton().vm.$emit('click');
         await nextTick();
@@ -1342,7 +1341,7 @@ describe('Add On Eligible User List', () => {
           props: { pageInfo: pageInfoWithMorePages },
         });
 
-        await findSelectAllUsersCheckbox().find('input').setChecked(true);
+        await findSelectAllUsersCheckbox().setChecked(true);
       });
 
       it('resets user selection on navigating to next page', async () => {

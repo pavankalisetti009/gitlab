@@ -24,6 +24,7 @@ export const EXPLAIN_CODE_TRACKING_EVENT_NAME = 'explain_code_blob_viewer';
 export const TANUKI_BOT_TRACKING_EVENT_NAME = 'ask_gitlab_chat';
 export const GENIE_CHAT_RESET_MESSAGE = '/reset';
 export const GENIE_CHAT_CLEAR_MESSAGE = '/clear';
+export const GENIE_CHAT_NEW_MESSAGE = '/new';
 export const GENIE_CHAT_EXPLAIN_MESSAGE = '/explain';
 
 export const COMMENT_TEMPERATURE_EVENTS = {
