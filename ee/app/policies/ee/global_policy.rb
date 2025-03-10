@@ -94,6 +94,8 @@ module EE
 
         if duo_chat_self_hosted?
           self_hosted_models_available_for?(@user)
+        elsif ::Feature.enabled?(:duo_chat_allowed_to_use, @user)
+          user.allowed_to_use?(:duo_chat)
         else
           duo_chat.allowed_for?(@user)
         end
