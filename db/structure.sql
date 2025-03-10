@@ -2166,6 +2166,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_5ed68c226e97() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."project_id"
+  FROM "approval_merge_request_rules"
+  WHERE "approval_merge_request_rules"."id" = NEW."approval_merge_request_rule_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_5f6432d2dccc() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -8671,7 +8687,8 @@ CREATE TABLE approval_merge_request_rules (
 CREATE TABLE approval_merge_request_rules_approved_approvers (
     id bigint NOT NULL,
     approval_merge_request_rule_id bigint NOT NULL,
-    user_id bigint NOT NULL
+    user_id bigint NOT NULL,
+    project_id bigint
 );
 
 CREATE SEQUENCE approval_merge_request_rules_approved_approvers_id_seq
@@ -31137,6 +31154,8 @@ CREATE INDEX idx_analytics_devops_adoption_segments_on_namespace_id ON analytics
 
 CREATE INDEX idx_analytics_devops_adoption_snapshots_finalized ON analytics_devops_adoption_snapshots USING btree (namespace_id, end_time) WHERE (recorded_at >= end_time);
 
+CREATE INDEX idx_approval_merge_request_rules_approved_approvers_project_id ON approval_merge_request_rules_approved_approvers USING btree (project_id);
+
 CREATE INDEX idx_approval_merge_request_rules_on_mr_id_config_id_and_id ON approval_merge_request_rules USING btree (merge_request_id, security_orchestration_policy_configuration_id, id);
 
 CREATE INDEX idx_approval_merge_request_rules_on_scan_result_policy_id ON approval_merge_request_rules USING btree (scan_result_policy_id);
@@ -38629,6 +38648,8 @@ CREATE TRIGGER trigger_5ca97b87ee30 BEFORE INSERT OR UPDATE ON merge_request_con
 
 CREATE TRIGGER trigger_5cf44cd40f22 BEFORE INSERT OR UPDATE ON operations_scopes FOR EACH ROW EXECUTE FUNCTION trigger_5cf44cd40f22();
 
+CREATE TRIGGER trigger_5ed68c226e97 BEFORE INSERT OR UPDATE ON approval_merge_request_rules_approved_approvers FOR EACH ROW EXECUTE FUNCTION trigger_5ed68c226e97();
+
 CREATE TRIGGER trigger_5f6432d2dccc BEFORE INSERT OR UPDATE ON operations_strategies_user_lists FOR EACH ROW EXECUTE FUNCTION trigger_5f6432d2dccc();
 
 CREATE TRIGGER trigger_627949f72f05 BEFORE INSERT OR UPDATE ON packages_rpm_metadata FOR EACH ROW EXECUTE FUNCTION trigger_627949f72f05();
@@ -40023,6 +40044,9 @@ ALTER TABLE ONLY subscription_seat_assignments
 
 ALTER TABLE ONLY organization_users
     ADD CONSTRAINT fk_8d9b20725d FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE NOT VALID;
+
+ALTER TABLE ONLY approval_merge_request_rules_approved_approvers
+    ADD CONSTRAINT fk_8dfb93b836 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY raw_usage_data
     ADD CONSTRAINT fk_8e21125854 FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
