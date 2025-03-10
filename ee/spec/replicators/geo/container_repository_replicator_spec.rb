@@ -25,7 +25,7 @@ RSpec.describe Geo::ContainerRepositoryReplicator, :geo, feature_category: :geo_
     end
 
     it_behaves_like 'a replicator' do
-      let_it_be(:event_name) { ::Geo::ContainerRepositoryReplicator::EVENT_UPDATED }
+      let_it_be(:event_name) { ::Geo::ReplicatorEvents::EVENT_UPDATED }
     end
 
     # This could be included in each model's spec, but including it here is DRYer.
@@ -48,7 +48,7 @@ RSpec.describe Geo::ContainerRepositoryReplicator, :geo, feature_category: :geo_
 
           expect(::Geo::Event.last.attributes).to include(
             "replicable_name" => replicator.replicable_name,
-            "event_name" => ::Geo::ContainerRepositoryReplicator::EVENT_UPDATED,
+            "event_name" => ::Geo::ReplicatorEvents::EVENT_UPDATED,
             "payload" => { "model_record_id" => replicator.model_record.id })
         end
 
@@ -91,7 +91,7 @@ RSpec.describe Geo::ContainerRepositoryReplicator, :geo, feature_category: :geo_
 
           expect(::Geo::Event.last.attributes).to include(
             "replicable_name" => replicator.replicable_name,
-            "event_name" => ::Geo::ContainerRepositoryReplicator::EVENT_DELETED,
+            "event_name" => ::Geo::ReplicatorEvents::EVENT_DELETED,
             "payload" => {
               "model_record_id" => replicator.model_record.id,
               "path" => replicator.model_record.path
@@ -139,7 +139,7 @@ RSpec.describe Geo::ContainerRepositoryReplicator, :geo, feature_category: :geo_
             .to receive(:new).with(model_record)
                   .and_return(sync_service)
 
-          replicator.consume(::Geo::ContainerRepositoryReplicator::EVENT_UPDATED)
+          replicator.consume(::Geo::ReplicatorEvents::EVENT_UPDATED)
         end
       end
 
@@ -150,7 +150,7 @@ RSpec.describe Geo::ContainerRepositoryReplicator, :geo, feature_category: :geo_
           expect(::Geo::ContainerRepositorySyncService)
             .not_to receive(:new)
 
-          replicator.consume(::Geo::ContainerRepositoryReplicator::EVENT_UPDATED)
+          replicator.consume(::Geo::ReplicatorEvents::EVENT_UPDATED)
         end
       end
     end
@@ -177,7 +177,7 @@ RSpec.describe Geo::ContainerRepositoryReplicator, :geo, feature_category: :geo_
                 .and_return(removal_service)
 
         replicator.consume(
-          ::Geo::ContainerRepositoryReplicator::EVENT_DELETED,
+          ::Geo::ReplicatorEvents::EVENT_DELETED,
           model_record_id: model_record,
           path: model_record.path
         )

@@ -22,7 +22,7 @@ RSpec.shared_examples 'a blob replicator' do
   end
 
   it_behaves_like 'a replicator' do
-    let_it_be(:event_name) { ::Geo::BlobReplicatorStrategy::EVENT_CREATED }
+    let_it_be(:event_name) { ::Geo::ReplicatorEvents::EVENT_CREATED }
   end
 
   it_behaves_like 'a verifiable replicator'
@@ -89,7 +89,7 @@ RSpec.shared_examples 'a blob replicator' do
 
         expect(::Geo::Event.last.attributes).to include(
           "replicable_name" => replicator.replicable_name,
-          "event_name" => ::Geo::BlobReplicatorStrategy::EVENT_CREATED,
+          "event_name" => ::Geo::ReplicatorEvents::EVENT_CREATED,
           "payload" => {
             "model_record_id" => replicator.model_record.id
           }
@@ -143,7 +143,7 @@ RSpec.shared_examples 'a blob replicator' do
 
         expect(::Geo::Event.last.attributes).to include(
           "replicable_name" => replicator.replicable_name,
-          "event_name" => ::Geo::BlobReplicatorStrategy::EVENT_DELETED,
+          "event_name" => ::Geo::ReplicatorEvents::EVENT_DELETED,
           "payload" => {
             "model_record_id" => replicator.model_record.id,
             "uploader_class" => replicator.carrierwave_uploader.class.to_s,
