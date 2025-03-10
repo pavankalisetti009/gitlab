@@ -607,9 +607,9 @@ then override the icon in one of two ways:
      ```yaml
      omniauth:
        providers:
-         - { name: '...'
+         - { name: 'myIcon'
              icon: 'data:image/png;base64,<base64-data>'
-             ...
+             # ...
            }
      ```
 
