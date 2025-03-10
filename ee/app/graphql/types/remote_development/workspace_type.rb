@@ -39,6 +39,10 @@ module Types
       field :actual_state, GraphQL::Types::String,
         null: false, description: 'Actual state of the workspace.'
 
+      field :actual_state_updated_at, Types::TimeType, # rubocop:disable GraphQL/ExtractType -- We don't want to extract this to a type
+        experiment: { milestone: '17.11' },
+        null: false, description: 'Timestamp of the last update to the actual state.'
+
       field :responded_to_agent_at, Types::TimeType,
         null: true,
         description: 'Timestamp of the last response sent to the GitLab agent for Kubernetes for the workspace.'
