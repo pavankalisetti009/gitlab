@@ -157,6 +157,13 @@ RSpec.describe Members::ActivateService, feature_category: :groups_and_projects 
     subject(:execute) { described_class.for_group(root_group).execute(current_user: current_user) }
 
     context 'when unauthorized' do
+      before do
+        stub_licensed_features(custom_roles: true)
+
+        member_role = create(:member_role, :guest, :admin_group_member, namespace: root_group)
+        create(:group_member, :guest, group: root_group, user: current_user, member_role: member_role)
+      end
+
       it_behaves_like 'returns an error', 'You do not have permission to approve a member'
     end
 

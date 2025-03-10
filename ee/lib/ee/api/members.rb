@@ -66,7 +66,7 @@ module EE
 
             not_found! unless member
             bad_request! unless group.root?
-            bad_request! unless can?(current_user, :admin_group_member, group)
+            bad_request! unless can?(current_user, :activate_group_member, group)
 
             result =
               if member.invite?
@@ -87,7 +87,7 @@ module EE
             group = find_group!(params[:id])
 
             bad_request! unless group.root?
-            bad_request! unless can?(current_user, :admin_group_member, group)
+            bad_request! unless can?(current_user, :activate_group_member, group)
 
             result = ::Members::ActivateService.for_group(group).execute(current_user: current_user)
 

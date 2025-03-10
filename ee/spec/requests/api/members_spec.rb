@@ -2007,7 +2007,14 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
         end
       end
 
-      context 'when the current user does not have the :admin_group_member ability' do
+      context 'when the current user does not have the `activate_group_member` ability' do
+        before do
+          stub_licensed_features(custom_roles: true)
+
+          member_role = create(:member_role, :guest, :admin_group_member, namespace: group)
+          create(:group_member, :guest, group: group, user: not_an_owner, member_role: member_role)
+        end
+
         it 'returns a bad request response' do
           put api(url, not_an_owner)
 
@@ -2069,10 +2076,17 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
       end
     end
 
-    describe 'PUT /groups/:id/members/approve_all' do
+    describe 'POST /groups/:id/members/approve_all' do
       let(:url) { "/groups/#{group.id}/members/approve_all" }
 
       context 'when the current user is not authorized' do
+        before do
+          stub_licensed_features(custom_roles: true)
+
+          member_role = create(:member_role, :guest, :admin_group_member, namespace: group)
+          create(:group_member, :guest, group: group, user: not_an_owner, member_role: member_role)
+        end
+
         it 'returns a bad request response' do
           post api(url, not_an_owner)
 

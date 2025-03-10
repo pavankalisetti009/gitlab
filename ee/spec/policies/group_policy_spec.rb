@@ -3808,6 +3808,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     context 'for a member role with admin_group_member true' do
       let(:member_role_abilities) { { admin_group_member: true } }
       let(:allowed_abilities) { [:admin_group_member] }
+      let(:disallowed_abilities) { [:activate_group_member] }
 
       it_behaves_like 'custom roles abilities'
 

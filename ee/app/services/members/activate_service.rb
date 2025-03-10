@@ -67,7 +67,7 @@ module Members
     def allowed?
       return true if skip_authorization
 
-      can?(current_user, :admin_group_member, group)
+      can?(current_user, :activate_group_member, group)
     end
 
     def update_user_project_access
