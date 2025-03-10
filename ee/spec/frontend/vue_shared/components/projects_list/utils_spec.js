@@ -26,7 +26,7 @@ jest.mock('~/vue_shared/components/projects_list/utils', () => ({
 }));
 
 const MOCK_PERSONAL_PROJECT = {
-  name: 'No Delay Project',
+  nameWithNamespace: 'No Delay Project',
   fullPath: 'path/to/project/1',
   isAdjournedDeletionEnabled: false,
   markedForDeletionOn: null,
@@ -35,7 +35,7 @@ const MOCK_PERSONAL_PROJECT = {
 };
 
 const MOCK_PROJECT_NO_ADJOURNED_DELETION = {
-  name: 'No Delay Project',
+  nameWithNamespace: 'No Delay Project',
   fullPath: 'path/to/project/1',
   isAdjournedDeletionEnabled: false,
   markedForDeletionOn: null,
@@ -46,7 +46,7 @@ const MOCK_PROJECT_NO_ADJOURNED_DELETION = {
 };
 
 const MOCK_PROJECT_WITH_DELAY_DELETION = {
-  name: 'With Delay Project',
+  nameWithNamespace: 'With Delay Project',
   fullPath: 'path/to/project/2',
   isAdjournedDeletionEnabled: true,
   markedForDeletionOn: null,
@@ -57,7 +57,7 @@ const MOCK_PROJECT_WITH_DELAY_DELETION = {
 };
 
 const MOCK_PROJECT_PENDING_DELETION = {
-  name: 'Pending Deletion Project',
+  nameWithNamespace: 'Pending Deletion Project',
   fullPath: 'path/to/project/3',
   isAdjournedDeletionEnabled: true,
   markedForDeletionOn: '2024-03-24',
@@ -91,7 +91,7 @@ describe('renderRestoreSuccessToast', () => {
     renderRestoreSuccessToast(MOCK_PROJECT_PENDING_DELETION);
 
     expect(toast).toHaveBeenCalledWith(
-      `Project '${MOCK_PROJECT_PENDING_DELETION.name}' has been successfully restored.`,
+      `Project '${MOCK_PROJECT_PENDING_DELETION.nameWithNamespace}' has been successfully restored.`,
     );
   });
 });
@@ -108,7 +108,7 @@ describe('renderDeleteSuccessToast', () => {
 
     it('renders toast explaining project will be delayed deleted', () => {
       expect(toast).toHaveBeenCalledWith(
-        `Project '${MOCK_PROJECT_WITH_DELAY_DELETION.name}' will be deleted on ${MOCK_PROJECT_WITH_DELAY_DELETION.permanentDeletionDate}.`,
+        `Project '${MOCK_PROJECT_WITH_DELAY_DELETION.nameWithNamespace}' will be deleted on ${MOCK_PROJECT_WITH_DELAY_DELETION.permanentDeletionDate}.`,
       );
     });
   });
@@ -125,7 +125,7 @@ describe('renderDeleteSuccessToast', () => {
 
     it('renders toast explaining project is deleted and when data will be removed', () => {
       expect(toast).toHaveBeenCalledWith(
-        `Deleting project '${MOCK_PROJECT_NO_ADJOURNED_DELETION.name}'. All data will be removed on ${MOCK_PROJECT_NO_ADJOURNED_DELETION.permanentDeletionDate}.`,
+        `Deleting project '${MOCK_PROJECT_NO_ADJOURNED_DELETION.nameWithNamespace}'. All data will be removed on ${MOCK_PROJECT_NO_ADJOURNED_DELETION.permanentDeletionDate}.`,
       );
     });
   });
@@ -157,7 +157,7 @@ describe('renderDeleteSuccessToast', () => {
 
     it('renders toast explaining project is being deleted', () => {
       expect(toast).toHaveBeenCalledWith(
-        `Project '${MOCK_PROJECT_PENDING_DELETION.name}' is being deleted.`,
+        `Project '${MOCK_PROJECT_PENDING_DELETION.nameWithNamespace}' is being deleted.`,
       );
     });
   });

@@ -3,7 +3,7 @@ import { GlLoadingIcon } from '@gitlab/ui';
 import projects from 'test_fixtures/api/users/projects/get.json';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import { renderRestoreSuccessToast } from 'ee/vue_shared/components/resource_lists/utils';
+import { renderRestoreSuccessToast } from 'ee/vue_shared/components/projects_list/utils';
 import { restoreProject } from 'ee/rest_api';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import ListActions from '~/vue_shared/components/list_actions/list_actions.vue';
@@ -15,8 +15,8 @@ import {
 } from '~/vue_shared/components/list_actions/constants';
 import { createAlert } from '~/alert';
 
-jest.mock('ee/vue_shared/components/resource_lists/utils', () => ({
-  ...jest.requireActual('ee/vue_shared/components/resource_lists/utils'),
+jest.mock('ee/vue_shared/components/projects_list/utils', () => ({
+  ...jest.requireActual('ee/vue_shared/components/projects_list/utils'),
   renderRestoreSuccessToast: jest.fn(),
 }));
 jest.mock('~/alert');
