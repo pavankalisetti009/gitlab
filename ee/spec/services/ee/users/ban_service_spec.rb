@@ -7,12 +7,12 @@ RSpec.describe Users::BanService, feature_category: :user_management do
 
   subject(:service) { described_class.new(current_user) }
 
-  describe '#execute' do
-    let!(:user) { create(:user) }
+  describe '#execute', :enable_admin_mode do
+    let_it_be_with_reload(:user) { create(:user) }
 
     subject(:operation) { service.execute(user) }
 
-    context 'for audit events', :enable_admin_mode do
+    context 'for audit events' do
       include_examples 'audit event logging' do
         let(:operation) { service.execute(user) }
 
@@ -35,6 +35,52 @@ RSpec.describe Users::BanService, feature_category: :user_management do
               target_type: 'User'
             }
           }
+        end
+      end
+    end
+
+    context 'for paid users', :saas do
+      shared_examples 'not banning paid users' do
+        specify :aggregate_failures do
+          response = service.execute(user)
+
+          expect(response[:status]).to eq(:error)
+          expect(response[:message]).to match('You cannot ban paid users.')
+          expect(user).not_to be_banned
+        end
+      end
+
+      context 'when the user is part of a paid namespace' do
+        before do
+          create(:group_with_plan, plan: :ultimate_plan, owners: user)
+        end
+
+        it_behaves_like 'not banning paid users'
+      end
+
+      context 'when the user is an enterprise user' do
+        let_it_be(:user) { create(:enterprise_user) }
+
+        it_behaves_like 'not banning paid users'
+      end
+
+      context 'when the user is a member of a trial namespace' do
+        before do
+          create(
+            :group_with_plan,
+            plan: :ultimate_trial_plan,
+            trial: true,
+            trial_starts_on: Date.current,
+            trial_ends_on: 30.days.from_now,
+            owners: user
+          )
+        end
+
+        it 'bans the user', :aggregate_failures do
+          response = service.execute(user)
+
+          expect(response[:status]).to eq(:success)
+          expect(user).to be_banned
         end
       end
     end
