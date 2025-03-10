@@ -7,12 +7,9 @@ module Geo
     include ::Geo::VerifiableReplicator
     include EE::GeoHelper # rubocop: disable Cop/InjectEnterpriseEditionModule
 
-    EVENT_CREATED = 'created'
-    EVENT_DELETED = 'deleted'
-
     included do
-      event EVENT_CREATED
-      event EVENT_DELETED
+      event ::Geo::ReplicatorEvents::EVENT_CREATED
+      event ::Geo::ReplicatorEvents::EVENT_DELETED
     end
 
     class_methods do
@@ -45,7 +42,7 @@ module Geo
 
           {
             replicable_name: replicable_name,
-            event_name: EVENT_DELETED,
+            event_name: ::Geo::ReplicatorEvents::EVENT_DELETED,
             payload: {
               model_record_id: record[:model_record_id],
               blob_path: record[:blob_path].to_s,
@@ -91,7 +88,10 @@ module Geo
     alias_method :download, :sync # Backwards compatible with old docs, keep at least till 17.6
 
     def enqueue_sync
-      Geo::EventWorker.perform_async(replicable_name, EVENT_CREATED, { 'model_record_id' => model_record.id })
+      Geo::EventWorker.perform_async(
+        replicable_name,
+        ::Geo::ReplicatorEvents::EVENT_CREATED,
+        { 'model_record_id' => model_record.id })
     end
 
     # Schedules a verification job after a model record is created/updated

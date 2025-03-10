@@ -6,13 +6,9 @@ module Geo
 
     extend ActiveSupport::Concern
 
-    EVENT_CREATED = 'created'
-    EVENT_UPDATED = 'updated'
-    EVENT_DELETED = 'deleted'
-
-    event EVENT_CREATED
-    event EVENT_UPDATED
-    event EVENT_DELETED
+    event ::Geo::ReplicatorEvents::EVENT_CREATED
+    event ::Geo::ReplicatorEvents::EVENT_DELETED
+    event ::Geo::ReplicatorEvents::EVENT_UPDATED
 
     class << self
       extend ::Gitlab::Utils::Override
@@ -88,7 +84,10 @@ module Geo
     end
 
     def enqueue_sync
-      Geo::EventWorker.perform_async(replicable_name, EVENT_UPDATED, { 'model_record_id' => model_record.id })
+      Geo::EventWorker.perform_async(
+        replicable_name,
+        ::Geo::ReplicatorEvents::EVENT_UPDATED,
+        { 'model_record_id' => model_record.id })
     end
 
     # Schedules a verification job after a model record is created/updated
