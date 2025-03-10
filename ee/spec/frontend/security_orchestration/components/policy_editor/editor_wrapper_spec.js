@@ -126,18 +126,19 @@ describe('EditorWrapper component', () => {
       });
 
       it.each`
-        policyTypeId                                                   | findComponent
-        ${POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.value}       | ${findPipelineExecutionPolicyEditor}
-        ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.value}           | ${findScanExecutionPolicyEditor}
-        ${POLICY_TYPE_COMPONENT_OPTIONS.approval.value}                | ${findScanResultPolicyEditor}
-        ${POLICY_TYPE_COMPONENT_OPTIONS.vulnerabilityManagement.value} | ${findVulnerabilityManagementPolicyEditor}
+        policyTypeId                                                   | findComponent                              | selectedPolicyType
+        ${POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.value}       | ${findPipelineExecutionPolicyEditor}       | ${POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter}
+        ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.value}           | ${findScanExecutionPolicyEditor}           | ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter}
+        ${POLICY_TYPE_COMPONENT_OPTIONS.approval.value}                | ${findScanResultPolicyEditor}              | ${POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter}
+        ${POLICY_TYPE_COMPONENT_OPTIONS.vulnerabilityManagement.value} | ${findVulnerabilityManagementPolicyEditor} | ${POLICY_TYPE_COMPONENT_OPTIONS.vulnerabilityManagement.urlParameter}
       `(
         'renders the policy editor of type $policyType when selected',
-        ({ findComponent, policyTypeId }) => {
+        ({ findComponent, policyTypeId, selectedPolicyType }) => {
           factory({ propsData: { selectedPolicyType: policyTypeId } });
           const component = findComponent();
           expect(component.exists()).toBe(true);
           expect(component.props('isEditing')).toBe(false);
+          expect(component.props('selectedPolicyType')).toBe(selectedPolicyType);
         },
       );
     });

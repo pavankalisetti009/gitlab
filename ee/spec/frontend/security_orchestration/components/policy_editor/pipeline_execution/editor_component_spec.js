@@ -59,6 +59,7 @@ describe('EditorComponent', () => {
     wrapper = shallowMountExtended(EditorComponent, {
       propsData: {
         assignedPolicyProject: DEFAULT_ASSIGNED_POLICY_PROJECT,
+        selectedPolicyType: POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter,
         isCreating: false,
         isDeleting: false,
         isEditing: false,

@@ -83,6 +83,12 @@ export default {
     };
   },
   computed: {
+    policyUrlParameter() {
+      const selectedPolicy = Object.values(POLICY_TYPE_COMPONENT_OPTIONS).find(
+        ({ value }) => value === this.selectedPolicyType,
+      );
+      return selectedPolicy?.urlParameter || '';
+    },
     isEditing() {
       return Boolean(this.existingPolicy);
     },
@@ -221,6 +227,7 @@ export default {
       :is-creating="isCreating"
       :is-deleting="isDeleting"
       :is-editing="isEditing"
+      :selected-policy-type="policyUrlParameter"
       @save="handleSave"
       @error="setError($event)"
     />

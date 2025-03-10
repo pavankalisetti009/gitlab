@@ -10,7 +10,6 @@ import {
   isProject,
 } from 'ee/security_orchestration/components/utils';
 import getSppLinkedProjectsGroups from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_groups.graphql';
-import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 import {
   policyBodyToYaml,
   policyToYaml,
@@ -62,7 +61,6 @@ export default {
   SECURITY_POLICY_ACTIONS,
   EDITOR_MODE_YAML,
   EDITOR_MODE_RULE,
-  POLICY_TYPE: POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter,
   i18n: {
     ACTION_SECTION_DISABLE_ERROR,
     ADD_ACTION_LABEL,
@@ -173,6 +171,10 @@ export default {
       type: Boolean,
       required: true,
     },
+    selectedPolicyType: {
+      type: String,
+      required: true,
+    },
   },
   data() {
     const newPolicyYaml = getPolicyYaml({
@@ -180,7 +182,7 @@ export default {
     });
 
     const yamlEditorValue = this.existingPolicy
-      ? policyToYaml(this.existingPolicy, this.$options.POLICY_TYPE)
+      ? policyToYaml(this.existingPolicy, this.selectedPolicyType)
       : newPolicyYaml;
 
     const { policy, parsingError } = createPolicyObject(yamlEditorValue);
@@ -335,7 +337,7 @@ export default {
   },
   methods: {
     areManifestsEqual(manifest) {
-      const policyManifest = policyToYaml(this.policy, this.$options.POLICY_TYPE);
+      const policyManifest = policyToYaml(this.policy, this.selectedPolicyType);
       return policyManifest === manifest && this.hasNewSplitView;
     },
     ruleHasBranchesProperty(rule) {
@@ -448,7 +450,7 @@ export default {
        */
       const policy = extractPolicyContent({
         manifest: this.yamlEditorValue,
-        type: this.$options.POLICY_TYPE,
+        type: this.selectedPolicyType,
         withType: true,
       });
 
@@ -478,7 +480,7 @@ export default {
       this.policy = policy;
     },
     updateYamlEditorValue(policy) {
-      this.yamlEditorValue = policyToYaml(policy, this.$options.POLICY_TYPE);
+      this.yamlEditorValue = policyToYaml(policy, this.selectedPolicyType);
     },
     async changeEditorMode(mode) {
       this.mode = mode;
