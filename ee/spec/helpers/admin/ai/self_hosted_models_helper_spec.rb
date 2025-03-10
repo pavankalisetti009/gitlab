@@ -60,4 +60,18 @@ RSpec.describe Admin::Ai::SelfHostedModelsHelper, feature_category: :"self-hoste
       expect(helper.beta_models_enabled?).to be(false)
     end
   end
+
+  describe '#duo_chat_sub_features_enabled?' do
+    it 'returns true if ai_duo_chat_sub_features_settings is enabled' do
+      stub_feature_flags(ai_duo_chat_sub_features_settings: true)
+
+      expect(helper.duo_chat_sub_features_enabled?).to be(true)
+    end
+
+    it 'returns false if ai_duo_chat_sub_features_settings is disabled' do
+      stub_feature_flags(ai_duo_chat_sub_features_settings: false)
+
+      expect(helper.duo_chat_sub_features_enabled?).to be(false)
+    end
+  end
 end
