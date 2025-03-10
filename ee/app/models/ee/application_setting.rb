@@ -77,21 +77,24 @@ module EE
       validates :integrations, json_schema: { filename: "application_setting_integrations" }
       validates :elasticsearch, json_schema: { filename: "application_setting_elasticsearch" }
 
+      jsonb_accessor :identity_verification_settings,
+        soft_phone_verification_transactions_daily_limit: [::Gitlab::Database::Type::JsonbInteger.new,
+          { default: 16_000 }],
+        hard_phone_verification_transactions_daily_limit: [::Gitlab::Database::Type::JsonbInteger.new,
+          { default: 20_000 }],
+        unverified_account_group_creation_limit: [::Gitlab::Database::Type::JsonbInteger.new, { default: 2 }],
+        phone_verification_enabled: [::Gitlab::Database::Type::JsonbBoolean.new, { default: true }],
+        ci_requires_identity_verification_on_free_plan: [::Gitlab::Database::Type::JsonbBoolean.new, { default: true }],
+        telesign_intelligence_enabled: [::Gitlab::Database::Type::JsonbBoolean.new, { default: true }],
+        credit_card_verification_enabled: [::Gitlab::Database::Type::JsonbBoolean.new, { default: true }],
+        arkose_labs_enabled: [::Gitlab::Database::Type::JsonbBoolean.new, { default: true }],
+        arkose_labs_data_exchange_enabled: [::Gitlab::Database::Type::JsonbBoolean.new, { default: true }]
+
+      validates :identity_verification_settings,
+        json_schema: { filename: "identity_verification_settings", detail_errors: true }
+
       jsonb_accessor :cluster_agents,
         receptive_cluster_agents_enabled: [:boolean, { default: false }]
-
-      jsonb_accessor :identity_verification_settings,
-        soft_phone_verification_transactions_daily_limit: [:integer, { default: 16_000 }],
-        hard_phone_verification_transactions_daily_limit: [:integer, { default: 20_000 }],
-        unverified_account_group_creation_limit: [:integer, { default: 2 }],
-        phone_verification_enabled: [:boolean, { default: true }],
-        ci_requires_identity_verification_on_free_plan: [:boolean, { default: true }],
-        telesign_intelligence_enabled: [:boolean, { default: true }],
-        credit_card_verification_enabled: [:boolean, { default: true }],
-        arkose_labs_enabled: [:boolean, { default: true }],
-        arkose_labs_data_exchange_enabled: [:boolean, { default: true }]
-
-      validates :identity_verification_settings, json_schema: { filename: "identity_verification_settings" }
 
       validates :cluster_agents, json_schema: { filename: 'application_setting_cluster_agents' }
 

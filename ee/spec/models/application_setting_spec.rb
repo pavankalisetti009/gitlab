@@ -148,6 +148,27 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       end
     end
 
+    describe 'identity_verification_settings' do
+      %i[
+        soft_phone_verification_transactions_daily_limit
+        hard_phone_verification_transactions_daily_limit
+        unverified_account_group_creation_limit
+      ].each do |field|
+        it_behaves_like 'validates jsonb integer field', field, :identity_verification_settings
+      end
+
+      %i[
+        phone_verification_enabled
+        ci_requires_identity_verification_on_free_plan
+        telesign_intelligence_enabled
+        credit_card_verification_enabled
+        arkose_labs_enabled
+        arkose_labs_data_exchange_enabled
+      ].each do |field|
+        it_behaves_like 'validates jsonb boolean field', field, :identity_verification_settings
+      end
+    end
+
     describe 'future_subscriptions', feature_category: :subscription_management do
       it { is_expected.to allow_value([{}]).for(:future_subscriptions) }
       it { is_expected.not_to allow_value({}).for(:future_subscriptions) }
