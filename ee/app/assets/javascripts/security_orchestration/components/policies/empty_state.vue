@@ -75,14 +75,12 @@ export default {
     :primary-button-text="emptyStatePrimaryButtonText"
     :svg-path="emptyListSvgPath"
     :svg-height="150"
-    title=""
+    :title="s__('SecurityOrchestration|No policies found')"
   >
     <template #description>
       <gl-sprintf :message="emptyStateDescription">
         <template #link="{ content }">
-          <gl-link :href="$options.link" target="_blank">
-            {{ content }}
-          </gl-link>
+          <gl-link variant="inline" :href="$options.link" target="_blank">{{ content }}</gl-link>
         </template>
       </gl-sprintf>
     </template>
