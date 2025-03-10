@@ -14,6 +14,7 @@ RSpec.describe ::Types::WorkItems::WidgetInterface, feature_category: :team_plan
     WorkItems::Widgets::Color              | Types::WorkItems::Widgets::ColorType
     WorkItems::Widgets::RequirementLegacy  | Types::WorkItems::Widgets::RequirementLegacyType
     WorkItems::Widgets::TestReports        | Types::WorkItems::Widgets::TestReportsType
+    WorkItems::Widgets::Vulnerabilities    | Types::WorkItems::Widgets::VulnerabilitiesType
   end
 
   with_them do

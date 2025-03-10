@@ -25,7 +25,8 @@ module EE
             ::WorkItems::Widgets::RequirementLegacy => ::Types::WorkItems::Widgets::RequirementLegacyType,
             ::WorkItems::Widgets::TestReports => ::Types::WorkItems::Widgets::TestReportsType,
             ::WorkItems::Widgets::Color => ::Types::WorkItems::Widgets::ColorType,
-            ::WorkItems::Widgets::CustomFields => ::Types::WorkItems::Widgets::CustomFieldsType
+            ::WorkItems::Widgets::CustomFields => ::Types::WorkItems::Widgets::CustomFieldsType,
+            ::WorkItems::Widgets::Vulnerabilities => ::Types::WorkItems::Widgets::VulnerabilitiesType
           }.freeze
 
           orphan_types(*type_mappings.values)
