@@ -117,6 +117,10 @@ export default {
     refShortName() {
       return this.refValue.shortName;
     },
+    refQueryParam() {
+      return this.refFullName || this.refShortName;
+    },
+
     shouldShowWarning() {
       return this.warnings.length > 0 && !this.isWarningDismissed;
     },
@@ -257,7 +261,7 @@ export default {
         :file-params="fileParams"
         :is-maintainer="isMaintainer"
         :project-path="projectPath"
-        :ref-param="refFullName"
+        :ref-param="refQueryParam"
         :settings-link="settingsLink"
         :variable-params="variableParams"
         @variables-updated="handleVariablesUpdated"
