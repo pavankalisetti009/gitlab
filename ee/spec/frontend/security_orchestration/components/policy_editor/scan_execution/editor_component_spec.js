@@ -86,6 +86,7 @@ describe('EditorComponent', () => {
       apolloProvider: createMockApolloProvider(handler),
       propsData: {
         assignedPolicyProject: DEFAULT_ASSIGNED_POLICY_PROJECT,
+        selectedPolicyType: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
         errorSources: [],
         isCreating: false,
         isDeleting: false,

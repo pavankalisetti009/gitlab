@@ -108,6 +108,7 @@ describe('EditorComponent', () => {
       propsData: {
         assignedPolicyProject: DEFAULT_ASSIGNED_POLICY_PROJECT,
         errorSources: [],
+        selectedPolicyType: POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter,
         isCreating: false,
         isDeleting: false,
         isEditing: false,

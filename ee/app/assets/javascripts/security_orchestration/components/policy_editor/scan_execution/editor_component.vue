@@ -11,10 +11,7 @@ import {
   extractPolicyContent,
 } from 'ee/security_orchestration/components/utils';
 import OverloadWarningModal from 'ee/security_orchestration/components/overload_warning_modal.vue';
-import {
-  DEFAULT_SKIP_SI_CONFIGURATION,
-  POLICY_TYPE_COMPONENT_OPTIONS,
-} from 'ee/security_orchestration/components/constants';
+import { DEFAULT_SKIP_SI_CONFIGURATION } from 'ee/security_orchestration/components/constants';
 import {
   policyBodyToYaml,
   policyToYaml,
@@ -52,7 +49,6 @@ export default {
   RULE: 'rules',
   EDITOR_MODE_RULE,
   EDITOR_MODE_YAML,
-  POLICY_TYPE: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
   SECURITY_POLICY_ACTIONS,
   i18n: {
     ACTIONS_LABEL,
@@ -139,10 +135,14 @@ export default {
       type: Boolean,
       required: true,
     },
+    selectedPolicyType: {
+      type: String,
+      required: true,
+    },
   },
   data() {
     const yamlEditorValue = this.existingPolicy
-      ? policyToYaml(this.existingPolicy, this.$options.POLICY_TYPE)
+      ? policyToYaml(this.existingPolicy, this.selectedPolicyType)
       : getPolicyYaml({ isGroup: isGroup(this.namespaceType) });
 
     const { policy, parsingError } = createPolicyObject(yamlEditorValue);
@@ -216,7 +216,7 @@ export default {
   },
   methods: {
     areManifestsEqual(manifest) {
-      const policyManifest = policyToYaml(this.policy, this.$options.POLICY_TYPE);
+      const policyManifest = policyToYaml(this.policy, this.selectedPolicyType);
       return policyManifest === manifest && this.hasNewSplitView;
     },
     addAction() {
@@ -292,7 +292,7 @@ export default {
        */
       const policy = extractPolicyContent({
         manifest: this.yamlEditorValue,
-        type: this.$options.POLICY_TYPE,
+        type: this.selectedPolicyType,
         withType: true,
       });
 
@@ -310,7 +310,7 @@ export default {
       this.specificActionSectionError = '';
     },
     updateYamlEditorValue(policy) {
-      this.yamlEditorValue = policyToYaml(policy, this.$options.POLICY_TYPE);
+      this.yamlEditorValue = policyToYaml(policy, this.selectedPolicyType);
     },
   },
 };

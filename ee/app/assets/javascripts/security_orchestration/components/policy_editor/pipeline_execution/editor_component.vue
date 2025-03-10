@@ -6,7 +6,6 @@ import { setUrlFragment, queryToObject } from '~/lib/utils/url_utility';
 import { s__, __ } from '~/locale';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
-import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 import { extractPolicyContent } from 'ee/security_orchestration/components/utils';
 import {
   ACTION_SECTION_DISABLE_ERROR,
@@ -33,7 +32,6 @@ export default {
   ACTION: 'actions',
   EDITOR_MODE_RULE,
   EDITOR_MODE_YAML,
-  POLICY_TYPE: POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter,
   SECURITY_POLICY_ACTIONS,
   i18n: {
     ACTION_SECTION_DISABLE_ERROR,
@@ -81,12 +79,16 @@ export default {
       type: Boolean,
       required: true,
     },
+    selectedPolicyType: {
+      type: String,
+      required: true,
+    },
   },
   data() {
     let yamlEditorValue;
 
     if (this.existingPolicy) {
-      yamlEditorValue = policyToYaml(this.existingPolicy, this.$options.POLICY_TYPE);
+      yamlEditorValue = policyToYaml(this.existingPolicy, this.selectedPolicyType);
     } else {
       yamlEditorValue = getInitialPolicy(
         DEFAULT_PIPELINE_EXECUTION_POLICY,
@@ -146,7 +148,7 @@ export default {
   },
   methods: {
     areManifestsEqual(manifest) {
-      const policyManifest = policyToYaml(this.policy, this.$options.POLICY_TYPE);
+      const policyManifest = policyToYaml(this.policy, this.selectedPolicyType);
       return policyManifest === manifest && this.hasNewSplitView;
     },
     changeEditorMode(mode) {
@@ -164,7 +166,7 @@ export default {
        */
       const policy = extractPolicyContent({
         manifest: this.yamlEditorValue,
-        type: this.$options.POLICY_TYPE,
+        type: this.selectedPolicyType,
         withType: true,
       });
 
@@ -216,7 +218,7 @@ export default {
       this.policy = policy;
     },
     updateYamlEditorValue(policy) {
-      this.yamlEditorValue = policyToYaml(policy, this.$options.POLICY_TYPE);
+      this.yamlEditorValue = policyToYaml(policy, this.selectedPolicyType);
     },
   },
 };
