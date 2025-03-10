@@ -657,16 +657,18 @@ RSpec.describe ProjectImportState, type: :model, feature_category: :importers do
 
     let(:import_state) { create(:import_state, :mirror, :failed, last_error: last_error) }
     let(:last_error) do
-      'fetch remote: "fatal: unable to access \'https://expired_cert.host\': ' \
-        'SSL certificate problem: certificate has expired\n": exit status 128'
+      <<~MSG
+        fetch remote: "fatal: unable to access \'https://expired_cert.host\': SSL certificate problem: certificate has expired\n": exit status 128
+      MSG
     end
 
     it { is_expected.to be_truthy }
 
     context 'when error is recoverable' do
       let(:last_error) do
-        'fetch remote: "fatal: unable to access \'host\': Failed to connect to host port 80: ' \
-          'Connection timed out\n": exit status 128'
+        <<~MSG
+          fetch remote: "fatal: unable to access \'host\': Failed to connect to host port 80: Connection timed out\n": exit status 128
+        MSG
       end
 
       it { is_expected.to be_falsey }
@@ -682,6 +684,36 @@ RSpec.describe ProjectImportState, type: :model, feature_category: :importers do
       let(:import_state) { create(:import_state, :mirror, :finished, last_error: last_error) }
 
       it { is_expected.to be_falsey }
+    end
+  end
+
+  describe '#mark_as_failed' do
+    let(:user) { 'user @!#' }
+    let(:password) { 'p w d@ #@' }
+    let(:error_message) do
+      <<~MSG
+        remote: Not Found
+        fatal: repository `http://#{user}:#{password}@gitlab.com/group/project.git` not found
+      MSG
+    end
+
+    let(:sanitized_message) do
+      <<~MSG
+        remote: Not Found
+        fatal: repository `http://*****:*****@gitlab.com/group/project.git` not found
+      MSG
+    end
+
+    it 'updates last_error with a sanitized error message' do
+      import_data = ProjectImportData.new(
+        data: { 'test' => 'some data' },
+        credentials: { user: user, password: password }
+      )
+      project = create(:project, import_data: import_data)
+      import_state = create(:import_state, :started, project: project)
+      import_state.mark_as_failed(error_message)
+
+      expect(import_state.last_error).to eq(sanitized_message)
     end
   end
 end

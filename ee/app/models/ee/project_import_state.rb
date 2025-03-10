@@ -226,5 +226,18 @@ module EE
 
       (BACKOFF_PERIOD + rand(JITTER)) * duration.seconds
     end
+
+    def user
+      project.import_data&.user
+    end
+
+    def password
+      project.import_data&.password
+    end
+
+    override :sanitized_failure_message
+    def sanitized_failure_message(error_message)
+      ::Gitlab::UrlSanitizer.sanitize(error_message, user: user, password: password)
+    end
   end
 end
