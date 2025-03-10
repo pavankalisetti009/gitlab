@@ -15,7 +15,8 @@ import { createAlert } from '~/alert';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { __, s__ } from '~/locale';
 import getSelfHostedModelsQuery from '../graphql/queries/get_self_hosted_models.query.graphql';
-import { BEDROCK_DUMMY_ENDPOINT, RELEASE_STATES } from '../constants';
+import { BEDROCK_DUMMY_ENDPOINT } from '../constants';
+import { RELEASE_STATES } from '../../constants';
 import DeleteSelfHostedModelDisclosureItem from './delete_self_hosted_model_disclosure_item.vue';
 
 export default {
