@@ -28,7 +28,7 @@ module EE
       self.reactive_cache_refresh_interval = 10.minutes
       self.reactive_cache_lifetime = 1.hour
 
-      add_authentication_token_field :saml_discovery_token, unique: false, token_generator: -> { Devise.friendly_token(8) } # rubocop:disable Gitlab/TokenWithoutPrefix -- wontfix; not used for authentication
+      add_authentication_token_field :saml_discovery_token, insecure: true, unique: false, token_generator: -> { Devise.friendly_token(8) } # rubocop:disable Gitlab/TokenWithoutPrefix -- wontfix; not used for authentication
 
       has_many :epics
       has_many :epic_boards, class_name: 'Boards::EpicBoard', inverse_of: :group
