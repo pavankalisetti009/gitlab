@@ -30,7 +30,7 @@ module EE
 
         # NOTE: This scope is meant to be used with scopes that leverage the most_active_runners method
         scope :order_most_active_desc, -> do
-          group(:id).reorder('COUNT(limited_builds.runner_id) DESC NULLS LAST', arel_table['id'].desc)
+          group(:id, :runner_type).reorder('COUNT(limited_builds.runner_id) DESC NULLS LAST', arel_table['id'].desc)
         end
 
         def self.any_shared_runners_with_enabled_cost_factor?(project)
