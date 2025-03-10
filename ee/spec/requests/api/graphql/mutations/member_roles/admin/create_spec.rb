@@ -51,8 +51,7 @@ RSpec.describe 'creating admin member role', :enable_admin_mode, feature_categor
         stub_saas_features(gitlab_com_subscriptions: true)
       end
 
-      it_behaves_like 'a mutation that returns top-level errors',
-        errors: ['admin member roles are not available on SaaS instance.']
+      it_behaves_like 'a mutation that creates a member role'
     end
 
     context 'when on self-managed' do

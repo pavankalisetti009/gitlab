@@ -58,16 +58,18 @@ RSpec.describe Members::MemberRolePolicy, feature_category: :system_access do
       context 'for group-level custom role' do
         let(:member_role) { group_member_role }
 
-        it { is_expected.to(group_role_allowed ? be_allowed(permission) : be_disallowed(permission)) }
-
-        context 'when memberships are locked to LDAP' do
-          before do
-            allow(group).to receive(:ldap_synced?).and_return(true)
-            stub_application_setting(allow_group_owners_to_manage_ldap: true)
-            stub_application_setting(lock_memberships_to_ldap: true)
-          end
-
+        context 'for SaaS' do
           it { is_expected.to(group_role_allowed ? be_allowed(permission) : be_disallowed(permission)) }
+
+          context 'when memberships are locked to LDAP' do
+            before do
+              allow(group).to receive(:ldap_synced?).and_return(true)
+              stub_application_setting(allow_group_owners_to_manage_ldap: true)
+              stub_application_setting(lock_memberships_to_ldap: true)
+            end
+
+            it { is_expected.to(group_role_allowed ? be_allowed(permission) : be_disallowed(permission)) }
+          end
         end
       end
     end
@@ -124,23 +126,29 @@ RSpec.describe Members::MemberRolePolicy, feature_category: :system_access do
     end
 
     describe ':admin_member_role' do
-      using RSpec::Parameterized::TableSyntax
-
       let(:permission) { :admin_member_role }
 
-      where(:role, :instance_role_allowed, :group_role_allowed) do
-        :non_member | false | false
-        :guest      | false | false
-        :reporter   | false | false
-        :developer  | false | false
-        :maintainer | false | false
-        :auditor    | false | false
-        :owner      | false | true
-        :admin      | true | true
+      context 'for Saas', :saas do
+        using RSpec::Parameterized::TableSyntax
+
+        where(:role, :instance_role_allowed, :group_role_allowed) do
+          :non_member | false | false
+          :guest      | false | false
+          :reporter   | false | false
+          :developer  | false | false
+          :maintainer | false | false
+          :auditor    | false | false
+          :owner      | false | true
+          :admin      | true | true
+        end
+
+        with_them do
+          it_behaves_like 'correct member role permissions'
+        end
       end
 
-      with_them do
-        it_behaves_like 'correct member role permissions'
+      context 'for self-managed' do
+        it { is_expected.to be_disallowed(permission) }
       end
     end
   end

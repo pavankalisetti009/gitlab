@@ -6,8 +6,8 @@ RSpec.describe 'deleting member role', feature_category: :system_access do
   include GraphqlHelpers
 
   let_it_be(:group) { create(:group) }
-  let_it_be(:member_role) { create(:member_role, namespace: group) }
-  let_it_be(:current_user) { create(:user) }
+  let_it_be(:member_role) { create(:member_role, :instance) }
+  let_it_be_with_reload(:current_user) { create(:user) }
 
   let(:arguments) do
     {
@@ -19,14 +19,14 @@ RSpec.describe 'deleting member role', feature_category: :system_access do
 
   subject(:mutation_response) { graphql_mutation_response(:member_role_delete) }
 
-  context 'without the custom roles feature' do
+  context 'without the custom roles feature', :enable_admin_mode do
     before do
       stub_licensed_features(custom_roles: false)
     end
 
     context 'with owner role' do
       before_all do
-        group.add_owner(current_user)
+        current_user.update!(admin: true)
       end
 
       it_behaves_like 'a mutation that returns a top-level access error'
@@ -38,17 +38,13 @@ RSpec.describe 'deleting member role', feature_category: :system_access do
       stub_licensed_features(custom_roles: true)
     end
 
-    context 'with maintainer role' do
-      before_all do
-        group.add_maintainer(current_user)
-      end
-
+    context 'when unauthorized' do
       it_behaves_like 'a mutation that returns a top-level access error'
     end
 
-    context 'with owner role' do
+    context 'with admin', :enable_admin_mode do
       before_all do
-        group.add_owner(current_user)
+        current_user.update!(admin: true)
       end
 
       context 'with valid arguments' do

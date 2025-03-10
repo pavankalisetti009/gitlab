@@ -33,7 +33,7 @@ RSpec.describe 'updating member role', feature_category: :system_access do
 
   subject(:update_member_role) { graphql_mutation_response(:member_role_update) }
 
-  context 'without the custom roles feature' do
+  context 'without the custom roles feature', :saas do
     before do
       stub_licensed_features(custom_roles: false)
     end
@@ -47,7 +47,7 @@ RSpec.describe 'updating member role', feature_category: :system_access do
     end
   end
 
-  context 'with the custom roles feature' do
+  context 'with the custom roles feature', :saas do
     before do
       stub_licensed_features(custom_roles: true)
     end

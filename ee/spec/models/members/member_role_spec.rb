@@ -78,7 +78,15 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
 
     describe 'namespace validation' do
       context 'when running on Gitlab.com', :saas do
-        it { is_expected.to validate_presence_of(:namespace) }
+        context 'with a regular role' do
+          it { is_expected.to validate_presence_of(:namespace) }
+        end
+
+        context 'with an admin role' do
+          subject(:member_role) { build(:member_role, :admin) }
+
+          it { is_expected.not_to validate_presence_of(:namespace) }
+        end
       end
 
       context 'when running on self-managed' do

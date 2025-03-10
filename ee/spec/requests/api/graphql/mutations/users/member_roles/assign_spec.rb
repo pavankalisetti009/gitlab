@@ -50,6 +50,24 @@ RSpec.describe 'Assigning a user to a member role', feature_category: :permissio
     stub_licensed_features(custom_roles: true)
   end
 
+  shared_examples 'custom role assignment' do
+    it 'returns correct response', :aggregate_failures do
+      post_graphql_mutation(mutation, current_user: current_user)
+
+      response_object = mutation_response['userMemberRole']
+
+      expect(response).to have_gitlab_http_status(:success)
+      expect(mutation_response['errors']).to be_empty
+      expect(response_object['user']['id']).to eq(user_global_id)
+      expect(response_object['memberRole']['id']).to eq(member_role_global_id)
+    end
+
+    it 'creates a new user member role' do
+      expect { post_graphql_mutation(mutation, current_user: current_user) }
+        .to change { ::Users::UserMemberRole.count }.by(1)
+    end
+  end
+
   context 'when current user is not an admin', :enable_admin_mode do
     before do
       current_user.update!(admin: false)
@@ -77,28 +95,12 @@ RSpec.describe 'Assigning a user to a member role', feature_category: :permissio
           stub_saas_features(gitlab_com_subscriptions: true)
         end
 
-        it_behaves_like 'a mutation that returns a top-level access error',
-          errors: ["The resource that you are attempting to access does not exist or " \
-            "you don't have permission to perform this action"]
+        it_behaves_like 'custom role assignment'
       end
 
       context 'when on self-managed' do
         context 'with valid member_role_id' do
-          it 'returns correct response', :aggregate_failures do
-            post_graphql_mutation(mutation, current_user: current_user)
-
-            response_object = mutation_response['userMemberRole']
-
-            expect(response).to have_gitlab_http_status(:success)
-            expect(mutation_response['errors']).to be_empty
-            expect(response_object['user']['id']).to eq(user_global_id)
-            expect(response_object['memberRole']['id']).to eq(member_role_global_id)
-          end
-
-          it 'creates a new user member role' do
-            expect { post_graphql_mutation(mutation, current_user: current_user) }
-              .to change { ::Users::UserMemberRole.count }.by(1)
-          end
+          it_behaves_like 'custom role assignment'
         end
 
         context 'when the provided custom role is not an admin role' do

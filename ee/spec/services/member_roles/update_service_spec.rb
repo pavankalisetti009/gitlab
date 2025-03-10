@@ -4,8 +4,10 @@ require 'spec_helper'
 
 RSpec.describe MemberRoles::UpdateService, feature_category: :system_access do
   let_it_be(:group) { create(:group) }
-  let_it_be(:user) { create(:user) }
-  let_it_be(:member_role) { create(:member_role, :guest, namespace: group, read_vulnerability: true) }
+  let_it_be(:regular_user) { create(:user) }
+  let_it_be(:admin) { create(:admin) }
+
+  let(:user) { regular_user }
 
   describe '#execute' do
     let(:params) do
@@ -24,21 +26,7 @@ RSpec.describe MemberRoles::UpdateService, feature_category: :system_access do
       stub_licensed_features(custom_roles: true)
     end
 
-    context 'with unauthorized user' do
-      before_all do
-        group.add_maintainer(user)
-      end
-
-      it 'returns an error' do
-        expect(result).to be_error
-      end
-    end
-
-    context 'with authorized user' do
-      before_all do
-        group.add_owner(user)
-      end
-
+    shared_examples 'member role update' do
       context 'with valid params' do
         it 'is successful' do
           expect(result).to be_success
@@ -47,7 +35,7 @@ RSpec.describe MemberRoles::UpdateService, feature_category: :system_access do
         it 'updates the provided (permitted) attributes' do
           expect { result }
             .to change { member_role.reload.name }.to('new name')
-            .and change { member_role.reload.read_vulnerability }.to(false)
+                                                  .and change { member_role.reload.read_vulnerability }.to(false)
         end
 
         it 'does not update unpermitted attributes' do
@@ -63,8 +51,8 @@ RSpec.describe MemberRoles::UpdateService, feature_category: :system_access do
           let(:attributes) do
             {
               author_id: user.id,
-              entity_id: group.id,
-              entity_type: group.class.name,
+              entity_id: audit_entity_id,
+              entity_type: audit_entity_type,
               details: {
                 author_name: user.name,
                 event_name: 'member_role_updated',
@@ -103,6 +91,50 @@ RSpec.describe MemberRoles::UpdateService, feature_category: :system_access do
         it 'does not log an audit event' do
           expect { result }.not_to change { AuditEvent.count }
         end
+      end
+    end
+
+    context 'for self-managed' do
+      let_it_be(:member_role) { create(:member_role, :guest, :instance, read_vulnerability: true) }
+
+      let(:audit_entity_id) { Gitlab::Audit::InstanceScope.new.id }
+      let(:audit_entity_type) { 'Gitlab::Audit::InstanceScope' }
+
+      context 'with unauthorized user' do
+        it 'returns an error' do
+          expect(result).to be_error
+        end
+      end
+
+      context 'with authorized user', :enable_admin_mode do
+        let(:user) { admin }
+
+        it_behaves_like 'member role update'
+      end
+    end
+
+    context 'for SaaS', :saas do
+      let_it_be(:member_role) { create(:member_role, :guest, namespace: group, read_vulnerability: true) }
+
+      let(:audit_entity_id) { group.id }
+      let(:audit_entity_type) { group.class.name }
+
+      context 'with unauthorized user' do
+        before_all do
+          group.add_maintainer(regular_user)
+        end
+
+        it 'returns an error' do
+          expect(result).to be_error
+        end
+      end
+
+      context 'with authorized user' do
+        before_all do
+          group.add_owner(regular_user)
+        end
+
+        it_behaves_like 'member role update'
       end
     end
   end

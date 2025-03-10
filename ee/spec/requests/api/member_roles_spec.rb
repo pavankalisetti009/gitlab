@@ -303,7 +303,7 @@ RSpec.describe API::MemberRoles, :api, feature_category: :system_access do
     end
   end
 
-  describe "GET /groups/:id/member_roles" do
+  describe "GET /groups/:id/member_roles", :saas do
     subject(:get_member_roles) { get api("/groups/#{group.id}/member_roles", current_user) }
 
     let(:authorized_user) { owner }
@@ -326,10 +326,6 @@ RSpec.describe API::MemberRoles, :api, feature_category: :system_access do
           "group_id" => group.id
         )
       ]
-    end
-
-    before do
-      stub_saas_mode
     end
 
     it_behaves_like "getting member roles"
@@ -374,7 +370,7 @@ RSpec.describe API::MemberRoles, :api, feature_category: :system_access do
     it_behaves_like "it is available only on self-managed"
   end
 
-  describe "POST /groups/:id/member_roles" do
+  describe "POST /groups/:id/member_roles", :saas do
     subject(:create_member_role) { post api("/groups/#{group.id}/member_roles", current_user), params: params }
 
     let(:authorized_user) { owner }
@@ -389,10 +385,6 @@ RSpec.describe API::MemberRoles, :api, feature_category: :system_access do
       }
     end
 
-    before do
-      stub_saas_mode
-    end
-
     it_behaves_like "creating member role"
     it_behaves_like "it is available only on SaaS"
 
@@ -405,7 +397,7 @@ RSpec.describe API::MemberRoles, :api, feature_category: :system_access do
 
         expect(response).to have_gitlab_http_status(:bad_request)
 
-        expect(json_response['message']).to match(/Creation of member role is allowed only for root groups/)
+        expect(json_response['message']).to match(/Namespace must be top-level namespace/)
       end
     end
   end
@@ -434,7 +426,7 @@ RSpec.describe API::MemberRoles, :api, feature_category: :system_access do
     it_behaves_like "it is available only on self-managed"
   end
 
-  describe "DELETE /groups/:id/member_roles/:member_role_id" do
+  describe "DELETE /groups/:id/member_roles/:member_role_id", :saas do
     subject(:delete_member_role) { delete api("/groups/#{group.id}/member_roles/#{member_role_id}", current_user) }
 
     let(:authorized_user) { owner }
