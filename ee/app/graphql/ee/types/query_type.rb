@@ -302,6 +302,13 @@ module EE
           description: 'Get GitLab Duo settings',
           resolver: ::Resolvers::Ai::DuoSettings::DuoSettingsResolver,
           experiment: { milestone: '17.9' }
+
+        field :custom_field, ::Types::Issuables::CustomFieldType,
+          null: true,
+          description: 'Find a custom field by its ID. ' \
+            'Available only when feature flag `custom_fields_feature` is enabled.',
+          resolver: ::Resolvers::Issuables::CustomFieldResolver,
+          experiment: { milestone: '17.10' }
       end
 
       def vulnerability(id:)
