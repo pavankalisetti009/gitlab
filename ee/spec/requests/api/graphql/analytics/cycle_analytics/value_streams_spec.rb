@@ -9,6 +9,8 @@ RSpec.describe '(Project|Group).value_streams', feature_category: :value_stream_
 
   let(:variables) { { fullPath: resource.full_path } }
 
+  let_it_be(:current_time) { Time.current }
+
   let(:query) do
     <<~QUERY
       query($fullPath: ID!, $valueStreamId: ID, $stageId: ID) {
@@ -32,6 +34,28 @@ RSpec.describe '(Project|Group).value_streams', feature_category: :value_stream_
         }
       }
     QUERY
+  end
+
+  shared_context 'for value stream metrics query' do
+    let(:metrics_query) do
+      <<~QUERY
+      query($fullPath: ID!, $valueStreamId: ID, $stageId: ID, $from: Date!, $to: Date!, $assigneeUsernames: [String!], $milestoneTitle: String, $labelNames: [String!], $projectIds: [ProjectID!], $epicId: ID, $weight: Int) {
+        #{resource_type}(fullPath: $fullPath) {
+          valueStreams(id: $valueStreamId) {
+            nodes {
+              stages(id: $stageId) {
+                metrics(timeframe: { start: $from, end: $to }, assigneeUsernames: $assigneeUsernames, milestoneTitle: $milestoneTitle, labelNames: $labelNames, projectIds: $projectIds, epicId: $epicId, weight: $weight) {
+                  count {
+                    value
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      QUERY
+    end
   end
 
   shared_examples 'unsupported filter examples' do
@@ -194,7 +218,6 @@ RSpec.describe '(Project|Group).value_streams', feature_category: :value_stream_
 
             context 'when requesting aggregated metrics' do
               let_it_be(:assignee) { create(:user) }
-              let_it_be(:current_time) { Time.current }
               let_it_be(:epic) { create(:epic, group: resource.root_ancestor) }
               let_it_be(:milestone) { create(:milestone, group: resource.root_ancestor) }
               let_it_be(:filter_label) { create(:group_label, group: resource.root_ancestor) }
@@ -224,12 +247,12 @@ RSpec.describe '(Project|Group).value_streams', feature_category: :value_stream_
 
               let(:query) do
                 <<~QUERY
-                  query($fullPath: ID!, $valueStreamId: ID, $stageId: ID, $from: Date!, $to: Date!, $assigneeUsernames: [String!], $milestoneTitle: String, $labelNames: [String!], $epicId: ID, $weight: Int) {
+                  query($fullPath: ID!, $valueStreamId: ID, $stageId: ID, $from: Date!, $to: Date!, $assigneeUsernames: [String!], $milestoneTitle: String, $labelNames: [String!], $projectIds: [ProjectID!],  $epicId: ID, $weight: Int) {
                     #{resource_type}(fullPath: $fullPath) {
                       valueStreams(id: $valueStreamId) {
                         nodes {
                           stages(id: $stageId) {
-                            metrics(timeframe: { start: $from, end: $to }, assigneeUsernames: $assigneeUsernames, milestoneTitle: $milestoneTitle, labelNames: $labelNames, epicId: $epicId, weight: $weight) {
+                            metrics(timeframe: { start: $from, end: $to }, assigneeUsernames: $assigneeUsernames, milestoneTitle: $milestoneTitle, labelNames: $labelNames, projectIds: $projectIds, epicId: $epicId, weight: $weight) {
                               count {
                                 value
                               }
@@ -461,8 +484,52 @@ RSpec.describe '(Project|Group).value_streams', feature_category: :value_stream_
     let_it_be(:start_label) { create(:label, project: resource, title: 'Start Label') }
     let_it_be(:end_label) { create(:label, project: resource, title: 'End Label') }
 
+    include_context 'for value stream metrics query'
+
+    before_all do
+      resource.add_reporter(current_user)
+    end
+
+    subject(:record_count) do
+      graphql_data_at(resource_type.to_sym, :value_streams, :nodes, 0, :stages,
+        0)['metrics']['count']['value']
+    end
+
     context 'when quarantined shared example', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/482804' do
       it_behaves_like 'value streams query'
+    end
+
+    context 'when filtering for project ids' do
+      let_it_be(:value_stream) do
+        create(
+          :cycle_analytics_value_stream,
+          namespace: namespace,
+          name: 'Custom 2'
+        )
+      end
+
+      let_it_be(:stage) do
+        create(:cycle_analytics_stage, value_stream: value_stream, namespace: namespace, name: 'Code')
+      end
+
+      before do
+        variables.merge!({
+          from: (current_time - 10.days).to_date,
+          to: (current_time + 10.days).to_date,
+          projectIds: [project.to_gid.to_s],
+          fullPath: resource.full_path
+        })
+
+        stub_licensed_features(cycle_analytics_for_projects: true, cycle_analytics_for_groups: true)
+      end
+
+      it 'returns a GraphQL error when filtering project value streams by project IDs' do
+        post_graphql(metrics_query, current_user: current_user, variables: variables)
+
+        expect(
+          graphql_errors[0]['message']
+        ).to eq("Project value streams don't support the projectIds filter")
+      end
     end
 
     context 'when using aggregated metrics' do
@@ -482,7 +549,7 @@ RSpec.describe '(Project|Group).value_streams', feature_category: :value_stream_
         let_it_be(:resource) { project }
 
         let_it_be(:value_stream) do
-          create(:cycle_analytics_value_stream, namespace: resource.project_namespace, name: 'custom stream', stages: [
+          create(:cycle_analytics_value_stream, namespace: namespace, name: 'custom stream', stages: [
             create(
               :cycle_analytics_stage,
               namespace: resource.project_namespace,
@@ -523,14 +590,105 @@ RSpec.describe '(Project|Group).value_streams', feature_category: :value_stream_
   context 'for groups' do
     let(:resource_type) { 'group' }
 
-    let_it_be(:resource) { create(:group, :with_organization) }
-    let_it_be(:project) { create(:project, namespace: resource) }
+    let_it_be(:resource) { create(:group) }
+    let_it_be(:project) { create(:project, group: resource) }
     let_it_be(:namespace) { resource }
     let_it_be(:start_label) { create(:group_label, group: resource, title: 'Start Label') }
     let_it_be(:end_label) { create(:group_label, group: resource, title: 'End Label') }
+    let_it_be(:project_2) { create(:project, group: resource) }
+    let_it_be(:project_3) { create(:project, group: resource) }
+    let(:value_stream) { value_streams.last }
+    let_it_be(:assignee) { create(:user) }
+
+    before_all do
+      resource.add_reporter(current_user)
+    end
+
+    subject(:record_count) do
+      graphql_data_at(resource_type.to_sym, :value_streams, :nodes, 0, :stages,
+        0)['metrics']['count']['value']
+    end
 
     context 'when qurantined shared example', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/482805' do
       it_behaves_like 'value streams query'
+    end
+
+    context 'when filtering for project ids' do
+      include_context 'for value stream metrics query'
+
+      let_it_be(:merge_request1) do
+        create(:merge_request, :unique_branches, source_project: project, created_at: current_time).tap do |mr|
+          mr.metrics.update!(merged_at: current_time + 2.hours)
+        end
+      end
+
+      let_it_be(:merge_request2) do
+        create(:merge_request, :unique_branches, source_project: project, created_at: 5.days.ago).tap do |mr|
+          mr.metrics.update!(merged_at: current_time + 3.hours)
+        end
+      end
+
+      let_it_be(:merge_request3) do
+        create(:merge_request, :unique_branches, source_project: project, created_at: 5.days.ago).tap do |mr|
+          mr.metrics.update!(merged_at: current_time + 4.hours)
+        end
+      end
+
+      let_it_be(:merge_request4) do
+        create(:merge_request, :unique_branches, source_project: project_2, created_at: 5.days.ago).tap do |mr|
+          mr.metrics.update!(merged_at: current_time + 4.hours)
+        end
+      end
+
+      let_it_be(:value_stream) do
+        create(:cycle_analytics_value_stream, namespace: resource, name: 'custom stream', stages: [
+          create(:cycle_analytics_stage,
+            namespace: resource,
+            name: "Code",
+            start_event_identifier: :merge_request_created,
+            end_event_identifier: :merge_request_merged
+          )
+        ])
+      end
+
+      before do
+        stub_licensed_features(cycle_analytics_for_projects: true, cycle_analytics_for_groups: true)
+
+        variables.merge!({
+          from: (current_time - 10.days).to_date,
+          to: (current_time + 10.days).to_date,
+          fullPath: resource.full_path
+        })
+
+        Analytics::CycleAnalytics::DataLoaderService.new(
+          namespace: resource.root_ancestor,
+          model: MergeRequest
+        ).execute
+      end
+
+      it 'returns the correct count when there is data' do
+        variables[:projectIds] = [project.to_gid.to_s]
+
+        post_graphql(metrics_query, current_user: current_user, variables: variables)
+
+        expect(record_count).to eq(3)
+      end
+
+      it 'returns the combined count when filtering by multiple projects with data' do
+        variables[:projectIds] = [project.to_gid.to_s, project_2.to_gid.to_s]
+
+        post_graphql(metrics_query, current_user: current_user, variables: variables)
+
+        expect(record_count).to eq(4)
+      end
+
+      it 'returns the correct count when there is no data' do
+        variables[:projectIds] = [project_3.to_gid.to_s]
+
+        post_graphql(metrics_query, current_user: current_user, variables: variables)
+
+        expect(record_count).to eq(0)
+      end
     end
 
     context 'when using aggregated metrics' do
