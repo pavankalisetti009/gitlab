@@ -39,8 +39,9 @@ module Search
         end
 
         def by_multi_match_query(fields:, query:, options:)
-          fields = ::Elastic::Latest::CustomLanguageAnalyzers.add_custom_analyzers_fields(fields)
-          fields = remove_fields_boost(fields) if options[:count_only]
+          query_fields = fields.dup
+          query_fields = ::Elastic::Latest::CustomLanguageAnalyzers.add_custom_analyzers_fields(query_fields)
+          query_fields = remove_fields_boost(query_fields) if options[:count_only]
 
           bool_expr = ::Search::Elastic::BoolExpr.new
 
@@ -57,8 +58,8 @@ module Search
             end
 
             multi_match_bool = ::Search::Elastic::BoolExpr.new
-            multi_match_bool.should << multi_match_query(fields, query, options.merge(operator: :and))
-            multi_match_bool.should << multi_match_phrase_query(fields, query, options)
+            multi_match_bool.should << multi_match_query(query_fields, query, options.merge(operator: :and))
+            multi_match_bool.should << multi_match_phrase_query(query_fields, query, options)
             multi_match_bool.minimum_should_match = 1
 
             if options[:count_only]
@@ -75,14 +76,15 @@ module Search
           query_hash = { query: { bool: bool_expr } }
           query_hash[:track_scores] = true unless query.present?
 
-          query_hash[:highlight] = apply_highlight(fields) unless options[:count_only]
+          query_hash[:highlight] = apply_highlight(query_fields) unless options[:count_only]
 
           query_hash
         end
 
         def by_simple_query_string(fields:, query:, options:)
-          fields = ::Elastic::Latest::CustomLanguageAnalyzers.add_custom_analyzers_fields(fields)
-          fields = remove_fields_boost(fields) if options[:count_only]
+          query_fields = fields.dup
+          query_fields = ::Elastic::Latest::CustomLanguageAnalyzers.add_custom_analyzers_fields(query_fields)
+          query_fields = remove_fields_boost(query_fields) if options[:count_only]
 
           bool_expr = ::Search::Elastic::BoolExpr.new
           if query.present?
@@ -98,11 +100,11 @@ module Search
             end
 
             if options[:count_only]
-              bool_expr.filter << simple_query_string(fields, query, options)
+              bool_expr.filter << simple_query_string(query_fields, query, options)
             elsif options[:keyword_match_clause] == :should
-              bool_expr.should << simple_query_string(fields, query, options)
+              bool_expr.should << simple_query_string(query_fields, query, options)
             else
-              bool_expr.must << simple_query_string(fields, query, options)
+              bool_expr.must << simple_query_string(query_fields, query, options)
             end
           else
             bool_expr.must = { match_all: {} }
@@ -111,7 +113,7 @@ module Search
           query_hash = { query: { bool: bool_expr } }
           query_hash[:track_scores] = true unless query.present?
 
-          query_hash[:highlight] = apply_highlight(fields) unless options[:count_only]
+          query_hash[:highlight] = apply_highlight(query_fields) unless options[:count_only]
 
           query_hash
         end
