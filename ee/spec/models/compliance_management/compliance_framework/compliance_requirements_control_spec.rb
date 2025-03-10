@@ -150,6 +150,30 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
         control.external_url = 'https://localhost:1337/bar'
         expect(control).to be_valid
       end
+
+      context 'when in SaaS context' do
+        it 'validates presence', :aggregate_failures do
+          stub_saas_features gitlab_com_subscriptions: true
+
+          control.external_url = nil
+          expect(control).not_to be_valid
+
+          control.external_url = 'udp://example.com:1701'
+          expect(control).not_to be_valid
+
+          control.external_url = 'https://example.com/bar'
+          expect(control).to be_valid
+
+          control.external_url = 'https://localhost:1337/bar'
+          expect(control).not_to be_valid
+
+          control.external_url = 'https://0.0.0.0:1337/bar'
+          expect(control).not_to be_valid
+
+          control.external_url = 'https://127.0.0.1:1337/bar'
+          expect(control).not_to be_valid
+        end
+      end
     end
 
     context 'with internal control_type' do

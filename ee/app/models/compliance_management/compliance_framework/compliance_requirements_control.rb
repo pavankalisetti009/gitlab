@@ -44,8 +44,11 @@ module ComplianceManagement
       validate :validate_internal_expression, if: :internal?
       validate :controls_count_per_requirement
 
-      validates :external_url, presence: true, addressable_url: true,
-        uniqueness: { scope: :compliance_requirement_id }, if: :external?
+      validates :external_url, presence: true,
+        # needs to evaluate .com? at runtime for specs to be able to differentiate - there must be a better way
+        addressable_url: { allow_localhost: ->(record) { !record.saas? } },
+        uniqueness: { scope: :compliance_requirement_id },
+        if: :external?
       validates :name, uniqueness: { scope: :compliance_requirement_id }, if: :internal?
       validates :secret_token, presence: true, if: :external?
 
@@ -55,6 +58,10 @@ module ComplianceManagement
         errors.add(:expression, _('should be a valid json object.'))
 
         nil
+      end
+
+      def saas?
+        ::Gitlab::Saas.feature_available? :gitlab_com_subscriptions
       end
 
       private
