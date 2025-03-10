@@ -207,6 +207,13 @@ PATH
       omniauth (~> 2.0)
 
 PATH
+  remote: vendor/gems/ruby-saml
+  specs:
+    ruby-saml (1.18.0)
+      nokogiri (>= 1.13.10)
+      rexml
+
+PATH
   remote: vendor/gems/sidekiq-7.2.4
   specs:
     sidekiq (7.2.4)
@@ -1705,9 +1712,6 @@ GEM
     ruby-magic (0.6.0)
       mini_portile2 (~> 2.8)
     ruby-progressbar (1.11.0)
-    ruby-saml (1.17.0)
-      nokogiri (>= 1.13.10)
-      rexml
     ruby-statistics (4.1.0)
     ruby2_keywords (0.0.5)
     rubyntlm (0.6.3)
@@ -2301,7 +2305,7 @@ DEPENDENCIES
   ruby-lsp-rspec (~> 0.1.10)
   ruby-magic (~> 0.6)
   ruby-progressbar (~> 1.10)
-  ruby-saml (~> 1.17.0)
+  ruby-saml (~> 1.18.0)!
   rubyzip (~> 2.3.2)
   rugged (~> 1.6)
   sanitize (~> 6.0.2)
