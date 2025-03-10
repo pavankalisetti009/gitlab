@@ -40370,6 +40370,17 @@ Represents a verification status widget.
 | <a id="workitemwidgetverificationstatustype"></a>`type` | [`WorkItemWidgetType`](#workitemwidgettype) | Widget type. |
 | <a id="workitemwidgetverificationstatusverificationstatus"></a>`verificationStatus` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 15.5. **Status**: Experiment. Verification status of the work item. |
 
+### `WorkItemWidgetVulnerabilities`
+
+Represents a vulnerabilities widget.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="workitemwidgetvulnerabilitiesrelatedvulnerabilities"></a>`relatedVulnerabilities` {{< icon name="warning-solid" >}} | [`VulnerabilityConnection`](#vulnerabilityconnection) | **Introduced** in GitLab 17.10. **Status**: Experiment. Related vulnerabilities of the work item. |
+| <a id="workitemwidgetvulnerabilitiestype"></a>`type` | [`WorkItemWidgetType`](#workitemwidgettype) | Widget type. |
+
 ### `WorkItemWidgetWeight`
 
 Represents a weight widget.
@@ -44279,6 +44290,7 @@ Type of a work item widget.
 | <a id="workitemwidgettypetest_reports"></a>`TEST_REPORTS` | Test Reports widget. |
 | <a id="workitemwidgettypetime_tracking"></a>`TIME_TRACKING` | Time Tracking widget. |
 | <a id="workitemwidgettypeverification_status"></a>`VERIFICATION_STATUS` | Verification Status widget. |
+| <a id="workitemwidgettypevulnerabilities"></a>`VULNERABILITIES` | Vulnerabilities widget. |
 | <a id="workitemwidgettypeweight"></a>`WEIGHT` | Weight widget. |
 
 ### `WorkspaceVariableInputType`
@@ -46686,6 +46698,7 @@ Implementations:
 - [`WorkItemWidgetTestReports`](#workitemwidgettestreports)
 - [`WorkItemWidgetTimeTracking`](#workitemwidgettimetracking)
 - [`WorkItemWidgetVerificationStatus`](#workitemwidgetverificationstatus)
+- [`WorkItemWidgetVulnerabilities`](#workitemwidgetvulnerabilities)
 - [`WorkItemWidgetWeight`](#workitemwidgetweight)
 
 ##### Fields

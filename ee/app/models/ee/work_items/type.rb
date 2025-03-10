@@ -18,7 +18,8 @@ module EE
         issuable_health_status: ::WorkItems::Widgets::HealthStatus,
         okrs: ::WorkItems::Widgets::Progress,
         epic_colors: ::WorkItems::Widgets::Color,
-        custom_fields: ::WorkItems::Widgets::CustomFields
+        custom_fields: ::WorkItems::Widgets::CustomFields,
+        security_dashboard: ::WorkItems::Widgets::Vulnerabilities
       }.freeze
 
       LICENSED_TYPES = { epic: :epics, objective: :okrs, key_result: :okrs, requirement: :requirements }.freeze
