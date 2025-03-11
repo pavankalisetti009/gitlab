@@ -106,6 +106,24 @@ RSpec.describe Sbom::PossiblyAffectedOccurrencesFinder, feature_category: :softw
 
     it_behaves_like 'non-matching component'
     it_behaves_like 'matching component'
+
+    context 'with pypi-related package names' do
+      let_it_be(:purl_type) { 'pypi' }
+      let_it_be(:package_name) { 'Matching_package' }
+      let_it_be(:normalized_name) do
+        ::Sbom::PackageUrl::Normalizer.new(type: purl_type, text: package_name).normalize_name
+      end
+
+      let_it_be(:matching_component) { create(:sbom_component, name: normalized_name, purl_type: purl_type) }
+
+      let_it_be(:matching_occurrences) do
+        create_list(:sbom_occurrence, 3, component: matching_component, project: project)
+      end
+
+      it 'returns the possibly affected occurrences' do
+        expect(possibly_affected_occurrences).to match_array(matching_occurrences)
+      end
+    end
   end
 
   context 'when the component purl_type is for container scanning' do

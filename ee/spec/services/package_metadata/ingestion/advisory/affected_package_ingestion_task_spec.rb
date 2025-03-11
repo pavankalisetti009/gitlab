@@ -5,13 +5,18 @@ require 'spec_helper'
 RSpec.describe PackageMetadata::Ingestion::Advisory::AffectedPackageIngestionTask, feature_category: :software_composition_analysis do
   describe '.execute' do
     let_it_be(:advisory_xid) { 'some-uuid-value' }
+    let_it_be(:purl_type) { 'pypi' }
+    let_it_be(:package_name) { 'Matching_name' }
+    let_it_be(:normalized_name) do
+      ::Sbom::PackageUrl::Normalizer.new(type: purl_type, text: package_name).normalize_name
+    end
 
     let!(:existing_advisory) do
       create(:pm_advisory, advisory_xid: advisory_xid)
     end
 
     let!(:existing_affected_package) do
-      create(:pm_affected_package, advisory: existing_advisory)
+      create(:pm_affected_package, advisory: existing_advisory, purl_type: purl_type, package_name: normalized_name)
     end
 
     let(:import_data) do
@@ -19,7 +24,8 @@ RSpec.describe PackageMetadata::Ingestion::Advisory::AffectedPackageIngestionTas
         build(:pm_advisory_data_object, advisory_xid: advisory_xid,
           affected_packages: [
             build(:pm_affected_package_data_object,
-              package_name: existing_affected_package.package_name,
+              purl_type: purl_type,
+              package_name: package_name,
               fixed_versions: %w[9.9.9],
               versions: [{ 'number' => '1.2.4',
                            'commit' => { 'tags' => ['v1.2.4-tag'], 'sha' => '295cf0778821bf08681e2bd0ef0e6cad04fc3001',
