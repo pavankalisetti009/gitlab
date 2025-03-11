@@ -247,7 +247,7 @@ module Gitlab
               \n          # A newline character
               [\s\S]*?    # Any characters (including newlines), non-greedy
               ```         # Three backticks to end the code block
-              \n          # A newline character after the closing backticks
+              (?:\n|$)    # Either a newline character OR the end of the string
             }mux # Flag: multiline (m), and unicode (u), extended mode (x) for readability,
 
             text.scan(code_block_regex) do |_match|

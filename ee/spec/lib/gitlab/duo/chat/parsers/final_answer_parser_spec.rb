@@ -1814,5 +1814,82 @@ RSpec.describe Gitlab::Duo::Chat::Parsers::FinalAnswerParser, feature_category: 
         expect(sanitized_answer).to eq(expected)
       end
     end
+
+    context 'when there is a only a code block in the answer' do
+      let(:final_answer) do
+        <<~MARKDOWN
+          ```ruby
+            async function fetchUserData(userId) {
+              try {
+                const response = await fetch(`https://api.example.com/users/${userId}`);
+                if (!response.ok) {
+                  throw new Error('Network response was not ok');
+                }
+                const userData = await response.json();
+                return userData;
+              } catch (error) {
+                console.error('Error fetching user data:', error);
+                return null;
+              }
+            }
+
+            function displayUserInfo(userData) {
+              if (userData) {
+                console.log(`Name: ${userData.name}`);
+                console.log(`Email: ${userData.email}`);
+                console.log(`Age: ${userData.age}`);
+              } else {
+                console.log('User data not available');
+              }
+            }
+
+            (async () => {
+              const userId = 123;
+              const user = await fetchUserData(userId);
+              displayUserInfo(user);
+            })();
+          ```
+        MARKDOWN
+      end
+
+      it 'sanitizes the URLs correctly' do
+        expected =
+          <<~MARKDOWN
+            ```ruby
+              async function fetchUserData(userId) {
+                try {
+                  const response = await fetch(`https://api.example.com/users/${userId}`);
+                  if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                  }
+                  const userData = await response.json();
+                  return userData;
+                } catch (error) {
+                  console.error('Error fetching user data:', error);
+                  return null;
+                }
+              }
+
+              function displayUserInfo(userData) {
+                if (userData) {
+                  console.log(`Name: ${userData.name}`);
+                  console.log(`Email: ${userData.email}`);
+                  console.log(`Age: ${userData.age}`);
+                } else {
+                  console.log('User data not available');
+                }
+              }
+
+              (async () => {
+                const userId = 123;
+                const user = await fetchUserData(userId);
+                displayUserInfo(user);
+              })();
+            ```
+          MARKDOWN
+
+        expect(sanitized_answer).to eq(expected)
+      end
+    end
   end
 end
