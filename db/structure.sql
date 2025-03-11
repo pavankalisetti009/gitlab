@@ -10901,6 +10901,24 @@ CREATE TABLE ci_pipeline_metadata (
     CONSTRAINT check_9d3665463c CHECK ((char_length(name) <= 255))
 );
 
+CREATE TABLE ci_pipeline_schedule_inputs (
+    id bigint NOT NULL,
+    pipeline_schedule_id bigint NOT NULL,
+    project_id bigint NOT NULL,
+    name text NOT NULL,
+    value jsonb,
+    CONSTRAINT check_a340b48bb4 CHECK ((char_length(name) <= 255))
+);
+
+CREATE SEQUENCE ci_pipeline_schedule_inputs_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE ci_pipeline_schedule_inputs_id_seq OWNED BY ci_pipeline_schedule_inputs.id;
+
 CREATE TABLE ci_pipeline_schedule_variables (
     id bigint NOT NULL,
     key character varying NOT NULL,
@@ -25589,6 +25607,8 @@ ALTER TABLE ONLY ci_pipeline_chat_data ALTER COLUMN id SET DEFAULT nextval('ci_p
 
 ALTER TABLE ONLY ci_pipeline_messages ALTER COLUMN id SET DEFAULT nextval('ci_pipeline_messages_id_seq'::regclass);
 
+ALTER TABLE ONLY ci_pipeline_schedule_inputs ALTER COLUMN id SET DEFAULT nextval('ci_pipeline_schedule_inputs_id_seq'::regclass);
+
 ALTER TABLE ONLY ci_pipeline_schedule_variables ALTER COLUMN id SET DEFAULT nextval('ci_pipeline_schedule_variables_id_seq'::regclass);
 
 ALTER TABLE ONLY ci_pipeline_schedules ALTER COLUMN id SET DEFAULT nextval('ci_pipeline_schedules_id_seq'::regclass);
@@ -27771,6 +27791,9 @@ ALTER TABLE ONLY ci_pipeline_messages
 
 ALTER TABLE ONLY ci_pipeline_metadata
     ADD CONSTRAINT ci_pipeline_metadata_pkey PRIMARY KEY (pipeline_id);
+
+ALTER TABLE ONLY ci_pipeline_schedule_inputs
+    ADD CONSTRAINT ci_pipeline_schedule_inputs_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY ci_pipeline_schedule_variables
     ADD CONSTRAINT ci_pipeline_schedule_variables_pkey PRIMARY KEY (id);
@@ -32561,6 +32584,10 @@ CREATE INDEX index_ci_pipeline_messages_on_pipeline_id ON ci_pipeline_messages U
 CREATE INDEX index_ci_pipeline_messages_on_project_id ON ci_pipeline_messages USING btree (project_id);
 
 CREATE INDEX index_ci_pipeline_metadata_on_project_id ON ci_pipeline_metadata USING btree (project_id);
+
+CREATE INDEX index_ci_pipeline_schedule_inputs_on_pipeline_schedule_id ON ci_pipeline_schedule_inputs USING btree (pipeline_schedule_id);
+
+CREATE INDEX index_ci_pipeline_schedule_inputs_on_project_id ON ci_pipeline_schedule_inputs USING btree (project_id);
 
 CREATE INDEX index_ci_pipeline_schedule_variables_on_project_id ON ci_pipeline_schedule_variables USING btree (project_id);
 
@@ -41530,6 +41557,9 @@ ALTER TABLE ONLY boards_epic_user_preferences
 
 ALTER TABLE ONLY group_wiki_repositories
     ADD CONSTRAINT fk_rails_26f867598c FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY ci_pipeline_schedule_inputs
+    ADD CONSTRAINT fk_rails_2709bc4c28 FOREIGN KEY (pipeline_schedule_id) REFERENCES ci_pipeline_schedules(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY lfs_file_locks
     ADD CONSTRAINT fk_rails_27a1d98fa8 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
