@@ -572,7 +572,7 @@ rspec:coverage:
     - job: rspec:artifact-collector ee remainder
       optional: true
   script:
-    - run_timed_command "bundle exec scripts/merge-simplecov"
+    - run_with_custom_exit_code run_timed_command "bundle exec scripts/merge-simplecov"
   coverage: '/LOC \((\d+\.\d+%)\) covered.$/'
   artifacts:
     name: coverage
