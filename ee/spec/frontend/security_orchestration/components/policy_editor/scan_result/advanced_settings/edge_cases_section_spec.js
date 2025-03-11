@@ -21,7 +21,7 @@ describe('EdgeCasesSection', () => {
 
     it('renders the checkbox', () => {
       expect(findCheckbox().text()).toContain(
-        'Make approval rules optional using scan execution policies',
+        'Make approval rules optional using execution policies',
       );
       expect(findCheckbox().attributes('checked')).toBeUndefined();
     });
