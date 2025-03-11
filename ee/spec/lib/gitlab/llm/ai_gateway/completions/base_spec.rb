@@ -97,6 +97,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::Base, feature_category: :ai_
       let(:processed_response) { { 'detail' => 'An unexpected error has occurred.' } }
 
       before do
+        allow(::Ai::AmazonQ).to receive(:connected?).and_return(false)
         allow(Gitlab::Json).to receive(:parse).and_raise(StandardError)
       end
 
@@ -132,6 +133,34 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::Base, feature_category: :ai_
         expect(client).to receive(:complete).with(
           url: "#{Gitlab::AiGateway.url}/v1/prompts/#{ai_action}",
           body: { 'inputs' => inputs, 'prompt_version' => '2.0.0' }
+        ).and_return(http_response)
+
+        expect(response_modifier_class).to receive(:new).with(processed_response)
+          .and_return(response_modifier)
+        expect(Gitlab::Llm::GraphqlSubscriptionResponseService).to receive(:new)
+          .with(user, resource, response_modifier, options: response_options).and_return(response_service)
+        expect(response_service).to receive(:execute).and_return(result)
+
+        is_expected.to be(result)
+      end
+    end
+
+    context 'when model_metadata is provided' do
+      it 'includes model_metadata in the request body' do
+        params = {
+          provider: 'provider',
+          name: 'model',
+          endpoint: 'http://example.com',
+          identifier: 'identifier'
+        }
+
+        expect_next_instance_of(::Gitlab::Llm::AiGateway::ModelMetadata) do |instance|
+          expect(instance).to receive(:to_params).and_return(params)
+        end
+
+        expect(client).to receive(:complete).with(
+          url: "#{Gitlab::AiGateway.url}/v1/prompts/#{ai_action}",
+          body: { 'inputs' => inputs, 'model_metadata' => params }
         ).and_return(http_response)
 
         expect(response_modifier_class).to receive(:new).with(processed_response)

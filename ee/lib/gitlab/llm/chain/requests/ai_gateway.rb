@@ -144,25 +144,9 @@ module Gitlab
 
             feature_setting = chat_feature_setting(unit_primitive: unit_primitive)
 
-            if feature_setting&.self_hosted?
-              self_hosted_model = feature_setting.self_hosted_model
-
-              params[:model_metadata] = {
-                provider: self_hosted_model.provider,
-                name: self_hosted_model.model,
-                endpoint: self_hosted_model.endpoint,
-                api_key: self_hosted_model.api_token,
-                identifier: self_hosted_model.identifier
-              }
-            end
-
-            if ::Ai::AmazonQ.connected?
-              params[:model_metadata] = {
-                provider: :amazon_q,
-                name: :amazon_q,
-                role_arn: ::Ai::Setting.instance.amazon_q_role_arn
-              }
-            end
+            model_metadata_params =
+              ::Gitlab::Llm::AiGateway::ModelMetadata.new(feature_setting: feature_setting).to_params
+            params[:model_metadata] = model_metadata_params if model_metadata_params.present?
 
             params
           end
