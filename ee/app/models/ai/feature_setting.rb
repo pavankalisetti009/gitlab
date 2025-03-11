@@ -14,7 +14,8 @@ module Ai
       duo_chat_explain_code: 3,
       duo_chat_write_tests: 4,
       duo_chat_refactor_code: 5,
-      duo_chat_fix_code: 6
+      duo_chat_fix_code: 6,
+      duo_chat_troubleshoot_job: 7
     }.freeze
 
     FEATURE_METADATA_PATH = Rails.root.join('ee/lib/gitlab/ai/feature_settings/feature_metadata.yml')

@@ -74,3 +74,12 @@ duo_chat_fix_code:
     - claude_3
     - gpt
     - codestral
+duo_chat_troubleshoot_job:
+  title: Troubleshoot Job
+  release_state: BETA
+  main_feature: GitLab Duo Chat
+  compatible_llms:
+    - mistral
+    - mixtral
+    - claude_3
+    - gpt
