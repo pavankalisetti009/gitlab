@@ -57,6 +57,15 @@ RSpec.describe Namespaces::RemoveDormantMembersWorker, :saas, feature_category: 
               expect { perform_work }.not_to change { Members::DeletionSchedule.count }
             end
           end
+
+          context 'when the dormant member is a bot' do
+            it 'does not remove the bot' do
+              bot_user = create(:user, :project_bot)
+              dormant_assignment.update!(user: bot_user)
+
+              expect { perform_work }.not_to change { Members::DeletionSchedule.count }
+            end
+          end
         end
 
         context 'when group has non-default dormant period' do
