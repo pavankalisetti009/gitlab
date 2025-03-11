@@ -44,4 +44,23 @@ RSpec.describe MergeRequests::ApprovalRule, type: :model, feature_category: :cod
       end
     end
   end
+
+  describe 'associations' do
+    it { is_expected.to have_many(:approval_rules_approver_users) }
+    it { is_expected.to have_many(:approver_users).through(:approval_rules_approver_users).source(:user) }
+  end
+
+  describe '#approver_users' do
+    let_it_be(:user) { create(:user) }
+    let_it_be(:group) { create(:group) }
+    let(:approval_rule) { create(:merge_requests_approval_rule, :from_group, group_id: group.id) }
+
+    before do
+      create(:merge_requests_approval_rules_approver_user, user: user, approval_rule: approval_rule)
+    end
+
+    it 'returns users through the approval_rules_approver_users association' do
+      expect(approval_rule.approver_users).to include(user)
+    end
+  end
 end

@@ -28,8 +28,8 @@ module MergeRequests
     has_one :approval_rules_merge_request, inverse_of: :approval_rule
     has_one :merge_request, through: :approval_rules_merge_request
 
-    has_many :approval_rules_users
-    has_many :users, through: :approval_rules_users
+    has_many :approval_rules_approver_users
+    has_many :approver_users, through: :approval_rules_approver_users, source: :user
 
     has_many :approval_rules_approver_groups
     has_many :approver_groups, through: :approval_rules_approver_groups, source: :group
