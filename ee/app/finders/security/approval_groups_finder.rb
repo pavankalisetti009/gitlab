@@ -24,7 +24,7 @@ module Security
       :container
 
     def global_groups?
-      @search_globally || user_namespace?
+      @search_globally || container.nil? || user_namespace?
     end
 
     # rubocop: disable Layout/LineLength
