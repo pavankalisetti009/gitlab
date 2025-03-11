@@ -22368,6 +22368,9 @@ msgstr ""
 msgid "Edit release"
 msgstr ""
 
+msgid "Edit release (%{title})"
+msgstr ""
+
 msgid "Edit single file"
 msgstr ""
 
