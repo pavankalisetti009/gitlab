@@ -59,6 +59,10 @@ RSpec.describe GitlabSubscriptions::SeatAssignment, feature_category: :seat_cost
       create(:gitlab_subscription_seat_assignment, namespace: namespace, last_activity_on: nil, created_at: 10.days.ago)
     end
 
+    it 'includes users' do
+      expect(described_class.dormant_in_namespace(namespace).first.association_cached?(:user)).to be true
+    end
+
     context 'with no cut off date passed to scope' do
       it 'returns dormant seat assignment records' do
         expect(described_class.dormant_in_namespace(namespace)).to contain_exactly(

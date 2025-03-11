@@ -58,7 +58,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
         }
       }
 
-      config_to_apply = yaml_safe_load_symbolized(config_to_apply_yaml_stream)
+      config_to_apply = yaml_safe_load_stream_symbolized(config_to_apply_yaml_stream)
 
       config_to_apply => [
         *_,
@@ -485,9 +485,10 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
 
               # test the config to apply first to get a more specific diff if it fails
               actual_workspace_rails_info = workspace_rails_infos.detect { |info| info.fetch(:name) == workspace.name }
-              actual_config_to_apply = yaml_safe_load_symbolized(actual_workspace_rails_info.fetch(:config_to_apply))
+              actual_config_to_apply =
+                yaml_safe_load_stream_symbolized(actual_workspace_rails_info.fetch(:config_to_apply))
               expected_config_to_apply =
-                yaml_safe_load_symbolized(expected_workspace_rails_info.fetch(:config_to_apply))
+                yaml_safe_load_stream_symbolized(expected_workspace_rails_info.fetch(:config_to_apply))
               expect(actual_config_to_apply).to eq(expected_config_to_apply)
 
               # then test everything in the infos

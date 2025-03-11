@@ -12,6 +12,7 @@ module GitlabSubscriptions
     scope :dormant_in_namespace, ->(namespace, cutoff = 90.days.ago) {
       by_namespace(namespace)
         .where('last_activity_on < ? OR (last_activity_on IS NULL AND created_at < ?)', cutoff, cutoff)
+        .includes(:user)
     }
 
     def self.find_by_namespace_and_user(namespace, user)

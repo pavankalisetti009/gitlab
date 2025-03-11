@@ -3,6 +3,8 @@
 module Security
   module SecurityOrchestrationPolicies
     class PolicyScopeFetcher
+      include ::GitlabSubscriptions::SubscriptionHelper
+
       def initialize(policy_scope:, container:, current_user:)
         @policy_scope = policy_scope
         @container = container
@@ -37,7 +39,13 @@ module Security
 
         return [] if compliance_framework_ids.blank?
 
-        root_ancestor.compliance_management_frameworks.id_in(compliance_framework_ids) || []
+        if !gitlab_com_subscription? && root_ancestor.nil?
+          ComplianceManagement::Framework.id_in(compliance_framework_ids)
+        elsif root_ancestor.present?
+          root_ancestor.compliance_management_frameworks.id_in(compliance_framework_ids)
+        else
+          []
+        end
       end
 
       def scoped_projects
@@ -63,6 +71,8 @@ module Security
       end
 
       def root_ancestor
+        return if container.nil?
+
         if container.is_a?(ComplianceManagement::Framework)
           container.namespace
         else
