@@ -31195,6 +31195,9 @@ msgstr ""
 msgid "Integrations|Add integration"
 msgstr ""
 
+msgid "Integrations|Add new %{title} integration"
+msgstr ""
+
 msgid "Integrations|All details"
 msgstr ""
 
@@ -31229,6 +31232,9 @@ msgid "Integrations|Comment detail:"
 msgstr ""
 
 msgid "Integrations|Comment settings:"
+msgstr ""
+
+msgid "Integrations|Configure %{title}"
 msgstr ""
 
 msgid "Integrations|Configure the scope of notifications."
