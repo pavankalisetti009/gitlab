@@ -9,10 +9,6 @@ query workItemCustomFields($id: WorkItemID!) {
             id
             name
             fieldType
-            selectOptions {
-              id
-              value
-            }
           }
           ... on WorkItemNumberFieldValue {
             value
