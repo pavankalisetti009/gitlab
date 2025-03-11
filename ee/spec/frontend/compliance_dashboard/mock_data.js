@@ -500,16 +500,51 @@ export const mockRequirements = [
     name: 'SOC2',
     description: 'Controls for SOC2',
     __typename: 'ComplianceManagement::Requirement',
+    complianceRequirementsControls: {
+      nodes: [],
+    },
   },
   {
     id: 'gid://gitlab/ComplianceManagement::Requirement/2',
     name: 'GitLab',
     description: 'Controls used by GitLab',
     __typename: 'ComplianceManagement::Requirement',
+    complianceRequirementsControls: {
+      nodes: [
+        {
+          id: 'gid://gitlab/ComplianceManagement::Control/1',
+          name: 'minimum_approvals_required',
+          controlType: 'internal',
+          externalUrl: null,
+        },
+        {
+          id: 'gid://gitlab/ComplianceManagement::Control/2',
+          name: 'scanner_sast_running',
+          controlType: 'internal',
+          externalUrl: null,
+        },
+      ],
+    },
+  },
+  {
+    id: 'gid://gitlab/ComplianceManagement::Requirement/3',
+    name: 'External',
+    description: 'Requirement with external control',
+    __typename: 'ComplianceManagement::Requirement',
+    complianceRequirementsControls: {
+      nodes: [
+        {
+          id: 'gid://gitlab/ComplianceManagement::Control/3',
+          name: 'external_control',
+          controlType: 'external',
+          externalUrl: 'https://example.com',
+        },
+      ],
+    },
   },
 ];
 
-export const mockRequirementControls = [
+export const mockGitLabStandardControls = [
   {
     id: 'scanner_sast_running',
     name: 'SAST Running',
@@ -555,6 +590,25 @@ export const mockRequirementControls = [
     __typename: 'ControlExpression',
   },
 ];
+
+export const mockInternalControls = [
+  {
+    name: 'minimum_approvals_required',
+    controlType: 'internal',
+    displayValue: 'Minimum approvals required',
+  },
+  {
+    name: 'scanner_sast_running',
+    controlType: 'internal',
+    displayValue: 'SAST Running',
+  },
+];
+
+export const mockExternalControl = {
+  name: 'external_control',
+  controlType: 'external',
+  displayValue: 'Send via: https://example.com',
+};
 
 export const mockedRoutes = [
   { name: ROUTE_STANDARDS_ADHERENCE, fullPath: `/${ROUTE_STANDARDS_ADHERENCE}` },

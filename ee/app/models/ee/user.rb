@@ -150,6 +150,7 @@ module EE
       has_one :pipl_user, class_name: 'ComplianceManagement::PiplUser'
 
       has_many :user_member_roles, class_name: 'Users::UserMemberRole'
+      has_many :user_group_member_roles, inverse_of: :user, class_name: 'Authz::UserGroupMemberRole'
 
       has_many :ai_conversation_threads, class_name: 'Ai::Conversation::Thread', foreign_key: :user_id
       has_many :ai_conversation_messages, class_name: 'Ai::Conversation::Message', through: :ai_conversation_threads, source: :messages

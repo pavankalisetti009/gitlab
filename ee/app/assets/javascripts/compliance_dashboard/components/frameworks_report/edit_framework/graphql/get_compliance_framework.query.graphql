@@ -42,6 +42,14 @@ query getComplianceFrameworkWithPolicies(
             id
             name
             description
+            complianceRequirementsControls {
+              nodes {
+                id
+                name
+                controlType
+                externalUrl
+              }
+            }
           }
         }
         projects {

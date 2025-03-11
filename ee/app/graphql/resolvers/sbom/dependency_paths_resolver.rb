@@ -21,7 +21,12 @@ module Resolvers
 
         occurrence_id = resolve_gid(occurrence, ::Sbom::Occurrence)
         result = Gitlab::Metrics.measure(:dependency_path_cte) do
-          ::Sbom::DependencyPath.find(occurrence_id: occurrence_id, project_id: project.id)
+          ::Sbom::DependencyPathsFinder.new(
+            project,
+            params: {
+              occurrence_id: occurrence_id
+            }
+          ).execute
         end
         record_metrics(result)
         result

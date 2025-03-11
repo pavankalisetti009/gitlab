@@ -37,7 +37,7 @@ export default {
       type: Object,
       required: true,
     },
-    requirementControls: {
+    gitlabStandardControls: {
       type: Array,
       required: true,
     },
@@ -68,7 +68,7 @@ export default {
       );
     },
     controlItems() {
-      return this.requirementControls
+      return this.gitlabStandardControls
         .filter((control) => !this.controlIds.includes(control.id))
         .filter((control) => control.name.toLowerCase().includes(this.searchQuery.toLowerCase()))
         .map(({ id, name }) => ({ value: id, text: name }));
@@ -137,7 +137,7 @@ export default {
       this.validateForm();
       if (this.isFormValid) {
         const conditions = this.controlIds
-          .map((controlId) => this.requirementControls.find((ctrl) => ctrl.id === controlId))
+          .map((controlId) => this.gitlabStandardControls.find((ctrl) => ctrl.id === controlId))
           .filter(Boolean)
           .map((control) => ({ id: control.id, ...omit(control.expression, '__typename') }));
 
@@ -153,7 +153,7 @@ export default {
       }
     },
     getToggleText(controlId) {
-      const selectedItem = this.requirementControls.find((item) => item.id === controlId);
+      const selectedItem = this.gitlabStandardControls.find((item) => item.id === controlId);
       return selectedItem ? selectedItem.name : this.$options.i18n.toggleText;
     },
     getSelected(controlId) {
@@ -186,7 +186,7 @@ export default {
     learnMore: __('Learn more.'),
     nameInputInvalid: s__('ComplianceFrameworks|Name is required'),
     descriptionInputInvalid: s__('ComplianceFrameworks|Description is required'),
-    addControl: s__('ComplianceFrameworks|Add another control'),
+    addControl: s__('ComplianceFrameworks|Add a GitLab Control'),
     toggleText: s__('ComplianceFrameworks|Choose a standard control'),
     removeControl: s__('ComplianceFrameworks|Remove control'),
   },

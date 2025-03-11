@@ -34,7 +34,7 @@ RSpec.describe 'Work items list filters', :js, feature_category: :team_planning 
     end
 
     describe 'group' do
-      it 'filters', :aggregate_failures do
+      it 'filters', :aggregate_failures, quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/523412' do
         select_tokens 'Group', group.name, submit: true
 
         expect(page).to have_css('.issue', count: 1)
