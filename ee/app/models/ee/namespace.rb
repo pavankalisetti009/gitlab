@@ -652,6 +652,11 @@ module EE
       end
     end
 
+    def projects_with_repository_size_limit_usage_ratio_greater_than(ratio:)
+      projects_subject_to_repository_size_limits
+        .with_total_repository_size_greater_than(repository_size_usage_ratio_arel(ratio))
+    end
+
     private
 
     def security_orchestration_policies_for_namespaces(namespace_ids, include_invalid: false)
@@ -754,6 +759,11 @@ module EE
     end
 
     def projects_for_repository_size_excess
+      projects_subject_to_repository_size_limits
+        .with_total_repository_size_greater_than(repository_size_limit_arel)
+    end
+
+    def projects_subject_to_repository_size_limits
       projects_with_limits = ::Project.without_unlimited_repository_size_limit
 
       if actual_repository_size_limit.to_i > 0
@@ -761,9 +771,7 @@ module EE
         projects_with_limits = projects_with_limits.or(::Project.without_repository_size_limit)
       end
 
-      all_projects
-        .merge(projects_with_limits)
-        .with_total_repository_size_greater_than(repository_size_limit_arel)
+      all_projects.merge(projects_with_limits)
     end
 
     def repository_size_limit_arel
@@ -777,6 +785,13 @@ module EE
       else
         ::Project.arel_table[:repository_size_limit]
       end
+    end
+
+    def repository_size_usage_ratio_arel(ratio)
+      Arel::Nodes::Multiplication.new(
+        repository_size_limit_arel,
+        Arel::Nodes::SqlLiteral.new(ratio.to_s)
+      )
     end
 
     def hosted_plan_for(subscription)

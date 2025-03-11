@@ -147,7 +147,7 @@ RSpec.describe Namespaces::Storage::RepositoryLimit::AlertComponent, :saas, type
       end
     end
 
-    context 'when group is paid and its approaching limit' do
+    context 'when group is paid and is approaching limit' do
       let(:group) do
         build_stubbed(
           :group,
@@ -156,24 +156,46 @@ RSpec.describe Namespaces::Storage::RepositoryLimit::AlertComponent, :saas, type
       end
 
       before do
-        allow(group).to receive_messages(
-          actual_size_limit: 500.gigabytes,
-          additional_purchased_storage_size: 100.gigabytes,
-          total_repository_size: 550.gigabytes
-        )
+        allow_next_instance_of(PlanLimits) do |plan_limit|
+          allow(plan_limit).to receive(:repository_size).and_return 1
+        end
+        allow_next_instance_of(::Namespaces::Storage::RepositoryLimit::Enforcement) do |size_checker|
+          allow(size_checker).to receive_messages(
+            has_projects_over_high_limit_warning_threshold?: true
+          )
+        end
       end
 
-      it 'renders the alert title' do
+      it 'renders the approaching limit alert title' do
         render_inline(component)
         expect(page).to have_content("We've noticed an unusually high storage usage on #{group.name}")
       end
 
-      it 'renders the alert message' do
+      it 'renders the approaching limit alert message' do
         render_inline(component)
         expect(page).to have_content(
           "To manage your usage and prevent your projects from being placed in a read-only state, " \
             "you should immediately reduce storage, or contact support to help you manage your usage."
         )
+      end
+
+      context 'when there are also projects over limit' do
+        before do
+          allow(group).to receive(:repository_size_excess_project_count).and_return(1)
+          allow_next_instance_of(::Namespaces::Storage::RepositoryLimit::Enforcement) do |size_checker|
+            allow(size_checker).to receive_messages(
+              usage_ratio: 1,
+              above_size_limit?: true,
+              has_projects_over_high_limit_warning_threshold?: true
+            )
+          end
+        end
+
+        it 'renders above limit alert title' do
+          render_inline(component)
+
+          expect(page).to have_content(alert_title_default)
+        end
       end
     end
 

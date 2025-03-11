@@ -20,6 +20,10 @@ module Namespaces
       class Enforcement
         include ::Gitlab::Utils::StrongMemoize
 
+        # High Limit is a special scenario. Please refer to the epic for more details
+        # https://gitlab.com/groups/gitlab-org/-/epics/14207
+        HIGH_LIMIT_WARNING_THRESHOLD = 0.9
+
         attr_reader :root_namespace
 
         def initialize(root_namespace)
@@ -62,9 +66,19 @@ module Namespaces
 
         def subject_to_high_limit?
           return false unless Feature.enabled?(:plan_limits_repository_size, root_namespace)
+          return false unless root_namespace.actual_plan.actual_limits.repository_size.present?
 
           root_namespace.actual_plan.paid_excluding_trials?
         end
+
+        def has_projects_over_high_limit_warning_threshold?
+          return false unless subject_to_high_limit?
+
+          root_namespace
+            .projects_with_repository_size_limit_usage_ratio_greater_than(ratio: HIGH_LIMIT_WARNING_THRESHOLD)
+            .exists?
+        end
+        strong_memoize_attr :has_projects_over_high_limit_warning_threshold?
 
         def error_message
           message_params = { namespace_name: root_namespace.name }

@@ -66,6 +66,12 @@ RSpec.describe Namespaces::Storage::RepositoryLimit::EmailNotificationService,
     end
 
     context 'when in GitLab.com', :saas do
+      before do
+        allow_next_instance_of(PlanLimits) do |plan_limit|
+          allow(plan_limit).to receive(:repository_size).and_return 1
+        end
+      end
+
       context 'when there is no available storage' do
         where(:actual_size_limit, :additional_purchased_storage_size, :repository_size) do
           100 | 0 | 101
