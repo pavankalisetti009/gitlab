@@ -274,10 +274,12 @@ describe('WorkItemCustomFieldsSingleSelect', () => {
       expect(mutationSuccessHandler).toHaveBeenCalledWith({
         input: {
           id: defaultWorkItemId,
-          customFieldsWidget: {
-            customFieldId: defaultField.customField.id,
-            selectedOptionIds: [newSelectedId],
-          },
+          customFieldsWidget: [
+            {
+              customFieldId: defaultField.customField.id,
+              selectedOptionIds: [newSelectedId],
+            },
+          ],
         },
       });
     });
@@ -293,10 +295,12 @@ describe('WorkItemCustomFieldsSingleSelect', () => {
       expect(mutationSuccessHandler).toHaveBeenCalledWith({
         input: {
           id: defaultWorkItemId,
-          customFieldsWidget: {
-            customFieldId: defaultField.customField.id,
-            selectedOptionIds: [null],
-          },
+          customFieldsWidget: [
+            {
+              customFieldId: defaultField.customField.id,
+              selectedOptionIds: [null],
+            },
+          ],
         },
       });
     });

@@ -200,10 +200,12 @@ export default {
           variables: {
             input: {
               id: this.workItemId,
-              customFieldsWidget: {
-                customFieldId: this.customFieldId,
-                selectedOptionIds: selectedOptionsValues,
-              },
+              customFieldsWidget: [
+                {
+                  customFieldId: this.customFieldId,
+                  selectedOptionIds: selectedOptionsValues,
+                },
+              ],
             },
           },
         })

@@ -156,10 +156,12 @@ export default {
           variables: {
             input: {
               id: this.workItemId,
-              customFieldsWidget: {
-                customFieldId: this.customFieldId,
-                textValue: text,
-              },
+              customFieldsWidget: [
+                {
+                  customFieldId: this.customFieldId,
+                  textValue: text,
+                },
+              ],
             },
           },
         })

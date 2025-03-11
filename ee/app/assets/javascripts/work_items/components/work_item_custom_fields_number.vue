@@ -110,10 +110,12 @@ export default {
           variables: {
             input: {
               id: this.workItemId,
-              customFieldsWidget: {
-                customFieldId: this.customFieldId,
-                numberValue: number,
-              },
+              customFieldsWidget: [
+                {
+                  customFieldId: this.customFieldId,
+                  numberValue: number,
+                },
+              ],
             },
           },
         })
