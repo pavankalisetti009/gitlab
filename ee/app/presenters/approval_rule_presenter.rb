@@ -37,7 +37,6 @@ class ApprovalRulePresenter < Gitlab::View::Presenter::Delegated
   def show_approvers?
     return !contains_hidden_groups? unless rule.respond_to?(:project)
 
-    (::Feature.enabled?(:mr_approvers_filter_hidden_users, current_user) && rule.project.member?(current_user)) ||
-      !contains_hidden_groups?
+    rule.project.member?(current_user) || !contains_hidden_groups?
   end
 end

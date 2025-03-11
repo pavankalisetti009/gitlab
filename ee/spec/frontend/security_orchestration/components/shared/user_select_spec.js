@@ -40,10 +40,11 @@ const createProjectMemberResponse = (nodes) => ({
   },
 });
 
-const DUPLICATE_PROJECT_MEMBER_RESPONSE = createProjectMemberResponse([
+const PROJECT_MEMBER_RESPONSE_WITH_DUPLICATE_AND_NULL = createProjectMemberResponse([
   { id: 'gid://gitlab/ProjectMember/1', user, __typename: 'ProjectMember' },
   { id: 'gid://gitlab/ProjectMember/2', user, __typename: 'ProjectMember' },
   { id: 'gid://gitlab/ProjectMember/3', user: user2, __typename: 'ProjectMember' },
+  { id: '', user: null, __typename: 'ProjectMember' },
 ]);
 
 const GROUP_MEMBER_RESPONSE = {
@@ -77,7 +78,7 @@ describe('UserSelect component', () => {
   const namespaceType = NAMESPACE_TYPES.PROJECT;
   const projectSearchQueryHandlerSuccess = jest
     .fn()
-    .mockResolvedValue(DUPLICATE_PROJECT_MEMBER_RESPONSE);
+    .mockResolvedValue(PROJECT_MEMBER_RESPONSE_WITH_DUPLICATE_AND_NULL);
   const groupSearchQueryHandlerSuccess = jest.fn().mockResolvedValue(GROUP_MEMBER_RESPONSE);
 
   const createComponent = ({ propsData = {}, provide = {} } = {}) => {
@@ -121,7 +122,7 @@ describe('UserSelect component', () => {
       expect(findListbox().props('toggleClass')).toEqual([{ '!gl-shadow-inner-1-red-500': false }]);
     });
 
-    it('removes duplicates from user request', () => {
+    it('removes duplicates and nulls from user request', () => {
       expect(findListbox().props('items')).toEqual([
         { ...user, id: user.id, text: user.name, username: `@${user.username}`, value: user.id },
         {

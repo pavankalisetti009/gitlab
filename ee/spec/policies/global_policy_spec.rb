@@ -693,27 +693,6 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
 
         it { is_expected.to duo_chat_enabled_for_user }
       end
-
-      context 'when duo_chat_allowed_to_use is disabled' do
-        where(:duo_pro_seat_assigned, :duo_chat_enabled_for_user) do
-          true  | be_allowed(policy)
-          false | be_disallowed(policy)
-        end
-
-        with_them do
-          before do
-            stub_feature_flags(duo_chat_allowed_to_use: false)
-
-            duo_chat_service_data = instance_double(CloudConnector::SelfSigned::AvailableServiceData)
-            allow(CloudConnector::AvailableServices).to receive(:find_by_name).with(:duo_chat).and_return(
-              duo_chat_service_data
-            )
-            allow(duo_chat_service_data).to receive(:allowed_for?).with(current_user).and_return(duo_pro_seat_assigned)
-          end
-
-          it { is_expected.to duo_chat_enabled_for_user }
-        end
-      end
     end
 
     context 'when not on .org or .com' do
@@ -732,33 +711,6 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
         end
 
         it { is_expected.to duo_chat_enabled_for_user }
-      end
-
-      context 'when duo_chat_allowed_to_use is disabled' do
-        where(:lock_duo_features_enabled, :duo_pro_seat_assigned, :duo_chat_enabled_for_user) do
-          true | true | be_disallowed(policy)
-          true  |  false |  be_disallowed(policy)
-          false |  false |  be_disallowed(policy)
-          false |  true  |  be_allowed(policy)
-        end
-
-        with_them do
-          before do
-            stub_feature_flags(duo_chat_allowed_to_use: false)
-
-            allow(::Gitlab).to receive(:org_or_com?).and_return(false)
-            stub_ee_application_setting(lock_duo_features_enabled: lock_duo_features_enabled)
-            allow(current_user).to receive(:allowed_to_use?).and_return(duo_pro_seat_assigned)
-
-            duo_chat_service_data = instance_double(CloudConnector::SelfSigned::AvailableServiceData)
-            allow(CloudConnector::AvailableServices).to receive(:find_by_name).with(:duo_chat).and_return(
-              duo_chat_service_data
-            )
-            allow(duo_chat_service_data).to receive(:allowed_for?).with(current_user).and_return(duo_pro_seat_assigned)
-          end
-
-          it { is_expected.to duo_chat_enabled_for_user }
-        end
       end
     end
 
@@ -807,10 +759,11 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
           stub_licensed_features(ai_chat: true, amazon_q: true)
           stub_feature_flags(amazon_q_chat_and_code_suggestions: ff_enabled)
 
-          allow(current_user).to receive(:allowed_to_use?).with(:duo_chat).and_return(false)
+          allow(current_user).to receive(:allowed_to_use).with(:duo_chat, service_name: nil,
+            licensed_feature: :ai_features).and_return(::Ai::UserAuthorizable::Response.new(allowed?: false))
 
-          allow(current_user).to receive(:allowed_to_use?).with(:duo_chat, service_name: :amazon_q_integration,
-            licensed_feature: :amazon_q).and_return(allowed_to_use)
+          allow(current_user).to receive(:allowed_to_use).with(:duo_chat, service_name: :amazon_q_integration,
+            licensed_feature: :amazon_q).and_return(::Ai::UserAuthorizable::Response.new(allowed?: allowed_to_use))
         end
 
         it { is_expected.to duo_chat_enabled_for_user }

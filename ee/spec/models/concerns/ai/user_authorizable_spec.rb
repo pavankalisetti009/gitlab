@@ -250,11 +250,42 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
     subject { user.allowed_to_use?(ai_feature) }
 
     before do
-      allow(user).to receive(:allowed_to_use).with(ai_feature)
+      allow(user).to receive(:allowed_to_use).with(ai_feature, service_name: nil, licensed_feature: :ai_features)
         .and_return(described_class::Response.new(allowed?: allowed))
     end
 
     it { is_expected.to eq(allowed) }
+
+    context 'when amazon q integration is connected' do
+      using RSpec::Parameterized::TableSyntax
+
+      where(:amazon_q_connected, :ff_enabled, :ai_feature, :service_name, :licensed_feature) do
+        false | true | :duo_chat | nil | :ai_features
+        true | true  | :duo_chat | :amazon_q_integration | :amazon_q
+        true | true  | :code_suggestions | :amazon_q_integration | :amazon_q
+        true | true  | :troubleshoot_job | :amazon_q_integration | :amazon_q
+        true | true  | :explain_vulnerability | :amazon_q_integration | :amazon_q
+        true | true  | :resolve_vulnerability | :amazon_q_integration | :amazon_q
+        true | true  | :summarize_comments | :amazon_q_integration | :amazon_q
+        true | true  | :sast | nil | :ai_features
+        true | false | :resolve_vulnerability | nil | :ai_features
+      end
+
+      with_them do
+        before do
+          Ai::Setting.instance.update!(amazon_q_ready: amazon_q_connected)
+          stub_licensed_features(amazon_q: true)
+          stub_feature_flags(amazon_q_chat_and_code_suggestions: ff_enabled)
+        end
+
+        it 'checks whether the feature is available in Amazon Q' do
+          expect(user).to receive(:allowed_to_use).with(ai_feature, service_name: service_name,
+            licensed_feature: licensed_feature).and_return(described_class::Response.new(allowed?: true))
+
+          is_expected.to eq(true)
+        end
+      end
+    end
   end
 
   describe '#allowed_by_namespace_ids' do

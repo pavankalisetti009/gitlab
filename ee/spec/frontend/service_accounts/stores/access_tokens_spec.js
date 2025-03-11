@@ -64,18 +64,6 @@ describe('useAccessTokens store', () => {
       mockAxios.reset();
     });
 
-    describe('setup', () => {
-      it('sets up the store', async () => {
-        await store.setup({ filters, id, urlRevoke, urlRotate, urlShow });
-
-        expect(store.filters).toEqual(filters);
-        expect(store.id).toBe(id);
-        expect(store.urlRevoke).toBe(urlRevoke);
-        expect(store.urlRotate).toBe(urlRotate);
-        expect(store.urlShow).toBe(urlShow);
-      });
-    });
-
     describe('fetchTokens', () => {
       beforeEach(() => {
         store.setup({ id, filters, urlShow });
@@ -237,6 +225,11 @@ describe('useAccessTokens store', () => {
 
         expect(createAlert).toHaveBeenCalledTimes(2);
         expect(createAlert).toHaveBeenCalledWith({
+          message: 'The token was revoked successfully.',
+          variant: 'success',
+        });
+        // This alert hides the one above.
+        expect(createAlert).toHaveBeenCalledWith({
           message: 'An error occurred while fetching the tokens.',
         });
         expect(store.busy).toBe(false);
@@ -294,14 +287,14 @@ describe('useAccessTokens store', () => {
       });
 
       it('scrolls to the top', async () => {
-        mockAxios.onPost().replyOnce(HTTP_STATUS_NO_CONTENT);
+        mockAxios.onPost().replyOnce(HTTP_STATUS_OK, { token: 'new-token' });
         await store.rotateToken(1, '2025-01-01');
 
         expect(smoothScrollTop).toHaveBeenCalledTimes(1);
       });
 
       it('updates tokens and sets busy to false after fetching', async () => {
-        mockAxios.onPost().replyOnce(HTTP_STATUS_NO_CONTENT);
+        mockAxios.onPost().replyOnce(HTTP_STATUS_OK, { token: 'new-token' });
         mockAxios.onGet().replyOnce(HTTP_STATUS_OK, [{ active: true, name: 'Token' }], headers);
         await store.rotateToken(1, '2025-01-01');
 
@@ -321,11 +314,11 @@ describe('useAccessTokens store', () => {
       });
 
       it('shows an alert if an error occurs while fetching', async () => {
-        mockAxios.onPost().replyOnce(HTTP_STATUS_NO_CONTENT);
+        mockAxios.onPost().replyOnce(HTTP_STATUS_OK, { token: 'new-token' });
         mockAxios.onGet().replyOnce(HTTP_STATUS_INTERNAL_SERVER_ERROR);
         await store.rotateToken(1, '2025-01-01');
 
-        expect(createAlert).toHaveBeenCalledTimes(2);
+        expect(createAlert).toHaveBeenCalledTimes(1);
         expect(createAlert).toHaveBeenCalledWith({
           message: 'An error occurred while fetching the tokens.',
         });
@@ -333,7 +326,7 @@ describe('useAccessTokens store', () => {
       });
 
       it('uses correct params in the fetch', async () => {
-        mockAxios.onPost().replyOnce(HTTP_STATUS_NO_CONTENT);
+        mockAxios.onPost().replyOnce(HTTP_STATUS_OK, { token: 'new-token' });
         mockAxios.onGet().replyOnce(HTTP_STATUS_OK, [{ active: true, name: 'Token' }], headers);
         store.setPage(2);
         store.setFilters(['my token']);
@@ -353,6 +346,14 @@ describe('useAccessTokens store', () => {
       });
     });
 
+    describe('setFilters', () => {
+      it('sets the filters', () => {
+        store.setFilters(['my token']);
+
+        expect(store.filters).toEqual(['my token']);
+      });
+    });
+
     describe('setPage', () => {
       it('sets the page', () => {
         store.setPage(2);
@@ -369,29 +370,41 @@ describe('useAccessTokens store', () => {
 
     describe('setToken', () => {
       it('sets the token', () => {
-        store.setToken(2);
+        store.setToken('new-token');
 
-        expect(store.token).toBe(2);
+        expect(store.token).toBe('new-token');
       });
     });
 
     describe('setSorting', () => {
       it('sets the sorting', () => {
-        store.setSorting({ value: 'name', isAsc: false });
+        store.setSorting({ isAsc: false, value: 'name' });
 
-        expect(store.sorting).toEqual({ value: 'name', isAsc: false });
+        expect(store.sorting).toEqual({ isAsc: false, value: 'name' });
       });
     });
 
-    describe('getters', () => {
-      describe('sort', () => {
-        it('returns correct value', () => {
-          expect(store.sort).toBe('expires_at_asc_id_desc');
+    describe('setup', () => {
+      it('sets up the store', async () => {
+        await store.setup({ filters, id, urlRevoke, urlRotate, urlShow });
 
-          store.sorting = { value: 'name', isAsc: false };
+        expect(store.filters).toEqual(filters);
+        expect(store.id).toBe(id);
+        expect(store.urlRevoke).toBe(urlRevoke);
+        expect(store.urlRotate).toBe(urlRotate);
+        expect(store.urlShow).toBe(urlShow);
+      });
+    });
+  });
 
-          expect(store.sort).toBe('name_desc');
-        });
+  describe('getters', () => {
+    describe('sort', () => {
+      it('returns correct value', () => {
+        expect(store.sort).toBe('expires_at_asc_id_desc');
+
+        store.sorting = { value: 'name', isAsc: false };
+
+        expect(store.sort).toBe('name_desc');
       });
     });
   });

@@ -27,8 +27,15 @@ module Security
         return lookup_error(vulnerability_result) unless vulnerability_result[:status] == :success
 
         vulnerability = vulnerability_result.payload[:vulnerability]
-        update_severity(vulnerability)
+        @original_severity = vulnerability.severity
+
+        if @original_severity != @severity
+          update_severity(vulnerability)
+          audit
+        end
+
         service_success
+
       rescue ArgumentError, ActiveRecord::RecordInvalid => error
         service_error(format_error(error.message), :unprocessable_entity)
       end
@@ -41,8 +48,6 @@ module Security
       end
 
       def update_severity(vulnerability)
-        return if vulnerability.severity == @severity
-
         vulnerability.transaction do
           create_severity_override_record(vulnerability)
           vulnerability.update!(severity: @severity)
@@ -59,6 +64,23 @@ module Security
           project_id: project.id,
           author_id: current_user.id
         })
+      end
+
+      def audit
+        message = "Vulnerability finding severity was changed from #{@original_severity.capitalize} " \
+          "to #{@severity.capitalize}"
+        details = "Vulnerability finding uuid: #{@security_finding.uuid}"
+
+        audit_context = {
+          name: 'vulnerability_severity_override',
+          author: @current_user,
+          scope: project,
+          target: project,
+          message: message,
+          target_details: details
+        }
+
+        ::Gitlab::Audit::Auditor.audit(audit_context)
       end
 
       def service_success

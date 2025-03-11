@@ -11,12 +11,18 @@ import { s__ } from '~/locale';
 import { SORT_OPTIONS, DEFAULT_SORT } from '~/access_tokens/constants';
 
 /**
+ * @typedef {{type: string, value: {data: string, operator: string}}} Filter
+ * @typedef {Array<string|Filter>} Filters
+ */
+
+/**
  * Fetch access tokens
  *
- * @param {string} url
- * @param {string|number} id
- * @param {Object<string, string|number>} params
- * @param {string} sort
+ * @param {Object} options
+ * @param {string} options.url
+ * @param {string|number} options.id
+ * @param {Object<string, string|number>} options.params
+ * @param {string} options.sort
  */
 const fetchTokens = async ({ url, id, params, sort }) => {
   const { data, headers } = await axios.get(url, {
@@ -32,6 +38,7 @@ export const useAccessTokens = defineStore('accessTokens', {
     return {
       alert: null,
       busy: false,
+      /** @type {Filters} */
       filters: [],
       id: null,
       page: 1,
@@ -69,6 +76,9 @@ export const useAccessTokens = defineStore('accessTokens', {
         this.busy = false;
       }
     },
+    /**
+     * @param {number} tokenId
+     */
     async revokeToken(tokenId) {
       this.alert?.dismiss();
       this.busy = true;
@@ -92,17 +102,21 @@ export const useAccessTokens = defineStore('accessTokens', {
         this.busy = false;
       }
     },
+    /**
+     * @param {number} tokenId
+     * @param {string} expiresAt
+     */
     async rotateToken(tokenId, expiresAt) {
       this.alert?.dismiss();
       this.busy = true;
       try {
         const url = this.urlRotate.replace(':id', this.id);
         const { data } = await axios.post(`${url}/${tokenId}/rotate`, { expires_at: expiresAt });
+        this.token = data.token;
         smoothScrollTop();
         // Reset pagination because after rotation the token may appear on a different page.
         this.page = 1;
         await this.fetchTokens({ clearAlert: false });
-        this.token = data.token;
       } catch (error) {
         const message =
           error?.response?.data?.message ??
@@ -112,6 +126,39 @@ export const useAccessTokens = defineStore('accessTokens', {
         this.busy = false;
       }
     },
+    /**
+     * @param {Filters} filters
+     */
+    setFilters(filters) {
+      this.filters = filters;
+    },
+    /**
+     * @param {number} page
+     */
+    setPage(page) {
+      smoothScrollTop();
+      this.page = page;
+    },
+    /**
+     * @param {string} token
+     */
+    setToken(token) {
+      this.token = token;
+    },
+    /**
+     * @param {{isAsc: boolean, value: string}} sorting
+     */
+    setSorting(sorting) {
+      this.sorting = sorting;
+    },
+    /**
+     * @param {Object} options
+     *    @param {Filters} options.filters
+     *    @param {number} options.id
+     *    @param {string} options.urlRevoke
+     *    @param {string} options.urlRotate
+     *    @param {string} options.urlShow
+     */
     setup({ filters, id, urlRevoke, urlRotate, urlShow }) {
       this.filters = filters;
       this.id = id;
@@ -119,22 +166,10 @@ export const useAccessTokens = defineStore('accessTokens', {
       this.urlRotate = urlRotate;
       this.urlShow = urlShow;
     },
-    setFilters(filters) {
-      this.filters = filters;
-    },
-    setPage(page) {
-      smoothScrollTop();
-      this.page = page;
-    },
-    setToken(token) {
-      this.token = token;
-    },
-    setSorting(sorting) {
-      this.sorting = sorting;
-    },
   },
   getters: {
     params() {
+      /** @type {Object<string, number|string>} */
       const newParams = { page: this.page };
 
       this.filters?.forEach((token) => {
