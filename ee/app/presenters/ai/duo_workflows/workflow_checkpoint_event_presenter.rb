@@ -24,6 +24,13 @@ module Ai
       def workflow_definition
         event.workflow.workflow_definition
       end
+
+      def execution_status
+        graph_state = event.checkpoint.dig('channel_values', 'status')
+        return graph_state unless graph_state.nil? || graph_state == 'Not Started'
+
+        event.workflow.human_status_name.titleize
+      end
     end
   end
 end
