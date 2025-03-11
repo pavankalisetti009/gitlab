@@ -55,14 +55,23 @@ export const mockAiFeatureSettings = [
   },
   {
     feature: 'duo_chat',
-    title: 'Duo Chat',
-    mainFeature: 'Duo Chat',
+    title: 'General Chat',
+    mainFeature: 'GitLab Duo Chat',
     provider: 'self_hosted',
     selfHostedModel: {
       id: 2,
-      name: 'Model 2',
-      model: 'codellama',
       releaseState: 'BETA',
+    },
+    validModels: { nodes: mockSelfHostedModels },
+  },
+  {
+    feature: 'duo_chat',
+    title: 'Explain Code',
+    mainFeature: 'GitLab Duo Chat',
+    provider: 'self_hosted',
+    selfHostedModel: {
+      id: 1,
+      releaseState: 'GA',
     },
     validModels: { nodes: mockSelfHostedModels },
   },

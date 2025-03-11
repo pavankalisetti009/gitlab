@@ -3844,7 +3844,16 @@ msgstr ""
 msgid "AdminAIPoweredFeatures|Add self-hosted model"
 msgstr ""
 
+msgid "AdminAIPoweredFeatures|An AI assistant that provides real-time guidance helping users understand code, generate tests, and boost collaboration. %{linkStart}Learn more.%{linkEnd}"
+msgstr ""
+
 msgid "AdminAIPoweredFeatures|An error occurred while loading the AI feature settings. Please try again."
+msgstr ""
+
+msgid "AdminAIPoweredFeatures|Assists developers by providing real-time code completions and recommendations. %{linkStart}Learn more.%{linkEnd}"
+msgstr ""
+
+msgid "AdminAIPoweredFeatures|Code Suggestions"
 msgstr ""
 
 msgid "AdminAIPoweredFeatures|Compatible models"
@@ -3853,7 +3862,16 @@ msgstr ""
 msgid "AdminAIPoweredFeatures|Disabled"
 msgstr ""
 
+msgid "AdminAIPoweredFeatures|Feature"
+msgstr ""
+
+msgid "AdminAIPoweredFeatures|GitLab Duo Chat"
+msgstr ""
+
 msgid "AdminAIPoweredFeatures|Main feature"
+msgstr ""
+
+msgid "AdminAIPoweredFeatures|Model"
 msgstr ""
 
 msgid "AdminAIPoweredFeatures|Model name"
