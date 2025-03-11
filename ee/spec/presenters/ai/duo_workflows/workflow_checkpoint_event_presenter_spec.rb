@@ -43,6 +43,62 @@ RSpec.describe ::Ai::DuoWorkflows::WorkflowCheckpointEventPresenter, feature_cat
     end
   end
 
+  describe 'execution_status' do
+    context 'when checkpoint channel values is empty' do
+      it 'returns the workflow status' do
+        expect(presenter.execution_status).to eq(checkpoint.workflow.human_status_name.titleize)
+      end
+    end
+
+    context 'when graph execution has started' do
+      let(:checkpoint_data) do
+        {
+          'channel_values' =>
+            {
+              'plan' => { 'steps' => [] },
+              'status' => 'Planning',
+              'handover' => [],
+              'ui_chat_log' => [],
+              'last_human_input' => nil,
+              'conversation_history' => {}
+            }
+        }
+      end
+
+      before do
+        checkpoint.checkpoint = checkpoint_data
+      end
+
+      it 'returns the graph execution status' do
+        expect(presenter.execution_status).to eq('Planning')
+      end
+    end
+
+    context 'when graph execution has not started' do
+      let(:checkpoint_data) do
+        {
+          'channel_values' =>
+            {
+              'plan' => { 'steps' => [] },
+              'status' => 'Not Started',
+              'handover' => [],
+              'ui_chat_log' => [],
+              'last_human_input' => nil,
+              'conversation_history' => {}
+            }
+        }
+      end
+
+      before do
+        checkpoint.checkpoint = checkpoint_data
+      end
+
+      it 'returns the workflow status' do
+        expect(presenter.execution_status).to eq(checkpoint.workflow.human_status_name.titleize)
+      end
+    end
+  end
+
   describe 'workflow_goal' do
     it 'returns the workflow goal' do
       expect(presenter.workflow_goal).to eq(checkpoint.workflow.goal)
