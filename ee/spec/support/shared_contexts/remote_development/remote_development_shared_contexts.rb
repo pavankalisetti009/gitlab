@@ -4,6 +4,16 @@
 #       RemoteDevelopment::WorkspaceOperations::Create::Constants, but instead hardcode the corresponding values here.
 RSpec.shared_context 'with remote development shared fixtures' do
   # rubocop:todo Metrics/ParameterLists, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity -- Cleanup as part of https://gitlab.com/gitlab-org/gitlab/-/issues/421687
+
+  # @param [RemoteDevelopment::Workspace] workspace
+  # @param [String] previous_actual_state
+  # @param [String] current_actual_state
+  # @param [Boolean] workspace_exists
+  # @param [Hash] workspace_variables_environment
+  # @param [Hash] workspace_variables_file
+  # @param [String] resource_version
+  # @param [String] dns_zone
+  # @param [Hash] error_details
   def create_workspace_agent_info_hash(
     workspace:,
     # NOTE: previous_actual_state is the actual state of the workspace IMMEDIATELY prior to the current state. We don't
@@ -292,10 +302,16 @@ RSpec.shared_context 'with remote development shared fixtures' do
 
   # rubocop:enable Metrics/ParameterLists, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
 
+  # @param [RemoteDevelopment::Workspace] workspace
+  # @param [Hash] args
+  # @return [String]
   def create_config_to_apply_yaml_stream(workspace:, **args)
     create_config_to_apply(workspace: workspace, **args).map { |resource| YAML.dump(resource.deep_stringify_keys) }.join
   end
 
+  # @param [RemoteDevelopment::Workspace] workspace
+  # @param [Hash] args
+  # @return [Array<Hash>]
   def create_config_to_apply(workspace:, **args)
     desired_config_generator_version = workspace.desired_config_generator_version
 
@@ -306,6 +322,28 @@ RSpec.shared_context 'with remote development shared fixtures' do
   end
 
   # rubocop:disable Metrics/ParameterLists, Metrics/AbcSize -- Cleanup as part of https://gitlab.com/gitlab-org/gitlab/-/issues/421687
+
+  # @param [RemoteDevelopment::Workspace] workspace
+  # @param [Boolean] started
+  # @param [Hash] workspace_variables_environment
+  # @param [Hash] workspace_variables_file
+  # @param [Boolean] include_inventory
+  # @param [Boolean] include_network_policy
+  # @param [Boolean] include_all_resources
+  # @param [String] dns_zone
+  # @param [Array<Hash>] egress_ip_rules
+  # @param [Hash] max_resources_per_workspace
+  # @param [Hash] default_resources_per_workspace_container
+  # @param [Boolean] allow_privilege_escalation
+  # @param [Boolean] use_kubernetes_user_namespaces
+  # @param [String] default_runtime_class
+  # @param [Hash] agent_labels
+  # @param [Hash] agent_annotations
+  # @param [String] project_name
+  # @param [String] namespace_path
+  # @param [Array<Hash>] image_pull_secrets
+  # @param [Boolean] core_resources_only
+  # @return [Array<Hash>]
   def create_config_to_apply_v3(
     workspace:,
     started:,
@@ -464,6 +502,10 @@ RSpec.shared_context 'with remote development shared fixtures' do
 
   # rubocop:enable Metrics/ParameterLists, Metrics/AbcSize
 
+  # @param [String] workspace_name
+  # @param [String] workspace_namespace
+  # @param [Integer] agent_id
+  # @return [Hash]
   def workspace_inventory(workspace_name:, workspace_namespace:, agent_id:)
     {
       kind: "ConfigMap",
@@ -481,6 +523,17 @@ RSpec.shared_context 'with remote development shared fixtures' do
   end
 
   # rubocop:disable Metrics/ParameterLists -- Cleanup as part of https://gitlab.com/gitlab-org/gitlab/-/issues/421687
+
+  # @param [String] workspace_name
+  # @param [String] workspace_namespace
+  # @param [Hash] labels
+  # @param [Hash] annotations
+  # @param [Integer] spec_replicas
+  # @param [Hash] default_resources_per_workspace_container
+  # @param [Boolean] allow_privilege_escalation
+  # @param [Boolean] use_kubernetes_user_namespaces
+  # @param [String] default_runtime_class
+  # @return [Hash]
   def workspace_deployment(
     workspace_name:,
     workspace_namespace:,
@@ -810,6 +863,11 @@ RSpec.shared_context 'with remote development shared fixtures' do
 
   # rubocop:enable Metrics/ParameterLists
 
+  # @param [String] workspace_name
+  # @param [String] workspace_namespace
+  # @param [Hash] labels
+  # @param [Hash] annotations
+  # @return [Hash]
   def workspace_service(
     workspace_name:,
     workspace_namespace:,
@@ -847,6 +905,11 @@ RSpec.shared_context 'with remote development shared fixtures' do
     }
   end
 
+  # @param [String] workspace_name
+  # @param [String] workspace_namespace
+  # @param [Hash] labels
+  # @param [Hash] annotations
+  # @return [Hash]
   def workspace_pvc(
     workspace_name:,
     workspace_namespace:,
@@ -877,6 +940,12 @@ RSpec.shared_context 'with remote development shared fixtures' do
     }
   end
 
+  # @param [String] workspace_name
+  # @param [String] workspace_namespace
+  # @param [Hash] labels
+  # @param [Hash] annotations
+  # @param [Array<Hash>] egress_ip_rules
+  # @return [Hash]
   def workspace_network_policy(
     workspace_name:,
     workspace_namespace:,
@@ -939,6 +1008,12 @@ RSpec.shared_context 'with remote development shared fixtures' do
     }
   end
 
+  # @param [String] workspace_name
+  # @param [String] workspace_namespace
+  # @param [Hash] labels
+  # @param [Hash] annotations
+  # @param [Hash] max_resources_per_workspace
+  # @return [Hash]
   def workspace_resource_quota(
     workspace_name:,
     workspace_namespace:,
@@ -977,6 +1052,12 @@ RSpec.shared_context 'with remote development shared fixtures' do
     }
   end
 
+  # @param [String] name
+  # @param [String] namespace
+  # @param [Array<Hash>] image_pull_secrets
+  # @param [Hash] labels
+  # @param [Hash] annotations
+  # @return [Hash]
   def workspace_service_account(
     name:,
     namespace:,
@@ -999,6 +1080,10 @@ RSpec.shared_context 'with remote development shared fixtures' do
     }
   end
 
+  # @param [String] workspace_name
+  # @param [String] workspace_namespace
+  # @param [Integer] agent_id
+  # @return [Hash]
   def workspace_secrets_inventory(
     workspace_name:,
     workspace_namespace:,
@@ -1019,6 +1104,12 @@ RSpec.shared_context 'with remote development shared fixtures' do
     }
   end
 
+  # @param [String] workspace_name
+  # @param [String] workspace_namespace
+  # @param [Hash] labels
+  # @param [Hash] annotations
+  # @param [Hash] workspace_variables_environment
+  # @return [Hash]
   def workspace_secret_environment(
     workspace_name:,
     workspace_namespace:,
@@ -1040,6 +1131,12 @@ RSpec.shared_context 'with remote development shared fixtures' do
     }
   end
 
+  # @param [String] workspace_name
+  # @param [String] workspace_namespace
+  # @param [Hash] labels
+  # @param [Hash] annotations
+  # @param [Hash] workspace_variables_file
+  # @return [Hash]
   def workspace_secret_file(
     workspace_name:,
     workspace_namespace:,
@@ -1060,6 +1157,10 @@ RSpec.shared_context 'with remote development shared fixtures' do
     }
   end
 
+  # @param [String] namespace_path
+  # @param [String] project_name
+  # @param [Array<Hash>] resources
+  # @return [Array<Hash>]
   def normalize_resources(namespace_path, project_name, resources)
     # Convert to YAML to normalize project_name, namespace_path, and root_url
     normalized_resources_yaml = resources.map do |resource|
@@ -1082,65 +1183,97 @@ RSpec.shared_context 'with remote development shared fixtures' do
     end
   end
 
+  # @param [ActiveRecord::Relation] workspace_variables
+  # @return [Hash]
   def get_workspace_variables_environment(workspace_variables:)
     workspace_variables.with_variable_type_environment.each_with_object({}) do |workspace_variable, hash|
       hash[workspace_variable.key.to_sym] = workspace_variable.value
     end
   end
 
+  # @param [ActiveRecord::Relation] workspace_variables
+  # @return [Hash]
   def get_workspace_variables_file(workspace_variables:)
     workspace_variables.with_variable_type_file.each_with_object({}) do |workspace_variable, hash|
       hash[workspace_variable.key.to_sym] = workspace_variable.value
     end
   end
 
+  # @param [String] workspace_name
+  # @param [String] dns_zone
+  # @return [String]
   def get_workspace_host_template_annotation(workspace_name, dns_zone)
     "{{.port}}-#{workspace_name}.#{dns_zone}"
   end
 
+  # @param [String] workspace_name
+  # @param [String] dns_zone
+  # @return [String]
   def get_workspace_host_template_environment(workspace_name, dns_zone)
     "${PORT}-#{workspace_name}.#{dns_zone}"
   end
 
+  # @param [String] yaml
+  # @return [Hash]
   def yaml_safe_load_symbolized(yaml)
-    is_multiple_docs = YAML.load_stream(yaml).size > 1
-    if is_multiple_docs
-      YAML.load_stream(yaml).map { |doc| YAML.safe_load(YAML.dump(doc)).deep_symbolize_keys }
-    else
-      YAML.safe_load(yaml).deep_symbolize_keys
-    end
+    raise "Use #yaml_safe_load_stream_symbolized for YAML streams (arrays)" unless YAML.load_stream(yaml).size == 1
+
+    YAML.safe_load(yaml).deep_symbolize_keys
   end
 
+  # @param [String] yaml
+  # @return [Array<Hash>]
+  def yaml_safe_load_stream_symbolized(yaml)
+    raise "Use #yaml_safe_load_symbolized for YAML docs (hashes)" unless YAML.load_stream(yaml).size > 1
+
+    YAML.load_stream(yaml).map { |doc| YAML.safe_load(YAML.dump(doc)).deep_symbolize_keys }
+  end
+
+  # @return [String]
   def example_default_devfile_yaml
     read_devfile_yaml('example.default_devfile.yaml')
   end
 
+  # @return [String]
   def example_devfile_yaml
     read_devfile_yaml('example.devfile.yaml')
   end
 
+  # @return [Hash]
   def example_devfile
     yaml_safe_load_symbolized(example_devfile_yaml)
   end
 
+  # @return [String]
   def example_flattened_devfile_yaml
     read_devfile_yaml("example.flattened-devfile.yaml")
   end
 
+  # @return [Hash]
   def example_flattened_devfile
     yaml_safe_load_symbolized(example_flattened_devfile_yaml)
   end
 
+  # @param [String] project_name
+  # @param [String] namespace_path
+  # @return [String]
   def example_processed_devfile_yaml(project_name: "test-project", namespace_path: "test-group")
     read_devfile_yaml("example.processed-devfile.yaml", project_name: project_name, namespace_path: namespace_path)
   end
 
+  # @param [String] project_name
+  # @param [String] namespace_path
+  # @return [Hash]
   def example_processed_devfile(project_name: "test-project", namespace_path: "test-group")
     yaml_safe_load_symbolized(
       example_processed_devfile_yaml(project_name: project_name, namespace_path: namespace_path)
     )
   end
 
+  # @param [String] filename
+  # @param [String] project_name
+  # @param [String] namespace_path
+  # @return [String]
   def read_devfile_yaml(filename, project_name: "test-project", namespace_path: "test-group")
     devfile_contents = File.read(Rails.root.join('ee/spec/fixtures/remote_development', filename).to_s)
     devfile_contents.gsub!('http://localhost/', root_url)
@@ -1149,6 +1282,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
     devfile_contents
   end
 
+  # @return [String]
   def root_url
     # NOTE: Default to http://example.com/ if GitLab::Application is not defined. This allows this helper to be used
     #       from ee/spec/remote_development/fast_spec_helper.rb
