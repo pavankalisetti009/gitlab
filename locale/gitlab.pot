@@ -61071,6 +61071,9 @@ msgstr ""
 msgid "Todos|When to-do items are snoozed, they will appear here."
 msgstr ""
 
+msgid "Todos|Wiki page"
+msgstr ""
+
 msgid "Todos|Work item"
 msgstr ""
 
