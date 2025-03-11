@@ -62,17 +62,17 @@ RSpec.describe Resolvers::Sbom::DependencyPathsResolver, feature_category: :vuln
         )]
       end
 
-      it 'returns data from DependencyPath.find' do
-        expect(::Sbom::DependencyPath).to receive(:find)
-          .with(occurrence_id: occurrence.id.to_s, project_id: project.id)
-          .and_return(result)
+      it 'returns data from DependencyPathFinder' do
+        expect_next_instance_of(::Sbom::DependencyPathsFinder) do |finder|
+          expect(finder).to receive(:execute).and_return(result)
+        end
         is_expected.to eq(result)
       end
 
       it 'records execution time' do
-        expect(::Sbom::DependencyPath).to receive(:find)
-          .with(occurrence_id: occurrence.id.to_s, project_id: project.id)
-          .and_return(result)
+        expect_next_instance_of(::Sbom::DependencyPathsFinder) do |finder|
+          expect(finder).to receive(:execute).and_return(result)
+        end
         expect(Gitlab::Metrics).to receive(:measure)
           .with(:dependency_path_cte)
           .and_call_original
@@ -81,9 +81,9 @@ RSpec.describe Resolvers::Sbom::DependencyPathsResolver, feature_category: :vuln
       end
 
       it 'records metrics' do
-        expect(::Sbom::DependencyPath).to receive(:find)
-          .with(occurrence_id: occurrence.id.to_s, project_id: project.id)
-          .and_return(result)
+        expect_next_instance_of(::Sbom::DependencyPathsFinder) do |finder|
+          expect(finder).to receive(:execute).and_return(result)
+        end
         counter_double = instance_double(Prometheus::Client::Counter)
         expect(Gitlab::Metrics).to receive(:counter)
           .with(:dependency_path_cte_paths_found, 'Count of Dependency Paths found using the recursive CTE')
