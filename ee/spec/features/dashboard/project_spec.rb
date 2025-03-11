@@ -18,28 +18,13 @@ RSpec.describe 'Dashboard projects', feature_category: :groups_and_projects do
 
     let_it_be(:project) { create(:project, :archived, namespace: group, marked_for_deletion_at: Date.current) }
 
-    context 'when your_work_projects_vue feature flag is enabled' do
-      it 'renders Restore button', :js do
-        visit inactive_dashboard_projects_path
-        wait_for_requests
+    it 'renders Restore button', :js do
+      visit inactive_dashboard_projects_path
+      wait_for_requests
 
-        within_testid("projects-list-item-#{project.id}") do
-          click_button 'Actions'
-          expect(page).to have_button('Restore')
-        end
-      end
-    end
-
-    context 'when your_work_projects_vue feature flag is disabled' do
-      before do
-        stub_feature_flags(your_work_projects_vue: false)
-        sign_in(user)
-      end
-
-      it 'renders Restore button' do
-        visit removed_dashboard_projects_path
-
-        expect(page).to have_link('Restore', href: project_restore_path(project))
+      within_testid("projects-list-item-#{project.id}") do
+        click_button 'Actions'
+        expect(page).to have_button('Restore')
       end
     end
   end
