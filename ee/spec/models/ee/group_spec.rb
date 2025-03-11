@@ -4325,13 +4325,9 @@ RSpec.describe Group, feature_category: :groups_and_projects do
   describe '#work_item_status_feature_available?' do
     subject { group.work_item_status_feature_available? }
 
-    before do
-      stub_feature_flags(work_item_status: true)
-    end
-
     context 'when work_item_status licensed feature is enabled' do
       before do
-        stub_licensed_features(work_item_custom_status: true)
+        stub_licensed_features(work_item_status: true)
       end
 
       it { is_expected.to be true }
@@ -4339,7 +4335,15 @@ RSpec.describe Group, feature_category: :groups_and_projects do
 
     context 'when work_item_status licensed feature is disabled' do
       before do
-        stub_licensed_features(work_item_custom_status: false)
+        stub_licensed_features(work_item_status: false)
+      end
+
+      it { is_expected.to be false }
+    end
+
+    context 'when work_item_status_feature_flag is disabled' do
+      before do
+        stub_feature_flags(work_item_status_feature_flag: false)
       end
 
       it { is_expected.to be false }
