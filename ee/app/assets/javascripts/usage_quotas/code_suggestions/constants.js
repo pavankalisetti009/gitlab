@@ -1,14 +1,31 @@
 import { PROMO_URL } from '~/constants';
 import { __, s__ } from '~/locale';
 
-export const DUO_PRO = 'pro';
-export const DUO_ENTERPRISE = 'enterprise';
-export const ADD_ON_CODE_SUGGESTIONS = 'CODE_SUGGESTIONS';
-export const ADD_ON_DUO_ENTERPRISE = 'DUO_ENTERPRISE';
+export const DUO_PRO = 'CODE_SUGGESTIONS';
+export const DUO_ENTERPRISE = 'DUO_ENTERPRISE';
+export const DUO_IDENTIFIERS = [DUO_PRO, DUO_ENTERPRISE];
+
 export const codeSuggestionsLearnMoreLink = `${PROMO_URL}/gitlab-duo/`;
 
-export const CODE_SUGGESTIONS_TITLE = s__('CodeSuggestions|GitLab Duo Pro');
-export const DUO_ENTERPRISE_TITLE = s__('CodeSuggestions|GitLab Duo Enterprise');
+export const DUO_TITLES = {
+  [DUO_PRO]: s__('CodeSuggestions|GitLab Duo Pro'),
+  [DUO_ENTERPRISE]: s__('CodeSuggestions|GitLab Duo Enterprise'),
+};
+
+export const DUO_BADGE_TITLES = {
+  [DUO_PRO]: s__('CodeSuggestions|Pro'),
+  [DUO_ENTERPRISE]: s__('CodeSuggestions|Enterprise'),
+};
+
+export const DUO_ADD_ONS = {
+  [DUO_PRO]: 'codeSuggestionsAddon',
+  [DUO_ENTERPRISE]: 'duoEnterpriseAddon',
+};
+
+export const DUO_CSS_IDENTIFIERS = {
+  [DUO_PRO]: 'duo_pro',
+  [DUO_ENTERPRISE]: 'duo_enterprise',
+};
 
 export const DUO_HEALTH_CHECK_CATEGORIES = [
   {
@@ -49,13 +66,13 @@ export const DUO_HEALTH_CHECK_CATEGORIES = [
 export const addOnEligibleUserListTableFields = {
   codeSuggestionsAddon: {
     key: 'codeSuggestionsAddon',
-    label: CODE_SUGGESTIONS_TITLE,
+    label: DUO_TITLES[DUO_PRO],
     thClass: 'gl-w-5/20',
     tdClass: '!gl-align-middle',
   },
   duoEnterpriseAddon: {
     key: 'codeSuggestionsAddon',
-    label: DUO_ENTERPRISE_TITLE,
+    label: DUO_TITLES[DUO_ENTERPRISE],
     thClass: 'gl-w-5/20',
     tdClass: '!gl-align-middle',
   },

@@ -40,6 +40,11 @@ export default {
       required: false,
       default: false,
     },
+    isGroup: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
@@ -111,6 +116,7 @@ export default {
       :can-update="canUpdate"
       :work-item-type="workItemType"
       :full-path="fullPath"
+      :is-group="isGroup"
       @error="$emit('error', $event)"
     />
   </div>

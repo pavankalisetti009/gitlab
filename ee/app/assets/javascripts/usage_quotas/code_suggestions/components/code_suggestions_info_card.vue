@@ -12,8 +12,10 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { s__, __ } from '~/locale';
 import UsageStatistics from 'ee/usage_quotas/components/usage_statistics.vue';
 import {
-  DUO_PRO,
+  DUO_CSS_IDENTIFIERS,
+  DUO_IDENTIFIERS,
   DUO_ENTERPRISE,
+  DUO_PRO,
   codeSuggestionsLearnMoreLink,
 } from 'ee/usage_quotas/code_suggestions/constants';
 import HandRaiseLeadButton from 'ee/hand_raise_leads/hand_raise_lead/components/hand_raise_lead_button.vue';
@@ -78,8 +80,8 @@ export default {
     duoTier: {
       type: String,
       required: false,
-      default: DUO_PRO,
-      validator: (val) => [DUO_PRO, DUO_ENTERPRISE].includes(val),
+      default: DUO_IDENTIFIERS[0],
+      validator: (val) => DUO_IDENTIFIERS.includes(val),
     },
   },
   data() {
@@ -141,16 +143,19 @@ export default {
     isDuoPro() {
       return this.duoTier === DUO_PRO;
     },
+    duoIdentifier() {
+      return DUO_CSS_IDENTIFIERS[this.duoTier];
+    },
     pageViewLabel() {
       return this.duoAddOnIsTrial
-        ? `duo_${this.duoTier}_add_on_tab_active_trial`
-        : `duo_${this.duoTier}_add_on_tab`;
+        ? `${this.duoIdentifier}_add_on_tab_active_trial`
+        : `${this.duoIdentifier}_add_on_tab`;
     },
     handRaiseLeadBtnTracking() {
       return {
         category: 'groups:usage_quotas:index',
         action: 'click_button',
-        label: `duo_${this.duoTier}_contact_sales`,
+        label: `${this.duoIdentifier}_contact_sales`,
       };
     },
     trialHandRaiseLeadAttributes() {
@@ -221,7 +226,7 @@ export default {
   methods: {
     handleAddDuoProClick() {
       this.trackEvent('click_add_seats_button_group_duo_usage_page', {
-        label: `add_duo_${this.duoTier}_${this.trackingPreffix}`,
+        label: `add_${this.duoIdentifier}_${this.trackingPreffix}`,
         property: 'usage_quotas_page',
       });
     },
@@ -238,7 +243,7 @@ export default {
       this.trackEvent(
         'click_purchase_seats_button_group_duo_usage_page',
         {
-          label: `duo_${this.duoTier}_purchase_seats`,
+          label: `${this.duoIdentifier}_purchase_seats`,
         },
         'groups:usage_quotas:index',
       );
@@ -249,7 +254,7 @@ export default {
       this.trackEvent(
         'click_marketing_link_group_duo_usage_page',
         {
-          label: `duo_${this.duoTier}_marketing_page`,
+          label: `${this.duoIdentifier}_marketing_page`,
         },
         'groups:usage_quotas:index',
       );

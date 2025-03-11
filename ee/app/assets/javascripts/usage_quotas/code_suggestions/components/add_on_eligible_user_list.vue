@@ -28,8 +28,8 @@ import PageSizeSelector from '~/vue_shared/components/page_size_selector.vue';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import {
-  DUO_PRO,
-  DUO_ENTERPRISE,
+  DUO_ADD_ONS,
+  DUO_IDENTIFIERS,
   addOnEligibleUserListTableFields,
   ASSIGN_SEATS_BULK_ACTION,
   UNASSIGN_SEATS_BULK_ACTION,
@@ -113,8 +113,8 @@ export default {
     duoTier: {
       type: String,
       required: false,
-      default: DUO_PRO,
-      validator: (val) => [DUO_PRO, DUO_ENTERPRISE].includes(val),
+      default: DUO_IDENTIFIERS[0],
+      validator: (val) => DUO_IDENTIFIERS.includes(val),
     },
   },
   i18n: {
@@ -178,14 +178,14 @@ export default {
       }
       return s__('Billing|No users to display.');
     },
-    duoPlan() {
-      return this.duoTier === DUO_ENTERPRISE ? 'duoEnterpriseAddon' : 'codeSuggestionsAddon';
+    duoAddOn() {
+      return DUO_ADD_ONS[this.duoTier];
     },
     tableFieldsConfiguration() {
-      let fieldConfig = ['user', this.duoPlan, 'emailWide', 'lastActivityTimeWide'];
+      let fieldConfig = ['user', this.duoAddOn, 'emailWide', 'lastActivityTimeWide'];
 
       if (this.isFilteringEnabled && this.hasMaxRoleField) {
-        fieldConfig = ['user', this.duoPlan, 'email', 'maxRole', 'lastActivityTime'];
+        fieldConfig = ['user', this.duoAddOn, 'email', 'maxRole', 'lastActivityTime'];
       }
 
       if (this.isBulkAddOnAssignmentEnabled) {

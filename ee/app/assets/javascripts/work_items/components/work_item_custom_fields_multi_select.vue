@@ -1,7 +1,7 @@
 <script>
 import { GlTruncate, GlTooltipDirective } from '@gitlab/ui';
 import fuzzaldrinPlus from 'fuzzaldrin-plus';
-import { __, sprintf } from '~/locale';
+import { s__, __, sprintf } from '~/locale';
 import { formatSelectOptionForCustomField } from '~/work_items/utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import {
@@ -10,6 +10,7 @@ import {
   I18N_WORK_ITEM_ERROR_UPDATING,
 } from '~/work_items/constants';
 import updateWorkItemCustomFieldsMutation from 'ee/work_items/graphql/update_work_item_custom_fields.mutation.graphql';
+import customFieldSelectOptionsQuery from 'ee/work_items/graphql/work_item_custom_field_select_options.query.graphql';
 import WorkItemSidebarDropdownWidget from '~/work_items/components/shared/work_item_sidebar_dropdown_widget.vue';
 
 export default {
@@ -45,9 +46,19 @@ export default {
         );
       },
     },
+    fullPath: {
+      type: String,
+      required: true,
+    },
+    isGroup: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
+      selectOptions: [],
       searchTerm: '',
       searchStarted: false,
       isUpdating: false,
@@ -61,9 +72,6 @@ export default {
     },
     dropdownLabel() {
       return this.customField.customField?.name;
-    },
-    headerText() {
-      return sprintf(__('Select %{name}'), { name: this.dropdownLabel });
     },
     currentlySelectedText() {
       return this.defaultOptions
@@ -108,9 +116,7 @@ export default {
       return this.selectedOptions.map(({ value }) => value);
     },
     defaultOptions() {
-      return (
-        this.customField.customField?.selectOptions?.map(formatSelectOptionForCustomField) || []
-      );
+      return this.selectOptions.map(formatSelectOptionForCustomField);
     },
     displayWidget() {
       return this.customField.customField?.fieldType === CUSTOM_FIELDS_TYPE_MULTI_SELECT;
@@ -119,6 +125,14 @@ export default {
       return (
         this.customField.selectedOptions === null || Array.isArray(this.customField.selectedOptions)
       );
+    },
+    isLoadingOptionsList() {
+      return this.$apollo.queries.selectOptions.loading;
+    },
+    groupPath() {
+      return this.isGroup
+        ? this.fullPath
+        : this.fullPath.substring(0, this.fullPath.lastIndexOf('/'));
     },
   },
   watch: {
@@ -130,6 +144,36 @@ export default {
             customField.selectedOptions?.map(formatSelectOptionForCustomField) || [];
           this.currentlySelectedIds = this.selectedOptions.map(({ value }) => value);
         }
+      },
+    },
+  },
+  apollo: {
+    selectOptions: {
+      query: customFieldSelectOptionsQuery,
+      variables() {
+        return {
+          fullPath: this.groupPath,
+          fieldId: this.customFieldId,
+        };
+      },
+      skip() {
+        return !this.searchStarted || !this.customFieldId;
+      },
+      update(data) {
+        return data?.group?.customField?.selectOptions || [];
+      },
+      error(e) {
+        const msg = sprintf(
+          s__(
+            'WorkItemCustomFields|Options could not be loaded for field: %{dropdownLabel}. Please try again.',
+          ),
+          {
+            dropdownLabel: this.dropdownLabel,
+          },
+        );
+
+        this.$emit('error', msg);
+        Sentry.captureException(e);
       },
     },
   },
@@ -189,10 +233,11 @@ export default {
     dropdown-name="select"
     :dropdown-label="dropdownLabel"
     :can-update="canUpdate"
+    :loading="isLoadingOptionsList"
     :list-items="optionsList"
     :item-value="optionsValues"
     :toggle-dropdown-text="dropdownText"
-    :header-text="headerText"
+    :header-text="s__('WorkItemCustomFields|Select one or more')"
     :update-in-progress="isUpdating"
     multi-select
     clear-search-on-item-select
@@ -206,7 +251,12 @@ export default {
     </template>
     <template #readonly>
       <p v-for="option in selectedOptions" :key="option.value" class="gl-fit-content gl-mb-2">
-        <gl-truncate v-gl-tooltip :title="option.text" :text="option.text" />
+        <gl-truncate
+          v-gl-tooltip
+          :title="option.text"
+          :text="option.text"
+          data-testid="option-text"
+        />
       </p>
     </template>
   </work-item-sidebar-dropdown-widget>

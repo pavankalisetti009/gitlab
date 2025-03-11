@@ -14159,6 +14159,9 @@ msgstr ""
 msgid "CodeSuggestions|Enhance your coding experience with intelligent recommendations. %{linkStart}GitLab Duo%{linkEnd} offers features that use generative AI to suggest code."
 msgstr ""
 
+msgid "CodeSuggestions|Enterprise"
+msgstr ""
+
 msgid "CodeSuggestions|Get started with GitLab Duo Pro today to boost your efficiency and effectiveness by reducing the time required to write and understand code."
 msgstr ""
 
@@ -14193,6 +14196,9 @@ msgid "CodeSuggestions|Not operational. Resolve issues to use GitLab Duo."
 msgstr ""
 
 msgid "CodeSuggestions|Outbound and inbound connections from clients to the GitLab instance must be allowed."
+msgstr ""
+
+msgid "CodeSuggestions|Pro"
 msgstr ""
 
 msgid "CodeSuggestions|Problems detected with setup"
@@ -31243,6 +31249,9 @@ msgstr ""
 msgid "Integrations|Add integration"
 msgstr ""
 
+msgid "Integrations|Add new %{title} integration"
+msgstr ""
+
 msgid "Integrations|All details"
 msgstr ""
 
@@ -31277,6 +31286,9 @@ msgid "Integrations|Comment detail:"
 msgstr ""
 
 msgid "Integrations|Comment settings:"
+msgstr ""
+
+msgid "Integrations|Configure %{title}"
 msgstr ""
 
 msgid "Integrations|Configure the scope of notifications."
@@ -54244,9 +54256,6 @@ msgstr ""
 msgid "Select"
 msgstr ""
 
-msgid "Select %{name}"
-msgstr ""
-
 msgid "Select Git revision"
 msgstr ""
 
@@ -66093,6 +66102,15 @@ msgid "Work item type %{work_item_type_name} can only have a maximum of %{limit}
 msgstr ""
 
 msgid "Work items"
+msgstr ""
+
+msgid "WorkItemCustomFields|Options could not be loaded for field: %{dropdownLabel}. Please try again."
+msgstr ""
+
+msgid "WorkItemCustomFields|Select one"
+msgstr ""
+
+msgid "WorkItemCustomFields|Select one or more"
 msgstr ""
 
 msgid "WorkItemCustomField|Add option"

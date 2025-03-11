@@ -12,10 +12,7 @@ import {
 import ErrorAlert from 'ee/vue_shared/components/error_alert/error_alert.vue';
 import AddOnEligibleUserList from 'ee/usage_quotas/code_suggestions/components/add_on_eligible_user_list.vue';
 import {
-  ADD_ON_CODE_SUGGESTIONS,
-  ADD_ON_DUO_ENTERPRISE,
-  DUO_PRO,
-  DUO_ENTERPRISE,
+  DUO_IDENTIFIERS,
   SORT_OPTIONS,
   DEFAULT_SORT_OPTION,
 } from 'ee/usage_quotas/code_suggestions/constants';
@@ -43,8 +40,8 @@ export default {
     duoTier: {
       type: String,
       required: false,
-      default: DUO_PRO,
-      validator: (value) => [DUO_PRO, DUO_ENTERPRISE].includes(value),
+      default: DUO_IDENTIFIERS[0],
+      validator: (value) => DUO_IDENTIFIERS.includes(value),
     },
   },
   addOnErrorDictionary: ADD_ON_ERROR_DICTIONARY,
@@ -90,8 +87,7 @@ export default {
     },
     queryVariables() {
       return {
-        addOnType:
-          this.duoTier === DUO_ENTERPRISE ? ADD_ON_DUO_ENTERPRISE : ADD_ON_CODE_SUGGESTIONS,
+        addOnType: this.duoTier,
         addOnPurchaseIds: [this.addOnPurchaseId],
         sort: this.sort,
         ...this.filterOptions,

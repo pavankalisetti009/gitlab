@@ -1,16 +1,13 @@
 import { subscriptionTypes } from 'ee/admin/subscriptions/show/constants';
 
-import {
-  ADD_ON_CODE_SUGGESTIONS,
-  ADD_ON_DUO_ENTERPRISE,
-} from 'ee/usage_quotas/code_suggestions/constants';
+import { DUO_PRO, DUO_ENTERPRISE } from 'ee/usage_quotas/code_suggestions/constants';
 
 export const noAssignedDuoProAddonData = {
   data: {
     addOnPurchases: [
       {
         id: 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/3',
-        name: ADD_ON_CODE_SUGGESTIONS,
+        name: DUO_PRO,
         assignedQuantity: 0,
         purchasedQuantity: 20,
         __typename: 'AddOnPurchase',
@@ -24,7 +21,7 @@ export const noAssignedDuoEnterpriseAddonData = {
     addOnPurchases: [
       {
         id: 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/3',
-        name: ADD_ON_DUO_ENTERPRISE,
+        name: DUO_ENTERPRISE,
         assignedQuantity: 0,
         purchasedQuantity: 20,
         __typename: 'AddOnPurchase',
@@ -38,14 +35,14 @@ export const noAssignedDuoAddonsData = {
     addOnPurchases: [
       {
         id: 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/3',
-        name: ADD_ON_CODE_SUGGESTIONS,
+        name: DUO_PRO,
         assignedQuantity: 0,
         purchasedQuantity: 15,
         __typename: 'AddOnPurchase',
       },
       {
         id: 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/4',
-        name: ADD_ON_DUO_ENTERPRISE,
+        name: DUO_ENTERPRISE,
         assignedQuantity: 0,
         purchasedQuantity: 20,
         __typename: 'AddOnPurchase',
@@ -65,7 +62,7 @@ export const purchasedAddonFuzzyData = {
     addOnPurchases: [
       {
         id: 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/3',
-        name: ADD_ON_CODE_SUGGESTIONS,
+        name: DUO_PRO,
         assignedQuantity: 0,
         purchasedQuantity: null,
         __typename: 'AddOnPurchase',
@@ -107,7 +104,7 @@ export const mockSMUserWithAddOnAssignment = {
   lastActivityOn: '2023-08-25',
   maxRole: null,
   addOnAssignments: {
-    nodes: [{ addOnPurchase: { name: ADD_ON_CODE_SUGGESTIONS } }],
+    nodes: [{ addOnPurchase: { name: DUO_PRO } }],
     __typename: 'UserAddOnAssignmentConnection',
   },
   __typename: 'AddOnUser',
