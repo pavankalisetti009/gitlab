@@ -984,7 +984,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
     shared_examples 'uses an implied configuration' do
       it 'is a non persisted PlanLimits' do
         expect(subject.id).to be_nil
-        expect(subject).to be_kind_of(PlanLimits)
+        expect(subject).to be_a(PlanLimits)
       end
 
       it 'has all limits defined' do
@@ -1566,6 +1566,70 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
     end
   end
 
+  describe '#projects_with_repository_size_limit_usage_ratio_greater_than' do
+    let(:instance_limit) { 10.gigabytes }
+    let_it_be_with_refind(:namespace) { create(:namespace) }
+    let_it_be_with_refind(:project_1) { create_project(repository_size: 18.gigabytes) }
+    let_it_be_with_refind(:project_2) { create_project(repository_size: 12.gigabytes) }
+
+    before do
+      stub_ee_application_setting(repository_size_limit: instance_limit)
+    end
+
+    it 'returns both projects for ratio: 1' do
+      expect(namespace.projects_with_repository_size_limit_usage_ratio_greater_than(ratio: 1))
+        .to match_array([project_1, project_2])
+    end
+
+    context 'when one of the projects has a bigger limit' do
+      before do
+        project_1.update!(repository_size_limit: 20.gigabytes)
+      end
+
+      it 'returns only one project for ratio: 1' do
+        expect(namespace.projects_with_repository_size_limit_usage_ratio_greater_than(ratio: 1))
+          .to match_array([project_2])
+      end
+
+      it 'returns both projects for ratio: 0.8' do
+        expect(namespace.projects_with_repository_size_limit_usage_ratio_greater_than(ratio: 0.8))
+        .to match_array([project_1, project_2])
+      end
+    end
+
+    context 'when one of the projects has no limit' do
+      before do
+        project_1.update!(repository_size_limit: 0)
+      end
+
+      it 'returns only one project for ratio: 1' do
+        expect(namespace.projects_with_repository_size_limit_usage_ratio_greater_than(ratio: 1))
+          .to match_array([project_2])
+      end
+
+      it 'returns only one project for ratio: 0.8' do
+        expect(namespace.projects_with_repository_size_limit_usage_ratio_greater_than(ratio: 0.8))
+        .to match_array([project_2])
+      end
+    end
+
+    context 'when namespace has a limit bigger than the instance' do
+      before do
+        namespace.update!(repository_size_limit: 15.gigabytes)
+      end
+
+      it 'returns only one project for ratio: 1' do
+        expect(namespace.projects_with_repository_size_limit_usage_ratio_greater_than(ratio: 1))
+        .to match_array([project_1])
+      end
+
+      it 'returns both projects for ratio: 0.1' do
+        expect(namespace.projects_with_repository_size_limit_usage_ratio_greater_than(ratio: 0.1))
+        .to match_array([project_1, project_2])
+      end
+    end
+  end
+
   describe '#total_repository_size', feature_category: :consumables_cost_management do
     let(:namespace) { create(:namespace) }
 
@@ -1588,8 +1652,6 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
   end
 
   describe '#contains_locked_projects?', feature_category: :consumables_cost_management do
-    using RSpec::Parameterized::TableSyntax
-
     let_it_be(:namespace) { create(:namespace) }
 
     before_all do
@@ -2388,7 +2450,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
     end
   end
 
-  def create_project(repository_size:, lfs_objects_size:, repository_size_limit:)
+  def create_project(repository_size:, lfs_objects_size: 0, repository_size_limit: nil)
     create(:project, namespace: namespace, repository_size_limit: repository_size_limit).tap do |project|
       create(:project_statistics, project: project, repository_size: repository_size, lfs_objects_size: lfs_objects_size)
     end
