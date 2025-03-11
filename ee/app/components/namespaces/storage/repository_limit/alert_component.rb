@@ -4,12 +4,6 @@ module Namespaces
   module Storage
     module RepositoryLimit
       class AlertComponent < BaseAlertComponent
-        HIGH_LIMIT_USAGE_THRESHOLDS = {
-          none: 0,
-          warning: 0.9,
-          error: 1
-        }.freeze
-
         private
 
         def render?
@@ -21,16 +15,14 @@ module Namespaces
         end
 
         def alert_title
-          if show_approaching_high_limit_message?
-            safe_format(
-              s_(
-                "NamespaceStorageSize|We've noticed an unusually high storage usage on %{namespace_name}"
-              ),
-              { namespace_name: root_namespace.name }
-            )
-          else
-            super
-          end
+          return super unless show_approaching_high_limit_message?
+
+          safe_format(
+            s_(
+              "NamespaceStorageSize|We've noticed an unusually high storage usage on %{namespace_name}"
+            ),
+            { namespace_name: root_namespace.name }
+          )
         end
 
         def default_alert_title
@@ -84,25 +76,22 @@ module Namespaces
 
         def alert_message
           manage_storage_link = help_page_path('user/storage_usage_quotas.md', anchor: 'manage-storage-usage')
+          return super unless show_approaching_high_limit_message?
 
-          if show_approaching_high_limit_message?
-            [
-              safe_format(
-                s_(
-                  "NamespaceStorageSize|To manage your usage and prevent your projects " \
-                    "from being placed in a read-only state, you should immediately " \
-                    "%{manage_storage_link_start}reduce storage%{link_end}, or " \
-                    "%{support_link_start}contact support%{link_end} to help you manage your usage."
-                ),
-                {
-                  **tag_pair(link_to('', manage_storage_link), :manage_storage_link_start, :link_end),
-                  **tag_pair(link_to('', "https://support.gitlab.com"), :support_link_start, :link_end)
-                }
-              )
-            ]
-          else
-            super
-          end
+          [
+            safe_format(
+              s_(
+                "NamespaceStorageSize|To manage your usage and prevent your projects " \
+                  "from being placed in a read-only state, you should immediately " \
+                  "%{manage_storage_link_start}reduce storage%{link_end}, or " \
+                  "%{support_link_start}contact support%{link_end} to help you manage your usage."
+              ),
+              {
+                **tag_pair(link_to('', manage_storage_link), :manage_storage_link_start, :link_end),
+                **tag_pair(link_to('', "https://support.gitlab.com"), :support_link_start, :link_end)
+              }
+            )
+          ]
         end
 
         def alert_message_explanation
@@ -165,44 +154,32 @@ module Namespaces
         end
 
         def usage_thresholds
-          if show_approaching_high_limit_message?
-            HIGH_LIMIT_USAGE_THRESHOLDS
-          elsif namespace_has_additional_storage_purchased?
-            DEFAULT_USAGE_THRESHOLDS
-          else
-            DEFAULT_USAGE_THRESHOLDS.except(:warning, :alert)
-          end
+          return DEFAULT_USAGE_THRESHOLDS if namespace_has_additional_storage_purchased?
+
+          DEFAULT_USAGE_THRESHOLDS.except(:warning, :alert)
+        end
+
+        def alert_level
+          return :warning if show_approaching_high_limit_message?
+
+          super
+        end
+
+        def show_purchase_link?
+          return false if root_storage_size.subject_to_high_limit?
+
+          super
         end
 
         def limit
           root_namespace.actual_size_limit
         end
 
-        def usage_ratio
-          if show_approaching_high_limit_message?
-            included_storage_usage_ratio
-          else
-            super
-          end
-        end
-
-        def included_storage_usage_ratio
-          total_storage_limit = limit + root_namespace.additional_purchased_storage_size
-
-          BigDecimal(root_namespace.total_repository_size) / BigDecimal(total_storage_limit)
-        end
-
-        def show_purchase_link?
-          return false if root_namespace.actual_plan.paid_excluding_trials?
-
-          super
-        end
-
         def show_approaching_high_limit_message?
           return false unless root_storage_size.subject_to_high_limit?
+          return false if root_storage_size.above_size_limit?
 
-          included_storage_usage_ratio >= HIGH_LIMIT_USAGE_THRESHOLDS[:warning] &&
-            included_storage_usage_ratio < HIGH_LIMIT_USAGE_THRESHOLDS[:error]
+          root_storage_size.has_projects_over_high_limit_warning_threshold?
         end
       end
     end
