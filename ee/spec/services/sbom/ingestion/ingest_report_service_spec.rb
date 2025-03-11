@@ -38,5 +38,23 @@ RSpec.describe Sbom::Ingestion::IngestReportService, feature_category: :dependen
       expect(all_occurrence_ids).to match_array(sequencer.range)
       expect(all_source_ids).to match_array(source_sequencer.range)
     end
+
+    it 'enqueues Sbom::BuildDependencyGraphWorker' do
+      expect(::Sbom::BuildDependencyGraphWorker).to receive(:perform_async).with(pipeline.project_id)
+
+      execute
+    end
+
+    context 'when dependency_paths feature flag is disabled' do
+      before do
+        stub_feature_flags(dependency_paths: false)
+      end
+
+      it 'does not enqueue any jobs' do
+        expect(::Sbom::BuildDependencyGraphWorker).not_to receive(:perform_async)
+
+        execute
+      end
+    end
   end
 end
