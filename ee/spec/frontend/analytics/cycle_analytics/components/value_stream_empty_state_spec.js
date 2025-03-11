@@ -1,4 +1,4 @@
-import { GlLoadingIcon, GlEmptyState } from '@gitlab/ui';
+import { GlEmptyState } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import ValueStreamEmptyState from 'ee/analytics/cycle_analytics/components/value_stream_empty_state.vue';
 import {
@@ -20,7 +20,6 @@ describe('ValueStreamEmptyState', () => {
     wrapper = shallowMountExtended(ValueStreamEmptyState, {
       propsData: {
         emptyStateSvgPath,
-        isLoading: false,
         hasDateRangeError: false,
         canEdit: true,
         ...props,
@@ -42,10 +41,6 @@ describe('ValueStreamEmptyState', () => {
   describe('default state', () => {
     beforeEach(() => {
       createComponent();
-    });
-
-    it('does not render the loading icon', () => {
-      expect(wrapper.findComponent(GlLoadingIcon).exists()).toBe(false);
     });
 
     it('renders the empty state title message', () => {
@@ -86,20 +81,6 @@ describe('ValueStreamEmptyState', () => {
 
     it('does not render the learn more button', () => {
       expect(findSecondaryAction().exists()).toBe(false);
-    });
-  });
-
-  describe('isLoading = true', () => {
-    beforeEach(() => {
-      createComponent({
-        props: {
-          isLoading: true,
-        },
-      });
-    });
-
-    it('renders the loading icon', () => {
-      expect(wrapper.findComponent(GlLoadingIcon).exists()).toBe(true);
     });
   });
 

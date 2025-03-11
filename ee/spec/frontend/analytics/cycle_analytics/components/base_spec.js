@@ -1,4 +1,4 @@
-import { GlEmptyState } from '@gitlab/ui';
+import { GlEmptyState, GlLoadingIcon } from '@gitlab/ui';
 import { shallowMount, mount } from '@vue/test-utils';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
@@ -11,7 +11,10 @@ import TypeOfWorkChartsLoader from 'ee/analytics/cycle_analytics/components/task
 import ValueStreamSelect from 'ee/analytics/cycle_analytics/components/value_stream_select.vue';
 import ValueStreamAggregationStatus from 'ee/analytics/cycle_analytics/components/value_stream_aggregation_status.vue';
 import ValueStreamEmptyState from 'ee/analytics/cycle_analytics/components/value_stream_empty_state.vue';
-import createStore from 'ee/analytics/cycle_analytics/store';
+import * as actions from 'ee/analytics/cycle_analytics/store/actions';
+import * as getters from 'ee/analytics/cycle_analytics/store/getters';
+import mutations from 'ee/analytics/cycle_analytics/store/mutations';
+import state from 'ee/analytics/cycle_analytics/store/state';
 import waitForPromises from 'helpers/wait_for_promises';
 import {
   currentGroup,
@@ -22,6 +25,7 @@ import {
   initialPaginationQuery,
   selectedProjects as rawSelectedProjects,
 } from 'jest/analytics/cycle_analytics/mock_data';
+import filters from '~/vue_shared/components/filtered_search_bar/store/modules/filters';
 import ValueStreamMetrics from '~/analytics/shared/components/value_stream_metrics.vue';
 import { toYmd } from '~/analytics/shared/utils';
 import PathNavigation from '~/analytics/cycle_analytics/components/path_navigation.vue';
@@ -137,17 +141,31 @@ describe('EE Value Stream Analytics component', () => {
       withStageSelected = false,
       features = {},
       initialState = initialCycleAnalyticsState,
+      initializeStore = true,
+      stateOverrides = {},
       props = {},
       selectedStage = null,
     } = options;
 
-    store = createStore();
-    await store.dispatch('initializeCycleAnalytics', {
-      ...initialState,
-      features: {
-        ...features,
+    store = new Vuex.Store({
+      actions,
+      getters,
+      mutations,
+      state: {
+        ...state(),
+        ...stateOverrides,
       },
+      modules: { filters },
     });
+
+    if (initializeStore) {
+      await store.dispatch('initializeCycleAnalytics', {
+        ...initialState,
+        features: {
+          ...features,
+        },
+      });
+    }
 
     const func = shallow ? shallowMount : mount;
     const comp = func(Component, {
@@ -190,16 +208,32 @@ describe('EE Value Stream Analytics component', () => {
   const findValueStreamSelect = () => wrapper.findComponent(ValueStreamSelect);
   const findUrlSync = () => wrapper.findComponent(UrlSync);
 
-  describe('with no value streams', () => {
+  beforeEach(() => {
+    mock = new MockAdapter(axios);
+  });
+
+  afterEach(() => {
+    mock.restore();
+  });
+
+  describe('when loading', () => {
     beforeEach(async () => {
-      mock = new MockAdapter(axios);
       wrapper = await createComponent({
-        initialState: { ...initialCycleAnalyticsState, valueStreams: [] },
+        initializeStore: false,
+        stateOverrides: { isLoadingValueStreams: true },
       });
     });
 
-    afterEach(() => {
-      mock.restore();
+    it('displays the loading icon', () => {
+      expect(wrapper.findComponent(GlLoadingIcon).exists()).toBe(true);
+    });
+  });
+
+  describe('with no value streams', () => {
+    beforeEach(async () => {
+      wrapper = await createComponent({
+        initialState: { ...initialCycleAnalyticsState, valueStreams: [] },
+      });
     });
 
     it('displays an empty state', () => {
@@ -225,7 +259,6 @@ describe('EE Value Stream Analytics component', () => {
 
   describe('the user does not have access to the group', () => {
     beforeEach(async () => {
-      mock = new MockAdapter(axios);
       mockRequiredRoutes(mock);
 
       wrapper = await createComponent({
@@ -260,13 +293,8 @@ describe('EE Value Stream Analytics component', () => {
 
   describe('the user has access to the group', () => {
     beforeEach(async () => {
-      mock = new MockAdapter(axios);
       mockRequiredRoutes(mock);
       wrapper = await createComponent({ withStageSelected: true });
-    });
-
-    afterEach(() => {
-      mock.restore();
     });
 
     it('hides the empty state', () => {
@@ -301,7 +329,6 @@ describe('EE Value Stream Analytics component', () => {
 
     describe('without the overview stage selected', () => {
       beforeEach(async () => {
-        mock = new MockAdapter(axios);
         mockRequiredRoutes(mock, { selectedStageEvents: [{}] });
         wrapper = await createComponent({ selectedStage: issueStage });
       });
@@ -331,7 +358,6 @@ describe('EE Value Stream Analytics component', () => {
 
       describe('without issue events', () => {
         beforeEach(async () => {
-          mock = new MockAdapter(axios);
           mockRequiredRoutes(mock, { selectedStageEvents: [] });
           wrapper = await createComponent({ selectedStage: issueStage });
         });
@@ -378,12 +404,7 @@ describe('EE Value Stream Analytics component', () => {
 
   describe('with failed requests while loading', () => {
     beforeEach(() => {
-      mock = new MockAdapter(axios);
       mockRequiredRoutes(mock);
-    });
-
-    afterEach(() => {
-      mock.restore();
     });
 
     it('will display an error if the fetchGroupStagesAndEvents request fails', async () => {
@@ -425,12 +446,7 @@ describe('EE Value Stream Analytics component', () => {
     const overviewStage = { id: OVERVIEW_STAGE_ID, title: 'Overview' };
 
     beforeEach(() => {
-      mock = new MockAdapter(axios);
       mockRequiredRoutes(mock);
-    });
-
-    afterEach(() => {
-      mock.restore();
     });
 
     it('when a stage is selected', async () => {
@@ -477,12 +493,7 @@ describe('EE Value Stream Analytics component', () => {
       commonUtils.historyPushState = jest.fn();
       urlUtils.mergeUrlParams = jest.fn();
 
-      mock = new MockAdapter(axios);
       mockRequiredRoutes(mock);
-    });
-
-    afterEach(() => {
-      mock.restore();
     });
 
     describe('with minimal parameters set', () => {
@@ -558,12 +569,7 @@ describe('EE Value Stream Analytics component', () => {
 
   describe('with`groupLevelAnalyticsDashboard=true`', () => {
     beforeEach(() => {
-      mock = new MockAdapter(axios);
       mockRequiredRoutes(mock);
-    });
-
-    afterEach(() => {
-      mock.restore();
     });
 
     it('renders a link to the value streams dashboard', async () => {
@@ -584,7 +590,6 @@ describe('EE Value Stream Analytics component', () => {
 
   describe('with `enableTasksByTypeChart=false`', () => {
     beforeEach(async () => {
-      mock = new MockAdapter(axios);
       mockRequiredRoutes(mock);
       wrapper = await createComponent({
         withStageSelected: true,
@@ -594,10 +599,6 @@ describe('EE Value Stream Analytics component', () => {
       });
     });
 
-    afterEach(() => {
-      mock.restore();
-    });
-
     it('does not display the tasks by type chart', () => {
       expect(findTypeOfWorkCharts().exists()).toBe(false);
     });
@@ -605,7 +606,6 @@ describe('EE Value Stream Analytics component', () => {
 
   describe('with `enableCustomizableStages=false`', () => {
     beforeEach(async () => {
-      mock = new MockAdapter(axios);
       mockRequiredRoutes(mock);
       wrapper = await createComponent({
         withStageSelected: true,
@@ -617,10 +617,6 @@ describe('EE Value Stream Analytics component', () => {
       });
     });
 
-    afterEach(() => {
-      mock.restore();
-    });
-
     it('does not display the value stream selector', () => {
       expect(findValueStreamSelect().exists()).toBe(false);
     });
@@ -628,7 +624,6 @@ describe('EE Value Stream Analytics component', () => {
 
   describe('with `enableProjectsFilter=false`', () => {
     beforeEach(async () => {
-      mock = new MockAdapter(axios);
       mockRequiredRoutes(mock);
       wrapper = await createComponent({
         withStageSelected: true,
@@ -640,10 +635,6 @@ describe('EE Value Stream Analytics component', () => {
       });
     });
 
-    afterEach(() => {
-      mock.restore();
-    });
-
     it('does not display the project filter', () => {
       expect(findFilterBar().props('hasProjectFilter')).toBe(false);
     });
@@ -651,7 +642,6 @@ describe('EE Value Stream Analytics component', () => {
 
   describe('with a project namespace', () => {
     beforeEach(async () => {
-      mock = new MockAdapter(axios);
       mockRequiredRoutes(mock);
       wrapper = await createComponent({
         withStageSelected: true,
@@ -666,10 +656,6 @@ describe('EE Value Stream Analytics component', () => {
       });
     });
 
-    afterEach(() => {
-      mock.restore();
-    });
-
     it('renders a link to the value streams dashboard', () => {
       expect(findOverviewMetrics().props('dashboardsPath')).toBe(
         '/some/cool/path/-/analytics/dashboards/value_streams_dashboard',
@@ -679,7 +665,6 @@ describe('EE Value Stream Analytics component', () => {
 
   describe('when dashboard link is disabled for the project namespace`', () => {
     beforeEach(async () => {
-      mock = new MockAdapter(axios);
       mockRequiredRoutes(mock);
       wrapper = await createComponent({
         withStageSelected: true,
@@ -692,10 +677,6 @@ describe('EE Value Stream Analytics component', () => {
           project: 'fake-id',
         },
       });
-    });
-
-    afterEach(() => {
-      mock.restore();
     });
 
     it('does not render a link to the value streams dashboard', () => {
