@@ -8,7 +8,7 @@ export default {
     UNBLOCK_RULES_TEXT,
     popoverTitle: __('Information'),
     popoverDesc: s__(
-      'ScanResultPolicy|Automatically make approval rules optional when scan artifacts are missing from the target branch and a scan is required by a scan execution policy. This option only works with an existing scan execution policy that has matching scanners.',
+      'ScanResultPolicy|When enabled, approval rules do not block merge requests when a scan is required by a scan execution policy or a pipeline execution policy but a required scan artifact is missing from the target branch. This option only works when the project or group has an existing scan execution policy or pipeline execution policy with matching scanners.',
     ),
   },
   components: {

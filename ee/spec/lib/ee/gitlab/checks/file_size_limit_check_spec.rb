@@ -1,0 +1,106 @@
+# frozen_string_literal: true
+
+require 'spec_helper'
+
+RSpec.describe Gitlab::Checks::FileSizeLimitCheck, feature_category: :source_code_management do
+  include_context 'changes access checks context'
+  include_context 'push rules checks context'
+
+  let(:changes) do
+    [
+      # Update of existing branch
+      { oldrev: oldrev, newrev: newrev, ref: ref },
+      # Creation of new branch
+      { newrev: newrev, ref: 'refs/heads/something' },
+      # Deletion of branch
+      { oldrev: oldrev, ref: 'refs/heads/deleteme' }
+    ]
+  end
+
+  let(:changes_access) do
+    Gitlab::Checks::ChangesAccess.new(
+      changes,
+      project: project,
+      user_access: user_access,
+      protocol: protocol,
+      logger: logger,
+      push_options: push_options,
+      gitaly_context: gitaly_context
+    )
+  end
+
+  let(:push_rule_limit) { 50 }
+  let(:push_rule) { create(:push_rule, max_file_size: push_rule_limit) }
+  let(:global_limit) { 10 }
+  let(:plan_limits) { instance_double(PlanLimits, file_size_limit_mb: global_limit) }
+
+  before do
+    allow(project).to receive_messages(
+      predefined_push_rule: push_rule,
+      actual_limits: plan_limits
+    )
+  end
+
+  subject(:file_size_check) { described_class.new(changes_access) }
+
+  RSpec.shared_examples 'checks file size limit' do |expected_limit|
+    it "passes the correct file size limit to HookEnvironmentAwareAnyOversizedBlobs" do
+      expect_next_instance_of(Gitlab::Checks::FileSizeCheck::HookEnvironmentAwareAnyOversizedBlobs,
+        project: project,
+        changes: changes,
+        file_size_limit_megabytes: expected_limit
+      ) do |check|
+        expect(check).to receive(:find).and_call_original
+      end
+      file_size_check.validate!
+    end
+  end
+
+  describe '#validate!' do
+    context 'when the global file limit is smaller than the push rule file size limit' do
+      let(:push_rule_limit) { 50 }
+      let(:global_limit) { 20 }
+
+      it_behaves_like 'checks file size limit', 20
+    end
+
+    context 'when the push rule file limit is smaller than the global file size limit' do
+      let(:push_rule_limit) { 10 }
+      let(:global_limit) { 50 }
+
+      it_behaves_like 'checks file size limit', 10
+    end
+
+    context 'when the push rule does not exist' do
+      let(:push_rule) { nil }
+      let(:global_limit) { 50 }
+
+      it_behaves_like 'checks file size limit', 50
+    end
+
+    context 'when the global file limit is nil' do
+      let(:push_rule_limit) { 30 }
+      let(:global_limit) { nil }
+
+      it_behaves_like 'checks file size limit', 30
+    end
+
+    context 'when the push rule limit is 0' do
+      let(:push_rule_limit) { 0 }
+      let(:global_limit) { 20 }
+
+      it_behaves_like 'checks file size limit', 20
+    end
+
+    context 'when feature flag "push_rule_file_size_limit" is disabled' do
+      let(:push_rule_limit) { 30 }
+      let(:global_limit) { 10 }
+
+      before do
+        stub_feature_flags(push_rule_file_size_limit: false)
+      end
+
+      it_behaves_like 'checks file size limit', 10
+    end
+  end
+end

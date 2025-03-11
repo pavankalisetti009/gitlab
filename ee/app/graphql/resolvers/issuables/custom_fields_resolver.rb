@@ -31,7 +31,7 @@ module Resolvers
 
         custom_fields = ::Issuables::CustomFieldsFinder.new(
           current_user,
-          group: object,
+          group: object.root_ancestor,
           active: active,
           field_type: field_type,
           search: search,
