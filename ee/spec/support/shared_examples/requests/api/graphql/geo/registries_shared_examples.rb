@@ -58,6 +58,49 @@ RSpec.shared_examples 'gets registries for' do |args|
     expect(actual).to eq(expected)
   end
 
+  context 'with count limit' do
+    let!(:expected_registry3) { create(registry_factory, :failed) }
+
+    def query_count(limit: '', params: '')
+      <<~QUERY
+        {
+          geoNode {
+            #{field_name}#{params} {
+              count#{limit}
+            }
+          }
+        }
+      QUERY
+    end
+
+    it 'returns registries count' do
+      post_graphql(query_count, current_user: current_user)
+
+      actual = graphql_data_at(:geo_node, field_name_sym, :count)
+      expect(actual).to eq(3)
+    end
+
+    it 'returns limited registries count' do
+      post_graphql(query_count(limit: '(limit: 1)'), current_user: current_user)
+
+      actual = graphql_data_at(:geo_node, field_name_sym, :count)
+      expect(actual).to eq(2)
+    end
+
+    it 'returns an error when limit is too large' do
+      post_graphql(query_count(limit: '(limit: 1500)'), current_user: current_user)
+
+      expect(graphql_errors).to include(a_hash_including('message' => 'limit must be less than or equal to 1000'))
+    end
+
+    it 'returns count of filtered registries' do
+      post_graphql(query_count(params: '(replicationState: FAILED)'), current_user: current_user)
+
+      actual = graphql_data_at(:geo_node, field_name_sym, :count)
+      expect(actual).to eq(1)
+    end
+  end
+
   context 'when paginating' do
     let!(:expected_registry1) { create(registry_factory) } # rubocop:disable Rails/SaveBang
     let!(:expected_registry2) { create(registry_factory) } # rubocop:disable Rails/SaveBang
