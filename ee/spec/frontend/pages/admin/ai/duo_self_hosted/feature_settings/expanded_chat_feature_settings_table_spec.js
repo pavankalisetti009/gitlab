@@ -1,0 +1,146 @@
+import Vue from 'vue';
+import VueApollo from 'vue-apollo';
+import { GlSprintf } from '@gitlab/ui';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import createMockApollo from 'helpers/mock_apollo_helper';
+import ExpandedChatFeatureSettingsTable from 'ee/pages/admin/ai/duo_self_hosted/feature_settings/components/expanded_chat_feature_settings_table.vue';
+import getAiFeatureSettingsQuery from 'ee/pages/admin/ai/duo_self_hosted/feature_settings/graphql/queries/get_ai_feature_settings.query.graphql';
+import { createAlert } from '~/alert';
+import waitForPromises from 'helpers/wait_for_promises';
+import { DUO_MAIN_FEATURES } from 'ee/pages/admin/ai/duo_self_hosted/constants';
+import { mockAiFeatureSettings } from './mock_data';
+
+Vue.use(VueApollo);
+
+jest.mock('~/alert');
+
+describe('ExpandedChatFeatureSettingsTable', () => {
+  let wrapper;
+
+  const getAiFeatureSettingsSuccessHandler = jest.fn().mockResolvedValue({
+    data: {
+      aiFeatureSettings: {
+        nodes: mockAiFeatureSettings,
+        errors: [],
+      },
+    },
+  });
+
+  const createComponent = ({
+    apolloHandlers = [[getAiFeatureSettingsQuery, getAiFeatureSettingsSuccessHandler]],
+  } = {}) => {
+    const mockApollo = createMockApollo([...apolloHandlers]);
+
+    wrapper = shallowMountExtended(ExpandedChatFeatureSettingsTable, {
+      apolloProvider: mockApollo,
+    });
+  };
+
+  const findFeatureSettingsTable = () => wrapper.findComponent(ExpandedChatFeatureSettingsTable);
+  const findDuoChatTableRows = () => wrapper.findByTestId('duo-chat-table-rows');
+  const findCodeSuggestionsTableRows = () => wrapper.findByTestId('code-suggestions-table-rows');
+  const findSectionHeaders = () => wrapper.findAll('h2');
+  const findSectionDescriptions = () => wrapper.findAllComponents(GlSprintf);
+
+  it('renders the component', () => {
+    createComponent();
+
+    expect(findFeatureSettingsTable().exists()).toBe(true);
+  });
+
+  it('renders Code Suggestions section', () => {
+    createComponent();
+
+    expect(findSectionHeaders().at(0).text()).toBe('Code Suggestions');
+    expect(findSectionDescriptions().at(0).attributes('message')).toContain(
+      'Assists developers by providing real-time code completions',
+    );
+    expect(findCodeSuggestionsTableRows().exists()).toBe(true);
+  });
+
+  it('renders Duo Chat section', () => {
+    createComponent();
+
+    expect(findSectionHeaders().at(1).text()).toBe('GitLab Duo Chat');
+    expect(findSectionDescriptions().at(1).attributes('message')).toContain(
+      'An AI assistant that provides real-time guidance',
+    );
+    expect(findDuoChatTableRows().exists()).toBe(true);
+  });
+
+  describe('when feature settings data is loading', () => {
+    it('passes the correct loading state to FeatureSettingsTableRows', () => {
+      createComponent();
+
+      expect(findCodeSuggestionsTableRows().props('isLoading')).toBe(true);
+      expect(findDuoChatTableRows().props('isLoading')).toBe(true);
+    });
+  });
+
+  describe('when the API query is successful', () => {
+    beforeEach(async () => {
+      createComponent();
+      await waitForPromises();
+    });
+
+    it('passes Code Suggestions table row data to FeatureSettingsTableRows', () => {
+      expect(findCodeSuggestionsTableRows().props('isLoading')).toEqual(false);
+      expect(findCodeSuggestionsTableRows().props('aiFeatureSettings')).toEqual(
+        mockAiFeatureSettings.filter(
+          (setting) => setting.mainFeature === DUO_MAIN_FEATURES.CODE_SUGGESTIONS,
+        ),
+      );
+    });
+
+    it('passes Duo Chat table row data to FeatureSettingsTableRows', () => {
+      expect(findDuoChatTableRows().props('isLoading')).toEqual(false);
+      expect(findDuoChatTableRows().props('aiFeatureSettings')).toEqual(
+        mockAiFeatureSettings.filter(
+          (setting) => setting.mainFeature === DUO_MAIN_FEATURES.DUO_CHAT,
+        ),
+      );
+    });
+  });
+
+  describe('when the API request is unsuccessful', () => {
+    describe('due to a general error', () => {
+      it('displays an error message for feature settings', async () => {
+        createComponent({
+          apolloHandlers: [[getAiFeatureSettingsQuery, jest.fn().mockRejectedValue('ERROR')]],
+        });
+
+        await waitForPromises();
+
+        expect(createAlert).toHaveBeenCalledWith(
+          expect.objectContaining({
+            message: 'An error occurred while loading the AI feature settings. Please try again.',
+          }),
+        );
+      });
+    });
+
+    describe('due to a business logic error', () => {
+      const getAiFeatureSettingsErrorHandler = jest.fn().mockResolvedValue({
+        data: {
+          aiFeatureSettings: {
+            errors: ['An error occured'],
+          },
+        },
+      });
+
+      it('displays an error message for feature settings', async () => {
+        createComponent({
+          apolloHandlers: [[getAiFeatureSettingsQuery, getAiFeatureSettingsErrorHandler]],
+        });
+
+        await waitForPromises();
+
+        expect(createAlert).toHaveBeenCalledWith(
+          expect.objectContaining({
+            message: 'An error occurred while loading the AI feature settings. Please try again.',
+          }),
+        );
+      });
+    });
+  });
+});

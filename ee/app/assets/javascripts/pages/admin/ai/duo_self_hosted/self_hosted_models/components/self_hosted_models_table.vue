@@ -152,7 +152,7 @@ export default {
 </script>
 <template>
   <div>
-    <div class="gl-border-t gl-py-4">
+    <div class="gl-py-4">
       <gl-search-box-by-type v-model.trim="searchTerm" />
     </div>
     <gl-table

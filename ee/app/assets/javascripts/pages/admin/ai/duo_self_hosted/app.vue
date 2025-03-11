@@ -4,6 +4,7 @@ import { s__ } from '~/locale';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import SelfHostedModelsTable from './self_hosted_models/components/self_hosted_models_table.vue';
 import FeatureSettingsTable from './feature_settings/components/feature_settings_table.vue';
+import ExpandedChatFeatureSettingsTable from './feature_settings/components/expanded_chat_feature_settings_table.vue';
 import { SELF_HOSTED_DUO_TABS } from './constants';
 
 export default {
@@ -14,6 +15,7 @@ export default {
     GlButton,
     SelfHostedModelsTable,
     FeatureSettingsTable,
+    ExpandedChatFeatureSettingsTable,
     PageHeading,
   },
   i18n: {
@@ -22,6 +24,7 @@ export default {
       'AdminSelfHostedModels|Manage GitLab Duo by configuring and assigning self-hosted models to AI-powered features.',
     ),
   },
+  inject: ['duoChatSubFeaturesEnabled'],
   props: {
     tabId: {
       type: String,
@@ -87,7 +90,7 @@ export default {
         </gl-button>
       </template>
     </page-heading>
-    <div class="top-area gl-border-b-0">
+    <div class="top-area">
       <gl-tabs
         v-model="currentTabIndex"
         data-testid="self-hosted-duo-config-tabs"
@@ -105,7 +108,8 @@ export default {
       <self-hosted-models-table />
     </div>
     <div v-else>
-      <feature-settings-table />
+      <expanded-chat-feature-settings-table v-if="duoChatSubFeaturesEnabled" />
+      <feature-settings-table v-else />
     </div>
   </div>
 </template>
