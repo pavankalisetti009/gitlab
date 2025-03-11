@@ -78,7 +78,7 @@ module Gitlab
           end
 
           def messages
-            message = ::Ai::Conversation::Message.for_user(user).for_message_xid(options[:message_id]).first! # rubocop:disable CodeReuse/ActiveRecord -- not sure why first is allowed but not first!
+            message = ::Ai::Conversation::Message.find_for_user!(options[:message_id], user)
             ::Gitlab::Llm::ChatStorage.new(user, nil, message.thread).messages_up_to(options[:message_id])
           end
           strong_memoize_attr :messages

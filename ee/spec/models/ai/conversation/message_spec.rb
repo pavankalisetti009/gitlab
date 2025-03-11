@@ -67,6 +67,38 @@ RSpec.describe Ai::Conversation::Message, feature_category: :duo_chat do
         expect(messages).to contain_exactly(message)
       end
     end
+
+    describe '.find_for_user!' do
+      let_it_be(:user) { create(:user) }
+      let_it_be(:thread) { create(:ai_conversation_thread, user: user) }
+      let_it_be(:message) { create(:ai_conversation_message, thread: thread) }
+
+      context 'when message exists and belongs to the user' do
+        it 'returns the message' do
+          expect(described_class.find_for_user!(message.message_xid, user)).to eq(message)
+        end
+      end
+
+      context 'when message exists but belongs to different user' do
+        let(:other_user) { create(:user) }
+
+        it 'raises ActiveRecord::RecordNotFound' do
+          expect do
+            described_class.find_for_user!(message.message_xid, other_user)
+          end.to raise_error(ActiveRecord::RecordNotFound)
+        end
+      end
+
+      context 'when message_xid does not exist' do
+        let(:non_existent_xid) { SecureRandom.uuid }
+
+        it 'raises ActiveRecord::RecordNotFound' do
+          expect do
+            described_class.find_for_user!(non_existent_xid, user)
+          end.to raise_error(ActiveRecord::RecordNotFound)
+        end
+      end
+    end
   end
 
   describe '.recent' do

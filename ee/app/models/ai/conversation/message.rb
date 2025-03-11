@@ -21,6 +21,10 @@ module Ai
 
       before_create :populate_organization
 
+      def self.find_for_user!(xid, user)
+        for_message_xid(xid).for_user(user).first!
+      end
+
       def self.recent(limit)
         order(id: :desc).limit(limit).reverse
       end
