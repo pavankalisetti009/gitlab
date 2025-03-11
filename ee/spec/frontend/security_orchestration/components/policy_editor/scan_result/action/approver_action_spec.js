@@ -419,4 +419,18 @@ describe('ApproverAction', () => {
       ]);
     });
   });
+
+  describe('sanitize required approval actions', () => {
+    it.each(['invalid', NaN, undefined, null, -1, -10, 0.5])(
+      'validates required approval action number for invalid type',
+      (approvalsRequired) => {
+        createWrapper({
+          initAction: { ...DEFAULT_ACTION, approvals_required: approvalsRequired },
+        });
+
+        expect(findApprovalsRequiredInput().props('value')).toBe(1);
+        expect(findApprovalsRequiredInput().props('state')).toBe(false);
+      },
+    );
+  });
 });
