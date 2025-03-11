@@ -36,9 +36,7 @@ module Vulnerabilities
       end
 
       def update_archived_records_count
-        vulnerability_archive.update_column(
-          :archived_records_count,
-          vulnerability_archive.archived_records_count + vulnerabilities.length)
+        vulnerability_archive.increment!(:archived_records_count, vulnerabilities.length)
       end
 
       def delete_records
