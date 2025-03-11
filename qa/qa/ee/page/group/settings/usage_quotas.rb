@@ -6,7 +6,7 @@ module QA
       module Group
         module Settings
           class UsageQuotas < QA::Page::Base
-            view 'app/assets/javascripts/usage_quotas/storage/tab_metadata.js' do
+            view 'app/assets/javascripts/usage_quotas/storage/utils.js' do
               element 'storage-tab'
             end
 
