@@ -278,6 +278,25 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
     end
   end
 
+  describe '#vscode_extension_marketplace_settings_description' do
+    using RSpec::Parameterized::TableSyntax
+
+    subject(:description) { helper.vscode_extension_marketplace_settings_description }
+
+    where(:remote_dev_license, :expected_description) do
+      false | _('Enable VS Code Extension Marketplace and configure the extensions registry for Web IDE.')
+      true  | _('Enable VS Code Extension Marketplace and configure the extensions registry for Web IDE and Workspaces.') # rubocop:disable -- The message extends past the line length
+    end
+
+    with_them do
+      before do
+        stub_licensed_features(remote_development: remote_dev_license)
+      end
+
+      it { is_expected.to be(expected_description) }
+    end
+  end
+
   describe '#zoekt_settings_checkboxes', feature_category: :global_search do
     let_it_be(:application_setting) { build(:application_setting) }
 
