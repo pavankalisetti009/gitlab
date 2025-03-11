@@ -119,7 +119,7 @@ RSpec.describe Vulnerabilities::NamespaceHistoricalStatistics::AdjustmentService
       let(:expected_statistics) do
         {
           'migrating' => false,
-          'total' => 4,
+          'total' => 3,
           'critical' => 2,
           'high' => 1,
           'medium' => 0,
