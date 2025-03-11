@@ -16299,7 +16299,8 @@ CREATE TABLE merge_request_diff_files (
     external_diff_offset integer,
     external_diff_size integer,
     generated boolean,
-    encoded_file_path boolean DEFAULT false NOT NULL
+    encoded_file_path boolean DEFAULT false NOT NULL,
+    project_id bigint
 );
 
 CREATE TABLE merge_request_diffs (
@@ -39313,6 +39314,9 @@ ALTER TABLE ONLY subscription_user_add_on_assignments
 
 ALTER TABLE ONLY approval_project_rules_users
     ADD CONSTRAINT fk_0dfcd9e339 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY merge_request_diff_files
+    ADD CONSTRAINT fk_0e3ba01603 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY ci_runner_projects
     ADD CONSTRAINT fk_0e743433ff FOREIGN KEY (runner_id) REFERENCES ci_runners_archived(id) ON DELETE CASCADE;
