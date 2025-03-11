@@ -45,7 +45,9 @@ describe('Skip ci for pipeline execution policy', () => {
       await waitForPromises();
     });
 
-    it('allows to skip ci configuration for pipeline execution', async () => {
+    // quarantine: https://gitlab.com/gitlab-org/gitlab/-/issues/523910
+    // eslint-disable-next-line jest/no-disabled-tests
+    it.skip('allows to skip ci configuration for pipeline execution', async () => {
       const verifyRuleMode = () => {
         expect(findSkipCiSelector().exists()).toBe(true);
       };
