@@ -94,6 +94,17 @@ RSpec.describe Security::ApprovalGroupsFinder, "#execute", feature_category: :se
         expect(subject).to contain_exactly(group_a, group_b)
       end
     end
+
+    context "with nil container (policy fetched on self-managed instance)" do
+      let(:container) { nil }
+      let(:search_globally) { false }
+      let(:group_ids) { [group_a.id, group_b.id] }
+      let(:group_paths) { [group_name] }
+
+      it "finds globally accessible groups" do
+        expect(subject).to contain_exactly(group_a, group_b)
+      end
+    end
   end
 
   context "with inaccessible groups included" do

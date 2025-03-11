@@ -50,7 +50,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyScopeFetcher, :agg
     described_class.new(policy_scope: policy_scope, container: container, current_user: current_user)
   end
 
-  shared_examples 'returns policy_scope' do
+  shared_examples 'returns policy_scope' do |fetch_all_frameworks: false|
     context 'when compliance_frameworks, projects and groups are present' do
       it 'returns the compliance_frameworks and projects' do
         response = service.execute
@@ -136,10 +136,23 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyScopeFetcher, :agg
         }
       end
 
-      it 'returns empty result' do
+      if fetch_all_frameworks
+        it 'returns the compliance_frameworks' do
+          response = service.execute
+
+          expect(response[:compliance_frameworks]).to contain_exactly(framework)
+        end
+      else
+        it 'returns empty compliance frameworks' do
+          response = service.execute
+
+          expect(response[:compliance_frameworks]).to be_empty
+        end
+      end
+
+      it 'returns empty projects and groups' do
         response = service.execute
 
-        expect(response[:compliance_frameworks]).to be_empty
         expect(response[:including_projects]).to be_empty
         expect(response[:excluding_projects]).to be_empty
         expect(response[:including_groups]).to be_empty
@@ -199,6 +212,49 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyScopeFetcher, :agg
       let_it_be_with_refind(:container) { framework1 }
 
       it_behaves_like 'returns policy_scope'
+    end
+
+    context 'when container is a nil' do
+      let_it_be_with_refind(:container) { nil }
+
+      context 'when on SaaS' do
+        before do
+          stub_saas_features(gitlab_com_subscriptions: true)
+        end
+
+        context 'when compliance framework is not associated with the namespace' do
+          let_it_be(:framework) { create(:compliance_framework) }
+          let(:policy_scope) do
+            {
+              compliance_frameworks: [{ id: framework.id }],
+              projects: { including: [], excluding: [] }
+            }
+          end
+
+          it 'returns empty compliance frameworks' do
+            response = service.execute
+
+            expect(response[:compliance_frameworks]).to be_empty
+          end
+
+          it 'returns empty projects and groups' do
+            response = service.execute
+
+            expect(response[:including_projects]).to be_empty
+            expect(response[:excluding_projects]).to be_empty
+            expect(response[:including_groups]).to be_empty
+            expect(response[:excluding_groups]).to be_empty
+          end
+        end
+      end
+
+      context 'when on self-managed' do
+        before do
+          stub_saas_features(gitlab_com_subscriptions: false)
+        end
+
+        it_behaves_like 'returns policy_scope', fetch_all_frameworks: true
+      end
     end
   end
 end

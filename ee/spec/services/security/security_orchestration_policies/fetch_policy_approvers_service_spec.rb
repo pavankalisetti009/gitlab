@@ -110,6 +110,20 @@ RSpec.describe Security::SecurityOrchestrationPolicies::FetchPolicyApproversServ
           expect(response[:approvers]).to match_array([{ all_groups: [], groups: [], roles: [], users: [], custom_roles: [] }])
         end
       end
+
+      context 'with nil container' do
+        let(:container) { nil }
+
+        it 'does returns any user approvers' do
+          response = service.execute
+
+          expect(response[:status]).to eq(:success)
+          expect(response[:users]).to be_empty
+          expect(response[:groups]).to be_empty
+          expect(response[:all_groups]).to be_empty
+          expect(response[:approvers]).to match_array([{ all_groups: [], groups: [], roles: [], users: [], custom_roles: [] }])
+        end
+      end
     end
 
     context 'with group approver' do
@@ -170,6 +184,20 @@ RSpec.describe Security::SecurityOrchestrationPolicies::FetchPolicyApproversServ
           expect(response[:all_groups]).to match_array([subgroup])
           expect(response[:users]).to be_empty
           expect(response[:approvers].first).to include(groups: [subgroup], all_groups: [subgroup])
+        end
+      end
+
+      context 'with nil container' do
+        let(:container) { nil }
+
+        it 'returns global group approvers only' do
+          response = service.execute
+
+          expect(response[:status]).to eq(:success)
+          expect(response[:groups]).to match_array([group])
+          expect(response[:all_groups]).to match_array([group])
+          expect(response[:users]).to be_empty
+          expect(response[:approvers].first).to include(groups: [group], all_groups: [group])
         end
       end
     end
