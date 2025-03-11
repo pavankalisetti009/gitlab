@@ -34059,6 +34059,8 @@ CREATE INDEX index_merge_request_reviewers_on_user_id ON merge_request_reviewers
 
 CREATE UNIQUE INDEX index_merge_request_user_mentions_on_note_id ON merge_request_user_mentions USING btree (note_id) WHERE (note_id IS NOT NULL);
 
+CREATE INDEX index_merge_request_user_mentions_on_project_id ON merge_request_user_mentions USING btree (project_id);
+
 CREATE INDEX index_merge_requests_approval_rules_approver_groups_on_group_id ON merge_requests_approval_rules_approver_groups USING btree (group_id);
 
 CREATE INDEX index_merge_requests_approval_rules_approver_users_on_group_id ON merge_requests_approval_rules_approver_users USING btree (group_id);
@@ -39430,6 +39432,9 @@ ALTER TABLE ONLY namespace_settings
 
 ALTER TABLE ONLY packages_nuget_metadata
     ADD CONSTRAINT fk_21569c0856 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY merge_request_user_mentions
+    ADD CONSTRAINT fk_217c683366 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY security_pipeline_execution_project_schedules
     ADD CONSTRAINT fk_21a3dca413 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
