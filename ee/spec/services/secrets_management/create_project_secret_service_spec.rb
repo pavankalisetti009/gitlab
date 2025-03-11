@@ -4,8 +4,9 @@ require 'spec_helper'
 
 RSpec.describe SecretsManagement::CreateProjectSecretService, :gitlab_secrets_manager, feature_category: :secrets_management do
   let_it_be_with_reload(:project) { create(:project) }
+  let_it_be(:user) { create(:user) }
 
-  let(:service) { described_class.new(project) }
+  let(:service) { described_class.new(project, user) }
   let(:name) { 'TEST_SECRET' }
   let(:description) { 'test description' }
   let(:value) { 'the-secret-value' }
@@ -21,10 +22,7 @@ RSpec.describe SecretsManagement::CreateProjectSecretService, :gitlab_secrets_ma
       let_it_be_with_reload(:secrets_manager) { create(:project_secrets_manager, project: project) }
 
       before do
-        rsa_key = OpenSSL::PKey::RSA.generate(3072).to_s
-        stub_application_setting(ci_jwt_signing_key: rsa_key)
-
-        provision_project_secrets_manager(secrets_manager)
+        provision_project_secrets_manager(secrets_manager, user)
       end
 
       it 'creates a project secret' do
@@ -165,7 +163,7 @@ RSpec.describe SecretsManagement::CreateProjectSecretService, :gitlab_secrets_ma
 
       context 'when the secret already exists' do
         before do
-          described_class.new(project).execute(name: name, value: value, environment: environment, branch: branch)
+          described_class.new(project, user).execute(name: name, value: value, environment: environment, branch: branch)
         end
 
         it 'fails' do

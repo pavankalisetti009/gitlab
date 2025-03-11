@@ -2,11 +2,14 @@
 
 module SecretsManagement
   class ProvisionProjectSecretsManagerService < BaseService
-    SECRET_ENGINE_TYPE = 'kv-v2'
+    include SecretsManagerClientHelpers
 
-    def initialize(secrets_manager)
+    SECRETS_ENGINE_TYPE = 'kv-v2'
+
+    def initialize(secrets_manager, current_user)
+      super(secrets_manager.project, current_user)
+
       @secrets_manager = secrets_manager
-      @client = SecretsManagerClient.new
     end
 
     def execute
@@ -20,7 +23,7 @@ module SecretsManagement
     private
 
     def enable_secret_store
-      client.enable_secrets_engine(secrets_manager.ci_secrets_mount_path, SECRET_ENGINE_TYPE)
+      secrets_manager_client.enable_secrets_engine(secrets_manager.ci_secrets_mount_path, SECRETS_ENGINE_TYPE)
     rescue SecretsManagerClient::ApiError => e
       raise e unless e.message.include?('path is already in use')
 
@@ -36,8 +39,11 @@ module SecretsManagement
     end
 
     def enable_pipeline_auth
-      client.enable_auth_engine(secrets_manager.ci_auth_mount, secrets_manager.ci_auth_type,
-        allow_existing: true)
+      secrets_manager_client.enable_auth_engine(
+        secrets_manager.ci_auth_mount,
+        secrets_manager.ci_auth_type,
+        allow_existing: true
+      )
     end
 
     def configure_auth(jwt_exists)
@@ -48,10 +54,10 @@ module SecretsManagement
         # so that we don't need a full Puma instance running.
         issuer_base_url = ProjectSecretsManager.jwt_issuer
         issuer_key = Gitlab::CurrentSettings.ci_jwt_signing_key
-        client.configure_jwt(secrets_manager.ci_auth_mount, issuer_base_url, issuer_key)
+        secrets_manager_client.configure_jwt(secrets_manager.ci_auth_mount, issuer_base_url, issuer_key)
       end
 
-      client.update_jwt_role(
+      secrets_manager_client.update_jwt_role(
         secrets_manager.ci_auth_mount,
         secrets_manager.ci_auth_role,
         role_type: 'jwt',
@@ -72,6 +78,6 @@ module SecretsManagement
       secrets_manager.activate!
     end
 
-    attr_reader :secrets_manager, :client
+    attr_reader :secrets_manager
   end
 end

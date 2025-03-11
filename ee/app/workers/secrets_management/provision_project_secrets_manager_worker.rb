@@ -12,9 +12,12 @@ module SecretsManagement
 
     feature_category :secrets_management
 
-    def perform(project_secrets_manager_id)
+    def perform(current_user_id, project_secrets_manager_id)
       ProjectSecretsManager.find_by_id(project_secrets_manager_id).try do |secrets_manager|
-        ProvisionProjectSecretsManagerService.new(secrets_manager).execute
+        user = User.find_by_id(current_user_id)
+        next unless user
+
+        ProvisionProjectSecretsManagerService.new(secrets_manager, user).execute
       end
     end
   end

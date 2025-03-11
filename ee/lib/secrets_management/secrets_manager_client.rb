@@ -6,9 +6,13 @@ module SecretsManagement
 
     SERVER_VERSION_FILE = 'GITLAB_OPENBAO_VERSION'
     KV_VALUE_FIELD = 'value'
+    TOKEN_HEADER = 'X-Vault-Token'
+    DEFAULT_JWT_ROLE = 'app'
+    GITLAB_JWT_AUTH_PATH = 'gitlab_rails_jwt'
 
     ApiError = Class.new(StandardError)
     ConnectionError = Class.new(StandardError)
+    AuthenticationError = Class.new(StandardError)
     Configuration = Struct.new(:host, :base_path)
 
     def self.configuration
@@ -22,6 +26,12 @@ module SecretsManagement
     def self.expected_server_version
       path = Rails.root.join(SERVER_VERSION_FILE)
       path.read.chomp
+    end
+
+    def initialize(jwt:, role: DEFAULT_JWT_ROLE)
+      @jwt = jwt
+      @role = role
+      authenticate!
     end
 
     def enable_auth_engine(mount_path, type, allow_existing: false)
@@ -151,6 +161,29 @@ module SecretsManagement
 
     private
 
+    attr_reader :jwt, :auth_token, :role
+
+    def authenticate!
+      result = jwt_login
+
+      @auth_token = result.dig('auth', 'client_token')
+
+      raise AuthenticationError, 'No token received from OpenBao' unless auth_token
+    rescue ConnectionError, ApiError => e
+      raise AuthenticationError, "Failed to authenticate with OpenBao: #{e}"
+    end
+
+    def jwt_login
+      params = { jwt: jwt }
+      params[:role] = role if role.present?
+
+      make_request(
+        :post,
+        "auth/#{GITLAB_JWT_AUTH_PATH}/login",
+        params
+      )
+    end
+
     # save_raw_policy and read_raw_policy handle raw (direct API responses)
     # and the get_policy/set_policy forms should be preferred as they return
     # typed (JSON-able) policies. The risk with these endpoints is that
@@ -172,12 +205,16 @@ module SecretsManagement
     end
 
     def connection
-      Faraday.new(url: URI.join(configuration.host, configuration.base_path)) do |f|
-        f.request :json
-        f.response :json
+      # We memoize by auth_token so that we support both unauthenticated and authenticated requests
+      strong_memoize_with(:connection, auth_token) do
+        Faraday.new(url: URI.join(configuration.host, configuration.base_path)) do |f|
+          f.request :json
+          f.response :json
+
+          f.headers[TOKEN_HEADER] = auth_token if auth_token.present?
+        end
       end
     end
-    strong_memoize_attr(:connection)
 
     def make_request(method, url, params = {}, optional: false)
       response = case method

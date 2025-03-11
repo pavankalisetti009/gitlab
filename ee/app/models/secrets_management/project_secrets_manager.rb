@@ -54,9 +54,13 @@ module SecretsManagement
       ].compact.join('/')
     end
 
+    def ci_data_root_path
+      'explicit'
+    end
+
     def ci_data_path(secret_key = nil)
       [
-        'explicit',
+        ci_data_root_path,
         secret_key
       ].compact.join('/')
     end
