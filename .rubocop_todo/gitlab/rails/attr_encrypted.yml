@@ -1,5 +1,6 @@
 ---
-Cop/AttrEncrypted:
+# Cop supports --autocorrect.
+Gitlab/Rails/AttrEncrypted:
   Details: grace period
   Exclude:
     - 'app/models/alert_management/http_integration.rb'
@@ -58,14 +59,3 @@ Cop/AttrEncrypted:
     - 'ee/app/models/system_access/group_microsoft_graph_access_token.rb'
     - 'ee/app/models/system_access/microsoft_application.rb'
     - 'ee/app/models/system_access/microsoft_graph_access_token.rb'
-    - 'ee/lib/ee/gitlab/background_migration/create_missing_external_links_for_vulnerabilities.rb'
-    - 'ee/spec/lib/gitlab/background_migration/create_missing_external_links_for_vulnerabilities_spec.rb'
-    - 'lib/gitlab/background_migration/backfill_p_ci_pipeline_variables_from_ci_trigger_requests.rb'
-    - 'lib/gitlab/background_migration/encrypt_ci_trigger_token.rb'
-    - 'lib/gitlab/background_migration/update_jira_tracker_data_deployment_type_based_on_url.rb'
-    - 'spec/lib/gitlab/background_migration/update_jira_tracker_data_deployment_type_based_on_url_spec.rb'
-    - 'spec/migrations/generate_ci_job_token_signing_key_spec.rb'
-    - 'spec/migrations/regenerate_ci_job_token_signing_key_spec.rb'
-    - 'spec/models/attr_encrypted_patches_spec.rb'
-    - 'spec/models/concerns/bulk_insert_safe_spec.rb'
-    - 'spec/models/concerns/gitlab/sensitive_attributes_spec.rb'
