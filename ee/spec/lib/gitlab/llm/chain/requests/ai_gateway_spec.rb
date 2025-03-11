@@ -46,7 +46,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
     let(:endpoint) { described_class::ENDPOINT }
     let(:url) { "#{::Gitlab::AiGateway.url}#{endpoint}" }
     let(:model) { nil }
-    let(:expected_model) { described_class::CLAUDE_3_5_SONNET }
+    let(:expected_model) { described_class::CLAUDE_3_7_SONNET }
     let(:provider) { :anthropic }
     let(:params) do
       {
@@ -167,59 +167,6 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
       end
     end
 
-    context "when using the claude haiku model" do
-      let(:model) { ::Gitlab::Llm::Concerns::AvailableModels::CLAUDE_3_HAIKU }
-      let(:expected_model) { ::Gitlab::Llm::Concerns::AvailableModels::CLAUDE_3_5_HAIKU }
-      let(:expected_response) { "Hello World" }
-
-      it "calls ai gateway client with 3.5 haiku model" do
-        expect(ai_client).to receive(:stream).with(
-          hash_including(
-            body: hash_including(
-              prompt_components: array_including(
-                hash_including(
-                  payload: hash_including(
-                    model: expected_model
-                  )
-                )
-              )
-            )
-          )
-        ).and_return(response)
-
-        request
-
-        expect(response).to eq(expected_response)
-      end
-    end
-
-    context "when claude 3.5 feature flag is disabled" do
-      let(:model) { ::Gitlab::Llm::Concerns::AvailableModels::CLAUDE_3_HAIKU }
-      let(:expected_response) { "Hello World" }
-
-      before do
-        stub_feature_flags(claude_3_5_haiku_rollout: false)
-      end
-
-      it "calls ai gateway client with original model" do
-        expect(ai_client).to receive(:stream).with(
-          hash_including(
-            body: hash_including(
-              prompt_components: array_including(
-                hash_including(
-                  payload: hash_including(model: model)
-                )
-              )
-            )
-          )
-        ).and_return(response)
-
-        request
-
-        expect(response).to eq(expected_response)
-      end
-    end
-
     context 'when invalid model is passed' do
       let(:model) { 'test' }
 
@@ -232,7 +179,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
 
     context "when no model is provided" do
       let(:model) { nil }
-      let(:expected_model) { ::Gitlab::Llm::Concerns::AvailableModels::CLAUDE_3_5_SONNET }
+      let(:expected_model) { ::Gitlab::Llm::Concerns::AvailableModels::CLAUDE_3_7_SONNET }
       let(:expected_response) { "Hello World" }
 
       it "calls ai gateway client with claude 3.5 sonnet model defaulted" do
