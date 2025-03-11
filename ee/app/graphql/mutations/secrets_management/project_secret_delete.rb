@@ -4,7 +4,6 @@ module Mutations
   module SecretsManagement
     class ProjectSecretDelete < BaseMutation
       graphql_name 'ProjectSecretDelete'
-
       include ResolvesProject
 
       authorize :admin_project_secrets_manager

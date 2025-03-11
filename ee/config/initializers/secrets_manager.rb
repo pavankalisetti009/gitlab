@@ -1,16 +1,10 @@
 # frozen_string_literal: true
 
 SecretsManagement::SecretsManagerClient.configure do |c|
-  c.host = if Gitlab.config.key?(:openbao) && Gitlab.config.openbao.key?(:proxy_address)
-             Gitlab.config.openbao.proxy_address
-           elsif Rails.env.test?
-             # This matches the listener address in
-             # `ee/spec/support/helpers/secrets_management/test_proxy.hcl`
-             "http://127.0.0.1:9900"
-           elsif Rails.env.development?
-             "http://127.0.0.1:8100"
+  c.host = if Rails.env.test?
+             "http://127.0.0.1:9800"
            else
-             "https://127.0.0.1:8100"
+             SecretsManagement::ProjectSecretsManager.server_url
            end
 
   c.base_path = 'v1'

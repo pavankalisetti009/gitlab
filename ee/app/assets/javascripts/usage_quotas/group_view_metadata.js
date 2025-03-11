@@ -1,5 +1,5 @@
 import customApolloProvider from 'ee/usage_quotas/shared/provider';
-import { getStorageTabMetadata } from '~/usage_quotas/storage/tab_metadata';
+import { getNamespaceStorageTabMetadata } from '~/usage_quotas/storage/namespace/tab_metadata';
 import { GROUP_VIEW_TYPE } from '~/usage_quotas/constants';
 import { mountUsageQuotasApp } from '~/usage_quotas/utils';
 import { getSeatTabMetadata } from './seats/tab_metadata';
@@ -13,7 +13,7 @@ const usageQuotasTabsMetadata = [
   getSeatTabMetadata(),
   getCodeSuggestionsTabMetadata(),
   getPipelineTabMetadata(),
-  getStorageTabMetadata({ viewType: GROUP_VIEW_TYPE, customApolloProvider }),
+  getNamespaceStorageTabMetadata({ customApolloProvider }),
   getTransferTabMetadata({ viewType: GROUP_VIEW_TYPE }),
   getProductAnalyticsTabMetadata(),
   getPagesTabMetadata(),

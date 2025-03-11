@@ -3,11 +3,37 @@
 require 'spec_helper'
 
 RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager, feature_category: :secrets_management do
-  let(:client) { described_class.new }
+  let(:jwt) { SecretsManagement::TestJwt.new.encoded }
+  let(:role) { described_class::DEFAULT_JWT_ROLE }
+  let(:client) { described_class.new(jwt: jwt, role: role) }
 
   shared_examples_for 'making an invalid API request' do
     it 'raises an error' do
       expect { subject }.to raise_error(SecretsManagement::SecretsManagerClient::ApiError)
+    end
+  end
+
+  describe '.configure' do
+    # Store original configuration before tests
+    let!(:original_host) { described_class.configuration.host }
+    let!(:original_base_path) { described_class.configuration.base_path }
+
+    after do
+      # Reset the configuration to original settings
+      described_class.configure do |config|
+        config.host = original_host
+        config.base_path = original_base_path
+      end
+    end
+
+    it 'sets the configuration values' do
+      described_class.configure do |config|
+        config.host = 'http://test-host:8200'
+        config.base_path = '/test-path/'
+      end
+
+      expect(described_class.configuration.host).to eq('http://test-host:8200')
+      expect(described_class.configuration.base_path).to eq('/test-path/')
     end
   end
 
@@ -20,19 +46,96 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
     end
   end
 
-  describe 'handling connection errors' do
-    before do
-      webmock_enable!(allow_localhost: false)
-      stub_request(:any, %r{#{described_class.configuration.host}/v1/sys/mounts}).to_raise(Errno::ECONNREFUSED)
-    end
-
+  describe 'handling connection and authentication errors' do
     after do
+      # Reset WebMock to its previous state
       webmock_enable!(allow_localhost: true)
       WebMock.reset!
     end
 
-    it 'raises the error' do
-      expect { client.enable_secrets_engine('test', 'kv-v2') }.to raise_error(described_class::ConnectionError)
+    context 'when connection error occurs during API calls' do
+      before do
+        webmock_enable!(allow_localhost: false)
+
+        # First allow the JWT login to succeed
+        stub_request(
+          :post,
+          %r{#{described_class.configuration.host}/v1/auth/#{described_class::GITLAB_JWT_AUTH_PATH}/login})
+          .to_return(
+            status: 200,
+            headers: { 'Content-Type' => 'application/json' },
+            body: { auth: { client_token: "test-token" } }.to_json
+          )
+
+        # Then make the secrets engine request fail with connection error
+        stub_request(:post, %r{#{described_class.configuration.host}/v1/sys/mounts})
+          .to_raise(Errno::ECONNREFUSED)
+      end
+
+      it 'raises ConnectionError for operations after authentication' do
+        client = described_class.new(jwt: jwt, role: role)
+        expect { client.enable_secrets_engine('test', 'kv-v2') }
+          .to raise_error(described_class::ConnectionError)
+      end
+    end
+
+    context 'when connection error occurs during authentication' do
+      before do
+        webmock_enable!(allow_localhost: false)
+
+        # Make the JWT login fail with connection error
+        stub_request(
+          :post,
+          %r{#{described_class.configuration.host}/v1/auth/#{described_class::GITLAB_JWT_AUTH_PATH}/login})
+          .to_raise(Errno::ECONNREFUSED)
+      end
+
+      it 'raises AuthenticationError wrapping the connection error' do
+        expect { described_class.new(jwt: jwt, role: role) }
+          .to raise_error(described_class::AuthenticationError, /Failed to authenticate with OpenBao/)
+      end
+    end
+
+    context 'when API error occurs during authentication' do
+      before do
+        webmock_enable!(allow_localhost: false)
+
+        # Make the JWT login fail with API error response
+        stub_request(
+          :post,
+          %r{#{described_class.configuration.host}/v1/auth/#{described_class::GITLAB_JWT_AUTH_PATH}/login})
+          .to_return(
+            status: 400,
+            headers: { 'Content-Type' => 'application/json' },
+            body: { errors: ["Invalid JWT"] }.to_json
+          )
+      end
+
+      it 'raises AuthenticationError wrapping the API error' do
+        expect { described_class.new(jwt: jwt, role: role) }
+          .to raise_error(described_class::AuthenticationError, /Failed to authenticate with OpenBao/)
+      end
+    end
+
+    context 'when authentication succeeds but returns no token' do
+      before do
+        webmock_enable!(allow_localhost: false)
+
+        # Return a response with empty auth object
+        stub_request(
+          :post,
+          %r{#{described_class.configuration.host}/v1/auth/#{described_class::GITLAB_JWT_AUTH_PATH}/login})
+          .to_return(
+            status: 200,
+            headers: { 'Content-Type' => 'application/json' },
+            body: { auth: {} }.to_json
+          )
+      end
+
+      it 'raises AuthenticationError with no token message' do
+        expect { described_class.new(jwt: jwt, role: role) }
+          .to raise_error(described_class::AuthenticationError, /No token received from OpenBao/)
+      end
     end
   end
 
@@ -56,6 +159,34 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
 
       expect_jwt_auth_engine_to_be_mounted(mount_path)
     end
+
+    context 'when the engine already exists' do
+      before do
+        client.enable_auth_engine(mount_path, engine)
+      end
+
+      it 'raises an error by default' do
+        expect { client.enable_auth_engine(mount_path, engine) }
+          .to raise_error(described_class::ApiError)
+      end
+
+      it 'returns true when allow_existing is true' do
+        expect(client.enable_auth_engine(mount_path, engine, allow_existing: true)).to be true
+      end
+    end
+  end
+
+  describe '#disable_auth_engine' do
+    let(:mount_path) { 'auth/testing/pipeline_jwt' }
+    let(:engine) { 'jwt' }
+
+    it 'disables the auth engine' do
+      client.enable_auth_engine(mount_path, engine)
+      expect_jwt_auth_engine_to_be_mounted(mount_path)
+
+      client.disable_auth_engine(mount_path)
+      expect_jwt_auth_engine_not_to_be_mounted(mount_path)
+    end
   end
 
   describe '#disable_secrets_engine' do
@@ -69,6 +200,72 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
       client.disable_secrets_engine(mount_path)
 
       expect_kv_secret_engine_not_to_be_mounted(mount_path)
+    end
+  end
+
+  describe '#configure_jwt' do
+    let(:mount_path) { 'auth/testing/pipeline_jwt' }
+    let(:server_url) { 'https://gitlab.example.com' }
+    let(:jwk_signer) { Gitlab::CurrentSettings.ci_jwt_signing_key }
+
+    before do
+      client.enable_auth_engine(mount_path, 'jwt')
+    end
+
+    it 'configures the JWT auth method' do
+      expect { client.configure_jwt(mount_path, server_url, jwk_signer) }.not_to raise_error
+
+      # Verify we can create a role on the configured JWT backend
+      expect do
+        client.update_jwt_role(
+          mount_path,
+          'test-role',
+          user_claim: 'project_id',
+          role_type: 'jwt',
+          bound_claims: { project_id: 123 },
+          token_policies: ['test-policy']
+        )
+      end.not_to raise_error
+    end
+  end
+
+  describe '#update_jwt_role and #read_jwt_role' do
+    let(:mount_path) { 'auth/testing/pipeline_jwt' }
+    let(:role_name) { 'test-role' }
+    let(:server_url) { 'https://gitlab.example.com' }
+    let(:jwk_signer) { Gitlab::CurrentSettings.ci_jwt_signing_key }
+
+    let(:role_data) do
+      {
+        role_type: 'jwt',
+        user_claim: 'project_id', # Required field
+        bound_claims: { project_id: 123 },
+        token_policies: ['test-policy']
+      }
+    end
+
+    before do
+      client.enable_auth_engine(mount_path, 'jwt')
+      client.configure_jwt(mount_path, server_url, jwk_signer)
+    end
+
+    it 'creates and reads a JWT role' do
+      # Create the role
+      client.update_jwt_role(mount_path, role_name, **role_data)
+
+      # Read the role back
+      role = client.read_jwt_role(mount_path, role_name)
+
+      # Verify the role data
+      expect(role).to be_present
+      expect(role['bound_claims']['project_id']).to eq(123)
+      expect(role['token_policies']).to include('test-policy')
+      expect(role['user_claim']).to eq('project_id')
+    end
+
+    it 'raises an error when reading a non-existent role' do
+      expect { client.read_jwt_role(mount_path, 'non-existent-role') }
+        .to raise_error(SecretsManagement::SecretsManagerClient::ApiError)
     end
   end
 
@@ -229,6 +426,16 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
         end
 
         it_behaves_like 'making an invalid API request'
+      end
+
+      context 'without custom metadata' do
+        subject(:call_api) { client.update_kv_secret(mount_path, secret_path, value) }
+
+        it 'creates the secret without custom metadata' do
+          call_api
+
+          expect_kv_secret_to_have_value(mount_path, secret_path, value)
+        end
       end
     end
 

@@ -20,15 +20,16 @@ module Resolvers
 
       def resolve(project_path:, name:)
         project = authorized_find!(project_path: project_path)
+
         ensure_active_secrets_manager!(project)
 
-        result = ::SecretsManagement::ProjectSecret.from_name(project, name)
+        result = ::SecretsManagement::ReadProjectSecretService.new(project, current_user).execute(name)
 
-        # Since an object is not necessarily created, we accept string errors
-        # here.
-        raise_resource_not_available_error!("Project secret does not exist.") unless result
-
-        result
+        if result.success?
+          result.payload[:project_secret]
+        else
+          raise_resource_not_available_error!(result.message)
+        end
       end
 
       private
