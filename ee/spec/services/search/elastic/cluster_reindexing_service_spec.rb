@@ -218,15 +218,17 @@ RSpec.describe ::Search::Elastic::ClusterReindexingService, :elastic, :clean_git
           'response' => { 'total' => 20, 'created' => 20, 'updated' => 0, 'deleted' => 0 }
         }
       )
-      allow(helper).to receive(:refresh_index).and_return(true)
       allow(helper).to receive(:reindex).and_return('task_1', 'task_2', 'task_3', 'task_4', 'task_5', 'task_6')
     end
 
     context 'when errors are raised' do
       context 'when documents count does not match' do
         before do
-          allow(helper).to receive(:documents_count)
-            .with(index_name: anything).and_return(subtask.reload.documents_count * 2)
+          allow(helper).to receive(:documents_count).with(index_name: subtask.index_name_from, refresh: anything)
+            .and_return(subtask.reload.documents_count)
+          allow(helper).to receive(:documents_count).with(index_name: subtask.index_name_to, refresh: anything)
+            .and_return(subtask.reload.documents_count * 2)
+          allow(helper).to receive(:get_settings).with(index_name: subtask.index_name_from)
         end
 
         it 'changes task state to failure' do
@@ -398,7 +400,9 @@ RSpec.describe ::Search::Elastic::ClusterReindexingService, :elastic, :clean_git
 
       with_them do
         before do
-          allow(helper).to receive(:documents_count).with(index_name: subtask.index_name_to)
+          allow(helper).to receive(:documents_count).with(index_name: subtask.index_name_from, refresh: anything)
+            .and_return(subtask.reload.documents_count)
+          allow(helper).to receive(:documents_count).with(index_name: subtask.index_name_to, refresh: anything)
             .and_return(subtask.reload.documents_count)
           allow(helper).to receive(:get_settings).with(index_name: subtask.index_name_from)
             .and_return(current_settings.with_indifferent_access)
