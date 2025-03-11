@@ -68,17 +68,13 @@ describe('FeatureSettingsTable', () => {
       await waitForPromises();
     });
 
-    it('renders Code Suggestions sub-features', () => {
+    it('renders feature settings table data', () => {
       const rows = findTableRows().wrappers.map((h) => h.text());
 
       expect(rows.filter((r) => r.includes('Code Generation')).length).toEqual(1);
       expect(rows.filter((r) => r.includes('Code Completion')).length).toEqual(1);
-    });
-
-    it('renders Duo Chat', () => {
-      const rows = findTableRows().wrappers.map((h) => h.text());
-
-      expect(rows.filter((r) => r.includes('Duo Chat')).length).toEqual(1);
+      expect(rows.filter((r) => r.includes('General Chat')).length).toEqual(1);
+      expect(rows.filter((r) => r.includes('Explain Code')).length).toEqual(1);
     });
   });
 
