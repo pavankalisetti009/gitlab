@@ -4,8 +4,9 @@ require 'spec_helper'
 
 RSpec.describe SecretsManagement::InitializeProjectSecretsManagerService, feature_category: :secrets_management do
   let_it_be(:project) { create(:project) }
+  let_it_be(:user) { create(:user) }
 
-  let(:service) { described_class.new(project) }
+  let(:service) { described_class.new(project, user) }
 
   subject(:result) { service.execute }
 
@@ -23,7 +24,7 @@ RSpec.describe SecretsManagement::InitializeProjectSecretsManagerService, featur
       expect(secrets_manager).to be_present
       expect(secrets_manager).to be_provisioning
 
-      expect(provision_worker_spy).to have_received(:perform_async).with(secrets_manager.id)
+      expect(provision_worker_spy).to have_received(:perform_async).with(user.id, secrets_manager.id)
     end
 
     context 'when there is an existing secrets manager record for the project' do

@@ -6,10 +6,7 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, feature_category: :se
   include GraphqlHelpers
 
   before do
-    rsa_key = OpenSSL::PKey::RSA.generate(3072).to_s
-    stub_application_setting(ci_jwt_signing_key: rsa_key)
-
-    provision_project_secrets_manager(secrets_manager)
+    provision_project_secrets_manager(secrets_manager, current_user)
   end
 
   let_it_be_with_reload(:project) { create(:project) }
@@ -43,6 +40,7 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, feature_category: :se
 
   let!(:secret_1) do
     create_project_secret(
+      user: current_user,
       project: project,
       name: 'MY_SECRET_1',
       description: 'test description 1',
@@ -54,6 +52,7 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, feature_category: :se
 
   let!(:secret_2) do
     create_project_secret(
+      user: current_user,
       project: project,
       name: 'MY_SECRET_2',
       description: 'test description 2',

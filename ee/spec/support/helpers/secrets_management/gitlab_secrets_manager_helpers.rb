@@ -30,8 +30,8 @@ module SecretsManagement
       end
     end
 
-    def provision_project_secrets_manager(secrets_manager)
-      ProvisionProjectSecretsManagerService.new(secrets_manager).execute
+    def provision_project_secrets_manager(secrets_manager, user)
+      ProvisionProjectSecretsManagerService.new(secrets_manager, user).execute
     end
 
     def expect_kv_secret_engine_to_be_mounted(path)
@@ -53,8 +53,11 @@ module SecretsManagement
       expect(stored_data["custom_metadata"]).to include(metadata)
     end
 
-    def expect_project_secret_not_to_exist(project, name)
-      expect(ProjectSecret.from_name(project, name)).to be_nil
+    def expect_project_secret_not_to_exist(project, name, user = nil)
+      user ||= create(:user)
+      result = ReadProjectSecretService.new(project, user).execute(name)
+      expect(result).to be_error
+      expect(result.message).to eq('Project secret does not exist.')
     end
 
     def expect_kv_secret_not_to_exist(mount_path, path)
@@ -66,15 +69,29 @@ module SecretsManagement
       expect { secrets_manager_client.read_auth_engine_configuration(path) }.not_to raise_error
     end
 
-    def secrets_manager_client
-      TestClient.new
+    def expect_jwt_auth_engine_not_to_be_mounted(path)
+      expect { secrets_manager_client.read_auth_engine_configuration(path) }
+        .to raise_error(SecretsManagement::SecretsManagerClient::ApiError)
     end
 
-    def create_project_secret(project:, name:, branch:, environment:, value:, description: nil)
-      project_secret = ProjectSecret.new(name: name, description: description, project: project,
-        branch: branch, environment: environment)
+    def secrets_manager_client
+      jwt = TestJwt.new.encoded
 
-      unless project_secret.save(value)
+      TestClient.new(jwt: jwt)
+    end
+
+    def create_project_secret(user:, project:, name:, branch:, environment:, value:, description: nil)
+      result = CreateProjectSecretService.new(project, user).execute(
+        name: name,
+        value: value,
+        description: description,
+        branch: branch,
+        environment: environment
+      )
+
+      project_secret = result.payload[:project_secret]
+
+      if project_secret.errors.any?
         raise "project secret creation failed with errors: #{project_secret.errors.full_messages.to_sentence}"
       end
 

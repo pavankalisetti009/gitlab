@@ -7,29 +7,27 @@ RSpec.describe SecretsManagement::ProvisionProjectSecretsManagerWorker, :gitlab_
 
   describe '#perform' do
     let_it_be(:project) { create(:project) }
+    let_it_be(:user) { create(:user) }
 
     let!(:secrets_manager) { create(:project_secrets_manager, project: project) }
-
-    before do
-      rsa_key = OpenSSL::PKey::RSA.generate(3072).to_s
-      stub_application_setting(ci_jwt_signing_key: rsa_key)
-    end
 
     it 'executes a service' do
       expect(SecretsManagement::ProjectSecretsManager)
         .to receive(:find_by_id).with(secrets_manager.id).and_return(secrets_manager)
 
+      expect(User).to receive(:find_by_id).with(user.id).and_return(user)
+
       service = instance_double(SecretsManagement::ProvisionProjectSecretsManagerService)
       expect(SecretsManagement::ProvisionProjectSecretsManagerService)
-        .to receive(:new).with(secrets_manager).and_return(service)
+        .to receive(:new).with(secrets_manager, user).and_return(service)
 
       expect(service).to receive(:execute)
 
-      worker.perform(secrets_manager.id)
+      worker.perform(user.id, secrets_manager.id)
     end
 
     it_behaves_like 'an idempotent worker' do
-      let(:job_args) { secrets_manager.id }
+      let(:job_args) { [user.id, secrets_manager.id] }
 
       it 'enables the secret engine for the project' do
         expect { perform_idempotent_work }.not_to raise_error

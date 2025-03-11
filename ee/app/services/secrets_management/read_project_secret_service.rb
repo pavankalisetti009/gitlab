@@ -1,0 +1,44 @@
+# frozen_string_literal: true
+
+module SecretsManagement
+  class ReadProjectSecretService < BaseService
+    include SecretsManagerClientHelpers
+
+    def execute(name)
+      return inactive_response unless project.secrets_manager&.active?
+
+      secret_metadata = secrets_manager_client.read_secret_metadata(
+        project.secrets_manager.ci_secrets_mount_path,
+        project.secrets_manager.ci_data_path(name)
+      )
+
+      if secret_metadata
+        build_success_response(name, secret_metadata)
+      else
+        not_found_response
+      end
+    end
+
+    private
+
+    def build_success_response(name, secret_metadata)
+      project_secret = ProjectSecret.new(
+        name: name,
+        project: project,
+        description: secret_metadata["custom_metadata"]["description"],
+        environment: secret_metadata["custom_metadata"]["environment"],
+        branch: secret_metadata["custom_metadata"]["branch"]
+      )
+
+      ServiceResponse.success(payload: { project_secret: project_secret })
+    end
+
+    def inactive_response
+      ServiceResponse.error(message: 'Project secrets manager is not active')
+    end
+
+    def not_found_response
+      ServiceResponse.error(message: 'Project secret does not exist.', reason: :not_found)
+    end
+  end
+end
