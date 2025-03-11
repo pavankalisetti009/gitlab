@@ -1,9 +1,0 @@
----
-name: group_dependency_list_csv_export
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/435843
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/183097
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/523239
-milestone: '17.10'
-group: group::security insights
-type: gitlab_com_derisk
-default_enabled: false

@@ -30,12 +30,6 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
             expect(response).to have_gitlab_http_status(:ok)
           end
 
-          it 'pushes group dependency list CSV export feature flag' do
-            subject
-
-            expect(response.body).to have_pushed_frontend_feature_flags(groupDependencyListCsvExport: true)
-          end
-
           it 'returns the correct template' do
             subject
 

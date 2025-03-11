@@ -24,11 +24,8 @@ describe('DependencyExportDropdown component', () => {
 
     wrapper = shallowMountExtended(DependencyExportDropdown, {
       store,
+      provide,
       propsData: props,
-      provide: {
-        glFeatures: { groupDependencyListCsvExport: true },
-        ...provide,
-      },
     });
   };
 
@@ -103,27 +100,6 @@ describe('DependencyExportDropdown component', () => {
 
     itHasCorrectLoadingLogic(() => findDisclosure());
     itShowsDisclosureWithItems([jsonArrayItem, csvItem]);
-
-    describe('when group CSV export feature flag is disabled', () => {
-      beforeEach(() => {
-        factory({
-          props: { container: NAMESPACE_GROUP },
-          provide: { glFeatures: { groupDependencyListCsvExport: false } },
-        });
-      });
-
-      it('shows button that dispatches JSON export', () => {
-        const button = findButton();
-
-        expect(button.exists()).toBe(true);
-
-        button.vm.$emit('click');
-
-        expect(store.dispatch).toHaveBeenCalledWith(`${allNamespace}/fetchExport`, {
-          export_type: EXPORT_FORMAT_JSON_ARRAY,
-        });
-      });
-    });
   });
 
   describe('when container is an organization', () => {
