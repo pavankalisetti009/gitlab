@@ -22650,6 +22650,12 @@ msgstr ""
 msgid "Enable Spam Check via external API endpoint"
 msgstr ""
 
+msgid "Enable VS Code Extension Marketplace and configure the extensions registry for Web IDE and Workspaces."
+msgstr ""
+
+msgid "Enable VS Code Extension Marketplace and configure the extensions registry for Web IDE."
+msgstr ""
+
 msgid "Enable What's new: All tiers"
 msgstr ""
 
@@ -24424,6 +24430,18 @@ msgid "Export this project with all its related data in order to move it to a ne
 msgstr ""
 
 msgid "Exported requirements"
+msgstr ""
+
+msgid "ExtensionMarketplace|An unknown error occurred. Please try again."
+msgstr ""
+
+msgid "ExtensionMarketplace|Extension marketplace settings updated."
+msgstr ""
+
+msgid "ExtensionMarketplace|Failed to update extension marketplace settings."
+msgstr ""
+
+msgid "ExtensionMarketplace|Failed to update extension marketplace settings. %{message}"
 msgstr ""
 
 msgid "External URL"
@@ -63864,6 +63882,9 @@ msgid "Using HTML script"
 msgstr ""
 
 msgid "Using required encryption strategy when encrypted field is missing!"
+msgstr ""
+
+msgid "VS Code Extension Marketplace"
 msgstr ""
 
 msgid "Validate"
