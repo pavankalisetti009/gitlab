@@ -176,7 +176,7 @@ retrieve-frontend-fixtures:
         exit 0
       fi
     - !reference [.base-script, script]
-    - rspec_parallelized_job
+    - run_with_custom_exit_code rspec_parallelized_job
   artifacts:
     name: frontend-fixtures
     expire_in: 31d
@@ -236,7 +236,7 @@ graphql-schema-dump:
   stage: fixtures
   needs: []
   script:
-    - bundle exec rake gitlab:graphql:schema:dump
+    - run_with_custom_exit_code bundle exec rake gitlab:graphql:schema:dump
   artifacts:
     expire_in: 30 days
     name: graphql-schema
@@ -256,7 +256,7 @@ upload-graphql-schema-dump:
     - .with-graphql-schema-dump-needs
   script:
     - source scripts/gitlab_component_helpers.sh
-    - create_and_upload_graphql_schema_package
+    - run_with_custom_exit_code create_and_upload_graphql_schema_package
 
 
 .frontend-test-base:
