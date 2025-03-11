@@ -669,58 +669,30 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
           expect(approval_rule.severity_levels).to be_empty
         end
 
-        it 'calls SoftwareLicensePolicies::BulkCreateScanResultPolicyService' do
-          expect(SoftwareLicensePolicies::BulkCreateScanResultPolicyService).to receive(:new).with(
+        it 'calls SoftwareLicensePolicies::CreateService' do
+          expect(SoftwareLicensePolicies::CreateService).to receive(:new).with(
             project,
-            [
-              {
-                name: 'BSD',
-                approval_status: 'denied',
-                scan_result_policy_read: instance_of(Security::ScanResultPolicyRead),
-                approval_policy_rule_id: approval_policy_rule.id
-              },
-              {
-                name: 'MIT',
-                approval_status: 'denied',
-                scan_result_policy_read: instance_of(Security::ScanResultPolicyRead),
-                approval_policy_rule_id: approval_policy_rule.id
-              }
-            ]
+            anything,
+            {
+              name: 'BSD',
+              approval_status: 'denied',
+              scan_result_policy_read: instance_of(Security::ScanResultPolicyRead),
+              approval_policy_rule_id: approval_policy_rule.id
+            }
+          ).and_call_original
+
+          expect(SoftwareLicensePolicies::CreateService).to receive(:new).with(
+            project,
+            anything,
+            {
+              name: 'MIT',
+              approval_status: 'denied',
+              scan_result_policy_read: instance_of(Security::ScanResultPolicyRead),
+              approval_policy_rule_id: approval_policy_rule.id
+            }
           ).and_call_original
 
           subject
-        end
-
-        context 'with bulk_create_scan_result_policies feature flag disabled' do
-          before do
-            stub_feature_flags(bulk_create_scan_result_policies: false)
-          end
-
-          it 'calls SoftwareLicensePolicies::CreateService' do
-            expect(SoftwareLicensePolicies::CreateService).to receive(:new).with(
-              project,
-              anything,
-              {
-                name: 'BSD',
-                approval_status: 'denied',
-                scan_result_policy_read: instance_of(Security::ScanResultPolicyRead),
-                approval_policy_rule_id: approval_policy_rule.id
-              }
-            ).and_call_original
-
-            expect(SoftwareLicensePolicies::CreateService).to receive(:new).with(
-              project,
-              anything,
-              {
-                name: 'MIT',
-                approval_status: 'denied',
-                scan_result_policy_read: instance_of(Security::ScanResultPolicyRead),
-                approval_policy_rule_id: approval_policy_rule.id
-              }
-            ).and_call_original
-
-            subject
-          end
         end
       end
 
@@ -739,22 +711,10 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
           expect(scan_result_policy_read.licenses).to eq(policy_licenses.with_indifferent_access)
         end
 
-        it 'does not calls SoftwareLicensePolicies::BulkCreateScanResultPolicyService' do
-          expect(SoftwareLicensePolicies::BulkCreateScanResultPolicyService).not_to receive(:new)
+        it 'does not calls SoftwareLicensePolicies::CreateService' do
+          expect(SoftwareLicensePolicies::CreateService).not_to receive(:new)
 
           subject
-        end
-
-        context 'with bulk_create_scan_result_policies feature flag disabled' do
-          before do
-            stub_feature_flags(bulk_create_scan_result_policies: false)
-          end
-
-          it 'does not calls SoftwareLicensePolicies::CreateService' do
-            expect(SoftwareLicensePolicies::CreateService).not_to receive(:new)
-
-            subject
-          end
         end
       end
     end
