@@ -27565,6 +27565,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="groupprojectsarchivedonly"></a>`archivedOnly` | [`Boolean`](#boolean) | Return only archived projects. |
 | <a id="groupprojectscomplianceframeworkfilters"></a>`complianceFrameworkFilters` | [`ComplianceFrameworkFilters`](#complianceframeworkfilters) | Filters applied when selecting a compliance framework. |
 | <a id="groupprojectshascodecoverage"></a>`hasCodeCoverage` | [`Boolean`](#boolean) | Returns only the projects which have code coverage. |
 | <a id="groupprojectshasvulnerabilities"></a>`hasVulnerabilities` | [`Boolean`](#boolean) | Returns only the projects which have vulnerabilities. |
@@ -28219,6 +28220,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="groupdoraprojectsarchivedonly"></a>`archivedOnly` | [`Boolean`](#boolean) | Return only archived projects. |
 | <a id="groupdoraprojectscomplianceframeworkfilters"></a>`complianceFrameworkFilters` | [`ComplianceFrameworkFilters`](#complianceframeworkfilters) | Filters applied when selecting a compliance framework. |
 | <a id="groupdoraprojectsenddate"></a>`endDate` | [`Date!`](#date) | Date range to end DORA lookup at. |
 | <a id="groupdoraprojectshascodecoverage"></a>`hasCodeCoverage` | [`Boolean`](#boolean) | Returns only the projects which have code coverage. |
@@ -31965,6 +31967,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="namespaceprojectsarchivedonly"></a>`archivedOnly` | [`Boolean`](#boolean) | Return only archived projects. |
 | <a id="namespaceprojectscomplianceframeworkfilters"></a>`complianceFrameworkFilters` | [`ComplianceFrameworkFilters`](#complianceframeworkfilters) | Filters applied when selecting a compliance framework. |
 | <a id="namespaceprojectshascodecoverage"></a>`hasCodeCoverage` | [`Boolean`](#boolean) | Returns only the projects which have code coverage. |
 | <a id="namespaceprojectshasvulnerabilities"></a>`hasVulnerabilities` | [`Boolean`](#boolean) | Returns only the projects which have vulnerabilities. |
