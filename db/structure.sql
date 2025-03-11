@@ -3460,6 +3460,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_cfbec3f07e2b() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."project_id"
+  FROM "deployments"
+  WHERE "deployments"."id" = NEW."deployment_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_d4487a75bd44() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -12981,7 +12997,8 @@ CREATE TABLE deployment_clusters (
 CREATE TABLE deployment_merge_requests (
     deployment_id bigint NOT NULL,
     merge_request_id bigint NOT NULL,
-    environment_id bigint
+    environment_id bigint,
+    project_id bigint
 );
 
 CREATE TABLE deployments (
@@ -39020,6 +39037,8 @@ CREATE TRIGGER trigger_cbecfadbc3e8 BEFORE INSERT ON project_security_settings F
 CREATE TRIGGER trigger_cd50823537a3 BEFORE INSERT OR UPDATE ON issuable_slas FOR EACH ROW EXECUTE FUNCTION trigger_cd50823537a3();
 
 CREATE TRIGGER trigger_cf646a118cbb BEFORE INSERT OR UPDATE ON milestone_releases FOR EACH ROW EXECUTE FUNCTION trigger_cf646a118cbb();
+
+CREATE TRIGGER trigger_cfbec3f07e2b BEFORE INSERT OR UPDATE ON deployment_merge_requests FOR EACH ROW EXECUTE FUNCTION trigger_cfbec3f07e2b();
 
 CREATE TRIGGER trigger_d4487a75bd44 BEFORE INSERT OR UPDATE ON terraform_state_versions FOR EACH ROW EXECUTE FUNCTION trigger_d4487a75bd44();
 
