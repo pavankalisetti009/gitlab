@@ -20554,6 +20554,10 @@ CREATE SEQUENCE projects_visits_id_seq
 
 ALTER SEQUENCE projects_visits_id_seq OWNED BY projects_visits.id;
 
+CREATE TABLE projects_with_pipeline_variables (
+    project_id bigint NOT NULL
+);
+
 CREATE TABLE protected_branch_merge_access_levels (
     id bigint NOT NULL,
     protected_branch_id bigint NOT NULL,
@@ -29183,6 +29187,9 @@ ALTER TABLE ONLY projects_sync_events
 
 ALTER TABLE ONLY projects_visits
     ADD CONSTRAINT projects_visits_pkey PRIMARY KEY (id, visited_at);
+
+ALTER TABLE ONLY projects_with_pipeline_variables
+    ADD CONSTRAINT projects_with_pipeline_variables_pkey PRIMARY KEY (project_id);
 
 ALTER TABLE ONLY protected_branch_merge_access_levels
     ADD CONSTRAINT protected_branch_merge_access_levels_pkey PRIMARY KEY (id);
@@ -43090,6 +43097,9 @@ ALTER TABLE ONLY audit_events_streaming_event_type_filters
 
 ALTER TABLE ONLY description_versions
     ADD CONSTRAINT fk_rails_e8f4caf9c7 FOREIGN KEY (epic_id) REFERENCES epics(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY projects_with_pipeline_variables
+    ADD CONSTRAINT fk_rails_e9080b2336 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY merge_request_blocks
     ADD CONSTRAINT fk_rails_e9387863bc FOREIGN KEY (blocking_merge_request_id) REFERENCES merge_requests(id) ON DELETE CASCADE;
