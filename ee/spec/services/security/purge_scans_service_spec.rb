@@ -4,15 +4,49 @@ require 'spec_helper'
 
 RSpec.describe Security::PurgeScansService, feature_category: :vulnerability_management do
   describe 'class interface' do
-    describe '.purge_stale_records' do
-      let(:stale_scan) { create(:security_scan, created_at: 91.days.ago) }
-      let(:fresh_scan) { create(:security_scan) }
+    describe '.purge_stale_records', :clean_gitlab_redis_shared_state do
+      let!(:stale_scan) { create(:security_scan, created_at: 92.days.ago) }
+      let(:stale_scan_tuple_cache) do
+        { "created_at" => stale_scan.created_at.strftime("%Y-%m-%d %H:%M:%S.%6N"), "id" => stale_scan.id.to_s }
+      end
+
+      let!(:fresh_scan) { create(:security_scan) }
 
       subject(:purge_stale_records) { described_class.purge_stale_records }
 
       it 'instantiates the service class with stale scans' do
         expect { purge_stale_records }.to change { stale_scan.reload.status }.to("purged")
                                       .and not_change { fresh_scan.reload.status }
+      end
+
+      describe 'dead tuple optimisation' do
+        def cached_tuple
+          Gitlab::Redis::SharedState.with do |redis|
+            redis.hgetall(described_class::LAST_PURGED_SCAN_TUPLE)
+          end
+        end
+
+        it 'caches a previous purged tuple' do
+          expect { purge_stale_records }.to change {
+            cached_tuple
+          }.from({}).to(stale_scan_tuple_cache.merge("ex" => described_class::LAST_PURGED_SCAN_TUPLE_TTL.to_s))
+        end
+
+        context 'when a previous purged tuple is cached' do
+          let!(:second_stale_scan) { create(:security_scan, created_at: 91.days.ago) }
+
+          before do
+            Gitlab::Redis::SharedState.with do |redis|
+              redis.hset(described_class::LAST_PURGED_SCAN_TUPLE, stale_scan_tuple_cache,
+                ex: described_class::LAST_PURGED_SCAN_TUPLE_TTL)
+            end
+          end
+
+          it 'uses the cached tuple to scope the query and skip already checked values' do
+            expect { purge_stale_records }.to change { second_stale_scan.reload.status }.to("purged")
+                                          .and not_change { stale_scan.reload.status }
+          end
+        end
       end
     end
 
