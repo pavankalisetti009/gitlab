@@ -24088,6 +24088,7 @@ CREATE TABLE vulnerability_state_transitions (
     comment text,
     dismissal_reason smallint,
     project_id bigint,
+    CONSTRAINT check_b6338547d4 CHECK ((project_id IS NOT NULL)),
     CONSTRAINT check_fe2eb6a0f3 CHECK ((char_length(comment) <= 50000))
 );
 
