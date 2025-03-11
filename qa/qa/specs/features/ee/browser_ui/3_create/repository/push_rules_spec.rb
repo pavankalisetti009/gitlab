@@ -32,30 +32,40 @@ module QA
         end
       end
 
-      context 'when using non signed commits' do
+      context 'when using non signed commits',
+        feature_flag: { name: :push_rule_file_size_limit } do
         it 'allows an unrestricted push',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347790' do
           expect_no_error_on_push(file: standard_file)
         end
 
-        it 'restricts files by name and size', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347784',
+        it 'restricts files by name and size',
+          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347784',
           quarantine: {
             only: { job: 'ee-qa-browser_ui-3_create' },
             type: :investigating,
             issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/455927'
           } do
-          # Note: The file size limits in this test should be lower than the limits in
-          # browser_ui/3_create/repository/push_over_http_file_size_spec to prevent
-          # the limit set in that test from triggering in this test (which can happen
-          # on Staging where the tests are run in parallel).
-          # See: https://gitlab.com/gitlab-org/gitlab/-/issues/218620#note_361634705
+          # # Note: The file size limits in this test should be lower than the limits in
+          # # browser_ui/3_create/repository/push_over_http_file_size_spec to prevent
+          # # the limit set in that test from triggering in this test (which can happen
+          # # on Staging where the tests are run in parallel).
+          # # See: https://gitlab.com/gitlab-org/gitlab/-/issues/218620#note_361634705
+
+          ff_enabled = Runtime::Feature.enabled?(:push_rule_file_size_limit)
+
+          expected_error = if ff_enabled
+                             'You are attempting to check in one or more blobs which exceed the 1MiB limit'
+                           else
+                             'File "file" is larger than the allowed size of 1 MiB'
+                           end
 
           expect_error_on_push(
             file: {
               name: 'file',
               content: SecureRandom.hex(1000000)
             },
-            error: 'File "file" is larger than the allowed size of 1 MiB')
+            error: expected_error)
           expect_error_on_push(
             file: {
               name: file_name_limitation,
