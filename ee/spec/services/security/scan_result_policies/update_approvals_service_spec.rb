@@ -389,6 +389,25 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
         let(:expected_context) { { 'pipeline_ids' => [pipeline.id], 'target_pipeline_ids' => [] } }
       end
 
+      context 'when there are no newly detected findings' do
+        let_it_be_with_refind(:pipeline) do
+          create(:ee_ci_pipeline, :with_dependency_scanning_report,
+            project: project,
+            ref: merge_request.source_branch,
+            sha: merge_request.diff_head_sha)
+        end
+
+        before do
+          create(:security_scan, :succeeded,
+            project: project,
+            pipeline: pipeline,
+            scan_type: 'dependency_scanning'
+          )
+        end
+
+        it_behaves_like 'sets approvals_required to 0'
+      end
+
       context 'with missing scan' do
         before do
           report_approver_rule.update!(scanners: %i[container_scanning])
