@@ -54253,9 +54253,6 @@ msgstr ""
 msgid "Select"
 msgstr ""
 
-msgid "Select %{name}"
-msgstr ""
-
 msgid "Select Git revision"
 msgstr ""
 
@@ -66099,6 +66096,15 @@ msgid "Work item type %{work_item_type_name} can only have a maximum of %{limit}
 msgstr ""
 
 msgid "Work items"
+msgstr ""
+
+msgid "WorkItemCustomFields|Options could not be loaded for field: %{dropdownLabel}. Please try again."
+msgstr ""
+
+msgid "WorkItemCustomFields|Select one"
+msgstr ""
+
+msgid "WorkItemCustomFields|Select one or more"
 msgstr ""
 
 msgid "WorkItemCustomField|Add option"

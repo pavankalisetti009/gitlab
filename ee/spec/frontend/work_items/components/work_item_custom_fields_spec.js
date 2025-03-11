@@ -117,9 +117,6 @@ describe('WorkItemCustomFields', () => {
       expect(selectField.props('customField')).toMatchObject({
         customField: {
           fieldType: CUSTOM_FIELDS_TYPE_SINGLE_SELECT,
-          selectOptions: expect.arrayContaining([
-            expect.objectContaining({ id: expect.any(String), value: expect.any(String) }),
-          ]),
         },
       });
     });
@@ -129,9 +126,6 @@ describe('WorkItemCustomFields', () => {
       expect(multiSelectField.props('customField')).toMatchObject({
         customField: {
           fieldType: CUSTOM_FIELDS_TYPE_MULTI_SELECT,
-          selectOptions: expect.arrayContaining([
-            expect.objectContaining({ id: expect.any(String), value: expect.any(String) }),
-          ]),
         },
       });
     });

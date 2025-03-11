@@ -9,10 +9,6 @@ mutation workItemUpdateCustomFields($input: WorkItemUpdateInput!) {
             customField {
               id
               fieldType
-              selectOptions {
-                id
-                value
-              }
             }
             ... on WorkItemNumberFieldValue {
               value

@@ -8,6 +8,7 @@ import WorkItemSidebarDropdownWidget from '~/work_items/components/shared/work_i
 import WorkItemCustomFieldsMultiSelect from 'ee/work_items/components/work_item_custom_fields_multi_select.vue';
 import { CUSTOM_FIELDS_TYPE_MULTI_SELECT, CUSTOM_FIELDS_TYPE_NUMBER } from '~/work_items/constants';
 import updateWorkItemCustomFieldsMutation from 'ee/work_items/graphql/update_work_item_custom_fields.mutation.graphql';
+import customFieldSelectOptionsQuery from 'ee/work_items/graphql/work_item_custom_field_select_options.query.graphql';
 import { customFieldsWidgetResponseFactory } from 'jest/work_items/mock_data';
 
 describe('WorkItemCustomFieldsMultiSelect', () => {
@@ -23,20 +24,6 @@ describe('WorkItemCustomFieldsMultiSelect', () => {
       id: '1-select',
       fieldType: CUSTOM_FIELDS_TYPE_MULTI_SELECT,
       name: 'Multi select custom field label',
-      selectOptions: [
-        {
-          id: 'select-1',
-          value: 'Option 1',
-        },
-        {
-          id: 'select-2',
-          value: 'Option 2',
-        },
-        {
-          id: 'select-3',
-          value: 'Option 3',
-        },
-      ],
     },
     selectedOptions: [
       {
@@ -49,6 +36,36 @@ describe('WorkItemCustomFieldsMultiSelect', () => {
       },
     ],
   };
+
+  const querySuccessHandler = jest.fn().mockResolvedValue({
+    data: {
+      group: {
+        id: 'gid://gitlab/Group/33',
+        customField: {
+          id: '1-select',
+          selectOptions: [
+            {
+              id: 'select-1',
+              value: 'Option 1',
+              __typename: 'CustomFieldSelectOption',
+            },
+            {
+              id: 'select-2',
+              value: 'Option 2',
+              __typename: 'CustomFieldSelectOption',
+            },
+            {
+              id: 'select-3',
+              value: 'Option 3',
+              __typename: 'CustomFieldSelectOption',
+            },
+          ],
+          __typename: 'CustomField',
+        },
+        __typename: 'Group',
+      },
+    },
+  });
 
   const mutationSuccessHandler = jest.fn().mockResolvedValue({
     data: {
@@ -64,21 +81,27 @@ describe('WorkItemCustomFieldsMultiSelect', () => {
 
   const findComponent = () => wrapper.findComponent(WorkItemCustomFieldsMultiSelect);
   const findSidebarDropdownWidget = () => wrapper.findComponent(WorkItemSidebarDropdownWidget);
+  const findSelectValues = () => wrapper.findAll('[data-testid="option-text"]');
 
   const createComponent = ({
     canUpdate = true,
     workItemType = defaultWorkItemType,
     customField = defaultField,
     workItemId = defaultWorkItemId,
+    queryHandler = querySuccessHandler,
     mutationHandler = mutationSuccessHandler,
   } = {}) => {
     wrapper = shallowMount(WorkItemCustomFieldsMultiSelect, {
-      apolloProvider: createMockApollo([[updateWorkItemCustomFieldsMutation, mutationHandler]]),
+      apolloProvider: createMockApollo([
+        [customFieldSelectOptionsQuery, queryHandler],
+        [updateWorkItemCustomFieldsMutation, mutationHandler],
+      ]),
       propsData: {
         canUpdate,
         customField,
         workItemType,
         workItemId,
+        fullPath: 'flightjs/FlightJs',
       },
     });
   };
@@ -105,12 +128,16 @@ describe('WorkItemCustomFieldsMultiSelect', () => {
     it('does not render if custom field type is incorrect', async () => {
       createComponent({
         customField: {
-          id: '1-number',
-          fieldType: CUSTOM_FIELDS_TYPE_NUMBER,
-          name: 'Number custom field label',
-          selectOptions: null,
+          customField: {
+            id: '1-number',
+            fieldType: CUSTOM_FIELDS_TYPE_NUMBER,
+            name: 'Number custom field label',
+          },
+          selectedOptions: {
+            id: 'number',
+            value: 3,
+          },
         },
-        value: 5,
       });
 
       await nextTick();
@@ -136,22 +163,8 @@ describe('WorkItemCustomFieldsMultiSelect', () => {
             id: '1-select',
             fieldType: CUSTOM_FIELDS_TYPE_MULTI_SELECT,
             name: 'Multi select custom field label',
-            selectOptions: [
-              {
-                id: 'select-1',
-                value: 'Option 1',
-              },
-              {
-                id: 'select-2',
-                value: 'Option 2',
-              },
-              {
-                id: 'select-3',
-                value: 'Option 3',
-              },
-            ],
           },
-          value: null,
+          selectedOptions: null,
         },
       });
 
@@ -165,84 +178,40 @@ describe('WorkItemCustomFieldsMultiSelect', () => {
             id: '1-select',
             fieldType: CUSTOM_FIELDS_TYPE_MULTI_SELECT,
             name: 'Multi select custom field label',
-            selectOptions: [
-              {
-                id: 'select-1',
-                value: 'Option 1',
-              },
-              {
-                id: 'select-2',
-                value: 'Option 2',
-              },
-              {
-                id: 'select-3',
-                value: 'Option 3',
-              },
-            ],
           },
-          value: 'Sample text',
+          selectedOptions: 'Sample text',
         },
       });
 
       expect(findSidebarDropdownWidget().props().toggleDropdownText).toContain('None');
     });
 
-    it('shows option selected when is set', () => {
+    it('shows option selected on render when it is defined', () => {
       createComponent();
 
-      expect(findSidebarDropdownWidget().props('listItems')).toEqual([
-        {
-          options: [
-            { text: 'Option 1', value: 'select-1' },
-            { text: 'Option 2', value: 'select-2' },
-          ],
-          text: 'Selected',
-        },
-        { options: [{ text: 'Option 3', value: 'select-3' }], text: 'All', textSrOnly: true },
-      ]);
+      expect(findSelectValues().at(0).props('text')).toBe('Option 1');
+      expect(findSelectValues().at(1).props('text')).toBe('Option 2');
     });
   });
 
   describe('Dropdown options', () => {
-    it('shows selected options on value when dropdown is open', () => {
+    it('fetches options when dropdown is shown', async () => {
       createComponent();
+
+      expect(querySuccessHandler).not.toHaveBeenCalled();
+
+      await findSidebarDropdownWidget().vm.$emit('dropdownShown');
+
+      expect(querySuccessHandler).toHaveBeenCalled();
+    });
+
+    it('shows dropdown options on list according to their state', async () => {
+      createComponent();
+
+      findSidebarDropdownWidget().vm.$emit('dropdownShown');
+      await waitForPromises();
 
       expect(findSidebarDropdownWidget().props('toggleDropdownText')).toBe('Option 1, Option 2');
-      expect(findSidebarDropdownWidget().props('itemValue')).toEqual(['select-1', 'select-2']);
-    });
-
-    it('shows "None" on value when dropdown is open and no option was selected', () => {
-      createComponent({
-        customField: {
-          customField: {
-            id: '1-select',
-            fieldType: CUSTOM_FIELDS_TYPE_MULTI_SELECT,
-            name: 'Multi select custom field label',
-            selectOptions: [
-              {
-                id: 'select-1',
-                value: 'Option 1',
-              },
-              {
-                id: 'select-2',
-                value: 'Option 2',
-              },
-              {
-                id: 'select-3',
-                value: 'Option 3',
-              },
-            ],
-          },
-          value: null,
-        },
-      });
-
-      expect(findSidebarDropdownWidget().props('toggleDropdownText')).toBe('None');
-    });
-
-    it('shows dropdown options on list according to their state', () => {
-      createComponent();
-
       expect(findSidebarDropdownWidget().props('listItems')).toEqual([
         {
           options: [
@@ -256,6 +225,44 @@ describe('WorkItemCustomFieldsMultiSelect', () => {
           text: 'All',
           textSrOnly: true,
         },
+      ]);
+    });
+
+    it('shows "None" on value when dropdown is open and no option was selected', async () => {
+      createComponent({
+        customField: {
+          customField: {
+            id: '1-select',
+            fieldType: CUSTOM_FIELDS_TYPE_MULTI_SELECT,
+            name: 'Multi select custom field label',
+          },
+          selectedOptions: null,
+        },
+      });
+
+      findSidebarDropdownWidget().vm.$emit('dropdownShown');
+      await waitForPromises();
+
+      expect(findSidebarDropdownWidget().props('toggleDropdownText')).toBe('None');
+      expect(findSidebarDropdownWidget().props('listItems')).toEqual([
+        { text: 'Option 1', value: 'select-1' },
+        { text: 'Option 2', value: 'select-2' },
+        { text: 'Option 3', value: 'select-3' },
+      ]);
+    });
+
+    it('shows alert error when fetching options fails', async () => {
+      const errorQueryHandler = jest.fn().mockRejectedValue(new Error('Network error'));
+
+      createComponent({ queryHandler: errorQueryHandler });
+
+      findSidebarDropdownWidget().vm.$emit('dropdownShown');
+      await waitForPromises();
+
+      expect(wrapper.emitted('error')).toEqual([
+        [
+          'Options could not be loaded for field: Multi select custom field label. Please try again.',
+        ],
       ]);
     });
   });
