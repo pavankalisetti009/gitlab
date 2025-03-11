@@ -318,6 +318,14 @@ export default {
       await Promise.all(createRequirementPromises);
     },
     async createRequirementAtIndex(requirement, frameworkId, index = null) {
+      const controls =
+        requirement.complianceRequirementsControls?.nodes?.map((control) => ({
+          id: control.id,
+          name: control.name,
+          controlType: control.controlType,
+          externalUrl: control.externalUrl,
+        })) || [];
+
       const { data } = await this.$apollo.mutate({
         mutation: createRequirementMutation,
         variables: {
@@ -326,7 +334,7 @@ export default {
             params: {
               name: requirement.name,
               description: requirement.description,
-              controlExpression: requirement.controlExpression,
+              complianceRequirementsControls: controls,
             },
           },
         },
@@ -382,7 +390,8 @@ export default {
             params: {
               name: requirement.name,
               description: requirement.description,
-              controlExpression: requirement.controlExpression,
+              complianceRequirementsControls:
+                requirement.complianceRequirementsControls?.nodes || [],
             },
           },
         },
@@ -460,6 +469,10 @@ export default {
     },
     async handleDeleteRequirement(index) {
       const requirementToDelete = this.requirements[index];
+      if (!requirementToDelete) {
+        return;
+      }
+
       if (this.isNewFramework) {
         this.requirements.splice(index, 1);
         this.showUndoDeleteRequirementToast(requirementToDelete, index);

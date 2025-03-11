@@ -4,6 +4,14 @@ mutation createComplianceRequirement($input: CreateComplianceRequirementInput!) 
       id
       name
       description
+      complianceRequirementsControls {
+        nodes {
+          id
+          name
+          controlType
+          externalUrl
+        }
+      }
     }
     errors
   }

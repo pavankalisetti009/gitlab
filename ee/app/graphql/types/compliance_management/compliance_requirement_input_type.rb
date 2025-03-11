@@ -14,6 +14,11 @@ module Types
         GraphQL::Types::String,
         required: false,
         description: 'New description for the compliance requirement.'
+
+      argument :compliance_requirements_controls,
+        [::Types::ComplianceManagement::ComplianceRequirementsControlInputType],
+        required: false,
+        description: 'Compliance controls of the compliance requirement.'
     end
   end
 end

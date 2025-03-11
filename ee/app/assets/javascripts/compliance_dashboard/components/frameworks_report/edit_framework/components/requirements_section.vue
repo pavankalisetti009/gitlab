@@ -5,6 +5,7 @@ import {
   GlButton,
   GlDisclosureDropdown,
   GlDisclosureDropdownItem,
+  GlBadge,
 } from '@gitlab/ui';
 
 import { s__, __ } from '~/locale';
@@ -25,6 +26,7 @@ export default {
     GlButton,
     GlDisclosureDropdown,
     GlDisclosureDropdownItem,
+    GlBadge,
   },
   props: {
     requirements: {
@@ -39,7 +41,9 @@ export default {
   apollo: {
     complianceRequirementControls: {
       query: complianceRequirementControlsQuery,
-      update: (data) => data.complianceRequirementControls.controlExpressions || [],
+      update: (data) => {
+        return data.complianceRequirementControls.controlExpressions || [];
+      },
       error(e) {
         createAlert({
           message: s__(
@@ -60,7 +64,7 @@ export default {
   computed: {
     requirementsWithControls() {
       return this.requirements.map((requirement) => {
-        const controls = this.getControls(requirement.controlExpression);
+        const controls = this.getControls(requirement.complianceRequirementsControls?.nodes || []);
         return {
           ...requirement,
           controls,
@@ -83,18 +87,27 @@ export default {
       this.$emit(requirementEvents.update, { requirement, index });
       this.requirementToEdit = null;
     },
-    getControls(controlExpression) {
-      if (!controlExpression) {
+    getControls(requirementControlNodes) {
+      if (!requirementControlNodes?.length) {
         return [];
       }
       try {
-        const parsedExpression = JSON.parse(controlExpression);
-        const conditions = parsedExpression.conditions || [];
-
-        return conditions
-          .map((condition) =>
-            this.complianceRequirementControls.find((control) => control.id === condition.id),
-          )
+        return requirementControlNodes
+          .map((control) => {
+            if (!['internal', 'external'].includes(control.controlType)) {
+              return null;
+            }
+            const matchingGitLabControl = this.complianceRequirementControls.find(
+              (gitLabControl) => gitLabControl.id === control.name,
+            );
+            return {
+              ...control,
+              displayValue:
+                control.controlType === 'external'
+                  ? `${this.$options.i18n.externalCheck} ${control.externalUrl}`
+                  : matchingGitLabControl?.name,
+            };
+          })
           .filter(Boolean);
       } catch (error) {
         return [];
@@ -136,6 +149,8 @@ export default {
     actionEdit: __('Edit'),
     actionDelete: __('Delete'),
     newRequirement: s__('ComplianceFrameworks|New requirement'),
+    externalCheck: s__('ComplianceFrameworks|Send via:'),
+    external: s__('ComplianceFrameworks|External'),
   },
   emptyRequirement,
   requirementEvents,
@@ -169,7 +184,10 @@ export default {
       <template #cell(controls)="{ item }">
         <ul v-if="item.controls.length" class="gl-m-0 gl-pl-4">
           <li v-for="control in item.controls" :key="control.id">
-            {{ control.name }}
+            {{ control.displayValue }}
+            <gl-badge v-if="control.controlType === 'external'">
+              {{ $options.i18n.external }}
+            </gl-badge>
           </li>
         </ul>
       </template>
@@ -219,7 +237,7 @@ export default {
     <requirement-modal
       v-if="requirementToEdit"
       ref="requirementModal"
-      :requirement-controls="complianceRequirementControls"
+      :gitlab-standard-controls="complianceRequirementControls"
       :requirement="requirementToEdit"
       :is-new-framework="isNewFramework"
       @[$options.requirementEvents.create]="handleCreate"
