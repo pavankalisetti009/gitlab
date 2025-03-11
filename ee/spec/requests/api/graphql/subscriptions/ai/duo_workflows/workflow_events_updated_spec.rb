@@ -18,6 +18,7 @@ RSpec.describe 'Subscriptions::Ai::DuoWorkflows::WorkflowEventsUpdated', feature
           metadata
           errors
           workflowStatus
+          executionStatus
         }
       }
     SUBSCRIPTION
@@ -76,7 +77,8 @@ RSpec.describe 'Subscriptions::Ai::DuoWorkflows::WorkflowEventsUpdated', feature
         expect(updated_workflow['checkpoint']).to eq(checkpoint.checkpoint.to_json)
         expect(updated_workflow['metadata']).to eq(checkpoint.metadata.to_json)
         expect(updated_workflow['errors']).to eq([])
-        expect(updated_workflow['workflowStatus']).to eq("CREATED")
+        expect(updated_workflow['workflowStatus']).to eq('CREATED')
+        expect(updated_workflow['executionStatus']).to eq('Created')
       end
 
       context 'when duo_features_enabled settings is turned off' do
