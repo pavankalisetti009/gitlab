@@ -68105,9 +68105,6 @@ msgstr ""
 msgid "Your Personal Access Token was revoked"
 msgstr ""
 
-msgid "Your Projects (default)"
-msgstr ""
-
 msgid "Your Projects' Activity"
 msgstr ""
 
