@@ -13829,6 +13829,20 @@ CREATE SEQUENCE evidences_id_seq
 
 ALTER SEQUENCE evidences_id_seq OWNED BY evidences.id;
 
+CREATE TABLE excluded_merge_requests (
+    id bigint NOT NULL,
+    merge_request_id bigint NOT NULL
+);
+
+CREATE SEQUENCE excluded_merge_requests_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE excluded_merge_requests_id_seq OWNED BY excluded_merge_requests.id;
+
 CREATE TABLE external_approval_rules (
     id bigint NOT NULL,
     project_id bigint NOT NULL,
@@ -25831,6 +25845,8 @@ ALTER TABLE ONLY events ALTER COLUMN id SET DEFAULT nextval('events_id_seq'::reg
 
 ALTER TABLE ONLY evidences ALTER COLUMN id SET DEFAULT nextval('evidences_id_seq'::regclass);
 
+ALTER TABLE ONLY excluded_merge_requests ALTER COLUMN id SET DEFAULT nextval('excluded_merge_requests_id_seq'::regclass);
+
 ALTER TABLE ONLY external_approval_rules ALTER COLUMN id SET DEFAULT nextval('external_approval_rules_id_seq'::regclass);
 
 ALTER TABLE ONLY external_pull_requests ALTER COLUMN id SET DEFAULT nextval('external_pull_requests_id_seq'::regclass);
@@ -28220,6 +28236,9 @@ ALTER TABLE ONLY events
 
 ALTER TABLE ONLY evidences
     ADD CONSTRAINT evidences_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY excluded_merge_requests
+    ADD CONSTRAINT excluded_merge_requests_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY external_approval_rules
     ADD CONSTRAINT external_approval_rules_pkey PRIMARY KEY (id);
@@ -33409,6 +33428,8 @@ CREATE UNIQUE INDEX index_events_on_target_type_and_target_id_and_fingerprint ON
 CREATE INDEX index_evidences_on_project_id ON evidences USING btree (project_id);
 
 CREATE INDEX index_evidences_on_release_id ON evidences USING btree (release_id);
+
+CREATE INDEX index_excluded_merge_requests_on_merge_request_id ON excluded_merge_requests USING btree (merge_request_id);
 
 CREATE INDEX index_expired_and_not_notified_personal_access_tokens ON personal_access_tokens USING btree (id, expires_at) WHERE ((impersonation = false) AND (revoked = false) AND (expire_notification_delivered = false));
 
@@ -42403,6 +42424,9 @@ ALTER TABLE ONLY work_item_progresses
 
 ALTER TABLE ONLY packages_conan_metadata
     ADD CONSTRAINT fk_rails_8c68cfec8b FOREIGN KEY (package_id) REFERENCES packages_packages(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY excluded_merge_requests
+    ADD CONSTRAINT fk_rails_8c973feffa FOREIGN KEY (merge_request_id) REFERENCES merge_requests(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY import_placeholder_memberships
     ADD CONSTRAINT fk_rails_8cdeffd260 FOREIGN KEY (source_user_id) REFERENCES import_source_users(id) ON DELETE CASCADE;
