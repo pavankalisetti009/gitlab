@@ -287,7 +287,7 @@ export default {
 
       this.trackEvent('ai_response_time', {
         property: requestId,
-        value: duration,
+        value: parseFloat(duration) || 0,
       });
 
       performance.clearMarks();
