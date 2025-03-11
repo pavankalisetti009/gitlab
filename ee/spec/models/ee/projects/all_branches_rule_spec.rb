@@ -50,4 +50,22 @@ RSpec.describe Projects::AllBranchesRule, feature_category: :source_code_managem
       expect(all_branches_rule.external_status_checks).to eq([status_check])
     end
   end
+
+  describe '#merge_request_approval_settings' do
+    it 'returns a merge request approval setting' do
+      setting = all_branches_rule.merge_request_approval_settings
+      expect(setting).to be_instance_of(Projects::AllBranchesRules::MergeRequestApprovalSetting)
+      expect(setting.project).to eq(project)
+    end
+
+    context 'when the feature flag is disabled' do
+      before do
+        stub_feature_flags(branch_rules_merge_request_approval_settings: false)
+      end
+
+      it 'returns nil' do
+        expect(all_branches_rule.merge_request_approval_settings).to be_nil
+      end
+    end
+  end
 end
