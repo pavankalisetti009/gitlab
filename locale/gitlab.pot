@@ -26066,6 +26066,9 @@ msgstr ""
 msgid "Geo|Filter by name"
 msgstr ""
 
+msgid "Geo|Geo Replication - %{node_name}"
+msgstr ""
+
 msgid "Geo|Geo Settings"
 msgstr ""
 

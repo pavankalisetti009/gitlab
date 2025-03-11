@@ -11,6 +11,10 @@ export default () => {
   const { geoReplicableEmptySvgPath, geoCurrentSiteId, geoTargetSiteId, replicableBasePath } =
     el.dataset;
 
+  const replicableTypes = convertObjectPropsToCamelCase(JSON.parse(el.dataset.replicableTypes), {
+    deep: true,
+  });
+
   const { titlePlural, graphqlFieldName, graphqlMutationRegistryClass, verificationEnabled } =
     convertObjectPropsToCamelCase(JSON.parse(el.dataset.replicatorClassData));
 
@@ -26,6 +30,7 @@ export default () => {
     }),
     provide: {
       replicableBasePath,
+      replicableTypes,
     },
 
     render(createElement) {
