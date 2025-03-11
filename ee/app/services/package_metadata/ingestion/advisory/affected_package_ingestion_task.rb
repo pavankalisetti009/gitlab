@@ -50,7 +50,7 @@ module PackageMetadata
             data_object.affected_packages.map do |affected_package|
               PackageMetadata::AffectedPackage.new(
                 purl_type: affected_package.purl_type,
-                package_name: affected_package.package_name,
+                package_name: normalized_name(affected_package.purl_type, affected_package.package_name),
                 solution: affected_package.solution,
                 affected_range: affected_package.affected_range,
                 fixed_versions: affected_package.fixed_versions,
@@ -67,6 +67,10 @@ module PackageMetadata
 
         def now
           @now ||= Time.zone.now
+        end
+
+        def normalized_name(purl_type, package_name)
+          ::Sbom::PackageUrl::Normalizer.new(type: purl_type, text: package_name).normalize_name
         end
       end
     end

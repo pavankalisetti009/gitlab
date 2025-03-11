@@ -71,13 +71,7 @@ module Security
           rule, approval_policy_rule, approval_action, rule_index, action_index
         )
 
-        if create_licenses?(rule)
-          if Feature.enabled?(:bulk_create_scan_result_policies, project)
-            bulk_create_software_license_policies(rule, scan_result_policy_read, approval_policy_rule)
-          else
-            create_software_license_policies(rule, scan_result_policy_read, approval_policy_rule)
-          end
-        end
+        create_software_license_policies(rule, scan_result_policy_read, approval_policy_rule) if create_licenses?(rule)
 
         return unless create_approval_rule?(rule)
 
@@ -111,12 +105,6 @@ module Security
 
       def create_licenses?(rule)
         rule[:type] == Security::ScanResultPolicy::LICENSE_FINDING && rule[:license_types].present?
-      end
-
-      def bulk_create_software_license_policies(rule, scan_result_policy_read, approval_policy_rule)
-        ::SoftwareLicensePolicies::BulkCreateScanResultPolicyService
-          .new(project, create_software_license_params(rule, scan_result_policy_read, approval_policy_rule))
-          .execute
       end
 
       def create_software_license_policies(rule, scan_result_policy_read, approval_policy_rule)

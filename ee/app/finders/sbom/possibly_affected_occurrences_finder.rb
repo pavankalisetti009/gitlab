@@ -43,7 +43,7 @@ module Sbom
               end
 
       scope
-        .by_purl_type_and_name(purl_type, package_name)
+        .by_purl_type_and_name(purl_type, normalized_name(purl_type, package_name))
         .select(:id)
         .first
     end
@@ -60,5 +60,11 @@ module Sbom
       end
     end
     strong_memoize_attr :search_scope
+
+    # This can be removed after `UpdatePackageNameInPmAffectedPackages` has been completed.
+    # See: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/183732
+    def normalized_name(purl_type, package_name)
+      ::Sbom::PackageUrl::Normalizer.new(type: purl_type, text: package_name).normalize_name
+    end
   end
 end

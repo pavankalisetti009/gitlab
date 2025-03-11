@@ -1,6 +1,6 @@
 <script>
 import { GlButton, GlTooltipDirective } from '@gitlab/ui';
-import { __ } from '~/locale';
+import { __, s__, sprintf } from '~/locale';
 
 export default {
   name: 'StageFieldActions',
@@ -28,6 +28,12 @@ export default {
     hideActionTooltip() {
       return this.canRemove ? __('Remove') : __('Hide');
     },
+    hideActionAriaLabel() {
+      return sprintf(s__('CreateValueStreamForm|%{action} stage %{index}'), {
+        action: this.hideActionTooltip,
+        index: this.index + 1,
+      });
+    },
     hideActionIcon() {
       return this.canRemove ? 'remove' : 'eye-slash';
     },
@@ -43,7 +49,7 @@ export default {
       v-gl-tooltip
       category="tertiary"
       :title="hideActionTooltip"
-      :aria-label="hideActionTooltip"
+      :aria-label="hideActionAriaLabel"
       :data-testid="hideActionTestId"
       :icon="hideActionIcon"
       @click="$emit(hideActionEvent, index)"
