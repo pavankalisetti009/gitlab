@@ -1,9 +1,0 @@
----
-name: prompt_migration_documentation_search
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/500984
-introduced_by_url: https://gitlab.com/groups/gitlab-org/-/epics/14431 
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/515695
-milestone: '17.10'
-group: group::ai framework
-type: experiment
-default_enabled: false
