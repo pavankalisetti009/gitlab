@@ -62,7 +62,9 @@ export default {
           ? data?.project?.projectMembers?.nodes
           : data?.workspace?.users?.nodes;
 
-        const users = (nodes || []).map(({ user }) => createUserObject(user));
+        const users = (nodes || [])
+          .filter(({ user }) => user)
+          .map(({ user }) => createUserObject(user));
         const accumulatedUsers = [...this.users, ...users];
 
         return uniqBy(accumulatedUsers, 'id');
