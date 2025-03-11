@@ -110,6 +110,7 @@ update-ruby-gems-coverage-cache-push:
   extends:
     - .default-retry
     - .ruby-gems-coverage-cache
+  image: ${REGISTRY_HOST}/${REGISTRY_GROUP}/gitlab-build-images/${BUILD_OS}-${OS_VERSION}-slim-ruby-${RUBY_VERSION}-rust-${RUST_VERSION}
   variables:
     BUNDLE_WITHOUT: ""  # This is to override the variable defined in .gitlab-ci.yml
     BUNDLE_ONLY: "coverage"
@@ -538,7 +539,6 @@ rspec:artifact-collector ee remainder:
     - !reference ['.rails:rules:ee-only-system', rules]
 
 rspec:coverage:
-  image: ${REGISTRY_HOST}/${REGISTRY_GROUP}/gitlab-build-images/${BUILD_OS}-${OS_VERSION}-slim-ruby-${RUBY_VERSION}
   extends:
     - .coverage-base
     - .rails:rules:rspec-coverage
@@ -587,7 +587,6 @@ rspec:coverage:
         path: coverage/coverage.xml
 
 rspec:undercoverage:
-  image: ${REGISTRY_HOST}/${REGISTRY_GROUP}/gitlab-build-images/${BUILD_OS}-${OS_VERSION}-slim-ruby-${RUBY_VERSION}
   extends:
     - .coverage-base
     - .rails:rules:rspec-undercoverage
