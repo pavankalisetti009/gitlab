@@ -4,7 +4,7 @@ module GitlabSubscriptions
   module Trials
     class ApplyTrialService < BaseApplyTrialService
       def valid_to_generate_trial?
-        namespace.present? && GitlabSubscriptions::Trials.namespace_eligible?(namespace, user)
+        namespace.present? && GitlabSubscriptions::Trials.namespace_eligible?(namespace)
       end
 
       private

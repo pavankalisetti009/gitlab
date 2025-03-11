@@ -20,7 +20,7 @@ RSpec.describe GitlabSubscriptions::DuoEnterpriseAlert::PremiumComponent, :saas,
 
   before do
     build(:gitlab_subscription, :premium, namespace: namespace)
-    allow(GitlabSubscriptions::Trials).to receive(:namespace_eligible?).with(namespace, user).and_return(eligible)
+    allow(GitlabSubscriptions::Trials).to receive(:namespace_eligible?).with(namespace).and_return(eligible)
   end
 
   shared_examples 'has the Duo Enterprise text' do

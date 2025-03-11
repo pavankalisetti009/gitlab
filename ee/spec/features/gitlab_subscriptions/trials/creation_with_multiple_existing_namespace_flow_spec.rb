@@ -195,35 +195,6 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
     end
   end
 
-  context 'when use_ssot_for_ultimate_trial_eligibility is disabled' do
-    context 'when selecting to create a new group with an existing group name' do
-      it 'fills out form, submits and lands on the duo page with a unique path' do
-        stub_feature_flags(use_ssot_for_ultimate_trial_eligibility: false)
-
-        sign_in(user)
-
-        visit new_trial_path
-
-        fill_in_company_information
-
-        submit_company_information_form
-
-        expect_to_be_on_namespace_selection
-
-        select_from_listbox 'Create group', from: 'Select a group'
-        wait_for_requests
-
-        # success
-        group_name = 'gitlab1'
-        fill_in_trial_selection_form_for_new_group
-
-        submit_new_group_trial_selection_form(extra_params: new_group_attrs(path: group_name))
-
-        expect_to_be_on_gitlab_duo_page(path: group_name)
-      end
-    end
-  end
-
   def fill_in_trial_selection_form_for_new_group(name: 'gitlab')
     within_testid('trial-form') do
       expect(page).to have_text('New group name')

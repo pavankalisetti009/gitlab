@@ -10,7 +10,7 @@ module GitlabSubscriptions
       attr_reader :add_on_purchase
 
       def render?
-        namespace.premium_plan? && GitlabSubscriptions::Trials.namespace_eligible?(namespace, user)
+        namespace.premium_plan? && GitlabSubscriptions::Trials.namespace_eligible?(namespace)
       end
 
       def duo_pro_add_on_purchase?

@@ -23,8 +23,8 @@ module GitlabSubscriptions
       namespace_id.to_i.in?(eligible_namespaces.pluck_primary_key)
     end
 
-    def self.namespace_eligible?(namespace, user)
-      namespace_plan_eligible?(namespace) && namespace_add_on_eligible?(namespace, user)
+    def self.namespace_eligible?(namespace)
+      namespace_plan_eligible?(namespace) && namespace_add_on_eligible?(namespace)
     end
 
     def self.namespace_plan_eligible?(namespace)
@@ -36,19 +36,11 @@ module GitlabSubscriptions
     end
 
     def self.eligible_namespaces_for_user(user)
-      if Feature.enabled?(:use_ssot_for_ultimate_trial_eligibility, user)
-        Namespaces::TrialEligibleFinder.new(user: user, use_caching: true).execute
-      else
-        Namespaces::TrialEligibleFinder.new(user:).execute
-      end
+      Namespaces::TrialEligibleFinder.new(user:).execute
     end
 
-    def self.namespace_add_on_eligible?(namespace, user)
-      if Feature.enabled?(:use_ssot_for_ultimate_trial_eligibility, user)
-        Namespaces::TrialEligibleFinder.new(namespace: namespace, use_caching: true).execute.any?
-      else
-        Namespaces::TrialEligibleFinder.new(namespace:).execute.any?
-      end
+    def self.namespace_add_on_eligible?(namespace)
+      Namespaces::TrialEligibleFinder.new(namespace:).execute.any?
     end
 
     def self.namespace_with_mid_trial_premium?(namespace, trial_starts_on)
