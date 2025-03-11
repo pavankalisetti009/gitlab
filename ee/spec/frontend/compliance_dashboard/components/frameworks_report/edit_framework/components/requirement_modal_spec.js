@@ -14,14 +14,17 @@ import {
   requirementEvents,
 } from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/constants';
 import waitForPromises from 'helpers/wait_for_promises';
-import { mockRequirementControls, mockRequirements } from 'ee_jest/compliance_dashboard/mock_data';
+import {
+  mockGitLabStandardControls,
+  mockRequirements,
+} from 'ee_jest/compliance_dashboard/mock_data';
 
 describe('RequirementModal', () => {
   let wrapper;
 
   const defaultProps = {
     requirement: { ...emptyRequirement, index: null },
-    requirementControls: mockRequirementControls,
+    gitlabStandardControls: mockGitLabStandardControls,
     isNewFramework: true,
   };
 
@@ -164,7 +167,7 @@ describe('RequirementModal', () => {
     createComponent({
       requirement: { ...mockRequirements[0], index: 0 },
       isNewFramework: false,
-      requirementControls: mockRequirementControls,
+      gitlabStandardControls: mockGitLabStandardControls,
     });
     await fillForm('Updated Name', 'Updated Description', [
       'scanner_sast_running',
@@ -180,6 +183,9 @@ describe('RequirementModal', () => {
             description: 'Updated Description',
             id: mockRequirements[0].id,
             __typename: 'ComplianceManagement::Requirement',
+            complianceRequirementsControls: {
+              nodes: [],
+            },
             controlExpression:
               '{"operator":"AND","conditions":[{"id":"scanner_sast_running","field":"scanner_sast_running","operator":"=","value":true},{"id":"default_branch_protected","field":"default_branch_protected","operator":"=","value":true}]}',
           },

@@ -1,11 +1,16 @@
-import { GlTable, GlDisclosureDropdown, GlDisclosureDropdownItem } from '@gitlab/ui';
+import { GlTable, GlDisclosureDropdown, GlDisclosureDropdownItem, GlBadge } from '@gitlab/ui';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import RequirementsSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/requirements_section.vue';
 import RequirementModal from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/requirement_modal.vue';
 import EditSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/edit_section.vue';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
-import { mockRequirements, mockRequirementControls } from 'ee_jest/compliance_dashboard/mock_data';
+import {
+  mockExternalControl,
+  mockInternalControls,
+  mockRequirements,
+  mockGitLabStandardControls,
+} from 'ee_jest/compliance_dashboard/mock_data';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import controlsQuery from 'ee/compliance_dashboard/graphql/compliance_requirement_controls.query.graphql';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -56,7 +61,7 @@ describe('Requirements section', () => {
     controlsQueryHandler = jest.fn().mockResolvedValue({
       data: {
         complianceRequirementControls: {
-          controlExpressions: mockRequirementControls,
+          controlExpressions: mockGitLabStandardControls,
         },
       },
     });
@@ -93,7 +98,8 @@ describe('Requirements section', () => {
     it.each`
       idx  | expectedRequirement    | expectedControls
       ${0} | ${mockRequirements[0]} | ${[]}
-      ${1} | ${mockRequirements[1]} | ${[]}
+      ${1} | ${mockRequirements[1]} | ${mockInternalControls}
+      ${2} | ${mockRequirements[2]} | ${[mockExternalControl]}
     `(
       'passes the correct items prop to the table at index $idx',
       async ({ idx, expectedRequirement, expectedControls }) => {
@@ -107,21 +113,33 @@ describe('Requirements section', () => {
     );
 
     it.each`
-      idx  | name        | description                  | controls
-      ${0} | ${'SOC2'}   | ${'Controls for SOC2'}       | ${[]}
-      ${1} | ${'GitLab'} | ${'Controls used by GitLab'} | ${[]}
-    `('has the correct data for row $idx', ({ idx, name, description, controls }) => {
-      const frameworkRequirements = findTableRowData(idx);
+      idx  | name          | description                            | controls                                          | externalBadgeCount
+      ${0} | ${'SOC2'}     | ${'Controls for SOC2'}                 | ${[]}                                             | ${0}
+      ${1} | ${'GitLab'}   | ${'Controls used by GitLab'}           | ${['Minimum approvals required', 'SAST Running']} | ${0}
+      ${2} | ${'External'} | ${'Requirement with external control'} | ${['Send via: https://example.com']}              | ${1}
+    `(
+      'has the correct data for row $idx',
+      ({ idx, name, description, controls, externalBadgeCount }) => {
+        const frameworkRequirements = findTableRowData(idx);
 
-      expect(frameworkRequirements.at(0).text()).toBe(name);
-      expect(frameworkRequirements.at(1).text()).toBe(description);
-      expect(
-        frameworkRequirements
+        expect(frameworkRequirements.at(0).text()).toBe(name);
+        expect(frameworkRequirements.at(1).text()).toBe(description);
+
+        const listItems = frameworkRequirements
           .at(2)
           .findAll('li')
-          .wrappers.map((w) => w.text()),
-      ).toEqual(controls);
-    });
+          .wrappers.map((w) =>
+            w
+              .text()
+              .replace(/\s+External$/, '')
+              .trim(),
+          );
+        expect(listItems).toEqual(controls);
+
+        const badges = frameworkRequirements.at(2).findAllComponents(GlBadge);
+        expect(badges).toHaveLength(externalBadgeCount);
+      },
+    );
 
     describe('Create requirement button', () => {
       beforeEach(() => {
@@ -139,7 +157,7 @@ describe('Requirements section', () => {
       controlsQueryHandler = jest.fn().mockResolvedValue({
         data: {
           complianceRequirementControls: {
-            controlExpressions: mockRequirementControls,
+            controlExpressions: mockGitLabStandardControls,
           },
         },
       });
@@ -152,8 +170,8 @@ describe('Requirements section', () => {
 
     it('updates data', async () => {
       await findNewRequirementButton().trigger('click');
-      expect(findRequirementModal().props('requirementControls')).toMatchObject(
-        mockRequirementControls,
+      expect(findRequirementModal().props('gitlabStandardControls')).toMatchObject(
+        mockGitLabStandardControls,
       );
     });
   });
@@ -178,7 +196,7 @@ describe('Requirements section', () => {
       await createComponent();
     });
 
-    it('passes corect props to requirement modal', async () => {
+    it('passes correct props to requirement modal', async () => {
       await findNewRequirementButton().trigger('click');
       expect(findRequirementModal().props('requirement')).toMatchObject({
         ...emptyRequirement,
@@ -220,7 +238,7 @@ describe('Requirements section', () => {
       await createComponent();
     });
 
-    it('passes corect props to requirement modal', async () => {
+    it('passes correct props to requirement modal', async () => {
       await findEditAction().vm.$emit('action');
       expect(findRequirementModal().props('requirement')).toMatchObject({
         ...mockRequirements[index],
@@ -242,6 +260,58 @@ describe('Requirements section', () => {
       });
       expect(wrapper.emitted('update')).toEqual([[{ requirement: updatedRequirement, index }]]);
       expect(findRequirementModal().exists()).toBe(false);
+    });
+  });
+
+  describe('getControls', () => {
+    beforeEach(async () => {
+      await createComponent();
+    });
+
+    it('returns empty array when requirementControls is null or undefined', () => {
+      expect(wrapper.vm.getControls(null)).toEqual([]);
+      expect(wrapper.vm.getControls(undefined)).toEqual([]);
+    });
+
+    it('returns empty array when requirementControls is empty', () => {
+      expect(wrapper.vm.getControls([])).toEqual([]);
+    });
+
+    it('returns empty array when an error occurs', () => {
+      const invalidControls = [{ controlType: 'invalid' }];
+      expect(wrapper.vm.getControls(invalidControls)).toEqual([]);
+    });
+
+    it('correctly maps external controls', () => {
+      const externalControl = [
+        {
+          name: 'external-control',
+          controlType: 'external',
+          externalUrl: 'https://test.com',
+        },
+      ];
+
+      const result = wrapper.vm.getControls(externalControl);
+      expect(result[0].displayValue).toBe('Send via: https://test.com');
+    });
+
+    it('correctly maps internal controls', () => {
+      wrapper.vm.complianceRequirementControls = [
+        {
+          id: 'internal-control',
+          name: 'Internal Control Name',
+        },
+      ];
+
+      const internalControl = [
+        {
+          name: 'internal-control',
+          controlType: 'internal',
+        },
+      ];
+
+      const result = wrapper.vm.getControls(internalControl);
+      expect(result[0].displayValue).toBe('Internal Control Name');
     });
   });
 });

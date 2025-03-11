@@ -66,10 +66,23 @@ describe('Edit Framework Form', () => {
     {
       name: 'SOC2',
       description: 'Controls for SOC2',
+      complianceRequirementsControls: {
+        nodes: [],
+      },
     },
     {
       name: 'GitLab',
       description: 'Controls used by GitLab',
+      complianceRequirementsControls: {
+        nodes: [],
+      },
+    },
+    {
+      name: 'External',
+      description: 'Requirement with external control',
+      complianceRequirementsControls: {
+        nodes: [],
+      },
     },
   ];
 
@@ -444,6 +457,9 @@ describe('Edit Framework Form', () => {
               name: 'SOC2',
               description: 'Controls for SOC2',
               __typename: 'ComplianceManagement::Requirement',
+              complianceRequirementsControls: {
+                nodes: [],
+              },
             },
             errors: [],
           },
@@ -498,7 +514,7 @@ describe('Edit Framework Form', () => {
               params: {
                 name: requirement.name,
                 description: requirement.description,
-                controlExpression: requirement.controlExpression,
+                complianceRequirementsControls: [],
               },
             },
           }),
@@ -539,6 +555,7 @@ describe('Edit Framework Form', () => {
               params: {
                 name: requirement.name,
                 description: requirement.description,
+                complianceRequirementsControls: [],
               },
             },
           }),
@@ -625,6 +642,9 @@ describe('Edit Framework Form', () => {
         id: 'gid://gitlab/ComplianceManagement::Requirement/1',
         name: 'SOC2 Updated',
         description: 'Updated Controls for SOC2',
+        complianceRequirementsControls: {
+          nodes: [],
+        },
       };
 
       requirementsSection.vm.$emit(requirementEvents.update, { requirement: updatedRequirement });
@@ -638,6 +658,7 @@ describe('Edit Framework Form', () => {
             params: {
               name: updatedRequirement.name,
               description: updatedRequirement.description,
+              complianceRequirementsControls: [],
             },
           },
         }),
@@ -701,6 +722,22 @@ describe('Edit Framework Form', () => {
               name: 'GitLab',
               description: 'Controls used by GitLab',
               __typename: 'ComplianceManagement::Requirement',
+              complianceRequirementsControls: {
+                nodes: [
+                  {
+                    id: 'gid://gitlab/ComplianceManagement::Control/1',
+                    name: 'minimum_approvals_required',
+                    controlType: 'internal',
+                    externalUrl: null,
+                  },
+                  {
+                    id: 'gid://gitlab/ComplianceManagement::Control/2',
+                    name: 'scanner_sast_running',
+                    controlType: 'internal',
+                    externalUrl: null,
+                  },
+                ],
+              },
             },
             errors: [],
           },
@@ -744,7 +781,10 @@ describe('Edit Framework Form', () => {
 
         await nextTick();
 
-        expect(requirementsSection.props('requirements')).toEqual([requirementsData[0]]);
+        expect(requirementsSection.props('requirements')).toEqual([
+          requirementsData[0],
+          requirementsData[2],
+        ]);
 
         clickToastAction();
 
@@ -779,7 +819,6 @@ describe('Edit Framework Form', () => {
 
       it('deletes and undoes delete of a requirement', async () => {
         const requirementsSection = wrapper.findComponent(RequirementsSection);
-
         requirementsSection.vm.$emit(requirementEvents.delete, 1);
 
         await waitForPromises();
@@ -790,7 +829,10 @@ describe('Edit Framework Form', () => {
           }),
         );
 
-        expect(requirementsSection.props('requirements')).toEqual([mockRequirements[0]]);
+        expect(requirementsSection.props('requirements')).toEqual([
+          mockRequirements[0],
+          mockRequirements[2],
+        ]);
 
         expect(showToastMock).toHaveBeenCalledTimes(1);
 
@@ -805,6 +847,8 @@ describe('Edit Framework Form', () => {
               params: {
                 name: mockRequirements[1].name,
                 description: mockRequirements[1].description,
+                complianceRequirementsControls:
+                  mockRequirements[1].complianceRequirementsControls.nodes,
               },
             },
           }),
