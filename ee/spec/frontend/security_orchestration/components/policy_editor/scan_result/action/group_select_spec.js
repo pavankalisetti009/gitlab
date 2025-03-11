@@ -45,6 +45,7 @@ const DESCENDANT_GROUP_RESPONSE = {
           {
             ...group2,
           },
+          null,
         ],
         __typename: 'GroupConnection',
       },
@@ -63,6 +64,7 @@ const NAMESPACE_GROUP_RESPONSE = {
         {
           ...group2,
         },
+        null,
       ],
       __typename: 'GroupConnection',
     },
@@ -187,7 +189,7 @@ describe('GroupSelect component', () => {
       });
     });
 
-    it('contains the root group and descendent group', async () => {
+    it('contains the root group and descendent group and filtes out null values', async () => {
       createComponent({ provide: { globalGroupApproversEnabled: false } });
       await waitForApolloAndVue();
       await waitForPromises();
