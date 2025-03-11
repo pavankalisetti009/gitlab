@@ -103,7 +103,6 @@ module Elastic
         return query_hash unless user
         return query_hash if options[:project_id].present? || options[:group_id].present?
         return query_hash unless options[:autocomplete]
-        return query_hash unless Feature.enabled?(:users_search_scoped_to_authorized_namespaces_advanced_search, user)
 
         authorized_groups = ::Search::GroupsFinder.new(user: user).execute
         group_authorized_traversal_ids = ::Namespaces::Traversal::TrieNode.build(authorized_groups.map(&:traversal_ids))

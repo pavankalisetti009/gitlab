@@ -371,16 +371,6 @@ RSpec.describe Elastic::Latest::UserClassProxy, feature_category: :global_search
           expect(query_hash).to eq(original_query_hash)
         end
       end
-
-      context 'when users_search_scoped_to_authorized_namespaces_advanced_search flag is disabled' do
-        before do
-          stub_feature_flags(users_search_scoped_to_authorized_namespaces_advanced_search: false)
-        end
-
-        it 'returns query_hash as is' do
-          expect(query_hash).to eq(original_query_hash)
-        end
-      end
     end
   end
 
