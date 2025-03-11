@@ -17418,6 +17418,9 @@ msgstr ""
 msgid "CreateTimelogForm|Time spent"
 msgstr ""
 
+msgid "CreateValueStreamForm|%{action} stage %{index}"
+msgstr ""
+
 msgid "CreateValueStreamForm|%{name} (default)"
 msgstr ""
 
