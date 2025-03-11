@@ -2,12 +2,7 @@
 import { GlCard, GlButton, GlIcon } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
 import UsageStatistics from 'ee/usage_quotas/components/usage_statistics.vue';
-import {
-  DUO_PRO,
-  DUO_ENTERPRISE,
-  CODE_SUGGESTIONS_TITLE,
-  DUO_ENTERPRISE_TITLE,
-} from 'ee/usage_quotas/code_suggestions/constants';
+import { DUO_PRO, DUO_IDENTIFIERS, DUO_TITLES } from 'ee/usage_quotas/code_suggestions/constants';
 import { InternalEvents } from '~/tracking';
 import { formatDate } from '~/lib/utils/datetime_utility';
 
@@ -43,8 +38,8 @@ export default {
     duoTier: {
       type: String,
       required: false,
-      default: DUO_PRO,
-      validator: (val) => [DUO_PRO, DUO_ENTERPRISE].includes(val),
+      default: DUO_IDENTIFIERS[0],
+      validator: (val) => DUO_IDENTIFIERS.includes(val),
     },
   },
   computed: {
@@ -52,7 +47,7 @@ export default {
       return Math.floor((this.usageValue / this.totalValue) * 100);
     },
     duoTitle() {
-      return this.duoTier === DUO_ENTERPRISE ? DUO_ENTERPRISE_TITLE : CODE_SUGGESTIONS_TITLE;
+      return DUO_TITLES[this.duoTier];
     },
     isDuoPro() {
       return this.duoTier === DUO_PRO;

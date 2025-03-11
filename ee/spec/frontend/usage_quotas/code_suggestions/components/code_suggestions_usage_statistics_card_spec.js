@@ -3,6 +3,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import CodeSuggestionsUsageStatisticsCard from 'ee/usage_quotas/code_suggestions/components/code_suggestions_usage_statistics_card.vue';
 import UsageStatistics from 'ee/usage_quotas/components/usage_statistics.vue';
+import { DUO_PRO } from 'ee/usage_quotas/code_suggestions/constants';
 
 describe('CodeSuggestionsUsageStatisticsCard', () => {
   let wrapper;
@@ -32,7 +33,7 @@ describe('CodeSuggestionsUsageStatisticsCard', () => {
 
   describe('with purchased Duo Pro Add-ons', () => {
     beforeEach(() => {
-      return createComponent({ usageValue: 0, totalValue: 20, duoTier: 'pro' });
+      return createComponent({ usageValue: 0, totalValue: 20, duoTier: DUO_PRO });
     });
 
     it('renders the description text', () => {
@@ -56,7 +57,7 @@ describe('CodeSuggestionsUsageStatisticsCard', () => {
 
   describe('with purchased Duo Enterprise Add-ons', () => {
     beforeEach(() => {
-      return createComponent({ usageValue: 0, totalValue: 20, duoTier: 'enterprise' });
+      return createComponent({ usageValue: 0, totalValue: 20, duoTier: 'DUO_ENTERPRISE' });
     });
 
     it('renders the description text', () => {

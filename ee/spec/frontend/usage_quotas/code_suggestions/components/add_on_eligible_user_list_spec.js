@@ -29,12 +29,7 @@ import {
 import { scrollToElement } from '~/lib/utils/common_utils';
 import Tracking from '~/tracking';
 import AddOnBulkActionConfirmationModal from 'ee/usage_quotas/code_suggestions/components/add_on_bulk_action_confirmation_modal.vue';
-import {
-  ADD_ON_CODE_SUGGESTIONS,
-  CODE_SUGGESTIONS_TITLE,
-  DUO_ENTERPRISE,
-  DUO_ENTERPRISE_TITLE,
-} from 'ee/usage_quotas/code_suggestions/constants';
+import { DUO_PRO, DUO_ENTERPRISE, DUO_TITLES } from 'ee/usage_quotas/code_suggestions/constants';
 import PageSizeSelector from '~/vue_shared/components/page_size_selector.vue';
 import { createMockClient } from 'helpers/mock_apollo_helper';
 import getAddOnEligibleUsers from 'ee/usage_quotas/add_on/graphql/saas_add_on_eligible_users.query.graphql';
@@ -59,11 +54,11 @@ describe('Add On Eligible User List', () => {
   const addOnPurchaseId = 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/1';
   const addDuoProHref = 'http://customers.gitlab.com/namespaces/0/duo_pro_seats';
 
-  const codeSuggestionsAddOn = { addOnPurchase: { name: ADD_ON_CODE_SUGGESTIONS } };
+  const codeSuggestionsAddOn = { addOnPurchase: { name: DUO_PRO } };
 
   const addOnPurchase = {
     id: addOnPurchaseId,
-    name: ADD_ON_CODE_SUGGESTIONS,
+    name: DUO_PRO,
     purchasedQuantity: 3,
     assignedQuantity: 2,
     __typename: 'AddOnPurchase',
@@ -71,7 +66,7 @@ describe('Add On Eligible User List', () => {
 
   const addOnEligibleUsersQueryVariables = {
     fullPath: 'namespace/full-path',
-    addOnType: 'CODE_SUGGESTIONS',
+    addOnType: DUO_PRO,
     addOnPurchaseIds: [addOnPurchaseId],
   };
 
@@ -220,7 +215,7 @@ describe('Add On Eligible User List', () => {
           pageInfo: pageInfoWithNoPages,
           pageSize: DEFAULT_PER_PAGE,
           isLoading: false,
-          duoTier: 'pro',
+          duoTier: DUO_PRO,
           ...props,
         },
         provide: {
@@ -402,7 +397,7 @@ describe('Add On Eligible User List', () => {
     });
 
     it('labels add-on column as Duo Pro', () => {
-      expect(findTableLabels()).toContain(CODE_SUGGESTIONS_TITLE);
+      expect(findTableLabels()).toContain(DUO_TITLES[DUO_PRO]);
     });
 
     describe('with Duo Enterprise add-on enabled', () => {
@@ -414,7 +409,7 @@ describe('Add On Eligible User List', () => {
       });
 
       it('labels add-on column as Duo Enterprise', () => {
-        expect(findTableLabels()).toContain(DUO_ENTERPRISE_TITLE);
+        expect(findTableLabels()).toContain(DUO_TITLES[DUO_ENTERPRISE]);
       });
     });
 
@@ -566,7 +561,7 @@ describe('Add On Eligible User List', () => {
           const expectedProps = [
             {
               userId: 'gid://gitlab/User/1',
-              addOnAssignments: [{ addOnPurchase: { name: 'CODE_SUGGESTIONS' } }],
+              addOnAssignments: [{ addOnPurchase: { name: DUO_PRO } }],
               addOnPurchaseId,
             },
             {
