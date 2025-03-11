@@ -38,6 +38,24 @@ RSpec.describe Security::Findings::SeverityOverrideService, feature_category: :v
     let_it_be(:current_user) { create(:user) }
     let_it_be(:new_severity) { 'high' }
 
+    shared_examples 'creates project audit event' do
+      it 'creates project audit event' do
+        original_severity = security_finding.severity
+        expected_details = "Vulnerability finding uuid: #{security_finding.uuid}"
+        expected_message = "Vulnerability finding severity was changed from #{original_severity.capitalize} " \
+          "to #{new_severity.capitalize}"
+
+        expect { execute }.to change { AuditEvent.count }.by(1)
+
+        last_audit_event = AuditEvent.last&.details
+        expect(last_audit_event[:event_name]).to eq('vulnerability_severity_override')
+        expect(last_audit_event[:author_name]).to eq(current_user.name)
+        expect(last_audit_event[:target_id]).to eq(project.id)
+        expect(last_audit_event[:target_details]).to eq(expected_details)
+        expect(last_audit_event[:custom_message]).to eq(expected_message)
+      end
+    end
+
     context 'when the user is authorized' do
       before do
         security_finding.project.add_maintainer(current_user)
@@ -50,6 +68,10 @@ RSpec.describe Security::Findings::SeverityOverrideService, feature_category: :v
           expect { execute }.to change { Vulnerability.count }.by(1)
           .and change { Vulnerabilities::Finding.count }.by(1)
           .and not_change { Vulnerabilities::SeverityOverride.count }
+        end
+
+        it 'doesnt create audit event' do
+          expect { execute }.not_to change { AuditEvent.count }
         end
       end
 
@@ -73,6 +95,8 @@ RSpec.describe Security::Findings::SeverityOverrideService, feature_category: :v
               vulnerability: security_finding.vulnerability
             )
           end
+
+          it_behaves_like 'creates project audit event'
         end
 
         context 'when a vulnerability matching the security finding already exists' do
@@ -117,6 +141,8 @@ RSpec.describe Security::Findings::SeverityOverrideService, feature_category: :v
               )
             end
           end
+
+          it_behaves_like 'creates project audit event'
         end
       end
 
