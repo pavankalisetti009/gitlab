@@ -124,9 +124,9 @@ RSpec.describe Dependencies::Export::SegmentedExportService, feature_category: :
     end
 
     it 'schedules the export deletion' do
-      finalise_export
+      expect(export).to receive(:schedule_export_deletion)
 
-      expect(Dependencies::DestroyExportWorker).to have_received(:perform_in).with(1.hour, export.id)
+      finalise_export
     end
 
     context 'when an error happens' do

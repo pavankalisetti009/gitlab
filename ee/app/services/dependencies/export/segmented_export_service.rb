@@ -32,8 +32,7 @@ module Dependencies # rubocop:disable Gitlab/BoundedContexts -- This is an exist
       rescue StandardError => error
         Gitlab::ErrorTracking.track_and_raise_for_dev_exception(error)
 
-        dependency_list_export.failed!
-        schedule_export_deletion
+        mark_as_failed!
       end
 
       def finalise_segmented_export
@@ -45,12 +44,11 @@ module Dependencies # rubocop:disable Gitlab/BoundedContexts -- This is an exist
         dependency_list_export.store_file_now!
         dependency_list_export.finish!
         dependency_list_export.send_completion_email!
+        dependency_list_export.schedule_export_deletion
       rescue StandardError => error
         Gitlab::ErrorTracking.track_and_raise_for_dev_exception(error)
 
-        dependency_list_export.failed!
-      ensure
-        schedule_export_deletion
+        mark_as_failed!
       end
 
       private
@@ -63,7 +61,8 @@ module Dependencies # rubocop:disable Gitlab/BoundedContexts -- This is an exist
         EXPORTERS[dependency_list_export.export_type.to_sym]
       end
 
-      def schedule_export_deletion
+      def mark_as_failed!
+        dependency_list_export.failed!
         Dependencies::DestroyExportWorker.perform_in(1.hour, dependency_list_export.id)
       end
 
