@@ -31,10 +31,12 @@ RSpec.describe 'Listing custom fields', feature_category: :team_planning do
   let_it_be(:select_option) { create(:custom_field_select_option, custom_field: select_field, position: 2) }
   let_it_be(:select_option_2) { create(:custom_field_select_option, custom_field: select_field, position: 1) }
 
+  let(:namespace) { group }
+
   let(:query) do
     <<~QUERY
     query($active: Boolean, $fieldType: CustomFieldType, $search: String, $workItemTypeIds: [WorkItemsTypeID!]) {
-      group(fullPath: "#{group.full_path}") {
+      namespace(fullPath: "#{namespace.full_path}") {
         id
         customFields(active: $active, fieldType: $fieldType, search: $search, workItemTypeIds: $workItemTypeIds) {
           nodes {
@@ -63,31 +65,109 @@ RSpec.describe 'Listing custom fields', feature_category: :team_planning do
     stub_licensed_features(custom_fields: true)
   end
 
-  it 'returns custom fields of the group' do
-    post_graphql(query, current_user: guest)
+  shared_examples 'returns configured custom fields' do
+    it 'returns custom fields of the group' do
+      post_graphql(query, current_user: guest)
 
-    expect(response).to have_gitlab_http_status(:ok)
+      expect(response).to have_gitlab_http_status(:ok)
 
-    custom_fields = graphql_data_at(:group, :customFields, :nodes)
+      custom_fields = graphql_data_at(:namespace, :customFields, :nodes)
 
-    expect(custom_fields).to match([
-      custom_field_attributes(select_field),
-      custom_field_attributes(text_field),
-      custom_field_attributes(archived_field)
-    ])
+      expect(custom_fields).to match([
+        custom_field_attributes(select_field),
+        custom_field_attributes(text_field),
+        custom_field_attributes(archived_field)
+      ])
 
-    expect(custom_fields[0]['selectOptions']).to eq([
-      { 'id' => select_option_2.to_global_id.to_s, 'value' => select_option_2.value },
-      { 'id' => select_option.to_global_id.to_s, 'value' => select_option.value }
-    ])
-    expect(custom_fields[0]['workItemTypes']).to eq([
-      { 'id' => issue_type.to_global_id.to_s, 'name' => issue_type.name },
-      { 'id' => task_type.to_global_id.to_s, 'name' => task_type.name }
-    ])
+      expect(custom_fields[0]['selectOptions']).to eq([
+        { 'id' => select_option_2.to_global_id.to_s, 'value' => select_option_2.value },
+        { 'id' => select_option.to_global_id.to_s, 'value' => select_option.value }
+      ])
+      expect(custom_fields[0]['workItemTypes']).to eq([
+        { 'id' => issue_type.to_global_id.to_s, 'name' => issue_type.name },
+        { 'id' => task_type.to_global_id.to_s, 'name' => task_type.name }
+      ])
 
-    expect(custom_fields[1]['workItemTypes']).to match_array([
-      { 'id' => issue_type.to_global_id.to_s, 'name' => issue_type.name }
-    ])
+      expect(custom_fields[1]['workItemTypes']).to match_array([
+        { 'id' => issue_type.to_global_id.to_s, 'name' => issue_type.name }
+      ])
+    end
+  end
+
+  it_behaves_like 'returns configured custom fields'
+
+  context 'when querying from a subgroup' do
+    let_it_be(:subgroup) { create(:group, :private, parent: group) }
+    let_it_be(:sub_subgroup) { create(:group, :private, parent: subgroup) }
+
+    let(:namespace) { sub_subgroup }
+
+    it_behaves_like 'returns configured custom fields'
+  end
+
+  context 'when querying from a descendant project' do
+    let_it_be(:project) { create(:project, group: group) }
+
+    let(:namespace) { project.project_namespace }
+
+    it_behaves_like 'returns configured custom fields'
+  end
+
+  context 'when querying from group field' do
+    let(:query) do
+      <<~QUERY
+      query($active: Boolean, $fieldType: CustomFieldType, $search: String, $workItemTypeIds: [WorkItemsTypeID!]) {
+        group(fullPath: "#{namespace.full_path}") {
+          id
+          customFields(active: $active, fieldType: $fieldType, search: $search, workItemTypeIds: $workItemTypeIds) {
+            nodes {
+              id
+              name
+              fieldType
+              active
+              createdAt
+              updatedAt
+              selectOptions {
+                id
+                value
+              }
+              workItemTypes {
+                id
+                name
+              }
+            }
+          }
+        }
+      }
+      QUERY
+    end
+
+    it 'returns custom fields of the group' do
+      post_graphql(query, current_user: guest)
+
+      expect(response).to have_gitlab_http_status(:ok)
+
+      custom_fields = graphql_data_at(:group, :customFields, :nodes)
+
+      expect(custom_fields).to match([
+        custom_field_attributes(select_field),
+        custom_field_attributes(text_field),
+        custom_field_attributes(archived_field)
+      ])
+
+      expect(custom_fields[0]['selectOptions']).to eq([
+        { 'id' => select_option_2.to_global_id.to_s, 'value' => select_option_2.value },
+        { 'id' => select_option.to_global_id.to_s, 'value' => select_option.value }
+      ])
+      expect(custom_fields[0]['workItemTypes']).to eq([
+        { 'id' => issue_type.to_global_id.to_s, 'name' => issue_type.name },
+        { 'id' => task_type.to_global_id.to_s, 'name' => task_type.name }
+      ])
+
+      expect(custom_fields[1]['workItemTypes']).to match_array([
+        { 'id' => issue_type.to_global_id.to_s, 'name' => issue_type.name }
+      ])
+    end
   end
 
   context 'when filtering by active' do
@@ -95,7 +175,7 @@ RSpec.describe 'Listing custom fields', feature_category: :team_planning do
       post_graphql(query, current_user: guest, variables: { active: true })
 
       expect(response).to have_gitlab_http_status(:ok)
-      expect(graphql_data_at(:group, :customFields, :nodes)).to match([
+      expect(graphql_data_at(:namespace, :customFields, :nodes)).to match([
         custom_field_attributes(select_field),
         custom_field_attributes(text_field)
       ])
@@ -105,7 +185,7 @@ RSpec.describe 'Listing custom fields', feature_category: :team_planning do
       post_graphql(query, current_user: guest, variables: { active: false })
 
       expect(response).to have_gitlab_http_status(:ok)
-      expect(graphql_data_at(:group, :customFields, :nodes)).to match([
+      expect(graphql_data_at(:namespace, :customFields, :nodes)).to match([
         custom_field_attributes(archived_field)
       ])
     end
@@ -116,7 +196,7 @@ RSpec.describe 'Listing custom fields', feature_category: :team_planning do
       post_graphql(query, current_user: guest, variables: { fieldType: 'TEXT' })
 
       expect(response).to have_gitlab_http_status(:ok)
-      expect(graphql_data_at(:group, :customFields, :nodes)).to match([
+      expect(graphql_data_at(:namespace, :customFields, :nodes)).to match([
         custom_field_attributes(text_field)
       ])
     end
@@ -127,7 +207,7 @@ RSpec.describe 'Listing custom fields', feature_category: :team_planning do
       post_graphql(query, current_user: guest, variables: { search: 'field' })
 
       expect(response).to have_gitlab_http_status(:ok)
-      expect(graphql_data_at(:group, :customFields, :nodes)).to match([
+      expect(graphql_data_at(:namespace, :customFields, :nodes)).to match([
         custom_field_attributes(text_field),
         custom_field_attributes(archived_field)
       ])
@@ -141,7 +221,7 @@ RSpec.describe 'Listing custom fields', feature_category: :team_planning do
       post_graphql(query, current_user: guest, variables: { work_item_type_ids: [task_type.to_global_id] })
 
       expect(response).to have_gitlab_http_status(:ok)
-      expect(graphql_data_at(:group, :customFields, :nodes)).to match([
+      expect(graphql_data_at(:namespace, :customFields, :nodes)).to match([
         custom_field_attributes(select_field)
       ])
     end
@@ -157,7 +237,7 @@ RSpec.describe 'Listing custom fields', feature_category: :team_planning do
         )
 
         expect(response).to have_gitlab_http_status(:ok)
-        expect(graphql_data_at(:group, :customFields, :nodes)).to match([
+        expect(graphql_data_at(:namespace, :customFields, :nodes)).to match([
           custom_field_attributes(select_field)
         ])
       end
@@ -194,7 +274,7 @@ RSpec.describe 'Listing custom fields', feature_category: :team_planning do
       post_graphql(query, current_user: guest)
 
       expect(response).to have_gitlab_http_status(:ok)
-      expect(graphql_data_at(:group, :customFields, :nodes)).to be_blank
+      expect(graphql_data_at(:namespace, :customFields, :nodes)).to be_blank
     end
   end
 
@@ -207,7 +287,7 @@ RSpec.describe 'Listing custom fields', feature_category: :team_planning do
       post_graphql(query, current_user: guest)
 
       expect(response).to have_gitlab_http_status(:ok)
-      expect(graphql_data_at(:group, :customFields, :nodes)).to be_blank
+      expect(graphql_data_at(:namespace, :customFields, :nodes)).to be_blank
     end
   end
 

@@ -13,11 +13,9 @@ RSpec.describe 'Fetching a single custom field', feature_category: :team_plannin
   let(:query) do
     <<~QUERY
     query($id: IssuablesCustomFieldID!) {
-      group(fullPath: "#{group.full_path}") {
-        customField(id: $id) {
-          id
-          name
-        }
+      customField(id: $id) {
+        id
+        name
       }
     }
     QUERY
@@ -32,12 +30,40 @@ RSpec.describe 'Fetching a single custom field', feature_category: :team_plannin
 
     expect(response).to have_gitlab_http_status(:ok)
 
-    expect(graphql_data_at(:group, :customField)).to match(
+    expect(graphql_data_at(:customField)).to match(
       a_hash_including(
         'id' => text_field.to_global_id.to_s,
         'name' => text_field.name
       )
     )
+  end
+
+  context 'when querying under a group' do
+    let(:query) do
+      <<~QUERY
+      query($id: IssuablesCustomFieldID!) {
+        group(fullPath: "#{group.full_path}") {
+          customField(id: $id) {
+            id
+            name
+          }
+        }
+      }
+      QUERY
+    end
+
+    it 'returns custom field with the given ID' do
+      post_graphql(query, current_user: guest, variables: { id: text_field.to_global_id.to_s })
+
+      expect(response).to have_gitlab_http_status(:ok)
+
+      expect(graphql_data_at(:group, :customField)).to match(
+        a_hash_including(
+          'id' => text_field.to_global_id.to_s,
+          'name' => text_field.name
+        )
+      )
+    end
   end
 
   context 'when feature is not available' do
@@ -49,7 +75,7 @@ RSpec.describe 'Fetching a single custom field', feature_category: :team_plannin
       post_graphql(query, current_user: guest, variables: { id: text_field.to_global_id.to_s })
 
       expect(response).to have_gitlab_http_status(:ok)
-      expect(graphql_data_at(:group, :customField)).to be_blank
+      expect(graphql_data_at(:customField)).to be_blank
     end
   end
 
@@ -62,7 +88,7 @@ RSpec.describe 'Fetching a single custom field', feature_category: :team_plannin
       post_graphql(query, current_user: guest, variables: { id: text_field.to_global_id.to_s })
 
       expect(response).to have_gitlab_http_status(:ok)
-      expect(graphql_data_at(:group, :customField)).to be_blank
+      expect(graphql_data_at(:customField)).to be_blank
     end
   end
 end
