@@ -13,6 +13,10 @@ module Groups
 
       feature_category :security_asset_inventories
 
+      include ProductAnalyticsTracking
+
+      track_internal_event :show, name: 'view_group_security_inventory'
+
       def show; end
 
       private
@@ -21,6 +25,12 @@ module Groups
         render_404 unless License.feature_available?(:security_inventory) &&
           ::Feature.enabled?(:security_inventory_dashboard, group, type: :wip)
       end
+
+      def tracking_namespace_source
+        group
+      end
+
+      def tracking_project_source; end
     end
   end
 end
