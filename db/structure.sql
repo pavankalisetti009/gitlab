@@ -3012,6 +3012,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_9e875cabe9c9() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."namespace_id" IS NULL THEN
+  SELECT "namespace_id"
+  INTO NEW."namespace_id"
+  FROM "wiki_page_meta"
+  WHERE "wiki_page_meta"."id" = NEW."wiki_page_meta_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_9f3745f8fe32() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -24217,7 +24233,8 @@ CREATE TABLE wiki_page_slugs (
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
     slug character varying(2048) NOT NULL,
-    project_id bigint
+    project_id bigint,
+    namespace_id bigint
 );
 
 CREATE SEQUENCE wiki_page_slugs_id_seq
@@ -36138,6 +36155,8 @@ CREATE INDEX index_wiki_page_meta_user_mentions_on_namespace_id ON wiki_page_met
 
 CREATE INDEX index_wiki_page_meta_user_mentions_on_note_id ON wiki_page_meta_user_mentions USING btree (note_id);
 
+CREATE INDEX index_wiki_page_slugs_on_namespace_id ON wiki_page_slugs USING btree (namespace_id);
+
 CREATE INDEX index_wiki_page_slugs_on_project_id ON wiki_page_slugs USING btree (project_id);
 
 CREATE UNIQUE INDEX index_wiki_page_slugs_on_slug_and_wiki_page_meta_id ON wiki_page_slugs USING btree (slug, wiki_page_meta_id);
@@ -38938,6 +38957,8 @@ CREATE TRIGGER trigger_9b944f36fdac BEFORE INSERT OR UPDATE ON approval_merge_re
 
 CREATE TRIGGER trigger_9e137c16de79 BEFORE INSERT OR UPDATE ON vulnerability_findings_remediations FOR EACH ROW EXECUTE FUNCTION trigger_9e137c16de79();
 
+CREATE TRIGGER trigger_9e875cabe9c9 BEFORE INSERT OR UPDATE ON wiki_page_slugs FOR EACH ROW EXECUTE FUNCTION trigger_9e875cabe9c9();
+
 CREATE TRIGGER trigger_9f3745f8fe32 BEFORE INSERT OR UPDATE ON merge_requests_closing_issues FOR EACH ROW EXECUTE FUNCTION trigger_9f3745f8fe32();
 
 CREATE TRIGGER trigger_9f3de326ea61 BEFORE INSERT OR UPDATE ON ci_pipeline_schedule_variables FOR EACH ROW EXECUTE FUNCTION trigger_9f3de326ea61();
@@ -41041,6 +41062,9 @@ ALTER TABLE ONLY clusters
 
 ALTER TABLE ONLY vulnerability_external_issue_links
     ADD CONSTRAINT fk_f07bb8233d FOREIGN KEY (vulnerability_id) REFERENCES vulnerabilities(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY wiki_page_slugs
+    ADD CONSTRAINT fk_f07dd9db19 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY epics
     ADD CONSTRAINT fk_f081aa4489 FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
