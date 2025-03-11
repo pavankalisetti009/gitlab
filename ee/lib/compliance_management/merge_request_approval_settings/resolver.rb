@@ -51,13 +51,11 @@ module ComplianceManagement
       end
 
       def selective_code_owner_removals
-        project_value = @project && @project.project_setting.read_attribute(:selective_code_owner_removals)
+        # The 'Remove all approvals' setting takes precedence over selective CodeOwners removals
+        retain_group_value = group_settings&.retain_approvals_on_push
+        project_value = (@project && @project.project_setting.read_attribute(:selective_code_owner_removals)) || false
 
-        ComplianceManagement::MergeRequestApprovalSettings::Setting.new(
-          value: !!project_value,
-          locked: false,
-          inherited_from: nil
-        )
+        setting(nil, retain_group_value, project_value)
       end
 
       def require_reauthentication_to_approve

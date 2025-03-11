@@ -189,6 +189,39 @@ RSpec.describe ::ComplianceManagement::MergeRequestApprovalSettings::Resolver, f
     end
   end
 
+  describe '#selective_code_owner_removals' do
+    where(:group_retains_approvals, :project_selective_code_owner_removals, :value, :locked, :inherited_from) do
+      # Cases which do not include a group
+      nil | true  | true  | false | nil
+      nil | false | false | false | nil
+
+      # Cases with a project
+      true  | false | false | false | nil
+      false | true  | false | true  | :group
+      false | false | false | true  | :group
+      true  | true  | true  | false | nil
+    end
+
+    with_them do
+      before do
+        group.group_merge_request_approval_setting.update!(retain_approvals_on_push: !!group_retains_approvals)
+        project.project_setting.update!(selective_code_owner_removals: project_selective_code_owner_removals)
+      end
+
+      let(:object) do
+        if project_selective_code_owner_removals.nil?
+          described_class.new(group).selective_code_owner_removals
+        elsif group_retains_approvals.nil?
+          described_class.new(nil, project: project).selective_code_owner_removals
+        else
+          described_class.new(group, project: project).selective_code_owner_removals
+        end
+      end
+
+      it_behaves_like 'a MR approval setting'
+    end
+  end
+
   describe '#require_password_to_approve' do
     where(:group_requires_password, :project_requires_password, :value, :locked, :inherited_from) do
       true  | nil | true  | false | nil
