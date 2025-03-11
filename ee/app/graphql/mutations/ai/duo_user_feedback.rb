@@ -15,7 +15,8 @@ module Mutations
       def resolve(**args)
         raise_resource_not_available_error! unless current_user
 
-        chat_storage = ::Gitlab::Llm::ChatStorage.new(current_user, args[:agent_version_id]&.model_id)
+        thread = ::Ai::Conversation::Message.find_for_user!(args[:ai_message_id], current_user)&.thread
+        chat_storage = ::Gitlab::Llm::ChatStorage.new(current_user, args[:agent_version_id]&.model_id, thread)
         message = chat_storage.messages.find { |m| m.id == args[:ai_message_id] }
 
         raise_resource_not_available_error! unless message
@@ -25,6 +26,8 @@ module Mutations
         track_snowplow_event(args[:tracking_event], message)
 
         { errors: [] }
+      rescue ActiveRecord::RecordNotFound
+        raise_resource_not_available_error!
       end
 
       private

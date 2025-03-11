@@ -3460,6 +3460,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_cfbec3f07e2b() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."project_id"
+  FROM "deployments"
+  WHERE "deployments"."id" = NEW."deployment_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_d4487a75bd44() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -10885,6 +10901,24 @@ CREATE TABLE ci_pipeline_metadata (
     CONSTRAINT check_9d3665463c CHECK ((char_length(name) <= 255))
 );
 
+CREATE TABLE ci_pipeline_schedule_inputs (
+    id bigint NOT NULL,
+    pipeline_schedule_id bigint NOT NULL,
+    project_id bigint NOT NULL,
+    name text NOT NULL,
+    value jsonb,
+    CONSTRAINT check_a340b48bb4 CHECK ((char_length(name) <= 255))
+);
+
+CREATE SEQUENCE ci_pipeline_schedule_inputs_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE ci_pipeline_schedule_inputs_id_seq OWNED BY ci_pipeline_schedule_inputs.id;
+
 CREATE TABLE ci_pipeline_schedule_variables (
     id bigint NOT NULL,
     key character varying NOT NULL,
@@ -12981,7 +13015,8 @@ CREATE TABLE deployment_clusters (
 CREATE TABLE deployment_merge_requests (
     deployment_id bigint NOT NULL,
     merge_request_id bigint NOT NULL,
-    environment_id bigint
+    environment_id bigint,
+    project_id bigint
 );
 
 CREATE TABLE deployments (
@@ -25572,6 +25607,8 @@ ALTER TABLE ONLY ci_pipeline_chat_data ALTER COLUMN id SET DEFAULT nextval('ci_p
 
 ALTER TABLE ONLY ci_pipeline_messages ALTER COLUMN id SET DEFAULT nextval('ci_pipeline_messages_id_seq'::regclass);
 
+ALTER TABLE ONLY ci_pipeline_schedule_inputs ALTER COLUMN id SET DEFAULT nextval('ci_pipeline_schedule_inputs_id_seq'::regclass);
+
 ALTER TABLE ONLY ci_pipeline_schedule_variables ALTER COLUMN id SET DEFAULT nextval('ci_pipeline_schedule_variables_id_seq'::regclass);
 
 ALTER TABLE ONLY ci_pipeline_schedules ALTER COLUMN id SET DEFAULT nextval('ci_pipeline_schedules_id_seq'::regclass);
@@ -27754,6 +27791,9 @@ ALTER TABLE ONLY ci_pipeline_messages
 
 ALTER TABLE ONLY ci_pipeline_metadata
     ADD CONSTRAINT ci_pipeline_metadata_pkey PRIMARY KEY (pipeline_id);
+
+ALTER TABLE ONLY ci_pipeline_schedule_inputs
+    ADD CONSTRAINT ci_pipeline_schedule_inputs_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY ci_pipeline_schedule_variables
     ADD CONSTRAINT ci_pipeline_schedule_variables_pkey PRIMARY KEY (id);
@@ -32545,6 +32585,10 @@ CREATE INDEX index_ci_pipeline_messages_on_project_id ON ci_pipeline_messages US
 
 CREATE INDEX index_ci_pipeline_metadata_on_project_id ON ci_pipeline_metadata USING btree (project_id);
 
+CREATE INDEX index_ci_pipeline_schedule_inputs_on_pipeline_schedule_id ON ci_pipeline_schedule_inputs USING btree (pipeline_schedule_id);
+
+CREATE INDEX index_ci_pipeline_schedule_inputs_on_project_id ON ci_pipeline_schedule_inputs USING btree (project_id);
+
 CREATE INDEX index_ci_pipeline_schedule_variables_on_project_id ON ci_pipeline_schedule_variables USING btree (project_id);
 
 CREATE UNIQUE INDEX index_ci_pipeline_schedule_variables_on_schedule_id_and_key ON ci_pipeline_schedule_variables USING btree (pipeline_schedule_id, key);
@@ -34058,6 +34102,8 @@ CREATE INDEX index_merge_request_reviewers_on_project_id ON merge_request_review
 CREATE INDEX index_merge_request_reviewers_on_user_id ON merge_request_reviewers USING btree (user_id);
 
 CREATE UNIQUE INDEX index_merge_request_user_mentions_on_note_id ON merge_request_user_mentions USING btree (note_id) WHERE (note_id IS NOT NULL);
+
+CREATE INDEX index_merge_request_user_mentions_on_project_id ON merge_request_user_mentions USING btree (project_id);
 
 CREATE INDEX index_merge_requests_approval_rules_approver_groups_on_group_id ON merge_requests_approval_rules_approver_groups USING btree (group_id);
 
@@ -39019,6 +39065,8 @@ CREATE TRIGGER trigger_cd50823537a3 BEFORE INSERT OR UPDATE ON issuable_slas FOR
 
 CREATE TRIGGER trigger_cf646a118cbb BEFORE INSERT OR UPDATE ON milestone_releases FOR EACH ROW EXECUTE FUNCTION trigger_cf646a118cbb();
 
+CREATE TRIGGER trigger_cfbec3f07e2b BEFORE INSERT OR UPDATE ON deployment_merge_requests FOR EACH ROW EXECUTE FUNCTION trigger_cfbec3f07e2b();
+
 CREATE TRIGGER trigger_d4487a75bd44 BEFORE INSERT OR UPDATE ON terraform_state_versions FOR EACH ROW EXECUTE FUNCTION trigger_d4487a75bd44();
 
 CREATE TRIGGER trigger_d5c895007948 BEFORE INSERT OR UPDATE ON protected_environment_approval_rules FOR EACH ROW EXECUTE FUNCTION trigger_d5c895007948();
@@ -39430,6 +39478,9 @@ ALTER TABLE ONLY namespace_settings
 
 ALTER TABLE ONLY packages_nuget_metadata
     ADD CONSTRAINT fk_21569c0856 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY merge_request_user_mentions
+    ADD CONSTRAINT fk_217c683366 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY security_pipeline_execution_project_schedules
     ADD CONSTRAINT fk_21a3dca413 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
@@ -41506,6 +41557,9 @@ ALTER TABLE ONLY boards_epic_user_preferences
 
 ALTER TABLE ONLY group_wiki_repositories
     ADD CONSTRAINT fk_rails_26f867598c FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY ci_pipeline_schedule_inputs
+    ADD CONSTRAINT fk_rails_2709bc4c28 FOREIGN KEY (pipeline_schedule_id) REFERENCES ci_pipeline_schedules(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY lfs_file_locks
     ADD CONSTRAINT fk_rails_27a1d98fa8 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;

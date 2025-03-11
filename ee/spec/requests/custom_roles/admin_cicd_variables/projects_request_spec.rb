@@ -26,6 +26,35 @@ RSpec.describe 'User with admin_cicd_variables custom role', feature_category: :
     end
   end
 
+  describe 'Querying Ci/CD settings pipelineVariablesMinimumOverrideRole' do
+    let_it_be(:role) do
+      create(:member_role,
+        :developer,
+        :manage_merge_request_settings,
+        namespace: group,
+        admin_cicd_variables: true)
+    end
+
+    let_it_be(:member) { create(:group_member, :developer, member_role: role, user: user, source: project.group) }
+    let(:query) do
+      %(
+        query {
+          project(fullPath: "#{project.full_path}") {
+            ciCdSettings {
+              pipelineVariablesMinimumOverrideRole
+            }
+          }
+        }
+      )
+    end
+
+    it 'returns minimum override role' do
+      result = GitlabSchema.execute(query, context: { current_user: user }).as_json
+      settings = result.dig('data', 'project', 'ciCdSettings')
+      expect(settings).to eq('pipelineVariablesMinimumOverrideRole' => 'no_one_allowed')
+    end
+  end
+
   describe 'Querying CI Variables and environment scopes' do
     include GraphqlHelpers
 

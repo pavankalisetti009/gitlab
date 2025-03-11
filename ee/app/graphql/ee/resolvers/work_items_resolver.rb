@@ -20,6 +20,11 @@ module EE
         argument :weight, GraphQL::Types::String,
           required: false,
           description: 'Weight applied to the work item, "none" and "any" values are supported.'
+        argument :custom_field, [::Types::WorkItems::Widgets::CustomFieldFilterInputType],
+          required: false,
+          experiment: { milestone: '17.10' },
+          description: 'Filter by custom fields.',
+          prepare: ->(custom_fields, _ctx) { Array(custom_fields).inject({}, :merge) }
       end
 
       override :resolve_with_lookahead

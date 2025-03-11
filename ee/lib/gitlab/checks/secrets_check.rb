@@ -204,7 +204,14 @@ module Gitlab
       end
 
       def use_diff_scan?
-        Feature.enabled?(:spp_scan_diffs, project) && http_or_ssh_protocol?
+        Feature.enabled?(:spp_scan_diffs, project) && (http_or_ssh_protocol? || secrets_check_enabled_for_web_requests?)
+      end
+
+      def secrets_check_enabled_for_web_requests?
+        return false if Feature.disabled?(:secret_checks_for_web_requests, project)
+        return false if changes_access.gitaly_context.nil?
+
+        changes_access.gitaly_context['enable_secrets_check'] == true
       end
 
       def includes_full_revision_history?

@@ -28,6 +28,12 @@ module EE
             required: false,
             as: :health_status,
             description: 'Health status of the issue, "none" and "any" values are supported.'
+
+          argument :custom_field, [::Types::WorkItems::Widgets::CustomFieldFilterInputType],
+            required: false,
+            experiment: { milestone: '17.10' },
+            description: 'Filter by custom fields.',
+            prepare: ->(custom_fields, _ctx) { Array(custom_fields).inject({}, :merge) }
         end
       end
     end

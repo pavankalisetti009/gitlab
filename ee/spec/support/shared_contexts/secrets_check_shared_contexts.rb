@@ -119,6 +119,18 @@ RSpec.shared_context 'secrets check context' do
     )
   end
 
+  let(:changes_access_web_secrets_check_enabled) do
+    Gitlab::Checks::ChangesAccess.new(
+      changes,
+      project: project,
+      user_access: user_access,
+      protocol: 'web',
+      logger: logger,
+      push_options: push_options,
+      gitaly_context: { 'enable_secrets_check' => true }
+    )
+  end
+
   let(:delete_changes_access) do
     Gitlab::Checks::ChangesAccess.new(
       delete_changes,
