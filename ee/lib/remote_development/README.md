@@ -45,6 +45,7 @@
     - [Matcher entry](#matcher-entry)
     - [Matcher chain methods](#matcher-chain-methods)
   - [Matcher internals](#matcher-internals)
+- [Debugging](#debugging)
 - [Benefits](#benefits)
   - [Loose coupling, high cohesion](#loose-coupling-high-cohesion)
   - [No need to write or test service classes](#no-need-to-write-or-test-service-classes)
@@ -897,6 +898,26 @@ For the final configuration step in `setup_mock_expectations_for_steps`, we setu
 
 Finally, we call the passed block that in turn calls the ROP main class method being tested. We then use the `expected_return_value_matcher` configured in the `and_return_expected_value` matcher chain method to
 assert the expected return value.
+
+## Debugging
+
+Viewing workspaces logs:
+
+1. In terminal `tail -f log/remote_development.log | jq`
+
+Viewing workspaces logs with `config_to_apply` included in reconciliation response (which may contain
+sensitive information and secrets):
+
+1. Edit `env.runit` in GDK dir
+1. Add
+    ```
+    #--- Begin Workspaces settings ---#
+    export GITLAB_DEBUG_WORKSPACES_OBSERVE_CONFIG_TO_APPLY=true
+    #--- End Workspaces settings ---#
+    ```
+1. `gdk restart`
+1. In terminal `tail -f log/remote_development.log | jq`
+1. Search for `"config_to_apply":`
 
 ## Benefits
 

@@ -9,43 +9,32 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
   let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
   let(:logger) { instance_double(::Logger) }
 
-  let(:workspace_rails_infos) do
-    [
-      {
-        name: "workspace1",
-        namespace: "namespace1",
-        deployment_resource_version: "1",
-        desired_state: desired_state,
-        actual_state: actual_state,
-        config_to_apply: :does_not_matter_should_not_be_logged
-      },
-      {
-        name: "workspace2",
-        namespace: "namespace2",
-        deployment_resource_version: "2",
-        desired_state: desired_state,
-        actual_state: actual_state,
-        config_to_apply: :does_not_matter_should_not_be_logged
-      }
-    ]
+  let(:workspace1_rails_info_without_config_to_apply) do
+    {
+      name: "workspace1",
+      namespace: "namespace1",
+      deployment_resource_version: "1",
+      desired_state: desired_state,
+      actual_state: actual_state
+    }
   end
 
-  let(:expected_logged_workspace_rails_infos) do
+  let(:workspace2_rails_info_without_config_to_apply) do
+    {
+      name: "workspace2",
+      namespace: "namespace2",
+      deployment_resource_version: "2",
+      desired_state: desired_state,
+      actual_state: actual_state
+    }
+  end
+
+  let(:config_to_apply) { { example: "config" } }
+
+  let(:workspace_rails_infos) do
     [
-      {
-        name: "workspace1",
-        namespace: "namespace1",
-        deployment_resource_version: "1",
-        desired_state: desired_state,
-        actual_state: actual_state
-      },
-      {
-        name: "workspace2",
-        namespace: "namespace2",
-        deployment_resource_version: "2",
-        desired_state: desired_state,
-        actual_state: actual_state
-      }
+      workspace1_rails_info_without_config_to_apply.merge(config_to_apply: config_to_apply),
+      workspace2_rails_info_without_config_to_apply.merge(config_to_apply: config_to_apply)
     ]
   end
 
@@ -80,22 +69,50 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
     described_class.observe(context)
   end
 
-  it "logs workspace_rails_infos", :unlimited_max_formatted_output_length do
-    expect(logger).to receive(:debug).with(
-      message: 'Returning verified response_payload',
-      agent_id: agent.id,
-      update_type: update_type,
-      response_payload: {
-        workspace_rails_info_count: workspace_rails_infos.length,
-        workspace_rails_infos: expected_logged_workspace_rails_infos,
-        settings: {
-          full_reconciliation_interval_seconds: 3600,
-          partial_reconciliation_interval_seconds: 10
-        }
-      },
-      observability_for_rails_infos: expected_observability_for_rails_infos
-    )
+  shared_examples "logs expected response payload" do
+    it "logs workspace_rails_infos", :unlimited_max_formatted_output_length do
+      expect(logger).to receive(:debug).with(
+        message: "Returning verified response_payload",
+        agent_id: agent.id,
+        update_type: update_type,
+        response_payload: {
+          workspace_rails_info_count: workspace_rails_infos.length,
+          workspace_rails_infos: expected_logged_workspace_rails_infos,
+          settings: {
+            full_reconciliation_interval_seconds: 3600,
+            partial_reconciliation_interval_seconds: 10
+          }
+        },
+        observability_for_rails_infos: expected_observability_for_rails_infos
+      )
 
-    expect(returned_value).to eq(context)
+      expect(returned_value).to eq(context)
+    end
+  end
+
+  context "when GITLAB_DEBUG_WORKSPACES_OBSERVE_CONFIG_TO_APPLY is NOT set" do
+    let(:expected_logged_workspace_rails_infos) do
+      [
+        workspace1_rails_info_without_config_to_apply,
+        workspace2_rails_info_without_config_to_apply
+      ]
+    end
+
+    it_behaves_like "logs expected response payload"
+  end
+
+  context "when GITLAB_DEBUG_WORKSPACES_OBSERVE_CONFIG_TO_APPLY is set" do
+    let(:expected_logged_workspace_rails_infos) do
+      [
+        workspace1_rails_info_without_config_to_apply.merge(config_to_apply: config_to_apply),
+        workspace2_rails_info_without_config_to_apply.merge(config_to_apply: config_to_apply)
+      ]
+    end
+
+    before do
+      stub_env("GITLAB_DEBUG_WORKSPACES_OBSERVE_CONFIG_TO_APPLY", "true")
+    end
+
+    it_behaves_like "logs expected response payload"
   end
 end
