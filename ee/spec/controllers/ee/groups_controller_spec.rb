@@ -246,7 +246,10 @@ RSpec.describe GroupsController, :with_current_organization, feature_category: :
   end
 
   describe 'DELETE #destroy' do
-    subject { delete :destroy, params: { id: group.to_param } }
+    let(:format) { :html }
+    let(:params) { {} }
+
+    subject { delete :destroy, format: format, params: { id: group.to_param, **params } }
 
     before do
       group.add_owner(user)
@@ -273,10 +276,22 @@ RSpec.describe GroupsController, :with_current_organization, feature_category: :
             end
           end
 
-          it 'redirects to group path' do
-            subject
+          context 'for a html request' do
+            it 'redirects to group path' do
+              subject
 
-            expect(response).to redirect_to(group_path(group))
+              expect(response).to redirect_to(group_path(group))
+            end
+          end
+
+          context 'for a json request', :freeze_time do
+            let(:format) { :json }
+
+            it 'returns json with message' do
+              subject
+
+              expect(json_response['message']).to eq("'#{group.name}' has been scheduled for deletion and will be deleted on #{permanent_deletion_date_formatted(group, group.marked_for_deletion_on)}.")
+            end
           end
         end
 
@@ -289,11 +304,23 @@ RSpec.describe GroupsController, :with_current_organization, feature_category: :
             expect { subject }.not_to change { group.reload.marked_for_deletion? }.from(false)
           end
 
-          it 'redirects to group edit page' do
-            subject
+          context 'for a html request' do
+            it 'redirects to group edit page' do
+              subject
 
-            expect(response).to redirect_to(edit_group_path(group))
-            expect(flash[:alert]).to include 'error'
+              expect(response).to redirect_to(edit_group_path(group))
+              expect(flash[:alert]).to include 'error'
+            end
+          end
+
+          context 'for a json request' do
+            let(:format) { :json }
+
+            it 'returns json with message' do
+              subject
+
+              expect(json_response['message']).to eq("error")
+            end
           end
         end
 
@@ -303,39 +330,108 @@ RSpec.describe GroupsController, :with_current_organization, feature_category: :
           end
 
           context 'when permanently_remove param is set' do
-            it 'deletes the group immediately' do
-              expect(GroupDestroyWorker).to receive(:perform_async)
+            let(:params) { { permanently_remove: true } }
 
-              delete :destroy, params: { id: group.to_param, permanently_remove: true }
+            context 'for a html request' do
+              it 'deletes the group immediately and redirects to root path' do
+                expect(GroupDestroyWorker).to receive(:perform_async)
 
-              expect(response).to redirect_to(root_path)
-              expect(flash[:toast]).to include "Group '#{group.name}' is being deleted."
+                subject
+
+                expect(response).to redirect_to(root_path)
+                expect(flash[:toast]).to include "Group '#{group.name}' is being deleted."
+              end
+            end
+
+            context 'for a json request' do
+              let(:format) { :json }
+
+              it 'deletes the group immediately and returns json with message' do
+                expect(GroupDestroyWorker).to receive(:perform_async)
+
+                subject
+
+                expect(json_response['message']).to eq("Group '#{group.name}' is being deleted.")
+              end
             end
           end
 
           context 'when permanently_remove param is not set' do
-            it 'does nothing' do
-              subject
+            context 'for a html request' do
+              it 'redirects to edit path with error' do
+                subject
 
-              expect(response).to redirect_to(edit_group_path(group))
-              expect(flash[:alert]).to include "Group has been already marked for deletion"
+                expect(response).to redirect_to(edit_group_path(group))
+                expect(flash[:alert]).to include "Group has been already marked for deletion"
+              end
+            end
+
+            context 'for a json request' do
+              let(:format) { :json }
+
+              it 'returns json with message' do
+                subject
+
+                expect(json_response['message']).to eq("Group has been already marked for deletion")
+              end
             end
           end
         end
       end
 
-      context 'delayed deletion feature is not available' do
+      context 'delayed deletion feature is not available', :sidekiq_inline do
         before do
           stub_licensed_features(adjourned_deletion_for_projects_and_groups: false)
         end
 
-        it 'immediately schedules a group destroy and redirects to root page with alert about immediate deletion' do
-          Sidekiq::Testing.fake! do
-            expect { subject }.to change { GroupDestroyWorker.jobs.size }.by(1)
-          end
+        context 'for a html request' do
+          it 'immediately schedules a group destroy and redirects to root page with alert about immediate deletion' do
+            Sidekiq::Testing.fake! do
+              expect { subject }.to change { GroupDestroyWorker.jobs.size }.by(1)
+            end
 
-          expect(response).to redirect_to(root_path)
-          expect(flash[:toast]).to include "Group '#{group.name}' is being deleted."
+            expect(response).to redirect_to(root_path)
+            expect(flash[:toast]).to include "Group '#{group.name}' is being deleted."
+          end
+        end
+
+        context 'for a json request' do
+          let(:format) { :json }
+
+          it 'immediately schedules a group destroy and returns json with message' do
+            Sidekiq::Testing.fake! do
+              expect { subject }.to change { GroupDestroyWorker.jobs.size }.by(1)
+            end
+
+            expect(json_response['message']).to eq("Group '#{group.name}' is being deleted.")
+          end
+        end
+      end
+
+      context 'when group is linked to a subscription', :saas do
+        let_it_be(:group_with_plan) do
+          create(:group_with_plan, plan: :ultimate_plan, owners: user, organization: current_organization)
+        end
+
+        let(:params) { { id: group_with_plan.to_param } }
+
+        context 'for a html request' do
+          it 'redirects to edit page with alert' do
+            subject
+
+            expect(response).to redirect_to(edit_group_path(group_with_plan))
+            expect(flash[:alert]).to eq 'This group is linked to a subscription'
+          end
+        end
+
+        context 'for a json request' do
+          let(:format) { :json }
+
+          it 'returns json with message' do
+            subject
+
+            expect(json_response['message']).to eq('This group is linked to a subscription')
+          end
         end
       end
     end
