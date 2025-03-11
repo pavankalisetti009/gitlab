@@ -292,6 +292,15 @@ module EE
       ]
     end
 
+    override :vscode_extension_marketplace_settings_description
+    def vscode_extension_marketplace_settings_description
+      if License.feature_available?(:remote_development)
+        _('Enable VS Code Extension Marketplace and configure the extensions registry for Web IDE and Workspaces.')
+      else
+        super
+      end
+    end
+
     def zoekt_settings_checkboxes(form)
       ::Search::Zoekt::Settings.boolean_settings.map do |setting_name, config|
         form.gitlab_ui_checkbox_component(

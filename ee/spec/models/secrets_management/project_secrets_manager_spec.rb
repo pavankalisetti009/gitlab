@@ -91,4 +91,29 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
       end
     end
   end
+
+  describe '#ci_jwt' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:secrets_manager) { build(:project_secrets_manager, project: project) }
+    let_it_be(:ci_build) { create(:ci_build, project: project) }
+    let_it_be(:openbao_server_url) { described_class.server_url }
+
+    subject(:ci_jwt) { secrets_manager.ci_jwt(ci_build) }
+
+    before do
+      allow(Gitlab::Ci::JwtV2).to receive(:for_build).with(ci_build, aud: openbao_server_url)
+      .and_return("generated_jwt_id_token_for_secrets_manager")
+    end
+
+    it 'generates a JWT for the build' do
+      expect(ci_jwt).to eq("generated_jwt_id_token_for_secrets_manager")
+    end
+
+    it_behaves_like 'internal event tracking' do
+      let(:event) { 'generate_id_token_for_secrets_manager_authentication' }
+      let(:category) { described_class.name }
+      let(:namespace) { project.namespace }
+      let(:user) { ci_build.user }
+    end
+  end
 end

@@ -8,6 +8,14 @@ FactoryBot.define do
     after(:build) do |vulnerability_statistic, _|
       vulnerability_statistic.archived = vulnerability_statistic.project&.archived
       vulnerability_statistic.traversal_ids = vulnerability_statistic.project&.namespace&.traversal_ids
+      vulnerability_statistic.total = [
+        vulnerability_statistic.low,
+        vulnerability_statistic.medium,
+        vulnerability_statistic.high,
+        vulnerability_statistic.critical,
+        vulnerability_statistic.unknown,
+        vulnerability_statistic.info
+      ].sum
     end
 
     trait :grade_a do
