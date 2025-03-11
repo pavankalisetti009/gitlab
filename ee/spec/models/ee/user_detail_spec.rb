@@ -52,7 +52,10 @@ RSpec.describe UserDetail, feature_category: :system_access do
     end
 
     it 'matches with role enum values in onboarding_status json schema' do
-      role_enum = json_schema.dig('properties', 'role', 'enum')
+      role_enum =
+        json_schema.dig('properties', 'role', 'enum').reject do |value|
+          value == 99 # non-applicable value, see https://gitlab.com/gitlab-org/gitlab/-/issues/524340
+        end
       expect(role_enum).to eq(described_class.onboarding_status_roles.values)
     end
 
