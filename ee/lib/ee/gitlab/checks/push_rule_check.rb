@@ -44,6 +44,9 @@ module EE
         # @raise [Gitlab::GitAccess::ForbiddenError] if any check fails
         def run_checks_in_sequence!
           check_tag_or_branch!
+
+          return if ::Feature.enabled?(:push_rule_file_size_limit, project)
+
           check_file_size!
         end
 
@@ -63,8 +66,10 @@ module EE
             check_tag_or_branch!
           end
 
-          parallelize(git_env) do
-            check_file_size!
+          unless ::Feature.enabled?(:push_rule_file_size_limit, project)
+            parallelize(git_env) do
+              check_file_size!
+            end
           end
 
           # Block whilst waiting for threads, however if one errors
