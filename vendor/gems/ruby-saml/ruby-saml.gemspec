@@ -15,9 +15,10 @@ Gem::Specification.new do |s|
     "LICENSE",
     "README.md"
   ]
-  # rubocop:disable Gemspec/AvoidExecutingGit -- Temporary gem vendor
-  s.files = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
-  # rubocop:enable Gemspec/AvoidExecutingGit
+  s.files = Dir[
+    "lib/**/*.*", ".document", "CHANGELOG.md", "Gemfile", "LICENSE", "README.md",
+    "Rakefile", "UPGRADING.md", "gemfiles/nokogiri-1.5.gemfile", "ruby-saml.gemspec"
+  ]
   s.homepage = %q{https://github.com/saml-toolkits/ruby-saml}
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
