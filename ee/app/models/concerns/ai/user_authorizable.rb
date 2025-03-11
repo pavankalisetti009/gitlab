@@ -14,6 +14,8 @@ module Ai
     DUO_PRO_ADD_ON_CACHE_KEY = 'user-%{user_id}-code-suggestions-add-on-cache'
     # refers to add-ons listed in GitlabSubscriptions::AddOn::DUO_ADD_ONS
     DUO_ADD_ONS_CACHE_KEY = 'user-%{user_id}-duo-add-ons-cache'
+    AMAZON_Q_FEATURES = [:duo_chat, :code_suggestions, :troubleshoot_job, :explain_vulnerability,
+      :resolve_vulnerability, :summarize_comments].freeze
 
     Response = Struct.new(:allowed?, :namespace_ids, :enablement_type, keyword_init: true)
 
@@ -93,8 +95,12 @@ module Ai
         end
       end
 
-      def allowed_to_use?(...)
-        allowed_to_use(...).allowed?
+      def allowed_to_use?(ai_feature, service_name: nil, licensed_feature: :ai_features)
+        if amazon_q_connected?(ai_feature)
+          return allowed_to_use(ai_feature, service_name: :amazon_q_integration, licensed_feature: :amazon_q).allowed?
+        end
+
+        allowed_to_use(ai_feature, service_name: service_name, licensed_feature: licensed_feature).allowed?
       end
 
       def allowed_by_namespace_ids(...)
@@ -131,6 +137,12 @@ module Ai
       end
 
       private
+
+      def amazon_q_connected?(ai_feature)
+        return false unless ::Feature.enabled?(:amazon_q_chat_and_code_suggestions, self) && ::Ai::AmazonQ.connected?
+
+        AMAZON_Q_FEATURES.include?(ai_feature)
+      end
 
       def namespaces_allowed_in_com(maturity)
         namespaces = member_namespaces.with_ai_supported_plan

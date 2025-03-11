@@ -1,9 +1,0 @@
----
-name: duo_chat_allowed_to_use
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/183834
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/183843
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/523874
-milestone: '17.10'
-group: group::duo chat
-type: gitlab_com_derisk
-default_enabled: false
