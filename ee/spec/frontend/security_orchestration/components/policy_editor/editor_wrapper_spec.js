@@ -79,7 +79,7 @@ describe('EditorWrapper component', () => {
   } = {}) => {
     wrapper = shallowMountExtended(EditorWrapper, {
       propsData: {
-        selectedPolicyType: 'container',
+        selectedPolicy: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution,
         ...propsData,
       },
       provide: {
@@ -126,15 +126,15 @@ describe('EditorWrapper component', () => {
       });
 
       it.each`
-        policyTypeId                                                   | findComponent                              | selectedPolicyType
-        ${POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.value}       | ${findPipelineExecutionPolicyEditor}       | ${POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter}
-        ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.value}           | ${findScanExecutionPolicyEditor}           | ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter}
-        ${POLICY_TYPE_COMPONENT_OPTIONS.approval.value}                | ${findScanResultPolicyEditor}              | ${POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter}
-        ${POLICY_TYPE_COMPONENT_OPTIONS.vulnerabilityManagement.value} | ${findVulnerabilityManagementPolicyEditor} | ${POLICY_TYPE_COMPONENT_OPTIONS.vulnerabilityManagement.urlParameter}
+        policyType                                               | findComponent                              | selectedPolicyType
+        ${POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution}       | ${findPipelineExecutionPolicyEditor}       | ${POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter}
+        ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution}           | ${findScanExecutionPolicyEditor}           | ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter}
+        ${POLICY_TYPE_COMPONENT_OPTIONS.approval}                | ${findScanResultPolicyEditor}              | ${POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter}
+        ${POLICY_TYPE_COMPONENT_OPTIONS.vulnerabilityManagement} | ${findVulnerabilityManagementPolicyEditor} | ${POLICY_TYPE_COMPONENT_OPTIONS.vulnerabilityManagement.urlParameter}
       `(
         'renders the policy editor of type $policyType when selected',
-        ({ findComponent, policyTypeId, selectedPolicyType }) => {
-          factory({ propsData: { selectedPolicyType: policyTypeId } });
+        ({ findComponent, policyType, selectedPolicyType }) => {
+          factory({ propsData: { selectedPolicy: policyType } });
           const component = findComponent();
           expect(component.exists()).toBe(true);
           expect(component.props('isEditing')).toBe(false);

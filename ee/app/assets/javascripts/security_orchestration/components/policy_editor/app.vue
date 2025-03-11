@@ -52,6 +52,9 @@ export default {
       [POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.value]: s__(
         'SecurityOrchestration|New pipeline execution policy',
       ),
+      [POLICY_TYPE_COMPONENT_OPTIONS.vulnerabilityManagement.value]: s__(
+        'SecurityOrchestration|New vulnerability management policy',
+      ),
       default: s__('SecurityOrchestration|New policy'),
     },
     editTitles: {
@@ -64,6 +67,9 @@ export default {
       [POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.value]: s__(
         'SecurityOrchestration|Edit pipeline execution policy',
       ),
+      [POLICY_TYPE_COMPONENT_OPTIONS.vulnerabilityManagement.value]: s__(
+        'SecurityOrchestration|Edit vulnerability management policy',
+      ),
       default: s__('SecurityOrchestration|Edit policy'),
     },
   },
@@ -73,6 +79,6 @@ export default {
   <div>
     <page-heading :heading="title" />
     <policy-type-selector v-if="!selectedPolicy" />
-    <editor-wrapper v-else :selected-policy-type="selectedPolicy.value" />
+    <editor-wrapper v-else :selected-policy="selectedPolicy" />
   </div>
 </template>
