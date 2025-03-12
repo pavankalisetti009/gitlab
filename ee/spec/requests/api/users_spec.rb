@@ -511,9 +511,11 @@ RSpec.describe API::Users, :with_current_organization, :aggregate_failures, feat
 
   describe 'POST /user/personal_access_tokens', :with_current_organization do
     let(:name) { 'new pat' }
+    let(:description) { 'description' }
+    let(:expires_at) { 3.days.from_now.to_date.to_s }
     let(:scopes) { %w[k8s_proxy] }
     let(:path) { "/user/personal_access_tokens" }
-    let(:params) { { name: name, scopes: scopes } }
+    let(:params) { { name: name, description: description, expires_at: expires_at, scopes: scopes } }
 
     context 'when disable_personal_access_tokens feature is available' do
       before do
@@ -542,8 +544,9 @@ RSpec.describe API::Users, :with_current_organization, :aggregate_failures, feat
 
           expect(response).to have_gitlab_http_status(:created)
           expect(json_response['name']).to eq(name)
+          expect(json_response['description']).to eq(description)
+          expect(json_response['expires_at']).to eq(expires_at)
           expect(json_response['scopes']).to eq(scopes)
-          expect(json_response['expires_at']).to eq(1.day.from_now.to_date.to_s)
           expect(json_response['id']).to be_present
           expect(json_response['created_at']).to be_present
           expect(json_response['active']).to be_truthy

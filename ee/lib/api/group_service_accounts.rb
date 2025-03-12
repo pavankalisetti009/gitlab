@@ -12,6 +12,7 @@ module API
       set_current_organization
     end
 
+    helpers ::API::Helpers::PersonalAccessTokensHelpers
     helpers do
       def user
         user_group.provisioned_users.find_by_id(params[:user_id])
@@ -128,12 +129,10 @@ module API
           end
 
           params do
-            requires :name, type: String, desc: 'The name of the personal access token'
+            use :create_personal_access_token_params
             requires :scopes, type: Array[String], coerce_with: ::API::Validations::Types::CommaSeparatedToArray.coerce,
               values: ::Gitlab::Auth.all_available_scopes.map(&:to_s),
               desc: 'The array of scopes of the personal access token'
-            optional :expires_at, type: Date,
-              desc: 'The expiration date of the personal access token in ISO 8601 format'
           end
 
           post do

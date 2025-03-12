@@ -501,9 +501,10 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
 
   describe "POST /groups/:id/service_accounts/:user_id/personal_access_tokens" do
     let(:name) { 'new pat' }
+    let(:description) { 'description' }
     let(:expires_at) { 3.days.from_now.to_date.to_s }
     let(:scopes) { %w[api read_user] }
-    let(:params) { { name: name, scopes: scopes, expires_at: expires_at } }
+    let(:params) { { name: name, description: description, expires_at: expires_at, scopes: scopes } }
 
     subject(:perform_request) do
       post(
@@ -530,6 +531,7 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
 
             expect(response).to have_gitlab_http_status(:created)
             expect(json_response['name']).to eq(name)
+            expect(json_response['description']).to eq(description)
             expect(json_response['scopes']).to eq(scopes)
             expect(json_response['expires_at']).to eq(expires_at)
             expect(json_response['id']).to be_present
