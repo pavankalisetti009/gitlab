@@ -2,7 +2,8 @@
 
 require 'spec_helper'
 
-RSpec.describe 'vulnerabilities' do
+RSpec.describe 'vulnerabilities', feature_category: :vulnerability_management do
+  let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project) }
   let_it_be(:user) { project.first_owner }
   let_it_be(:vulnerability_1) { create(:vulnerability, project: project) }
@@ -28,6 +29,7 @@ RSpec.describe 'vulnerabilities' do
   end
 
   let(:vulnerabilities) { execute.dig('data', 'project', 'vulnerabilities') }
+  let(:extensions) { execute['extensions'] }
 
   subject(:execute) { GitlabSchema.execute(query, context: { current_user: user }).as_json }
 
@@ -38,6 +40,68 @@ RSpec.describe 'vulnerabilities' do
     # create the `vulnerability_reads` records in specific order.
     create(:vulnerabilities_finding, vulnerability: vulnerability_2, project: project)
     create(:vulnerabilities_finding, vulnerability: vulnerability_1, project: project)
+  end
+
+  describe 'extensions' do
+    context 'when the query could use vulnerability identifier filtering' do
+      let(:query) do
+        %(
+          query {
+          #{vulnerable.class.name.downcase}(fullPath: "#{vulnerable.full_path}") {
+            name
+            vulnerabilities { nodes { id } } }})
+      end
+
+      before do
+        test_vulnerability_limit = 1
+        stub_const(
+          '::Security::GroupIdentifierSearch::MAX_VULNERABILITY_COUNT_GROUP_SUPPORT',
+          test_vulnerability_limit
+        )
+        allow(::Security::ProjectStatistics).to receive(:sum_vulnerability_count_for_group)
+                                                  .with(group).and_return(test_vulnerability_limit + 1)
+      end
+
+      context 'when vulnerable is project' do
+        let(:vulnerable) { project }
+
+        it { expect(extensions["disabled_filters"]).to eq [] }
+
+        context 'when the return_disabled_vulnerability_graphql_filters FF is disabled' do
+          before do
+            stub_feature_flags(return_disabled_vulnerability_graphql_filters: false)
+          end
+
+          it "does not calculate disabled vulnerability filters" do
+            expect(extensions).to be_nil
+          end
+        end
+      end
+
+      context 'when vulnerable is group' do
+        let(:vulnerable) { group }
+
+        context 'when the return_disabled_vulnerability_graphql_filters FF is disabled' do
+          before do
+            stub_feature_flags(return_disabled_vulnerability_graphql_filters: false)
+          end
+
+          it "does not calculate disabled vulnerability filters" do
+            expect(extensions).to be_nil
+          end
+        end
+
+        it { expect(extensions["disabled_filters"]).to match_array %w[identifier_name] }
+      end
+
+      context 'when the vulnerability type is not in the query' do
+        let(:query) { %(query { group(fullPath: "#{group.full_path}") { name } }) }
+
+        it "does not calculate disabled vulnerability filters" do
+          expect(extensions).to be_nil
+        end
+      end
+    end
   end
 
   describe 'nodes' do

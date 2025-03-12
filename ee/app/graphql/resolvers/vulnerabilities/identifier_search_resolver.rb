@@ -4,8 +4,7 @@ module Resolvers
   module Vulnerabilities
     class IdentifierSearchResolver < BaseResolver
       include Gitlab::Graphql::Authorize::AuthorizeResource
-
-      MAX_VULNERABILITY_COUNT_GROUP_SUPPORT = 20_000
+      include ::Security::GroupIdentifierSearch
 
       authorize :read_security_resource
 
@@ -23,7 +22,7 @@ module Resolvers
 
         validate_args(args)
 
-        group_allowed_for_search?
+        search_by_identifier_allowed!(vulnerable: object)
 
         if object.is_a?(::Project)
           ::Vulnerabilities::Identifier.search_identifier_name(
@@ -46,15 +45,6 @@ module Resolvers
       def authorize!
         Ability.allowed?(context[:current_user], :read_security_resource, object) ||
           raise_resource_not_available_error!
-      end
-
-      def group_allowed_for_search?
-        return unless object.is_a?(Group)
-
-        vulnerability_count = ::Security::ProjectStatistics.sum_vulnerability_count_for_group(object)
-        allowed = vulnerability_count <= MAX_VULNERABILITY_COUNT_GROUP_SUPPORT
-
-        raise ::Gitlab::Graphql::Errors::ArgumentError, 'Group has more than 20k vulnerabilities.' unless allowed
       end
     end
   end
