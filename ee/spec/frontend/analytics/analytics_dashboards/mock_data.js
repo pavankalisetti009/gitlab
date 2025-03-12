@@ -759,6 +759,53 @@ export const mockGroupUsageMetricsQueryResponse = {
   project: null,
 };
 
+export const mockGroupUsageMetricsZeroQueryResponse = {
+  group: {
+    id: 'gid://gitlab/Group/225',
+    fullName: 'GitLab Org',
+    avatarUrl: '/avatar.png',
+    visibility: 'public',
+    __typename: 'Group',
+    groups: {
+      __typename: 'ValueStreamDashboardCount',
+      identifier: 'GROUPS',
+      count: 0,
+      recordedAt: '2023-11-27T23:59:59Z',
+    },
+    projects: {
+      __typename: 'ValueStreamDashboardCount',
+      identifier: 'PROJECTS',
+      count: 0,
+      recordedAt: '2023-11-27T21:59:59Z',
+    },
+    users: {
+      __typename: 'ValueStreamDashboardCount',
+      identifier: 'USERS',
+      count: 0,
+      recordedAt: '2023-11-27T21:59:59Z',
+    },
+    issues: {
+      __typename: 'ValueStreamDashboardCount',
+      identifier: 'ISSUES',
+      count: 0,
+      recordedAt: '2023-11-26T23:59:59Z',
+    },
+    pipelines: {
+      __typename: 'ValueStreamDashboardCount',
+      identifier: 'PIPELINES',
+      count: 0,
+      recordedAt: undefined,
+    },
+    merge_requests: {
+      __typename: 'ValueStreamDashboardCount',
+      identifier: 'MERGE_REQUESTS',
+      count: 0,
+      recordedAt: '2022-11-27T23:59:59Z',
+    },
+  },
+  project: null,
+};
+
 export const mockProjectUsageMetricsQueryResponse = {
   group: null,
   project: {

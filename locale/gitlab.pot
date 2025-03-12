@@ -7125,6 +7125,9 @@ msgstr ""
 msgid "Analytics|Invalid visualization configuration"
 msgstr ""
 
+msgid "Analytics|Last updated: %{recordedAt}"
+msgstr ""
+
 msgid "Analytics|Learn more about %{docsLinkStart}AI impact analytics%{docsLinkEnd} and %{subscriptionLinkStart}GitLab Duo seats%{subscriptionLinkEnd}."
 msgstr ""
 
@@ -7210,6 +7213,9 @@ msgid "Analytics|Updating visualization %{visualizationName}"
 msgstr ""
 
 msgid "Analytics|Usage breakdown"
+msgstr ""
+
+msgid "Analytics|Usage data is a cumulative count and is updated monthly."
 msgstr ""
 
 msgid "Analytics|Use ClickHouse for supported analytics reports. Available when %{link_start}ClickHouse is configured%{link_end}."

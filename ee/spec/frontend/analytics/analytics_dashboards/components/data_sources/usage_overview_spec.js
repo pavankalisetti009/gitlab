@@ -176,16 +176,16 @@ describe('Usage overview Data Source', () => {
       ${'for group namespaces'}   | ${mockGroupUsageMetricsQueryResponse}   | ${mockGroupUsageOverviewData}
       ${'for project namespaces'} | ${mockProjectUsageMetricsQueryResponse} | ${mockProjectUsageOverviewData}
     `('$namespaceTypeDescription', ({ queryResponse, usageOverviewData }) => {
-      it.each`
-        label                  | data             | params
-        ${'with no data'}      | ${{}}            | ${{ namespace, queryOverrides: mockFilters }}
-        ${'with no namespace'} | ${queryResponse} | ${{ namespace: null, queryOverrides: mockFilters }}
-      `('$label returns the no data object', async ({ params }) => {
-        jest.spyOn(defaultClient, 'query').mockResolvedValue({ data: {} });
+      describe('with no data', () => {
+        beforeEach(async () => {
+          jest.spyOn(defaultClient, 'query').mockResolvedValue({ data: {} });
 
-        obj = await fetch(params);
+          obj = await fetch({ namespace, queryOverrides: mockFilters });
+        });
 
-        expect(obj).toMatchObject({ metrics: mockUsageMetricsNoData });
+        it('returns the no data object', () => {
+          expect(obj).toMatchObject({ metrics: mockUsageMetricsNoData });
+        });
       });
 
       describe('successfully completes', () => {

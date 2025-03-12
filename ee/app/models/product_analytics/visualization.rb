@@ -49,6 +49,12 @@ module ProductAnalytics
       dora_performers_score
       dora_projects_comparison
       namespace_metadata
+      groups_count
+      users_count
+      projects_count
+      issues_count
+      merge_requests_count
+      pipelines_count
     ].freeze
 
     AI_IMPACT_DASHBOARD_PATH = 'ee/lib/gitlab/analytics/ai_impact_dashboard/visualizations'
@@ -73,6 +79,9 @@ module ProductAnalytics
     VISUALIZATIONS_FOR_GROUP_ONLY = %w[
       dora_performers_score
       dora_projects_comparison
+      groups_count
+      users_count
+      projects_count
     ].freeze
 
     def self.for(container:, user:)

@@ -66,6 +66,7 @@
             "cube_analytics",
             "value_stream",
             "usage_overview",
+            "usage_count",
             "dora_metrics",
             "dora_metrics_by_project",
             "ai_impact_over_time",
