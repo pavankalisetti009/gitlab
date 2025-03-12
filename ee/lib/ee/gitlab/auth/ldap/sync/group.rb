@@ -6,6 +6,8 @@ module EE
       module Ldap
         module Sync
           class Group
+            include ::GitlabSubscriptions::MemberManagement::PromotionManagementUtils
+
             attr_reader :provider, :group, :proxy
 
             class << self
@@ -273,13 +275,15 @@ module EE
               else
                 # If you pass the user object, instead of just user ID,
                 # it saves an extra user database query.
-                group.add_member(
+                member = group.add_member(
                   user,
                   access[:base_access_level],
                   member_role_id: access[:member_role_id],
                   current_user: current_user,
                   ldap: true
                 )
+
+                trigger_event_to_promote_pending_members!(member)
               end
             end
 

@@ -81,6 +81,37 @@ RSpec.describe EE::Gitlab::Auth::Ldap::Sync::Group, feature_category: :system_ac
     end
   end
 
+  shared_examples 'handles pending promotion memberships' do
+    let(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
+    let!(:member_approval) do
+      create(:gitlab_subscription_member_management_member_approval, :to_maintainer, user: user)
+    end
+
+    before do
+      stub_application_setting(enable_member_promotion_management: true)
+      allow(License).to receive(:current).and_return(license)
+      allow(::Gitlab::EventStore).to receive(:publish).and_call_original
+    end
+
+    context 'when there are pending promotions' do
+      it 'publishes MembershipModifiedByAdminEvent' do
+        expect { sync_group.update_permissions }.to publish_event(::Members::MembershipModifiedByAdminEvent).with(
+          {
+            member_user_id: user.id
+          }
+        )
+      end
+    end
+
+    context 'when there are no pending promotions' do
+      let!(:member_approval) { nil }
+
+      it 'does not publishes MembershipModifiedByAdminEvent' do
+        expect { sync_group.update_permissions }.not_to publish_event(::Members::MembershipModifiedByAdminEvent)
+      end
+    end
+  end
+
   describe '.execute_all_providers' do
     def execute
       described_class.execute_all_providers(group)
@@ -194,11 +225,15 @@ RSpec.describe EE::Gitlab::Auth::Ldap::Sync::Group, feature_category: :system_ac
           sync_group.update_permissions
         end
 
-        it 'adds new members and sets ldap attribute to true' do
-          sync_group.update_permissions
+        context 'when new membership is added' do
+          it 'adds new members and sets ldap attribute to true' do
+            sync_group.update_permissions
 
-          expect(group.members.pluck(:user_id)).to include(user.id)
-          expect(group.members.find_by(user_id: user.id).ldap?).to be_truthy
+            expect(group.members.pluck(:user_id)).to include(user.id)
+            expect(group.members.find_by(user_id: user.id).ldap?).to be_truthy
+          end
+
+          it_behaves_like 'handles pending promotion memberships'
         end
 
         it 'converts an existing membership access request to a real member' do
@@ -225,14 +260,20 @@ RSpec.describe EE::Gitlab::Auth::Ldap::Sync::Group, feature_category: :system_ac
             .to eq(::Gitlab::Access::DEVELOPER)
         end
 
-        it 'upgrades existing member access' do
-          # Create user with lower access
-          group.add_member(user, Gitlab::Access::GUEST)
+        context  'when member access is upgraded' do
+          before do
+            # Create user with lower access
+            group.add_member(user, Gitlab::Access::GUEST)
+          end
 
-          sync_group.update_permissions
+          it 'upgrades existing member access' do
+            sync_group.update_permissions
 
-          expect(group.members.find_by(user_id: user.id).access_level)
-            .to eq(::Gitlab::Access::DEVELOPER)
+            expect(group.members.find_by(user_id: user.id).access_level)
+              .to eq(::Gitlab::Access::DEVELOPER)
+          end
+
+          it_behaves_like 'handles pending promotion memberships'
         end
 
         it 'sets an existing member ldap attribute to true' do
