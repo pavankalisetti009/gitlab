@@ -14,8 +14,7 @@ namespace :gitlab do
 
     desc 'GitLab | Duo | Create evaluation-ready group'
     task :setup_evaluation, [:root_group_path] => :environment do |_, args|
-      group = Gitlab::Duo::Developments::Setup.new(args).execute
-      Gitlab::Duo::Developments::SetupGroupsForModelEvaluation.new(group).execute
+      Gitlab::Duo::Developments::SetupGroupsForModelEvaluation.new(args).execute
     end
 
     desc 'GitLab | Duo | Verify self-hosted Duo setup'

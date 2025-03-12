@@ -26,4 +26,44 @@ RSpec.describe 'gitlab:duo tasks', :gitlab_duo, :silence_stdout, feature_categor
       expect(Gitlab::Duo::Developments::Setup).to have_received(:new).with(hash_including(add_on: 'test'))
     end
   end
+
+  describe 'duo:setup_evaluation' do
+    let(:task_name) { 'gitlab:duo:setup_evaluation' }
+    let(:root_group_path) { 'my-evaluation-group' }
+    let(:setup_evaluation_service_instance) do
+      instance_double(Gitlab::Duo::Developments::SetupGroupsForModelEvaluation)
+    end
+
+    subject(:task) { Rake::Task[task_name] }
+
+    before do
+      allow(Gitlab::Duo::Developments::SetupGroupsForModelEvaluation).to receive(:new)
+        .with(hash_including(root_group_path: root_group_path))
+        .and_return(setup_evaluation_service_instance)
+
+      allow(setup_evaluation_service_instance).to receive(:execute)
+
+      task.reenable
+    end
+
+    it 'instantiates SetupGroupsForModelEvaluation with args and calls execute' do
+      expect(Gitlab::Duo::Developments::SetupGroupsForModelEvaluation).to receive(:new)
+        .with(hash_including(root_group_path: root_group_path))
+        .and_return(setup_evaluation_service_instance)
+      expect(setup_evaluation_service_instance).to receive(:execute)
+
+      task.invoke(root_group_path)
+    end
+
+    context 'when root_group_path argument is not provided' do
+      before do
+        allow(Gitlab::Duo::Developments::SetupGroupsForModelEvaluation).to receive(:new)
+          .and_call_original
+      end
+
+      it 'raises an error because the argument is required by the service initializer' do
+        expect { task.invoke }.to raise_error(RuntimeError, 'You must specify :root_group_path')
+      end
+    end
+  end
 end
