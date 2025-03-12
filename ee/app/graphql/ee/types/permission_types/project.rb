@@ -7,6 +7,8 @@ module EE
         extend ActiveSupport::Concern
 
         prepended do
+          ability_field :read_path_locks
+          ability_field :create_path_lock
           ability_field :admin_path_locks
           ability_field :generate_description
         end

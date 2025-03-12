@@ -2,10 +2,10 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['PathLock'] do
+RSpec.describe GitlabSchema.types['PathLock'], feature_category: :source_code_management do
   it { expect(described_class.graphql_name).to eq('PathLock') }
 
   it 'has the expected fields' do
-    expect(described_class).to have_graphql_fields(:id, :path, :user)
+    expect(described_class).to have_graphql_fields(:id, :path, :user, :user_permissions)
   end
 end
