@@ -7,10 +7,13 @@ module Security
   # Service for alerting revocation service of leaked security tokens
   #
   class TokenRevocationService < ::BaseService
+    include Gitlab::InternalEventsTracking
+
     RevocationFailedError = Class.new(StandardError)
 
-    def initialize(revocable_keys:)
+    def initialize(revocable_keys:, project:)
       @revocable_keys = revocable_keys
+      @project = project
     end
 
     def execute
@@ -24,7 +27,12 @@ module Security
       return success if revoke_token_body.blank?
 
       response = revoke_tokens
-      response.success? ? success : error('Failed to revoke tokens')
+
+      return error('Failed to revoke tokens') unless response.success?
+
+      @revocable_keys.each { |key| log_token_revocation(key_type: key[:type]) }
+
+      success
     rescue RevocationFailedError => exception
       error(exception.message)
     rescue StandardError => exception
@@ -33,6 +41,8 @@ module Security
     end
 
     private
+
+    attr_reader :project
 
     # Deduplicate pats before revocation regardless of file location
     def revoke_glpats(tokens)
@@ -54,6 +64,8 @@ module Security
       ).execute
 
       raise RevocationFailedError, result[:message] if result[:status] == :error
+
+      log_token_revocation(key_type: GLPAT_KEY_TYPE)
 
       return unless token[:vulnerability].present?
 
@@ -128,6 +140,20 @@ module Security
     def revocation_comment
       s_("TokenRevocation|This personal access token has been automatically revoked on detection. " \
          "Consider investigating and rotating before marking this vulnerability as resolved.")
+    end
+
+    #################################################################
+    ## Internal tracking methods
+
+    def log_token_revocation(key_type:)
+      track_internal_event(
+        'revoke_leaked_token_after_vulnerability_report_is_ingested',
+        project: project,
+        namespace: project.namespace,
+        additional_properties: {
+          label: key_type
+        }
+      )
     end
   end
 end

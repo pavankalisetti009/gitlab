@@ -43,13 +43,15 @@ module GitlabSubscriptions
       private
 
       def member_eligible_for_admin_event?(member)
-        member.persisted? &&
-          member.errors.empty? &&
-          member.user_id.present? &&
-          promotion_management_required_for_role?(
-            new_access_level: member.access_level,
-            member_role_id: member.member_role_id
-          )
+        return false unless member.present?
+        return false unless member.persisted?
+        return false unless member.errors.empty?
+        return false unless member.user_id.present?
+
+        promotion_management_required_for_role?(
+          new_access_level: member.access_level,
+          member_role_id: member.member_role_id
+        )
       end
 
       def promotion_management_feature_flag_enabled?

@@ -235,9 +235,18 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
         allow(Feature).to receive(:persisted_names).and_return(['zoekt_custom_flag'])
 
         zoekt_flag = instance_double(Feature::Definition, to_s: 'zoekt_default_flag')
-        allow(Feature::Definition).to receive(:definitions).and_return({
-          'zoekt_default_flag' => zoekt_flag
-        })
+
+        # Combine all Feature::Definition stubs
+        allow(Feature::Definition).to receive_messages(
+          definitions: { 'zoekt_default_flag' => zoekt_flag },
+          has_definition?: false
+        )
+
+        # Set up specific has_definition? calls that override the default
+        allow(Feature::Definition).to receive(:has_definition?).with(:zoekt_custom_flag).and_return(true)
+        allow(Feature::Definition).to receive(:has_definition?).with('zoekt_custom_flag').and_return(true)
+        allow(Feature::Definition).to receive(:has_definition?).with(:zoekt_default_flag).and_return(true)
+        allow(Feature::Definition).to receive(:has_definition?).with('zoekt_default_flag').and_return(true)
 
         allow(Feature).to receive(:persisted_name?).with('zoekt_default_flag').and_return(false)
         allow(Feature).to receive(:enabled?).with('zoekt_custom_flag', nil).and_return(true)
@@ -265,7 +274,10 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
             persisted_name?: false,
             enabled?: false
           )
-          allow(Feature::Definition).to receive(:definitions).and_return({})
+          allow(Feature::Definition).to receive_messages(
+            definitions: {},
+            has_definition?: false
+          )
         end
 
         it 'displays empty feature flags sections' do
@@ -281,6 +293,35 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
 
           # Check for the 'none' message without specifying exactly how many times
           expect(logger).to have_received(:info).with(/Feature flags:.+#{Rainbow('none').yellow}/).at_least(:once)
+        end
+      end
+
+      context 'with feature flags without YAML definitions' do
+        before do
+          allow(Feature).to receive(:persisted_names).and_return(%w[zoekt_custom_flag zoekt_undefined_flag])
+
+          # Set up has_definition? to return appropriate values for both string and symbol keys
+          allow(Feature::Definition).to receive(:has_definition?).and_return(false)
+          allow(Feature::Definition).to receive(:has_definition?).with(:zoekt_custom_flag).and_return(true)
+          allow(Feature::Definition).to receive(:has_definition?).with('zoekt_custom_flag').and_return(true)
+          allow(Feature::Definition).to receive(:has_definition?).with(:zoekt_undefined_flag).and_return(false)
+          allow(Feature::Definition).to receive(:has_definition?).with('zoekt_undefined_flag').and_return(false)
+          allow(Feature::Definition).to receive(:has_definition?).with(:zoekt_default_flag).and_return(true)
+          allow(Feature::Definition).to receive(:has_definition?).with('zoekt_default_flag').and_return(true)
+
+          # We should never call enabled? on the undefined flag
+          allow(Feature).to receive(:enabled?).with('zoekt_undefined_flag', nil)
+            .and_raise('This should not be called')
+        end
+
+        it 'displays flags without definitions as "no definition"' do
+          service.execute
+
+          # The flag with no definition should show up in the output
+          expect(logger).to have_received(:info).with(/- zoekt_undefined_flag:.+#{Rainbow('no definition').yellow}/)
+
+          # The regular flag should still work
+          expect(logger).to have_received(:info).with(/- zoekt_custom_flag:.+#{Rainbow('enabled').green}/)
         end
       end
     end

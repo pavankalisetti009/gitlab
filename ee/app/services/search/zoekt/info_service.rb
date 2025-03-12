@@ -48,10 +48,16 @@ module Search
         # Get the state of each persisted flag
         flag_states = {}
         persisted_flags.each do |flag|
-          enabled = Feature.enabled?(flag, Feature.current_request)
-          state_text = enabled ? 'enabled' : 'disabled'
-          state_color = enabled ? :green : :red
-          flag_states[flag] = Rainbow(state_text).color(state_color)
+          # Skip flags without YAML definitions to avoid InvalidFeatureFlagError
+          if Feature::Definition.has_definition?(flag.to_sym)
+            enabled = Feature.enabled?(flag, Feature.current_request)
+            state_text = enabled ? 'enabled' : 'disabled'
+            state_color = enabled ? :green : :red
+            flag_states[flag] = Rainbow(state_text).color(state_color)
+          else
+            # Mark flags without definitions
+            flag_states[flag] = Rainbow('no definition').yellow
+          end
         end
 
         # Sort flags alphabetically and log each flag and its state
@@ -62,7 +68,7 @@ module Search
 
       # Display default feature flags section - shows all flags using default values
       def log_default_feature_flags
-        # Get all zoekt-related feature flags
+        # Get all zoekt-related feature flags that have YAML definitions
         all_flags = Feature::Definition.definitions.keys
         zoekt_flags = all_flags.select { |name| name.to_s.start_with?('zoekt_') }
 
@@ -77,6 +83,9 @@ module Search
         # Get the state of each default flag
         flag_states = {}
         default_flags.each do |flag|
+          # Skip flags without YAML definitions to avoid errors
+          next unless Feature::Definition.has_definition?(flag)
+
           enabled = Feature.enabled?(flag, Feature.current_request)
           state_text = enabled ? 'enabled' : 'disabled'
           state_color = enabled ? :green : :red
