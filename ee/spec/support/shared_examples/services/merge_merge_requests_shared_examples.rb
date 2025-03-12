@@ -337,7 +337,7 @@ RSpec.shared_examples 'service with approval rules' do
       it 'inherits only regular and any_approver rules from the project' do
         expect(execute.approval_rules.count).to eq(2)
 
-        expect(execute.approval_rules.map(&:attributes)).to match(
+        expect(execute.approval_rules.map(&:attributes)).to match_array(
           [
             a_hash_including('approvals_required' => 1, 'rule_type' => 'any_approver'),
             a_hash_including('approvals_required' => 2, 'rule_type' => 'regular')
