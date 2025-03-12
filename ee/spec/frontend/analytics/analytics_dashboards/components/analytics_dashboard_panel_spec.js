@@ -37,6 +37,7 @@ describe('AnalyticsDashboardPanel', () => {
         rootNamespaceFullPath: 'namespace',
         isProject: true,
         dataSourceClickhouse: true,
+        overviewCountsAggregationEnabled: true,
         ...provide,
       },
       propsData: {
@@ -106,6 +107,7 @@ describe('AnalyticsDashboardPanel', () => {
           visualizationOptions: mockPanel.visualization.options,
           filters: {},
           dataSourceClickhouse: true,
+          overviewCountsAggregationEnabled: true,
           setAlerts: expect.any(Function),
           onRequestDelayed: expect.any(Function),
           setVisualizationOverrides: expect.any(Function),
