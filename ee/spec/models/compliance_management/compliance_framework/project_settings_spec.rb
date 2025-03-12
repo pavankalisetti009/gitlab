@@ -53,18 +53,24 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectSettings, type:
   end
 
   describe 'scopes' do
+    let_it_be(:framework1) do
+      create(:compliance_framework, namespace: project.group.root_ancestor, name: 'framework1')
+    end
+
+    let_it_be(:setting) do
+      create(:compliance_framework_project_setting, project: project, compliance_management_framework: framework1)
+    end
+
     describe '.by_framework_and_project' do
-      let_it_be(:framework1) do
-        create(:compliance_framework, namespace: project.group.root_ancestor, name: 'framework1')
-      end
-
-      let_it_be(:setting) do
-        create(:compliance_framework_project_setting, project: project, compliance_management_framework: framework1)
-      end
-
       it 'returns the setting' do
         expect(described_class.by_framework_and_project(project.id, framework1.id))
           .to eq([setting])
+      end
+    end
+
+    describe '.by_project_id' do
+      it 'returns the setting' do
+        expect(described_class.by_project_id(project.id)).to eq([setting])
       end
     end
   end

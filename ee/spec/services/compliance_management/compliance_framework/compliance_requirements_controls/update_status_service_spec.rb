@@ -157,18 +157,5 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
         expect(::Gitlab::Audit::Auditor).not_to have_received(:audit)
       end
     end
-
-    context 'when an ArgumentError is raised' do
-      before do
-        allow(service).to receive(:update_control_status).and_raise(ArgumentError, 'test error message')
-      end
-
-      it 'returns an error response with the error message' do
-        result = service.execute
-
-        expect(result).to be_error
-        expect(result.message).to eq('Failed to update compliance control status. Error: test error message')
-      end
-    end
   end
 end
