@@ -15,8 +15,13 @@ RSpec.describe ::WebIde::Settings, feature_category: :web_ide do # rubocop:disab
   subject(:settings) { described_class.get([:vscode_extension_marketplace_metadata], options) }
 
   before do
-    stub_feature_flags(vscode_web_ide: true, web_ide_extensions_marketplace: true)
+    stub_feature_flags(
+      vscode_web_ide: true,
+      web_ide_extensions_marketplace: true,
+      vscode_extension_marketplace_settings: true
+    )
     stub_licensed_features(disable_extensions_marketplace_for_enterprise_users: true)
+    stub_application_setting(vscode_extension_marketplace: { enabled: true, preset: 'open_vsx' })
     user.update!(extensions_marketplace_enabled: true)
   end
 
