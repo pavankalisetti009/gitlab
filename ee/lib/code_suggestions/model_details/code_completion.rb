@@ -15,6 +15,8 @@ module CodeSuggestions
 
         return fireworks_qwen_2_5_model_details if use_fireworks_qwen_for_code_completions?
 
+        return codestral_2502_vertex_model_details if code_gecko_disabled? && !user_opted_in_to_qwen?
+
         # the default behavior is returning an empty hash
         # AI Gateway will fall back to the code-gecko model if model details are not provided
         {}
@@ -25,6 +27,10 @@ module CodeSuggestions
 
         return CodeSuggestions::Prompts::CodeCompletion::FireworksQwen if use_fireworks_qwen_for_code_completions?
 
+        if code_gecko_disabled? && !user_opted_in_to_qwen?
+          return CodeSuggestions::Prompts::CodeCompletion::CodestralVertex
+        end
+
         CodeSuggestions::Prompts::CodeCompletion::VertexAi
       end
 
@@ -34,6 +40,13 @@ module CodeSuggestions
         {
           model_provider: CodeSuggestions::Prompts::CodeCompletion::FireworksQwen::MODEL_PROVIDER,
           model_name: CodeSuggestions::Prompts::CodeCompletion::FireworksQwen::MODEL_NAME
+        }
+      end
+
+      def codestral_2502_vertex_model_details
+        {
+          model_provider: CodeSuggestions::Prompts::CodeCompletion::CodestralVertex::MODEL_PROVIDER,
+          model_name: CodeSuggestions::Prompts::CodeCompletion::CodestralVertex::MODEL_NAME
         }
       end
 
@@ -48,12 +61,20 @@ module CodeSuggestions
         return false if Feature.disabled?(:fireworks_qwen_code_completion, current_user, type: :beta)
 
         # if the beta FF is enabled, proceed to check the ops FF
+        user_opted_in_to_qwen?
+      end
 
+      # check if user's groups or instance has opted out of Fireworks/Qwen
+      def user_opted_in_to_qwen?
         # on saas, check the user's groups
         return all_user_groups_opted_in_to_fireworks_qwen? if Gitlab.org_or_com? # rubocop: disable Gitlab/AvoidGitlabInstanceChecks -- see comment above method definition
 
         # on self-managed, check the ops FF against the entire instance
         instance_opted_in_to_fireworks_qwen?
+      end
+
+      def code_gecko_disabled?
+        Feature.enabled?(:disable_code_gecko_default, current_user)
       end
 
       def all_user_groups_opted_in_to_fireworks_qwen?

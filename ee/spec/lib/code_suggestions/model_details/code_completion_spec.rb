@@ -13,6 +13,7 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
       before do
         stub_feature_flags(fireworks_qwen_code_completion: true)
         stub_feature_flags(code_completion_model_opt_out_from_fireworks_qwen: false)
+        stub_feature_flags(disable_code_gecko_default: false)
       end
 
       context 'on GitLab self-managed' do
@@ -28,7 +29,16 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
           it 'returns the codegecko model' do
             stub_feature_flags(code_completion_model_opt_out_from_fireworks_qwen: true)
 
-            expect(actual_result).to eq(expected_codegecko_result)
+            expect(actual_result).to eq(expected_default_result)
+          end
+
+          context 'when code gecko is disabled' do
+            it 'returns codestral on vertex' do
+              stub_feature_flags(disable_code_gecko_default: true)
+              stub_feature_flags(code_completion_model_opt_out_from_fireworks_qwen: true)
+
+              expect(actual_result).to eq(expected_codestral_result)
+            end
           end
         end
       end
@@ -61,7 +71,15 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
           end
 
           it 'returns the code gecko model' do
-            expect(actual_result).to eq(expected_codegecko_result)
+            expect(actual_result).to eq(expected_default_result)
+          end
+
+          context 'when code gecko is disabled' do
+            it 'returns codestral on vertex' do
+              stub_feature_flags(disable_code_gecko_default: true)
+
+              expect(actual_result).to eq(expected_codestral_result)
+            end
           end
         end
 
@@ -80,10 +98,11 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
     context 'when Fireworks/Qwen beta FF is disabled' do
       before do
         stub_feature_flags(fireworks_qwen_code_completion: false)
+        stub_feature_flags(disable_code_gecko_default: false)
       end
 
-      it 'returns the codegecko model' do
-        expect(actual_result).to eq(expected_codegecko_result)
+      it 'returns the default model' do
+        expect(actual_result).to eq(expected_default_result)
       end
     end
 
@@ -111,7 +130,14 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
         }
       end
 
-      let(:expected_codegecko_result) { {} }
+      let(:expected_codestral_result) do
+        {
+          model_provider: 'vertex-ai',
+          model_name: 'codestral-2501'
+        }
+      end
+
+      let(:expected_default_result) { {} }
 
       let(:expected_self_hosted_model_result) { {} }
     end
@@ -125,7 +151,11 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
         CodeSuggestions::Prompts::CodeCompletion::FireworksQwen
       end
 
-      let(:expected_codegecko_result) do
+      let(:expected_codestral_result) do
+        CodeSuggestions::Prompts::CodeCompletion::CodestralVertex
+      end
+
+      let(:expected_default_result) do
         CodeSuggestions::Prompts::CodeCompletion::VertexAi
       end
 
