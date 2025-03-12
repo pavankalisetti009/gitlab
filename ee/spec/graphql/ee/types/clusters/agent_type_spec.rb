@@ -7,8 +7,6 @@ RSpec.describe GitlabSchema.types['ClusterAgent'], feature_category: :deployment
     expect(described_class).to have_graphql_fields(
       :vulnerability_images,
       :workspaces,
-      # TODO: clusterAgent.remoteDevelopmentAgentConfig GraphQL is deprecated - remove in 17.10 - https://gitlab.com/gitlab-org/gitlab/-/issues/480769
-      :remote_development_agent_config,
       :workspaces_agent_config,
       :is_receptive,
       :url_configurations
@@ -87,9 +85,6 @@ RSpec.describe GitlabSchema.types['ClusterAgent'], feature_category: :deployment
           namespace(fullPath: "#{group.full_path}") {
             remoteDevelopmentClusterAgents(filter: AVAILABLE) {
               nodes {
-                remoteDevelopmentAgentConfig {
-                  workspacesPerUserQuota
-                }
                 workspacesAgentConfig {
                   workspacesPerUserQuota
                 }
@@ -106,27 +101,6 @@ RSpec.describe GitlabSchema.types['ClusterAgent'], feature_category: :deployment
 
     before do
       stub_licensed_features(remote_development: true)
-    end
-
-    # TODO: clusterAgent.remoteDevelopmentAgentConfig GraphQL is deprecated - remove in 17.10 - https://gitlab.com/gitlab-org/gitlab/-/issues/480769
-    describe "for remote_development_agent_config" do
-      subject(:remote_development_agent_config_result) do
-        result = GitlabSchema.execute(query, context: { current_user: current_user }).as_json
-        result.dig('data', 'namespace', 'remoteDevelopmentClusterAgents', 'nodes', 0, 'remoteDevelopmentAgentConfig')
-      end
-
-      context 'when user is logged in' do
-        let(:current_user) { user }
-        let(:expected_workspaces_per_user_quota) do
-          workspaces_agent_config.workspaces_per_user_quota
-        end
-
-        it 'returns associated workspaces agent config' do
-          expect(remote_development_agent_config_result).to eq(
-            'workspacesPerUserQuota' => expected_workspaces_per_user_quota
-          )
-        end
-      end
     end
 
     subject(:workspaces_agent_config_result) do

@@ -34,16 +34,20 @@ describe('App component', () => {
       factory({ provide: { existingPolicy: { id: 'policy-id', value: 'approval' } } });
       expect(findPolicySelection().exists()).toBe(false);
       expect(findPolicyEditor().exists()).toBe(true);
+      expect(findPolicyEditor().props('selectedPolicy')).toEqual(
+        POLICY_TYPE_COMPONENT_OPTIONS.legacyApproval,
+      );
     });
   });
 
   describe('page title', () => {
     describe.each`
-      value                  | titleSuffix
-      ${'approval'}          | ${'merge request approval policy'}
-      ${'scanExecution'}     | ${'scan execution policy'}
-      ${'pipelineExecution'} | ${'pipeline execution policy'}
-    `('$titleSuffix', ({ titleSuffix, value }) => {
+      value                        | titleSuffix                          | expectedPolicy
+      ${'approval'}                | ${'merge request approval policy'}   | ${POLICY_TYPE_COMPONENT_OPTIONS.legacyApproval}
+      ${'scanExecution'}           | ${'scan execution policy'}           | ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution}
+      ${'pipelineExecution'}       | ${'pipeline execution policy'}       | ${POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution}
+      ${'vulnerabilityManagement'} | ${'vulnerability management policy'} | ${POLICY_TYPE_COMPONENT_OPTIONS.vulnerabilityManagement}
+    `('$titleSuffix', ({ titleSuffix, value, expectedPolicy }) => {
       beforeEach(() => {
         jest
           .spyOn(urlUtils, 'getParameterByName')
@@ -53,11 +57,13 @@ describe('App component', () => {
       it('displays for a new policy', () => {
         factory();
         expect(findTitle()).toBe(`New ${titleSuffix}`);
+        expect(findPolicyEditor().props('selectedPolicy')).toEqual(expectedPolicy);
       });
 
       it('displays for an existing policy', () => {
         factory({ provide: { existingPolicy: { id: 'policy-id', value } } });
         expect(findTitle()).toBe(`Edit ${titleSuffix}`);
+        expect(findPolicyEditor().props('selectedPolicy')).toEqual(expectedPolicy);
       });
     });
 
@@ -69,11 +75,13 @@ describe('App component', () => {
       it('displays for a new policy', () => {
         factory();
         expect(findTitle()).toBe('New policy');
+        expect(findPolicyEditor().exists()).toBe(false);
       });
 
       it('displays for an existing policy', () => {
         factory({ provide: { existingPolicy: { id: 'policy-id', value: 'scanResult' } } });
         expect(findTitle()).toBe('Edit policy');
+        expect(findPolicyEditor().exists()).toBe(false);
       });
     });
   });

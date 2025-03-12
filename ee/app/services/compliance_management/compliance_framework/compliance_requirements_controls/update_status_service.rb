@@ -23,8 +23,6 @@ module ComplianceManagement
 
           audit_changes
           success
-        rescue ArgumentError => e
-          error(e.message)
         end
 
         private

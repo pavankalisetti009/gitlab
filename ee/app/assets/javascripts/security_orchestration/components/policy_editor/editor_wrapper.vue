@@ -62,9 +62,9 @@ export default {
     namespacePath: { default: '' },
   },
   props: {
-    // This is the `value` field of the POLICY_TYPE_COMPONENT_OPTIONS
-    selectedPolicyType: {
-      type: String,
+    // This is the POLICY_TYPE_COMPONENT_OPTIONS object for the policy type
+    selectedPolicy: {
+      type: Object,
       required: true,
     },
   },
@@ -84,10 +84,10 @@ export default {
   },
   computed: {
     policyUrlParameter() {
-      const selectedPolicy = Object.values(POLICY_TYPE_COMPONENT_OPTIONS).find(
-        ({ value }) => value === this.selectedPolicyType,
+      return (
+        this.selectedPolicy?.urlParameter ||
+        POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter
       );
-      return selectedPolicy?.urlParameter || '';
     },
     isEditing() {
       return Boolean(this.existingPolicy);
@@ -98,14 +98,8 @@ export default {
     originalName() {
       return this.existingPolicy?.name;
     },
-    policyTypes() {
-      return Object.values(POLICY_TYPE_COMPONENT_OPTIONS);
-    },
     policyOptions() {
-      return (
-        this.policyTypes.find(({ value }) => value === this.selectedPolicyType) ||
-        POLICY_TYPE_COMPONENT_OPTIONS.scanExecution
-      );
+      return this.selectedPolicy || POLICY_TYPE_COMPONENT_OPTIONS.scanExecution;
     },
     shouldAllowPolicyTypeSelection() {
       return !this.existingPolicy;

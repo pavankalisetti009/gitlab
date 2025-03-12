@@ -1,7 +1,7 @@
 <script>
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState, mapGetters } from 'vuex';
-import { GlEmptyState } from '@gitlab/ui';
+import { GlEmptyState, GlLoadingIcon } from '@gitlab/ui';
 import { refreshCurrentPage } from '~/lib/utils/url_utility';
 import { VSA_METRICS_GROUPS, FLOW_METRICS_QUERY_TYPE } from '~/analytics/shared/constants';
 import {
@@ -28,6 +28,7 @@ export default {
     PageHeading,
     DurationChartLoader,
     GlEmptyState,
+    GlLoadingIcon,
     TypeOfWorkChartsLoader,
     StageTable,
     PathNavigation,
@@ -98,9 +99,6 @@ export default {
     isWaitingForNextAggregation() {
       return Boolean(this.selectedValueStream && !this.aggregation.lastRunAt);
     },
-    shouldRenderEmptyState() {
-      return this.isLoadingValueStreams || !this.hasValueStreams;
-    },
     shouldRenderAggregationWarning() {
       return this.isWaitingForNextAggregation;
     },
@@ -109,13 +107,6 @@ export default {
     },
     selectedStageReady() {
       return !this.hasNoAccessError && this.selectedStage;
-    },
-    shouldDisplayCreateMultipleValueStreams() {
-      return Boolean(
-        this.enableCustomizableStages &&
-          !this.shouldRenderEmptyState &&
-          !this.isLoadingValueStreams,
-      );
     },
     hasDateRangeSet() {
       return this.createdAfter && this.createdBefore;
@@ -212,9 +203,11 @@ export default {
 </script>
 <template>
   <div>
+    <div v-if="isLoadingValueStreams" class="gl-p-7 gl-text-center">
+      <gl-loading-icon size="lg" />
+    </div>
     <value-stream-empty-state
-      v-if="shouldRenderEmptyState"
-      :is-loading="isLoadingValueStreams"
+      v-else-if="!hasValueStreams"
       :empty-state-svg-path="emptyStateSvgPath"
       :has-date-range-error="!hasDateRangeSet"
       :can-edit="canEdit"
@@ -224,7 +217,7 @@ export default {
       <div
         class="gl-mb-6 gl-flex gl-flex-col gl-justify-between gl-gap-3 sm:gl-flex-row sm:gl-items-center"
       >
-        <value-stream-select v-if="shouldDisplayCreateMultipleValueStreams" :can-edit="canEdit" />
+        <value-stream-select v-if="enableCustomizableStages" :can-edit="canEdit" />
         <value-stream-aggregation-status v-if="isAggregationStatusAvailable" :data="aggregation" />
       </div>
       <value-stream-filters
