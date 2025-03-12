@@ -143,7 +143,8 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
         allow(Note).to receive(:insert_all!).and_raise(ActiveRecord::RecordNotUnique)
       end
 
-      it 'does not bubble up the error' do
+      it 'does not bubble up the error and tracks the exception' do
+        expect(Gitlab::ErrorTracking).to receive(:track_exception).with(ActiveRecord::RecordNotUnique)
         expect { service.execute }.not_to raise_error
       end
 

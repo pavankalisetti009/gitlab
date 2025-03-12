@@ -51,20 +51,19 @@ RSpec.describe ::Search::Elastic::ClusterReindexingService, :elastic, :clean_git
     end
 
     it 'errors when there is not enough space' do
-      allow(helper).to receive(:index_size_bytes).and_return(100.megabytes)
-      allow(helper).to receive(:cluster_free_size_bytes).and_return(30.megabytes)
+      allow(helper).to receive_messages(index_size_bytes: 100.megabytes, cluster_free_size_bytes: 30.megabytes)
 
       expect { cluster_reindexing_service.execute }.to change { task.reload.state }.from('initial').to('failure')
       expect(task.reload.error_message).to match(/storage available/)
     end
 
     it 'pauses elasticsearch indexing' do
-      expect(Gitlab::CurrentSettings.elasticsearch_pause_indexing).to eq(false)
+      expect(Gitlab::CurrentSettings.elasticsearch_pause_indexing).to be(false)
 
       expect { cluster_reindexing_service.execute }
         .to change { task.reload.state }.from('initial').to('indexing_paused')
 
-      expect(Gitlab::CurrentSettings.elasticsearch_pause_indexing).to eq(true)
+      expect(Gitlab::CurrentSettings.elasticsearch_pause_indexing).to be(true)
     end
 
     context 'when partial reindexing' do
@@ -93,11 +92,12 @@ RSpec.describe ::Search::Elastic::ClusterReindexingService, :elastic, :clean_git
       let!(:task) { create(:elastic_reindexing_task, state: :indexing_paused, targets: nil) }
 
       before do
-        allow(helper).to receive(:create_standalone_indices).and_return(issues_new_index_name => issues_alias)
         allow(helper).to receive(:target_index_names) { |options| { "#{options[:target]}-1" => true } }
-        allow(helper).to receive(:create_empty_index).and_return(main_new_index_name => main_alias)
+        allow(helper).to receive_messages(
+          create_standalone_indices: { issues_new_index_name => issues_alias },
+          create_empty_index: { main_new_index_name => main_alias }
+        )
         allow(helper).to receive(:reindex) { |options| "#{options[:to]}_task_id" }
-        allow(helper).to receive(:documents_count)
         allow(helper).to receive(:get_settings) do |options|
           number_of_shards = case options[:index_name]
                              when main_old_index_name then 10
@@ -212,11 +212,12 @@ RSpec.describe ::Search::Elastic::ClusterReindexingService, :elastic, :clean_git
     end
 
     before do
-      allow(helper).to receive(:task_status).and_return(
-        {
+      allow(helper).to receive_messages(
+        task_status: {
           'completed' => true,
           'response' => { 'total' => 20, 'created' => 20, 'updated' => 0, 'deleted' => 0 }
-        }
+        },
+        refresh_index: true
       )
       allow(helper).to receive(:reindex).and_return('task_1', 'task_2', 'task_3', 'task_4', 'task_5', 'task_6')
     end
