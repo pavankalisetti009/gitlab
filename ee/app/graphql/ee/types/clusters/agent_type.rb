@@ -29,14 +29,6 @@ module EE
             resolver: ::Resolvers::RemoteDevelopment::ClusterAgent::WorkspacesResolver,
             description: 'Workspaces associated with the agent.'
 
-          field :remote_development_agent_config,
-            ::Types::RemoteDevelopment::RemoteDevelopmentAgentConfigType,
-            extras: [:lookahead],
-            null: true,
-            description: 'Remote development agent config for the cluster agent.',
-            resolver: ::Resolvers::RemoteDevelopment::ClusterAgent::RemoteDevelopmentAgentConfigResolver,
-            experiment: { milestone: '17.4' }
-
           field :workspaces_agent_config,
             ::Types::RemoteDevelopment::WorkspacesAgentConfigType,
             extras: [:lookahead],

@@ -20,9 +20,6 @@ module RemoteDevelopment
     attribute :desired_config_generator_version,
       default: ::RemoteDevelopment::WorkspaceOperations::DesiredConfigGeneratorVersion::LATEST_VERSION
 
-    # TODO: clusterAgent.remoteDevelopmentAgentConfig GraphQL is deprecated - remove in 17.10 - https://gitlab.com/gitlab-org/gitlab/-/issues/480769
-    # noinspection RailsParamDefResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
-    has_one :remote_development_agent_config, through: :agent, source: :remote_development_agent_config
     has_many :workspace_variables, class_name: 'RemoteDevelopment::WorkspaceVariable', inverse_of: :workspace
     # Currently we only support :environment type for user provided variables
     has_many :user_provided_workspace_variables, -> {
