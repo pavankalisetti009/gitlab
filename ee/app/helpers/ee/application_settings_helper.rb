@@ -74,7 +74,6 @@ module EE
         :cube_api_key,
         :security_policy_global_group_approvers_enabled,
         :security_approval_policies_limit,
-        :use_clickhouse_for_analytics,
         :duo_features_enabled,
         :lock_duo_features_enabled,
         :duo_availability,

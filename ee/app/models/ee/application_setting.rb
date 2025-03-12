@@ -22,9 +22,6 @@ module EE
 
       belongs_to :file_template_project, class_name: "Project"
 
-      jsonb_accessor :clickhouse,
-        use_clickhouse_for_analytics: [:boolean, { default: false }]
-
       jsonb_accessor :search,
         global_search_code_enabled: [:boolean, { default: true }],
         global_search_commits_enabled: [:boolean, { default: true }],
@@ -71,7 +68,6 @@ module EE
         elasticsearch_indexed_file_size_limit_kb: [:integer, { default: 1024 }],
         elasticsearch_max_code_indexing_concurrency: [:integer, { default: 30 }]
 
-      validates :clickhouse, json_schema: { filename: "application_setting_clickhouse" }
       validates :search, json_schema: { filename: 'application_setting_ee_search' }
       validates :duo_workflow, json_schema: { filename: "application_setting_duo_workflow" }
       validates :integrations, json_schema: { filename: "application_setting_integrations" }
