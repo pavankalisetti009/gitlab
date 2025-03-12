@@ -7,7 +7,6 @@ RSpec.describe RemoteDevelopment::AgentConfigOperations::Main, feature_category:
 
   let(:rop_steps) do
     [
-      [RemoteDevelopment::AgentConfigOperations::LicenseChecker, :and_then],
       [RemoteDevelopment::AgentConfigOperations::Updater, :and_then]
     ]
   end
@@ -87,18 +86,6 @@ RSpec.describe RemoteDevelopment::AgentConfigOperations::Main, feature_category:
     # rubocop:disable Style/TrailingCommaInArrayLiteral -- let the last element have a comma for simpler diffs
     where(:case_name, :err_result_for_step, :expected_response) do
       [
-        [
-          "when LicenseChecker returns LicenseCheckFailed",
-          {
-            step_class: RemoteDevelopment::AgentConfigOperations::LicenseChecker,
-            returned_message: lazy { RemoteDevelopment::Messages::LicenseCheckFailed.new(err_message_content) }
-          },
-          {
-            status: :error,
-            message: lazy { "License check failed: #{error_details}" },
-            reason: :forbidden
-          }
-        ],
         [
           "when Updater returns AgentConfigUpdateFailed",
           {

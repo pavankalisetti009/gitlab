@@ -22,10 +22,6 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Main, "Integration", 
     described_class.main(context)
   end
 
-  before do
-    allow(License).to receive(:feature_available?).with(:remote_development).and_return(true)
-  end
-
   context "when a workspaces_agent_config record does not already exist" do
     let_it_be(:agent) { create(:cluster_agent) }
 

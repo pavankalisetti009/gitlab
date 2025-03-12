@@ -9,9 +9,6 @@ module RemoteDevelopment
     # Errors - message name should describe the reason for the error
     #---------------------------------------------------------------
 
-    # License error
-    LicenseCheckFailed = Class.new(Gitlab::Fp::Message)
-
     # AgentConfigOperations errors
     AgentConfigUpdateFailed = Class.new(Gitlab::Fp::Message)
 
