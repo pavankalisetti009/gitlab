@@ -116,6 +116,38 @@ RSpec.describe ApplicationController, type: :request, feature_category: :shared 
           end
         end
 
+        context 'when welcome step has been completed and step_url is still welcome' do
+          let(:onboarding_status_step_url) { users_sign_up_welcome_path }
+
+          before do
+            user.update!(setup_for_company: true)
+          end
+
+          it 'does not redirect for a request away from onboarding and tracks the error' do
+            expect(Gitlab::ErrorTracking)
+              .to receive(:track_exception).with(
+                instance_of(::Onboarding::StepUrlError),
+                onboarding_status: user.onboarding_status.to_json
+              )
+
+            expect { get root_path }.to change { user.reload.onboarding_in_progress }.to(false)
+
+            expect(response).not_to be_redirect
+          end
+
+          context 'when stop_welcome_redirection feature is not enabled' do
+            before do
+              stub_feature_flags(stop_welcome_redirection: false)
+            end
+
+            it 'redirects away from requested path and does not finish onboarding' do
+              expect { get root_path }.not_to change { user.reload.onboarding_in_progress }
+
+              expect(response).to be_redirect
+            end
+          end
+        end
+
         context 'when terms enabled' do
           it 'redirects to terms first' do
             enforce_terms

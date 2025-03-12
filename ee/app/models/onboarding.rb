@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 module Onboarding
+  StepUrlError = Class.new(StandardError)
+
   REGISTRATION_TYPE = {
     free: 'free',
     trial: 'trial',
@@ -16,6 +18,10 @@ module Onboarding
     user.present? &&
       user.onboarding_in_progress? &&
       enabled?
+  end
+
+  def self.completed_welcome_step?(user)
+    !user.setup_for_company.nil?
   end
 
   def self.add_on_seat_assignment_iterable_params(user, product_interaction, namespace)
