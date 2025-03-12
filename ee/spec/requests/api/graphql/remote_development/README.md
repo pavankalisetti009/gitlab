@@ -17,12 +17,6 @@ Here are the related spec folders for the fields (in alphabetical order by resol
     - Resolver source file for `tests.yml` and `verify-tff-mapping`: `ee/app/graphql/resolvers/remote_development/workspaces_admin_resolver.rb`
     - Notes: Only admins may use this field.
 
-- GraphQL Field: `Query.project.clusterAgent.remoteDevelopmentAgentConfig`
-  - Spec folder: `ee/spec/requests/api/graphql/remote_development/cluster_agent/remote_development_agent_config`
-  - API docs: https://docs.gitlab.com/ee/api/graphql/reference/#clusteragentremotedevelopmentagentconfig
-  - Resolver source file for `tests.yml` and `verify-tff-mapping`: `ee/app/graphql/resolvers/remote_development/cluster_agent/remote_development_agent_config_resolver.rb`
-  - Note: THIS FIELD IS DEPRECATED, AND WILL BE REMOVED IN A FUTURE RELEASE.
-
 - Field: `Query.project.clusterAgent.workspaces`
     - Spec folder: `ee/spec/requests/api/graphql/remote_development/cluster_agent/workspaces`
     - API docs: https://docs.gitlab.com/ee/api/graphql/reference/#clusteragentworkspaces

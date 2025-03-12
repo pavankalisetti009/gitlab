@@ -75,29 +75,6 @@ RSpec.describe Resolvers::Clusters::AgentsResolver, feature_category: :environme
           create(:ee_cluster_agent, project: project)
         end
 
-        # TODO: clusterAgent.hasRemoteDevelopmentAgentConfig GraphQL is deprecated - remove in 17.10 - https://gitlab.com/gitlab-org/gitlab/-/issues/480769
-        context 'when has_remote_development_agent_config argument is provided' do
-          let(:params) do
-            { has_remote_development_agent_config: has_remote_development_agent_config }
-          end
-
-          context 'when has_remote_development_agent_config is set to true' do
-            let(:has_remote_development_agent_config) { true }
-
-            it 'returns only agents with remote_development_agent_config' do
-              expect(subject).to contain_exactly(agent_with_workspaces_agent_config)
-            end
-          end
-
-          context 'when has_remote_development_agent_config is set to false' do
-            let(:has_remote_development_agent_config) { false }
-
-            it 'returns only agents without remote_development_agent_config' do
-              expect(subject).to contain_exactly(agent_without_workspaces_agent_config)
-            end
-          end
-        end
-
         context 'when has_workspaces_agent_config argument is provided' do
           let(:params) do
             { has_workspaces_agent_config: has_workspaces_agent_config }

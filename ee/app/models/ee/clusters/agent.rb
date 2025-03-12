@@ -15,12 +15,6 @@ module EE
           foreign_key: 'cluster_agent_id',
           inverse_of: :agent
 
-        # TODO: clusterAgent.remoteDevelopmentAgentConfig GraphQL is deprecated - remove in 17.10 - https://gitlab.com/gitlab-org/gitlab/-/issues/480769
-        has_one :remote_development_agent_config,
-          class_name: 'RemoteDevelopment::RemoteDevelopmentAgentConfig',
-          inverse_of: :agent,
-          foreign_key: :cluster_agent_id
-
         # WARNING: Do not use this `unversioned_latest_workspaces_agent_config`
         # association unless you are positive that is what you want to do!
         #
