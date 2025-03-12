@@ -18,17 +18,5 @@ RSpec.describe Sbom::ProcessVulnerabilitiesWorker, feature_category: :software_c
 
       described_class.new.handle_event(sbom_ingest_event)
     end
-
-    context 'with feature flag disabled' do
-      before do
-        stub_feature_flags(dependency_scanning_using_sbom_reports: false)
-      end
-
-      it "does not call Sbom::CreateVulnerabilitiesService" do
-        expect(Sbom::CreateVulnerabilitiesService).not_to receive(:execute)
-
-        described_class.new.handle_event(sbom_ingest_event)
-      end
-    end
   end
 end

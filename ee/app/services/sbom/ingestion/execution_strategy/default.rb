@@ -51,7 +51,7 @@ module Sbom
         end
 
         def publish_ingested_sbom_event
-          return unless ingested_ids.present? && Feature.enabled?(:dependency_scanning_using_sbom_reports, project)
+          return unless ingested_ids.present?
 
           Gitlab::EventStore.publish(
             Sbom::SbomIngestedEvent.new(data: { pipeline_id: pipeline.id })
