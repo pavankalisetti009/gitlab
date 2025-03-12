@@ -2021,6 +2021,28 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
     end
   end
 
+  describe 'seat_control_available?' do
+    let_it_be(:namespace) { create(:group) }
+
+    subject(:seat_control_available?) { namespace.seat_control_available? }
+
+    where(:user_cap, :block_overages, :expected) do
+      true  | true  | true
+      true  | false | true
+      false | true  | true
+      false | false | false
+    end
+
+    with_them do
+      before do
+        allow(namespace).to receive(:user_cap_available?).and_return(user_cap)
+        allow(namespace).to receive(:block_overages_available?).and_return(block_overages)
+      end
+
+      it { is_expected.to be expected }
+    end
+  end
+
   describe '#user_cap_available?' do
     let_it_be(:namespace) { create(:group) }
     let_it_be(:subgroup) {  create(:group, parent: namespace) }
@@ -2045,6 +2067,59 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
 
       it { is_expected.to be false }
     end
+  end
+
+  describe '#block_overages_available?', :saas do
+    let_it_be(:namespace) { create(:group) }
+
+    let(:end_date) { 5.days.from_now }
+
+    subject(:block_overages_available?) { namespace.block_overages_available? }
+
+    before do
+      stub_saas_features(gitlab_com_subscriptions: true)
+
+      create(:gitlab_subscription, namespace: namespace, hosted_plan: create(:ultimate_plan), end_date: end_date)
+    end
+
+    context 'when not on Gitlab.com' do
+      before do
+        stub_saas_features(gitlab_com_subscriptions: false)
+      end
+
+      it { is_expected.to be false }
+    end
+
+    context 'when the namespace is not a group' do
+      let(:user) { create(:user) }
+      let(:namespace) { user.namespace }
+
+      it { is_expected.to be false }
+    end
+
+    context 'with no subscription' do
+      before do
+        allow(namespace).to receive(:gitlab_subscription).and_return(nil)
+      end
+
+      it { is_expected.to be false }
+    end
+
+    context 'without a paid plan' do
+      before do
+        allow(namespace.gitlab_subscription).to receive(:has_a_paid_hosted_plan?).and_return(false)
+      end
+
+      it { is_expected.to be false }
+    end
+
+    context 'with an expired subscription' do
+      let(:end_date) { 1.day.ago }
+
+      it { is_expected.to be false }
+    end
+
+    it { is_expected.to be true }
   end
 
   describe '#capacity_left_for_user?' do
