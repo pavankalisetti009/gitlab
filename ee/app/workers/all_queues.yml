@@ -3063,6 +3063,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: security_delete_approval_policy_rules
+  :worker_name: Security::DeleteApprovalPolicyRulesWorker
+  :feature_category: :security_policy_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: security_delete_orchestration_configuration
   :worker_name: Security::DeleteOrchestrationConfigurationWorker
   :feature_category: :security_policy_management

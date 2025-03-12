@@ -325,7 +325,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
           expect { persist }.to change {
             policy_configuration
               .security_policies.order(policy_index: :asc).flat_map(&:approval_policy_rules).flat_map(&:rule_index)
-          }.from(contain_exactly(0, 1)).to(contain_exactly(0, -2))
+          }.from(contain_exactly(0, 1)).to(contain_exactly(0, -1))
         end
 
         it 'calls EventPublisher with deleted policies' do
