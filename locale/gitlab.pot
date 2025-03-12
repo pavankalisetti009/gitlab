@@ -25891,6 +25891,12 @@ msgstr ""
 msgid "GCP region configured"
 msgstr ""
 
+msgid "GLQL list"
+msgstr ""
+
+msgid "GLQL table"
+msgstr ""
+
 msgid "GLQL view timed out. Add more filters to reduce the number of results."
 msgstr ""
 
