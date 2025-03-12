@@ -29,6 +29,26 @@ RSpec.describe Onboarding, feature_category: :onboarding do
     end
   end
 
+  describe '.completed_welcome_step?' do
+    let(:user) { build(:user) }
+
+    where(:setup_for_company, :expected_result) do
+      true  | true
+      false | true
+      nil   | false
+    end
+
+    with_them do
+      before do
+        user.setup_for_company = setup_for_company
+      end
+
+      subject { described_class.completed_welcome_step?(user) }
+
+      it { is_expected.to be expected_result }
+    end
+  end
+
   describe '.enabled?' do
     subject { described_class.enabled? }
 

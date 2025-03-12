@@ -57,13 +57,9 @@ module Registrations
     end
 
     def verify_welcome_needed!
-      return unless completed_welcome_step?
+      return unless ::Onboarding.completed_welcome_step?(current_user)
 
       redirect_to path_for_signed_in_user
-    end
-
-    def completed_welcome_step?
-      !current_user.setup_for_company.nil?
     end
 
     def update_params

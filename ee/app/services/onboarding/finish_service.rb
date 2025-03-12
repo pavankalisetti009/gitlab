@@ -11,7 +11,17 @@ module Onboarding
     def execute
       return unless valid_to_finish?
 
-      user.update(onboarding_attributes)
+      if user.update(onboarding_attributes)
+        ServiceResponse.success
+      else
+        ::Gitlab::ErrorTracking.track_exception(
+          ::Onboarding::StepUrlError.new("Failed to finish onboarding with: #{user.errors.full_messages}"),
+          onboarding_status: user.onboarding_status.to_json,
+          user_id: user.id
+        )
+
+        ServiceResponse.error(message: "Failed to finish onboarding with: #{user.errors.full_messages}")
+      end
     end
 
     def onboarding_attributes

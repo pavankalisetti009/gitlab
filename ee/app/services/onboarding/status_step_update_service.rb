@@ -15,6 +15,14 @@ module Onboarding
       if user.update(onboarding_status_step_url: step_url)
         ServiceResponse.success(payload: payload)
       else
+        ::Gitlab::ErrorTracking.track_exception(
+          ::Onboarding::StepUrlError.new(
+            "Failed to updated the step_url with #{step_url}: #{user.errors.full_messages}"
+          ),
+          onboarding_status: user.onboarding_status.to_json,
+          user_id: user.id
+        )
+
         ServiceResponse.error(message: user.errors.full_messages, payload: payload)
       end
     end

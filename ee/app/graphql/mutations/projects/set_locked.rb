@@ -62,11 +62,7 @@ module Mutations
       def lock_path(file_path)
         return if fetch_path_lock(file_path)
 
-        path_lock = PathLocks::LockService.new(project, current_user).execute(file_path)
-
-        if path_lock.persisted? && sync_with_lfs?(file_path)
-          Lfs::LockFileService.new(project, current_user, path: file_path, create_path_lock: false).execute
-        end
+        PathLocks::LockService.new(project, current_user).execute(file_path)
       end
 
       def unlock_path(file_path)
@@ -75,10 +71,6 @@ module Mutations
         return unless path_lock
 
         PathLocks::UnlockService.new(project, current_user).execute(path_lock)
-
-        if sync_with_lfs?(file_path)
-          Lfs::UnlockFileService.new(project, current_user, path: file_path, force: true).execute
-        end
       end
 
       def sync_with_lfs?(file_path)

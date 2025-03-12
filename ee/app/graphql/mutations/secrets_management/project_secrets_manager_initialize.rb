@@ -6,6 +6,7 @@ module Mutations
       graphql_name 'ProjectSecretsManagerInitialize'
 
       include ResolvesProject
+      include Gitlab::InternalEventsTracking
 
       authorize :admin_project_secrets_manager
 
@@ -30,6 +31,7 @@ module Mutations
           .execute
 
         if result.success?
+          track_event(project)
           {
             project_secrets_manager: result.payload[:project_secrets_manager],
             errors: []
@@ -43,6 +45,18 @@ module Mutations
       end
 
       private
+
+      def track_event(project)
+        track_internal_event(
+          'enable_ci_secrets_manager_for_project',
+          project: project,
+          user: current_user,
+          namespace: project.namespace,
+          additional_properties: {
+            label: 'graphql'
+          }
+        )
+      end
 
       def find_object(project_path:)
         resolve_project(full_path: project_path)
