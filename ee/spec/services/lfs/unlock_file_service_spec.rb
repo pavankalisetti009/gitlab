@@ -12,25 +12,28 @@ RSpec.describe Lfs::UnlockFileService, feature_category: :source_code_management
   describe '#execute' do
     context 'when authorized' do
       before do
-        project.add_developer(current_user)
+        project.add_developer(lock_author)
       end
 
-      describe 'File Locking integraction' do
-        let(:destroy_path_lock) { true }
-        let(:params) { { id: lock.id, destroy_path_lock: destroy_path_lock } }
+      describe 'File Locking integration' do
+        let(:syncing_path_lock) { false }
+        let(:params) { { id: lock.id, syncing_path_lock: syncing_path_lock } }
         let(:current_user) { lock_author }
         let(:file_locks_license) { true }
+        let(:path_lock_service) { PathLocks::UnlockService }
 
         before do
           stub_licensed_features(file_locks: file_locks_license)
-
-          project.add_developer(lock_author)
           project.path_locks.create!(path: lock.path, user: lock_author)
+          allow(path_lock_service).to receive(:new).and_call_original
         end
 
         context 'when File Locking is available' do
-          it 'deletes the Path Lock' do
+          it 'deletes the Path Lock', :aggregate_failures do
             expect { subject.execute }.to change { PathLock.count }.to(0)
+            expect(path_lock_service)
+              .to have_received(:new)
+              .with(project, lock_author, syncing_lfs_lock: true)
           end
 
           context 'when the lfs file was not unlocked successfully' do
@@ -43,8 +46,8 @@ RSpec.describe Lfs::UnlockFileService, feature_category: :source_code_management
             end
           end
 
-          context 'when destroy_path_lock is false' do
-            let(:destroy_path_lock) { false }
+          context 'when syncing_path_lock is true' do
+            let(:syncing_path_lock) { true }
 
             it 'does not delete the Path Lock' do
               expect { subject.execute }.not_to change { PathLock.count }
