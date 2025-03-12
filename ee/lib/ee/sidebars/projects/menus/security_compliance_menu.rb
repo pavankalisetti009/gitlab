@@ -108,7 +108,13 @@ module EE
               title: _('Vulnerability report'),
               link: project_security_vulnerability_report_index_path(context.project),
               super_sidebar_parent: ::Sidebars::Projects::SuperSidebarMenus::SecureMenu,
-              active_routes: { path: %w[projects/security/vulnerability_report#index projects/security/vulnerabilities#show] },
+              active_routes: {
+                path: %w[
+                  projects/security/vulnerability_report#index
+                  projects/security/vulnerabilities#show
+                  projects/security/vulnerabilities#new
+                ]
+              },
               item_id: :vulnerability_report
             )
           end
