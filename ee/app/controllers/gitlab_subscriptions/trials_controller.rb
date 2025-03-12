@@ -123,7 +123,7 @@ module GitlabSubscriptions
 
     def trial_params
       params.permit(*::Onboarding::StatusPresenter::GLM_PARAMS, :new_group_name, :namespace_id)
-      .with_defaults(organization_id: Current.organization_id).to_h
+      .with_defaults(organization_id: Current.organization&.id).to_h
     end
 
     def eligible_namespaces
