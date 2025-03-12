@@ -330,6 +330,14 @@ module EE
           resolver: ::Resolvers::Sbom::ComponentResolver,
           experiment: { milestone: '17.5' }
 
+        field :component_versions,
+          ::Types::Sbom::ComponentVersionType.connection_type,
+          null: false,
+          authorize: :read_dependency,
+          description: 'Find software dependency versions by component name.',
+          resolver: ::Resolvers::Sbom::ComponentVersionResolver,
+          experiment: { milestone: '18.0' }
+
         field :custom_fields, ::Types::Issuables::CustomFieldType.connection_type,
           null: true,
           description: 'Custom fields configured for the group.',

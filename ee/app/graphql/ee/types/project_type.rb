@@ -415,7 +415,7 @@ module EE
           ::Types::Sbom::ComponentVersionType.connection_type,
           null: false,
           authorize: :read_dependency,
-          description: 'Find software dependency versions by component.',
+          description: 'Find software dependency versions by component name.',
           resolver: ::Resolvers::Sbom::ComponentVersionResolver,
           experiment: { milestone: '17.10' }
 

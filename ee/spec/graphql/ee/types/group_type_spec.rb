@@ -49,6 +49,7 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
   it { expect(described_class).to have_graphql_field(:components) }
   it { expect(described_class).to have_graphql_field(:custom_fields) }
   it { expect(described_class).to have_graphql_field(:project_compliance_requirements_status) }
+  it { expect(described_class).to have_graphql_field(:component_versions) }
 
   describe 'components' do
     let_it_be(:guest) { create(:user) }
@@ -446,5 +447,14 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
     subject { described_class.fields['dora'] }
 
     it { is_expected.to have_graphql_type(Types::Analytics::Dora::GroupDoraType) }
+  end
+
+  describe 'component_versions' do
+    subject { described_class.fields['componentVersions'] }
+
+    it { is_expected.to have_non_null_graphql_type(::Types::Sbom::ComponentVersionType.connection_type) }
+    it { is_expected.to have_graphql_resolver(::Resolvers::Sbom::ComponentVersionResolver) }
+
+    it { is_expected.to include_graphql_arguments(:component_name) }
   end
 end

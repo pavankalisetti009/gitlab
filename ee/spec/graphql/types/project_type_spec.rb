@@ -894,6 +894,6 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
     it { is_expected.to have_non_null_graphql_type(Types::Sbom::ComponentVersionType.connection_type) }
     it { is_expected.to have_graphql_resolver(::Resolvers::Sbom::ComponentVersionResolver) }
 
-    it { is_expected.to include_graphql_arguments(:component_id) }
+    it { is_expected.to include_graphql_arguments(:component_name) }
   end
 end
