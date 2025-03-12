@@ -1,22 +1,35 @@
 <script>
 import { GlCollapsibleListbox, GlSprintf } from '@gitlab/ui';
 import { s__, __, sprintf } from '~/locale';
+import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import BranchSelection from 'ee/security_orchestration/components/policy_editor/scan_result/rule/branch_selection.vue';
 import TimezoneDropdown from '~/vue_shared/components/timezone_dropdown/timezone_dropdown.vue';
 import { getHostname } from '../../utils';
-import { CADENCE_OPTIONS, updateScheduleCadence } from './utils';
+import {
+  CADENCE_OPTIONS,
+  HOUR_MINUTE_LIST,
+  WEEKDAY_OPTIONS,
+  isCadenceDaily,
+  isCadenceWeekly,
+  updateScheduleCadence,
+} from './utils';
 
 export default {
   name: 'ScheduleForm',
   CADENCE_OPTIONS,
+  HOUR_MINUTE_LIST,
+  WEEKDAY_OPTIONS,
   i18n: {
     cadence: __('Cadence'),
     details: s__(
       'SecurityOrchestration|at the following times: %{cadenceSelector}, start at %{start}, run for: %{duration}, and timezone is %{timezoneSelector}',
     ),
     message: s__('SecurityOrchestration|Schedule to run for %{branchSelector}'),
+    time: __('Time'),
     timezoneLabel: s__('ScanExecutionPolicy|on %{hostname}'),
     timezonePlaceholder: s__('ScanExecutionPolicy|Select timezone'),
+    weekly: __('Weekly'),
+    weekdayDropdownPlaceholder: __('Select a day'),
   },
   components: {
     BranchSelection,
@@ -38,8 +51,25 @@ export default {
         branches: this.schedule?.branches,
       };
     },
+    cadence() {
+      return this.schedule.type;
+    },
+    showTimeDropdown() {
+      return isCadenceDaily(this.cadence);
+    },
+    showWeekdayDropdown() {
+      return isCadenceWeekly(this.cadence);
+    },
     timezoneTooltipText() {
       return sprintf(this.$options.i18n.timezoneLabel, { hostname: getHostname() });
+    },
+    weekdayToggleText() {
+      return getSelectedOptionsText({
+        options: this.$options.WEEKDAY_OPTIONS,
+        selected: this.schedule.days || [],
+        placeholder: this.$options.i18n.weekdayDropdownPlaceholder,
+        maxOptionsShown: 2,
+      });
     },
   },
   methods: {
@@ -59,8 +89,8 @@ export default {
       const updatedSchedule = updateScheduleCadence({ schedule: this.schedule, cadence: value });
       this.$emit('changed', updatedSchedule);
     },
-    handleTimeZoneInput({ identifier }) {
-      this.$emit('changed', { ...this.schedule, timezone: identifier });
+    updatePolicy(key, value) {
+      this.$emit('changed', { ...this.schedule, [key]: value });
     },
   },
 };
@@ -81,12 +111,35 @@ export default {
           <gl-collapsible-listbox
             :aria-label="$options.i18n.cadence"
             :items="$options.CADENCE_OPTIONS"
-            :selected="schedule.type"
+            :selected="cadence"
             @select="updateCadence"
           />
         </template>
 
-        <template #start> </template>
+        <template #start>
+          <div class="gl-display-inline-block">
+            <template v-if="showTimeDropdown">
+              <gl-collapsible-listbox
+                data-testid="time-dropdown"
+                :aria-label="$options.i18n.time"
+                :items="$options.HOUR_MINUTE_LIST"
+                :selected="schedule.start_time"
+                @select="updatePolicy('start_time', $event)"
+              />
+            </template>
+            <template v-else-if="showWeekdayDropdown">
+              <gl-collapsible-listbox
+                multiple
+                data-testid="weekday-dropdown"
+                :aria-label="$options.i18n.weekly"
+                :items="$options.WEEKDAY_OPTIONS"
+                :selected="schedule.days"
+                :toggle-text="weekdayToggleText"
+                @select="updatePolicy('days', $event)"
+              />
+            </template>
+          </div>
+        </template>
 
         <template #duration> </template>
 
@@ -98,7 +151,7 @@ export default {
             :timezone-data="timezones"
             :title="timezoneTooltipText"
             :value="schedule.timezone"
-            @input="handleTimeZoneInput"
+            @input="updatePolicy('timezone', $event.identifier)"
           />
         </template>
       </gl-sprintf>
