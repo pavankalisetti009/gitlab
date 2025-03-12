@@ -179,16 +179,26 @@ module Security
       end
     end
 
-    def rules
+    def all_rules
       if type_approval_policy?
-        approval_policy_rules.undeleted
+        approval_policy_rules
       elsif type_scan_execution_policy?
-        scan_execution_policy_rules.undeleted
+        scan_execution_policy_rules
       elsif type_vulnerability_management_policy?
-        vulnerability_management_policy_rules.undeleted
-      else
-        []
+        vulnerability_management_policy_rules
       end
+    end
+
+    def rules
+      Array.wrap(all_rules&.undeleted)
+    end
+
+    def max_rule_index
+      all_rules&.maximum("ABS(rule_index)") || 0
+    end
+
+    def next_rule_index
+      rules.empty? ? 0 : (rules.maximum(:rule_index) + 1)
     end
 
     def scope_applicable?(project)

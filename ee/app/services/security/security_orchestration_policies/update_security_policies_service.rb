@@ -33,12 +33,9 @@ module Security
       def update_policy_rules(policy, rules_diff)
         return unless rules_diff
 
-        if rules_diff.deleted.any?
-          mark_rules_for_deletion(rules_diff.deleted, rules_diff.deleted.count + rules_diff.updated.count)
-        end
-
+        mark_rules_for_deletion(policy, rules_diff.deleted)
         update_existing_rules(policy, rules_diff.updated)
-        create_new_rules(policy, rules_diff.created, rules_diff.updated.count)
+        create_new_rules(policy, rules_diff.created)
       end
 
       def update_existing_rules(policy, updated_rules)
@@ -48,19 +45,18 @@ module Security
         end
       end
 
-      def create_new_rules(policy, created_rules, existing_rules_count)
+      def create_new_rules(policy, created_rules)
+        new_index = policy.next_rule_index
         created_rules.each_with_index do |rule_hash, index|
-          new_index = existing_rules_count + index
-          policy.upsert_rule(new_index, rule_hash)
+          policy.upsert_rule(new_index + index, rule_hash)
         end
       end
 
-      def mark_rules_for_deletion(deleted_rules, old_rules_count)
+      def mark_rules_for_deletion(policy, deleted_rules)
+        new_index = policy.max_rule_index || 1
         deleted_rules.each_with_index do |rule_diff, index|
           rule_record = rule_diff.from
-
-          new_index = old_rules_count + index
-          rule_record.update!(rule_index: -new_index)
+          rule_record.update!(rule_index: -(new_index + index))
         end
       end
     end

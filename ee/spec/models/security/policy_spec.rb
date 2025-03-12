@@ -509,6 +509,47 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
     end
   end
 
+  describe '#max_rule_index' do
+    let_it_be(:policy) { create(:security_policy) }
+    let_it_be(:rule1) { create(:approval_policy_rule, security_policy: policy, rule_index: 0) }
+    let_it_be(:rule2) { create(:approval_policy_rule, security_policy: policy, rule_index: -2) }
+    let_it_be(:rule3) { create(:approval_policy_rule, security_policy: policy, rule_index: 1) }
+
+    it 'returns the maximum absolute rule index' do
+      expect(policy.max_rule_index).to eq(2)
+    end
+
+    context 'when all_rules is nil' do
+      before do
+        allow(policy).to receive(:all_rules).and_return(nil)
+      end
+
+      it 'returns zero' do
+        expect(policy.max_rule_index).to eq(0)
+      end
+    end
+  end
+
+  describe '#next_rule_index' do
+    let_it_be(:policy) { create(:security_policy) }
+
+    context 'when there are no rules' do
+      it 'returns 0' do
+        expect(policy.next_rule_index).to eq(0)
+      end
+    end
+
+    context 'when there are existing rules' do
+      let_it_be(:rule1) { create(:approval_policy_rule, security_policy: policy, rule_index: 0) }
+      let_it_be(:rule2) { create(:approval_policy_rule, security_policy: policy, rule_index: 1) }
+      let_it_be(:deleted_rule) { create(:approval_policy_rule, security_policy: policy, rule_index: -1) }
+
+      it 'returns the next available index' do
+        expect(policy.next_rule_index).to eq(2)
+      end
+    end
+  end
+
   describe '#scope_applicable?' do
     let_it_be(:project) { create(:project) }
     let(:policy) { build(:security_policy) }
