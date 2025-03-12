@@ -66,6 +66,10 @@ FactoryBot.define do
       ai_action { :generate_commit_message }
     end
 
+    trait :description_composer do
+      ai_action { :description_composer }
+    end
+
     trait :summarize_review do
       ai_action { :summarize_review }
     end
