@@ -8,7 +8,7 @@ RSpec.describe ComplianceManagement::Pipl::BlockNonCompliantUserService,
   subject(:execute) { described_class.new(pipl_user: pipl_user, current_user: blocking_user).execute }
 
   let(:pipl_user) { create(:pipl_user) }
-  let(:blocking_user) { Users::Internal.admin_bot }
+  let(:blocking_user) { create(:user, :admin) }
 
   shared_examples 'does not block the user' do
     it 'does not change the user status and note' do
@@ -94,7 +94,7 @@ RSpec.describe ComplianceManagement::Pipl::BlockNonCompliantUserService,
       end
 
       context 'when the block operation fails' do
-        let(:pipl_user) { create(:pipl_user, user: blocking_user, initial_email_sent_at: 60.days.ago) }
+        let(:pipl_user) { create(:pipl_user, user: Users::Internal.admin_bot, initial_email_sent_at: 60.days.ago) }
 
         it_behaves_like 'does not block the user'
         it_behaves_like 'has a validation error',
