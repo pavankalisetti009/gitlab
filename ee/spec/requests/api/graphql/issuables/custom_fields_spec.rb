@@ -35,10 +35,10 @@ RSpec.describe 'Listing custom fields', feature_category: :team_planning do
 
   let(:query) do
     <<~QUERY
-    query($active: Boolean, $fieldType: CustomFieldType, $search: String, $workItemTypeIds: [WorkItemsTypeID!]) {
+    query($active: Boolean, $fieldType: CustomFieldType, $search: String, $workItemTypeId: WorkItemsTypeID) {
       namespace(fullPath: "#{namespace.full_path}") {
         id
-        customFields(active: $active, fieldType: $fieldType, search: $search, workItemTypeIds: $workItemTypeIds) {
+        customFields(active: $active, fieldType: $fieldType, search: $search, workItemTypeId: $workItemTypeId) {
           nodes {
             id
             name
@@ -116,10 +116,10 @@ RSpec.describe 'Listing custom fields', feature_category: :team_planning do
   context 'when querying from group field' do
     let(:query) do
       <<~QUERY
-      query($active: Boolean, $fieldType: CustomFieldType, $search: String, $workItemTypeIds: [WorkItemsTypeID!]) {
+      query($active: Boolean, $fieldType: CustomFieldType, $search: String, $workItemTypeId: WorkItemsTypeID) {
         group(fullPath: "#{namespace.full_path}") {
           id
-          customFields(active: $active, fieldType: $fieldType, search: $search, workItemTypeIds: $workItemTypeIds) {
+          customFields(active: $active, fieldType: $fieldType, search: $search, workItemTypeId: $workItemTypeId) {
             nodes {
               id
               name
@@ -214,11 +214,11 @@ RSpec.describe 'Listing custom fields', feature_category: :team_planning do
     end
   end
 
-  context 'when filtering by work item type ids', :aggregate_failures do
+  context 'when filtering by work item type id', :aggregate_failures do
     it 'returns matching fields while using work_item_types.id' do
       expect(task_type.to_global_id.model_id.to_i).to eq(task_type.id)
 
-      post_graphql(query, current_user: guest, variables: { work_item_type_ids: [task_type.to_global_id] })
+      post_graphql(query, current_user: guest, variables: { work_item_type_id: task_type.to_global_id })
 
       expect(response).to have_gitlab_http_status(:ok)
       expect(graphql_data_at(:namespace, :customFields, :nodes)).to match([
@@ -233,7 +233,7 @@ RSpec.describe 'Listing custom fields', feature_category: :team_planning do
         post_graphql(
           query,
           current_user: guest,
-          variables: { work_item_type_ids: [::Gitlab::GlobalId.build(task_type, id: task_type.old_id)] }
+          variables: { work_item_type_id: ::Gitlab::GlobalId.build(task_type, id: task_type.old_id) }
         )
 
         expect(response).to have_gitlab_http_status(:ok)

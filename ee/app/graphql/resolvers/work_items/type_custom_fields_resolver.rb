@@ -4,6 +4,8 @@ module Resolvers
   module WorkItems
     class TypeCustomFieldsResolver < BaseResolver
       include LooksAhead
+      include ::Issuables::CustomFields::LookAheadPreloads
+      extend ::Gitlab::Utils::Override
 
       type [Types::Issuables::CustomFieldType], null: true
 
@@ -50,16 +52,9 @@ module Resolvers
         end
       end
 
+      override :unconditional_includes
       def unconditional_includes
-        [:namespace, :work_item_types]
-      end
-
-      def preloads
-        {
-          created_by: [:created_by],
-          updated_by: [:updated_by],
-          select_options: [:select_options]
-        }
+        super + [:work_item_types]
       end
     end
   end
