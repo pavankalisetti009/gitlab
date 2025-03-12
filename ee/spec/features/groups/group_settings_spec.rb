@@ -616,24 +616,10 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
       end
     end
 
-    context 'when user cap feature is available', :js do
+    context 'when user cap feature is available', :js, :saas do
       let(:user_caps_selector) { '[name="group[new_user_signups_cap]"]' }
 
-      context 'when group is not the root group' do
-        let(:subgroup) { create(:group, parent: group) }
-
-        before do
-          visit edit_group_path(subgroup)
-        end
-
-        it 'is not visible' do
-          expect(page).not_to have_content('Seat control')
-          expect(page).not_to have_content('Restricted access')
-          expect(page).not_to have_content('Set user cap')
-        end
-      end
-
-      context 'when the group is the root group' do
+      context 'with no subscription' do
         before do
           visit edit_group_path(group)
         end
@@ -641,87 +627,124 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
         it 'is visible' do
           expect(page).to have_content('Seat control')
           expect(page).to have_content('Set user cap')
-          expect(page).to have_content('Restricted access')
         end
 
-        it 'will save positive numbers for the user cap' do
-          find_by_testid("seat-control-user-cap-radio").click
+        it 'is not visible' do
+          expect(page).not_to have_content('Restricted access')
+        end
+      end
 
-          find(user_caps_selector).set(5)
-
-          click_button 'Save changes'
-          wait_for_requests
-
-          expect(page).to have_content("Group 'Foo bar' was successfully updated.")
+      context 'with a subscription' do
+        before do
+          create(:gitlab_subscription, namespace: group, hosted_plan: create(:ultimate_plan))
+          allow(Gitlab::CurrentSettings.current_application_settings)
+            .to receive(:should_check_namespace_plan?).and_return(true)
         end
 
-        it 'will not allow a negative number for the user cap' do
-          find_by_testid("seat-control-user-cap-radio").click
+        context 'when group is not the root group' do
+          let(:subgroup) { create(:group, parent: group) }
 
-          find(user_caps_selector).set(-5)
-
-          click_button 'Save changes'
-          expect(page).to have_content('This field is required.')
-
-          wait_for_requests
-
-          expect(page).not_to have_content("Group 'Foo bar' was successfully updated.")
-        end
-
-        it 'requires a number' do
-          find_by_testid("seat-control-user-cap-radio").click
-
-          expect(find(user_caps_selector).value).to eq("")
-
-          click_button 'Save changes'
-          expect(page).to have_content('This field is required.')
-
-          wait_for_requests
-
-          expect(page).not_to have_content("Group 'Foo bar' was successfully updated.")
-        end
-
-        it 'hides the required error when the user selects open access' do
-          find_by_testid("seat-control-user-cap-radio").click
-
-          expect(find(user_caps_selector).value).to eq("")
-
-          click_button 'Save changes'
-          expect(page).to have_content('This field is required.')
-          expect(page).to have_css("#{user_caps_selector}.gl-field-error-outline")
-
-          find_by_testid("seat-control-off-radio").click
-
-          expect(page).not_to have_content('This field is required.')
-          expect(page).not_to have_css("#{user_caps_selector}.gl-field-error-outline")
-        end
-
-        it 'disables the user cap input field when open access is selected' do
-          expect(find('#group_new_user_signups_cap')).to be_disabled
-        end
-
-        it 'will save restricted access' do
-          choose 'Restricted access'
-
-          click_button 'Save changes'
-
-          expect(page).to have_content("Group 'Foo bar' was successfully updated.")
-          expect(page).to have_checked_field 'Restricted access'
-        end
-
-        context 'when the group cannot set a user cap or block seat overages' do
           before do
-            create(:group_group_link, shared_group: group)
+            visit edit_group_path(subgroup)
           end
 
-          it 'will disable both options' do
-            visit edit_group_path(group)
+          it 'is not visible' do
+            expect(page).not_to have_content('Seat control')
+            expect(page).not_to have_content('Restricted access')
+            expect(page).not_to have_content('Set user cap')
+          end
+        end
 
-            expect(find('#group_seat_control_block_overages')).to be_disabled
-            expect(find('#group_seat_control_user_cap')).to be_disabled
-            expect(find(user_caps_selector)).to be_disabled
-            expect(page).to have_content 'Restricted access and user cap cannot be turned on. ' \
-              'The group or one of its subgroups or projects is shared externally.'
+        context 'when the group is the root group' do
+          before do
+            visit edit_group_path(group)
+          end
+
+          it 'is visible' do
+            expect(page).to have_content('Seat control')
+            expect(page).to have_content('Set user cap')
+            expect(page).to have_content('Restricted access')
+          end
+
+          it 'will save positive numbers for the user cap' do
+            find_by_testid("seat-control-user-cap-radio").click
+
+            find(user_caps_selector).set(5)
+
+            click_button 'Save changes'
+            wait_for_requests
+
+            expect(page).to have_content("Group 'Foo bar' was successfully updated.")
+          end
+
+          it 'will not allow a negative number for the user cap' do
+            find_by_testid("seat-control-user-cap-radio").click
+
+            find(user_caps_selector).set(-5)
+
+            click_button 'Save changes'
+            expect(page).to have_content('This field is required.')
+
+            wait_for_requests
+
+            expect(page).not_to have_content("Group 'Foo bar' was successfully updated.")
+          end
+
+          it 'requires a number' do
+            find_by_testid("seat-control-user-cap-radio").click
+
+            expect(find(user_caps_selector).value).to eq("")
+
+            click_button 'Save changes'
+            expect(page).to have_content('This field is required.')
+
+            wait_for_requests
+
+            expect(page).not_to have_content("Group 'Foo bar' was successfully updated.")
+          end
+
+          it 'hides the required error when the user selects open access' do
+            find_by_testid("seat-control-user-cap-radio").click
+
+            expect(find(user_caps_selector).value).to eq("")
+
+            click_button 'Save changes'
+            expect(page).to have_content('This field is required.')
+            expect(page).to have_css("#{user_caps_selector}.gl-field-error-outline")
+
+            find_by_testid("seat-control-off-radio").click
+
+            expect(page).not_to have_content('This field is required.')
+            expect(page).not_to have_css("#{user_caps_selector}.gl-field-error-outline")
+          end
+
+          it 'disables the user cap input field when open access is selected' do
+            expect(find('#group_new_user_signups_cap')).to be_disabled
+          end
+
+          it 'will save restricted access' do
+            choose 'Restricted access'
+
+            click_button 'Save changes'
+
+            expect(page).to have_content("Group 'Foo bar' was successfully updated.")
+            expect(page).to have_checked_field 'Restricted access'
+          end
+
+          context 'when the group cannot set a user cap or block seat overages' do
+            before do
+              create(:group_group_link, shared_group: group)
+            end
+
+            it 'will disable both options' do
+              visit edit_group_path(group)
+
+              expect(find('#group_seat_control_block_overages')).to be_disabled
+              expect(find('#group_seat_control_user_cap')).to be_disabled
+              expect(find(user_caps_selector)).to be_disabled
+              expect(page).to have_content 'Restricted access and user cap cannot be turned on. ' \
+                'The group or one of its subgroups or projects is shared externally.'
+            end
           end
         end
       end

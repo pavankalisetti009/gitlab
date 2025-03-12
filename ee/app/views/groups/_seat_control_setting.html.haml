@@ -1,12 +1,13 @@
-- return unless group.root? && group.user_cap_available?
+- return unless group.root? && group.seat_control_available?
 
 .form-group#js-seat-control
   %h5
     = _("Seat control")
-  %div
-    = f.gitlab_ui_radio_component :seat_control, :block_overages, render('groups/restricted_access_label'),
-      help_text: _("Invitations above seat count are blocked"),
-      radio_options: { disabled: group.shared_externally? }
+  - if group.block_overages_available?
+    %div
+      = f.gitlab_ui_radio_component :seat_control, :block_overages, render('groups/restricted_access_label'),
+        help_text: _("Invitations above seat count are blocked"),
+        radio_options: { disabled: group.shared_externally? }
   %div
     = f.gitlab_ui_radio_component :seat_control, :user_cap, _("Set user cap"),
       help_text: _("Any user who is added or requests access in excess of the user cap must be approved by an administrator"),
