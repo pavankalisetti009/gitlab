@@ -569,6 +569,16 @@ module EE
       end
     end
 
+    def seat_control_available?
+      user_cap_available? || block_overages_available?
+    end
+
+    def block_overages_available?
+      group_namespace? &&
+        ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions) &&
+        has_paid_hosted_plan? && subscription_not_expired?
+    end
+
     def user_cap_available?
       return false unless group_namespace?
       return false unless ::Gitlab.com?
@@ -658,6 +668,14 @@ module EE
     end
 
     private
+
+    def has_paid_hosted_plan?
+      has_subscription? && gitlab_subscription.has_a_paid_hosted_plan?
+    end
+
+    def subscription_not_expired?
+      has_subscription? && !gitlab_subscription.expired?
+    end
 
     def security_orchestration_policies_for_namespaces(namespace_ids, include_invalid: false)
       validated_security_orchestration_policies(
