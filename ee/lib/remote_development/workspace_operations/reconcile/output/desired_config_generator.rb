@@ -7,43 +7,160 @@ module RemoteDevelopment
         class DesiredConfigGenerator
           include States
 
-          # @param [RemoteDevelopment::WorkspaceOperations::Workspace] workspace
+          # @param [RemoteDevelopment::Workspace] workspace
           # @param [Boolean] include_all_resources
           # @param [RemoteDevelopment::Logger] logger
           # @return [Array<Hash>]
           def self.generate_desired_config(workspace:, include_all_resources:, logger:)
-            desired_config = []
-            workspaces_agent_config = workspace.workspaces_agent_config
             # NOTE: update env_secret_name to "#{workspace.name}-environment". This is to ensure naming consistency.
             # Changing it now would require migration from old config version to a new one.
             # Update this when a new desired config generator is created for some other reason.
             env_secret_name = "#{workspace.name}-env-var"
             file_secret_name = "#{workspace.name}-file"
-            domain_template = get_domain_template_annotation(
-              name: workspace.name,
-              dns_zone: workspaces_agent_config.dns_zone
-            )
-            inventory_name = "#{workspace.name}-workspace-inventory"
+            workspaces_agent_config = workspace.workspaces_agent_config
 
-            labels, annotations = get_merged_labels_and_annotations(
-              agent_labels: workspaces_agent_config.labels,
-              agent_annotations: workspaces_agent_config.annotations,
-              agent_id: workspace.agent.id,
+            max_resources_per_workspace = workspaces_agent_config.max_resources_per_workspace.deep_symbolize_keys
+
+            agent_annotations = workspaces_agent_config.annotations
+            domain_template = "{{.port}}-#{workspace.name}.#{workspaces_agent_config.dns_zone}"
+            common_annotations = get_common_annotations(
+              agent_annotations: agent_annotations,
               domain_template: domain_template,
-              owning_inventory: inventory_name,
               workspace_id: workspace.id,
-              max_resources_per_workspace: workspaces_agent_config.max_resources_per_workspace.deep_symbolize_keys
+              max_resources_per_workspace: max_resources_per_workspace
             )
 
-            k8s_inventory_for_workspace_core = get_inventory_config_map(
-              name: inventory_name,
+            workspace_inventory_name = "#{workspace.name}-workspace-inventory"
+            workspace_inventory_annotations =
+              common_annotations.merge("config.k8s.io/owning-inventory": workspace_inventory_name)
+
+            labels = workspaces_agent_config.labels.merge({ "agent.gitlab.com/id": workspace.agent.id.to_s })
+
+            resources_from_devfile_parser = DevfileParser.get_all(
+              processed_devfile: workspace.processed_devfile,
+              params: get_devfile_parser_params(
+                workspace: workspace,
+                workspaces_agent_config: workspaces_agent_config,
+                domain_template: domain_template,
+                labels: labels,
+                annotations: workspace_inventory_annotations,
+                env_secret_name: env_secret_name,
+                file_secret_name: file_secret_name
+              ),
+              logger: logger
+            )
+
+            # If we got no resources back from the devfile parser, this indicates some error was encountered in parsing
+            # the processed_devfile. So we return an empty array which will result in no updates being applied by the
+            # agent. We should not continue on and try to add anything else to the resources, as this would result
+            # in an invalid configuration being applied to the cluster.
+            return [] if resources_from_devfile_parser.empty?
+
+            desired_config = []
+
+            append_inventory_config_map(
+              desired_config: desired_config,
+              name: workspace_inventory_name,
               namespace: workspace.namespace,
-              agent_labels: workspaces_agent_config.labels,
-              agent_annotations: workspaces_agent_config.annotations,
-              agent_id: workspace.agent.id
+              labels: labels,
+              agent_annotations: agent_annotations
             )
 
-            k8s_resources_params = {
+            desired_config.append(*resources_from_devfile_parser)
+
+            append_image_pull_secrets_service_account(
+              desired_config: desired_config,
+              name: workspace.name,
+              namespace: workspace.namespace,
+              image_pull_secrets: workspaces_agent_config.image_pull_secrets,
+              labels: labels,
+              annotations: workspace_inventory_annotations
+            )
+
+            append_network_policy(
+              desired_config: desired_config,
+              workspaces_agent_config: workspaces_agent_config,
+              name: workspace.name,
+              namespace: workspace.namespace,
+              labels: labels,
+              annotations: workspace_inventory_annotations
+            )
+
+            secrets_inventory_name = "#{workspace.name}-secrets-inventory"
+            secrets_inventory_annotations =
+              common_annotations.merge("config.k8s.io/owning-inventory": secrets_inventory_name)
+
+            append_inventory_config_map(
+              desired_config: desired_config,
+              name: secrets_inventory_name,
+              labels: labels,
+              agent_annotations: agent_annotations,
+              namespace: workspace.namespace
+            )
+
+            # NOTE: We will perform append_secret here in order to complete
+            #       https://gitlab.com/gitlab-org/gitlab/-/merge_requests/182392
+
+            return desired_config unless include_all_resources
+
+            append_resource_quota(
+              desired_config: desired_config,
+              name: workspace.name,
+              namespace: workspace.namespace,
+              labels: labels,
+              annotations: workspace_inventory_annotations,
+              max_resources_per_workspace: max_resources_per_workspace
+            )
+
+            append_secret(
+              desired_config: desired_config,
+              name: env_secret_name,
+              namespace: workspace.namespace,
+              labels: labels,
+              annotations: secrets_inventory_annotations
+            )
+
+            append_secret_data_from_variables(
+              desired_config: desired_config,
+              secret_name: env_secret_name,
+              variables: workspace.workspace_variables.with_variable_type_environment
+            )
+
+            append_secret(
+              desired_config: desired_config,
+              name: file_secret_name,
+              namespace: workspace.namespace,
+              labels: labels,
+              annotations: secrets_inventory_annotations
+            )
+
+            append_secret_data_from_variables(
+              desired_config: desired_config,
+              secret_name: file_secret_name,
+              variables: workspace.workspace_variables.with_variable_type_file
+            )
+
+            desired_config
+          end
+
+          # @param [RemoteDevelopment::Workspace] workspace
+          # @param [RemoteDevelopment::WorkspacesAgentConfig] workspaces_agent_config
+          # @param [String] domain_template
+          # @param [Hash<String, String>] labels
+          # @param [Hash<String, String>] annotations
+          # @param [String] env_secret_name
+          # @param [String] file_secret_name
+          # @return [Hash]
+          def self.get_devfile_parser_params(
+            workspace:,
+            workspaces_agent_config:,
+            domain_template:,
+            labels:,
+            annotations:,
+            env_secret_name:,
+            file_secret_name:
+          )
+            {
               name: workspace.name,
               namespace: workspace.namespace,
               replicas: get_workspace_replicas(desired_state: workspace.desired_state),
@@ -53,169 +170,14 @@ module RemoteDevelopment
               env_secret_names: [env_secret_name],
               file_secret_names: [file_secret_name],
               service_account_name: workspace.name,
-              default_resources_per_workspace_container: workspaces_agent_config
-                .default_resources_per_workspace_container
-                .deep_symbolize_keys,
+              default_resources_per_workspace_container:
+                workspaces_agent_config
+                  .default_resources_per_workspace_container
+                  .deep_symbolize_keys,
               allow_privilege_escalation: workspaces_agent_config.allow_privilege_escalation,
               use_kubernetes_user_namespaces: workspaces_agent_config.use_kubernetes_user_namespaces,
               default_runtime_class: workspaces_agent_config.default_runtime_class
             }
-
-            k8s_resources_for_workspace_core = DevfileParser.get_all(
-              processed_devfile: workspace.processed_devfile,
-              k8s_resources_params: k8s_resources_params,
-              logger: logger
-            )
-
-            # If we got no resources back from the devfile parser, this indicates some error was encountered in parsing
-            # the processed_devfile. So we return an empty array which will result in no updates being applied by the
-            # agent. We should not continue on and try to add anything else to the resources, as this would result
-            # in an invalid configuration being applied to the cluster.
-            return [] if k8s_resources_for_workspace_core.empty?
-
-            desired_config.append(k8s_inventory_for_workspace_core, *k8s_resources_for_workspace_core)
-
-            workspace_service_account_definition = get_image_pull_secrets_service_account(
-              name: workspace.name,
-              namespace: workspace.namespace,
-              image_pull_secrets: workspaces_agent_config.image_pull_secrets,
-              labels: labels,
-              annotations: annotations
-            )
-            desired_config.append(workspace_service_account_definition)
-
-            if workspaces_agent_config.network_policy_enabled
-              network_policy = get_network_policy(
-                name: workspace.name,
-                namespace: workspace.namespace,
-                labels: labels,
-                annotations: annotations,
-                gitlab_workspaces_proxy_namespace: workspaces_agent_config.gitlab_workspaces_proxy_namespace,
-                egress_ip_rules: workspaces_agent_config.network_policy_egress
-              )
-              desired_config.append(network_policy)
-            end
-
-            return desired_config unless include_all_resources
-
-            desired_config + get_extra_k8s_resources(
-              workspace: workspace,
-              labels: labels,
-              annotations: annotations,
-              env_secret_name: env_secret_name,
-              file_secret_name: file_secret_name
-            )
-          end
-
-          # @param [RemoteDevelopment::WorkspaceOperations::Workspace] workspace
-          # @param [Hash<String, String>] labels
-          # @param [Hash<String, String>] annotations
-          # @param [String] env_secret_name
-          # @param [String] file_secret_name
-          # @param [Hash] desired_config
-          # @return [Array<(Hash)>]
-          def self.get_extra_k8s_resources(
-            workspace:,
-            labels:,
-            annotations:,
-            env_secret_name:,
-            file_secret_name:
-          )
-            workspaces_agent_config = workspace.workspaces_agent_config
-            agent_annotations = workspaces_agent_config.annotations
-            agent_labels = workspaces_agent_config.labels
-            max_resources_per_workspace = workspaces_agent_config.max_resources_per_workspace.deep_symbolize_keys
-            extra_config = []
-
-            unless max_resources_per_workspace.blank?
-              k8s_resource_quota = get_resource_quota(
-                name: workspace.name,
-                namespace: workspace.namespace,
-                labels: labels,
-                annotations: annotations,
-                max_resources_per_workspace: max_resources_per_workspace
-              )
-              extra_config.append(k8s_resource_quota)
-            end
-
-            k8s_resources_for_secrets = get_k8s_resources_for_secrets(
-              workspace: workspace,
-              agent_labels: agent_labels,
-              agent_annotations: agent_annotations,
-              env_secret_name: env_secret_name,
-              file_secret_name: file_secret_name,
-              max_resources_per_workspace: max_resources_per_workspace
-            )
-            extra_config.append(*k8s_resources_for_secrets)
-
-            extra_config
-          end
-
-          # @param [RemoteDevelopment::WorkspaceOperations::Workspace] workspace
-          # @param [Hash<String, String>] agent_labels
-          # @param [Hash<String, String>] agent_annotations
-          # @param [String] env_secret_name
-          # @param [String] file_secret_name
-          # @param [String] env_secret_name
-          # @param [String] file_secret_name
-          # @param [Hash] max_resources_per_workspace
-          # @return [Array<(Hash)>]
-          def self.get_k8s_resources_for_secrets(
-            workspace:,
-            agent_labels:,
-            agent_annotations:,
-            env_secret_name:,
-            file_secret_name:,
-            max_resources_per_workspace:
-          )
-            inventory_name = "#{workspace.name}-secrets-inventory"
-            domain_template = get_domain_template_annotation(
-              name: workspace.name,
-              dns_zone: workspace.workspaces_agent_config.dns_zone
-            )
-            labels, annotations = get_merged_labels_and_annotations(
-              agent_labels: agent_labels,
-              agent_annotations: agent_annotations,
-              agent_id: workspace.agent.id,
-              domain_template: domain_template,
-              owning_inventory: inventory_name,
-              workspace_id: workspace.id,
-              max_resources_per_workspace: max_resources_per_workspace
-            )
-
-            k8s_inventory = get_inventory_config_map(
-              name: inventory_name,
-              agent_labels: agent_labels,
-              agent_annotations: agent_annotations,
-              namespace: workspace.namespace,
-              agent_id: workspace.agent.id
-            )
-
-            data_for_environment = workspace.workspace_variables.with_variable_type_environment
-            data_for_environment = data_for_environment.each_with_object({}) do |workspace_variable, hash|
-              hash[workspace_variable.key.to_sym] = workspace_variable.value
-            end
-            k8s_secret_for_environment = get_secret(
-              name: env_secret_name,
-              namespace: workspace.namespace,
-              labels: labels,
-              annotations: annotations,
-              data: data_for_environment
-            )
-
-            data_for_file = workspace.workspace_variables.with_variable_type_file
-            data_for_file = data_for_file.each_with_object({}) do |workspace_variable, hash|
-              hash[workspace_variable.key.to_sym] = workspace_variable.value
-            end
-            k8s_secret_for_file = get_secret(
-              name: file_secret_name,
-              namespace: workspace.namespace,
-              labels: labels,
-              annotations: annotations,
-              data: data_for_file
-            )
-
-            [k8s_inventory, k8s_secret_for_environment, k8s_secret_for_file]
           end
 
           # @param [String] desired_state
@@ -229,108 +191,147 @@ module RemoteDevelopment
             0
           end
 
+          # @param [Array] desired_config
           # @param [String] name
           # @param [String] namespace
-          # @param [Hash<String, String>] agent_labels
+          # @param [Hash<String, String>] labels
           # @param [Hash<String, String>] agent_annotations
-          # @param [Integer] agent_id
-          # @return [Hash]
-          def self.get_inventory_config_map(name:, namespace:, agent_labels:, agent_annotations:, agent_id:)
-            extra_labels = {
-              'cli-utils.sigs.k8s.io/inventory-id': name,
-              'agent.gitlab.com/id': agent_id.to_s
-            }
-            labels = agent_labels.merge(extra_labels)
-            {
-              kind: 'ConfigMap',
-              apiVersion: 'v1',
+          # @return [void]
+          def self.append_inventory_config_map(
+            desired_config:,
+            name:,
+            namespace:,
+            labels:,
+            agent_annotations:
+          )
+            extra_labels = { "cli-utils.sigs.k8s.io/inventory-id": name }
+
+            config_map = {
+              kind: "ConfigMap",
+              apiVersion: "v1",
               metadata: {
                 name: name,
                 namespace: namespace,
-                labels: labels,
+                labels: labels.merge(extra_labels),
                 annotations: agent_annotations
               }
             }
+
+            desired_config.append(config_map)
+
+            nil
           end
 
-          # @param [Hash<String, String>] agent_labels
           # @param [Hash<String, String>] agent_annotations
-          # @param [Integer] agent_id
           # @param [String] domain_template
-          # @param [String] owning_inventory
-          # @param [String] object_type
           # @param [Integer] workspace_id
           # @param [Hash] max_resources_per_workspace
-          # @return [Array<Hash, Hash>]
-          def self.get_merged_labels_and_annotations(
-            agent_labels:,
+          # @return [Hash]
+          def self.get_common_annotations(
             agent_annotations:,
-            agent_id:,
             domain_template:,
-            owning_inventory:,
             workspace_id:,
             max_resources_per_workspace:
           )
-            extra_labels = {
-              'agent.gitlab.com/id': agent_id.to_s
-            }
-            labels = agent_labels.merge(extra_labels)
             extra_annotations = {
-              'config.k8s.io/owning-inventory': owning_inventory.to_s,
-              'workspaces.gitlab.com/host-template': domain_template.to_s,
-              'workspaces.gitlab.com/id': workspace_id.to_s,
-              'workspaces.gitlab.com/max-resources-per-workspace-sha256':
+              "workspaces.gitlab.com/host-template": domain_template.to_s,
+              "workspaces.gitlab.com/id": workspace_id.to_s,
+              # NOTE: This annotation is added to cause the workspace to restart whenever the max resources change
+              "workspaces.gitlab.com/max-resources-per-workspace-sha256":
                 OpenSSL::Digest::SHA256.hexdigest(max_resources_per_workspace.sort.to_h.to_s)
             }
-            annotations = agent_annotations.merge(extra_annotations)
-            [labels, annotations]
+            agent_annotations.merge(extra_annotations)
           end
 
+          # @param [Array] desired_config
           # @param [String] name
           # @param [String] namespace
           # @param [Hash] labels
           # @param [Hash] annotations
-          # @param [Hash] data
-          # @return [Hash]
-          def self.get_secret(name:, namespace:, labels:, annotations:, data:)
-            {
-              kind: 'Secret',
-              apiVersion: 'v1',
+          # @return [void]
+          def self.append_secret(desired_config:, name:, namespace:, labels:, annotations:)
+            secret = {
+              kind: "Secret",
+              apiVersion: "v1",
               metadata: {
                 name: name,
                 namespace: namespace,
                 labels: labels,
                 annotations: annotations
               },
-              data: data.transform_values { |v| Base64.strict_encode64(v) }
+              data: {}
             }
+
+            desired_config.append(secret)
+
+            nil
           end
 
-          # @param [String] name
-          # @param [String] dns_zone
-          # @return [String]
-          def self.get_domain_template_annotation(name:, dns_zone:)
-            "{{.port}}-#{name}.#{dns_zone}"
+          # @param [Array] desired_config
+          # @param [String] secret_name
+          # @param [ActiveRecord::Relation<RemoteDevelopment::WorkspaceVariable>] variables
+          # @return [void]
+          def self.append_secret_data_from_variables(desired_config:, secret_name:, variables:)
+            data = variables.each_with_object({}) do |workspace_variable, hash|
+              hash[workspace_variable.key.to_sym] = workspace_variable.value
+            end
+
+            append_secret_data(
+              desired_config: desired_config,
+              secret_name: secret_name,
+              data: data
+            )
+
+            nil
           end
 
+          # @param [Array] desired_config
+          # @param [String] secret_name
+          # @param [Hash] data
+          # @return [void]
+          # noinspection RubyUnusedLocalVariable -- Rubymine doesn't recognize '^' to use a variable in pattern-matching
+          def self.append_secret_data(desired_config:, secret_name:, data:)
+            desired_config => [
+              *_,
+              {
+                metadata: {
+                  name: ^secret_name
+                },
+                data: secret_data
+              },
+              *_
+            ]
+
+            transformed_data = data.transform_values { |value| Base64.strict_encode64(value) }
+
+            secret_data.merge!(transformed_data)
+
+            nil
+          end
+
+          # @param [Array] desired_config
+          # @param [RemoteDevelopment::WorkspacesAgentConfig] workspaces_agent_config
           # @param [String] name
           # @param [String] namespace
           # @param [Hash] labels
           # @param [Hash] annotations
-          # @param [string] gitlab_workspaces_proxy_namespace
-          # @param [Array<Hash>] egress_ip_rules
-          # @return [Hash]
-          def self.get_network_policy(
+          # @return [void]
+          def self.append_network_policy(
+            desired_config:,
+            workspaces_agent_config:,
             name:,
             namespace:,
             labels:,
-            annotations:,
-            gitlab_workspaces_proxy_namespace:,
-            egress_ip_rules:
+            annotations:
           )
+            return unless workspaces_agent_config.network_policy_enabled
+
+            gitlab_workspaces_proxy_namespace = workspaces_agent_config.gitlab_workspaces_proxy_namespace
+            egress_ip_rules = workspaces_agent_config.network_policy_egress
+
             policy_types = [
-              - "Ingress",
-              - "Egress"
+              -"Ingress",
+              -"Egress"
             ]
 
             proxy_namespace_selector = {
@@ -363,7 +364,7 @@ module RemoteDevelopment
               )
             end
 
-            {
+            network_policy = {
               apiVersion: "networking.k8s.io/v1",
               kind: "NetworkPolicy",
               metadata: {
@@ -379,21 +380,29 @@ module RemoteDevelopment
                 policyTypes: policy_types
               }
             }
+
+            desired_config.append(network_policy)
+
+            nil
           end
 
+          # @param [Array] desired_config
           # @param [String] name
           # @param [String] namespace
           # @param [Hash] labels
           # @param [Hash] annotations
           # @param [Hash] max_resources_per_workspace
-          # @return [Hash]
-          def self.get_resource_quota(
+          # @return [void]
+          def self.append_resource_quota(
+            desired_config:,
             name:,
             namespace:,
             labels:,
             annotations:,
             max_resources_per_workspace:
           )
+            return unless max_resources_per_workspace.present?
+
             max_resources_per_workspace => {
               limits: {
                 cpu: limits_cpu,
@@ -405,7 +414,7 @@ module RemoteDevelopment
               }
             }
 
-            {
+            resource_quota = {
               apiVersion: "v1",
               kind: "ResourceQuota",
               metadata: {
@@ -423,19 +432,32 @@ module RemoteDevelopment
                 }
               }
             }
+
+            desired_config.append(resource_quota)
+
+            nil
           end
 
+          # @param [Array] desired_config
           # @param [String] name
           # @param [String] namespace
           # @param [Hash] labels
           # @param [Hash] annotations
           # @param [Array] image_pull_secrets
-          # @return [Hash]
-          def self.get_image_pull_secrets_service_account(name:, namespace:, labels:, annotations:, image_pull_secrets:)
-            image_pull_secrets_names = image_pull_secrets.map { |secret| { name: secret.fetch('name') } }
-            {
-              apiVersion: 'v1',
-              kind: 'ServiceAccount',
+          # @return [void]
+          def self.append_image_pull_secrets_service_account(
+            desired_config:,
+            name:,
+            namespace:,
+            labels:,
+            annotations:,
+            image_pull_secrets:
+          )
+            image_pull_secrets_names = image_pull_secrets.map { |secret| { name: secret.fetch("name") } }
+
+            workspace_service_account_definition = {
+              apiVersion: "v1",
+              kind: "ServiceAccount",
               metadata: {
                 name: name,
                 namespace: namespace,
@@ -445,7 +467,15 @@ module RemoteDevelopment
               automountServiceAccountToken: false,
               imagePullSecrets: image_pull_secrets_names
             }
+
+            desired_config.append(workspace_service_account_definition)
+
+            nil
           end
+
+          private_class_method :get_devfile_parser_params, :get_workspace_replicas, :append_inventory_config_map,
+            :get_common_annotations, :append_secret, :append_secret_data_from_variables, :append_secret_data,
+            :append_network_policy, :append_resource_quota, :append_image_pull_secrets_service_account
         end
       end
     end

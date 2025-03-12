@@ -79,7 +79,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
   let(:labels) { {} }
   let(:annotations) { {} }
 
-  let(:k8s_resources_params) do
+  let(:params) do
     {
       name: workspace.name,
       namespace: workspace.namespace,
@@ -119,10 +119,10 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
     )
   end
 
-  subject(:k8s_resources_for_workspace_core) do
+  subject(:resources_from_devfile_parser) do
     described_class.get_all(
       processed_devfile: processed_devfile_yaml,
-      k8s_resources_params: k8s_resources_params,
+      params: params,
       logger: logger
     )
   end
@@ -145,9 +145,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
 
       it 'returns workspace_resources with allow_privilege_escalation set to true',
         :unlimited_max_formatted_output_length do
-        expect(k8s_resources_for_workspace_core).to eq(expected_workspace_resources)
+        expect(resources_from_devfile_parser).to eq(expected_workspace_resources)
 
-        k8s_resources_for_workspace_core => [
+        resources_from_devfile_parser => [
           *_,
           {
             kind: "Deployment",
@@ -181,9 +181,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
       let(:use_kubernetes_user_namespaces) { true }
 
       it 'returns workspace_resources with hostUsers set to true' do
-        expect(k8s_resources_for_workspace_core).to eq(expected_workspace_resources)
+        expect(resources_from_devfile_parser).to eq(expected_workspace_resources)
 
-        k8s_resources_for_workspace_core => [
+        resources_from_devfile_parser => [
           *_,
           {
             kind: "Deployment",
@@ -217,7 +217,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
           workspace_namespace: workspace.namespace,
           devfile_parser_error: "some error"
         )
-        expect(k8s_resources_for_workspace_core).to eq([])
+        expect(resources_from_devfile_parser).to eq([])
       end
     end
 
