@@ -206,6 +206,26 @@ describe('GroupProjectsDropdown', () => {
       });
     });
 
+    describe('when fetch query returns group as null', () => {
+      it('renders empty list when group is null', async () => {
+        createComponent({
+          handlers: {
+            handlers: {
+              getGroupProjects: jest.fn().mockResolvedValue({
+                data: {
+                  id: 1,
+                  group: null,
+                },
+              }),
+            },
+          },
+        });
+
+        await waitForPromises();
+        expect(wrapper.emitted('projects-query-error')).toHaveLength(1);
+      });
+    });
+
     describe('when a query is loading a new page of projects', () => {
       it('should render the loading spinner', async () => {
         createComponent({ handlers: mockApolloHandlers([], true) });
