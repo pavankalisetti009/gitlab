@@ -1,5 +1,3 @@
-- return unless License.feature_available?(:cluster_receptive_agents)
-
 - expanded = integration_expanded?('cluster_agents_')
 
 = render ::Layouts::SettingsBlockComponent.new(s_('ClusterAgents|GitLab Agent for Kubernetes'), id: 'js-cluster-agent-settings', expanded: expanded) do |c|
@@ -10,10 +8,12 @@
     = gitlab_ui_form_for @application_setting, url: general_admin_application_settings_path(anchor: 'js-cluster-agent-settings'), html: { class: 'fieldset-form', id: 'cluster-agent-settings' } do |f|
       = form_errors(@application_setting)
 
+      = render_if_exists 'admin/application_settings/cluster_agents_receptive_enabled', form: f
+
       .form-group
-        - help_text = s_('ClusterAgents|Allow configuring agents in receptive mode.')
-        - help_link = link_to _('Learn more.'), help_page_path('user/clusters/agent/install/_index.md', anchor: 'option-2-gitlab-connects-to-agent-receptive-agent'), target: '_blank', rel: 'noopener noreferrer'
-        = f.gitlab_ui_checkbox_component :receptive_cluster_agents_enabled, s_('ClusterAgents|Enable receptive mode'),
+        - help_text = s_('ClusterAgents|Allow configuring agents to be authorized for the entire instance.')
+        - help_link = link_to _('Learn more.'), help_page_path('user/clusters/agent/ci_cd_workflow.md', anchor: 'authorize-all-projects-in-your-gitlab-instance-to-access-the-agent'), target: '_blank', rel: 'noopener noreferrer'
+        = f.gitlab_ui_checkbox_component :organization_cluster_agent_authorization_enabled, s_('ClusterAgents|Enable instance level authorization'),
             help_text: '%{help_text} %{help_link}'.html_safe % { help_text: help_text, help_link: help_link }
 
       = f.submit _('Save changes'), pajamas_button: true
