@@ -80,6 +80,7 @@ module EE
         mount ::API::Chat
         mount ::API::DuoCodeReview
         mount ::API::SecurityScans
+        mount ::API::ComplianceExternalControls
         mount ::API::VirtualRegistries::Packages::Maven::Registries
         mount ::API::VirtualRegistries::Packages::Maven::Upstreams
         mount ::API::VirtualRegistries::Packages::Maven::Cache::Entries
