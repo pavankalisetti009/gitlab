@@ -59,24 +59,11 @@ module Projects
     end
 
     def lock_file
-      path_lock = PathLocks::LockService.new(project, current_user).execute(path)
-
-      if path_lock.persisted? && sync_with_lfs?
-        Lfs::LockFileService.new(
-          project,
-          current_user,
-          path: path,
-          create_path_lock: false
-        ).execute
-      end
+      PathLocks::LockService.new(project, current_user).execute(path)
     end
 
     def unlock_file(path_lock)
       PathLocks::UnlockService.new(project, current_user).execute(path_lock)
-
-      if sync_with_lfs?
-        Lfs::UnlockFileService.new(project, current_user, path: path_lock.path, force: true).execute
-      end
     end
 
     def lfs_file?
