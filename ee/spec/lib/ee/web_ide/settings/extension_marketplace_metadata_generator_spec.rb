@@ -5,7 +5,17 @@ require "fast_spec_helper"
 RSpec.describe WebIde::Settings::ExtensionMarketplaceMetadataGenerator, feature_category: :web_ide do
   using RSpec::Parameterized::TableSyntax
 
-  let(:user_class) { stub_const('User', Class.new) }
+  let(:user_class) do
+    stub_const(
+      "User",
+      Class.new do
+        def flipper_id
+          "UserStub"
+        end
+      end
+    )
+  end
+
   let(:group_class) { stub_const('Namespace', Class.new) }
   let(:user) { user_class.new }
   let(:group) { group_class.new }
@@ -43,6 +53,10 @@ RSpec.describe WebIde::Settings::ExtensionMarketplaceMetadataGenerator, feature_
         extensions_marketplace_opt_in_status: :unset
       )
       allow(group).to receive(:enterprise_users_extensions_marketplace_enabled?).and_return(enterprise_group_enabled)
+
+      allow(::WebIde::ExtensionMarketplace).to receive(:feature_enabled_from_application_settings?)
+        .with(user: user)
+        .and_return(true)
     end
 
     it "adds settings with disabled reason based on enterprise_group presence and setting" do
