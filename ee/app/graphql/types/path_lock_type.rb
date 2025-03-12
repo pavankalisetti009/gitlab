@@ -4,6 +4,8 @@ module Types
     graphql_name 'PathLock'
     description 'Represents a file or directory in the project repository that has been locked.'
 
+    expose_permissions Types::PermissionTypes::Projects::PathLock
+
     field :id, ::Types::GlobalIDType[PathLock], null: false,
       description: 'ID of the path lock.'
 

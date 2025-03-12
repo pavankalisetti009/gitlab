@@ -38,9 +38,9 @@ export default {
           const { __typename, avatarUrl, id, fullName, fullPath } = data.group;
           const rootGroupMatches = fullName.includes(this.search);
 
-          const descendantGroups = (data?.group?.descendantGroups?.nodes || []).map(
-            createGroupObject,
-          );
+          const descendantGroups = (data?.group?.descendantGroups?.nodes || [])
+            .filter((group) => group)
+            .map(createGroupObject);
 
           if (!rootGroupMatches) return descendantGroups;
 
@@ -48,7 +48,7 @@ export default {
           return uniqBy([...this.groups, rootGroup, ...descendantGroups], 'id');
         }
 
-        const groups = (data?.groups?.nodes || []).map(createGroupObject);
+        const groups = (data?.groups?.nodes || []).filter((group) => group).map(createGroupObject);
         return uniqBy([...this.groups, ...groups], 'id');
       },
       debounce: DEFAULT_DEBOUNCE_AND_THROTTLE_MS,
