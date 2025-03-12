@@ -32,10 +32,11 @@ export default {
          * otherwise after performing backend search and selecting found item
          * selection is overwritten
          */
-        return uniqBy([...this.projects, ...data.group.projects.nodes], 'id');
+        const { projects: { nodes = [] } = {} } = data.group || {};
+        return uniqBy([...this.projects, ...nodes], 'id');
       },
       result({ data }) {
-        this.pageInfo = data?.group?.projects.pageInfo || {};
+        this.pageInfo = data?.group?.projects?.pageInfo || {};
 
         if (this.selectedButNotLoadedProjectIds.length > 0) {
           this.fetchGroupProjectsByIds();
@@ -176,8 +177,8 @@ export default {
           query: getGroupProjects,
           variables,
         });
-
-        this.projects = uniqBy([...this.projects, ...data.group.projects.nodes], 'id');
+        const { projects: { nodes = [] } = {} } = data.group || {};
+        this.projects = uniqBy([...this.projects, ...nodes], 'id');
       } catch {
         this.$emit('projects-query-error');
       }
