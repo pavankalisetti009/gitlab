@@ -469,6 +469,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectApprovalPolic
 
   describe '#delete_rules' do
     let_it_be(:approval_policy_rule) { create(:approval_policy_rule, security_policy: security_policy) }
+    let_it_be(:other_approval_policy_rule) { create(:approval_policy_rule, security_policy: security_policy) }
 
     let_it_be(:project_approval_rule) do
       create(:approval_project_rule, :scan_finding,
@@ -489,6 +490,25 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectApprovalPolic
 
     it 'deletes approval rules linked to project' do
       expect { delete_rules }.to change { project.approval_rules.count }.by(-1)
+    end
+
+    it 'schedules DeleteApprovalPolicyRulesWorker when rules are not linked to projects' do
+      expect(Security::DeleteApprovalPolicyRulesWorker).to receive(:perform_in)
+        .with(1.minute, [approval_policy_rule.id, other_approval_policy_rule.id])
+
+      delete_rules
+    end
+
+    context 'when rules are linked to projects' do
+      before do
+        create(:approval_policy_rule_project_link, approval_policy_rule: approval_policy_rule, project: project)
+      end
+
+      it 'does not schedule DeleteApprovalPolicyRulesWorker' do
+        expect(Security::DeleteApprovalPolicyRulesWorker).not_to receive(:perform_in)
+
+        delete_rules
+      end
     end
 
     it_behaves_like 'calls sync_merge_requests' do

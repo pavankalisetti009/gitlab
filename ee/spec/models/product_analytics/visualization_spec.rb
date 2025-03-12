@@ -25,10 +25,16 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
       vsd_lifecycle_metrics_table
       vsd_security_metrics_table
       namespace_metadata
+      issues_count
+      merge_requests_count
+      pipelines_count
     ]
   end
 
-  let(:group_only_visualizations) { %w[dora_performers_score dora_projects_comparison] }
+  let(:group_only_visualizations) do
+    %w[dora_performers_score dora_projects_comparison groups_count users_count projects_count]
+  end
+
   let(:group_vsd_available_visualizations) do
     [].concat(group_only_visualizations, project_vsd_available_visualizations)
   end
@@ -320,7 +326,7 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
   describe '.value_stream_dashboard_visualizations' do
     subject { described_class.value_stream_dashboard_visualizations }
 
-    num_builtin_visualizations = 8
+    num_builtin_visualizations = 14
 
     it 'returns the value stream dashboard builtin visualizations' do
       expect(subject.count).to eq(num_builtin_visualizations)

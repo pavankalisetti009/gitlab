@@ -49,9 +49,31 @@ module EE
       result = ::Groups::MarkForDeletionService.new(group, current_user).execute
 
       if result[:status] == :success
-        redirect_to group_path(group), status: :found
+        respond_to do |format|
+          format.html do
+            redirect_to group_path(group), status: :found
+          end
+
+          format.json do
+            render json: {
+              message: format(
+                _("'%{group_name}' has been scheduled for deletion and will be deleted on %{date}."),
+                group_name: group.name,
+                date: permanent_deletion_date_formatted(group, group.marked_for_deletion_on)
+              )
+            }
+          end
+        end
       else
-        redirect_to edit_group_path(group), status: :found, alert: result[:message]
+        respond_to do |format|
+          format.html do
+            redirect_to edit_group_path(group), status: :found, alert: result[:message]
+          end
+
+          format.json do
+            render json: { message: result[:message] }, status: :unprocessable_entity
+          end
+        end
       end
     end
 
@@ -71,9 +93,17 @@ module EE
 
     def check_subscription!
       if group.linked_to_subscription?
-        redirect_to edit_group_path(group),
-          status: :found,
-          alert: _('This group is linked to a subscription')
+        respond_to do |format|
+          format.html do
+            redirect_to edit_group_path(group),
+              status: :found,
+              alert: _('This group is linked to a subscription')
+          end
+
+          format.json do
+            render json: { message: _('This group is linked to a subscription') }, status: :unprocessable_entity
+          end
+        end
       end
     end
 

@@ -68,6 +68,7 @@ export default {
     'rootNamespaceName',
     'rootNamespaceFullPath',
     'dataSourceClickhouse',
+    'overviewCountsAggregationEnabled',
   ],
   props: {
     visualization: {
@@ -235,6 +236,7 @@ export default {
             this.visualizationOptionOverrides = visualizationOptionOverrides;
           },
           dataSourceClickhouse: this.dataSourceClickhouse,
+          overviewCountsAggregationEnabled: this.overviewCountsAggregationEnabled,
         });
 
         if (this.currentRequestNumber === requestNumber) {

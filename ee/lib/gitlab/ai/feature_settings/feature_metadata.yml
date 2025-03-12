@@ -44,6 +44,7 @@ duo_chat_explain_code:
     - mixtral
     - claude_3
     - gpt
+    - llama3
 duo_chat_write_tests:
   title: Write Test
   release_state: BETA
@@ -54,6 +55,7 @@ duo_chat_write_tests:
     - claude_3
     - gpt
     - codestral
+    - llama3
 duo_chat_refactor_code:
   title: Refactor Code
   release_state: BETA

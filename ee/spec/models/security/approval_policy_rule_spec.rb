@@ -103,6 +103,19 @@ RSpec.describe Security::ApprovalPolicyRule, feature_category: :security_policy_
     end
   end
 
+  describe '.deleted' do
+    let_it_be(:rule_with_positive_index) { create(:approval_policy_rule, rule_index: 1) }
+    let_it_be(:rule_with_zero_index) { create(:approval_policy_rule, rule_index: 0) }
+    let_it_be(:rule_with_negative_index) { create(:approval_policy_rule, rule_index: -1) }
+
+    it 'returns rules with rule_index lesser than 0' do
+      result = described_class.deleted
+
+      expect(result).to contain_exactly(rule_with_negative_index)
+      expect(result).not_to include(rule_with_positive_index, rule_with_zero_index)
+    end
+  end
+
   describe '.undeleted' do
     let_it_be(:rule_with_positive_index) { create(:approval_policy_rule, rule_index: 1) }
     let_it_be(:rule_with_zero_index) { create(:approval_policy_rule, rule_index: 0) }

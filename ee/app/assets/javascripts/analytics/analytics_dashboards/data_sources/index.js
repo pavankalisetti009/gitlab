@@ -29,6 +29,7 @@ export default {
   cube_analytics: () => import('./cube_analytics'),
   value_stream: () => import('./value_stream'),
   usage_overview: () => import('./usage_overview'),
+  usage_count: () => import('./usage_count'),
   dora_metrics: () => import('./dora_metrics'),
   dora_metrics_by_project: () => import('./dora_metrics_by_project'),
   ai_impact_over_time: () => import('./ai_impact_over_time'),

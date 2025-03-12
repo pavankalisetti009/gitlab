@@ -91,6 +91,10 @@ module Security
 
       def delete_approval_rules(approval_policy_rules)
         security_policy.delete_approval_policy_rules_for_project(project, approval_policy_rules)
+
+        return if Security::ApprovalPolicyRuleProjectLink.for_policy_rules(approval_policy_rules.select(:id)).exists?
+
+        Security::DeleteApprovalPolicyRulesWorker.perform_in(1.minute, approval_policy_rules.map(&:id))
       end
 
       def update_approval_rules(approval_policy_rules)

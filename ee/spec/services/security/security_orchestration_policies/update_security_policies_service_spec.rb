@@ -107,6 +107,23 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateSecurityPoliciesSe
       end
     end
 
+    context 'when all rules are deleted' do
+      let(:yaml_policy) do
+        {
+          name: 'Updated Policy',
+          description: 'Updated description',
+          rules: []
+        }
+      end
+
+      it 'sets the rule_index to negative values' do
+        service.execute
+
+        expect(approval_policy_rule_1.reload.rule_index).to eq(-2)
+        expect(approval_policy_rule_2.reload.rule_index).to eq(-3)
+      end
+    end
+
     context 'when there are updated rules' do
       let(:yaml_policy) do
         {
@@ -120,6 +137,25 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateSecurityPoliciesSe
         expect { service.execute }.to change {
                                         Security::ApprovalPolicyRule.last.typed_content.deep_symbolize_keys
                                       }.to(rule_content_3)
+      end
+    end
+
+    context 'when there are updated and created rules' do
+      let(:yaml_policy) do
+        {
+          name: 'Updated Policy',
+          description: 'Updated description',
+          rules: [rule_content_1, rule_content_3, rule_content_2]
+        }
+      end
+
+      it 'updates the existing rule and creates a new rule' do
+        service.execute
+
+        last_rule = Security::ApprovalPolicyRule.last
+        expect(last_rule.typed_content.deep_symbolize_keys).to eq(rule_content_2)
+        expect(last_rule.rule_index).to eq(3)
+        expect(approval_policy_rule_2.reload.typed_content.deep_symbolize_keys).to eq(rule_content_3)
       end
     end
 
