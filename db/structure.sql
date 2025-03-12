@@ -36490,6 +36490,8 @@ CREATE UNIQUE INDEX kubernetes_namespaces_cluster_and_namespace ON clusters_kube
 
 CREATE UNIQUE INDEX lfs_objects_projects_on_project_id_lfs_object_id_null_repo_type ON lfs_objects_projects USING btree (project_id, lfs_object_id) WHERE (repository_type IS NULL);
 
+CREATE UNIQUE INDEX lfs_objects_projects_on_project_id_lfs_object_id_with_repo_type ON lfs_objects_projects USING btree (project_id, lfs_object_id, repository_type) WHERE (repository_type IS NOT NULL);
+
 CREATE UNIQUE INDEX merge_request_user_mentions_on_mr_id_and_note_id_index ON merge_request_user_mentions USING btree (merge_request_id, note_id);
 
 CREATE UNIQUE INDEX merge_request_user_mentions_on_mr_id_index ON merge_request_user_mentions USING btree (merge_request_id) WHERE (note_id IS NULL);
