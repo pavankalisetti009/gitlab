@@ -13,7 +13,7 @@ module Types
         field :allowed_statuses, ::Types::WorkItems::Widgets::StatusType.connection_type,
           null: true, experiment: { milestone: '17.8' },
           description: 'Allowed statuses for the work item type.',
-          resolver: Resolvers::WorkItems::Widgets::StatusResolver
+          resolver: ::Resolvers::WorkItems::Widgets::StatusResolver
       end
       # rubocop:enable Graphql/AuthorizeTypes
     end

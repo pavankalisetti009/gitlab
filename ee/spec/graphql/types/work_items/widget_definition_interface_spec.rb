@@ -9,6 +9,7 @@ RSpec.describe Types::WorkItems::WidgetDefinitionInterface, feature_category: :t
     where(:widget_type, :widget_definition_type_class) do
       'labels'        | Types::WorkItems::WidgetDefinitions::LabelsType
       'custom_fields' | Types::WorkItems::WidgetDefinitions::CustomFieldsType
+      'status'        | Types::WorkItems::WidgetDefinitions::StatusType
     end
 
     subject { described_class.resolve_type(object, {}) }

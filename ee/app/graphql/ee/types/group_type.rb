@@ -360,6 +360,10 @@ module EE
           resolver: ::Resolvers::Issuables::CustomFieldResolver,
           experiment: { milestone: '17.6' }
 
+        field :allowed_statuses, ::Types::WorkItems::Widgets::StatusType.connection_type,
+          null: true, description: 'Allowed statuses for the group.',
+          experiment: { milestone: '17.8' }, resolver: ::Resolvers::WorkItems::Widgets::StatusResolver
+
         def epics_enabled
           object.licensed_feature_available?(:epics)
         end
