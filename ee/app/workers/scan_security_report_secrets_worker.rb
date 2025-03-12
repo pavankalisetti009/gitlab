@@ -28,7 +28,10 @@ class ScanSecurityReportSecretsWorker
     keys = revocable_keys(pipeline)
 
     if keys.present?
-      executed_result = Security::TokenRevocationService.new(revocable_keys: keys).execute
+      executed_result = Security::TokenRevocationService.new(
+        revocable_keys: keys,
+        project: pipeline.project
+      ).execute
 
       raise ScanSecurityReportSecretsWorkerError, executed_result[:message] if executed_result[:status] == :error
     end

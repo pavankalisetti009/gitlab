@@ -5,6 +5,7 @@ require 'spec_helper'
 RSpec.describe Security::TokenRevocationService, '#execute', feature_category: :security_policy_management do
   let_it_be(:revocation_token_types_url) { 'https://myhost.com/api/v1/token_types' }
   let_it_be(:token_revocation_url) { 'https://myhost.com/api/v1/revoke' }
+  let_it_be(:project) { build(:project) }
 
   let_it_be(:revocable_keys) do
     [{
@@ -28,7 +29,7 @@ RSpec.describe Security::TokenRevocationService, '#execute', feature_category: :
     { types: %w[aws_key_id aws_secret gcp_key_id gcp_secret] }
   end
 
-  subject { described_class.new(revocable_keys: revocable_keys).execute }
+  subject(:token_revocation_service) { described_class.new(revocable_keys:, project:).execute }
 
   before do
     stub_application_setting(secret_detection_revocation_token_types_url: revocation_token_types_url)
@@ -38,10 +39,7 @@ RSpec.describe Security::TokenRevocationService, '#execute', feature_category: :
 
   context 'when revoking a glpat token' do
     let_it_be(:glpat_token) { create(:personal_access_token) }
-
-    let_it_be(:vulnerability) do
-      double('Vulnerability') # rubocop:disable RSpec/VerifiedDoubles
-    end
+    let_it_be(:vulnerability) { create(:vulnerability, project: project) }
 
     let_it_be(:revocable_keys) do
       [
@@ -58,6 +56,12 @@ RSpec.describe Security::TokenRevocationService, '#execute', feature_category: :
           vulnerability: vulnerability
         }
       ]
+    end
+
+    it_behaves_like 'internal event tracking' do
+      let(:event) { 'revoke_leaked_token_after_vulnerability_report_is_ingested' }
+      let(:category) { described_class.name }
+      let(:additional_properties) { { label: 'gitleaks_rule_id_gitlab_personal_access_token' } }
     end
 
     it 'returns success' do
@@ -100,6 +104,12 @@ RSpec.describe Security::TokenRevocationService, '#execute', feature_category: :
 
         subject
       end
+
+      it_behaves_like 'internal event tracking' do
+        let(:event) { 'revoke_leaked_token_after_vulnerability_report_is_ingested' }
+        let(:category) { described_class.name }
+        let(:additional_properties) { { label: 'gitleaks_rule_id_gitlab_personal_access_token' } }
+      end
     end
   end
 
@@ -113,6 +123,10 @@ RSpec.describe Security::TokenRevocationService, '#execute', feature_category: :
     it 'returns error' do
       expect(subject[:status]).to be(:error)
       expect(subject[:message]).to eql('Failed to revoke tokens')
+    end
+
+    it 'does not create internal tracking events' do
+      expect { subject }.not_to trigger_internal_events('revoke_leaked_token_after_vulnerability_report_is_ingested')
     end
   end
 
@@ -141,7 +155,28 @@ RSpec.describe Security::TokenRevocationService, '#execute', feature_category: :
       end
 
       context 'when there is a list of tokens to be revoked' do
-        specify { expect(subject[:status]).to be(:success) }
+        describe 'status is success' do
+          specify { expect(described_class.new(revocable_keys:, project:).execute[:status]).to be(:success) }
+        end
+
+        # rubocop:disable Layout/LineLength -- metric names are very long
+        it 'creates internal tracking event' do
+          expect { described_class.new(revocable_keys:, project:).execute }.to trigger_internal_events(
+            'revoke_leaked_token_after_vulnerability_report_is_ingested').with(
+              project: project, namespace: project.namespace, additional_properties: { label: 'aws_key_id' }
+            ).and trigger_internal_events('revoke_leaked_token_after_vulnerability_report_is_ingested').with(
+              project: project, namespace: project.namespace, additional_properties: { label: 'aws_secret' }
+            ).twice.and increment_usage_metrics(
+              'redis_hll_counters.count_distinct_namespace_id_from_revoke_leaked_token_after_vulnerability_report_is_ingested_monthly',
+              'redis_hll_counters.count_distinct_project_id_from_revoke_leaked_token_after_vulnerability_report_is_ingested_monthly',
+              'redis_hll_counters.count_distinct_namespace_id_from_revoke_leaked_token_after_vulnerability_report_is_ingested_weekly',
+              'redis_hll_counters.count_distinct_project_id_from_revoke_leaked_token_after_vulnerability_report_is_ingested_weekly'
+            ).by(1).and increment_usage_metrics(
+              'redis_hll_counters.count_distinct_label_from_revoke_leaked_token_after_vulnerability_report_is_ingested_monthly',
+              'redis_hll_counters.count_distinct_label_from_revoke_leaked_token_after_vulnerability_report_is_ingested_weekly'
+            ).by(2)
+        end
+        # rubocop:enable Layout/LineLength
       end
 
       context 'when token_revocation_url is missing' do
@@ -152,6 +187,12 @@ RSpec.describe Security::TokenRevocationService, '#execute', feature_category: :
         end
 
         specify { expect(subject).to eql({ message: 'Missing revocation token data', status: :error }) }
+
+        it 'does not create internal tracking events' do
+          expect { subject }.not_to trigger_internal_events(
+            'revoke_leaked_token_after_vulnerability_report_is_ingested'
+          )
+        end
       end
 
       context 'when token_types_url is missing' do
@@ -162,6 +203,12 @@ RSpec.describe Security::TokenRevocationService, '#execute', feature_category: :
         end
 
         specify { expect(subject).to eql({ message: 'Missing revocation token data', status: :error }) }
+
+        it 'does not create internal tracking events' do
+          expect { subject }.not_to trigger_internal_events(
+            'revoke_leaked_token_after_vulnerability_report_is_ingested'
+          )
+        end
       end
 
       context 'when revocation_api_token is missing' do
@@ -172,6 +219,12 @@ RSpec.describe Security::TokenRevocationService, '#execute', feature_category: :
         end
 
         specify { expect(subject).to eql({ message: 'Missing revocation token data', status: :error }) }
+
+        it 'does not create internal tracking events' do
+          expect { subject }.not_to trigger_internal_events(
+            'revoke_leaked_token_after_vulnerability_report_is_ingested'
+          )
+        end
       end
 
       context 'when there is no token to be revoked' do
@@ -180,6 +233,12 @@ RSpec.describe Security::TokenRevocationService, '#execute', feature_category: :
         end
 
         specify { expect(subject).to eql({ status: :success }) }
+
+        it 'does not create internal tracking events' do
+          expect { subject }.not_to trigger_internal_events(
+            'revoke_leaked_token_after_vulnerability_report_is_ingested'
+          )
+        end
       end
     end
 
@@ -189,6 +248,12 @@ RSpec.describe Security::TokenRevocationService, '#execute', feature_category: :
       end
 
       specify { expect(subject).to eql({ message: 'Failed to get revocation token types', status: :error }) }
+
+      it 'does not create internal tracking events' do
+        expect { subject }.not_to trigger_internal_events(
+          'revoke_leaked_token_after_vulnerability_report_is_ingested'
+        )
+      end
     end
   end
 
