@@ -128,6 +128,13 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
         )
       end
 
+      let(:request_body_for_vertrex_codestral) do
+        request_body_without_model_details.merge(
+          "model_name" => "codestral-2501",
+          "model_provider" => "vertex-ai"
+        )
+      end
+
       context 'on GitLab self-managed' do
         before do
           allow(Gitlab).to receive(:org_or_com?).and_return(false)
@@ -141,9 +148,21 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
           it_behaves_like 'code suggestion task' do
             before do
               stub_feature_flags(code_completion_model_opt_out_from_fireworks_qwen: true)
+              stub_feature_flags(disable_code_gecko_default: false)
             end
 
             let(:expected_body) { request_body_without_model_details }
+          end
+
+          context "when code gecko is disabled" do
+            before do
+              stub_feature_flags(code_completion_model_opt_out_from_fireworks_qwen: true)
+              stub_feature_flags(disable_code_gecko_default: true)
+            end
+
+            it_behaves_like 'code suggestion task' do
+              let(:expected_body) { request_body_for_vertrex_codestral }
+            end
           end
         end
       end
@@ -173,10 +192,21 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
           before do
             # opt out for group2
             stub_feature_flags(code_completion_model_opt_out_from_fireworks_qwen: group2)
+            stub_feature_flags(disable_code_gecko_default: false)
           end
 
           it_behaves_like 'code suggestion task' do
             let(:expected_body) { request_body_without_model_details }
+          end
+
+          context "when code gecko is disabled" do
+            before do
+              stub_feature_flags(disable_code_gecko_default: true)
+            end
+
+            it_behaves_like 'code suggestion task' do
+              let(:expected_body) { request_body_for_vertrex_codestral }
+            end
           end
         end
       end
@@ -294,6 +324,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
     context 'when amazon_q_chat_and_code_suggestions is disabled' do
       before do
         stub_feature_flags(amazon_q_chat_and_code_suggestions: false)
+        stub_feature_flags(disable_code_gecko_default: false)
       end
 
       it_behaves_like 'code suggestion task' do
