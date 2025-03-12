@@ -52568,6 +52568,24 @@ msgstr ""
 msgid "SecurityExclusions|ex: spec/**/*.rb"
 msgstr ""
 
+msgid "SecurityInventory|CS"
+msgstr ""
+
+msgid "SecurityInventory|DAST"
+msgstr ""
+
+msgid "SecurityInventory|DS"
+msgstr ""
+
+msgid "SecurityInventory|IaC"
+msgstr ""
+
+msgid "SecurityInventory|SAST"
+msgstr ""
+
+msgid "SecurityInventory|SD"
+msgstr ""
+
 msgid "SecurityInventory|Security inventory"
 msgstr ""
 
