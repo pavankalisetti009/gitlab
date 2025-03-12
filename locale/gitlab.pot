@@ -16881,6 +16881,9 @@ msgstr ""
 msgid "Copy file path"
 msgstr ""
 
+msgid "Copy file permalink"
+msgstr ""
+
 msgid "Copy image URL"
 msgstr ""
 
