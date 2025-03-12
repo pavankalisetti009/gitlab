@@ -14,6 +14,7 @@ import {
 import {
   DUO_PRO,
   DUO_ENTERPRISE,
+  DUO_AMAZON_Q,
   SORT_OPTIONS,
   DEFAULT_SORT_OPTION,
 } from 'ee/usage_quotas/code_suggestions/constants';
@@ -41,6 +42,7 @@ describe('Add On Eligible User List', () => {
 
   const addOnPurchaseId = 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/1';
   const duoEnterpriseAddOnPurchaseId = 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/2';
+  const duoAmazonQAddOnPurchaseId = 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/3';
 
   const error = new Error('Error');
   const addOnEligibleUsersResponse = {
@@ -70,6 +72,11 @@ describe('Add On Eligible User List', () => {
   const defaultDuoEnterpriseQueryVariables = {
     addOnType: DUO_ENTERPRISE,
     addOnPurchaseIds: [duoEnterpriseAddOnPurchaseId],
+    ...defaultPaginationParams,
+  };
+  const defaultDuoAmazonQQueryVariables = {
+    addOnType: DUO_AMAZON_Q,
+    addOnPurchaseIds: [duoAmazonQAddOnPurchaseId],
     ...defaultPaginationParams,
   };
 
@@ -177,6 +184,18 @@ describe('Add On Eligible User List', () => {
         expect(addOnEligibleUsersDataHandler).toHaveBeenCalledWith(
           defaultDuoEnterpriseQueryVariables,
         );
+      });
+    });
+
+    describe('with Duo with Amazon Q add-on tier', () => {
+      beforeEach(() => {
+        return createComponent({
+          props: { duoTier: DUO_AMAZON_Q, addOnPurchaseId: duoAmazonQAddOnPurchaseId },
+        });
+      });
+
+      it('calls addOnEligibleUsers query with appropriate params', () => {
+        expect(addOnEligibleUsersDataHandler).toHaveBeenCalledWith(defaultDuoAmazonQQueryVariables);
       });
     });
 

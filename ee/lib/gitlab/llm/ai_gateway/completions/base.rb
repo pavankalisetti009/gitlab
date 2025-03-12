@@ -44,16 +44,7 @@ module Gitlab
           end
 
           def request!
-            ai_client = ::Gitlab::Llm::AiGateway::Client.new(user, service_name: service_name,
-              tracking_context: tracking_context)
-
-            request_body = { 'inputs' => inputs }
-            request_body['prompt_version'] = prompt_version unless prompt_version.nil?
-
-            response = ai_client.complete(
-              url: "#{::Gitlab::AiGateway.url}/v1/prompts/#{prompt_message.ai_action}",
-              body: request_body
-            )
+            response = perform_ai_gateway_request!
 
             return if response&.body.blank?
             return Gitlab::Json.parse(response.body) if response&.success?
@@ -65,6 +56,22 @@ module Gitlab
             Gitlab::ErrorTracking.track_exception(e, ai_action: prompt_message.ai_action)
 
             { 'detail' => DEFAULT_ERROR }
+          end
+
+          def perform_ai_gateway_request!
+            ai_client = ::Gitlab::Llm::AiGateway::Client.new(user, service_name: service_name,
+              tracking_context: tracking_context)
+
+            request_body = { 'inputs' => inputs }
+            request_body['prompt_version'] = prompt_version unless prompt_version.nil?
+
+            model_metadata_params = ::Gitlab::Llm::AiGateway::ModelMetadata.new.to_params
+            request_body['model_metadata'] = model_metadata_params if model_metadata_params.present?
+
+            ai_client.complete(
+              url: "#{::Gitlab::AiGateway.url}/v1/prompts/#{prompt_message.ai_action}",
+              body: request_body
+            )
           end
 
           def service_name

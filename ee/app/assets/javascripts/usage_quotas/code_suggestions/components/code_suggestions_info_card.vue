@@ -339,7 +339,7 @@ export default {
               glm-content="usage-quotas-gitlab-duo-tab"
             />
             <gl-button
-              v-else
+              v-else-if="isDuoPro"
               v-gl-modal-directive="'limited-access-modal-id'"
               category="primary"
               target="_blank"

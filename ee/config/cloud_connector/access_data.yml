@@ -23,6 +23,7 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
           - review_merge_request
           - summarize_issue_discussions
           - summarize_review
+          - description_composer
   code_suggestions:
     # The name of the backend who is serving this service. The name is used as a token audience claim.
     backend: 'gitlab-ai-gateway'
@@ -275,3 +276,10 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
           - amazon_q_integration
     license_types:
       - ultimate
+  description_composer:
+    backend: 'gitlab-ai-gateway'
+    cut_off_date: 2024-10-17 00:00:00 UTC
+    bundled_with:
+      duo_enterprise:
+        unit_primitives:
+          - description_composer
