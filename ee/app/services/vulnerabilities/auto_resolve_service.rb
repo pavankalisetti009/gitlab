@@ -19,7 +19,9 @@ module Vulnerabilities
       refresh_statistics
 
       ServiceResponse.success(payload: { count: vulnerabilities_to_resolve.size })
-    rescue ActiveRecord::ActiveRecordError
+    rescue ActiveRecord::ActiveRecordError => e
+      Gitlab::ErrorTracking.track_exception(e)
+
       error_response
     end
 
