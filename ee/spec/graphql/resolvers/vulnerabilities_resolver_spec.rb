@@ -399,7 +399,7 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
 
           before do
             stub_const(
-              'Resolvers::VulnerabilityFilterable::MAX_VULNERABILITY_COUNT_GROUP_SUPPORT',
+              '::Security::GroupIdentifierSearch::MAX_VULNERABILITY_COUNT_GROUP_SUPPORT',
               max
             )
 

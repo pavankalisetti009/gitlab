@@ -99,6 +99,11 @@ module Resolvers
 
       args[:scanner_id] = resolve_gids(args[:scanner_id], ::Vulnerabilities::Scanner) if args[:scanner_id]
 
+      if Feature.enabled?(:return_disabled_vulnerability_graphql_filters, vulnerable_to_actor)
+        disabled_filters = context.response_extensions["disabled_filters"] ||= []
+        disabled_filters << :identifier_name unless search_by_identifier_allowed?(vulnerable: vulnerable)
+      end
+
       vulnerabilities(args)
         .with_findings_scanner_and_identifiers
     end
@@ -128,16 +133,18 @@ module Resolvers
     end
 
     def resolve_with_duo_filtering_enabled?
-      actor = case vulnerable
-              when ::InstanceSecurityDashboard
-                current_user
-              when Project
-                vulnerable.group
-              else
-                vulnerable
-              end
+      Feature.enabled?(:vulnerability_report_vr_filter, vulnerable_to_actor)
+    end
 
-      Feature.enabled?(:vulnerability_report_vr_filter, actor)
+    def vulnerable_to_actor
+      case vulnerable
+      when ::InstanceSecurityDashboard
+        current_user
+      when Project
+        vulnerable.group
+      else
+        vulnerable
+      end
     end
 
     def after_severity
