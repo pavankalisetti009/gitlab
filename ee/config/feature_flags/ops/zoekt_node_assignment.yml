@@ -6,4 +6,4 @@ rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/470149
 milestone: '17.2'
 group: group::global search
 type: ops
-default_enabled: true
+default_enabled: false
