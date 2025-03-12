@@ -60021,6 +60021,9 @@ msgstr ""
 msgid "This page is unavailable because you are not allowed to read information across multiple projects."
 msgstr ""
 
+msgid "This parent does not exist or you don't have sufficient permission."
+msgstr ""
+
 msgid "This pipeline makes use of a predefined CI/CD configuration enabled by %{strongStart}Auto DevOps.%{strongEnd}"
 msgstr ""
 
