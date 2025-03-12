@@ -2,7 +2,7 @@ import { shallowMount } from '@vue/test-utils';
 import { GlCard, GlIcon, GlButton } from '@gitlab/ui';
 import UsageStatistics from 'ee/usage_quotas/components/usage_statistics.vue';
 import DuoSeatUtilizationInfoCard from 'ee/ai/settings/components/duo_seat_utilization_info_card.vue';
-import { DUO_PRO, DUO_ENTERPRISE, DUO_TITLES } from 'ee/usage_quotas/code_suggestions/constants';
+import { DUO_PRO, DUO_ENTERPRISE, DUO_AMAZON_Q } from 'ee/usage_quotas/code_suggestions/constants';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 
 jest.mock('~/lib/utils/url_utility');
@@ -90,10 +90,13 @@ describe('DuoSeatUtilizationInfoCard', () => {
 
     it('sets duoTitle correctly based on duoTier', () => {
       wrapper = createComponent({ duoTier: DUO_PRO });
-      expect(findSeatUtilizationDescription().text()).toContain(DUO_TITLES[DUO_PRO]);
+      expect(findSeatUtilizationDescription().text()).toContain('GitLab Duo Pro');
 
       wrapper = createComponent({ duoTier: DUO_ENTERPRISE });
-      expect(findSeatUtilizationDescription().text()).toContain(DUO_TITLES[DUO_ENTERPRISE]);
+      expect(findSeatUtilizationDescription().text()).toContain('GitLab Duo Enterprise');
+
+      wrapper = createComponent({ duoTier: DUO_AMAZON_Q });
+      expect(findSeatUtilizationDescription().text()).toContain('GitLab Duo with Amazon Q');
     });
 
     it('renders subscription dates correctly', () => {

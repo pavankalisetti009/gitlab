@@ -3,7 +3,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import CodeSuggestionsUsageStatisticsCard from 'ee/usage_quotas/code_suggestions/components/code_suggestions_usage_statistics_card.vue';
 import UsageStatistics from 'ee/usage_quotas/components/usage_statistics.vue';
-import { DUO_PRO } from 'ee/usage_quotas/code_suggestions/constants';
+import { DUO_PRO, DUO_ENTERPRISE, DUO_AMAZON_Q } from 'ee/usage_quotas/code_suggestions/constants';
 
 describe('CodeSuggestionsUsageStatisticsCard', () => {
   let wrapper;
@@ -57,12 +57,36 @@ describe('CodeSuggestionsUsageStatisticsCard', () => {
 
   describe('with purchased Duo Enterprise Add-ons', () => {
     beforeEach(() => {
-      return createComponent({ usageValue: 0, totalValue: 20, duoTier: 'DUO_ENTERPRISE' });
+      return createComponent({ usageValue: 0, totalValue: 20, duoTier: DUO_ENTERPRISE });
     });
 
     it('renders the description text', () => {
       expect(findCodeSuggestionsDescription().text()).toBe(
         `A user can be assigned a GitLab Duo Enterprise seat only once each billable month.`,
+      );
+    });
+
+    it('renders the info text', () => {
+      expect(findCodeSuggestionsInfo().text()).toBe('Seats used');
+    });
+
+    it('passes the correct props to <usage-statistics>', () => {
+      expect(findUsageStatistics().attributes()).toMatchObject({
+        percentage: '0',
+        'total-value': '20',
+        'usage-value': '0',
+      });
+    });
+  });
+
+  describe('with purchased Duo with Amazon Q Add-ons', () => {
+    beforeEach(() => {
+      return createComponent({ usageValue: 0, totalValue: 20, duoTier: DUO_AMAZON_Q });
+    });
+
+    it('renders the description text', () => {
+      expect(findCodeSuggestionsDescription().text()).toBe(
+        'A user can be assigned a GitLab Duo with Amazon Q seat only once each billable month.',
       );
     });
 

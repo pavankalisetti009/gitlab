@@ -15,7 +15,7 @@ import getGitlabSubscriptionQuery from 'ee/fulfillment/shared_queries/gitlab_sub
 import { getMockSubscriptionData } from 'ee_jest/usage_quotas/seats/mock_data';
 import HandRaiseLeadButton from 'ee/hand_raise_leads/hand_raise_lead/components/hand_raise_lead_button.vue';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
-import { DUO_PRO, DUO_ENTERPRISE } from 'ee/usage_quotas/code_suggestions/constants';
+import { DUO_PRO, DUO_ENTERPRISE, DUO_AMAZON_Q } from 'ee/usage_quotas/code_suggestions/constants';
 
 Vue.use(VueApollo);
 
@@ -128,7 +128,6 @@ describe('CodeSuggestionsInfoCard', () => {
     beforeEach(async () => {
       createComponent();
 
-      // wait for apollo to load
       await waitForPromises();
     });
 
@@ -140,7 +139,6 @@ describe('CodeSuggestionsInfoCard', () => {
       beforeEach(async () => {
         createComponent({ props: { duoTier: DUO_PRO } });
 
-        // wait for apollo to load
         await waitForPromises();
       });
 
@@ -164,7 +162,6 @@ describe('CodeSuggestionsInfoCard', () => {
       beforeEach(async () => {
         createComponent({ props: { duoTier: DUO_ENTERPRISE } });
 
-        // wait for apollo to load
         await waitForPromises();
       });
 
@@ -179,6 +176,30 @@ describe('CodeSuggestionsInfoCard', () => {
           'view_group_duo_usage_pageload',
           {
             label: 'duo_enterprise_add_on_tab',
+          },
+          'groups:usage_quotas:index',
+        );
+      });
+    });
+
+    describe('with Duo Amazon Q add-on enabled', () => {
+      beforeEach(async () => {
+        createComponent({ props: { duoTier: DUO_AMAZON_Q } });
+
+        await waitForPromises();
+      });
+
+      it('renders the title text', () => {
+        expect(findCodeSuggestionsInfoTitle().text()).toBe('Subscription');
+      });
+
+      it('tracks the page view correctly', () => {
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          'view_group_duo_usage_pageload',
+          {
+            label: 'duo_amazon_q_add_on_tab',
           },
           'groups:usage_quotas:index',
         );
@@ -201,7 +222,6 @@ describe('CodeSuggestionsInfoCard', () => {
             subscriptionData: getMockSubscriptionData({ code: 'premium', name: 'Premium' }),
           });
 
-          // wait for apollo to load
           await waitForPromises();
         });
         it('renders the correct start date text', () => {
@@ -216,7 +236,6 @@ describe('CodeSuggestionsInfoCard', () => {
         beforeEach(async () => {
           createComponent({ subscriptionData: {} });
 
-          // wait for apollo to load
           await waitForPromises();
         });
         it('renders the correct start date text', () => {
@@ -234,7 +253,6 @@ describe('CodeSuggestionsInfoCard', () => {
             provide: { subscriptionStartDate: null, subscriptionEndDate: null },
           });
 
-          // wait for apollo to load
           await waitForPromises();
         });
         it('renders the correct start date text', () => {
@@ -303,7 +321,6 @@ describe('CodeSuggestionsInfoCard', () => {
           },
         });
 
-        // wait for apollo to load
         await waitForPromises();
       });
 
@@ -438,6 +455,16 @@ describe('CodeSuggestionsInfoCard', () => {
 
       describe('when add on is not a trial', () => {
         describe('when add on is duo enterprise', () => {
+          it('does not render the purchase seats button', async () => {
+            createComponent({
+              props: { duoTier: DUO_ENTERPRISE },
+              provide: { duoAddOnIsTrial: false },
+            });
+            await waitForPromises();
+
+            expect(findPurchaseSeatsButton().exists()).toBe(false);
+          });
+
           describe('contact sales button', () => {
             it('is rendered after apollo is loaded with the correct props', async () => {
               createComponent({
@@ -445,7 +472,6 @@ describe('CodeSuggestionsInfoCard', () => {
                 provide: { duoAddOnIsTrial: false },
               });
 
-              // wait for apollo to load
               await waitForPromises();
               expect(findContactSalesButton().exists()).toBe(true);
               expect(findContactSalesButton().props()).toMatchObject({
@@ -561,11 +587,17 @@ describe('CodeSuggestionsInfoCard', () => {
         });
 
         describe('when add on is duo pro (code suggestions)', () => {
+          it('does not render the hand raise lead button', async () => {
+            createComponent();
+
+            await waitForPromises();
+            expect(findContactSalesButton().exists()).toBe(false);
+          });
+
           describe('add seats button', () => {
             it('is rendered after apollo is loaded', async () => {
               createComponent();
 
-              // wait for apollo to load
               await waitForPromises();
               expect(findAddSeatsButton().exists()).toBe(true);
               expect(findAddSeatsButton().text()).toBe('Purchase seats');
@@ -708,6 +740,25 @@ describe('CodeSuggestionsInfoCard', () => {
                 },
               );
             });
+          });
+        });
+
+        describe('when add on is Duo with Amazon Q', () => {
+          beforeEach(async () => {
+            createComponent({
+              props: { duoTier: DUO_AMAZON_Q },
+              provide: { duoAddOnIsTrial: false },
+            });
+
+            await waitForPromises();
+          });
+
+          it('does not render the hand raise lead button', () => {
+            expect(findContactSalesButton().exists()).toBe(false);
+          });
+
+          it('does not render the purchase seats button', () => {
+            expect(findPurchaseSeatsButton().exists()).toBe(false);
           });
         });
       });

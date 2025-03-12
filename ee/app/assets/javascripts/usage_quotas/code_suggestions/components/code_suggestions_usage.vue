@@ -9,8 +9,9 @@ import getAddOnPurchasesQuery from 'ee/usage_quotas/add_on/graphql/get_add_on_pu
 import getCurrentLicense from 'ee/admin/subscriptions/show/graphql/queries/get_current_license.query.graphql';
 
 import {
-  DUO_ENTERPRISE,
   DUO_PRO,
+  DUO_ENTERPRISE,
+  DUO_AMAZON_Q,
   DUO_TITLES,
   DUO_BADGE_TITLES,
 } from 'ee/usage_quotas/code_suggestions/constants';
@@ -172,12 +173,18 @@ export default {
         return this.queryVariables;
       },
       update({ addOnPurchases }) {
-        return (
-          // Prioritize Duo Enterprise add-on over Duo Pro if both are available to the namespace.
-          // For example, a namespace can have a Duo Pro add-on but also a Duo Enterprise trial add-on.
-          addOnPurchases?.find((addOnPurchase) => addOnPurchase.name === DUO_ENTERPRISE) ||
-          addOnPurchases?.find((addOnPurchase) => addOnPurchase.name === DUO_PRO)
-        );
+        // Prioritize Duo with Amazon Q over Duo Enterprise over Duo Pro.
+        // For example, a namespace can have a Duo Pro add-on but also a Duo Enterprise trial add-on,
+        // and Duo Enterprise would take precedence
+
+        return addOnPurchases?.reduce((priorityPurchase, currentPurchase) => {
+          if (currentPurchase.name === DUO_AMAZON_Q) return currentPurchase;
+          if (priorityPurchase?.name === DUO_AMAZON_Q) return priorityPurchase;
+          if (currentPurchase.name === DUO_ENTERPRISE) return currentPurchase;
+          if (priorityPurchase?.name === DUO_ENTERPRISE) return priorityPurchase;
+
+          return currentPurchase;
+        }, undefined);
       },
       error(error) {
         const errorWithCause = Object.assign(error, { cause: ADD_ON_PURCHASE_FETCH_ERROR_CODE });

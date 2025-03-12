@@ -2,13 +2,12 @@ import { shallowMount } from '@vue/test-utils';
 import { GlToggle } from '@gitlab/ui';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { sprintf } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import Tracking from '~/tracking';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import CodeSuggestionsAddonAssignment from 'ee/usage_quotas/code_suggestions/components/code_suggestions_addon_assignment.vue';
-import { DUO_PRO, DUO_ENTERPRISE, DUO_TITLES } from 'ee/usage_quotas/code_suggestions/constants';
+import { DUO_PRO, DUO_ENTERPRISE, DUO_AMAZON_Q } from 'ee/usage_quotas/code_suggestions/constants';
 import getAddOnEligibleUsers from 'ee/usage_quotas/add_on/graphql/saas_add_on_eligible_users.query.graphql';
 import userAddOnAssignmentCreateMutation from 'ee/usage_quotas/add_on/graphql/user_add_on_assignment_create.mutation.graphql';
 import userAddOnAssignmentRemoveMutation from 'ee/usage_quotas/add_on/graphql/user_add_on_assignment_remove.mutation.graphql';
@@ -30,9 +29,11 @@ describe('CodeSuggestionsAddonAssignment', () => {
 
   const addOnPurchaseId = 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/2';
   const duoEnterpriseAddOnPurchaseId = 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/3';
+  const duoAmazonQAddOnPurchaseId = 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/4';
 
   const codeSuggestionsAddOn = { addOnPurchase: { name: DUO_PRO } };
   const duoEnterpriseAddOn = { addOnPurchase: { name: DUO_ENTERPRISE } };
+  const duoAmazonQAddOn = { addOnPurchase: { name: DUO_AMAZON_Q } };
 
   const addOnPurchase = {
     id: addOnPurchaseId,
@@ -48,6 +49,13 @@ describe('CodeSuggestionsAddonAssignment', () => {
     assignedQuantity: 2,
     __typename: 'AddOnPurchase',
   };
+  const duoAmazonQAddOnPurchase = {
+    id: duoAmazonQAddOnPurchaseId,
+    name: DUO_AMAZON_Q,
+    purchasedQuantity: 3,
+    assignedQuantity: 2,
+    __typename: 'AddOnPurchase',
+  };
 
   const addOnEligibleUsersQueryVariables = {
     fullPath: 'namespace/full-path',
@@ -58,6 +66,11 @@ describe('CodeSuggestionsAddonAssignment', () => {
     fullPath: 'namespace/full-path',
     addOnType: DUO_ENTERPRISE,
     addOnPurchaseIds: [duoEnterpriseAddOnPurchaseId],
+  };
+  const duoAmazonQAddOnEligibleUsersQueryVariables = {
+    fullPath: 'namespace/full-path',
+    addOnType: DUO_AMAZON_Q,
+    addOnPurchaseIds: [duoAmazonQAddOnPurchaseId],
   };
 
   const addOnAssignmentSuccess = {
@@ -81,6 +94,19 @@ describe('CodeSuggestionsAddonAssignment', () => {
       id: userIdForAssignment,
       addOnAssignments: {
         nodes: duoEnterpriseAddOn,
+        __typename: 'UserAddOnAssignmentConnection',
+      },
+      __typename: 'AddOnUser',
+    },
+  };
+  const duoAmazonQAddOnAssignmentSuccess = {
+    clientMutationId: '1',
+    errors: [],
+    addOnPurchase: duoAmazonQAddOnPurchase,
+    user: {
+      id: userIdForAssignment,
+      addOnAssignments: {
+        nodes: duoAmazonQAddOn,
         __typename: 'UserAddOnAssignmentConnection',
       },
       __typename: 'AddOnUser',
@@ -125,6 +151,9 @@ describe('CodeSuggestionsAddonAssignment', () => {
   });
   const duoEnterpriseAssignAddOnHandler = jest.fn().mockResolvedValue({
     data: { userAddOnAssignmentCreate: duoEnterpriseAddOnAssignmentSuccess },
+  });
+  const duoAmazonQAssignAddOnHandler = jest.fn().mockResolvedValue({
+    data: { userAddOnAssignmentCreate: duoAmazonQAddOnAssignmentSuccess },
   });
 
   const unassignAddOnHandler = jest.fn().mockResolvedValue({
@@ -188,9 +217,7 @@ describe('CodeSuggestionsAddonAssignment', () => {
 
   it('shows correct label on the toggle', () => {
     createComponent();
-    expect(findToggle().props('label')).toBe(
-      sprintf('%{addOnName} status', { addOnName: DUO_TITLES[DUO_PRO] }),
-    );
+    expect(findToggle().props('label')).toBe('GitLab Duo Pro status');
   });
 
   describe('with Duo Enterprise add-on enabled', () => {
@@ -199,9 +226,17 @@ describe('CodeSuggestionsAddonAssignment', () => {
     });
 
     it('shows correct label on the toggle', () => {
-      expect(findToggle().props('label')).toBe(
-        sprintf('%{addOnName} status', { addOnName: DUO_TITLES[DUO_ENTERPRISE] }),
-      );
+      expect(findToggle().props('label')).toBe('GitLab Duo Enterprise status');
+    });
+  });
+
+  describe('with Duo with Amazon Q add-on enabled', () => {
+    beforeEach(() => {
+      return createComponent({ props: { duoTier: DUO_AMAZON_Q } });
+    });
+
+    it('shows correct label on the toggle', () => {
+      expect(findToggle().props('label')).toBe('GitLab Duo with Amazon Q status');
     });
   });
 
@@ -306,6 +341,45 @@ describe('CodeSuggestionsAddonAssignment', () => {
     it('calls addon assigment mutation with appropriate params', () => {
       expect(duoEnterpriseAssignAddOnHandler).toHaveBeenCalledWith({
         addOnPurchaseId: duoEnterpriseAddOnPurchaseId,
+        userId: userIdForAssignment,
+      });
+    });
+
+    it('does not call addon un-assigment mutation', () => {
+      expect(unassignAddOnHandler).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('when assigning a Duo with Amazon Q add-on', () => {
+    beforeEach(() => {
+      createComponent({
+        props: {
+          addOnAssignments: [],
+          duoTier: DUO_AMAZON_Q,
+          userId: userIdForAssignment,
+          addOnPurchaseId: duoAmazonQAddOnPurchaseId,
+        },
+        addonAssignmentCreateHandler: duoAmazonQAssignAddOnHandler,
+        addOnAssignmentQueryVariables: duoAmazonQAddOnEligibleUsersQueryVariables,
+      });
+
+      findToggle().vm.$emit('change', true);
+    });
+
+    it('updates the cache with latest add-on assignment status', async () => {
+      await waitForPromises();
+
+      expect(
+        getAddOnAssignmentStatusForUserFromCache(
+          userIdForAssignment,
+          duoAmazonQAddOnEligibleUsersQueryVariables,
+        ),
+      ).toEqual(duoAmazonQAddOn);
+    });
+
+    it('calls addon assigment mutation with appropriate params', () => {
+      expect(duoAmazonQAssignAddOnHandler).toHaveBeenCalledWith({
+        addOnPurchaseId: duoAmazonQAddOnPurchaseId,
         userId: userIdForAssignment,
       });
     });
