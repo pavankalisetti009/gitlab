@@ -16,6 +16,7 @@ import { i18n, GENIE_CHAT_RESET_MESSAGE, GENIE_CHAT_CLEAR_MESSAGE } from 'ee/ai/
 import { InternalEvents } from '~/tracking';
 import getAiSlashCommands from 'ee/ai/graphql/get_ai_slash_commands.query.graphql';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import { fetchPolicies } from '~/lib/graphql';
 import {
   TANUKI_BOT_TRACKING_EVENT_NAME,
   MESSAGE_TYPES,
@@ -72,6 +73,7 @@ export default {
       skip() {
         return !this.duoChatGlobalState.isShown;
       },
+      fetchPolicy: fetchPolicies.NETWORK_ONLY,
       result({ data }) {
         if (data?.aiMessages?.nodes) {
           this.setMessages(data.aiMessages.nodes);
