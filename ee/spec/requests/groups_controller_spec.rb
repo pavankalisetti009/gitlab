@@ -452,6 +452,7 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
           vscode_web_ide: true,
           web_ide_extensions_marketplace: true
         )
+        stub_application_setting(vscode_extension_marketplace: { enabled: true, preset: 'open_vsx' })
       end
 
       it 'does not change the column' do

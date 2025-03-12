@@ -8,7 +8,6 @@ import {
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
 import { s__ } from '~/locale';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import {
   EXPORT_FORMAT_CSV,
   EXPORT_FORMAT_DEPENDENCY_LIST,
@@ -39,13 +38,7 @@ const exportFormats = [
     type: EXPORT_FORMAT_CSV,
     buttonText: s__('Dependencies|Export as CSV'),
     testid: 'csv-item',
-    available: (component) => {
-      if (component.container === NAMESPACE_GROUP) {
-        return component.glFeatures.groupDependencyListCsvExport;
-      }
-
-      return availableForContainers([NAMESPACE_PROJECT, NAMESPACE_ORGANIZATION])(component);
-    },
+    available: availableForContainers([NAMESPACE_PROJECT, NAMESPACE_GROUP, NAMESPACE_ORGANIZATION]),
   },
 ];
 
@@ -59,7 +52,6 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  mixins: [glFeatureFlagMixin()],
   props: {
     // Used in availability check.
     // eslint-disable-next-line vue/no-unused-properties

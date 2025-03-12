@@ -15,6 +15,8 @@ module EE
     override :extensions_marketplace_view
 
     def extensions_marketplace_view
+      return unless ::WebIde::ExtensionMarketplace.feature_enabled_from_application_settings?(user: current_user)
+
       if License.feature_available?(:remote_development) &&
           ::WebIde::ExtensionMarketplace.feature_enabled?(user: current_user)
         build_extensions_marketplace_view(

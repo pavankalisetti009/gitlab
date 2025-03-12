@@ -48,7 +48,26 @@ RSpec.describe PreferencesHelper, feature_category: :shared do
   end
 
   describe '#extensions_marketplace_view' do
+    let(:feature_enabled) { false }
+    let(:application_setting_enabled) { true }
+
     subject { helper.extensions_marketplace_view }
+
+    before do
+      allow(::WebIde::ExtensionMarketplace).to receive(:feature_enabled?)
+        .with(user: user)
+        .and_return(feature_enabled)
+
+      allow(::WebIde::ExtensionMarketplace).to receive(:feature_enabled_from_application_settings?)
+        .with(user: user)
+        .and_return(application_setting_enabled)
+    end
+
+    context 'when feature not enabled at application_settings' do
+      let(:application_setting_enabled) { false }
+
+      it { is_expected.to be_nil }
+    end
 
     context 'when remote_development licensed feature is enabled' do
       before do
@@ -56,9 +75,7 @@ RSpec.describe PreferencesHelper, feature_category: :shared do
       end
 
       context 'when Web IDE Extension Marketplace feature is enabled' do
-        before do
-          allow(::WebIde::ExtensionMarketplace).to receive(:feature_enabled?).with(user: user).and_return(true)
-        end
+        let(:feature_enabled) { true }
 
         it { is_expected.to match(a_hash_including(title: 'Web IDE and Workspaces', message: /IDE and Workspaces/)) }
       end
@@ -70,9 +87,7 @@ RSpec.describe PreferencesHelper, feature_category: :shared do
 
     context 'when remote_development licensed feature is not enabled' do
       context 'when Web IDE Extension Marketplace feature is enabled' do
-        before do
-          allow(::WebIde::ExtensionMarketplace).to receive(:feature_enabled?).with(user: user).and_return(true)
-        end
+        let(:feature_enabled) { true }
 
         it { is_expected.to match(a_hash_including(title: 'Web IDE', message: /for the Web IDE/)) }
       end
