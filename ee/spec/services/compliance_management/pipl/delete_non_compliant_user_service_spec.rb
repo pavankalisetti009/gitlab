@@ -9,7 +9,7 @@ RSpec.describe ComplianceManagement::Pipl::DeleteNonCompliantUserService,
 
   let_it_be_with_reload(:pipl_user) { create(:pipl_user, :deletable) }
   let_it_be_with_reload(:user) { pipl_user.user }
-  let(:deleting_user) { Users::Internal.admin_bot }
+  let(:deleting_user) { create(:user, :admin) }
 
   shared_examples 'does not delete the user' do
     it 'does not schedule a deletion migration' do
