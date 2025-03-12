@@ -54,16 +54,19 @@ module CredentialsInventoryActions
 
   def filter_credentials
     if show_personal_access_tokens?
-      ::PersonalAccessTokensFinder.new(users: users, impersonation: false, sort: 'id_desc', owner_type: 'human', **pat_params).execute
+      ::PersonalAccessTokensFinder.new(pat_params(users: users, owner_type: 'human')).execute
     elsif show_ssh_keys?
       ::KeysFinder.new({ users: users, key_type: 'ssh' }).execute
     elsif show_resource_access_tokens?
-      ::PersonalAccessTokensFinder.new(users: bot_users, impersonation: false, sort: 'id_desc', **pat_params).execute.project_access_token
+      ::PersonalAccessTokensFinder.new(pat_params(users: bot_users)).execute.project_access_token
     end
   end
 
-  def pat_params
-    params.permit(:state, :revoked, :created_before, :created_after, :expires_before, :expires_after, :last_used_before, :last_used_after, :search, :sort).to_hash.transform_keys(&:to_sym)
+  def pat_params(options)
+    { **options,
+      impersonation: false,
+      sort: 'expires_at_asc_id_desc',
+      **params.permit(:state, :revoked, :created_before, :created_after, :expires_before, :expires_after, :last_used_before, :last_used_after, :search, :sort) }.with_indifferent_access
   end
 
   def notify_deleted_or_revoked_credential(credential)

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::Projects::SetLocked do
+RSpec.describe Mutations::Projects::SetLocked, feature_category: :source_code_management do
   include GraphqlHelpers
   subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
@@ -10,14 +10,14 @@ RSpec.describe Mutations::Projects::SetLocked do
   let_it_be(:project) { create(:project, :repository) }
 
   describe '#resolve' do
-    subject { mutation.resolve(project_path: project.full_path, file_path: file_path, lock: lock) }
+    subject(:resolve) { mutation.resolve(project_path: project.full_path, file_path: file_path, lock: lock) }
 
     let(:file_path) { 'README.md' }
     let(:lock) { true }
-    let(:mutated_path_locks) { subject[:project].path_locks }
+    let(:mutated_path_locks) { resolve[:project].path_locks }
 
     it 'raises an error if the resource is not accessible to the user' do
-      expect { subject }.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)
+      expect { resolve }.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)
     end
 
     context 'when the user can lock the file' do
@@ -33,14 +33,15 @@ RSpec.describe Mutations::Projects::SetLocked do
         end
 
         it 'raises an error' do
-          expect { subject }.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)
+          expect { resolve }.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)
         end
       end
 
       context 'when file is not locked' do
         it 'sets path locks for the project' do
-          expect { subject }.to change { project.path_locks.count }.by(1)
+          expect { resolve }.to change { project.path_locks.count }.from(0).to(1)
           expect(mutated_path_locks.first).to have_attributes(path: file_path, user: current_user)
+          expect(resolve[:errors]).to be_empty
         end
       end
 
@@ -50,7 +51,9 @@ RSpec.describe Mutations::Projects::SetLocked do
         end
 
         it 'does not change the lock' do
-          expect { subject }.not_to change { project.path_locks.count }
+          expect { resolve }.not_to change { project.path_locks.count }
+          expect(mutated_path_locks.first).to have_attributes(path: file_path)
+          expect(resolve[:errors]).to be_empty
         end
       end
 
@@ -64,14 +67,18 @@ RSpec.describe Mutations::Projects::SetLocked do
         end
 
         it 'locks the file in LFS' do
-          expect { subject }.to change { project.lfs_file_locks.count }.by(1)
+          expect { resolve }.to change { project.lfs_file_locks.count }.by(1)
         end
 
         context 'when file is not tracked in LFS' do
           let(:file_path) { 'README.md' }
 
           it 'does not lock the file' do
-            expect { subject }.not_to change { project.lfs_file_locks.count }
+            expect { resolve }
+              .to change { project.path_locks.count }.from(0).to(1)
+              .and not_change { project.lfs_file_locks.count }
+            expect(mutated_path_locks.first).to have_attributes(path: file_path, user: current_user)
+            expect(resolve[:errors]).to be_empty
           end
         end
 
@@ -79,11 +86,11 @@ RSpec.describe Mutations::Projects::SetLocked do
           let(:file_path) { 'lfs/' }
 
           it 'locks the directory' do
-            expect { subject }.to change { project.path_locks.count }.by(1)
+            expect { resolve }.to change { project.path_locks.count }.by(1)
           end
 
           it 'does not locks the directory through LFS' do
-            expect { subject }.not_to change { project.lfs_file_locks.count }
+            expect { resolve }.not_to change { project.lfs_file_locks.count }
           end
         end
       end
@@ -102,8 +109,9 @@ RSpec.describe Mutations::Projects::SetLocked do
         end
 
         it 'unlocks the file' do
-          expect { subject }.to change { project.path_locks.count }.by(-1)
+          expect { resolve }.to change { project.path_locks.count }.from(1).to(0)
           expect(mutated_path_locks).to be_empty
+          expect(resolve[:errors]).to be_empty
         end
       end
 
@@ -113,14 +121,16 @@ RSpec.describe Mutations::Projects::SetLocked do
         end
 
         it 'returns an error' do
-          expect(subject[:errors]).to eq(['You have no permissions'])
+          expect(resolve[:project]).to be_nil
+          expect(resolve[:errors]).to eq(['You have no permissions'])
         end
       end
 
       context 'when file is not locked' do
         it 'does nothing' do
-          expect { subject }.not_to change { project.path_locks.count }
+          expect { resolve }.not_to change { project.path_locks.count }
           expect(mutated_path_locks).to be_empty
+          expect(resolve[:errors]).to be_empty
         end
       end
 
@@ -139,33 +149,29 @@ RSpec.describe Mutations::Projects::SetLocked do
             create(:path_lock, project: project, path: file_path, user: current_user)
           end
 
-          it 'unlocks the file' do
-            expect { subject }.to change { project.path_locks.count }.by(-1)
-          end
-
-          it 'unlocks the file in LFS' do
-            expect { subject }.to change { project.lfs_file_locks.count }.by(-1)
+          it 'unlocks the file and syncs with lfs', :aggregate_failures do
+            expect { resolve }
+              .to change { project.path_locks.count }.from(1).to(0)
+              .and change { project.lfs_file_locks.count }.from(1).to(0)
           end
 
           context 'when file is not tracked in LFS' do
             let(:file_path) { 'README.md' }
 
-            it 'does not unlock the file' do
-              expect { subject }.not_to change { project.lfs_file_locks.count }
+            it 'unlocks the file but does not sync with lfs' do
+              expect { resolve }
+                .to change { project.path_locks.count }.from(1).to(0)
+                .and not_change { project.lfs_file_locks.count }
             end
           end
 
           context 'when unlocking a directory' do
             let(:file_path) { 'lfs/' }
 
-            it 'unlocks the directory' do
-              expect { subject }.to change { project.path_locks.count }.by(-1)
-            end
-
-            it 'does not call the LFS unlock service' do
+            it 'unlocks the directory and does not call the lfs unlock service', :aggregate_failures do
               expect(Lfs::UnlockFileService).not_to receive(:new)
 
-              subject
+              expect { resolve }.to change { project.path_locks.count }.from(1).to(0)
             end
           end
         end
