@@ -1639,6 +1639,9 @@ msgstr ""
 msgid "%{wildcards_link_start}Wildcards%{wildcards_link_end} such as %{code_tag_start}v*%{code_tag_end} or %{code_tag_start}*-release%{code_tag_end} are supported."
 msgstr ""
 
+msgid "'%{group_name}' has been scheduled for deletion and will be deleted on %{date}."
+msgstr ""
+
 msgid "'%{group_name}' has been scheduled for removal on %{removal_time}."
 msgstr ""
 
