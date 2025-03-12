@@ -1,5 +1,5 @@
 <script>
-import { GlButton, GlEmptyState, GlLoadingIcon } from '@gitlab/ui';
+import { GlButton, GlEmptyState } from '@gitlab/ui';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import Tracking from '~/tracking';
 import {
@@ -16,16 +16,10 @@ export default {
   components: {
     GlButton,
     GlEmptyState,
-    GlLoadingIcon,
   },
   mixins: [Tracking.mixin()],
   inject: ['newValueStreamPath'],
   props: {
-    isLoading: {
-      type: Boolean,
-      required: true,
-      default: false,
-    },
     hasDateRangeError: {
       type: Boolean,
       required: true,
@@ -67,31 +61,25 @@ export default {
 };
 </script>
 <template>
-  <div>
-    <div v-if="isLoading" class="gl-p-7 gl-text-center">
-      <gl-loading-icon size="lg" />
-    </div>
-    <gl-empty-state
-      v-else
-      :svg-path="emptyStateSvgPath"
-      :title="title"
-      :description="description"
-      data-testid="vsa-empty-state"
-    >
-      <template v-if="!hasDateRangeError && canEdit" #actions>
-        <gl-button
-          :href="newValueStreamPath"
-          class="gl-mx-2 gl-mb-3"
-          variant="confirm"
-          data-testid="create-value-stream-button"
-          data-track-action="click_button"
-          data-track-label="empty_state_create_value_stream_form_open"
-          >{{ $options.i18n.EMPTY_STATE_ACTION_TEXT }}</gl-button
-        >
-        <gl-button class="gl-mx-2 gl-mb-3" data-testid="learn-more-link" :href="$options.docsPath"
-          >{{ $options.i18n.EMPTY_STATE_SECONDARY_TEXT }}
-        </gl-button>
-      </template>
-    </gl-empty-state>
-  </div>
+  <gl-empty-state
+    :svg-path="emptyStateSvgPath"
+    :title="title"
+    :description="description"
+    data-testid="vsa-empty-state"
+  >
+    <template v-if="!hasDateRangeError && canEdit" #actions>
+      <gl-button
+        :href="newValueStreamPath"
+        class="gl-mx-2 gl-mb-3"
+        variant="confirm"
+        data-testid="create-value-stream-button"
+        data-track-action="click_button"
+        data-track-label="empty_state_create_value_stream_form_open"
+        >{{ $options.i18n.EMPTY_STATE_ACTION_TEXT }}</gl-button
+      >
+      <gl-button class="gl-mx-2 gl-mb-3" data-testid="learn-more-link" :href="$options.docsPath"
+        >{{ $options.i18n.EMPTY_STATE_SECONDARY_TEXT }}
+      </gl-button>
+    </template>
+  </gl-empty-state>
 </template>
