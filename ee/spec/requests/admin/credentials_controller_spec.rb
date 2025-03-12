@@ -36,13 +36,22 @@ RSpec.describe Admin::CredentialsController, type: :request, feature_category: :
           expect(response).to have_gitlab_http_status(:ok)
         end
 
-        it_behaves_like 'internal event tracking' do
+        it_behaves_like 'migrated internal event' do
           subject(:admin_credentials_request) { get admin_credentials_path }
 
           let(:event) { 'visit_compliance_credential_inventory' }
           let(:user) { admin }
           let(:project) { nil }
           let(:namespace) { nil }
+          let(:migrated_metrics) do
+            [
+              'redis_hll_counters.compliance.i_compliance_credential_inventory_monthly',
+              'redis_hll_counters.compliance.i_compliance_credential_inventory_weekly'
+            ]
+          end
+
+          let(:previous_event_name) { 'i_compliance_credential_inventory' }
+          let(:previous_event_value) { user.id }
         end
 
         describe 'filtering by type of credential' do
