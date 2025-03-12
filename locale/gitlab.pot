@@ -1552,15 +1552,6 @@ msgstr ""
 msgid "%{total} warnings found: showing first %{warningsDisplayed}"
 msgstr ""
 
-msgid "%{type} '%{name}' has been successfully restored."
-msgstr ""
-
-msgid "%{type} '%{name}' is being deleted."
-msgstr ""
-
-msgid "%{type} '%{name}' will be deleted on %{date}."
-msgstr ""
-
 msgid "%{type} must be a %{help_link}"
 msgstr ""
 
@@ -28142,6 +28133,9 @@ msgid "Group '%{group_name}' is being deleted."
 msgstr ""
 
 msgid "Group '%{group_name}' was successfully updated."
+msgstr ""
+
+msgid "Group '%{group_name}' will be deleted on %{date}."
 msgstr ""
 
 msgid "Group Git LFS status:"

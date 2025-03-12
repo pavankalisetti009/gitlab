@@ -3,13 +3,13 @@ import { GlLoadingIcon } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import { restoreProject } from 'ee/rest_api';
-import { renderRestoreSuccessToast } from 'ee/vue_shared/components/resource_lists/utils';
 import ListActions from '~/vue_shared/components/list_actions/list_actions.vue';
 import {
   ACTION_EDIT,
   ACTION_RESTORE,
   ACTION_DELETE,
 } from '~/vue_shared/components/list_actions/constants';
+import { renderRestoreSuccessToast } from './utils';
 
 export default {
   name: 'ProjectListItemActionsEE',

@@ -34,7 +34,7 @@ export const availableGraphQLProjectActions = ({ userPermissions, markedForDelet
 export const renderRestoreSuccessToast = (project) => {
   toast(
     sprintf(__("Project '%{project_name}' has been successfully restored."), {
-      project_name: project.name,
+      project_name: project.nameWithNamespace,
     }),
   );
 };
@@ -52,7 +52,7 @@ export const renderDeleteSuccessToast = (project) => {
   if (project.markedForDeletionOn) {
     toast(
       sprintf(__("Project '%{project_name}' is being deleted."), {
-        project_name: project.name,
+        project_name: project.nameWithNamespace,
       }),
     );
 
@@ -63,7 +63,7 @@ export const renderDeleteSuccessToast = (project) => {
   if (project.isAdjournedDeletionEnabled) {
     toast(
       sprintf(__("Project '%{project_name}' will be deleted on %{date}."), {
-        project_name: project.name,
+        project_name: project.nameWithNamespace,
         date: project.permanentDeletionDate,
       }),
     );
@@ -76,7 +76,7 @@ export const renderDeleteSuccessToast = (project) => {
   // restored by an admin.
   toast(
     sprintf(__("Deleting project '%{project_name}'. All data will be removed on %{date}."), {
-      project_name: project.name,
+      project_name: project.nameWithNamespace,
       date: project.permanentDeletionDate,
     }),
   );
