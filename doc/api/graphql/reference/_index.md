@@ -42286,6 +42286,7 @@ Types of add-ons.
 | Value | Description |
 | ----- | ----------- |
 | <a id="gitlabsubscriptionsaddontypecode_suggestions"></a>`CODE_SUGGESTIONS` | GitLab Duo Pro seat add-on. |
+| <a id="gitlabsubscriptionsaddontypeduo_amazon_q"></a>`DUO_AMAZON_Q` | GitLab Duo with Amazon Q seat add-on. |
 | <a id="gitlabsubscriptionsaddontypeduo_enterprise"></a>`DUO_ENTERPRISE` | GitLab Duo Enterprise seat add-on. |
 
 ### `GitlabSubscriptionsUserRole`

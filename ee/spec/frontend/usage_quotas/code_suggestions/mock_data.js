@@ -1,6 +1,6 @@
 import { subscriptionTypes } from 'ee/admin/subscriptions/show/constants';
 
-import { DUO_PRO, DUO_ENTERPRISE } from 'ee/usage_quotas/code_suggestions/constants';
+import { DUO_PRO, DUO_ENTERPRISE, DUO_AMAZON_Q } from 'ee/usage_quotas/code_suggestions/constants';
 
 export const noAssignedDuoProAddonData = {
   data: {
@@ -30,6 +30,20 @@ export const noAssignedDuoEnterpriseAddonData = {
   },
 };
 
+export const noAssignedDuoAmazonQAddonData = {
+  data: {
+    addOnPurchases: [
+      {
+        id: 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/3',
+        name: DUO_AMAZON_Q,
+        assignedQuantity: 0,
+        purchasedQuantity: 20,
+        __typename: 'AddOnPurchase',
+      },
+    ],
+  },
+};
+
 export const noAssignedDuoAddonsData = {
   data: {
     addOnPurchases: [
@@ -42,6 +56,27 @@ export const noAssignedDuoAddonsData = {
       },
       {
         id: 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/4',
+        name: DUO_ENTERPRISE,
+        assignedQuantity: 0,
+        purchasedQuantity: 20,
+        __typename: 'AddOnPurchase',
+      },
+      {
+        id: 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/5',
+        name: DUO_AMAZON_Q,
+        assignedQuantity: 0,
+        purchasedQuantity: 20,
+        __typename: 'AddOnPurchase',
+      },
+      {
+        id: 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/6',
+        name: DUO_PRO,
+        assignedQuantity: 0,
+        purchasedQuantity: 15,
+        __typename: 'AddOnPurchase',
+      },
+      {
+        id: 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/7',
         name: DUO_ENTERPRISE,
         assignedQuantity: 0,
         purchasedQuantity: 20,
