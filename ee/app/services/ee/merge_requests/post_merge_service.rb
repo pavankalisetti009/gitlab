@@ -4,6 +4,7 @@ module EE
   module MergeRequests
     module PostMergeService
       extend ::Gitlab::Utils::Override
+      include ::Security::ScanResultPolicies::PolicyLogger
 
       override :execute
       def execute(merge_request, source = nil)
@@ -97,9 +98,8 @@ module EE
         violations = merge_request.running_scan_result_policy_violations
         return if violations.none?
 
-        ::Gitlab::AppLogger.warn(
-          message: 'Running scan result policy violations after merge',
-          project_path: project.full_path,
+        log_policy_evaluation('post_merge', 'Running scan result policy violations after merge',
+          project: project,
           merge_request_id: merge_request.id,
           merge_request_iid: merge_request.iid,
           head_pipeline_id: merge_request.diff_head_pipeline&.id,

@@ -5,6 +5,7 @@ module Security
     include Gitlab::Utils::StrongMemoize
     include ::Security::ScanResultPolicies::RelatedPipelines
     include ::Security::ScanResultPolicies::VulnerabilityStatesHelper
+    include ::Security::ScanResultPolicies::PolicyLogger
 
     def initialize(merge_request)
       @merge_request = merge_request
@@ -14,8 +15,8 @@ module Security
     def execute
       approval_rules = merge_request.approval_rules.including_scan_result_policy_read
 
-      notify_for_report_type(merge_request, :scan_finding, approval_rules.scan_finding)
-      notify_for_report_type(merge_request, :license_scanning, approval_rules.license_scanning)
+      update_for_report_type(merge_request, :scan_finding, approval_rules.scan_finding)
+      update_for_report_type(merge_request, :license_scanning, approval_rules.license_scanning)
     end
 
     private
@@ -24,8 +25,13 @@ module Security
 
     delegate :project, to: :merge_request, private: true
 
-    def notify_for_report_type(merge_request, report_type, approval_rules)
-      return unless unenforceable_report?(report_type)
+    def update_for_report_type(merge_request, report_type, approval_rules)
+      pipelines = pipelines_with_enforceable_reports(report_type)
+      if pipelines.present?
+        log_message(report_type, "No unenforceable #{report_type} rules detected, skipping",
+          pipelines_with_reports_ids: pipelines.map(&:id))
+        return
+      end
 
       unblock_fail_open_rules(report_type)
 
@@ -34,6 +40,7 @@ module Security
       applicable_rules = filter_newly_detected_rules(report_type, approval_rules)
       return if applicable_rules.blank?
 
+      log_message(report_type, "Unenforceable #{report_type} rules detected")
       policy_evaluation = Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationService
                             .new(merge_request, approval_rules, report_type)
 
@@ -45,20 +52,22 @@ module Security
       policy_evaluation.save
     end
 
-    def unenforceable_report?(report_type)
-      return true if pipeline.nil?
+    def pipelines_with_enforceable_reports(report_type)
+      return [] if pipeline.nil?
 
       case report_type
       when :scan_finding
         # Pipelines which can store security reports are handled via SyncFindingsToApprovalRulesService
-        related_pipelines.none?(&:can_store_security_reports?)
+        related_pipelines.select(&:can_store_security_reports?)
       when :license_scanning
         # Pipelines which have scanning results available are handled via SyncLicenseScanningRulesService
-        related_pipelines.none?(&:can_ingest_sbom_reports?)
+        related_pipelines.select(&:can_ingest_sbom_reports?)
       end
     end
 
     def related_pipelines
+      return [] if pipeline.nil?
+
       project.all_pipelines.id_in(related_pipeline_ids(pipeline))
     end
     strong_memoize_attr :related_pipelines
@@ -67,6 +76,12 @@ module Security
       Security::ScanResultPolicies::UnblockFailOpenApprovalRulesService
         .new(merge_request: merge_request, report_types: [report_type])
         .execute
+    end
+
+    def log_message(report_type, message, **attributes)
+      log_policy_evaluation('unenforceable_rules', message,
+        project: project, report_type: report_type, merge_request_id: merge_request.id,
+        merge_request_iid: merge_request.iid, related_pipeline_ids: related_pipelines.map(&:id), **attributes)
     end
   end
 end
