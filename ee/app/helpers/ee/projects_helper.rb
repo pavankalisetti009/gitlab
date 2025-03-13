@@ -262,7 +262,8 @@ module EE
         new_vulnerability_path: new_project_security_vulnerability_path(@project),
         dismissal_descriptions: dismissal_descriptions.to_json,
         hide_third_party_offers: ::Gitlab::CurrentSettings.current_application_settings.hide_third_party_offers?.to_s,
-        operational_configuration_path: new_project_security_policy_path(@project)
+        operational_configuration_path: new_project_security_policy_path(@project),
+        show_retention_alert: ::Gitlab.com?.to_s
       }.merge(security_dashboard_pipeline_data(project))
     end
 

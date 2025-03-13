@@ -94,7 +94,8 @@ RSpec.describe Groups::SecurityFeaturesHelper, feature_category: :user_managemen
         can_admin_vulnerability: 'true',
         can_view_false_positive: 'false',
         has_projects: has_projects,
-        dismissal_descriptions: dismissal_descriptions_json
+        dismissal_descriptions: dismissal_descriptions_json,
+        show_retention_alert: 'false'
       }
     end
 
