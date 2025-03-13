@@ -11694,6 +11694,12 @@ msgstr ""
 msgid "Cannot assign a confidential epic to a non-confidential issue. Make the issue confidential and try again"
 msgstr ""
 
+msgid "Cannot assign a confidential parent to a non-confidential work item. Make the work item confidential and try again"
+msgstr ""
+
+msgid "Cannot assign this work item type to parent type"
+msgstr ""
+
 msgid "Cannot be merged automatically"
 msgstr ""
 
@@ -66174,6 +66180,9 @@ msgid "Work in progress limit"
 msgstr ""
 
 msgid "Work in progress limit: %{wipLimit}"
+msgstr ""
+
+msgid "Work item %{work_item_reference} has already been added to parent %{parent_reference}."
 msgstr ""
 
 msgid "Work item not supported"
