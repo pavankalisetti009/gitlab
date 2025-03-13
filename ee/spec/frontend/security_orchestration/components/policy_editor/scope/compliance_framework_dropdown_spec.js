@@ -360,6 +360,25 @@ describe('ComplianceFrameworkDropdown', () => {
     });
   });
 
+  describe('when query response has no frameworks', () => {
+    it('emits error when query does not return frameworks', async () => {
+      createComponent({
+        handlers: {
+          complianceFrameworks: jest.fn().mockResolvedValue({
+            data: {
+              namespace: {
+                id: 1,
+                name: 'name',
+              },
+            },
+          }),
+        },
+      });
+      await waitForPromises();
+      expect(wrapper.emitted('framework-query-error')).toHaveLength(1);
+    });
+  });
+
   describe('error state', () => {
     it.each`
       showError | variant      | category       | groupErrorAttribute
