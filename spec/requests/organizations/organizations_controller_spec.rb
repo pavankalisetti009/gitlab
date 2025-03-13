@@ -208,7 +208,8 @@ RSpec.describe Organizations::OrganizationsController, feature_category: :cell d
         end
       end
 
-      context 'when organization has multiple projects' do
+      context 'when organization has multiple projects',
+        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/524222' do
         let_it_be(:stale_project) do
           create(:project, organization: organization, last_activity_at: Date.yesterday)
         end
