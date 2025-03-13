@@ -1396,6 +1396,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_1f57c71a69fb() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."snippet_organization_id" IS NULL THEN
+  SELECT "organization_id"
+  INTO NEW."snippet_organization_id"
+  FROM "snippets"
+  WHERE "snippets"."id" = NEW."snippet_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_206cbe2dc1a2() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -3532,6 +3548,22 @@ IF NEW."project_id" IS NULL THEN
   INTO NEW."project_id"
   FROM "merge_requests"
   WHERE "merge_requests"."id" = NEW."merge_request_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
+CREATE FUNCTION trigger_d9468bfbb0b4() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."snippet_project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."snippet_project_id"
+  FROM "snippets"
+  WHERE "snippets"."id" = NEW."snippet_id";
 END IF;
 
 RETURN NEW;
@@ -21979,6 +22011,8 @@ CREATE TABLE snippet_repositories (
     verification_failure text,
     verification_state smallint DEFAULT 0 NOT NULL,
     verification_started_at timestamp with time zone,
+    snippet_project_id bigint,
+    snippet_organization_id bigint,
     CONSTRAINT snippet_repositories_verification_failure_text_limit CHECK ((char_length(verification_failure) <= 255))
 );
 
@@ -35618,6 +35652,10 @@ CREATE UNIQUE INDEX index_snippet_repositories_on_disk_path ON snippet_repositor
 
 CREATE INDEX index_snippet_repositories_on_shard_id ON snippet_repositories USING btree (shard_id);
 
+CREATE INDEX index_snippet_repositories_on_snippet_organization_id ON snippet_repositories USING btree (snippet_organization_id);
+
+CREATE INDEX index_snippet_repositories_on_snippet_project_id ON snippet_repositories USING btree (snippet_project_id);
+
 CREATE INDEX index_snippet_repositories_pending_verification ON snippet_repositories USING btree (verified_at NULLS FIRST) WHERE (verification_state = 0);
 
 CREATE INDEX index_snippet_repositories_verification_state ON snippet_repositories USING btree (verification_state);
@@ -38914,6 +38952,8 @@ CREATE TRIGGER trigger_1ed40f4d5f4e BEFORE INSERT OR UPDATE ON packages_maven_me
 
 CREATE TRIGGER trigger_1eda1bc6ef53 BEFORE INSERT OR UPDATE ON merge_request_diff_details FOR EACH ROW EXECUTE FUNCTION trigger_1eda1bc6ef53();
 
+CREATE TRIGGER trigger_1f57c71a69fb BEFORE INSERT OR UPDATE ON snippet_repositories FOR EACH ROW EXECUTE FUNCTION trigger_1f57c71a69fb();
+
 CREATE TRIGGER trigger_206cbe2dc1a2 BEFORE INSERT OR UPDATE ON packages_package_files FOR EACH ROW EXECUTE FUNCTION trigger_206cbe2dc1a2();
 
 CREATE TRIGGER trigger_207005e8e995 BEFORE INSERT OR UPDATE ON operations_strategies FOR EACH ROW EXECUTE FUNCTION trigger_207005e8e995();
@@ -39189,6 +39229,8 @@ CREATE TRIGGER trigger_d4487a75bd44 BEFORE INSERT OR UPDATE ON terraform_state_v
 CREATE TRIGGER trigger_d5c895007948 BEFORE INSERT OR UPDATE ON protected_environment_approval_rules FOR EACH ROW EXECUTE FUNCTION trigger_d5c895007948();
 
 CREATE TRIGGER trigger_d8c2de748d8c BEFORE INSERT OR UPDATE ON merge_request_predictions FOR EACH ROW EXECUTE FUNCTION trigger_d8c2de748d8c();
+
+CREATE TRIGGER trigger_d9468bfbb0b4 BEFORE INSERT OR UPDATE ON snippet_repositories FOR EACH ROW EXECUTE FUNCTION trigger_d9468bfbb0b4();
 
 CREATE TRIGGER trigger_da5fd3d6d75c BEFORE INSERT OR UPDATE ON packages_composer_metadata FOR EACH ROW EXECUTE FUNCTION trigger_da5fd3d6d75c();
 
@@ -41230,6 +41272,9 @@ ALTER TABLE ONLY merge_request_context_commits
 ALTER TABLE ONLY approval_project_rules
     ADD CONSTRAINT fk_efa5a1e3fb FOREIGN KEY (security_orchestration_policy_configuration_id) REFERENCES security_orchestration_policy_configurations(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY snippet_repositories
+    ADD CONSTRAINT fk_efaf4ac269 FOREIGN KEY (snippet_organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY dora_daily_metrics
     ADD CONSTRAINT fk_efc32a39fa FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
@@ -41265,6 +41310,9 @@ ALTER TABLE ONLY abuse_reports
 
 ALTER TABLE ONLY timelogs
     ADD CONSTRAINT fk_f12ef8db70 FOREIGN KEY (timelog_category_id) REFERENCES timelog_categories(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY snippet_repositories
+    ADD CONSTRAINT fk_f1319bee9d FOREIGN KEY (snippet_project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY boards
     ADD CONSTRAINT fk_f15266b5f9 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
