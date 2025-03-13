@@ -1,29 +1,45 @@
 import { shallowMount } from '@vue/test-utils';
 import { GlCollapsibleListbox, GlSprintf } from '@gitlab/ui';
 import ScheduleForm from 'ee/security_orchestration/components/policy_editor/pipeline_execution/rule/schedule_form.vue';
+import BranchSelection from 'ee/security_orchestration/components/policy_editor/scan_result/rule/branch_selection.vue';
+import TimezoneDropdown from '~/vue_shared/components/timezone_dropdown/timezone_dropdown.vue';
 
 describe('ScheduleForm', () => {
   let wrapper;
-  const defaultSchedule = { type: 'daily', time_window: { value: 3600 } };
+  const defaultSchedule = {
+    type: 'daily',
+    time_window: { value: 3600 },
+    branch_type: 'protected',
+    timezone: 'America/New_York',
+  };
+  const mockTimezones = [
+    { identifier: 'America/New_York', name: 'Eastern Time' },
+    { identifier: 'America/Los_Angeles', name: 'Pacific Time' },
+  ];
 
-  const createComponent = (props = {}) => {
+  const createComponent = (props = {}, provide = {}) => {
     wrapper = shallowMount(ScheduleForm, {
       propsData: { schedule: defaultSchedule, ...props },
       stubs: { GlSprintf },
+      provide: { timezones: mockTimezones, ...provide },
     });
   };
 
   const findListbox = () => wrapper.findComponent(GlCollapsibleListbox);
+  const findBranchSelection = () => wrapper.findComponent(BranchSelection);
+  const findTimezoneDropdown = () => wrapper.findComponent(TimezoneDropdown);
 
   describe('rendering', () => {
-    it('renders the component', () => {
+    it('displays the message', () => {
       createComponent();
-      expect(wrapper.exists()).toBe(true);
+      expect(wrapper.text()).toContain('Schedule to run for');
     });
 
-    it('displays the correct message', () => {
+    it('displays the details', () => {
       createComponent();
-      expect(wrapper.text()).toContain('Schedule a pipeline on a  cadence for branches');
+      expect(wrapper.text()).toContain(
+        'at the following times: , start at , run for: , and timezone is',
+      );
     });
 
     it('renders the cadence selector with correct options', () => {
@@ -41,56 +57,101 @@ describe('ScheduleForm', () => {
       createComponent({ schedule: { type: 'weekly' } });
       expect(findListbox().props('selected')).toBe('weekly');
     });
+
+    it('renders the branch selection component', () => {
+      createComponent();
+      expect(findBranchSelection().exists()).toBe(true);
+      expect(findBranchSelection().props('initRule')).toEqual({
+        branch_type: 'protected',
+        branches: undefined,
+      });
+    });
+
+    it('renders the timezone dropdown', () => {
+      createComponent();
+      const timezoneDropdown = findTimezoneDropdown();
+      expect(timezoneDropdown.exists()).toBe(true);
+      expect(timezoneDropdown.props()).toMatchObject({
+        timezoneData: mockTimezones,
+        value: 'America/New_York',
+        headerText: 'Select timezone',
+      });
+      expect(timezoneDropdown.attributes('title')).toBe(`on ${window.location.host}`);
+    });
   });
 
-  describe('updateCadence', () => {
-    it('emits changed event with daily schedule when daily is selected', async () => {
+  describe('event handling', () => {
+    beforeEach(() => {
       createComponent();
-      await findListbox().vm.$emit('select', 'daily');
-
-      expect(wrapper.emitted('changed')).toHaveLength(1);
-      expect(wrapper.emitted('changed')).toMatchObject([
-        [{ type: 'daily', start_time: '00:00', time_window: { value: 3600 } }],
-      ]);
     });
 
-    it('emits changed event with weekly schedule when weekly is selected', async () => {
-      createComponent();
-      await findListbox().vm.$emit('select', 'weekly');
-
-      expect(wrapper.emitted('changed')).toHaveLength(1);
-      expect(wrapper.emitted('changed')).toMatchObject([
-        [{ type: 'weekly', days: 'monday', time_window: { value: 86400 } }],
-      ]);
+    describe('branch selection', () => {
+      it('handles branch selection changes', async () => {
+        const branchData = { branch_type: 'all' };
+        await findBranchSelection().vm.$emit('set-branch-type', branchData);
+        expect(wrapper.emitted('changed')).toMatchObject([[{ ...branchData }]]);
+      });
     });
 
-    it('emits changed event with monthly schedule when monthly is selected', async () => {
-      createComponent();
-      await findListbox().vm.$emit('select', 'monthly');
+    describe('cadence', () => {
+      it('emits changed event with daily schedule when daily is selected', async () => {
+        createComponent();
+        await findListbox().vm.$emit('select', 'daily');
 
-      expect(wrapper.emitted('changed')).toHaveLength(1);
-      expect(wrapper.emitted('changed')).toMatchObject([
-        [{ type: 'monthly', days_of_month: '1', time_window: { value: 86400 } }],
-      ]);
-    });
-
-    it('removes irrelevant properties when changing cadence type', async () => {
-      createComponent({
-        schedule: {
-          type: 'daily',
-          start_time: '12:00',
-          days: 'friday',
-          days_of_month: '15',
-          time_window: { value: 3600 },
-        },
+        expect(wrapper.emitted('changed')).toHaveLength(1);
+        expect(wrapper.emitted('changed')).toMatchObject([
+          [{ type: 'daily', start_time: '00:00', time_window: { value: 3600 } }],
+        ]);
       });
 
-      await findListbox().vm.$emit('select', 'weekly');
+      it('emits changed event with weekly schedule when weekly is selected', async () => {
+        createComponent();
+        await findListbox().vm.$emit('select', 'weekly');
 
-      const emittedSchedule = wrapper.emitted('changed')[0][0];
-      expect(emittedSchedule).toHaveProperty('days');
-      expect(emittedSchedule).not.toHaveProperty('start_time');
-      expect(emittedSchedule).not.toHaveProperty('days_of_month');
+        expect(wrapper.emitted('changed')).toHaveLength(1);
+        expect(wrapper.emitted('changed')).toMatchObject([
+          [{ type: 'weekly', days: 'monday', time_window: { value: 86400 } }],
+        ]);
+      });
+
+      it('emits changed event with monthly schedule when monthly is selected', async () => {
+        createComponent();
+        await findListbox().vm.$emit('select', 'monthly');
+
+        expect(wrapper.emitted('changed')).toHaveLength(1);
+        expect(wrapper.emitted('changed')).toMatchObject([
+          [{ type: 'monthly', days_of_month: '1', time_window: { value: 86400 } }],
+        ]);
+      });
+
+      it('removes irrelevant properties when changing cadence type', async () => {
+        createComponent({
+          schedule: {
+            type: 'daily',
+            start_time: '12:00',
+            days: 'friday',
+            days_of_month: '15',
+            time_window: { value: 3600 },
+          },
+        });
+
+        await findListbox().vm.$emit('select', 'weekly');
+
+        const emittedSchedule = wrapper.emitted('changed')[0][0];
+        expect(emittedSchedule).toHaveProperty('days');
+        expect(emittedSchedule).not.toHaveProperty('start_time');
+        expect(emittedSchedule).not.toHaveProperty('days_of_month');
+      });
+    });
+
+    describe('timezone', () => {
+      it('handles timezone selection changes', async () => {
+        const timezoneData = { identifier: 'America/Los_Angeles' };
+        await findTimezoneDropdown().vm.$emit('input', timezoneData);
+        expect(wrapper.emitted('changed')).toEqual([
+          [expect.objectContaining({ timezone: timezoneData.identifier })],
+        ]);
+      });
     });
   });
 });
