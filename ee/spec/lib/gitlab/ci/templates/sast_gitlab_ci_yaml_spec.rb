@@ -63,6 +63,7 @@ RSpec.describe 'SAST.gitlab-ci.yml', feature_category: :continuous_integration d
             'Golang'               | { 'main.go' => '' }                                    | {}                                         | %w[semgrep-sast]
             'Groovy'               | { 'app.groovy' => '' }                                 | {}                                         | %w[spotbugs-sast]
             'Java'                 | { 'app.java' => '' }                                   | {}                                         | %w[semgrep-sast]
+            'Java properties'      | { 'app.properties' => '' }                             | {}                                         | %w[semgrep-sast]
             'Javascript'           | { 'app.js' => '' }                                     | {}                                         | %w[semgrep-sast]
             'JSX'                  | { 'app.jsx' => '' }                                    | {}                                         | %w[semgrep-sast]
             'Kotlin'               | { 'app.kt' => '' }                                     | {}                                         | %w[semgrep-sast]
