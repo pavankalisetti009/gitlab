@@ -162,7 +162,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
     end
 
     context 'when calling AI Gateway with Claude 2.1 model' do
-      let(:model) { Gitlab::Llm::Concerns::AvailableModels::CLAUDE_2_1 }
+      let(:model) { Gitlab::Llm::Concerns::AvailableModels::CLAUDE_3_5_SONNET }
       let(:options) { { model: model } }
 
       it 'returns expected response' do

@@ -222,7 +222,7 @@ module Gitlab
         end
 
         def model
-          CLAUDE_2_1
+          CLAUDE_3_5_SONNET
         end
 
         def log_response_received(response_body, request_type)
