@@ -1,12 +1,12 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { shallowMount } from '@vue/test-utils';
+import WorkItemDueDates from '~/work_items/components/work_item_due_dates.vue';
 import WorkItemProgress from 'ee/work_items/components/work_item_progress.vue';
 import WorkItemHealthStatus from 'ee/work_items/components/work_item_health_status.vue';
 import WorkItemWeight from 'ee/work_items/components/work_item_weight.vue';
 import WorkItemIteration from 'ee/work_items/components/work_item_iteration.vue';
 import WorkItemColor from 'ee/work_items/components/work_item_color.vue';
-import WorkItemRolledupDates from 'ee/work_items/components/work_item_rolledup_dates.vue';
 import WorkItemCustomFields from 'ee/work_items/components/work_item_custom_fields.vue';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -61,7 +61,7 @@ describe('EE WorkItemAttributesWrapper component', () => {
   const findWorkItemProgress = () => wrapper.findComponent(WorkItemProgress);
   const findWorkItemColor = () => wrapper.findComponent(WorkItemColor);
   const findWorkItemHealthStatus = () => wrapper.findComponent(WorkItemHealthStatus);
-  const findWorkItemRolledupDates = () => wrapper.findComponent(WorkItemRolledupDates);
+  const findWorkItemDueDates = () => wrapper.findComponent(WorkItemDueDates);
   const findWorkItemCustomFields = () => wrapper.findComponent(WorkItemCustomFields);
 
   const createComponent = ({
@@ -304,7 +304,7 @@ describe('EE WorkItemAttributesWrapper component', () => {
     it('renders rolledup dates widget', async () => {
       await createComponentWithRolledupDates();
 
-      expect(findWorkItemRolledupDates().exists()).toBe(true);
+      expect(findWorkItemDueDates().exists()).toBe(true);
     });
   });
 

@@ -1,6 +1,7 @@
 import { GlDatepicker, GlFormRadio } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
+import WorkItemDueDates from '~/work_items/components/work_item_due_dates.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { mockTracking } from 'helpers/tracking_helper';
 import { stubComponent } from 'helpers/stub_component';
@@ -8,7 +9,6 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { Mousetrap } from '~/lib/mousetrap';
 import { newDate } from '~/lib/utils/datetime/date_calculation_utility';
-import WorkItemRolledupDates from 'ee/work_items/components/work_item_rolledup_dates.vue';
 import { TRACKING_CATEGORY_SHOW } from '~/work_items/constants';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
 import {
@@ -18,7 +18,7 @@ import {
 
 Vue.use(VueApollo);
 
-describe('WorkItemRolledupDates component', () => {
+describe('WorkItemDueDates component', () => {
   let wrapper;
 
   const startDateShowSpy = jest.fn();
@@ -44,7 +44,7 @@ describe('WorkItemRolledupDates component', () => {
     shouldRollUp = true,
     mutationHandler = updateWorkItemMutationHandler,
   } = {}) => {
-    wrapper = shallowMountExtended(WorkItemRolledupDates, {
+    wrapper = shallowMountExtended(WorkItemDueDates, {
       apolloProvider: createMockApollo([[updateWorkItemMutation, mutationHandler]]),
       propsData: {
         canUpdate,

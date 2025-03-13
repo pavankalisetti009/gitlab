@@ -113,6 +113,7 @@ export default {
     isDatepickerDisabled() {
       return !this.canUpdate || this.isUpdating;
     },
+    // eslint-disable-next-line vue/no-unused-properties
     tracking() {
       return {
         category: TRACKING_CATEGORY_SHOW,
@@ -318,7 +319,7 @@ export default {
 </script>
 
 <template>
-  <section data-testid="work-item-rolledup-dates">
+  <section data-testid="work-item-due-dates">
     <div class="gl-flex gl-items-center gl-gap-3">
       <h3 :class="{ 'gl-sr-only': isEditing }" class="gl-heading-5 !gl-mb-0">
         {{ $options.i18n.dates }}
@@ -334,7 +335,7 @@ export default {
         >{{ __('Edit') }}</gl-button
       >
     </div>
-    <fieldset v-if="!isEditing" class="gl-mt-2 gl-flex gl-gap-5">
+    <fieldset v-if="!isEditing && shouldRollUp" class="gl-mt-2 gl-flex gl-gap-5">
       <gl-form-radio
         v-model="rollupType"
         value="fixed"
