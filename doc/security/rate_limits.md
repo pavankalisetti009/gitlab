@@ -190,7 +190,7 @@ The **rate limit** is 1,000 notifications per 24 hours per project or group per 
 
 {{< history >}}
 
-- [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/439101) in GitLab 17.6.
+- Introduced in GitLab 17.6.
 
 {{< /history >}}
 
