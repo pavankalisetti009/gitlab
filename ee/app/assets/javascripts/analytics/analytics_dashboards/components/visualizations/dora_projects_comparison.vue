@@ -36,7 +36,7 @@ export default {
     const excludedProjectText = n__(
       'Excluding %d project with no DORA metrics.',
       'Excluding %d projects with no DORA metrics.',
-      this.data.projects.length - this.filteredProjects.length,
+      this.data.count - this.filteredProjects.length,
     );
     this.$emit('showTooltip', { description: `${shownProjectText} ${excludedProjectText}` });
   },

@@ -12,6 +12,7 @@ import {
 } from 'ee/analytics/dashboards/constants';
 import { percentChange } from 'ee/analytics/dashboards/utils';
 import DoraMetricsByProjectQuery from 'ee/analytics/dashboards/graphql/dora_metrics_by_project.query.graphql';
+import DoraMetricsByProjectLegacyQuery from 'ee/analytics/dashboards/graphql/dora_metrics_by_project_legacy.query.graphql';
 import { defaultClient } from '../graphql/client';
 
 const calculateTrends = (previous, current) =>
@@ -27,9 +28,12 @@ const fetchAllProjects = async (params) => {
   const {
     data: {
       group: {
-        projects: {
-          nodes,
-          pageInfo: { endCursor, hasNextPage },
+        projects: { count },
+        dora: {
+          projects: {
+            nodes,
+            pageInfo: { endCursor, hasNextPage },
+          },
         },
       },
     },
@@ -42,18 +46,60 @@ const fetchAllProjects = async (params) => {
   });
 
   if (hasNextPage) {
-    const nextNodes = await fetchAllProjects({
+    const { projects: nextNodes } = await fetchAllProjects({
       ...params,
       after: endCursor,
     });
-    return [...nodes, ...nextNodes];
+    return {
+      projects: [...nodes, ...nextNodes],
+      count,
+    };
   }
 
-  return nodes;
+  return {
+    projects: nodes,
+    count,
+  };
 };
 
-const formatData = (nodes) => ({
-  projects: nodes.map(
+const fetchAllProjectsLegacy = async (params) => {
+  const {
+    data: {
+      group: {
+        projects: {
+          count,
+          nodes,
+          pageInfo: { endCursor, hasNextPage },
+        },
+      },
+    },
+  } = await defaultClient.query({
+    query: DoraMetricsByProjectLegacyQuery,
+    variables: {
+      ...params,
+      interval: BUCKETING_INTERVAL_MONTHLY,
+    },
+  });
+
+  if (hasNextPage) {
+    const { projects: nextNodes } = await fetchAllProjectsLegacy({
+      ...params,
+      after: endCursor,
+    });
+    return {
+      projects: [...nodes, ...nextNodes],
+      count,
+    };
+  }
+
+  return {
+    projects: nodes,
+    count,
+  };
+};
+
+const formatProjects = (projects) =>
+  projects.map(
     ({
       id,
       name,
@@ -70,8 +116,7 @@ const formatData = (nodes) => ({
       trends: calculateTrends(pastMetrics, currentMetrics),
       ...currentMetrics,
     }),
-  ),
-});
+  );
 
 export default async function fetch({ namespace, isProject, setAlerts }) {
   if (isProject) {
@@ -88,11 +133,18 @@ export default async function fetch({ namespace, isProject, setAlerts }) {
   const endDate = nDaysBefore(thisMonth, 1);
   const startDate = nMonthsBefore(thisMonth, 2);
 
-  const projects = await fetchAllProjects({
+  const fetchFunc = gon.features?.doraProjectsComparisonSubgroups
+    ? fetchAllProjects
+    : fetchAllProjectsLegacy;
+
+  const { projects, count } = await fetchFunc({
     startDate: toISODateFormat(startDate),
     endDate: toISODateFormat(endDate),
     fullPath: namespace,
   });
 
-  return formatData(projects);
+  return {
+    projects: formatProjects(projects),
+    count,
+  };
 }
