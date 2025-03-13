@@ -118,8 +118,6 @@ module EE
       delegate :enable_auto_assign_gitlab_duo_pro_seats, :enable_auto_assign_gitlab_duo_pro_seats=, :enable_auto_assign_gitlab_duo_pro_seats_human_readable, :enable_auto_assign_gitlab_duo_pro_seats_human_readable=, to: :namespace_settings, allow_nil: true
 
       delegate :extended_grat_expiry_webhooks_execute, :extended_grat_expiry_webhooks_execute=, to: :namespace_settings
-      delegate :require_dpop_for_manage_api_endpoints, :require_dpop_for_manage_api_endpoints=, to: :namespace_settings
-      delegate :require_dpop_for_manage_api_endpoints?, to: :namespace_settings
 
       # Use +checked_file_template_project+ instead, which implements important
       # visibility checks
