@@ -871,8 +871,7 @@ module EE
       triggered = super
 
       if group && feature_available?(:group_webhooks)
-        if ::Feature.enabled?(:extended_expiry_webhook_execution_setting, self.namespace) &&
-            scope == :resource_access_token_hooks &&
+        if scope == :resource_access_token_hooks &&
             data[:interval] != :seven_days
           triggered.add_hooks(group_webhooks_including_extended_token_expiry)
         else

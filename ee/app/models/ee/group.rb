@@ -825,8 +825,7 @@ module EE
       # seven_days interval but we have a setting to allow webhook execution
       # for thirty_days and sixty_days_plus interval too.
       is_extended_expiry_webhook = hooks_scope == :resource_access_token_hooks &&
-        data[:interval] != :seven_days &&
-        ::Feature.enabled?(:extended_expiry_webhook_execution_setting, self)
+        data[:interval] != :seven_days
 
       group_hooks = if is_extended_expiry_webhook
                       GroupHook.where(group_id: groups_for_extended_webhook_execution_on_token_expiry)
@@ -1119,8 +1118,6 @@ module EE
     end
 
     def groups_for_extended_webhook_execution_on_token_expiry
-      return Group.none unless ::Feature.enabled?(:extended_expiry_webhook_execution_setting, self)
-
       self_and_ancestors
         .joins(:namespace_settings)
         .where(namespace_settings: { extended_grat_expiry_webhooks_execute: true })
