@@ -4,6 +4,11 @@ import ScheduleForm from 'ee/security_orchestration/components/policy_editor/pip
 import BranchSelection from 'ee/security_orchestration/components/policy_editor/scan_result/rule/branch_selection.vue';
 import TimezoneDropdown from '~/vue_shared/components/timezone_dropdown/timezone_dropdown.vue';
 
+jest.mock('ee/security_orchestration/components/policy_editor/utils', () => ({
+  ...jest.requireActual('ee/security_orchestration/components/policy_editor/utils'),
+  getHostname: jest.fn().mockReturnValue('gitlab.example.com'),
+}));
+
 describe('ScheduleForm', () => {
   let wrapper;
   const defaultSchedule = {
@@ -67,16 +72,18 @@ describe('ScheduleForm', () => {
       });
     });
 
-    it('renders the timezone dropdown', () => {
-      createComponent();
-      const timezoneDropdown = findTimezoneDropdown();
-      expect(timezoneDropdown.exists()).toBe(true);
-      expect(timezoneDropdown.props()).toMatchObject({
-        timezoneData: mockTimezones,
-        value: 'America/New_York',
-        headerText: 'Select timezone',
+    describe('timezone dropdown', () => {
+      it('renders the timezone dropdown', () => {
+        createComponent();
+        const timezoneDropdown = findTimezoneDropdown();
+        expect(timezoneDropdown.exists()).toBe(true);
+        expect(timezoneDropdown.props()).toMatchObject({
+          timezoneData: mockTimezones,
+          value: 'America/New_York',
+          headerText: 'Select timezone',
+        });
+        expect(timezoneDropdown.attributes('title')).toBe('on gitlab.example.com');
       });
-      expect(timezoneDropdown.attributes('title')).toBe(`on ${window.location.host}`);
     });
   });
 

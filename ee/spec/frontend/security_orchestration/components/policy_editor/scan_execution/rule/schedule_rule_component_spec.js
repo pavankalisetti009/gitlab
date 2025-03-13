@@ -15,6 +15,11 @@ import {
 import { CRON_DEFAULT_TIME } from 'ee/security_orchestration/components/policy_editor/scan_execution/lib';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 
+jest.mock('ee/security_orchestration/components/policy_editor/utils', () => ({
+  ...jest.requireActual('ee/security_orchestration/components/policy_editor/utils'),
+  getHostname: jest.fn().mockReturnValue('gitlab.example.com'),
+}));
+
 describe('ScheduleRuleComponent', () => {
   let wrapper;
   const ruleLabel = 'ScanExecutionPolicy|if';
@@ -195,18 +200,18 @@ describe('ScheduleRuleComponent', () => {
     });
 
     it('should display label for branch scope with host name', () => {
-      expect(findTimezoneLabel().text()).toBe(`on ${window.location.host}`);
+      expect(findTimezoneLabel().text()).toBe('on gitlab.example.com');
     });
 
     it('should display specific label for agent scope', async () => {
       findScheduleRuleScopeDropDown().vm.$emit('select', SCAN_EXECUTION_RULE_SCOPE_AGENT_KEY);
       await nextTick();
 
-      expect(findTimezoneLabel().text()).toBe(`on the Kubernetes agent pod`);
+      expect(findTimezoneLabel().text()).toBe('on the Kubernetes agent pod');
     });
 
     it('should display correct tooltip for branch scope with host name', () => {
-      expect(findTimezoneDropdown().attributes('title')).toBe(`${window.location.host}'s timezone`);
+      expect(findTimezoneDropdown().attributes('title')).toBe("gitlab.example.com's timezone");
     });
 
     it('should display specific tooltip for agent scope', async () => {

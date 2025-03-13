@@ -1,7 +1,7 @@
 import { intersection, isNumber, uniqBy, isEmpty } from 'lodash';
 import { isValidCron } from 'cron-validator';
 import { safeDump } from 'js-yaml';
-import { sprintf, s__ } from '~/locale';
+import { sprintf, s__, __ } from '~/locale';
 import { joinPaths, visitUrl } from '~/lib/utils/url_utility';
 import createPolicyProjectAsync from 'ee/security_orchestration/graphql/mutations/create_policy_project_async.mutation.graphql';
 import createPolicy from 'ee/security_orchestration/graphql/mutations/create_policy.mutation.graphql';
@@ -799,3 +799,5 @@ export const parseExceptionsStringToItems = (items = []) => {
     parsedWithErrorsExceptions,
   };
 };
+
+export const getHostname = () => window?.location?.host || __('your GitLab instance');
