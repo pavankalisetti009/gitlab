@@ -13,6 +13,7 @@ import {
   MOCK_BASIC_GRAPHQL_DATA,
   MOCK_REPLICABLE_TYPE,
   MOCK_REPLICABLE_BASE_PATH,
+  MOCK_GRAPHQL_REGISTRY_CLASS,
 } from '../mock_data';
 
 Vue.use(Vuex);
@@ -20,13 +21,13 @@ Vue.use(Vuex);
 describe('GeoReplicableItem', () => {
   let wrapper;
   const mockReplicable = MOCK_BASIC_GRAPHQL_DATA[0];
+  const MOCK_NAME = `${MOCK_GRAPHQL_REGISTRY_CLASS}/${getIdFromGraphQLId(mockReplicable.id)}`;
 
   const actionSpies = {
     initiateReplicableAction: jest.fn(),
   };
 
   const defaultProps = {
-    name: mockReplicable.name,
     registryId: mockReplicable.id,
     modelRecordId: 11,
     syncStatus: mockReplicable.state,
@@ -49,7 +50,11 @@ describe('GeoReplicableItem', () => {
         ...defaultProps,
         ...props,
       },
-      provide: { replicableBasePath: MOCK_REPLICABLE_BASE_PATH, glFeatures: { ...featureFlags } },
+      provide: {
+        replicableBasePath: MOCK_REPLICABLE_BASE_PATH,
+        graphqlRegistryClass: MOCK_GRAPHQL_REGISTRY_CLASS,
+        glFeatures: { ...featureFlags },
+      },
     });
   };
 
@@ -97,8 +102,8 @@ describe('GeoReplicableItem', () => {
         createComponent(null, null, { geoReplicablesShowView: false });
       });
 
-      it('renders as plain text', () => {
-        expect(findReplicableItemNoLinkText().text()).toBe(mockReplicable.name);
+      it(`renders name as plain text ${MOCK_NAME}`, () => {
+        expect(findReplicableItemNoLinkText().text()).toBe(MOCK_NAME);
       });
 
       it('does not render a link', () => {
@@ -113,6 +118,10 @@ describe('GeoReplicableItem', () => {
 
       it('does not render as plain text', () => {
         expect(findReplicableItemNoLinkText().exists()).toBe(false);
+      });
+
+      it(`renders name as link ${MOCK_NAME}`, () => {
+        expect(findReplicableDetailsLink().text()).toBe(MOCK_NAME);
       });
 
       it('renders a link', () => {
@@ -133,7 +142,7 @@ describe('GeoReplicableItem', () => {
 
       expect(actionSpies.initiateReplicableAction).toHaveBeenCalledWith(expect.any(Object), {
         registryId: defaultProps.registryId,
-        name: defaultProps.name,
+        name: MOCK_NAME,
         action: ACTION_TYPES.RESYNC,
       });
     });
@@ -149,7 +158,7 @@ describe('GeoReplicableItem', () => {
 
       expect(actionSpies.initiateReplicableAction).toHaveBeenCalledWith(expect.any(Object), {
         registryId: defaultProps.registryId,
-        name: defaultProps.name,
+        name: MOCK_NAME,
         action: ACTION_TYPES.REVERIFY,
       });
     });

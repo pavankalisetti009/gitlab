@@ -16,9 +16,6 @@ export default {
   },
   methods: {
     ...mapActions(['fetchReplicableItems']),
-    buildName(item) {
-      return item.name ? item.name : item.id;
-    },
   },
   NEXT,
   PREV,
@@ -30,7 +27,6 @@ export default {
     <geo-replicable-item
       v-for="item in replicableItems"
       :key="item.id"
-      :name="buildName(item)"
       :registry-id="item.id"
       :model-record-id="item.modelRecordId"
       :sync-status="item.state.toLowerCase()"
