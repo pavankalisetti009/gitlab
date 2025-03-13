@@ -17,7 +17,10 @@ describe('DoraProjectsComparison Visualization', () => {
 
   beforeEach(() => {
     createWrapper({
-      data: { projects: mockUnfilteredProjectsDoraMetrics },
+      data: {
+        count: mockUnfilteredProjectsDoraMetrics.length,
+        projects: mockUnfilteredProjectsDoraMetrics,
+      },
     });
   });
 

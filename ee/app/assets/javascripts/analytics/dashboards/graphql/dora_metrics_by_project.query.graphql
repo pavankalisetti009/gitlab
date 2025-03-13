@@ -9,19 +9,24 @@ query doraMetricsByProjectQuery(
 ) {
   group(fullPath: $fullPath) {
     id
-    projects(after: $after) {
-      pageInfo {
-        endCursor
-        hasNextPage
-      }
-      nodes {
-        id
-        name
-        avatarUrl
-        webUrl
-        dora {
-          metrics(startDate: $startDate, endDate: $endDate, interval: $interval) {
-            ...DoraMetricItem
+    projects(includeSubgroups: true) {
+      count
+    }
+    dora {
+      projects(after: $after, startDate: $startDate, endDate: $endDate, includeSubgroups: true) {
+        pageInfo {
+          endCursor
+          hasNextPage
+        }
+        nodes {
+          id
+          name
+          avatarUrl
+          webUrl
+          dora {
+            metrics(startDate: $startDate, endDate: $endDate, interval: $interval) {
+              ...DoraMetricItem
+            }
           }
         }
       }
