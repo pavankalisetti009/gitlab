@@ -241,7 +241,8 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
             provider: :amazon_q,
             name: :amazon_q,
             role_arn: 'role-arn'
-          }
+          },
+          prompt_version: "^1.0.0"
         }
       end
 
@@ -267,7 +268,8 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
         {
           stream: true,
           inputs: inputs,
-          model_metadata: model_metadata
+          model_metadata: model_metadata,
+          prompt_version: "^1.0.0"
         }
       end
 
@@ -324,6 +326,14 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
           let(:model_metadata) do
             { api_key: model_api_key, endpoint: model_endpoint, name: "mistral", provider: :openai,
               identifier: model_identifier }
+          end
+
+          it 'fetches the right prompt version' do
+            expect(Gitlab::Llm::PromptVersions).to receive(:version_for_prompt).with('chat/explain_code/mistral')
+                                                                               .and_call_original
+
+            expect(ai_client).to receive(:stream).with(url: url, body: body).and_return(response)
+            expect(request).to eq(response)
           end
 
           it_behaves_like 'performing request to the AI Gateway'

@@ -174,6 +174,74 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
     end
   end
 
+  describe '#complete_prompt' do
+    let(:prompt_version) { nil }
+    let(:model_metadata) { nil }
+
+    subject(:complete_prompt) do
+      ai_client.complete_prompt(
+        base_url: ::Gitlab::AiGateway.url,
+        prompt_name: 'test_prompt_name',
+        inputs: { 'test' => 'Hello' },
+        timeout: 10,
+        prompt_version: prompt_version,
+        model_metadata: model_metadata
+      )
+    end
+
+    it 'calls complete with the right parameters' do
+      expected_body = {
+        'inputs' => { 'test' => 'Hello' },
+        'prompt_version' => '^3.0.0'
+      }
+      expected_url = "#{::Gitlab::AiGateway.url}/v1/prompts/test_prompt_name"
+
+      expect(::Gitlab::Llm::PromptVersions).to receive(:version_for_prompt).with('test_prompt_name/base')
+                                                                         .and_return("^3.0.0")
+      expect(ai_client).to receive(:complete).with(url: expected_url, body: expected_body, timeout: 10)
+
+      complete_prompt
+    end
+
+    context 'with explicit prompt version' do
+      let(:prompt_version) { '5.0.0' }
+
+      it 'uses the version passed as argument' do
+        expect(::Gitlab::Llm::PromptVersions).not_to receive(:version_for_prompt)
+
+        expected_body = {
+          'inputs' => { 'test' => 'Hello' },
+          'prompt_version' => '5.0.0'
+        }
+        expected_url = "#{::Gitlab::AiGateway.url}/v1/prompts/test_prompt_name"
+
+        expect(ai_client).to receive(:complete).with(url: expected_url, body: expected_body, timeout: 10)
+
+        complete_prompt
+      end
+    end
+
+    context 'with model metadata' do
+      let(:model_metadata) { { name: 'mistral' } }
+
+      it 'fetches the right prompt version based on the metadata' do
+        expected_body = {
+          'inputs' => { 'test' => 'Hello' },
+          'prompt_version' => '^3.0.0',
+          'model_metadata' => model_metadata
+        }
+        expected_url = "#{::Gitlab::AiGateway.url}/v1/prompts/test_prompt_name/mistral"
+
+        expect(::Gitlab::Llm::PromptVersions).to receive(:version_for_prompt).with('test_prompt_name/mistral')
+                                                                             .and_return("^3.0.0")
+
+        expect(ai_client).to receive(:complete).with(url: expected_url, body: expected_body, timeout: 10)
+
+        complete_prompt
+      end
+    end
+  end
+
   describe '#stream' do
     subject { ai_client.stream(url: url, body: expected_body) }
 

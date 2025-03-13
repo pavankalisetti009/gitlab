@@ -46,9 +46,12 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::CategorizeQuestion, feature_
       service_name: :duo_chat,
       tracking_context: tracking_context
     ).and_return(ai_client)
-    expect(ai_client).to receive(:complete).with(
-      url: "#{Gitlab::AiGateway.url}/v1/prompts/categorize_question",
-      body: { 'inputs' => inputs }
+    expect(ai_client).to receive(:complete_prompt).with(
+      base_url: Gitlab::AiGateway.url,
+      prompt_name: :categorize_question,
+      inputs: inputs,
+      model_metadata: nil,
+      prompt_version: nil
     ).and_return(ai_response)
 
     expect(::Gitlab::Llm::GraphqlSubscriptionResponseService).to receive(:new).and_call_original

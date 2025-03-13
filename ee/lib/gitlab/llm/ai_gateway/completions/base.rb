@@ -59,19 +59,14 @@ module Gitlab
           end
 
           def perform_ai_gateway_request!
-            ai_client = ::Gitlab::Llm::AiGateway::Client.new(user, service_name: service_name,
-              tracking_context: tracking_context)
-
-            request_body = { 'inputs' => inputs }
-            request_body['prompt_version'] = prompt_version unless prompt_version.nil?
-
-            model_metadata_params = ::Gitlab::Llm::AiGateway::ModelMetadata.new.to_params
-            request_body['model_metadata'] = model_metadata_params if model_metadata_params.present?
-
-            ai_client.complete(
-              url: "#{::Gitlab::AiGateway.url}/v1/prompts/#{prompt_message.ai_action}",
-              body: request_body
-            )
+            ::Gitlab::Llm::AiGateway::Client.new(user, service_name: service_name, tracking_context: tracking_context)
+              .complete_prompt(
+                base_url: ::Gitlab::AiGateway.url,
+                prompt_name: prompt_message.ai_action,
+                inputs: inputs,
+                prompt_version: prompt_version,
+                model_metadata: ::Gitlab::Llm::AiGateway::ModelMetadata.new.to_params
+              )
           end
 
           def service_name

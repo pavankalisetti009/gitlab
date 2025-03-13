@@ -32,10 +32,13 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeNewMergeRequest, fe
 
         expect_next_instance_of(Gitlab::Llm::AiGateway::Client) do |client|
           expect(client)
-            .to receive(:complete)
+            .to receive(:complete_prompt)
             .with(
-              url: "#{Gitlab::AiGateway.url}/v1/prompts/summarize_new_merge_request",
-              body: { 'inputs' => { extracted_diff: extracted_diff } }
+              base_url: Gitlab::AiGateway.url,
+              prompt_name: :summarize_new_merge_request,
+              inputs: { extracted_diff: extracted_diff },
+              model_metadata: nil,
+              prompt_version: nil
             )
             .and_return(example_response)
         end
@@ -108,10 +111,13 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeNewMergeRequest, fe
 
         expect_next_instance_of(Gitlab::Llm::AiGateway::Client) do |client|
           expect(client)
-            .to receive(:complete)
+            .to receive(:complete_prompt)
             .with(
-              url: "#{Gitlab::AiGateway.url}/v1/prompts/summarize_new_merge_request",
-              body: { 'inputs' => { extracted_diff: extracted_diff }, 'prompt_version' => '2.0.0' }
+              base_url: Gitlab::AiGateway.url,
+              prompt_name: :summarize_new_merge_request,
+              inputs: { extracted_diff: extracted_diff },
+              model_metadata: nil,
+              prompt_version: "2.0.0"
             )
             .and_return(example_response)
         end

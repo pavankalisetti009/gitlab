@@ -51,9 +51,13 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::Base, feature_category: :ai_
     shared_examples 'executing successfully' do
       it 'executes the response service and returns its result' do
         if http_response
-          expect(client).to receive(:complete).with(url: "#{Gitlab::AiGateway.url}/v1/prompts/#{ai_action}",
-            body: { 'inputs' => inputs })
-            .and_return(http_response)
+          expect(client).to receive(:complete_prompt).with(
+            base_url: ::Gitlab::AiGateway.url,
+            prompt_name: ai_action,
+            inputs: inputs,
+            prompt_version: nil,
+            model_metadata: nil
+          ).and_return(http_response)
         end
 
         expect(response_modifier_class).to receive(:new).with(processed_response)
@@ -130,9 +134,12 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::Base, feature_category: :ai_
       end
 
       it 'includes prompt_version in the request body' do
-        expect(client).to receive(:complete).with(
-          url: "#{Gitlab::AiGateway.url}/v1/prompts/#{ai_action}",
-          body: { 'inputs' => inputs, 'prompt_version' => '2.0.0' }
+        expect(client).to receive(:complete_prompt).with(
+          base_url: ::Gitlab::AiGateway.url,
+          prompt_name: ai_action,
+          inputs: inputs,
+          prompt_version: '2.0.0',
+          model_metadata: nil
         ).and_return(http_response)
 
         expect(response_modifier_class).to receive(:new).with(processed_response)
@@ -158,9 +165,12 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::Base, feature_category: :ai_
           expect(instance).to receive(:to_params).and_return(params)
         end
 
-        expect(client).to receive(:complete).with(
-          url: "#{Gitlab::AiGateway.url}/v1/prompts/#{ai_action}",
-          body: { 'inputs' => inputs, 'model_metadata' => params }
+        expect(client).to receive(:complete_prompt).with(
+          base_url: ::Gitlab::AiGateway.url,
+          prompt_name: ai_action,
+          inputs: inputs,
+          prompt_version: nil,
+          model_metadata: params
         ).and_return(http_response)
 
         expect(response_modifier_class).to receive(:new).with(processed_response)

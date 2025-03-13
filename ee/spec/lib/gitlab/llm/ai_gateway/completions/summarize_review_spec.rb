@@ -46,10 +46,13 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeReview, feature_cat
         it 'publishes the content from the AI response' do
           expect_next_instance_of(Gitlab::Llm::AiGateway::Client) do |client|
             allow(client)
-              .to receive(:complete)
+              .to receive(:complete_prompt)
               .with(
-                url: "#{Gitlab::AiGateway.url}/v1/prompts/summarize_review",
-                body: { 'inputs' => { draft_notes_content: draft_notes_content } }
+                base_url: Gitlab::AiGateway.url,
+                prompt_name: :summarize_review,
+                inputs: { draft_notes_content: draft_notes_content },
+                model_metadata: nil,
+                prompt_version: nil
               )
               .and_return(example_response)
           end
@@ -85,10 +88,13 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeReview, feature_cat
         it 'includes prompt_version in the request' do
           expect_next_instance_of(Gitlab::Llm::AiGateway::Client) do |client|
             expect(client)
-              .to receive(:complete)
+              .to receive(:complete_prompt)
               .with(
-                url: "#{Gitlab::AiGateway.url}/v1/prompts/summarize_review",
-                body: { 'inputs' => { draft_notes_content: draft_notes_content }, 'prompt_version' => '2.0.0' }
+                base_url: Gitlab::AiGateway.url,
+                prompt_name: :summarize_review,
+                inputs: { draft_notes_content: draft_notes_content },
+                model_metadata: nil,
+                prompt_version: "2.0.0"
               )
               .and_return(example_response)
           end
