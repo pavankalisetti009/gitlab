@@ -10,10 +10,12 @@ RSpec.describe Ai::CodeSuggestionEventsFinder, :click_house, feature_category: :
   let_it_be(:user_contributor_2) { create(:user) }
   let_it_be(:user_contributor_only_on_ch) { create(:user) }
   let_it_be(:user_not_contributor) { create(:user) }
-  let_it_be(:code_suggestion_event_1) { create(:code_suggestion_event, :shown, user: user_contributor_1) }
-  let_it_be(:code_suggestion_event_2) { create(:code_suggestion_event, :shown, user: user_contributor_2) }
-  let_it_be(:code_suggestion_event_3) { create(:code_suggestion_event, :accepted, user: user_not_contributor) }
-  let_it_be(:code_suggestion_event_4) { create(:code_suggestion_event, :accepted, user: user_contributor_only_on_ch) }
+  let_it_be(:code_suggestion_event_1) { create(:ai_code_suggestion_event, :shown, user: user_contributor_1) }
+  let_it_be(:code_suggestion_event_2) { create(:ai_code_suggestion_event, :shown, user: user_contributor_2) }
+  let_it_be(:code_suggestion_event_3) { create(:ai_code_suggestion_event, :accepted, user: user_not_contributor) }
+  let_it_be(:code_suggestion_event_4) do
+    create(:ai_code_suggestion_event, :accepted, user: user_contributor_only_on_ch)
+  end
 
   subject(:results) { described_class.new(user, resource: group).execute }
 

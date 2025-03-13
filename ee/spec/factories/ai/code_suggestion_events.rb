@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 FactoryBot.define do
-  factory :code_suggestion_event, class: '::Ai::CodeSuggestionEvent' do
+  factory :ai_code_suggestion_event, class: '::Ai::CodeSuggestionEvent' do
     event { 'code_suggestion_shown_in_ide' }
     user
     payload { { language: 'ruby', suggestion_size: 1, unique_tracking_id: SecureRandom.hex.slice(0, 20) } }
