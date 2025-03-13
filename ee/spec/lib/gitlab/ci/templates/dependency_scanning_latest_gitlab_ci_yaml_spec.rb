@@ -8,6 +8,7 @@ RSpec.shared_examples 'language detection' do
   using RSpec::Parameterized::TableSyntax
 
   where(:case_name, :files, :include_build_names) do
+    'Dart'                           | { 'pubspec.lock' => '' }                  | %w[dependency-scanning]
     'Go'                             | { 'go.sum' => '' }                        | %w[gemnasium-dependency_scanning]
     'Java'                           | { 'pom.xml' => '' }                       | %w[gemnasium-maven-dependency_scanning]
     'Java Gradle'                    | { 'build.gradle' => '' }                  | %w[gemnasium-maven-dependency_scanning]
