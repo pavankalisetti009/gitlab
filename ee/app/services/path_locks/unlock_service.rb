@@ -7,7 +7,7 @@ module PathLocks
     def execute(path_lock)
       return unless path_lock
 
-      raise AccessDenied, _('You have no permissions') unless can?(current_user, :admin_path_locks, path_lock)
+      raise AccessDenied, _('You have no permissions') unless can?(current_user, :destroy_path_lock, path_lock)
 
       path = path_lock.path
       path_lock.destroy
