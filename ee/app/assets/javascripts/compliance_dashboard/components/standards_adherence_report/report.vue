@@ -1,5 +1,5 @@
 <script>
-import { GlSprintf, GlAlert, GlLink } from '@gitlab/ui';
+import { GlSprintf, GlAlert, GlLink, GlToggle } from '@gitlab/ui';
 import Tracking from '~/tracking';
 import {
   FEEDBACK_ISSUE_URL,
@@ -7,11 +7,14 @@ import {
 } from 'ee/compliance_dashboard/constants';
 import { s__ } from '~/locale';
 import ComplianceStandardsAdherenceTable from './standards_adherence_table.vue';
+import ComplianceStandardsAdherenceTableV2 from './standards_adherence_table_v2.vue';
 
 export default {
   name: 'ComplianceStandardsAdherenceReport',
   components: {
     ComplianceStandardsAdherenceTable,
+    ComplianceStandardsAdherenceTableV2,
+    GlToggle,
     GlAlert,
     GlLink,
     GlSprintf,
@@ -33,6 +36,7 @@ export default {
   data() {
     return {
       showBanner: this.adherenceV2Enabled,
+      showNewReport: this.adherenceV2Enabled,
     };
   },
   mounted() {
@@ -40,9 +44,18 @@ export default {
       property: this.activeComplianceFrameworks ? 'with_active_compliance_frameworks' : '',
     });
   },
+  methods: {
+    updateReportVersion(value) {
+      this.track('toggle_standards_adherence_report_version');
+      this.$emit('changed', 'report_version', {
+        showNewReport: value,
+      });
+      this.showNewReport = !this.showNewReport;
+    },
+  },
   i18n: {
     feedbackTitle: s__(
-      "AdherenceReport|We've updated the Adherence Report with new features to enhance your compliance workflow.",
+      "AdherenceReport|We've updated the adherence report with new features to enhance your compliance workflow.",
     ),
     learnMoreDocsText: s__(
       'AdherenceReport|Learn more about the changes in our %{linkStart}documentation%{linkEnd}.',
@@ -50,6 +63,7 @@ export default {
     feedbackText: s__(
       'AdherenceReport|Have questions or thoughts on the new improvements we made? %{linkStart}Please provide feedback on your experience%{linkEnd}.',
     ),
+    toggleLabel: s__('AdherenceReport|Show old report'),
   },
   FEEDBACK_ISSUE_URL,
   STANDARDS_ADHERENCE_DOCS_URL,
@@ -74,7 +88,25 @@ export default {
           </template>
         </gl-sprintf>
       </div>
+      <div class="gl-mt-4 gl-flex gl-items-center">
+        <span class="gl-mr-3">{{ $options.i18n.toggleText }}</span>
+        <gl-toggle
+          :value="!showNewReport"
+          :label="$options.i18n.toggleLabel"
+          label-position="left"
+          @change="updateReportVersion"
+        />
+      </div>
     </gl-alert>
-    <compliance-standards-adherence-table :group-path="groupPath" :project-path="projectPath" />
+    <compliance-standards-adherence-table-v2
+      v-if="showNewReport"
+      :group-path="groupPath"
+      :project-path="projectPath"
+    />
+    <compliance-standards-adherence-table
+      v-else
+      :group-path="groupPath"
+      :project-path="projectPath"
+    />
   </div>
 </template>
