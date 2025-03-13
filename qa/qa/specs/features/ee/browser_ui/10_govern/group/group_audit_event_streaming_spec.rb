@@ -8,7 +8,11 @@ module QA
     :requires_admin,
     :skip_live_env, # We need to enable local requests to use a local mock streaming server
     # and we can't create top-level groups in the paid tier on production
-    product_group: :compliance
+    product_group: :compliance,
+    feature_flag: {
+      name: 'use_consolidated_audit_event_stream_dest_api',
+      scope: :group
+    }
   ) do
     describe 'Group audit event streaming' do
       include_context 'with streamed events mock setup'
@@ -16,6 +20,10 @@ module QA
       let(:root_group) { create(:sandbox) }
 
       before(:context) do
+        # TDOD remove `Runtime::Feature.disable` once we finish implementing the feature
+        # https://gitlab.com/gitlab-org/gitlab/-/issues/442447
+        # Because the job gdk-instance-ff-inverse runs this with the feature flag enabled
+        Runtime::Feature.disable(:use_consolidated_audit_event_stream_dest_api)
         Runtime::ApplicationSettings.enable_local_requests
       end
 

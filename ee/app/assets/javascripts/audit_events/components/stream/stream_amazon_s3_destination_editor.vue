@@ -42,10 +42,10 @@ export default {
   data() {
     return {
       name: this.item.name,
-      accessKeyXid: this.item.accessKeyXid,
+      accessKeyXid: this.item.accessKeyXid || this.item?.config?.accessKeyXid,
       secretAccessKey: null,
-      awsRegion: this.item.awsRegion,
-      bucketName: this.item.bucketName,
+      awsRegion: this.item.awsRegion || this.item?.config?.awsRegion,
+      bucketName: this.item.bucketName || this.item?.config?.bucketName,
       errors: [],
       loading: false,
       addingSecretAccessKey: false,

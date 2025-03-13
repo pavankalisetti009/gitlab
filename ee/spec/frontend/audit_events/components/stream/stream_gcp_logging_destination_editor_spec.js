@@ -17,6 +17,7 @@ import {
   gcpLoggingDestinationCreateMutationPopulator,
   gcpLoggingDestinationUpdateMutationPopulator,
   groupPath,
+  mockConsolidatedAPIGcpLoggingDestinations,
   mockGcpLoggingDestinations,
   instanceGroupPath,
   mockInstanceGcpLoggingDestinations,
@@ -34,6 +35,7 @@ describe('StreamDestinationEditor', () => {
   const createComponent = ({
     mountFn = mountExtended,
     props = {},
+    provide = {},
     apolloHandlers = [
       [
         googleCloudLoggingConfigurationCreate,
@@ -46,6 +48,7 @@ describe('StreamDestinationEditor', () => {
       attachTo: document.body,
       provide: {
         groupPath: groupPathProvide,
+        ...provide,
       },
       propsData: {
         ...props,
@@ -77,6 +80,29 @@ describe('StreamDestinationEditor', () => {
 
   afterEach(() => {
     createAlert.mockClear();
+  });
+
+  describe('when useConsolidatedAuditEventStreamDestApi is enabled', () => {
+    const item = mockConsolidatedAPIGcpLoggingDestinations[0];
+
+    beforeEach(() => {
+      createComponent({
+        props: { item },
+        provide: {
+          glFeatures: { useConsolidatedAuditEventStreamDestApi: true },
+        },
+      });
+    });
+
+    it('renders the destination correctly', () => {
+      expect(findName().element.value).toBe('GCP Destination 1');
+      expect(findProjectId().element.value).toBe('google-project-id-name');
+      expect(findClientEmailUrl().element.value).toBe('clientEmail@example.com');
+      expect(findLogId().element.value).toBe('gcp-log-id-name');
+      expect(findPrivateKey().exists()).toBe(false);
+      expect(findPrivateKeyAddButton().exists()).toBe(true);
+      expect(findPrivateKeyCancelButton().exists()).toBe(false);
+    });
   });
 
   describe('Group GCP Logging StreamDestinationEditor', () => {
@@ -229,17 +255,13 @@ describe('StreamDestinationEditor', () => {
         });
 
         it('the destination fields', () => {
-          expect(findName().exists()).toBe(true);
           expect(findName().element.value).toBe(mockGcpLoggingDestinations[0].name);
-          expect(findProjectId().exists()).toBe(true);
           expect(findProjectId().element.value).toBe(
             mockGcpLoggingDestinations[0].googleProjectIdName,
           );
-          expect(findClientEmailUrl().exists()).toBe(true);
           expect(findClientEmailUrl().element.value).toBe(
             mockGcpLoggingDestinations[0].clientEmail,
           );
-          expect(findLogId().exists()).toBe(true);
           expect(findLogId().element.value).toBe(mockGcpLoggingDestinations[0].logIdName);
           expect(findPrivateKey().exists()).toBe(false);
           expect(findPrivateKeyAddButton().exists()).toBe(true);

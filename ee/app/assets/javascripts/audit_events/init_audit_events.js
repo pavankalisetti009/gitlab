@@ -40,6 +40,7 @@ export default (selector) => {
 
   return new Vue({
     el,
+    name: 'AuditEventsView',
     store,
     provide: {
       events: JSON.parse(events) || [],

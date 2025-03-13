@@ -18,6 +18,7 @@ import {
   amazonS3DestinationUpdateMutationPopulator,
   groupPath,
   instanceGroupPath,
+  mockConsolidatedAPIAmazonS3Destinations,
   mockAmazonS3Destinations,
   mockInstanceAmazonS3Destinations,
   instanceAmazonS3DestinationCreateMutationPopulator,
@@ -34,6 +35,7 @@ describe('StreamDestinationEditor', () => {
   const createComponent = ({
     mountFn = mountExtended,
     props = {},
+    provide = {},
     apolloHandlers = [
       [
         amazonS3ConfigurationCreate,
@@ -46,6 +48,7 @@ describe('StreamDestinationEditor', () => {
       attachTo: document.body,
       provide: {
         groupPath: groupPathProvide,
+        ...provide,
       },
       propsData: {
         ...props,
@@ -78,6 +81,29 @@ describe('StreamDestinationEditor', () => {
 
   afterEach(() => {
     createAlert.mockClear();
+  });
+
+  describe('when useConsolidatedAuditEventStreamDestApi is enabled', () => {
+    const item = mockConsolidatedAPIAmazonS3Destinations[0];
+
+    beforeEach(() => {
+      createComponent({
+        props: { item },
+        provide: {
+          glFeatures: { useConsolidatedAuditEventStreamDestApi: true },
+        },
+      });
+    });
+
+    it('renders the destination correctly', () => {
+      expect(findName().element.value).toBe('AWS Destination 1');
+      expect(findAccessKeyXid().element.value).toBe('myAwsAccessKey_needs_16_chars_min');
+      expect(findAwsRegion().element.value).toBe('us-test-1');
+      expect(findBucketName().element.value).toBe('bucket-name');
+      expect(findSecretAccessKey().exists()).toBe(false);
+      expect(findSecretAccessKeyAddButton().exists()).toBe(true);
+      expect(findSecretAccessKeyCancelButton().exists()).toBe(false);
+    });
   });
 
   describe('Group amazon S3 StreamDestinationEditor', () => {
@@ -228,13 +254,9 @@ describe('StreamDestinationEditor', () => {
         });
 
         it('the destination fields', () => {
-          expect(findName().exists()).toBe(true);
           expect(findName().element.value).toBe(mockAmazonS3Destinations[0].name);
-          expect(findAccessKeyXid().exists()).toBe(true);
           expect(findAccessKeyXid().element.value).toBe(mockAmazonS3Destinations[0].accessKeyXid);
-          expect(findAwsRegion().exists()).toBe(true);
           expect(findAwsRegion().element.value).toBe(mockAmazonS3Destinations[0].awsRegion);
-          expect(findBucketName().exists()).toBe(true);
           expect(findBucketName().element.value).toBe(mockAmazonS3Destinations[0].bucketName);
           expect(findSecretAccessKey().exists()).toBe(false);
           expect(findSecretAccessKeyAddButton().exists()).toBe(true);

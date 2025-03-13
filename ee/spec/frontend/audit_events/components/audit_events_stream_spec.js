@@ -2,9 +2,12 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlAlert, GlDisclosureDropdown, GlDisclosureDropdownItem, GlLoadingIcon } from '@gitlab/ui';
 import { createAlert } from '~/alert';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import groupStreamingDestinationsQuery from 'ee/audit_events/graphql/queries/get_group_streaming_destinations.query.graphql';
+import instanceStreamingDestinationsQuery from 'ee/audit_events/graphql/queries/get_instance_streaming_destinations.query.graphql';
 import externalDestinationsQuery from 'ee/audit_events/graphql/queries/get_external_destinations.query.graphql';
 import instanceExternalDestinationsQuery from 'ee/audit_events/graphql/queries/get_instance_external_destinations.query.graphql';
 import gcpLoggingDestinationsQuery from 'ee/audit_events/graphql/queries/get_google_cloud_logging_destinations.query.graphql';
@@ -24,8 +27,11 @@ import StreamAmazonS3DestinationEditor from 'ee/audit_events/components/stream/s
 import StreamItem from 'ee/audit_events/components/stream/stream_item.vue';
 import StreamEmptyState from 'ee/audit_events/components/stream/stream_empty_state.vue';
 import {
+  mockAllConsolidatedAPIDestinations,
   mockExternalDestinations,
   groupPath,
+  streamingDestinationDataPopulator,
+  instanceStreamingDestinationDataPopulator,
   destinationDataPopulator,
   mockInstanceExternalDestinations,
   instanceGroupPath,
@@ -38,12 +44,21 @@ import {
 } from '../mock_data';
 
 jest.mock('~/alert');
+jest.mock('~/sentry/sentry_browser_wrapper');
 Vue.use(VueApollo);
 
 describe('AuditEventsStream', () => {
   let wrapper;
   let providedGroupPath = groupPath;
 
+  const streamingDestinationsQuerySpy = jest
+    .fn()
+    .mockResolvedValue(streamingDestinationDataPopulator(mockAllConsolidatedAPIDestinations));
+  const instanceStreamingDestinationsQuerySpy = jest
+    .fn()
+    .mockResolvedValue(
+      instanceStreamingDestinationDataPopulator(mockAllConsolidatedAPIDestinations),
+    );
   const externalDestinationsQuerySpy = jest
     .fn()
     .mockResolvedValue(destinationDataPopulator(mockExternalDestinations));
@@ -54,12 +69,17 @@ describe('AuditEventsStream', () => {
     .fn()
     .mockResolvedValue(gcpLoggingDataPopulator(mockAmazonS3Destinations));
 
-  const createComponent = (mockApollo) => {
+  const defaultProvide = {
+    glFeatures: { useConsolidatedAuditEventStreamDestApi: false },
+  };
+
+  const createComponent = ({ apolloProvider, provide = defaultProvide } = {}) => {
     wrapper = mountExtended(AuditEventsStream, {
       provide: {
         groupPath: providedGroupPath,
+        ...provide,
       },
-      apolloProvider: mockApollo,
+      apolloProvider,
       stubs: {
         GlAlert: true,
         GlLoadingIcon: true,
@@ -99,12 +119,12 @@ describe('AuditEventsStream', () => {
     describe('when initialized', () => {
       it('should render the loading icon while waiting for data to be returned', () => {
         const destinationQuerySpy = jest.fn();
-        const mockApollo = createMockApollo([
+        const apolloProvider = createMockApollo([
           [externalDestinationsQuery, destinationQuerySpy],
           [gcpLoggingDestinationsQuery, destinationQuerySpy],
           [amazonS3DestinationsQuery, destinationQuerySpy],
         ]);
-        createComponent(mockApollo);
+        createComponent({ apolloProvider });
 
         expect(findLoadingIcon().exists()).toBe(true);
       });
@@ -113,12 +133,12 @@ describe('AuditEventsStream', () => {
         const destinationQuerySpy = jest.fn().mockImplementation(() => {
           return new Promise(() => {});
         });
-        const mockApollo = createMockApollo([
+        const apolloProvider = createMockApollo([
           [externalDestinationsQuery, destinationQuerySpy],
           [gcpLoggingDestinationsQuery, externalGcpLoggingQuerySpy],
           [amazonS3DestinationsQuery, externalAmazonS3QuerySpy],
         ]);
-        createComponent(mockApollo);
+        createComponent({ apolloProvider });
         await waitForPromises();
 
         expect(findLoadingIcon().exists()).toBe(true);
@@ -128,12 +148,12 @@ describe('AuditEventsStream', () => {
         const destinationQuerySpy = jest.fn().mockImplementation(() => {
           return new Promise(() => {});
         });
-        const mockApollo = createMockApollo([
+        const apolloProvider = createMockApollo([
           [externalDestinationsQuery, externalDestinationsQuerySpy],
           [gcpLoggingDestinationsQuery, destinationQuerySpy],
           [amazonS3DestinationsQuery, externalAmazonS3QuerySpy],
         ]);
-        createComponent(mockApollo);
+        createComponent({ apolloProvider });
         await waitForPromises();
 
         expect(findLoadingIcon().exists()).toBe(true);
@@ -143,12 +163,12 @@ describe('AuditEventsStream', () => {
         const destinationQuerySpy = jest.fn().mockImplementation(() => {
           return new Promise(() => {});
         });
-        const mockApollo = createMockApollo([
+        const apolloProvider = createMockApollo([
           [externalDestinationsQuery, destinationQuerySpy],
           [gcpLoggingDestinationsQuery, destinationQuerySpy],
           [amazonS3DestinationsQuery, destinationQuerySpy],
         ]);
-        createComponent(mockApollo);
+        createComponent({ apolloProvider });
         await waitForPromises();
 
         expect(findLoadingIcon().exists()).toBe(true);
@@ -158,12 +178,12 @@ describe('AuditEventsStream', () => {
         const destinationQuerySpy = jest.fn().mockResolvedValue(destinationDataPopulator([]));
         const gcpLoggingQuerySpy = jest.fn().mockResolvedValue(gcpLoggingDataPopulator([]));
         const amazonS3QuerySpy = jest.fn().mockResolvedValue(gcpLoggingDataPopulator([]));
-        const mockApollo = createMockApollo([
+        const apolloProvider = createMockApollo([
           [externalDestinationsQuery, destinationQuerySpy],
           [gcpLoggingDestinationsQuery, gcpLoggingQuerySpy],
           [amazonS3DestinationsQuery, amazonS3QuerySpy],
         ]);
-        createComponent(mockApollo);
+        createComponent({ apolloProvider });
         await waitForPromises();
 
         expect(findLoadingIcon().exists()).toBe(false);
@@ -172,8 +192,8 @@ describe('AuditEventsStream', () => {
 
       it('should report error when server error occurred', async () => {
         const destinationQuerySpy = jest.fn().mockRejectedValue({});
-        const mockApollo = createMockApollo([[externalDestinationsQuery, destinationQuerySpy]]);
-        createComponent(mockApollo);
+        const apolloProvider = createMockApollo([[externalDestinationsQuery, destinationQuerySpy]]);
+        createComponent({ apolloProvider });
         await waitForPromises();
 
         expect(findLoadingIcon().exists()).toBe(false);
@@ -185,11 +205,11 @@ describe('AuditEventsStream', () => {
 
     describe('when edit mode entered', () => {
       beforeEach(() => {
-        const mockApollo = createMockApollo([
+        const apolloProvider = createMockApollo([
           [externalDestinationsQuery, externalDestinationsQuerySpy],
           [gcpLoggingDestinationsQuery, externalGcpLoggingQuerySpy],
         ]);
-        createComponent(mockApollo);
+        createComponent({ apolloProvider });
 
         return waitForPromises();
       });
@@ -289,10 +309,10 @@ describe('AuditEventsStream', () => {
 
     describe('Streaming items', () => {
       beforeEach(() => {
-        const mockApollo = createMockApollo([
+        const apolloProvider = createMockApollo([
           [externalDestinationsQuery, externalDestinationsQuerySpy],
         ]);
-        createComponent(mockApollo);
+        createComponent({ apolloProvider });
 
         return waitForPromises();
       });
@@ -315,6 +335,60 @@ describe('AuditEventsStream', () => {
         await waitForPromises();
         expect(findStreamItems()).toHaveLength(currentLength - 1);
         expect(findSuccessMessage().text()).toBe(DELETE_STREAM_MESSAGE);
+      });
+
+      describe('when useConsolidatedAuditEventStreamDestApi is enabled', () => {
+        beforeEach(() => {
+          const apolloProvider = createMockApollo([
+            [groupStreamingDestinationsQuery, streamingDestinationsQuerySpy],
+          ]);
+          createComponent({
+            apolloProvider,
+            provide: {
+              glFeatures: { useConsolidatedAuditEventStreamDestApi: true },
+            },
+          });
+
+          return waitForPromises();
+        });
+
+        it('shows the items', () => {
+          expect(findStreamItems()).toHaveLength(mockAllConsolidatedAPIDestinations.length);
+
+          findStreamItems().wrappers.forEach((streamItem, index) => {
+            expect(streamItem.props('item').id).toBe(mockAllConsolidatedAPIDestinations[index].id);
+          });
+        });
+
+        it('captures an error when the destination category is not recognized', async () => {
+          const unknownAPIDestination = {
+            __typename: 'GroupAuditEventStreamingDestination',
+            id: 'gid://gitlab/AuditEvents::Group::ExternalStreamingDestination/1',
+            name: 'Unknown Destination 1',
+            category: 'something_else',
+            secretToken: '',
+            config: {},
+            eventTypeFilters: [],
+            namespaceFilters: [],
+          };
+          const streamingDestinationsQueryUnknownCategory = jest
+            .fn()
+            .mockResolvedValue(streamingDestinationDataPopulator([unknownAPIDestination]));
+          const apolloProvider = createMockApollo([
+            [groupStreamingDestinationsQuery, streamingDestinationsQueryUnknownCategory],
+          ]);
+          createComponent({
+            apolloProvider,
+            provide: {
+              glFeatures: { useConsolidatedAuditEventStreamDestApi: true },
+            },
+          });
+          await waitForPromises();
+
+          expect(Sentry.captureException).toHaveBeenCalledWith(
+            new Error('Unknown destination category: something_else'),
+          );
+        });
       });
     });
   });
@@ -344,12 +418,12 @@ describe('AuditEventsStream', () => {
     describe('when initialized', () => {
       it('should render the loading icon while waiting for data to be returned', () => {
         const destinationQuerySpy = jest.fn();
-        const mockApollo = createMockApollo([
+        const apolloProvider = createMockApollo([
           [instanceExternalDestinationsQuery, destinationQuerySpy],
           [instanceGcpLoggingDestinationsQuery, destinationQuerySpy],
           [instanceAmazonS3DestinationsQuery, destinationQuerySpy],
         ]);
-        createComponent(mockApollo);
+        createComponent({ apolloProvider });
 
         expect(findLoadingIcon().exists()).toBe(true);
       });
@@ -358,12 +432,12 @@ describe('AuditEventsStream', () => {
         const destinationQuerySpy = jest.fn().mockImplementation(() => {
           return new Promise(() => {});
         });
-        const mockApollo = createMockApollo([
+        const apolloProvider = createMockApollo([
           [instanceExternalDestinationsQuery, destinationQuerySpy],
           [instanceGcpLoggingDestinationsQuery, externalInstanceGcpLoggingQuerySpy],
           [instanceAmazonS3DestinationsQuery, externalInstanceAmazonS3QuerySpy],
         ]);
-        createComponent(mockApollo);
+        createComponent({ apolloProvider });
         await waitForPromises();
 
         expect(findLoadingIcon().exists()).toBe(true);
@@ -373,12 +447,12 @@ describe('AuditEventsStream', () => {
         const destinationQuerySpy = jest.fn().mockImplementation(() => {
           return new Promise(() => {});
         });
-        const mockApollo = createMockApollo([
+        const apolloProvider = createMockApollo([
           [instanceExternalDestinationsQuery, externalInstanceDestinationsQuerySpy],
           [instanceGcpLoggingDestinationsQuery, destinationQuerySpy],
           [instanceAmazonS3DestinationsQuery, externalInstanceAmazonS3QuerySpy],
         ]);
-        createComponent(mockApollo);
+        createComponent({ apolloProvider });
         await waitForPromises();
 
         expect(findLoadingIcon().exists()).toBe(true);
@@ -388,12 +462,12 @@ describe('AuditEventsStream', () => {
         const destinationQuerySpy = jest.fn().mockImplementation(() => {
           return new Promise(() => {});
         });
-        const mockApollo = createMockApollo([
+        const apolloProvider = createMockApollo([
           [instanceExternalDestinationsQuery, destinationQuerySpy],
           [instanceGcpLoggingDestinationsQuery, externalInstanceGcpLoggingQuerySpy],
           [instanceAmazonS3DestinationsQuery, destinationQuerySpy],
         ]);
-        createComponent(mockApollo);
+        createComponent({ apolloProvider });
         await waitForPromises();
 
         expect(findLoadingIcon().exists()).toBe(true);
@@ -403,12 +477,12 @@ describe('AuditEventsStream', () => {
         const destinationQuerySpy = jest.fn().mockResolvedValue(destinationDataPopulator([]));
         const gcpLoggingQuerySpy = jest.fn().mockResolvedValue(gcpLoggingDataPopulator([]));
         const amazonS3QuerySpy = jest.fn().mockResolvedValue(gcpLoggingDataPopulator([]));
-        const mockApollo = createMockApollo([
+        const apolloProvider = createMockApollo([
           [instanceExternalDestinationsQuery, destinationQuerySpy],
           [instanceGcpLoggingDestinationsQuery, gcpLoggingQuerySpy],
           [instanceAmazonS3DestinationsQuery, amazonS3QuerySpy],
         ]);
-        createComponent(mockApollo);
+        createComponent({ apolloProvider });
         await waitForPromises();
 
         expect(findLoadingIcon().exists()).toBe(false);
@@ -417,12 +491,12 @@ describe('AuditEventsStream', () => {
 
       it('should report error when server error occurred', async () => {
         const instanceDestinationQuerySpy = jest.fn().mockRejectedValue({});
-        const mockApollo = createMockApollo([
+        const apolloProvider = createMockApollo([
           [instanceExternalDestinationsQuery, instanceDestinationQuerySpy],
           [instanceGcpLoggingDestinationsQuery, instanceDestinationQuerySpy],
           [instanceAmazonS3DestinationsQuery, instanceDestinationQuerySpy],
         ]);
-        createComponent(mockApollo);
+        createComponent({ apolloProvider });
         await waitForPromises();
 
         expect(findLoadingIcon().exists()).toBe(false);
@@ -434,10 +508,10 @@ describe('AuditEventsStream', () => {
 
     describe('when edit mode entered', () => {
       beforeEach(() => {
-        const mockApollo = createMockApollo([
+        const apolloProvider = createMockApollo([
           [instanceExternalDestinationsQuery, externalInstanceDestinationsQuerySpy],
         ]);
-        createComponent(mockApollo);
+        createComponent({ apolloProvider });
 
         return waitForPromises();
       });
@@ -527,10 +601,10 @@ describe('AuditEventsStream', () => {
 
     describe('Streaming items', () => {
       beforeEach(() => {
-        const mockApollo = createMockApollo([
+        const apolloProvider = createMockApollo([
           [instanceExternalDestinationsQuery, externalInstanceDestinationsQuerySpy],
         ]);
-        createComponent(mockApollo);
+        createComponent({ apolloProvider });
 
         return waitForPromises();
       });
@@ -557,6 +631,30 @@ describe('AuditEventsStream', () => {
         await waitForPromises();
         expect(findStreamItems()).toHaveLength(currentLength - 1);
         expect(findSuccessMessage().text()).toBe(DELETE_STREAM_MESSAGE);
+      });
+
+      describe('when useConsolidatedAuditEventStreamDestApi is enabled', () => {
+        beforeEach(() => {
+          const apolloProvider = createMockApollo([
+            [instanceStreamingDestinationsQuery, instanceStreamingDestinationsQuerySpy],
+          ]);
+          createComponent({
+            apolloProvider,
+            provide: {
+              glFeatures: { useConsolidatedAuditEventStreamDestApi: true },
+            },
+          });
+
+          return waitForPromises();
+        });
+
+        it('shows the items', () => {
+          expect(findStreamItems()).toHaveLength(mockAllConsolidatedAPIDestinations.length);
+
+          findStreamItems().wrappers.forEach((streamItem, index) => {
+            expect(streamItem.props('item').id).toBe(mockAllConsolidatedAPIDestinations[index].id);
+          });
+        });
       });
     });
   });
