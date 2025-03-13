@@ -430,17 +430,6 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
           expect { request }.to change { group.reload.extended_grat_expiry_webhooks_execute? }
           expect(response).to have_gitlab_http_status(:found)
         end
-
-        context 'when feature flag is disabled' do
-          before do
-            stub_feature_flags(extended_expiry_webhook_execution_setting: false)
-          end
-
-          it 'does not change the column' do
-            expect { request }.not_to change { group.reload.extended_grat_expiry_webhooks_execute? }
-            expect(response).to have_gitlab_http_status(:found)
-          end
-        end
       end
     end
 

@@ -1741,23 +1741,6 @@ RSpec.describe Project, feature_category: :groups_and_projects do
             end
           end
 
-          context 'when feature flag is disabled' do
-            let(:data) { { interval: :thirty_days } }
-
-            before do
-              stub_feature_flags(extended_expiry_webhook_execution_setting: false)
-            end
-
-            it 'adds webhook to the execution list since no setting is there' do
-              expect(WebHookService)
-                .to receive(:new)
-                .with(group_hook, data, 'resource_access_token_hooks', idempotency_key: anything)
-                .and_return(wh_service)
-
-              project.execute_hooks(data, :resource_access_token_hooks)
-            end
-          end
-
           context 'when setting extended_grat_expiry_webhooks_execute is disabled' do
             before do
               group.namespace_settings.update!(extended_grat_expiry_webhooks_execute: false)

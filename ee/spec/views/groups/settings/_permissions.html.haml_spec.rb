@@ -116,22 +116,6 @@ RSpec.describe 'groups/settings/_permissions.html.haml', :saas, feature_category
         )
         expect(rendered).to have_unchecked_field(checkbox_label, type: 'checkbox')
       end
-
-      context 'when feature flag is disabled' do
-        before do
-          stub_feature_flags(extended_expiry_webhook_execution_setting: false)
-        end
-
-        it 'renders nothing', :aggregate_failures do
-          render
-
-          expect(rendered).to render_template('groups/settings/_extended_grat_expiry_webhook_execute')
-          expect(rendered).not_to have_content(
-            s_('GroupSettings|Add additional webhook triggers for group access token expiration')
-          )
-          expect(rendered).not_to have_unchecked_field(checkbox_label, type: 'checkbox')
-        end
-      end
     end
   end
 

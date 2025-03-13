@@ -80,8 +80,7 @@ module EE
             params_ee << :enterprise_users_extensions_marketplace_enabled
           end
 
-          if ::Feature.enabled?(:extended_expiry_webhook_execution_setting, current_group) &&
-              can?(current_user, :admin_group, current_group) &&
+          if can?(current_user, :admin_group, current_group) &&
               current_group.licensed_feature_available?(:group_webhooks)
             params_ee << :extended_grat_expiry_webhooks_execute
           end
