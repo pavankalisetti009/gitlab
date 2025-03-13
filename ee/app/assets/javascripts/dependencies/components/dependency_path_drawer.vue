@@ -1,5 +1,5 @@
 <script>
-import { GlDrawer, GlTruncateText } from '@gitlab/ui';
+import { GlDrawer, GlTruncateText, GlBadge } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
@@ -26,6 +26,7 @@ export default {
   components: {
     GlDrawer,
     GlTruncateText,
+    GlBadge,
   },
   props: {
     dependencyPaths: {
@@ -62,6 +63,7 @@ export default {
     drawerTitle: s__('Vulnerability|Dependency paths'),
     projectTitle: s__('Vulnerability|Project'),
     componentTitle: s__('Vulnerability|Component'),
+    circularDependencyBadgeText: s__('Vulnerability|circular dependency'),
   },
   getContentWrapperHeight,
   DRAWER_Z_INDEX,
@@ -101,6 +103,9 @@ export default {
         :key="index"
         class="gl-border-b gl-py-5 first:!gl-pt-0"
       >
+        <gl-badge v-if="dependencyPath.isCyclic" variant="warning" class="mb-2">{{
+          $options.i18n.circularDependencyBadgeText
+        }}</gl-badge>
         <gl-truncate-text
           :toggle-button-props="$options.truncateToggleButtonProps"
           :mobile-lines="3"

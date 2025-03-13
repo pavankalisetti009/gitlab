@@ -1,4 +1,4 @@
-import { GlDrawer, GlTruncateText } from '@gitlab/ui';
+import { GlDrawer, GlTruncateText, GlBadge } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import DependencyPathDrawer from 'ee/dependencies/components/dependency_path_drawer.vue';
 import { RENDER_ALL_SLOTS_TEMPLATE, stubComponent } from 'helpers/stub_component';
@@ -15,7 +15,7 @@ describe('DependencyPathDrawer component', () => {
       name: 'activerecord',
       version: '5.0.0',
     },
-    dependencyPaths: [{ path: [{ name: 'jest', version: '29.7.0' }] }],
+    dependencyPaths: [{ isCyclic: true, path: [{ name: 'jest', version: '29.7.0' }] }],
   };
 
   const createComponent = (props) => {
@@ -36,6 +36,7 @@ describe('DependencyPathDrawer component', () => {
   const findProject = () => wrapper.findByTestId('dependency-path-drawer-project');
   const findAllListItem = () => wrapper.findAll('li');
   const getTruncateText = (index) => findAllListItem().at(index).findComponent(GlTruncateText);
+  const getBadge = (index) => findAllListItem().at(index).findComponent(GlBadge);
 
   describe('default', () => {
     it('configures the drawer with header height and z-index', () => {
@@ -118,6 +119,23 @@ describe('DependencyPathDrawer component', () => {
       const index = 0;
       const { name, version } = defaultProps.dependencyPaths[index].path[index];
       expect(getTruncateText(index).text()).toBe(`${name} @${version}`);
+    });
+  });
+
+  describe('with circular dependency badge', () => {
+    it('renders the badge with the correct prop and text', () => {
+      createComponent();
+
+      expect(getBadge(0).props('variant')).toBe('warning');
+      expect(getBadge(0).text()).toBe('circular dependency');
+    });
+
+    it('does not render the badge', () => {
+      createComponent({
+        dependencyPaths: [{ isCyclic: false, path: [{ name: 'jest', version: '29.7.0' }] }],
+      });
+
+      expect(getBadge(0).exists()).toBe(false);
     });
   });
 });

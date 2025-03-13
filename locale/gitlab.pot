@@ -65790,6 +65790,9 @@ msgstr ""
 msgid "Vulnerability|What is code flow?"
 msgstr ""
 
+msgid "Vulnerability|circular dependency"
+msgstr ""
+
 msgid "Vulnerability|code_flow"
 msgstr ""
 
