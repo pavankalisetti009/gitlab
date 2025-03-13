@@ -2,7 +2,7 @@
 import { GlButton, GlIcon, GlFormGroup, GlCollapsibleListbox } from '@gitlab/ui';
 import { debounce } from 'lodash';
 // eslint-disable-next-line no-restricted-imports
-import { mapGetters, mapState } from 'vuex';
+import { mapGetters } from 'vuex';
 import { __ } from '~/locale';
 import { getGroupLabels } from 'ee/api/analytics_api';
 import { DATA_REFETCH_DELAY } from '../../../shared/constants';
@@ -57,7 +57,6 @@ export default {
     };
   },
   computed: {
-    ...mapState(['defaultGroupLabels']),
     fieldName() {
       const { eventType, index } = this;
       return `custom-stage-${eventType}-label-${index}`;
@@ -82,14 +81,10 @@ export default {
       this.search();
     }, DATA_REFETCH_DELAY),
   },
-  async mounted() {
-    if (!this.defaultGroupLabels?.length) {
-      this.loading = true;
-      await this.fetchLabels();
-      this.loading = false;
-    } else {
-      this.labels = this.defaultGroupLabels;
-    }
+  async created() {
+    this.loading = true;
+    await this.fetchLabels();
+    this.loading = false;
   },
   methods: {
     ...mapGetters(['namespaceRestApiRequestPath']),

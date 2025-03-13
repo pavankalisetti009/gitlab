@@ -6,7 +6,6 @@ import {
 export default () => ({
   features: {},
   defaultStageConfig: [],
-  defaultGroupLabels: null,
 
   createdAfter: null,
   createdBefore: null,
@@ -27,7 +26,6 @@ export default () => ({
 
   isLoadingValueStreams: false,
   isDeletingValueStream: false,
-  isFetchingGroupLabels: false,
   isFetchingGroupStagesAndEvents: false,
 
   deleteValueStreamError: null,

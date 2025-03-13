@@ -101,7 +101,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(['formEvents', 'defaultGroupLabels', 'selectedValueStream']),
+    ...mapState(['formEvents', 'selectedValueStream']),
     ...mapGetters(['namespaceRestApiRequestPath']),
     selectedValueStreamId() {
       return this.selectedValueStream?.id || -1;
@@ -384,7 +384,6 @@ export default {
                 :index="activeStageIndex"
                 :total-stages="stages.length"
                 :errors="fieldErrors(activeStageIndex)"
-                :default-group-labels="defaultGroupLabels"
                 @move="handleMove"
                 @remove="onRemove"
                 @input="onFieldInput(activeStageIndex, $event)"

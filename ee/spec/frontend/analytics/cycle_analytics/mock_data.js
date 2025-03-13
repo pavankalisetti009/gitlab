@@ -45,7 +45,6 @@ import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import { getDatesInRange } from '~/lib/utils/datetime_utility';
 
 export const endpoints = {
-  groupLabels: /groups\/[A-Z|a-z|\d|\-|_]+\/-\/labels.json/,
   durationData:
     /analytics\/value_stream_analytics\/value_streams\/\w+\/stages\/\w+\/average_duration_chart/,
   stageData: /analytics\/value_stream_analytics\/value_streams\/\w+\/stages\/\w+\/records/,
