@@ -377,6 +377,11 @@ module EE
       supports_sla?
     end
 
+    override :supports_parent?
+    def supports_parent?
+      supports_epic? && licensed_feature_available?(:epics)
+    end
+
     private
 
     def blocking_issues_ids

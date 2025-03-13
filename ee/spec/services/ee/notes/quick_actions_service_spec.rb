@@ -66,21 +66,6 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
         stub_licensed_features(epics: true)
       end
 
-      context 'when user have no access to the issue' do
-        before do
-          allow(user).to receive(:can?).and_call_original
-          allow(user).to receive(:can?).with(:admin_issue_relation, issue).and_return(false)
-        end
-
-        it 'does not assign the epic' do
-          content, message  = execute(note, include_message: true)
-
-          expect(content).to be_empty
-          expect(message).to eq('Could not apply set_parent command.')
-          expect(issue.epic).to be_nil
-        end
-      end
-
       context 'when user have no access to the epic' do
         let(:note_text) { "/epic #{private_epic.to_reference(full: true)}" }
 
@@ -94,6 +79,21 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
       end
 
       context 'on an issue' do
+        context 'when user has no access to the issue' do
+          before do
+            allow(user).to receive(:can?).and_call_original
+            allow(user).to receive(:can?).with(:admin_issue_relation, issue).and_return(false)
+          end
+
+          it 'does not assign the epic' do
+            content, message  = execute(note, include_message: true)
+
+            expect(content).to be_empty
+            expect(message).to eq('Could not apply set_parent command.')
+            expect(issue.epic).to be_nil
+          end
+        end
+
         it 'assigns the issue to the epic' do
           expect { execute(note) }.to change { issue.reload.epic }.from(nil).to(epic)
         end
@@ -109,6 +109,21 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
 
       context 'on a work item' do
         let(:note) { create(:note_on_work_item, noteable: work_item, project: project, note: note_text) }
+
+        context 'when user has no access to the work_item' do
+          before do
+            allow(user).to receive(:can?).and_call_original
+            allow(user).to receive(:can?).with(:admin_issue_relation, work_item).and_return(false)
+          end
+
+          it 'does not assign the epic' do
+            content, message  = execute(note, include_message: true)
+
+            expect(content).to be_empty
+            expect(message).to eq('Could not apply set_parent command.')
+            expect(work_item.reload.work_item_parent).to be_nil
+          end
+        end
 
         it 'assigns the work item to the parent' do
           expect { execute(note) }.to change { work_item.reload.work_item_parent }.from(nil).to(epic.work_item)
