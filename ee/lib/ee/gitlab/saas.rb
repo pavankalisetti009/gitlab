@@ -35,6 +35,7 @@ module EE
           secret_detection_service
           ci_component_usages_in_projects
           deduplicate_ci_tags
+          targeted_messages
         ].freeze
 
       CONFIG_FILE_ROOT = 'ee/config/saas_features'

@@ -113,4 +113,6 @@ namespace :admin do
       get :dashboard
     end
   end
+
+  resources :targeted_messages, only: [:index, :new, :create]
 end
