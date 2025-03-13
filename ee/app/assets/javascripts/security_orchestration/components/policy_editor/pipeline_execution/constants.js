@@ -65,6 +65,7 @@ content:
 export const HOUR_IN_SECONDS = 3600;
 export const DAILY = 'daily';
 export const DEFAULT_SCHEDULE = {
+  branch_type: 'protected',
   type: DAILY,
   start_time: '00:00',
   time_window: {

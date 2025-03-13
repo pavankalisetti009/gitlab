@@ -53297,7 +53297,7 @@ msgstr ""
 msgid "SecurityOrchestration|Schedule a new"
 msgstr ""
 
-msgid "SecurityOrchestration|Schedule a pipeline on a %{cadenceSelector} cadence for branches"
+msgid "SecurityOrchestration|Schedule to run for %{branchSelector}"
 msgstr ""
 
 msgid "SecurityOrchestration|Scope"
@@ -53655,6 +53655,9 @@ msgid "SecurityOrchestration|are false positives"
 msgstr ""
 
 msgid "SecurityOrchestration|are not false positives"
+msgstr ""
+
+msgid "SecurityOrchestration|at the following times: %{cadenceSelector}, start at %{start}, run for: %{duration}, and timezone is %{timezoneSelector}"
 msgstr ""
 
 msgid "SecurityOrchestration|branch"
