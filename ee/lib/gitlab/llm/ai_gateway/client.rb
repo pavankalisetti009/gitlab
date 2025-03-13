@@ -20,6 +20,28 @@ module Gitlab
           @tracking_context = tracking_context
         end
 
+        def complete_prompt(
+          base_url:,
+          prompt_name:,
+          inputs:,
+          timeout: DEFAULT_TIMEOUT,
+          prompt_version: nil,
+          model_metadata: nil
+        )
+          prompt_modifier = (model_metadata.present? && model_metadata[:name]) || 'base'
+          full_prompt_name = "#{prompt_name}/#{prompt_modifier}"
+          version = prompt_version || ::Gitlab::Llm::PromptVersions.version_for_prompt(full_prompt_name)
+          body = { 'inputs' => inputs, 'prompt_version' => version }
+
+          body['model_metadata'] = model_metadata if model_metadata.present?
+
+          complete(
+            url: "#{base_url}/v1/prompts/#{model_metadata.present? ? full_prompt_name : prompt_name}",
+            body: body,
+            timeout: timeout
+          )
+        end
+
         def complete(url:, body:, timeout: DEFAULT_TIMEOUT)
           return unless enabled?
 

@@ -82,6 +82,10 @@ module Gitlab
             provider(options)
           end
 
+          def default_prompt_version(unit_primitive, model_family)
+            PromptVersions.version_for_prompt("chat/#{unit_primitive}/#{model_family}")
+          end
+
           def endpoint(unit_primitive, use_ai_gateway_agent_prompt)
             path =
               if use_ai_gateway_agent_prompt
@@ -129,13 +133,15 @@ module Gitlab
               inputs: inputs
             }
 
-            params[:prompt_version] = prompt_version if prompt_version.present?
-
             feature_setting = chat_feature_setting(unit_primitive: unit_primitive)
 
             model_metadata_params =
               ::Gitlab::Llm::AiGateway::ModelMetadata.new(feature_setting: feature_setting).to_params
             params[:model_metadata] = model_metadata_params if model_metadata_params.present?
+
+            model_family = model_metadata_params.present? ? model_metadata_params[:name] : 'base'
+
+            params[:prompt_version] = prompt_version || default_prompt_version(unit_primitive, model_family)
 
             params
           end

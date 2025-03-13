@@ -23,9 +23,12 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::MeasureCommentTemperature, f
         service_name: :measure_comment_temperature,
         tracking_context: { action: :measure_comment_temperature, request_id: uuid }
       ).and_return(ai_client)
-      expect(ai_client).to receive(:complete).with(
-        url: "#{Gitlab::AiGateway.url}/v1/prompts/measure_comment_temperature",
-        body: { 'inputs' => { content: content } }
+      expect(ai_client).to receive(:complete_prompt).with(
+        base_url: Gitlab::AiGateway.url,
+        prompt_name: :measure_comment_temperature,
+        inputs: { content: content },
+        model_metadata: nil,
+        prompt_version: nil
       ).and_return(ai_response)
 
       expect(::Gitlab::Llm::GraphqlSubscriptionResponseService).to receive(:new).and_call_original
@@ -42,9 +45,12 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::MeasureCommentTemperature, f
           service_name: :measure_comment_temperature,
           tracking_context: { action: :measure_comment_temperature, request_id: uuid }
         ).and_return(ai_client)
-        expect(ai_client).to receive(:complete).with(
-          url: "#{Gitlab::AiGateway.url}/v1/prompts/measure_comment_temperature",
-          body: { 'inputs' => { content: content } }
+        expect(ai_client).to receive(:complete_prompt).with(
+          base_url: Gitlab::AiGateway.url,
+          prompt_name: :measure_comment_temperature,
+          inputs: { content: content },
+          model_metadata: nil,
+          prompt_version: nil
         ).and_return(ai_response)
 
         expect(::Gitlab::Llm::GraphqlSubscriptionResponseService).to receive(:new).and_call_original

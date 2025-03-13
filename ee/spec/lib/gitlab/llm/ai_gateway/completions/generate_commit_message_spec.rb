@@ -28,9 +28,12 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::GenerateCommitMessage, featu
           service_name: :generate_commit_message,
           tracking_context: tracking_context
         )
-        expect(ai_client).to receive(:complete).with(
-          url: "#{Gitlab::AiGateway.url}/v1/prompts/generate_commit_message",
-          body: body
+        expect(ai_client).to receive(:complete_prompt).with(
+          base_url: Gitlab::AiGateway.url,
+          prompt_name: :generate_commit_message,
+          inputs: { diff: expected_diff },
+          model_metadata: nil,
+          prompt_version: expected_prompt_version
         ).and_return(ai_response)
 
         expect(::Gitlab::Llm::GraphqlSubscriptionResponseService).to receive(:new).and_call_original
@@ -39,8 +42,8 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::GenerateCommitMessage, featu
       end
     end
 
-    let(:body) { { 'inputs' => { diff: expected_diff }, 'prompt_version' => '1.1.0' } }
     let(:expected_diff) { merge_request.raw_diffs.to_a.map(&:diff).join("\n").truncate_words(10000) }
+    let(:expected_prompt_version) { "1.1.0" }
 
     before do
       allow(Gitlab::Llm::AiGateway::Client).to receive(:new).and_return(ai_client)
@@ -101,7 +104,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::GenerateCommitMessage, featu
         stub_feature_flags(generate_commit_message_claude_3_7: false)
       end
 
-      let(:body) { { 'inputs' => { diff: expected_diff }, 'prompt_version' => '1.0.0' } }
+      let(:expected_prompt_version) { "1.0.0" }
 
       it_behaves_like 'successful completion request'
     end

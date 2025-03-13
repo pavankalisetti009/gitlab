@@ -57,7 +57,7 @@ RSpec.describe Llm::GitCommandService, feature_category: :source_code_management
         current_user,
         service_name: :glab_ask_git_command
       ) do |client|
-        allow(client).to receive(:complete).and_return(response)
+        allow(client).to receive(:complete_prompt).and_return(response)
       end
     end
 
