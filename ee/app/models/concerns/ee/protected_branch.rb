@@ -21,6 +21,8 @@ module EE
       attr_accessor :protected_from_deletion
 
       has_one :squash_option, class_name: 'Projects::BranchRules::SquashOption'
+      has_one :merge_request_approval_setting, class_name: 'Projects::BranchRules::MergeRequestApprovalSetting'
+
       accepts_nested_attributes_for :squash_option, allow_destroy: true, update_only: true
 
       validate :exact_match_for_squash_option, if: :name_changed?
