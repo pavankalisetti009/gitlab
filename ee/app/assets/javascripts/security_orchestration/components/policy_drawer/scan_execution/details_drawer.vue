@@ -1,7 +1,6 @@
 <script>
 import { GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import SkipCiConfiguration from 'ee/security_orchestration/components/policy_drawer/skip_ci_configuration.vue';
 import {
   DEFAULT_SKIP_SI_CONFIGURATION,
@@ -38,7 +37,6 @@ export default {
     DrawerLayout,
     InfoRow,
   },
-  mixins: [glFeatureFlagsMixin()],
   props: {
     policy: {
       type: Object,
@@ -46,9 +44,6 @@ export default {
     },
   },
   computed: {
-    hasSkipCiConfiguration() {
-      return this.glFeatures.securityPoliciesSkipCi;
-    },
     actions() {
       return this.parsedYaml?.actions || [];
     },
@@ -128,11 +123,7 @@ export default {
           </ul>
         </section>
       </info-row>
-      <info-row
-        v-if="hasSkipCiConfiguration"
-        data-testid="policy-configuration"
-        :label="$options.i18n.configuration"
-      >
+      <info-row data-testid="policy-configuration" :label="$options.i18n.configuration">
         <skip-ci-configuration :configuration="configuration" />
       </info-row>
     </template>

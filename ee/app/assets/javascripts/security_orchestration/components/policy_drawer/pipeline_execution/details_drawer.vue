@@ -2,7 +2,6 @@
 import { GlLink } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { joinPaths } from '~/lib/utils/url_utility';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { humanizeActions } from 'ee/security_orchestration/components/policy_drawer/pipeline_execution/utils';
 import {
   SUMMARY_TITLE,
@@ -34,7 +33,6 @@ export default {
     GlLink,
     SkipCiConfiguration,
   },
-  mixins: [glFeatureFlagsMixin()],
   props: {
     policy: {
       type: Object,
@@ -42,9 +40,6 @@ export default {
     },
   },
   computed: {
-    hasSkipCiConfiguration() {
-      return this.glFeatures.securityPoliciesSkipCi;
-    },
     humanizedActions() {
       return humanizeActions([this.parsedYaml]);
     },
@@ -116,11 +111,7 @@ export default {
           </ul>
         </div>
       </info-row>
-      <info-row
-        v-if="hasSkipCiConfiguration"
-        data-testid="policy-configuration"
-        :label="$options.i18n.configuration"
-      >
+      <info-row data-testid="policy-configuration" :label="$options.i18n.configuration">
         <skip-ci-configuration :configuration="configuration" />
       </info-row>
     </template>

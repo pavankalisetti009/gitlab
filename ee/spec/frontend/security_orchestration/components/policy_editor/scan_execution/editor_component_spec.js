@@ -151,7 +151,7 @@ describe('EditorComponent', () => {
         factory({ provide: { namespaceType } });
 
         expect(findPolicyEditorLayout().props('policy')).toEqual(manifest);
-        expect(findSkipCiSelector().exists()).toBe(false);
+        expect(findSkipCiSelector().exists()).toBe(true);
       });
     });
 
@@ -706,13 +706,7 @@ enabled: true`;
 
   describe('skip ci configuration', () => {
     it('renders skip ci configuration', () => {
-      factory({
-        provide: {
-          glFeatures: {
-            securityPoliciesSkipCi: true,
-          },
-        },
-      });
+      factory();
 
       expect(findSkipCiSelector().exists()).toBe(true);
       expect(findSkipCiSelector().props('skipCiConfiguration')).toEqual(
@@ -731,11 +725,6 @@ enabled: true`;
       factoryWithExistingPolicy({
         policy: {
           skip_ci: skipCi,
-        },
-        provide: {
-          glFeatures: {
-            securityPoliciesSkipCi: true,
-          },
         },
       });
 

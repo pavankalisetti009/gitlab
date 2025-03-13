@@ -12,6 +12,10 @@ export const mockScanExecutionActionManifest = `scan_execution_policy:
           - '*'
     actions:
       - scan: secret_detection
+    skip_ci:
+      allowed: true
+      allowlist:
+        users: []
 `;
 
 export const mockScanExecutionActionProjectManifest = `scan_execution_policy:
@@ -24,6 +28,10 @@ export const mockScanExecutionActionProjectManifest = `scan_execution_policy:
           - '*'
     actions:
       - scan: secret_detection
+    skip_ci:
+      allowed: true
+      allowlist:
+        users: []
     policy_scope:
       compliance_frameworks:
         - id: 1
@@ -113,6 +121,10 @@ export const EXCLUDING_PROJECTS_MOCKS = {
           - '*'
     actions:
       - scan: secret_detection
+    skip_ci:
+      allowed: true
+      allowlist:
+        users: []
 `,
   PIPELINE_EXECUTION: `name: ''
 description: ''
@@ -168,6 +180,10 @@ export const EXCLUDING_PROJECTS_PROJECTS_LEVEL_MOCKS = {
           - '*'
     actions:
       - scan: secret_detection
+    skip_ci:
+      allowed: true
+      allowlist:
+        users: []
     policy_scope:
       projects:
         excluding:
@@ -248,6 +264,10 @@ export const INCLUDING_GROUPS_WITH_EXCEPTIONS_MOCKS = {
           - '*'
     actions:
       - scan: secret_detection
+    skip_ci:
+      allowed: true
+      allowlist:
+        users: []
 `,
   PIPELINE_EXECUTION: `pipeline_execution_policy:
   - name: ''
@@ -314,6 +334,10 @@ export const INCLUDING_GROUPS_MOCKS = {
           - '*'
     actions:
       - scan: secret_detection
+    skip_ci:
+      allowed: true
+      allowlist:
+        users: []
 `,
   PIPELINE_EXECUTION: `pipeline_execution_policy:
   - name: ''

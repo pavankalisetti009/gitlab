@@ -60,7 +60,7 @@ describe('DetailsDrawer component', () => {
         policyScope: defaultPolicy.policyScope,
         type: 'Scan execution',
       });
-      expect(findConfigurationRow().exists()).toBe(false);
+      expect(findConfigurationRow().exists()).toBe(true);
     });
 
     it('renders copy informing when there are no actions', () => {
@@ -130,9 +130,7 @@ describe('DetailsDrawer component', () => {
 
   describe('configuration', () => {
     it('renders default configuration row if there is no configuration in policy', () => {
-      createComponent(mockScanExecutionPolicyManifestWithWrapper, {
-        glFeatures: { securityPoliciesSkipCi: true },
-      });
+      createComponent(mockScanExecutionPolicyManifestWithWrapper);
 
       expect(findConfigurationRow().exists()).toBe(true);
       expect(findSkipCiConfiguration().props('configuration')).toEqual(
@@ -141,9 +139,7 @@ describe('DetailsDrawer component', () => {
     });
 
     it('renders configuration row when there is a configuration', () => {
-      createComponent(mockProjectScanExecutionWithConfigurationPolicy, {
-        glFeatures: { securityPoliciesSkipCi: true },
-      });
+      createComponent(mockProjectScanExecutionWithConfigurationPolicy);
 
       expect(findConfigurationRow().exists()).toBe(true);
       expect(findSkipCiConfiguration().props('configuration')).toEqual({ allowed: true });

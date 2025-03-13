@@ -148,7 +148,7 @@ export default {
     const { policy, parsingError } = createPolicyObject(yamlEditorValue);
 
     const hasSkipCi = 'skip_ci' in policy;
-    if (!hasSkipCi && this.glFeatures.securityPoliciesSkipCi) {
+    if (!hasSkipCi) {
       policy.skip_ci = DEFAULT_SKIP_SI_CONFIGURATION;
     }
 
@@ -171,9 +171,6 @@ export default {
   computed: {
     hasNewSplitView() {
       return this.glFeatures.securityPoliciesSplitView;
-    },
-    hasSkipCiConfiguration() {
-      return this.glFeatures.securityPoliciesSkipCi;
     },
     actionSectionError() {
       return this.specificActionSectionError || this.$options.i18n.ACTION_SECTION_DISABLE_ERROR;
@@ -399,7 +396,7 @@ export default {
       </disabled-section>
     </template>
 
-    <template v-if="hasSkipCiConfiguration" #settings>
+    <template #settings>
       <disabled-section :disabled="false">
         <template #title>
           <h4>{{ $options.i18n.configurationTitle }}</h4>

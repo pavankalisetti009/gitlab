@@ -1,5 +1,6 @@
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_GROUP, TYPENAME_PROJECT } from '~/graphql_shared/constants';
+import { DEFAULT_SKIP_SI_CONFIGURATION } from 'ee/security_orchestration/components/constants';
 
 export const actionId = 'action_0';
 export const ruleId = 'rule_0';
@@ -96,6 +97,7 @@ export const SCAN_EXECUTION_DEFAULT_POLICY = {
   enabled: true,
   rules: [{ type: 'pipeline', branches: ['*'], id: 'rule_0' }],
   actions: [{ scan: 'secret_detection', id: 'action_0' }],
+  skip_ci: DEFAULT_SKIP_SI_CONFIGURATION,
 };
 
 export const SCAN_EXECUTION_DEFAULT_POLICY_WITH_SCOPE = {

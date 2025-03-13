@@ -114,9 +114,6 @@ export default {
     hasNewSplitView() {
       return this.glFeatures.securityPoliciesSplitView;
     },
-    hasSkipCiConfiguration() {
-      return this.glFeatures.securityPoliciesSkipCi;
-    },
     originalName() {
       return this.existingPolicy?.name;
     },
@@ -274,7 +271,7 @@ export default {
       </disabled-section>
     </template>
 
-    <template v-if="hasSkipCiConfiguration" #settings>
+    <template #settings>
       <disabled-section :disabled="false">
         <template #title>
           <h4>{{ $options.i18n.configurationTitle }}</h4>

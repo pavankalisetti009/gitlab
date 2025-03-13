@@ -13,7 +13,6 @@ module Groups
         push_frontend_feature_flag(:scan_execution_policy_action_limit_group, group)
         push_frontend_feature_flag(:exclude_license_packages, group)
         push_frontend_feature_flag(:security_policies_split_view, group)
-        push_frontend_feature_flag(:security_policies_skip_ci, group)
         push_frontend_feature_flag(:security_policy_approval_warn_mode, group)
         push_frontend_feature_flag(:scheduled_pipeline_execution_policies, group)
       end
