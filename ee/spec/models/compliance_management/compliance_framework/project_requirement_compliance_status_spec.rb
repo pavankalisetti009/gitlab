@@ -42,4 +42,78 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectRequirementComp
       expect(status).to be_valid
     end
   end
+
+  describe '.order_by_updated_at_and_id' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:framework) { create(:compliance_framework, namespace: group) }
+    let_it_be(:requirement1) { create(:compliance_requirement, namespace: group, framework: framework) }
+    let_it_be(:requirement2) do
+      create(:compliance_requirement, namespace: group, framework: framework, name: 'requirement2')
+    end
+
+    let_it_be(:requirement3) do
+      create(:compliance_requirement, namespace: group, framework: framework, name: 'requirement3')
+    end
+
+    let_it_be(:project) { create(:project, namespace: group) }
+
+    let_it_be(:requirement_status1) do
+      create(:project_requirement_compliance_status, compliance_requirement: requirement1, project: project,
+        updated_at: 1.day.ago)
+    end
+
+    let_it_be(:requirement_status2) do
+      create(:project_requirement_compliance_status, compliance_requirement: requirement2, project: project,
+        updated_at: 1.week.ago)
+    end
+
+    let_it_be(:requirement_status3) do
+      create(:project_requirement_compliance_status, compliance_requirement: requirement3, project: project,
+        updated_at: 2.days.ago)
+    end
+
+    context 'when direction is not provided' do
+      it 'sorts by updated_at in ascending order by default' do
+        expect(described_class.order_by_updated_at_and_id).to eq(
+          [
+            requirement_status2,
+            requirement_status3,
+            requirement_status1
+          ]
+        )
+      end
+    end
+
+    context 'when direction is asc' do
+      it 'sorts by updated_at in ascending order by default' do
+        expect(described_class.order_by_updated_at_and_id(:asc)).to eq(
+          [
+            requirement_status2,
+            requirement_status3,
+            requirement_status1
+          ]
+        )
+      end
+    end
+
+    context 'when direction is desc' do
+      it 'sorts in descending order' do
+        expect(described_class.order_by_updated_at_and_id(:desc)).to eq(
+          [
+            requirement_status1,
+            requirement_status3,
+            requirement_status2
+          ]
+        )
+      end
+    end
+
+    context 'when direction is invalid' do
+      it 'raises error' do
+        expect do
+          described_class.order_by_updated_at_and_id(:invalid)
+        end.to raise_error(ArgumentError, /Direction "invalid" is invalid/)
+      end
+    end
+  end
 end

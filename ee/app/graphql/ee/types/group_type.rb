@@ -364,6 +364,14 @@ module EE
           null: true, description: 'Allowed statuses for the group.',
           experiment: { milestone: '17.8' }, resolver: ::Resolvers::WorkItems::Widgets::StatusResolver
 
+        field :project_compliance_requirements_status,
+          ::Types::ComplianceManagement::ComplianceFramework::ProjectRequirementStatusType.connection_type,
+          null: true,
+          description: 'Compliance standards adherence for the projects in a group and its subgroups.',
+          resolver: ::Resolvers::ComplianceManagement::ComplianceFramework::GroupProjectRequirementStatusResolver,
+          authorize: :read_compliance_adherence_report,
+          experiment: { milestone: '17.10' }
+
         def epics_enabled
           object.licensed_feature_available?(:epics)
         end

@@ -14,6 +14,15 @@ module ComplianceManagement
 
       validates :pass_count, :fail_count, :pending_count,
         numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+
+      scope :order_by_updated_at_and_id, ->(direction = :asc) { order(updated_at: direction, id: direction) }
+
+      scope :in_optimization_array_mapping_scope, ->(id_expression) {
+        where(arel_table[:namespace_id].eq(id_expression))
+      }
+      scope :in_optimization_finder_query, ->(_project_id_expression, id_expression) {
+        where(arel_table[:id].eq(id_expression))
+      }
     end
   end
 end
