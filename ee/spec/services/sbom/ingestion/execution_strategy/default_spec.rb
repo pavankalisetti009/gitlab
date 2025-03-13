@@ -62,18 +62,6 @@ RSpec.describe Sbom::Ingestion::ExecutionStrategy::Default, feature_category: :d
         expect(Gitlab::EventStore).not_to have_received(:publish)
       end
     end
-
-    context 'when the feature dependency_scanning_using_sbom_reports is disabled' do
-      before do
-        stub_feature_flags(dependency_scanning_using_sbom_reports: false)
-      end
-
-      it 'does not publish the ingested SBOM event' do
-        strategy.execute
-
-        expect(Gitlab::EventStore).not_to have_received(:publish)
-      end
-    end
   end
 
   private
