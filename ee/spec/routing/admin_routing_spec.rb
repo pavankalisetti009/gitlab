@@ -114,4 +114,18 @@ RSpec.describe 'EE-specific admin routing' do
         .to route_to('admin/application_settings/service_accounts#index', vueroute: 'access_tokens')
     end
   end
+
+  describe Admin::TargetedMessagesController, 'routing' do
+    it 'routes to #index' do
+      expect(get('/admin/targeted_messages')).to route_to('admin/targeted_messages#index')
+    end
+
+    it 'routes to #new' do
+      expect(get('/admin/targeted_messages/new')).to route_to('admin/targeted_messages#new')
+    end
+
+    it 'routes to #create' do
+      expect(post('/admin/targeted_messages')).to route_to('admin/targeted_messages#create')
+    end
+  end
 end
