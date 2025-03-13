@@ -21,20 +21,10 @@ module GitlabSubscriptions
           seats_available_for_self_managed?(parsed_invites, access_level, member_role_id)
         end
 
-        def non_billable_member?(access_level, member_role_id, exclude_guests)
-          if member_role_id
-            custom_role = MemberRole.find_by_id(member_role_id)
-            custom_role && !custom_role.occupies_seat?
-          else
-            access_level == ::Gitlab::Access::MINIMAL_ACCESS ||
-              (access_level == ::Gitlab::Access::GUEST && exclude_guests)
-          end
-        end
-
         def seats_available_for_group?(root_group, invites, access_level, member_role_id)
           return true unless root_group.gitlab_subscription&.has_a_paid_hosted_plan?
 
-          return true if non_billable_member?(access_level, member_role_id, root_group.exclude_guests?)
+          return true if saas_non_billable_member?(root_group, access_level, member_role_id)
 
           billable_ids = root_group.billed_user_ids[:user_ids].map(&:to_s)
 
@@ -50,8 +40,7 @@ module GitlabSubscriptions
         end
 
         def seats_available_for_self_managed?(invites, access_level, member_role_id)
-          exclude_guests = ::License.current.exclude_guests_from_active_count?
-          return true if non_billable_member?(access_level, member_role_id, exclude_guests)
+          return true if sm_non_billable_member?(access_level, member_role_id)
 
           billable_ids = get_billable_user_ids
           new_invites = invites - billable_ids
@@ -62,6 +51,26 @@ module GitlabSubscriptions
         end
 
         private
+
+        def saas_non_billable_member?(root_namespace, access_level, member_role_id)
+          if member_role_id
+            custom_role = MemberRole.find_by_id(member_role_id)
+            custom_role && !custom_role.occupies_seat?
+          else
+            access_level == ::Gitlab::Access::MINIMAL_ACCESS ||
+              (access_level == ::Gitlab::Access::GUEST && root_namespace.exclude_guests?)
+          end
+        end
+
+        def sm_non_billable_member?(access_level, member_role_id)
+          if member_role_id
+            custom_role = MemberRole.find_by_id(member_role_id)
+            custom_role && !custom_role.occupies_seat?
+          else
+            (access_level == ::Gitlab::Access::MINIMAL_ACCESS || access_level == ::Gitlab::Access::GUEST) &&
+              ::License.current.exclude_guests_from_active_count?
+          end
+        end
 
         def process_invites(source, list)
           emails, user_ids = parse_input_list(list)

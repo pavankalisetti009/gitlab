@@ -174,6 +174,20 @@ RSpec.describe GitlabSubscriptions::MemberManagement::BlockSeatOverages, feature
               end
             end
 
+            context 'when on premium plan' do
+              let(:total_license_seats) { 1 }
+              let(:license) { create(:license, plan: License::PREMIUM_PLAN) }
+              let(:invites) { [user2.id] }
+
+              context 'with minimal access level' do
+                let(:access_level) { Gitlab::Access::MINIMAL_ACCESS }
+
+                it 'returns false' do
+                  expect(seats_available?).to be false
+                end
+              end
+            end
+
             context 'with billable custom roles' do
               let(:total_license_seats) { 1 }
               let(:member_role_id) { billable_member_role.id }
