@@ -355,7 +355,11 @@ RSpec.describe ProductAnalytics::SyncFunnelsWorker, feature_category: :product_a
           it_behaves_like 'sends data to configurator' do
             let(:allow_local_requests) { false }
             let(:url_to_projects_regex) do
-              { "http://test:test@anotherhost:4567/funnel-schemas": /gitlab_project_#{other_project_1.id}.*gitlab_project_#{other_project_2.id}/ }
+              {
+                "http://test:test@anotherhost:4567/funnel-schemas":
+                  /gitlab_project_#{other_project_1.id}.*gitlab_project_#{other_project_2.id}|
+                    gitlab_project_#{other_project_2.id}.*gitlab_project_#{other_project_1.id}/
+              }
             end
           end
         end
