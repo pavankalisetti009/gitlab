@@ -300,9 +300,9 @@ RSpec.describe RegistrationsController, :with_current_organization, type: :reque
 
       context 'when user signup cap is exceeded on an ultimate license' do
         before do
-          allow(Gitlab::CurrentSettings).to receive(:new_user_signups_cap).and_return(1)
-          create(:group_member, :developer)
+          stub_ee_application_setting(new_user_signups_cap: 1)
 
+          create(:group_member, :developer)
           license = create(:license, plan: License::ULTIMATE_PLAN)
           allow(License).to receive(:current).and_return(license)
         end
@@ -312,6 +312,42 @@ RSpec.describe RegistrationsController, :with_current_organization, type: :reque
 
           user = User.find_by(email: user_attrs[:email])
           expect(user).to be_active
+        end
+      end
+    end
+
+    describe 'block seat overages' do
+      context 'when there are no seats remaining on a premium license' do
+        before do
+          stub_ee_application_setting(seat_control: ::EE::ApplicationSetting::SEAT_CONTROL_BLOCK_OVERAGES)
+
+          create(:user, :developer)
+          license = create(:license, plan: License::PREMIUM_PLAN, seats: 1)
+          allow(License).to receive(:current).and_return(license)
+        end
+
+        it 'prevents new user registration' do
+          create_user
+
+          expect(flash[:alert]).to eq('There are no seats left on your GitLab instance. ' \
+            'Please contact your GitLab administrator.')
+          expect(User.count).to eq(1)
+        end
+      end
+
+      context 'when there are no seats remaining on an ultimate license' do
+        before do
+          stub_ee_application_setting(seat_control: ::EE::ApplicationSetting::SEAT_CONTROL_BLOCK_OVERAGES)
+
+          create(:user, :developer)
+          license = create(:license, plan: License::ULTIMATE_PLAN, seats: 1)
+          allow(License).to receive(:current).and_return(license)
+        end
+
+        it 'allows new user registration' do
+          create_user
+
+          expect(User.count).to eq(2)
         end
       end
     end

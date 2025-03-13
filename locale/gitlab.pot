@@ -48241,6 +48241,9 @@ msgstr ""
 msgid "RegistrationFeatures|use this feature"
 msgstr ""
 
+msgid "Registration|There are no seats left on your GitLab instance. Please contact your GitLab administrator."
+msgstr ""
+
 msgid "Registries enqueued to be resynced"
 msgstr ""
 
