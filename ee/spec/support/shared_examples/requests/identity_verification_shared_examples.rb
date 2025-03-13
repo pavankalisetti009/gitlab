@@ -68,7 +68,7 @@ RSpec.shared_examples 'logs and tracks the event' do |category, event, reason = 
 
     do_request
 
-    expect(Gitlab::AppLogger).to have_received(:info).with(a_hash_including(logger_args))
+    expect(Gitlab::AppLogger).to have_received(:info).with(hash_including(logger_args))
 
     tracking_args = {
       category: message,
