@@ -2406,6 +2406,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_7495f5e0efcb() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."snippet_project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."snippet_project_id"
+  FROM "snippets"
+  WHERE "snippets"."id" = NEW."snippet_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_765cae42cd77() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -2876,6 +2892,22 @@ IF NEW."project_id" IS NULL THEN
   INTO NEW."project_id"
   FROM "packages_packages"
   WHERE "packages_packages"."id" = NEW."package_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
+CREATE FUNCTION trigger_93a5b044f4e8() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."snippet_organization_id" IS NULL THEN
+  SELECT "organization_id"
+  INTO NEW."snippet_organization_id"
+  FROM "snippets"
+  WHERE "snippets"."id" = NEW."snippet_id";
 END IF;
 
 RETURN NEW;
@@ -22076,7 +22108,9 @@ CREATE TABLE snippet_user_mentions (
     mentioned_users_ids bigint[],
     mentioned_projects_ids bigint[],
     mentioned_groups_ids bigint[],
-    note_id bigint
+    note_id bigint,
+    snippet_project_id bigint,
+    snippet_organization_id bigint
 );
 
 CREATE SEQUENCE snippet_user_mentions_id_seq
@@ -35680,6 +35714,10 @@ CREATE INDEX index_snippet_repository_storage_moves_on_state ON snippet_reposito
 
 CREATE UNIQUE INDEX index_snippet_user_mentions_on_note_id ON snippet_user_mentions USING btree (note_id) WHERE (note_id IS NOT NULL);
 
+CREATE INDEX index_snippet_user_mentions_on_snippet_organization_id ON snippet_user_mentions USING btree (snippet_organization_id);
+
+CREATE INDEX index_snippet_user_mentions_on_snippet_project_id ON snippet_user_mentions USING btree (snippet_project_id);
+
 CREATE INDEX index_snippets_on_author_id ON snippets USING btree (author_id);
 
 CREATE INDEX index_snippets_on_content_trigram ON snippets USING gin (content gin_trgm_ops);
@@ -39076,6 +39114,8 @@ CREATE TRIGGER trigger_70d3f0bba1de BEFORE INSERT OR UPDATE ON compliance_framew
 
 CREATE TRIGGER trigger_740afa9807b8 BEFORE INSERT OR UPDATE ON subscription_user_add_on_assignments FOR EACH ROW EXECUTE FUNCTION trigger_740afa9807b8();
 
+CREATE TRIGGER trigger_7495f5e0efcb BEFORE INSERT OR UPDATE ON snippet_user_mentions FOR EACH ROW EXECUTE FUNCTION trigger_7495f5e0efcb();
+
 CREATE TRIGGER trigger_765cae42cd77 BEFORE INSERT OR UPDATE ON bulk_import_trackers FOR EACH ROW EXECUTE FUNCTION trigger_765cae42cd77();
 
 CREATE TRIGGER trigger_77d9fbad5b12 BEFORE INSERT OR UPDATE ON packages_debian_project_distribution_keys FOR EACH ROW EXECUTE FUNCTION trigger_77d9fbad5b12();
@@ -39141,6 +39181,8 @@ CREATE TRIGGER trigger_8fbb044c64ad BEFORE INSERT OR UPDATE ON design_management
 CREATE TRIGGER trigger_90fa5c6951f1 BEFORE INSERT OR UPDATE ON dast_profiles_tags FOR EACH ROW EXECUTE FUNCTION trigger_90fa5c6951f1();
 
 CREATE TRIGGER trigger_9259aae92378 BEFORE INSERT OR UPDATE ON packages_build_infos FOR EACH ROW EXECUTE FUNCTION trigger_9259aae92378();
+
+CREATE TRIGGER trigger_93a5b044f4e8 BEFORE INSERT OR UPDATE ON snippet_user_mentions FOR EACH ROW EXECUTE FUNCTION trigger_93a5b044f4e8();
 
 CREATE TRIGGER trigger_94514aeadc50 BEFORE INSERT OR UPDATE ON deployment_approvals FOR EACH ROW EXECUTE FUNCTION trigger_94514aeadc50();
 
@@ -40255,6 +40297,9 @@ ALTER TABLE ONLY subscription_user_add_on_assignments
 ALTER TABLE ONLY merge_requests_approval_rules_approver_users
     ADD CONSTRAINT fk_725cca295c FOREIGN KEY (approval_rule_id) REFERENCES merge_requests_approval_rules(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY snippet_user_mentions
+    ADD CONSTRAINT fk_7280faac49 FOREIGN KEY (snippet_project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY zentao_tracker_data
     ADD CONSTRAINT fk_72a0e59cd8 FOREIGN KEY (instance_integration_id) REFERENCES instance_integrations(id) ON DELETE CASCADE;
 
@@ -41148,6 +41193,9 @@ ALTER TABLE ONLY project_control_compliance_statuses
 
 ALTER TABLE ONLY protected_branches
     ADD CONSTRAINT fk_de9216e774 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY snippet_user_mentions
+    ADD CONSTRAINT fk_def441dfc3 FOREIGN KEY (snippet_organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY work_item_number_field_values
     ADD CONSTRAINT fk_df27ad8c35 FOREIGN KEY (work_item_id) REFERENCES issues(id) ON DELETE CASCADE;
