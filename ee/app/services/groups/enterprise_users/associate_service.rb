@@ -33,10 +33,6 @@ module Groups
       private
 
       def user_attributes
-        if ::Feature.disabled?(:no_onboarding_enterprise_users, ::Feature.current_request)
-          return enterprise_user_attributes
-        end
-
         enterprise_user_attributes.merge(::Onboarding::FinishService.new(user).onboarding_attributes)
       end
 
