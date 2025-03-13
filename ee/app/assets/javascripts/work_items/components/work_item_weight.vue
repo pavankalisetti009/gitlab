@@ -1,26 +1,25 @@
 <script>
-import { GlButton, GlForm, GlFormInput, GlLoadingIcon, GlTooltipDirective } from '@gitlab/ui';
+import { GlButton, GlFormInput, GlTooltipDirective } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import Tracking from '~/tracking';
 import {
-  sprintfWorkItem,
   I18N_WORK_ITEM_ERROR_UPDATING,
+  sprintfWorkItem,
   TRACKING_CATEGORY_SHOW,
 } from '~/work_items/constants';
 import updateNewWorkItemMutation from '~/work_items/graphql/update_new_work_item.mutation.graphql';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
 import { newWorkItemId } from '~/work_items/utils';
+import WorkItemSidebarWidget from '~/work_items/components/shared/work_item_sidebar_widget.vue';
 
 export default {
-  inputId: 'weight-widget-input',
   directives: {
     GlTooltip: GlTooltipDirective,
   },
   components: {
+    WorkItemSidebarWidget,
     GlButton,
-    GlForm,
     GlFormInput,
-    GlLoadingIcon,
   },
   mixins: [Tracking.mixin()],
   inject: ['hasIssueWeightsFeature'],
@@ -42,10 +41,6 @@ export default {
       type: String,
       required: true,
     },
-    workItemIid: {
-      type: String,
-      required: true,
-    },
     workItemType: {
       type: String,
       required: true,
@@ -53,9 +48,7 @@ export default {
   },
   data() {
     return {
-      isEditing: false,
-      clickingClearButton: false,
-      workItem: {},
+      dirtyWeight: this.widget.weight,
       isUpdating: false,
     };
   },
@@ -69,6 +62,7 @@ export default {
     showRemoveWeight() {
       return this.hasWeight && !this.isUpdating;
     },
+    // eslint-disable-next-line vue/no-unused-properties
     tracking() {
       return {
         category: TRACKING_CATEGORY_SHOW,
@@ -88,27 +82,19 @@ export default {
     },
   },
   methods: {
-    blurInput() {
-      this.$refs.input.$el.blur();
+    clearWeight(stopEditing) {
+      this.dirtyWeight = '';
+      stopEditing();
+      this.updateWeight();
     },
-    handleFocus() {
-      this.isEditing = true;
-    },
-    updateWeightFromInput(event) {
-      if (event.target.value === '') {
-        this.updateWeight(null);
+    updateWeight() {
+      if (!this.canUpdate) {
         return;
       }
 
-      const weight = Number(event.target.value);
-      this.updateWeight(weight);
-    },
-    updateWeight(weight) {
-      if (this.clickingClearButton) return;
-      if (!this.canUpdate) return;
+      const newWeight = this.dirtyWeight === '' ? null : Number(this.dirtyWeight);
 
-      if (this.weight === weight) {
-        this.isEditing = false;
+      if (this.weight === newWeight) {
         return;
       }
 
@@ -123,13 +109,12 @@ export default {
             input: {
               workItemType: this.workItemType,
               fullPath: this.fullPath,
-              weight,
+              weight: newWeight,
             },
           },
         });
 
         this.isUpdating = false;
-        this.isEditing = false;
         return;
       }
 
@@ -140,7 +125,7 @@ export default {
             input: {
               id: this.workItemId,
               weightWidget: {
-                weight,
+                weight: newWeight,
               },
             },
           },
@@ -157,7 +142,6 @@ export default {
         })
         .finally(() => {
           this.isUpdating = false;
-          this.isEditing = false;
         });
     },
   },
@@ -165,74 +149,49 @@ export default {
 </script>
 
 <template>
-  <div v-if="displayWeightWidget" data-testid="work-item-weight">
-    <div class="gl-flex gl-items-center gl-justify-between">
-      <!-- hide header when editing, since we then have a form label. Keep it reachable for screenreader nav  -->
-      <h3 :class="{ 'gl-sr-only': isEditing }" class="gl-heading-5 !gl-mb-0">
-        {{ __('Weight') }}
-      </h3>
-      <gl-button
-        v-if="canUpdate && !isEditing"
-        data-testid="edit-weight"
-        category="tertiary"
-        size="small"
-        @click="isEditing = true"
-        >{{ __('Edit') }}</gl-button
-      >
-    </div>
-    <gl-form v-if="isEditing" @submit.prevent="blurInput">
-      <div class="gl-flex gl-items-center">
-        <label :for="$options.inputId" class="gl-mb-0">{{ __('Weight') }}</label>
-        <gl-loading-icon v-if="isUpdating" size="sm" inline class="gl-ml-3" />
-        <gl-button
-          data-testid="apply-weight"
-          category="tertiary"
-          size="small"
-          class="gl-ml-auto"
-          :disabled="isUpdating"
-          @click="isEditing = false"
-          >{{ __('Apply') }}</gl-button
-        >
-      </div>
-      <!-- wrapper for the form input so the borders fit inside the sidebar -->
+  <work-item-sidebar-widget
+    v-if="displayWeightWidget"
+    :can-update="canUpdate"
+    :is-updating="isUpdating"
+    data-testid="work-item-weight"
+    @stopEditing="updateWeight"
+  >
+    <template #title>
+      {{ __('Weight') }}
+    </template>
+    <template #content>
+      <template v-if="hasWeight">
+        {{ weight }}
+      </template>
+      <span v-else class="gl-text-subtle">
+        {{ __('None') }}
+      </span>
+    </template>
+    <template #editing-content="{ stopEditing }">
       <div class="gl-relative gl-px-2">
         <gl-form-input
-          :id="$options.inputId"
-          ref="input"
-          min="0"
-          class="hide-unfocused-input-decoration gl-block"
-          type="number"
-          :disabled="isUpdating"
-          :placeholder="__('Enter a number')"
-          :value="weight"
+          v-model="dirtyWeight"
           autofocus
-          @blur="updateWeightFromInput"
-          @focus="handleFocus"
-          @keydown.exact.esc.stop="blurInput"
+          min="0"
+          :placeholder="__('Enter a number')"
+          type="number"
+          :aria-label="__('Enter a number')"
+          @keydown.enter="stopEditing"
+          @keydown.exact.esc.stop="stopEditing"
         />
         <gl-button
           v-if="showRemoveWeight"
           v-gl-tooltip
-          data-testid="remove-weight"
-          variant="default"
+          class="gl-absolute gl-right-7 gl-top-2"
           category="tertiary"
-          size="small"
-          name="clear"
           icon="clear"
-          class="gl-clear-icon-button gl-absolute gl-right-7 gl-top-2"
+          size="small"
           :title="__('Remove weight')"
           :aria-label="__('Remove weight')"
-          @mousedown="clickingClearButton = true"
-          @mouseup="clickingClearButton = false"
-          @click="updateWeight(null)"
+          data-testid="remove-weight"
+          @click="clearWeight(stopEditing)"
         />
       </div>
-    </gl-form>
-    <template v-else-if="hasWeight">
-      <div>{{ weight }}</div>
     </template>
-    <template v-else>
-      <div class="gl-text-subtle">{{ __('None') }}</div>
-    </template>
-  </div>
+  </work-item-sidebar-widget>
 </template>
