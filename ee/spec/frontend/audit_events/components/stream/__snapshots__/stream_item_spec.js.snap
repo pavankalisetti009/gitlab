@@ -9,7 +9,7 @@ exports[`StreamItem Group http StreamItem when an item has event filters renders
   <a
     class="gl-link"
     href="/help/user/compliance/audit_event_streaming#update-event-filters"
-    rel="noopener"
+    rel="noopener noreferrer"
     target="_blank"
   >
     What are filters?
@@ -26,7 +26,7 @@ exports[`StreamItem Group http StreamItem when an item has namespace filters ren
   <a
     class="gl-link"
     href="/help/user/compliance/audit_event_streaming#update-event-filters"
-    rel="noopener"
+    rel="noopener noreferrer"
     target="_blank"
   >
     What are filters?
