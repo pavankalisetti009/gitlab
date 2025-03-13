@@ -43,7 +43,6 @@ module RuboCop
       #     end
       #   end
       class PreventAddingAttrEncryptedColumns < RuboCop::Cop::Base
-        extend AutoCorrector
         include MigrationHelpers
 
         MSG = "Do not introduce `%<wrong_column>s` (`attr_encrypted` column), introduce a single " \
@@ -86,14 +85,7 @@ module RuboCop
           add_offense(
             node.loc.selector,
             message: format(MSG, wrong_column: wrong_column, correct_column: correct_column)
-          ) do |corrector|
-            replaced_content = node.source
-            constant = node.children.find { |child| valid_node?(child) && child.const_type? }
-            replaced_content = node.source.sub(constant.short_name.to_s, ":#{correct_column}") if constant
-            replaced_content = replaced_content.sub(wrong_column.to_s, correct_column.to_s).sub('binary', 'jsonb')
-
-            corrector.replace(node, replaced_content)
-          end
+          )
         end
 
         def attr_encrypted_column?(column_name)

@@ -16,16 +16,6 @@ RSpec.describe RuboCop::Cop::Migration::PreventAddingAttrEncryptedColumns, featu
           end
         end
       RUBY
-
-      expect_correction(<<~RUBY)
-        class CreateAuditEventsInstanceAmazonS3Configurations < ActiveRecord::Migration[6.0]
-          def change
-            create_table :audit_events_instance_amazon_s3_configurations do |t|
-              t.jsonb :secret_access_key
-            end
-          end
-        end
-      RUBY
     end
   end
 
@@ -41,20 +31,6 @@ RSpec.describe RuboCop::Cop::Migration::PreventAddingAttrEncryptedColumns, featu
               t.binary COLUMN_NAME
                 ^^^^^^ Do not introduce `encrypted_secret_access_key` (`attr_encrypted` column), introduce a single `secret_access_key` column with type `:jsonb` instead.[...]
               t.binary COLUMN_NAME_IV
-            end
-          end
-        end
-      RUBY
-
-      expect_correction(<<~RUBY)
-        class CreateAuditEventsInstanceAmazonS3Configurations < ActiveRecord::Migration[6.0]
-          COLUMN_NAME = :encrypted_secret_access_key
-          COLUMN_NAME_IV = :encrypted_secret_access_key_iv
-
-          def change
-            create_table :audit_events_instance_amazon_s3_configurations do |t|
-              t.jsonb :secret_access_key
-              t.jsonb :secret_access_key
             end
           end
         end
@@ -104,15 +80,6 @@ RSpec.describe RuboCop::Cop::Migration::PreventAddingAttrEncryptedColumns, featu
           end
         end
       RUBY
-
-      expect_correction(<<~RUBY)
-        class CreateAuditEventsInstanceAmazonS3Configurations < ActiveRecord::Migration[6.0]
-          def change
-            add_column(:audit_events_instance_amazon_s3_configurations, :secret_access_key, :jsonb)
-            add_column(:audit_events_instance_amazon_s3_configurations, :secret_access_key, :jsonb)
-          end
-        end
-      RUBY
     end
 
     context "and column name is a constant" do
@@ -124,16 +91,6 @@ RSpec.describe RuboCop::Cop::Migration::PreventAddingAttrEncryptedColumns, featu
             def change
               add_column(:audit_events_instance_amazon_s3_configurations, COLUMN_NAME, :binary)
               ^^^^^^^^^^ Do not introduce `encrypted_secret_access_key` (`attr_encrypted` column), introduce a single `secret_access_key` column with type `:jsonb` instead.[...]
-            end
-          end
-        RUBY
-
-        expect_correction(<<~RUBY)
-          class CreateAuditEventsInstanceAmazonS3Configurations < ActiveRecord::Migration[6.0]
-            COLUMN_NAME = :encrypted_secret_access_key
-
-            def change
-              add_column(:audit_events_instance_amazon_s3_configurations, :secret_access_key, :jsonb)
             end
           end
         RUBY
