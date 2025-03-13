@@ -45,6 +45,22 @@ module GitlabSubscriptions
           root_group.gitlab_subscription.seats >= (billable_ids.count + new_invites.count)
         end
 
+        def block_seat_overages_for_self_managed?
+          ::Gitlab::CurrentSettings.seat_control_block_overages?
+        end
+
+        def seats_available_for_self_managed?(invites, access_level, member_role_id)
+          exclude_guests = ::License.current.exclude_guests_from_active_count?
+          return true if non_billable_member?(access_level, member_role_id, exclude_guests)
+
+          billable_ids = get_billable_user_ids
+          new_invites = invites - billable_ids
+
+          return true if new_invites.empty?
+
+          ::License.current.seats >= (billable_ids.count + new_invites.count)
+        end
+
         private
 
         def process_invites(source, list)
@@ -88,22 +104,6 @@ module GitlabSubscriptions
           human_users = users.select(&:human?)
 
           human_users.map { |user| user.id.to_s }
-        end
-
-        def block_seat_overages_for_self_managed?
-          ::Gitlab::CurrentSettings.seat_control_block_overages?
-        end
-
-        def seats_available_for_self_managed?(invites, access_level, member_role_id)
-          exclude_guests = ::License.current.exclude_guests_from_active_count?
-          return true if non_billable_member?(access_level, member_role_id, exclude_guests)
-
-          billable_ids = get_billable_user_ids
-          new_invites = invites - billable_ids
-
-          return true if new_invites.empty?
-
-          ::License.current.seats >= (billable_ids.count + new_invites.count)
         end
 
         def get_billable_user_ids

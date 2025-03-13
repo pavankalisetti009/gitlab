@@ -18,6 +18,7 @@ module EE
       before_action :restrict_registration, only: [:new, :create]
       before_action :ensure_can_remove_self, only: [:destroy]
       before_action :verify_arkose_labs_challenge!, only: :create
+      before_action :check_seats, only: :create
     end
 
     override :new
@@ -58,6 +59,19 @@ module EE
 
       member&.destroy
       redirect_to restricted_signup_identity_verification_path
+    end
+
+    def check_seats
+      return unless ::GitlabSubscriptions::MemberManagement::BlockSeatOverages.block_seat_overages_for_self_managed?
+
+      email = Array.wrap(sign_up_params[:email])
+      return if ::GitlabSubscriptions::MemberManagement::BlockSeatOverages
+        .seats_available_for_self_managed?(email, ::Gitlab::Access::GUEST, nil)
+
+      flash[:alert] =
+        s_('Registration|There are no seats left on your GitLab instance. Please contact your GitLab administrator.')
+
+      render action: 'new'
     end
 
     def allow_invited_user?
