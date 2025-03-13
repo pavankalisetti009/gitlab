@@ -419,6 +419,7 @@ After you reassign contributions, GitLab sends you an email with the number of:
 
 - Successfully processed rows
 - Unsuccessfully processed rows
+- Skipped rows
 
 If any rows have not been successfully processed, the email has a CSV file with more detailed results.
 
