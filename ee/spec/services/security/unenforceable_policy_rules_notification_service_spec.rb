@@ -123,6 +123,12 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
 
   context 'without report approver rules' do
     it_behaves_like 'does not trigger policy bot comment'
+
+    it 'does not log message' do
+      expect(Gitlab::AppJsonLogger).not_to receive(:info)
+
+      execute
+    end
   end
 
   context 'when all reports are enforceable' do
@@ -132,6 +138,15 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
     end
 
     it_behaves_like 'does not block enforceable rules'
+
+    it 'logs the corresponding message' do
+      expect(Gitlab::AppJsonLogger).to receive(:info).with(
+        hash_including(message: 'No unenforceable scan_finding rules detected, skipping'))
+      expect(Gitlab::AppJsonLogger).to receive(:info).with(
+        hash_including(message: 'No unenforceable license_scanning rules detected, skipping'))
+
+      execute
+    end
   end
 
   context 'when merge request has no head pipeline' do
@@ -189,6 +204,16 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
       end
 
       it_behaves_like 'triggers policy bot comment', report_type, true
+
+      it 'logs the corresponding message' do
+        allow(Gitlab::AppJsonLogger).to receive(:info)
+        expect(Gitlab::AppJsonLogger).to receive(:info).with(hash_including(
+          event: 'unenforceable_rules',
+          message: "Unenforceable #{report_type} rules detected"
+        ))
+
+        execute
+      end
 
       it 'updates violation status' do
         expect { execute }.to change { violation.reload.status }.from('running').to('failed')

@@ -4,6 +4,7 @@ module Security
   module ScanResultPolicies
     class SyncPreexistingStatesApprovalRulesService
       include VulnerabilityStatesHelper
+      include ::Security::ScanResultPolicies::PolicyLogger
 
       def initialize(merge_request)
         @merge_request = merge_request
@@ -30,11 +31,14 @@ module Security
       delegate :project, to: :merge_request, private: true
 
       def evaluate_rules(approval_rules)
+        log_message('Evaluating pre_existing scan_finding rules from approval policies')
         approval_rules.each do |rule|
           rule_violated, violation_data = preexisting_findings_count_violated?(rule)
 
           if rule_violated
-            log_violated_rule(approval_rule_id: rule.id, approval_rule_name: rule.name)
+            log_message('Updating MR approval rule with pre_existing states',
+              reason: 'pre_existing scan_finding rule violated',
+              approval_rule_id: rule.id, approval_rule_name: rule.name)
             evaluation.fail!(rule, data: violation_data)
           else
             evaluation.pass!(rule)
@@ -62,18 +66,9 @@ module Security
         ::Security::ScanResultPolicies::VulnerabilitiesFinder.new(project, finder_params).execute
       end
 
-      def log_violated_rule(**attributes)
-        default_attributes = {
-          reason: 'pre_existing scan_finding_rule violated',
-          event: 'update_approvals',
-          merge_request_id: merge_request.id,
-          merge_request_iid: merge_request.iid,
-          project_path: merge_request.project.full_path
-        }
-        Gitlab::AppJsonLogger.info(
-          message: 'Updating MR approval rule with pre_existing states',
-          **default_attributes.merge(attributes)
-        )
+      def log_message(message, **attributes)
+        log_policy_evaluation('update_approvals', message,
+          project: project, merge_request_id: merge_request.id, merge_request_iid: merge_request.iid, **attributes)
       end
 
       def evaluation

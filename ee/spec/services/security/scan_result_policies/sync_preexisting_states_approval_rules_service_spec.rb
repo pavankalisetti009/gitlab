@@ -55,6 +55,15 @@ RSpec.describe Security::ScanResultPolicies::SyncPreexistingStatesApprovalRulesS
       end
     end
 
+    shared_examples_for 'logs only evaluation' do
+      it 'logs the start of the evaluation' do
+        expect(Gitlab::AppJsonLogger).to receive(:info).with(hash_including(
+          message: 'Evaluating pre_existing scan_finding rules from approval policies'))
+
+        execute
+      end
+    end
+
     context 'when merge_request is merged' do
       before do
         merge_request.update!(state: 'merged')
@@ -70,7 +79,7 @@ RSpec.describe Security::ScanResultPolicies::SyncPreexistingStatesApprovalRulesS
 
       it_behaves_like 'does not update approval rules'
       it_behaves_like 'triggers policy bot comment', :scan_finding, false, requires_approval: false
-      it_behaves_like 'does not log violations'
+      it_behaves_like 'logs only evaluation'
     end
 
     context 'when rules do not contain pre-existing states' do
@@ -116,7 +125,7 @@ RSpec.describe Security::ScanResultPolicies::SyncPreexistingStatesApprovalRulesS
 
         it_behaves_like 'sets approvals_required to 0'
         it_behaves_like 'triggers policy bot comment', :scan_finding, false
-        it_behaves_like 'does not log violations'
+        it_behaves_like 'logs only evaluation'
         it_behaves_like 'merge request without scan result violations'
       end
 
@@ -136,16 +145,19 @@ RSpec.describe Security::ScanResultPolicies::SyncPreexistingStatesApprovalRulesS
         it_behaves_like 'triggers policy bot comment', :scan_finding, true
 
         it 'logs update' do
+          expect(Gitlab::AppJsonLogger).to receive(:info).with(hash_including(
+            message: 'Evaluating pre_existing scan_finding rules from approval policies'))
           expect(::Gitlab::AppJsonLogger)
             .to receive(:info).once.ordered
             .with(
+              workflow: 'approval_policy_evaluation',
               event: 'update_approvals',
               message: 'Updating MR approval rule with pre_existing states',
               approval_rule_id: approver_rule.id,
               approval_rule_name: approver_rule.name,
               merge_request_id: merge_request.id,
               merge_request_iid: merge_request.iid,
-              reason: 'pre_existing scan_finding_rule violated',
+              reason: 'pre_existing scan_finding rule violated',
               project_path: project.full_path
             ).and_call_original
 
@@ -167,7 +179,7 @@ RSpec.describe Security::ScanResultPolicies::SyncPreexistingStatesApprovalRulesS
       context 'when vulnerabilities count does not match the pre-existing states' do
         it_behaves_like 'sets approvals_required to 0'
         it_behaves_like 'triggers policy bot comment', :scan_finding, false
-        it_behaves_like 'does not log violations'
+        it_behaves_like 'logs only evaluation'
         it_behaves_like 'merge request without scan result violations'
 
         context 'when there are other scan_finding violations' do

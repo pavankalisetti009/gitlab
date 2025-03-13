@@ -4,6 +4,7 @@ module Security
   module ScanResultPolicies
     class UpdateLicenseApprovalsService
       include Gitlab::Utils::StrongMemoize
+      include ::Security::ScanResultPolicies::PolicyLogger
 
       def initialize(merge_request, pipeline, preexisting_states = false)
         @merge_request = merge_request
@@ -20,7 +21,11 @@ module Security
       def execute
         return if merge_request.merged?
         return if approval_rules.empty?
-        return if !preexisting_states && !scanner.results_available?
+
+        if !preexisting_states && !scanner.results_available?
+          log_update_approval_rule('No SBOM reports found for the pipeline')
+          return
+        end
 
         filtered_rules = filter_approval_rules(approval_rules)
         return if filtered_rules.empty?
@@ -42,6 +47,7 @@ module Security
       end
 
       def evaluate_rules(license_approval_rules)
+        log_update_approval_rule('Evaluating license_scanning rules from approval policies', **validation_context)
         license_approval_rules.each do |approval_rule|
           # We only error for fail-open. Fail closed policy is evaluated as "failing"
           if !target_branch_pipeline && fail_open?(approval_rule)
@@ -53,7 +59,8 @@ module Security
 
           if rule_violated
             evaluation.fail!(approval_rule, data: violation_data, context: validation_context)
-            log_update_approval_rule(approval_rule_id: approval_rule.id, approval_rule_name: approval_rule.name)
+            log_update_approval_rule('Updating MR approval rule', reason: 'license_finding rule violated',
+              approval_rule_id: approval_rule.id, approval_rule_name: approval_rule.name)
           else
             evaluation.pass!(approval_rule)
           end
@@ -117,19 +124,10 @@ module Security
         { pipeline_ids: [pipeline&.id].compact, target_pipeline_ids: [target_branch_pipeline&.id].compact }
       end
 
-      def log_update_approval_rule(**attributes)
-        default_attributes = {
-          reason: 'license_finding rule violated',
-          event: 'update_approvals',
-          merge_request_id: merge_request.id,
-          merge_request_iid: merge_request.iid,
-          project_path: project.full_path
-        }
-
-        Gitlab::AppJsonLogger.info(
-          message: 'Updating MR approval rule',
-          **default_attributes.merge(attributes).merge(validation_context)
-        )
+      def log_update_approval_rule(message, **attributes)
+        log_policy_evaluation('update_approvals', message,
+          project: project, merge_request_id: merge_request.id,
+          merge_request_iid: merge_request.iid, **attributes.merge(validation_context))
       end
 
       def build_violation_data(denied_licenses_with_dependencies)

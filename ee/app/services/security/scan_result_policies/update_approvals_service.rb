@@ -5,6 +5,7 @@ module Security
     class UpdateApprovalsService
       include Gitlab::Utils::StrongMemoize
       include VulnerabilityStatesHelper
+      include ::Security::ScanResultPolicies::PolicyLogger
 
       attr_reader :pipeline, :merge_request, :approval_rules
 
@@ -18,7 +19,11 @@ module Security
         pipeline_complete = pipeline.complete_or_manual?
 
         return unless pipeline_complete
-        return unless pipeline.can_store_security_reports?
+
+        unless pipeline.can_store_security_reports?
+          log_update_approval_rule('No security reports found for the pipeline', **validation_context)
+          return
+        end
 
         approval_rules_with_newly_detected_states = filter_newly_detected_rules(:scan_finding, approval_rules)
         return if approval_rules_with_newly_detected_states.empty?
@@ -40,7 +45,7 @@ module Security
       delegate :project, to: :pipeline
 
       def evaluate_rules(approval_rules)
-        log_update_approval_rule('Evaluating MR approval rules from scan result policies', **validation_context)
+        log_update_approval_rule('Evaluating scan_finding rules from approval policies', **validation_context)
 
         approval_rules.each do |merge_request_approval_rule|
           approval_rule = merge_request_approval_rule.try(:source_rule) || merge_request_approval_rule
@@ -80,13 +85,8 @@ module Security
       end
 
       def log_update_approval_rule(message, **attributes)
-        default_attributes = {
-          event: 'update_approvals',
-          merge_request_id: merge_request.id,
-          merge_request_iid: merge_request.iid,
-          project_path: project.full_path
-        }
-        Gitlab::AppJsonLogger.info(message: message, **default_attributes.merge(attributes))
+        log_policy_evaluation('update_approvals', message,
+          project: project, merge_request_id: merge_request.id, merge_request_iid: merge_request.iid, **attributes)
       end
 
       def violates_approval_rule?(approval_rule)

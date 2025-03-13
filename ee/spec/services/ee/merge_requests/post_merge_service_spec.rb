@@ -219,8 +219,9 @@ RSpec.describe MergeRequests::PostMergeService, feature_category: :code_review_w
               scan_result_policy_read: policy)
           end
 
-          it 'logs a warning' do
-            expect(Gitlab::AppLogger).to receive(:warn).with(a_hash_including(
+          it 'logs a message' do
+            expect(Gitlab::AppJsonLogger).to receive(:info).with(a_hash_including(
+              workflow: 'approval_policy_evaluation',
               message: 'Running scan result policy violations after merge',
               merge_request_id: merge_request.id,
               violation_ids: [violation.id]
@@ -232,8 +233,8 @@ RSpec.describe MergeRequests::PostMergeService, feature_category: :code_review_w
           context 'when feature is not licensed' do
             let(:security_orchestration_enabled) { false }
 
-            it 'does not log a warning' do
-              expect(Gitlab::AppLogger).not_to receive(:warn)
+            it 'does not log a message' do
+              expect(Gitlab::AppJsonLogger).not_to receive(:info)
 
               execute
             end
@@ -241,8 +242,8 @@ RSpec.describe MergeRequests::PostMergeService, feature_category: :code_review_w
         end
 
         context 'without running_scan_result_policy_violations' do
-          it 'does log a warning' do
-            expect(Gitlab::AppLogger).not_to receive(:warn)
+          it 'does not log a message' do
+            expect(Gitlab::AppJsonLogger).not_to receive(:info)
 
             execute
           end

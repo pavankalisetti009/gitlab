@@ -63,6 +63,12 @@ RSpec.describe Security::ScanResultPolicies::SyncAnyMergeRequestRulesService, fe
       it 'creates no violation records' do
         expect { execute }.not_to change { merge_request.scan_result_policy_violations.count }
       end
+
+      it 'does not create a log' do
+        expect(Gitlab::AppJsonLogger).not_to receive(:info)
+
+        execute
+      end
     end
 
     describe 'approval rules' do
@@ -80,8 +86,10 @@ RSpec.describe Security::ScanResultPolicies::SyncAnyMergeRequestRulesService, fe
             let(:archived_project) { merge_request.project }
           end
 
-          it 'does not create a log' do
-            expect(Gitlab::AppJsonLogger).not_to receive(:info)
+          it 'logs only the evaluation and not a violated rule' do
+            expect(Gitlab::AppJsonLogger).to receive(:info).with(
+              hash_including(message: 'Evaluating any_merge_request rules from approval policies')
+            )
 
             execute
           end
@@ -203,6 +211,8 @@ RSpec.describe Security::ScanResultPolicies::SyncAnyMergeRequestRulesService, fe
           it_behaves_like 'merge request with scan result violations'
 
           it 'logs violated rules' do
+            expect(Gitlab::AppJsonLogger).to receive(:info).with(hash_including(
+              message: 'Evaluating any_merge_request rules from approval policies'))
             expect(Gitlab::AppJsonLogger).to receive(:info).with(hash_including(message: 'Updating MR approval rule'))
 
             execute

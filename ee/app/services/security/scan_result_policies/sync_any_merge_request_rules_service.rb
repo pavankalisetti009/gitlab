@@ -5,6 +5,7 @@ module Security
     class SyncAnyMergeRequestRulesService
       include Gitlab::Utils::StrongMemoize
       include ::Security::ScanResultPolicies::PolicyViolationCommentGenerator
+      include ::Security::ScanResultPolicies::PolicyLogger
 
       def initialize(merge_request)
         @merge_request = merge_request
@@ -32,6 +33,7 @@ module Security
 
         violated_policies, unviolated_policies = evaluate_policy_violations(related_policies)
 
+        log_message('Evaluating any_merge_request rules from approval policies')
         violated_rules, unviolated_rules = rules_for_violated_policies(violated_policies)
         violated_rules, unviolated_rules = update_required_approvals(violated_rules, unviolated_rules)
 
@@ -137,22 +139,18 @@ module Security
         return unless rules.any?
 
         rules.each do |approval_rule|
-          log_violated_rule(
+          log_message('Updating MR approval rule',
+            reason: 'any_merge_request rule violated',
             approval_rule_id: approval_rule.id,
             approval_rule_name: approval_rule.name
           )
         end
       end
 
-      def log_violated_rule(**attributes)
-        default_attributes = {
-          reason: 'any_merge_request rule violated',
-          event: 'update_approvals',
-          merge_request_id: merge_request.id,
-          merge_request_iid: merge_request.iid,
-          project_path: merge_request.project.full_path
-        }
-        Gitlab::AppJsonLogger.info(message: 'Updating MR approval rule', **default_attributes.merge(attributes))
+      def log_message(message, **attributes)
+        log_policy_evaluation('update_approvals', message,
+          project: project, merge_request_id: merge_request.id,
+          merge_request_iid: merge_request.iid, **attributes)
       end
 
       def save_violation_data(violated_policies)

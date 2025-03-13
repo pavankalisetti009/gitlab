@@ -81,6 +81,12 @@ RSpec.describe Security::ScanResultPolicies::UpdateLicenseApprovalsService, feat
     end
 
     it_behaves_like 'does not trigger policy bot comment'
+
+    it 'does not call logger' do
+      expect(Gitlab::AppJsonLogger).not_to receive(:info)
+
+      execute
+    end
   end
 
   describe 'violation data' do
@@ -124,6 +130,8 @@ RSpec.describe Security::ScanResultPolicies::UpdateLicenseApprovalsService, feat
     it_behaves_like 'triggers policy bot comment', :license_scanning, true
 
     it 'logs the violated rules' do
+      expect(Gitlab::AppJsonLogger).to receive(:info).with(hash_including(
+        message: 'Evaluating license_scanning rules from approval policies'))
       expect(Gitlab::AppJsonLogger).to receive(:info).with(hash_including(message: 'Updating MR approval rule'))
 
       execute
@@ -156,8 +164,9 @@ RSpec.describe Security::ScanResultPolicies::UpdateLicenseApprovalsService, feat
       it_behaves_like 'triggers policy bot comment', :license_scanning, false
       it_behaves_like 'merge request without scan result violations'
 
-      it 'does not call logger' do
-        expect(Gitlab::AppJsonLogger).not_to receive(:info)
+      it 'only logs evaluation' do
+        expect(Gitlab::AppJsonLogger).to receive(:info).with(hash_including(
+          message: 'Evaluating license_scanning rules from approval policies'))
 
         execute
       end
@@ -196,6 +205,13 @@ RSpec.describe Security::ScanResultPolicies::UpdateLicenseApprovalsService, feat
 
       it_behaves_like 'requires approval'
       it_behaves_like 'does not trigger policy bot comment'
+
+      it 'logs a message' do
+        expect(Gitlab::AppJsonLogger).to receive(:info).with(hash_including(
+          message: 'No SBOM reports found for the pipeline'))
+
+        execute
+      end
     end
 
     context 'when there are no violations' do
