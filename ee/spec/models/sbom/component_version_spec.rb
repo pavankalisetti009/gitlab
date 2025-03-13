@@ -33,4 +33,61 @@ RSpec.describe Sbom::ComponentVersion, type: :model, feature_category: :dependen
       let_it_be(:model) { create(:sbom_component_version, organization: parent) }
     end
   end
+
+  describe '.by_project_and_component' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:sbom_component_1) { create(:sbom_component) }
+    let_it_be(:component_version_1) { create(:sbom_component_version, component: sbom_component_1) }
+    let_it_be(:sbom_component_2) { create(:sbom_component) }
+    let_it_be(:component_version_2) { create(:sbom_component_version, component: sbom_component_2) }
+
+    let_it_be(:occurrence_1) do
+      create(:sbom_occurrence, project: project, component: sbom_component_1, component_version: component_version_1)
+    end
+
+    let_it_be(:occurrence_2) do
+      create(:sbom_occurrence, project: project, component: sbom_component_2, component_version: component_version_2)
+    end
+
+    subject(:results) do
+      described_class.by_project_and_component(project.id, component_id)
+    end
+
+    context 'when sbom occurences belongs to same component' do
+      context 'when all the versions present are unique' do
+        let_it_be(:component_version_3) { create(:sbom_component_version, component: sbom_component_1) }
+        let_it_be(:occurrence_3) do
+          create(:sbom_occurrence, project: project,
+            component: sbom_component_1, component_version: component_version_3)
+        end
+
+        let(:component_id) { sbom_component_1.id }
+
+        it 'returns the matching versions' do
+          expect(results.to_a).to match_array([component_version_1, component_version_3])
+        end
+      end
+
+      context 'when same version is present more than once' do
+        let_it_be(:occurrence_4) do
+          create(:sbom_occurrence, project: project,
+            component: sbom_component_1, component_version: component_version_1)
+        end
+
+        let(:component_id) { sbom_component_1.id }
+
+        it 'returns only the unique versions' do
+          expect(results.to_a).to eq([component_version_1])
+        end
+      end
+    end
+
+    context 'when sbom occurences does not belong to same component' do
+      let(:component_id) { sbom_component_1.id }
+
+      it 'returns only the matching version' do
+        expect(results.to_a).to eq([component_version_1])
+      end
+    end
+  end
 end

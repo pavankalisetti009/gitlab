@@ -389,6 +389,14 @@ module EE
           resolver: ::Resolvers::Sbom::ComponentResolver,
           experiment: { milestone: '17.9' }
 
+        field :component_versions,
+          [::Types::Sbom::ComponentVersionType],
+          null: false,
+          authorize: :read_dependency,
+          description: 'Find software dependency versions by component.',
+          resolver: ::Resolvers::Sbom::ComponentVersionResolver,
+          experiment: { milestone: '17.10' }
+
         field :merge_requests_disable_committers_approval, GraphQL::Types::Boolean,
           null: false,
           description: 'Indicates that committers of the given merge request cannot approve.'
