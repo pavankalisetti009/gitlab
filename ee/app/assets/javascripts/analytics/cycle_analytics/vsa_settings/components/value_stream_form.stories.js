@@ -1,7 +1,6 @@
 import { withVuexStore } from 'storybook_addons/vuex_store';
 import {
   defaultStageConfig,
-  defaultGroupLabels,
   formEvents,
   selectedValueStream,
   selectedValueStreamStages,
@@ -26,12 +25,8 @@ const createStoryWithState = ({ state = {} } = {}) => {
       state: {
         defaultStageConfig,
         formEvents,
-        defaultGroupLabels,
         isLoading: false,
         ...state,
-      },
-      actions: {
-        fetchGroupLabels: () => true,
       },
     }),
   });

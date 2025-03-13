@@ -10,7 +10,6 @@ import {
   rawCustomStage,
   valueStreams,
   defaultStageConfig,
-  groupLabels as defaultGroupLabels,
 } from 'ee_jest/analytics/cycle_analytics/mock_data';
 
 Vue.use(Vuex);
@@ -20,8 +19,6 @@ const camelCustomStage = convertObjectPropsToCamelCase(rawCustomStage);
 const stages = [camelCustomStage];
 const initialData = { name: '', stages: [] };
 
-const fetchGroupLabelsMock = jest.fn(() => Promise.resolve());
-
 describe('ValueStreamForm', () => {
   let wrapper = null;
 
@@ -29,14 +26,9 @@ describe('ValueStreamForm', () => {
     new Vuex.Store({
       state: {
         defaultStageConfig,
-        defaultGroupLabels,
         isLoading: false,
-        isFetchingGroupLabels: false,
         isFetchingGroupStagesAndEvents: false,
         ...state,
-      },
-      actions: {
-        fetchGroupLabels: fetchGroupLabelsMock,
       },
     });
 
@@ -97,7 +89,7 @@ describe('ValueStreamForm', () => {
     });
   });
 
-  describe.each(['isLoading', 'isFetchingGroupStagesAndEvents', 'isFetchingGroupLabels'])(
+  describe.each(['isLoading', 'isFetchingGroupStagesAndEvents'])(
     'when %s',
     (isFetchingResource) => {
       beforeEach(() => {
@@ -113,16 +105,4 @@ describe('ValueStreamForm', () => {
       });
     },
   );
-
-  describe('when there are no defaultGroupLabels', () => {
-    beforeEach(() => {
-      createComponent({
-        state: { defaultGroupLabels: null },
-      });
-    });
-
-    it('should fetch group labels', () => {
-      expect(fetchGroupLabelsMock).toHaveBeenCalledTimes(1);
-    });
-  });
 });

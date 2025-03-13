@@ -1,7 +1,7 @@
 <script>
 import { GlLoadingIcon } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
-import { mapState, mapActions } from 'vuex';
+import { mapState } from 'vuex';
 import { generateInitialStageData } from '../utils';
 import ValueStreamFormContent from './value_stream_form_content.vue';
 
@@ -23,13 +23,11 @@ export default {
       'selectedValueStream',
       'stages',
       'defaultStageConfig',
-      'defaultGroupLabels',
       'isFetchingGroupStagesAndEvents',
-      'isFetchingGroupLabels',
       'isLoading',
     ]),
     isLoadingOrFetching() {
-      return this.isLoading || this.isFetchingGroupLabels || this.isFetchingGroupStagesAndEvents;
+      return this.isLoading || this.isFetchingGroupStagesAndEvents;
     },
     initialData() {
       return this.isEditing
@@ -42,14 +40,6 @@ export default {
             stages: [],
           };
     },
-  },
-  created() {
-    if (!this.defaultGroupLabels) {
-      this.fetchGroupLabels();
-    }
-  },
-  methods: {
-    ...mapActions(['fetchGroupLabels']),
   },
 };
 </script>

@@ -1,4 +1,3 @@
-import { getGroupLabels } from 'ee/api/analytics_api';
 import { createAlert } from '~/alert';
 import { constructPathWithNamespace } from '~/analytics/cycle_analytics/utils';
 import { LABELS_ENDPOINT, MILESTONES_ENDPOINT } from '~/analytics/cycle_analytics/constants';
@@ -30,13 +29,6 @@ export const setPaths = ({
 };
 
 export const setFeatures = ({ commit }, features) => commit(types.SET_FEATURES, features);
-
-export const fetchGroupLabels = ({ commit, getters: { namespaceRestApiRequestPath } }) => {
-  commit(types.REQUEST_GROUP_LABELS);
-  return getGroupLabels(namespaceRestApiRequestPath, { only_group_labels: true })
-    .then(({ data = [] }) => commit(types.RECEIVE_GROUP_LABELS_SUCCESS, data))
-    .catch(() => commit(types.RECEIVE_GROUP_LABELS_ERROR));
-};
 
 export const requestCycleAnalyticsData = ({ commit }) => commit(types.REQUEST_VALUE_STREAM_DATA);
 

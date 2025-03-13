@@ -26,7 +26,6 @@ import {
   customStageEvents as formEvents,
   defaultStageConfig,
   rawCustomStage,
-  groupLabels as defaultGroupLabels,
   endpoints,
 } from '../../mock_data';
 
@@ -64,7 +63,6 @@ describe('ValueStreamFormContent', () => {
     new Vuex.Store({
       state: {
         formEvents,
-        defaultGroupLabels,
         selectedValueStream: undefined,
         ...stateOverrides,
       },
@@ -123,7 +121,7 @@ describe('ValueStreamFormContent', () => {
 
   describe('when creating value stream', () => {
     beforeEach(() => {
-      wrapper = createComponent({ state: { defaultGroupLabels: null } });
+      wrapper = createComponent();
     });
 
     it('has the form actions', () => {

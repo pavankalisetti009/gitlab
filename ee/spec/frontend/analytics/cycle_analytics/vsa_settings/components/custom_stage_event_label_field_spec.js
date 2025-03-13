@@ -10,7 +10,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import { i18n, ERRORS } from 'ee/analytics/cycle_analytics/vsa_settings/constants';
 import CustomStageEventLabelField from 'ee/analytics/cycle_analytics/vsa_settings/components/custom_stage_event_label_field.vue';
 import createStore from 'ee/analytics/cycle_analytics/store';
-import { groupLabels as defaultGroupLabels } from '../../mock_data';
+import { groupLabels } from '../../mock_data';
 
 Vue.use(Vuex);
 
@@ -18,7 +18,7 @@ const index = 0;
 const eventType = 'start-event';
 const fieldLabel = i18n.FORM_FIELD_START_EVENT_LABEL;
 const labelError = ERRORS.INVALID_EVENT_PAIRS;
-const [selectedLabel] = defaultGroupLabels;
+const [selectedLabel] = groupLabels;
 
 const defaultProps = {
   index,
@@ -52,10 +52,7 @@ describe('CustomStageEventLabelField', () => {
     axiosMock = new MockAdapter(axios);
 
     const endpointResponse = new Promise((resolve) => {
-      resolveGroupLabelsRequest = ({
-        status = HTTP_STATUS_OK,
-        results = defaultGroupLabels,
-      } = {}) => {
+      resolveGroupLabelsRequest = ({ status = HTTP_STATUS_OK, results = groupLabels } = {}) => {
         resolve([status, results]);
         return waitForPromises();
       };
@@ -107,7 +104,7 @@ describe('CustomStageEventLabelField', () => {
     });
   });
 
-  describe('with no default labels', () => {
+  describe('loading labels', () => {
     beforeEach(() => {
       wrapper = createComponent();
     });
@@ -116,7 +113,7 @@ describe('CustomStageEventLabelField', () => {
       expect(findToggleButton().props().loading).toBe(true);
     });
 
-    describe('once labels are loaded', () => {
+    describe('once request succeeds', () => {
       beforeEach(() => {
         return resolveGroupLabelsRequest();
       });
@@ -126,18 +123,8 @@ describe('CustomStageEventLabelField', () => {
       });
 
       it('shows the labels in the listbox', () => {
-        expect(findCollapsibleListbox().props().items.length).toBe(defaultGroupLabels.length);
+        expect(findCollapsibleListbox().props().items.length).toBe(groupLabels.length);
       });
-    });
-  });
-
-  describe('default labels fail to load', () => {
-    beforeEach(() => {
-      wrapper = createComponent();
-    });
-
-    it('will show loading state while request is pending', () => {
-      expect(findToggleButton().props().loading).toBe(true);
     });
 
     describe('once request fails', () => {
@@ -159,7 +146,7 @@ describe('CustomStageEventLabelField', () => {
   });
 
   describe('when searching', () => {
-    const results = defaultGroupLabels.slice(0, 1);
+    const results = groupLabels.slice(0, 1);
 
     beforeEach(() => {
       wrapper = createComponent();

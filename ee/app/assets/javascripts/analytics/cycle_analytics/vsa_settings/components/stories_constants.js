@@ -1,29 +1,5 @@
 /* eslint-disable @gitlab/require-i18n-strings */
 
-export const defaultGroupLabels = [
-  {
-    id: 1,
-    title: 'in-dev',
-    color: '#4018cc',
-    project_id: null,
-    text_color: '#FFFFFF',
-  },
-  {
-    id: 2,
-    title: 'in-review',
-    color: '#48b29d',
-    project_id: null,
-    text_color: '#FFFFFF',
-  },
-  {
-    id: 3,
-    title: 'done',
-    color: '#4c20e8',
-    project_id: null,
-    text_color: '#FFFFFF',
-  },
-];
-
 export const defaultStageConfig = [
   {
     custom: false,
@@ -147,7 +123,22 @@ export const formEvents = [
 
 export const selectedValueStream = { id: 16, name: 'Cool value stream', isCustom: true };
 
-const [startEventLabel, endEventLabel] = defaultGroupLabels;
+const startEventLabel = {
+  id: 1,
+  title: 'in-dev',
+  color: '#4018cc',
+  project_id: null,
+  text_color: '#FFFFFF',
+};
+
+const endEventLabel = {
+  id: 2,
+  title: 'in-review',
+  color: '#48b29d',
+  project_id: null,
+  text_color: '#FFFFFF',
+};
+
 export const customStage = {
   hidden: false,
   legend: 'Custom legend',

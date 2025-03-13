@@ -16,13 +16,8 @@ import {
   I18N_VSA_ERROR_STAGE_MEDIAN,
 } from '~/analytics/cycle_analytics/constants';
 import { createAlert } from '~/alert';
-import {
-  HTTP_STATUS_BAD_REQUEST,
-  HTTP_STATUS_FORBIDDEN,
-  HTTP_STATUS_INTERNAL_SERVER_ERROR,
-  HTTP_STATUS_OK,
-} from '~/lib/utils/http_status';
-import { allowedStages as stages, valueStreams, endpoints, groupLabels } from '../mock_data';
+import { HTTP_STATUS_FORBIDDEN, HTTP_STATUS_INTERNAL_SERVER_ERROR } from '~/lib/utils/http_status';
+import { allowedStages as stages, valueStreams } from '../mock_data';
 
 const milestonesPath = `/${namespace.restApiRequestPath}/-/milestones.json`;
 const labelsPath = `/${namespace.restApiRequestPath}/-/labels.json`;
@@ -381,39 +376,5 @@ describe('Value Stream Analytics actions', () => {
         [{ type: types.INITIALIZE_VALUE_STREAM_SUCCESS }],
         [],
       ));
-  });
-
-  describe('fetchGroupLabels', () => {
-    beforeEach(() => {
-      mock.onGet(endpoints.groupLabels).reply(HTTP_STATUS_OK, groupLabels);
-    });
-
-    it(`will commit the "REQUEST_GROUP_LABELS" and "RECEIVE_GROUP_LABELS_SUCCESS" mutations`, () => {
-      return testAction({
-        action: actions.fetchGroupLabels,
-        state,
-        expectedMutations: [
-          { type: types.REQUEST_GROUP_LABELS },
-          { type: types.RECEIVE_GROUP_LABELS_SUCCESS, payload: groupLabels },
-        ],
-      });
-    });
-
-    describe('with a failed request', () => {
-      beforeEach(() => {
-        mock.onGet(endpoints.groupLabels).reply(HTTP_STATUS_BAD_REQUEST);
-      });
-
-      it(`will commit the "RECEIVE_GROUP_LABELS_ERROR" mutation`, () => {
-        return testAction({
-          action: actions.fetchGroupLabels,
-          state,
-          expectedMutations: [
-            { type: types.REQUEST_GROUP_LABELS },
-            { type: types.RECEIVE_GROUP_LABELS_ERROR },
-          ],
-        });
-      });
-    });
   });
 });
