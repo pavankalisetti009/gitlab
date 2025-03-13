@@ -253,6 +253,68 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
     end
   end
 
+  RSpec.shared_examples "service account user update" do
+    context 'when the group exists' do
+      let(:group_id) { group.id }
+
+      it 'updates the service account user' do
+        perform_request
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response.keys).to match_array(%w[id name username email])
+        expect(json_response['name']).to eq(params[:name])
+        expect(json_response['username']).to eq(params[:username])
+      end
+
+      context 'when user with the username already exists' do
+        let(:existing_user) { create(:user, username: 'existing_user') }
+        let(:params) { { username: existing_user.username } }
+
+        it 'returns error' do
+          perform_request
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+          expect(json_response['message']).to include('Username has already been taken')
+        end
+      end
+
+      it "returns 404 for non-existing user" do
+        patch api("/groups/#{group_id}/service_accounts/#{non_existing_record_id}", user), params: params
+
+        expect(response).to have_gitlab_http_status(:not_found)
+        expect(json_response['message']).to eq('404 User Not Found')
+      end
+
+      it "returns a 400 for invalid user ID" do
+        patch api("/groups/#{group_id}/service_accounts/ASDF", user), params: params
+
+        expect(response).to have_gitlab_http_status(:bad_request)
+      end
+
+      context 'when target user is not a service account' do
+        let(:regular_user) { create(:user, provisioned_by_group: group) }
+
+        it 'returns bad request error' do
+          patch api("/groups/#{group_id}/service_accounts/#{regular_user.id}", user), params: params
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+          expect(json_response['message']).to include('User is not of type Service Account')
+        end
+      end
+    end
+
+    context 'when the group does not exist' do
+      let(:group_id) { non_existing_record_id }
+
+      it "returns error" do
+        perform_request
+
+        expect(response).to have_gitlab_http_status(:not_found)
+        expect(json_response['message']).to include('404 Group Not Found')
+      end
+    end
+  end
+
   describe "POST /groups/:id/service_accounts" do
     subject(:perform_request) { post api("/groups/#{group_id}/service_accounts", user), params: params }
 
@@ -447,6 +509,79 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
         perform_request
 
         expect(response).to have_gitlab_http_status(:forbidden)
+      end
+    end
+  end
+
+  describe "PATCH /groups/:id/service_accounts/:user_id" do
+    let(:group_id) { group.id }
+    let(:params) { { name: 'Updated Name', username: 'updated_username' } }
+
+    subject(:perform_request) do
+      patch api("/groups/#{group_id}/service_accounts/#{service_account_user.id}", user), params: params
+    end
+
+    context 'when feature is licensed' do
+      before do
+        stub_licensed_features(service_accounts: true)
+      end
+
+      context 'when current user is an admin' do
+        let(:user) { create(:admin) }
+
+        context 'when admin mode is not enabled' do
+          it "returns forbidden error" do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:forbidden)
+          end
+        end
+
+        context 'when admin mode is enabled', :enable_admin_mode do
+          it_behaves_like "service account user update"
+        end
+      end
+
+      context 'when current user is a group owner' do
+        before do
+          group.add_owner(user)
+        end
+
+        it_behaves_like "service account user update"
+
+        context 'when saas', :saas do
+          it_behaves_like "service account user update"
+        end
+      end
+
+      context 'when current user is not a group owner' do
+        before do
+          group.add_maintainer(user)
+        end
+
+        it "returns forbidden error" do
+          perform_request
+
+          expect(response).to have_gitlab_http_status(:forbidden)
+        end
+      end
+    end
+
+    context 'when feature is not licensed' do
+      before do
+        stub_licensed_features(service_accounts: false)
+      end
+
+      context 'when current user is an admin' do
+        let(:current_user) { admin }
+
+        context 'when admin mode is enabled', :enable_admin_mode do
+          it "returns forbidden error" do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:forbidden)
+          end
+        end
       end
     end
   end
