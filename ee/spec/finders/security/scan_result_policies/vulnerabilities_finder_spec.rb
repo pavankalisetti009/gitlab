@@ -40,7 +40,8 @@ RSpec.describe Security::ScanResultPolicies::VulnerabilitiesFinder, feature_cate
   context 'when filtered with limit' do
     let(:filters) { { limit: 1 } }
 
-    it 'only returns vulnerabilities within limit' do
+    it 'only returns vulnerabilities within limit',
+      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/513081' do
       is_expected.to contain_exactly(vulnerability1)
     end
   end
