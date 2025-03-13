@@ -1,9 +1,0 @@
----
-name: code_creation_slash_commands_claude_3_7
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/521410
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/182789
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/521423
-milestone: '17.10'
-group: group::code creation
-type: beta
-default_enabled: false
