@@ -135,6 +135,32 @@ RSpec.describe 'groups/settings/_permissions.html.haml', :saas, feature_category
     end
   end
 
+  context 'for require dpop for manage api endpoint setting' do
+    let_it_be(:checkbox_label) { s_('GroupSettings|Enforce DPoP authentication for manage API endpoints for group') }
+
+    it 'renders checkbox', :aggregate_failures do
+      render
+
+      expect(rendered).to render_template('groups/settings/_require_dpop_for_manage_api_endpoints')
+      expect(rendered).to have_content(checkbox_label)
+      expect(rendered).to have_checked_field(checkbox_label, type: 'checkbox')
+    end
+
+    context 'when feature flag is disabled' do
+      before do
+        stub_feature_flags(manage_pat_by_group_owners_ready: false)
+      end
+
+      it 'renders nothing', :aggregate_failures do
+        render
+
+        expect(rendered).to render_template('groups/settings/_require_dpop_for_manage_api_endpoints')
+        expect(rendered).not_to have_content(checkbox_label)
+        expect(rendered).not_to have_checked_field(checkbox_label, type: 'checkbox')
+      end
+    end
+  end
+
   context 'for extensions marketplace settings' do
     let_it_be(:section_title) { _('Web IDE and workspaces') }
     let_it_be(:checkbox_label) { s_('GroupSettings|Enable extension marketplace') }
