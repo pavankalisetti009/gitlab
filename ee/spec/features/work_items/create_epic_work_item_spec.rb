@@ -26,7 +26,7 @@ RSpec.describe 'Create epic work item', :js, feature_category: :team_planning do
           expect(page).to have_selector('[data-testid="work-item-description-wrapper"]')
           expect(page).to have_selector('[data-testid="work-item-assignees"]')
           expect(page).to have_selector('[data-testid="work-item-labels"]')
-          expect(page).to have_selector('[data-testid="work-item-rolledup-dates"]')
+          expect(page).to have_selector('[data-testid="work-item-due-dates"]')
           expect(page).to have_selector('[data-testid="work-item-health-status"]')
           expect(page).to have_selector('[data-testid="work-item-color"]')
           expect(page).to have_selector('[data-testid="work-item-parent"]')

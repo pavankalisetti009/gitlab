@@ -327,7 +327,7 @@ RSpec.describe 'Epic boards sidebar', :js, feature_category: :portfolio_manageme
         wait_for_requests
       end
 
-      it_behaves_like 'work items rolled up dates in drawer'
+      it_behaves_like 'work items due dates in drawer'
     end
 
     context 'confidentiality' do

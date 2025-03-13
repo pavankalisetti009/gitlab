@@ -219,7 +219,7 @@ RSpec.describe 'Epic Work Item sync', :js, feature_category: :portfolio_manageme
         find_by_testid('confidentiality-toggle-action').click
         wait_for_requests
 
-        within(find_by_testid('work-item-rolledup-dates')) do
+        within(find_by_testid('work-item-due-dates')) do
           click_button 'Edit'
         end
         fill_in('start-date-input', with: start_date.iso8601)
