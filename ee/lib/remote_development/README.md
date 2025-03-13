@@ -68,6 +68,7 @@
   - [DeclarativePolicy guidelines](#declarativepolicy-guidelines)
   - [Testing DeclarativePolicy authorization policies](#testing-declarativepolicy-authorization-policies)
   - [Guidelines for writing tests using this pattern](#guidelines-for-writing-tests-using-this-pattern)
+- [Coding standards for Remote Development domain](#coding-standards-for-remote-development-domain)
 - [FAQ](#faq)
   - [Why is the Result class in the top level lib directory?](#why-is-the-result-class-in-the-top-level-lib-directory)
   - [What are all the `noinspection` comments in the code?](#what-are-all-the-noinspection-comments-in-the-code)
@@ -1352,6 +1353,23 @@ For available user roles, refer to: https://docs.gitlab.com/ee/user/permissions.
   end
 ```
 
+## Coding standards for Remote Development domain
+
+In addition to the patterns/etc. mentioned above, there are other coding standards which we wish to
+enforce in the Remote Development domain / bounded context.
+
+Guidelines for these domain-specific standards:
+
+- They should not conflict with any standards in the wider codebase
+- They may introduce additional standards which do not exist in the wider codebase
+- They should be dicussed and have some level of consensus among the group's engineers, and the resulting
+  decision should be linked along with the standard in this section.
+- They should ideally be enforced by linters, but if that is not possible/practical/easy,
+   they can start with just documentation in this section.
+
+Existing standards:
+
+1. Prefer double-quotes over single-quotes for delimiting String literals, even non-interpolated ones. [team decision](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/124398#note_1444988985), [wider dicussion](https://gitlab.com/gitlab-org/gitlab/-/issues/198046)
 
 ## FAQ
 
