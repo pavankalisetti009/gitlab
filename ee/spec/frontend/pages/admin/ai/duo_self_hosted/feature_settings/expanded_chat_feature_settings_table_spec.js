@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlSprintf } from '@gitlab/ui';
+import { GlSprintf, GlAlert, GlLink } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import ExpandedChatFeatureSettingsTable from 'ee/pages/admin/ai/duo_self_hosted/feature_settings/components/expanded_chat_feature_settings_table.vue';
@@ -17,6 +17,7 @@ jest.mock('~/alert');
 describe('ExpandedChatFeatureSettingsTable', () => {
   let wrapper;
 
+  const duoConfigurationSettingsPath = '/admin/gitlab_duo/configuration';
   const getAiFeatureSettingsSuccessHandler = jest.fn().mockResolvedValue({
     data: {
       aiFeatureSettings: {
@@ -28,11 +29,19 @@ describe('ExpandedChatFeatureSettingsTable', () => {
 
   const createComponent = ({
     apolloHandlers = [[getAiFeatureSettingsQuery, getAiFeatureSettingsSuccessHandler]],
+    injectedProps = {},
+    stubs = {},
   } = {}) => {
     const mockApollo = createMockApollo([...apolloHandlers]);
 
     wrapper = shallowMountExtended(ExpandedChatFeatureSettingsTable, {
       apolloProvider: mockApollo,
+      provide: {
+        betaModelsEnabled: false,
+        duoConfigurationSettingsPath,
+        ...injectedProps,
+      },
+      stubs: { ...stubs },
     });
   };
 
@@ -41,6 +50,8 @@ describe('ExpandedChatFeatureSettingsTable', () => {
   const findCodeSuggestionsTableRows = () => wrapper.findByTestId('code-suggestions-table-rows');
   const findSectionHeaders = () => wrapper.findAll('h2');
   const findSectionDescriptions = () => wrapper.findAllComponents(GlSprintf);
+  const findDuoConfigurationLink = () => wrapper.findByTestId('duo-configuration-link');
+  const findBetaAlert = () => wrapper.findComponent(GlAlert);
 
   it('renders the component', () => {
     createComponent();
@@ -74,6 +85,25 @@ describe('ExpandedChatFeatureSettingsTable', () => {
 
       expect(findCodeSuggestionsTableRows().props('isLoading')).toBe(true);
       expect(findDuoChatTableRows().props('isLoading')).toBe(true);
+    });
+  });
+
+  describe('when beta features are enabled', () => {
+    beforeEach(() => {
+      createComponent({ injectedProps: { betaModelsEnabled: true } });
+    });
+
+    it('does not display a beta models info alert', () => {
+      expect(findBetaAlert().exists()).toBe(false);
+    });
+  });
+
+  describe('when beta features are disabled', () => {
+    it('displays a beta models info alert', () => {
+      createComponent({ stubs: { GlLink, GlSprintf } });
+
+      expect(findBetaAlert().exists()).toBe(true);
+      expect(findDuoConfigurationLink().attributes('href')).toBe(duoConfigurationSettingsPath);
     });
   });
 

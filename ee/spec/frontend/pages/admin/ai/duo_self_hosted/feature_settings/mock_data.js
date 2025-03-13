@@ -41,6 +41,7 @@ export const mockAiFeatureSettings = [
     feature: 'code_generations',
     title: 'Code Generation',
     mainFeature: 'Code Suggestions',
+    releaseState: 'GA',
     provider: 'vendored',
     selfHostedModel: null,
     validModels: { nodes: mockSelfHostedModels },
@@ -49,6 +50,7 @@ export const mockAiFeatureSettings = [
     feature: 'code_completions',
     title: 'Code Completion',
     mainFeature: 'Code Suggestions',
+    releaseState: 'GA',
     provider: 'disabled',
     selfHostedModel: null,
     validModels: { nodes: mockSelfHostedModels },
@@ -57,6 +59,7 @@ export const mockAiFeatureSettings = [
     feature: 'duo_chat',
     title: 'General Chat',
     mainFeature: 'GitLab Duo Chat',
+    releaseState: 'GA',
     provider: 'self_hosted',
     selfHostedModel: {
       id: 2,
@@ -68,6 +71,7 @@ export const mockAiFeatureSettings = [
     feature: 'duo_chat',
     title: 'Explain Code',
     mainFeature: 'GitLab Duo Chat',
+    releaseState: 'BETA',
     provider: 'self_hosted',
     selfHostedModel: {
       id: 1,

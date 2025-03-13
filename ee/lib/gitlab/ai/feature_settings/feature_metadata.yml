@@ -27,8 +27,8 @@ code_completions:
     - claude_3
     - gpt
 duo_chat:
-  title: General
-  release_state: BETA
+  title: General Chat
+  release_state: GA
   main_feature: GitLab Duo Chat
   compatible_llms:
     - mistral

@@ -5,6 +5,7 @@ query getAiFeatureSetting {
       title
       mainFeature
       provider
+      releaseState
       selfHostedModel {
         id
         releaseState

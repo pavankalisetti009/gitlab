@@ -1,11 +1,13 @@
 <script>
-import { GlTableLite, GlSkeletonLoader } from '@gitlab/ui';
+import { GlExperimentBadge, GlTableLite, GlSkeletonLoader } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import { RELEASE_STATES } from '../../constants';
 import FeatureSettingsModelSelector from './feature_settings_model_selector.vue';
 
 export default {
   name: 'FeatureSettingsTableRows',
   components: {
+    GlExperimentBadge,
     GlTableLite,
     FeatureSettingsModelSelector,
     GlSkeletonLoader,
@@ -63,6 +65,11 @@ export default {
       ];
     },
   },
+  methods: {
+    isBetaFeature(releaseState) {
+      return releaseState === RELEASE_STATES.BETA;
+    },
+  },
 };
 </script>
 <template>
@@ -78,7 +85,14 @@ export default {
       <gl-skeleton-loader v-if="isLoading" :height="38" :width="600">
         <rect y="8" :width="item.loaderWidth.subFeature" height="24" rx="10" />
       </gl-skeleton-loader>
-      <span v-else>{{ item.title }}</span>
+      <div v-else>
+        <span>{{ item.title }}</span>
+        <gl-experiment-badge
+          v-if="isBetaFeature(item.releaseState)"
+          data-testid="feature-beta-badge"
+          type="beta"
+        />
+      </div>
     </template>
     <template #cell(model_name)="{ item }">
       <gl-skeleton-loader v-if="isLoading" :height="38" :width="600">

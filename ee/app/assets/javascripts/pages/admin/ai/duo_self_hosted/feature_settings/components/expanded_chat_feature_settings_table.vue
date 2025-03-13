@@ -1,5 +1,5 @@
 <script>
-import { GlLink, GlSprintf } from '@gitlab/ui';
+import { GlAlert, GlLink, GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import { helpPagePath } from '~/helpers/help_page_helper';
@@ -11,9 +11,11 @@ export default {
   name: 'ExpandedChatFeatureSettingsTable',
   components: {
     FeatureSettingsTableRows,
+    GlAlert,
     GlLink,
     GlSprintf,
   },
+  inject: ['betaModelsEnabled', 'duoConfigurationSettingsPath'],
   i18n: {
     errorMessage: s__(
       'AdminAIPoweredFeatures|An error occurred while loading the AI feature settings. Please try again.',
@@ -98,6 +100,23 @@ export default {
           </template>
         </gl-sprintf>
       </p>
+    </div>
+    <div v-if="!betaModelsEnabled" class="gl-pb-4 gl-pt-2">
+      <gl-alert variant="info" :dismissible="false">
+        <gl-sprintf
+          :message="
+            s__(
+              'AdminSelfHostedModels|More features are available in beta. You can %{linkStart}turn on AI-powered beta features%{linkEnd}.',
+            )
+          "
+        >
+          <template #link="{ content }">
+            <gl-link data-testid="duo-configuration-link" :href="duoConfigurationSettingsPath">
+              {{ content }}
+            </gl-link>
+          </template>
+        </gl-sprintf>
+      </gl-alert>
     </div>
     <feature-settings-table-rows
       data-testid="duo-chat-table-rows"
