@@ -139,10 +139,7 @@ export default {
       );
     },
     isEditing() {
-      return (
-        Boolean(this.item?.destinationUrl) ||
-        (this.item?.name !== this.destinationName && Boolean(this.item?.destinationUrl))
-      );
+      return Boolean(this.item?.destinationUrl || this.item?.config?.url);
     },
     addButtonName() {
       return this.isEditing
@@ -229,10 +226,13 @@ export default {
   },
   mounted() {
     this.headers = mapItemHeadersToFormData(this.item);
-    this.destinationUrl = this.item.destinationUrl;
+    this.destinationUrl = this.item.destinationUrl || this.item?.config?.url;
     this.destinationName = this.item.name;
     this.filters = this.item.eventTypeFilters || [];
-    this.namespaceFilter.namespace = this.item?.namespaceFilter?.namespace?.fullPath || '';
+    this.namespaceFilter.namespace =
+      this.item?.namespaceFilter?.namespace?.fullPath ||
+      this.item?.namespaceFilters?.at(0)?.namespace?.fullPath ||
+      '';
     if (
       this.item?.namespaceFilter?.namespace?.id.includes('gid://gitlab/Namespaces::GroupNamespace')
     ) {
@@ -815,11 +815,14 @@ export default {
       >
         <gl-form-input-group
           readonly
-          :value="item.verificationToken"
+          :value="item.verificationToken || item.secretToken"
           data-testid="verification-token"
         >
           <template #append>
-            <clipboard-button :text="item.verificationToken" :title="__('Copy to clipboard')" />
+            <clipboard-button
+              :text="item.verificationToken || item.secretToken"
+              :title="__('Copy to clipboard')"
+            />
           </template>
         </gl-form-input-group>
       </gl-form-group>
@@ -831,6 +834,7 @@ export default {
             <gl-form-checkbox
               class="gl-mt-3"
               :checked="active"
+              data-testid="header-active-input"
               @input="handleHeaderActiveInput(index, $event)"
             >
               {{ $options.i18n.TABLE_COLUMN_ACTIVE_LABEL }}

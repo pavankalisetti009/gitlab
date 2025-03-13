@@ -40,6 +40,7 @@ import {
   destinationHeaderUpdateMutationPopulator,
   destinationHeaderDeleteMutationPopulator,
   groupPath,
+  mockConsolidatedAPIExternalDestinations,
   mockExternalDestinations,
   mockInstanceExternalDestinations,
   mockExternalDestinationHeader,
@@ -81,6 +82,7 @@ describe('StreamDestinationEditor', () => {
   const createComponent = ({
     mountFn = mountExtended,
     props = {},
+    provide = {},
     apolloHandlers = [
       [
         externalAuditEventDestinationCreate,
@@ -98,6 +100,7 @@ describe('StreamDestinationEditor', () => {
         groupPath: groupPathProvide,
         maxHeaders,
         auditEventDefinitions: mockAuditEventDefinitions,
+        ...provide,
       },
       propsData: {
         ...props,
@@ -144,6 +147,8 @@ describe('StreamDestinationEditor', () => {
     extendedWrapper(findHeadersRows().at(trIdx)).findByTestId('header-name-input');
   const findHeaderValueInput = (trIdx) =>
     extendedWrapper(findHeadersRows().at(trIdx)).findByTestId('header-value-input');
+  const findHeaderActiveInput = (trIdx) =>
+    extendedWrapper(findHeadersRows().at(trIdx)).findByTestId('header-active-input');
 
   const setHeaderNameInput = (trIdx, name) => findHeaderNameInput(trIdx).setValue(name);
   const setHeaderValueInput = (trIdx, value) => findHeaderValueInput(trIdx).setValue(value);
@@ -173,6 +178,38 @@ describe('StreamDestinationEditor', () => {
 
   afterEach(() => {
     createAlert.mockClear();
+  });
+
+  describe('when useConsolidatedAuditEventStreamDestApi is enabled', () => {
+    const item = mockConsolidatedAPIExternalDestinations[0];
+
+    beforeEach(() => {
+      createComponent({
+        props: { item },
+        provide: {
+          glFeatures: { useConsolidatedAuditEventStreamDestApi: true },
+        },
+      });
+    });
+
+    it('renders the destination correctly', () => {
+      expect(findWarningMessage().exists()).toBe(false);
+      expect(findDestinationName().element.value).toBe('HTTP Destination 1');
+      expect(findDestinationUrl().element.value).toBe('http://destination1.local');
+      expect(findDestinationUrl().attributes('disabled')).toBeDefined();
+      expect(findVerificationToken().props('value')).toBe('id5hzCbERzSkQ82tAs16tH5Y');
+      expect(findClipboardButton().props('text')).toBe('id5hzCbERzSkQ82tAs16tH5Y');
+      expect(findHeaderNameInput(0).element.value).toBe('key1');
+      expect(findHeaderValueInput(0).element.value).toBe('test');
+      expect(findHeaderActiveInput(0).element.value).toBe('true');
+      expect(findFilters().props()).toStrictEqual({
+        value: ['user_created'],
+      });
+      expect(findNamespaceFilters().props()).toMatchObject({
+        value: mockNamespaceFilter('myGroup/project1'),
+      });
+      expect(findDeleteModal().props('item')).toBe(item);
+    });
   });
 
   describe('Group StreamDestinationEditor', () => {
@@ -518,7 +555,6 @@ describe('StreamDestinationEditor', () => {
         });
 
         it('renders the delete modal', () => {
-          expect(findDeleteModal().exists()).toBe(true);
           expect(findDeleteModal().props('item')).toBe(item);
         });
 

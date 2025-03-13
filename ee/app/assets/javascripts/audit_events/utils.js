@@ -65,8 +65,16 @@ export const createAuditEventSearchQuery = ({ filterValue, startDate, endDate, s
   return params;
 };
 
-export const mapItemHeadersToFormData = (item, settings = {}) => {
+export const mapItemHeadersToFormData = (item) => {
   const headers = item?.headers?.nodes || [];
+
+  if (item?.config?.headers) {
+    return Object.keys(item.config.headers).map((headerKey) => ({
+      ...createBlankHeader(),
+      name: headerKey,
+      ...item.config.headers[headerKey],
+    }));
+  }
 
   return (
     headers
@@ -76,7 +84,6 @@ export const mapItemHeadersToFormData = (item, settings = {}) => {
         name: key,
         value,
         active,
-        ...settings,
       }))
       // Sort the headers so they appear in the order they were created
       // The GraphQL endpoint returns them in the reverse order of this

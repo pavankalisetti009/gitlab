@@ -115,9 +115,10 @@ export default {
   },
   mounted() {
     this.name = this.item.name;
-    this.googleProjectIdName = this.item.googleProjectIdName;
-    this.logIdName = this.item.logIdName;
-    this.clientEmail = this.item.clientEmail;
+    this.googleProjectIdName =
+      this.item.googleProjectIdName || this.item?.config?.googleProjectIdName;
+    this.logIdName = this.item.logIdName || this.item?.config?.logIdName;
+    this.clientEmail = this.item.clientEmail || this.item?.config?.clientEmail;
   },
   methods: {
     onDeleting() {

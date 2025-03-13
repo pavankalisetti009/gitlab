@@ -6,7 +6,11 @@ import {
   mapAllMutationErrors,
   mapItemHeadersToFormData,
 } from 'ee/audit_events/utils';
-import { destinationDeleteMutationPopulator, mockExternalDestinationHeader } from './mock_data';
+import {
+  destinationDeleteMutationPopulator,
+  mockExternalDestinationHeader,
+  mockConsolidatedAPIExternalDestinations,
+} from './mock_data';
 
 describe('Audit Event Utils', () => {
   describe('getTypeFromEntityType', () => {
@@ -151,6 +155,18 @@ describe('Audit Event Utils', () => {
           name: header3.key,
           value: header3.value,
           active: false,
+          validationErrors: { name: '' },
+        },
+      ]);
+    });
+
+    it('returns headers when response is from the consolidated api', () => {
+      expect(mapItemHeadersToFormData(mockConsolidatedAPIExternalDestinations[0])).toStrictEqual([
+        {
+          id: null,
+          name: 'key1',
+          value: 'test',
+          active: true,
           validationErrors: { name: '' },
         },
       ]);
