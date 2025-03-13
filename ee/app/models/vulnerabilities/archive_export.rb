@@ -52,6 +52,10 @@ module Vulnerabilities
         transition running: :created
       end
 
+      event :purge do
+        transition any => :purged
+      end
+
       before_transition created: :running do |export|
         export.started_at = Time.current
       end
@@ -83,6 +87,14 @@ module Vulnerabilities
       def first_record_in(partition_number)
         where(partition_number: partition_number).first
       end
+    end
+
+    def completed?
+      finished? || failed?
+    end
+
+    def archives
+      project.vulnerability_archives.where(date: date_range)
     end
 
     def uploads_sharding_key

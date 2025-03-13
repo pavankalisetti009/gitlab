@@ -35759,7 +35759,7 @@ CREATE INDEX index_vulnerability_archive_exports_on_project_id ON ONLY vulnerabi
 
 CREATE INDEX index_vulnerability_archive_exports_on_status ON ONLY vulnerability_archive_exports USING btree (status);
 
-CREATE INDEX index_vulnerability_archived_records_on_archive_id ON vulnerability_archived_records USING btree (archive_id);
+CREATE INDEX index_vulnerability_archived_records_on_archive_id_and_id ON vulnerability_archived_records USING btree (archive_id, id);
 
 CREATE INDEX index_vulnerability_archived_records_on_project_id ON vulnerability_archived_records USING btree (project_id);
 

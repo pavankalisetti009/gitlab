@@ -15,6 +15,7 @@ FactoryBot.define do
         description: 'Test Description',
         cve_value: 'CVE-2018-1234',
         cwe_value: 'CWE-123',
+        other_identifiers: ['OWASP-A01:2021'],
         created_at: '2025-01-29 19:02:08 UTC',
         location: {
           class: 'com.gitlab.security_products.tests.App',

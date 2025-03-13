@@ -806,15 +806,15 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     end
 
     describe 'vulnerability permissions' do
-      describe 'dismiss_vulnerability' do
-        context 'with developer' do
-          let(:current_user) { developer }
+      context 'with developer' do
+        let(:current_user) { developer }
 
-          include_context 'when security dashboard feature is not available'
-          it { is_expected.to be_disallowed(:admin_vulnerability) }
-          it { is_expected.to be_disallowed(:read_vulnerability) }
-          it { is_expected.to be_disallowed(:create_vulnerability_export) }
-        end
+        include_context 'when security dashboard feature is not available'
+
+        it { is_expected.to be_disallowed(:admin_vulnerability) }
+        it { is_expected.to be_disallowed(:read_vulnerability) }
+        it { is_expected.to be_disallowed(:create_vulnerability_export) }
+        it { is_expected.to be_disallowed(:create_vulnerability_archive_export) }
       end
     end
 
@@ -2912,6 +2912,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           [
             :access_security_and_compliance,
             :create_vulnerability_export,
+            :create_vulnerability_archive_export,
             :read_security_resource,
             :read_vulnerability,
             :read_vulnerability_feedback,
