@@ -433,6 +433,7 @@ export const setNewWorkItemCache = async (
         widgets.push({
           type: 'MILESTONE',
           milestone: null,
+          projectMilestone: false,
           __typename: 'WorkItemWidgetMilestone',
         });
       }
