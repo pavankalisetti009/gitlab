@@ -42621,9 +42621,6 @@ msgstr ""
 msgid "PipelineCharts|An unknown error occurred while processing CI/CD analytics."
 msgstr ""
 
-msgid "PipelineCharts|CI/CD Analytics"
-msgstr ""
-
 msgid "PipelineCharts|Failure rate"
 msgstr ""
 

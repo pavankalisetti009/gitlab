@@ -24,7 +24,7 @@ describe('dora_chart_header.vue', () => {
   });
 
   it('renders the header text', () => {
-    const actualText = wrapper.find('h4').text();
+    const actualText = wrapper.find('h2').text();
 
     expect(actualText).toBe(mockHeaderText);
   });
