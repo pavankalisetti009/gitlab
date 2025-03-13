@@ -125,6 +125,14 @@ module EE
       end
     end
 
+    override :supports_parent?
+    def supports_parent?
+      return false if work_item_type.issue? && !licensed_feature_available?(:epics)
+      return false if work_item_type.epic? && !licensed_feature_available?(:subepics)
+
+      hierarchy_supports_parent?
+    end
+
     private
 
     override :linked_work_items_query

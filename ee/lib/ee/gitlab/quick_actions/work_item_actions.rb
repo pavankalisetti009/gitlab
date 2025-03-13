@@ -125,28 +125,12 @@ module EE
         end
         # rubocop:enable Gitlab/ModuleWithInstanceVariables
 
-        override :can_user_link_issue_to_epic?
-        def can_user_link_issue_to_epic?
-          quick_action_target.supports_epic? &&
-            quick_action_target.project.group&.feature_available?(:epics) &&
-            current_user.can?(:"admin_#{quick_action_target.to_ability_name}_relation", quick_action_target)
-        end
-
         override :show_epic_alias?
         def show_epic_alias?
           # We also check that the quick action target is an instance of an issue here, since the work_item_type
           # relationship is only created after save for legacy issues
           (quick_action_target.instance_of?(::Issue) || quick_action_target.work_item_type&.issue?) &&
             quick_action_target.licensed_feature_available?(:epics)
-        end
-
-        override :supports_parent?
-        def supports_parent?
-          target_item = quick_action_target
-
-          return false if target_item.work_item_type.epic? && !target_item.licensed_feature_available?(:subepics)
-
-          super
         end
       end
     end

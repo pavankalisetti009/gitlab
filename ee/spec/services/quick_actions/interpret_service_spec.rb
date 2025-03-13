@@ -736,6 +736,40 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
       end
     end
 
+    context 'set_parent command' do
+      context 'on an issue' do
+        let_it_be(:issue) { create(:issue, project: project) }
+
+        context 'when epics are enabled' do
+          before do
+            stub_licensed_features(epics: true)
+          end
+
+          it 'allows the /set_parent command' do
+            expect(service.available_commands(issue)).to include(a_hash_including(name: :set_parent))
+          end
+        end
+
+        context 'when epics are disabled' do
+          before do
+            stub_licensed_features(epics: false)
+          end
+
+          it 'does not allow the /set_parent command' do
+            expect(service.available_commands(issue)).not_to include(a_hash_including(name: :set_parent))
+          end
+        end
+      end
+
+      context 'on a work_item' do
+        let_it_be(:work_item) { create(:work_item, :task, project: project) }
+
+        it 'allows the /set_parent command' do
+          expect(service.available_commands(work_item)).to include(a_hash_including(name: :set_parent))
+        end
+      end
+    end
+
     context 'epic command' do
       let_it_be_with_reload(:epic) { create(:epic, group: group) }
       let_it_be_with_reload(:private_epic) { create(:epic, group: create(:group, :private)) }
