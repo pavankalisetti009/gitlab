@@ -80,7 +80,7 @@ describe('Projects section', () => {
     });
 
     it('renders correct atrributes for the info link', () => {
-      expect(findLink().attributes('to')).toBe('/projects');
+      expect(findLink().props('to')).toBe('/projects');
       expect(findLink().attributes('href')).toBe('/projects');
     });
   });
