@@ -34821,6 +34821,9 @@ msgstr ""
 msgid "Local"
 msgstr ""
 
+msgid "Local time is displayed."
+msgstr ""
+
 msgid "Localization"
 msgstr ""
 
