@@ -10876,6 +10876,9 @@ msgstr ""
 msgid "BulkImport|%{count} placeholder users not matched to users."
 msgstr ""
 
+msgid "BulkImport|%{count} placeholder users skipped."
+msgstr ""
+
 msgid "BulkImport|%{feature} (require v%{version})"
 msgstr ""
 
