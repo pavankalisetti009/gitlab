@@ -564,6 +564,7 @@ module EE
       rule { can?(:read_security_resource) }.policy do
         enable :read_project_security_dashboard
         enable :create_vulnerability_export
+        enable :create_vulnerability_archive_export
         enable :admin_vulnerability_issue_link
         enable :admin_vulnerability_merge_request_link
         enable :admin_vulnerability_external_issue_link
@@ -926,6 +927,7 @@ module EE
         enable :read_vulnerability
         enable :read_security_resource
         enable :create_vulnerability_export
+        enable :create_vulnerability_archive_export
       end
 
       rule { custom_role_enables_admin_merge_request }.policy do

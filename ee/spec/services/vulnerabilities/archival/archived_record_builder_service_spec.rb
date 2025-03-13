@@ -51,7 +51,12 @@ RSpec.describe Vulnerabilities::Archival::ArchivedRecordBuilderService, feature_
           project: project,
           external_type: 'CWE',
           external_id: 'CWE-123',
-          name: 'CWE-123')
+          name: 'CWE-123'),
+        build(:vulnerabilities_identifier,
+          project: project,
+          external_type: 'OWASP',
+          external_id: 'A01:2021',
+          name: 'OWASP-A01:2021')
       ]
 
       vulnerability.vulnerability_read.dismissal_reason = :false_positive
@@ -71,6 +76,7 @@ RSpec.describe Vulnerabilities::Archival::ArchivedRecordBuilderService, feature_
           description: 'Test Description',
           cve_value: 'CVE-2018-1234',
           cwe_value: 'CWE-123',
+          other_identifiers: ['OWASP-A01:2021'],
           created_at: vulnerability.created_at.to_s,
           location: {
             class: 'com.gitlab.security_products.tests.App',

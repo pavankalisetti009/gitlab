@@ -41,6 +41,7 @@ module Vulnerabilities
           description: finding.description,
           cve_value: vulnerability.cve_value,
           cwe_value: vulnerability.cwe_value,
+          other_identifiers: vulnerability.other_identifier_values,
           created_at: vulnerability.created_at.to_s,
           location: vulnerability.location,
           resolved_on_default_branch: vulnerability.resolved_on_default_branch,

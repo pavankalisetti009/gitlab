@@ -16,5 +16,11 @@ FactoryBot.define do
       status { :running }
       started_at { 1.minute.ago }
     end
+
+    trait :finished do
+      with_csv_file
+
+      status { :finished }
+    end
   end
 end

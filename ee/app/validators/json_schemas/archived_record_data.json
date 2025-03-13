@@ -18,7 +18,7 @@
       "type": "string"
     },
     "description": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "severity": {
       "type": "string"
@@ -28,6 +28,12 @@
     },
     "cwe_value": {
       "type": ["null", "string"]
+    },
+    "other_identifiers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     },
     "created_at": {
       "type": "date-time"

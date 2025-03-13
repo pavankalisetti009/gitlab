@@ -73,6 +73,16 @@ RSpec.describe Vulnerabilities::ArchiveExport, feature_category: :vulnerability_
         expect { reset_state }.to change { export.reload.started_at }.to(nil)
       end
     end
+
+    describe '#purge' do
+      let(:export) { create(:vulnerability_archive_export, :running) }
+
+      subject(:purge) { export.purge! }
+
+      it 'sets the status of the record as purged' do
+        expect { purge }.to change { export.reload.status }.to('purged')
+      end
+    end
   end
 
   describe 'partition helpers' do
@@ -124,5 +134,39 @@ RSpec.describe Vulnerabilities::ArchiveExport, feature_category: :vulnerability_
         end
       end
     end
+  end
+
+  describe '#completed?' do
+    using RSpec::Parameterized::TableSyntax
+
+    where(:status, :completed?) do
+      :created | false
+      :running | false
+      :finished | true
+      :failed | true
+      :purged | false
+    end
+
+    with_them do
+      let(:archive_export) { build(:vulnerability_archive_export, status: status) }
+
+      subject { archive_export.completed? }
+
+      it { is_expected.to eq(completed?) }
+    end
+  end
+
+  describe '#archives', :freeze_time do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:project_archive_1) { create(:vulnerability_archive, project: project, date: 3.months.ago) }
+    let_it_be(:project_archive_2) { create(:vulnerability_archive, project: project, date: 1.month.ago) }
+    let_it_be(:another_project_archive) { create(:vulnerability_archive, date: 1.month.ago) }
+
+    let_it_be(:date_range) { project_archive_2.date..Time.zone.today }
+    let_it_be(:archive_export) { create(:vulnerability_archive_export, project: project, date_range: date_range) }
+
+    subject { archive_export.archives }
+
+    it { is_expected.to contain_exactly(project_archive_2) }
   end
 end
