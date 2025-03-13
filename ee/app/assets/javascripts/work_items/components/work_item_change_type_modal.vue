@@ -2,6 +2,7 @@
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { __, s__, sprintf } from '~/locale';
 import { visitUrl } from '~/lib/utils/url_utility';
+import { getParentGroupName } from '~/work_items/utils';
 import WorkItemChangeTypeModal from '~/work_items/components/work_item_change_type_modal.vue';
 import promoteToEpicMutation from '~/issues/show/queries/promote_to_epic.mutation.graphql';
 import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
@@ -108,7 +109,7 @@ export default {
     },
     epicFieldNote() {
       return sprintf(s__('WorkItem|Epic will be moved to parent group %{groupName}.'), {
-        groupName: this.getParentGroupName(),
+        groupName: getParentGroupName(this.namespaceFullName),
       });
     },
   },
@@ -159,11 +160,6 @@ export default {
       });
 
       return updatedWidgetDefinitions;
-    },
-    getParentGroupName() {
-      const parts = this.namespaceFullName.split('/');
-      // Gets the second-to-last item in the reference path
-      return parts.length > 1 ? parts[parts.length - 2].trim() : '';
     },
   },
 };

@@ -212,6 +212,7 @@ export const workItemChangeTypeWidgets = {
       startDate: '2022-10-17',
       dueDate: '2022-10-24',
       webPath: '123',
+      projectMilestone: true,
     },
   },
 };
