@@ -31,7 +31,7 @@ RSpec.describe Resolvers::WorkItems::Widgets::StatusResolver, feature_category: 
     let(:resource_parent) { group }
 
     before do
-      stub_licensed_features(work_item_custom_status: true)
+      stub_licensed_features(work_item_status: true)
     end
 
     context 'with group' do
@@ -59,9 +59,9 @@ RSpec.describe Resolvers::WorkItems::Widgets::StatusResolver, feature_category: 
       it_behaves_like 'does not return system defined statuses'
     end
 
-    context 'with work_item_status feature flag disabled' do
+    context 'with work_item_status_feature_flag feature flag disabled' do
       before do
-        stub_feature_flags(work_item_status: false)
+        stub_feature_flags(work_item_status_feature_flag: false)
       end
 
       it_behaves_like 'does not return system defined statuses'
@@ -69,7 +69,7 @@ RSpec.describe Resolvers::WorkItems::Widgets::StatusResolver, feature_category: 
 
     context 'with work_item_status licensed feature disabled' do
       before do
-        stub_licensed_features(work_item_custom_status: false)
+        stub_licensed_features(work_item_status: false)
       end
 
       it_behaves_like 'does not return system defined statuses'

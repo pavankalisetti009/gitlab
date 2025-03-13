@@ -25,7 +25,7 @@ RSpec.shared_examples 'graphql work item type list request spec EE' do
     include_context 'with work item types request context EE'
 
     it 'returns the allowed custom statuses' do
-      stub_licensed_features(work_item_custom_status: true)
+      stub_licensed_features(work_item_status: true)
       post_graphql(query, current_user: current_user)
 
       work_item_types = graphql_data_at(parent_key, :workItemTypes, :nodes)
