@@ -3,11 +3,15 @@
 require 'spec_helper'
 
 RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :system_access do
+  include Auth::DpopTokenHelper
+
   let_it_be(:current_user) { create(:user) }
   let_it_be(:group) { create(:group) }
-  let_it_be(:current_user_token) { create(:personal_access_token, user: current_user, scopes: [:api]) }
+  let_it_be(:personal_access_token) { create(:personal_access_token, user: current_user, scopes: [:api]) }
 
-  subject(:get_request) { get api(path, personal_access_token: current_user_token) }
+  subject(:get_request) do
+    get(api(path, personal_access_token: personal_access_token), headers: dpop_headers_for(current_user))
+  end
 
   before_all do
     group.add_owner(current_user)
@@ -26,13 +30,15 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
       end
     end
 
-    it 'returns 403 for unauthorized user' do
-      unauthorized_user = create(:user)
-      token = create(:personal_access_token, user: unauthorized_user, scopes: [:api])
+    context 'when unauthorized user' do
+      let_it_be(:unauthorized_user) { create(:user) }
+      let_it_be(:personal_access_token) { create(:personal_access_token, user: unauthorized_user, scopes: [:api]) }
 
-      get api(path, personal_access_token: token)
+      it 'returns 403 for unauthorized user' do
+        get(api(path, personal_access_token: personal_access_token), headers: dpop_headers_for(unauthorized_user))
 
-      expect(response).to have_gitlab_http_status(:forbidden)
+        expect(response).to have_gitlab_http_status(:forbidden)
+      end
     end
   end
 
@@ -78,10 +84,10 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
     it_behaves_like 'a manage groups GET endpoint'
 
     it 'returns 404 for non-existing group' do
-      get api(
+      get(api(
         "/groups/#{non_existing_record_id}/manage/personal_access_tokens",
-        personal_access_token: current_user_token
-      )
+        personal_access_token: personal_access_token
+      ), headers: dpop_headers_for(current_user))
 
       expect(response).to have_gitlab_http_status(:not_found)
     end
@@ -135,16 +141,17 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
     it_behaves_like 'a manage groups GET endpoint'
 
     it 'returns 404 for non-existing group' do
-      get api(
+      get(api(
         "/groups/#{non_existing_record_id}/manage/resource_access_tokens",
-        personal_access_token: current_user_token
-      )
+        personal_access_token: personal_access_token
+      ), headers: dpop_headers_for(current_user))
 
       expect(response).to have_gitlab_http_status(:not_found)
     end
 
     it 'returns the expected response for group tokens' do
-      get api(path, personal_access_token: current_user_token), params: { sort: 'created_at_desc' }
+      get api(path, personal_access_token: personal_access_token), params: { sort: 'created_at_desc' },
+        headers: dpop_headers_for(current_user)
 
       expect(response).to have_gitlab_http_status(:ok)
       expect(response).to match_response_schema('public_api/v4/resource_access_tokens')
@@ -154,7 +161,8 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
     end
 
     it 'returns the expected response for project tokens' do
-      get api(path, personal_access_token: current_user_token), params: { sort: 'created_at_asc' }
+      get(api(path, personal_access_token: personal_access_token), params: { sort: 'created_at_asc' },
+        headers: dpop_headers_for(current_user))
 
       expect(response).to have_gitlab_http_status(:ok)
       expect(response).to match_response_schema('public_api/v4/resource_access_tokens')
@@ -164,17 +172,19 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
     end
 
     it 'avoids N+1 queries' do
-      get api(path, personal_access_token: current_user_token)
+      dpop_header_val = dpop_headers_for(current_user)
+
+      get(api(path, personal_access_token: personal_access_token), headers: dpop_header_val)
 
       control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
-        get api(path, personal_access_token: current_user_token)
+        get(api(path, personal_access_token: personal_access_token), headers: dpop_header_val)
       end
 
       other_bot = create(:user, :project_bot, bot_namespace: group, developer_of: group)
       create(:personal_access_token, user: other_bot)
 
       expect do
-        get api(path, personal_access_token: current_user_token)
+        get(api(path, personal_access_token: personal_access_token), headers: dpop_header_val)
       end.not_to exceed_all_query_limit(control)
     end
   end
@@ -185,7 +195,7 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
     let_it_be(:path) { "/groups/#{group.id}/manage/ssh_keys" }
 
     it 'throws not found error for a non existent group' do
-      get api("/groups/#{non_existing_record_id}/manage/ssh_keys")
+      get(api("/groups/#{non_existing_record_id}/manage/ssh_keys"), headers: dpop_headers_for(current_user))
 
       expect(response).to have_gitlab_http_status(:not_found)
     end
@@ -199,7 +209,7 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
       it 'returns empty response for group which has no enterprise user associated' do
         group.add_developer(user)
 
-        get api(path, personal_access_token: current_user_token)
+        get(api(path, personal_access_token: personal_access_token), headers: dpop_headers_for(current_user))
 
         expect(response).to have_gitlab_http_status(:ok)
         expect(json_response).to eq([])
@@ -212,7 +222,7 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
       it "returns the ssh_keys for the group" do
         ssh_key = create(:personal_key, user: user)
 
-        get api(path, personal_access_token: current_user_token)
+        get(api(path, personal_access_token: personal_access_token), headers: dpop_headers_for(current_user))
 
         expect(response).to have_gitlab_http_status(:ok)
         expect_paginated_array_response_contain_exactly(ssh_key.id)
@@ -220,20 +230,24 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
       end
 
       it 'avoids N+1 queries' do
+        dpop_header_val = dpop_headers_for(current_user)
         control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
-          get api(path, personal_access_token: current_user_token)
+          get(api(path, personal_access_token: personal_access_token), headers: dpop_header_val)
         end
 
         user2 = create(:enterprise_user, enterprise_group: group)
         create(:personal_key, user: user2)
 
         expect do
-          get api(path, personal_access_token: current_user_token)
+          get(api(path, personal_access_token: personal_access_token), headers: dpop_header_val)
         end.not_to exceed_all_query_limit(control)
       end
 
       context 'with filter params', :freeze_time do
-        subject(:get_request) { get api(path, personal_access_token: current_user_token), params: params }
+        subject(:get_request) do
+          get api(path, personal_access_token: personal_access_token), params: params,
+            headers: dpop_headers_for(current_user)
+        end
 
         let(:params) { {} }
 
@@ -298,5 +312,9 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
         end
       end
     end
+  end
+
+  def dpop_headers_for(user)
+    { "dpop" => generate_dpop_proof_for(user).proof }
   end
 end
