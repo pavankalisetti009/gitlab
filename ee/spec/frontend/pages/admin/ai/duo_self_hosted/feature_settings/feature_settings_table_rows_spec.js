@@ -29,6 +29,7 @@ describe('FeatureSettingsTableRows', () => {
     findTableRows().at(idx).findComponent(FeatureSettingsModelSelector);
   const findFeatureSettingsTableRows = () => wrapper.findComponent(FeatureSettingsTableRows);
   const findLoaders = () => wrapper.findAllComponents(GlSkeletonLoader);
+  const findBetaBadges = () => wrapper.findAllByTestId('feature-beta-badge');
 
   it('renders the component', () => {
     createComponent();
@@ -54,6 +55,21 @@ describe('FeatureSettingsTableRows', () => {
 
       expect(findRowFeatureNameByIdx(0).text()).toBe('Code Generation');
       expect(findRowFeatureNameByIdx(1).text()).toBe('Code Completion');
+    });
+
+    describe('beta features', () => {
+      it('renders the beta badge for beta features', () => {
+        const betaFeature = mockAiFeatureSettings[3];
+        createComponent({ aiFeatureSettings: [betaFeature] });
+
+        expect(findBetaBadges().length).toBe(1);
+      });
+
+      it('does not render the beta badge for non-beta features', () => {
+        createComponent();
+
+        expect(findBetaBadges().length).toBe(0);
+      });
     });
 
     it('renders the model select dropdown and passes the correct prop', () => {

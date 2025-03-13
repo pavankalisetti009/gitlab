@@ -18,6 +18,8 @@ module Ai
       duo_chat_troubleshoot_job: 7
     }.freeze
 
+    FEATURES = STABLE_FEATURES.merge(FLAGGED_FEATURES)
+
     FEATURE_METADATA_PATH = Rails.root.join('ee/lib/gitlab/ai/feature_settings/feature_metadata.yml')
     FEATURE_METADATA = YAML.load_file(FEATURE_METADATA_PATH)
 
@@ -59,7 +61,14 @@ module Ai
     def self.allowed_features
       allowed_features = STABLE_FEATURES
 
-      allowed_features = allowed_features.merge(FLAGGED_FEATURES) if Feature.enabled?(:ai_duo_chat_sub_features_settings) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- The feature flag is global
+      # rubocop:disable Gitlab/FeatureFlagWithoutActor -- The feature flag is global
+      if Feature.enabled?(:ai_duo_chat_sub_features_settings) && ::Ai::TestingTermsAcceptance.has_accepted?
+        # FLAGGED_FEATURES are in beta status. We must ensure the GitLab Testing Terms
+        # have been accepted by the user in order for them to be used.
+        # https://handbook.gitlab.com/handbook/legal/testing-agreement/
+        allowed_features = allowed_features.merge(FLAGGED_FEATURES)
+      end
+      # rubocop:enable Gitlab/FeatureFlagWithoutActor
 
       allowed_features.stringify_keys
     end
