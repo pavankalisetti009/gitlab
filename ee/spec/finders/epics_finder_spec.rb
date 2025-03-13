@@ -1032,4 +1032,66 @@ RSpec.describe EpicsFinder, feature_category: :team_planning do
       end
     end
   end
+
+  describe 'filtering by custom fields' do
+    include_context 'with group configured with custom fields'
+
+    let_it_be(:current_user) { create(:user) }
+    let_it_be(:epics) { create_list(:epic, 5, group: group) }
+
+    let(:results) { described_class.new(current_user, params).execute }
+
+    before do
+      stub_licensed_features(epics: true, custom_fields: true)
+    end
+
+    context 'when filtering on a select field' do
+      let(:params) { { group_id: group.id, custom_field: { select_field.id => select_option_2.id } } }
+
+      before_all do
+        create(:work_item_select_field_value, work_item_id: epics[0].issue_id, custom_field: select_field, custom_field_select_option: select_option_1)
+        create(:work_item_select_field_value, work_item_id: epics[1].issue_id, custom_field: select_field, custom_field_select_option: select_option_2)
+        create(:work_item_select_field_value, work_item_id: epics[2].issue_id, custom_field: select_field, custom_field_select_option: select_option_2)
+      end
+
+      it 'returns epics matching the custom field value' do
+        expect(results).to contain_exactly(epics[1], epics[2])
+      end
+
+      context 'when feature is unlicensed' do
+        before do
+          stub_licensed_features(epics: true, custom_fields: false)
+        end
+
+        it 'does not apply the custom field filter' do
+          expect(results).to match_array(epics)
+        end
+      end
+
+      context 'when custom_fields_feature is disabled' do
+        before do
+          stub_feature_flags(custom_fields_feature: false)
+        end
+
+        it 'does not apply the custom field filter' do
+          expect(results).to match_array(epics)
+        end
+      end
+    end
+
+    context 'filtering on a multi-select field' do
+      let(:params) { { group_id: group.id, custom_field: { multi_select_field.id => [multi_select_option_1.id, multi_select_option_2.id] } } }
+
+      before do
+        create(:work_item_select_field_value, work_item_id: epics[0].issue_id, custom_field: multi_select_field, custom_field_select_option: multi_select_option_1)
+        create(:work_item_select_field_value, work_item_id: epics[1].issue_id, custom_field: multi_select_field, custom_field_select_option: multi_select_option_2)
+        create(:work_item_select_field_value, work_item_id: epics[2].issue_id, custom_field: multi_select_field, custom_field_select_option: multi_select_option_1)
+        create(:work_item_select_field_value, work_item_id: epics[2].issue_id, custom_field: multi_select_field, custom_field_select_option: multi_select_option_2)
+      end
+
+      it 'returns epics matching all the custom field values' do
+        expect(results).to contain_exactly(epics[2])
+      end
+    end
+  end
 end

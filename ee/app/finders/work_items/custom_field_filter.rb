@@ -2,8 +2,9 @@
 
 module WorkItems
   class CustomFieldFilter < ::Issuables::BaseFilter
-    def initialize(parent:, **kwargs)
+    def initialize(parent:, work_item_id_column: :id, **kwargs)
       @parent = parent
+      @work_item_id_column = work_item_id_column
 
       super(**kwargs)
     end
@@ -33,7 +34,7 @@ module WorkItems
             custom_field_id: custom_field_id,
             custom_field_select_option_id: select_option_id
           ).where(
-            WorkItems::SelectFieldValue.arel_table[:work_item_id].eq(issuables.arel_table[:id])
+            WorkItems::SelectFieldValue.arel_table[:work_item_id].eq(issuables.arel_table[@work_item_id_column])
           )
         )
       end
