@@ -48,6 +48,8 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
             labels_fetch_path: group_labels_path(
               project, format: :json, only_group_labels: true, include_ancestor_groups: true
             ),
+            new_comment_template_paths: include({ text: "Your comment templates",
+                                                  href: profile_comment_templates_path }.to_json),
             epics_list_path: group_epics_path(project),
             has_linked_items_epics_feature: "true"
           })
