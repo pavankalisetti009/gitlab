@@ -17,6 +17,8 @@ import DeleteRoleModal from '../delete_role_modal.vue';
 import memberRoleQuery from '../../graphql/role_details/member_role.query.graphql';
 import DetailsTab from './details_tab.vue';
 
+export const DETAILS_QUERYSTRING = 'from_details';
+
 export default {
   components: {
     GlSprintf,
@@ -88,6 +90,9 @@ export default {
     hasAssignedUsers() {
       return this.role.usersCount > 0;
     },
+    editRolePath() {
+      return `${this.role.editPath}?${DETAILS_QUERYSTRING}`;
+    },
   },
   methods: {
     navigateToListPage() {
@@ -112,7 +117,7 @@ export default {
         <gl-button
           v-gl-tooltip="s__('MemberRole|Edit role')"
           icon="pencil"
-          :href="role.editPath"
+          :href="editRolePath"
           class="gl-ml-2"
           data-testid="edit-button"
         />
