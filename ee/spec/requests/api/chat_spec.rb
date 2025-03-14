@@ -315,6 +315,8 @@ RSpec.describe API::Chat, :saas, feature_category: :duo_chat do
           end
 
           it 'sends resource to the chat' do
+            stub_licensed_features(epics: true)
+
             expect(chat_message).to receive(:save!)
             expect(Gitlab::Llm::ChatMessage).to receive(:new).with(chat_message_params).and_return(chat_message)
             expect(Llm::Internal::CompletionService).to receive(:new).with(chat_message, options).and_return(chat)

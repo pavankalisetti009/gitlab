@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe IssuePolicy, feature_category: :team_planning do
+  let_it_be(:admin) { create(:user, :admin) }
   let_it_be(:user) { create(:user) }
   let_it_be(:guest) { create(:user) }
   let_it_be(:planner) { create(:user) }
@@ -22,6 +23,7 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
 
   let_it_be(:group) do
     create(:group, :public, parent: root_group).tap do |g|
+      g.add_guest(guest)
       g.add_planner(planner)
       g.add_reporter(reporter)
       g.add_owner(owner)
@@ -145,10 +147,6 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
     let_it_be(:private_project) { create(:project, :private, group: group) }
     let_it_be(:public_issue) { create(:issue, project: public_project) }
     let_it_be(:private_issue) { create(:issue, project: private_project) }
-
-    before_all do
-      group.add_guest(guest)
-    end
 
     it 'does not allow non-members to admin_issue_relation' do
       expect(permissions(non_member, group_issue)).to be_disallowed(:admin_issue_relation)
@@ -327,6 +325,41 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
           )
         end
       end
+    end
+  end
+
+  context 'when work item type is epic' do
+    let_it_be(:author) { create(:user) }
+    let_it_be(:assignee) { create(:user) }
+    let_it_be(:project) { create(:project, :private, group: group) }
+    let_it_be(:project_epic) do
+      create(:issue, work_item_type: WorkItems::Type.default_by_type(:epic), project: project)
+    end
+
+    context 'when epics feature is available' do
+      before do
+        stub_licensed_features(epics: true)
+      end
+
+      it 'allows read permissions for guest users' do
+        expect(permissions(guest, project_epic)).to be_allowed(:read_issue)
+      end
+
+      context 'when project_work_item_epics feature flag is disabled' do
+        before do
+          stub_feature_flags(project_work_item_epics: false)
+        end
+
+        it_behaves_like 'prevents access to project-level {issues|work_items} with type Epic', :issue
+      end
+    end
+
+    context 'when epics feature is not available' do
+      before do
+        stub_licensed_features(epics: false)
+      end
+
+      it_behaves_like 'prevents access to project-level {issues|work_items} with type Epic', :issue
     end
   end
 end

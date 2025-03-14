@@ -26,7 +26,7 @@ module EE
 
     override :add_work_item_show_breadcrumb
     def add_work_item_show_breadcrumb(resource_parent, iid)
-      if resource_parent.work_items.with_work_item_type.find_by_iid(iid)&.epic_work_item?
+      if resource_parent.work_items.with_work_item_type.find_by_iid(iid)&.group_epic_work_item?
         return add_to_breadcrumbs(_('Epics'), group_epics_path(resource_parent))
       end
 

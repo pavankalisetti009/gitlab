@@ -565,6 +565,12 @@ module EE
 
         root_ancestor.custom_roles_enabled?
       end
+
+      def project_epics_enabled?
+        return group.project_epics_enabled? if group
+
+        ::Feature.enabled?(:project_work_item_epics, self, type: :beta)
+      end
     end
 
     def self.cascading_with_parent_namespace(attribute)
