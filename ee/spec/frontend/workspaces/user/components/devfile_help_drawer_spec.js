@@ -70,7 +70,7 @@ describe('workspaces/user/components/devfile_help_drawer', () => {
     expect(wrapper.findByTestId('drawer-title').text()).toContain('GitLab devfile');
 
     expect(drawer.text()).toContain(
-      'A devfile is a file that detines a development environment by specifying the necessary tools, languages, runtimes, and other components for a GitLab project.',
+      'A devfile is a file that defines a development environment by specifying the necessary tools, languages, runtimes, and other components for a GitLab project.',
     );
 
     expect(drawer.text()).toContain(
