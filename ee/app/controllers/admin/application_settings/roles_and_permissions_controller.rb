@@ -11,6 +11,10 @@ module Admin
       before_action :authorize_admin_member_roles!, except: [:index, :show]
       before_action :authorize_view_member_roles!, only: [:index, :show]
 
+      before_action only: [:index] do
+        push_frontend_feature_flag(:custom_admin_roles)
+      end
+
       private
 
       def authorize_admin_member_roles!

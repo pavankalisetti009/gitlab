@@ -1,7 +1,7 @@
 <script>
 import { GlTable, GlBadge, GlLoadingIcon, GlLink } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import { isCustomRole } from '../utils';
+import { isCustomRole, isAdminRole } from '../utils';
 import RoleActions from './role_actions.vue';
 
 export const TABLE_FIELDS = [
@@ -33,7 +33,7 @@ export default {
       required: true,
     },
   },
-  methods: { isCustomRole },
+  methods: { isCustomRole, isAdminRole },
   TABLE_FIELDS,
 };
 </script>
@@ -45,10 +45,15 @@ export default {
     </template>
 
     <template #cell(name)="{ item }">
-      <div class="gl-items-center gl-whitespace-nowrap md:gl-flex">
+      <div
+        class="gl-flex gl-flex-wrap gl-items-center gl-justify-end gl-gap-3 gl-whitespace-nowrap md:gl-flex-nowrap md:gl-justify-start"
+      >
         <gl-link :href="item.detailsPath">{{ item.name }}</gl-link>
-        <gl-badge v-if="isCustomRole(item)" class="gl-ml-3">
-          {{ s__('MemberRole|Custom role') }}
+        <gl-badge v-if="isCustomRole(item)">
+          {{ s__('MemberRole|Custom member role') }}
+        </gl-badge>
+        <gl-badge v-else-if="isAdminRole(item)" icon="admin" variant="info">
+          {{ s__('MemberRole|Custom admin role') }}
         </gl-badge>
       </div>
     </template>

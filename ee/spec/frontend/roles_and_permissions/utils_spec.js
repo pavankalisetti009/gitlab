@@ -1,5 +1,5 @@
-import { isCustomRole } from 'ee/roles_and_permissions/utils';
-import { standardRoles, memberRoles } from './mock_data';
+import { isCustomRole, isAdminRole } from 'ee/roles_and_permissions/utils';
+import { standardRoles, memberRoles, adminRoles } from './mock_data';
 
 describe('Roles and permissions utils', () => {
   describe('isCustomRole', () => {
@@ -12,6 +12,12 @@ describe('Roles and permissions utils', () => {
     describe.each(memberRoles)('for custom role $name', (role) => {
       it('returns true', () => {
         expect(isCustomRole(role)).toBe(true);
+      });
+    });
+
+    describe.each(adminRoles)('for admin role $name', (role) => {
+      it('returns true', () => {
+        expect(isAdminRole(role)).toBe(true);
       });
     });
   });

@@ -18,9 +18,8 @@ export default {
     description: s__(
       'MemberRole|Manage which actions users can take with %{linkStart}roles and permissions%{linkEnd}.',
     ),
-    roleCount: s__(
-      `MemberRole|%{rolesStart}Roles:%{rolesEnd} %{customCount} Custom %{defaultCount} Default`,
-    ),
+    roleCount: s__(`MemberRole|%{defaultCount} Default %{customCount} Custom`),
+    roleCountAdmin: s__(`MemberRole|%{adminCount} Admin`),
     newRoleText: s__('MemberRole|New role'),
     fetchRolesError: s__('MemberRole|Failed to fetch roles.'),
     roleDeletedText: s__('MemberRole|Role successfully deleted.'),
@@ -78,8 +77,12 @@ export default {
     customRoles() {
       return this.rolesData?.memberRoles.nodes || [];
     },
+    adminRoles() {
+      // Only self-managed has admin roles, SaaS does not.
+      return this.rolesData?.adminMemberRoles?.nodes || [];
+    },
     roles() {
-      return [...this.defaultRoles, ...this.customRoles];
+      return [...this.defaultRoles, ...this.customRoles, ...this.adminRoles];
     },
     canExportRoles() {
       // Check that the backend feature is enabled and that the current user can export members.
@@ -114,14 +117,16 @@ export default {
     <div class="gl-mb-4 gl-flex gl-flex-wrap gl-items-center gl-justify-between gl-gap-3">
       <span data-testid="role-counts">
         <gl-sprintf :message="$options.i18n.roleCount">
-          <template #roles="{ content }">
-            <span class="gl-font-bold">{{ content }}</span>
+          <template #defaultCount>
+            <span class="gl-font-bold">{{ defaultRoles.length }}</span>
           </template>
           <template #customCount>
-            <span class="gl-font-bold">{{ customRoles.length }}</span>
+            <span class="gl-ml-3 gl-font-bold">{{ customRoles.length }}</span>
           </template>
-          <template #defaultCount>
-            <span class="gl-ml-2 gl-font-bold">{{ defaultRoles.length }}</span>
+        </gl-sprintf>
+        <gl-sprintf v-if="glFeatures.customAdminRoles" :message="$options.i18n.roleCountAdmin">
+          <template #adminCount>
+            <span class="gl-ml-3 gl-font-bold">{{ adminRoles.length }}</span>
           </template>
         </gl-sprintf>
       </span>

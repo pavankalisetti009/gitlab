@@ -2,7 +2,7 @@ import { GlDisclosureDropdown, GlIcon, GlLink, GlPopover, GlTooltip } from '@git
 import { nextTick } from 'vue';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import RoleActions from 'ee/roles_and_permissions/components/role_actions.vue';
-import { mockMemberRole } from '../mock_data';
+import { mockMemberRole, adminRoles } from '../mock_data';
 
 describe('Role actions', () => {
   let wrapper;
@@ -62,9 +62,10 @@ describe('Role actions', () => {
   });
 
   describe.each`
-    type         | role           | id      | expectedText          | expectedToast
-    ${'default'} | ${defaultRole} | ${'10'} | ${'Access level: 10'} | ${'Access level copied to clipboard'}
-    ${'custom'}  | ${customRole}  | ${'1'}  | ${'Role ID: 1'}       | ${'Role ID copied to clipboard'}
+    type         | role             | id      | expectedText          | expectedToast
+    ${'default'} | ${defaultRole}   | ${'10'} | ${'Access level: 10'} | ${'Access level copied to clipboard'}
+    ${'custom'}  | ${customRole}    | ${'1'}  | ${'Role ID: 1'}       | ${'Role ID copied to clipboard'}
+    ${'admin'}   | ${adminRoles[0]} | ${'3'}  | ${'Role ID: 3'}       | ${'Role ID copied to clipboard'}
   `('role ID item for $type role', ({ role, id, expectedText, expectedToast }) => {
     beforeEach(() => createComponent({ role }));
 
