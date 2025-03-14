@@ -641,11 +641,14 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
     end
   end
 
-  describe 'POST /personal_access_tokens/:token_id/rotate' do
+  describe 'POST /groups/:id/service_accounts/:user_id/personal_access_tokens/:token_id/rotate' do
+    let(:group_id) { group.id }
+    let(:user_id) { service_account_user.id }
     let(:token) { create(:personal_access_token, user: service_account_user) }
+    let(:token_id) { token.id }
     let(:params) { nil }
     let(:path) do
-      "/groups/#{group_id}/service_accounts/#{service_account_user.id}/personal_access_tokens/#{token.id}/rotate"
+      "/groups/#{group_id}/service_accounts/#{user_id}/personal_access_tokens/#{token_id}/rotate"
     end
 
     subject(:perform_request) do
@@ -653,8 +656,6 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
     end
 
     context 'when the feature is licensed' do
-      let(:group_id) { group.id }
-
       before do
         stub_licensed_features(service_accounts: true)
       end
@@ -669,6 +670,7 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
             perform_request
 
             expect(response).to have_gitlab_http_status(:ok)
+            expect(token.reload.revoked?).to be_truthy
             expect(json_response['token']).not_to eq(token.token)
             expect(json_response['expires_at']).to eq((Date.today + 1.week).to_s)
           end
@@ -681,37 +683,27 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
               perform_request
 
               expect(response).to have_gitlab_http_status(:ok)
+              expect(token.reload.revoked?).to be_truthy
               expect(json_response['token']).not_to eq(token.token)
               expect(json_response['expires_at']).to eq(expiry_date.to_s)
             end
           end
 
           context 'when service raises an error' do
-            let(:error_message) { 'boom!' }
-
-            before do
-              allow_next_instance_of(PersonalAccessTokens::RotateService) do |service|
-                allow(service).to receive(:execute).and_return(ServiceResponse.error(message: error_message))
-              end
-            end
-
             it 'returns error message' do
+              token.revoke!
               perform_request
 
               expect(response).to have_gitlab_http_status(:bad_request)
-              expect(json_response['message']).to eq("400 Bad request - #{error_message}")
+              expect(json_response['message']).to eq("400 Bad request - Token already revoked")
             end
           end
 
           context 'when token does not exist' do
-            let(:invalid_path) do
-              # rubocop:disable Layout/LineLength
-              "/groups/#{group_id}/service_accounts/#{service_account_user.id}/personal_access_tokens/#{non_existing_record_id}/rotate"
-              # rubocop:enable Layout/LineLength
-            end
+            let(:token_id) { non_existing_record_id }
 
             it 'returns not found' do
-              post api(invalid_path, user)
+              perform_request
 
               expect(response).to have_gitlab_http_status(:not_found)
             end
@@ -745,6 +737,7 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
 
           context 'when target user is not service accounts' do
             let(:regular_user) { create(:user) }
+            let(:user_id) { regular_user.id }
 
             before do
               regular_user.provisioned_by_group_id = group.id
@@ -754,10 +747,7 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
             end
 
             it 'returns bad request error' do
-              post api(
-                "/groups/#{group_id}/service_accounts/#{regular_user.id}/personal_access_tokens/#{token.id}/rotate",
-                user
-              )
+              perform_request
 
               expect(response).to have_gitlab_http_status(:bad_request)
             end
@@ -767,7 +757,7 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
         context 'when group does not exist' do
           let(:group_id) { non_existing_record_id }
 
-          it "returns error" do
+          it 'returns error' do
             perform_request
 
             expect(response).to have_gitlab_http_status(:not_found)
