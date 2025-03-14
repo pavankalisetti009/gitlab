@@ -27,7 +27,7 @@ RSpec.describe Search::Zoekt::IndexToEvictEventWorker, :zoekt_settings_enabled, 
       let_it_be_with_reload(:idx2) { create(:zoekt_index, :pending_eviction) }
       let_it_be_with_reload(:idx3) { create(:zoekt_index, :pending_eviction) }
 
-      it 'deletes associated replicas and logs metadata with deletedØ count' do
+      it 'deletes associated replicas and logs metadata with deleted count' do
         expect_next_instance_of(described_class) do |instance|
           expect(instance).to receive(:log_hash_metadata_on_done)
             .with({ replicas_deleted_count: 3, indices_updated_count: 3 })

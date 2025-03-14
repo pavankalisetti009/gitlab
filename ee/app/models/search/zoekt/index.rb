@@ -53,6 +53,7 @@ module Search
         where(node: node)
       end
 
+      scope :for_replica, ->(ids) { where(replica: ids) }
       scope :for_root_namespace_id, ->(root_namespace_id) do
         where(namespace_id: root_namespace_id).where.not(zoekt_enabled_namespace_id: nil)
       end

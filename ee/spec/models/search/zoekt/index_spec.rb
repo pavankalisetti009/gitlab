@@ -66,6 +66,16 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
       it { is_expected.to contain_exactly(zoekt_index_2) }
     end
 
+    describe '.for_replica' do
+      let(:zoekt_replica) { zoekt_index_2.replica }
+
+      subject(:results) { described_class.for_replica(zoekt_replica) }
+
+      it 'contains zoekt_indices of given zoekt_replica' do
+        expect(results.pluck(:zoekt_replica_id).uniq).to contain_exactly(zoekt_replica.id)
+      end
+    end
+
     describe '.for_root_namespace_id' do
       subject { described_class.for_root_namespace_id(namespace_2) }
 
