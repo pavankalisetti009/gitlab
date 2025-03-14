@@ -789,15 +789,40 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
     end
   end
 
-  describe '.by_group_level_authorization' do
-    subject(:by_group_level_authorization) do
-      described_class.by_group_level_authorization(query_hash: query_hash, options: options)
+  describe '.by_search_level_and_group_membership' do
+    let_it_be_with_reload(:group) { create(:group, :private) }
+    let(:base_options) { { current_user: user, search_level: 'global' } }
+    let(:options) { base_options }
+
+    subject(:by_search_level_and_group_membership) do
+      described_class.by_search_level_and_group_membership(query_hash: query_hash, options: options)
+    end
+
+    context 'when no search_level is provided' do
+      let(:base_options) { { current_user: user } }
+
+      it 'raises an error' do
+        expect { by_search_level_and_group_membership }.to raise_error(ArgumentError)
+      end
+    end
+
+    context 'when invalid search_level is provided' do
+      let(:options) do
+        {
+          current_user: nil,
+          project_ids: [],
+          group_ids: [],
+          search_level: :foobar,
+          features: :repository
+        }
+      end
+
+      it 'raises an error' do
+        expect { by_search_level_and_group_membership }.to raise_error(ArgumentError)
+      end
     end
 
     context 'when user.can_read_all_resources? is true' do
-      let(:base_options) { { current_user: user, search_level: 'global' } }
-      let(:options) { base_options }
-
       before do
         allow(user).to receive(:can_read_all_resources?).and_return(true)
       end
@@ -805,99 +830,431 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       it_behaves_like 'does not modify the query_hash'
     end
 
-    context 'when user is having permission for the group' do
-      let_it_be(:group) { create(:group, :private) }
-      let(:base_options) { { current_user: user, search_level: 'group', group_id: group.id, group_ids: [group.id] } }
-      let(:options) { base_options }
-
+    context 'when user has GUEST permission for the group' do
       before_all do
-        group.add_developer(user)
+        group.add_guest(user)
       end
 
-      it 'shows private filter' do
-        expected_filter = [
-          { bool: { _name: "filters:level:group", minimum_should_match: 1,
-                    should: [{ prefix: {
-                      traversal_ids: {
-                        _name: "filters:level:group:ancestry_filter:descendants",
-                        value: group.elastic_namespace_ancestry
-                      }
-                    } }] } },
-          { bool: {
-            minimum_should_match: 1,
-            should: [
-              { bool: { filter: [
-                { term: { namespace_visibility_level: {
-                  _name: 'filters:namespace_visibility_level:public', value: ::Gitlab::VisibilityLevel::PUBLIC
-                } } }
-              ] } },
-              { bool: { filter: [{ term: { namespace_visibility_level: {
-                _name: 'filters:namespace_visibility_level:internal', value: ::Gitlab::VisibilityLevel::INTERNAL
-              } } }] } },
-              { bool: { filter: [
-                { term: {
-                  namespace_visibility_level: { _name: 'filters:namespace_visibility_level:private',
-                                                value: ::Gitlab::VisibilityLevel::PRIVATE }
-                } },
-                { terms: { namespace_id: [group.id] } }
-              ] } }
-            ]
-          } }
-        ]
+      context 'for global search' do
+        let(:options) { base_options.merge(search_level: 'global') }
+        let_it_be(:another_group) { create(:group, :private, guests: user) }
 
-        expect(by_group_level_authorization.dig(:query, :bool, :filter)).to match(expected_filter)
-        expect(by_group_level_authorization.dig(:query, :bool, :must)).to be_empty
-        expect(by_group_level_authorization.dig(:query, :bool, :must_not)).to be_empty
-        expect(by_group_level_authorization.dig(:query, :bool, :should)).to be_empty
+        it 'shows private filter' do
+          public_and_internal_filter =
+            { bool:
+              { must: [
+                { terms:
+                  { _name: 'filters:permissions:global:namespace_visibility_level:public_and_internal',
+                    namespace_visibility_level:
+                      [::Gitlab::VisibilityLevel::PUBLIC, ::Gitlab::VisibilityLevel::INTERNAL] } }
+              ] } }
+
+          private_filter =
+            { bool: {
+              must: [
+                { terms:
+                  { _name: 'filters:permissions:global:namespace_visibility_level:private',
+                    namespace_visibility_level: [::Gitlab::VisibilityLevel::PRIVATE] } }
+              ],
+              should: [
+                { prefix:
+                  { traversal_ids:
+                    { _name: 'filters:permissions:global:ancestry_filter:descendants',
+                      value: group.elastic_namespace_ancestry } } },
+                { prefix:
+                  { traversal_ids:
+                    { _name: 'filters:permissions:global:ancestry_filter:descendants',
+                      value: another_group.elastic_namespace_ancestry } } }
+              ],
+              minimum_should_match: 1
+            } }
+
+          expected_filter = [
+            { bool:
+              { _name: 'filters:permissions:global',
+                should: [public_and_internal_filter, private_filter],
+                minimum_should_match: 1 } }
+          ]
+
+          expect(by_search_level_and_group_membership.dig(:query, :bool, :filter)).to match(expected_filter)
+          expect(by_search_level_and_group_membership.dig(:query, :bool, :must)).to be_empty
+          expect(by_search_level_and_group_membership.dig(:query, :bool, :must_not)).to be_empty
+          expect(by_search_level_and_group_membership.dig(:query, :bool, :should)).to be_empty
+        end
+      end
+
+      context 'for group search' do
+        let(:options) { base_options.merge(search_level: 'group', group_ids: [group.id]) }
+
+        it 'shows private filter' do
+          public_and_internal_filter =
+            { bool:
+              { must: [
+                { terms:
+                  { _name: 'filters:permissions:group:namespace_visibility_level:public_and_internal',
+                    namespace_visibility_level:
+                      [::Gitlab::VisibilityLevel::PUBLIC, ::Gitlab::VisibilityLevel::INTERNAL] } }
+              ] } }
+
+          private_filter =
+            { bool: {
+              must: [
+                { terms:
+                  { _name: 'filters:permissions:group:namespace_visibility_level:private',
+                    namespace_visibility_level: [::Gitlab::VisibilityLevel::PRIVATE] } }
+              ],
+              should: [
+                { prefix:
+                  { traversal_ids:
+                    { _name: 'filters:permissions:group:ancestry_filter:descendants',
+                      value: group.elastic_namespace_ancestry } } }
+              ],
+              minimum_should_match: 1
+            } }
+
+          expected_filter = [
+            { bool:
+              { _name: 'filters:level:group',
+                should: [
+                  { prefix:
+                    { traversal_ids:
+                      { _name: 'filters:level:group:ancestry_filter:descendants',
+                        value: group.elastic_namespace_ancestry } } }
+                ],
+                minimum_should_match: 1 } },
+            { bool:
+              { _name: 'filters:permissions:group',
+                should: [public_and_internal_filter, private_filter],
+                minimum_should_match: 1 } }
+          ]
+
+          expect(by_search_level_and_group_membership.dig(:query, :bool, :filter)).to match(expected_filter)
+          expect(by_search_level_and_group_membership.dig(:query, :bool, :must)).to be_empty
+          expect(by_search_level_and_group_membership.dig(:query, :bool, :must_not)).to be_empty
+          expect(by_search_level_and_group_membership.dig(:query, :bool, :should)).to be_empty
+        end
       end
     end
 
     context 'when user is nil' do
-      let(:options) { base_options }
       let(:base_options) { { current_user: nil, search_level: 'global' } }
 
-      it 'shows only the public filter' do
-        expected_filter = [
-          bool: {
-            minimum_should_match: 1,
-            should: [
-              { bool: { filter: [{ term: { namespace_visibility_level: {
-                _name: 'filters:namespace_visibility_level:public', value: ::Gitlab::VisibilityLevel::PUBLIC
-              } } }] } }
-            ]
-          }
-        ]
+      context 'for global search' do
+        let(:options) { base_options.merge(search_level: 'global') }
 
-        expect(by_group_level_authorization.dig(:query, :bool, :filter)).to match(expected_filter)
-        expect(by_group_level_authorization.dig(:query, :bool, :must)).to be_empty
-        expect(by_group_level_authorization.dig(:query, :bool, :must_not)).to be_empty
-        expect(by_group_level_authorization.dig(:query, :bool, :should)).to be_empty
+        it 'shows only the public filter' do
+          expected_filter = [
+            { bool:
+              { _name: 'filters:permissions:global',
+                should: [
+                  { bool:
+                    { must: [
+                      { terms:
+                        { _name: 'filters:permissions:global:namespace_visibility_level:public',
+                          namespace_visibility_level:
+                            [::Gitlab::VisibilityLevel::PUBLIC] } }
+                    ] } }
+                ],
+                minimum_should_match: 1 } }
+          ]
+
+          expect(by_search_level_and_group_membership.dig(:query, :bool, :filter)).to match(expected_filter)
+          expect(by_search_level_and_group_membership.dig(:query, :bool, :must)).to be_empty
+          expect(by_search_level_and_group_membership.dig(:query, :bool, :must_not)).to be_empty
+          expect(by_search_level_and_group_membership.dig(:query, :bool, :should)).to be_empty
+        end
+      end
+
+      context 'for group search' do
+        let(:options) { base_options.merge(search_level: 'group', group_ids: [group.id]) }
+
+        it 'shows only the public filter' do
+          expected_filter = [
+            { bool:
+              { _name: 'filters:level:group',
+                should: [
+                  { prefix:
+                    { traversal_ids:
+                      { _name: 'filters:level:group:ancestry_filter:descendants',
+                        value: group.elastic_namespace_ancestry } } }
+                ],
+                minimum_should_match: 1 } },
+            { bool:
+              { _name: 'filters:permissions:group',
+                should: [
+                  { bool:
+                    { must: [
+                      { terms:
+                        { _name: 'filters:permissions:group:namespace_visibility_level:public',
+                          namespace_visibility_level:
+                            [::Gitlab::VisibilityLevel::PUBLIC] } }
+                    ] } }
+                ],
+                minimum_should_match: 1 } }
+          ]
+
+          expect(by_search_level_and_group_membership.dig(:query, :bool, :filter)).to match(expected_filter)
+          expect(by_search_level_and_group_membership.dig(:query, :bool, :must)).to be_empty
+          expect(by_search_level_and_group_membership.dig(:query, :bool, :must_not)).to be_empty
+          expect(by_search_level_and_group_membership.dig(:query, :bool, :should)).to be_empty
+        end
       end
     end
 
-    context 'when user is not having permissions to read confidential epics' do
-      let(:options) { base_options }
-      let(:base_options) { { current_user: user, search_level: 'global' } }
+    context 'when user has no role in group or project' do
+      context 'for global search' do
+        let(:options) { base_options.merge(search_level: 'global') }
 
-      it 'shows only the public filter' do
-        expected_filter = [
-          bool: {
-            minimum_should_match: 1,
-            should: [
-              { bool: { filter: [{ term: { namespace_visibility_level: {
-                _name: 'filters:namespace_visibility_level:public', value: ::Gitlab::VisibilityLevel::PUBLIC
-              } } }] } },
-              { bool: { filter: [{ term: { namespace_visibility_level: {
-                _name: 'filters:namespace_visibility_level:internal', value: ::Gitlab::VisibilityLevel::INTERNAL
-              } } }] } }
+        it 'shows only the public and internal filters' do
+          expected_filter = [
+            { bool:
+              { _name: 'filters:permissions:global',
+                should: [
+                  { bool:
+                    { must: [
+                      { terms:
+                        { _name: 'filters:permissions:global:namespace_visibility_level:public_and_internal',
+                          namespace_visibility_level:
+                            [::Gitlab::VisibilityLevel::PUBLIC, ::Gitlab::VisibilityLevel::INTERNAL] } }
+                    ] } }
+                ],
+                minimum_should_match: 1 } }
+          ]
+
+          expect(by_search_level_and_group_membership.dig(:query, :bool, :filter)).to match(expected_filter)
+          expect(by_search_level_and_group_membership.dig(:query, :bool, :must)).to be_empty
+          expect(by_search_level_and_group_membership.dig(:query, :bool, :must_not)).to be_empty
+          expect(by_search_level_and_group_membership.dig(:query, :bool, :should)).to be_empty
+        end
+      end
+
+      context 'for group search' do
+        let(:options) { base_options.merge(search_level: 'group', group_ids: [group.id]) }
+
+        it 'shows only the public and filters' do
+          expected_filter = [
+            { bool:
+              { _name: 'filters:level:group',
+                should: [
+                  { prefix:
+                    { traversal_ids:
+                      { _name: 'filters:level:group:ancestry_filter:descendants',
+                        value: group.elastic_namespace_ancestry } } }
+                ],
+                minimum_should_match: 1 } },
+            { bool:
+              { _name: 'filters:permissions:group',
+                should: [
+                  { bool:
+                    { must: [
+                      { terms:
+                        { _name: 'filters:permissions:group:namespace_visibility_level:public_and_internal',
+                          namespace_visibility_level:
+                            [::Gitlab::VisibilityLevel::PUBLIC, ::Gitlab::VisibilityLevel::INTERNAL] } }
+                    ] } }
+                ],
+                minimum_should_match: 1 } }
+          ]
+
+          expect(by_search_level_and_group_membership.dig(:query, :bool, :filter)).to match(expected_filter)
+          expect(by_search_level_and_group_membership.dig(:query, :bool, :must)).to be_empty
+          expect(by_search_level_and_group_membership.dig(:query, :bool, :must_not)).to be_empty
+          expect(by_search_level_and_group_membership.dig(:query, :bool, :should)).to be_empty
+        end
+      end
+    end
+
+    context 'when user has GUEST permission for a project in the group hierarchy' do
+      let_it_be(:sub_group) { create(:group, :private, parent: group) }
+      let_it_be(:project) { create(:project, :private, group: sub_group, guests: user) }
+
+      context 'for global search' do
+        let(:options) { base_options.merge(search_level: 'global') }
+
+        it 'shows private filter' do
+          public_and_internal_filter =
+            { bool:
+              { must: [
+                { terms:
+                  { _name: 'filters:permissions:global:namespace_visibility_level:public_and_internal',
+                    namespace_visibility_level:
+                      [::Gitlab::VisibilityLevel::PUBLIC, ::Gitlab::VisibilityLevel::INTERNAL] } }
+              ] } }
+
+          private_filter =
+            { bool: {
+              must: [
+                { terms:
+                  { _name: 'filters:permissions:global:namespace_visibility_level:private',
+                    namespace_visibility_level: [::Gitlab::VisibilityLevel::PRIVATE] } },
+                { terms:
+                  { _name: 'filters:permissions:global:project:membership',
+                    namespace_id: contain_exactly(group.id, sub_group.id) } }
+              ]
+            } }
+
+          expected_filter = [
+            { bool:
+              { _name: 'filters:permissions:global',
+                should: [public_and_internal_filter, private_filter],
+                minimum_should_match: 1 } }
+          ]
+
+          expect(by_search_level_and_group_membership.dig(:query, :bool, :filter)).to match(expected_filter)
+          expect(by_search_level_and_group_membership.dig(:query, :bool, :must)).to be_empty
+          expect(by_search_level_and_group_membership.dig(:query, :bool, :must_not)).to be_empty
+          expect(by_search_level_and_group_membership.dig(:query, :bool, :should)).to be_empty
+        end
+
+        context 'and user also has direct permission in a top level group' do
+          before_all do
+            group.add_guest(user)
+          end
+
+          it 'shows private filter for top level group and project namespace ancestors' do
+            public_and_internal_filter =
+              { bool:
+                { must: [
+                  { terms:
+                    { _name: 'filters:permissions:global:namespace_visibility_level:public_and_internal',
+                      namespace_visibility_level:
+                        [::Gitlab::VisibilityLevel::PUBLIC, ::Gitlab::VisibilityLevel::INTERNAL] } }
+                ] } }
+
+            private_filter_top_level_group =
+              { bool: {
+                minimum_should_match: 1,
+                must: [
+                  { terms:
+                    { _name: 'filters:permissions:global:namespace_visibility_level:private',
+                      namespace_visibility_level: [::Gitlab::VisibilityLevel::PRIVATE] } }
+                ],
+                should: [
+                  { prefix:
+                    { traversal_ids: {
+                      _name: 'filters:permissions:global:ancestry_filter:descendants',
+                      value: group.elastic_namespace_ancestry
+                    } } }
+                ]
+              } }
+
+            expected_filter = [
+              { bool:
+                { _name: 'filters:permissions:global',
+                  should: contain_exactly(public_and_internal_filter,
+                    private_filter_top_level_group),
+                  minimum_should_match: 1 } }
             ]
-          }
-        ]
 
-        expect(by_group_level_authorization.dig(:query, :bool, :filter)).to match(expected_filter)
-        expect(by_group_level_authorization.dig(:query, :bool, :must)).to be_empty
-        expect(by_group_level_authorization.dig(:query, :bool, :must_not)).to be_empty
-        expect(by_group_level_authorization.dig(:query, :bool, :should)).to be_empty
+            expect(by_search_level_and_group_membership.dig(:query, :bool, :filter)).to match(expected_filter)
+            expect(by_search_level_and_group_membership.dig(:query, :bool, :must)).to be_empty
+            expect(by_search_level_and_group_membership.dig(:query, :bool, :must_not)).to be_empty
+            expect(by_search_level_and_group_membership.dig(:query, :bool, :should)).to be_empty
+          end
+        end
+      end
+
+      context 'for group search' do
+        let(:options) { base_options.merge(search_level: 'group', group_ids: [group.id]) }
+
+        it 'shows private filter' do
+          public_and_internal_filter =
+            { bool:
+              { must: [
+                { terms:
+                  { _name: 'filters:permissions:group:namespace_visibility_level:public_and_internal',
+                    namespace_visibility_level:
+                      [::Gitlab::VisibilityLevel::PUBLIC, ::Gitlab::VisibilityLevel::INTERNAL] } }
+              ] } }
+
+          private_filter =
+            { bool: {
+              must: [
+                { terms:
+                  { _name: 'filters:permissions:group:namespace_visibility_level:private',
+                    namespace_visibility_level: [::Gitlab::VisibilityLevel::PRIVATE] } },
+                { terms:
+                  { _name: 'filters:permissions:group:project:membership',
+                    namespace_id: contain_exactly(group.id, sub_group.id) } }
+              ]
+            } }
+
+          expected_filter = [
+            { bool:
+              { _name: 'filters:level:group',
+                should: [
+                  { prefix:
+                    { traversal_ids:
+                      { _name: 'filters:level:group:ancestry_filter:descendants',
+                        value: group.elastic_namespace_ancestry } } }
+                ],
+                minimum_should_match: 1 } },
+            { bool:
+              { _name: 'filters:permissions:group',
+                should: [public_and_internal_filter, private_filter],
+                minimum_should_match: 1 } }
+          ]
+
+          expect(by_search_level_and_group_membership.dig(:query, :bool, :filter)).to match(expected_filter)
+          expect(by_search_level_and_group_membership.dig(:query, :bool, :must)).to be_empty
+          expect(by_search_level_and_group_membership.dig(:query, :bool, :must_not)).to be_empty
+          expect(by_search_level_and_group_membership.dig(:query, :bool, :should)).to be_empty
+        end
+
+        context 'and user also has direct permission in a top level group' do
+          before_all do
+            group.add_guest(user)
+          end
+
+          it 'shows private filter for top level group only' do
+            public_and_internal_filter =
+              { bool:
+                { must: [
+                  { terms:
+                    { _name: 'filters:permissions:group:namespace_visibility_level:public_and_internal',
+                      namespace_visibility_level:
+                        [::Gitlab::VisibilityLevel::PUBLIC, ::Gitlab::VisibilityLevel::INTERNAL] } }
+                ] } }
+
+            private_filter =
+              { bool: {
+                minimum_should_match: 1,
+                must: [
+                  { terms:
+                    { _name: 'filters:permissions:group:namespace_visibility_level:private',
+                      namespace_visibility_level: [::Gitlab::VisibilityLevel::PRIVATE] } }
+                ],
+                should: [
+                  { prefix:
+                    { traversal_ids: {
+                      _name: 'filters:permissions:group:ancestry_filter:descendants',
+                      value: group.elastic_namespace_ancestry
+                    } } }
+                ]
+              } }
+
+            expected_filter = [
+              { bool:
+                { _name: 'filters:level:group',
+                  should: [
+                    { prefix:
+                      { traversal_ids:
+                        { _name: 'filters:level:group:ancestry_filter:descendants',
+                          value: group.elastic_namespace_ancestry } } }
+                  ],
+                  minimum_should_match: 1 } },
+              { bool:
+                { _name: 'filters:permissions:group',
+                  should: [public_and_internal_filter, private_filter],
+                  minimum_should_match: 1 } }
+            ]
+
+            expect(by_search_level_and_group_membership.dig(:query, :bool, :filter)).to match(expected_filter)
+            expect(by_search_level_and_group_membership.dig(:query, :bool, :must)).to be_empty
+            expect(by_search_level_and_group_membership.dig(:query, :bool, :must_not)).to be_empty
+            expect(by_search_level_and_group_membership.dig(:query, :bool, :should)).to be_empty
+          end
+        end
       end
     end
   end
@@ -937,40 +1294,40 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
               minimum_should_match: 1,
               should: [
                 { bool: {
-                  _name: "filters:non_confidential:groups:public",
+                  _name: "filters:confidentiality:groups:non_confidential:public",
                   must: [
                     { term: { confidential: { value: false } } },
                     { term: { namespace_visibility_level: { value: ::Gitlab::VisibilityLevel::PUBLIC } } }
                   ]
                 } },
                 { bool: {
-                  _name: "filters:non_confidential:groups:internal",
+                  _name: "filters:confidentiality:groups:non_confidential:internal",
                   must: [
                     { term: { confidential: { value: false } } },
                     { term: { namespace_visibility_level: { value: ::Gitlab::VisibilityLevel::INTERNAL } } }
                   ]
                 } },
                 { bool: {
-                  _name: "filters:non_confidential:groups:private",
+                  _name: "filters:confidentiality:groups:non_confidential:private",
                   must: [{ term: { confidential: { value: false } } }],
                   should: [
                     { prefix:
                       { traversal_ids:
-                        { _name: "filters:non_confidential:groups:private:ancestry_filter:descendants",
+                        { _name: "filters:confidentiality:groups:non_confidential:private:ancestry_filter:descendants",
                           value: group.elastic_namespace_ancestry } } }
                   ],
                   minimum_should_match: 1
                 } },
                 {
                   bool: {
-                    _name: "filters:confidential:groups:private",
+                    _name: "filters:confidentiality:groups:confidential:private",
                     must: [
                       { term: { confidential: { value: true } } }
                     ],
                     should: [
                       { prefix:
                         { traversal_ids:
-                          { _name: "filters:confidential:groups:private:ancestry_filter:descendants",
+                          { _name: "filters:confidentiality:groups:confidential:private:ancestry_filter:descendants",
                             value: group.elastic_namespace_ancestry } } }
                     ],
                     minimum_should_match: 1
@@ -998,40 +1355,40 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
               minimum_should_match: 1,
               should: [
                 { bool: {
-                  _name: "filters:non_confidential:groups:public",
+                  _name: "filters:confidentiality:groups:non_confidential:public",
                   must: [
                     { term: { confidential: { value: false } } },
                     { term: { namespace_visibility_level: { value: ::Gitlab::VisibilityLevel::PUBLIC } } }
                   ]
                 } },
                 { bool: {
-                  _name: "filters:non_confidential:groups:internal",
+                  _name: "filters:confidentiality:groups:non_confidential:internal",
                   must: [
                     { term: { confidential: { value: false } } },
                     { term: { namespace_visibility_level: { value: ::Gitlab::VisibilityLevel::INTERNAL } } }
                   ]
                 } },
                 { bool: {
-                  _name: "filters:non_confidential:groups:private",
+                  _name: "filters:confidentiality:groups:non_confidential:private",
                   must: [{ term: { confidential: { value: false } } }],
                   should: [
                     { prefix:
                       { traversal_ids:
-                        { _name: "filters:non_confidential:groups:private:ancestry_filter:descendants",
+                        { _name: "filters:confidentiality:groups:non_confidential:private:ancestry_filter:descendants",
                           value: group.elastic_namespace_ancestry } } }
                   ],
                   minimum_should_match: 1
                 } },
                 {
                   bool: {
-                    _name: "filters:confidential:groups:private",
+                    _name: "filters:confidentiality:groups:confidential:private",
                     must: [
                       { term: { confidential: { value: true } } }
                     ],
                     should: [
                       { prefix:
                         { traversal_ids:
-                          { _name: "filters:confidential:groups:private:ancestry_filter:descendants",
+                          { _name: "filters:confidentiality:groups:confidential:private:ancestry_filter:descendants",
                             value: group.elastic_namespace_ancestry } } }
                     ],
                     minimum_should_match: 1
@@ -1062,48 +1419,48 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
               minimum_should_match: 1,
               should: [
                 { bool: {
-                  _name: "filters:non_confidential:groups:public",
+                  _name: "filters:confidentiality:groups:non_confidential:public",
                   must: [
                     { term: { confidential: { value: false } } },
                     { term: { namespace_visibility_level: { value: ::Gitlab::VisibilityLevel::PUBLIC } } }
                   ]
                 } },
                 { bool: {
-                  _name: "filters:non_confidential:groups:internal",
+                  _name: "filters:confidentiality:groups:non_confidential:internal",
                   must: [
                     { term: { confidential: { value: false } } },
                     { term: { namespace_visibility_level: { value: ::Gitlab::VisibilityLevel::INTERNAL } } }
                   ]
                 } },
                 { bool: {
-                  _name: "filters:non_confidential:groups:private",
+                  _name: "filters:confidentiality:groups:non_confidential:private",
                   must: [{ term: { confidential: { value: false } } }],
                   should: contain_exactly(
                     { prefix:
                       { traversal_ids:
-                        { _name: "filters:non_confidential:groups:private:ancestry_filter:descendants",
+                        { _name: "filters:confidentiality:groups:non_confidential:private:ancestry_filter:descendants",
                           value: group.elastic_namespace_ancestry } } },
                     { prefix:
                       { traversal_ids:
-                        { _name: "filters:non_confidential:groups:private:ancestry_filter:descendants",
+                        { _name: "filters:confidentiality:groups:non_confidential:private:ancestry_filter:descendants",
                           value: shared_group.elastic_namespace_ancestry } } }
                   ),
                   minimum_should_match: 1
                 } },
                 {
                   bool: {
-                    _name: "filters:confidential:groups:private",
+                    _name: "filters:confidentiality:groups:confidential:private",
                     must: [
                       { term: { confidential: { value: true } } }
                     ],
                     should: contain_exactly(
                       { prefix:
                         { traversal_ids:
-                          { _name: "filters:confidential:groups:private:ancestry_filter:descendants",
+                          { _name: "filters:confidentiality:groups:confidential:private:ancestry_filter:descendants",
                             value: group.elastic_namespace_ancestry } } },
                       { prefix:
                         { traversal_ids:
-                          { _name: "filters:confidential:groups:private:ancestry_filter:descendants",
+                          { _name: "filters:confidentiality:groups:confidential:private:ancestry_filter:descendants",
                             value: shared_group.elastic_namespace_ancestry } } }
                     ),
                     minimum_should_match: 1
@@ -1130,7 +1487,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             minimum_should_match: 1,
             should: [
               { bool: {
-                _name: "filters:non_confidential:groups:public",
+                _name: "filters:confidentiality:groups:non_confidential:public",
                 must: [
                   { term: { confidential: { value: false } } },
                   { term: { namespace_visibility_level: { value: ::Gitlab::VisibilityLevel::PUBLIC } } }
@@ -1154,14 +1511,14 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             minimum_should_match: 1,
             should: [
               { bool: {
-                _name: "filters:non_confidential:groups:public",
+                _name: "filters:confidentiality:groups:non_confidential:public",
                 must: [
                   { term: { confidential: { value: false } } },
                   { term: { namespace_visibility_level: { value: ::Gitlab::VisibilityLevel::PUBLIC } } }
                 ]
               } },
               { bool: {
-                _name: "filters:non_confidential:groups:internal",
+                _name: "filters:confidentiality:groups:non_confidential:internal",
                 must: [
                   { term: { confidential: { value: false } } },
                   { term: { namespace_visibility_level: { value: ::Gitlab::VisibilityLevel::INTERNAL } } }
@@ -1188,7 +1545,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
               minimum_should_match: 1,
               should: [
                 { bool: {
-                  _name: "filters:non_confidential:groups:public",
+                  _name: "filters:confidentiality:groups:non_confidential:public",
                   must: [
                     { term: { confidential: { value: false } } },
                     { term: { namespace_visibility_level: { value: ::Gitlab::VisibilityLevel::PUBLIC } } }
@@ -1215,26 +1572,26 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             minimum_should_match: 1,
             should: [
               { bool: {
-                _name: "filters:non_confidential:groups:public",
+                _name: "filters:confidentiality:groups:non_confidential:public",
                 must: [
                   { term: { confidential: { value: false } } },
                   { term: { namespace_visibility_level: { value: ::Gitlab::VisibilityLevel::PUBLIC } } }
                 ]
               } },
               { bool: {
-                _name: "filters:non_confidential:groups:internal",
+                _name: "filters:confidentiality:groups:non_confidential:internal",
                 must: [
                   { term: { confidential: { value: false } } },
                   { term: { namespace_visibility_level: { value: ::Gitlab::VisibilityLevel::INTERNAL } } }
                 ]
               } },
               { bool: {
-                _name: "filters:non_confidential:groups:private",
+                _name: "filters:confidentiality:groups:non_confidential:private",
                 must: [{ term: { confidential: { value: false } } }],
                 should: [
                   { prefix:
                     { traversal_ids:
-                      { _name: "filters:non_confidential:groups:private:ancestry_filter:descendants",
+                      { _name: "filters:confidentiality:groups:non_confidential:private:ancestry_filter:descendants",
                         value: group.elastic_namespace_ancestry } } }
                 ],
                 minimum_should_match: 1
@@ -1247,6 +1604,95 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
         expect(by_group_level_confidentiality.dig(:query, :bool, :must)).to be_empty
         expect(by_group_level_confidentiality.dig(:query, :bool, :must_not)).to be_empty
         expect(by_group_level_confidentiality.dig(:query, :bool, :should)).to be_empty
+      end
+    end
+
+    context 'when user has GUEST permission for a project in the group hierarchy' do
+      let_it_be(:group) { create(:group, :private) }
+      let_it_be(:sub_group) { create(:group, :private, parent: group) }
+      let_it_be(:project) { create(:project, :private, group: sub_group, guests: user) }
+
+      it 'shows the expected filter' do
+        expected_filter = [
+          bool: {
+            minimum_should_match: 1,
+            should: [
+              { bool: {
+                _name: "filters:confidentiality:groups:non_confidential:public",
+                must: [
+                  { term: { confidential: { value: false } } },
+                  { term: { namespace_visibility_level: { value: ::Gitlab::VisibilityLevel::PUBLIC } } }
+                ]
+              } },
+              { bool: {
+                _name: "filters:confidentiality:groups:non_confidential:internal",
+                must: [
+                  { term: { confidential: { value: false } } },
+                  { term: { namespace_visibility_level: { value: ::Gitlab::VisibilityLevel::INTERNAL } } }
+                ]
+              } },
+              { bool: {
+                _name: "filters:confidentiality:groups:non_confidential:private",
+                must: [
+                  { term: { confidential: { value: false } } },
+                  { terms: { _name: 'filters:confidentiality:groups:non_confidential:private:project:membership',
+                             namespace_id: contain_exactly(sub_group.id, group.id) } }
+                ]
+              } }
+            ]
+          }
+        ]
+
+        expect(by_group_level_confidentiality.dig(:query, :bool, :filter)).to match(expected_filter)
+        expect(by_group_level_confidentiality.dig(:query, :bool, :must)).to be_empty
+        expect(by_group_level_confidentiality.dig(:query, :bool, :must_not)).to be_empty
+        expect(by_group_level_confidentiality.dig(:query, :bool, :should)).to be_empty
+      end
+
+      context 'and user also has GUEST permission to the top level group' do
+        before_all do
+          group.add_guest(user)
+        end
+
+        it 'shows the expected filter' do
+          expected_filter = [
+            bool: {
+              minimum_should_match: 1,
+              should: [
+                { bool: {
+                  _name: "filters:confidentiality:groups:non_confidential:public",
+                  must: [
+                    { term: { confidential: { value: false } } },
+                    { term: { namespace_visibility_level: { value: ::Gitlab::VisibilityLevel::PUBLIC } } }
+                  ]
+                } },
+                { bool: {
+                  _name: "filters:confidentiality:groups:non_confidential:internal",
+                  must: [
+                    { term: { confidential: { value: false } } },
+                    { term: { namespace_visibility_level: { value: ::Gitlab::VisibilityLevel::INTERNAL } } }
+                  ]
+                } },
+                { bool: {
+                  _name: "filters:confidentiality:groups:non_confidential:private",
+                  must: [{ term: { confidential: { value: false } } }],
+                  should: [
+                    { prefix:
+                      { traversal_ids:
+                        { _name: "filters:confidentiality:groups:non_confidential:private:ancestry_filter:descendants",
+                          value: group.elastic_namespace_ancestry } } }
+                  ],
+                  minimum_should_match: 1
+                } }
+              ]
+            }
+          ]
+
+          expect(by_group_level_confidentiality.dig(:query, :bool, :filter)).to match(expected_filter)
+          expect(by_group_level_confidentiality.dig(:query, :bool, :must)).to be_empty
+          expect(by_group_level_confidentiality.dig(:query, :bool, :must_not)).to be_empty
+          expect(by_group_level_confidentiality.dig(:query, :bool, :should)).to be_empty
+        end
       end
     end
   end

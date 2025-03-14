@@ -26,12 +26,12 @@ RSpec.describe ::Search::Elastic::WorkItemGroupQueryBuilder, :elastic_helpers, f
     assert_names_in_query(build, with: %w[
       work_item:multi_match:and:search_terms
       work_item:multi_match_phrase:search_terms
-      filters:namespace_visibility_level:public
-      filters:namespace_visibility_level:internal
+      filters:permissions:global
+      filters:permissions:global:namespace_visibility_level:public_and_internal
       filters:not_hidden
       filters:work_item_type_ids
       filters:non_archived
-      filters:non_confidential:groups:public
+      filters:confidentiality:groups:non_confidential:public
     ])
   end
 
@@ -110,8 +110,9 @@ RSpec.describe ::Search::Elastic::WorkItemGroupQueryBuilder, :elastic_helpers, f
           private_group.add_guest(user)
 
           assert_names_in_query(build,
-            with: %w[filters:non_confidential:groups:public filters:non_confidential:groups:private],
-            without: %w[filters:confidential:groups:private])
+            with: %w[filters:confidentiality:groups:non_confidential:public
+              filters:confidentiality:groups:non_confidential:private],
+            without: %w[filters:confidentiality:groups:confidential:private])
         end
       end
 
@@ -120,18 +121,18 @@ RSpec.describe ::Search::Elastic::WorkItemGroupQueryBuilder, :elastic_helpers, f
           private_group.add_planner(user)
 
           assert_names_in_query(build,
-            with: %w[filters:non_confidential:groups:public
-              filters:non_confidential:groups:private
-              filters:confidential:groups:private])
+            with: %w[filters:confidentiality:groups:non_confidential:public
+              filters:confidentiality:groups:non_confidential:private
+              filters:confidentiality:groups:confidential:private])
         end
       end
 
       context 'when user does not have role' do
         it 'applies only non-confidential public filters' do
           assert_names_in_query(build,
-            with: %w[filters:non_confidential:groups:public],
-            without: %w[filters:non_confidential:groups:private
-              filters:confidential:groups:private])
+            with: %w[filters:confidentiality:groups:non_confidential:public],
+            without: %w[filters:confidentiality:groups:non_confidential:private
+              filters:confidentiality:groups:private])
         end
       end
 
@@ -140,9 +141,9 @@ RSpec.describe ::Search::Elastic::WorkItemGroupQueryBuilder, :elastic_helpers, f
 
         it 'only applies the non-confidential filter' do
           assert_names_in_query(build,
-            with: %w[filters:non_confidential:groups:public],
-            without: %w[filters:non_confidential:groups:private
-              filters:confidential:groups:private])
+            with: %w[filters:confidentiality:groups:non_confidential:public],
+            without: %w[filters:confidentiality:groups:non_confidential:private
+              filters:confidentiality:groups:confidential:private])
         end
       end
 
@@ -153,9 +154,9 @@ RSpec.describe ::Search::Elastic::WorkItemGroupQueryBuilder, :elastic_helpers, f
 
         it 'applies skips applying all confidential filters' do
           assert_names_in_query(build,
-            without: %w[filters:non_confidential:groups:public
-              filters:non_confidential:groups:private
-              filters:confidential:groups:private])
+            without: %w[filters:confidentiality:groups:non_confidential:public
+              filters:confidentiality:groups:non_confidential:private
+              filters:confidentiality:groups:confidential:private])
         end
       end
     end
@@ -169,8 +170,8 @@ RSpec.describe ::Search::Elastic::WorkItemGroupQueryBuilder, :elastic_helpers, f
         end
 
         it 'applies authorization filters' do
-          assert_names_in_query(build, with: %w[filters:namespace_visibility_level:public
-            filters:namespace_visibility_level:internal])
+          assert_names_in_query(build, with: %w[filters:permissions:global
+            filters:permissions:global:namespace_visibility_level:public_and_internal])
         end
 
         context 'when user can read all resources' do
@@ -179,8 +180,8 @@ RSpec.describe ::Search::Elastic::WorkItemGroupQueryBuilder, :elastic_helpers, f
           end
 
           it 'bypasses authorization filters' do
-            assert_names_in_query(build, without: %w[filters:namespace_visibility_level:public
-              filters:namespace_visibility_level:internal])
+            assert_names_in_query(build, without: %w[filters:permissions:global
+              filters:permissions:global:namespace_visibility_level:public_and_internal])
           end
         end
       end
@@ -192,9 +193,8 @@ RSpec.describe ::Search::Elastic::WorkItemGroupQueryBuilder, :elastic_helpers, f
 
         it 'applies authorization filters' do
           assert_names_in_query(build, with: %w[filters:level:group
-            filters:namespace_visibility_level:public
-            filters:namespace_visibility_level:internal
-            filters:namespace_visibility_level:private])
+            filters:permissions:group:namespace_visibility_level:public_and_internal
+            filters:permissions:group:namespace_visibility_level:private])
         end
       end
     end
