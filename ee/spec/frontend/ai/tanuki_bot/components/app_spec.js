@@ -262,26 +262,48 @@ describeSkipVue3(skipReason, () => {
       performance.mark = jest.fn();
     });
 
-    it('calls the chat mutation', async () => {
-      expect(chatMutationHandlerMock).toHaveBeenCalledTimes(0);
+    describe('and the chat is not ready', () => {
+      beforeEach(async () => {
+        duoChatGlobalState.isShown = true;
+        await waitForPromises();
+      });
 
-      sendDuoChatCommand({ question: '/troubleshoot', resourceId: '1' });
-      await waitForPromises();
-
-      expect(chatMutationHandlerMock).toHaveBeenCalledTimes(1);
+      it('does not send the command to the api', () => {
+        sendDuoChatCommand({ question: '/troubleshoot', resourceId: '1' });
+        expect(chatMutationHandlerMock).not.toHaveBeenCalled();
+      });
     });
 
-    it('uses the command resourceId', async () => {
-      sendDuoChatCommand({ question: '/troubleshoot', resourceId: 'command::1' });
-      await waitForPromises();
+    describe('and the chat is ready', () => {
+      beforeEach(async () => {
+        duoChatGlobalState.isShown = true;
+        await waitForPromises();
+      });
 
-      expect(chatMutationHandlerMock).toHaveBeenCalledWith({
-        clientSubscriptionId: '123',
-        question: '/troubleshoot',
-        resourceId: 'command::1',
-        projectId: null,
-        conversationType: null,
-        threadId: null,
+      it('calls the chat mutation', async () => {
+        sendDuoChatCommand({ question: '/troubleshoot', resourceId: '1' });
+        await waitForPromises();
+        expect(chatMutationHandlerMock).toHaveBeenCalledTimes(0);
+
+        await findSubscriptions().vm.$emit('subscription-ready');
+        await waitForPromises();
+
+        expect(chatMutationHandlerMock).toHaveBeenCalledTimes(1);
+      });
+
+      it('uses the command resourceId', async () => {
+        await findSubscriptions().vm.$emit('subscription-ready');
+        sendDuoChatCommand({ question: '/troubleshoot', resourceId: 'command::1' });
+        await waitForPromises();
+
+        expect(chatMutationHandlerMock).toHaveBeenCalledWith({
+          clientSubscriptionId: '123',
+          question: '/troubleshoot',
+          resourceId: 'command::1',
+          projectId: null,
+          conversationType: null,
+          threadId: null,
+        });
       });
     });
   });
