@@ -5,7 +5,6 @@ require 'spec_helper'
 RSpec.describe 'Epic work item detail', :js, feature_category: :team_planning do
   include DragTo
   include ListboxHelpers
-  include WorkItemFeedbackHelpers
 
   let_it_be_with_reload(:user) { create(:user) }
   let_it_be_with_reload(:user2) { create(:user, name: 'John') }
@@ -31,7 +30,6 @@ RSpec.describe 'Epic work item detail', :js, feature_category: :team_planning do
         related_epics: true, subepics: true)
       sign_in(user)
       visit work_items_path
-      close_work_item_feedback_popover_if_present
     end
 
     it 'shows breadcrumb links', :aggregate_failures do
