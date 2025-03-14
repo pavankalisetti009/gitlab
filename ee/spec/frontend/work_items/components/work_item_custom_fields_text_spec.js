@@ -292,10 +292,12 @@ describe('WorkItemCustomFieldsText', () => {
       expect(mutationSuccessHandler).toHaveBeenCalledWith({
         input: {
           id: defaultWorkItemId,
-          customFieldsWidget: {
-            customFieldId: defaultField.customField.id,
-            textValue: newValue,
-          },
+          customFieldsWidget: [
+            {
+              customFieldId: defaultField.customField.id,
+              textValue: newValue,
+            },
+          ],
         },
       });
     });
@@ -313,10 +315,12 @@ describe('WorkItemCustomFieldsText', () => {
       expect(mutationSuccessHandler).toHaveBeenCalledWith({
         input: {
           id: defaultWorkItemId,
-          customFieldsWidget: {
-            customFieldId: defaultField.customField.id,
-            textValue: null,
-          },
+          customFieldsWidget: [
+            {
+              customFieldId: defaultField.customField.id,
+              textValue: null,
+            },
+          ],
         },
       });
     });
