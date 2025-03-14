@@ -56003,7 +56003,13 @@ msgstr ""
 msgid "Snippets|Files"
 msgstr ""
 
+msgid "Snippets|New snippet"
+msgstr ""
+
 msgid "Snippets|Snippet actions"
+msgstr ""
+
+msgid "Snippets|Snippets"
 msgstr ""
 
 msgid "Snippets|Snippets are limited to %{total} files."
