@@ -78,7 +78,8 @@ RSpec.describe Resolvers::Ai::UserAvailableFeaturesResolver, feature_category: :
                 duo_include_context_merge_request: 'include_merge_request_context',
                 duo_include_context_issue: 'include_issue_context',
                 duo_include_context_dependency: 'include_dependency_context',
-                duo_include_context_local_git: 'include_local_git_context'
+                duo_include_context_local_git: 'include_local_git_context',
+                duo_include_context_terminal: 'include_terminal_context'
               }
 
             already_enabled_context = %w[include_file_context].freeze
@@ -91,7 +92,7 @@ RSpec.describe Resolvers::Ai::UserAvailableFeaturesResolver, feature_category: :
                 end
 
                 it "returns #{feature} and all already enabled features" do
-                  expect(Feature.enabled?(flag, current_user, type: :gitlab_com_derisk)).to be(true)
+                  expect(Feature.enabled?(flag, current_user)).to be(true)
                   expect(resolver).to contain_exactly(feature, *already_enabled_context)
                 end
               end

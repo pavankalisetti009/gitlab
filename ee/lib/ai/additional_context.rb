@@ -26,7 +26,8 @@ module Ai
       merge_request: 'merge_request',
       issue: 'issue',
       dependency: 'dependency',
-      local_git: 'local_git'
+      local_git: 'local_git',
+      terminal: 'terminal'
     }.freeze
 
     MAX_BODY_SIZE = ::API::CodeSuggestions::MAX_BODY_SIZE
