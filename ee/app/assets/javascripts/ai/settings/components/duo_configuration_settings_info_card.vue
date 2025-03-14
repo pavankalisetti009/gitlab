@@ -10,7 +10,7 @@ export default {
     duoConfigurationSettingsTitle: __('GitLab Duo'),
     duoChangeConfigurationButtonText: s__('AiPowered|Change configuration'),
     experimentAndBetaFeaturesText: s__('AiPowered|Experiment and beta features'),
-    betaSelfHostedModelsText: s__('AiPowered|Beta Self-hosted models'),
+    betaSelfHostedModelsText: s__('AiPowered|Self-hosted beta models and features'),
     directConnectionsText: s__('AiPowered|Direct connections'),
     enabledText: __('Enabled'),
     defaultOnText: s__('AiPowered|On by default'),
