@@ -29480,9 +29480,6 @@ msgstr ""
 msgid "Hide details"
 msgstr ""
 
-msgid "Hide empty"
-msgstr ""
-
 msgid "Hide file browser"
 msgstr ""
 
@@ -38627,9 +38624,6 @@ msgstr ""
 msgid "No AI gateway available."
 msgstr ""
 
-msgid "No Author"
-msgstr ""
-
 msgid "No Epic"
 msgstr ""
 
@@ -38787,9 +38781,6 @@ msgid "No groups or projects found"
 msgstr ""
 
 msgid "No issues found"
-msgstr ""
-
-msgid "No items"
 msgstr ""
 
 msgid "No iteration"
@@ -55429,9 +55420,6 @@ msgstr ""
 msgid "Show details"
 msgstr ""
 
-msgid "Show empty"
-msgstr ""
-
 msgid "Show file browser"
 msgstr ""
 
@@ -66364,7 +66352,19 @@ msgstr ""
 msgid "WorkItem|Are you sure you want to delete the %{workItemType}? This action cannot be reversed."
 msgstr ""
 
+msgid "WorkItem|Assignee"
+msgstr ""
+
 msgid "WorkItem|Assignees"
+msgstr ""
+
+msgid "WorkItem|At risk"
+msgstr ""
+
+msgid "WorkItem|Author"
+msgstr ""
+
+msgid "WorkItem|Back"
 msgstr ""
 
 msgid "WorkItem|Blocked by"
@@ -66550,7 +66550,16 @@ msgstr ""
 msgid "WorkItem|Forest green"
 msgstr ""
 
+msgid "WorkItem|Group by"
+msgstr ""
+
+msgid "WorkItem|Health Status"
+msgstr ""
+
 msgid "WorkItem|Health status"
+msgstr ""
+
+msgid "WorkItem|Hide empty"
 msgstr ""
 
 msgid "WorkItem|History only"
@@ -66578,6 +66587,9 @@ msgid "WorkItem|Key Result"
 msgstr ""
 
 msgid "WorkItem|Key result"
+msgstr ""
+
+msgid "WorkItem|Label"
 msgstr ""
 
 msgid "WorkItem|Labels"
@@ -66634,6 +66646,9 @@ msgstr ""
 msgid "WorkItem|Must be a valid hex code"
 msgstr ""
 
+msgid "WorkItem|Needs attention"
+msgstr ""
+
 msgid "WorkItem|New"
 msgstr ""
 
@@ -66665,6 +66680,9 @@ msgid "WorkItem|No child items are currently assigned. Use child items to break 
 msgstr ""
 
 msgid "WorkItem|No child items are currently open."
+msgstr ""
+
+msgid "WorkItem|No items"
 msgstr ""
 
 msgid "WorkItem|No iteration"
@@ -66701,6 +66719,9 @@ msgid "WorkItem|Number"
 msgstr ""
 
 msgid "WorkItem|Objective"
+msgstr ""
+
+msgid "WorkItem|On track"
 msgstr ""
 
 msgid "WorkItem|One or more items cannot be shown. If you're using SAML authentication, this could mean your session has expired."
@@ -66791,6 +66812,9 @@ msgid "WorkItem|Show all ancestors"
 msgstr ""
 
 msgid "WorkItem|Show closed items"
+msgstr ""
+
+msgid "WorkItem|Show empty"
 msgstr ""
 
 msgid "WorkItem|Show labels"
