@@ -115,7 +115,7 @@ RSpec.describe 'Update Epic', :js, feature_category: :portfolio_management do
       it 'edits full screen' do
         page.within('.detail-page-description') { find('.js-zen-enter').click }
 
-        expect(page).to have_selector('.div-dropzone-wrapper.fullscreen')
+        expect(page).to have_selector('.zen-backdrop.fullscreen')
       end
 
       it 'uploads a file when dragging into textarea' do

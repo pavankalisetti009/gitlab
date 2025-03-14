@@ -23244,6 +23244,9 @@ msgstr ""
 msgid "Enter a number from 0 to 100."
 msgstr ""
 
+msgid "Enter a prompt"
+msgstr ""
+
 msgid "Enter a search query to find more branches, or use * to create a wildcard."
 msgstr ""
 
@@ -26180,6 +26183,9 @@ msgid "General pipelines"
 msgstr ""
 
 msgid "General settings"
+msgstr ""
+
+msgid "Generate"
 msgstr ""
 
 msgid "Generate API key at %{site}"
@@ -31446,6 +31452,9 @@ msgid "Insert a quote"
 msgstr ""
 
 msgid "Insert code"
+msgstr ""
+
+msgid "Insert code change summary"
 msgstr ""
 
 msgid "Insert column left"
@@ -48683,6 +48692,9 @@ msgstr[0] ""
 msgstr[1] ""
 
 msgid "Refreshing…"
+msgstr ""
+
+msgid "Regenerate"
 msgstr ""
 
 msgid "Regenerate export"
@@ -68086,6 +68098,9 @@ msgid "Write milestone description..."
 msgstr ""
 
 msgid "Write milestone description…"
+msgstr ""
+
+msgid "Write with GitLab Duo"
 msgstr ""
 
 msgid "Write your release notes or drag your files here…"

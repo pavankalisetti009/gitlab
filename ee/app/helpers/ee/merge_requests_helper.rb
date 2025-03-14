@@ -18,6 +18,11 @@ module EE
       end
     end
 
+    override :can_use_description_composer
+    def can_use_description_composer(user, merge_request)
+      ::Llm::DescriptionComposerService.new(user, merge_request).valid?.to_s
+    end
+
     override :diffs_tab_pane_data
     def diffs_tab_pane_data(project, merge_request, params)
       data = {
