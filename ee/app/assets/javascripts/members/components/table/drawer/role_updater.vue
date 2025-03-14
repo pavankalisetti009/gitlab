@@ -1,5 +1,6 @@
 <script>
 import axios from 'axios';
+import { isEqual } from 'lodash';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
 import { s__ } from '~/locale';
 import { I18N_ROLE_SAVE_SUCCESS, I18N_ROLE_SAVE_ERROR } from '~/members/constants';
@@ -28,7 +29,7 @@ export default {
       return this.isLdapUser && !this.member.isOverridden;
     },
     isLdapRoleSelected() {
-      return this.role === ldapRole;
+      return isEqual(this.role, ldapRole);
     },
   },
   watch: {
