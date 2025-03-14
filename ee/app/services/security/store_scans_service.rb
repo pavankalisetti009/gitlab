@@ -47,7 +47,7 @@ module Security
 
     def grouped_report_artifacts
       pipeline.job_artifacts
-        .security_reports(file_types: security_report_file_types, project: project)
+        .security_reports(file_types: security_report_file_types)
         .group_by(&:file_type)
     end
     strong_memoize_attr :grouped_report_artifacts
@@ -67,12 +67,7 @@ module Security
     strong_memoize_attr :sbom_report_artifacts
 
     def security_report_file_types
-      if Feature.enabled?(:dependency_scanning_for_pipelines_with_cyclonedx_reports,
-        project)
-        EE::Enums::Ci::JobArtifact.security_report_and_cyclonedx_report_file_types
-      else
-        EE::Enums::Ci::JobArtifact.security_report_file_types
-      end
+      EE::Enums::Ci::JobArtifact.security_report_and_cyclonedx_report_file_types
     end
 
     def parse_report_file?(file_type)

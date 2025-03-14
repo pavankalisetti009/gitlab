@@ -12,11 +12,7 @@ module EE
       end
 
       def security_report_file_types
-        if ::Feature.enabled?(:dependency_scanning_for_pipelines_with_cyclonedx_reports, pipeline.project)
-          EE::Enums::Ci::JobArtifact.security_report_and_cyclonedx_report_file_types
-        else
-          EE::Enums::Ci::JobArtifact.security_report_file_types
-        end
+        EE::Enums::Ci::JobArtifact.security_report_and_cyclonedx_report_file_types
       end
 
       def degradation_threshold(file_type)

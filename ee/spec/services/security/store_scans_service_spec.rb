@@ -115,19 +115,6 @@ RSpec.describe Security::StoreScansService, feature_category: :vulnerability_man
                 .with([cyclonedx_artifact], pipeline, 'dependency_scanning')
             end
           end
-
-          context 'with dependency_scanning_for_pipelines_with_cyclonedx_reports feature flag disabled' do
-            before do
-              stub_feature_flags(dependency_scanning_for_pipelines_with_cyclonedx_reports: false)
-            end
-
-            it 'does not execute cyclonedx artifacts' do
-              store_group_of_artifacts
-
-              expect(Security::StoreGroupedSbomScansService).not_to have_received(:execute).with([cyclonedx_artifact],
-                pipeline, 'dependency_scanning')
-            end
-          end
         end
 
         context 'for StoreSecurityReportsByProjectWorker' do
@@ -382,16 +369,6 @@ RSpec.describe Security::StoreScansService, feature_category: :vulnerability_man
             expect { store_group_of_artifacts }.to change { Security::Finding.count }.by(ds_findings_count)
           end
         end
-
-        context 'with dependency_scanning_for_pipelines_with_cyclonedx_reports feature flag disabled' do
-          before do
-            stub_feature_flags(dependency_scanning_for_pipelines_with_cyclonedx_reports: false)
-          end
-
-          it 'does not create cyclonedx related findings' do
-            expect { store_group_of_artifacts }.to change { Security::Finding.count }.by(ds_findings_count)
-          end
-        end
       end
 
       context 'with different jobs with the same cyclonedx related findings' do
@@ -411,16 +388,6 @@ RSpec.describe Security::StoreScansService, feature_category: :vulnerability_man
           expect { store_group_of_artifacts }.to change {
             Security::Finding.deduplicated.count
           }.by(cyclonedx_findings_count)
-        end
-
-        context 'with dependency_scanning_for_pipelines_with_cyclonedx_reports feature flag disabled' do
-          before do
-            stub_feature_flags(dependency_scanning_for_pipelines_with_cyclonedx_reports: false)
-          end
-
-          it 'does not created cyclonedx related findings' do
-            expect { store_group_of_artifacts }.not_to change { Security::Finding.count }
-          end
         end
       end
     end

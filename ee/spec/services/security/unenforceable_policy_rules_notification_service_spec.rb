@@ -72,21 +72,11 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
           end
         end
 
-        context 'with dependency_scanning_for_pipelines_with_cyclonedx_reports enabled' do
-          before do
-            unenforceable_reports.push(:license_scanning) unless unenforceable_reports.include?(:license_scanning)
-          end
-
-          it_behaves_like 'for Security::GeneratePolicyViolationCommentWorker', unenforceable_reports
+        before do
+          unenforceable_reports.push(:license_scanning) unless unenforceable_reports.include?(:license_scanning)
         end
 
-        context 'with dependency_scanning_for_pipelines_with_cyclonedx_reports disabled' do
-          before do
-            stub_feature_flags(dependency_scanning_for_pipelines_with_cyclonedx_reports: false)
-          end
-
-          it_behaves_like 'for Security::GeneratePolicyViolationCommentWorker', unenforceable_reports
-        end
+        it_behaves_like 'for Security::GeneratePolicyViolationCommentWorker', unenforceable_reports
 
         it 'resets approvals', :aggregate_failures do
           execute

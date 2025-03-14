@@ -164,7 +164,7 @@ RSpec.describe Ci::JobArtifact, feature_category: :geo_replication do
     context 'when the `file_types` parameter is provided' do
       let!(:sast_artifact) { create(:ee_ci_job_artifact, :sast) }
 
-      subject { described_class.security_reports(file_types: file_types, project: job.project) }
+      subject { described_class.security_reports(file_types: file_types) }
 
       context 'when the provided file_types is array' do
         let(:file_types) { %w[secret_detection] }
@@ -192,19 +192,11 @@ RSpec.describe Ci::JobArtifact, feature_category: :geo_replication do
         let(:cyclonedx_artifact) { create(:ee_ci_job_artifact, :cyclonedx) }
 
         it { is_expected.to eq([cyclonedx_artifact]) }
-
-        context 'with feature flag disabled' do
-          before do
-            stub_feature_flags(dependency_scanning_for_pipelines_with_cyclonedx_reports: false)
-          end
-
-          it { is_expected.to be_empty }
-        end
       end
     end
 
     context 'when the file_types parameter is not provided' do
-      subject { described_class.security_reports(project: job.project) }
+      subject { described_class.security_reports }
 
       context 'when there is a security report' do
         let!(:sast_artifact) { create(:ee_ci_job_artifact, :sast) }

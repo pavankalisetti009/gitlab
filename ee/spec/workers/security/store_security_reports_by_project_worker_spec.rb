@@ -387,24 +387,6 @@ RSpec.describe Security::StoreSecurityReportsByProjectWorker, feature_category: 
             scan_sast.reload.info
           }
         end
-
-        context 'with dependency_scanning_for_pipelines_with_cyclonedx_reports FF disabled' do
-          before do
-            stub_feature_flags(dependency_scanning_for_pipelines_with_cyclonedx_reports: false)
-          end
-
-          it 'generates errors' do
-            expect { worker.perform(project.id) }.to change {
-              scan_sast.reload.info
-            }.from({})
-              .to({ "errors" => [
-                {
-                  "message" => "Ingestion failed for some vulnerabilities",
-                  "type" => "IngestionError"
-                }
-              ] })
-          end
-        end
       end
     end
   end

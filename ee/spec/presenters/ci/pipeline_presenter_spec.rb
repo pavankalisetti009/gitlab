@@ -100,14 +100,6 @@ RSpec.describe Ci::PipelinePresenter do
           let!(:build) { create(:ee_ci_build, :cyclonedx, pipeline: pipeline) }
 
           it { is_expected.to be_truthy }
-
-          context 'when :dependency_scanning_for_pipelines_with_cyclonedx_reports is disabled' do
-            before do
-              stub_feature_flags(dependency_scanning_for_pipelines_with_cyclonedx_reports: false)
-            end
-
-            it { is_expected.to be_falsey }
-          end
         end
       end
 
