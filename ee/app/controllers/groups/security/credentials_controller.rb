@@ -6,6 +6,7 @@ class Groups::Security::CredentialsController < Groups::ApplicationController
   extend ::Gitlab::Utils::Override
   include CredentialsInventoryActions
   include Groups::SecurityFeaturesHelper
+  include ProductAnalyticsTracking
 
   helper_method :credentials_inventory_path, :user_detail_path, :personal_access_token_revoke_path,
     :resource_access_token_revoke_path, :ssh_key_delete_path
@@ -15,7 +16,17 @@ class Groups::Security::CredentialsController < Groups::ApplicationController
 
   feature_category :user_management
 
+  track_internal_event :index, name: 'visit_authentication_credentials_inventory'
+
   private
+
+  def tracking_project_source
+    nil
+  end
+
+  def tracking_namespace_source
+    group
+  end
 
   def validate_group_level_credentials_inventory_available!
     render_404 unless group_level_credentials_inventory_available?(group)
