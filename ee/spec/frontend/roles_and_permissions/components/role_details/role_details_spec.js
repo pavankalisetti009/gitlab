@@ -133,7 +133,7 @@ describe('Role details', () => {
     beforeEach(() => createWrapper());
 
     it('shows button', () => {
-      expect(findEditButton().attributes('href')).toBe('role/path/1/edit');
+      expect(findEditButton().attributes('href')).toBe('role/path/1/edit?from_details');
       expect(findEditButton().props('icon')).toBe('pencil');
     });
 

@@ -21,6 +21,7 @@ import createMemberRoleMutation from '../graphql/create_member_role.mutation.gra
 import updateMemberRoleMutation from '../graphql/update_member_role.mutation.graphql';
 import memberRoleQuery from '../graphql/role_details/member_role.query.graphql';
 import PermissionsSelector from './permissions_selector.vue';
+import { DETAILS_QUERYSTRING } from './role_details/role_details.vue';
 
 export default {
   i18n: {
@@ -66,6 +67,11 @@ export default {
       default: null,
     },
     listPagePath: {
+      type: String,
+      required: false,
+      default: '',
+    },
+    detailsPagePath: {
       type: String,
       required: false,
       default: '',
@@ -150,6 +156,13 @@ export default {
         ? BASE_ROLES_WITHOUT_OWNER.find(({ value }) => value === baseAccessLevel).text
         : this.$options.i18n.baseRolePlaceholder;
     },
+    redirectUrl() {
+      // URL to send the user back to if they submit or cancel the form. If the details querystring exists but
+      // detailsPagePath does not, fall back to the list page.
+      return new URLSearchParams(window.location.search).has(DETAILS_QUERYSTRING)
+        ? this.detailsPagePath || this.listPagePath
+        : this.listPagePath;
+    },
   },
   methods: {
     async saveMemberRole() {
@@ -199,7 +212,7 @@ export default {
             message: sprintf(errorMessage, { error }, false),
           });
         } else {
-          visitUrl(this.listPagePath);
+          visitUrl(this.redirectUrl);
         }
       } catch {
         this.isSubmitting = false;
@@ -302,7 +315,7 @@ export default {
       >
         {{ saveButtonText }}
       </gl-button>
-      <gl-button data-testid="cancel-button" :disabled="isSubmitting" :href="listPagePath">
+      <gl-button data-testid="cancel-button" :disabled="isSubmitting" :href="redirectUrl">
         {{ $options.i18n.cancel }}
       </gl-button>
     </div>

@@ -3,7 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Admin::ApplicationSettings::RolesAndPermissionsController, :enable_admin_mode, feature_category: :user_management do
-  let_it_be(:role_id) { Gitlab::Access.options.each_key.first }
+  let_it_be(:member_role) { create(:member_role, namespace: nil) }
+  let_it_be(:role_id) { member_role.id }
   let_it_be(:admin) { create(:admin) }
 
   shared_examples 'not found' do
@@ -112,8 +113,14 @@ RSpec.describe Admin::ApplicationSettings::RolesAndPermissionsController, :enabl
   describe 'GET #show' do
     subject(:get_method) { get admin_application_settings_roles_and_permission_path(role_id) }
 
-    it_behaves_like 'access control', [:custom_roles, :default_roles_assignees]
+    it_behaves_like 'access control', [:custom_roles]
     it_behaves_like 'role existence check'
+  end
+
+  describe 'GET #show for default_roles_assignees license' do
+    subject(:get_method) { get admin_application_settings_roles_and_permission_path('GUEST') }
+
+    it_behaves_like 'access control', [:default_roles_assignees]
   end
 
   describe 'GET #edit' do

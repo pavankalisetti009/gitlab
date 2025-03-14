@@ -9,7 +9,8 @@ RSpec.describe Groups::Settings::RolesAndPermissionsController, feature_category
   let_it_be(:user) { create(:user) }
   let_it_be(:admin) { create(:admin) }
   let_it_be_with_reload(:group) { create(:group) }
-  let_it_be(:role_id) { Gitlab::Access.options.each_key.first }
+  let_it_be(:member_role) { create(:member_role, namespace: group) }
+  let_it_be(:role_id) { member_role.id }
 
   before do
     stub_saas_features(gitlab_com_subscriptions: true)
@@ -153,8 +154,14 @@ RSpec.describe Groups::Settings::RolesAndPermissionsController, feature_category
   describe 'GET #show', :saas do
     subject(:get_method) { get(group_settings_roles_and_permission_path(group, role_id)) }
 
-    it_behaves_like 'access control', [:custom_roles, :default_roles_assignees]
+    it_behaves_like 'access control', [:custom_roles]
     it_behaves_like 'role existence check'
+  end
+
+  describe 'GET #show for default_roles_assignees license', :saas do
+    subject(:get_method) { get group_settings_roles_and_permission_path(group, 'GUEST') }
+
+    it_behaves_like 'access control', [:default_roles_assignees]
   end
 
   describe 'GET #edit', :saas do

@@ -19,6 +19,7 @@ import { stubComponent } from 'helpers/stub_component';
 import memberRoleQuery from 'ee/roles_and_permissions/graphql/role_details/member_role.query.graphql';
 import { visitUrl } from '~/lib/utils/url_utility';
 import PermissionsSelector from 'ee/roles_and_permissions/components/permissions_selector.vue';
+import setWindowLocation from 'helpers/set_window_location_helper';
 import { getMemberRoleQueryResponse } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -49,7 +50,12 @@ describe('CreateMemberRole', () => {
     roleId,
   } = {}) => {
     wrapper = shallowMountExtended(CreateMemberRole, {
-      propsData: { groupFullPath, listPagePath: 'http://list/page/path', roleId },
+      propsData: {
+        groupFullPath,
+        listPagePath: 'http://list/page/path',
+        detailsPagePath: 'http://details/page/path',
+        roleId,
+      },
       stubs: {
         GlFormInput: stubComponent(GlFormInput, { props: ['state'] }),
         GlFormGroup: stubComponent(GlFormGroup, { props: ['state'] }),
@@ -314,6 +320,24 @@ describe('CreateMemberRole', () => {
           },
         });
       });
+    });
+  });
+
+  describe('when coming from details page', () => {
+    beforeEach(() => {
+      setWindowLocation('?from_details');
+      createComponent();
+    });
+
+    it('uses details path for cancel button URL', () => {
+      expect(findCancelButton().attributes('href')).toBe('http://details/page/path');
+    });
+
+    it('navigates to details path on form submit', async () => {
+      fillForm();
+      await submitForm(waitForPromises);
+
+      expect(visitUrl).toHaveBeenCalledWith('http://details/page/path');
     });
   });
 });
