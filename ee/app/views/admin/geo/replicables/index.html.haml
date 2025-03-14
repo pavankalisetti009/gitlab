@@ -2,8 +2,15 @@
 - add_page_specific_style 'page_bundles/admin/geo_replicable'
 - page_title @replicator_class.replicable_title_plural
 
-= render "admin/geo/shared/replication_nav"
+- if Feature.enabled?(:geo_replicables_filtered_list_view, current_user)
+  = render ::Layouts::PageHeadingComponent.new(s_('Geo|Geo Replication - %{node_name}') % { node_name: @target_node.name }) do |c|
+    - c.with_description do
+      = s_('Geo|Review replication status, and resynchronize and reverify items with the primary site.')
+- else
+  = render "admin/geo/shared/replication_nav"
+
 #js-geo-replicable{ data: { "geo-replicable-empty-svg-path" => image_path("illustrations/empty-state/empty-geo-md.svg"),
+  "replicable_types" => replicable_types.to_json,
   "replicator-class-data" => replicable_class_data(@replicator_class).to_json,
   "geo-target-site-id" => @target_node&.id,
   "geo-current-site-id" => @current_node&.id,
