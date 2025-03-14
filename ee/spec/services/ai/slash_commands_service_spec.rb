@@ -19,8 +19,9 @@ RSpec.describe Ai::SlashCommandsService, feature_category: :duo_chat do
       let(:namespace) { create(:namespace) }
 
       before do
-        allow(Namespace).to receive(:find_by_full_path).and_return(namespace)
-        allow(Rails.application.routes).to receive(:recognize_path).and_return({ controller: 'unknown/controller' })
+        allow_next_instance_of(::Gitlab::Llm::Utils::RouteHelper) do |helper|
+          allow(helper).to receive(:namespace).and_return(namespace)
+        end
       end
 
       context 'when user has Duo Enterprise access' do
@@ -46,18 +47,16 @@ RSpec.describe Ai::SlashCommandsService, feature_category: :duo_chat do
       end
     end
 
-    context 'when ActionController::RoutingError is raised' do
+    context 'when no namespace is found' do
       let(:url) { 'https://gitlab.com/' }
 
       before do
-        allow(Rails.application.routes).to receive(:recognize_path).and_raise(ActionController::RoutingError.new('Err'))
+        allow_next_instance_of(::Gitlab::Llm::Utils::RouteHelper) do |helper|
+          allow(helper).to receive(:namespace).and_return(nil)
+        end
       end
 
       it_behaves_like 'returns only base commands'
-
-      it 'catches the RoutingError' do
-        expect { available_commands }.not_to raise_error
-      end
     end
 
     context 'with issue context' do
