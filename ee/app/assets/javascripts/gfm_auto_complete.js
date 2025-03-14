@@ -51,6 +51,14 @@ export const Q_MERGE_REQUEST_SUB_COMMANDS = {
   },
   test: {
     header: s__('AmazonQ|test'),
+    description: s__('AmazonQ|Create unit tests for this merge request (Beta)'),
+  },
+};
+
+export const Q_MERGE_REQUEST_DIFF_SUB_COMMANDS = {
+  ...Q_MERGE_REQUEST_SUB_COMMANDS,
+  test: {
+    header: s__('AmazonQ|test'),
     description: s__(
       'AmazonQ|Create unit tests for selected lines of code in Java or Python files (Beta)',
     ),
@@ -59,6 +67,10 @@ export const Q_MERGE_REQUEST_SUB_COMMANDS = {
 
 const getQSubCommands = ($input) => {
   if ($input.data('noteableType') === MERGE_REQUEST_NOTEABLE_TYPE) {
+    const canSuggest = $input.data('canSuggest');
+    if (canSuggest) {
+      return Q_MERGE_REQUEST_DIFF_SUB_COMMANDS;
+    }
     return Q_MERGE_REQUEST_SUB_COMMANDS;
   }
 
