@@ -57,6 +57,8 @@ export default {
           };
         },
         result({ data }) {
+          this.$emit('subscription-ready');
+
           const requestId = data?.aiCompletionResponse?.requestId;
           const threadId = data?.aiCompletionResponse?.threadId;
 

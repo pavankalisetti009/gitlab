@@ -149,6 +149,7 @@ export default {
       toolName: i18n.GITLAB_DUO,
       error: '',
       isResponseTracked: false,
+      isSubscriptionReady: false,
       cancelledRequestIds: [],
       completedRequestId: null,
       aiSlashCommands: [],
@@ -166,6 +167,14 @@ export default {
   },
   computed: {
     ...mapState(['loading', 'messages']),
+    isReadyForCommands() {
+      return (
+        duoChatGlobalState.isShown &&
+        this.hasCommands &&
+        !this.$apollo.loading &&
+        this.isSubscriptionReady
+      );
+    },
     computedResourceId() {
       if (this.hasCommands) {
         return this.duoChatGlobalState.commands[0].resourceId;
@@ -193,11 +202,13 @@ export default {
     },
   },
   watch: {
-    'duoChatGlobalState.commands': {
-      handler(commands) {
-        if (commands?.length) {
-          const { question, variables } = commands[0];
-          this.onSendChatPrompt(question, variables);
+    isReadyForCommands: {
+      handler(flag) {
+        if (flag) {
+          this.$nextTick(() => {
+            const { question, variables } = this.duoChatGlobalState.commands[0];
+            this.onSendChatPrompt(question, variables);
+          });
         }
       },
     },
@@ -479,6 +490,7 @@ export default {
         @message-stream="onMessageStreamReceived"
         @response-received="onResponseReceived"
         @error="onError"
+        @subscription-ready="isSubscriptionReady = true"
       />
 
       <duo-chat
