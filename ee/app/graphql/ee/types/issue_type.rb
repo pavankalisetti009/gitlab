@@ -9,7 +9,7 @@ module EE
         field :epic,
           ::Types::EpicType,
           null: true,
-          description: 'Epic to which this issue belongs.',
+          description: 'Epic to which the issue belongs.',
           deprecated: { reason: 'Replaced by WorkItem type', milestone: '17.5' }
 
         field :has_epic, GraphQL::Types::Boolean,
@@ -32,14 +32,14 @@ module EE
 
         field :blocking_count, GraphQL::Types::Int,
           null: false, method: :blocking_issues_count,
-          description: 'Count of issues this issue is blocking.'
+          description: 'Count of issues the issue is blocking.'
 
         field :blocked_by_count, GraphQL::Types::Int,
-          null: true, description: 'Count of issues blocking this issue.'
+          null: true, description: 'Count of issues blocking the issue.'
 
         field :blocked_by_issues, ::Types::IssueType.connection_type,
           null: true, complexity: 5,
-          description: 'Issues blocking this issue.'
+          description: 'Issues blocking the issue.'
 
         field :health_status, ::Types::HealthStatusEnum,
           null: true, description: 'Current health status.'
