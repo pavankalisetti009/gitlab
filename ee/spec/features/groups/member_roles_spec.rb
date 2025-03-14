@@ -42,7 +42,7 @@ RSpec.describe 'Member Roles', feature_category: :permissions do
 
       expect(created_member_role).not_to be_nil
 
-      expect(page).to have_content("#{created_member_role.name} Custom role #{created_member_role.description}")
+      expect(page).to have_content("#{created_member_role.name} Custom member role #{created_member_role.description}")
     end
   end
 

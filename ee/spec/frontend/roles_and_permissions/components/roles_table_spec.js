@@ -3,11 +3,11 @@ import { mountExtended } from 'helpers/vue_test_utils_helper';
 import RolesTable, { TABLE_FIELDS } from 'ee/roles_and_permissions/components/roles_table.vue';
 import RoleActions from 'ee/roles_and_permissions/components/role_actions.vue';
 import { stubComponent } from 'helpers/stub_component';
-import { standardRoles, memberRoles } from '../mock_data';
+import { standardRoles, memberRoles, adminRoles } from '../mock_data';
 
 describe('Roles table', () => {
   let wrapper;
-  const roles = [...standardRoles, ...memberRoles];
+  const roles = [...standardRoles, ...memberRoles, ...adminRoles];
 
   const createComponent = ({ busy = false, stubs } = {}) => {
     wrapper = mountExtended(RolesTable, {
@@ -91,7 +91,20 @@ describe('Roles table', () => {
     beforeEach(() => createComponent());
 
     it('shows custom role badge', () => {
-      expect(findCustomRoleBadge(role).text()).toBe('Custom role');
+      expect(findCustomRoleBadge(role).text()).toBe('Custom member role');
+    });
+  });
+
+  describe.each(adminRoles)('for admin role $name', (role) => {
+    beforeEach(() => createComponent());
+
+    it('shows admin role badge', () => {
+      const badge = findCustomRoleBadge(role);
+      expect(badge.text()).toBe('Custom admin role');
+      expect(badge.props()).toMatchObject({
+        icon: 'admin',
+        variant: 'info',
+      });
     });
   });
 });

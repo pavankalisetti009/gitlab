@@ -10,7 +10,7 @@ import {
 } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import { isCustomRole } from '../utils';
+import { isCustomRole, isAdminRole } from '../utils';
 
 export default {
   i18n: {
@@ -19,8 +19,8 @@ export default {
     viewDetailsText: __('View details'),
     editRoleText: s__('MemberRole|Edit role'),
     deleteRoleText: s__('MemberRole|Delete role'),
-    accessLevelCopiedToClipboard: s__('MemberRole|Access level copied to clipboard'),
-    idCopiedToClipboard: s__('MemberRole|Role ID copied to clipboard'),
+    accessLevelCopied: s__('MemberRole|Access level copied to clipboard'),
+    roleIdCopied: s__('MemberRole|Role ID copied to clipboard'),
     deleteDisabledTooltip: s__(
       "MemberRole|You can't delete this custom role until you remove it from all group members.",
     ),
@@ -45,22 +45,22 @@ export default {
     },
   },
   computed: {
-    isCustomRole() {
-      return isCustomRole(this.role);
+    isCustomOrAdminRole() {
+      return isCustomRole(this.role) || isAdminRole(this.role);
     },
     hasAssignedUsers() {
       return this.role.usersCount > 0;
     },
     roleId() {
-      return this.isCustomRole ? getIdFromGraphQLId(this.role.id) : this.role.accessLevel;
+      return this.isCustomOrAdminRole ? getIdFromGraphQLId(this.role.id) : this.role.accessLevel;
     },
     hasDependentSecurityPolicies() {
-      return this.role.dependentSecurityPolicies.length > 0;
+      return this.role.dependentSecurityPolicies?.length > 0;
     },
     idText() {
       const { roleIdText, accessLevelText } = this.$options.i18n;
 
-      return this.isCustomRole ? roleIdText : accessLevelText;
+      return this.isCustomOrAdminRole ? roleIdText : accessLevelText;
     },
     viewDetailsItem() {
       return { text: this.$options.i18n.viewDetailsText, href: this.role.detailsPath };
@@ -69,7 +69,7 @@ export default {
       return { text: this.$options.i18n.editRoleText, href: this.role.editPath };
     },
     deleteActionId() {
-      return `${this.$options.DELETE_ROLE}-${this.roleId}`;
+      return `delete-role-action-${this.roleId}`;
     },
     deleteRoleItem() {
       return {
@@ -88,11 +88,11 @@ export default {
   },
   methods: {
     showCopiedToClipboardToast() {
-      const { idCopiedToClipboard, accessLevelCopiedToClipboard } = this.$options.i18n;
-      this.$toast.show(this.isCustomRole ? idCopiedToClipboard : accessLevelCopiedToClipboard);
+      const { roleIdCopied, accessLevelCopied } = this.$options.i18n;
+      const toastMessage = this.isCustomOrAdminRole ? roleIdCopied : accessLevelCopied;
+      this.$toast.show(toastMessage);
     },
   },
-  DELETE_ROLE: 'delete-role-action',
 };
 </script>
 
@@ -113,7 +113,7 @@ export default {
 
     <gl-disclosure-dropdown-item data-testid="view-details-item" :item="viewDetailsItem" />
 
-    <template v-if="isCustomRole">
+    <template v-if="isCustomOrAdminRole">
       <gl-disclosure-dropdown-item data-testid="edit-role-item" :item="editRoleItem" />
       <gl-disclosure-dropdown-item
         :id="deleteActionId"

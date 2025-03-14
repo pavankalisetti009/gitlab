@@ -19,4 +19,11 @@ query getInstanceRoles {
       }
     }
   }
+  adminMemberRoles {
+    nodes {
+      ...Role
+      usersCount
+      detailsPath
+    }
+  }
 }

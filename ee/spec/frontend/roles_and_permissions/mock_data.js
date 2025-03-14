@@ -145,6 +145,25 @@ export const memberRoles = [
   },
 ];
 
+export const adminRoles = [
+  {
+    id: 'gid://gitlab/MemberRole/3',
+    name: 'Admin role 1',
+    description: 'Admin role 1 description',
+    usersCount: 0,
+    detailsPath: 'details/path/3',
+    __typename: 'AdminMemberRole',
+  },
+  {
+    id: 'gid://gitlab/MemberRole/4',
+    name: 'Admin role 2',
+    description: 'Admin role 2 description',
+    usersCount: 0,
+    detailsPath: 'details/path/4',
+    __typename: 'AdminMemberRole',
+  },
+];
+
 export const groupRolesResponse = {
   data: {
     group: {
@@ -159,6 +178,7 @@ export const instanceRolesResponse = {
   data: {
     standardRoles: { nodes: standardRoles },
     memberRoles: { nodes: memberRoles },
+    adminMemberRoles: { nodes: adminRoles },
   },
 };
 

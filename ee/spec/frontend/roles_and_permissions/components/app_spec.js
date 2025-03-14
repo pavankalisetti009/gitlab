@@ -14,6 +14,7 @@ import { createAlert } from '~/alert';
 import {
   standardRoles,
   memberRoles,
+  adminRoles,
   groupRolesResponse,
   instanceRolesResponse,
 } from '../mock_data';
@@ -36,6 +37,7 @@ describe('Roles app', () => {
     newRolePath = 'new/role/path',
     membersPermissionsDetailedExport = true,
     exportGroupMemberships = true,
+    customAdminRoles = true,
   } = {}) => {
     wrapper = shallowMountExtended(RolesApp, {
       apolloProvider: createMockApollo([
@@ -43,7 +45,7 @@ describe('Roles app', () => {
         [instanceRolesQuery, instanceRolesQueryHandler],
       ]),
       provide: {
-        glFeatures: { membersPermissionsDetailedExport },
+        glFeatures: { membersPermissionsDetailedExport, customAdminRoles },
         glAbilities: { exportGroupMemberships },
       },
       propsData: { groupFullPath, newRolePath },
@@ -118,10 +120,6 @@ describe('Roles app', () => {
       expect(queryHandler).toHaveBeenCalledWith(expectedQueryData);
     });
 
-    it('shows expected role counts', () => {
-      expect(findRoleCounts().text()).toBe('Roles: 2 Custom 6 Default');
-    });
-
     // Remove the Minimal Access role from standardRoles with slice(), it shouldn't be shown.
     it.each(standardRoles.slice(1))(`passes '$name' role to roles table`, (role) => {
       expect(findRolesTable().props('roles')).toContainEqual(role);
@@ -135,6 +133,30 @@ describe('Roles app', () => {
       expect(findRolesTable().props('roles')).not.toContainEqual(
         expect.objectContaining({ name: 'Minimal Access' }),
       );
+    });
+  });
+
+  describe('for Self-Managed', () => {
+    beforeEach(() => createComponent({ groupFullPath: null }));
+
+    it('shows role counts', () => {
+      expect(findRoleCounts().text()).toBe('6 Default 2 Custom 2 Admin');
+    });
+
+    it('passes admin roles to roles table', () => {
+      expect(findRolesTable().props('roles')).toEqual(expect.arrayContaining(adminRoles));
+    });
+  });
+
+  describe('for SaaS', () => {
+    beforeEach(() => createComponent({ customAdminRoles: false }));
+
+    it('shows role counts', () => {
+      expect(findRoleCounts().text()).toBe('6 Default 2 Custom');
+    });
+
+    it('does not pass admin roles to roles table', () => {
+      expect(findRolesTable().props('roles')).not.toEqual(expect.arrayContaining(adminRoles));
     });
   });
 
