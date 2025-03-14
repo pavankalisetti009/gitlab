@@ -38,7 +38,7 @@ module Ai
     def initialize(user, url)
       @user = user
       @url = url
-      @route = parse_route
+      @route = ::Gitlab::Llm::Utils::RouteHelper.new(url)
     end
 
     def available_commands
@@ -66,46 +66,37 @@ module Ai
     end
 
     def has_duo_enterprise_access?
-      return false unless @route
+      return false unless @route.exists?
 
-      namespace = Namespace.find_by_full_path(@route[:namespace_id])
+      namespace = @route.namespace
       namespace && @user&.assigned_to_duo_enterprise?(namespace)
     end
 
     def can_access_job?
-      find_record('jobs')
+      record_exists?('jobs')
     end
 
     def can_access_vulnerability?
-      find_record('vulnerabilities')
+      record_exists?('vulnerabilities')
     end
 
     def determine_context
-      return :unknown unless @route
+      return :unknown unless @route.exists?
 
-      CONTROLLER_CONTEXTS[@route[:controller]] || :unknown
+      CONTROLLER_CONTEXTS[@route.controller] || :unknown
     end
 
-    def find_record(resource)
-      project = Project.find_by_full_path("#{@route[:namespace_id]}/#{@route[:project_id]}")
-      return unless project
+    def record_exists?(resource)
+      project = @route.project
+      id = @route.id
+      return false unless project && id
 
       case resource
       when 'jobs'
-        project.builds.failed.id_in(@route[:id]).exists?
+        project.builds.failed.id_in(id).exists?
       when 'vulnerabilities'
-        project.vulnerabilities.sast.id_in(@route[:id]).exists?
+        project.vulnerabilities.sast.id_in(id).exists?
       end
-    end
-
-    def parse_route
-      uri = Gitlab::Utils.parse_url(@url)
-      return unless uri
-
-      path = uri.path.delete_prefix('/')
-      Rails.application.routes.recognize_path(path)
-    rescue ActionController::RoutingError
-      nil
     end
   end
 end
