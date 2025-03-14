@@ -61,6 +61,7 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :cell do
       'ci_pipeline_messages.project_id',
       'p_ci_job_annotations.project_id', # LFK already present on p_ci_builds and cascade delete all ci resources
       'p_ci_pipelines_config.project_id', # LFK already present on p_ci_pipelines and cascade delete all ci resources
+      'ci_unit_test_failures.project_id', # LFK already present on ci_unit_tests and cascade delete all ci resources
       'dast_profiles_pipelines.project_id', # LFK already present on dast_profiles and will cascade delete
       'dast_scanner_profiles_builds.project_id', # LFK already present on dast_scanner_profiles and will cascade delete
       'vulnerability_finding_links.project_id', # LFK already present on vulnerability_occurrence with cascade delete
