@@ -78,7 +78,7 @@ module Sbom
 
       empty_licenses_as_unknown =
         if dependable.is_a?(::Group)
-          Feature.disabled?(:filter_unknown_licenses_by_spdx_identifier, dependable)
+          Feature.disabled?(:filter_unknown_licenses_by_spdx_identifier, dependable.root_ancestor)
         else
           true
         end

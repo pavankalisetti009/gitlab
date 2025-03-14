@@ -108,7 +108,8 @@ module Sbom
 
       relation.by_primary_license(
         params[:licenses],
-        empty_licenses_as_unknown: Feature.disabled?(:filter_unknown_licenses_by_spdx_identifier, namespace)
+        empty_licenses_as_unknown: Feature.disabled?(:filter_unknown_licenses_by_spdx_identifier,
+          namespace.root_ancestor)
       )
     end
 
