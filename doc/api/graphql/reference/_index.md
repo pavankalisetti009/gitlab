@@ -40955,6 +40955,7 @@ The category of the additional context.
 | <a id="aiadditionalcontextcategorylocal_git"></a>`LOCAL_GIT` | Local_git content category. |
 | <a id="aiadditionalcontextcategorymerge_request"></a>`MERGE_REQUEST` | Merge_request content category. |
 | <a id="aiadditionalcontextcategorysnippet"></a>`SNIPPET` | Snippet content category. |
+| <a id="aiadditionalcontextcategoryterminal"></a>`TERMINAL` | Terminal content category. |
 
 ### `AiConversationsThreadsConversationType`
 
