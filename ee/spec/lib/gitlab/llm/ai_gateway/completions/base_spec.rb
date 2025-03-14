@@ -152,25 +152,25 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::Base, feature_category: :ai_
       end
     end
 
-    context 'when model_metadata is provided' do
+    context 'when feature setting is present' do
+      let(:ai_action) { :duo_chat }
+      let!(:feature_setting) do
+        create(:ai_feature_setting, feature: ai_action)
+      end
+
       it 'includes model_metadata in the request body' do
-        params = {
-          provider: 'provider',
-          name: 'model',
-          endpoint: 'http://example.com',
-          identifier: 'identifier'
-        }
-
-        expect_next_instance_of(::Gitlab::Llm::AiGateway::ModelMetadata) do |instance|
-          expect(instance).to receive(:to_params).and_return(params)
-        end
-
         expect(client).to receive(:complete_prompt).with(
           base_url: ::Gitlab::AiGateway.url,
           prompt_name: ai_action,
           inputs: inputs,
           prompt_version: nil,
-          model_metadata: params
+          model_metadata: {
+            provider: :openai,
+            name: 'mistral',
+            endpoint: 'http://localhost:11434/v1',
+            api_key: 'token',
+            identifier: 'provider/some-model'
+          }
         ).and_return(http_response)
 
         expect(response_modifier_class).to receive(:new).with(processed_response)

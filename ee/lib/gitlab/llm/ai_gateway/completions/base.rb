@@ -59,13 +59,15 @@ module Gitlab
           end
 
           def perform_ai_gateway_request!
+            feature_setting = ::Ai::FeatureSetting.find_by_feature(prompt_message.ai_action)
+
             ::Gitlab::Llm::AiGateway::Client.new(user, service_name: service_name, tracking_context: tracking_context)
               .complete_prompt(
-                base_url: ::Gitlab::AiGateway.url,
+                base_url: feature_setting&.base_url || ::Gitlab::AiGateway.url,
                 prompt_name: prompt_message.ai_action,
                 inputs: inputs,
                 prompt_version: prompt_version,
-                model_metadata: ::Gitlab::Llm::AiGateway::ModelMetadata.new.to_params
+                model_metadata: ::Gitlab::Llm::AiGateway::ModelMetadata.new(feature_setting: feature_setting).to_params
               )
           end
 
