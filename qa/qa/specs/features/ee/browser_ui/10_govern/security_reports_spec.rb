@@ -268,10 +268,12 @@ module QA
 
         yield
 
-        if page.has_element?("report-type-token", wait: 1)
-          page.clear_filter_token('report type')
-        elsif page.has_element?("filtered-search-term", wait: 1)
-          page.clear_filter_token('tool')
+        if page.has_text?('Development vulnerabilities') # If vulnerability report page
+          if page.has_selector?('[data-testid="scanner-token"]', wait: 1)
+            page.clear_filter_token('scanner') # vulnerability_report_type_scanner_filter feature flag
+          else
+            page.clear_filter_token('tool')
+          end
         else
           page.filter_report_type(filter_report)
         end
