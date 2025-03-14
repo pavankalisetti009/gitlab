@@ -19,4 +19,13 @@ fragment WorkItemWidgets on WorkItemWidget {
       }
     }
   }
+  ... on WorkItemWidgetIteration {
+    iteration {
+      id
+      iterationCadence {
+        id
+        title
+      }
+    }
+  }
 }
