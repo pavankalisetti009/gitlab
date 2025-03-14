@@ -34,7 +34,13 @@ module QA
           def filter_report_type(report)
             if has_element?("filtered-search-term", wait: 1)
               click_element('filtered-search-term')
-              click_link('Tool') || click_link('Report type')
+
+              if page.has_link?('Scanner')
+                click_link('Scanner')
+              elsif page.has_link?('Tool')
+                click_link('Tool')
+              end
+
               click_link(report)
               click_element("search-button")
               click_element("search-button") # Click twice to make dropdown go away
