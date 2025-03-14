@@ -66451,6 +66451,9 @@ msgstr ""
 msgid "WorkItem|Cancel"
 msgstr ""
 
+msgid "WorkItem|Change appearance for all issues, epics, and tasks"
+msgstr ""
+
 msgid "WorkItem|Change type"
 msgstr ""
 
@@ -66632,6 +66635,9 @@ msgid "WorkItem|Health status"
 msgstr ""
 
 msgid "WorkItem|Hide empty"
+msgstr ""
+
+msgid "WorkItem|Hide sidebar"
 msgstr ""
 
 msgid "WorkItem|History only"
@@ -66892,6 +66898,9 @@ msgstr ""
 msgid "WorkItem|Show labels"
 msgstr ""
 
+msgid "WorkItem|Show sidebar"
+msgstr ""
+
 msgid "WorkItem|Similar items"
 msgstr ""
 
@@ -67055,6 +67064,9 @@ msgid "WorkItem|To-do item"
 msgstr ""
 
 msgid "WorkItem|Toggle details"
+msgstr ""
+
+msgid "WorkItem|Truncate descriptions"
 msgstr ""
 
 msgid "WorkItem|Turn off confidentiality"

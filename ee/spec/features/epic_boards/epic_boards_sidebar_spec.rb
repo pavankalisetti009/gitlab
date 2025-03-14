@@ -366,7 +366,7 @@ RSpec.describe 'Epic boards sidebar', :js, feature_category: :portfolio_manageme
           find('button').click
 
           within_testid('notifications-toggle-form') do
-            subscription_button = find_by_testid('toggle-wrapper').find('button')
+            subscription_button = find_by_testid('notifications-toggle').find('button')
 
             subscription_button.click
 
