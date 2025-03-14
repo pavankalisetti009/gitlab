@@ -2,6 +2,7 @@ import $ from 'jquery';
 import GfmAutoCompleteEE, {
   Q_ISSUE_SUB_COMMANDS,
   Q_MERGE_REQUEST_SUB_COMMANDS,
+  Q_MERGE_REQUEST_DIFF_SUB_COMMANDS,
 } from 'ee/gfm_auto_complete';
 import { TEST_HOST } from 'helpers/test_constants';
 import GfmAutoComplete from '~/gfm_auto_complete';
@@ -165,13 +166,20 @@ describe('GfmAutoCompleteEE', () => {
         description: Q_MERGE_REQUEST_SUB_COMMANDS.test.description,
       },
     ];
+    const EXPECTATION_MR_DIFF_SUB_COMMANDS = [
+      ...EXPECTATION_MR_SUB_COMMANDS.filter((cmd) => cmd.name !== 'test'),
+      {
+        name: 'test',
+        description: Q_MERGE_REQUEST_DIFF_SUB_COMMANDS.test.description,
+      },
+    ];
 
     describe.each`
       availableCommand | textareaAttributes                                             | expectation
       ${'foo'}         | ${''}                                                          | ${[]}
       ${'q'}           | ${''}                                                          | ${EXPECTATION_ISSUE_SUB_COMMANDS}
       ${'q'}           | ${'data-noteable-type="MergeRequest"'}                         | ${EXPECTATION_MR_SUB_COMMANDS}
-      ${'q'}           | ${'data-noteable-type="MergeRequest" data-can-suggest="true"'} | ${EXPECTATION_MR_SUB_COMMANDS}
+      ${'q'}           | ${'data-noteable-type="MergeRequest" data-can-suggest="true"'} | ${EXPECTATION_MR_DIFF_SUB_COMMANDS}
     `(
       'with availableCommands=$availableCommand, textareaAttributes=$textareaAttributes',
       ({ availableCommand, textareaAttributes, expectation }) => {
