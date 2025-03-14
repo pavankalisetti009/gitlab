@@ -3,6 +3,8 @@
 module Issuables
   module CustomFields
     class CreateService < BaseGroupService
+      include Gitlab::InternalEventsTracking
+
       FeatureNotAvailableError = ServiceResponse.error(
         message: 'This feature is currently behind a feature flag and it is not available.'
       )
@@ -24,6 +26,15 @@ module Issuables
 
         if custom_field.save
           custom_field.reset_ordered_associations
+
+          track_internal_event(
+            'create_custom_field_in_group_settings',
+            namespace: group,
+            user: current_user,
+            additional_properties: {
+              label: custom_field.field_type
+            }
+          )
 
           ServiceResponse.success(payload: { custom_field: custom_field })
         else

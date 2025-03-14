@@ -3,6 +3,8 @@
 module WorkItems
   module Callbacks
     class CustomFields < Base
+      include Gitlab::InternalEventsTracking
+
       # `params` for this widget callback is in the format:
       # [
       #   { custom_field_id: 1, text_value: 'text' },
@@ -25,6 +27,13 @@ module WorkItems
 
           update_work_item_field_value(custom_field, field_params)
         end
+
+        track_internal_event(
+          'change_work_item_custom_field_value',
+          namespace: work_item.project&.namespace || work_item.namespace,
+          project: work_item.project,
+          user: current_user
+        )
       end
 
       private
