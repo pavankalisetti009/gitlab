@@ -6,31 +6,31 @@ RSpec.describe Groups::MarkForDeletionService, feature_category: :groups_and_pro
   let(:user) { create(:user) }
   let(:group) { create(:group) }
 
-  subject { described_class.new(group, user, {}).execute }
+  subject(:execute) { described_class.new(group, user, {}).execute }
 
   before do
     stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
   end
 
-  context 'marking the group for deletion' do
+  context 'when marking the group for deletion' do
     context 'with user that can admin the group' do
       before do
         group.add_owner(user)
       end
 
       context 'for a group that has not been marked for deletion' do
-        it 'marks the group for deletion' do
-          subject
+        it 'marks the group for deletion', :freeze_time do
+          execute
 
-          expect(group.marked_for_deletion_on).to eq(Date.today)
+          expect(group.marked_for_deletion_on).to eq(Time.zone.today)
           expect(group.deleting_user).to eq(user)
         end
 
         it 'returns success' do
-          expect(subject).to eq({ status: :success })
+          expect(execute).to eq({ status: :success })
         end
 
-        context 'marking for deletion fails' do
+        context 'when marking for deletion fails' do
           before do
             expect_next_instance_of(GroupDeletionSchedule) do |group_deletion_schedule|
               allow(group_deletion_schedule).to receive_message_chain(:errors, :full_messages)
@@ -41,7 +41,7 @@ RSpec.describe Groups::MarkForDeletionService, feature_category: :groups_and_pro
           end
 
           it 'returns error' do
-            expect(subject).to eq({ status: :error, message: 'error message' })
+            expect(execute).to eq({ status: :error, message: 'error message' })
           end
         end
       end
@@ -55,42 +55,42 @@ RSpec.describe Groups::MarkForDeletionService, feature_category: :groups_and_pro
         end
 
         it 'does not change the attributes associated with delayed deletion' do
-          subject
+          execute
 
           expect(group.marked_for_deletion_on).to eq(deletion_date.to_date)
           expect(group.deleting_user).to eq(user)
         end
 
         it 'returns error' do
-          expect(subject).to eq({ status: :error, message: 'Group has been already marked for deletion' })
+          expect(execute).to eq({ status: :error, message: 'Group has been already marked for deletion' })
         end
       end
 
-      context 'audit events' do
+      context 'for audit events' do
         it 'logs audit event' do
           expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
             hash_including(name: 'group_deletion_marked')
           ).and_call_original
 
-          expect { subject }.to change { AuditEvent.count }.by(1)
+          expect { execute }.to change { AuditEvent.count }.by(1)
         end
       end
     end
 
     context 'with a user that cannot admin the group' do
       it 'does not mark the group for deletion' do
-        subject
+        execute
 
         expect(group.marked_for_deletion?).to be_falsey
       end
 
       it 'returns error' do
-        expect(subject).to eq({ status: :error, message: 'You are not authorized to perform this action' })
+        expect(execute).to eq({ status: :error, message: 'You are not authorized to perform this action' })
       end
 
-      context 'audit events' do
+      context 'for audit events' do
         it 'does not log audit event' do
-          expect { subject }.not_to change { AuditEvent.count }
+          expect { execute }.not_to change { AuditEvent.count }
         end
       end
     end
