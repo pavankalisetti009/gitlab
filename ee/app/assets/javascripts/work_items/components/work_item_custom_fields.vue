@@ -1,14 +1,11 @@
 <script>
-import { s__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import {
-  WIDGET_TYPE_CUSTOM_FIELDS,
   CUSTOM_FIELDS_TYPE_NUMBER,
   CUSTOM_FIELDS_TYPE_TEXT,
   CUSTOM_FIELDS_TYPE_SINGLE_SELECT,
   CUSTOM_FIELDS_TYPE_MULTI_SELECT,
 } from '~/work_items/constants';
-import workItemCustomFieldsQuery from '../graphql/work_item_custom_fields.query.graphql';
 import WorkItemCustomFieldNumber from './work_item_custom_fields_number.vue';
 import WorkItemCustomFieldText from './work_item_custom_fields_text.vue';
 import WorkItemCustomFieldSingleSelect from './work_item_custom_fields_single_select.vue';
@@ -45,43 +42,15 @@ export default {
       required: false,
       default: false,
     },
-  },
-  data() {
-    return {
-      workItemCustomFields: [],
-    };
-  },
-  apollo: {
-    workItemCustomFields: {
-      query() {
-        return workItemCustomFieldsQuery;
-      },
-      variables() {
-        return {
-          id: this.workItemId,
-        };
-      },
-      skip() {
-        return !this.workItemId;
-      },
-      update(data) {
-        return (
-          data.workItem?.widgets?.find((widget) => widget.type === WIDGET_TYPE_CUSTOM_FIELDS)
-            ?.customFieldValues ?? []
-        );
-      },
-      error(error) {
-        this.$emit(
-          'error',
-          s__('WorkItem|Some fields could not be loaded. Refresh the page to try again.'),
-        );
-        Sentry.captureException(error);
-      },
+    customFields: {
+      type: Array,
+      required: false,
+      default: () => [],
     },
   },
   computed: {
     hasCustomFields() {
-      return this.workItemCustomFields.length > 0;
+      return this.customFields?.length;
     },
   },
   methods: {
@@ -108,7 +77,7 @@ export default {
   <div v-if="hasCustomFields" data-testid="work-item-custom-field">
     <component
       :is="customFieldComponent(customFieldData.customField)"
-      v-for="customFieldData in workItemCustomFields"
+      v-for="customFieldData in customFields"
       :key="customFieldData.customField.id"
       class="gl-border-t gl-mb-5 gl-border-subtle gl-pt-5"
       :work-item-id="workItemId"

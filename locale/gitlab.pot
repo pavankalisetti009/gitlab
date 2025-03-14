@@ -66901,9 +66901,6 @@ msgstr ""
 msgid "WorkItem|Some fields are not present in %{workItemType}. If you change type now, this information will be lost."
 msgstr ""
 
-msgid "WorkItem|Some fields could not be loaded. Refresh the page to try again."
-msgstr ""
-
 msgid "WorkItem|Some values are not present in %{groupName} and will be removed."
 msgstr ""
 
