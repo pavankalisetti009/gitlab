@@ -10430,7 +10430,8 @@ CREATE TABLE ci_builds_runner_session (
     "authorization" character varying,
     build_id bigint NOT NULL,
     partition_id bigint NOT NULL,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_2eb15fa9f3 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE ci_builds_runner_session_id_seq
