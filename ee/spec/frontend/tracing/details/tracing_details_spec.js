@@ -37,7 +37,7 @@ describe('TracingDetails', () => {
 
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
 
-  const findTraceDetails = () => wrapper.findComponentByTestId('trace-details');
+  const findTraceDetails = () => wrapper.findByTestId('trace-details');
   const findTraceChart = () => wrapper.findComponent(TracingChart);
   const findRelatedIssues = () => wrapper.findComponent(RelatedIssue);
 
