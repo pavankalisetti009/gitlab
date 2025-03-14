@@ -34,5 +34,5 @@ export const deleteParams = (item) => {
     return deleteParamsCE();
   }
 
-  return { permanently_remove: true, full_path: item.fullPath };
+  return { permanently_remove: true };
 };
