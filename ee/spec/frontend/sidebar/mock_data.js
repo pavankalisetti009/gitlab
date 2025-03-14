@@ -447,3 +447,35 @@ export const getHealthStatusQueryResponse = ({ state = 'opened', healthStatus = 
     },
   };
 };
+
+export const mockGetMergeRequestReviewers = {
+  data: {
+    workspace: {
+      id: 'gid://gitlab/Project/1',
+      issuable: {
+        id: 'gid://gitlab/MergeRequest/1',
+        reviewers: {
+          nodes: [
+            {
+              id: 'gid://gitlab/User/1',
+              avatarUrl: 'image',
+              name: 'User',
+              username: 'username',
+              webUrl: 'https://example.com/username',
+              webPath: '/username',
+              status: null,
+              mergeRequestInteraction: {
+                canMerge: true,
+                canUpdate: true,
+                approved: true,
+                reviewState: 'APPROVED',
+                applicableApprovalRules: [{ id: 'gid://gitlab/ApprovalMergeRequestRule/1' }],
+              },
+            },
+          ],
+        },
+        userPermissions: { adminMergeRequest: true },
+      },
+    },
+  },
+};
