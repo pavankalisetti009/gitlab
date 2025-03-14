@@ -35,17 +35,19 @@ describe('AiModelsForm', () => {
   const findTestingAgreementLink = () => wrapper.findComponent(PromoPageLink);
 
   it('has the correct title', () => {
-    expect(findTitle()).toBe('Self-hosted AI models');
+    expect(findTitle()).toBe('Self-hosted beta models and features');
   });
 
   it('has the correct label', () => {
-    expect(findCheckboxLabel().text()).toBe('Use beta self-hosted models features');
+    expect(findCheckboxLabel().text()).toBe(
+      'Use beta models and features in GitLab Duo Self-Hosted',
+    );
   });
 
   describe('help text', () => {
     it('renders the correct text', () => {
       expect(findCheckboxHelpText().text().replace(/\s+/g, ' ')).toMatch(
-        'Enabling this feature is your acceptance of the GitLab Testing Agreement',
+        'Enabling self-hosted beta models and features is your acceptance of the GitLab Testing Agreement',
       );
     });
 

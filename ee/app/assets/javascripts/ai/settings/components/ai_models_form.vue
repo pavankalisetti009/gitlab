@@ -6,10 +6,10 @@ import PromoPageLink from '~/vue_shared/components/promo_page_link/promo_page_li
 export default {
   name: 'AiModelsForm',
   i18n: {
-    title: s__('AiPowered|Self-hosted AI models'),
-    checkBoxLabel: s__('AiPowered|Use beta self-hosted models features'),
+    title: s__('AiPowered|Self-hosted beta models and features'),
+    checkBoxLabel: s__('AiPowered|Use beta models and features in GitLab Duo Self-Hosted'),
     checkboxHelpText: s__(
-      'AiPowered|Enabling this feature is your acceptance of the %{linkStart}GitLab Testing Agreement%{linkEnd}.',
+      'AiPowered|Enabling self-hosted beta models and features is your acceptance of the %{linkStart}GitLab Testing Agreement%{linkEnd}.',
     ),
   },
   components: {
