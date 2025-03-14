@@ -27,6 +27,14 @@ RSpec.describe Dependencies::CreateExportService, feature_category: :dependency_
       end
     end
 
+    it_behaves_like 'internal event tracking' do
+      let(:event) { 'project_dependency_list_export_created' }
+      let(:category) { described_class.name }
+      let(:namespace) { group }
+      let(:additional_properties) { { label: 'dependency_list' } }
+      subject(:service_action) { result }
+    end
+
     it 'returns a new instance of dependency_list_export' do
       expect(result).to be_success
 
@@ -58,6 +66,14 @@ RSpec.describe Dependencies::CreateExportService, feature_category: :dependency_
 
           expect(result.payload[:dependency_list_export].export_type).to eq(export_type.to_s)
         end
+
+        it_behaves_like 'internal event tracking' do
+          let(:event) { 'project_dependency_list_export_created' }
+          let(:category) { described_class.name }
+          let(:namespace) { group }
+          let(:additional_properties) { { label: export_type.to_s } }
+          subject(:service_action) { result }
+        end
       end
     end
 
@@ -65,6 +81,39 @@ RSpec.describe Dependencies::CreateExportService, feature_category: :dependency_
       expect(Dependencies::ExportWorker).to receive(:perform_async)
 
       result
+    end
+
+    context 'when export is for a group' do
+      let(:export_type) { :json_array }
+      let(:params) { { export_type: export_type } }
+
+      subject(:result) { described_class.new(group, user, params).execute }
+
+      it_behaves_like 'internal event tracking' do
+        let(:event) { 'group_dependency_list_export_created' }
+        let(:category) { described_class.name }
+        let(:project) { nil }
+        let(:namespace) { group }
+        let(:additional_properties) { { label: export_type.to_s } }
+        subject(:service_action) { result }
+      end
+    end
+
+    context 'when export is for a pipeline' do
+      let_it_be(:pipeline) { build_stubbed(:ci_pipeline, project: project) }
+
+      let(:export_type) { :sbom }
+      let(:params) { { export_type: export_type } }
+
+      subject(:result) { described_class.new(pipeline, user, params).execute }
+
+      it_behaves_like 'internal event tracking' do
+        let(:event) { 'pipeline_dependency_list_export_created' }
+        let(:category) { described_class.name }
+        let(:namespace) { group }
+        let(:additional_properties) { { label: export_type.to_s } }
+        subject(:service_action) { result }
+      end
     end
   end
 end
