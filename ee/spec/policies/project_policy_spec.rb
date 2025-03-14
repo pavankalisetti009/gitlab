@@ -4805,4 +4805,50 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
     end
   end
+
+  describe 'create_epic' do
+    where(:current_user, :match_role_permissions) do
+      ref(:owner)      | be_allowed(:create_epic)
+      ref(:maintainer) | be_allowed(:create_epic)
+      ref(:developer)  | be_allowed(:create_epic)
+      ref(:reporter)   | be_allowed(:create_epic)
+      ref(:planner)    | be_allowed(:create_epic)
+      ref(:guest)      | be_disallowed(:create_epic)
+      ref(:non_member) | be_disallowed(:create_epic)
+    end
+
+    with_them do
+      context 'when epics feature is available' do
+        before do
+          stub_licensed_features(epics: true)
+        end
+
+        it { is_expected.to match_role_permissions }
+
+        context 'when project_work_item_epics feature flag is disabled' do
+          before do
+            stub_feature_flags(project_work_item_epics: false)
+          end
+
+          it { is_expected.to be_disallowed(:create_epic) }
+        end
+
+        context 'when issues are disabled for the project' do
+          before do
+            project.update!(issues_enabled: false)
+          end
+
+          it { is_expected.to be_disallowed(:create_epic) }
+        end
+      end
+
+      context 'when epic feature is not available' do
+        before do
+          stub_licensed_features(epics: false)
+        end
+
+        it { is_expected.to be_disallowed(:create_epic) }
+      end
+    end
+  end
 end

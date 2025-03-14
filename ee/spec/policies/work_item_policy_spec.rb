@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe WorkItemPolicy, feature_category: :team_planning do
+  let_it_be(:admin) { create(:user, :admin) }
   let_it_be(:guest) { create(:user) }
   let_it_be(:planner) { create(:user) }
   let_it_be(:reporter) { create(:user) }
@@ -152,6 +153,38 @@ RSpec.describe WorkItemPolicy, feature_category: :team_planning do
       expect(permissions(owner, objective)).to be_disallowed(*move_and_clone_permissions)
       expect(permissions(owner, key_result)).to be_disallowed(*move_and_clone_permissions)
       expect(permissions(owner, epic)).to be_disallowed(*move_and_clone_permissions)
+    end
+  end
+
+  context 'when work item type is epic' do
+    let_it_be(:author) { create(:user) }
+    let_it_be(:assignee) { create(:user) }
+    let_it_be(:project_epic) { create(:work_item, :epic, project: project) }
+
+    context 'when epics feature is available' do
+      before do
+        stub_licensed_features(epics: true)
+      end
+
+      it 'allows read permissions for guest users' do
+        expect(permissions(guest, project_epic)).to be_allowed(:read_work_item)
+      end
+
+      context 'when project_work_item_epics feature flag is disabled' do
+        before do
+          stub_feature_flags(project_work_item_epics: false)
+        end
+
+        it_behaves_like 'prevents access to project-level {issues|work_items} with type Epic', :work_item
+      end
+    end
+
+    context 'when epics feature is not available' do
+      before do
+        stub_licensed_features(epics: false)
+      end
+
+      it_behaves_like 'prevents access to project-level {issues|work_items} with type Epic', :work_item
     end
   end
 end

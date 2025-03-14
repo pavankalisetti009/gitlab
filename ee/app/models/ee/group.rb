@@ -324,6 +324,10 @@ module EE
         ).allowed?
     end
 
+    def project_epics_enabled?
+      feature_flag_enabled_for_self_or_ancestor?(:project_work_item_epics, type: :beta)
+    end
+
     class_methods do
       def groups_user_can(groups, user, action, same_root: false)
         # If :use_traversal_ids is enabled we can use filter optmization

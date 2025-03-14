@@ -3,12 +3,6 @@
 module EE
   module WorkItemPolicy
     extend ActiveSupport::Concern
-    class_methods do
-      def synced_work_item_disallowed_abilities
-        ::WorkItemPolicy.ability_map.map.keys.select { |ability| !ability.to_s.starts_with?("read_") }
-      end
-    end
-
     prepended do
       condition(:is_epic, scope: :subject) do
         @subject.work_item_type&.epic?

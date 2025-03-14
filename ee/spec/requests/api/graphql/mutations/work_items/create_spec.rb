@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe 'Create a work item', feature_category: :team_planning do
   include GraphqlHelpers
 
-  let_it_be(:group) { create(:group) }
+  let_it_be(:group) { create(:group, :private) }
   let_it_be(:project) { create(:project, group: group) }
   let_it_be(:developer) { create(:user, developer_of: group) }
 
@@ -340,11 +340,82 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
       context 'with projectPath' do
         let_it_be(:container_params) { { project: project } }
         let(:mutation) { graphql_mutation(:workItemCreate, input.merge(projectPath: project.full_path), fields) }
-        let(:work_item_type) { :task }
 
-        it_behaves_like 'creates work item with iteration widget'
-        it_behaves_like 'creates work item with weight widget'
-        it_behaves_like 'creates work item linked to a vulnerability'
+        context 'with task type' do
+          let(:work_item_type) { :task }
+
+          it_behaves_like 'creates work item with iteration widget'
+          it_behaves_like 'creates work item with weight widget'
+          it_behaves_like 'creates work item linked to a vulnerability'
+        end
+
+        context 'with epic type' do
+          let(:work_item_type) { :epic }
+
+          let(:fields) do
+            <<~FIELDS
+              workItem {
+                workItemType {
+                  name
+                }
+              }
+              errors
+            FIELDS
+          end
+
+          let(:input) do
+            { title: "project epic WI", workItemTypeId: WorkItems::Type.default_by_type(:epic).to_gid.to_s }
+          end
+
+          context 'when epics licensed feature is available' do
+            before do
+              stub_licensed_features(epics: true)
+            end
+
+            it 'creates the work item epic' do
+              expect do
+                post_graphql_mutation(mutation, current_user: current_user)
+              end.to change { WorkItem.count }.by(1)
+
+              expect(response).to have_gitlab_http_status(:success)
+              expect(type_response).to include({ 'name' => 'Epic' })
+            end
+
+            context 'when project_work_item_epics feature flag is disabled' do
+              before do
+                stub_feature_flags(project_work_item_epics: false)
+              end
+
+              it 'return an error' do
+                expect do
+                  post_graphql_mutation(mutation, current_user: current_user)
+                end.to not_change { WorkItem.count }
+
+                expect_graphql_errors_to_include(
+                  "The resource that you are attempting to access does not exist or " \
+                    "you don't have permission to perform this action"
+                )
+              end
+            end
+          end
+
+          context 'when epics licensed feature is not available' do
+            before do
+              stub_licensed_features(epics: false)
+            end
+
+            it 'return an error' do
+              expect do
+                post_graphql_mutation(mutation, current_user: current_user)
+              end.to not_change { WorkItem.count }
+
+              expect_graphql_errors_to_include(
+                "The resource that you are attempting to access does not exist or " \
+                  "you don't have permission to perform this action"
+              )
+            end
+          end
+        end
       end
 
       context 'with namespacePath' do
@@ -818,45 +889,78 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
 
         context 'when type is Epic' do
           let(:input) do
-            { title: "epic WI", workItemTypeId: WorkItems::Type.default_by_type(:epic).to_gid.to_s }
+            { title: "task WI", workItemTypeId: WorkItems::Type.default_by_type(:epic).to_gid.to_s }
           end
 
-          context 'when epics licensed feature is available' do
-            before do
-              stub_licensed_features(epics: true)
-            end
+          it 'creates the work item epic' do
+            expect do
+              post_graphql_mutation(mutation, current_user: current_user)
+            end.to change { WorkItem.count }.by(1)
 
-            it 'creates the work item epic' do
-              expect do
-                post_graphql_mutation(mutation, current_user: current_user)
-              end.to change { WorkItem.count }.by(1)
-
-              expect(response).to have_gitlab_http_status(:success)
-              expect(type_response).to include({ 'name' => 'Epic' })
-            end
-
-            context 'when the work_item_epics feature flag is disabled' do
-              before do
-                stub_feature_flags(work_item_epics: false)
-              end
-
-              it_behaves_like 'a mutation that returns top-level errors',
-                errors: ['Epic type is not available for the given group']
-            end
+            expect(response).to have_gitlab_http_status(:success)
+            expect(type_response).to include({ 'name' => 'Epic' })
           end
 
-          context 'when epics licensed feature is not available' do
+          context 'when the work_item_epics feature flag is disabled' do
             before do
-              stub_licensed_features(epics: false)
+              stub_feature_flags(work_item_epics: false)
             end
 
-            it_behaves_like 'a mutation that returns top-level errors', errors: [
-              "The resource that you are attempting to access does not exist or you don't have " \
-                "permission to perform this action"
-            ]
+            it_behaves_like 'a mutation that returns top-level errors',
+              errors: ['Epic type is not available for the given group']
           end
         end
       end
+    end
+  end
+
+  context 'when user lacks permissions to create work item type' do
+    let_it_be(:current_user) { create(:user, guest_of: group) }
+
+    let(:input) do
+      { title: 'epic WI', workItemTypeId: WorkItems::Type.default_by_type(:epic).to_gid.to_s }
+    end
+
+    let(:fields) do
+      <<~FIELDS
+        workItem {
+          workItemType {
+            name
+          }
+        }
+        errors
+      FIELDS
+    end
+
+    before do
+      stub_licensed_features(epics: true)
+    end
+
+    shared_examples 'return authorization error' do
+      specify do
+        expect do
+          post_graphql_mutation(mutation, current_user: current_user)
+        end.to not_change { WorkItem.count }
+
+        expect_graphql_errors_to_include(
+          "The resource that you are attempting to access does not exist or " \
+            "you don't have permission to perform this action"
+        )
+      end
+    end
+
+    context 'when creating epics in a group' do
+      let_it_be(:container_params) { { namespace: group } }
+      let(:mutation) { graphql_mutation(:workItemCreate, input.merge(namespacePath: group.full_path), fields) }
+
+      it_behaves_like 'return authorization error'
+    end
+
+    context 'when creating epics in a project' do
+      let_it_be(:container_params) { { project: project } }
+      let(:mutation) { graphql_mutation(:workItemCreate, input.merge(projectPath: project.full_path), fields) }
+
+      it_behaves_like 'return authorization error'
     end
   end
 

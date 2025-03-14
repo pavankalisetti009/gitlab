@@ -12,7 +12,7 @@ module EE
 
       override :transaction_create
       def transaction_create(work_item)
-        return super unless work_item.epic_work_item?
+        return super unless work_item.group_epic_work_item?
 
         super.tap do |save_result|
           break save_result unless save_result

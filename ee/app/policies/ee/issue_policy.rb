@@ -5,15 +5,14 @@ module EE
     extend ActiveSupport::Concern
     extend ::Gitlab::Utils::Override
 
-    class_methods do
-      def synced_work_item_disallowed_abilities
-        ::IssuePolicy.ability_map.map.keys.select { |ability| !ability.to_s.starts_with?("read_") }
-      end
-    end
-
     override :epics_license_available?
     def epics_license_available?
       subject_container.licensed_feature_available?(:epics) || super
+    end
+
+    override :project_work_item_epics_available?
+    def project_work_item_epics_available?
+      (subject_container.project_epics_enabled? && epics_license_available?) || super
     end
 
     prepended do
@@ -40,9 +39,10 @@ module EE
       rule { ~can?(:read_issue) }.policy do
         prevent :summarize_comments
       end
+
       # This rule is already defined in FOSS IssuePolicy, but EE::IssuePolicy may be adding EE specific abilities
       # that would be captured here, e.g. `summarize_comments`, `promote_to_epic`, etc
-      rule { group_issue & ~group_level_issues_license_available }.policy do
+      rule { ~work_item_type_available }.policy do
         prevent(*::IssuePolicy.ability_map.map.keys)
       end
     end

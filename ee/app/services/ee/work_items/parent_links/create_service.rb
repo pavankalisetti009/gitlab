@@ -20,7 +20,7 @@ module EE
 
         override :set_parent
         def set_parent(issuable, work_item)
-          if issuable.epic_work_item? && !synced_work_item
+          if issuable.group_epic_work_item? && !synced_work_item
             ApplicationRecord.transaction do
               parent_link = super
               parent_link.work_item_syncing = true # set this attribute to skip the validation validate_legacy_hierarchy
@@ -78,15 +78,13 @@ module EE
           # and only check for `read` access for the parents, when they are group level work items.
           #
           # Once decision has been made, we can refactor the existing `admin_parent_link` policy.
-          if parent_work_item.epic_work_item? && parent_work_item.resource_parent.is_a?(Group)
-            return can?(current_user, :read_work_item, parent_work_item)
-          end
+          return can?(current_user, :read_work_item, parent_work_item) if parent_work_item.group_epic_work_item?
 
           super
         end
 
         def create_synced_epic_link!(parent_link, work_item)
-          result = if work_item.work_item_type.epic?
+          result = if work_item.group_epic_work_item?
                      handle_epic_link(parent_link, work_item)
                    else
                      handle_epic_issue(parent_link, work_item)
@@ -105,7 +103,7 @@ module EE
         end
 
         def sync_relative_position(parent_link)
-          if parent_link.work_item.work_item_type.epic? && parent_link.work_item.synced_epic
+          if parent_link.work_item.group_epic_work_item? && parent_link.work_item.synced_epic
             parent_link.work_item.synced_epic.update(relative_position: parent_link.relative_position)
           elsif parent_link.work_item.work_item_type.issue?
             epic_issue = EpicIssue.find_by_issue_id(parent_link.work_item.id)

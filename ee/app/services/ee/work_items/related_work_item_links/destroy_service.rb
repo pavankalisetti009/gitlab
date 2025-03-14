@@ -56,7 +56,7 @@ module EE
 
         def destroy_related_epic_link_for?(link)
           !sync_work_item? &&
-            work_item.epic_work_item? &&
+            work_item.group_epic_work_item? &&
             link.synced_related_epic_link
         end
 

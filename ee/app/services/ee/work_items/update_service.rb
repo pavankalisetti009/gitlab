@@ -11,7 +11,7 @@ module EE
       attr_reader :widget_params, :callbacks
 
       def transaction_update(work_item, opts = {})
-        return super unless work_item.epic_work_item?
+        return super unless work_item.group_epic_work_item?
 
         super.tap do |save_result|
           break save_result unless save_result

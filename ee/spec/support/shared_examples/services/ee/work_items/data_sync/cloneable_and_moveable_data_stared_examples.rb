@@ -16,7 +16,7 @@ RSpec.shared_examples 'cloneable and moveable for ee widget data' do
   end
 
   def wi_linked_items(work_item)
-    return [] unless original_work_item.work_item_type.epic?
+    return [] unless original_work_item.group_epic_work_item?
 
     [
       IssueLink.for_source(work_item).map(&:target).pluck(:title),
@@ -50,7 +50,7 @@ RSpec.shared_examples 'cloneable and moveable for ee widget data' do
 
   let_it_be(:related_items) do
     # related items for non epic WI are covered in FOSS
-    if original_work_item.work_item_type.epic?
+    if original_work_item.group_epic_work_item?
       create(:work_item, :epic_with_legacy_epic, namespace: original_work_item.namespace).tap do |related_wi_epic|
         create(:related_epic_link, :with_related_work_item_link, source: original_work_item.sync_object,
           target: related_wi_epic.sync_object, link_type: ::Enums::IssuableLink::TYPE_BLOCKS)

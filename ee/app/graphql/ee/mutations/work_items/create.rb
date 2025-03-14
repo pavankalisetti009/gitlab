@@ -63,6 +63,13 @@ module EE
             errors: result.errors
           }
         end
+
+        override :check_feature_available!
+        def check_feature_available!(container, type, params)
+          return super unless container.is_a?(Project) && type.epic?
+
+          raise_resource_not_available_error! unless current_user.can?(:create_epic, container)
+        end
       end
     end
   end

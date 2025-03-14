@@ -97,7 +97,7 @@ module EE
         end
 
         def sync_related_epic_link?
-          issuable.epic_work_item? &&
+          issuable.group_epic_work_item? &&
             issuable.synced_epic.present?
         end
       end

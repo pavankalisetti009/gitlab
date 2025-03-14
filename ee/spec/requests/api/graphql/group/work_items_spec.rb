@@ -224,12 +224,27 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
 
   describe 'license check' do
     let_it_be(:group_issuables) { create_list(:work_item, 10, :epic, namespace: group) }
-    let_it_be(:project_issuables) { create_list(:work_item, 10, :epic, project: project) }
+    let_it_be(:project_issues) { create_list(:work_item, 5, :issue, project: project) }
+    let_it_be(:project_epics) { create_list(:work_item, 5, :epic, project: project) }
+    let_it_be(:project_issuables) { project_issues + project_epics }
 
     let(:field_name) { 'workItems' }
     let(:container_name) { 'group' }
     let(:container) { group }
     let(:count_path) { ['data', container_name, field_name, 'count'] }
+
+    let(:page_size) { 20 }
+
+    subject(:execute) do
+      GitlabSchema.execute(
+        query,
+        context: { current_user: user },
+        variables: {
+          fullPath: container.full_path,
+          first: page_size
+        }
+      ).to_h
+    end
 
     context 'with group level work items' do
       context 'with group level work item license' do
@@ -244,7 +259,6 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
 
       context 'without group level work item license' do
         let(:issuables) { group_issuables }
-        let(:page_size) { 20 }
 
         let(:query) do
           <<~GRAPHQL
@@ -265,17 +279,6 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
               }
             }
           GRAPHQL
-        end
-
-        subject(:execute) do
-          GitlabSchema.execute(
-            query,
-            context: { current_user: user },
-            variables: {
-              fullPath: container.full_path,
-              first: page_size
-            }
-          ).to_h
         end
 
         before do
@@ -328,24 +331,36 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
           let(:per_page) { 19 }
           let(:query) { work_items_query }
         end
+
+        context 'when project_work_item_epics feature flag is disabled' do
+          let_it_be(:issuables) { [group_issuables, project_issues].flatten }
+
+          let(:query) { work_items_query }
+
+          before do
+            stub_feature_flags(project_work_item_epics: false)
+          end
+
+          it 'does not return an error' do
+            expect(execute['errors']).to be_nil
+          end
+
+          it 'does not return disabled work item types' do
+            data = execute['data'][container_name]['workItems']
+
+            expect(data['count']).to eq(20)
+            expect(data['edges'].count).to eq(15)
+            expect(data['edges'].map { |node| node.dig('node', 'id') }).to match_array(
+              issuables.flat_map(&:to_gid).map(&:to_s)
+            )
+          end
+        end
       end
 
       context 'without group level work item license' do
-        let_it_be(:issuables) { [group_issuables, project_issuables] }
+        let_it_be(:issuables) { [group_issuables, project_issues] }
 
-        let(:page_size) { 20 }
         let(:query) { work_items_query }
-
-        subject(:execute) do
-          GitlabSchema.execute(
-            query,
-            context: { current_user: user },
-            variables: {
-              fullPath: container.full_path,
-              first: page_size
-            }
-          ).to_h
-        end
 
         before do
           stub_licensed_features(epics: false)
@@ -355,13 +370,13 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
           expect(execute['errors']).to be_nil
         end
 
-        it 'does not return work items' do
+        it 'does not return licensed work items' do
           data = execute['data'][container_name]['workItems']
 
           expect(data['count']).to eq(20)
-          expect(data['edges'].count).to eq(10)
+          expect(data['edges'].count).to eq(5)
           expect(data['edges'].map { |node| node.dig('node', 'id') }).to match_array(
-            project_issuables.flat_map(&:to_gid).map(&:to_s)
+            project_issues.flat_map(&:to_gid).map(&:to_s)
           )
         end
       end

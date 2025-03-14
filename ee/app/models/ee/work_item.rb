@@ -86,16 +86,12 @@ module EE
 
     override :skip_metrics?
     def skip_metrics?
-      super || epic_work_item?
+      super || group_epic_work_item?
     end
 
     override :use_elasticsearch?
     def use_elasticsearch?
       namespace.use_elasticsearch?
-    end
-
-    def epic_work_item?
-      work_item_type.epic?
     end
 
     def es_parent

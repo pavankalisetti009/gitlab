@@ -19,7 +19,7 @@ module EE
 
         def remove_relation
           return super if synced_work_item?
-          return super unless parent.work_item_type.epic?
+          return super unless parent.group_epic_work_item?
           return super unless parent.synced_epic.present?
 
           ::ApplicationRecord.transaction do
@@ -29,7 +29,7 @@ module EE
         end
 
         def sync_to_work_item!
-          service_response = child.work_item_type.epic? ? handle_epic_link : handle_issue_link
+          service_response = child.group_epic_work_item? ? handle_epic_link : handle_issue_link
           return if service_response[:status] == :success
 
           ::Gitlab::EpicWorkItemSync::Logger.error(

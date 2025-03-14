@@ -525,22 +525,36 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
   end
 
   describe '#ensure_metrics!' do
-    subject(:create_work_item) { create(:work_item, project: reusable_project, work_item_type: type) }
+    context 'with project-level work item' do
+      subject(:create_work_item) { create(:work_item, project: reusable_project, work_item_type: type) }
 
-    context 'when it is not a work item of type epic' do
-      let(:type) { create(:work_item_type, :issue) }
+      context 'when it is not a work item of type epic' do
+        let(:type) { WorkItems::Type.default_by_type(:issue) }
 
-      it 'creates metrics after saving' do
-        expect(create_work_item).to be_persisted
+        it 'creates metrics after saving' do
+          expect(create_work_item).to be_persisted
 
-        expect(Issue::Metrics.count).to eq(1)
+          expect(Issue::Metrics.count).to eq(1)
+        end
+      end
+
+      context 'when it is a project work item of type epic' do
+        let(:type) { WorkItems::Type.default_by_type(:epic) }
+
+        it 'creates metrics after saving' do
+          expect(create_work_item).to be_persisted
+
+          expect(Issue::Metrics.count).to eq(1)
+        end
       end
     end
 
-    context 'when it is a work item of type epic' do
-      let(:type) { create(:work_item_type, :epic) }
+    context 'with grup-level work item' do
+      subject(:create_work_item) do
+        create(:work_item, namespace: reusable_group, work_item_type: WorkItems::Type.default_by_type(:epic))
+      end
 
-      it 'does not create metrics after saving' do
+      it 'does not create metrics after saving work item with type epic' do
         expect(create_work_item).to be_persisted
 
         expect(Issue::Metrics.count).to eq(0)

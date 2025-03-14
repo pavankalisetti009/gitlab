@@ -41,6 +41,11 @@ module EE
         in_group? && @subject.feature_available?(:project_level_compliance_violations_report)
       end
 
+      with_scope :subject
+      condition(:project_epics_available) do
+        @subject.project_epics_enabled? && @subject.licensed_feature_available?(:epics)
+      end
+
       with_scope :global
       condition(:is_development) { Rails.env.development? }
 
@@ -876,6 +881,10 @@ module EE
       end
 
       rule { can_admin_compliance_framework_in_group }.enable :admin_compliance_framework
+
+      rule { project_epics_available & planner_or_reporter_access & can?(:create_issue) }.policy do
+        enable :create_epic
+      end
 
       rule { (admin | owner | auditor) & project_level_compliance_dashboard_enabled }.policy do
         enable :read_compliance_dashboard

@@ -383,6 +383,52 @@ RSpec.describe 'getting a work item list for a project', feature_category: :team
     end
   end
 
+  context 'when work item epics are present' do
+    let_it_be(:epic1) { create(:work_item, :epic, project: project) }
+    let_it_be(:epic2) { create(:work_item, :epic, project: project) }
+    let_it_be(:issue) { create(:work_item, :issue, project: project) }
+
+    context 'when licensed feature is available' do
+      before do
+        stub_licensed_features(epics: true)
+      end
+
+      it 'returns work items including epics' do
+        post_graphql(query, current_user: current_user)
+
+        expect(item_ids).to contain_exactly(
+          epic1.to_global_id.to_s,
+          epic2.to_global_id.to_s,
+          issue.to_global_id.to_s
+        )
+      end
+
+      context 'when feature flag project_work_item_epics is disabled' do
+        before do
+          stub_feature_flags(project_work_item_epics: false)
+        end
+
+        it 'returns work items excluding epics' do
+          post_graphql(query, current_user: current_user)
+
+          expect(item_ids).to contain_exactly(issue.to_global_id.to_s)
+        end
+      end
+    end
+
+    context 'when licensed feature is not available' do
+      before do
+        stub_licensed_features(epics: false)
+      end
+
+      it 'returns work items excluding epics' do
+        post_graphql(query, current_user: current_user)
+
+        expect(item_ids).to contain_exactly(issue.to_global_id.to_s)
+      end
+    end
+  end
+
   def create_feature_flag_for(work_item)
     feature_flag = create(:operations_feature_flag, project: project)
     create(:feature_flag_issue, issue_id: work_item.id, feature_flag: feature_flag)
