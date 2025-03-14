@@ -14,7 +14,6 @@ Layout/LineLength:
     - 'app/controllers/projects/settings/ci_cd_controller.rb'
     - 'app/controllers/projects/settings/repository_controller.rb'
     - 'app/controllers/projects/templates_controller.rb'
-    - 'app/controllers/projects/triggers_controller.rb'
     - 'app/controllers/projects/web_ide_schemas_controller.rb'
     - 'app/controllers/projects_controller.rb'
     - 'app/controllers/registrations_controller.rb'
