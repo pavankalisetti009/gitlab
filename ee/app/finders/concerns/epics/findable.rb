@@ -33,7 +33,7 @@ module Epics
       end
 
       def array_params
-        @array_params ||= { issues: [], label_name: [] }
+        @array_params ||= { issues: [], label_name: [], custom_field: {} }
       end
 
       def valid_iid_query?(query)
@@ -75,6 +75,7 @@ module Epics
       items = by_confidential(items)
       items = by_milestone(items)
       items = by_subscribed(items)
+      items = by_custom_field(items)
 
       starts_with_iid(items)
     end
@@ -144,6 +145,14 @@ module Epics
       items.in_milestone(milestones)
     end
     # rubocop: enable CodeReuse/ActiveRecord
+
+    def by_custom_field(items)
+      ::WorkItems::CustomFieldFilter.new(
+        params: original_params,
+        parent: params.parent,
+        work_item_id_column: :issue_id
+      ).filter(items)
+    end
 
     def milestone_group_projects
       Project.in_namespace(milestone_groups).with_issues_available_for_user(current_user)

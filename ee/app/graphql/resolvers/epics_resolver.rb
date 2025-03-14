@@ -60,6 +60,12 @@ module Resolvers
       description: 'Epics the current user is subscribed to.',
       required: false
 
+    argument :custom_field, [::Types::WorkItems::Widgets::CustomFieldFilterInputType],
+      required: false,
+      experiment: { milestone: '17.10' },
+      description: 'Filter by custom fields.',
+      prepare: ->(custom_fields, _ctx) { Array(custom_fields).inject({}, :merge) }
+
     argument :created_after, Types::TimeType,
       required: false,
       description: 'Epics created after this date.'

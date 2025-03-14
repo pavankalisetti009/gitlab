@@ -210,4 +210,70 @@ RSpec.describe 'Custom field filters', feature_category: :team_planning do
 
     it_behaves_like 'returns filtered items'
   end
+
+  context 'with legacy epics' do
+    let_it_be(:work_item_a) { create(:epic, group: group, labels: [group_label]) }
+    let_it_be(:work_item_b) { create(:epic, group: group, labels: [group_label]) }
+    let_it_be(:work_item_c) { create(:epic, group: group, labels: [group_label]) }
+
+    before_all do
+      create(:work_item_select_field_value, work_item_id: work_item_a.issue_id, custom_field: select_field,
+        custom_field_select_option: select_option_1)
+      create(:work_item_select_field_value, work_item_id: work_item_b.issue_id, custom_field: select_field,
+        custom_field_select_option: select_option_2)
+      create(:work_item_select_field_value, work_item_id: work_item_c.issue_id, custom_field: select_field,
+        custom_field_select_option: select_option_2)
+    end
+
+    before do
+      stub_licensed_features(epics: true, custom_fields: true)
+    end
+
+    context 'when querying group.epics' do
+      let(:query) do
+        graphql_query_for(:group, { full_path: group.full_path },
+          query_nodes(:epics, :id, args: params)
+        )
+      end
+
+      let(:items) { graphql_data.dig('group', 'epics', 'nodes') }
+
+      it_behaves_like 'returns filtered items'
+    end
+
+    context 'when querying group.epicBoards.lists.epics' do
+      let_it_be(:board) { create(:epic_board, group: group) }
+      let_it_be(:label_list) { create(:epic_list, epic_board: board, label: group_label) }
+
+      let(:query) do
+        graphql_query_for(:group, { full_path: group.full_path },
+          <<~BOARDS
+            epicBoards(first: 1) {
+              nodes {
+                lists(id: "#{label_list.to_global_id}") {
+                  nodes {
+                    epics(#{attributes_to_graphql(filters: params)}) {
+                      nodes {
+                        id
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          BOARDS
+        )
+      end
+
+      let(:items) do
+        graphql_data.dig(
+          'group', 'epicBoards', 'nodes', 0,
+          'lists', 'nodes', 0,
+          'epics', 'nodes'
+        )
+      end
+
+      it_behaves_like 'returns filtered items'
+    end
+  end
 end
