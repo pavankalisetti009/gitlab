@@ -32,6 +32,15 @@ RSpec.describe Groups::Security::CredentialsController, :saas, feature_category:
       end
 
       context 'for a user with access to view credentials inventory' do
+        it_behaves_like 'internal event tracking' do
+          let(:event) { 'visit_authentication_credentials_inventory' }
+          let(:user) { owner }
+          let(:project) { nil }
+          let(:namespace) { group }
+
+          subject(:group_security_credentials_request) { get_request }
+        end
+
         it 'responds with 200' do
           get_request
 
