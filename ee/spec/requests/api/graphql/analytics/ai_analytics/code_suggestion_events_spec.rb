@@ -39,10 +39,10 @@ RSpec.describe '(Group|Project).aiUsageData.codeSuggestionEvents', :click_house,
   let(:filter_params) { {} }
   let(:expected_filters) { {} }
 
-  let_it_be(:code_suggestion_event_1) { create(:code_suggestion_event, :shown, user: user_1) }
-  let_it_be(:code_suggestion_event_2) { create(:code_suggestion_event, :accepted, user: user_1) }
-  let_it_be(:code_suggestion_event_3) { create(:code_suggestion_event, :accepted, user: user_2) }
-  let_it_be(:code_suggestion_event_4) { create(:code_suggestion_event, :accepted, user: user_3) }
+  let_it_be(:code_suggestion_event_1) { create(:ai_code_suggestion_event, :shown, user: user_1) }
+  let_it_be(:code_suggestion_event_2) { create(:ai_code_suggestion_event, :accepted, user: user_1) }
+  let_it_be(:code_suggestion_event_3) { create(:ai_code_suggestion_event, :accepted, user: user_2) }
+  let_it_be(:code_suggestion_event_4) { create(:ai_code_suggestion_event, :accepted, user: user_3) }
 
   before do
     allow(Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
