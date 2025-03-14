@@ -4,7 +4,7 @@ module Projects
   class PathLocksController < Projects::ApplicationController
     before_action :require_non_empty_project
     before_action :ensure_feature_licensed!
-    before_action :authorize_read_code!
+    before_action :authorize_read_path_locks!
 
     feature_category :source_code_management
     urgency :low, [:index]
