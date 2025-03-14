@@ -475,6 +475,11 @@ module Search
       logger.info(Rainbow("\nIndexing Queues").yellow)
       logger.info("Initial queue:\t\t\t#{::Elastic::ProcessInitialBookkeepingService.queue_size}")
       logger.info("Incremental queue:\t\t#{::Elastic::ProcessBookkeepingService.queue_size}")
+
+      concurrency_limit_service = Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService
+      deprecated_queue_size = concurrency_limit_service.queue_size('ElasticCommitIndexerWorker')
+      queue_size = concurrency_limit_service.queue_size('Search::Elastic::CommitIndexerWorker')
+      logger.info("Concurrency limit code queue:\t#{queue_size + deprecated_queue_size}")
     end
 
     def display_index_settings
