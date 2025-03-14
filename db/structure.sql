@@ -11685,7 +11685,8 @@ CREATE TABLE ci_unit_test_failures (
     unit_test_id bigint NOT NULL,
     build_id bigint NOT NULL,
     partition_id bigint NOT NULL,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_5e4c2d7261 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE ci_unit_test_failures_id_seq
