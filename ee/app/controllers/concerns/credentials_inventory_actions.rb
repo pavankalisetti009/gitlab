@@ -65,7 +65,7 @@ module CredentialsInventoryActions
   def pat_params(options)
     { **options,
       impersonation: false,
-      sort: 'expires_at_asc_id_desc',
+      sort: 'expires_asc',
       **params.permit(:state, :revoked, :created_before, :created_after, :expires_before, :expires_after, :last_used_before, :last_used_after, :search, :sort) }.with_indifferent_access
   end
 
