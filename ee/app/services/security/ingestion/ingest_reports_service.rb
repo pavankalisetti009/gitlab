@@ -122,8 +122,6 @@ module Security
       end
 
       def valid_scanner?(scan)
-        return true unless ::Feature.enabled?(:dependency_scanning_for_pipelines_with_cyclonedx_reports, project)
-
         scan.scanner.present?
       end
     end

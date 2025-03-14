@@ -84,20 +84,6 @@ RSpec.describe Security::Ingestion::IngestReportsService, feature_category: :vul
         expect(Security::Ingestion::IngestReportService).to have_received(:execute).with(scan_1)
         expect(Security::Ingestion::IngestReportService).to have_received(:execute).with(scan_2)
       end
-
-      context 'with dependency_scanning_for_pipelines_with_cyclonedx_reports disabled' do
-        before do
-          stub_feature_flags(dependency_scanning_for_pipelines_with_cyclonedx_reports: false)
-        end
-
-        it 'ingests the scan not only from both child pipelines, but also from the parent pipeline' do
-          service_object.execute
-
-          expect(Security::Ingestion::IngestReportService).to have_received(:execute).with(parent_scan)
-          expect(Security::Ingestion::IngestReportService).to have_received(:execute).with(scan_1)
-          expect(Security::Ingestion::IngestReportService).to have_received(:execute).with(scan_2)
-        end
-      end
     end
 
     it_behaves_like 'schedules synchronization of findings to approval rules' do

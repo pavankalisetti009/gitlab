@@ -100,7 +100,7 @@ module Security
 
     def report_artifacts
       pipeline.job_artifacts
-              .security_reports(project: pipeline.project)
+              .security_reports
               .to_a
     end
   end

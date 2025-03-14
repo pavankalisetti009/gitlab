@@ -749,17 +749,7 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
           create(:ee_ci_build, :cyclonedx, pipeline: pipeline, project: project, ci_stage: create(:ci_stage))
         end
 
-        context 'when dependency_scanning_for_pipelines_with_cyclonedx_reports is enabled' do
-          it { is_expected.to be_truthy }
-        end
-
-        context 'when dependency_scanning_for_pipelines_with_cyclonedx_reports is disabled' do
-          before do
-            stub_feature_flags(dependency_scanning_for_pipelines_with_cyclonedx_reports: false)
-          end
-
-          it { is_expected.to be_falsey }
-        end
+        it { is_expected.to be_truthy }
       end
     end
   end

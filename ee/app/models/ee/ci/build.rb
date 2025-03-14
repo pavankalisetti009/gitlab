@@ -112,7 +112,7 @@ module EE
       end
 
       def has_security_reports?
-        job_artifacts.security_reports(project: project).any?
+        job_artifacts.security_reports.any?
       end
 
       def collect_security_reports!(security_reports, report_types: ::EE::Enums::Ci::JobArtifact.security_report_file_types)

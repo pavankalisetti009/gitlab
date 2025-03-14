@@ -2800,7 +2800,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
       context 'when the most recent pipeline does not have security reports' do
         before do
-          most_recent_merge_base_pipeline.job_artifacts.security_reports(project: project).delete_all
+          most_recent_merge_base_pipeline.job_artifacts.security_reports.delete_all
         end
 
         context 'when other merge base pipeline has security reports' do
@@ -2811,7 +2811,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
         context 'when no other merge base pipeline has security reports' do
           before do
-            old_merge_base_pipeline.job_artifacts.security_reports(project: project).delete_all
+            old_merge_base_pipeline.job_artifacts.security_reports.delete_all
           end
 
           context 'when base pipeline has security reports' do
@@ -2822,7 +2822,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
           context 'when no base pipeline has security reports' do
             before do
-              base_pipeline.job_artifacts.security_reports(project: project).delete_all
+              base_pipeline.job_artifacts.security_reports.delete_all
 
               most_recent_merge_base_pipeline.update!(status: :manual)
             end
@@ -2862,7 +2862,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
       context 'when the most recent pipeline does not have security reports' do
         before do
-          most_recent_base_pipeline.job_artifacts.security_reports(project: project).delete_all
+          most_recent_base_pipeline.job_artifacts.security_reports.delete_all
         end
 
         it 'returns the latest base pipeline with security reports' do
@@ -2871,9 +2871,9 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
         context 'when no base pipeline has security reports' do
           before do
-            base_pipeline.job_artifacts.security_reports(project: project).delete_all
-            old_base_pipeline.job_artifacts.security_reports(project: project).delete_all
-            most_recent_base_pipeline.job_artifacts.security_reports(project: project).delete_all
+            base_pipeline.job_artifacts.security_reports.delete_all
+            old_base_pipeline.job_artifacts.security_reports.delete_all
+            most_recent_base_pipeline.job_artifacts.security_reports.delete_all
           end
 
           it 'returns nil' do
@@ -2994,7 +2994,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
     context 'when there are no merge base and diff start pipelines' do
       before do
-        base_pipeline.job_artifacts.security_reports(project: project).delete_all
+        base_pipeline.job_artifacts.security_reports.delete_all
       end
 
       it 'returns nil' do

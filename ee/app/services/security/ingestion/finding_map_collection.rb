@@ -41,16 +41,9 @@ module Security
       # We are also sorting by `uuid` to prevent having deadlock errors while
       # ingesting the findings.
       def deduplicated_findings
-        @deduplicated_findings ||= if ::Feature.enabled?(:dependency_scanning_for_pipelines_with_cyclonedx_reports,
-          project)
-                                     findings.deduplicated.except_scanners(sbom_scanner).sort do |a, b|
-                                       [b.overridden_uuid.to_s, b.uuid] <=> [a.overridden_uuid.to_s, a.uuid]
-                                     end
-                                   else
-                                     findings.deduplicated.sort do |a, b|
-                                       [b.overridden_uuid.to_s, b.uuid] <=> [a.overridden_uuid.to_s, a.uuid]
-                                     end
-                                   end
+        @deduplicated_findings ||= findings.deduplicated.except_scanners(sbom_scanner).sort do |a, b|
+          [b.overridden_uuid.to_s, b.uuid] <=> [a.overridden_uuid.to_s, a.uuid]
+        end
       end
 
       def sbom_scanner

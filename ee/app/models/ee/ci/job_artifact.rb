@@ -28,19 +28,11 @@ module EE
 
       EE_REPORT_FILE_TYPES = EE::Enums::Ci::JobArtifact.ee_report_file_types
 
-      scope :security_reports, ->(project:, file_types: EE::Enums::Ci::JobArtifact.security_report_file_types) do
+      scope :security_reports, ->(file_types: EE::Enums::Ci::JobArtifact.security_report_and_cyclonedx_report_file_types) do
         requested_file_types = *file_types
+        valid_file_types = requested_file_types & EE::Enums::Ci::JobArtifact.security_report_and_cyclonedx_report_file_types
 
-        security_report_file_types = if ::Feature.enabled?(:dependency_scanning_for_pipelines_with_cyclonedx_reports, project)
-                                       EE::Enums::Ci::JobArtifact.security_report_and_cyclonedx_report_file_types
-                                     else
-                                       EE::Enums::Ci::JobArtifact.security_report_file_types
-                                     end
-
-        # CycloneDX reports are also valid file types because their components can be scanned for vulnerabilities.
-        # This feaure is behind the :dependency_scanning_for_pipelines_with_cyclonedx_reports feature flag
-        # which is why it's not included in the default `file_types` value.
-        with_file_types(requested_file_types & security_report_file_types)
+        with_file_types(valid_file_types)
       end
 
       scope :with_files_stored_locally, -> { where(file_store: ::ObjectStorage::Store::LOCAL) }

@@ -115,7 +115,7 @@ module EE
       end
 
       def security_reports(report_types: [])
-        reports_scope = report_types.empty? ? ::Ci::JobArtifact.security_reports(project: project) : ::Ci::JobArtifact.security_reports(file_types: report_types, project: project)
+        reports_scope = report_types.empty? ? ::Ci::JobArtifact.security_reports : ::Ci::JobArtifact.security_reports(file_types: report_types)
         types_to_collect = report_types.empty? ? ::EE::Enums::Ci::JobArtifact.security_report_file_types : report_types
 
         ::Gitlab::Ci::Reports::Security::Reports.new(self).tap do |security_reports|
@@ -270,11 +270,7 @@ module EE
       end
 
       def has_security_reports?
-        security_and_license_scanning_file_types = EE::Enums::Ci::JobArtifact.security_report_file_types | %w[license_scanning]
-
-        if ::Feature.enabled?(:dependency_scanning_for_pipelines_with_cyclonedx_reports, project)
-          security_and_license_scanning_file_types |= %w[cyclonedx]
-        end
+        security_and_license_scanning_file_types = EE::Enums::Ci::JobArtifact.security_report_and_cyclonedx_report_file_types | %w[license_scanning]
 
         complete_or_manual_and_has_reports?(::Ci::JobArtifact.with_file_types(security_and_license_scanning_file_types))
       end
