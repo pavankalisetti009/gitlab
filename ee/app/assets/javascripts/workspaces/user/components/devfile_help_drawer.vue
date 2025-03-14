@@ -8,7 +8,7 @@ export const i18n = {
   subtext: s__("Workspaces|What's the %{linkStart}Gitlab default devfile%{linkEnd}?"),
   drawerTitle: s__('Workspaces|GitLab devfile'),
   drawerParagraph1: s__(
-    'Workspaces|A devfile is a file that detines a development environment by specifying the necessary tools, languages, runtimes, and other components for a GitLab project.',
+    'Workspaces|A devfile is a file that defines a development environment by specifying the necessary tools, languages, runtimes, and other components for a GitLab project.',
   ),
   drawerParagraph2: s__(
     'Workspaces|When no devfile is provided, the GitLab default devfile will be used.',
