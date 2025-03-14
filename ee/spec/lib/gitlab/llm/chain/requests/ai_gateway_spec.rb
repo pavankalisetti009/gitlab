@@ -46,7 +46,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
     let(:endpoint) { described_class::ENDPOINT }
     let(:url) { "#{::Gitlab::AiGateway.url}#{endpoint}" }
     let(:model) { nil }
-    let(:expected_model) { described_class::CLAUDE_3_7_SONNET }
+    let(:expected_model) { described_class::CLAUDE_3_5_SONNET }
     let(:provider) { :anthropic }
     let(:params) do
       {
@@ -179,7 +179,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
 
     context "when no model is provided" do
       let(:model) { nil }
-      let(:expected_model) { ::Gitlab::Llm::Concerns::AvailableModels::CLAUDE_3_7_SONNET }
+      let(:expected_model) { ::Gitlab::Llm::Concerns::AvailableModels::CLAUDE_3_5_SONNET }
       let(:expected_response) { "Hello World" }
 
       it "calls ai gateway client with claude 3.5 sonnet model defaulted" do

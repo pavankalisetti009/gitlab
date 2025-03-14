@@ -69,7 +69,7 @@ module Gitlab
           def model(options)
             return options[:model] if options[:model].present?
 
-            CLAUDE_3_7_SONNET
+            CLAUDE_3_5_SONNET
           end
 
           def provider(options)
