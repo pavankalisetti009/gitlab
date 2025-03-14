@@ -698,6 +698,8 @@
 
 .rubocop-patterns: &rubocop-patterns
   - ".{rubocop,rubocop_todo}.yml"
+  - "{,spec/}rubocop/cop/.rubocop.yml"
+  - ".rubocop/*.yml"
   - ".rubocop_todo/**/*.yml"
   - "{,ee/,jh/}rubocop/**/*"  # We might be changing custom cops
   - "{,ee/,jh/}Gemfile.lock"  # This should include gitlab-styles, rubocop itself, and any plugins we might be using
