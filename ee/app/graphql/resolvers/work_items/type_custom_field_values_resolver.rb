@@ -2,12 +2,12 @@
 
 module Resolvers
   module WorkItems
-    class TypeCustomFieldsResolver < BaseResolver
+    class TypeCustomFieldValuesResolver < BaseResolver
       include LooksAhead
       include ::Issuables::CustomFields::LookAheadPreloads
       extend ::Gitlab::Utils::Override
 
-      type [Types::Issuables::CustomFieldType], null: true
+      type [Types::WorkItems::CustomFieldValueInterface], null: true
 
       def resolve_with_lookahead
         group = context[:resource_parent].root_ancestor
@@ -28,7 +28,10 @@ module Resolvers
             custom_fields_by_work_item_type_id = index_results_by_work_item_type_id(custom_fields)
 
             custom_fields_by_work_item_type_id.each do |work_item_type_id, fields|
-              loader.call({ group: group, work_item_type_id: work_item_type_id }, fields)
+              loader.call(
+                { group: group, work_item_type_id: work_item_type_id },
+                convert_to_empty_field_values(fields)
+              )
             end
           end
         end
@@ -52,9 +55,22 @@ module Resolvers
         end
       end
 
+      def convert_to_empty_field_values(custom_fields)
+        custom_fields.map do |field|
+          {
+            custom_field: field,
+            value: nil
+          }
+        end
+      end
+
       override :unconditional_includes
       def unconditional_includes
         super + [:work_item_types]
+      end
+
+      def nested_preloads
+        { custom_field: custom_field_preloads }
       end
     end
   end

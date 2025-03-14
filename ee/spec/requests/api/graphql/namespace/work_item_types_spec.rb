@@ -29,8 +29,10 @@ RSpec.describe 'getting a list of work item types for a group EE', feature_categ
         widgetDefinitions {
           type
           ... on WorkItemWidgetDefinitionCustomFields {
-            customFields {
-              id
+            customFieldValues {
+              customField {
+                id
+              }
             }
           }
         }
@@ -56,11 +58,11 @@ RSpec.describe 'getting a list of work item types for a group EE', feature_categ
           work_item_type_id: issue_type.to_gid.to_s,
           custom_fields_widget: {
             'type' => 'CUSTOM_FIELDS',
-            'customFields' => [
-              { 'id' => select_field.to_gid.to_s },
-              { 'id' => number_field.to_gid.to_s },
-              { 'id' => text_field.to_gid.to_s },
-              { 'id' => multi_select_field.to_gid.to_s }
+            'customFieldValues' => [
+              { 'customField' => { 'id' => select_field.to_gid.to_s } },
+              { 'customField' => { 'id' => number_field.to_gid.to_s } },
+              { 'customField' => { 'id' => text_field.to_gid.to_s } },
+              { 'customField' => { 'id' => multi_select_field.to_gid.to_s } }
             ]
           }
         }
@@ -71,10 +73,10 @@ RSpec.describe 'getting a list of work item types for a group EE', feature_categ
           work_item_type_id: task_type.to_gid.to_s,
           custom_fields_widget: {
             'type' => 'CUSTOM_FIELDS',
-            'customFields' => [
-              { 'id' => select_field.to_gid.to_s },
-              { 'id' => multi_select_field.to_gid.to_s },
-              { 'id' => field_on_other_type.to_gid.to_s }
+            'customFieldValues' => [
+              { 'customField' => { 'id' => select_field.to_gid.to_s } },
+              { 'customField' => { 'id' => multi_select_field.to_gid.to_s } },
+              { 'customField' => { 'id' => field_on_other_type.to_gid.to_s } }
             ]
           }
         }
@@ -88,9 +90,11 @@ RSpec.describe 'getting a list of work item types for a group EE', feature_categ
           widgetDefinitions {
             type
             ... on WorkItemWidgetDefinitionCustomFields {
-              customFields {
-                id
-                selectOptions { value }
+              customFieldValues {
+                customField {
+                  id
+                  selectOptions { id }
+                }
               }
             }
           }
@@ -111,6 +115,22 @@ RSpec.describe 'getting a list of work item types for a group EE', feature_categ
 
         expect { post_graphql(query, current_user: current_user) }.not_to exceed_all_query_limit(control)
         expect_graphql_errors_to_be_empty
+
+        issue_type_data = graphql_data_at(:namespace, :workItemTypes, :nodes).find do |t|
+          t['id'] == issue_type.to_gid.to_s
+        end
+        custom_fields_widget = issue_type_data['widgetDefinitions'].find { |d| d['type'] == 'CUSTOM_FIELDS' }
+        select_option_ids = custom_fields_widget['customFieldValues'].flat_map do |v|
+          v.dig('customField', 'selectOptions').pluck('id')
+        end
+
+        expect(select_option_ids).to match_array([
+          select_option_1,
+          select_option_2,
+          multi_select_option_1,
+          multi_select_option_2,
+          multi_select_option_3
+        ].map { |o| o.to_global_id.to_s })
       end
     end
   end

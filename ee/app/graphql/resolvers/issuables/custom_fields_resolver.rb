@@ -44,6 +44,8 @@ module Resolvers
           apply_lookahead(custom_fields)
         )
       end
+
+      alias_method :preloads, :custom_field_preloads
     end
   end
 end
