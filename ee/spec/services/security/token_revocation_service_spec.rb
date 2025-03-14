@@ -92,6 +92,29 @@ RSpec.describe Security::TokenRevocationService, '#execute', feature_category: :
       expect(subject[:status]).to be(:success)
     end
 
+    context 'when PersonalAccessTokens::RevokeService returns error' do
+      before do
+        allow_next_instance_of(PersonalAccessTokens::RevokeService) do |service|
+          allow(service).to receive(:execute).and_return({ status: :error, message: 'Failed to revoke token' })
+        end
+      end
+
+      it 'fires internal tracking events' do
+        expect { subject }.to trigger_internal_events(
+          'leaked_token_unable_to_be_revoked_after_vulnerability_report_is_ingested'
+        ).with(
+          project: project,
+          namespace: project.namespace,
+          additional_properties: {
+            label: 'gitleaks_rule_id_gitlab_personal_access_token',
+            property: described_class::ERROR
+          }
+        ).and increment_usage_metrics(
+          'counts.count_total_leaked_tokens_unable_to_be_revoked_due_to_error'
+        )
+      end
+    end
+
     context 'when vulnerability is missing' do
       before do
         revocable_keys.each do |key|
@@ -125,6 +148,31 @@ RSpec.describe Security::TokenRevocationService, '#execute', feature_category: :
       expect(subject[:message]).to eql('Failed to revoke tokens')
     end
 
+    it 'calls log_unable_to_revoke_token with COMM_FAILURE reason for each key' do
+      expect { subject }.to trigger_internal_events(
+        'leaked_token_unable_to_be_revoked_after_vulnerability_report_is_ingested'
+      ).with(
+        project: project,
+        namespace: project.namespace,
+        additional_properties: {
+          label: 'aws_key_id',
+          property: described_class::COMM_FAILURE
+        }
+      ).and trigger_internal_events(
+        'leaked_token_unable_to_be_revoked_after_vulnerability_report_is_ingested'
+      ).with(
+        project: project,
+        namespace: project.namespace,
+        additional_properties: {
+          label: 'aws_secret',
+          property: described_class::COMM_FAILURE
+        }
+      ).twice
+      .and increment_usage_metrics(
+        'counts.count_total_leaked_tokens_unable_to_be_automatically_revoked_due_to_srs_communication_failure'
+      ).by(3)
+    end
+
     it 'does not create internal tracking events' do
       expect { subject }.not_to trigger_internal_events('revoke_leaked_token_after_vulnerability_report_is_ingested')
     end
@@ -137,6 +185,51 @@ RSpec.describe Security::TokenRevocationService, '#execute', feature_category: :
     end
 
     specify { expect(subject).to eql({ status: :success }) }
+
+    context 'with multiple token types in revocable keys' do
+      let(:custom_revocable_keys) do
+        [
+          { type: 'aws_key_id', token: 'aws1', location: 'example.com/1' },
+          { type: 'aws_secret', token: 'aws2', location: 'example.com/2' },
+          { type: 'gcp_key_id', token: 'gcp1', location: 'example.com/3' }
+        ]
+      end
+
+      it 'tracks unsupported keys' do
+        expect do
+          described_class.new(revocable_keys: custom_revocable_keys, project: project).execute
+        end.to trigger_internal_events(
+          'leaked_token_unable_to_be_revoked_after_vulnerability_report_is_ingested'
+        ).with(
+          project: project,
+          namespace: project.namespace,
+          additional_properties: {
+            label: 'aws_key_id',
+            property: described_class::UNSUPPORTED
+          }
+        ).and trigger_internal_events(
+          'leaked_token_unable_to_be_revoked_after_vulnerability_report_is_ingested'
+        ).with(
+          project: project,
+          namespace: project.namespace,
+          additional_properties: {
+            label: 'aws_secret',
+            property: described_class::UNSUPPORTED
+          }
+        ).and trigger_internal_events(
+          'leaked_token_unable_to_be_revoked_after_vulnerability_report_is_ingested'
+        ).with(
+          project: project,
+          namespace: project.namespace,
+          additional_properties: {
+            label: 'gcp_key_id',
+            property: described_class::UNSUPPORTED
+          }
+        ).and increment_usage_metrics(
+          'counts.count_total_leaked_tokens_unable_to_be_revoked_due_to_being_unsupported'
+        ).by(3)
+      end
+    end
   end
 
   context 'when external revocation service is disabled' do
@@ -147,6 +240,45 @@ RSpec.describe Security::TokenRevocationService, '#execute', feature_category: :
     before do
       stub_application_setting(secret_detection_token_revocation_enabled: true)
       stub_revoke_token_api_with_success
+    end
+
+    context 'when some token types are not supported' do
+      before do
+        stub_revocation_token_types_api_with_success
+      end
+
+      let(:revocable_keys) do
+        [
+          {
+            type: 'unsupported_token_type',
+            token: 'some_unsupported_token',
+            location: 'https://mywebsite.com/some-repo/blob/abcdefghijklmnop/compromisedfile.java'
+          },
+          {
+            type: 'aws_key_id',
+            token: 'AKIASOMEAWSACCESSKEY', # gitleaks:allow
+            location: 'https://mywebsite.com/some-repo/blob/abcdefghijklmnop/compromisedfile.java'
+          }
+        ]
+      end
+
+      # rubocop:disable Layout/LineLength -- metric names are very long
+      it 'tracks internal events for both the supported and unsupported token types' do
+        stub_revoke_token_api_with_success([revocable_keys.last])
+
+        expect { subject }.to trigger_internal_events('revoke_leaked_token_after_vulnerability_report_is_ingested')
+          .with(project: project, namespace: project.namespace, additional_properties: { label: 'aws_key_id' })
+          .and trigger_internal_events('leaked_token_unable_to_be_revoked_after_vulnerability_report_is_ingested').with(
+            project: project, namespace: project.namespace, additional_properties: {
+              label: 'unsupported_token_type', property: described_class::UNSUPPORTED
+            }
+          ).and increment_usage_metrics(
+            'counts.count_total_leaked_tokens_unable_to_be_revoked_due_to_being_unsupported',
+            'redis_hll_counters.count_distinct_label_from_revoke_leaked_token_after_vulnerability_report_is_ingested_monthly',
+            'redis_hll_counters.count_distinct_label_from_revoke_leaked_token_after_vulnerability_report_is_ingested_weekly'
+          )
+      end
+      # rubocop:enable Layout/LineLength
     end
 
     context 'with a list of valid token types' do
@@ -160,7 +292,7 @@ RSpec.describe Security::TokenRevocationService, '#execute', feature_category: :
         end
 
         # rubocop:disable Layout/LineLength -- metric names are very long
-        it 'creates internal tracking event' do
+        it 'creates internal tracking event', :clean_gitlab_redis_shared_state do
           expect { described_class.new(revocable_keys:, project:).execute }.to trigger_internal_events(
             'revoke_leaked_token_after_vulnerability_report_is_ingested').with(
               project: project, namespace: project.namespace, additional_properties: { label: 'aws_key_id' }
@@ -187,6 +319,15 @@ RSpec.describe Security::TokenRevocationService, '#execute', feature_category: :
         end
 
         specify { expect(subject).to eql({ message: 'Missing revocation token data', status: :error }) }
+
+        it 'does not call log_unable_to_revoke_token when token data is missing' do
+          service = described_class.new(revocable_keys:, project:)
+
+          # log_unable_to_revoke_token shouldn't be called when missing token data
+          expect(service).not_to receive(:log_unable_to_revoke_token)
+
+          service.execute
+        end
 
         it 'does not create internal tracking events' do
           expect { subject }.not_to trigger_internal_events(
@@ -249,6 +390,16 @@ RSpec.describe Security::TokenRevocationService, '#execute', feature_category: :
 
       specify { expect(subject).to eql({ message: 'Failed to get revocation token types', status: :error }) }
 
+      it 'raises RevocationFailedError without calling log_unable_to_revoke_token' do
+        service = described_class.new(revocable_keys:, project:)
+
+        # log_unable_to_revoke_token shouldn't be called in this case
+        # as the error happens before we process token types
+        expect(service).not_to receive(:log_unable_to_revoke_token)
+
+        service.execute
+      end
+
       it 'does not create internal tracking events' do
         expect { subject }.not_to trigger_internal_events(
           'revoke_leaked_token_after_vulnerability_report_is_ingested'
@@ -257,9 +408,9 @@ RSpec.describe Security::TokenRevocationService, '#execute', feature_category: :
     end
   end
 
-  def stub_revoke_token_api_with_success
+  def stub_revoke_token_api_with_success(keys = revocable_keys)
     stub_request(:post, token_revocation_url)
-      .with(body: revocable_keys.to_json)
+      .with(body: keys.to_json)
       .to_return(
         status: 200,
         headers: { 'Content-Type' => 'application/json' },

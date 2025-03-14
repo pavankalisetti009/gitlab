@@ -9,6 +9,12 @@ module Security
   class TokenRevocationService < ::BaseService
     include Gitlab::InternalEventsTracking
 
+    #########################################
+    ### Reasons tokens could not be revoked
+    UNSUPPORTED = 'unsupported'
+    COMM_FAILURE = 'srs_comm_failure'
+    ERROR = 'error'
+
     RevocationFailedError = Class.new(StandardError)
 
     def initialize(revocable_keys:, project:)
@@ -28,7 +34,12 @@ module Security
 
       response = revoke_tokens
 
-      return error('Failed to revoke tokens') unless response.success?
+      unless response.success?
+        @revocable_keys.each do |key|
+          log_unable_to_revoke_token(key_type: key[:type], reason: COMM_FAILURE)
+        end
+        return error('Failed to revoke tokens')
+      end
 
       @revocable_keys.each { |key| log_token_revocation(key_type: key[:type]) }
 
@@ -63,7 +74,10 @@ module Security
         source: :secret_detection
       ).execute
 
-      raise RevocationFailedError, result[:message] if result[:status] == :error
+      if result[:status] == :error
+        log_unable_to_revoke_token(key_type: GLPAT_KEY_TYPE, reason: ERROR)
+        raise RevocationFailedError, result[:message]
+      end
 
       log_token_revocation(key_type: GLPAT_KEY_TYPE)
 
@@ -116,9 +130,19 @@ module Security
         raise RevocationFailedError, 'Failed to get revocation token types' unless response.success?
 
         token_types = ::Gitlab::Json.parse(response.body)['types']
-        return if token_types.blank?
+        if token_types.blank?
+          @revocable_keys.each do |key|
+            log_unable_to_revoke_token(key_type: key[:type], reason: UNSUPPORTED)
+          end
+          return
+        end
 
-        @revocable_keys.filter! { |key| token_types.include?(key[:type]) }
+        @revocable_keys.filter! do |key|
+          revocable = token_types.include?(key[:type])
+          log_unable_to_revoke_token(key_type: key[:type], reason: UNSUPPORTED) unless revocable
+          revocable
+        end
+
         return if @revocable_keys.blank?
 
         @revocable_keys.to_json
@@ -152,6 +176,18 @@ module Security
         namespace: project.namespace,
         additional_properties: {
           label: key_type
+        }
+      )
+    end
+
+    def log_unable_to_revoke_token(key_type:, reason:)
+      track_internal_event(
+        'leaked_token_unable_to_be_revoked_after_vulnerability_report_is_ingested',
+        project: project,
+        namespace: project.namespace,
+        additional_properties: {
+          label: key_type,
+          property: reason
         }
       )
     end
