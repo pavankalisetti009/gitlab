@@ -717,7 +717,6 @@ Layout/LineLength:
     - 'ee/app/services/jira/requests/issues/list_service.rb'
     - 'ee/app/services/merge_requests/create_from_vulnerability_data_service.rb'
     - 'ee/app/services/merge_trains/refresh_merge_request_service.rb'
-    - 'ee/app/services/projects/mark_for_deletion_service.rb'
     - 'ee/app/services/projects/update_mirror_service.rb'
     - 'ee/app/services/security/ingestion/finding_map.rb'
     - 'ee/app/services/security/ingestion/tasks/ingest_remediations.rb'

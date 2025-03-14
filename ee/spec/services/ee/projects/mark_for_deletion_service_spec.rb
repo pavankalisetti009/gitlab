@@ -2,8 +2,8 @@
 
 require 'spec_helper'
 
-RSpec.describe Projects::MarkForDeletionService do
-  let(:user) { create(:user) }
+RSpec.describe Projects::MarkForDeletionService, feature_category: :groups_and_projects do
+  let(:user) { create(:user, :with_namespace) }
   let(:marked_for_deletion_at) { nil }
   let!(:project) do
     create(:project,
@@ -22,29 +22,33 @@ RSpec.describe Projects::MarkForDeletionService do
         security_orchestration_policies: true)
     end
 
-    context 'marking project for deletion' do
-      subject { described_class.new(project, user).execute }
+    context 'when marking project for deletion' do
+      subject(:execute) { described_class.new(project, user).execute }
 
       it 'marks project as archived and marked for deletion' do
         expect(Namespaces::ScheduleAggregationWorker).to receive(:perform_async)
          .with(project.namespace_id).and_call_original
-        expect(subject[:status]).to eq(:success)
+        expect(execute[:status]).to eq(:success)
         expect(Project.unscoped.all).to include(project)
-        expect(project.archived).to eq(true)
+        expect(project.archived).to be(true)
         expect(project.marked_for_deletion_at).not_to be_nil
         expect(project.deleting_user).to eq(user)
       end
 
       it 'renames project name' do
-        expect { subject }.to change { project.name }.from(original_project_name).to("#{original_project_name}-deleted-#{project.id}")
+        expect { execute }.to change {
+          project.name
+        }.from(original_project_name).to("#{original_project_name}-deleted-#{project.id}")
       end
 
       it 'renames project path' do
-        expect { subject }.to change { project.path }.from(original_project_path).to("#{original_project_path}-deleted-#{project.id}")
+        expect { execute }.to change {
+          project.path
+        }.from(original_project_path).to("#{original_project_path}-deleted-#{project.id}")
       end
     end
 
-    context 'marking project for deletion once again' do
+    context 'when marking project for deletion once again' do
       let(:marked_for_deletion_at) { 2.days.ago }
 
       it 'does not change original date' do
@@ -87,7 +91,7 @@ RSpec.describe Projects::MarkForDeletionService do
       end
     end
 
-    context 'audit events' do
+    context 'for audit events' do
       it 'saves audit event' do
         expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
           hash_including(name: 'project_path_updated')
@@ -108,7 +112,7 @@ RSpec.describe Projects::MarkForDeletionService do
   end
 
   context 'with delayed delete feature turned off' do
-    context 'marking project for deletion' do
+    context 'when marking project for deletion' do
       before do
         described_class.new(project, user).execute
       end
@@ -123,7 +127,7 @@ RSpec.describe Projects::MarkForDeletionService do
         expect(result[:message]).to eq('Cannot mark project for deletion: feature not supported')
         expect(Project.all).to include(project)
 
-        expect(project.archived).to eq(false)
+        expect(project.archived).to be(false)
         expect(project.marked_for_deletion_at).to be_nil
         expect(project.deleting_user).to be_nil
       end
@@ -131,19 +135,20 @@ RSpec.describe Projects::MarkForDeletionService do
   end
 
   describe "#project_update_service_params" do
-    subject { described_class.new(project, user) }
+    subject(:service) { described_class.new(project, user) }
 
     context 'when delayed deletion feature is not available' do
       before do
-        expect(project).to receive(:feature_available?).with(:adjourned_deletion_for_projects_and_groups).and_return(false)
+        allow(project).to receive(:feature_available?)
+          .with(:adjourned_deletion_for_projects_and_groups).and_return(false)
       end
 
       it "creates the params for project update service" do
-        project_update_service_params = subject.send(:project_update_service_params)
+        project_update_service_params = service.send(:project_update_service_params)
 
         expect(project_update_service_params[:marked_for_deletion_at]).not_to be_nil
-        expect(project_update_service_params[:archived]).to eq(true)
-        expect(project_update_service_params[:hidden]).to eq(true)
+        expect(project_update_service_params[:archived]).to be(true)
+        expect(project_update_service_params[:hidden]).to be(true)
         expect(project_update_service_params[:deleting_user]).to eq(user)
         expect(project_update_service_params[:name]).to eq("#{original_project_name}-deleted-#{project.id}")
       end
@@ -151,15 +156,15 @@ RSpec.describe Projects::MarkForDeletionService do
 
     context 'when delayed deletion feature is available' do
       before do
-        expect(project).to receive(:feature_available?).with(:adjourned_deletion_for_projects_and_groups).and_return(true)
+        stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
       end
 
       it "creates the params for project update service" do
-        project_update_service_params = subject.send(:project_update_service_params)
+        project_update_service_params = service.send(:project_update_service_params)
 
         expect(project_update_service_params[:marked_for_deletion_at]).not_to be_nil
-        expect(project_update_service_params[:archived]).to eq(true)
-        expect(project_update_service_params.has_key?(:hidden)).to eq(false)
+        expect(project_update_service_params[:archived]).to be(true)
+        expect(project_update_service_params.has_key?(:hidden)).to be(false)
         expect(project_update_service_params[:deleting_user]).to eq(user)
         expect(project_update_service_params[:name]).to eq("#{original_project_name}-deleted-#{project.id}")
       end
