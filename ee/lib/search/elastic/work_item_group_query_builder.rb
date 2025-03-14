@@ -14,7 +14,7 @@ module Search
 
       override :get_authorization_filter
       def get_authorization_filter(query_hash:, options:)
-        ::Search::Elastic::Filters.by_group_level_authorization(query_hash: query_hash, options: options)
+        ::Search::Elastic::Filters.by_search_level_and_group_membership(query_hash: query_hash, options: options)
       end
 
       override :hybrid_work_item_search?
