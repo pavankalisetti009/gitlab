@@ -19,11 +19,10 @@ module Search
         return unless indices.exists?
 
         log_metadata = {}
-
+        zoekt_replica_id_to_be_deleted = indices.pluck(:zoekt_replica_id).compact # rubocop: disable CodeReuse/ActiveRecord -- Using pluck only
         ApplicationRecord.transaction do
-          deleted_count = Search::Zoekt::Replica.id_in(indices.select(:zoekt_replica_id)).delete_all
-          updated_count = indices.update_all(state: :evicted)
-
+          updated_count = Index.for_replica(zoekt_replica_id_to_be_deleted).update_all(state: :evicted)
+          deleted_count = Replica.id_in(zoekt_replica_id_to_be_deleted).delete_all
           log_metadata[:replicas_deleted_count] = deleted_count
           log_metadata[:indices_updated_count] = updated_count
         end
