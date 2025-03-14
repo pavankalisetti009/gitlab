@@ -61,26 +61,18 @@ module Sbom
       ))
     end
 
-    scope :by_licenses, ->(spdx_identifiers, depth: 1, empty_licenses_as_unknown: true) do
+    scope :by_licenses, ->(spdx_identifiers, depth: 1) do
       return none if depth < 0 || spdx_identifiers.blank?
 
       conditions = (0..depth).map do |depth_level|
         "licenses#>>'{#{depth_level},spdx_identifier}' = ANY(ARRAY[:spdx_identifiers])"
       end
 
-      if empty_licenses_as_unknown
-        unknown_license_spdx_identifier = Gitlab::LicenseScanning::PackageLicenses::UNKNOWN_LICENSE[:spdx_identifier]
-
-        if spdx_identifiers.reject! { |identifier| identifier == unknown_license_spdx_identifier }
-          conditions << "jsonb_array_length(licenses) = 0"
-        end
-      end
-
       where(Arel.sql(conditions.join(" OR ")), spdx_identifiers: Array(spdx_identifiers).uniq)
     end
 
-    scope :by_primary_license, ->(spdx_identifiers, empty_licenses_as_unknown: true) do
-      by_licenses(spdx_identifiers, depth: 0, empty_licenses_as_unknown: empty_licenses_as_unknown)
+    scope :by_primary_license, ->(spdx_identifiers) do
+      by_licenses(spdx_identifiers, depth: 0)
     end
 
     scope :unarchived, -> { where(archived: false) }

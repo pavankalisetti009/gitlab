@@ -155,14 +155,12 @@ module Sbom
           strong_memoize_attr :licenses
 
           def map_from(license)
-            return if license[:spdx_identifier].blank? || skip_unknown_licenses?(license[:spdx_identifier])
+            return if license[:spdx_identifier].blank?
 
             license.slice(:name, :spdx_identifier, :url)
           end
 
           def consolidate_unknown_licenses(license_group)
-            return license_group unless ingest_unknown_licenses?
-
             unknown_count = 0
             license_group.reject! do |license|
               unknown_count += 1 if license[:spdx_identifier] == unknown_license[:spdx_identifier]
@@ -178,15 +176,6 @@ module Sbom
 
             license_group
           end
-
-          def skip_unknown_licenses?(spdx_identifier)
-            !ingest_unknown_licenses? && spdx_identifier == unknown_license[:spdx_identifier]
-          end
-
-          def ingest_unknown_licenses?
-            Feature.enabled?(:filter_unknown_licenses_by_spdx_identifier, project.root_namespace)
-          end
-          strong_memoize_attr :ingest_unknown_licenses?
 
           def key_for(result)
             [result.name, result.version, result.purl_type]
