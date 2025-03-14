@@ -785,9 +785,6 @@ msgstr ""
 msgid "%{count} of %{total}"
 msgstr ""
 
-msgid "%{count} open"
-msgstr ""
-
 msgid "%{count} project"
 msgid_plural "%{count} projects"
 msgstr[0] ""
@@ -40783,6 +40780,15 @@ msgid "OpenAPI Specification file URL"
 msgstr ""
 
 msgid "OpenAPI Specification file path or URL"
+msgstr ""
+
+msgid "OpenMrBadge|%{count} open"
+msgstr ""
+
+msgid "OpenMrBadge|Open"
+msgstr ""
+
+msgid "OpenMrBadge|Opened"
 msgstr ""
 
 msgid "OpenSSL version 3"
