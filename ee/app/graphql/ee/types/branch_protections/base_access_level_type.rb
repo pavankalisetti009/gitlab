@@ -10,12 +10,12 @@ module EE
           field :user,
             ::Types::AccessLevels::UserType,
             null: true,
-            description: 'User associated with this access level.'
+            description: 'User associated with the access level.'
 
           field :group,
             ::Types::AccessLevels::GroupType,
             null: true,
-            description: 'Group associated with this access level.'
+            description: 'Group associated with the access level.'
         end
       end
     end
