@@ -68,16 +68,16 @@ module Resolvers
 
     argument :created_after, Types::TimeType,
       required: false,
-      description: 'Epics created after this date.'
+      description: 'Epics created after the date.'
     argument :created_before, Types::TimeType,
       required: false,
-      description: 'Epics created before this date.'
+      description: 'Epics created before the date.'
     argument :updated_after, Types::TimeType,
       required: false,
-      description: 'Epics updated after this date.'
+      description: 'Epics updated after the date.'
     argument :updated_before, Types::TimeType,
       required: false,
-      description: 'Epics updated before this date.'
+      description: 'Epics updated before the date.'
 
     argument :not, ::Types::Epics::NegatedEpicFilterInputType,
       required: false,

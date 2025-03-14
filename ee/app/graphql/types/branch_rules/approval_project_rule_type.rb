@@ -34,7 +34,7 @@ module Types
         type: ::Types::UserType.connection_type,
         method: :approvers,
         null: true,
-        description: 'List of users eligible to approve merge requests for this approval rule.'
+        description: 'List of users eligible to approve merge requests for the approval rule.'
     end
   end
 end

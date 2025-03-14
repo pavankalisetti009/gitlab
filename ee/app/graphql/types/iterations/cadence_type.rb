@@ -15,7 +15,7 @@ module Types
         null: false, description: 'Title of the iteration cadence.'
 
       field :duration_in_weeks, GraphQL::Types::Int,
-        null: true, description: 'Duration in weeks of the iterations within this cadence.'
+        null: true, description: 'Duration in weeks of the iterations within the cadence.'
 
       field :iterations_in_advance, GraphQL::Types::Int,
         null: true, description: 'Upcoming iterations to be created when iteration cadence is set to automatic.'

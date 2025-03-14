@@ -179,13 +179,13 @@ module Types
 
     field :blocking_count, GraphQL::Types::Int,
       null: true, complexity: 5,
-      description: 'Count of epics that this epic is blocking.'
+      description: 'Count of epics that the epic is blocking.'
 
     field :blocked_by_count, GraphQL::Types::Int,
-      null: true, description: 'Count of epics blocking this epic.'
+      null: true, description: 'Count of epics blocking the epic.'
 
     field :blocked_by_epics, ::Types::EpicType.connection_type,
-      null: true, complexity: 5, description: 'Epics blocking this epic.'
+      null: true, complexity: 5, description: 'Epics blocking the epic.'
 
     field :linked_work_items, ::Types::WorkItems::LinkedItemType.connection_type,
       null: true, complexity: 5, resolver: Resolvers::WorkItems::LinkedItemsResolver,

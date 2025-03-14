@@ -11,7 +11,7 @@ module Types
         authorize: :read_group_runners,
         null: true,
         method: :allow_stale_runner_pruning?,
-        description: 'Indicates if stale runners directly belonging to this namespace should be periodically pruned.'
+        description: 'Indicates if stale runners directly belonging to the namespace should be periodically pruned.'
 
       field :namespace, Types::NamespaceType,
         authorize: :read_namespace,

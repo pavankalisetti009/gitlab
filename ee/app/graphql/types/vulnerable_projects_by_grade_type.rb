@@ -10,10 +10,10 @@ module Types
       null: false, description: "Grade based on the highest severity vulnerability present."
 
     field :count, GraphQL::Types::Int,
-      null: false, complexity: 5, description: 'Number of projects within this grade.'
+      null: false, complexity: 5, description: 'Number of projects within the grade.'
 
     field :projects, Types::ProjectType.connection_type,
-      null: false, complexity: 5, description: 'Projects within this grade.'
+      null: false, complexity: 5, description: 'Projects within the grade.'
   end
   # rubocop: enable Graphql/AuthorizeTypes
 end
