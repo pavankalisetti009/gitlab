@@ -11,7 +11,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariab
   let(:workspace_id) { 1 }
   let(:vscode_extensions_gallery_service_url) { "https://open-vsx.org/vscode/gallery" }
   let(:vscode_extensions_gallery_item_url) { "https://open-vsx.org/vscode/item" }
-  let(:vscode_extensions_gallery_resource_url_template) { "https://open-vsx.org/vscode/unpkg/{publisher}/{name}/{version}/{path}" }
+  let(:vscode_extensions_gallery_resource_url_template) { "https://open-vsx.org/vscode/unpkg/{publisher}/{name}/{versionRaw}/{path}" }
   let(:git_credential_store_script) do
     <<~SH
       #!/bin/sh
