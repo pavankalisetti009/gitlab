@@ -1,8 +1,11 @@
 # frozen_string_literal: true
+
 module Types
-  class PathLockType < BaseObject # rubocop:disable Graphql/AuthorizeTypes
+  class PathLockType < BaseObject
     graphql_name 'PathLock'
     description 'Represents a file or directory in the project repository that has been locked.'
+
+    authorize :read_path_locks
 
     expose_permissions Types::PermissionTypes::Projects::PathLock
 

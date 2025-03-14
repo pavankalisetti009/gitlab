@@ -5,7 +5,7 @@ module Resolvers
     include Gitlab::Graphql::Authorize::AuthorizeResource
     include LooksAhead
 
-    authorize :read_code
+    authorize :read_path_locks
 
     type Types::PathLockType, null: true
 

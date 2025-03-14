@@ -7,7 +7,7 @@ module Mutations
 
       include FindsProject
 
-      authorize :push_code
+      authorize :create_path_lock
 
       argument :project_path, GraphQL::Types::ID,
         required: true,

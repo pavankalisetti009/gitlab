@@ -5,7 +5,7 @@ module PathLocks
     AccessDenied = Class.new(StandardError)
 
     def execute(path)
-      raise AccessDenied, 'You have no permissions' unless can?(current_user, :push_code, project)
+      raise AccessDenied, 'You have no permissions' unless can?(current_user, :create_path_lock, project)
 
       path_lock = project.path_locks.create(path: path, user: current_user)
 
