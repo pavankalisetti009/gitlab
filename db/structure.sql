@@ -18410,7 +18410,8 @@ CREATE TABLE packages_dependency_links (
     package_id bigint NOT NULL,
     dependency_id bigint NOT NULL,
     dependency_type smallint NOT NULL,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_dea82eaa8e CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE packages_dependency_links_id_seq
