@@ -25187,7 +25187,7 @@ msgstr ""
 msgid "FeatureFlags|Delete feature flag"
 msgstr ""
 
-msgid "FeatureFlags|Description"
+msgid "FeatureFlags|Description (optional)"
 msgstr ""
 
 msgid "FeatureFlags|Edit Feature flag"
