@@ -7,7 +7,7 @@ import {
 } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
 import TimezoneDropdown from '~/vue_shared/components/timezone_dropdown/timezone_dropdown.vue';
-import { slugify, slugifyToArray } from '../../utils';
+import { getHostname, slugify, slugifyToArray } from '../../utils';
 import {
   DAYS,
   HOUR_MINUTE_LIST,
@@ -88,8 +88,8 @@ export default {
     };
   },
   computed: {
-    getHostname() {
-      return window?.location?.host;
+    hostname() {
+      return getHostname();
     },
     isBranchScope() {
       return this.selectedScope === SCAN_EXECUTION_RULE_SCOPE_BRANCH_KEY;
@@ -116,16 +116,12 @@ export default {
     },
     timezoneLabel() {
       return this.isBranchScope
-        ? sprintf(this.$options.i18n.branchTimezoneLabel, {
-            hostname: this.getHostname,
-          })
+        ? sprintf(this.$options.i18n.branchTimezoneLabel, { hostname: this.hostname })
         : this.$options.i18n.kubernetesTimezoneLabel;
     },
     timezoneTooltipText() {
       return this.isBranchScope
-        ? sprintf(this.$options.i18n.branchTimezoneTooltipText, {
-            hostname: this.getHostname,
-          })
+        ? sprintf(this.$options.i18n.branchTimezoneTooltipText, { hostname: this.hostname })
         : this.$options.i18n.agentTimezoneTooltipText;
     },
   },

@@ -3,6 +3,7 @@ import { GlCollapsibleListbox, GlSprintf } from '@gitlab/ui';
 import { s__, __, sprintf } from '~/locale';
 import BranchSelection from 'ee/security_orchestration/components/policy_editor/scan_result/rule/branch_selection.vue';
 import TimezoneDropdown from '~/vue_shared/components/timezone_dropdown/timezone_dropdown.vue';
+import { getHostname } from '../../utils';
 import { CADENCE_OPTIONS, updateScheduleCadence } from './utils';
 
 export default {
@@ -31,9 +32,6 @@ export default {
     },
   },
   computed: {
-    hostname() {
-      return window?.location?.host;
-    },
     branchInfo() {
       return {
         branch_type: this.schedule?.branch_type,
@@ -41,7 +39,7 @@ export default {
       };
     },
     timezoneTooltipText() {
-      return sprintf(this.$options.i18n.timezoneLabel, { hostname: this.hostname });
+      return sprintf(this.$options.i18n.timezoneLabel, { hostname: getHostname() });
     },
   },
   methods: {

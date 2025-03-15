@@ -30,6 +30,7 @@ import {
   mapComponentLicenseFormatToYaml,
   parseExceptionsStringToItems,
   splitItemsByCommaOrSpace,
+  getHostname,
 } from 'ee/security_orchestration/components/policy_editor/utils';
 import { DEFAULT_ASSIGNED_POLICY_PROJECT } from 'ee/security_orchestration/constants';
 import createPolicyProjectAsync from 'ee/security_orchestration/graphql/mutations/create_policy_project_async.mutation.graphql';
@@ -657,5 +658,33 @@ describe('mapBranchesToExceptions', () => {
     `('parses array of strings into objects', ({ items, output }) => {
       expect(parseExceptionsStringToItems(items)).toEqual(output);
     });
+  });
+});
+
+describe('getHostname', () => {
+  const mockHostname = 'gitlab.example.com';
+  const originalHostname = window.location.host;
+
+  afterEach(() => {
+    Object.defineProperty(window, 'location', {
+      writable: true,
+      value: { host: originalHostname },
+    });
+  });
+
+  it('returns the host name', () => {
+    Object.defineProperty(window, 'location', {
+      writable: true,
+      value: { host: mockHostname },
+    });
+    expect(getHostname()).toBe(mockHostname);
+  });
+
+  it('returns the fallback value', () => {
+    Object.defineProperty(window, 'location', {
+      writable: true,
+      value: undefined,
+    });
+    expect(getHostname()).toBe('your GitLab instance');
   });
 });
