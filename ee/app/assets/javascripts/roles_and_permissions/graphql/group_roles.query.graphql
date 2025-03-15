@@ -7,18 +7,11 @@ query getGroupRoles($fullPath: ID!) {
     standardRoles(accessLevel: [GUEST, REPORTER, PLANNER, DEVELOPER, MAINTAINER, OWNER]) {
       nodes {
         ...Role
-        detailsPath
       }
     }
     memberRoles {
       nodes {
         ...Role
-        usersCount
-        detailsPath
-        dependentSecurityPolicies {
-          name
-          editPath
-        }
       }
     }
   }

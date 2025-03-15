@@ -5,25 +5,16 @@ query getInstanceRoles {
   standardRoles(accessLevel: [GUEST, REPORTER, PLANNER, DEVELOPER, MAINTAINER, OWNER]) {
     nodes {
       ...Role
-      detailsPath
     }
   }
   memberRoles {
     nodes {
       ...Role
-      usersCount
-      detailsPath
-      dependentSecurityPolicies {
-        name
-        editPath
-      }
     }
   }
   adminMemberRoles {
     nodes {
       ...Role
-      usersCount
-      detailsPath
     }
   }
 }

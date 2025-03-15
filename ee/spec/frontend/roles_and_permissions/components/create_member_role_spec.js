@@ -53,7 +53,6 @@ describe('CreateMemberRole', () => {
       propsData: {
         groupFullPath,
         listPagePath: 'http://list/page/path',
-        detailsPagePath: 'http://details/page/path',
         roleId,
       },
       stubs: {
@@ -326,18 +325,18 @@ describe('CreateMemberRole', () => {
   describe('when coming from details page', () => {
     beforeEach(() => {
       setWindowLocation('?from_details');
-      createComponent();
+      return createComponent({ roleId: 1 });
     });
 
     it('uses details path for cancel button URL', () => {
-      expect(findCancelButton().attributes('href')).toBe('http://details/page/path');
+      expect(findCancelButton().attributes('href')).toBe('role/path/1');
     });
 
     it('navigates to details path on form submit', async () => {
       fillForm();
       await submitForm(waitForPromises);
 
-      expect(visitUrl).toHaveBeenCalledWith('http://details/page/path');
+      expect(visitUrl).toHaveBeenCalledWith('role/path/1');
     });
   });
 });

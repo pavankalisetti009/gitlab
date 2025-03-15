@@ -151,7 +151,8 @@ export const adminRoles = [
     name: 'Admin role 1',
     description: 'Admin role 1 description',
     usersCount: 0,
-    detailsPath: 'details/path/3',
+    editPath: 'role/path/3/edit',
+    detailsPath: 'role/path/3',
     __typename: 'AdminMemberRole',
   },
   {
@@ -159,7 +160,8 @@ export const adminRoles = [
     name: 'Admin role 2',
     description: 'Admin role 2 description',
     usersCount: 0,
-    detailsPath: 'details/path/4',
+    editPath: 'role/path/4/edit',
+    detailsPath: 'role/path/4',
     __typename: 'AdminMemberRole',
   },
 ];
@@ -188,9 +190,11 @@ export const mockMemberRole = {
   description: 'Custom role description',
   createdAt: '2024-08-04T12:20:43Z',
   editPath: 'role/path/1/edit',
+  detailsPath: 'role/path/1',
   usersCount: 0,
   baseAccessLevel: { stringValue: 'DEVELOPER', humanAccess: 'Developer' },
   enabledPermissions: { nodes: [{ value: 'A' }, { value: 'B' }] },
+  dependentSecurityPolicies: [],
   __typename: 'MemberRole',
 };
 

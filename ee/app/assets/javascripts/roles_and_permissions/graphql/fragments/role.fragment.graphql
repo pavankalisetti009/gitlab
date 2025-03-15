@@ -2,6 +2,7 @@ fragment Role on RoleInterface {
   id
   name
   description
+  detailsPath
 
   ... on StandardRole {
     accessLevel
@@ -9,5 +10,15 @@ fragment Role on RoleInterface {
 
   ... on MemberRole {
     editPath
+    usersCount
+    dependentSecurityPolicies {
+      name
+      editPath
+    }
+  }
+
+  ... on AdminMemberRole {
+    editPath
+    usersCount
   }
 }
