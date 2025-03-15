@@ -63,7 +63,7 @@ describe('ScheduleForm', () => {
       expect(findBranchSelection().exists()).toBe(true);
       expect(findBranchSelection().props('initRule')).toEqual({
         branch_type: 'protected',
-        branches: undefined,
+        type: 'daily',
       });
     });
 
@@ -86,10 +86,16 @@ describe('ScheduleForm', () => {
     });
 
     describe('branch selection', () => {
-      it('handles branch selection changes', async () => {
-        const branchData = { branch_type: 'all' };
-        await findBranchSelection().vm.$emit('set-branch-type', branchData);
-        expect(wrapper.emitted('changed')).toMatchObject([[{ ...branchData }]]);
+      it('handles branch type selection changes', async () => {
+        const branchTypeData = { branch_type: 'all' };
+        await findBranchSelection().vm.$emit('set-branch-type', branchTypeData);
+        expect(wrapper.emitted('changed')).toMatchObject([[{ ...branchTypeData }]]);
+      });
+
+      it('handles branches selection changes', async () => {
+        const branchesData = { branches: ['main'] };
+        await findBranchSelection().vm.$emit('changed', branchesData);
+        expect(wrapper.emitted('changed')).toMatchObject([[{ ...branchesData }]]);
       });
     });
 

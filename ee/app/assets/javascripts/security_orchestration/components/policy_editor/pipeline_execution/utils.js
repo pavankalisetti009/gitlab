@@ -12,7 +12,12 @@ export const validatePolicy = (policy) => {
   const error = {};
 
   const contentKeys = ['include'];
-  const pipelineConfigStrategies = ['inject_policy', 'inject_ci', 'override_project_ci'];
+  const pipelineConfigStrategies = [
+    'inject_policy',
+    'inject_ci',
+    'override_project_ci',
+    'schedule',
+  ];
   const hasInvalidPipelineConfigStrategy = (strategy) =>
     !pipelineConfigStrategies.includes(strategy);
 
