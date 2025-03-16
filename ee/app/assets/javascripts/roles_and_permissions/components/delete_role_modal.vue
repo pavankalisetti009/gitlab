@@ -1,9 +1,11 @@
 <script>
 import { s__, sprintf } from '~/locale';
 import deleteMemberRoleMutation from 'ee/roles_and_permissions/graphql/delete_member_role.mutation.graphql';
+import deleteAdminRoleMutation from 'ee/roles_and_permissions/graphql/admin_role/delete_role.mutation.graphql';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_MEMBER_ROLE } from '~/graphql_shared/constants';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
+import { isAdminRole } from '../utils';
 
 export default {
   components: { ConfirmActionModal },
@@ -18,8 +20,8 @@ export default {
     async deleteRole() {
       try {
         const { data } = await this.$apollo.mutate({
-          mutation: deleteMemberRoleMutation,
-          variables: { input: { id: convertToGraphQLId(TYPENAME_MEMBER_ROLE, this.role.id) } },
+          mutation: isAdminRole(this.role) ? deleteAdminRoleMutation : deleteMemberRoleMutation,
+          variables: { id: convertToGraphQLId(TYPENAME_MEMBER_ROLE, this.role.id) },
         });
 
         const error = data.memberRoleDelete.errors[0];
@@ -43,11 +45,11 @@ export default {
   <confirm-action-modal
     v-if="role"
     modal-id="delete-role-modal"
-    :title="s__('MemberRole|Delete custom role?')"
+    :title="s__('MemberRole|Delete role?')"
     :action-fn="deleteRole"
     :action-text="s__('MemberRole|Delete role')"
     @close="$emit('close')"
   >
-    {{ s__('MemberRole|Are you sure you want to delete this custom role?') }}
+    {{ s__('MemberRole|Are you sure you want to delete this role?') }}
   </confirm-action-modal>
 </template>
