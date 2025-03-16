@@ -11,7 +11,7 @@ module Types
 
       field :inherited, GraphQL::Types::Boolean,
         null: false,
-        description: 'Indicates whether this policy is inherited from parent group.'
+        description: 'Indicates whether the policy is inherited from parent group.'
 
       field :namespace, Types::NamespaceType,
         null: true,

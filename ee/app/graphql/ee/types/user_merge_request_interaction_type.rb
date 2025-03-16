@@ -9,7 +9,7 @@ module EE
         field :applicable_approval_rules,
           [::Types::ApprovalRuleType],
           null: true,
-          description: 'Approval rules that apply to this user for this merge request.'
+          description: 'Approval rules that apply to the user for the merge request.'
       end
     end
   end

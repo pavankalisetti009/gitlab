@@ -16,6 +16,6 @@ module Types
       description: 'Locked path.'
 
     field :user, ::Types::UserType, null: true,
-      description: 'User that has locked this path.'
+      description: 'User that has locked the path.'
   end
 end

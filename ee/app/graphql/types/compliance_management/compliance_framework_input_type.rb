@@ -23,7 +23,7 @@ module Types
       argument :default,
         GraphQL::Types::Boolean,
         required: false,
-        description: 'Set this compliance framework as the default framework for the group.'
+        description: 'Set the compliance framework as the default framework for the group.'
 
       argument :pipeline_configuration_full_path,
         GraphQL::Types::String,

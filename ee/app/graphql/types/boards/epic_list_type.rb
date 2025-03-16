@@ -28,7 +28,7 @@ module Types
 
       field :collapsed, GraphQL::Types::Boolean,
         null: true,
-        description: 'Indicates if this list is collapsed for this user.'
+        description: 'Indicates if the list is collapsed for the user.'
 
       field :epics, Types::EpicType.connection_type,
         null: true,
