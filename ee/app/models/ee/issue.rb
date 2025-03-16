@@ -280,8 +280,9 @@ module EE
       override :sort_by_attribute
       def sort_by_attribute(method, excluded_labels: [])
         case method.to_s
-        when 'blocking_issues_asc'  then order_blocking_issues_asc.with_order_id_desc
-        when 'blocking_issues_desc' then order_blocking_issues_desc.with_order_id_desc
+        # aliases for blocking_issues
+        when 'blocking_issues_asc', 'blocking_items_asc' then order_blocking_issues_asc.with_order_id_desc
+        when 'blocking_issues_desc', 'blocking_items_desc' then order_blocking_issues_desc.with_order_id_desc
         when 'weight', 'weight_asc' then order_weight_asc.with_order_id_desc
         when 'weight_desc'          then order_weight_desc.with_order_id_desc
         when 'published_asc'        then order_status_page_published_last
