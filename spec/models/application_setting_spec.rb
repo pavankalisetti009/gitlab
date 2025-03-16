@@ -1778,7 +1778,18 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
 
   describe 'vscode_extension_marketplace' do
     let(:invalid_custom) { { enabled: false, preset: "custom", custom_values: {} } }
-    let(:valid_open_vsx) { { enabled: true, preset: "open_vsx" } }
+    let(:invalid_custom_urls) do
+      {
+        enabled: true,
+        preset: "custom",
+        custom_values: {
+          item_url: "abc",
+          service_url: "def",
+          resource_url_template: "ghi"
+        }
+      }
+    end
+
     let(:valid_custom) do
       {
         enabled: false,
@@ -1791,15 +1802,20 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       }
     end
 
+    let(:valid_open_vsx) { { enabled: true, preset: "open_vsx" } }
+    let(:valid_open_vsx_with_custom) { valid_custom.merge(valid_open_vsx) }
+
     # valid json
     it { is_expected.to allow_value({}).for(:vscode_extension_marketplace) }
-    it { is_expected.to allow_value({ enabled: true, preset: "open_vsx" }).for(:vscode_extension_marketplace) }
+    it { is_expected.to allow_value(valid_open_vsx).for(:vscode_extension_marketplace) }
+    it { is_expected.to allow_value(valid_open_vsx_with_custom).for(:vscode_extension_marketplace) }
     it { is_expected.to allow_value(valid_custom).for(:vscode_extension_marketplace) }
 
     # invalid json
     it { is_expected.not_to allow_value({ enabled: false, preset: "foo" }).for(:vscode_extension_marketplace) }
     it { is_expected.not_to allow_value({ enabled: true, preset: "custom" }).for(:vscode_extension_marketplace) }
     it { is_expected.not_to allow_value(invalid_custom).for(:vscode_extension_marketplace) }
+    it { is_expected.not_to allow_value(invalid_custom_urls).for(:vscode_extension_marketplace) }
   end
 
   describe '#static_objects_external_storage_auth_token=', :aggregate_failures do
