@@ -16978,7 +16978,8 @@ CREATE TABLE ml_candidate_metrics (
     tracked_at bigint,
     project_id bigint,
     CONSTRAINT check_3bb4a3fbd9 CHECK ((char_length(name) <= 250)),
-    CONSTRAINT check_d7dfd3de26 CHECK ((candidate_id IS NOT NULL))
+    CONSTRAINT check_d7dfd3de26 CHECK ((candidate_id IS NOT NULL)),
+    CONSTRAINT check_e0012be52e CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE ml_candidate_metrics_id_seq
