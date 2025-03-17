@@ -435,23 +435,31 @@ In order to push images to this location:
          - `Analytics`, `Requirements`, `Security and compliance`, `Wiki`, `Snippets`, `Package registry`, `Model experiments`, `Model registry`, `Pages`, `Monitor`, `Environments`, `Feature flags`, `Infrastructure`, `Releases`, `GitLab Duo`
             - `Disabled`
 
-1. Configure the following [`CI/CD` environment variables](../../ci/variables/_index.md) for the _analyzer project_, located at `https://gitlab.com/gitlab-org/security-products/analyzers/<ANALYZER_NAME>`:
+1. Configure the following options for the _analyzer project_, located at `https://gitlab.com/gitlab-org/security-products/analyzers/<ANALYZER_NAME>`:
 
-   {{< alert type="note" >}}
+   1. Add the wildcard `v*` as a [Protected Tag](../../user/project/protected_tags.md).
 
-   It's crucial to [mask and hide](../../ci/variables/_index.md#hide-a-cicd-variable) the `SEC_REGISTRY_PASSWORD` variable.
+      Ensure the `gl-service-dev-secure-analyzers-automation` account has been explicitly added to the list of accounts `Allowed to create` protected tags. This is required to allow the [`upsert git tag`](https://gitlab.com/gitlab-org/security-products/ci-templates/blob/2a3519d/includes-dev/upsert-git-tag.yml#L35-44) job to create new releases for the analyzer project.
 
-   {{< /alert >}}
+   1. Add the wildcard `v*` as a [Protected Branch](../../user/project/repository/branches/protected.md).
 
-   | Key                     | Value                                                                       |
-   |-------------------------|-----------------------------------------------------------------------------|
-   | `SEC_REGISTRY_IMAGE`    | `registry.gitlab.com/security-products/$CI_PROJECT_NAME`                    |
-   | `SEC_REGISTRY_USER`     | `gl-service-dev-secure-analyzers-automation`                                |
-   | `SEC_REGISTRY_PASSWORD` | Personal Access Token for `gl-service-dev-secure-analyzers-automation` user. Request an [administrator](https://gitlab.com/gitlab-com/team-member-epics/access-requests/-/issues/29538#admin-users) to configure this token value. |
+   1. [`CI/CD` environment variables](../../ci/variables/_index.md)
 
-   The above variables are used by the [tag_image.sh](https://gitlab.com/gitlab-org/security-products/ci-templates/blob/a784f5d/scripts/tag_image.sh#L21-26) script in the `ci-templates` project to push the container image to `registry.gitlab.com/security-products/<ANALYZER-NAME>:<TAG>`.
+      {{< alert type="note" >}}
 
-   See the [semgrep CI/CD Variables](https://gitlab.com/gitlab-org/security-products/analyzers/semgrep/-/settings/ci_cd#js-cicd-variables-settings) for an example.
+      It's crucial to [mask and hide](../../ci/variables/_index.md#hide-a-cicd-variable) the `SEC_REGISTRY_PASSWORD` variable.
+
+      {{< /alert >}}
+
+      | Key                     | Value                                                                       |
+      |-------------------------|-----------------------------------------------------------------------------|
+      | `SEC_REGISTRY_IMAGE`    | `registry.gitlab.com/security-products/$CI_PROJECT_NAME`                    |
+      | `SEC_REGISTRY_USER`     | `gl-service-dev-secure-analyzers-automation`                                |
+      | `SEC_REGISTRY_PASSWORD` | Personal Access Token for `gl-service-dev-secure-analyzers-automation` user. Request an [administrator](https://gitlab.com/gitlab-com/team-member-epics/access-requests/-/issues/29538#admin-users) to configure this token value. |
+
+      The above variables are used by the [tag_image.sh](https://gitlab.com/gitlab-org/security-products/ci-templates/blob/a784f5d/scripts/tag_image.sh#L21-26) script in the `ci-templates` project to push the container image to `registry.gitlab.com/security-products/<ANALYZER-NAME>:<TAG>`.
+
+      See the [semgrep CI/CD Variables](https://gitlab.com/gitlab-org/security-products/analyzers/semgrep/-/settings/ci_cd#js-cicd-variables-settings) for an example.
 
 #### Temporary development images
 
