@@ -33,9 +33,11 @@ export default {
   },
   computed: {
     branchInfo() {
+      const { branch_type, branches, type } = this.schedule;
       return {
-        branch_type: this.schedule?.branch_type,
-        branches: this.schedule?.branches,
+        type,
+        ...(branch_type ? { branch_type } : {}), // eslint-disable-line camelcase
+        ...(branches ? { branches } : {}),
       };
     },
     timezoneTooltipText() {
@@ -43,7 +45,7 @@ export default {
     },
   },
   methods: {
-    updateBranchType({ branch_type, branches }) {
+    updateBranchConfig({ branch_type, branches }) {
       const {
         branch_type: oldBranchType,
         branches: oldBranches,
@@ -71,7 +73,11 @@ export default {
     <div class="gl-mb-3 gl-flex gl-flex-wrap gl-items-center gl-gap-3">
       <gl-sprintf :message="$options.i18n.message">
         <template #branchSelector>
-          <branch-selection :init-rule="branchInfo" @set-branch-type="updateBranchType" />
+          <branch-selection
+            :init-rule="branchInfo"
+            @changed="updateBranchConfig"
+            @set-branch-type="updateBranchConfig"
+          />
         </template>
       </gl-sprintf>
     </div>
