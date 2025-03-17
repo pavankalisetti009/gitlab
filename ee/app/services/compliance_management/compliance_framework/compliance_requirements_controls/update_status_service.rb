@@ -5,6 +5,7 @@ module ComplianceManagement
     module ComplianceRequirementsControls
       class UpdateStatusService < BaseService
         include Gitlab::Utils::StrongMemoize
+        include Gitlab::InternalEventsTracking
 
         VALID_STATUSES = %w[pass fail].freeze
 
@@ -40,8 +41,29 @@ module ComplianceManagement
             message: "Changed compliance control status from '#{old_status}' to '#{new_status}'",
             author: current_user
           }
-
           ::Gitlab::Audit::Auditor.audit(audit_context)
+          track_changes(old_status, new_status)
+        end
+
+        def track_changes(old_status, new_status)
+          event_name = ''
+
+          event_name = 'g_sscs_compliance_control_status_pass_to_fail' if old_status == 'pass' && new_status == 'fail'
+          event_name = 'g_sscs_compliance_control_status_fail_to_pass' if old_status == 'fail' && new_status == 'pass'
+
+          return if event_name.empty?
+
+          event_args = {
+            namespace: project.namespace,
+            project: project,
+            additional_properties: {
+              property: control.control_type.to_s
+            }
+          }
+
+          event_args[:user] = current_user if current_user.is_a?(::User)
+
+          track_internal_event(event_name, event_args)
         end
 
         def permitted?

@@ -77,6 +77,52 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
         )
       end
 
+      it 'does not track any events when changing from pending to pass' do
+        expect { service.execute }.not_to trigger_internal_events
+      end
+
+      context 'when transitioning from pass to fail' do
+        let(:fail_service) do
+          described_class.new(current_user: user, control: control, project: project, status_value: 'fail')
+        end
+
+        before do
+          described_class.new(current_user: user, control: control, project: project, status_value: 'pass').execute
+        end
+
+        it 'tracks a pass to fail event' do
+          expect { fail_service.execute }
+            .to trigger_internal_events('g_sscs_compliance_control_status_pass_to_fail')
+            .with(
+              user: user,
+              namespace: project.namespace,
+              project: project,
+              additional_properties: {
+                property: control.control_type.to_s
+              }
+            )
+        end
+      end
+
+      context 'when transitioning from fail to pass' do
+        before do
+          described_class.new(current_user: user, control: control, project: project, status_value: 'fail').execute
+        end
+
+        it 'tracks a fail to pass event' do
+          expect { service.execute }
+            .to trigger_internal_events('g_sscs_compliance_control_status_fail_to_pass')
+            .with(
+              user: user,
+              namespace: project.namespace,
+              project: project,
+              additional_properties: {
+                property: control.control_type.to_s
+              }
+            )
+        end
+      end
+
       context 'when project control status does not exist' do
         before do
           project_control_compliance_status.destroy!
@@ -96,21 +142,71 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
           expect(new_status.project_id).to eq(project.id)
           expect(new_status.compliance_requirements_control_id).to eq(control.id)
         end
+
+        it 'does not track any events when creating a new pass status' do
+          expect { service.execute }.not_to trigger_internal_events
+        end
+      end
+
+      context 'when using an unauthenticated author' do
+        let(:unauthenticated_author) { ::Gitlab::Audit::UnauthenticatedAuthor.new }
+        let(:unauthenticated_service) do
+          described_class.new(
+            current_user: unauthenticated_author,
+            control: control,
+            project: project,
+            status_value: 'pass'
+          )
+        end
+
+        before do
+          described_class.new(current_user: user, control: control, project: project, status_value: 'fail').execute
+        end
+
+        it 'updates the status successfully' do
+          expect { unauthenticated_service.execute }.to change {
+            project_control_compliance_status.reload.status
+          }.to('pass')
+        end
+
+        it 'audits the changes with the unauthenticated author' do
+          unauthenticated_service.execute
+
+          expect(::Gitlab::Audit::Auditor).to have_received(:audit).with(
+            name: 'compliance_control_status_pass',
+            scope: project,
+            target: project_control_compliance_status,
+            message: "Changed compliance control status from 'fail' to 'pass'",
+            author: unauthenticated_author
+          )
+        end
+
+        it 'tracks the fail to pass event without a user parameter' do
+          expect { unauthenticated_service.execute }
+            .to trigger_internal_events('g_sscs_compliance_control_status_fail_to_pass')
+            .with(
+              namespace: project.namespace,
+              project: project,
+              additional_properties: {
+                property: control.control_type.to_s
+              }
+            )
+        end
       end
     end
 
     context 'with invalid params' do
       shared_examples 'rejects invalid status' do |status|
-        let(:service) do
+        let(:invalid_service) do
           described_class.new(current_user: user, control: control, project: project, status_value: status)
         end
 
         it "does not update project control compliance status" do
-          expect { service.execute }.not_to change { project_control_compliance_status.reload.attributes }
+          expect { invalid_service.execute }.not_to change { project_control_compliance_status.reload.attributes }
         end
 
         it "is unsuccessful" do
-          result = service.execute
+          result = invalid_service.execute
 
           expect(result.success?).to be false
           expect(result.message).to eq(
@@ -119,9 +215,13 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
         end
 
         it "does not audit the changes" do
-          service.execute
+          invalid_service.execute
 
           expect(::Gitlab::Audit::Auditor).not_to have_received(:audit)
+        end
+
+        it "does not track any events" do
+          expect { invalid_service.execute }.not_to trigger_internal_events
         end
       end
 
@@ -131,11 +231,8 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
 
     context 'when status update fails' do
       before do
-        # Stub the existing status record to fail on update
         allow(project_control_compliance_status).to receive_messages(update: false,
           errors: instance_double(ActiveModel::Errors, full_messages: ['Some validation error']))
-
-        # Ensure create_or_find_for_project_and_control returns our stubbed instance
         allow(ComplianceManagement::ComplianceFramework::ProjectControlComplianceStatus)
           .to receive(:create_or_find_for_project_and_control)
           .with(project, control)
@@ -155,6 +252,32 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
         service.execute
 
         expect(::Gitlab::Audit::Auditor).not_to have_received(:audit)
+      end
+
+      it 'does not track any events' do
+        expect { service.execute }.not_to trigger_internal_events
+      end
+    end
+
+    context 'when an ArgumentError is raised' do
+      before do
+        allow(service).to receive(:update_control_status).and_raise(ArgumentError, 'test error message')
+        allow(service).to receive(:execute).and_wrap_original do |original|
+          original.call
+        rescue ArgumentError => e
+          ServiceResponse.error(message: "Failed to update compliance control status. Error: #{e.message}")
+        end
+      end
+
+      it 'returns an error response with the error message' do
+        result = service.execute
+
+        expect(result).to be_error
+        expect(result.message).to eq('Failed to update compliance control status. Error: test error message')
+      end
+
+      it 'does not track any events' do
+        expect { service.execute }.not_to trigger_internal_events
       end
     end
   end

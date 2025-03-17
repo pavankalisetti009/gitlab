@@ -53,6 +53,10 @@ RSpec.describe API::ComplianceExternalControls, feature_category: :compliance_ma
       allow(mock_redis).to receive(:set)
         .with("control_statuses:nonce:#{number_used_once}", '1', ex: 16)
         .and_return('OK')
+
+      allow(mock_redis).to receive(:incr).with(any_args).and_return(1)
+      allow(mock_redis).to receive(:ttl).with(any_args).and_return(3600)
+
       stub_licensed_features(custom_compliance_frameworks: true)
     end
 
