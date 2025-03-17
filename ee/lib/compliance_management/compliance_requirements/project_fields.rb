@@ -8,7 +8,8 @@ module ComplianceManagement
         'merge_request_prevent_author_approval' => :merge_request_prevent_author_approval?,
         'merge_request_prevent_committers_approval' => :merge_requests_disable_committers_approval?,
         'project_visibility' => :project_visibility,
-        'minimum_approvals_required' => :minimum_approvals_required
+        'minimum_approvals_required' => :minimum_approvals_required,
+        'auth_sso_enabled' => :auth_sso_enabled?
       }.freeze
 
       class << self
@@ -37,6 +38,10 @@ module ComplianceManagement
 
         def minimum_approvals_required(project)
           project.approval_rules.pick("SUM(approvals_required)") || 0
+        end
+
+        def auth_sso_enabled?(project)
+          ::Groups::SsoHelper.saml_provider_enabled?(project.group)
         end
       end
     end

@@ -11,7 +11,8 @@
         "merge_request_prevent_author_approval",
         "merge_request_prevent_committers_approval",
         "project_visibility",
-        "default_branch_protected"
+        "default_branch_protected",
+        "auth_sso_enabled"
       ]
     },
     "operator": {
@@ -43,7 +44,8 @@
               "scanner_sast_running",
               "merge_request_prevent_author_approval",
               "merge_request_prevent_committers_approval",
-              "default_branch_protected"
+              "default_branch_protected",
+              "auth_sso_enabled"
             ]
           }
         }
