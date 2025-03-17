@@ -487,10 +487,6 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
               end
 
               context 'when there are no replicables' do
-                before do
-                  Project.delete_all
-                end
-
                 it 'returns 0' do
                   expect(subject.send(replicable_count_method)).to eq(0)
                 end
@@ -518,10 +514,6 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
                 end
 
                 context 'when there are no replicables' do
-                  before do
-                    Project.delete_all
-                  end
-
                   it 'returns 0' do
                     expect(subject.send(replicable_count_method)).to eq(0)
                   end
@@ -561,28 +553,23 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
                 create(registry_factory, :synced)
               end
 
-              it 'returns the right number of registries' do
+              it 'returns the right counts', :aggregate_failures do
                 expect(subject.send(registry_count_method)).to eq(3)
-              end
 
-              it 'returns the right number of failed and synced replicables' do
                 expect(subject.send(failed_count_method)).to eq(2)
                 expect(subject.send(synced_count_method)).to eq(1)
-              end
 
-              it 'returns the percent of synced replicables' do
                 expect(subject.send(synced_in_percentage_method)).to be_within(0.01).of(33.33)
               end
             end
 
             context 'when there are no registries' do
-              it 'returns 0' do
+              it 'returns 0', :aggregate_failures do
                 expect(subject.send(registry_count_method)).to eq(0)
+
                 expect(subject.send(failed_count_method)).to eq(0)
                 expect(subject.send(synced_count_method)).to eq(0)
-              end
 
-              it 'returns 0' do
                 expect(subject.send(synced_in_percentage_method)).to eq(0)
               end
             end
@@ -611,30 +598,16 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
                 create(model_factory, :verification_failed)
               end
 
-              describe '#<replicable_name>_checksummed_count' do
-                it 'returns the right number of checksummed replicables' do
-                  expect(subject.send(checksummed_count_method)).to eq(2)
-                end
-              end
-
-              describe '#<replicable_name>_checksum_failed_count' do
-                it 'returns the right number of failed replicables' do
-                  expect(subject.send(checksum_failed_count_method)).to eq(1)
-                end
+              it 'returns the right checksum counts', :aggregate_failures do
+                expect(subject.send(checksummed_count_method)).to eq(2)
+                expect(subject.send(checksum_failed_count_method)).to eq(1)
               end
             end
 
             context 'when there are no replicables' do
-              describe '#<replicable_name>_checksummed_count' do
-                it 'returns 0' do
-                  expect(subject.send(checksummed_count_method)).to eq(0)
-                end
-              end
-
-              describe '#<replicable_name>_checksum_failed_count' do
-                it 'returns 0' do
-                  expect(subject.send(checksum_failed_count_method)).to eq(0)
-                end
+              it 'returns 0', :aggregate_failures do
+                expect(subject.send(checksummed_count_method)).to eq(0)
+                expect(subject.send(checksum_failed_count_method)).to eq(0)
               end
             end
           end
@@ -644,16 +617,9 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
               allow(replicator).to receive(:verification_enabled?).and_return(false)
             end
 
-            describe '#<replicable_name>_checksummed_count' do
-              it 'returns nil' do
-                expect(subject.send(checksummed_count_method)).to be_nil
-              end
-            end
-
-            describe '#<replicable_name>_checksum_failed_count' do
-              it 'returns nil' do
-                expect(subject.send(checksum_failed_count_method)).to be_nil
-              end
+            it 'returns nil', :aggregate_failures do
+              expect(subject.send(checksummed_count_method)).to be_nil
+              expect(subject.send(checksum_failed_count_method)).to be_nil
             end
           end
         end
@@ -679,42 +645,18 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
                 create(registry_factory, :verification_failed)
               end
 
-              describe '#<replicable_name>_verified_count' do
-                it 'returns the right number of checksummed replicables' do
-                  expect(subject.send(verified_count_method)).to eq(2)
-                end
-              end
-
-              describe '#<replicable_name>_verification_failed_count' do
-                it 'returns the right number of failed replicables' do
-                  expect(subject.send(verification_failed_count_method)).to eq(1)
-                end
-              end
-
-              describe '#<replicable_name>_verified_in_percentage' do
-                it 'returns the right percentage' do
-                  expect(subject.send(verified_in_percentage_method)).to be_within(0.01).of(66.67)
-                end
+              it 'returns the right counts and percentage', :aggregate_failures do
+                expect(subject.send(verified_count_method)).to eq(2)
+                expect(subject.send(verification_failed_count_method)).to eq(1)
+                expect(subject.send(verified_in_percentage_method)).to be_within(0.01).of(66.67)
               end
             end
 
             context 'when there are no replicables' do
-              describe '#<replicable_name>_verified_count' do
-                it 'returns 0' do
-                  expect(subject.send(verified_count_method)).to eq(0)
-                end
-              end
-
-              describe '#<replicable_name>_verification_failed_count' do
-                it 'returns 0' do
-                  expect(subject.send(verification_failed_count_method)).to eq(0)
-                end
-              end
-
-              describe '#<replicable_name>_verified_in_percentage' do
-                it 'returns 0' do
-                  expect(subject.send(verified_in_percentage_method)).to eq(0)
-                end
+              it 'returns 0', :aggregate_failures do
+                expect(subject.send(verified_count_method)).to eq(0)
+                expect(subject.send(verification_failed_count_method)).to eq(0)
+                expect(subject.send(verified_in_percentage_method)).to eq(0)
               end
             end
           end
@@ -724,22 +666,10 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
               allow(replicator).to receive(:verification_enabled?).and_return(false)
             end
 
-            describe '#<replicable_name>_verified_count' do
-              it 'returns nil' do
-                expect(subject.send(verified_count_method)).to be_nil
-              end
-            end
-
-            describe '#<replicable_name>_verification_failed_count' do
-              it 'returns nil' do
-                expect(subject.send(verification_failed_count_method)).to be_nil
-              end
-            end
-
-            describe '#<replicable_name>_verified_in_percentage' do
-              it 'returns 0' do
-                expect(subject.send(verified_in_percentage_method)).to eq(0)
-              end
+            it 'returns nil', :aggregate_failures do
+              expect(subject.send(verified_count_method)).to be_nil
+              expect(subject.send(verification_failed_count_method)).to be_nil
+              expect(subject.send(verified_in_percentage_method)).to eq(0)
             end
           end
         end
