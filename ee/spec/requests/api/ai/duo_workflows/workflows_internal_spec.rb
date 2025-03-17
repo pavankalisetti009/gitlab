@@ -307,6 +307,7 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
       expect(json_response['project_id']).to eq(project.id)
       expect(json_response['agent_privileges']).to eq(workflow.agent_privileges)
       expect(json_response['agent_privileges_names']).to eq(["read_write_files"])
+      expect(json_response['allow_agent_to_request_user']).to be(true)
       expect(json_response['status']).to eq("created")
     end
 

@@ -13,6 +13,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
   let_it_be(:ai_workflows_oauth_token) { create(:oauth_access_token, user: user, scopes: [:ai_workflows]) }
   let(:agent_privileges) { [::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES] }
   let(:workflow_definition) { 'software_development' }
+  let(:allow_agent_to_request_user) { false }
 
   before do
     allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
@@ -21,7 +22,12 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
   describe 'POST /ai/duo_workflows/workflows' do
     let(:path) { "/ai/duo_workflows/workflows" }
     let(:params) do
-      { project_id: project.id, agent_privileges: agent_privileges, workflow_definition: workflow_definition }
+      {
+        project_id: project.id,
+        agent_privileges: agent_privileges,
+        workflow_definition: workflow_definition,
+        allow_agent_to_request_user: allow_agent_to_request_user
+      }
     end
 
     context 'when success' do
@@ -36,6 +42,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
         expect(created_workflow.agent_privileges).to eq(agent_privileges)
         expect(created_workflow.workflow_definition).to eq(workflow_definition)
+        expect(created_workflow.allow_agent_to_request_user).to eq(allow_agent_to_request_user)
       end
 
       context 'when agent_privileges is not provided' do
@@ -49,6 +56,16 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           expect(created_workflow.agent_privileges).to match_array(
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::DEFAULT_PRIVILEGES
           )
+        end
+      end
+
+      context 'when allow_agent_to_request_user is not provided' do
+        it 'creates a workflow with the default of true' do
+          post api(path, user), params: params.except(:allow_agent_to_request_user)
+          expect(response).to have_gitlab_http_status(:created)
+
+          created_workflow = Ai::DuoWorkflows::Workflow.last
+          expect(created_workflow.allow_agent_to_request_user).to eq(true)
         end
       end
 
