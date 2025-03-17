@@ -201,6 +201,7 @@ export const lockPathMutationMock = {
 export const blobControlsDataMock = {
   __typename: 'Project',
   id: '1234',
+  userPermissions: userPermissionsMock,
   repository: {
     __typename: 'Repository',
     empty: false,
@@ -227,6 +228,10 @@ export const blobControlsDataMock = {
           canModifyBlob: true,
           canModifyBlobWithWebIde: true,
           forkAndViewPath: 'fork/view/path',
+          editBlobPath: 'edit/blob/path/file.js',
+          ideEditPath: 'ide/blob/path/file.js',
+          pipelineEditorPath: 'pipeline/editor/path/file.yml',
+          gitpodBlobUrl: 'gitpod/blob/url/file.js',
           simpleViewer: {
             __typename: 'BlobViewer',
             collapsed: false,
@@ -249,4 +254,12 @@ export const blobControlsDataMock = {
       ],
     },
   },
+};
+
+export const currentUserDataMock = {
+  __typename: 'User',
+  id: '1234',
+  gitpodEnabled: true,
+  preferencesGitpodPath: 'preferences/gitpod/path',
+  profileEnableGitpodPath: 'profile/enable/gitpod/path',
 };
