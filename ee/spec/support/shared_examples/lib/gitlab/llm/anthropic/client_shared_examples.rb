@@ -31,7 +31,7 @@ RSpec.shared_examples 'anthropic client' do
   let(:default_body_params) do
     {
       prompt: "anything",
-      model: ::Gitlab::Llm::Concerns::AvailableModels::CLAUDE_2_1,
+      model: ::Gitlab::Llm::Concerns::AvailableModels::CLAUDE_3_5_SONNET,
       max_tokens_to_sample: described_class::DEFAULT_MAX_TOKENS,
       temperature: described_class::DEFAULT_TEMPERATURE
     }
@@ -196,7 +196,7 @@ RSpec.shared_examples 'anthropic client' do
       let(:expected_request_body) do
         {
           prompt: "anything",
-          model: ::Gitlab::Llm::Concerns::AvailableModels::CLAUDE_2_1,
+          model: ::Gitlab::Llm::Concerns::AvailableModels::CLAUDE_3_5_SONNET,
           max_tokens_to_sample: described_class::DEFAULT_MAX_TOKENS,
           temperature: options[:temperature]
         }
@@ -398,7 +398,7 @@ RSpec.shared_examples 'anthropic client' do
     let(:messages_body_params) do
       {
         messages: 'anything',
-        model: ::Gitlab::Llm::Concerns::AvailableModels::CLAUDE_2_1,
+        model: ::Gitlab::Llm::Concerns::AvailableModels::CLAUDE_3_5_SONNET,
         max_tokens: described_class::DEFAULT_MAX_TOKENS,
         temperature: described_class::DEFAULT_TEMPERATURE
       }
@@ -547,7 +547,7 @@ RSpec.shared_examples 'anthropic client' do
       let(:expected_request_body) do
         {
           messages: 'anything',
-          model: ::Gitlab::Llm::Concerns::AvailableModels::CLAUDE_2_1,
+          model: ::Gitlab::Llm::Concerns::AvailableModels::CLAUDE_3_5_SONNET,
           max_tokens: described_class::DEFAULT_MAX_TOKENS,
           temperature: options[:temperature]
         }
@@ -590,7 +590,7 @@ RSpec.shared_examples 'anthropic client' do
     let(:messages_body_params) do
       {
         messages: 'anything',
-        model: ::Gitlab::Llm::Concerns::AvailableModels::CLAUDE_2_1,
+        model: ::Gitlab::Llm::Concerns::AvailableModels::CLAUDE_3_5_SONNET,
         max_tokens: described_class::DEFAULT_MAX_TOKENS,
         temperature: described_class::DEFAULT_TEMPERATURE
       }

@@ -147,7 +147,7 @@ module DuoChatQaEvaluationHelpers
       end
 
     {
-      model: Gitlab::Llm::Concerns::AvailableModels::CLAUDE_2_1,
+      model: Gitlab::Llm::Concerns::AvailableModels::CLAUDE_3_5_SONNET,
       response: response
     }
   end
