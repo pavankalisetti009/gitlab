@@ -335,8 +335,10 @@ include:
 
 build:
   stage: build
-  image: "python:latest"
+  image: "python:3.12"
   script:
+    - "pip install pipenv"
+    - "pipenv install"
     - "pipenv graph --json-tree > pipenv.graph.json"
   artifacts:
     when: on_success
