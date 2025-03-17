@@ -38,11 +38,10 @@ module Gitlab
               {
                 prompt: final_prompt[:prompt],
                 options: final_prompt[:options].merge(
-                  use_ai_gateway_agent_prompt: Feature.enabled?(:prompt_migration_documentation_search, current_user)
+                  use_ai_gateway_agent_prompt: true
                 )
               },
-              unit_primitive:
-              (:documentation_search if Feature.enabled?(:prompt_migration_documentation_search, current_user))
+              unit_primitive: :documentation_search
             ) do |data|
               yield data if block_given?
             end

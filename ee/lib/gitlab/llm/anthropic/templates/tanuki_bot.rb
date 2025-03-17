@@ -64,7 +64,7 @@ module Gitlab
             {
               prompt: conversation,
               options: {
-                model: ::Gitlab::Llm::Anthropic::Client::CLAUDE_3_5_SONNET,
+                model: ::Gitlab::Llm::Anthropic::Client::CLAUDE_3_7_SONNET,
                 inputs: {
                   question: question,
                   content_id: CONTENT_ID_FIELD,

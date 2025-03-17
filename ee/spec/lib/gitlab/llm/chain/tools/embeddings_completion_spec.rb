@@ -13,7 +13,7 @@ RSpec.describe ::Gitlab::Llm::Chain::Tools::EmbeddingsCompletion, feature_catego
   let(:ai_gateway_request) { ::Gitlab::Llm::Chain::Requests::AiGateway.new(user) }
   let(:attrs) { search_documents.pluck(:id).map { |x| "CNT-IDX-#{x}" }.join(", ") }
   let(:completion_response) { { 'response' => "#{answer} ATTRS: #{attrs}" } }
-  let(:model) { ::Gitlab::Llm::Anthropic::Client::CLAUDE_3_5_SONNET }
+  let(:model) { ::Gitlab::Llm::Anthropic::Client::CLAUDE_3_7_SONNET }
   let(:inputs) do
     {
       question: question,
@@ -36,15 +36,13 @@ RSpec.describe ::Gitlab::Llm::Chain::Tools::EmbeddingsCompletion, feature_catego
       allow(::Gitlab::Llm::Chain::Requests::AiGateway).to receive(:new).and_return(ai_gateway_request)
 
       allow(ai_gateway_request).to receive(:request).and_return(completion_response)
-
-      stub_feature_flags(prompt_migration_documentation_search: false)
     end
 
     it 'executes calls and returns ResponseModifier' do
       expect(ai_gateway_request).to receive(:request)
         .with({ prompt: instance_of(Array),
           options: { inputs: inputs, model: model, max_tokens: 256,
-                     use_ai_gateway_agent_prompt: false } }, unit_primitive: nil)
+                     use_ai_gateway_agent_prompt: true } }, unit_primitive: :documentation_search)
         .once.and_return(completion_response)
 
       expect(execute).to be_an_instance_of(::Gitlab::Llm::Anthropic::ResponseModifiers::TanukiBot)
@@ -57,7 +55,7 @@ RSpec.describe ::Gitlab::Llm::Chain::Tools::EmbeddingsCompletion, feature_catego
         .to receive(:request)
         .with({ prompt: instance_of(Array),
           options: { inputs: inputs, model: model, max_tokens: 256,
-                     use_ai_gateway_agent_prompt: false } }, unit_primitive: nil)
+                     use_ai_gateway_agent_prompt: true } }, unit_primitive: :documentation_search)
         .once
         .and_yield(answer)
         .and_return(completion_response)
@@ -74,10 +72,6 @@ RSpec.describe ::Gitlab::Llm::Chain::Tools::EmbeddingsCompletion, feature_catego
     end
 
     context "when tool calls agent registry" do
-      before do
-        stub_feature_flags(prompt_migration_documentation_search: true)
-      end
-
       let(:options) do
         {
           inputs: {
