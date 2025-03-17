@@ -1,0 +1,43 @@
+query SubgroupsAndProjects($fullPath: ID!) {
+  group(fullPath: $fullPath) {
+    id
+    descendantGroups(includeParentDescendants: false, first: 10) {
+      nodes {
+        id
+        name
+        descendantGroupsCount
+        projectsCount
+        path
+        fullPath
+        avatarUrl
+        webUrl
+        vulnerabilitySeveritiesCount {
+          critical
+          high
+          low
+          info
+          medium
+          unknown
+        }
+      }
+    }
+    projects(first: 10) {
+      nodes {
+        id
+        name
+        path
+        fullPath
+        avatarUrl
+        webUrl
+        vulnerabilitySeveritiesCount {
+          critical
+          high
+          low
+          info
+          medium
+          unknown
+        }
+      }
+    }
+  }
+}
