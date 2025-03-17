@@ -12,6 +12,7 @@ import { formatStat } from './utils';
 import { i18n } from './constants';
 
 export default {
+  name: 'ProjectQualitySummaryApp',
   components: {
     GlSkeletonLoader,
     GlCard,
