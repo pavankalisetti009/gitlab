@@ -36,7 +36,7 @@ module Gitlab
           body['model_metadata'] = model_metadata if model_metadata.present?
 
           complete(
-            url: "#{base_url}/v1/prompts/#{model_metadata.present? ? full_prompt_name : prompt_name}",
+            url: "#{base_url}/v1/prompts/#{prompt_name}",
             body: body,
             timeout: timeout
           )
