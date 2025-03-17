@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 
+# noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
 RSpec.describe RemoteDevelopment::AgentPolicy, feature_category: :workspaces do
   include AdminModeHelper
   using RSpec::Parameterized::TableSyntax
@@ -91,6 +92,65 @@ RSpec.describe RemoteDevelopment::AgentPolicy, feature_category: :workspaces do
       before do
         enable_admin_mode!(admin_in_admin_mode) if user == admin_in_admin_mode
 
+        debug = false # Set to true to enable debugging of policies, but change back to false before committing
+        debug_policies(user, agent, Clusters::AgentPolicy, ability) if debug
+      end
+
+      it { expect(policy_instance.allowed?(ability)).to eq(result) }
+    end
+  end
+
+  describe ':read_agent' do
+    let_it_be(:ability) { :read_cluster_agent }
+    let_it_be(:project) { create(:project) }
+    let_it_be(:organization) { project.organization }
+    let_it_be(:user) { create(:user) }
+
+    let_it_be(:agent_with_no_remote_development_config) do
+      create(:ee_cluster_agent, project: project, name: "agent-with-no-workspace-config")
+    end
+
+    let_it_be(:agent_remote_dev_disabled) do
+      create(:ee_cluster_agent, project: project, name: "agent-with-remote-dev-disabled").tap do |agent|
+        create(:workspaces_agent_config, agent: agent, enabled: false)
+        create(:organization_cluster_agent_mapping, user: user, agent: agent, organization: organization)
+      end
+    end
+
+    let_it_be(:unmapped_agent_in_org) do
+      create(:ee_cluster_agent, project: project, name: "agent-in-org-unmapped").tap do |agent|
+        create(:workspaces_agent_config, agent: agent)
+      end
+    end
+
+    let_it_be(:mapped_agent_in_unrelated_org) do
+      create(:ee_cluster_agent, project: project, name: "agent-in-unrelated-org-mapped").tap do |agent|
+        create(:workspaces_agent_config, agent: agent)
+        create(:organization_cluster_agent_mapping, user: user, agent: agent, organization: create(:organization))
+      end
+    end
+
+    let_it_be(:mapped_agent_in_org) do
+      create(:ee_cluster_agent, project: project, name: "agent-in-org-mapped").tap do |agent|
+        create(:workspaces_agent_config, agent: agent)
+        create(:organization_cluster_agent_mapping, user: user, agent: agent, organization: organization)
+      end
+    end
+
+    where(:agent, :user_in_org, :result) do
+      ref(:mapped_agent_in_org)                       | true  | true
+      ref(:mapped_agent_in_unrelated_org)             | true  | false
+      ref(:agent_remote_dev_disabled)                 | true  | false
+      ref(:unmapped_agent_in_org)                     | true  | false
+      ref(:agent_with_no_remote_development_config)   | true  | false
+      ref(:mapped_agent_in_org)                       | false | false
+    end
+
+    with_them do
+      subject(:policy_instance) { Clusters::AgentPolicy.new(user, agent) }
+
+      before do
+        create(:organization_user, organization: organization, user: user) if user_in_org
         debug = false # Set to true to enable debugging of policies, but change back to false before committing
         debug_policies(user, agent, Clusters::AgentPolicy, ability) if debug
       end

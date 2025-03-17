@@ -2,7 +2,7 @@
 
 module Resolvers
   module RemoteDevelopment
-    module Namespace
+    module Organization
       class ClusterAgentsResolver < ::Resolvers::BaseResolver
         include Gitlab::Graphql::Authorize::AuthorizeResource
 
@@ -17,10 +17,8 @@ module Resolvers
             raise_resource_not_available_error! "'remote_development' licensed feature is not available"
           end
 
-          raise_resource_not_available_error! unless @object.group_namespace?
-
-          ::RemoteDevelopment::NamespaceClusterAgentsFinder.execute(
-            namespace: @object,
+          ::RemoteDevelopment::OrganizationClusterAgentsFinder.execute(
+            organization: @object,
             filter: args[:filter].downcase.to_sym,
             user: current_user
           )

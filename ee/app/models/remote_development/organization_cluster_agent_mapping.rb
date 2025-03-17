@@ -11,7 +11,7 @@ module RemoteDevelopment
     belongs_to :agent,
       class_name: 'Clusters::Agent',
       foreign_key: 'cluster_agent_id',
-      inverse_of: :organization_cluster_agent_mappings
+      inverse_of: :organization_cluster_agent_mapping
 
     validates :organization, presence: true
     validates :agent, presence: true

@@ -35,12 +35,16 @@ module EE
           inverse_of: :agent,
           foreign_key: 'cluster_agent_id'
 
-        has_one :organization_cluster_agent_mappings,
+        has_one :organization_cluster_agent_mapping,
           class_name: 'RemoteDevelopment::OrganizationClusterAgentMapping',
           inverse_of: :agent,
           foreign_key: 'cluster_agent_id'
 
         scope :for_projects, ->(projects) { where(project: projects) }
+        scope :for_organizations, ->(organization_ids) {
+          where(project_id: ::Project.in_organization(organization_ids).select('id'))
+        }
+
         scope :with_workspaces_agent_config, -> {
                                                joins(:unversioned_latest_workspaces_agent_config)
                                              }
