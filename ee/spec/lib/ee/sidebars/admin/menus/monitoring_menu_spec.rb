@@ -10,7 +10,7 @@ RSpec.describe Sidebars::Admin::Menus::MonitoringMenu, feature_category: :naviga
   let_it_be(:user, refind: true) { create(:user) }
 
   describe '#render?' do
-    context 'with a non-admin user' do
+    context 'with a non-admin user', :enable_admin_mode do
       before do
         stub_licensed_features(admin_audit_log: true, custom_roles: true)
       end
@@ -26,7 +26,7 @@ RSpec.describe Sidebars::Admin::Menus::MonitoringMenu, feature_category: :naviga
   end
 
   describe "#renderable_items" do
-    context "when user has `read_admin_monitoring`" do
+    context "when user has `read_admin_monitoring`", :enable_admin_mode do
       subject(:menu_items) { menu.renderable_items.map(&:title) }
 
       let_it_be(:membership) { create(:admin_role, :read_admin_monitoring, user: user) }

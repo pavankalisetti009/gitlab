@@ -91,6 +91,7 @@ RSpec.describe Ci::RunnerPolicy, feature_category: :runner do
     end
 
     describe 'with admin custom roles' do
+      let_it_be(:user, refind: true) { create(:user) }
       let_it_be(:instance_runner) { create(:ci_runner, :instance) }
 
       where(:custom_permission, :abilities) do
@@ -99,7 +100,7 @@ RSpec.describe Ci::RunnerPolicy, feature_category: :runner do
 
       with_them do
         [:instance_runner, :group_runner, :project_runner].each do |runner_type|
-          context "with a #{runner_type}" do
+          context "with a #{runner_type}", :enable_admin_mode do
             subject(:policy) { described_class.new(user, public_send(runner_type)) }
 
             it { expect_disallowed(*abilities) }

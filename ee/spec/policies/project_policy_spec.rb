@@ -3239,7 +3239,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
     end
 
-    context 'admin custom role' do
+    context 'admin custom role', :enable_admin_mode do
       let_it_be(:project) { create(:project, :private, public_builds: false) }
       let_it_be(:non_admin_user) { create(:user) }
 

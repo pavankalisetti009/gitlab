@@ -7,7 +7,7 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
   using RSpec::Parameterized::TableSyntax
 
   let_it_be(:admin) { create(:admin) }
-  let_it_be(:current_user) { create(:user) }
+  let_it_be_with_reload(:current_user) { create(:user) }
   let_it_be(:user) { create(:user) }
   let_it_be(:security_policy_bot) { create(:user, :security_policy_bot) }
 
@@ -904,7 +904,7 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
     end
   end
 
-  context 'custom permissions' do
+  context 'custom permissions', :enable_admin_mode do
     where(:custom_ability, :enabled_permissions) do
       :read_admin_cicd         | %i[read_admin_cicd]
       :read_admin_dashboard    | %i[read_admin_dashboard access_admin_area]

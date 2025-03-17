@@ -134,7 +134,7 @@ RSpec.describe Ci::JobsFinder, '#execute', feature_category: :continuous_integra
     end
 
     context 'when current user is not an admin' do
-      let_it_be(:current_user) { create(:user) }
+      let_it_be_with_refind(:current_user) { create(:user) }
       let_it_be(:pending_job) { create(:ci_build, :pending) }
       let_it_be(:running_job) { create(:ci_build, :running) }
       let_it_be(:successful_job) { create(:ci_build, :success) }
@@ -145,7 +145,7 @@ RSpec.describe Ci::JobsFinder, '#execute', feature_category: :continuous_integra
 
       it { is_expected.to be_empty }
 
-      context 'with admin custom role with read_admin_cicd enabled' do
+      context 'with admin custom role with read_admin_cicd enabled', :enable_admin_mode do
         let_it_be(:role) { create(:admin_role, :read_admin_cicd, user: current_user) }
 
         it { is_expected.to match_array([pending_job, running_job, successful_job]) }

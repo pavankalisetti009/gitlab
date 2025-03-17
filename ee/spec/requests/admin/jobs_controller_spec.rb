@@ -18,8 +18,8 @@ RSpec.describe Admin::JobsController, feature_category: :fleet_visibility do
       get admin_jobs_path
     end
 
-    context 'with a non-admin user' do
-      let_it_be(:user) { non_admin_user }
+    context 'with a non-admin user', :enable_admin_mode do
+      let_it_be_with_refind(:user) { non_admin_user }
 
       it { is_expected.to have_gitlab_http_status(:not_found) }
 

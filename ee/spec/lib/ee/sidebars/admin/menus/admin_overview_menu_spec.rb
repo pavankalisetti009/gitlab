@@ -14,7 +14,7 @@ RSpec.describe Sidebars::Admin::Menus::AdminOverviewMenu, feature_category: :nav
       :read_admin_dashboard,
       :read_admin_users
     ].each do |permission|
-      context "when user has `#{permission}`" do
+      context "when user has `#{permission}`", :enable_admin_mode do
         let_it_be(:role) { create(:member_role, permission) }
         let_it_be(:membership) { create(:user_member_role, user: user, member_role: role) }
 
@@ -41,7 +41,7 @@ RSpec.describe Sidebars::Admin::Menus::AdminOverviewMenu, feature_category: :nav
     end
 
     with_them do
-      context "when user has `#{params[:permissions]}`" do
+      context "when user has `#{params[:permissions]}`", :enable_admin_mode do
         subject(:menu_items) { menu.renderable_items.map(&:title) }
 
         let!(:role) { create(:member_role, *permissions) }

@@ -29,7 +29,7 @@ RSpec.describe GitlabSchema.types['CiRunner'], feature_category: :runner do
 
     subject(:response) { GitlabSchema.execute(query, context: { current_user: current_user }) }
 
-    context 'when current user is not an admin with read_admin_cicd custom ability' do
+    context 'when current user is not an admin with read_admin_cicd custom ability', :enable_admin_mode do
       let_it_be(:current_user) { create(:user) }
 
       before do
