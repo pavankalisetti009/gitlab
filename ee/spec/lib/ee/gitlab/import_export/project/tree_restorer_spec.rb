@@ -229,6 +229,10 @@ RSpec.describe Gitlab::ImportExport::Project::TreeRestorer, :clean_gitlab_redis_
         restored_project_json
       end
 
+      it 'creates squash options' do
+        expect(protected_branch.squash_option.squash_option).to eq('always')
+      end
+
       it 'excludes access levels assigned to users' do
         expect(project.protected_branches.count).to eq(1)
 

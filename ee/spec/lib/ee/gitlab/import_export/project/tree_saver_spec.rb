@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::ImportExport::Project::TreeSaver do
+RSpec.describe Gitlab::ImportExport::Project::TreeSaver, feature_category: :importers do
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
@@ -137,6 +137,26 @@ RSpec.describe Gitlab::ImportExport::Project::TreeSaver do
 
         joint_instance = approval_rules_json['approval_project_rules_users'].first
         expect(joint_instance['user_id']).to eq(user.id)
+      end
+    end
+
+    context 'with squash options' do
+      let!(:squash_option) do
+        create(
+          :branch_rule_squash_option,
+          protected_branch: protected_branch,
+          project: project,
+          squash_option: 'always'
+        )
+      end
+
+      let(:squash_option_json) { get_json(full_path, exportable_path, 'protected_branches').first['squash_option'] }
+
+      it 'saves squash option' do
+        expect(project_tree_saver.save).to be true
+
+        expect(squash_option_json['squash_option']).to eq('always')
+        expect(squash_option_json['project_id']).to eq(project.id)
       end
     end
 
