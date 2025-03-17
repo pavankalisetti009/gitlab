@@ -7,8 +7,8 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
 
   using RSpec::Parameterized::TableSyntax
 
-  let!(:primary) { create(:geo_node, :primary) }
-  let!(:secondary) { create(:geo_node, :secondary) }
+  let_it_be(:primary) { create(:geo_node, :primary) }
+  let_it_be(:secondary) { create(:geo_node, :secondary) }
 
   let_it_be(:group)     { create(:group) }
   let_it_be(:project_1) { create(:project, group: group) }
@@ -23,6 +23,9 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
     # is not allowed within a transaction but all RSpec tests run inside of a transaction.
     stub_batch_counter_transaction_open_check
     stub_current_geo_node(secondary)
+
+    primary.reload_status
+    secondary.reload_status
   end
 
   describe '#fast_current_node_status' do
