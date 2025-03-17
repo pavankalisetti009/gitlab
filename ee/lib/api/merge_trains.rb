@@ -114,7 +114,9 @@ module API
           optional :squash, type: Grape::API::Boolean,
             desc: 'When true, the commits will be squashed into a single commit on merge'
           optional :when_pipeline_succeeds, type: Grape::API::Boolean,
-            desc: 'When true, this merge request will be merged when the pipeline succeeds'
+            desc: 'Deprecated. Use the auto_merge parameter instead.'
+          optional :auto_merge, type: Grape::API::Boolean,
+            desc: 'When true, this merge request will be set to auto merge'
         end
         post 'merge_requests/:merge_request_iid', requirements: API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
           merge_request = find_project_merge_request(params[:merge_request_iid])
@@ -123,7 +125,7 @@ module API
 
           merge_params = HashWithIndifferentAccess.new(
             squash: params[:squash],
-            when_pipeline_succeeds: params[:when_pipeline_succeeds],
+            auto_merge: params[:when_pipeline_succeeds] || params[:auto_merge],
             sha: params[:sha] || merge_request.diff_head_sha
           )
 

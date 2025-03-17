@@ -103,7 +103,7 @@ RSpec.describe MergeTrains::AddMergeRequestService, feature_category: :continuou
     end
 
     context 'when pipeline succeeds is true' do
-      let(:params) { { when_pipeline_succeeds: true } }
+      let(:params) { { auto_merge: true } }
 
       context 'when pipeline is completed' do
         let(:pipeline_status) { :success }
@@ -129,7 +129,7 @@ RSpec.describe MergeTrains::AddMergeRequestService, feature_category: :continuou
     end
 
     context 'when pipeline succeeds is false' do
-      let(:params) { { when_pipeline_succeeds: false } }
+      let(:params) { { auto_merge: false } }
 
       context 'when pipeline is completed' do
         let(:pipeline_status) { :success }
