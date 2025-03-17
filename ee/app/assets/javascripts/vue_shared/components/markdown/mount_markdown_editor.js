@@ -10,7 +10,6 @@ export function mountMarkdownEditor(options = {}) {
   }
 
   const editor = mountCEMarkdownEditor({
-    useApollo: true,
     provide: {
       editorAiActions: provideEEAiActions,
       mrGeneratedContent,
