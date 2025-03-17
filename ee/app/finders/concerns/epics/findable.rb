@@ -52,7 +52,6 @@ module Epics
       items = filter_negated_items(items)
 
       # This has to be last as we use a CTE as an optimization fence
-      # for counts by passing the force_cte param
       # https://www.postgresql.org/docs/current/static/queries-with.html
       by_search(items)
     end
