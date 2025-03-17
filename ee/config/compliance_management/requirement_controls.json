@@ -52,5 +52,14 @@
       "operator": "=",
       "value": true
     }
+  },
+  {
+    "id": "auth_sso_enabled",
+    "name": "Auth SSO Enabled",
+    "expression": {
+      "field": "auth_sso_enabled",
+      "operator": "=",
+      "value": true
+    }
   }
 ]

@@ -13,7 +13,8 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
         'merge_request_prevent_author_approval',
         'merge_request_prevent_committers_approval',
         'project_visibility',
-        'minimum_approvals_required'
+        'minimum_approvals_required',
+        'auth_sso_enabled'
       )
     end
 
@@ -54,6 +55,42 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
         expect(project.approval_rules).to receive(:pick).with("SUM(approvals_required)")
 
         described_class.map_field(project, 'minimum_approvals_required')
+      end
+    end
+
+    describe 'auth_sso_enabled' do
+      it 'calls Groups::SsoHelper.saml_provider_enabled? with project.group' do
+        expect(::Groups::SsoHelper).to receive(:saml_provider_enabled?).with(project.group)
+
+        described_class.map_field(project, 'auth_sso_enabled')
+      end
+
+      context 'when SAML provider is enabled' do
+        before do
+          allow(::Groups::SsoHelper).to receive(:saml_provider_enabled?).with(project.group).and_return(true)
+        end
+
+        it 'returns true' do
+          expect(described_class.map_field(project, 'auth_sso_enabled')).to be true
+        end
+      end
+
+      context 'when SAML provider is not enabled' do
+        before do
+          allow(::Groups::SsoHelper).to receive(:saml_provider_enabled?).with(project.group).and_return(false)
+        end
+
+        it 'returns false' do
+          expect(described_class.map_field(project, 'auth_sso_enabled')).to be false
+        end
+      end
+
+      context 'when project has no group' do
+        let_it_be(:project_without_group) { create(:project) }
+
+        it 'returns false' do
+          expect(described_class.map_field(project_without_group, 'auth_sso_enabled')).to be false
+        end
       end
     end
   end
