@@ -2183,12 +2183,6 @@ class User < ApplicationRecord
     end
   end
 
-  def todos_done_count(force: false)
-    Rails.cache.fetch(['users', id, 'todos_done_count'], force: force, expires_in: COUNT_CACHE_VALIDITY_PERIOD) do
-      TodosFinder.new(self, state: :done).execute.count
-    end
-  end
-
   def todos_pending_count(force: false)
     Rails.cache.fetch(['users', id, 'todos_pending_count'], force: force, expires_in: COUNT_CACHE_VALIDITY_PERIOD) do
       TodosFinder.new(self, state: :pending).execute.count
@@ -2202,7 +2196,6 @@ class User < ApplicationRecord
   end
 
   def update_todos_count_cache
-    todos_done_count(force: true)
     todos_pending_count(force: true)
   end
 
@@ -2224,7 +2217,6 @@ class User < ApplicationRecord
   end
 
   def invalidate_todos_cache_counts
-    Rails.cache.delete(['users', id, 'todos_done_count'])
     Rails.cache.delete(['users', id, 'todos_pending_count'])
   end
 
