@@ -17000,7 +17000,8 @@ CREATE TABLE ml_candidate_params (
     project_id bigint,
     CONSTRAINT check_093034d049 CHECK ((char_length(name) <= 250)),
     CONSTRAINT check_28a3c29e43 CHECK ((char_length(value) <= 250)),
-    CONSTRAINT check_7a0505ca91 CHECK ((candidate_id IS NOT NULL))
+    CONSTRAINT check_7a0505ca91 CHECK ((candidate_id IS NOT NULL)),
+    CONSTRAINT check_b42534522f CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE ml_candidate_params_id_seq
