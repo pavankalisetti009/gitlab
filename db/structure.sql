@@ -15100,6 +15100,7 @@ CREATE TABLE incident_management_oncall_rotations (
     active_period_start time without time zone,
     active_period_end time without time zone,
     project_id bigint,
+    CONSTRAINT check_28c39f8a0c CHECK ((project_id IS NOT NULL)),
     CONSTRAINT check_5209fb5d02 CHECK ((char_length(name) <= 200))
 );
 
