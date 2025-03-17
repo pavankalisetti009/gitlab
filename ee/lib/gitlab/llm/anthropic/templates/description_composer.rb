@@ -48,8 +48,9 @@ module Gitlab
             PROMPT
           )
 
-          def initialize(merge_request, params = {})
-            @merge_request = merge_request
+          def initialize(user, project, params = {})
+            @user = user
+            @project = project
             @params = params
           end
 
@@ -66,25 +67,35 @@ module Gitlab
             {
               diff: extracted_diff,
               description: params[:description],
-              title: merge_request.title,
+              title: params[:title],
               user_prompt: params[:user_prompt]
             }
           end
 
           private
 
-          attr_reader :merge_request, :params
+          attr_reader :user, :project, :params
 
           def extracted_diff
             Gitlab::Llm::Utils::MergeRequestTool.extract_diff(
-              source_project: merge_request.source_project,
-              source_branch: merge_request.source_branch,
-              target_project: merge_request.project,
-              target_branch: merge_request.target_branch,
+              source_project: source_project,
+              source_branch: params[:source_branch],
+              target_project: project,
+              target_branch: params[:target_branch],
               character_limit: 10000
             )
           end
           strong_memoize_attr :extracted_diff
+
+          def source_project
+            return project unless params[:source_project_id]
+
+            source_project = Project.find_by_id(params[:source_project_id])
+
+            return source_project if source_project.present? && user.can?(:create_merge_request_from, source_project)
+
+            project
+          end
         end
       end
     end

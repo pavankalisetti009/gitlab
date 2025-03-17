@@ -7,17 +7,15 @@ RSpec.describe Llm::DescriptionComposerService, :saas, feature_category: :code_r
   let_it_be(:user) { create(:user) }
   let_it_be_with_refind(:project) { create(:project, :public, group: group) }
   let_it_be(:merge_request) { create(:merge_request, source_project: project) }
-  let_it_be(:issue) { create(:issue, project: project) }
   let_it_be(:options) { {} }
 
-  subject(:service) { described_class.new(user, merge_request, options) }
+  subject(:service) { described_class.new(user, project, options) }
 
   before do
     stub_ee_application_setting(should_check_namespace_plan: true)
     stub_licensed_features(description_composer: true, ai_features: true, experimental_features: true)
 
-    allow(user).to receive(:can?).with("read_merge_request", merge_request).and_call_original
-    allow(user).to receive(:can?).with("read_issue", issue).and_call_original
+    allow(user).to receive(:can?).with("read_project", project).and_call_original
     allow(user).to receive(:can?).with(:access_duo_features, merge_request.project).and_call_original
     allow(user).to receive(:can?).with(:admin_all_resources).and_call_original
 
@@ -37,14 +35,14 @@ RSpec.describe Llm::DescriptionComposerService, :saas, feature_category: :code_r
       before do
         allow(user)
           .to receive(:can?)
-          .with(:access_description_composer, merge_request)
+          .with(:access_description_composer, project)
           .and_return(true)
         allow(user).to receive(:allowed_to_use?).with(:description_composer).and_return(true)
       end
 
       it_behaves_like 'schedules completion worker' do
         let(:action_name) { :description_composer }
-        let(:resource) { merge_request }
+        let(:resource) { project }
       end
     end
 
@@ -62,36 +60,32 @@ RSpec.describe Llm::DescriptionComposerService, :saas, feature_category: :code_r
   end
 
   describe '#valid?' do
-    using RSpec::Parameterized::TableSyntax
-
-    where(:access_description_composer, :issuable_type, :result) do
-      true   | :merge_request | true
-      false  | :merge_request | false
-      true   | :issue         | false
-      false  | :issue         | false
+    before_all do
+      group.add_maintainer(user)
     end
 
-    with_them do
-      let(:issuable) do
-        case issuable_type
-        when :merge_request then merge_request
-        when :issue then issue
-        end
-      end
+    before do
+      allow(user).to receive(:allowed_to_use?).with(:description_composer).and_return(true)
+    end
 
-      before_all do
-        group.add_maintainer(user)
-      end
+    subject(:valid) { described_class.new(user, project, options).valid? }
 
-      before do
-        allow(user)
-          .to receive(:can?)
-          .with(:access_description_composer, issuable)
-          .and_return(access_description_composer)
-        allow(user).to receive(:allowed_to_use?).with(:description_composer).and_return(true)
-      end
+    it 'returns true when user has access' do
+      allow(user)
+        .to receive(:can?)
+        .with(:access_description_composer, project)
+        .and_return(true)
 
-      it { expect(described_class.new(user, issuable, options).valid?).to eq(result) }
+      expect(valid).to be(true)
+    end
+
+    it 'returns false when user does not have access' do
+      allow(user)
+        .to receive(:can?)
+        .with(:access_description_composer, project)
+        .and_return(false)
+
+      expect(valid).to be(false)
     end
   end
 end
