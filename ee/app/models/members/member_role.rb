@@ -270,8 +270,8 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
     errors.add(
       :base,
       s_(
-        "MemberRole|Role is assigned to one or more admins. " \
-        "Remove role from all admins, then delete role."
+        "MemberRole|Admin role is assigned to one or more users. " \
+        "Remove role from all users, then delete role."
       )
     )
 

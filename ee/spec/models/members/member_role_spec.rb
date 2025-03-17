@@ -356,7 +356,7 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
 
         expect(destroy_admin_member_role).to be_falsey
         expect(member_role.errors.messages[:base]).to(include(
-          s_('MemberRole|Role is assigned to one or more admins. Remove role from all admins, then delete role.')
+          s_('MemberRole|Admin role is assigned to one or more users. Remove role from all users, then delete role.')
         ))
       end
     end

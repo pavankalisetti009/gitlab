@@ -110,7 +110,7 @@ RSpec.describe 'deleting admin member role', :enable_admin_mode, feature_categor
           post_graphql_mutation(mutation, current_user: current_user)
 
           expect(delete_admin_member_role['errors']).to eq([
-            'Role is assigned to one or more admins. Remove role from all admins, then delete role.'
+            'Admin role is assigned to one or more users. Remove role from all users, then delete role.'
           ])
         end
       end
