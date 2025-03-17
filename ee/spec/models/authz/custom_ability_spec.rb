@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Authz::CustomAbility, feature_category: :permissions do
-  describe '.allowed?', :request_store do
+  describe '.allowed?', :request_store, :enable_admin_mode do
     using RSpec::Parameterized::TableSyntax
 
     subject(:custom_ability) { described_class }

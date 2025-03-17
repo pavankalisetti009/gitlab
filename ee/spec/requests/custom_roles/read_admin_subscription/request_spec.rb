@@ -15,7 +15,7 @@ RSpec.describe 'User with read_admin_subscription custom role', feature_category
 
   describe Admin::SubscriptionsController do
     describe "#show" do
-      it 'user has access via a custom role' do
+      it 'user has access via a custom role', :enable_admin_mode do
         get admin_subscription_path
 
         expect(response).to have_gitlab_http_status(:ok)

@@ -118,10 +118,10 @@ RSpec.describe Ci::RunnersFinder, '#execute', feature_category: :fleet_visibilit
     end
   end
 
-  context 'when current user is not an admin' do
+  context 'when current user is not an admin', :enable_admin_mode do
     let(:params) { {} }
 
-    let_it_be(:user) { create(:user) }
+    let_it_be_with_refind(:user) { create(:user) }
     let_it_be(:instance_runner) { create(:ci_runner) }
     let_it_be(:group_runner) { create(:ci_runner, :group, groups: [group]) }
     let_it_be(:project_runner) { create(:ci_runner, :project, projects: [project]) }

@@ -3,14 +3,14 @@
 require 'spec_helper'
 
 RSpec.describe Sidebars::Admin::Menus::CiCdMenu, feature_category: :navigation do
-  describe '#render?' do
+  describe '#render?', :enable_admin_mode do
     let(:context) { Sidebars::Context.new(current_user: user, container: nil) }
     let(:menu) { described_class.new(context) }
 
     subject(:render?) { menu.render? }
 
     context 'with a non-admin user' do
-      let_it_be(:user) { create(:user) }
+      let_it_be_with_refind(:user) { create(:user) }
 
       before do
         stub_licensed_features(custom_roles: true)

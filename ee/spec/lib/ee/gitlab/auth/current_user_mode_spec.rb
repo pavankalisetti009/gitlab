@@ -14,6 +14,24 @@ RSpec.describe Gitlab::Auth::CurrentUserMode, :request_store, feature_category: 
       allow(ActiveSession).to receive(:list_sessions).with(user).and_return([session])
     end
 
+    context 'when the user is a regular user with admin custom permission' do
+      let_it_be(:user) { create(:user) }
+      let_it_be(:admin_role) { create(:member_role, :admin) }
+      let_it_be(:user_member_role) { create(:user_member_role, member_role: admin_role, user: user) }
+
+      describe '#admin_mode?' do
+        it_behaves_like 'admin_mode? check if admin_mode can be enabled'
+      end
+
+      describe '#enable_admin_mode!' do
+        it_behaves_like 'enabling admin_mode when it can be enabled'
+      end
+
+      describe '#disable_admin_mode!' do
+        it_behaves_like 'disabling admin_mode'
+      end
+    end
+
     describe '#enable_admin_mode!' do
       before do
         stub_licensed_features(extended_audit_events: true)

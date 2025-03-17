@@ -617,6 +617,14 @@ module EE
       bot? && gitlab_com_member?
     end
 
+    override :can_access_admin_area?
+    def can_access_admin_area?
+      return true if super
+
+      has_admin_custom_permissions?
+    end
+    strong_memoize_attr :can_access_admin_area?
+
     def security_dashboard
       InstanceSecurityDashboard.new(self)
     end
@@ -871,6 +879,10 @@ module EE
         target: self,
         message: 'User access unlocked'
       )
+    end
+
+    def has_admin_custom_permissions?
+      Authz::Admin.new(self).available_permissions_for_user.present?
     end
   end
 end

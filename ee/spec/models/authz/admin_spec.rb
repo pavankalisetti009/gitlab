@@ -15,8 +15,32 @@ RSpec.describe Authz::Admin, feature_category: :permissions do
   describe "#permitted" do
     subject(:permitted) { instance_authorization.permitted }
 
-    it 'includes the ability' do
-      is_expected.to eq([:read_admin_dashboard])
+    context 'with admin mode enabled', :enable_admin_mode do
+      it 'includes the ability' do
+        is_expected.to eq([:read_admin_dashboard])
+      end
+    end
+
+    context 'with admin mode disabled' do
+      it 'returns an empty array' do
+        is_expected.to be_empty
+      end
+    end
+  end
+
+  describe "#available_permissions_for_user" do
+    subject(:permitted) { instance_authorization.available_permissions_for_user }
+
+    context 'with admin mode enabled', :enable_admin_mode do
+      it 'includes the ability' do
+        is_expected.to eq([:read_admin_dashboard])
+      end
+    end
+
+    context 'with admin mode disabled' do
+      it 'includes the ability' do
+        is_expected.to eq([:read_admin_dashboard])
+      end
     end
   end
 end

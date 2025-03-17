@@ -82,38 +82,39 @@ RSpec.describe 'Query.vulnerabilities.issueLinks', feature_category: :vulnerabil
       # 4) Release savepoint
       # 5) Select personal access tokens
       # 6) Select current organization
-      # 7) Select geo nodes
-      # 8) Update personal access tokens(last used at)
-      # 9) Select user
-      # 10) Select user_detail
-      # 11) Authorization check
-      # 12) Select vulnerability_reads
-      # 13) Select vulnerabilities
-      # 14) Select project
-      # 15) Select route
-      # 16) Select vulnerability occurrences
-      # 17) Select vulnerability reads
-      # 18) Select vulnerability scanners
-      # 19) Select vulnerability identifiers join table
-      # 20) Select vulnerability identifiers
-      # 21) Select namespace
-      # 22) Select group links
-      # 23) Select project features
-      # 24) Authorization check
-      # 25) Select issue links
-      # 26) Select issues
-      # 27) Select issue project
-      # 28) Loading the project authorizations
-      # 29) Loading the namespace
-      # 30) Loading the user
-      # 31) Loading the organization
-      # 32) Loading the organization for access token (only inside specs)
-      # 33) Loading the organization_details for avatar_url
-      # 34/35) Likely transitional in nature during decomposition. Investigate when all tables are transitioned
-      # 36) Load last used IPs of personal access tokens
-      # 37) Saver current IP of the request in personal access token last used IPs
+      # 7) Select user custom roler
+      # 8) Select geo nodes
+      # 9) Update personal access tokens(last used at)
+      # 10) Select user
+      # 11) Select user_detail
+      # 12) Authorization check
+      # 13) Select vulnerability_reads
+      # 14) Select vulnerabilities
+      # 15) Select project
+      # 16) Select route
+      # 17) Select vulnerability occurrences
+      # 18) Select vulnerability reads
+      # 19) Select vulnerability scanners
+      # 20) Select vulnerability identifiers join table
+      # 21) Select vulnerability identifiers
+      # 22) Select namespace
+      # 23) Select group links
+      # 24) Select project features
+      # 25) Authorization check
+      # 26) Select issue links
+      # 27) Select issues
+      # 28) Select issue project
+      # 29) Loading the project authorizations
+      # 30) Loading the namespace
+      # 31) Loading the user
+      # 32) Loading the organization
+      # 33) Loading the organization for access token (only inside specs)
+      # 34) Loading the organization_details for avatar_url
+      # 35/36) Likely transitional in nature during decomposition. Investigate when all tables are transitioned
+      # 37) Load last used IPs of personal access tokens
+      # 38) Saver current IP of the request in personal access token last used IPs
       # https://gitlab.com/gitlab-org/gitlab/-/issues/480882
-      expect { query_issue_links }.not_to exceed_query_limit(37)
+      expect { query_issue_links }.not_to exceed_query_limit(38)
     end
   end
 

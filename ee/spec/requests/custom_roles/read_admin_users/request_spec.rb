@@ -13,7 +13,7 @@ RSpec.describe 'User with read_admin_users', feature_category: :user_management 
     sign_in(current_user)
   end
 
-  describe Admin::UsersController do
+  describe Admin::UsersController, :enable_admin_mode do
     let_it_be(:other_user) { create(:user, :with_namespace) }
 
     it "GET #index" do

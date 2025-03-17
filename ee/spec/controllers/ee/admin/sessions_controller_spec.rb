@@ -6,6 +6,37 @@ RSpec.describe Admin::SessionsController, :do_not_mock_admin_mode,
   feature_category: :system_access do
   include_context 'custom session'
 
+  describe '#new' do
+    let_it_be(:user) { create(:user) }
+    let_it_be(:admin_role) { create(:member_role, :admin) }
+    let_it_be(:user_member_role) { create(:user_member_role, member_role: admin_role, user: user) }
+
+    context 'for regular users with admin custom role' do
+      before do
+        sign_in(user)
+      end
+
+      it 'renders a password form' do
+        get :new
+
+        expect(response).to render_template :new
+      end
+
+      context 'when already in admin mode' do
+        before do
+          controller.current_user_mode.request_admin_mode!
+          controller.current_user_mode.enable_admin_mode!(password: user.password)
+        end
+
+        it 'redirects to original location' do
+          get :new
+
+          expect(response).to redirect_to(admin_root_path)
+        end
+      end
+    end
+  end
+
   describe '#create' do
     context 'when using two-factor authentication' do
       def authenticate_2fa(otp_user_id: user.id, **user_params)

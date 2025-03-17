@@ -2197,6 +2197,25 @@ RSpec.describe User, feature_category: :system_access do
     end
   end
 
+  describe '#can_access_admin_area?' do
+    let_it_be_with_refind(:user) { create(:user) }
+
+    context 'for user without admin custom permissions' do
+      it 'returns false' do
+        expect(user.can_access_admin_area?).to be_falsey
+      end
+    end
+
+    context 'for user with admin custom permissions' do
+      let_it_be(:admin_role) { create(:member_role, :admin) }
+      let_it_be(:user_member_role) { create(:user_member_role, member_role: admin_role, user: user) }
+
+      it 'returns true' do
+        expect(user.can_access_admin_area?).to be_truthy
+      end
+    end
+  end
+
   describe '#authorized_groups' do
     let_it_be(:user) { create(:user) }
     let_it_be(:private_group) { create(:group) }
