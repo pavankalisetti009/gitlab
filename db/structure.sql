@@ -2941,6 +2941,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_91e1012b9851() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."project_id"
+  FROM "merge_request_context_commits"
+  WHERE "merge_request_context_commits"."id" = NEW."merge_request_context_commit_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_9259aae92378() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -16357,7 +16373,8 @@ CREATE TABLE merge_request_context_commit_diff_files (
     "binary" boolean,
     merge_request_context_commit_id bigint NOT NULL,
     generated boolean,
-    encoded_file_path boolean DEFAULT false NOT NULL
+    encoded_file_path boolean DEFAULT false NOT NULL,
+    project_id bigint
 );
 
 CREATE TABLE merge_request_context_commits (
@@ -34285,6 +34302,8 @@ CREATE UNIQUE INDEX index_merge_request_cleanup_schedules_on_merge_request_id ON
 
 CREATE INDEX index_merge_request_cleanup_schedules_on_status ON merge_request_cleanup_schedules USING btree (status);
 
+CREATE INDEX index_merge_request_context_commit_diff_files_on_project_id ON merge_request_context_commit_diff_files USING btree (project_id);
+
 CREATE INDEX index_merge_request_context_commits_on_project_id ON merge_request_context_commits USING btree (project_id);
 
 CREATE UNIQUE INDEX index_merge_request_diff_commit_users_on_name_and_email ON merge_request_diff_commit_users USING btree (name, email);
@@ -39273,6 +39292,8 @@ CREATE TRIGGER trigger_8fbb044c64ad BEFORE INSERT OR UPDATE ON design_management
 
 CREATE TRIGGER trigger_90fa5c6951f1 BEFORE INSERT OR UPDATE ON dast_profiles_tags FOR EACH ROW EXECUTE FUNCTION trigger_90fa5c6951f1();
 
+CREATE TRIGGER trigger_91e1012b9851 BEFORE INSERT OR UPDATE ON merge_request_context_commit_diff_files FOR EACH ROW EXECUTE FUNCTION trigger_91e1012b9851();
+
 CREATE TRIGGER trigger_9259aae92378 BEFORE INSERT OR UPDATE ON packages_build_infos FOR EACH ROW EXECUTE FUNCTION trigger_9259aae92378();
 
 CREATE TRIGGER trigger_93a5b044f4e8 BEFORE INSERT OR UPDATE ON snippet_user_mentions FOR EACH ROW EXECUTE FUNCTION trigger_93a5b044f4e8();
@@ -41276,6 +41297,9 @@ ALTER TABLE ONLY project_topics
 
 ALTER TABLE ONLY web_hooks
     ADD CONSTRAINT fk_db1ea5699b FOREIGN KEY (integration_id) REFERENCES integrations(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY merge_request_context_commit_diff_files
+    ADD CONSTRAINT fk_db51fb6abe FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY work_item_dates_sources
     ADD CONSTRAINT fk_dbbe8917ee FOREIGN KEY (due_date_sourcing_work_item_id) REFERENCES issues(id) ON DELETE SET NULL;
