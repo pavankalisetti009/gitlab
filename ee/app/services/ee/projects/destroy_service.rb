@@ -37,6 +37,8 @@ module EE
 
       override :destroy_project_related_records
       def destroy_project_related_records(project)
+        destroy_compliance_requirement_statuses!
+
         with_scheduling_epic_cache_update do
           super && log_destroy_events
         end
@@ -101,6 +103,11 @@ module EE
         }
 
         ::Gitlab::Audit::Auditor.audit(audit_context)
+      end
+
+      def destroy_compliance_requirement_statuses!
+        ::ComplianceManagement::ComplianceFramework::ProjectRequirementComplianceStatus
+          .delete_all_project_statuses(project.id)
       end
     end
   end

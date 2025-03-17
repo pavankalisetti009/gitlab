@@ -116,4 +116,41 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectRequirementComp
       end
     end
   end
+
+  describe '.delete_all_project_statuses' do
+    context 'when project has associated compliance requirement statuses' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:project) { create(:project, group: group) }
+      let_it_be(:project2) { create(:project, group: group) }
+      let_it_be(:framework) { create(:compliance_framework, namespace: group) }
+
+      before do
+        create(:project_requirement_compliance_status, project: project,
+          compliance_requirement: create(:compliance_requirement, namespace: group, framework: framework,
+            name: 'requirement1')
+        )
+        create(:project_requirement_compliance_status, project: project,
+          compliance_requirement: create(:compliance_requirement, namespace: group, framework: framework,
+            name: 'requirement2')
+        )
+
+        create(:project_requirement_compliance_status, project: project2,
+          compliance_requirement: create(:compliance_requirement, namespace: group, framework: framework,
+            name: 'requirement3')
+        )
+      end
+
+      it 'destroys all records associated with the project' do
+        expect do
+          described_class.delete_all_project_statuses(project.id)
+        end.to change { described_class.where(project_id: project.id).count }.from(2).to(0)
+      end
+
+      it 'does not destroy records associated with other projects' do
+        expect do
+          described_class.delete_all_project_statuses(project.id)
+        end.not_to change { described_class.where(project_id: project2.id).count }
+      end
+    end
+  end
 end
