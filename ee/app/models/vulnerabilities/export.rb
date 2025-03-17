@@ -10,6 +10,7 @@ module Vulnerabilities
 
     EXPORTER_CLASS = VulnerabilityExports::ExportService
     MAX_EXPORT_DURATION = 24.hours
+    EXPIRES_AFTER = 7.days
 
     self.table_name = "vulnerability_exports"
 
@@ -93,7 +94,11 @@ module Vulnerabilities
     end
 
     def schedule_export_deletion
-      VulnerabilityExports::ExportDeletionWorker.perform_in(1.hour, id)
+      if email_delivery_enabled?
+        update!(expires_at: EXPIRES_AFTER.from_now)
+      else
+        VulnerabilityExports::ExportDeletionWorker.perform_in(1.hour, id)
+      end
     end
 
     def timed_out?
@@ -104,7 +109,31 @@ module Vulnerabilities
       { organization_id: organization_id }
     end
 
+    def send_completion_email!
+      return unless email_delivery_enabled?
+
+      Vulnerabilities::ExportMailer.completion_email(self).deliver_now
+    end
+
+    def email_delivery_enabled?
+      email_delivery_enabled_for_group? || email_delivery_enabled_for_project?
+    end
+
     private
+
+    def email_delivery_enabled_for_group?
+      exportable.is_a?(::Group) && Feature.enabled?(
+        :asynchronous_vulnerability_export_delivery_for_groups,
+        exportable
+      )
+    end
+
+    def email_delivery_enabled_for_project?
+      exportable.is_a?(::Project) && Feature.enabled?(
+        :asynchronous_vulnerability_export_delivery_for_projects,
+        exportable
+      )
+    end
 
     def make_project_level_export(project)
       self.project = project
