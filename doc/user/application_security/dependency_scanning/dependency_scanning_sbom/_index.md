@@ -228,7 +228,7 @@ include:
 
 build:
   # Running in the build stage ensures that the dependency-scanning job
-  # receives the maven.graph.json artifacts.
+  # receives the dependencies.lock artifacts.
   stage: build
   script:
     - gradle generateLock saveLock
@@ -252,6 +252,8 @@ build:
 The following example `.gitlab-ci.yml` demonstrates how to enable the CI/CD
 component on a Maven project. The dependency graph is output as a job artifact
 in the `build` stage, before dependency scanning runs.
+
+Requirement: use at least version `3.7.0` of the maven-dependency-plugin.
 
 ```yaml
 stages:
