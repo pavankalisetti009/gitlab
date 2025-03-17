@@ -47,19 +47,19 @@ export default {
         {
           loaderWidth: {
             subFeature: '200',
-            modelName: '375',
+            modelName: '440',
           },
         },
         {
           loaderWidth: {
             subFeature: '80',
-            modelName: '375',
+            modelName: '440',
           },
         },
         {
           loaderWidth: {
             subFeature: '150',
-            modelName: '375',
+            modelName: '440',
           },
         },
       ];
@@ -86,19 +86,24 @@ export default {
         <rect y="8" :width="item.loaderWidth.subFeature" height="24" rx="10" />
       </gl-skeleton-loader>
       <div v-else>
-        <span>{{ item.title }}</span>
         <gl-experiment-badge
           v-if="isBetaFeature(item.releaseState)"
+          class="gl-ml-0 gl-mr-3"
           data-testid="feature-beta-badge"
           type="beta"
         />
+        <span>{{ item.title }}</span>
       </div>
     </template>
     <template #cell(model_name)="{ item }">
       <gl-skeleton-loader v-if="isLoading" :height="38" :width="600">
-        <rect y="8" :width="item.loaderWidth.modelName" height="24" rx="10" />
+        <rect y="8" x="155" :width="item.loaderWidth.modelName" height="24" rx="10" />
       </gl-skeleton-loader>
-      <feature-settings-model-selector v-else :ai-feature-setting="item" />
+      <feature-settings-model-selector
+        v-else
+        class="gl-float-right gl-w-full gl-max-w-[440px]"
+        :ai-feature-setting="item"
+      />
     </template>
   </gl-table-lite>
 </template>
