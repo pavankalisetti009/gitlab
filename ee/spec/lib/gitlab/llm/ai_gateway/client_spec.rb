@@ -230,7 +230,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
           'prompt_version' => '^3.0.0',
           'model_metadata' => model_metadata
         }
-        expected_url = "#{::Gitlab::AiGateway.url}/v1/prompts/test_prompt_name/mistral"
+        expected_url = "#{::Gitlab::AiGateway.url}/v1/prompts/test_prompt_name"
 
         expect(::Gitlab::Llm::PromptVersions).to receive(:version_for_prompt).with('test_prompt_name/mistral')
                                                                              .and_return("^3.0.0")
