@@ -1,4 +1,5 @@
 import Vue from 'vue';
+import apolloProvider from 'ee/vue_shared/security_configuration/graphql/provider';
 import App from './components/app.vue';
 
 export default () => {
@@ -14,14 +15,13 @@ export default () => {
 
   return new Vue({
     el,
-    name: 'SecurityInventory',
+    apolloProvider,
+    provide: {
+      groupFullPath,
+      groupName,
+    },
     render(createElement) {
-      return createElement(App, {
-        provide: {
-          groupFullPath,
-          groupName,
-        },
-      });
+      return createElement(App);
     },
   });
 };
