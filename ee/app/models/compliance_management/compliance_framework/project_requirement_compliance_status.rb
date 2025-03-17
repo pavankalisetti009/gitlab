@@ -3,6 +3,8 @@
 module ComplianceManagement
   module ComplianceFramework
     class ProjectRequirementComplianceStatus < ApplicationRecord
+      include EachBatch
+
       belongs_to :compliance_framework, class_name: 'ComplianceManagement::Framework'
       belongs_to :project
       belongs_to :namespace
@@ -23,6 +25,12 @@ module ComplianceManagement
       scope :in_optimization_finder_query, ->(_project_id_expression, id_expression) {
         where(arel_table[:id].eq(id_expression))
       }
+
+      def self.delete_all_project_statuses(project_id)
+        where(project_id: project_id).each_batch(of: 100) do |batch|
+          batch.delete_all
+        end
+      end
     end
   end
 end

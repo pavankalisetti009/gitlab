@@ -389,4 +389,31 @@ RSpec.describe Projects::DestroyService, feature_category: :groups_and_projects 
       expect(query_recorder.log).to include(*expected_queries)
     end
   end
+
+  context 'when project has associated compliance requirement statuses' do
+    let!(:group) { create(:group) }
+    let!(:project) { create(:project, group: group) }
+    let!(:framework) { create(:compliance_framework, namespace: group) }
+
+    before do
+      group.add_owner(user)
+
+      create(:project_requirement_compliance_status, project: project,
+        compliance_requirement: create(:compliance_requirement, namespace: group, framework: framework,
+          name: 'requirement1')
+      )
+      create(:project_requirement_compliance_status, project: project,
+        compliance_requirement: create(:compliance_requirement, namespace: group, framework: framework,
+          name: 'requirement2')
+      )
+    end
+
+    it 'destroys all associated Compliance Requirement statuses and the project', :aggregate_failures do
+      expect do
+        project_destroy_service.execute
+      end.to change(
+        ::ComplianceManagement::ComplianceFramework::ProjectRequirementComplianceStatus, :count).by(-2)
+      .and change(Project.where(id: project.id), :count).by(-1)
+    end
+  end
 end
