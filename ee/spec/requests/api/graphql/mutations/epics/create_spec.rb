@@ -60,7 +60,7 @@ RSpec.describe 'Creating an Epic', feature_category: :portfolio_management do
 
     context 'when epics are enabled' do
       before do
-        stub_licensed_features(epics: true)
+        stub_licensed_features(epics: true, epic_colors: true)
       end
 
       it 'creates the epic' do
@@ -109,7 +109,7 @@ RSpec.describe 'Creating an Epic', feature_category: :portfolio_management do
         let(:attributes) { { title: '' } }
 
         it_behaves_like 'a mutation that returns errors in the response',
-          errors: ["Title can't be blank", "Work item can't be blank"]
+          errors:  ["Author can't be blank", "Group can't be blank", "Title can't be blank", "Work item can't be blank"]
 
         it 'does not create the epic' do
           expect { post_graphql_mutation(mutation, current_user: current_user) }.not_to change(Epic, :count)

@@ -99,9 +99,7 @@ RSpec.describe Epics::IssuePromoteService, :aggregate_failures, feature_category
           let_it_be(:epic_issue) { create(:epic_issue, :with_parent_link, epic: parent_epic, issue: issue) }
 
           it 'schedules update of cached metadata for the epic' do
-            # first it's scheduled from the newly created epic
-            # then it's scheduled from the original issue (because it changes state to closed)
-            expect(::Epics::UpdateCachedMetadataWorker).to receive(:perform_async).with([epic_issue.epic_id]).twice
+            expect(::Epics::UpdateCachedMetadataWorker).to receive(:perform_async).with([epic_issue.epic_id]).once
 
             subject.execute(issue)
           end
@@ -303,7 +301,7 @@ RSpec.describe Epics::IssuePromoteService, :aggregate_failures, feature_category
 
             it 'does not promote to epic and raises error' do
               expect { subject.execute(issue, new_group) }
-                .to raise_error(Epics::IssuePromoteService::PromoteError, /No matching work item found/)
+                .to raise_error(Epics::IssuePromoteService::PromoteError, /No matching epic found/)
 
               expect(issue.reload.state).to eq("opened")
               expect(issue.reload.promoted_to_epic_id).to be_nil

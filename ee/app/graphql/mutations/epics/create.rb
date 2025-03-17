@@ -21,7 +21,8 @@ module Mutations
 
         validate_arguments!(args)
 
-        epic = ::Epics::CreateService.new(group: group, current_user: current_user, params: args).execute
+        epic = ::WorkItems::LegacyEpics::CreateService.new(group: group, current_user: current_user,
+          params: args).execute
 
         response_object = epic if epic.valid?
 

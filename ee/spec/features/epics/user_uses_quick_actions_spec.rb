@@ -46,7 +46,7 @@ RSpec.describe 'Epics > User uses quick actions', :js, feature_category: :portfo
       visit new_group_epic_path(group)
 
       find('#epic-title').native.send_keys(epic_title)
-      find('#epic-description').native.send_keys("With parent \n\n/parent_epic #{epic_1.to_reference}")
+      find('#epic-description').native.send_keys("With parent \n\n/set_parent #{epic_1.to_reference}")
       click_button 'Create epic'
       wait_for_requests
 

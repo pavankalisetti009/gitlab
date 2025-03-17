@@ -202,12 +202,10 @@ RSpec.describe API::EpicLinks, feature_category: :portfolio_management do
           allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(140)
         end
 
-        it 'returns 201 status' do
+        it 'returns 403 status' do
           subject
 
-          expect(response).to have_gitlab_http_status(:created)
-          expect(response).to match_response_schema('public_api/v4/linked_epic', dir: 'ee')
-          expect(epic.reload.children).to include(Epic.last)
+          expect(response).to have_gitlab_http_status(:forbidden)
         end
       end
 

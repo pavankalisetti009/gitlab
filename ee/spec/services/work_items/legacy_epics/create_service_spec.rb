@@ -3,7 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe WorkItems::LegacyEpics::CreateService, feature_category: :team_planning do
-  let_it_be(:group) { create(:group) }
+  let_it_be(:ancestor_group) { create(:group, :internal) }
+  let_it_be(:group) { create(:group, :internal, parent: ancestor_group) }
   let_it_be(:group_without_access) { create(:group, :private) }
   let_it_be(:user) { create(:user, owner_of: group) }
   let_it_be(:other_user) { create(:user) }
@@ -21,7 +22,7 @@ RSpec.describe WorkItems::LegacyEpics::CreateService, feature_category: :team_pl
 
   let(:base_attrs) do
     %i[
-      title description confidential created_at updated_by_id last_edited_by_id
+      title confidential created_at updated_by_id last_edited_by_id
       last_edited_at closed_by_id closed_at
     ]
   end
@@ -65,6 +66,7 @@ RSpec.describe WorkItems::LegacyEpics::CreateService, feature_category: :team_pl
 
       expect(new_epic.errors.empty?).to be(true)
       expect(new_epic.attributes.with_indifferent_access.values_at(*base_attrs)).to eq(params.values_at(*base_attrs))
+      expect(new_epic.description).to eq('epic description')
       expect(new_epic.state_id).to eq(Epic.available_states['closed'])
       expect(new_epic.author).to eq(author)
       expect(new_epic.labels).to contain_exactly(label0, label2)
@@ -151,7 +153,7 @@ RSpec.describe WorkItems::LegacyEpics::CreateService, feature_category: :team_pl
   describe '#execute' do
     it_behaves_like 'success' do
       let(:parent_not_found_error) do
-        'No matching work item found. Make sure that you are adding a valid work item ID.'
+        'No matching epic found. Make sure that you are adding a valid epic URL.'
       end
     end
 
@@ -168,7 +170,6 @@ RSpec.describe WorkItems::LegacyEpics::CreateService, feature_category: :team_pl
           current_user: user,
           perform_spam_check: true,
           params: {
-            description: "epic description",
             title: "new epic",
             confidential: false,
             author: author,
@@ -182,6 +183,7 @@ RSpec.describe WorkItems::LegacyEpics::CreateService, feature_category: :team_pl
             work_item_type: ::WorkItems::Type.default_by_type(:epic)
           },
           widget_params: a_hash_including(
+            description_widget: { description: "epic description" },
             color_widget: { color: '#c91c00' },
             hierarchy_widget: { parent: parent_epic.work_item },
             start_and_due_date_widget: { is_fixed: true, due_date: due_date, start_date: start_date },
@@ -220,6 +222,98 @@ RSpec.describe WorkItems::LegacyEpics::CreateService, feature_category: :team_pl
         it 'does not persist epic or work item' do
           expect { execute }.to not_change { Epic.count }.and not_change { WorkItem.count }
           expect(execute.errors.full_messages).to contain_exactly('error message')
+        end
+      end
+    end
+
+    context 'when description param has quick action' do
+      context 'for /set_parent' do
+        shared_examples 'assigning a valid parent epic' do
+          let_it_be(:description) { "/set_parent #{parent_epic.to_reference(group, full: true)}" }
+          let_it_be(:params) { { title: 'New epic with parent', description: description } }
+
+          it 'sets parent epic' do
+            expect(execute.reset.parent).to eq(parent_epic)
+          end
+        end
+
+        context 'when parent is in the same group' do
+          it_behaves_like 'assigning a valid parent epic'
+        end
+
+        context 'when parent is in an ancestor group' do
+          let(:new_group) { ancestor_group }
+
+          before_all do
+            ancestor_group.add_reporter(user)
+          end
+
+          it_behaves_like 'assigning a valid parent epic'
+        end
+
+        context 'when parent is in a descendant group' do
+          let_it_be(:descendant_group) { create(:group, :private, parent: group) }
+          let(:new_group) { descendant_group }
+
+          before_all do
+            descendant_group.add_reporter(user)
+          end
+
+          it_behaves_like 'assigning a valid parent epic'
+        end
+
+        context 'when parent is in a different group hierarchy' do
+          let_it_be(:other_group) { create(:group, :private) }
+          let(:new_group) { other_group }
+
+          context 'when user has access to the group' do
+            before_all do
+              other_group.add_reporter(user)
+            end
+
+            it_behaves_like 'assigning a valid parent epic'
+          end
+
+          context 'when user does not have access to the group' do
+            let_it_be(:parent) { create(:work_item, :epic_with_legacy_epic, namespace: other_group) }
+            let_it_be(:description) { "/set_parent #{parent.to_reference(other_group, full: true)}" }
+            let_it_be(:params) { { title: 'New epic with parent', description: description } }
+
+            it 'does not set parent epic but still creates the epic' do
+              expect { execute }.to not_change { WorkItems::ParentLink.count }
+                .and change { WorkItem.count }.by(1)
+                .and change { Epic.count }.by(1)
+
+              expect(execute.reload.parent).to be_nil
+            end
+          end
+        end
+
+        context 'for /add_child' do
+          let_it_be(:child_epic)  { create(:work_item, :epic_with_legacy_epic, namespace: group) }
+          let_it_be(:description) { "/add_child #{child_epic.to_reference}" }
+          let_it_be(:params) { { title: 'New epic with child', description: description } }
+
+          it 'sets a child epic' do
+            expect { execute }.to change { WorkItems::ParentLink.count }.by(1)
+              .and change { WorkItem.count }.by(1)
+              .and change { Epic.count }.by(1)
+
+            expect(execute.reload.children).to include(child_epic.sync_object)
+          end
+
+          context 'when child epic cannot be assigned' do
+            let(:other_group) { create(:group, :private) }
+            let(:child_epic) { create(:work_item, :epic_with_legacy_epic, namespace: other_group) }
+
+            it 'does not set child epic' do
+              expect { execute }.to not_change { WorkItems::ParentLink.count }
+                .and change { WorkItem.count }.by(1)
+                .and change { Epic.count }.by(1)
+
+              expect(execute.reload.children).to be_empty
+            end
+          end
         end
       end
     end

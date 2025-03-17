@@ -106,12 +106,13 @@ module API
           documentation: { example: true }
       end
       post ':id/(-/)epics/:epic_iid/epics' do
-        authorize_admin_epic_tree_relation!
+        authorize_can_create!
+        authorize_create_epic_tree_relation!
 
         confidential = params[:confidential].nil? ? epic.confidential : params[:confidential]
         create_params = { parent_id: epic.id, title: params[:title], confidential: confidential }
 
-        child_epic = ::Epics::CreateService.new(group: user_group, current_user: current_user, params: create_params).execute
+        child_epic = ::WorkItems::LegacyEpics::CreateService.new(group: user_group, current_user: current_user, params: create_params).execute
 
         if child_epic.errors.empty? && child_epic.valid?
           present child_epic, with: EE::API::Entities::LinkedEpic, user: current_user

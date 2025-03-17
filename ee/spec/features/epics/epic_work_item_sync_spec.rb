@@ -17,7 +17,7 @@ RSpec.describe 'Epic Work Item sync', :js, feature_category: :portfolio_manageme
   let(:start_date) { 1.day.after(Time.current).to_date }
   let(:due_date) { 5.days.after(start_date) }
   let(:description_input) do
-    "#{description}\n/parent_epic #{parent_epic.to_reference}\n"
+    "#{description}\n/set_parent #{parent_epic.to_reference}\n"
   end
 
   before_all do
@@ -167,6 +167,9 @@ RSpec.describe 'Epic Work Item sync', :js, feature_category: :portfolio_manageme
     describe 'from work item to epic' do
       before do
         stub_feature_flags(work_item_epics_list: false, work_item_epics: true)
+        # TODO: remove threshold after epic-work item sync
+        # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
+        allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(130)
       end
 
       subject(:create_epic_work_item) do

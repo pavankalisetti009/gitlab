@@ -687,7 +687,7 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
         # TODO: remove threshold after epic-work item sync
         # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
         allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(142)
-        stub_licensed_features(epics: true, subepics: true)
+        stub_licensed_features(epics: true, subepics: true, epic_colors: true)
         group.add_developer(user)
       end
 
@@ -729,8 +729,8 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
 
           new_epic = Epic.last
 
-          expect(parent_epic.notes.last&.note).to eq("added #{new_epic.work_item.to_reference} as child epic")
-          expect(new_epic.notes.last&.note).to eq("added #{parent_epic.work_item.to_reference} as parent epic")
+          expect(new_epic.notes.where(note: "added #{parent_epic.work_item.to_reference} as parent epic").count).to eq(1)
+          expect(parent_epic.notes.where(note: "added #{new_epic.work_item.to_reference} as child epic").count).to eq(1)
         end
 
         it 'creates a new epic' do
@@ -739,7 +739,7 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
           expect(epic.title).to eq('new epic')
           expect(epic.description).to eq('epic description')
           expect(epic.start_date_fixed).to eq(nil)
-          expect(epic.start_date_is_fixed).to be_falsey
+          expect(epic.start_date_is_fixed).to eq(true)
           expect(epic.due_date).to eq(Date.new(2018, 7, 17))
           expect(epic.due_date_fixed).to eq(Date.new(2018, 7, 17))
           expect(epic.due_date_is_fixed).to eq(true)
@@ -751,15 +751,10 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
           expect(epic.text_color).to be_color(::EE::Epic::DEFAULT_COLOR.contrast)
         end
 
-        it 'calls LegacyEpics::EpicLinks service' do
-          allow_next_instance_of(::WorkItems::LegacyEpics::EpicLinks::CreateService) do |service|
-            allow(service).to receive(:execute).and_return({ status: :success })
-          end
-
-          post api(url, user), params: params
-
-          expect(::WorkItems::LegacyEpics::EpicLinks::CreateService)
-            .to have_received(:new).with(parent_epic, user, { target_issuable: Epic.last })
+        it 'creates a parent link' do
+          expect do
+            post api(url, user), params: params
+          end.to change { ::WorkItems::ParentLink.count }.by(1)
         end
 
         context 'when we specify a color by hex code' do
@@ -809,10 +804,10 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
         context 'when deprecated start_date and end_date params are present' do
           let(:start_date) { Date.new(2001, 1, 1) }
           let(:due_date) { Date.new(2001, 1, 2) }
-          let(:params) { { title: 'new epic', start_date: start_date, end_date: due_date } }
+          let(:params) { { title: 'new epic', start_date: start_date, end_date: due_date, start_date_is_fixed: true } }
 
           it 'updates start_date_fixed and due_date_fixed' do
-            result = Epic.last
+            result = Epic.find(json_response["id"])
 
             expect(result.start_date_fixed).to eq(start_date)
             expect(result.due_date_fixed).to eq(due_date)
@@ -961,7 +956,7 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
 
     context 'when epics feature is enabled' do
       before do
-        stub_licensed_features(epics: true, subepics: true)
+        stub_licensed_features(epics: true, subepics: true, epic_colors: true)
         # TODO: reduce threshold after epic-work item sync
         # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
         allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(175)

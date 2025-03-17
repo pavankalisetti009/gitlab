@@ -4,6 +4,7 @@ module WorkItems
   module LegacyEpics
     class CreateService
       MAPPED_WIDGET_PARAMS = {
+        description_widget: [:description],
         labels_widget: [:label_ids, :add_label_ids, :remove_label_ids],
         hierarchy_widget: [:parent_id, :parent],
         start_and_due_date_widget: [
@@ -12,6 +13,9 @@ module WorkItems
         ],
         color_widget: [:color]
       }.freeze
+
+      WORK_ITEM_NOT_FOUND_ERROR = 'No matching work item found'
+      EPIC_NOT_FOUND_ERROR = 'No matching epic found. Make sure that you are adding a valid epic URL.'
 
       def initialize(group:, perform_spam_check: true, current_user: nil, params: {})
         @group = group
@@ -120,7 +124,10 @@ module WorkItems
         # so in case of failing to create the work item we create a new epic that includes the service errors
         new_epic = result.payload[:work_item]&.reload&.synced_epic || Epic.new
 
-        new_epic.errors.add(:base, result[:message]) if result.try(:error?)
+        if result.try(:error?)
+          new_epic.errors.add(:base,
+            result[:message].include?(WORK_ITEM_NOT_FOUND_ERROR) ? EPIC_NOT_FOUND_ERROR : result[:message])
+        end
 
         new_epic
       end
