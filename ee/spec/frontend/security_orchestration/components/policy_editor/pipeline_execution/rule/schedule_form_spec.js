@@ -1,5 +1,5 @@
-import { shallowMount } from '@vue/test-utils';
 import { GlCollapsibleListbox, GlSprintf } from '@gitlab/ui';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import ScheduleForm from 'ee/security_orchestration/components/policy_editor/pipeline_execution/rule/schedule_form.vue';
 import BranchSelection from 'ee/security_orchestration/components/policy_editor/scan_result/rule/branch_selection.vue';
 import TimezoneDropdown from '~/vue_shared/components/timezone_dropdown/timezone_dropdown.vue';
@@ -23,7 +23,7 @@ describe('ScheduleForm', () => {
   ];
 
   const createComponent = (props = {}, provide = {}) => {
-    wrapper = shallowMount(ScheduleForm, {
+    wrapper = shallowMountExtended(ScheduleForm, {
       propsData: { schedule: defaultSchedule, ...props },
       stubs: { GlSprintf },
       provide: { timezones: mockTimezones, ...provide },
@@ -33,6 +33,8 @@ describe('ScheduleForm', () => {
   const findListbox = () => wrapper.findComponent(GlCollapsibleListbox);
   const findBranchSelection = () => wrapper.findComponent(BranchSelection);
   const findTimezoneDropdown = () => wrapper.findComponent(TimezoneDropdown);
+  const findTimeDropdown = () => wrapper.findByTestId('time-dropdown');
+  const findWeekdayDropdown = () => wrapper.findByTestId('weekday-dropdown');
 
   describe('rendering', () => {
     it('displays the message', () => {
@@ -83,6 +85,52 @@ describe('ScheduleForm', () => {
           headerText: 'Select timezone',
         });
         expect(timezoneDropdown.attributes('title')).toBe('on gitlab.example.com');
+      });
+    });
+
+    it('renders time dropdown for daily schedule', () => {
+      createComponent({ schedule: { type: 'daily', start_time: '09:00' } });
+      const timeDropdown = findTimeDropdown();
+      expect(timeDropdown.exists()).toBe(true);
+      expect(timeDropdown.props('selected')).toBe('09:00');
+    });
+
+    describe('weekday dropdown', () => {
+      it('renders weekday dropdown for weekly schedule', () => {
+        createComponent({ schedule: { type: 'weekly', days: ['monday'] } });
+        const weekdayDropdown = findWeekdayDropdown();
+        expect(weekdayDropdown.exists()).toBe(true);
+        expect(weekdayDropdown.props('selected')).toEqual(['monday']);
+        expect(weekdayDropdown.props('multiple')).toBe(true);
+      });
+
+      describe('weekdayToggleText', () => {
+        it('returns placeholder when the days property is not available', () => {
+          createComponent({ schedule: { type: 'weekly' } });
+          expect(findWeekdayDropdown().props('toggleText')).toBe('Select a day');
+        });
+
+        it('returns placeholder when no days are selected', () => {
+          createComponent({ schedule: { type: 'weekly', days: [] } });
+          expect(findWeekdayDropdown().props('toggleText')).toBe('Select a day');
+        });
+
+        it('returns single day when one day is selected', () => {
+          createComponent({ schedule: { type: 'weekly', days: ['monday'] } });
+          expect(findWeekdayDropdown().props('toggleText')).toBe('Monday');
+        });
+
+        it('returns two days when two days are selected', () => {
+          createComponent({ schedule: { type: 'weekly', days: ['monday', 'friday'] } });
+          expect(findWeekdayDropdown().props('toggleText')).toBe('Monday, Friday');
+        });
+
+        it('returns truncated text when more than two days are selected', () => {
+          createComponent({
+            schedule: { type: 'weekly', days: ['monday', 'wednesday', 'friday'] },
+          });
+          expect(findWeekdayDropdown().props('toggleText')).toBe('Monday, Wednesday +1 more');
+        });
       });
     });
   });
@@ -163,6 +211,28 @@ describe('ScheduleForm', () => {
         await findTimezoneDropdown().vm.$emit('input', timezoneData);
         expect(wrapper.emitted('changed')).toEqual([
           [expect.objectContaining({ timezone: timezoneData.identifier })],
+        ]);
+      });
+    });
+
+    describe('daily time dropdown', () => {
+      it('emits changed event when time is selected', async () => {
+        createComponent({ schedule: { type: 'daily', start_time: '09:00' } });
+        const timeDropdown = findTimeDropdown();
+        await timeDropdown.vm.$emit('select', '10:00');
+        expect(wrapper.emitted('changed')).toEqual([
+          [expect.objectContaining({ start_time: '10:00' })],
+        ]);
+      });
+    });
+
+    describe('weekday dropdown', () => {
+      it('emits changed event when days are selected', async () => {
+        createComponent({ schedule: { type: 'weekly', days: ['monday'] } });
+        const weekdayDropdown = findWeekdayDropdown();
+        await weekdayDropdown.vm.$emit('select', ['monday', 'wednesday']);
+        expect(wrapper.emitted('changed')).toEqual([
+          [expect.objectContaining({ days: ['monday', 'wednesday'] })],
         ]);
       });
     });

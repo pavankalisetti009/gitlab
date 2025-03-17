@@ -1,4 +1,5 @@
 import { __ } from '~/locale';
+import { getWeekdayNames } from '~/lib/utils/datetime_utility';
 import { DAILY, HOUR_IN_SECONDS } from '../constants';
 
 const DAY_IN_SECONDS = HOUR_IN_SECONDS * 24;
@@ -7,6 +8,9 @@ const DEFAULT_START_WEEKDAY = 'monday';
 const DEFAULT_START_MONTH_DAY = '1';
 const WEEKLY = 'weekly';
 const MONTHLY = 'monthly';
+
+export const isCadenceDaily = (cadence) => cadence === DAILY;
+export const isCadenceWeekly = (cadence) => cadence === WEEKLY;
 
 export const CADENCE_OPTIONS = [
   { value: DAILY, text: __('Daily') },
@@ -45,3 +49,20 @@ export const updateScheduleCadence = ({ schedule, cadence }) => {
 
   return updatedSchedule;
 };
+
+/**
+ * Time options in one hour increments for the daily scheduler
+ * @returns {Array} Array of time options
+ */
+export const HOUR_MINUTE_LIST = Array.from(Array(24).keys()).map((num) => {
+  const hour = num.toString().length === 1 ? `0${num}:00` : `${num}:00`;
+  return { value: hour, text: hour };
+});
+
+/**
+ * Weekday options for the weekly scheduler
+ * @returns {Array} Array of weekday options
+ */
+export const WEEKDAY_OPTIONS = getWeekdayNames().map((day) => {
+  return { value: day.toLowerCase(), text: day };
+});
