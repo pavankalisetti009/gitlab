@@ -10,15 +10,10 @@ module EE
 
       attr_reader :widget_params, :callbacks
 
-      override :transaction_create
-      def transaction_create(work_item)
-        return super unless work_item.group_epic_work_item?
-
-        super.tap do |save_result|
-          break save_result unless save_result
-
-          create_epic_for!(work_item)
-        end
+      override :run_after_create_callbacks
+      def run_after_create_callbacks(work_item)
+        create_epic_for!(work_item) if work_item.group_epic_work_item?
+        super
       end
     end
   end

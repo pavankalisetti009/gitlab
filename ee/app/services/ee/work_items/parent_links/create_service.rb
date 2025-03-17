@@ -104,7 +104,9 @@ module EE
 
         def sync_relative_position(parent_link)
           if parent_link.work_item.group_epic_work_item? && parent_link.work_item.synced_epic
-            parent_link.work_item.synced_epic.update(relative_position: parent_link.relative_position)
+            legacy_epic = parent_link.work_item.synced_epic
+            legacy_epic.relative_position = parent_link.relative_position
+            legacy_epic.save(touch: false)
           elsif parent_link.work_item.work_item_type.issue?
             epic_issue = EpicIssue.find_by_issue_id(parent_link.work_item.id)
             epic_issue.update(relative_position: parent_link.relative_position) if epic_issue

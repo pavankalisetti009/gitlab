@@ -70,7 +70,8 @@ class Groups::EpicsController < Groups::ApplicationController
   end
 
   def create
-    @epic = ::Epics::CreateService.new(group: @group, current_user: current_user, params: epic_params).execute
+    @epic = ::WorkItems::LegacyEpics::CreateService.new(group: @group, current_user: current_user,
+      params: epic_params).execute
 
     if @epic.persisted?
       render json: {

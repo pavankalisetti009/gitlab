@@ -233,7 +233,7 @@ module API
         create_params[:start_date_fixed] ||= create_params.delete(:start_date) if create_params.key?(:start_date)
         create_params[:due_date_fixed] ||= create_params.delete(:end_date) if create_params.key?(:end_date)
 
-        epic = ::Epics::CreateService.new(
+        epic = ::WorkItems::LegacyEpics::CreateService.new(
           group: user_group,
           current_user: current_user,
           params: create_params

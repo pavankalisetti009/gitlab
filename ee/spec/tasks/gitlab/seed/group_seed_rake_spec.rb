@@ -9,6 +9,7 @@ RSpec.describe 'gitlab:seed:group_seed rake task', :silence_stdout, feature_cate
   let(:task_params) { [2, username, organization.path] }
 
   before do
+    stub_licensed_features(epics: true)
     Rake.application.rake_require('tasks/gitlab/seed/group_seed')
   end
 
