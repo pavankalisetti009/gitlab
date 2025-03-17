@@ -48140,6 +48140,9 @@ msgstr ""
 msgid "Ready to get started with GitLab? Follow these steps to get familiar with us:"
 msgstr ""
 
+msgid "Ready to merge"
+msgstr ""
+
 msgid "Ready to merge by members who can write to the target branch."
 msgstr ""
 
