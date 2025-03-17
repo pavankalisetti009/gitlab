@@ -70,6 +70,29 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
       end
     end
 
+    context "for showPlanUpgradePromotion field" do
+      context "when the namespace is in a paid plan" do
+        before do
+          post_graphql(query, current_user: current_user)
+        end
+
+        it "returns false" do
+          expect(work_item_data).to include('showPlanUpgradePromotion' => false)
+        end
+      end
+
+      context "when the namespace is in a free plan" do
+        before do
+          stub_licensed_features(epics: false)
+          post_graphql(query, current_user: current_user)
+        end
+
+        it "returns true" do
+          expect(work_item_data).to include('showPlanUpgradePromotion' => true)
+        end
+      end
+    end
+
     context 'when querying widgets' do
       describe 'iteration widget' do
         let(:work_item_fields) do
