@@ -18,6 +18,7 @@ module EE
         has_many :organization_cluster_agent_mappings,
           class_name: 'RemoteDevelopment::OrganizationClusterAgentMapping',
           inverse_of: :organization
+        has_many :mapped_agents, through: :organization_cluster_agent_mappings, source: :agent
       end
     end
   end

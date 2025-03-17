@@ -1,0 +1,141 @@
+# frozen_string_literal: true
+
+require_relative "../../shared"
+
+#-------------------------------------------------
+# SHARED CONTEXTS - INDIVIDUAL ARGUMENTS SCENARIOS
+#-------------------------------------------------
+
+# noinspection RubyArgCount
+RSpec.shared_context "with agents and users setup in an organization" do
+  let_it_be(:organization) { create(:organization) }
+
+  let_it_be(:authorized_user) do
+    create(:user, owner_of: organization)
+  end
+
+  let_it_be(:unauthorized_user) { create(:user) }
+
+  let_it_be(:available_agent) do
+    project = create(:project, organization: organization, namespace: create(:group))
+    create(:ee_cluster_agent, project: project, name: "agent-in-org-available").tap do |agent|
+      create(:workspaces_agent_config, agent: agent)
+      create(:organization_cluster_agent_mapping, user: authorized_user, agent: agent, organization: organization)
+    end
+  end
+
+  let_it_be(:directly_mapped_but_disabled_agent) do
+    project = create(:project, organization: organization)
+    create(:ee_cluster_agent, project: project, name: "agent-in-org-mapped").tap do |agent|
+      create(:workspaces_agent_config, agent: agent, enabled: false)
+      create(:organization_cluster_agent_mapping, user: authorized_user, agent: agent, organization: organization)
+    end
+  end
+
+  let_it_be(:unmapped_agent) do
+    project = create(:project, organization: organization)
+    create(:ee_cluster_agent, project: project, name: "agent-in-org-unmapped").tap do |agent|
+      create(:workspaces_agent_config, agent: agent)
+    end
+  end
+
+  let_it_be(:agent_in_another_org) do
+    project = create(:project, organization: create(:organization))
+    create(:ee_cluster_agent, project: project, name: "agent-in-another-org").tap do |agent|
+      create(:workspaces_agent_config, agent: agent)
+    end
+  end
+end
+
+RSpec.shared_context "for a Query.organization.workspaces_cluster_agents query" do
+  include GraphqlHelpers
+
+  let(:args) { { id: organization.to_gid } }
+
+  let(:attributes) { { filter: filter } }
+
+  let(:fields) do
+    query_graphql_field(
+      :workspaces_cluster_agents,
+      attributes,
+      [
+        query_graphql_field(
+          :nodes,
+          all_graphql_fields_for("cluster_agents".classify, max_depth: 1)
+        )
+      ]
+    )
+  end
+
+  let(:query) { graphql_query_for(:organization, args, fields) }
+
+  subject(:actual_agents) { graphql_dig_at(graphql_data, :organization, :workspacesClusterAgents, :nodes) }
+end
+
+#------------------------------------------------
+# SHARED EXAMPLES - MAIN ENTRY POINTS FOR TESTING
+#------------------------------------------------
+
+RSpec.shared_examples "multiple agents query" do
+  include_context "in licensed environment"
+
+  let(:agent_names) { actual_agents.pluck("name") }
+  let(:expected_agent_names) { expected_agents.pluck("name").sort }
+
+  context "when user is fully authorized" do
+    include_context "with authorized user as current user"
+
+    it_behaves_like "query is a working graphql query"
+
+    context "when the user requests an agent that they are authorized for" do
+      before do
+        post_graphql(query, current_user: current_user)
+      end
+
+      it "includes only the expected agent", :unlimited_max_formatted_output_length do
+        expect(agent_names.sort).to eq(expected_agent_names)
+      end
+    end
+
+    context "when the user requests agents in their current organization" do
+      before do
+        post_graphql(query, current_user: current_user)
+      end
+
+      it "does not return agents in another organizations" do
+        expect(agent_names).not_to include(agent_in_another_org.name)
+      end
+    end
+  end
+
+  context "when the user is authorized only on mapped and available agents" do
+    let_it_be(:current_user) do
+      create(:user).tap do |u|
+        create(:organization_user, organization: organization, user: u)
+      end
+    end
+
+    let_it_be(:unavailable_and_unmapped_agents) { [unmapped_agent.name, directly_mapped_but_disabled_agent.name] }
+
+    it_behaves_like "query is a working graphql query"
+
+    context "when the user requests agents" do
+      before do
+        post_graphql(query, current_user: current_user)
+      end
+
+      it "does not include unmapped and unavailable agents", :unlimited_max_formatted_output_length do
+        expect(agent_names.sort).not_to include(*unavailable_and_unmapped_agents)
+      end
+    end
+  end
+
+  context "when user is not authorized" do
+    include_context "with unauthorized user as current user"
+
+    it_behaves_like "query is a working graphql query"
+    it_behaves_like "query returns blank"
+  end
+
+  it_behaves_like "query in unlicensed environment"
+end

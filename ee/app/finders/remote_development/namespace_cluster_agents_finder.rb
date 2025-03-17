@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module RemoteDevelopment
-  class ClusterAgentsFinder
+  class NamespaceClusterAgentsFinder
     def self.execute(namespace:, filter:, user:)
       agents = fetch_agents(filter, namespace, user)
 

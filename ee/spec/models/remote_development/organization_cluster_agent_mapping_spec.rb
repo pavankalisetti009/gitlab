@@ -38,7 +38,7 @@ RSpec.describe RemoteDevelopment::OrganizationClusterAgentMapping, feature_categ
           .to belong_to(:agent)
                 .class_name('Clusters::Agent')
                 .with_foreign_key(:cluster_agent_id)
-                .inverse_of(:organization_cluster_agent_mappings)
+                .inverse_of(:organization_cluster_agent_mapping)
       end
     end
 
