@@ -63,7 +63,7 @@ export default {
 <template>
   <div>
     <div class="gl-p-5">
-      <h2 class="gl-heading-2 gl-mb-3">{{ s__('AdminAIPoweredFeatures|Code Suggestions') }}</h2>
+      <h2 class="gl-heading-2 gl-mb-2">{{ s__('AdminAIPoweredFeatures|Code Suggestions') }}</h2>
       <p class="gl-mb-0 gl-text-subtle">
         <gl-sprintf
           :message="
@@ -86,7 +86,7 @@ export default {
       :is-loading="isLoading"
     />
     <div class="gl-p-5 gl-pt-0 md:gl-p-5">
-      <h2 class="gl-heading-2 gl-mb-3">{{ s__('AdminAIPoweredFeatures|GitLab Duo Chat') }}</h2>
+      <h2 class="gl-heading-2 gl-mb-2">{{ s__('AdminAIPoweredFeatures|GitLab Duo Chat') }}</h2>
       <p class="gl-mb-0 gl-text-subtle">
         <gl-sprintf
           :message="
