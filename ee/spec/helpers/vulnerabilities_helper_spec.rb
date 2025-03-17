@@ -606,4 +606,34 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
       end
     end
   end
+
+  describe '#vulnerabilities_exportable_link' do
+    using RSpec::Parameterized::TableSyntax
+
+    let_it_be(:url_builder) { Gitlab::UrlBuilder.instance }
+
+    subject(:exportable_link) { helper.vulnerabilities_exportable_link(export) }
+
+    context 'when exportable is a project' do
+      let(:project) { build_stubbed(:project) }
+      let(:export) { build_stubbed(:vulnerability_export, project: project) }
+
+      it { is_expected.to eq("project <a href=\"#{url_builder.project_url(project)}\">#{project.full_name}</a>") }
+    end
+
+    context 'when exportable is a group' do
+      let(:group) { build_stubbed(:group) }
+      let(:export) { build_stubbed(:vulnerability_export, group: group, project: nil) }
+
+      it { is_expected.to eq("group <a href=\"#{url_builder.group_canonical_url(group)}\">#{group.full_name}</a>") }
+    end
+
+    context 'when exportable is invalid' do
+      let(:export) { build_stubbed(:vulnerability_export, group: nil, project: nil) }
+
+      it 'raises a NoMethodError' do
+        expect { exportable_link }.to raise_error(NoMethodError, /undefined method `full_name'/)
+      end
+    end
+  end
 end

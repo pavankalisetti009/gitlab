@@ -49,7 +49,7 @@ module DependenciesHelper
     expose_url(api_v4_dependency_list_exports_download_path(export_id: export.id))
   end
 
-  def exportable_link(export)
+  def dependencies_exportable_link(export)
     exportable = export.exportable
 
     link_text = case exportable

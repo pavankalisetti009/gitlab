@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 module VulnerabilitiesHelper
+  include ::API::Helpers::RelatedResourcesHelpers
+
   FINDING_FIELDS = %i[metadata identifiers name issue_feedback merge_request_feedback project project_fingerprint scanner uuid details dismissal_feedback false_positive state_transitions issue_links merge_request_links].freeze
 
   def vulnerability_details_app_data(vulnerability, pipeline, project)
@@ -156,5 +158,25 @@ module VulnerabilitiesHelper
 
   def vulnerability_scan_data?(vulnerability)
     vulnerability.scanner.present? || vulnerability.scan.present?
+  end
+
+  def vulnerabilities_export_download_url(export)
+    expose_url(api_v4_security_vulnerability_exports_download_path(id: export.id))
+  end
+
+  def vulnerabilities_exportable_link(export)
+    exportable = export.exportable
+
+    link_text = exportable.full_name
+
+    url = Gitlab::UrlBuilder.build(exportable)
+
+    link = link_to(link_text, url)
+
+    exportable_type = exportable.class.name.demodulize.underscore
+
+    # rubocop:disable Rails/OutputSafety -- url helper output is safe
+    "#{exportable_type} #{link}".html_safe
+    # rubocop:enable Rails/OutputSafety
   end
 end

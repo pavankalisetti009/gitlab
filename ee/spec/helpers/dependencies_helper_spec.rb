@@ -115,12 +115,12 @@ RSpec.describe DependenciesHelper, feature_category: :dependency_management do
     end
   end
 
-  describe '#exportable_link' do
+  describe '#dependencies_exportable_link' do
     using RSpec::Parameterized::TableSyntax
 
     let_it_be(:url_builder) { Gitlab::UrlBuilder.instance }
 
-    subject(:exportable_link) { helper.exportable_link(export) }
+    subject(:exportable_link) { helper.dependencies_exportable_link(export) }
 
     context 'when exportable is a project' do
       let(:project) { build_stubbed(:project) }
