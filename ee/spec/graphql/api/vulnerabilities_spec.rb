@@ -66,30 +66,10 @@ RSpec.describe 'vulnerabilities', feature_category: :vulnerability_management do
         let(:vulnerable) { project }
 
         it { expect(extensions["disabled_filters"]).to eq [] }
-
-        context 'when the return_disabled_vulnerability_graphql_filters FF is disabled' do
-          before do
-            stub_feature_flags(return_disabled_vulnerability_graphql_filters: false)
-          end
-
-          it "does not calculate disabled vulnerability filters" do
-            expect(extensions).to be_nil
-          end
-        end
       end
 
       context 'when vulnerable is group' do
         let(:vulnerable) { group }
-
-        context 'when the return_disabled_vulnerability_graphql_filters FF is disabled' do
-          before do
-            stub_feature_flags(return_disabled_vulnerability_graphql_filters: false)
-          end
-
-          it "does not calculate disabled vulnerability filters" do
-            expect(extensions).to be_nil
-          end
-        end
 
         it { expect(extensions["disabled_filters"]).to match_array %w[identifier_name] }
       end

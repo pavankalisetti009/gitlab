@@ -99,10 +99,8 @@ module Resolvers
 
       args[:scanner_id] = resolve_gids(args[:scanner_id], ::Vulnerabilities::Scanner) if args[:scanner_id]
 
-      if Feature.enabled?(:return_disabled_vulnerability_graphql_filters, vulnerable_to_actor)
-        disabled_filters = context.response_extensions["disabled_filters"] ||= []
-        disabled_filters << :identifier_name unless search_by_identifier_allowed?(vulnerable: vulnerable)
-      end
+      disabled_filters = context.response_extensions["disabled_filters"] ||= []
+      disabled_filters << :identifier_name unless search_by_identifier_allowed?(vulnerable: vulnerable)
 
       vulnerabilities(args)
         .with_findings_scanner_and_identifiers
