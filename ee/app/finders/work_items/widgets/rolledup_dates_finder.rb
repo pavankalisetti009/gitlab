@@ -100,7 +100,7 @@ module WorkItems
           :children_work_items,
           WorkItem
             .with_issue_type(%w[issue epic])
-            .joins(:parent_link)
+            .joins(:parent_link, :work_item_type)
             .where(WorkItems::ParentLink.arel_table[:work_item_parent_id].in(@work_items_ids))
             .select(
               WorkItem.arel_table[:id].as("id"),
