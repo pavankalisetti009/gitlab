@@ -12,7 +12,7 @@ module EE
         mirror_update = project.mirror? &&
           project.repository.up_to_date_with_upstream?(branch_name)
 
-        { mirror_update: mirror_update }
+        super.merge(mirror_update: mirror_update)
       end
     end
   end
