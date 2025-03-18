@@ -13,7 +13,7 @@ RSpec.describe MergeRequests::AfterCreateService, feature_category: :code_review
 
     before do
       allow(Ci::SyncReportsToReportApprovalRulesWorker).to receive(:perform_async)
-      allow(Security::ScanResultPolicies::SyncFindingsToApprovalRulesWorker).to receive(:perform_async)
+      allow(Security::ScanResultPolicies::SyncMergeRequestApprovalsWorker).to receive(:perform_async)
       allow(Security::UnenforceablePolicyRulesPipelineNotificationWorker).to receive(:perform_async)
       allow(Security::ScanResultPolicies::SyncAnyMergeRequestApprovalRulesWorker).to receive(:perform_async)
       allow(Security::ScanResultPolicies::SyncPreexistingStatesApprovalRulesWorker).to receive(:perform_async)
@@ -51,8 +51,8 @@ RSpec.describe MergeRequests::AfterCreateService, feature_category: :code_review
 
         expect(merge_request).to have_received(:update_head_pipeline).ordered
         expect(Ci::SyncReportsToReportApprovalRulesWorker).to have_received(:perform_async).ordered.with(pipeline_id)
-        expect(Security::ScanResultPolicies::SyncFindingsToApprovalRulesWorker)
-          .to have_received(:perform_async).ordered.with(pipeline_id)
+        expect(Security::ScanResultPolicies::SyncMergeRequestApprovalsWorker)
+          .to have_received(:perform_async).ordered.with(pipeline_id, merge_request.id)
         expect(Security::UnenforceablePolicyRulesPipelineNotificationWorker)
           .to have_received(:perform_async).ordered.with(pipeline_id)
       end
@@ -69,7 +69,7 @@ RSpec.describe MergeRequests::AfterCreateService, feature_category: :code_review
         execute
 
         expect(Ci::SyncReportsToReportApprovalRulesWorker).not_to have_received(:perform_async)
-        expect(Security::ScanResultPolicies::SyncFindingsToApprovalRulesWorker).not_to have_received(:perform_async)
+        expect(Security::ScanResultPolicies::SyncMergeRequestApprovalsWorker).not_to have_received(:perform_async)
         expect(Security::UnenforceablePolicyRulesPipelineNotificationWorker).not_to have_received(:perform_async)
       end
 

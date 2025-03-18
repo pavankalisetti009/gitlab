@@ -62,7 +62,7 @@ module EE
 
           # This is needed here to avoid inconsistent state when the scan result policy is updated after the
           # head pipeline completes and before the merge request is created, we might have inconsistent state.
-          ::Security::ScanResultPolicies::SyncFindingsToApprovalRulesWorker.perform_async(pipeline_id)
+          ::Security::ScanResultPolicies::SyncMergeRequestApprovalsWorker.perform_async(pipeline_id, merge_request.id)
           ::Security::UnenforceablePolicyRulesPipelineNotificationWorker.perform_async(pipeline_id)
         else
           ::Security::UnenforceablePolicyRulesNotificationWorker.perform_async(merge_request.id)

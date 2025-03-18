@@ -6,6 +6,7 @@ module Security
       include Gitlab::Utils::StrongMemoize
       include VulnerabilityStatesHelper
       include ::Security::ScanResultPolicies::PolicyLogger
+      include ::Security::ScanResultPolicies::RelatedPipelines
 
       attr_reader :pipeline, :merge_request, :approval_rules
 
@@ -16,11 +17,7 @@ module Security
       end
 
       def execute
-        pipeline_complete = pipeline.complete_or_manual?
-
-        return unless pipeline_complete
-
-        unless pipeline.can_store_security_reports?
+        unless pipeline_with_security_reports_exists?
           log_update_approval_rule('No security reports found for the pipeline', **validation_context)
           return
         end
@@ -38,8 +35,23 @@ module Security
 
       private
 
+      def pipeline_with_security_reports_exists?
+        if ::Feature.disabled?(:use_related_pipelines_for_policy_evaluation, project)
+          return pipeline.complete_or_manual? && pipeline.can_store_security_reports?
+        end
+
+        # First check if our pipeline has reports before looking up related pipelines
+        return true if pipeline.can_store_security_reports?
+
+        related_pipeline_with_security_reports_exists?
+      end
+
+      def related_pipeline_with_security_reports_exists?
+        related_pipelines(pipeline).with_reports(::Ci::JobArtifact.security_reports).exists?
+      end
+
       def validation_context
-        { pipeline_ids: related_pipeline_ids, target_pipeline_ids: related_target_pipeline_ids }
+        { pipeline_ids: related_source_pipeline_ids, target_pipeline_ids: related_target_pipeline_ids }
       end
 
       delegate :project, to: :pipeline
@@ -106,7 +118,7 @@ module Security
       end
 
       def pipeline_security_scan_types
-        security_scan_types(related_pipeline_ids)
+        security_scan_types(related_source_pipeline_ids)
       end
       strong_memoize_attr :pipeline_security_scan_types
 
@@ -116,7 +128,7 @@ module Security
       strong_memoize_attr :target_pipeline_security_scan_types
 
       def target_pipeline
-        merge_request.latest_scan_finding_comparison_pipeline
+        target_pipeline_for_merge_request(merge_request, :scan_finding)
       end
       strong_memoize_attr :target_pipeline
 
@@ -163,35 +175,26 @@ module Security
           .new(merge_request, approval_rules, :scan_finding)
       end
 
-      def related_pipeline_sources
-        Enums::Ci::Pipeline.ci_and_security_orchestration_sources.values
-      end
-
       def security_scan_types(pipeline_ids)
         Security::Scan.by_pipeline_ids(pipeline_ids).distinct_scan_types
       end
 
       def related_target_pipeline_ids
-        return [] unless target_pipeline
-
-        Security::RelatedPipelinesFinder.new(target_pipeline, {
-          sources: related_pipeline_sources,
-          ref: merge_request.target_branch
-        }).execute
+        related_target_pipeline_ids_for_merge_request(merge_request, :scan_finding)
       end
       strong_memoize_attr :related_target_pipeline_ids
 
-      def related_pipeline_ids
-        Security::RelatedPipelinesFinder.new(pipeline, { sources: related_pipeline_sources }).execute
+      def related_source_pipeline_ids
+        related_pipeline_ids(pipeline)
       end
-      strong_memoize_attr :related_pipeline_ids
+      strong_memoize_attr :related_source_pipeline_ids
 
       def target_pipeline_findings_uuids(approval_rule)
         findings_uuids(target_pipeline, approval_rule, related_target_pipeline_ids)
       end
 
       def pipeline_findings_uuids(approval_rule)
-        findings_uuids(pipeline, approval_rule, related_pipeline_ids, true)
+        findings_uuids(pipeline, approval_rule, related_source_pipeline_ids, true)
       end
 
       def findings_uuids(pipeline, approval_rule, pipeline_ids, check_dismissed = false)
