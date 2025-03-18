@@ -305,25 +305,26 @@ RSpec.shared_examples 'a Geo verifiable registry' do
                   calculated_checksum
                 end
               end.to change { subject.verification_succeeded? }.from(false).to(true)
-
+              expect(replicator.matches_checksum?(calculated_checksum)).to eq(matches_checksum)
               expect(subject.verification_checksum).to eq(calculated_checksum)
             end
           end
 
           context 'when the calculated checksum does not match the primary checksum' do
             let(:matches_checksum) { false }
+            let(:primary_checksum) { '123abc' }
 
             it 'transitions to verification_failed and updates mismatch fields' do
-              allow(replicator).to receive(:primary_checksum).and_return(calculated_checksum)
+              allow(replicator).to receive(:primary_checksum).and_return(primary_checksum)
 
               expect do
                 subject.track_checksum_attempt! do
                   calculated_checksum
                 end
               end.to change { subject.verification_failed? }.from(false).to(true)
-
+              expect(replicator.matches_checksum?(calculated_checksum)).to eq(matches_checksum)
               expect(subject.verification_checksum).to eq(calculated_checksum)
-              expect(subject.verification_checksum_mismatched).to eq(calculated_checksum)
+              expect(subject.verification_checksum_mismatched).to eq(primary_checksum)
               expect(subject.checksum_mismatch).to eq(true)
               expect(subject.verification_failure).to match('Checksum does not match the primary checksum')
             end
