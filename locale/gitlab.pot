@@ -20091,16 +20091,22 @@ msgstr ""
 msgid "DependencyProxy|All items in the cache are scheduled for removal."
 msgstr ""
 
+msgid "DependencyProxy|Automatic cache cleanup"
+msgstr ""
+
+msgid "DependencyProxy|Automatically remove cached images older than 90 days."
+msgstr ""
+
 msgid "DependencyProxy|Base URL of the external registry. Must begin with %{codeStart}http%{codeEnd} or %{codeStart}https%{codeEnd}"
+msgstr ""
+
+msgid "DependencyProxy|Cache container images from Docker Hub to speed up builds and reduce external bandwidth usage."
 msgstr ""
 
 msgid "DependencyProxy|Cached %{time}"
 msgstr ""
 
 msgid "DependencyProxy|Clear cache"
-msgstr ""
-
-msgid "DependencyProxy|Clear the Dependency Proxy cache automatically"
 msgstr ""
 
 msgid "DependencyProxy|Configure in settings"
@@ -20118,6 +20124,9 @@ msgstr ""
 msgid "DependencyProxy|Copy prefix"
 msgstr ""
 
+msgid "DependencyProxy|Credentials used to authenticate with Docker Hub when pulling images."
+msgstr ""
+
 msgid "DependencyProxy|Dependency Proxy"
 msgstr ""
 
@@ -20127,13 +20136,22 @@ msgstr ""
 msgid "DependencyProxy|Digest: %{shortDigest}"
 msgstr ""
 
+msgid "DependencyProxy|Docker Hub authentication"
+msgstr ""
+
 msgid "DependencyProxy|Enable Dependency Proxy"
 msgstr ""
 
 msgid "DependencyProxy|Enable the Dependency Proxy for packages, and configure connection settings for external registries."
 msgstr ""
 
-msgid "DependencyProxy|Enable the Dependency Proxy to cache container images from Docker Hub and automatically clear the cache."
+msgid "DependencyProxy|Enter your password, personal access token, or organization access token."
+msgstr ""
+
+msgid "DependencyProxy|Enter your username (for password or personal access token) or organization name (for organization access token)."
+msgstr ""
+
+msgid "DependencyProxy|Identity"
 msgstr ""
 
 msgid "DependencyProxy|Image list"
@@ -20146,6 +20164,9 @@ msgid "DependencyProxy|Pull image by digest example"
 msgstr ""
 
 msgid "DependencyProxy|Scheduled for deletion"
+msgstr ""
+
+msgid "DependencyProxy|Secret"
 msgstr ""
 
 msgid "DependencyProxy|Something went wrong while fetching the dependency proxy settings."
@@ -20161,9 +20182,6 @@ msgid "DependencyProxy|To store docker images in Dependency Proxy cache, pull an
 msgstr ""
 
 msgid "DependencyProxy|Username of the external registry."
-msgstr ""
-
-msgid "DependencyProxy|When enabled, images older than 90 days will be removed from the cache."
 msgstr ""
 
 msgid "Depends on %d merge request being merged"
