@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'API-Fuzzing.latest.gitlab-ci.yml', feature_category: :continuous_integration do
+RSpec.describe 'API-Fuzzing.latest.gitlab-ci.yml', feature_category: :dynamic_application_security_testing do
   include Ci::PipelineMessageHelpers
 
   subject(:template) { Gitlab::Template::GitlabCiYmlTemplate.find('API-Fuzzing.latest') }
@@ -31,53 +31,34 @@ RSpec.describe 'API-Fuzzing.latest.gitlab-ci.yml', feature_category: :continuous
   end
 
   describe 'the created pipeline' do
+    let_it_be(:default_branch) { 'master' }
+    let_it_be(:feature_branch) { 'patch-1' }
     let_it_be(:project) { create(:project, :custom_repo, files: { 'README.txt' => '' }) }
-
-    let(:default_branch) { 'master' }
-    let(:pipeline_branch) { default_branch }
-    let(:user) { project.first_owner }
-    let(:service) { Ci::CreatePipelineService.new(project, user, ref: pipeline_branch) }
+    let_it_be(:user) { project.first_owner }
     let(:pipeline) { service.execute(:push).payload }
-    let(:build_names) { pipeline.builds.pluck(:name) }
 
-    context 'when no stages' do
+    context 'when stages list does not include fuzz' do
       before do
         stub_ci_pipeline_yaml_file(template.content)
-        allow_next_instance_of(Ci::BuildScheduleWorker) do |worker|
-          allow(worker).to receive(:perform).and_return(true)
-        end
-        allow(project).to receive(:default_branch).and_return(default_branch)
       end
 
-      context 'when project has no stages' do
-        it 'includes no jobs' do
-          expect(build_names).to be_empty
-        end
-      end
+      include_context 'with default branch pipeline setup'
+
+      include_examples 'missing stage', 'fuzz'
     end
 
-    context 'when stages includes fuzz' do
+    context 'when stages list includes fuzz' do
       let(:ci_pipeline_yaml) { "stages: [\"fuzz\"]\n" }
 
       before do
         stub_ci_pipeline_yaml_file(ci_pipeline_yaml + template.content)
-
-        allow_next_instance_of(Ci::BuildScheduleWorker) do |worker|
-          allow(worker).to receive(:perform).and_return(true)
-        end
-
-        allow(project).to receive(:default_branch).and_return(default_branch)
       end
 
       context 'when project has no license' do
-        before do
-          create(:ci_variable, project: project, key: 'FUZZAPI_HAR', value: 'testing.har')
-          create(:ci_variable, project: project, key: 'FUZZAPI_TARGET_URL', value: 'http://example.com')
-        end
+        include_context 'with default branch pipeline setup'
 
-        it 'includes job to display error' do
-          expect(build_names).to match_array(%w[apifuzzer_fuzz])
-        end
+        # job still runs to display an error
+        include_examples 'has expected jobs', %w[apifuzzer_fuzz]
       end
 
       context 'when project has Ultimate license' do
@@ -87,111 +68,35 @@ RSpec.describe 'API-Fuzzing.latest.gitlab-ci.yml', feature_category: :continuous
           allow(License).to receive(:current).and_return(license)
         end
 
-        it_behaves_like 'acts as branch pipeline', %w[apifuzzer_fuzz]
-
-        it_behaves_like 'acts as MR pipeline', %w[apifuzzer_fuzz], { 'CHANGELOG.md' => '' }
-
-        context 'when configured with HAR' do
-          before do
-            create(:ci_variable, project: project, key: 'FUZZAPI_HAR', value: 'testing.har')
-            create(:ci_variable, project: project, key: 'FUZZAPI_TARGET_URL', value: 'http://example.com')
-          end
-
-          it 'includes job' do
-            expect(build_names).to match_array(%w[apifuzzer_fuzz])
-          end
+        shared_examples 'common pipeline checks' do
+          include_examples 'has expected jobs', %w[apifuzzer_fuzz]
+          include_examples 'has jobs that can be disabled', 'API_FUZZING_DISABLED', %w[true 1], %w[apifuzzer_fuzz]
+          include_examples 'has FIPS compatible jobs', 'FUZZAPI_IMAGE_SUFFIX', %w[apifuzzer_fuzz]
         end
 
-        context 'when configured with OpenAPI' do
-          before do
-            create(:ci_variable, project: project, key: 'FUZZAPI_OPENAPI', value: 'testing.json')
-            create(:ci_variable, project: project, key: 'FUZZAPI_TARGET_URL', value: 'http://example.com')
-          end
+        context 'as a branch pipeline on the default branch' do
+          include_context 'with default branch pipeline setup'
 
-          it 'includes job' do
-            expect(build_names).to match_array(%w[apifuzzer_fuzz])
-          end
+          include_examples 'common pipeline checks'
+          include_examples 'has jobs that can be disabled',
+            'API_FUZZING_DISABLED_FOR_DEFAULT_BRANCH', %w[true 1], %w[apifuzzer_fuzz]
         end
 
-        context 'when configured with Postman' do
-          before do
-            create(:ci_variable, project: project, key: 'FUZZAPI_POSTMAN_COLLECTION', value: 'testing.json')
-            create(:ci_variable, project: project, key: 'FUZZAPI_TARGET_URL', value: 'http://example.com')
-          end
+        context 'as a branch pipeline on a feature branch' do
+          include_context 'with feature branch pipeline setup'
 
-          it 'includes job' do
-            expect(build_names).to match_array(%w[apifuzzer_fuzz])
-          end
+          include_examples 'common pipeline checks'
         end
 
-        context 'when setting API_FUZZING_DISABLED' do
-          before do
-            create(:ci_variable, project: project, key: 'FUZZAPI_HAR', value: 'testing.har')
-            create(:ci_variable, project: project, key: 'FUZZAPI_TARGET_URL', value: 'http://example.com')
-          end
+        context 'as an MR pipeline' do
+          include_context 'with MR pipeline setup'
 
-          context 'when API_FUZZING_DISABLED=1' do
-            before do
-              create(:ci_variable, project: project, key: 'API_FUZZING_DISABLED', value: '1')
-            end
+          include_examples 'common pipeline checks'
 
-            it 'includes no jobs' do
-              expect(build_names).to be_empty
-              expect(pipeline.errors.full_messages).to match_array([
-                sanitize_message(Ci::Pipeline.rules_failure_message)
-              ])
-            end
-          end
+          context 'when AST_ENABLE_MR_PIPELINES=false' do
+            include_context 'with CI variables', { 'AST_ENABLE_MR_PIPELINES' => 'false' }
 
-          context 'when API_FUZZING_DISABLED="true"' do
-            before do
-              create(:ci_variable, project: project, key: 'API_FUZZING_DISABLED', value: 'true')
-            end
-
-            it 'includes no jobs' do
-              expect(build_names).to be_empty
-              expect(pipeline.errors.full_messages).to match_array([
-                sanitize_message(Ci::Pipeline.rules_failure_message)
-              ])
-            end
-          end
-
-          context 'when API_FUZZING_DISABLED="false"' do
-            before do
-              create(:ci_variable, project: project, key: 'API_FUZZING_DISABLED', value: 'false')
-            end
-
-            it 'includes jobs' do
-              expect(build_names).not_to be_empty
-            end
-          end
-        end
-
-        context 'when CI_GITLAB_FIPS_MODE=false' do
-          let(:build_dast_api) { pipeline.builds.find_by(name: 'apifuzzer_fuzz') }
-          let(:build_variables) { build_dast_api.variables.pluck(:key, :value) }
-
-          before do
-            create(:ci_variable, project: project, key: 'CI_GITLAB_FIPS_MODE', value: 'false')
-            create(:ci_variable, project: project, key: 'FUZZAPI_HAR', value: 'testing.har')
-            create(:ci_variable, project: project, key: 'FUZZAPI_TARGET_URL', value: 'http://example.com')
-          end
-
-          it 'sets FUZZAPI_IMAGE_SUFFIX to ""' do
-            expect(build_variables).to be_include(['FUZZAPI_IMAGE_SUFFIX', ''])
-          end
-        end
-
-        context 'when CI_GITLAB_FIPS_MODE=true' do
-          let(:build_dast_api) { pipeline.builds.find_by(name: 'apifuzzer_fuzz') }
-          let(:build_variables) { build_dast_api.variables.pluck(:key, :value) }
-
-          before do
-            create(:ci_variable, project: project, key: 'CI_GITLAB_FIPS_MODE', value: 'true')
-          end
-
-          it 'sets FUZZAPI_IMAGE_SUFFIX to "-fips"' do
-            expect(build_variables).to be_include(['FUZZAPI_IMAGE_SUFFIX', '-fips'])
+            include_examples 'has expected jobs', []
           end
         end
       end

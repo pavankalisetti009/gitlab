@@ -2,10 +2,10 @@
 
 require 'spec_helper'
 
-RSpec.describe 'SAST-IaC.gitlab-ci.yml', feature_category: :static_application_security_testing do
+RSpec.describe 'SAST-IaC.latest.gitlab-ci.yml', feature_category: :static_application_security_testing do
   include Ci::PipelineMessageHelpers
 
-  subject(:template) { Gitlab::Template::GitlabCiYmlTemplate.find('SAST-IaC') }
+  subject(:template) { Gitlab::Template::GitlabCiYmlTemplate.find('SAST-IaC.latest') }
 
   describe 'the created pipeline' do
     let_it_be(:default_branch) { 'master' }
@@ -40,12 +40,12 @@ RSpec.describe 'SAST-IaC.gitlab-ci.yml', feature_category: :static_application_s
       context 'as an MR pipeline' do
         include_context 'with MR pipeline setup'
 
-        include_examples 'has expected jobs', []
+        include_examples 'common pipeline checks'
 
-        context 'when AST_ENABLE_MR_PIPELINES=true' do
-          include_context 'with CI variables', { 'AST_ENABLE_MR_PIPELINES' => 'true' }
+        context 'when AST_ENABLE_MR_PIPELINES=false' do
+          include_context 'with CI variables', { 'AST_ENABLE_MR_PIPELINES' => 'false' }
 
-          include_examples 'common pipeline checks'
+          include_examples 'has expected jobs', []
         end
       end
     end

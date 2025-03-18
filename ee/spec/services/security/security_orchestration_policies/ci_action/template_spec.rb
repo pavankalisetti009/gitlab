@@ -117,7 +117,11 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
 
         it 'returns prepared CI configuration with Secret Detection scans' do
           expected_configuration = {
-            rules: [{ if: '$CI_COMMIT_BRANCH' }],
+            rules: [
+              { if: '$AST_ENABLE_MR_PIPELINES == "true" && $CI_PIPELINE_SOURCE == "merge_request_event"' },
+              { if: '$AST_ENABLE_MR_PIPELINES == "true" && $CI_OPEN_MERGE_REQUESTS', when: 'never' },
+              { if: '$CI_COMMIT_BRANCH' }
+            ],
             script: ["/analyzer run"],
             tags: ['runner-tag'],
             stage: 'test',
