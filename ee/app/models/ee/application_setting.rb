@@ -297,6 +297,7 @@ module EE
         inclusion: { in: [true, false], message: N_('must be a boolean value') }
 
       after_commit :update_personal_access_tokens_lifetime, if: :saved_change_to_max_personal_access_token_lifetime?
+      after_commit :trigger_clickhouse_for_analytics_enabled_event
     end
 
     class_methods do
@@ -715,6 +716,14 @@ module EE
       return if unknown_integrations.blank?
 
       errors.add(:allowed_integrations, 'contains unknown integration names')
+    end
+
+    def trigger_clickhouse_for_analytics_enabled_event
+      return if !saved_change_to_use_clickhouse_for_analytics? || !use_clickhouse_for_analytics?
+
+      ::Gitlab::EventStore.publish(
+        ::Analytics::ClickHouseForAnalyticsEnabledEvent.new(data: { enabled_at: updated_at.iso8601 })
+      )
     end
   end
 end
