@@ -151,7 +151,7 @@ export default {
                 v-if="licensedUserCount"
                 :message="
                   s__(
-                    'ApplicationSettings|A user cap that exceeds the current licensed user count (%{licensedUserCount}) may result in a %{linkStart}true-up%{linkEnd}.',
+                    'ApplicationSettings|A user cap that exceeds the current licensed user count (%{licensedUserCount}) may result in %{linkStart}seat overages%{linkEnd}.',
                   )
                 "
               >

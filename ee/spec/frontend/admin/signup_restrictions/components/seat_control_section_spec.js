@@ -62,7 +62,7 @@ describe('SeatControlSection', () => {
         mountComponent({ provide: { licensedUserCount: 10 } });
 
         expect(wrapper.text()).toContain(
-          'A user cap that exceeds the current licensed user count (10) may result in a true-up.',
+          'A user cap that exceeds the current licensed user count (10) may result in seat overages.',
         );
       });
     });
