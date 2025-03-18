@@ -28,7 +28,9 @@ module QA
           end
 
           def latest_response
-            find_all('.duo-chat-message p').last&.text
+            Support::Retrier.retry_until(retry_on_exception: true, max_duration: 60) do
+              find_all('.duo-chat-message p').last&.text.presence
+            end
           end
 
           def has_feedback_message?
