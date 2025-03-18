@@ -339,6 +339,27 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
           )
       end
     end
+
+    context 'for preventing deletion after admin is associated' do
+      let_it_be_with_reload(:member_role) { create(:member_role, :read_admin_dashboard) }
+
+      subject(:destroy_admin_member_role) { member_role.destroy } # rubocop: disable Rails/SaveBang
+
+      it 'allows deletion without any admin associated' do
+        expect(destroy_admin_member_role).to be_truthy
+      end
+
+      it 'prevent deletion when admin is associated' do
+        create(:user_member_role, member_role: member_role)
+
+        member_role.user_member_roles.reload
+
+        expect(destroy_admin_member_role).to be_falsey
+        expect(member_role.errors.messages[:base]).to(include(
+          s_('MemberRole|Role is assigned to one or more admins. Remove role from all admins, then delete role.')
+        ))
+      end
+    end
   end
 
   describe 'scopes' do

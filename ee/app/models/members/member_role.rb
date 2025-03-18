@@ -68,7 +68,8 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
       .select('COUNT(DISTINCT members.user_id) AS users_count')
   end
 
-  before_destroy :prevent_delete_after_member_associated
+  before_destroy :prevent_delete_if_member_associated
+  before_destroy :prevent_delete_if_admin_user_associated, if: :admin_related_role?
 
   jsonb_accessor :permissions, Gitlab::CustomRoles::Definition.all.keys.index_with(:boolean)
 
@@ -168,7 +169,7 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
   private
 
   def security_policies_disabled?
-    return !namespace.licensed_feature_available?(:security_orchestration_policies) if gitlab_com_subscription?
+    return !namespace&.licensed_feature_available?(:security_orchestration_policies) if gitlab_com_subscription?
 
     !License.feature_available?(:security_orchestration_policies)
   end
@@ -249,7 +250,7 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
     )
   end
 
-  def prevent_delete_after_member_associated
+  def prevent_delete_if_member_associated
     return unless members.present?
 
     errors.add(
@@ -257,6 +258,20 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
       s_(
         "MemberRole|Role is assigned to one or more group members. " \
         "Remove role from all group members, then delete role."
+      )
+    )
+
+    throw :abort # rubocop:disable Cop/BanCatchThrow
+  end
+
+  def prevent_delete_if_admin_user_associated
+    return unless user_member_roles.present?
+
+    errors.add(
+      :base,
+      s_(
+        "MemberRole|Role is assigned to one or more admins. " \
+        "Remove role from all admins, then delete role."
       )
     )
 

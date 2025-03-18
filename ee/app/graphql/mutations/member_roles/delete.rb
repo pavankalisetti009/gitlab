@@ -17,6 +17,10 @@ module Mutations
       def resolve(id:)
         member_role = authorized_find!(id: id)
 
+        if member_role.admin_related_role?
+          raise Gitlab::Graphql::Errors::ArgumentError, 'This mutation can only be used to delete standard member roles'
+        end
+
         response = ::MemberRoles::DeleteService
           .new(current_user)
           .execute(member_role)

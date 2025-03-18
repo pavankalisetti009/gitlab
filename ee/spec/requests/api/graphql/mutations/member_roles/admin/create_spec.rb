@@ -62,9 +62,8 @@ RSpec.describe 'creating admin member role', :enable_admin_mode, feature_categor
           stub_feature_flags(custom_admin_roles: false)
         end
 
-        it_behaves_like 'a mutation that returns a top-level access error',
-          errors: ["The resource that you are attempting to access does not exist or " \
-            "you don't have permission to perform this action"]
+        it_behaves_like 'a mutation that returns top-level errors',
+          errors: ['`custom_admin_roles` feature flag is disabled.']
       end
 
       context 'when current user is not an admin' do

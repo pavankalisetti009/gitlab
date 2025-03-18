@@ -59,6 +59,7 @@ module EE
         mount_mutation ::Mutations::MemberRoles::Create, experiment: { milestone: '16.5' }
         mount_mutation ::Mutations::MemberRoles::Admin::Create, experiment: { milestone: '17.7' }
         mount_mutation ::Mutations::MemberRoles::Admin::Update, experiment: { milestone: '17.10' }
+        mount_mutation ::Mutations::MemberRoles::Admin::Delete, experiment: { milestone: '17.10' }
         mount_mutation ::Mutations::MemberRoles::Delete, experiment: { milestone: '16.7' }
         mount_mutation ::Mutations::RequirementsManagement::CreateRequirement
         mount_mutation ::Mutations::RequirementsManagement::ExportRequirements
