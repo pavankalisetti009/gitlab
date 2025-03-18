@@ -12,7 +12,10 @@ module Gitlab
           SELECT
             id,
             argMax(author_id, contributions.updated_at) AS author_id,
-            argMax(target_type, contributions.updated_at) AS target_type,
+            CASE
+              WHEN argMax(target_type, contributions.updated_at) IN ('Issue', 'WorkItem') THEN 'Issue'
+              ELSE argMax(target_type, contributions.updated_at)
+            END AS target_type,
             argMax(action, contributions.updated_at) AS action
           FROM contributions
             WHERE startsWith(path, {group_path:String})
@@ -25,7 +28,7 @@ module Gitlab
               OR
               (
                 "contributions"."action" IN (1, 3, 7, 12)
-                AND "contributions"."target_type" IN ('MergeRequest', 'Issue')
+                AND "contributions"."target_type" IN ('MergeRequest', 'Issue', 'WorkItem')
               )
             )
           GROUP BY id

@@ -29,17 +29,21 @@ module Gitlab
             .select('source_id AS id'))
         cte_condition = 'project_id IN (SELECT id FROM project_ids)'
 
+        target_type = Arel::Nodes::Case.new.when(Event.arel_table[:target_type].in(%w[Issue WorkItem]))
+          .then('Issue').else(Event.arel_table[:target_type]).as('target_type')
+
         events_from_date = ::Event
           .where(cte_condition)
           .where(Event.arel_table[:created_at].gteq(from))
           .where(Event.arel_table[:created_at].lteq(to))
+          .select(:author_id, :action, target_type)
 
         ::Event.with(cte.to_arel).from_union(
           [
             events_from_date.where(action: :pushed, target_type: nil),
             events_from_date.where(
               action: [:created, :closed, :merged, :approved],
-              target_type: [::MergeRequest.name, ::Issue.name])
+              target_type: [::MergeRequest.name, ::Issue.name, ::WorkItem.name])
           ], remove_duplicates: false)
       end
       # rubocop: enable CodeReuse/ActiveRecord
