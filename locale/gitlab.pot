@@ -1781,6 +1781,9 @@ msgstr[1] ""
 msgid "+%{count} more"
 msgstr ""
 
+msgid "+%{count} new"
+msgstr ""
+
 msgid "+%{more_assignees_count}"
 msgstr ""
 
