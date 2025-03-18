@@ -65,20 +65,12 @@ module Gitlab
         matches = []
 
         parsed_data.each do |_, section_entries|
-          if codeowners_file_exclusions_enabled?
-            matching_patterns = section_entries.keys.reverse.select { |pattern| path_matches?(pattern, path) }
-            matching_entries = matching_patterns.map { |pattern| section_entries[pattern] }
+          matching_patterns = section_entries.keys.reverse.select { |pattern| path_matches?(pattern, path) }
+          matching_entries = matching_patterns.map { |pattern| section_entries[pattern] }
 
-            next if matching_entries.any?(&:exclusion?)
+          next if matching_entries.any?(&:exclusion?)
 
-            matches << matching_entries.first.dup if matching_entries.any?
-          else
-            matching_pattern = section_entries.keys.reverse.detect do |pattern|
-              path_matches?(pattern, path)
-            end
-
-            matches << section_entries[matching_pattern].dup if matching_pattern
-          end
+          matches << matching_entries.first.dup if matching_entries.any?
         end
 
         matches
@@ -92,10 +84,6 @@ module Gitlab
       end
 
       private
-
-      def codeowners_file_exclusions_enabled?
-        Feature.enabled?(:codeowners_file_exclusions, project)
-      end
 
       def project
         @blob&.repository&.project
@@ -172,7 +160,7 @@ module Gitlab
       def extract_entry_info(line)
         pattern, _separator, entry_owners = line.partition(/(?<!\\)\s+/)
 
-        is_exclusion_pattern = codeowners_file_exclusions_enabled? && pattern.start_with?('!')
+        is_exclusion_pattern = pattern.start_with?('!')
         pattern = pattern[1..] if is_exclusion_pattern
 
         [pattern, entry_owners, is_exclusion_pattern]

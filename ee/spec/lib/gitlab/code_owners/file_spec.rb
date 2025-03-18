@@ -46,23 +46,6 @@ RSpec.describe Gitlab::CodeOwners::File, feature_category: :source_code_manageme
         expect(parsed['Ruby']['/config/example.yml'].owner_line).to eq('@config-yml')
         expect(parsed['Ruby']['/config/**/*.rb'].exclusion).to be(true)
       end
-
-      context 'when "codeowners_file_exclusions" is disabled' do
-        before do
-          stub_feature_flags(codeowners_file_exclusions: false)
-        end
-
-        it 'does not mark excluded entries per section' do
-          parsed = file.parsed_data
-
-          expect(parsed['codeowners'].keys).to contain_exactly('/**/*', '/**/!*.rb')
-          expect(parsed['codeowners']['/**/*'].owner_line).to eq('@group-x')
-
-          expect(parsed['Ruby'].keys).to contain_exactly('/**/*.rb', '/config/example.yml', '/**/!/config/**/*.rb')
-          expect(parsed['Ruby']['/**/*.rb'].owner_line).to eq('@ruby-devs')
-          expect(parsed['Ruby']['/config/example.yml'].owner_line).to eq('@config-yml')
-        end
-      end
     end
 
     context "when CODEOWNERS file contains no sections" do
@@ -533,22 +516,6 @@ RSpec.describe Gitlab::CodeOwners::File, feature_category: :source_code_manageme
           expect(regular_entry.owner_line).to eq('@group-x')
           expect(temp_entry).to be_empty
           expect(nested_temp_entry).to be_empty
-        end
-
-        context 'when "codeowners_file_exclusions" is disabled' do
-          before do
-            stub_feature_flags(codeowners_file_exclusions: false)
-          end
-
-          it 'handles nested path exclusions correctly' do
-            regular_entry = file.entries_for_path('app/models/user.rb').first
-            temp_entry = file.entries_for_path('app/temp/temp.rb').first
-            nested_temp_entry = file.entries_for_path('app/models/temp/file.rb').first
-
-            expect(regular_entry.owner_line).to eq('@group-x')
-            expect(temp_entry.owner_line).to eq('@group-x')
-            expect(nested_temp_entry.owner_line).to eq('@group-x')
-          end
         end
       end
     end
