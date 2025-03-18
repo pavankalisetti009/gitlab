@@ -27008,6 +27008,12 @@ msgstr ""
 msgid "GitPod"
 msgstr ""
 
+msgid "GitSetup|Global"
+msgstr ""
+
+msgid "GitSetup|Local"
+msgstr ""
+
 msgid "Gitaly servers"
 msgstr ""
 
@@ -27216,9 +27222,6 @@ msgid "Given epic is already related to this epic."
 msgstr ""
 
 msgid "Given inputs not defined in the `spec` section of the included configuration file"
-msgstr ""
-
-msgid "Global"
 msgstr ""
 
 msgid "Global SAML group membership lock"
