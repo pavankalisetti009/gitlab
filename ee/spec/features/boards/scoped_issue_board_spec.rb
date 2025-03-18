@@ -185,6 +185,10 @@ RSpec.describe 'Scoped issue boards', :js, feature_category: :portfolio_manageme
         end
 
         it 'creates board filtering by "Any" weight' do
+          # TODO: remove threshold once https://gitlab.com/gitlab-org/gitlab/-/issues/512056 is resolved
+          # Incident: https://gitlab.com/gitlab-org/quality/engineering-productivity/master-broken-incidents/-/issues/11282
+          allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(110)
+
           create_board_weight('Any')
 
           expect(page).to have_selector('.board-card', count: 6)
