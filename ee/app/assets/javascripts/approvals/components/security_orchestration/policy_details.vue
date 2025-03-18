@@ -1,5 +1,5 @@
 <script>
-import { GlLink } from '@gitlab/ui';
+import { GlButton } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import {
   humanizeRules,
@@ -14,7 +14,7 @@ export default {
     policyDetails: s__('SecurityOrchestration|Edit policy'),
   },
   components: {
-    GlLink,
+    GlButton,
     PolicyApprovals,
   },
   props: {
@@ -39,13 +39,13 @@ export default {
     requireApprovals() {
       return this.actions?.filter((action) => action.type === REQUIRE_APPROVAL_TYPE) || [];
     },
+    colSpan() {
+      return this.showEditLink ? 3 : 4;
+    },
   },
   methods: {
     mapApproversToArray(index) {
       return mapApproversToArray(this.actionApprovers[index]);
-    },
-    isLastIndex(index) {
-      return index === this.requireApprovals.length - 1;
     },
   },
 };
@@ -53,35 +53,36 @@ export default {
 
 <template>
   <tr v-if="policy.isSelected">
-    <td colspan="4" class="!gl-border-t-0 !gl-pt-0">
+    <td :colspan="colSpan" class="!gl-border-t-0">
+      <policy-approvals
+        v-for="(approval, index) in requireApprovals"
+        :key="index"
+        :action="approval"
+        :approvers="mapApproversToArray(index)"
+      />
       <div
-        class="gl-rounded-base gl-border-1 gl-border-solid gl-border-default gl-bg-white gl-px-5 gl-py-4"
+        v-for="{ summary, criteriaList } in humanizedRules"
+        :key="summary"
+        class="gl-mb-1 gl-mt-5"
       >
-        <policy-approvals
-          v-for="(action, index) in requireApprovals"
-          :key="action.id"
-          :action="action"
-          :approvers="mapApproversToArray(index)"
-          :is-last-item="isLastIndex(index)"
-        />
-        <div
-          v-for="{ summary, criteriaList } in humanizedRules"
-          :key="summary"
-          class="gl-mb-1 gl-mt-5"
-        >
-          {{ summary }}
-          <ul class="gl-m-0">
-            <li v-for="criteria in criteriaList" :key="criteria">
-              {{ criteria }}
-            </li>
-          </ul>
-        </div>
-        <div v-if="showEditLink" class="gl-text-right">
-          <gl-link :href="policy.editPath" target="_blank">
-            {{ $options.i18n.policyDetails }}
-          </gl-link>
-        </div>
+        {{ summary }}
+        <ul class="gl-m-0">
+          <li v-for="criteria in criteriaList" :key="criteria">
+            {{ criteria }}
+          </li>
+        </ul>
       </div>
+    </td>
+    <td v-if="showEditLink" class="!gl-border-t-0">
+      <gl-button
+        v-if="showEditLink"
+        :href="policy.editPath"
+        size="small"
+        variant="confirm"
+        category="tertiary"
+      >
+        {{ $options.i18n.policyDetails }}
+      </gl-button>
     </td>
   </tr>
 </template>

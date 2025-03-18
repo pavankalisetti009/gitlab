@@ -1,4 +1,4 @@
-import { GlLink } from '@gitlab/ui';
+import { GlButton } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import PolicyDetails from 'ee/approvals/components/security_orchestration/policy_details.vue';
 import PolicyApprovals from 'ee/security_orchestration/components/policy_drawer/scan_result/policy_approvals.vue';
@@ -46,7 +46,7 @@ describe('PolicyDetails', () => {
     });
   };
 
-  const findLink = () => wrapper.findComponent(GlLink);
+  const findEditPolicy = () => wrapper.findComponent(GlButton);
   const findPolicyApprovals = () => wrapper.findComponent(PolicyApprovals);
   const findAllPolicyApprovals = () => wrapper.findAllComponents(PolicyApprovals);
 
@@ -70,8 +70,8 @@ describe('PolicyDetails', () => {
     });
 
     it('renders a link to policy path', () => {
-      expect(findLink().exists()).toBe(true);
-      expect(findLink().attributes('href')).toBe(initialPolicy.editPath);
+      expect(findEditPolicy().exists()).toBe(true);
+      expect(findEditPolicy().attributes('href')).toBe(initialPolicy.editPath);
     });
 
     describe('with an inherited policy', () => {
@@ -80,8 +80,8 @@ describe('PolicyDetails', () => {
       });
 
       it('renders a link to policy path', () => {
-        expect(findLink().exists()).toBe(true);
-        expect(findLink().attributes('href')).toBe(initialPolicy.editPath);
+        expect(findEditPolicy().exists()).toBe(true);
+        expect(findEditPolicy().attributes('href')).toBe(initialPolicy.editPath);
       });
     });
   });
@@ -97,7 +97,7 @@ describe('PolicyDetails', () => {
     });
 
     it('does not render a link to the policy path', () => {
-      expect(findLink().exists()).toBe(false);
+      expect(findEditPolicy().exists()).toBe(false);
     });
   });
 
@@ -114,7 +114,7 @@ describe('PolicyDetails', () => {
         },
       });
 
-      expect(findLink().exists()).toBe(linkVisible);
+      expect(findEditPolicy().exists()).toBe(linkVisible);
     });
   });
 });
