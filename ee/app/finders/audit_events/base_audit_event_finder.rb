@@ -14,12 +14,16 @@ module AuditEvents
       audit_events = by_created_at(audit_events)
       audit_events = by_author(audit_events)
 
+      if AuditEvents::OffsetOptimization.should_use_offset_optimization?(params)
+        return AuditEvents::OffsetOptimization.paginate_with_offset_optimization(audit_events, params)
+      end
+
       sort(audit_events)
     end
 
     private
 
-    attr_reader :params
+    attr_reader :params, :optimize_offset
 
     def init_collection
       raise NotImplementedError, "Subclasses must define `init_collection`"

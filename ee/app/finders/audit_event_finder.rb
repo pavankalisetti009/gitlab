@@ -7,7 +7,6 @@ class AuditEventFinder
   InvalidLevelTypeError = Class.new(StandardError)
 
   VALID_ENTITY_TYPES = %w[Project User Group Gitlab::Audit::InstanceScope].freeze
-  PAGE_THRESHOLD_FOR_OFFSET_OPTIMIZATION = 100
 
   # Instantiates a new finder
   #
@@ -18,14 +17,12 @@ class AuditEventFinder
   # @option params [DateTime] :created_after from created_at date
   # @option params [DateTime] :created_before to created_at date
   # @option params [String] :sort order by field_direction (e.g. created_asc)
-  # @param [Boolean] optimize_offset for enabling finder offset optimization,
   #   still needs feature flag and other settings for offset optimization to kick in
   #
   # @return [AuditEventFinder]
-  def initialize(level:, params: {}, optimize_offset: false)
+  def initialize(level:, params: {})
     @level = level
     @params = params
-    @optimize_offset = optimize_offset
   end
 
   # Filters and sorts records
@@ -37,24 +34,16 @@ class AuditEventFinder
     audit_events = by_created_at(audit_events)
     audit_events = by_author(audit_events)
 
-    return sort(audit_events) unless should_use_offset_optimization?
+    if AuditEvents::OffsetOptimization.should_use_offset_optimization?(params)
+      return AuditEvents::OffsetOptimization.paginate_with_offset_optimization(audit_events, params)
+    end
 
-    paginate_with_offset_optimization(audit_events)
-  end
-
-  def paginate_with_offset_optimization(audit_events)
-    audit_events.order(created_at: :desc, id: :desc) # rubocop:disable CodeReuse/ActiveRecord -- Need to order in a deterministic way with tiebreaker
-
-    Gitlab::Pagination::Offset::PaginationWithIndexOnlyScan.new(
-      scope: audit_events,
-      page: params[:page],
-      per_page: params[:per_page]
-    ).paginate_with_kaminari
+    sort(audit_events)
   end
 
   private
 
-  attr_reader :level, :params
+  attr_reader :level, :params, :optimize_offset
 
   def init_collection
     raise InvalidLevelTypeError unless valid_level_type?
@@ -116,12 +105,5 @@ class AuditEventFinder
 
   def valid_author_username?
     valid_username?(params[:author_username])
-  end
-
-  def should_use_offset_optimization?
-    @optimize_offset &&
-      Feature.enabled?(:audit_events_api_offset_optimization, :instance) &&
-      params[:pagination] != 'keyset' &&
-      params[:page].to_i > PAGE_THRESHOLD_FOR_OFFSET_OPTIMIZATION
   end
 end

@@ -363,37 +363,33 @@ RSpec.describe AuditEventFinder, feature_category: :audit_events do
         end
 
         it 'does not use offset optimization even with high page number' do
-          params = { page: 101, per_page: 1 }
+          params = { page: 101, per_page: 1, optimize_offset: true }
 
           expect(Gitlab::Pagination::Offset::PaginationWithIndexOnlyScan).not_to receive(:new)
 
-          described_class.new(level: level, params: params, optimize_offset: true).execute
+          described_class.new(level: level, params: params).execute
         end
       end
 
       context 'when feature flag is enabled' do
-        before do
-          stub_feature_flags(audit_events_api_offset_optimization: true)
-        end
-
         it 'does not use optimization for keyset pagination' do
-          params = { page: 101, per_page: 1, pagination: 'keyset' }
+          params = { page: 101, per_page: 1, pagination: 'keyset', optimize_offset: true }
 
           expect(Gitlab::Pagination::Offset::PaginationWithIndexOnlyScan).not_to receive(:new)
 
-          described_class.new(level: level, params: params, optimize_offset: true).execute
+          described_class.new(level: level, params: params).execute
         end
 
         it 'does not use optimization for low page numbers' do
-          params = { page: 1, per_page: 10 }
+          params = { page: 1, per_page: 10, optimize_offset: true }
 
           expect(Gitlab::Pagination::Offset::PaginationWithIndexOnlyScan).not_to receive(:new)
 
-          described_class.new(level: level, params: params, optimize_offset: true).execute
+          described_class.new(level: level, params: params).execute
         end
 
         it 'uses optimization for high page numbers' do
-          params = { page: 101, per_page: 10 }
+          params = { page: 101, per_page: 10, optimize_offset: true }
 
           expect(Gitlab::Pagination::Offset::PaginationWithIndexOnlyScan)
             .to receive(:new)
@@ -404,11 +400,11 @@ RSpec.describe AuditEventFinder, feature_category: :audit_events do
             ))
             .and_call_original
 
-          described_class.new(level: level, params: params, optimize_offset: true).execute
+          described_class.new(level: level, params: params).execute
         end
 
         context 'with filters' do
-          let(:base_params) { { page: 101, per_page: 10 } }
+          let(:base_params) { { page: 101, per_page: 10, optimize_offset: true } }
 
           it 'uses optimization with created_after filter and returns correct results' do
             created_time = project_audit_event.created_at
@@ -419,7 +415,7 @@ RSpec.describe AuditEventFinder, feature_category: :audit_events do
               .with(hash_including(page: 101, per_page: 10))
               .and_call_original
 
-            results = described_class.new(level: level, params: params, optimize_offset: true).execute
+            results = described_class.new(level: level, params: params).execute
 
             expect(results).to all(have_attributes(created_at: be > created_time))
           end
@@ -432,7 +428,7 @@ RSpec.describe AuditEventFinder, feature_category: :audit_events do
               .with(hash_including(page: 101, per_page: 10))
               .and_call_original
 
-            results = described_class.new(level: level, params: params, optimize_offset: true).execute
+            results = described_class.new(level: level, params: params).execute
 
             expect(results).to all(have_attributes(entity_type: 'User'))
           end
@@ -445,7 +441,7 @@ RSpec.describe AuditEventFinder, feature_category: :audit_events do
               .with(hash_including(page: 101, per_page: 10))
               .and_call_original
 
-            results = described_class.new(level: level, params: params, optimize_offset: true).execute
+            results = described_class.new(level: level, params: params).execute
 
             expect(results).to all(have_attributes(author_id: user.id))
           end
@@ -463,7 +459,7 @@ RSpec.describe AuditEventFinder, feature_category: :audit_events do
               .with(hash_including(page: 101, per_page: 10))
               .and_call_original
 
-            results = described_class.new(level: level, params: params, optimize_offset: true).execute
+            results = described_class.new(level: level, params: params).execute
 
             aggregate_failures do
               expect(results).to all(have_attributes(
@@ -483,14 +479,13 @@ RSpec.describe AuditEventFinder, feature_category: :audit_events do
 
             optimized_results = described_class.new(
               level: level,
-              params: params,
-              optimize_offset: true
+              params: params
             ).execute.to_a
 
+            params[:optimize_offset] = false
             unoptimized_results = described_class.new(
               level: level,
-              params: params,
-              optimize_offset: false
+              params: params
             ).execute.to_a
 
             expect(optimized_results).to match_array(unoptimized_results)
