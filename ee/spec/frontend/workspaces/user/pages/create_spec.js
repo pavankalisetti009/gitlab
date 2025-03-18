@@ -432,7 +432,7 @@ describe('workspaces/user/pages/create.vue', () => {
             {
               key: '',
               value: '',
-              type: WORKSPACE_VARIABLE_INPUT_TYPE_ENUM.env,
+              variableType: WORKSPACE_VARIABLE_INPUT_TYPE_ENUM.env,
               valid: false,
             },
           ];
