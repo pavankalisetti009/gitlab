@@ -136,7 +136,7 @@ RSpec.describe ProductAnalytics::SyncFunnelsWorker, feature_category: :product_a
           expect(Gitlab::HTTP).to receive(:post)
             .with(URI.parse(url.to_s), {
               allow_local_requests: allow_local_requests,
-              body: Regexp.new(/.*"state":"deleted"/.source)
+              body: Regexp.new(/.*deleted/.source)
             }).once
             .and_return(instance_double("HTTParty::Response", body: { result: 'success' }))
         end
@@ -155,7 +155,7 @@ RSpec.describe ProductAnalytics::SyncFunnelsWorker, feature_category: :product_a
             expect(Gitlab::HTTP).to receive(:post)
               .with(URI.parse(url.to_s), {
                 allow_local_requests: allow_local_requests,
-                body: Regexp.new(projects_regex.source + /.*"state":"deleted"/.source)
+                body: Regexp.new(projects_regex.source + /.*deleted/.source)
               }).once
               .and_return(instance_double("HTTParty::Response", body: { result: 'success' }))
           end
