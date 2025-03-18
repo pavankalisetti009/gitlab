@@ -7,7 +7,6 @@ import {
   MWPS_MERGE_STRATEGY,
   MWCP_MERGE_STRATEGY,
   MT_MERGE_STRATEGY,
-  MTWPS_MERGE_STRATEGY,
   MTWCP_MERGE_STRATEGY,
 } from '~/vue_merge_request_widget/constants';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -50,7 +49,7 @@ const mr = {
   sha: '1EA2EZ34',
   targetBranchPath: '/foo/bar',
   targetBranch: 'foo',
-  autoMergeStrategy: MTWPS_MERGE_STRATEGY,
+  autoMergeStrategy: MTWCP_MERGE_STRATEGY,
 };
 
 const generateMockResponse = ({ mergeRequest, mergeTrainsCount } = {}) => ({
@@ -112,33 +111,6 @@ describe('MRWidgetAutoMergeEnabled', () => {
   });
 
   describe('status', () => {
-    it('should return "to start a merge train..." if MTWPS is selected and there is no existing merge train', async () => {
-      createComponent({
-        mergeRequest: {
-          autoMergeStrategy: MTWPS_MERGE_STRATEGY,
-        },
-      });
-
-      await waitForPromises();
-
-      expect(getStatusText()).toContain('to start a merge train when the pipeline succeeds');
-    });
-
-    it('should return "to be added to the merge train..." if MTWPS is selected and there is an existing merge train', async () => {
-      createComponent({
-        mergeRequest: {
-          autoMergeStrategy: MTWPS_MERGE_STRATEGY,
-        },
-        mergeTrainsCount: 1,
-      });
-
-      await waitForPromises();
-
-      expect(getStatusText()).toContain(
-        'to be added to the merge train when the pipeline succeeds',
-      );
-    });
-
     it('should return "to be merged automatically..." if MWPS is selected', async () => {
       createComponent({
         mergeRequest: {
@@ -194,26 +166,6 @@ describe('MRWidgetAutoMergeEnabled', () => {
   });
 
   describe('cancelButtonText', () => {
-    it('should return "Cancel start merge train" if MTWPS is selected', async () => {
-      createComponent({
-        mergeRequest: {
-          autoMergeStrategy: MTWPS_MERGE_STRATEGY,
-        },
-        mergeTrainsCount: 1,
-      });
-
-      await waitForPromises();
-
-      expect(wrapper.findComponent(StateContainer).props('actions')).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            text: 'Cancel auto-merge',
-            testId: 'cancelAutomaticMergeButton',
-          }),
-        ]),
-      );
-    });
-
     it('should return "Remove from merge train" if the pipeline has been added to the merge train', async () => {
       createComponent({
         mergeRequest: {

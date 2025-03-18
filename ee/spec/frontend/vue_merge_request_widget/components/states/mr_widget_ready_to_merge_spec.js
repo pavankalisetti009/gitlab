@@ -10,7 +10,6 @@ import {
   MWPS_MERGE_STRATEGY,
   MWCP_MERGE_STRATEGY,
   MT_MERGE_STRATEGY,
-  MTWPS_MERGE_STRATEGY,
   MTWCP_MERGE_STRATEGY,
 } from '~/vue_merge_request_widget/constants';
 
@@ -188,12 +187,11 @@ describe('ReadyToMerge', () => {
 
   describe('merge train failed confirmation dialog', () => {
     it.each`
-      mergeStrategy           | isPipelineFailed | isVisible
-      ${MT_MERGE_STRATEGY}    | ${true}          | ${true}
-      ${MT_MERGE_STRATEGY}    | ${false}         | ${false}
-      ${MTWPS_MERGE_STRATEGY} | ${true}          | ${false}
-      ${MWPS_MERGE_STRATEGY}  | ${true}          | ${false}
-      ${MWCP_MERGE_STRATEGY}  | ${true}          | ${false}
+      mergeStrategy          | isPipelineFailed | isVisible
+      ${MT_MERGE_STRATEGY}   | ${true}          | ${true}
+      ${MT_MERGE_STRATEGY}   | ${false}         | ${false}
+      ${MWPS_MERGE_STRATEGY} | ${true}          | ${false}
+      ${MWCP_MERGE_STRATEGY} | ${true}          | ${false}
     `(
       'with merge stragtegy $mergeStrategy and pipeline failed status of $isPipelineFailed we should show the modal: $isVisible',
       async ({ mergeStrategy, isPipelineFailed, isVisible }) => {
@@ -345,8 +343,6 @@ describe('ReadyToMerge', () => {
       ${[MWCP_MERGE_STRATEGY]}     | ${0}             | ${'Set to auto-merge'}
       ${[MT_MERGE_STRATEGY]}       | ${0}             | ${'Merge'}
       ${[MT_MERGE_STRATEGY]}       | ${1}             | ${'Merge'}
-      ${[MTWPS_MERGE_STRATEGY]}    | ${0}             | ${'Set to auto-merge'}
-      ${[MTWPS_MERGE_STRATEGY]}    | ${1}             | ${'Set to auto-merge'}
     `(
       'displays $expectedText with merge strategy $availableAutoMergeStrategies and merge train count $mergeTrainsCount',
       ({ availableAutoMergeStrategies, mergeTrainsCount, expectedText }) => {

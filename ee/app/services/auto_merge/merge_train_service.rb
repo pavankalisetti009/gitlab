@@ -97,8 +97,7 @@ module AutoMerge
       # to build the train ref instead, and the MR will be removed from the train
       # with a more informative message.
       skip_conflict_check = merge_request.auto_merge_strategy ==
-        AutoMergeService::STRATEGY_ADD_TO_MERGE_TRAIN_WHEN_PIPELINE_SUCCEEDS || merge_request.auto_merge_strategy ==
-          AutoMergeService::STRATEGY_ADD_TO_MERGE_TRAIN_WHEN_CHECKS_PASS
+        AutoMergeService::STRATEGY_ADD_TO_MERGE_TRAIN_WHEN_CHECKS_PASS
 
       super.merge(
         skip_conflict_check: skip_conflict_check

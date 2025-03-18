@@ -35,31 +35,6 @@ module SystemNotes
       create_note(NoteSummary.new(noteable, project, author, body, action: 'merge'))
     end
 
-    # Called when 'add to merge train when pipeline succeeds' is executed
-    def add_when_pipeline_succeeds(sha)
-      body = "enabled automatic add to merge train when the pipeline for #{sha} succeeds"
-
-      create_note(NoteSummary.new(noteable, project, author, body, action: 'merge'))
-    end
-
-    # Called when 'add to merge train when pipeline succeeds' is canceled
-    def cancel_add_when_pipeline_succeeds
-      body = 'cancelled automatic add to merge train'
-
-      create_note(NoteSummary.new(noteable, project, author, body, action: 'merge'))
-    end
-
-    # Called when 'add to merge train when pipeline succeeds' is aborted
-    def abort_add_when_pipeline_succeeds(reason)
-      ::TodoService.new.merge_train_removed(noteable)
-
-      ##
-      # TODO: Abort message should be sent by the system, not a particular user.
-      # See https://gitlab.com/gitlab-org/gitlab/issues/29467.
-      body = "aborted automatic add to merge train because #{reason}"
-      create_note(NoteSummary.new(noteable, project, author, body, action: 'merge'))
-    end
-
     # Called when 'add to merge train when checks pass' is executed
     def add_when_checks_pass(_sha)
       body = "enabled automatic add to merge train when checks pass"
