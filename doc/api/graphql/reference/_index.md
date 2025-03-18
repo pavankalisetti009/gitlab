@@ -40724,7 +40724,7 @@ Represents a notes widget.
 
 ##### `WorkItemWidgetNotes.discussions`
 
-Notes on this work item.
+Discussions on this work item.
 
 Returns [`DiscussionConnection`](#discussionconnection).
 
@@ -40737,6 +40737,22 @@ four standard [pagination arguments](#pagination-arguments):
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="workitemwidgetnotesdiscussionsfilter"></a>`filter` | [`NotesFilterType`](#notesfiltertype) | Type of notes collection: ALL_NOTES, ONLY_COMMENTS, ONLY_ACTIVITY. |
+
+##### `WorkItemWidgetNotes.notes`
+
+Notes on this work item.
+
+Returns [`NoteConnection!`](#noteconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="workitemwidgetnotesnotesfilter"></a>`filter` | [`NotesFilterType`](#notesfiltertype) | Type of notes collection: ALL_NOTES, ONLY_COMMENTS, ONLY_ACTIVITY. |
 
 ### `WorkItemWidgetNotifications`
 
