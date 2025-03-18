@@ -13778,7 +13778,8 @@ CREATE TABLE epic_issues (
     issue_id bigint NOT NULL,
     relative_position integer,
     namespace_id bigint,
-    work_item_parent_link_id bigint
+    work_item_parent_link_id bigint,
+    CONSTRAINT check_885d672eec CHECK ((namespace_id IS NOT NULL))
 );
 
 CREATE SEQUENCE epic_issues_id_seq
