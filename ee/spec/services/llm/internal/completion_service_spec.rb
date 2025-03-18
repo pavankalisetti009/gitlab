@@ -293,6 +293,13 @@ RSpec.describe Llm::Internal::CompletionService, :saas, feature_category: :ai_ab
       it 'calls Gitlab::Llm::CompletionsFactory.completion! without resource' do
         allow(completion).to receive(:execute)
 
+        expect(logger).to receive(:info).with(
+          a_hash_including(
+            message: "Nullifying resource to prevent unauthorized access",
+            event_name: 'permission_denied',
+            ai_component: 'abstraction_layer')
+        )
+
         expect(Gitlab::Llm::CompletionsFactory).to receive(:completion!) do |prompt_message, _options|
           expect(prompt_message.resource).to be_nil
           completion

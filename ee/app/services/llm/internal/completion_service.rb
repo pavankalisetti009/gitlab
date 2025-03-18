@@ -20,7 +20,13 @@ module Llm
         set_current_context_for_ai_gateway
 
         with_tracking(prompt_message.ai_action) do
-          prompt_message.context.assign_attributes(resource: nil) unless resource_authorized?(prompt_message)
+          unless resource_authorized?(prompt_message)
+            prompt_message.context.assign_attributes(resource: nil)
+
+            log_info(message: "Nullifying resource to prevent unauthorized access",
+              event_name: 'permission_denied',
+              ai_component: 'abstraction_layer')
+          end
 
           options.symbolize_keys!
           options[:extra_resource] = ::Llm::ExtraResourceFinder
