@@ -122,7 +122,7 @@ describe('FeatureSettingsModelSelector', () => {
 
         expect(updateFeatureSettingsSuccessHandler).toHaveBeenCalledWith({
           input: {
-            feature: 'CODE_GENERATIONS',
+            features: ['CODE_GENERATIONS'],
             provider: 'SELF_HOSTED',
             aiSelfHostedModelId: 1,
           },
@@ -136,7 +136,7 @@ describe('FeatureSettingsModelSelector', () => {
 
         expect(updateFeatureSettingsSuccessHandler).toHaveBeenCalledWith({
           input: {
-            feature: 'CODE_GENERATIONS',
+            features: ['CODE_GENERATIONS'],
             provider: 'DISABLED',
             aiSelfHostedModelId: null,
           },
