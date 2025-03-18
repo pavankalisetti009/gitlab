@@ -162,4 +162,93 @@ RSpec.describe AuditEvents::GroupAuditEventFinder, feature_category: :audit_even
       end
     end
   end
+
+  describe 'offset optimization' do
+    describe 'feature flag behavior' do
+      let_it_be(:pagination_events) do
+        create_list(:audit_events_group_audit_event, 5, group_id: group_1.id, created_at: 3.days.ago)
+      end
+
+      after do
+        pagination_events.each(&:destroy)
+      end
+
+      context 'when feature flag is disabled' do
+        let(:params) { { page: 101, per_page: 1, optimize_offset: true } }
+
+        before do
+          stub_feature_flags(audit_events_api_offset_optimization: false)
+        end
+
+        it 'does not use offset optimization even with high page number' do
+          expect(Gitlab::Pagination::Offset::PaginationWithIndexOnlyScan).not_to receive(:new)
+
+          finder.execute
+        end
+      end
+
+      context 'when feature flag is enabled' do
+        context 'with keyset pagination' do
+          let(:params) { { page: 101, per_page: 1, pagination: 'keyset', optimize_offset: true } }
+
+          it 'does not use optimization' do
+            expect(Gitlab::Pagination::Offset::PaginationWithIndexOnlyScan).not_to receive(:new)
+
+            finder.execute
+          end
+        end
+
+        context 'with high page numbers' do
+          let(:params) { { page: 101, per_page: 10, optimize_offset: true } }
+
+          it 'uses optimization' do
+            expect(Gitlab::Pagination::Offset::PaginationWithIndexOnlyScan)
+              .to receive(:new)
+              .with(hash_including(
+                page: 101,
+                per_page: 10,
+                scope: kind_of(ActiveRecord::Relation)
+              ))
+              .and_call_original
+
+            finder.execute
+          end
+        end
+
+        context 'with filters' do
+          let(:base_params) { { page: 101, per_page: 10, optimize_offset: true } }
+
+          context 'with created_after filter' do
+            let(:params) { base_params.merge(created_after: group_audit_event_1.created_at) }
+
+            it 'uses optimization and returns correct results' do
+              expect(Gitlab::Pagination::Offset::PaginationWithIndexOnlyScan)
+                .to receive(:new)
+                .with(hash_including(page: 101, per_page: 10))
+                .and_call_original
+
+              results = finder.execute
+
+              expect(results).to all(have_attributes(created_at: be >= group_audit_event_1.created_at))
+            end
+          end
+
+          context 'with author_id filter' do
+            let(:params) { base_params.merge(author_id: user_1.id) }
+
+            it 'uses optimization and returns correct results' do
+              expect(Gitlab::Pagination::Offset::PaginationWithIndexOnlyScan)
+                .to receive(:new)
+                .with(hash_including(page: 101, per_page: 10))
+                .and_call_original
+
+              results = finder.execute
+
+              expect(results).to all(have_attributes(author_id: user_1.id))
+            end
+          end
+        end
+      end
+    end
+  end
 end

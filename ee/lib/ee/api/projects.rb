@@ -58,6 +58,8 @@ module EE
               use :pagination
             end
             get '/', feature_category: :audit_events, urgency: :low do
+              audit_event_finder_params[:optimize_offset] = true
+
               if ::Feature.enabled?(:read_audit_events_from_new_tables, user_project)
                 audit_events = ::AuditEvents::ProjectAuditEventFinder.new(
                   project: user_project,
