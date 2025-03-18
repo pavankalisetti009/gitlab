@@ -35892,6 +35892,9 @@ msgstr ""
 msgid "MemberRole|Role type"
 msgstr ""
 
+msgid "MemberRole|Roles"
+msgstr ""
+
 msgid "MemberRole|Roles and permissions"
 msgstr ""
 

@@ -10,6 +10,8 @@ import RolesApp from 'ee/roles_and_permissions/components/app.vue';
 import RolesTable from 'ee/roles_and_permissions/components/roles_table.vue';
 import DeleteRoleModal from 'ee/roles_and_permissions/components/delete_role_modal.vue';
 import RolesExport from 'ee/roles_and_permissions/components/roles_export.vue';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import { createAlert } from '~/alert';
 import {
   standardRoles,
@@ -49,7 +51,7 @@ describe('Roles app', () => {
         glAbilities: { exportGroupMemberships },
       },
       propsData: { groupFullPath, newRolePath },
-      stubs: { GlSprintf },
+      stubs: { GlSprintf, PageHeading, CrudComponent },
       mocks: { $toast: { show: mockToastShow } },
     });
 
@@ -67,20 +69,20 @@ describe('Roles app', () => {
     });
 
     it('shows the title', () => {
-      expect(wrapper.find('h2').text()).toBe('Roles and permissions');
+      expect(wrapper.findByTestId('page-heading').text()).toBe('Roles and permissions');
     });
 
     it('shows the New role button', () => {
       const button = wrapper.findComponent(GlButton);
 
       expect(button.text()).toBe('New role');
-      expect(button.props('variant')).toBe('confirm');
+      expect(button.props('size')).toBe('small');
       expect(button.attributes('href')).toBe('new/role/path');
     });
 
     describe('sub-title', () => {
       it('shows the sub-title', () => {
-        expect(wrapper.find('p').text()).toBe(
+        expect(wrapper.findByTestId('page-heading-description').text()).toBe(
           'Manage which actions users can take with roles and permissions.',
         );
       });
