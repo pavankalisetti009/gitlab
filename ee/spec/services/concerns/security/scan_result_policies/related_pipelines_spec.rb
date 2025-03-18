@@ -27,8 +27,8 @@ RSpec.describe Security::ScanResultPolicies::RelatedPipelines, feature_category:
     end
   end
 
-  describe '#target_pipeline' do
-    subject(:target_pipeline) { subject_class.new.target_pipeline(merge_request, report_type) }
+  describe '#target_pipeline_for_merge_request' do
+    subject(:target_pipeline) { subject_class.new.target_pipeline_for_merge_request(merge_request, report_type) }
 
     before do
       merge_request.update_head_pipeline
@@ -104,10 +104,12 @@ RSpec.describe Security::ScanResultPolicies::RelatedPipelines, feature_category:
     end
   end
 
-  describe '#related_target_pipeline_ids' do
+  describe '#related_target_pipeline_ids_for_merge_request' do
     let(:report_type) { :scan_finding }
 
-    subject(:related_target_pipeline_ids) { subject_class.new.related_target_pipeline_ids(merge_request, report_type) }
+    subject(:related_target_pipeline_ids) do
+      subject_class.new.related_target_pipeline_ids_for_merge_request(merge_request, report_type)
+    end
 
     context 'when there is no pipeline on target branch' do
       it 'returns an empty array' do
@@ -141,11 +143,7 @@ RSpec.describe Security::ScanResultPolicies::RelatedPipelines, feature_category:
     end
   end
 
-  describe '#related_pipeline_ids' do
-    subject(:related_pipeline_ids) do
-      subject_class.new.related_pipeline_ids(merge_request.diff_head_pipeline)
-    end
-
+  shared_context 'with related pipelines' do
     let_it_be(:pipeline) do
       create(:ee_ci_pipeline, :success,
         :with_dependency_scanning_report,
@@ -174,9 +172,45 @@ RSpec.describe Security::ScanResultPolicies::RelatedPipelines, feature_category:
         sha: merge_request.diff_head_sha
       )
     end
+  end
 
-    it 'returns the related target pipeline ids' do
+  describe '#related_pipeline_ids' do
+    include_context 'with related pipelines'
+
+    let(:pipeline) { merge_request.diff_head_pipeline }
+
+    subject(:related_pipeline_ids) { subject_class.new.related_pipeline_ids(pipeline) }
+
+    it 'returns the related pipeline ids' do
       expect(related_pipeline_ids).to match_array([pipeline.id, another_pipeline.id])
+    end
+
+    context 'when pipeline is nil' do
+      let(:pipeline) { nil }
+
+      it 'returns empty array' do
+        expect(related_pipeline_ids).to be_empty
+      end
+    end
+  end
+
+  describe '#related_pipelines' do
+    include_context 'with related pipelines'
+
+    let(:pipeline) { merge_request.diff_head_pipeline }
+
+    subject(:related_pipelines) { subject_class.new.related_pipelines(pipeline) }
+
+    it 'returns the related pipeline ids' do
+      expect(related_pipelines).to match_array([pipeline, another_pipeline])
+    end
+
+    context 'when pipeline is nil' do
+      let(:pipeline) { nil }
+
+      it 'returns empty collection' do
+        expect(related_pipelines).to eq(Ci::Pipeline.none)
+      end
     end
   end
 end

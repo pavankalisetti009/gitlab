@@ -28,8 +28,16 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
         ref: merge_request.target_branch, sha: merge_request.diff_base_sha)
     end
 
+    let_it_be(:ds_build) do
+      create(:ci_build, :success, name: 'ds_1', pipeline: pipeline, project: project)
+    end
+
     let_it_be(:pipeline_scan) do
-      create(:security_scan, :succeeded, project: project, pipeline: pipeline, scan_type: 'dependency_scanning')
+      create(:security_scan, :succeeded, project: project, build: ds_build, scan_type: 'dependency_scanning')
+    end
+
+    let_it_be(:scan_artifact) do
+      create(:ee_ci_job_artifact, :dependency_scanning, job: ds_build, project: project)
     end
 
     let_it_be(:target_scan) do
@@ -61,13 +69,16 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
       )
     end
 
+    let(:service) { described_class.new(merge_request: merge_request, pipeline: pipeline) }
+
     before do
       allow(pipeline).to receive(:can_store_security_reports?).and_return(true)
+      allow_next_found_instance_of(Ci::Pipeline) do |instance|
+        allow(instance).to receive(:can_store_security_reports?).and_return(true)
+      end
     end
 
-    subject(:execute) do
-      described_class.new(merge_request: merge_request, pipeline: pipeline).execute
-    end
+    subject(:execute) { service.execute }
 
     shared_examples_for 'does not update approvals_required' do
       it do
@@ -149,6 +160,17 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
 
     context 'when security scan is removed in current pipeline' do
       let_it_be(:pipeline) { create(:ee_ci_pipeline, :success, project: project, ref: merge_request.source_branch) }
+      let_it_be(:cs_build) do
+        create(:ci_build, :success, name: 'cs_1', pipeline: pipeline, project: project)
+      end
+
+      let_it_be(:pipeline_scan) do
+        create(:security_scan, :succeeded, project: project, build: cs_build, scan_type: 'container_scanning')
+      end
+
+      let_it_be(:scan_artifact) do
+        create(:ee_ci_job_artifact, :container_scanning, job: cs_build, project: project)
+      end
 
       context 'when approval rule scanners is empty' do
         let(:scanners) { [] }
@@ -648,11 +670,6 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
 
     context 'when there are preexisting findings that exceed the allowed limit' do
       context 'when target pipeline is not empty' do
-        let_it_be(:pipeline) { create(:ee_ci_pipeline, :success, project: project, ref: merge_request.source_branch) }
-        let_it_be(:pipeline_scan) do
-          create(:security_scan, :succeeded, pipeline: pipeline, scan_type: 'dependency_scanning')
-        end
-
         let_it_be(:target_pipeline_findings) { create_findings_with_vulnerabilities(target_scan, uuids) }
         let(:vulnerability_states) { %w[detected] }
 
@@ -756,12 +773,6 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
         )
       end
 
-      let_it_be(:related_pipeline_findings) do
-        related_uuids.each do |uuid|
-          create(:security_finding, scan: related_pipeline_scan, scanner: scanner, severity: 'high', uuid: uuid)
-        end
-      end
-
       let_it_be(:related_target_scan) do
         create(:security_scan, :succeeded,
           project: project,
@@ -770,21 +781,19 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
         )
       end
 
-      before_all do
-        related_uuids.each do |uuid|
-          create(:security_finding, scan: related_target_scan, scanner: scanner, severity: 'high', uuid: uuid)
-
-          vulnerability = create(:vulnerability, project: project)
-          create(:vulnerabilities_finding, project: project, uuid: uuid, vulnerability: vulnerability)
-        end
+      context 'when findings in the main pipeline violate the policy' do
+        it_behaves_like 'does not update approvals_required'
+        it_behaves_like 'triggers policy bot comment', :scan_finding, true
       end
 
-      context 'when pipeline cannot store security reports' do
+      context 'when no pipeline can store security reports' do
         before do
           allow(pipeline).to receive(:can_store_security_reports?).and_return(false)
+          allow(service).to receive(:related_pipeline_with_security_reports_exists?).and_return(false)
         end
 
         it_behaves_like 'does not update approvals_required'
+        it_behaves_like 'does not trigger policy bot comment'
 
         it 'logs a message' do
           expect(::Gitlab::AppJsonLogger).to receive(:info).with(a_hash_including(
@@ -796,17 +805,78 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
         end
       end
 
-      context 'when security scan is removed in related pipeline' do
-        let_it_be(:pipeline) do
-          create(:ee_ci_pipeline, :success,
-            project: project,
-            ref: merge_request.source_branch
-          )
+      context 'when findings in the main pipeline do not violate the policy' do
+        let(:severity_levels) { %w[medium] }
+
+        context 'without findings in the related pipelines' do
+          it_behaves_like 'sets approvals_required to 0'
+          it_behaves_like 'triggers policy bot comment', :scan_finding, false
+
+          context 'when main pipeline cannot store security reports and a related pipeline can' do
+            before do
+              allow(pipeline).to receive(:can_store_security_reports?).and_return(false)
+              allow(service).to receive(:related_pipeline_with_security_reports_exists?).and_return(true)
+            end
+
+            it_behaves_like 'sets approvals_required to 0'
+            it_behaves_like 'triggers policy bot comment', :scan_finding, false
+
+            context 'when feature flag "use_related_pipelines_for_policy_evaluation" is disabled' do
+              before do
+                stub_feature_flags(use_related_pipelines_for_policy_evaluation: false)
+              end
+
+              it_behaves_like 'does not update approvals_required'
+              it_behaves_like 'does not trigger policy bot comment'
+            end
+          end
         end
 
-        it_behaves_like 'does not update approvals_required'
+        context 'with findings in the related pipelines violating the policy' do
+          before_all do
+            related_uuids.each do |uuid|
+              create(:security_finding, scan: related_pipeline_scan, scanner: scanner, severity: 'medium', uuid: uuid)
+              create(:security_finding, scan: related_target_scan, scanner: scanner, severity: 'medium', uuid: uuid)
 
-        it_behaves_like 'triggers policy bot comment', :scan_finding, true
+              vulnerability = create(:vulnerability, project: project)
+              create(:vulnerabilities_finding, project: project, uuid: uuid, vulnerability: vulnerability)
+            end
+          end
+
+          it_behaves_like 'does not update approvals_required'
+          it_behaves_like 'triggers policy bot comment', :scan_finding, true
+
+          context 'when main pipeline cannot store security reports and a related pipeline can' do
+            before do
+              allow(pipeline).to receive(:can_store_security_reports?).and_return(false)
+              allow(service).to receive(:related_pipeline_with_security_reports_exists?).and_return(true)
+            end
+
+            it_behaves_like 'does not update approvals_required'
+            it_behaves_like 'triggers policy bot comment', :scan_finding, true
+
+            context 'when feature flag "use_related_pipelines_for_policy_evaluation" is disabled' do
+              before do
+                stub_feature_flags(use_related_pipelines_for_policy_evaluation: false)
+              end
+
+              it_behaves_like 'does not update approvals_required'
+              it_behaves_like 'does not trigger policy bot comment'
+            end
+          end
+
+          context 'when security scan is removed in related pipeline' do
+            let_it_be(:pipeline) do
+              create(:ee_ci_pipeline, :success,
+                project: project,
+                ref: merge_request.source_branch
+              )
+            end
+
+            it_behaves_like 'does not update approvals_required'
+            it_behaves_like 'triggers policy bot comment', :scan_finding, true
+          end
+        end
       end
     end
 

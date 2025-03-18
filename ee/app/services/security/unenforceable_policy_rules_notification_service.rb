@@ -45,8 +45,7 @@ module Security
                             .new(merge_request, approval_rules, report_type)
 
       applicable_rules.each do |rule|
-        policy_evaluation.error!(rule, :artifacts_missing,
-          context: related_pipelines_context(pipeline, merge_request, report_type))
+        policy_evaluation.error!(rule, :artifacts_missing, context: validation_context(report_type))
       end
 
       policy_evaluation.save
@@ -55,22 +54,16 @@ module Security
     def pipelines_with_enforceable_reports(report_type)
       return [] if pipeline.nil?
 
+      pipelines = related_pipelines(pipeline)
       case report_type
       when :scan_finding
         # Pipelines which can store security reports are handled via SyncFindingsToApprovalRulesService
-        related_pipelines.select(&:can_store_security_reports?)
+        pipelines.select(&:can_store_security_reports?)
       when :license_scanning
         # Pipelines which have scanning results available are handled via SyncLicenseScanningRulesService
-        related_pipelines.select(&:can_ingest_sbom_reports?)
+        pipelines.select(&:can_ingest_sbom_reports?)
       end
     end
-
-    def related_pipelines
-      return [] if pipeline.nil?
-
-      project.all_pipelines.id_in(related_pipeline_ids(pipeline))
-    end
-    strong_memoize_attr :related_pipelines
 
     def unblock_fail_open_rules(report_type)
       Security::ScanResultPolicies::UnblockFailOpenApprovalRulesService
@@ -78,10 +71,17 @@ module Security
         .execute
     end
 
+    def validation_context(report_type)
+      return if pipeline.nil?
+
+      { pipeline_ids: related_pipeline_ids(pipeline),
+        target_pipeline_ids: related_target_pipeline_ids_for_merge_request(merge_request, report_type) }
+    end
+
     def log_message(report_type, message, **attributes)
       log_policy_evaluation('unenforceable_rules', message,
         project: project, report_type: report_type, merge_request_id: merge_request.id,
-        merge_request_iid: merge_request.iid, related_pipeline_ids: related_pipelines.map(&:id), **attributes)
+        merge_request_iid: merge_request.iid, related_pipeline_ids: related_pipeline_ids(pipeline), **attributes)
     end
   end
 end

@@ -1,0 +1,9 @@
+---
+name: use_related_pipelines_for_policy_evaluation
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/519532
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/184445
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/524830
+milestone: '17.11'
+group: group::security policies
+type: gitlab_com_derisk
+default_enabled: false

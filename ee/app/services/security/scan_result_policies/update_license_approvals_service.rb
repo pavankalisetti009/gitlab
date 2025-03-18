@@ -5,6 +5,7 @@ module Security
     class UpdateLicenseApprovalsService
       include Gitlab::Utils::StrongMemoize
       include ::Security::ScanResultPolicies::PolicyLogger
+      include ::Security::ScanResultPolicies::RelatedPipelines
 
       def initialize(merge_request, pipeline, preexisting_states = false)
         @merge_request = merge_request
@@ -87,7 +88,7 @@ module Security
       end
 
       def scanner
-        ::Gitlab::LicenseScanning.scanner_for_pipeline(project, pipeline)
+        ::Gitlab::LicenseScanning.scanner_for_pipeline(project, source_pipeline)
       end
       strong_memoize_attr :scanner
 
@@ -95,6 +96,17 @@ module Security
         @evaluation ||= Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationService
           .new(merge_request, approval_rules, :license_scanning)
       end
+
+      def source_pipeline
+        return pipeline if pipeline.nil? || pipeline.has_sbom_reports? ||
+          ::Feature.disabled?(:use_related_pipelines_for_policy_evaluation, project)
+
+        # We use dependency_scanning_reports instead of SBOM reports because
+        # container scanning job also generates SBOM reports. We might pick a pipeline with CS job and not DS job.
+        # TODO: Investigate use of SBOM reports in https://gitlab.com/gitlab-org/gitlab/-/issues/500106
+        merge_request.find_pipeline_with_dependency_scanning_reports(related_pipelines(pipeline)) || pipeline
+      end
+      strong_memoize_attr :source_pipeline
 
       def target_branch_pipeline
         target_pipeline = merge_request.latest_comparison_pipeline_with_sbom_reports
@@ -121,7 +133,7 @@ module Security
       end
 
       def validation_context
-        { pipeline_ids: [pipeline&.id].compact, target_pipeline_ids: [target_branch_pipeline&.id].compact }
+        { pipeline_ids: [source_pipeline&.id].compact, target_pipeline_ids: [target_branch_pipeline&.id].compact }
       end
 
       def log_update_approval_rule(message, **attributes)

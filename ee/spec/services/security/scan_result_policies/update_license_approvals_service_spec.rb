@@ -44,7 +44,9 @@ RSpec.describe Security::ScanResultPolicies::UpdateLicenseApprovalsService, feat
     )
   end
 
-  subject(:execute) { described_class.new(merge_request, pipeline, preexisting_states).execute }
+  let(:service) { described_class.new(merge_request, pipeline, preexisting_states) }
+
+  subject(:execute) { service.execute }
 
   shared_examples 'does not require approvals' do
     it 'resets approvals_required in approval rules' do
@@ -197,10 +199,14 @@ RSpec.describe Security::ScanResultPolicies::UpdateLicenseApprovalsService, feat
     end
 
     context 'when the pipeline has no license report' do
-      before do
-        allow(::Gitlab::LicenseScanning).to receive(:scanner_for_pipeline).and_return(
-          instance_double('Gitlab::LicenseScanning::SbomScanner', report: nil, results_available?: false)
-        )
+      let_it_be_with_reload(:pipeline) do
+        create(
+          :ee_ci_pipeline,
+          :success,
+          project: project,
+          merge_requests_as_head_pipeline: [merge_request],
+          ref: merge_request.source_branch,
+          sha: merge_request.diff_head_sha)
       end
 
       it_behaves_like 'requires approval'
@@ -211,6 +217,52 @@ RSpec.describe Security::ScanResultPolicies::UpdateLicenseApprovalsService, feat
           message: 'No SBOM reports found for the pipeline'))
 
         execute
+      end
+
+      context 'when a related source pipeline has a license report' do
+        let_it_be(:related_source_pipeline) do
+          create(
+            :ee_ci_pipeline,
+            :success,
+            :with_dependency_scanning_feature_branch,
+            :with_cyclonedx_report,
+            source: :merge_request_event,
+            project: project,
+            ref: merge_request.source_branch,
+            sha: merge_request.diff_head_sha)
+        end
+
+        it_behaves_like 'requires approval'
+        it_behaves_like 'triggers policy bot comment', :license_scanning, true
+
+        context 'when feature flag "use_related_pipelines_for_policy_evaluation" is disabled' do
+          before do
+            stub_feature_flags(use_related_pipelines_for_policy_evaluation: false)
+          end
+
+          it_behaves_like 'requires approval'
+          it_behaves_like 'does not trigger policy bot comment'
+        end
+
+        context 'when there are no violations' do
+          before do
+            allow_next_instance_of(Security::ScanResultPolicies::LicenseViolationChecker) do |checker|
+              allow(checker).to receive(:execute).and_return(nil)
+            end
+          end
+
+          it_behaves_like 'does not require approvals'
+          it_behaves_like 'triggers policy bot comment', :license_scanning, false
+
+          context 'when feature flag "use_related_pipelines_for_policy_evaluation" is disabled' do
+            before do
+              stub_feature_flags(use_related_pipelines_for_policy_evaluation: false)
+            end
+
+            it_behaves_like 'requires approval'
+            it_behaves_like 'does not trigger policy bot comment'
+          end
+        end
       end
     end
 
