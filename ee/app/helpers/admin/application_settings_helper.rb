@@ -9,24 +9,6 @@ module Admin
       :enabled_expanded_logging,
       to: :current_application_settings
 
-    def ai_powered_testing_agreement
-      safe_format(
-        s_('AIPoweredSM|By enabling this feature, you agree to the %{link_start}GitLab Testing Agreement%{link_end}.'),
-        tag_pair_for_link(gitlab_testing_agreement_url))
-    end
-
-    def ai_powered_description
-      safe_format(
-        s_('AIPoweredSM|Enable %{link_start}AI-powered features%{link_end} for this instance.'),
-        tag_pair_for_link(ai_powered_docs_url))
-    end
-
-    def direct_connections_description
-      safe_format(
-        s_('AIPoweredSM|Disable %{link_start}direct connections%{link_end} for this instance.'),
-        tag_pair_for_link(direct_connections_docs_url))
-    end
-
     def admin_display_duo_addon_settings?
       GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_pro_or_duo_enterprise.active.any?
     end
