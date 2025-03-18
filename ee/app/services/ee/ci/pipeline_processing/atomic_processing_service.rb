@@ -20,7 +20,6 @@ module EE
         # pipeline-policy-pre stage is not completed. This is to
         # ensure jobs can not circumvent enforces security checks.
         def calculate_status_based_on_policy_pre_stage(status, job)
-          return status unless ensure_pipeline_policy_pre_stage_complete_enabled?
           return status if !policy_pre_stage || job_on_policy_pre_stage?(job)
 
           policy_pre_stage_completed? ? status : 'running'
@@ -41,12 +40,6 @@ module EE
           end
         end
         strong_memoize_attr :policy_pre_stage
-
-        def ensure_pipeline_policy_pre_stage_complete_enabled?
-          ::Feature.enabled?(:ensure_pipeline_policy_pre_stage_complete, pipeline.project) ||
-            ::Feature.enabled?(:ensure_pipeline_policy_pre_stage_complete_group, pipeline.project.group)
-        end
-        strong_memoize_attr :ensure_pipeline_policy_pre_stage_complete_enabled?
       end
     end
   end
