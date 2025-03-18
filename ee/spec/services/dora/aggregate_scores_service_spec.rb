@@ -4,9 +4,9 @@ require 'spec_helper'
 
 RSpec.describe Dora::AggregateScoresService, feature_category: :value_stream_management do
   let_it_be(:group) { create(:group) }
-  let_it_be(:topic1) { create(:topic, name: "topic1") }
-  let_it_be(:topic2) { create(:topic, name: "topic2") }
-  let_it_be(:topic3) { create(:topic, name: "topic3") }
+  let_it_be(:topic1) { create(:topic, name: "topic1", organization_id: group.organization_id) }
+  let_it_be(:topic2) { create(:topic, name: "topic2", organization_id: group.organization_id) }
+  let_it_be(:topic3) { create(:topic, name: "topic3", organization_id: group.organization_id) }
   let_it_be(:project_1) { create(:project, group: group, topics: [topic1]) }
   let_it_be(:project_2) { create(:project, group: group, topics: [topic2]) }
   let_it_be(:project_3) { create(:project, group: group, topics: [topic1, topic2]) }
