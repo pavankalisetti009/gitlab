@@ -9,14 +9,12 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
   let_it_be(:self_hosted_model) { create(:ai_self_hosted_model) }
   let_it_be(:feature_setting) { create(:ai_feature_setting, provider: :vendored, self_hosted_model: nil) }
   let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
-  let_it_be(:add_on_purchase) do
-    create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active)
-  end
+  let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active) }
 
   let(:mutation_name) { :ai_feature_setting_update }
   let(:mutation_params) do
     {
-      feature: 'CODE_GENERATIONS',
+      features: ['CODE_GENERATIONS'],
       provider: 'VENDORED'
     }
   end
@@ -39,24 +37,38 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
       context 'when there are ActiveRecord validation errors' do
         let(:mutation_params) do
           {
-            feature: 'CODE_GENERATIONS',
+            features: ['CODE_GENERATIONS'],
             provider: 'SELF_HOSTED'
           }
         end
 
         it 'returns an error' do
           request
-
           result = json_response['data']['aiFeatureSettingUpdate']
-
-          expect(result['aiFeatureSetting']).to eq(nil)
+          expect(result['aiFeatureSettings']).to eq([])
           expect(result['errors']).to eq(["Self hosted model can't be blank"])
         end
 
         it 'does not update the AI feature setting' do
           request
-
           expect { feature_setting.reload }.not_to change { feature_setting.provider }
+        end
+      end
+
+      context 'when features array is empty' do
+        let(:mutation_params) do
+          {
+            features: [],
+            provider: 'VENDORED'
+          }
+        end
+
+        it 'returns an error message' do
+          request
+          result = json_response['data']['aiFeatureSettingUpdate']
+
+          expect(result['aiFeatureSettings']).to eq([])
+          expect(result['errors']).to eq(['At least one feature is required'])
         end
       end
 
@@ -64,39 +76,59 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
         let(:self_hosted_model_id) { self_hosted_model.to_global_id.to_s }
         let(:mutation_params) do
           {
-            feature: 'CODE_GENERATIONS',
+            features: %w[CODE_GENERATIONS DUO_CHAT_EXPLAIN_CODE],
             provider: 'SELF_HOSTED',
             ai_self_hosted_model_id: self_hosted_model_id
           }
         end
 
         context 'when the feature setting exists' do
-          it 'updates the feature setting' do
-            expect { request }.not_to change { ::Ai::FeatureSetting.count }
+          before do
+            create(:ai_feature_setting, feature: 'duo_chat_explain_code', provider: :vendored, self_hosted_model: nil)
+          end
 
+          it 'updates the feature settings correctly' do
+            expect { request }.not_to change { ::Ai::FeatureSetting.count }
             expect(response).to have_gitlab_http_status(:success)
 
-            expect(feature_setting.reload.feature).to eq('code_generations')
-            expect(feature_setting.reload.provider).to eq('self_hosted')
-            expect(feature_setting.reload.self_hosted_model.to_global_id.to_s).to eq(self_hosted_model_id)
+            feature_settings = ::Ai::FeatureSetting.where(feature: %w[code_generations
+              duo_chat_explain_code]).order(:feature)
+
+            expect(feature_settings.count).to eq(2)
+
+            feature_settings.each do |setting|
+              expect(setting.reload.provider).to eq('self_hosted')
+              expect(setting.reload.self_hosted_model.to_global_id.to_s).to eq(self_hosted_model_id)
+            end
           end
         end
 
         context 'when the feature setting does not exist' do
+          let(:mutation_params) do
+            {
+              features: %w[DUO_CHAT_FIX_CODE DUO_CHAT_EXPLAIN_CODE],
+              provider: 'SELF_HOSTED',
+              ai_self_hosted_model_id: self_hosted_model_id
+            }
+          end
+
           before do
             ::Ai::FeatureSetting.delete_all
           end
 
-          it 'create the feature setting' do
-            expect { request }.to change { ::Ai::FeatureSetting.count }.from(0).to(1)
-
+          it 'creates the feature settings correctly' do
+            expect { request }.to change { ::Ai::FeatureSetting.count }.from(0).to(2)
             expect(response).to have_gitlab_http_status(:success)
 
-            created_feature_setting = ::Ai::FeatureSetting.last
+            feature_settings = ::Ai::FeatureSetting.where(feature: %w[duo_chat_fix_code
+              duo_chat_explain_code]).order(:feature)
 
-            expect(created_feature_setting.feature).to eq('code_generations')
-            expect(created_feature_setting.provider).to eq('self_hosted')
-            expect(created_feature_setting.self_hosted_model.to_global_id.to_s).to eq(self_hosted_model_id)
+            expect(feature_settings.count).to eq(2)
+
+            feature_settings.each do |setting|
+              expect(setting.provider).to eq('self_hosted')
+              expect(setting.self_hosted_model.to_global_id.to_s).to eq(self_hosted_model_id)
+            end
           end
         end
       end

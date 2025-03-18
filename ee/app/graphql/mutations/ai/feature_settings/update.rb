@@ -5,11 +5,11 @@ module Mutations
     module FeatureSettings
       class Update < Base
         graphql_name 'AiFeatureSettingUpdate'
-        description "Updates or create setting for the AI feature."
+        description "Updates or creates settings for AI features."
 
-        argument :feature, ::Types::Ai::FeatureSettings::FeaturesEnum,
+        argument :features, [::Types::Ai::FeatureSettings::FeaturesEnum],
           required: true,
-          description: 'AI feature being configured.'
+          description: 'Array of AI features being configured (for single or batch update).'
 
         argument :provider, ::Types::Ai::FeatureSettings::ProvidersEnum,
           required: true,
@@ -18,37 +18,42 @@ module Mutations
         argument :ai_self_hosted_model_id,
           ::Types::GlobalIDType[::Ai::SelfHostedModel],
           required: false,
-          description: 'Global ID of the self-hosted model provide the AI setting.'
+          description: 'Global ID of the self-hosted model providing the AI setting.'
 
         def resolve(**args)
           check_feature_access!
 
-          result = upsert_feature_setting(args)
+          return { ai_feature_settings: [], errors: ['At least one feature is required'] } if args[:features].empty?
 
-          if result.error?
-            {
-              ai_feature_setting: nil,
-              errors: Array(result.errors)
-            }
-          else
-            { ai_feature_setting: result.payload, errors: [] }
+          upsert_args = args.dup
+          upsert_args.delete(:features)
+
+          results = args[:features].map do |feature|
+            upsert_feature_setting(upsert_args.merge(feature: feature))
           end
+
+          errors = results.select(&:error?).flat_map(&:errors)
+          payloads = results.reject(&:error?).map(&:payload)
+
+          {
+            ai_feature_settings: payloads,
+            errors: errors
+          }
         end
 
         private
 
         def upsert_feature_setting(args)
           feature_setting = find_or_initialize_object(feature: args[:feature])
-          feature_settings_params = args.dup
 
-          self_hosted_model_gid = feature_settings_params[:ai_self_hosted_model_id]
-
+          self_hosted_model_gid = args[:ai_self_hosted_model_id]
           if self_hosted_model_gid.present?
-            feature_settings_params[:ai_self_hosted_model_id] = GitlabSchema.parse_gid(self_hosted_model_gid)&.model_id
+            args[:ai_self_hosted_model_id] =
+              GitlabSchema.parse_gid(self_hosted_model_gid)&.model_id
           end
 
           ::Ai::FeatureSettings::UpdateService.new(
-            feature_setting, current_user, feature_settings_params
+            feature_setting, current_user, args
           ).execute
         end
 

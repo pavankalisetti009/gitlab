@@ -103,7 +103,7 @@ export default {
           mutation: updateAiFeatureSetting,
           variables: {
             input: {
-              feature: this.aiFeatureSetting.feature.toUpperCase(),
+              features: [this.aiFeatureSetting.feature.toUpperCase()],
               provider: selectedOption.provider.toUpperCase(),
               aiSelfHostedModelId: selectedOption.selfHostedModelId,
             },
