@@ -1,8 +1,9 @@
 import { GlFilteredSearch, GlPagination, GlSorting } from '@gitlab/ui';
 import { createTestingPinia } from '@pinia/testing';
-import Vue from 'vue';
+import Vue, { nextTick } from 'vue';
 import { PiniaVuePlugin } from 'pinia';
 import AccessTokens from 'ee/service_accounts/components/access_tokens/access_tokens.vue';
+import AccessTokenForm from 'ee/service_accounts/components/access_tokens/access_token_form.vue';
 import { useAccessTokens } from 'ee/service_accounts/stores/access_tokens';
 import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -15,8 +16,9 @@ describe('AccessTokens', () => {
   const pinia = createTestingPinia();
   const store = useAccessTokens();
 
-  const accessTokenRevoke = '/api/v4/groups/4/service_accounts/:id/personal_access_tokens/';
-  const accessTokenRotate = '/api/v4/groups/4/service_accounts/:id/personal_access_tokens/';
+  const accessTokenCreate = '/api/v4/groups/1/service_accounts/:id/personal_access_tokens/';
+  const accessTokenRevoke = '/api/v4/groups/2/service_accounts/:id/personal_access_tokens/';
+  const accessTokenRotate = '/api/v4/groups/3/service_accounts/:id/personal_access_tokens/';
   const accessTokenShow = '/api/v4/personal_access_tokens';
   const id = 235;
 
@@ -24,6 +26,7 @@ describe('AccessTokens', () => {
     wrapper = shallowMountExtended(AccessTokens, {
       pinia,
       provide: {
+        accessTokenCreate,
         accessTokenRevoke,
         accessTokenRotate,
         accessTokenShow,
@@ -34,6 +37,8 @@ describe('AccessTokens', () => {
     });
   };
 
+  const findCreateTokenButton = () => wrapper.findByTestId('add-new-token-button');
+  const findCreateTokenForm = () => wrapper.findComponent(AccessTokenForm);
   const findFilteredSearch = () => wrapper.findComponent(GlFilteredSearch);
   const findPagination = () => wrapper.findComponent(GlPagination);
   const findSorting = () => wrapper.findComponent(GlSorting);
@@ -45,11 +50,34 @@ describe('AccessTokens', () => {
     expect(store.setup).toHaveBeenCalledWith({
       filters: [{ type: 'state', value: { data: 'active', operator: '=' } }],
       id: 235,
-      urlRevoke: '/api/v4/groups/4/service_accounts/:id/personal_access_tokens/',
-      urlRotate: '/api/v4/groups/4/service_accounts/:id/personal_access_tokens/',
+      urlCreate: '/api/v4/groups/1/service_accounts/:id/personal_access_tokens/',
+      urlRevoke: '/api/v4/groups/2/service_accounts/:id/personal_access_tokens/',
+      urlRotate: '/api/v4/groups/3/service_accounts/:id/personal_access_tokens/',
       urlShow: '/api/v4/personal_access_tokens',
     });
     expect(store.fetchTokens).toHaveBeenCalledTimes(1);
+  });
+
+  describe('when clicking on the add new token button', () => {
+    it('clears the current token', () => {
+      createComponent();
+      expect(store.setToken).toHaveBeenCalledTimes(0);
+      findCreateTokenButton().vm.$emit('click');
+
+      expect(store.setToken).toHaveBeenCalledWith(null);
+    });
+
+    it('shows the token creation form', async () => {
+      createComponent();
+      expect(findCreateTokenForm().exists()).toBe(false);
+      findCreateTokenButton().vm.$emit('click');
+
+      expect(store.setShowCreateForm).toHaveBeenCalledWith(true);
+      store.showCreateForm = true;
+      await nextTick();
+
+      expect(findCreateTokenForm().exists()).toBe(true);
+    });
   });
 
   it('fetches tokens when the page is changed', () => {

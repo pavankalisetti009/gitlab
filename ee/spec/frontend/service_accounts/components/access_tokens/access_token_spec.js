@@ -12,6 +12,8 @@ Vue.use(PiniaVuePlugin);
 describe('AccessToken', () => {
   let wrapper;
 
+  const token = 'my-token';
+
   const pinia = createTestingPinia();
   const store = useAccessTokens();
 
@@ -24,41 +26,31 @@ describe('AccessToken', () => {
   const findAlert = () => wrapper.findComponent(GlAlert);
   const findInputCopyToggleVisibility = () => wrapper.findComponent(InputCopyToggleVisibility);
 
-  describe('when token is null', () => {
-    it('hides the alert', () => {
-      createComponent();
-      expect(findAlert().exists()).toBe(false);
-      expect(findInputCopyToggleVisibility().exists()).toBe(false);
+  beforeEach(() => {
+    store.token = token;
+    createComponent();
+  });
+
+  it('renders the alert', () => {
+    expect(findAlert().exists()).toBe(true);
+    expect(findInputCopyToggleVisibility().props()).toMatchObject({
+      copyButtonTitle: 'Copy token',
+      formInputGroupProps: {
+        'data-testid': 'access-token-field',
+        id: 'access-token-field',
+        name: 'access-token-field',
+      },
+      initialVisibility: false,
+      readonly: true,
+      showCopyButton: true,
+      showToggleVisibilityButton: true,
+      size: 'lg',
+      value: token,
     });
   });
 
-  describe('when token is present', () => {
-    beforeEach(() => {
-      store.token = 'my-token';
-      createComponent();
-    });
-
-    it('renders the alert', () => {
-      expect(findAlert().exists()).toBe(true);
-      expect(findInputCopyToggleVisibility().props()).toMatchObject({
-        copyButtonTitle: 'Copy token',
-        formInputGroupProps: {
-          'data-testid': 'access-token-field',
-          id: 'access-token-field',
-          name: 'access-token-field',
-        },
-        initialVisibility: false,
-        readonly: true,
-        showCopyButton: true,
-        showToggleVisibilityButton: true,
-        size: 'lg',
-        value: 'my-token',
-      });
-    });
-
-    it('nullifies token if alert is dismissed', () => {
-      findAlert().vm.$emit('dismiss');
-      expect(store.setToken).toHaveBeenCalledWith(null);
-    });
+  it('nullifies token if alert is dismissed', () => {
+    findAlert().vm.$emit('dismiss');
+    expect(store.setToken).toHaveBeenCalledWith(null);
   });
 });

@@ -24,13 +24,7 @@ export default {
 </script>
 
 <template>
-  <gl-alert
-    v-if="token"
-    variant="success"
-    data-testid="access-token-alert"
-    class="gl-mb-5"
-    @dismiss="setToken(null)"
-  >
+  <gl-alert variant="success" class="gl-mb-5" @dismiss="setToken(null)">
     <input-copy-toggle-visibility
       :copy-button-title="s__('AccessTokens|Copy token')"
       :label="s__('AccessTokens|Your token')"

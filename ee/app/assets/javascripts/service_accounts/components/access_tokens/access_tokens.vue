@@ -1,5 +1,11 @@
 <script>
-import { GlFilteredSearch, GlFilteredSearchToken, GlPagination, GlSorting } from '@gitlab/ui';
+import {
+  GlButton,
+  GlFilteredSearch,
+  GlFilteredSearchToken,
+  GlPagination,
+  GlSorting,
+} from '@gitlab/ui';
 import { mapActions, mapState } from 'pinia';
 import { __, s__ } from '~/locale';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
@@ -12,18 +18,21 @@ import { SORT_OPTIONS } from '~/access_tokens/constants';
 
 import { useAccessTokens } from '../../stores/access_tokens';
 import AccessToken from './access_token.vue';
+import AccessTokenForm from './access_token_form.vue';
 import AccessTokenTable from './access_token_table.vue';
 
 export default {
   components: {
+    GlButton,
     GlFilteredSearch,
     GlPagination,
     GlSorting,
     PageHeading,
     AccessToken,
+    AccessTokenForm,
     AccessTokenTable,
   },
-  inject: ['accessTokenRevoke', 'accessTokenRotate', 'accessTokenShow'],
+  inject: ['accessTokenCreate', 'accessTokenRevoke', 'accessTokenRotate', 'accessTokenShow'],
   props: {
     id: {
       type: Number,
@@ -36,9 +45,11 @@ export default {
       'filters',
       'page',
       'perPage',
+      'showCreateForm',
+      'sorting',
+      'token',
       'tokens',
       'total',
-      'sorting',
     ]),
   },
   created() {
@@ -53,6 +64,7 @@ export default {
         },
       ],
       id: this.id,
+      urlCreate: this.accessTokenCreate,
       urlRevoke: this.accessTokenRevoke,
       urlRotate: this.accessTokenRotate,
       urlShow: this.accessTokenShow,
@@ -60,7 +72,19 @@ export default {
     this.fetchTokens();
   },
   methods: {
-    ...mapActions(useAccessTokens, ['fetchTokens', 'setPage', 'setFilters', 'setup', 'setSorting']),
+    ...mapActions(useAccessTokens, [
+      'fetchTokens',
+      'setFilters',
+      'setPage',
+      'setShowCreateForm',
+      'setSorting',
+      'setToken',
+      'setup',
+    ]),
+    addAccessToken() {
+      this.setToken(null);
+      this.setShowCreateForm(true);
+    },
     search(filters) {
       this.setFilters(filters);
       this.setPage(1);
@@ -139,8 +163,22 @@ export default {
 
 <template>
   <div>
-    <page-heading :heading="s__('AccessTokens|Personal access tokens')" />
-    <access-token />
+    <page-heading :heading="s__('AccessTokens|Personal access tokens')">
+      <template #description>
+        {{
+          s__(
+            'AccessTokens|You can generate a personal access token for each application you use that needs access to the GitLab API. You can also use personal access tokens to authenticate against Git over HTTP. They are the only accepted password when you have Two-Factor Authentication (2FA) enabled.',
+          )
+        }}
+      </template>
+      <template #actions>
+        <gl-button variant="confirm" data-testid="add-new-token-button" @click="addAccessToken">
+          {{ s__('AccessTokens|Add new token') }}
+        </gl-button>
+      </template>
+    </page-heading>
+    <access-token v-if="token" />
+    <access-token-form v-if="showCreateForm" />
     <div class="gl-flex gl-flex-col gl-gap-3 gl-py-5 md:gl-flex-row">
       <gl-filtered-search
         class="gl-min-w-0 gl-grow"

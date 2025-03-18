@@ -36,9 +36,11 @@ describe('useAccessTokens store', () => {
       expect(store.id).toBe(null);
       expect(store.page).toBe(1);
       expect(store.perPage).toBe(null);
+      expect(store.showCreateForm).toBe(false);
       expect(store.token).toEqual(null);
       expect(store.tokens).toEqual([]);
       expect(store.total).toBe(0);
+      expect(store.urlCreate).toBe('');
       expect(store.urlRevoke).toBe('');
       expect(store.urlRotate).toBe('');
       expect(store.urlShow).toBe('');
@@ -50,8 +52,9 @@ describe('useAccessTokens store', () => {
     const mockAxios = new MockAdapter(axios);
     const filters = ['dummy'];
     const id = 235;
-    const urlRevoke = '/api/v4/groups/4/service_accounts/:id/personal_access_tokens';
-    const urlRotate = '/api/v4/groups/4/service_accounts/:id/personal_access_tokens';
+    const urlCreate = '/api/v4/groups/1/service_accounts/:id/personal_access_tokens';
+    const urlRevoke = '/api/v4/groups/2/service_accounts/:id/personal_access_tokens';
+    const urlRotate = '/api/v4/groups/3/service_accounts/:id/personal_access_tokens';
     const urlShow = '/api/v4/personal_access_tokens';
 
     const headers = {
@@ -62,6 +65,110 @@ describe('useAccessTokens store', () => {
 
     beforeEach(() => {
       mockAxios.reset();
+    });
+
+    describe('createToken', () => {
+      const name = 'dummy-name';
+      const description = 'dummy-description';
+      const expiresAt = '2020-01-01';
+      const scopes = ['dummy-scope'];
+
+      beforeEach(() => {
+        store.setup({ id, filters, urlCreate, urlShow });
+      });
+
+      it('dismisses any existing alert', () => {
+        store.alert = createAlert({ message: 'dummy' });
+        store.fetchTokens();
+
+        expect(mockAlertDismiss).toHaveBeenCalledTimes(1);
+      });
+
+      it('sets busy to true when revoking', () => {
+        store.createToken({ name, description, expiresAt, scopes });
+
+        expect(store.busy).toBe(true);
+      });
+
+      it('creates the token', async () => {
+        await store.createToken({ name, description, expiresAt, scopes });
+
+        expect(mockAxios.history.post).toHaveLength(1);
+        expect(mockAxios.history.post[0]).toEqual(
+          expect.objectContaining({
+            data: '{"name":"dummy-name","description":"dummy-description","expires_at":"2020-01-01","scopes":["dummy-scope"]}',
+            url: '/api/v4/groups/1/service_accounts/235/personal_access_tokens',
+          }),
+        );
+      });
+
+      it('hides the token creation form', async () => {
+        mockAxios.onPost().replyOnce(HTTP_STATUS_OK, { token: 'new-token' });
+        store.showCreateForm = true;
+        await store.createToken({ name, description, expiresAt, scopes });
+
+        expect(store.showCreateForm).toBe(false);
+      });
+
+      it('scrolls to the top', async () => {
+        mockAxios.onPost().replyOnce(HTTP_STATUS_OK, { token: 'new-token' });
+        await store.createToken({ name, description, expiresAt, scopes });
+
+        expect(smoothScrollTop).toHaveBeenCalledTimes(1);
+      });
+
+      it('updates tokens and sets busy to false after fetching', async () => {
+        mockAxios.onPost().replyOnce(HTTP_STATUS_OK, { token: 'new-token' });
+        mockAxios.onGet().replyOnce(HTTP_STATUS_OK, [{ active: true, name: 'Token' }], headers);
+        await store.createToken({ name, description, expiresAt, scopes });
+
+        expect(store.tokens).toHaveLength(1);
+        expect(store.busy).toBe(false);
+      });
+
+      it('shows an alert if an error occurs while revoking', async () => {
+        mockAxios.onPost().replyOnce(HTTP_STATUS_INTERNAL_SERVER_ERROR);
+
+        await store.createToken({ name, description, expiresAt, scopes });
+
+        expect(createAlert).toHaveBeenCalledTimes(1);
+        expect(createAlert).toHaveBeenCalledWith({
+          message: 'An error occurred while creating the token.',
+        });
+        expect(store.busy).toBe(false);
+      });
+
+      it('shows an alert if an error occurs while fetching', async () => {
+        mockAxios.onPost().replyOnce(HTTP_STATUS_OK, { token: 'new-token' });
+        mockAxios.onGet().replyOnce(HTTP_STATUS_INTERNAL_SERVER_ERROR);
+        await store.createToken({ name, description, expiresAt, scopes });
+
+        expect(createAlert).toHaveBeenCalledTimes(1);
+        expect(createAlert).toHaveBeenCalledWith({
+          message: 'An error occurred while fetching the tokens.',
+        });
+        expect(store.busy).toBe(false);
+      });
+
+      it('uses correct params in the fetch', async () => {
+        mockAxios.onPost().replyOnce(HTTP_STATUS_OK, { token: 'new-token' });
+        mockAxios.onGet().replyOnce(HTTP_STATUS_OK, [{ active: true, name: 'Token' }], headers);
+        store.setPage(2);
+        store.setFilters(['my token']);
+        await store.createToken({ name, description, expiresAt, scopes });
+
+        expect(mockAxios.history.get).toHaveLength(1);
+        expect(mockAxios.history.get[0]).toEqual(
+          expect.objectContaining({
+            params: {
+              page: 1,
+              sort: 'expires_at_asc_id_desc',
+              search: 'my token',
+              user_id: 235,
+            },
+          }),
+        );
+      });
     });
 
     describe('fetchTokens', () => {
@@ -152,13 +259,20 @@ describe('useAccessTokens store', () => {
 
     describe('revokeToken', () => {
       beforeEach(() => {
-        store.setup({ id, filters, urlRevoke });
+        store.setup({ id, filters, urlRevoke, urlShow });
       });
 
       it('sets busy to true when revoking', () => {
         store.revokeToken(1);
 
         expect(store.busy).toBe(true);
+      });
+
+      it('hides the token creation form', () => {
+        store.showCreateForm = true;
+        store.revokeToken(1);
+
+        expect(store.showCreateForm).toBe(false);
       });
 
       it('dismisses any existing alert', () => {
@@ -174,7 +288,7 @@ describe('useAccessTokens store', () => {
         expect(mockAxios.history.delete).toHaveLength(1);
         expect(mockAxios.history.delete[0]).toEqual(
           expect.objectContaining({
-            url: '/api/v4/groups/4/service_accounts/235/personal_access_tokens/1',
+            url: '/api/v4/groups/2/service_accounts/235/personal_access_tokens/1',
           }),
         );
       });
@@ -258,13 +372,20 @@ describe('useAccessTokens store', () => {
 
     describe('rotateToken', () => {
       beforeEach(() => {
-        store.setup({ id, filters, urlRotate });
+        store.setup({ id, filters, urlRotate, urlShow });
       });
 
       it('sets busy to true when rotating', () => {
         store.rotateToken(1, '2025-01-01');
 
         expect(store.busy).toBe(true);
+      });
+
+      it('hides the token creation form', () => {
+        store.showCreateForm = true;
+        store.rotateToken(1, '2025-01-01');
+
+        expect(store.showCreateForm).toBe(false);
       });
 
       it('dismisses any existing alert', () => {
@@ -280,8 +401,8 @@ describe('useAccessTokens store', () => {
         expect(mockAxios.history.post).toHaveLength(1);
         expect(mockAxios.history.post[0]).toEqual(
           expect.objectContaining({
-            url: '/api/v4/groups/4/service_accounts/235/personal_access_tokens/1/rotate',
             data: '{"expires_at":"2025-01-01"}',
+            url: '/api/v4/groups/3/service_accounts/235/personal_access_tokens/1/rotate',
           }),
         );
       });
@@ -368,6 +489,14 @@ describe('useAccessTokens store', () => {
       });
     });
 
+    describe('setShowCreateForm', () => {
+      it('sets the value', () => {
+        store.setShowCreateForm(true);
+
+        expect(store.showCreateForm).toBe(true);
+      });
+    });
+
     describe('setToken', () => {
       it('sets the token', () => {
         store.setToken('new-token');
@@ -385,11 +514,12 @@ describe('useAccessTokens store', () => {
     });
 
     describe('setup', () => {
-      it('sets up the store', async () => {
-        await store.setup({ filters, id, urlRevoke, urlRotate, urlShow });
+      it('sets up the store', () => {
+        store.setup({ filters, id, urlCreate, urlRevoke, urlRotate, urlShow });
 
         expect(store.filters).toEqual(filters);
         expect(store.id).toBe(id);
+        expect(store.urlCreate).toBe(urlCreate);
         expect(store.urlRevoke).toBe(urlRevoke);
         expect(store.urlRotate).toBe(urlRotate);
         expect(store.urlShow).toBe(urlShow);
