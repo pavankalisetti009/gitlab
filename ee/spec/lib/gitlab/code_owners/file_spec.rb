@@ -16,6 +16,12 @@ RSpec.describe Gitlab::CodeOwners::File, feature_category: :source_code_manageme
 
   subject(:file) { described_class.new(blob) }
 
+  describe '#errors' do
+    subject(:errors) { file.errors }
+
+    it { is_expected.to be_instance_of(Gitlab::CodeOwners::Errors) }
+  end
+
   describe '#parsed_data' do
     def owner_line(pattern)
       file.parsed_data["codeowners"][pattern].owner_line
@@ -589,11 +595,11 @@ RSpec.describe Gitlab::CodeOwners::File, feature_category: :source_code_manageme
 
         expect(file.errors).to match_array(
           [
-            Gitlab::CodeOwners::Error.new(message: :missing_entry_owner, line_number: 1, path: 'CODEOWNERS'),
-            Gitlab::CodeOwners::Error.new(message: :missing_section_name, line_number: 3, path: 'CODEOWNERS'),
-            Gitlab::CodeOwners::Error.new(message: :invalid_approval_requirement, line_number: 6, path: 'CODEOWNERS'),
-            Gitlab::CodeOwners::Error.new(message: :invalid_section_format, line_number: 9, path: 'CODEOWNERS'),
-            Gitlab::CodeOwners::Error.new(message: :malformed_entry_owner, line_number: 9, path: 'CODEOWNERS')
+            Gitlab::CodeOwners::Error.new(:missing_entry_owner, 1),
+            Gitlab::CodeOwners::Error.new(:missing_section_name, 3),
+            Gitlab::CodeOwners::Error.new(:invalid_approval_requirement, 6),
+            Gitlab::CodeOwners::Error.new(:invalid_section_format, 9),
+            Gitlab::CodeOwners::Error.new(:malformed_entry_owner, 9)
           ]
         )
       end
@@ -621,7 +627,7 @@ RSpec.describe Gitlab::CodeOwners::File, feature_category: :source_code_manageme
 
             expect(file.errors).to match_array(
               [
-                Gitlab::CodeOwners::Error.new(message: :malformed_entry_owner, line_number: 5, path: 'CODEOWNERS')
+                Gitlab::CodeOwners::Error.new(:malformed_entry_owner, 5)
               ]
             )
           end
@@ -643,7 +649,7 @@ RSpec.describe Gitlab::CodeOwners::File, feature_category: :source_code_manageme
 
             expect(file.errors).to match_array(
               [
-                Gitlab::CodeOwners::Error.new(message: :malformed_entry_owner, line_number: 5, path: 'CODEOWNERS')
+                Gitlab::CodeOwners::Error.new(:malformed_entry_owner, 5)
               ]
             )
           end
