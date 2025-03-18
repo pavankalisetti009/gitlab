@@ -34,6 +34,7 @@ describe('buildDefaultDashboardFilters', () => {
     expect(buildDefaultDashboardFilters('')).toStrictEqual({
       filterAnonUsers: false,
       searchFilters: {},
+      projectFullPath: null,
     });
   });
 
@@ -44,6 +45,7 @@ describe('buildDefaultDashboardFilters', () => {
       dateRangeOption: defaultOption.key,
       filterAnonUsers: false,
       searchFilters: {},
+      projectFullPath: null,
     });
   });
 
@@ -56,6 +58,7 @@ describe('buildDefaultDashboardFilters', () => {
       dateRangeOption: option.key,
       filterAnonUsers: false,
       searchFilters: {},
+      projectFullPath: null,
     });
   });
 
@@ -68,6 +71,7 @@ describe('buildDefaultDashboardFilters', () => {
       dateRangeOption: DATE_RANGE_OPTION_CUSTOM,
       filterAnonUsers: false,
       searchFilters: {},
+      projectFullPath: null,
     });
   });
 
@@ -80,6 +84,7 @@ describe('buildDefaultDashboardFilters', () => {
       dateRangeOption: option.key,
       filterAnonUsers: false,
       searchFilters: {},
+      projectFullPath: null,
     });
   });
 
@@ -91,12 +96,21 @@ describe('buildDefaultDashboardFilters', () => {
     });
   });
 
+  it('returns the projectFullPath filter when project param is present', () => {
+    const queryString = 'project=foo/bar';
+
+    expect(buildDefaultDashboardFilters(queryString)).toMatchObject({
+      projectFullPath: 'foo/bar',
+    });
+  });
+
   it('returns populated `searchFilters` object when filtered search params are present in query string', () => {
     const queryString = `${TOKEN_TYPE_LABEL}[]=Afterpod&${TOKEN_TYPE_MILESTONE}[]=Any&${TOKEN_TYPE_AUTHOR}[]=root&${TOKEN_TYPE_ASSIGNEE}[]=root&not%5B${TOKEN_TYPE_ASSIGNEE}%5D[]=vsm-user-1-1737989060&fake_param=hello`;
 
     expect(buildDefaultDashboardFilters(queryString)).toStrictEqual({
       filterAnonUsers: false,
       searchFilters: mockFilteredSearchChangePayload,
+      projectFullPath: null,
     });
   });
 
@@ -116,6 +130,7 @@ describe('buildDefaultDashboardFilters', () => {
         filterAnonUsers: false,
         dateRangeOption: selectedDateRangeOption,
         searchFilters: {},
+        projectFullPath: null,
       });
     });
 
@@ -128,6 +143,7 @@ describe('buildDefaultDashboardFilters', () => {
         dateRangeOption: option.key,
         filterAnonUsers: false,
         searchFilters: {},
+        projectFullPath: null,
       });
     });
   });
@@ -150,6 +166,7 @@ describe('filtersToQueryParams', () => {
       end_date: null,
       start_date: null,
       filter_anon_users: null,
+      project: null,
     });
   });
 
@@ -159,6 +176,7 @@ describe('filtersToQueryParams', () => {
       start_date: '2016-01-01',
       end_date: '2016-02-01',
       filter_anon_users: null,
+      project: null,
     });
   });
 
@@ -174,8 +192,15 @@ describe('filtersToQueryParams', () => {
       start_date: null,
       end_date: null,
       filter_anon_users: null,
+      project: null,
       ...mockFilteredSearchEmptyQueryObj,
       ...mockFilteredSearchQueryObj,
+    });
+  });
+
+  it('return the project param when project filter is present', () => {
+    expect(filtersToQueryParams({ projectFullPath: 'project/path' })).toMatchObject({
+      project: 'project/path',
     });
   });
 });

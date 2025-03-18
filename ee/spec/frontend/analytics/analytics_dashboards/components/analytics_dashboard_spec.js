@@ -206,6 +206,7 @@ describe('AnalyticsDashboard', () => {
         FilteredSearchFilter,
         RouterLink: true,
         RouterView: true,
+        ProjectsFilter,
         CustomizableDashboard: stubComponent(CustomizableDashboard, {
           methods: {
             ...stubMockMethods,
@@ -1001,10 +1002,7 @@ describe('AnalyticsDashboard', () => {
     });
 
     describe('projects  filter', () => {
-      // In Vue3 this is kebabbed, in Vue2 it is not :( https://gitlab.com/gitlab-org/gitlab/-/issues/509355
-      const findDropdownGroupNamespace = () =>
-        findProjectsFilter().attributes('group-namespace') ||
-        findProjectsFilter().attributes('groupnamespace');
+      const findDropdownGroupNamespace = () => findProjectsFilter().props('groupNamespace');
 
       describe('when dashboard is group-level', () => {
         beforeEach(async () => {
@@ -1016,20 +1014,36 @@ describe('AnalyticsDashboard', () => {
           expect(findDropdownGroupNamespace()).toBe(TEST_CUSTOM_DASHBOARDS_GROUP.fullPath);
         });
 
+        it('synchronizes the filters with the URL', () => {
+          expect(findUrlSync().props()).toMatchObject({
+            historyUpdateMethod: HISTORY_REPLACE_UPDATE_METHOD,
+            urlParamsUpdateStrategy: URL_SET_PARAMS_STRATEGY,
+            query: filtersToQueryParams(defaultFilters),
+          });
+        });
+
         describe('on project selection', () => {
+          const selectedProject = {
+            id: 'gid://test-project',
+            name: 'test-project',
+            fullPath: 'test/project',
+          };
+
           beforeEach(async () => {
-            await findProjectsFilter().vm.$emit('projectSelected', {
-              projectNamespace: 'test-project',
-              projectId: 123,
+            await findProjectsFilter().vm.$emit('projectSelected', selectedProject);
+          });
+
+          it('synchronizes the filters with the URL', () => {
+            expect(findUrlSync().props()).toMatchObject({
+              historyUpdateMethod: HISTORY_REPLACE_UPDATE_METHOD,
+              urlParamsUpdateStrategy: URL_SET_PARAMS_STRATEGY,
+              query: filtersToQueryParams({ projectFullPath: selectedProject.fullPath }),
             });
           });
 
           it('updates the slot filters', () => {
             expect(findAllPanels().at(0).props('filters')).toMatchObject({
-              project: {
-                projectNamespace: 'test-project',
-                projectId: 123,
-              },
+              projectFullPath: selectedProject.fullPath,
             });
           });
         });
