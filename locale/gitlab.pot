@@ -9265,9 +9265,6 @@ msgstr ""
 msgid "BeyondIdentity|Verify that GPG keys are authorized by Beyond Identity Authenticator."
 msgstr ""
 
-msgid "Bi-weekly code coverage"
-msgstr ""
-
 msgid "Billable users"
 msgstr ""
 
@@ -14022,6 +14019,9 @@ msgid "Co-authored-by: ..."
 msgstr ""
 
 msgid "Code"
+msgstr ""
+
+msgid "Code Coverage in %%"
 msgstr ""
 
 msgid "Code Coverage: %{coveragePercentage}%{percentSymbol}"
