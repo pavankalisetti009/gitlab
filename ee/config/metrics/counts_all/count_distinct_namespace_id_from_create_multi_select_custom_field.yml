@@ -7,7 +7,7 @@ product_categories:
 performance_indicator_type: []
 value_type: number
 status: active
-milestone: '17.10'
+milestone: '17.11'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/184587
 time_frame:
 - 28d
