@@ -249,73 +249,8 @@ module Search
       # Task has been replaced by saas_rollout
       def dot_com_rollout; end
 
-      # rubocop: disable Metrics/AbcSize -- After removal of FFs metrics will be fine
-      def node_assignment
-        return false if Feature.disabled?(:zoekt_node_assignment, Feature.current_request)
-
-        execute_every 1.hour do
-          nodes = ::Search::Zoekt::Node.online.find_each.to_a
-
-          break false if nodes.empty?
-
-          zoekt_indices = []
-
-          EnabledNamespace.with_missing_indices.preload_storage_statistics.find_each do |zoekt_enabled_namespace|
-            storage_statistics = zoekt_enabled_namespace.namespace.root_storage_statistics
-            unless storage_statistics
-              logger.error(build_structured_payload(
-                task: :node_assignment,
-                message: "RootStorageStatistics isn't available",
-                zoekt_enabled_namespace_id: zoekt_enabled_namespace.id
-              ))
-
-              next
-            end
-
-            space_required = BUFFER_FACTOR * storage_statistics.repository_size
-
-            node = nodes.max_by { |n| n.total_bytes - n.used_bytes }
-
-            if (node.used_bytes + space_required) <= node.total_bytes * ::Search::Zoekt::Node::WATERMARK_LIMIT_LOW
-              zoekt_index = Search::Zoekt::Index.new(
-                namespace_id: zoekt_enabled_namespace.root_namespace_id,
-                zoekt_node_id: node.id,
-                zoekt_enabled_namespace: zoekt_enabled_namespace,
-                replica: Replica.for_enabled_namespace!(zoekt_enabled_namespace),
-                reserved_storage_bytes: space_required
-              )
-              zoekt_index.state = :ready if space_required == 0
-              zoekt_indices << zoekt_index
-              node.used_bytes += space_required
-            elsif Feature.enabled?(:zoekt_create_multiple_indices, zoekt_enabled_namespace.namespace)
-              multiple_indices = NamespaceAssignmentService.new(zoekt_enabled_namespace).execute
-              if multiple_indices.empty?
-                logger.error(build_structured_payload(
-                  task: :node_assignment,
-                  message: 'Namespace is too big even for multiple indices',
-                  zoekt_enabled_namespace_id: zoekt_enabled_namespace.id
-                ))
-              else
-                zoekt_indices.concat(multiple_indices)
-              end
-            else
-              logger.error(build_structured_payload(
-                task: :node_assignment,
-                message: 'Space is not available in Node', zoekt_enabled_namespace_id: zoekt_enabled_namespace.id,
-                meta: node.metadata_json
-              ))
-            end
-          end
-
-          zoekt_indices.each do |zoekt_index|
-            unless zoekt_index.save
-              logger.error(build_structured_payload(task: :node_assignment,
-                message: 'Could not save Search::Zoekt::Index', zoekt_index: zoekt_index.attributes.compact))
-            end
-          end
-        end
-      end
-      # rubocop: enable Metrics/AbcSize
+      # Task has been replaced by Search::Zoekt::RolloutWorker
+      def node_assignment; end
 
       def node_with_negative_unclaimed_storage_bytes_check
         execute_every 1.hour do
