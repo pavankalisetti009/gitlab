@@ -23,7 +23,7 @@ module RemoteDevelopment
       where(user_provided: true)
     }
 
-    attr_encrypted :value,
+    attr_encrypted :value, # rubocop:disable Gitlab/Rails/AttrEncrypted -- https://gitlab.com/gitlab-org/gitlab/-/issues/525574
       mode: :per_attribute_iv,
       key: ::Settings.attr_encrypted_db_key_base_32,
       algorithm: 'aes-256-gcm',
