@@ -94,7 +94,7 @@ module Security
 
       def evaluation
         @evaluation ||= Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationService
-          .new(merge_request, approval_rules, :license_scanning)
+          .new(merge_request, approval_rules)
       end
 
       def source_pipeline

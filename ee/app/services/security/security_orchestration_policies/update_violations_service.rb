@@ -3,16 +3,15 @@
 module Security
   module SecurityOrchestrationPolicies
     class UpdateViolationsService
-      attr_reader :merge_request, :violated_policies, :unviolated_policies, :violation_data, :report_type
+      attr_reader :merge_request, :violated_policies, :unviolated_policies, :violation_data
 
       delegate :project, to: :merge_request
 
-      def initialize(merge_request, report_type)
+      def initialize(merge_request)
         @merge_request = merge_request
         @violated_policies = Set.new
         @unviolated_policies = Set.new
         @violation_data = {}
-        @report_type = report_type
       end
 
       def add(violated, unviolated)
@@ -20,7 +19,7 @@ module Security
         unviolated_policies.merge(unviolated.compact)
       end
 
-      def add_violation(policy, data, context: nil)
+      def add_violation(policy, report_type, data, context: nil)
         add([policy], [])
 
         @violation_data[policy.id] ||= {}

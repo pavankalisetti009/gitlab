@@ -172,7 +172,7 @@ module Security
 
       def evaluation
         @evaluation ||= Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationService
-          .new(merge_request, approval_rules, :scan_finding)
+          .new(merge_request, approval_rules)
       end
 
       def security_scan_types(pipeline_ids)
