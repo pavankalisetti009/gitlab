@@ -6,22 +6,18 @@ import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
 import DependencyPathDrawer from 'ee/dependencies/components/dependency_path_drawer.vue';
 
-// This is temporary and will be deleted
-// Will be replaced with proper API data once the BE completes
-export const TEST_DEPENDENCY = {
-  name: 'activerecord',
-  version: '5.2.3',
-  project: {
-    name: 'gitlab-org/gitlab-ce',
-  },
-};
-
 export default {
-  name: 'DependencyPathsDrawer',
+  name: 'DependencyPath',
   components: {
     MountingPortal,
     GlButton,
     DependencyPathDrawer,
+  },
+  props: {
+    dependency: {
+      type: Object,
+      required: true,
+    },
   },
   data() {
     return {
@@ -42,7 +38,6 @@ export default {
   },
   getContentWrapperHeight,
   DRAWER_Z_INDEX,
-  TEST_DEPENDENCY,
 };
 </script>
 
@@ -54,7 +49,8 @@ export default {
     <mounting-portal mount-to="#js-dependency-paths-drawer-portal">
       <dependency-path-drawer
         :show-drawer="isDrawerOpen"
-        :dependency="$options.TEST_DEPENDENCY"
+        :component="dependency.component"
+        :dependency-paths="dependency.dependencyPaths"
         @close="closeDrawer"
       />
     </mounting-portal>

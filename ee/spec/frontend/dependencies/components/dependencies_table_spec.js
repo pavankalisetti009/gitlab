@@ -441,6 +441,7 @@ describe('DependenciesTable component', () => {
   describe('dependency paths', () => {
     describe('for project level when there is location data', () => {
       const dependency = makeDependency();
+      const { name, version } = dependency;
 
       beforeEach(() => {
         createComponent({
@@ -456,7 +457,7 @@ describe('DependenciesTable component', () => {
       });
 
       it('passes the correct prop to the DependencyPathDrawer component when the drawer is shown', async () => {
-        expect(findDependencyPathDrawer().props('showDrawer')).toBe(false);
+        expect(findDependencyPathDrawer().exists()).toBe(false);
 
         findDependencyPathButtons().at(0).vm.$emit('click');
 
@@ -464,7 +465,7 @@ describe('DependenciesTable component', () => {
 
         expect(findDependencyPathDrawer().props()).toMatchObject({
           showDrawer: true,
-          dependency,
+          component: { name, version },
         });
       });
 
@@ -479,8 +480,7 @@ describe('DependenciesTable component', () => {
         findDependencyPathButtons().at(0).vm.$emit('click');
         await nextTick();
 
-        expect(findDependencyPathDrawer().props('showDrawer')).toBe(false);
-        expect(findDependencyPathDrawer().props('dependency')).toStrictEqual({});
+        expect(findDependencyPathDrawer().exists()).toBe(false);
       });
 
       describe('when the feature flag "dependencyPaths" is disabled', () => {
@@ -508,13 +508,14 @@ describe('DependenciesTable component', () => {
         path: 'Gemfile.lock',
       };
 
-      beforeEach(() => {
-        const dependency = makeDependency({
-          occurrenceCount: 2,
-          project: { full_path: 'full_path', name: 'name' },
-          location,
-        });
+      const dependency = makeDependency({
+        componentId: 1,
+        occurrenceCount: 2,
+        project: { full_path: 'full_path', name: 'name' },
+        location,
+      });
 
+      beforeEach(() => {
         createComponent({
           propsData: {
             dependencies: [dependency],
@@ -528,9 +529,8 @@ describe('DependenciesTable component', () => {
       });
 
       it('passes the correct prop to the DependencyPathDrawer component when triggered', async () => {
-        const project = {
-          name: 'emitted-project',
-        };
+        const project = { name: 'emitted-project' };
+        const { name, version } = dependency;
 
         findDependencyLocationCount().vm.$emit('click-dependency-path', {
           location,
@@ -541,10 +541,8 @@ describe('DependenciesTable component', () => {
 
         expect(findDependencyPathDrawer().props()).toMatchObject({
           showDrawer: true,
-          dependency: {
-            project,
-            location,
-          },
+          project,
+          component: { name, version },
         });
       });
     });
