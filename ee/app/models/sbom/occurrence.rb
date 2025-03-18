@@ -119,6 +119,15 @@ module Sbom
       where(component_id: component_ids)
     end
 
+    scope :filter_by_component_version_ids, ->(component_version_ids) do
+      where(component_version_id: component_version_ids)
+    end
+
+    # This filter will be used with either project/group(traversal_ids) filter and component selected
+    scope :filter_by_non_component_version_ids, ->(component_version_ids) do
+      where.not(component_version_id: component_version_ids)
+    end
+
     scope :filter_by_search_with_component_and_group, ->(search, component_id, group) do
       relation = for_namespace_and_descendants(group)
         .where(component_version_id: component_id)

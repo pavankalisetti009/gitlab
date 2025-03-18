@@ -357,6 +357,25 @@ RSpec.describe Sbom::Occurrence, type: :model, feature_category: :dependency_man
     end
   end
 
+  describe '.filter_by_component_version_ids' do
+    let_it_be(:occurrence_1) { create(:sbom_occurrence) }
+    let_it_be(:occurrence_2) { create(:sbom_occurrence) }
+
+    it 'returns records filtered by component version IDs' do
+      expect(described_class.filter_by_component_version_ids([occurrence_1.component_version_id])).to eq([occurrence_1])
+    end
+  end
+
+  describe '.filter_by_non_component_version_ids' do
+    let_it_be(:occurrence_1) { create(:sbom_occurrence) }
+    let_it_be(:occurrence_2) { create(:sbom_occurrence) }
+
+    it 'returns records filtered by component version IDs' do
+      expect(described_class.filter_by_non_component_version_ids(
+        [occurrence_1.component_version_id])).to eq([occurrence_2])
+    end
+  end
+
   describe '.filter_by_source_types' do
     let_it_be(:container_scanning_occurrence) { create(:sbom_occurrence, :os_occurrence) }
     let_it_be(:dependency_scanning_occurrence) { create(:sbom_occurrence) }
