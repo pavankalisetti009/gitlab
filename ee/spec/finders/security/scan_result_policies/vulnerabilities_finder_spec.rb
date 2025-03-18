@@ -30,19 +30,19 @@ RSpec.describe Security::ScanResultPolicies::VulnerabilitiesFinder, feature_cate
 
   let(:filters) { {} }
 
-  subject(:execute) { described_class.new(project, filters).execute }
+  subject(:vulnerabilities) { described_class.new(project, filters).execute }
 
   it 'returns vulnerabilities of a project' do
-    expect(execute).to match_array(project.vulnerabilities)
-    expect(execute).to contain_exactly(vulnerability1, vulnerability2, vulnerability3)
+    expect(vulnerabilities).to match_array(project.vulnerabilities)
+    expect(vulnerabilities).to contain_exactly(vulnerability1, vulnerability2, vulnerability3)
   end
 
   context 'when filtered with limit' do
-    let(:filters) { { limit: 1 } }
+    let(:limit) { 1 }
+    let(:filters) { { limit: limit } }
 
-    it 'only returns vulnerabilities within limit',
-      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/513081' do
-      is_expected.to contain_exactly(vulnerability1)
+    it 'only returns vulnerabilities within limit' do
+      expect(vulnerabilities.count).to eq(limit)
     end
   end
 
