@@ -63728,6 +63728,9 @@ msgstr ""
 msgid "UserMapping|Pending approval"
 msgstr ""
 
+msgid "UserMapping|Placeholder"
+msgstr ""
+
 msgid "UserMapping|Placeholder %{name} (@%{username}) was kept as a placeholder."
 msgstr ""
 
