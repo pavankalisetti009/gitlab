@@ -5,17 +5,14 @@ module EE
     extend ActiveSupport::Concern
 
     STRATEGY_MERGE_TRAIN = 'merge_train'
-    STRATEGY_ADD_TO_MERGE_TRAIN_WHEN_PIPELINE_SUCCEEDS = 'add_to_merge_train_when_pipeline_succeeds'
 
     EE_STRATEGIES = [
       STRATEGY_MERGE_TRAIN,
-      STRATEGY_ADD_TO_MERGE_TRAIN_WHEN_PIPELINE_SUCCEEDS,
       ::AutoMergeService::STRATEGY_ADD_TO_MERGE_TRAIN_WHEN_CHECKS_PASS
     ].freeze
 
     EE_STRATEGY_TO_CLASS_MAP = {
       STRATEGY_MERGE_TRAIN => AutoMerge::MergeTrainService,
-      STRATEGY_ADD_TO_MERGE_TRAIN_WHEN_PIPELINE_SUCCEEDS => AutoMerge::AddToMergeTrainWhenPipelineSucceedsService,
       ::AutoMergeService::STRATEGY_ADD_TO_MERGE_TRAIN_WHEN_CHECKS_PASS =>
         AutoMerge::AddToMergeTrainWhenChecksPassService
     }.freeze

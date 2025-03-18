@@ -91,32 +91,17 @@ module EE
       merge_trains_service(noteable, project, author).abort(reason)
     end
 
-    # Called when 'add to merge train when pipeline succeeds' is executed
-    def add_to_merge_train_when_pipeline_succeeds(noteable, project, author, sha)
-      merge_trains_service(noteable, project, author).add_when_pipeline_succeeds(sha)
-    end
-
-    # Called when 'add to merge train when pipeline succeeds' is canceled
-    def cancel_add_to_merge_train_when_pipeline_succeeds(noteable, project, author)
-      merge_trains_service(noteable, project, author).cancel_add_when_pipeline_succeeds
-    end
-
-    # Called when 'add to merge train when pipeline succeeds' is aborted
-    def abort_add_to_merge_train_when_pipeline_succeeds(noteable, project, author, reason)
-      merge_trains_service(noteable, project, author).abort_add_when_pipeline_succeeds(reason)
-    end
-
-    # Called when 'add to merge train when pipeline succeeds' is executed
+    # Called when 'add to merge train when checks pass' is executed
     def add_to_merge_train_when_checks_pass(noteable, project, author, sha)
       merge_trains_service(noteable, project, author).add_when_checks_pass(sha)
     end
 
-    # Called when 'add to merge train when pipeline succeeds' is canceled
+    # Called when 'add to merge train when checks pass' is canceled
     def cancel_add_to_merge_train_when_checks_pass(noteable, project, author)
       merge_trains_service(noteable, project, author).cancel_add_when_checks_pass
     end
 
-    # Called when 'add to merge train when pipeline succeeds' is aborted
+    # Called when 'add to merge train when checks pass' is aborted
     def abort_add_to_merge_train_when_checks_pass(noteable, project, author, reason)
       merge_trains_service(noteable, project, author).abort_add_when_checks_pass(reason)
     end
