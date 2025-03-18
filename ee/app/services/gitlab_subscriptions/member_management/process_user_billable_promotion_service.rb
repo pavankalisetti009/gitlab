@@ -56,7 +56,7 @@ module GitlabSubscriptions
           end
         end
 
-        return error("Failed to apply promotions") if all_promotions_failed?
+        return error("Failed to apply promotions") if all_promotions_failed? && user_non_billable?
 
         approve_failed_member_approvals
         success_status = failed_member_approvals.present? ? :partial_success : :success
@@ -77,6 +77,10 @@ module GitlabSubscriptions
 
       def all_promotions_failed?
         successful_promotion_count == 0 && failed_member_approvals.present?
+      end
+
+      def user_non_billable?
+        ::User.non_billable_users_for_billable_management([user.id]).present?
       end
 
       def member_approval_params(member_approval, source)
