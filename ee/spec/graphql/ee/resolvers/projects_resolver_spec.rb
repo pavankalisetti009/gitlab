@@ -28,6 +28,10 @@ RSpec.describe Resolvers::ProjectsResolver, feature_category: :groups_and_projec
       hidden_project.add_developer(user)
     end
 
+    before do
+      ::Current.organization = project.organization
+    end
+
     context 'when aimedForDeletion filter is true' do
       let(:filters) { { aimed_for_deletion: true } }
 

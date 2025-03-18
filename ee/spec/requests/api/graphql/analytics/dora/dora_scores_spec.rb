@@ -8,7 +8,7 @@ RSpec.describe 'Query.[group](fullPath).doraPerformanceScoreCounts', :freeze_tim
   # rubocop:disable RSpec/MultipleMemoizedHelpers -- all required
   let_it_be(:group) { create(:group) }
   let_it_be(:subgroup) { create(:group, parent: group) }
-  let_it_be(:ruby_topic) { create(:topic, name: "ruby") }
+  let_it_be(:ruby_topic) { create(:topic, name: "ruby", organization_id: group.organization_id) }
   let_it_be(:project_1) { create(:project, group: group, topics: [ruby_topic]) }
   let_it_be(:project_2) { create(:project, group: group) }
   let_it_be(:project_3) { create(:project, group: group) }
