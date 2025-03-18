@@ -19,5 +19,12 @@ fragment Issue on Issue {
       title
     }
   }
+  linkedWorkItems {
+    nodes {
+      linkId
+      linkType
+      workItemState
+    }
+  }
   healthStatus
 }

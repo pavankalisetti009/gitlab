@@ -8,7 +8,9 @@ fragment WorkItemMetadataWidgetsExtras on WorkItemWidget {
       startDate
       dueDate
       updatedAt
+      webUrl
       iterationCadence {
+        id
         title
       }
     }

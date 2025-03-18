@@ -60,10 +60,13 @@ fragment WorkItemMetadataWidgets on WorkItemWidget {
   }
   ... on WorkItemWidgetIteration {
     iteration {
+      id
       title
       startDate
       dueDate
+      webUrl
       iterationCadence {
+        id
         title
       }
     }

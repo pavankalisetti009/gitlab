@@ -358,14 +358,14 @@ RSpec.describe 'Project issue boards', :js, feature_category: :portfolio_managem
       page.within(find('[data-testid="board-list"]:nth-child(1)')) do
         page.within(first('.board-card')) do
           expect(page).to have_content(issue1.title)
-          expect(page).to have_selector('[data-testid="issuable-blocked-icon"]')
+          expect(page).to have_selector('[data-testid="relationship-blocked-by-icon"]')
 
-          find_by_testid('issuable-blocked-icon').hover
+          find_by_testid('relationship-blocked-by-icon').hover
         end
       end
 
       page.within(find('.gl-popover')) do
-        expect(page).to have_content('Blocked by 1 issue')
+        expect(page).to have_content('Blocked by')
         expect(page).to have_content(issue2.title)
       end
     end
