@@ -9853,14 +9853,6 @@ msgstr ""
 msgid "Blocked"
 msgstr ""
 
-msgid "Blocked by %d issue"
-msgid_plural "Blocked by %d issues"
-msgstr[0] ""
-msgstr[1] ""
-
-msgid "Blocked issue"
-msgstr ""
-
 msgid "Blocked work items are not available for the current subscription tier"
 msgstr ""
 
@@ -10002,11 +9994,6 @@ msgstr ""
 msgid "Boards and board lists"
 msgstr ""
 
-msgid "Boards|+ %{displayedIssuablesCount} more %{issuableType}"
-msgid_plural "Boards|+ %{displayedIssuablesCount} more %{issuableType}s"
-msgstr[0] ""
-msgstr[1] ""
-
 msgid "Boards|An error occurred while creating the %{issuableType}. Please try again."
 msgstr ""
 
@@ -10091,11 +10078,6 @@ msgstr ""
 msgid "Boards|Because this is the only board in this project, when this board is deleted, a new default Development board will be created."
 msgstr ""
 
-msgid "Boards|Blocked by %{blockedByCount} %{issuableType}"
-msgid_plural "Boards|Blocked by %{blockedByCount} %{issuableType}s"
-msgstr[0] ""
-msgstr[1] ""
-
 msgid "Boards|Board"
 msgstr ""
 
@@ -10141,9 +10123,6 @@ msgstr ""
 msgid "Boards|Failed to delete board. Please try again."
 msgstr ""
 
-msgid "Boards|Failed to fetch blocking %{issuableType}s"
-msgstr ""
-
 msgid "Boards|Load more epics"
 msgstr ""
 
@@ -10165,9 +10144,6 @@ msgstr ""
 msgid "Boards|No matching boards found"
 msgstr ""
 
-msgid "Boards|Retrieving blocking %{issuableType}s"
-msgstr ""
-
 msgid "Boards|Select board"
 msgstr ""
 
@@ -10175,9 +10151,6 @@ msgid "Boards|Some of your boards are hidden, add a license to see them again."
 msgstr ""
 
 msgid "Boards|Switch board"
-msgstr ""
-
-msgid "Boards|View all blocking %{issuableType}s"
 msgstr ""
 
 msgid "Bold (%{modifierKey}B)"

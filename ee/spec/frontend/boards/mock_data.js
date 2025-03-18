@@ -296,6 +296,17 @@ export const rawIssue = {
   epic: {
     id: 'gid://gitlab/Epic/41',
   },
+  linkedWorkItems: {
+    __typename: 'LinkedWorkItemTypeConnection',
+    nodes: [
+      {
+        linkId: 'gid://gitlab/WorkItems::RelatedWorkItemLink/103',
+        linkType: 'blocks',
+        workItemState: 'OPEN',
+        __typename: 'LinkedWorkItemType',
+      },
+    ],
+  },
   __typename: 'Issue',
 };
 
@@ -319,6 +330,17 @@ export const mockIssue = {
     iid: 2,
     group: { fullPath: mockIssueGroupPath },
   },
+  linkedWorkItems: {
+    __typename: 'LinkedWorkItemTypeConnection',
+    nodes: [
+      {
+        linkId: 'gid://gitlab/WorkItems::RelatedWorkItemLink/103',
+        linkType: 'blocks',
+        workItemState: 'OPEN',
+        __typename: 'LinkedWorkItemType',
+      },
+    ],
+  },
 };
 
 export const mockIssue2 = {
@@ -338,6 +360,17 @@ export const mockIssue2 = {
     iid: 1,
     group: { fullPath: 'gitlab-org' },
   },
+  linkedWorkItems: {
+    __typename: 'LinkedWorkItemTypeConnection',
+    nodes: [
+      {
+        linkId: 'gid://gitlab/WorkItems::RelatedWorkItemLink/103',
+        linkType: 'blocks',
+        workItemState: 'OPEN',
+        __typename: 'LinkedWorkItemType',
+      },
+    ],
+  },
 };
 
 export const mockIssue3 = {
@@ -353,6 +386,17 @@ export const mockIssue3 = {
   assignees: mockAssignees,
   labels,
   epic: null,
+  linkedWorkItems: {
+    __typename: 'LinkedWorkItemTypeConnection',
+    nodes: [
+      {
+        linkId: 'gid://gitlab/WorkItems::RelatedWorkItemLink/103',
+        linkType: 'blocks',
+        workItemState: 'OPEN',
+        __typename: 'LinkedWorkItemType',
+      },
+    ],
+  },
 };
 
 export const mockIssue4 = {
@@ -368,6 +412,17 @@ export const mockIssue4 = {
   assignees: mockAssignees,
   labels,
   epic: null,
+  linkedWorkItems: {
+    __typename: 'LinkedWorkItemTypeConnection',
+    nodes: [
+      {
+        linkId: 'gid://gitlab/WorkItems::RelatedWorkItemLink/103',
+        linkType: 'blocks',
+        workItemState: 'OPEN',
+        __typename: 'LinkedWorkItemType',
+      },
+    ],
+  },
 };
 
 export const mockIssues = [mockIssue, mockIssue2];
@@ -459,6 +514,17 @@ export const rawEpic = {
   },
   issues: [rawIssue],
   labels: [],
+  linkedWorkItems: {
+    __typename: 'LinkedWorkItemTypeConnection',
+    nodes: [
+      {
+        linkId: 'gid://gitlab/WorkItems::RelatedWorkItemLink/103',
+        linkType: 'blocks',
+        workItemState: 'OPEN',
+        __typename: 'LinkedWorkItemType',
+      },
+    ],
+  },
   __typename: 'Epic',
 };
 
@@ -489,6 +555,17 @@ export const mockEpic = {
   },
   issues: [mockIssue],
   labels: [],
+  linkedWorkItems: {
+    __typename: 'LinkedWorkItemTypeConnection',
+    nodes: [
+      {
+        linkId: 'gid://gitlab/WorkItems::RelatedWorkItemLink/103',
+        linkType: 'blocks',
+        workItemState: 'OPEN',
+        __typename: 'LinkedWorkItemType',
+      },
+    ],
+  },
 };
 
 export const mockEpics = [
@@ -513,6 +590,17 @@ export const mockEpics = [
     userPreferences: {
       collapsed: false,
     },
+    linkedWorkItems: {
+      __typename: 'LinkedWorkItemTypeConnection',
+      nodes: [
+        {
+          linkId: 'gid://gitlab/WorkItems::RelatedWorkItemLink/103',
+          linkType: 'blocks',
+          workItemState: 'OPEN',
+          __typename: 'LinkedWorkItemType',
+        },
+      ],
+    },
   },
   {
     id: 'gid://gitlab/Epic/40',
@@ -531,6 +619,17 @@ export const mockEpics = [
     labels: [],
     userPreferences: {
       collapsed: false,
+    },
+    linkedWorkItems: {
+      __typename: 'LinkedWorkItemTypeConnection',
+      nodes: [
+        {
+          linkId: 'gid://gitlab/WorkItems::RelatedWorkItemLink/103',
+          linkType: 'blocks',
+          workItemState: 'OPEN',
+          __typename: 'LinkedWorkItemType',
+        },
+      ],
     },
   },
   {
@@ -551,6 +650,17 @@ export const mockEpics = [
     userPreferences: {
       collapsed: false,
     },
+    linkedWorkItems: {
+      __typename: 'LinkedWorkItemTypeConnection',
+      nodes: [
+        {
+          linkId: 'gid://gitlab/WorkItems::RelatedWorkItemLink/103',
+          linkType: 'blocks',
+          workItemState: 'OPEN',
+          __typename: 'LinkedWorkItemType',
+        },
+      ],
+    },
   },
   {
     id: 'gid://gitlab/Epic/38',
@@ -570,6 +680,17 @@ export const mockEpics = [
     userPreferences: {
       collapsed: false,
     },
+    linkedWorkItems: {
+      __typename: 'LinkedWorkItemTypeConnection',
+      nodes: [
+        {
+          linkId: 'gid://gitlab/WorkItems::RelatedWorkItemLink/103',
+          linkType: 'blocks',
+          workItemState: 'OPEN',
+          __typename: 'LinkedWorkItemType',
+        },
+      ],
+    },
   },
   {
     id: 'gid://gitlab/Epic/37',
@@ -588,6 +709,17 @@ export const mockEpics = [
     labels: [],
     userPreferences: {
       collapsed: false,
+    },
+    linkedWorkItems: {
+      __typename: 'LinkedWorkItemTypeConnection',
+      nodes: [
+        {
+          linkId: 'gid://gitlab/WorkItems::RelatedWorkItemLink/103',
+          linkType: 'blocks',
+          workItemState: 'OPEN',
+          __typename: 'LinkedWorkItemType',
+        },
+      ],
     },
   },
 ];

@@ -13,4 +13,11 @@ fragment EpicNode on Epic {
   webUrl
   createdAt
   closedAt
+  linkedWorkItems {
+    nodes {
+      linkId
+      linkType
+      workItemState
+    }
+  }
 }
