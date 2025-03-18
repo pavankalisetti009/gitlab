@@ -1,5 +1,8 @@
 <script>
 import ProjectsDropdownFilter from '~/analytics/shared/components/projects_dropdown_filter.vue';
+import { getParameterByName } from '~/lib/utils/url_utility';
+import GetDefaultProjectQuery from './get_default_project.query.graphql';
+import { PROJECT_FILTER_QUERY_NAME } from './constants';
 
 export default {
   components: {
@@ -11,24 +14,45 @@ export default {
       required: true,
     },
   },
+  data() {
+    return {
+      defaultProject: null,
+    };
+  },
+  apollo: {
+    defaultProject: {
+      query: GetDefaultProjectQuery,
+      variables() {
+        return { fullPath: this.defaultProjectPath };
+      },
+      update({ project }) {
+        return project;
+      },
+      skip() {
+        return !this.defaultProjectPath;
+      },
+    },
+  },
   computed: {
+    defaultProjectPath() {
+      return getParameterByName(PROJECT_FILTER_QUERY_NAME);
+    },
     queryParams() {
       return {
         first: 50,
         includeSubgroups: true,
       };
     },
+    isLoadingDefaultProject() {
+      return this.$apollo.queries.defaultProject.loading;
+    },
+    defaultProjects() {
+      return this.defaultProject ? [this.defaultProject] : [];
+    },
   },
   methods: {
     onProjectsSelected(selectedProjects) {
-      const projectNamespace = selectedProjects[0]?.fullPath || null;
-      const projectId = selectedProjects[0]?.id || null;
-      if (projectId && projectNamespace) {
-        this.$emit('projectSelected', {
-          projectNamespace,
-          projectId,
-        });
-      }
+      this.$emit('projectSelected', selectedProjects[0] || null);
     },
   },
 };
@@ -41,6 +65,8 @@ export default {
     :query-params="queryParams"
     :group-namespace="groupNamespace"
     :use-graphql="true"
+    :loading-default-projects="isLoadingDefaultProject"
+    :default-projects="defaultProjects"
     @selected="onProjectsSelected"
   />
 </template>

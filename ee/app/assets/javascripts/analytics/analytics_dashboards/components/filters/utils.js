@@ -17,6 +17,7 @@ import {
   DATE_RANGE_OPTION_KEYS,
   DEFAULT_SELECTED_DATE_RANGE_OPTION,
   FILTERED_SEARCH_SUPPORTED_TOKENS,
+  PROJECT_FILTER_QUERY_NAME,
 } from './constants';
 
 const isCustomOption = (option) => option && option === DATE_RANGE_OPTION_CUSTOM;
@@ -34,9 +35,13 @@ const DEFAULT_FILTER = dateRangeOptionToFilter(
 );
 
 export const buildDefaultDashboardFilters = (queryString, dashboardDefaultFilters = {}) => {
-  const { dateRangeOption, startDate, endDate, filterAnonUsers } = convertObjectPropsToCamelCase(
-    queryToObject(queryString, { gatherArrays: true }),
-  );
+  const {
+    dateRangeOption,
+    startDate,
+    endDate,
+    filterAnonUsers,
+    [PROJECT_FILTER_QUERY_NAME]: projectFullPath,
+  } = convertObjectPropsToCamelCase(queryToObject(queryString, { gatherArrays: true }));
   const searchFilters = urlQueryToFilter(queryString, {
     filterNamesAllowList: FILTERED_SEARCH_SUPPORTED_TOKENS,
   });
@@ -60,6 +65,7 @@ export const buildDefaultDashboardFilters = (queryString, dashboardDefaultFilter
     }),
     filterAnonUsers: parseBoolean(filterAnonUsers),
     searchFilters,
+    projectFullPath: projectFullPath || null,
   };
 };
 
@@ -69,6 +75,7 @@ export const filtersToQueryParams = ({
   endDate,
   filterAnonUsers,
   searchFilters,
+  projectFullPath,
 }) => {
   const customDateRange = isCustomOption(dateRangeOption);
 
@@ -80,6 +87,7 @@ export const filtersToQueryParams = ({
     endDate: customDateRange ? formatDate(endDate, ISO_SHORT_FORMAT) : null,
     // Clear the anon users filter unless truthy
     filterAnonUsers: filterAnonUsers || null,
+    [PROJECT_FILTER_QUERY_NAME]: projectFullPath || null,
   });
 
   return { ...additionalFiltersQueryObj, ...searchFiltersQueryObj };

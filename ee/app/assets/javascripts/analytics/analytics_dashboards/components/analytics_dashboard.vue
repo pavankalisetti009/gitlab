@@ -465,13 +465,10 @@ export default {
         this.trackEvent(EVENT_LABEL_EXCLUDE_ANONYMISED_USERS);
       }
     },
-    setProjectsFilter({ projectNamespace, projectId }) {
+    setProjectsFilter(project) {
       this.filters = {
         ...this.filters,
-        project: {
-          projectNamespace,
-          projectId,
-        },
+        projectFullPath: project?.fullPath || null,
       };
     },
     setFilteredSearchFilter(searchFilters) {
