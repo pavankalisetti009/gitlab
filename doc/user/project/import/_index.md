@@ -428,6 +428,9 @@ After you reassign contributions, GitLab sends you an email with the number of:
 
 If any rows have not been successfully processed, the email has a CSV file with more detailed results.
 
+To reassign placeholder users in bulk without using the UI,
+see [Group placeholder reassignments API](../../../api/group_placeholder_reassignments.md).
+
 #### Keep as placeholder
 
 You might not want to reassign contributions and memberships to users on the destination instance. For example, you
