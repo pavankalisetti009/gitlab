@@ -31,8 +31,7 @@ RSpec.describe ComplianceManagement::Frameworks::JsonExportService, feature_cate
   end
 
   let_it_be(:control) do
-    create(:compliance_requirements_control,
-      name: 'minimum_approvals_required_2',
+    create(:compliance_requirements_control, :minimum_approvals_required_2,
       compliance_requirement: requirement)
   end
 

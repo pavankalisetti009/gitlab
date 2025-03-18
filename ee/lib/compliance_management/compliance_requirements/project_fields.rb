@@ -3,32 +3,7 @@
 module ComplianceManagement
   module ComplianceRequirements
     class ProjectFields
-      FIELD_MAPPINGS = {
-        'default_branch_protected' => :default_branch_protected?,
-        'merge_request_prevent_author_approval' => :merge_request_prevent_author_approval?,
-        'merge_request_prevent_committers_approval' => :merge_requests_disable_committers_approval?,
-        'project_visibility' => :project_visibility,
-        'minimum_approvals_required' => :minimum_approvals_required,
-        'auth_sso_enabled' => :auth_sso_enabled?,
-        'scanner_sast_running' => :scanner_sast_running?,
-        'scanner_secret_detection_running' => :scanner_secret_detection_running?,
-        'scanner_dep_scanning_running' => :scanner_dep_scanning_running?,
-        'scanner_container_scanning_running' => :scanner_container_scanning_running?,
-        'scanner_license_compliance_running' => :scanner_license_compliance_running?,
-        'scanner_dast_running' => :scanner_dast_running?,
-        'scanner_api_security_running' => :scanner_api_security_running?,
-        'scanner_fuzz_testing_running' => :scanner_fuzz_testing_running?,
-        'scanner_code_quality_running' => :scanner_code_quality_running?,
-        'scanner_iac_running' => :scanner_iac_running?,
-        'code_changes_requires_code_owners' => :code_changes_requires_code_owners?,
-        'reset_approvals_on_push' => :reset_approvals_on_push?,
-        'status_checks_required' => :status_checks_required?,
-        'require_branch_up_to_date' => :require_branch_up_to_date?,
-        'resolve_discussions_required' => :resolve_discussions_required?,
-        'require_linear_history' => :require_linear_history?,
-        'restrict_push_merge_access' => :restrict_push_merge_access?,
-        'force_push_disabled' => :force_push_disabled?
-      }.freeze
+      FIELD_MAPPINGS = ComplianceManagement::ComplianceFramework::Controls::Registry.field_mappings.freeze
 
       SECURITY_SCANNERS = [
         :sast,
@@ -46,12 +21,16 @@ module ComplianceManagement
       class << self
         def map_field(project, field)
           method_name = FIELD_MAPPINGS[field]
-          send(method_name, project) # rubocop:disable GitlabSecurity/PublicSend -- We control the `method` name
+          return unless method_name
+
+          send(method_name, project) # rubocop:disable GitlabSecurity/PublicSend -- We control the method name
         end
 
         private
 
         def default_branch_protected?(project)
+          return false unless project.default_branch
+
           ProtectedBranch.protected?(project, project.default_branch)
         end
 
@@ -72,6 +51,8 @@ module ComplianceManagement
         end
 
         def auth_sso_enabled?(project)
+          return false unless project.group
+
           ::Groups::SsoHelper.saml_provider_enabled?(project.group)
         end
 
@@ -125,7 +106,7 @@ module ComplianceManagement
         end
 
         def code_changes_requires_code_owners?(project)
-          ProtectedBranch.branch_requires_code_owner_approval?(project, project.default_branch)
+          ProtectedBranch.branch_requires_code_owner_approval?(project, nil)
         end
 
         def reset_approvals_on_push?(project)
@@ -153,7 +134,11 @@ module ComplianceManagement
         end
 
         def force_push_disabled?(project)
-          !ProtectedBranch.allow_force_push?(project, project.default_branch)
+          !ProtectedBranch.allow_force_push?(project, nil)
+        end
+
+        def terraform_enabled?(project)
+          project.terraform_states.exists?
         end
       end
     end

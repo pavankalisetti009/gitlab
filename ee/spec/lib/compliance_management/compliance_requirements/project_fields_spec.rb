@@ -3,11 +3,36 @@
 require 'spec_helper'
 
 RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feature_category: :compliance_management do
-  let_it_be(:namespace) { create(:namespace) }
+  let_it_be(:namespace) { create(:group) }
   let_it_be(:project) { create(:project, namespace: namespace) }
 
   describe '.map_field' do
-    it 'defines expected field mappings' do
+    before do
+      allow(ComplianceManagement::ComplianceFramework::Controls::Registry).to receive(:field_mappings)
+        .and_return(
+          'default_branch_protected' => :default_branch_protected?,
+          'merge_request_prevent_author_approval' => :merge_request_prevent_author_approval?,
+          'merge_request_prevent_committers_approval' => :merge_requests_disable_committers_approval?,
+          'project_visibility' => :project_visibility,
+          'minimum_approvals_required' => :minimum_approvals_required,
+          'auth_sso_enabled' => :auth_sso_enabled?,
+          'scanner_sast_running' => :scanner_sast_running?,
+          'scanner_secret_detection_running' => :scanner_secret_detection_running?,
+          'scanner_dep_scanning_running' => :scanner_dep_scanning_running?,
+          'scanner_container_scanning_running' => :scanner_container_scanning_running?,
+          'scanner_license_compliance_running' => :scanner_license_compliance_running?,
+          'scanner_dast_running' => :scanner_dast_running?,
+          'scanner_api_security_running' => :scanner_api_security_running?,
+          'scanner_fuzz_testing_running' => :scanner_fuzz_testing_running?,
+          'scanner_code_quality_running' => :scanner_code_quality_running?,
+          'scanner_iac_running' => :scanner_iac_running?,
+          'terraform_enabled' => :terraform_enabled?
+        )
+
+      allow(project).to receive(:default_branch).and_return('main')
+    end
+
+    it 'defines expected field mappings from Registry' do
       expect(described_class::FIELD_MAPPINGS.keys).to contain_exactly(
         'default_branch_protected',
         'merge_request_prevent_author_approval',
@@ -32,8 +57,13 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
         'resolve_discussions_required',
         'require_linear_history',
         'restrict_push_merge_access',
-        'force_push_disabled'
+        'force_push_disabled',
+        'terraform_enabled'
       )
+    end
+
+    it 'returns nil for unknown fields' do
+      expect(described_class.map_field(project, 'unknown_field')).to be_nil
     end
 
     describe 'default_branch_protected' do
@@ -41,6 +71,18 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
         expect(ProtectedBranch).to receive(:protected?).with(project, project.default_branch)
 
         described_class.map_field(project, 'default_branch_protected')
+      end
+
+      context 'when default_branch is nil' do
+        let(:project_without_default_branch) { build_stubbed(:project) }
+
+        before do
+          allow(project_without_default_branch).to receive(:default_branch).and_return(nil)
+        end
+
+        it 'returns false' do
+          expect(described_class.map_field(project_without_default_branch, 'default_branch_protected')).to be false
+        end
       end
     end
 
@@ -74,9 +116,23 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
 
         described_class.map_field(project, 'minimum_approvals_required')
       end
+
+      context 'when no approval rules exist' do
+        before do
+          allow(project.approval_rules).to receive(:pick).and_return(nil)
+        end
+
+        it 'returns 0' do
+          expect(described_class.map_field(project, 'minimum_approvals_required')).to eq(0)
+        end
+      end
     end
 
     describe 'auth_sso_enabled' do
+      before do
+        allow(project).to receive(:group).and_return(namespace)
+      end
+
       it 'calls Groups::SsoHelper.saml_provider_enabled? with project.group' do
         expect(::Groups::SsoHelper).to receive(:saml_provider_enabled?).with(project.group)
 
@@ -195,6 +251,10 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
     describe 'security_scanner_running?' do
       let_it_be(:pipeline) { create(:ci_pipeline, :success, project: project) }
       let_it_be(:build) { create(:ci_build, :secret_detection_report, :success, pipeline: pipeline, project: project) }
+
+      before do
+        allow(project).to receive(:latest_successful_pipeline_for_default_branch).and_return(pipeline)
+      end
 
       it 'returns true if the latest successful pipeline has the scanner job artifact' do
         expect(described_class.send(:security_scanner_running?, :secret_detection, project)).to be true
@@ -315,6 +375,22 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
           .with(project, nil)
 
         described_class.map_field(project, 'force_push_disabled')
+      end
+    end
+
+    describe 'terraform_enabled' do
+      context 'when terraform states exist' do
+        it 'returns true' do
+          create(:terraform_state, project: project)
+
+          expect(described_class.map_field(project, 'terraform_enabled')).to be true
+        end
+      end
+
+      context 'when terraform states do not exist' do
+        it 'returns false' do
+          expect(described_class.map_field(project, 'terraform_enabled')).to be false
+        end
       end
     end
   end

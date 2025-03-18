@@ -21,13 +21,27 @@
         "scanner_api_security_running",
         "scanner_fuzz_testing_running",
         "scanner_code_quality_running",
-        "scanner_iac_running"
+        "scanner_iac_running",
+        "code_changes_requires_code_owners",
+        "reset_approvals_on_push",
+        "status_checks_required",
+        "require_branch_up_to_date",
+        "resolve_discussions_required",
+        "require_linear_history",
+        "restrict_push_merge_access",
+        "force_push_disabled",
+        "terraform_enabled"
       ]
     },
     "operator": {
       "type": "string",
       "enum": [
-        "="
+        "=",
+        "!=",
+        ">",
+        "<",
+        ">=",
+        "<="
       ]
     },
     "value": {
@@ -63,7 +77,16 @@
               "scanner_api_security_running",
               "scanner_fuzz_testing_running",
               "scanner_code_quality_running",
-              "scanner_iac_running"
+              "scanner_iac_running",
+              "code_changes_requires_code_owners",
+              "reset_approvals_on_push",
+              "status_checks_required",
+              "require_branch_up_to_date",
+              "resolve_discussions_required",
+              "require_linear_history",
+              "restrict_push_merge_access",
+              "force_push_disabled",
+              "terraform_enabled"
             ]
           }
         }
@@ -75,7 +98,8 @@
           },
           "operator": {
             "enum": [
-              "="
+              "=",
+              "!="
             ]
           }
         }
@@ -98,7 +122,12 @@
           },
           "operator": {
             "enum": [
-              "="
+              "=",
+              "!=",
+              ">",
+              "<",
+              ">=",
+              "<="
             ]
           }
         }
@@ -126,7 +155,8 @@
           },
           "operator": {
             "enum": [
-              "="
+              "=",
+              "!="
             ]
           }
         }

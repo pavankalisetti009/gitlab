@@ -5,14 +5,26 @@ FactoryBot.define do
     class: 'ComplianceManagement::ComplianceFramework::ComplianceRequirementsControl' do
     compliance_requirement
     namespace_id { compliance_requirement.namespace_id }
-    name { 'minimum_approvals_required_2' }
     control_type { 'internal' }
-    expression do
-      {
-        operator: "=",
-        field: "minimum_approvals_required",
-        value: 2
-      }.to_json
+
+    # Default to scanner_sast_running
+    name { :scanner_sast_running }
+    expression { { field: 'scanner_sast_running', operator: '=', value: true }.to_json }
+
+    trait :minimum_approvals_required_2 do
+      name { :minimum_approvals_required_2 }
+      expression do
+        {
+          operator: "=",
+          field: "minimum_approvals_required",
+          value: 2
+        }.to_json
+      end
+    end
+
+    trait :scanner_sast_running do
+      name { :scanner_sast_running }
+      expression { { field: 'scanner_sast_running', operator: '=', value: true }.to_json }
     end
 
     trait :project_visibility_not_internal do

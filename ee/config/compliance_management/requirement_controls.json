@@ -13,7 +13,7 @@
     "name": "At least two approvals",
     "expression": {
       "field": "minimum_approvals_required",
-      "operator": "=",
+      "operator": ">=",
       "value": 2
     }
   },
@@ -40,7 +40,7 @@
     "name": "Internal visibility is forbidden",
     "expression": {
       "field": "project_visibility",
-      "operator": "=",
+      "operator": "!=",
       "value": "internal"
     }
   },
@@ -64,7 +64,7 @@
   },
   {
     "id": "scanner_secret_detection_running",
-    "name": "Secrets Detection Running",
+    "name": "Secret Detection Running",
     "expression": {
       "field": "scanner_secret_detection_running",
       "operator": "=",
@@ -73,7 +73,7 @@
   },
   {
     "id": "scanner_dep_scanning_running",
-    "name": "Dependency Scanner Running",
+    "name": "Dependency Scanning Running",
     "expression": {
       "field": "scanner_dep_scanning_running",
       "operator": "=",
@@ -82,7 +82,7 @@
   },
   {
     "id": "scanner_container_scanning_running",
-    "name": "Container Scanner Running",
+    "name": "Container Scanning Running",
     "expression": {
       "field": "scanner_container_scanning_running",
       "operator": "=",
@@ -109,7 +109,7 @@
   },
   {
     "id": "scanner_api_security_running",
-    "name": "API Fuzz Testing Running",
+    "name": "API Security Running",
     "expression": {
       "field": "scanner_api_security_running",
       "operator": "=",
@@ -136,9 +136,90 @@
   },
   {
     "id": "scanner_iac_running",
-    "name": "IaC Scanner Running",
+    "name": "IaC Scanning Running",
     "expression": {
       "field": "scanner_iac_running",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "code_changes_requires_code_owners",
+    "name": "Code Changes Requires Code Owners",
+    "expression": {
+      "field": "code_changes_requires_code_owners",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "reset_approvals_on_push",
+    "name": "Reset Approvals on Push",
+    "expression": {
+      "field": "reset_approvals_on_push",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "status_checks_required",
+    "name": "Status Checks Required",
+    "expression": {
+      "field": "status_checks_required",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "require_branch_up_to_date",
+    "name": "Require Branch Up to Date",
+    "expression": {
+      "field": "require_branch_up_to_date",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "resolve_discussions_required",
+    "name": "Resolve Discussions Required",
+    "expression": {
+      "field": "resolve_discussions_required",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "require_linear_history",
+    "name": "Require Linear History",
+    "expression": {
+      "field": "require_linear_history",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "restrict_push_merge_access",
+    "name": "Restrict Push/Merge Access",
+    "expression": {
+      "field": "restrict_push_merge_access",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "force_push_disabled",
+    "name": "Force Push Disabled",
+    "expression": {
+      "field": "force_push_disabled",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "terraform_enabled",
+    "name": "Terraform Enabled",
+    "expression": {
+      "field": "terraform_enabled",
       "operator": "=",
       "value": true
     }
