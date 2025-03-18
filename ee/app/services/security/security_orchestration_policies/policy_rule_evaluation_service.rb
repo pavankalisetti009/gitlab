@@ -21,12 +21,7 @@ module Security
         ApprovalMergeRequestRule.remove_required_approved(passed_rules) if passed_rules.any?
 
         violations.execute
-
-        generate_policy_bot_comment(
-          merge_request,
-          approval_rules.applicable_to_branch(merge_request.target_branch),
-          report_type
-        )
+        generate_policy_bot_comment(merge_request)
       end
 
       def pass!(approval_rule)

@@ -8,14 +8,11 @@ module Security
 
       LOCK_SLEEP_SEC = 0.5.seconds
 
-      attr_reader :merge_request, :project, :report_type, :violated_policy, :requires_approval
+      attr_reader :merge_request, :project
 
-      def initialize(merge_request, params = {})
+      def initialize(merge_request)
         @merge_request = merge_request
         @project = merge_request.project
-        @report_type = params['report_type']
-        @violated_policy = params['violated_policy']
-        @requires_approval = params['requires_approval']
       end
 
       def execute

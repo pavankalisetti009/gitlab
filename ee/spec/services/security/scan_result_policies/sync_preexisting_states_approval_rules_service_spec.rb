@@ -78,7 +78,7 @@ RSpec.describe Security::ScanResultPolicies::SyncPreexistingStatesApprovalRulesS
       let(:approvals_required) { 0 }
 
       it_behaves_like 'does not update approval rules'
-      it_behaves_like 'triggers policy bot comment', :scan_finding, false, requires_approval: false
+      it_behaves_like 'triggers policy bot comment', false
       it_behaves_like 'logs only evaluation'
     end
 
@@ -124,7 +124,7 @@ RSpec.describe Security::ScanResultPolicies::SyncPreexistingStatesApprovalRulesS
         end
 
         it_behaves_like 'sets approvals_required to 0'
-        it_behaves_like 'triggers policy bot comment', :scan_finding, false
+        it_behaves_like 'triggers policy bot comment', false
         it_behaves_like 'logs only evaluation'
         it_behaves_like 'merge request without scan result violations'
       end
@@ -142,7 +142,7 @@ RSpec.describe Security::ScanResultPolicies::SyncPreexistingStatesApprovalRulesS
         let(:uuids) { vulnerabilities.map(&:finding_uuid) }
 
         it_behaves_like 'does not update approval rules'
-        it_behaves_like 'triggers policy bot comment', :scan_finding, true
+        it_behaves_like 'triggers policy bot comment', true
 
         it 'logs update' do
           expect(Gitlab::AppJsonLogger).to receive(:info).with(hash_including(
@@ -178,7 +178,7 @@ RSpec.describe Security::ScanResultPolicies::SyncPreexistingStatesApprovalRulesS
 
       context 'when vulnerabilities count does not match the pre-existing states' do
         it_behaves_like 'sets approvals_required to 0'
-        it_behaves_like 'triggers policy bot comment', :scan_finding, false
+        it_behaves_like 'triggers policy bot comment', false
         it_behaves_like 'logs only evaluation'
         it_behaves_like 'merge request without scan result violations'
 
@@ -204,7 +204,7 @@ RSpec.describe Security::ScanResultPolicies::SyncPreexistingStatesApprovalRulesS
               merge_request: merge_request)
           end
 
-          it_behaves_like 'triggers policy bot comment', :scan_finding, true
+          it_behaves_like 'triggers policy bot comment', true
 
           context 'when other violation has not been evaluated yet and has no data' do
             before do

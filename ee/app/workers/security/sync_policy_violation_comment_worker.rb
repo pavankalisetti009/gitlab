@@ -19,17 +19,10 @@ module Security
 
       return unless merge_request.project.licensed_feature_available?(:security_orchestration_policies)
 
-      approval_rules = merge_request.approval_rules
-      generate_comment(merge_request, approval_rules.scan_finding, :scan_finding)
-      generate_comment(merge_request, approval_rules.license_scanning, :license_scanning)
-    end
+      approval_rules = merge_request.approval_rules.report_approver
+      return if approval_rules.blank?
 
-    private
-
-    def generate_comment(merge_request, rules, report_type)
-      return if rules.blank?
-
-      generate_policy_bot_comment(merge_request, rules.applicable_to_branch(merge_request.target_branch), report_type)
+      generate_policy_bot_comment(merge_request)
     end
   end
 end

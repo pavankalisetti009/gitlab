@@ -391,7 +391,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationServ
           service.pass!(approval_rule_2)
         end
 
-        it_behaves_like 'triggers policy bot comment', :scan_finding, true
+        it_behaves_like 'triggers policy bot comment', true
         it_behaves_like 'does not trigger policy bot comment for archived project' do
           let(:archived_project) { merge_request.project }
         end
@@ -403,7 +403,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationServ
           service.pass!(approval_rule_2)
         end
 
-        it_behaves_like 'triggers policy bot comment', :scan_finding, false, requires_approval: false
+        it_behaves_like 'triggers policy bot comment', false
         it_behaves_like 'does not trigger policy bot comment for archived project' do
           let(:archived_project) { merge_request.project }
         end

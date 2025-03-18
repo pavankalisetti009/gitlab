@@ -45,7 +45,7 @@ module Security
         )
         save_violation_data(violated_policies)
         violations.execute
-        generate_policy_bot_comment(merge_request, violated_rules, :any_merge_request)
+        generate_policy_bot_comment(merge_request)
       end
 
       def evaluate_policy_violations(scan_result_policy_reads)

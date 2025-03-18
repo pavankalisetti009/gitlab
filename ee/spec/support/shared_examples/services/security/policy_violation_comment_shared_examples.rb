@@ -1,16 +1,21 @@
 # frozen_string_literal: true
 
-RSpec.shared_examples_for 'triggers policy bot comment' do |report_type, expected_violation,
-  requires_approval: true|
+RSpec.shared_examples_for 'triggers policy bot comment' do |expected_violation|
   it 'enqueues Security::GeneratePolicyViolationCommentWorker' do
-    expect(Security::GeneratePolicyViolationCommentWorker).to receive(:perform_async).with(
-      merge_request.id,
-      { 'report_type' => Security::ScanResultPolicies::PolicyViolationComment::REPORT_TYPES[report_type],
-        'violated_policy' => expected_violation,
-        'requires_approval' => requires_approval }
-    )
+    expect(Security::GeneratePolicyViolationCommentWorker).to receive(:perform_async).with(merge_request.id)
 
     execute
+  end
+
+  context 'when some violations are not populated' do
+    let_it_be(:other_scan_result_policy_read) { create(:scan_result_policy_read, project: merge_request.project) }
+
+    before do
+      create(:scan_result_policy_violation, scan_result_policy_read: other_scan_result_policy_read,
+        merge_request: merge_request, project: merge_request.project, violation_data: nil)
+    end
+
+    it_behaves_like 'does not trigger policy bot comment'
   end
 
   if expected_violation
@@ -32,12 +37,7 @@ RSpec.shared_examples_for 'triggers policy bot comment' do |report_type, expecte
         end
 
         it 'enqueues Security::GeneratePolicyViolationCommentWorker' do
-          expect(Security::GeneratePolicyViolationCommentWorker).to receive(:perform_async).with(
-            merge_request.id,
-            { 'report_type' => Security::ScanResultPolicies::PolicyViolationComment::REPORT_TYPES[report_type],
-              'violated_policy' => expected_violation,
-              'requires_approval' => requires_approval }
-          )
+          expect(Security::GeneratePolicyViolationCommentWorker).to receive(:perform_async).with(merge_request.id)
 
           execute
         end

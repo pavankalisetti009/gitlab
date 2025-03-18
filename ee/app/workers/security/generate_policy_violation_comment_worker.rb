@@ -8,7 +8,7 @@ module Security
     data_consistency :sticky
     feature_category :security_policy_management
 
-    def perform(merge_request_id, params = {})
+    def perform(merge_request_id, _params = {})
       merge_request = MergeRequest.find_by_id(merge_request_id)
 
       unless merge_request
@@ -16,25 +16,18 @@ module Security
         return
       end
 
-      result = Security::ScanResultPolicies::GeneratePolicyViolationCommentService.new(
-        merge_request,
-        params
-      ).execute
-
+      result = Security::ScanResultPolicies::GeneratePolicyViolationCommentService.new(merge_request).execute
       return unless result.error?
 
-      log_message(result.message.join(', '), merge_request_id, params)
+      log_message(result.message.join(', '), merge_request_id)
     end
 
     private
 
-    def log_message(errors, merge_request_id, params)
+    def log_message(errors, merge_request_id)
       logger.warn(
         structured_payload(
           merge_request_id: merge_request_id,
-          violated_policy: params['violated_policy'],
-          report_type: params['report_type'],
-          requires_approval: params['requires_approval'],
           message: errors
         ))
     end

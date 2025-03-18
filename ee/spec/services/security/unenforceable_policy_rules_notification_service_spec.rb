@@ -57,26 +57,12 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
         let!(:approval_scan_finding_rule) { create_approval_rule(:scan_finding) }
         let!(:approval_license_scanning_rule) { create_approval_rule(:license_scanning) }
 
-        shared_examples 'for Security::GeneratePolicyViolationCommentWorker' do |report_types|
-          it 'enqueues Security::GeneratePolicyViolationCommentWorker for unenforceable report types' do
-            report_types.each do |report_type|
-              expect(Security::GeneratePolicyViolationCommentWorker).to receive(:perform_async).with(
-                merge_request.id,
-                { 'report_type' => Security::ScanResultPolicies::PolicyViolationComment::REPORT_TYPES[report_type],
-                  'violated_policy' => true,
-                  'requires_approval' => true }
-              )
-            end
+        it 'enqueues Security::GeneratePolicyViolationCommentWorker for unenforceable report types' do
+          expect(Security::GeneratePolicyViolationCommentWorker)
+            .to receive(:perform_async).exactly(unenforceable_reports.size).with(merge_request.id)
 
-            execute
-          end
+          execute
         end
-
-        before do
-          unenforceable_reports.push(:license_scanning) unless unenforceable_reports.include?(:license_scanning)
-        end
-
-        it_behaves_like 'for Security::GeneratePolicyViolationCommentWorker', unenforceable_reports
 
         it 'resets approvals', :aggregate_failures do
           execute
@@ -172,7 +158,8 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
   end
 
   shared_examples_for 'unenforceable report' do |report_type|
-    it_behaves_like 'blocks newly detected unenforceable approval rules', [report_type]
+    it_behaves_like 'blocks newly detected unenforceable approval rules',
+      report_type == :scan_finding ? %i[scan_finding license_scanning] : %i[license_scanning]
 
     context 'with violated approval rules' do
       let(:approvals_required) { 1 }
@@ -193,7 +180,7 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
           scan_result_policy_read: scan_result_policy_read)
       end
 
-      it_behaves_like 'triggers policy bot comment', report_type, true
+      it_behaves_like 'triggers policy bot comment', true
 
       it 'logs the corresponding message' do
         allow(Gitlab::AppJsonLogger).to receive(:info)
@@ -212,7 +199,7 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
       context 'without required approvals' do
         let(:approvals_required) { 0 }
 
-        it_behaves_like 'triggers policy bot comment', report_type, true, requires_approval: false
+        it_behaves_like 'triggers policy bot comment', true
       end
 
       context 'when approval rules are not applicable to the target branch' do
@@ -235,7 +222,7 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
           end
         end
 
-        it_behaves_like 'triggers policy bot comment', report_type, false, requires_approval: false
+        it_behaves_like 'triggers policy bot comment', false
 
         it 'updates violation status' do
           expect { execute }.to change { violation.reload.status }.from('running').to('failed')
@@ -309,12 +296,12 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
         expect(merge_request.scan_result_policy_violations.map(&:status)).to contain_exactly('warn', 'failed')
       end
 
-      it_behaves_like 'triggers policy bot comment', report_type, true
+      it_behaves_like 'triggers policy bot comment', true
 
       context "when all rules fail open" do
         let(:fail_closed_rule) { nil }
 
-        it_behaves_like 'triggers policy bot comment', report_type, true, requires_approval: false
+        it_behaves_like 'triggers policy bot comment', true
 
         it 'updates violation status' do
           execute

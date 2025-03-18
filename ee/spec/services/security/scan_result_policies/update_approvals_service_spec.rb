@@ -176,12 +176,12 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
         let(:scanners) { [] }
 
         it_behaves_like 'does not update approvals_required'
-        it_behaves_like 'triggers policy bot comment', :scan_finding, true
+        it_behaves_like 'triggers policy bot comment', true
       end
 
       context 'when scan type matches the approval rule scanners' do
         it_behaves_like 'does not update approvals_required'
-        it_behaves_like 'triggers policy bot comment', :scan_finding, true
+        it_behaves_like 'triggers policy bot comment', true
 
         it 'logs update' do
           expect(::Gitlab::AppJsonLogger)
@@ -302,7 +302,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
         let(:scanners) { %w[container_scanning] }
 
         it_behaves_like 'sets approvals_required to 0'
-        it_behaves_like 'triggers policy bot comment', :scan_finding, false
+        it_behaves_like 'triggers policy bot comment', false
       end
     end
 
@@ -310,7 +310,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
       let(:vulnerabilities_allowed) { 100 }
 
       it_behaves_like 'sets approvals_required to 0'
-      it_behaves_like 'triggers policy bot comment', :scan_finding, false
+      it_behaves_like 'triggers policy bot comment', false
       it_behaves_like 'merge request without scan result violations'
 
       context 'when there are other scan_finding violations' do
@@ -334,7 +334,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
             merge_request: merge_request)
         end
 
-        it_behaves_like 'triggers policy bot comment', :scan_finding, true
+        it_behaves_like 'triggers policy bot comment', true
 
         context 'when other violation has not been evaluated yet and has no data' do
           before do
@@ -349,7 +349,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
     context 'when there are no required approvals' do
       let(:approvals_required) { 0 }
 
-      it_behaves_like 'triggers policy bot comment', :scan_finding, true, requires_approval: false
+      it_behaves_like 'triggers policy bot comment', true
       it_behaves_like 'persists violation details' do
         let(:expected_violations) { { 'newly_detected' => array_including(uuids) } }
       end
@@ -373,7 +373,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
         merge_request.update!(target_branch: 'non-protected')
       end
 
-      it_behaves_like 'triggers policy bot comment', :scan_finding, false, requires_approval: false
+      it_behaves_like 'triggers policy bot comment', false
     end
 
     context 'when target pipeline is nil' do
@@ -383,7 +383,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
       end
 
       it_behaves_like 'does not update approvals_required'
-      it_behaves_like 'triggers policy bot comment', :scan_finding, true
+      it_behaves_like 'triggers policy bot comment', true
       it_behaves_like 'persists violation details' do
         let(:expected_violations) { { 'newly_detected' => array_including(uuids) } }
         let(:expected_context) { { 'pipeline_ids' => [pipeline.id], 'target_pipeline_ids' => [] } }
@@ -395,7 +395,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
         end
 
         it_behaves_like 'does not update approvals_required'
-        it_behaves_like 'triggers policy bot comment', :scan_finding, true
+        it_behaves_like 'triggers policy bot comment', true
 
         it 'persists the error in violation data' do
           execute
@@ -455,14 +455,14 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
 
       context 'when there are no violated approval rules' do
         it_behaves_like 'sets approvals_required to 0'
-        it_behaves_like 'triggers policy bot comment', :scan_finding, false
+        it_behaves_like 'triggers policy bot comment', false
       end
 
       context 'when there are violated approval rules' do
         let(:existing_uuid) { SecureRandom.uuid }
 
         it_behaves_like 'does not update approvals_required'
-        it_behaves_like 'triggers policy bot comment', :scan_finding, true
+        it_behaves_like 'triggers policy bot comment', true
 
         context 'when no common ancestor pipeline has security reports' do
           before do
@@ -470,7 +470,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
           end
 
           it_behaves_like 'does not update approvals_required'
-          it_behaves_like 'triggers policy bot comment', :scan_finding, true
+          it_behaves_like 'triggers policy bot comment', true
         end
       end
     end
@@ -481,7 +481,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
       it_behaves_like 'new vulnerability_states', %w[new_dismissed new_needs_triage]
 
       it_behaves_like 'does not update approvals_required'
-      it_behaves_like 'triggers policy bot comment', :scan_finding, true
+      it_behaves_like 'triggers policy bot comment', true
 
       it_behaves_like 'persists violation details' do
         let(:expected_violations) { { 'newly_detected' => array_including(uuids) } }
@@ -491,14 +491,14 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
         let(:vulnerability_states) { %w[new_dismissed] }
 
         it_behaves_like 'sets approvals_required to 0'
-        it_behaves_like 'triggers policy bot comment', :scan_finding, false
+        it_behaves_like 'triggers policy bot comment', false
       end
 
       context 'when vulnerability_states are new_needs_triage' do
         let(:vulnerability_states) { %w[new_needs_triage] }
 
         it_behaves_like 'does not update approvals_required'
-        it_behaves_like 'triggers policy bot comment', :scan_finding, true
+        it_behaves_like 'triggers policy bot comment', true
       end
 
       context 'when new findings are introduced to previously existing findings and it exceeds the allowed limit' do
@@ -541,7 +541,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
         end
 
         it_behaves_like 'does not update approvals_required'
-        it_behaves_like 'triggers policy bot comment', :scan_finding, true
+        it_behaves_like 'triggers policy bot comment', true
 
         it_behaves_like 'persists violation details' do
           let(:expected_violations) do
@@ -697,7 +697,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
           let(:vulnerability_states) { %w[new_needs_triage new_dismissed] }
 
           it_behaves_like 'sets approvals_required to 0'
-          it_behaves_like 'triggers policy bot comment', :scan_finding, false
+          it_behaves_like 'triggers policy bot comment', false
           it_behaves_like 'merge request without scan result violations'
         end
 
@@ -705,7 +705,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
           let(:vulnerability_states) { [] }
 
           it_behaves_like 'sets approvals_required to 0'
-          it_behaves_like 'triggers policy bot comment', :scan_finding, false
+          it_behaves_like 'triggers policy bot comment', false
           it_behaves_like 'merge request without scan result violations'
         end
 
@@ -721,7 +721,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
               let(:vulnerability_states) { base_states + states }
 
               it_behaves_like 'does not update approvals_required'
-              it_behaves_like 'triggers policy bot comment', :scan_finding, true
+              it_behaves_like 'triggers policy bot comment', true
               it_behaves_like 'persists violation details' do
                 let(:expected_violations) { { 'previously_existing' => array_including(uuids) } }
               end
@@ -737,7 +737,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
         end
 
         it_behaves_like 'does not update approvals_required'
-        it_behaves_like 'triggers policy bot comment', :scan_finding, true
+        it_behaves_like 'triggers policy bot comment', true
         it_behaves_like 'persists violation details' do
           let(:expected_violations) { { 'newly_detected' => array_including(uuids) } }
           let(:expected_context) { { 'pipeline_ids' => [pipeline.id], 'target_pipeline_ids' => [] } }
@@ -783,7 +783,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
 
       context 'when findings in the main pipeline violate the policy' do
         it_behaves_like 'does not update approvals_required'
-        it_behaves_like 'triggers policy bot comment', :scan_finding, true
+        it_behaves_like 'triggers policy bot comment', true
       end
 
       context 'when no pipeline can store security reports' do
@@ -810,7 +810,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
 
         context 'without findings in the related pipelines' do
           it_behaves_like 'sets approvals_required to 0'
-          it_behaves_like 'triggers policy bot comment', :scan_finding, false
+          it_behaves_like 'triggers policy bot comment', false
 
           context 'when main pipeline cannot store security reports and a related pipeline can' do
             before do
@@ -819,7 +819,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
             end
 
             it_behaves_like 'sets approvals_required to 0'
-            it_behaves_like 'triggers policy bot comment', :scan_finding, false
+            it_behaves_like 'triggers policy bot comment', false
 
             context 'when feature flag "use_related_pipelines_for_policy_evaluation" is disabled' do
               before do
@@ -844,7 +844,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
           end
 
           it_behaves_like 'does not update approvals_required'
-          it_behaves_like 'triggers policy bot comment', :scan_finding, true
+          it_behaves_like 'triggers policy bot comment', true
 
           context 'when main pipeline cannot store security reports and a related pipeline can' do
             before do
@@ -853,7 +853,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
             end
 
             it_behaves_like 'does not update approvals_required'
-            it_behaves_like 'triggers policy bot comment', :scan_finding, true
+            it_behaves_like 'triggers policy bot comment', true
 
             context 'when feature flag "use_related_pipelines_for_policy_evaluation" is disabled' do
               before do
@@ -874,7 +874,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
             end
 
             it_behaves_like 'does not update approvals_required'
-            it_behaves_like 'triggers policy bot comment', :scan_finding, true
+            it_behaves_like 'triggers policy bot comment', true
           end
         end
       end
