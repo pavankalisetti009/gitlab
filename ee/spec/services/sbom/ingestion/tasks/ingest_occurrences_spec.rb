@@ -239,13 +239,13 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrences, feature_category: :dep
         expect(occurrence_maps).to all(have_attributes(occurrence_id: Integer))
       end
 
-      context 'when sbom_ingest_unknown_licenses_with_count is disabled' do
+      context 'when filter_unknown_licenses_by_spdx_identifier is disabled' do
         it 'does not include licenses' do
           expect(Sbom::Occurrence.pluck(:licenses)).to all(be_empty)
         end
       end
 
-      context 'when sbom_ingest_unknown_licenses_with_count is enabled' do
+      context 'when filter_unknown_licenses_by_spdx_identifier is enabled' do
         it 'associates the correct number of unknown licenses with each occurrence' do
           task
 
@@ -399,7 +399,7 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrences, feature_category: :dep
 
         let(:occurrence_maps) { [occurrence_map_with_all_unknown_licenses] }
 
-        context 'when sbom_ingest_unknown_licenses_with_count is enabled' do
+        context 'when filter_unknown_licenses_by_spdx_identifier is enabled' do
           it 'ingests occurrences with an unknown license with name 2 unknown licenses' do
             expect { task }.to change(Sbom::Occurrence, :count).by(1)
 
@@ -408,9 +408,9 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrences, feature_category: :dep
           end
         end
 
-        context 'when sbom_ingest_unknown_licenses_with_count is disabled' do
+        context 'when filter_unknown_licenses_by_spdx_identifier is disabled' do
           before do
-            stub_feature_flags(sbom_ingest_unknown_licenses_with_count: false)
+            stub_feature_flags(filter_unknown_licenses_by_spdx_identifier: false)
           end
 
           it 'does not ingest unknown licenses' do
@@ -448,7 +448,7 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrences, feature_category: :dep
 
         let(:occurrence_maps) { [occurrence_map_with_mixed_licenses] }
 
-        context 'when sbom_ingest_unknown_licenses_with_count is enabled' do
+        context 'when filter_unknown_licenses_by_spdx_identifier is enabled' do
           it 'ingests occurrences with mixed licenses, retaining all licenses' do
             task
 
@@ -457,9 +457,9 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrences, feature_category: :dep
           end
         end
 
-        context 'when sbom_ingest_unknown_licenses_with_count is disabled' do
+        context 'when filter_unknown_licenses_by_spdx_identifier is disabled' do
           before do
-            stub_feature_flags(sbom_ingest_unknown_licenses_with_count: false)
+            stub_feature_flags(filter_unknown_licenses_by_spdx_identifier: false)
           end
 
           it 'ingests occurrences with mixed licenses, retaining known licenses' do

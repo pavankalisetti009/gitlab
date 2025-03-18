@@ -184,7 +184,7 @@ module Sbom
           end
 
           def ingest_unknown_licenses?
-            Feature.enabled?(:sbom_ingest_unknown_licenses_with_count, project)
+            Feature.enabled?(:filter_unknown_licenses_by_spdx_identifier, project.root_namespace)
           end
           strong_memoize_attr :ingest_unknown_licenses?
 
