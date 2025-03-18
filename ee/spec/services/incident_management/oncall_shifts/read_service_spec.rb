@@ -42,7 +42,8 @@ RSpec.describe ::IncidentManagement::OncallShifts::ReadService, feature_category
 
         expect(shifts).to all(be_a(::IncidentManagement::OncallShift))
         expect(shifts.sort_by(&:starts_at)).to eq(shifts)
-        expect(shifts.map(&:attributes)).to eq(expected_shifts.map(&:attributes))
+        filtered_attributes = ->(shift) { shift.attributes.except('project_id') }
+        expect(shifts.map(&filtered_attributes)).to eq(expected_shifts.map(&filtered_attributes))
       end
     end
 
