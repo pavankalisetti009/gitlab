@@ -16,7 +16,9 @@ module Mutations
           null: true
 
         def ready?(**args)
-          raise_resource_not_available_error! unless Feature.enabled?(:custom_admin_roles, :instance)
+          unless Feature.enabled?(:custom_admin_roles, :instance)
+            raise_resource_not_available_error! '`custom_admin_roles` feature flag is disabled.'
+          end
 
           super
         end

@@ -9,15 +9,20 @@ RSpec.describe 'deleting member role', feature_category: :system_access do
   let_it_be(:member_role) { create(:member_role, :instance) }
   let_it_be_with_reload(:current_user) { create(:user) }
 
-  let(:arguments) do
-    {
-      id: member_role.to_global_id.to_s
-    }
+  let(:input) { { id: member_role.to_global_id.to_s } }
+
+  let(:fields) do
+    <<~FIELDS
+      errors
+      memberRole {
+        id
+      }
+    FIELDS
   end
 
-  let(:mutation) { graphql_mutation(:member_role_delete, arguments) }
+  let(:mutation) { graphql_mutation(:member_role_delete, input, fields) }
 
-  subject(:mutation_response) { graphql_mutation_response(:member_role_delete) }
+  subject(:delete_member_role) { graphql_mutation_response(:member_role_delete) }
 
   context 'without the custom roles feature', :enable_admin_mode do
     before do
@@ -51,9 +56,9 @@ RSpec.describe 'deleting member role', feature_category: :system_access do
         it 'returns success' do
           post_graphql_mutation(mutation, current_user: current_user)
 
-          expect(mutation_response).to be_present
-          expect(mutation_response['errors']).to be_empty
-          expect(mutation_response['memberRole']).to be_present
+          expect(delete_member_role).to be_present
+          expect(delete_member_role['errors']).to be_empty
+          expect(delete_member_role['memberRole']['id']).to eq(member_role.to_global_id.to_s)
           expect(graphql_errors).to be_nil
         end
 
@@ -64,23 +69,27 @@ RSpec.describe 'deleting member role', feature_category: :system_access do
       end
 
       context 'with invalid arguments' do
-        let(:arguments) { { id: 'gid://gitlab/MemberRole/-1' } }
+        let(:input) { { id: 'gid://gitlab/MemberRole/-1' } }
 
-        it 'returns an error' do
-          post_graphql_mutation(mutation, current_user: current_user)
-
-          expect(graphql_errors).to be_present
-        end
+        it_behaves_like 'a mutation that returns a top-level access error'
       end
 
       context 'with missing arguments' do
-        let(:arguments) { {} }
+        let(:input) { {} }
 
         it 'returns an error' do
           post_graphql_mutation(mutation, current_user: current_user)
 
-          expect(graphql_errors).to be_present
+          expect_graphql_errors_to_include(/was provided invalid value for id/)
         end
+      end
+
+      context 'when member role is an admin role' do
+        let_it_be(:member_role) { create(:member_role, :read_admin_dashboard) }
+        let_it_be(:current_user) { create(:admin) }
+
+        it_behaves_like  'a mutation that returns top-level errors',
+          errors: ['This mutation can only be used to delete standard member roles']
       end
     end
   end
