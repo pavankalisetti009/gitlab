@@ -131,6 +131,13 @@ RSpec.describe Projects::DependenciesController, feature_category: :dependency_m
             end
           end
 
+          context 'with component_version_id filter' do
+            it_behaves_like 'it can filter dependencies', :component_version_ids do
+              let(:filter_value) { [occurrences.last.component_version_id] }
+              let(:expected_results) { [occurrences.last] }
+            end
+          end
+
           shared_examples 'it can sort dependencies' do |sort|
             subject { json_response['dependencies'].pluck('occurrence_id') }
 

@@ -40,6 +40,7 @@ module Sbom
       filter_by_component_names
       filter_by_component_ids
       filter_by_licences
+      filter_by_component_version_ids
       sort
     end
 
@@ -62,7 +63,7 @@ module Sbom
     end
 
     def filter_by_component_names
-      return if params[:component_names].blank?
+      return if params[:component_names].blank? || params[:component_ids]
 
       @collection = @collection.filter_by_component_names(params[:component_names])
     end
@@ -84,6 +85,13 @@ module Sbom
         end
 
       @collection = @collection.by_licenses(params[:licenses], empty_licenses_as_unknown:)
+    end
+
+    def filter_by_component_version_ids
+      return if Feature.disabled?(:version_filtering_on_project_level_dependency_list, dependable) ||
+        params[:component_version_ids].blank?
+
+      @collection = @collection.filter_by_component_version_ids(params[:component_version_ids])
     end
 
     def sort_direction
