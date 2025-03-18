@@ -51,7 +51,7 @@ RSpec.describe IncidentManagement::OncallRotations::EditService, feature_categor
       it 'adds the participant to the rotation' do
         subject
 
-        attributes_to_match = participant_to_add.attributes.except('id')
+        attributes_to_match = participant_to_add.attributes.except('id', 'project_id')
 
         expect(oncall_rotation.participants.not_removed).to include(an_object_having_attributes(attributes_to_match))
       end
