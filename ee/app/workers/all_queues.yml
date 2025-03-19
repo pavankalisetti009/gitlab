@@ -63,6 +63,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace: :cronjob
+- :name: cronjob:ai_active_context_migration
+  :worker_name: Ai::ActiveContext::MigrationWorker
+  :feature_category: :global_search
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :cpu
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace: :cronjob
 - :name: cronjob:analytics_cycle_analytics_consistency
   :worker_name: Analytics::CycleAnalytics::ConsistencyWorker
   :feature_category: :value_stream_management
