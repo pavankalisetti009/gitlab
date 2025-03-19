@@ -22,7 +22,7 @@ module EE
             "Project #{target.full_path} was removed from inbound list of allowed projects for #{scope.full_path}"
           event_name = 'secure_ci_job_token_project_removed'
 
-          if ::Feature.enabled?(:add_policies_to_ci_job_token, scope) && policies.present?
+          if scope.job_token_policies_enabled? && policies.present?
             audit_message += ", with job token policies: #{policies.join(', ')}"
           end
 

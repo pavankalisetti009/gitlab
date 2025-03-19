@@ -47,13 +47,13 @@ RSpec.describe Ci::JobTokenScope::RemoveGroupService, feature_category: :continu
       service_result
     end
 
-    context 'when feature-flag `add_policies_to_ci_job_token` is disabled' do
+    context 'when job token policies are disabled' do
       let(:expected_audit_message) do
         "Group #{target_group.full_path} was removed from list of allowed groups for #{project.full_path}"
       end
 
       before do
-        stub_feature_flags(add_policies_to_ci_job_token: false)
+        allow(project).to receive(:job_token_policies_enabled?).and_return(false)
       end
 
       it 'audits the event without policies' do
