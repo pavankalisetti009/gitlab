@@ -142,6 +142,12 @@ the following applications and settings to achieve scale. All settings are
 publicly available, as [Kubernetes configuration](https://gitlab.com/gitlab-com/gl-infra/k8s-workloads/gitlab-com)
 or [Chef cookbooks](https://gitlab.com/gitlab-cookbooks).
 
+### Consul
+
+Service discovery:
+
+- [`gitlab-cookbooks` / `gitlab_consul` · GitLab](https://gitlab.com/gitlab-cookbooks/gitlab_consul)
+
 ### Elastic cluster
 
 We use Elasticsearch and Kibana for part of our monitoring solution:
@@ -155,35 +161,29 @@ We use Fluentd to unify our GitLab logs:
 
 - [`gitlab-cookbooks` / `gitlab_fluentd` · GitLab](https://gitlab.com/gitlab-cookbooks/gitlab_fluentd)
 
-### Prometheus
-
-Prometheus complete our monitoring stack:
-
-- [`gitlab-cookbooks` / `gitlab-prometheus` · GitLab](https://gitlab.com/gitlab-cookbooks/gitlab-prometheus)
-
 ### Grafana
 
 For the visualization of monitoring data:
 
 - [`gitlab-cookbooks` / `gitlab-grafana` · GitLab](https://gitlab.com/gitlab-cookbooks/gitlab-grafana)
 
-### Sentry
-
-Open source error tracking:
-
-- [`gitlab-cookbooks` / `gitlab-sentry` · GitLab](https://gitlab.com/gitlab-cookbooks/gitlab-sentry)
-
-### Consul
-
-Service discovery:
-
-- [`gitlab-cookbooks` / `gitlab_consul` · GitLab](https://gitlab.com/gitlab-cookbooks/gitlab_consul)
-
 ### HAProxy
 
 High Performance TCP/HTTP Load Balancer:
 
 - [`gitlab-cookbooks` / `gitlab-haproxy` · GitLab](https://gitlab.com/gitlab-cookbooks/gitlab-haproxy)
+
+### Prometheus
+
+Prometheus complete our monitoring stack:
+
+- [`gitlab-cookbooks` / `gitlab-prometheus` · GitLab](https://gitlab.com/gitlab-cookbooks/gitlab-prometheus)
+
+### Sentry
+
+Open source error tracking:
+
+- [`gitlab-cookbooks` / `gitlab-sentry` · GitLab](https://gitlab.com/gitlab-cookbooks/gitlab-sentry)
 
 ## GitLab.com logging
 
@@ -277,24 +277,18 @@ restrictive for each IP address. For more information about the rate limits
 for GitLab.com, see
 [the documentation in the handbook](https://handbook.gitlab.com/handbook/engineering/infrastructure/rate-limiting).
 
-### Rate limiting responses
+### Group and project import by uploading export files
 
-For information on rate limiting responses, see:
+To help avoid abuse, the following are rate limited:
 
-- [List of headers on responses to blocked requests](../../administration/settings/user_and_ip_rate_limits.md#response-headers).
-- [Customizable response text](../../administration/settings/user_and_ip_rate_limits.md#use-a-custom-rate-limit-response).
+- Project and group imports.
+- Group and project exports that use files.
+- Export downloads.
 
-### Protected paths throttle
+For more information, see:
 
-If the same IP address sends more than 10 POST requests in a minute to protected paths, GitLab.com returns a `429` HTTP status code.
-
-See the source below for which paths are protected. This includes user creation,
-user confirmation, user sign in, and password reset.
-
-[User and IP rate limits](../../administration/settings/user_and_ip_rate_limits.md#response-headers)
-includes a list of the headers responded to blocked requests.
-
-See [Protected Paths](../../administration/settings/protected_paths.md) for more details.
+- [Project import/export rate limits](../project/settings/import_export.md#rate-limits).
+- [Group import/export rate limits](../project/settings/import_export.md#rate-limits-1).
 
 ### IP blocks
 
@@ -331,15 +325,34 @@ No response headers are provided.
 These requests might lead to a temporary IP block if too many requests are sent simultaneously.
 To resolve this issue, use [SSH keys to communicate with GitLab](../ssh.md).
 
+### Non-configurable limits
+
+See [non-configurable limits](../../security/rate_limits.md#non-configurable-limits)
+for information on rate limits that are not configurable, and therefore also
+used on GitLab.com.
+
 ### Pagination response headers
 
 For performance reasons, if a query returns more than 10,000 records, [GitLab excludes some headers](../../api/rest/_index.md#pagination-response-headers).
 
-### Visibility settings
+### Protected paths throttle
 
-Projects, groups, and snippets have the
-[Internal visibility](../public_access.md#internal-projects-and-groups)
-setting [disabled on GitLab.com](https://gitlab.com/gitlab-org/gitlab/-/issues/12388).
+If the same IP address sends more than 10 POST requests in a minute to protected paths, GitLab.com returns a `429` HTTP status code.
+
+See the source below for which paths are protected. This includes user creation,
+user confirmation, user sign in, and password reset.
+
+[User and IP rate limits](../../administration/settings/user_and_ip_rate_limits.md#response-headers)
+includes a list of the headers responded to blocked requests.
+
+See [Protected Paths](../../administration/settings/protected_paths.md) for more details.
+
+### Rate limiting responses
+
+For information on rate limiting responses, see:
+
+- [List of headers on responses to blocked requests](../../administration/settings/user_and_ip_rate_limits.md#response-headers).
+- [Customizable response text](../../administration/settings/user_and_ip_rate_limits.md#use-a-custom-rate-limit-response).
 
 ### SSH maximum number of connections
 
@@ -349,24 +362,11 @@ If more than the maximum number of allowed connections occur concurrently, they
 are dropped and users get
 [an `ssh_exchange_identification` error](../../topics/git/troubleshooting_git.md#ssh_exchange_identification-error).
 
-### Group and project import by uploading export files
+### Visibility settings
 
-To help avoid abuse, the following are rate limited:
-
-- Project and group imports.
-- Group and project exports that use files.
-- Export downloads.
-
-For more information, see:
-
-- [Project import/export rate limits](../project/settings/import_export.md#rate-limits).
-- [Group import/export rate limits](../project/settings/import_export.md#rate-limits-1).
-
-### Non-configurable limits
-
-See [non-configurable limits](../../security/rate_limits.md#non-configurable-limits)
-for information on rate limits that are not configurable, and therefore also
-used on GitLab.com.
+Projects, groups, and snippets have the
+[Internal visibility](../public_access.md#internal-projects-and-groups)
+setting [disabled on GitLab.com](https://gitlab.com/gitlab-org/gitlab/-/issues/12388).
 
 ## GitLab-hosted runners
 
