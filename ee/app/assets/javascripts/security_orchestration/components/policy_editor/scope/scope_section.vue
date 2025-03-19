@@ -98,10 +98,8 @@ export default {
         };
       },
       update(data) {
-        const {
-          securityPolicyProjectLinkedProjects: { nodes: linkedProjects = [] },
-          securityPolicyProjectLinkedGroups: { nodes: linkedGroups = [] },
-        } = data?.project || {};
+        const linkedProjects = data?.project?.securityPolicyProjectLinkedProjects?.nodes || [];
+        const linkedGroups = data?.project?.securityPolicyProjectLinkedGroups?.nodes || [];
 
         const items = [...linkedProjects, ...linkedGroups];
 
