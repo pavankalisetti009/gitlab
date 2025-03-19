@@ -71,11 +71,6 @@ export default {
       required: false,
       default: '',
     },
-    detailsPagePath: {
-      type: String,
-      required: false,
-      default: '',
-    },
     roleId: {
       type: Number,
       required: false,
@@ -157,10 +152,9 @@ export default {
         : this.$options.i18n.baseRolePlaceholder;
     },
     redirectUrl() {
-      // URL to send the user back to if they submit or cancel the form. If the details querystring exists but
-      // detailsPagePath does not, fall back to the list page.
+      // URL to send the user back to if they submit or cancel the form, depending on which page they came from.
       return new URLSearchParams(window.location.search).has(DETAILS_QUERYSTRING)
-        ? this.detailsPagePath || this.listPagePath
+        ? this.memberRole.detailsPath || this.listPagePath
         : this.listPagePath;
     },
   },

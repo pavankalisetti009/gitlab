@@ -16,7 +16,7 @@ export const initEditMemberRoleApp = () => {
     return null;
   }
 
-  const { groupFullPath, listPagePath, detailsPagePath, roleId } = el.dataset;
+  const { groupFullPath, listPagePath, roleId } = el.dataset;
 
   return new Vue({
     el,
@@ -27,7 +27,6 @@ export const initEditMemberRoleApp = () => {
         props: {
           groupFullPath,
           listPagePath,
-          detailsPagePath,
           roleId: Number(roleId),
         },
       });

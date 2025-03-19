@@ -3,7 +3,6 @@
 query memberRole($id: MemberRoleID!) {
   memberRole(id: $id) {
     ...Role
-    usersCount
     createdAt
     baseAccessLevel {
       stringValue
