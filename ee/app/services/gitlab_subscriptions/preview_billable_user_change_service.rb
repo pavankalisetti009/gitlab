@@ -32,7 +32,7 @@ module GitlabSubscriptions
     def all_added_user_ids
       ids = Set.new
 
-      ids += add_user_ids
+      ids += filtered_add_user_ids
       ids += user_ids_from_added_emails
       ids += user_ids_from_added_group
 
@@ -40,12 +40,25 @@ module GitlabSubscriptions
     end
 
     def user_ids_from_added_emails
-      @user_ids_from_added_emails ||= begin
-        return [] if add_user_emails.blank?
+      return [] if filtered_add_user_emails.blank?
 
-        User.by_any_email(add_user_emails).pluck(:id) # rubocop:disable CodeReuse/ActiveRecord
-      end
+      User.by_any_email(filtered_add_user_emails).ids # rubocop:disable CodeReuse/ActiveRecord -- To avoid having a scope that does not return Activerecord::Relation
     end
+    strong_memoize_attr :user_ids_from_added_emails
+
+    def filtered_add_user_ids
+      return [] if add_user_ids.blank?
+
+      add_user_ids - User.by_ids(add_user_ids).service_accounts.ids # rubocop:disable CodeReuse/ActiveRecord -- To avoid having a scope that does not return Activerecord::Relation
+    end
+    strong_memoize_attr :filtered_add_user_ids
+
+    def filtered_add_user_emails
+      return [] if add_user_emails.blank?
+
+      add_user_emails - User.by_any_email(add_user_emails).service_accounts.pluck(:email) # rubocop:disable CodeReuse/ActiveRecord -- To avoid having a scope that does not return Activerecord::Relation
+    end
+    strong_memoize_attr :filtered_add_user_emails
 
     def user_ids_from_added_group
       return [] if add_group_id.blank?
@@ -67,7 +80,7 @@ module GitlabSubscriptions
       @new_billable_user_count ||= begin
         return target_namespace.billable_members_count unless increase_billable_members_count?
 
-        unmatched_added_emails_count = add_user_emails.count - user_ids_from_added_emails.count
+        unmatched_added_emails_count = filtered_add_user_emails.count - user_ids_from_added_emails.count
 
         (target_namespace.billed_user_ids[:user_ids].to_set + all_added_user_ids).count + unmatched_added_emails_count
       end
