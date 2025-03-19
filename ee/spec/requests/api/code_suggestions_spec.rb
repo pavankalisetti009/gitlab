@@ -54,6 +54,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
     stub_feature_flags(fireworks_qwen_code_completion: false)
     stub_feature_flags(code_completion_model_opt_out_from_fireworks_qwen: false)
     stub_feature_flags(disable_code_gecko_default: false)
+    stub_feature_flags(use_claude_code_completion: false)
   end
 
   shared_examples 'a response' do |case_name|
@@ -1139,6 +1140,23 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             post_api
 
             expect(json_response['model_details']).to be_nil
+          end
+        end
+
+        context 'when use_claude_code_completion FF is true' do
+          let(:user_duo_group) do
+            Group.by_id(current_user.duo_available_namespace_ids).first
+          end
+
+          before do
+            stub_feature_flags(use_claude_code_completion: user_duo_group)
+          end
+
+          include_examples 'a response', 'unauthorized' do
+            let(:result) { :forbidden }
+            let(:response_body) do
+              { 'message' => '403 Forbidden - Direct connections are disabled' }
+            end
           end
         end
       end

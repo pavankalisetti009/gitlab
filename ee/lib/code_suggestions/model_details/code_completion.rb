@@ -27,11 +27,21 @@ module CodeSuggestions
 
         return CodeSuggestions::Prompts::CodeCompletion::FireworksQwen if use_fireworks_qwen_for_code_completions?
 
+        if any_user_groups_claude_code_completion?
+          return CodeSuggestions::Prompts::CodeCompletion::Anthropic::ClaudeHaiku
+        end
+
         if code_gecko_disabled? && !user_opted_in_to_qwen?
           return CodeSuggestions::Prompts::CodeCompletion::CodestralVertex
         end
 
         CodeSuggestions::Prompts::CodeCompletion::VertexAi
+      end
+
+      def any_user_groups_claude_code_completion?
+        user_duo_groups.any? do |group|
+          Feature.enabled?(:use_claude_code_completion, group)
+        end
       end
 
       private

@@ -37,8 +37,7 @@ module CodeSuggestions
 
       def saas_prompt
         if Feature.enabled?(:incident_fail_over_completion_provider, current_user)
-          # claude hosted on anthropic
-          CodeSuggestions::Prompts::CodeCompletion::Anthropic.new(params, current_user)
+          CodeSuggestions::Prompts::CodeCompletion::Anthropic::ClaudeSonnet.new(params, current_user)
         else
           saas_primary_model_class.new(params, current_user)
         end

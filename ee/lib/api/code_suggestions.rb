@@ -21,6 +21,13 @@ module API
     end
 
     helpers do
+      include Gitlab::Utils::StrongMemoize
+
+      def completion_model_details
+        ::CodeSuggestions::ModelDetails::CodeCompletion.new(current_user: current_user)
+      end
+      strong_memoize_attr :completion_model_details
+
       def model_gateway_headers(headers, service)
         Gitlab::AiGateway.headers(
           user: current_user,
@@ -63,9 +70,12 @@ module API
         file_too_large!
       end
 
+      # Any Claude model (including failover provider) needs v3 of the code completion prompt
+      # which isn't supported by direct access
       def forbid_direct_access?
         Gitlab::CurrentSettings.disabled_direct_code_suggestions ||
-          Feature.enabled?(:incident_fail_over_completion_provider, current_user)
+          Feature.enabled?(:incident_fail_over_completion_provider, current_user) ||
+          completion_model_details.any_user_groups_claude_code_completion?
       end
     end
 
@@ -180,10 +190,6 @@ module API
 
           token = Gitlab::Llm::AiGateway::CodeSuggestionsClient.new(current_user).direct_access_token
           service_unavailable!(token[:message]) if token[:status] == :error
-
-          completion_model_details = ::CodeSuggestions::ModelDetails::CodeCompletion.new(
-            current_user: current_user
-          )
 
           unauthorized! if completion_model_details.feature_disabled?
 
