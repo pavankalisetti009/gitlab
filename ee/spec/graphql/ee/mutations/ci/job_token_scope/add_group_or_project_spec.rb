@@ -46,6 +46,12 @@ RSpec.describe Mutations::Ci::JobTokenScope::AddGroupOrProject, feature_category
       mutation.resolve(**mutation_args)
     end
 
+    before do
+      allow_next_found_instance_of(Project) do |project|
+        allow(project).to receive(:job_token_policies_enabled?).and_return(true)
+      end
+    end
+
     context 'when user adds target group to the job token scope' do
       let(:target) { target_group }
 

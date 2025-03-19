@@ -44,6 +44,12 @@ RSpec.describe Mutations::Ci::JobTokenScope::RemoveProject, feature_category: :c
       described_class.new(object: nil, context: query_context, field: nil)
     end
 
+    before do
+      allow_next_found_instance_of(Project) do |project|
+        allow(project).to receive(:job_token_policies_enabled?).and_return(true)
+      end
+    end
+
     subject(:resolver) do
       mutation.resolve(**mutation_args)
     end

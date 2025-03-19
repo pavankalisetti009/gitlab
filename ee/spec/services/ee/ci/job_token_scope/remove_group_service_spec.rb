@@ -18,6 +18,10 @@ RSpec.describe Ci::JobTokenScope::RemoveGroupService, feature_category: :continu
     )
   end
 
+  before do
+    allow(project).to receive(:job_token_policies_enabled?).and_return(true)
+  end
+
   subject(:service_result) { described_class.new(project, current_user).execute(target_group) }
 
   describe '#execute' do

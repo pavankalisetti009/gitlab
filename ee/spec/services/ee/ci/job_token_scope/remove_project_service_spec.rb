@@ -12,6 +12,10 @@ RSpec.describe Ci::JobTokenScope::RemoveProjectService, feature_category: :conti
 
   let_it_be(:direction) { :inbound }
 
+  before do
+    allow(project).to receive(:job_token_policies_enabled?).and_return(true)
+  end
+
   subject(:service_result) do
     described_class.new(project, current_user).execute(target_project, direction)
   end

@@ -30,6 +30,10 @@ RSpec.describe Ci::JobTokenScope::AddGroupService, feature_category: :continuous
       }
     end
 
+    before do
+      allow(project).to receive(:job_token_policies_enabled?).and_return(true)
+    end
+
     it 'returns a success response', :aggregate_failures do
       expect { service_result }.to change { Ci::JobToken::GroupScopeLink.count }.by(1)
       expect(service_result).to be_success

@@ -16,6 +16,10 @@ RSpec.describe Ci::JobTokenScope::UpdatePoliciesService, feature_category: :cont
   end
 
   describe '#execute' do
+    before do
+      allow(project).to receive(:job_token_policies_enabled?).and_return(true)
+    end
+
     context 'when the link to update exists' do
       before_all do
         create(:ci_job_token_project_scope_link,
