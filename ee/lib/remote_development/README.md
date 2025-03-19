@@ -45,6 +45,7 @@
     - [Matcher entry](#matcher-entry)
     - [Matcher chain methods](#matcher-chain-methods)
   - [Matcher internals](#matcher-internals)
+- [Local smoke test suite](#local-smoke-test-suite)
 - [Debugging](#debugging)
 - [Benefits](#benefits)
   - [Loose coupling, high cohesion](#loose-coupling-high-cohesion)
@@ -79,7 +80,7 @@
 - The `Main` class is the entry point for each sub-module, and is found at `ee/lib/remote_development/**/main.rb`
 - Have a look through the ["Railway Oriented Programming"](https://fsharpforfunandprofit.com/rop/) presentation slides (middle of that page) to understand the patterns used in the Domain Logic layer.
 - Prefer `ee/spec/lib/remote_development/fast_spec_helper.rb` instead of `spec_helper` where possible. See [Avoid coupling Domain Logic layer to Rails application](#avoid-coupling-domain-logic-layer-to-rails-application).
-- Use `scripts/remote_development/run-smoke-test-suite.sh` locally, to get a faster feedback than pushing to CI and waiting for a build.
+- Use `scripts/remote_development/run-smoke-test-suite.sh` locally, to get a faster feedback than pushing to CI and waiting for a build. See ["Local smoke test suite"](#local-smoke-test-suite) for more details.
 - Use `scripts/remote_development/run-e2e-tests.sh` to easily run the QA E2E tests.
 - If you use [RubyMine](https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/rubymine/), you will get a lot of extra help, because we try to keep the `Inspect Code` clean and green for all Remote Development files, and also maintain YARD annotations, which means you will get fast in-IDE feedback about many errors such as type violations, etc, which are not caught by the standard Gitlab static linters such as RuboCop, ESLint, etc.
 
@@ -936,6 +937,49 @@ For the final configuration step in `setup_mock_expectations_for_steps`, we setu
 
 Finally, we call the passed block that in turn calls the ROP main class method being tested. We then use the `expected_return_value_matcher` configured in the `and_return_expected_value` matcher chain method to
 assert the expected return value.
+
+## Local smoke test suite
+
+### Smoke test suite overview
+
+There is a [`scripts/remote_development/run-smoke-test-suite.sh` script](https://gitlab.com/gitlab-org/gitlab/blob/master/scripts/remote_development/run-smoke-test-suite.sh)
+which you can run locally before you push your changes.
+
+This suite runs only the linters and tests which are closely related to Remote Development (this includes specs in `lib/gitlab/fp`). 
+
+This suite gives quick local feedback on things you might have broken with your local changes, without having to push and wait for a CI pipeline to run to find out.
+
+The suite is split up into multiple stages, with the fastest ones running first, and the slower ones running last. For example, RuboCop linter and specs which use `fast_spec_helper` run first, and the Capybara browser-based feature specs run last. This gives you the fastest feedback on anything you have broken.
+
+### Skipping stages in the smoke test suite
+
+You can skip stages in the suite by setting environment variables like `SKIP_<stage>=1`.
+
+For example, to skip the final feature specs (because they are slow) you can set the `SKIP_FEATURE=1` variable:
+
+```sh
+SKIP_FEATURE=1 scripts/remote_development/run-smoke-test-suite.sh
+```
+
+You can see all of the supported `SKIP_*` variables in a comment at the bottom of the `scripts/remote_development/run-smoke-test-suite.sh` script, for easy copy-paste to the command line. Just delete the one(s) you don't want to skip.
+
+### Note on RuboCop stage of the smoke test suite
+
+When GitLab adds new RuboCop rules, any existing violations are ignored by adding new entries in files under `.rubocop-todo`. However, this can result in those violations going unnoticed and never getting fixed, and piling up.
+
+So, in the Remote Development domain, we prefer to proactively fix all new violations as soon as they appear in the codebase. The other reason for fixing them proactively is that we use a custom approach for managing our RuboCop todo files, which RubyMine is not aware of. So even if there is a todo entry, RubyMine will still flag it as a warning.
+
+This means that when you run `scripts/remote_development/run-smoke-test-suite.sh`, it will fail on the RuboCop stage, even though it might not be failing in CI, because CI observes the TODOs.
+
+You can temporarily ignore these by setting `REVEAL_RUBOCOP_TODO=0`, but we should fix them proactively as soon as we notice them.
+
+Here's what to do if you see a RuboCop failure in the smoke test suite that is occurring on master, but is ignored with a `.rubocop-todo` entry:
+
+1. Ensure nobody else on the team is already addressing it
+1. If not, let people know you are fixing it, and open a new MR on master to:
+    1. Fix the rubocop violation OR add an inline `# rubocop:disable ... -- ...` with a link to an issue to fix it
+    1. Remove the todo entry(s)
+1. Tell engineers on the team to rebase once the MR with the fix is merged.
 
 ## Debugging
 
