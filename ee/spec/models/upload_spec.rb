@@ -150,4 +150,46 @@ RSpec.describe Upload, feature_category: :geo_replication do
       end
     end
   end
+
+  describe '.destroy_for_associations!', :sidekiq_inline do
+    let_it_be(:vulnerability_export) { create(:vulnerability_export, :with_csv_file) }
+    let_it_be(:uploader) { AttachmentUploader }
+    let_it_be(:user) { create(:user) }
+    let_it_be(:other_upload) { create(:upload, model: user, uploader: uploader.to_s) }
+
+    let_it_be(:records) { Vulnerabilities::Export.where(id: vulnerability_export.id) }
+
+    it 'deletes the file from the file storage', :sidekiq_inline do
+      files_to_delete = described_class
+                          .where(model: vulnerability_export, uploader: uploader.to_s).all.map(&:absolute_path)
+
+      expect { described_class.destroy_for_associations!(records, uploader) }
+        .to change { files_to_delete.map { |f| File.exist?(f) }.uniq }.from([true]).to([false])
+    end
+
+    it 'deletes uploads associated with the given records and uploader' do
+      expect { described_class.destroy_for_associations!(records, uploader) }
+        .to change { Upload.where(model: vulnerability_export, uploader: uploader.to_s).count }
+              .from(1).to(0)
+    end
+
+    it 'does not delete uploads that are not associated with the given records' do
+      expect { described_class.destroy_for_associations!(records, uploader) }
+        .not_to change { Upload.where(model: user, uploader: uploader.to_s).count }
+    end
+
+    it 'calls begin_fast_destroy and finalize_fast_destroy' do
+      expect(described_class).to receive(:begin_fast_destroy).and_call_original
+      expect(described_class).to receive(:finalize_fast_destroy).and_call_original
+
+      described_class.destroy_for_associations!(records, uploader)
+    end
+
+    context 'when no records are provided' do
+      it 'does not delete anything' do
+        expect { described_class.destroy_for_associations!(nil, uploader) }
+          .not_to change { Upload.count }
+      end
+    end
+  end
 end

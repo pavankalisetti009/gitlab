@@ -19,7 +19,7 @@ module EE
         return super unless ::Geo::EventStore.can_create_event?
 
         keys_to_delete.each_slice(::Uploads::Base::BATCH_SIZE) do |batch|
-          ::DeleteStoredFilesWorker.perform_async(self.class, batch.pluck(:absolute_path))
+          ::DeleteStoredFilesWorker.perform_async(self.class.name, batch.pluck(:absolute_path))
 
           ::Geo::UploadReplicator.bulk_create_delete_events_async(batch)
         end

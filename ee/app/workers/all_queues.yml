@@ -853,6 +853,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace: :cronjob
+- :name: cronjob:vulnerabilities_delete_expired_exports
+  :worker_name: Vulnerabilities::DeleteExpiredExportsWorker
+  :feature_category: :dependency_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :cpu
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace: :cronjob
 - :name: cronjob:vulnerabilities_historical_statistics_deletion
   :worker_name: Vulnerabilities::HistoricalStatistics::DeletionWorker
   :feature_category: :vulnerability_management
