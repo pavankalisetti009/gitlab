@@ -1,7 +1,7 @@
 import { __ } from '~/locale';
 import { parseBoolean } from '~/lib/utils/common_utils';
+import { createAsyncTabContentWrapper } from '~/usage_quotas/components/async_tab_content_wrapper';
 import apolloProvider from '../shared/provider';
-import SeatUsageApp from './components/subscription_seats.vue';
 
 export const parseProvideData = (el) => {
   const {
@@ -51,6 +51,13 @@ export const getSeatTabMetadata = ({ includeEl = false } = {}) => {
     explorePlansPath,
     enforcementFreeUserCapEnabled,
   } = parseProvideData(el);
+
+  const SeatUsageApp = () => {
+    const component = import(
+      /* webpackChunkName: 'uq_seats' */ './components/subscription_seats.vue'
+    );
+    return createAsyncTabContentWrapper(component);
+  };
 
   const seatTabMetadata = {
     title: __('Seats'),

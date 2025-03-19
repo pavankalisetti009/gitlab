@@ -2,7 +2,7 @@ import { __ } from '~/locale';
 import { parseBoolean } from '~/lib/utils/common_utils';
 import apolloProvider from 'ee/usage_quotas/shared/provider';
 import { isNumeric } from '~/lib/utils/number_utils';
-import PipelineUsageApp from './components/app.vue';
+import { createAsyncTabContentWrapper } from '~/usage_quotas/components/async_tab_content_wrapper';
 
 export const parseProvideData = (el) => {
   const {
@@ -51,6 +51,11 @@ export const getPipelineTabMetadata = ({ includeEl = false } = {}) => {
   const el = document.querySelector('#js-pipeline-usage-app');
 
   if (!el) return false;
+
+  const PipelineUsageApp = () => {
+    const component = import(/* webpackChunkName: 'uq_pipelines' */ './components/app.vue');
+    return createAsyncTabContentWrapper(component);
+  };
 
   const pipelineTabMetadata = {
     title: __('Pipelines'),

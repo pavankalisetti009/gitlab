@@ -1,7 +1,7 @@
 import { __ } from '~/locale';
 import { parseBoolean } from '~/lib/utils/common_utils';
+import { createAsyncTabContentWrapper } from '~/usage_quotas/components/async_tab_content_wrapper';
 import apolloProvider from '../shared/provider';
-import PagesDeploymentsApp from './components/app.vue';
 
 export const parseProvideData = (el) => {
   const {
@@ -29,6 +29,11 @@ export const getPagesTabMetadata = ({ viewType } = {}) => {
   const el = document.querySelector('#js-pages-deployments-app');
 
   if (!el) return false;
+
+  const PagesDeploymentsApp = () => {
+    const component = import(/* webpackChunkName: 'uq_pages' */ './components/app.vue');
+    return createAsyncTabContentWrapper(component);
+  };
 
   return {
     title: __('Pages'),
