@@ -107,7 +107,7 @@ RSpec.shared_examples 'creates PEP project schedules' do
       end
 
       let(:invalid_schedule) { valid_schedule.clone.tap { |schedule| schedule[:time_window][:value] = -1 } }
-      let(:error_message) { a_string_including('Time window seconds must be greater than 0') }
+      let(:error_message) { a_string_including('Time window seconds must be greater than or equal to 600') }
 
       before do
         security_policy.content = security_policy.content.merge(schedules: [valid_schedule, invalid_schedule])

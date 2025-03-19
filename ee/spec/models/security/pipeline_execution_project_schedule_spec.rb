@@ -14,7 +14,15 @@ RSpec.describe Security::PipelineExecutionProjectSchedule, feature_category: :se
     it { is_expected.to validate_presence_of(:cron) }
     it { is_expected.to validate_presence_of(:cron_timezone) }
     it { is_expected.to validate_presence_of(:time_window_seconds) }
-    it { is_expected.to validate_numericality_of(:time_window_seconds).is_greater_than(0).only_integer }
+
+    it 'validates time_window_seconds limits' do
+      is_expected.to(
+        validate_numericality_of(:time_window_seconds)
+          .is_greater_than_or_equal_to(10.minutes.to_i)
+          .is_less_than_or_equal_to(1.month.to_i)
+          .only_integer
+      )
+    end
 
     context 'when security policy is not a pipeline_execution_schedule_policy' do
       let_it_be(:security_policy) { create(:security_policy, :pipeline_execution_policy) }
@@ -198,6 +206,44 @@ RSpec.describe Security::PipelineExecutionProjectSchedule, feature_category: :se
     it 'returns the security policy CI config content' do
       expect(ci_content).to eq(
         'include' => [{ 'project' => 'compliance-project', 'file' => 'compliance-pipeline.yml' }])
+    end
+  end
+
+  describe '#next_run_in' do
+    let(:schedule) { build(:security_pipeline_execution_project_schedule, cron: cron) }
+
+    subject(:next_run_in) { schedule.next_run_in }
+
+    context 'with daily schedule' do
+      let(:cron) { "0 0 * * *" }
+
+      it 'returns 24 hours from beginning of the day' do
+        travel_to(Time.zone.now.beginning_of_day) do
+          expect(next_run_in).to eq(1.day)
+        end
+      end
+
+      it 'returns 12 hours from noon of the day' do
+        travel_to(Time.zone.now.beginning_of_day + 12.hours) do
+          expect(next_run_in).to eq(12.hours)
+        end
+      end
+    end
+
+    context 'with weekly schedule running Tuesday and Saturday' do
+      let(:cron) { '0 0 * * 2,6' }
+
+      it 'returns 4 days from Tuesday' do
+        travel_to(Time.zone.parse('2025-03-18 00:00:00')) do
+          expect(next_run_in).to eq(4.days)
+        end
+      end
+
+      it 'returns 1 day from Monday' do
+        travel_to(Time.zone.parse('2025-03-17 00:00:00')) do
+          expect(next_run_in).to eq(1.day)
+        end
+      end
     end
   end
 end

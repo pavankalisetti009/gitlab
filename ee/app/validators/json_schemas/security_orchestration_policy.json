@@ -386,11 +386,12 @@
                     },
                     "time_window": {
                       "type": "object",
+                      "description": "Specifies the time window on which scheduled runs can be distributed. The actual time window might be shorter based on the schedule frequency.",
                       "properties": {
                         "value": {
                           "type": "integer",
-                          "minimum": 3600,
-                          "maximum": 259200
+                          "minimum": 600,
+                          "maximum": 2629746
                         },
                         "distribution": {
                           "type": "string",
@@ -451,11 +452,12 @@
                     },
                     "time_window": {
                       "type": "object",
+                      "description": "Specifies the time window on which scheduled runs can be distributed. The actual time window might be shorter based on the schedule frequency.",
                       "properties": {
                         "value": {
                           "type": "integer",
-                          "minimum": 3600,
-                          "maximum": 259200
+                          "minimum": 600,
+                          "maximum": 2629746
                         },
                         "distribution": {
                           "type": "string",
@@ -510,11 +512,12 @@
                     },
                     "time_window": {
                       "type": "object",
+                      "description": "Specifies the time window on which scheduled runs can be distributed. The actual time window might be shorter based on the schedule frequency.",
                       "properties": {
                         "value": {
                           "type": "integer",
-                          "minimum": 3600,
-                          "maximum": 259200
+                          "minimum": 600,
+                          "maximum": 2629746
                         },
                         "distribution": {
                           "type": "string",
