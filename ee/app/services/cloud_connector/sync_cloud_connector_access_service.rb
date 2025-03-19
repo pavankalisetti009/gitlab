@@ -40,7 +40,6 @@ module CloudConnector
       if license
         errors.add(:license, 'is not an online cloud license') unless license.online_cloud_license?
         errors.add(:license, 'grace period has been expired') if license.grace_period_expired?
-        errors.add(:license, 'can\'t be on trial') if license.trial?
         errors.add(:license, 'has no expiration date') unless license.expires_at
       else
         errors.add(:license, 'not found')

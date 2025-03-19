@@ -29,7 +29,7 @@ module Gitlab
       return false unless license&.cloud_license?
       return false if license.offline_cloud_license?
 
-      !license.trial? && license.expires_at.present? # Skip sync if license has no expiration
+      license.expires_at.present? # Skip sync if license has no expiration
     end
 
     def as_json(_options = {})
