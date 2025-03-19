@@ -15,7 +15,7 @@ module Gitlab
 
       def initialize(blob)
         @blob = blob
-        @errors = []
+        @errors = Errors.new
       end
 
       attr_reader :errors
@@ -110,7 +110,7 @@ module Gitlab
         entries = parsed_data.values.flat_map(&:values)
         validation_errors = UserPermissionCheck.new(project, entries, limit: MAX_REFERENCES).errors
         validation_errors.each do |e|
-          add_error(e[:error], e[:line_number])
+          errors.add(e[:error], e[:line_number])
         end
       end
 
@@ -136,7 +136,7 @@ module Gitlab
 
           # Report errors even if the section is successfully parsed
           unless section_parser.valid?
-            section_parser.errors.each { |error| add_error(error, line_number) }
+            section_parser.errors.each { |error| errors.add(error, line_number) }
           end
 
           # Detect section headers and consider next lines in the file as part ot the section.
@@ -180,11 +180,11 @@ module Gitlab
 
       def validate_and_get_owners(entry_owners, section, line_number)
         if entry_owners.split.any? { |owner| invalid_owner?(owner) }
-          add_error(Error::MALFORMED_ENTRY_OWNER, line_number)
+          errors.add(:malformed_entry_owner, line_number)
         end
 
         owners = entry_owners.presence || section.default_owners
-        add_error(Error::MISSING_ENTRY_OWNER, line_number) if owners.blank?
+        errors.add(:missing_entry_owner, line_number) if owners.blank?
 
         owners
       end
@@ -218,10 +218,6 @@ module Gitlab
 
       def path_matches?(pattern, path)
         ::File.fnmatch?(pattern, path, FNMATCH_FLAGS)
-      end
-
-      def add_error(message, line_number)
-        errors << Error.new(message: message, line_number: line_number, path: path)
       end
     end
   end

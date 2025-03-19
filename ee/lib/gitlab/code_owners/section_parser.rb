@@ -26,17 +26,17 @@ module Gitlab
         section = fetch_section
 
         if section.present?
-          errors << Error::MISSING_SECTION_NAME if section.name.blank?
-          errors << Error::INVALID_APPROVAL_REQUIREMENT if section.optional && section.approvals > 0
+          errors << :missing_section_name if section.name.blank?
+          errors << :invalid_approval_requirement if section.optional && section.approvals > 0
 
           if section.default_owners.present? && ReferenceExtractor.new(section.default_owners).references.blank?
-            errors << Error::INVALID_SECTION_OWNER_FORMAT
+            errors << :invalid_section_owner_format
           end
 
           return section
         end
 
-        errors << Error::INVALID_SECTION_FORMAT if invalid_section?
+        errors << :invalid_section_format if invalid_section?
 
         nil
       end

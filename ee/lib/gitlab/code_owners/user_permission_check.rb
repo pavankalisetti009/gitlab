@@ -27,10 +27,7 @@ module Gitlab
         entries.each_with_object([]) do |entry, errors|
           next unless Gitlab::CodeOwners::ReferenceExtractor.new(entry.owner_line).names.intersect?(error_usernames)
 
-          errors << {
-            error: Error::OWNER_WITHOUT_PERMISSION,
-            line_number: entry.line_number
-          }
+          errors << { error: :owner_without_permission, line_number: entry.line_number }
         end
       end
 

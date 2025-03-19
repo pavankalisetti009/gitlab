@@ -42,10 +42,7 @@ RSpec.describe Gitlab::CodeOwners::UserPermissionCheck, feature_category: :sourc
   context 'when the entries mention a username' do
     shared_examples_for 'validation error for name without permissions' do
       it 'has warnings' do
-        expect(errors).to contain_exactly({
-          error: Gitlab::CodeOwners::Error::OWNER_WITHOUT_PERMISSION,
-          line_number: entry.line_number
-        })
+        expect(errors).to contain_exactly({ error: :owner_without_permission, line_number: entry.line_number })
       end
     end
 
@@ -162,7 +159,7 @@ RSpec.describe Gitlab::CodeOwners::UserPermissionCheck, feature_category: :sourc
           expect(Gitlab::CodeOwners::UsersLoader).to receive(:new).with(
             project, names: [group_developer, developer, non_member, guest, not_persisted_user].map(&:username)
           ).and_call_original
-          expect(errors.all? { |e| e[:error] == Gitlab::CodeOwners::Error::OWNER_WITHOUT_PERMISSION }).to be(true)
+          expect(errors.all? { |e| e[:error] == :owner_without_permission }).to be(true)
           expect(errors.pluck(:line_number)).to match_array([
             invalid_entry_with_multiple_references.line_number,
             invalid_entry.line_number
@@ -182,7 +179,7 @@ RSpec.describe Gitlab::CodeOwners::UserPermissionCheck, feature_category: :sourc
           error = errors.first
 
           expect(errors.size).to eq(1)
-          expect(error[:error]).to eq(Gitlab::CodeOwners::Error::OWNER_WITHOUT_PERMISSION)
+          expect(error[:error]).to eq(:owner_without_permission)
           expect(error[:line_number]).to eq(invalid_entry_with_multiple_references.line_number)
         end
       end

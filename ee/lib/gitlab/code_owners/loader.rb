@@ -82,7 +82,7 @@ module Gitlab
             label: error.message.to_s,
             project: @project,
             extra: {
-              file_path: error.path,
+              file_path: code_owners_file.path,
               line_number: error.line_number
             }
           )
