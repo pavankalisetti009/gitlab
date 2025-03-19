@@ -1,4 +1,4 @@
-import { GlFormInput } from '@gitlab/ui';
+import { GlFormInput, GlForm, GlCollapsibleListbox } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import BoardSettingsWipLimit from 'ee_component/boards/components/board_settings_wip_limit.vue';
@@ -8,6 +8,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { mockLabelList } from 'jest/boards/mock_data';
 import * as cacheUpdates from '~/boards/graphql/cache_updates';
+import { WIP_ITEMS, WIP_WEIGHT } from 'ee_else_ce/boards/constants';
 import { mockUpdateListWipLimitResponse } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -16,23 +17,20 @@ describe('BoardSettingsWipLimit', () => {
   let wrapper;
   let mockApollo;
   const listId = mockLabelList.id;
-  const currentWipLimit = 1; // Needs to be other than null to trigger requests
 
   const findRemoveWipLimit = () => wrapper.findByTestId('remove-limit');
   const findWipLimit = () => wrapper.findByTestId('wip-limit');
   const findInput = () => wrapper.findComponent(GlFormInput);
+  const findGlForm = () => wrapper.findComponent(GlForm);
+  const findDropdown = () => wrapper.findComponent(GlCollapsibleListbox);
 
   const listUpdateLimitMetricsMutationHandler = jest
     .fn()
     .mockResolvedValue(mockUpdateListWipLimitResponse);
-  const errorMessage = 'Failed to update list';
-  const listUpdateLimitMetricsMutationHandlerFailure = jest
-    .fn()
-    .mockRejectedValue(new Error(errorMessage));
 
   const createComponent = ({
     localState = {},
-    props = { maxIssueCount: 0 },
+    props = { maxIssueCount: 0, maxIssueWeight: 0 },
     injectedProps = {},
     listUpdateWipLimitMutationHandler = listUpdateLimitMetricsMutationHandler,
   }) => {
@@ -58,15 +56,19 @@ describe('BoardSettingsWipLimit', () => {
     await nextTick();
   };
 
-  const triggerBlur = async (type) => {
-    if (type === 'blur') {
-      findInput().vm.$emit('blur');
+  const triggerEvent = async (type) => {
+    if (type === 'focusout') {
+      findGlForm().vm.$emit('focusout', {
+        relatedTarget: null,
+      });
     }
 
     if (type === 'enter') {
-      findInput().trigger('keydown.enter');
+      findInput().trigger('keydown.enter', {
+        relatedTarget: null,
+      });
     }
-
+    await waitForPromises();
     await nextTick();
   };
 
@@ -75,24 +77,34 @@ describe('BoardSettingsWipLimit', () => {
   });
 
   describe('when activeList is present', () => {
-    describe('when activeListWipLimit is 0', () => {
-      it('renders "None" in the block', () => {
+    it('renders "None" when no WIP limit is set', () => {
+      createComponent({ props: { maxIssueCount: 0, maxIssueWeight: 0 } });
+
+      expect(findWipLimit().text()).toBe('None');
+    });
+
+    describe('when WIP limit is based on number of issues', () => {
+      it.each`
+        num   | expected
+        ${1}  | ${'Item - 1'}
+        ${11} | ${'Items - 11'}
+      `('renders $num', ({ num, expected }) => {
         createComponent({
-          props: { maxIssueCount: 0 },
+          props: { maxIssueCount: num, maxIssueWeight: 0 },
         });
 
-        expect(findWipLimit().text()).toBe('None');
+        expect(findWipLimit().text()).toBe(expected);
       });
     });
 
-    describe('when activeListWipLimit is greater than 0', () => {
+    describe('when WIP limit is based on weight', () => {
       it.each`
-        num   | expected
-        ${1}  | ${'1 issue'}
-        ${11} | ${'11 issues'}
-      `('renders $num', ({ num, expected }) => {
+        weight | expected
+        ${5}   | ${'Weight - 5'}
+        ${10}  | ${'Weight - 10'}
+      `('renders $weight', ({ weight, expected }) => {
         createComponent({
-          props: { maxIssueCount: num },
+          props: { maxIssueCount: 0, maxIssueWeight: weight, currentLimitMetric: WIP_WEIGHT },
         });
 
         expect(findWipLimit().text()).toBe(expected);
@@ -100,159 +112,67 @@ describe('BoardSettingsWipLimit', () => {
     });
   });
 
-  describe('when clicking edit', () => {
-    const maxIssueCount = 4;
+  describe('editing the WIP limit', () => {
     beforeEach(async () => {
-      createComponent({
-        props: { maxIssueCount },
-      });
+      createComponent({ props: { maxIssueCount: 4, maxIssueWeight: 0 } });
 
       await clickEdit();
     });
 
-    it('renders an input', () => {
+    it('renders an input field', () => {
       expect(findInput().exists()).toBe(true);
     });
 
-    it('does not render current wipLimit text', () => {
-      expect(findWipLimit().exists()).toBe(false);
+    it('renders a dropdown to select WIP category', () => {
+      expect(findDropdown().exists()).toBe(true);
     });
 
-    it('sets wipLimit to be the value of list.maxIssueCount', () => {
-      expect(findInput().attributes('value')).toBe(maxIssueCount.toString());
+    it('displays the correct initial input value', () => {
+      expect(findInput().attributes('value')).toBe('4');
     });
   });
 
-  describe('remove limit', () => {
-    describe('when wipLimit is set', () => {
-      beforeEach(() => {
-        createComponent({
-          props: { maxIssueCount: 4 },
-        });
-      });
-
-      it('resets wipLimit to 0', async () => {
-        expect(findWipLimit().text()).toContain('4');
-
-        findRemoveWipLimit().vm.$emit('click');
-        await waitForPromises();
-        await nextTick();
-
-        expect(listUpdateLimitMetricsMutationHandler).toHaveBeenCalledWith({
-          input: { listId, maxIssueCount: 0 },
-        });
+  describe('removing WIP limit', () => {
+    beforeEach(() => {
+      createComponent({
+        props: { maxIssueCount: 4, maxIssueWeight: 5, currentLimitMetric: WIP_WEIGHT },
       });
     });
 
-    describe('when wipLimit is not set', () => {
-      beforeEach(() => {
-        createComponent({
-          props: { maxIssueCount: 0 },
-        });
-      });
+    it('resets WIP limit to 0 when remove button is clicked', async () => {
+      expect(findWipLimit().text()).toContain('Weight - 5');
 
-      it('does not render the remove limit button', () => {
-        expect(findRemoveWipLimit().exists()).toBe(false);
+      findRemoveWipLimit().vm.$emit('click');
+      await waitForPromises();
+      await nextTick();
+
+      expect(listUpdateLimitMetricsMutationHandler).toHaveBeenCalledWith({
+        input: { listId, maxIssueCount: 0, maxIssueWeight: 0, limitMetric: WIP_WEIGHT },
       });
     });
   });
 
-  describe('when edit is true', () => {
-    describe.each`
-      blurMethod
-      ${'enter'}
-      ${'blur'}
-    `('$blurMethod', ({ blurMethod }) => {
-      describe(`when blur is triggered by ${blurMethod}`, () => {
-        it('calls listUpdateLimitMetricsMutation', async () => {
-          createComponent({
-            localState: { edit: true, currentWipLimit },
-          });
-
-          await triggerBlur(blurMethod);
-
-          expect(listUpdateLimitMetricsMutationHandler).toHaveBeenCalledWith({
-            input: { listId, maxIssueCount: currentWipLimit },
-          });
-        });
-
-        describe('when component wipLimit and List.maxIssueCount are equal', () => {
-          it('does not call listUpdateLimitMetricsMutation', async () => {
-            createComponent({
-              localState: { edit: true, currentWipLimit: 2 },
-              props: { maxIssueCount: 2 },
-            });
-
-            await triggerBlur(blurMethod);
-
-            expect(listUpdateLimitMetricsMutationHandler).toHaveBeenCalledTimes(0);
-          });
-        });
-
-        describe('when currentWipLimit is null', () => {
-          it('does not call listUpdateLimitMetricsMutation', async () => {
-            createComponent({
-              localState: { edit: true, currentWipLimit: null },
-            });
-
-            await triggerBlur(blurMethod);
-
-            expect(listUpdateLimitMetricsMutationHandler).toHaveBeenCalledTimes(0);
-          });
-        });
-
-        describe('when response is successful', () => {
-          const maxIssueCount = 11;
-
-          beforeEach(async () => {
-            createComponent({
-              localState: { edit: true, currentWipLimit: maxIssueCount },
-              props: { maxIssueCount },
-            });
-
-            await triggerBlur(blurMethod);
-          });
-
-          it('sets activeWipLimit to new maxIssueCount value', () => {
-            expect(findWipLimit().text()).toContain(maxIssueCount.toString());
-          });
-
-          it('toggles GlFormInput on blur', () => {
-            expect(findInput().exists()).toBe(false);
-            expect(findWipLimit().exists()).toBe(true);
-          });
-        });
-
-        describe('when response fails', () => {
-          beforeEach(async () => {
-            createComponent({
-              localState: { edit: true, currentWipLimit },
-              listUpdateWipLimitMutationHandler: listUpdateLimitMetricsMutationHandlerFailure,
-            });
-
-            await triggerBlur(blurMethod);
-          });
-
-          it('sets error', () => {
-            expect(cacheUpdates.setError).toHaveBeenCalled();
-          });
-        });
-      });
-    });
-
-    describe('passing of props to gl-form-input', () => {
-      beforeEach(() => {
-        createComponent({
-          localState: { edit: true },
-        });
+  describe('updating WIP limit', () => {
+    it('should update limit based on selected category when focusout event occurs', async () => {
+      createComponent({
+        localState: { edit: true, currentWipLimit: 6, selectedWIPCategory: WIP_ITEMS },
       });
 
-      it('passes `trim`', () => {
-        expect(findInput().attributes().trim).toBeDefined();
-      });
+      await findDropdown().vm.$emit('select', WIP_ITEMS);
+      await waitForPromises();
 
-      it('passes `number`', () => {
-        expect(findInput().attributes().number).toBeDefined();
+      await findInput().vm.$emit('input', 6);
+      await waitForPromises();
+
+      await triggerEvent('focusout');
+
+      expect(listUpdateLimitMetricsMutationHandler).toHaveBeenCalledWith({
+        input: {
+          listId,
+          maxIssueCount: 6,
+          maxIssueWeight: 0,
+          limitMetric: WIP_ITEMS,
+        },
       });
     });
   });

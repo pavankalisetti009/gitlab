@@ -177,6 +177,7 @@ RSpec.describe 'epic boards', :sidekiq_inline, :js, feature_category: :portfolio
 
           click_button 'Move to end of list'
 
+          wait_for_requests
           expect(all('.board-card').last).to have_content(epic4.title)
         end
       end

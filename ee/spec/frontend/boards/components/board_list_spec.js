@@ -2,11 +2,12 @@ import { nextTick } from 'vue';
 import BoardNewEpic from 'ee/boards/components/board_new_epic.vue';
 import waitForPromises from 'helpers/wait_for_promises';
 
-import { DraggableItemTypes } from 'ee_else_ce/boards/constants';
+import { DraggableItemTypes, WIP_WEIGHT } from 'ee_else_ce/boards/constants';
 import BoardCard from '~/boards/components/board_card.vue';
 import BoardCardInner from '~/boards/components/board_card_inner.vue';
 import BoardCardMoveToPosition from '~/boards/components/board_card_move_to_position.vue';
 import BoardNewIssue from '~/boards/components/board_new_issue.vue';
+import BoardCutLine from '~/boards/components/board_cut_line.vue';
 import listIssuesQuery from '~/boards/graphql/lists_issues.query.graphql';
 import issueCreateMutation from '~/boards/graphql/issue_create.mutation.graphql';
 import * as cacheUpdates from '~/boards/graphql/cache_updates';
@@ -30,6 +31,8 @@ import {
 } from '../mock_data';
 
 jest.mock('~/alert');
+
+const maxIssueWeightOrCountWarningClass = '.gl-bg-red-50';
 
 const actions = {
   addListNewEpic: jest.fn().mockResolvedValue(),
@@ -112,7 +115,76 @@ describe('BoardList Component', () => {
       expect(wrapper.findComponent(notRenderedFormComponent).exists()).toBe(false);
     },
   );
+  describe('max issue weight warning', () => {
+    describe('when issue weight exceeds max issue weight', () => {
+      beforeEach(async () => {
+        wrapper = createComponent({
+          listProps: { totalIssueWeight: 4, maxIssueWeight: 2, limitMetric: WIP_WEIGHT },
+        });
+        await waitForPromises();
+      });
+      it('sets background to warning color', () => {
+        const block = wrapper.find(maxIssueWeightOrCountWarningClass);
 
+        expect(block.exists()).toBe(true);
+        expect(block.attributes('class').split(' ')).toEqual(
+          expect.arrayContaining(['gl-rounded-bl-base', 'gl-rounded-br-base']),
+        );
+      });
+      it('shows cut line', () => {
+        const cutline = wrapper.findComponent(BoardCutLine);
+        expect(cutline.exists()).toBe(true);
+        expect(cutline.props('cutLineText')).toEqual('Work in progress limit: 2 weight');
+      });
+    });
+
+    describe('when list issue weight does NOT exceed list max issue weight', () => {
+      beforeEach(async () => {
+        wrapper = createComponent({
+          list: { totalIssueWeight: 2, maxIssueWeight: 3, limitMetric: WIP_WEIGHT },
+        });
+        await waitForPromises();
+      });
+      it('does not sets background to warning color', () => {
+        expect(wrapper.find(maxIssueWeightOrCountWarningClass).exists()).toBe(false);
+      });
+      it('does not show cut line', () => {
+        expect(wrapper.findComponent(BoardCutLine).exists()).toBe(false);
+      });
+    });
+    describe('when list max issue weight is 0', () => {
+      beforeEach(async () => {
+        wrapper = createComponent({ list: { totalIssueWeight: 0, limitMetric: WIP_WEIGHT } });
+        await waitForPromises();
+      });
+      it('does not sets background to warning color', () => {
+        expect(wrapper.find(maxIssueWeightOrCountWarningClass).exists()).toBe(false);
+      });
+      it('does not show cut line', () => {
+        expect(wrapper.findComponent(BoardCutLine).exists()).toBe(false);
+      });
+    });
+    describe('when boardList is either undefined or defined', () => {
+      it('returns totalIssueWeight when boardList is defined', async () => {
+        wrapper = createComponent({
+          provide: {
+            isEpicBoard: false,
+          },
+          listProps: {
+            totalIssueWeight: 10,
+          },
+          propsData: {
+            columnIndex: 1,
+          },
+        });
+
+        await waitForPromises();
+        await wrapper.vm.$forceUpdate();
+
+        expect(wrapper.vm.listItemsWeight).toBe(5);
+      });
+    });
+  });
   describe('Apollo boards', () => {
     const projectIssuesQueryHandlerSuccess = jest.fn().mockResolvedValue(mockProjectIssuesResponse);
     const groupIssuesQueryHandlerSuccess = jest.fn().mockResolvedValue(mockGroupIssuesResponse());
