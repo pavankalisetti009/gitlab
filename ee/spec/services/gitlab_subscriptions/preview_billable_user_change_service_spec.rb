@@ -270,6 +270,136 @@ RSpec.describe ::GitlabSubscriptions::PreviewBillableUserChangeService, feature_
           end
         end
 
+        context 'when adding a service account' do
+          context 'by group id' do
+            subject(:execute) do
+              described_class.new(
+                current_user: current_user,
+                target_namespace: target_namespace,
+                role: role,
+                add_group_id: add_group_id
+              ).execute
+            end
+
+            context 'when group exists' do
+              let_it_be(:service_account_member_1) { create(:service_account) }
+              let_it_be(:service_account_member_2) { create(:service_account) }
+              let_it_be(:group) { create(:group, :private) }
+              let(:add_group_id) { group.id }
+
+              before do
+                group.add_developer(service_account_member_1)
+                group.add_developer(service_account_member_2)
+              end
+
+              context 'when current_user has access to view group' do
+                before do
+                  group.add_developer(current_user)
+                end
+
+                it 'counts group members but not service accounts' do
+                  expect(execute).to include({
+                    success: true,
+                    data: {
+                      will_increase_overage: true,
+                      new_billable_user_count: 2,
+                      seats_in_subscription: 0
+                    }
+                  })
+                end
+              end
+
+              context 'when current_user does not have access to view group' do
+                before do
+                  group.add_developer(service_account_member_1)
+                  group.add_developer(service_account_member_2)
+                end
+
+                it 'does not count group members or service accounts' do
+                  expect(execute).to include({
+                    success: true,
+                    data: {
+                      will_increase_overage: false,
+                      new_billable_user_count: 1,
+                      seats_in_subscription: 0
+                    }
+                  })
+                end
+              end
+            end
+          end
+
+          context 'by email' do
+            let_it_be(:user) { create(:user) }
+            let_it_be(:service_account) { create(:service_account) }
+            let(:add_user_emails) { [user.email, 'foo@example.com', service_account.email] }
+
+            subject(:execute) do
+              described_class.new(
+                current_user: current_user,
+                target_namespace: target_namespace,
+                role: role,
+                add_user_emails: add_user_emails
+              ).execute
+            end
+
+            it 'counts user emails and unassociated emails but not service accounts' do
+              expect(execute).to include({
+                success: true,
+                data: {
+                  will_increase_overage: true,
+                  new_billable_user_count: 3,
+                  seats_in_subscription: 0
+                }
+              })
+            end
+
+            context 'when email is associated with user already in target group' do
+              let(:add_user_emails) { [user.email, 'foo@example.com', existing_user.email, service_account.email] }
+
+              it 'does not count either existing user or service accounts' do
+                expect(execute).to include({
+                  success: true,
+                  data: {
+                    will_increase_overage: true,
+                    new_billable_user_count: 3,
+                    seats_in_subscription: 0
+                  }
+                })
+              end
+            end
+          end
+
+          context 'by user id' do
+            let(:add_user_ids) { [non_existing_record_id] }
+
+            subject(:execute) do
+              described_class.new(
+                current_user: current_user,
+                target_namespace: target_namespace,
+                role: role,
+                add_user_ids: add_user_ids
+              ).execute
+            end
+
+            context 'when id is associated with a service account' do
+              let(:service_account) { create(:service_account) }
+              let(:add_user_ids) { [non_existing_record_id, service_account.id, existing_user.id] }
+
+              it 'does not count the service account' do
+                expect(execute).to include({
+                  success: true,
+                  data: {
+                    will_increase_overage: true,
+                    new_billable_user_count: 2,
+                    seats_in_subscription: 0
+                  }
+                })
+              end
+            end
+          end
+        end
+
         context 'when added users results in an increased overage' do
           let_it_be(:add_user_ids) do
             10.times.map do |i| # rubocop:disable Performance/TimesMap
