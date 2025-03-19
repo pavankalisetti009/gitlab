@@ -37,15 +37,11 @@ RSpec.describe DependencyEntity, feature_category: :dependency_management do
       })
     end
 
-    context "when there are no known licenses" do
+    context "when there are no licenses" do
       let_it_be(:sbom_occurrence) { create(:sbom_occurrence, project: project) }
 
-      it 'injects an unknown license' do
-        expect(subject.as_json['licenses']).to match_array([
-          "spdx_identifier" => "unknown",
-          "name" => "unknown",
-          "url" => nil
-        ])
+      it 'returns an empty array' do
+        expect(subject.as_json['licenses']).to eq([])
       end
     end
 
