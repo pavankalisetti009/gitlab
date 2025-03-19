@@ -571,7 +571,7 @@ class Namespace < ApplicationRecord
       path_before_last_save
     else
       previous_parent = Group.find_by(id: parent_id_before_last_save)
-      previous_parent.full_path + '/' + path_before_last_save
+      "#{previous_parent.full_path}/#{path_before_last_save}"
     end
   end
 
