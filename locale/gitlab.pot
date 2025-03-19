@@ -34258,6 +34258,9 @@ msgstr ""
 msgid "Latest pipeline for the most recent commit on this ref"
 msgstr ""
 
+msgid "Latest version"
+msgstr ""
+
 msgid "Launch a ready-to-code development environment for your project."
 msgstr ""
 
