@@ -5,7 +5,7 @@ module Geo
     BaseError = Class.new(StandardError)
     class StatusTimeoutError < BaseError
       def message
-        "Job running too long, approaching deduplication TTL"
+        "Generating Geo node status is taking too long"
       end
     end
   end
