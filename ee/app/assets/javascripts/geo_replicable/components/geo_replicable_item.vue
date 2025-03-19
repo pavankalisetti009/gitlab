@@ -28,12 +28,8 @@ export default {
     GlSprintf,
   },
   mixins: [glFeatureFlagsMixin()],
-  inject: ['replicableBasePath'],
+  inject: ['replicableBasePath', 'graphqlRegistryClass'],
   props: {
-    name: {
-      type: String,
-      required: true,
-    },
     registryId: {
       type: [String, Number],
       required: true,
@@ -76,8 +72,14 @@ export default {
         },
       ];
     },
+    id() {
+      return getIdFromGraphQLId(this.registryId);
+    },
     detailsPath() {
-      return `${this.replicableBasePath}/${getIdFromGraphQLId(this.registryId)}`;
+      return `${this.replicableBasePath}/${getIdFromGraphQLId(this.id)}`;
+    },
+    name() {
+      return `${this.graphqlRegistryClass}/${this.id}`;
     },
   },
   methods: {

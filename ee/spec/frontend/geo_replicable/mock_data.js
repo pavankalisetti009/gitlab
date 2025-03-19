@@ -8,7 +8,6 @@ export const MOCK_GRAPHQL_REGISTRY_CLASS = 'DESIGNS_REGISTRY';
 
 export const MOCK_BASIC_GRAPHQL_DATA = [
   {
-    name: 'test 1',
     id: 'gid://gitlab/Geo::MockRegistry/1',
     modelRecordId: 1,
     state: 'PENDING',
@@ -16,7 +15,6 @@ export const MOCK_BASIC_GRAPHQL_DATA = [
     verifiedAt: new Date().toString(),
   },
   {
-    name: 'test 2',
     id: 'gid://gitlab/Geo::MockRegistry/2',
     modelRecordId: 2,
     state: 'SYNCED',

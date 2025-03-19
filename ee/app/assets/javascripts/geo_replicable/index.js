@@ -15,8 +15,13 @@ export default () => {
     deep: true,
   });
 
-  const { titlePlural, graphqlFieldName, graphqlMutationRegistryClass, verificationEnabled } =
-    convertObjectPropsToCamelCase(JSON.parse(el.dataset.replicatorClassData));
+  const {
+    titlePlural,
+    graphqlFieldName,
+    graphqlMutationRegistryClass,
+    graphqlRegistryClass,
+    verificationEnabled,
+  } = convertObjectPropsToCamelCase(JSON.parse(el.dataset.replicatorClassData));
 
   return new Vue({
     el,
@@ -31,6 +36,7 @@ export default () => {
     provide: {
       replicableBasePath,
       replicableTypes,
+      graphqlRegistryClass,
     },
 
     render(createElement) {
