@@ -26159,6 +26159,9 @@ msgstr ""
 msgid "Geo|%{label} should be between 1-999"
 msgstr ""
 
+msgid "Geo|%{noBoldStart}Next sync retry:%{noBoldEnd} Retry #%{retryCount} scheduled %{timeAgo}"
+msgstr ""
+
 msgid "Geo|%{timeAgoStr} (%{pendingEvents} events)"
 msgstr ""
 
@@ -26261,6 +26264,9 @@ msgstr ""
 msgid "Geo|Edit your search and try again."
 msgstr ""
 
+msgid "Geo|Error: %{message}"
+msgstr ""
+
 msgid "Geo|Errors:"
 msgstr ""
 
@@ -26333,6 +26339,9 @@ msgstr ""
 msgid "Geo|Last event ID processed"
 msgstr ""
 
+msgid "Geo|Last synced: %{timeAgo}"
+msgstr ""
+
 msgid "Geo|Last time verified"
 msgstr ""
 
@@ -26349,6 +26358,9 @@ msgid "Geo|Make everyone on your team more productive regardless of their locati
 msgstr ""
 
 msgid "Geo|Minimum interval in days"
+msgstr ""
+
+msgid "Geo|Missing on Primary!"
 msgstr ""
 
 msgid "Geo|Model record: %{modelRecordId}"
@@ -26388,6 +26400,9 @@ msgid "Geo|Object Storage replication"
 msgstr ""
 
 msgid "Geo|Offline"
+msgstr ""
+
+msgid "Geo|Pending"
 msgstr ""
 
 msgid "Geo|Primary"
@@ -26436,6 +26451,9 @@ msgid "Geo|Replicating"
 msgstr ""
 
 msgid "Geo|Replication Details"
+msgstr ""
+
+msgid "Geo|Replication information"
 msgstr ""
 
 msgid "Geo|Replication slot WAL"
@@ -26514,6 +26532,12 @@ msgid "Geo|Site name should be between 1 and 255 characters"
 msgstr ""
 
 msgid "Geo|Site's status was updated %{timeAgo}."
+msgstr ""
+
+msgid "Geo|Started"
+msgstr ""
+
+msgid "Geo|Status: %{badge}"
 msgstr ""
 
 msgid "Geo|Storage config"

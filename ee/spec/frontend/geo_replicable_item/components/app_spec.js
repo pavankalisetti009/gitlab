@@ -6,6 +6,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import GeoReplicableItemApp from 'ee/geo_replicable_item/components/app.vue';
 import GeoReplicableItemRegistryInfo from 'ee/geo_replicable_item/components/geo_replicable_item_registry_info.vue';
+import GeoReplicableItemReplicationInfo from 'ee/geo_replicable_item/components/geo_replicable_item_replication_info.vue';
 import buildReplicableItemQuery from 'ee/geo_replicable_item/graphql/replicable_item_query_builder';
 import { createAlert } from '~/alert';
 import {
@@ -70,6 +71,8 @@ describe('GeoReplicableItemApp', () => {
 
   const findGlLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findRegistryInfoComponent = () => wrapper.findComponent(GeoReplicableItemRegistryInfo);
+  const findReplicationInfoComponent = () =>
+    wrapper.findComponent(GeoReplicableItemReplicationInfo);
 
   describe('loading state', () => {
     beforeEach(() => {
@@ -95,6 +98,18 @@ describe('GeoReplicableItemApp', () => {
       expect(findRegistryInfoComponent().props('registryId')).toBe(
         `${MOCK_REPLICABLE_CLASS.graphqlRegistryClass}/${defaultProps.replicableItemId}`,
       );
+    });
+  });
+
+  describe('replication information', () => {
+    beforeEach(async () => {
+      createComponent();
+
+      await waitForPromises();
+    });
+
+    it('renders replication info component', () => {
+      expect(findReplicationInfoComponent().exists()).toBe(true);
     });
   });
 
