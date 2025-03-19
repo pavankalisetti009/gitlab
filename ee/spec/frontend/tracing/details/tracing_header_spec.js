@@ -1,4 +1,4 @@
-import { GlBadge } from '@gitlab/ui';
+import { GlBadge, GlCard } from '@gitlab/ui';
 import TracingHeader from 'ee/tracing/details/tracing_header.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
@@ -23,6 +23,7 @@ describe('TracingHeader', () => {
         fetchingIssues: false,
         relatedIssuesId: 'related-issues-1',
       },
+      stubs: { GlCard },
     });
   };
   beforeEach(() => {
