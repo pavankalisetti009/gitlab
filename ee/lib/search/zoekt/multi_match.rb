@@ -3,6 +3,8 @@
 module Search
   module Zoekt
     class MultiMatch
+      include Gitlab::EncodingHelper
+
       MAX_CHUNKS_PER_FILE = 50
       DEFAULT_REQUESTED_CHUNK_SIZE = 3
       NEW_CHUNK_THRESHOLD = 2
@@ -75,7 +77,7 @@ module Search
           end
 
           chunk[:lines][match[:LineNumber]] = {
-            text: Base64.decode64(match[:Line]).force_encoding('UTF-8'),
+            text: encode_utf8(Base64.decode64(match[:Line])),
             highlights: highlight_match(match[:LineFragments])
           }
           match_count_per_line = match[:LineFragments].count
@@ -123,7 +125,7 @@ module Search
 
         return [''] if context_encoded_string.empty?
 
-        decoded_string = Base64.decode64(context_encoded_string).force_encoding('UTF-8')
+        decoded_string = encode_utf8(Base64.decode64(context_encoded_string))
         return [''] if decoded_string == "\n"
 
         decoded_string.split("\n", -1)

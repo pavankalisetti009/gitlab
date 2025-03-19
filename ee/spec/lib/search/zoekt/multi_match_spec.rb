@@ -102,5 +102,14 @@ RSpec.describe Search::Zoekt::MultiMatch, feature_category: :global_search do
         expect(extracted_result).to eq expected_extracted_result
       end
     end
+
+    context 'when response contains non utf-8 characters' do
+      let(:raw_response) { File.read Rails.root.join(fixtures_path, 'non_utf8_characters_raw_response.json') }
+
+      it 'does not raise any error' do
+        expect { extracted_result }.not_to raise_error
+        expect(extracted_result[0].first[:chunks][0][:lines][0][:text]).to eq "GIT_AUTHOR_NAME=\"Áéí óú\" &&"
+      end
+    end
   end
 end
