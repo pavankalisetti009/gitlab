@@ -28831,6 +28831,12 @@ msgstr ""
 msgid "GroupSettings|Enable extension marketplace"
 msgstr ""
 
+msgid "GroupSettings|Enable fine-grained permissions for CI/CD job tokens"
+msgstr ""
+
+msgid "GroupSettings|Enable fine-grained permissions for CI/CD job tokens."
+msgstr ""
+
 msgid "GroupSettings|Enable overview background aggregation for Value Streams Dashboard"
 msgstr ""
 
