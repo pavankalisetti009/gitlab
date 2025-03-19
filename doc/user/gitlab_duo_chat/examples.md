@@ -329,7 +329,7 @@ Programming languages that require compiling the source code may throw cryptic e
 - `Why is "this" undefined in VueJS? Provide common error cases, and explain how to avoid them.`
 - `How to debug a Ruby on Rails stacktrace? Share common strategies and an example exception.`
 
-## Ask about specific files
+## Ask about specific files in the IDE
 
 {{< details >}}
 
@@ -345,6 +345,7 @@ Programming languages that require compiling the source code may throw cryptic e
 - [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/477258) in GitLab 17.7 [with flags](../../administration/feature_flags.md) named `duo_additional_context` and `duo_include_context_file`. Disabled by default.
 - [Enabled](https://gitlab.com/groups/gitlab-org/-/epics/15227) for [self-hosted model configuration](../../administration/gitlab_duo_self_hosted/_index.md#self-hosted-ai-gateway-and-llms) as well as the [default GitLab external AI vendor configuration](../../administration/gitlab_duo_self_hosted/_index.md#gitlabcom-ai-gateway-with-default-gitlab-external-vendor-llms) in GitLab 17.9.
 - [Enabled on GitLab.com, GitLab Self-Managed, and GitLab Dedicated](https://gitlab.com/groups/gitlab-org/-/epics/15183) in GitLab 17.9.
+- `duo_additional_context` flag [removed](https://gitlab.com/gitlab-org/gitlab/-/issues/508741) in GitLab 17.10.
 
 {{< /history >}}
 
@@ -355,8 +356,8 @@ For more information, see the history.
 
 {{< /alert >}}
 
-Add repository files to your Duo Chat conversations in VS Code or JetBrains IDEs by
-typing `/include` and choosing the files.
+Add repository files to your Duo Chat conversations in VS Code or JetBrains IDEs
+by typing `/include` and choosing the files.
 
 Prerequisites:
 
@@ -722,4 +723,4 @@ These commands work only when using Duo Chat in supported IDEs:
 | /explain  | [Explain code](#explain-selected-code)            |
 | /refactor | [Refactor the code](#refactor-code-in-the-ide)    |
 | /fix      | [Fix the code](#fix-code-in-the-ide)              |
-| /include  | [Include file context](#ask-about-specific-files) |
+| /include  | [Include file context](#ask-about-specific-files-in-the-ide) |
