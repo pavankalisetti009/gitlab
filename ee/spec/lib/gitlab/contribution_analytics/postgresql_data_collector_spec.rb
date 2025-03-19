@@ -21,6 +21,10 @@ RSpec.describe Gitlab::ContributionAnalytics::PostgresqlDataCollector, feature_c
       target_type: ::MergeRequest.name)
     create(:event, :created, project: project2, target: nil, created_at: 2.weeks.ago, author: user2,
       target_type: ::MergeRequest.name)
+    create(:event, :created, project: project2, target: nil, created_at: 3.weeks.ago, author: user2,
+      target_type: ::Issue.name)
+    create(:event, :closed, project: project2, target: nil, created_at: 4.weeks.ago, author: user2,
+      target_type: ::WorkItem.name)
 
     data =
       described_class.new(group: group, from: 3.months.ago, to: 1.week.ago)
@@ -31,7 +35,9 @@ RSpec.describe Gitlab::ContributionAnalytics::PostgresqlDataCollector, feature_c
       {
         [user1.id, "MergeRequest", "merged"] => 1,
         [user1.id, nil, "pushed"] => 2,
-        [user2.id, "MergeRequest", "created"] => 1
+        [user2.id, "MergeRequest", "created"] => 1,
+        [user2.id, "Issue", "created"] => 1,
+        [user2.id, "Issue", "closed"] => 1
       }
     )
   end
