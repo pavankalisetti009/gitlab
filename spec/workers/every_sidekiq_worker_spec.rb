@@ -228,7 +228,6 @@ RSpec.describe 'Every Sidekiq worker', feature_category: :shared do
         'ElasticCommitIndexerWorker' => 2,
         'ElasticDeleteProjectWorker' => 2,
         'ElasticFullIndexWorker' => 2,
-        'ElasticIndexingControlWorker' => 3,
         'ElasticNamespaceIndexerWorker' => 2,
         'ElasticNamespaceRolloutWorker' => 2,
         'EmailReceiverWorker' => 3,
