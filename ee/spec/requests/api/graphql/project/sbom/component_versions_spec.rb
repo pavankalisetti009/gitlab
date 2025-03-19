@@ -21,7 +21,8 @@ RSpec.describe 'Query.project(fullPath).component_versions', feature_category: :
     create(:sbom_occurrence, project: project, component: sbom_component, component_version: component_version_2)
   end
 
-  let(:component_versions) { graphql_data_at(:project, :component_versions) }
+  let(:component_versions) { graphql_data_at(:project, :component_versions, :nodes) }
+  let(:page_info) { graphql_data_at(:project, :component_versions, :page_info) }
 
   let(:query) do
     %(
@@ -29,8 +30,14 @@ RSpec.describe 'Query.project(fullPath).component_versions', feature_category: :
         project(fullPath: "#{project.full_path}") {
           name
           componentVersions(componentId: "#{sbom_component.to_gid}") {
-            id
-            version
+            nodes {
+              id
+              version
+            }
+            pageInfo {
+              endCursor
+              hasNextPage
+            }
           }
         }
       }
@@ -56,5 +63,6 @@ RSpec.describe 'Query.project(fullPath).component_versions', feature_category: :
     end
 
     expect(component_versions).to match_array(expected)
+    expect(page_info).to be_present
   end
 end
