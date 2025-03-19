@@ -53,4 +53,41 @@ RSpec.describe Ai::ActiveContext::Connection, feature_category: :global_search d
       expect(described_class.active).to eq(active_connection)
     end
   end
+
+  describe '#activate!' do
+    let!(:active_connection) { create(:ai_active_context_connection) }
+    let!(:inactive_connection) { create(:ai_active_context_connection, :inactive) }
+
+    context 'when the connection is already active' do
+      it 'does not make any changes' do
+        expect { active_connection.activate! }.not_to change { Ai::ActiveContext::Connection.active }
+      end
+    end
+
+    context 'when the connection is inactive' do
+      it 'activates the connection and deactivates the previously active connection' do
+        expect do
+          inactive_connection.activate!
+        end.to change { Ai::ActiveContext::Connection.active }.from(active_connection).to(inactive_connection)
+
+        expect(active_connection.reload).not_to be_active
+        expect(inactive_connection.reload).to be_active
+      end
+    end
+
+    context 'when an error occurs during activation' do
+      before do
+        allow(inactive_connection).to receive(:update!).and_raise(ActiveRecord::RecordInvalid)
+      end
+
+      it 'rolls back the transaction and does not change the active connection' do
+        expect do
+          expect { inactive_connection.activate! }.to raise_error(ActiveRecord::RecordInvalid)
+        end.not_to change { Ai::ActiveContext::Connection.active }
+
+        expect(active_connection.reload).to be_active
+        expect(inactive_connection.reload).not_to be_active
+      end
+    end
+  end
 end
