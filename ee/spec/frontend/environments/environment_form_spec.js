@@ -30,6 +30,7 @@ describe('~/environments/components/form.vue', () => {
           id: 1,
           name: 'test',
           externalUrl: 'https://example.com',
+          description: 'test description',
         },
       });
     });
