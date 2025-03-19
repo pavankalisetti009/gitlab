@@ -178,8 +178,10 @@ RSpec.describe 'Project issue boards', :js, feature_category: :portfolio_managem
 
         it 'displays issue and max issue size' do
           page.within("[data-testid='board-list']:nth-child(2)") do
-            expect(find_by_testid('board-items-count')).to have_text(total_development_issues)
-            expect(page.find('.max-issue-size')).to have_text(max_issue_count)
+            page.within("[data-testid='item-count'] ") do
+              expect(find_by_testid('board-items-count')).to have_text(total_development_issues)
+              expect(page.find('.max-issue-size')).to have_text(max_issue_count)
+            end
           end
         end
       end
@@ -234,13 +236,13 @@ RSpec.describe 'Project issue boards', :js, feature_category: :portfolio_managem
               find('input').set(max_issue_count)
             end
 
-            # Off click
-            find('body').click
+            click_button _('Apply')
 
             wait_for_requests
           end
 
           it "sets max issue count to zero" do
+            expect(page).to have_button(_('Remove limit'), disabled: false, wait: 5)
             click_button _('Remove limit')
 
             wait_for_requests
@@ -250,15 +252,13 @@ RSpec.describe 'Project issue boards', :js, feature_category: :portfolio_managem
         end
 
         context 'when the user is editing a wip limit and clicks close' do
-          it 'updates the max issue count wip limit' do
+          it 'does not update the max issue count wip limit' do
             max_issue_count = 3
             page.within(find('.js-board-settings-sidebar')) do
               click_button("Edit")
 
               find('input').set(max_issue_count)
             end
-
-            # Off click
             # Danger: coupling to gitlab-ui class name for close.
             # Change when https://gitlab.com/gitlab-org/gitlab-ui/issues/578 is resolved
             find('.gl-drawer-close-button').click
@@ -269,42 +269,42 @@ RSpec.describe 'Project issue boards', :js, feature_category: :portfolio_managem
               click_button('Edit list settings')
             end
 
-            expect(find_by_testid('wip-limit')).to have_text(max_issue_count)
+            expect(find_by_testid('wip-limit')).not_to have_text(max_issue_count)
           end
         end
 
         context "when user off clicks" do
-          it 'updates the max issue count wip limit' do
+          it 'does not update the max issue count wip limit and remains in edit mode' do
             max_issue_count = 2
             page.within(find('.js-board-settings-sidebar')) do
               click_button("Edit")
-
               find('input').set(max_issue_count)
             end
 
-            # Off click
             find('body').click
 
             wait_for_requests
 
-            expect(find_by_testid('wip-limit')).to have_text(max_issue_count)
+            page.within(find('.js-board-settings-sidebar')) do
+              expect(page).to have_selector('input', visible: :visible)
+            end
           end
 
-          context "When user sets max issue count to 0" do
-            it 'updates the max issue count wip limit to None' do
+          context "When user sets max issue count to 0 and off clicks" do
+            it 'does not update the max issue count wip limit and remains in edit mode' do
               max_issue_count = 0
               page.within(find('.js-board-settings-sidebar')) do
                 click_button("Edit")
-
                 find('input').set(max_issue_count)
               end
 
-              # Off click
               find('body').click
 
               wait_for_requests
 
-              expect(find_by_testid('wip-limit')).to have_text("None")
+              page.within(find('.js-board-settings-sidebar')) do
+                expect(page).to have_selector('input', visible: :visible)
+              end
             end
           end
         end

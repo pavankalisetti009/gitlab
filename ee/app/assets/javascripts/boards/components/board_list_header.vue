@@ -60,10 +60,10 @@ export default {
     },
     totalIssueWeight() {
       if (this.isEpicBoard) {
-        return this.boardList?.metadata?.totalWeight || 0;
+        return parseInt(this.boardList?.metadata?.totalWeight, 10) || 0;
       }
 
-      return this.boardList?.totalIssueWeight;
+      return parseInt(this.boardList?.totalIssueWeight, 10);
     },
   },
   watch: {
