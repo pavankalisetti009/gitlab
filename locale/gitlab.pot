@@ -6545,6 +6545,9 @@ msgstr ""
 msgid "An error occurred creating the new branch."
 msgstr ""
 
+msgid "An error occurred deleting the group. Please refresh the page to try again."
+msgstr ""
+
 msgid "An error occurred editing the blob"
 msgstr ""
 
@@ -40974,9 +40977,6 @@ msgid "Organization|An error occurred creating a group in this organization. Ple
 msgstr ""
 
 msgid "Organization|An error occurred creating an organization. Please try again."
-msgstr ""
-
-msgid "Organization|An error occurred deleting the group. Please refresh the page to try again."
 msgstr ""
 
 msgid "Organization|An error occurred deleting the project. Please refresh the page to try again."

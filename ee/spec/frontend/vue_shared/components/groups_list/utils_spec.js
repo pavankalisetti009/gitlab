@@ -84,7 +84,6 @@ describe('deleteParams', () => {
     expect(deleteParamsCE).not.toHaveBeenCalled();
     expect(res).toStrictEqual({
       permanently_remove: true,
-      full_path: MOCK_GROUP_PENDING_DELETION.fullPath,
     });
   });
 });
