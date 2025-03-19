@@ -46,7 +46,9 @@ module Security
       private
 
       def enqueue_within_time_window(schedule)
-        delay = Random.rand(schedule.time_window_seconds)
+        time_window = [schedule.time_window_seconds, schedule.next_run_in].min
+
+        delay = Random.rand(time_window)
 
         with_context(project: schedule.project_id) do
           Security::PipelineExecutionPolicies::RunScheduleWorker.perform_in(delay, schedule.id)

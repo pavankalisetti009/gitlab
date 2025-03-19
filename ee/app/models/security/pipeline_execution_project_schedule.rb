@@ -14,7 +14,9 @@ module Security
     validates :security_policy, :project, :cron, :cron_timezone, :time_window_seconds, presence: true
     validates :cron, cron: true
     validates :cron_timezone, cron_timezone: true
-    validates :time_window_seconds, numericality: { greater_than: 0, only_integer: true }
+    validates :time_window_seconds,
+      numericality: { greater_than_or_equal_to: 10.minutes.to_i, less_than_or_equal_to: 1.month.to_i,
+                      only_integer: true }
 
     validate :security_policy_is_pipeline_execution_schedule_policy
 
@@ -30,6 +32,12 @@ module Security
 
     def ci_content
       security_policy.content["content"]
+    end
+
+    def next_run_in
+      time_now = Time.zone.now
+
+      (calculate_next_run_at(time_now) - time_now).to_i
     end
 
     private

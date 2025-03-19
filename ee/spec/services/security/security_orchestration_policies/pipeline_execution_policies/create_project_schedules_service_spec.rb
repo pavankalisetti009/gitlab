@@ -98,7 +98,7 @@ RSpec.describe(
     end
 
     let(:exception_message) do
-      a_string_including('Time window seconds must be greater than 0')
+      a_string_including('Time window seconds must be greater than or equal to 600')
     end
 
     let(:expected_log) do

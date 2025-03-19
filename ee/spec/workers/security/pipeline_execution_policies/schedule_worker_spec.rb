@@ -158,5 +158,21 @@ RSpec.describe Security::PipelineExecutionPolicies::ScheduleWorker, feature_cate
         perform
       end
     end
+
+    context 'when schedule time_window_seconds is greater than the time to the next run' do
+      let(:cron) { '0 0 * * *' }
+
+      before do
+        schedule.update!(next_run_at: 1.day.ago, time_window_seconds: 2.days.to_i, cron: cron)
+      end
+
+      it 'uses the time to next run as time window' do
+        travel_to(Time.zone.now.beginning_of_day + 1.hour) do
+          expect(Random).to receive(:rand).with(23.hours.to_i)
+
+          perform
+        end
+      end
+    end
   end
 end
