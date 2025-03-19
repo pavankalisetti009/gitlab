@@ -35,15 +35,6 @@ module EE
       super + recent_epics_autocomplete(term)
     end
 
-    override :search_blob_title
-    def search_blob_title(project, path)
-      if @project
-        path
-      else
-        "#{project.full_name}: #{content_tag(:i, path)}".html_safe
-      end
-    end
-
     override :search_entries_scope_label
     def search_entries_scope_label(scope, count)
       case scope
