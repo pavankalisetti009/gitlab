@@ -25,10 +25,6 @@ module Onboarding
     end
 
     def valid_for_onboarding_redirect?(path)
-      unless Feature.enabled?(:onboarding_step_full_uri, current_user)
-        return path.present? && request.get? && path != request.fullpath && valid_referer?(path)
-      end
-
       return false unless path.present? && request.get?
       return false if welcome_and_already_completed?
 

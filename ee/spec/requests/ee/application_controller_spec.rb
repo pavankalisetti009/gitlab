@@ -63,49 +63,6 @@ RSpec.describe ApplicationController, type: :request, feature_category: :shared 
           end
         end
 
-        context "when onboarding_step_full_uri feature flag is disabled" do
-          before do
-            stub_feature_flags(onboarding_step_full_uri: false)
-          end
-
-          context 'when onboarding is enabled' do
-            context 'and onboarding step url does not match current request url' do
-              where(:url, :params) do
-                [
-                  ["/group/new", {}],
-                  ["/?query=param", { test: 456 }],
-                  ["#{Gitlab.config.gitlab.url}/", {}] # erroneously redirects
-                ]
-              end
-
-              with_them do
-                it 'redirects to onboading step url' do
-                  get root_path, params: params
-
-                  expect(response).to redirect_to(url)
-                end
-              end
-            end
-
-            context 'and onboarding step url matches current request url' do
-              where(:url, :params) do
-                [
-                  ["/?query=param", { query: "param" }],
-                  ["/?q1=1&q2=2", { q1: 1, q2: 2 }]
-                ]
-              end
-
-              with_them do
-                it 'does not redirect to onboarding step url' do
-                  get root_path, params: params
-
-                  expect(response).not_to be_redirect
-                end
-              end
-            end
-          end
-        end
-
         context 'when onboarding step url is not set' do
           let(:onboarding_status_step_url) { nil }
 
