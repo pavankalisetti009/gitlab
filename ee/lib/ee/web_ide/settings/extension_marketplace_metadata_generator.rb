@@ -20,7 +20,7 @@ module EE
           end
 
           override :build_metadata_for_user
-          def build_metadata_for_user(user)
+          def build_metadata_for_user(user:, marketplace_home_url:)
             return metadata_disabled(:enterprise_group_disabled) unless enabled_for_enterprise_group?(user)
 
             super
