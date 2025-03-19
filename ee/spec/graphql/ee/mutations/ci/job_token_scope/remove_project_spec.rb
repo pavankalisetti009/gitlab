@@ -101,7 +101,15 @@ RSpec.describe Mutations::Ci::JobTokenScope::RemoveProject, feature_category: :c
       end
     end
 
-    context 'when user removes target project to the default outbound job token scope' do
+    context 'when user removes target project from the outbound job token scope' do
+      let(:mutation_args) do
+        {
+          project_path: project_path,
+          target_project_path: target_project_path,
+          direction: :outbound
+        }
+      end
+
       it 'does not log an audit event' do
         expect(::Gitlab::Audit::Auditor).not_to receive(:audit)
 
