@@ -14,7 +14,7 @@ FactoryBot.define do
     end
 
     trait :enough_free_space do
-      total_bytes { 100_000_000 }
+      total_bytes { 10.gigabytes }
     end
 
     trait :offline do

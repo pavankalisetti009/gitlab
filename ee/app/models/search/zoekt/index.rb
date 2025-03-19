@@ -8,7 +8,6 @@ module Search
       include NamespaceValidateable
       include Gitlab::Loggable
 
-      DEFAULT_RESERVED_STORAGE_BYTES = 1.gigabyte.freeze
       DEFAULT_USED_STORAGE_BYTES = 1.kilobyte.freeze
       EVICTION_STATES = %i[evicted pending_eviction].freeze
       SEARCHEABLE_STATES = %i[ready].freeze
@@ -26,8 +25,6 @@ module Search
         class_name: '::Search::Zoekt::Repository'
 
       validates :metadata, json_schema: { filename: 'zoekt_indices_metadata' }
-
-      before_save :set_watermark_level, if: :storage_bytes_changed?
 
       enum state: {
         pending: 0,
@@ -110,41 +107,12 @@ module Search
         SQL
       end
 
-      def update_storage_bytes!
+      def update_storage_bytes_and_watermark_level!
         refresh_used_storage_bytes
-
-        refresh_reserved_storage_bytes if (ready? && overprovisioned?) || high_watermark_exceeded?
+        refresh_reserved_storage_bytes
+        self.watermark_level = appropriate_watermark_level
 
         save!
-      end
-
-      def refresh_used_storage_bytes
-        sum_for_index = zoekt_repositories.sum(:size_bytes)
-        self.used_storage_bytes = sum_for_index == 0 ? DEFAULT_USED_STORAGE_BYTES : sum_for_index
-        self.used_storage_bytes_updated_at = Time.zone.now
-      end
-
-      def refresh_reserved_storage_bytes
-        if used_storage_bytes == 0
-          self.reserved_storage_bytes = DEFAULT_RESERVED_STORAGE_BYTES
-          return
-        end
-
-        # This number of bytes will put the index as the ideal storage utilization
-        ideal_reserved_storage_bytes = used_storage_bytes / STORAGE_IDEAL_PERCENT_USED
-
-        # Reservable space left on node in addition to the existing reservation made by the index
-        max_reservable_storage_bytes = node.unclaimed_storage_bytes + reserved_storage_bytes.to_i
-
-        # In case there is more requested bytes than available on the node, we reserve the minimum
-        # amount that we have available.
-        #
-        # Note: this will also **decrease** the reservation if the total needed is now lower.
-        new_reserved_bytes = [ideal_reserved_storage_bytes, max_reservable_storage_bytes].min
-        new_reserved_bytes = DEFAULT_RESERVED_STORAGE_BYTES if new_reserved_bytes == 0
-        return if new_reserved_bytes == reserved_storage_bytes
-
-        self.reserved_storage_bytes = new_reserved_bytes
       end
 
       def free_storage_bytes
@@ -176,12 +144,43 @@ module Search
         end
       end
 
-      def set_watermark_level
-        self.watermark_level = appropriate_watermark_level
+      def refresh_used_storage_bytes
+        sum_for_index = zoekt_repositories.sum(:size_bytes)
+        self.used_storage_bytes = sum_for_index == 0 ? DEFAULT_USED_STORAGE_BYTES : sum_for_index
+        self.used_storage_bytes_updated_at = Time.zone.now
       end
 
-      def storage_bytes_changed?
-        reserved_storage_bytes_changed? || used_storage_bytes_changed?
+      # Allows the reduction of reserved_storage_bytes only if index is ready.
+      # Always allows the possible expansion of reserved_storage_bytes.
+      def refresh_reserved_storage_bytes
+        # This number of bytes will put the index as the ideal storage utilization.
+        ideal_reserved_storage_bytes = (used_storage_bytes / STORAGE_IDEAL_PERCENT_USED).to_i
+
+        # Note: this will also **decrease** the reservation if the total needed is now lower.
+        new_reserved_bytes = if ideal_reserved_storage_bytes > reserved_storage_bytes
+                               claim_reserved_storage_bytes_from_node(ideal_reserved_storage_bytes)
+                             else
+                               ideal_reserved_storage_bytes
+                             end
+
+        # Do not update reserved_storage_bytes if new_reserved_bytes is less and index is not ready.
+        # Case could be that index is initializing and used_storage_bytes is just building up. So do not rely on it.
+        return if (new_reserved_bytes < reserved_storage_bytes) && !ready?
+
+        self.reserved_storage_bytes = new_reserved_bytes
+      end
+
+      # Return existing reserved_storage_bytes if node does not have any unclaimed_storage_bytes.
+      # If node has full availability of storage bytes asked by index, it will return the storage bytes asked by index.
+      # If node has not full availability, node will return the maximum it can give to the index.
+      def claim_reserved_storage_bytes_from_node(ideal_reserved_storage_bytes)
+        # return existing reserved_storage_bytes, can not do anything as there is no unclaimed storage in node.
+        return reserved_storage_bytes if node.unclaimed_storage_bytes <= 0
+
+        max_reservable_storage_bytes = node.unclaimed_storage_bytes + reserved_storage_bytes.to_i
+        # In case there is more requested bytes than available on the node,
+        # we reserve the minimum amount that we have available.
+        [ideal_reserved_storage_bytes, max_reservable_storage_bytes].min
       end
 
       def logger

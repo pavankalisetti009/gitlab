@@ -15,7 +15,7 @@ module Search
 
       def handle_event(_event)
         indices = Index.with_stale_used_storage_bytes_updated_at.ordered_by_used_storage_updated_at
-        indices.limit(BATCH_SIZE).each(&:update_storage_bytes!)
+        indices.limit(BATCH_SIZE).each(&:update_storage_bytes_and_watermark_level!)
 
         reemit_event
       end

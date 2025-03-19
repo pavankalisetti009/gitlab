@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
   let_it_be(:namespace) { create(:group) }
   let_it_be_with_reload(:zoekt_enabled_namespace) { create(:zoekt_enabled_namespace, namespace: namespace) }
-  let_it_be(:zoekt_node) { create(:zoekt_node) }
+  let_it_be(:zoekt_node) { create(:zoekt_node, :enough_free_space) }
   let_it_be(:zoekt_replica) { create(:zoekt_replica, zoekt_enabled_namespace: zoekt_enabled_namespace) }
   let_it_be_with_refind(:zoekt_index) do
     create(:zoekt_index, zoekt_enabled_namespace: zoekt_enabled_namespace, node: zoekt_node, replica: zoekt_replica,
@@ -265,216 +265,56 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
     end
 
     describe '.with_mismatched_watermark_levels' do
-      let(:ideal_percent) { Search::Zoekt::Index::STORAGE_IDEAL_PERCENT_USED }
-      let(:low_watermark) { Search::Zoekt::Index::STORAGE_LOW_WATERMARK }
-      let(:high_watermark) { Search::Zoekt::Index::STORAGE_HIGH_WATERMARK }
-      let(:critical_watermark) { Search::Zoekt::Index::STORAGE_CRITICAL_WATERMARK }
+      let(:ideal_percent) { described_class::STORAGE_IDEAL_PERCENT_USED }
+      let(:low_watermark) { described_class::STORAGE_LOW_WATERMARK }
+      let(:high_watermark) { described_class::STORAGE_HIGH_WATERMARK }
+      let(:critical_watermark) { described_class::STORAGE_CRITICAL_WATERMARK }
       let(:mismatched_indices) { described_class.with_mismatched_watermark_levels }
+      let(:overprovisioned_mismatch) { create(:zoekt_index, :overprovisioned) }
+      let(:healthy_mismatch) { create(:zoekt_index, :healthy) }
+      let(:low_watermark_exceeded_mismatched) { create(:zoekt_index, :low_watermark_exceeded) }
+      let(:high_watermark_exceeded_mismatched) { create(:zoekt_index, :high_watermark_exceeded) }
+      let(:critical_watermark_exceeded_mismatched) { create(:zoekt_index, :critical_watermark_exceeded) }
 
       before do
-        # Clear existing records
         Search::Zoekt::Repository.delete_all
         described_class.delete_all
+        overprovisioned_mismatch.update_column(:reserved_storage_bytes, 1)
+        healthy_mismatch.update_column(:used_storage_bytes, 1)
+        low_watermark_exceeded_mismatched.update_column(:used_storage_bytes, 1)
+        high_watermark_exceeded_mismatched.update_column(:used_storage_bytes, 1)
+        critical_watermark_exceeded_mismatched.update_column(:used_storage_bytes, 1)
+        create(:zoekt_index, :overprovisioned)
+        create(:zoekt_index, :healthy)
+        create(:zoekt_index, :low_watermark_exceeded)
+        create(:zoekt_index, :high_watermark_exceeded)
+        create(:zoekt_index, :critical_watermark_exceeded)
       end
 
-      it 'returns indices where watermark_level is mismatched (healthy)' do
-        # Setup a healthy record but with incorrect watermark_level
-        idx = create(
-          :zoekt_index,
-          used_storage_bytes: 40,
-          reserved_storage_bytes: 100
+      it 'returns indices where watermark_level is mismatched' do
+        expect(mismatched_indices).to contain_exactly(
+          overprovisioned_mismatch,
+          healthy_mismatch,
+          low_watermark_exceeded_mismatched,
+          high_watermark_exceeded_mismatched,
+          critical_watermark_exceeded_mismatched
         )
-
-        # Skip active record callback: set_watermark_level
-        idx.update!(watermark_level: :low_watermark_exceeded) # Incorrect level
-
-        expect(mismatched_indices.count).to eq(1)
-        expect(mismatched_indices.first.watermark_level).to eq('low_watermark_exceeded')
-      end
-
-      it 'returns no indices when all watermark_levels are correct' do
-        # Setup record with correct watermark level
-        create(
-          :zoekt_index,
-          used_storage_bytes: 40,
-          reserved_storage_bytes: 100,
-          watermark_level: :healthy
-        )
-
-        expect(mismatched_indices).to be_empty
-      end
-
-      it 'detects overprovisioned mismatches' do
-        # Setup an overprovisioned record with incorrect watermark_level
-        idx = create(
-          :zoekt_index,
-          used_storage_bytes: 10,
-          reserved_storage_bytes: 100
-        )
-
-        # Skip active record callback: set_watermark_level
-        idx.update!(watermark_level: :healthy) # Incorrect level
-
-        expect(mismatched_indices.count).to eq(1)
-        expect(mismatched_indices.first.watermark_level).to eq('healthy')
       end
 
       it 'handles edge cases at the exact boundary' do
         # Setup a record exactly at the STORAGE_LOW_WATERMARK
-        idx = create(
-          :zoekt_index,
-          used_storage_bytes: (low_watermark * 100).to_i,
-          reserved_storage_bytes: 100
-        )
+        idx = create(:zoekt_index, used_storage_bytes: (low_watermark * 100).to_i, reserved_storage_bytes: 100)
+        idx.update_column(:watermark_level, :healthy) # Incorrect level
 
-        # Skip active record callback
-        idx.update!(
-          watermark_level: :healthy # Incorrect level
-        )
-
-        expect(mismatched_indices.count).to eq(1)
-        expect(mismatched_indices.first.watermark_level).to eq('healthy')
+        expect(mismatched_indices).to include(idx)
       end
 
       it 'handles division by zero gracefully' do
         # Setup a record with zero reserved_storage_bytes
-        create(
-          :zoekt_index,
-          used_storage_bytes: 50,
-          reserved_storage_bytes: 0,
-          watermark_level: :critical_watermark_exceeded
-        )
+        idx = create(:zoekt_index, :critical_watermark_exceeded)
+        idx.update_column(:reserved_storage_bytes, 0)
 
         expect { mismatched_indices }.not_to raise_error
-      end
-
-      it 'returns indices where watermark_level is mismatched (critical)' do
-        # Setup a record that should be critical but has incorrect watermark_level
-        idx = create(
-          :zoekt_index,
-          used_storage_bytes: (critical_watermark * 100) + 1,
-          reserved_storage_bytes: 100
-        )
-
-        idx.update!(watermark_level: :high_watermark_exceeded) # Incorrect level
-
-        expect(mismatched_indices.count).to eq(1)
-        expect(mismatched_indices.first.watermark_level).to eq('high_watermark_exceeded')
-      end
-
-      it 'correctly identifies critical watermark level' do
-        # Setup a record with correct critical watermark level
-        create(
-          :zoekt_index,
-          used_storage_bytes: (critical_watermark * 100) + 1,
-          reserved_storage_bytes: 100,
-          watermark_level: :critical_watermark_exceeded
-        )
-
-        expect(mismatched_indices).to be_empty
-      end
-    end
-  end
-
-  describe '#refresh_reserved_storage_bytes' do
-    let(:zoekt_node) { create(:zoekt_node, total_bytes: 1000, used_bytes: 300, indexed_bytes: 200) }
-    let(:idx) do
-      create(:zoekt_index, used_storage_bytes: 90, reserved_storage_bytes: 100, node: zoekt_node)
-    end
-
-    before do
-      zoekt_node.save! # This triggers update_usable_storage_bytes to set usable_storage_bytes to 900
-      # Make sure we properly stub both indices and reserved_storage_bytes
-      allow(zoekt_node).to receive_messages(indices: [], reserved_storage_bytes: 0)
-    end
-
-    it 'updates reserved_storage_bytes with the ideal storage based on used bytes' do
-      ideal_reserved_storage = idx.used_storage_bytes / described_class::STORAGE_IDEAL_PERCENT_USED
-
-      expect do
-        idx.refresh_reserved_storage_bytes
-      end.to change {
-        idx.reserved_storage_bytes
-      }.from(100).to(ideal_reserved_storage)
-    end
-
-    context 'when the node has limited storage' do
-      let(:zoekt_node) { create(:zoekt_node, total_bytes: 300, used_bytes: 198, indexed_bytes: 0) }
-      let(:idx) do
-        create(:zoekt_index, used_storage_bytes: 90, reserved_storage_bytes: 100, node: zoekt_node)
-      end
-
-      let(:other_index) { create(:zoekt_index, node: zoekt_node, reserved_storage_bytes: 100) }
-
-      before do
-        zoekt_node.save! # This triggers update_usable_storage_bytes to set usable_storage_bytes to 102
-        allow(zoekt_node).to receive_messages(indices: [other_index], reserved_storage_bytes: 100)
-      end
-
-      it 'increases the reserved storage only up to available node storage' do
-        # With the new formula:
-        # unclaimed_storage_bytes = usable_storage_bytes - reserved_storage_bytes
-        # unclaimed_storage_bytes = 102 - 100 = 2
-        #
-        # Available space for this index = unclaimed_storage_bytes + this index's current reserved_storage_bytes
-        # Available space = 2 + 100 = 102
-
-        expect do
-          idx.refresh_reserved_storage_bytes
-        end.to change {
-          idx.reserved_storage_bytes
-        }.from(100).to(102)
-      end
-    end
-
-    context 'when the node does not have any more storage' do
-      let(:zoekt_node) { create(:zoekt_node, total_bytes: 300, used_bytes: 300, indexed_bytes: 0) }
-      let(:idx) do
-        create(:zoekt_index, used_storage_bytes: 90, reserved_storage_bytes: 100, node: zoekt_node)
-      end
-
-      before do
-        zoekt_node.save! # This triggers update_usable_storage_bytes to set usable_storage_bytes to 0
-
-        # Set up the node to indicate it has no more available storage
-        # This means: usable_storage_bytes <= reserved_storage_bytes
-        # which gives unclaimed_storage_bytes <= 0
-        allow(zoekt_node).to receive_messages(usable_storage_bytes: 0, indices: [], reserved_storage_bytes: 0)
-
-        # Important: unclaimed_storage_bytes + current reserved space is now 0,
-        # so there's no room to grow beyond current reserved space
-
-        # Additionally, stub the index's ideal size determination to ensure
-        # it doesn't trigger the change
-        allow(idx).to receive(:ideal_reserved_storage_bytes).and_return(200)
-      end
-
-      it 'does not change reserved_storage_bytes' do
-        expect do
-          idx.refresh_reserved_storage_bytes
-        end.not_to change { idx.reserved_storage_bytes }
-      end
-    end
-
-    context 'when used_storage_bytes is 0' do
-      let(:idx) { create(:zoekt_index, used_storage_bytes: 0) }
-
-      it 'sets reserved_storage_bytes to DEFAULT_RESERVED_STORAGE_BYTES' do
-        expect do
-          idx.refresh_reserved_storage_bytes
-        end.to change {
-          idx.reserved_storage_bytes
-        }.to(described_class::DEFAULT_RESERVED_STORAGE_BYTES)
-      end
-
-      it 'does not perform division calculation' do
-        expect(idx).not_to receive(:storage_percent_used)
-        idx.refresh_reserved_storage_bytes
-      end
-
-      it 'does not check node unclaimed storage' do
-        expect(idx.node).not_to receive(:unclaimed_storage_bytes)
-        idx.refresh_reserved_storage_bytes
       end
     end
   end
@@ -486,87 +326,149 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
     end
   end
 
-  describe '#update_storage_bytes!' do
-    using RSpec::Parameterized::TableSyntax
+  describe '#update_storage_bytes_and_watermark_level!' do
+    describe 'used_storage_bytes assertion' do
+      context 'when index does not have any zoekt_repositories' do
+        it 'sets the used_storage_bytes to default 1 kilobytes', :freeze_time do
+          expect { zoekt_index.update_storage_bytes_and_watermark_level! }
+            .to change { zoekt_index.used_storage_bytes }.from(0).to(described_class::DEFAULT_USED_STORAGE_BYTES)
+              .and change { zoekt_index.used_storage_bytes_updated_at }.to(Time.zone.now)
+        end
+      end
 
-    before do
-      allow(zoekt_index).to receive(:refresh_used_storage_bytes)
-      allow(zoekt_index).to receive(:refresh_reserved_storage_bytes)
-      allow(zoekt_index).to receive(:save!)
-      allow(zoekt_index).to receive_messages(ready?: ready, overprovisioned?: overprovisioned,
-        high_watermark_exceeded?: high_watermark_exceeded)
-    end
-
-    where(:ready, :overprovisioned, :high_watermark_exceeded, :should_update_reserved_storage) do
-      true  | true  | false | true
-      true  | false | true  | true
-      true  | false | false | false
-      false | true  | false | false
-      false | false | true  | true
-      false | false | false | false
-    end
-
-    with_them do
-      it 'calls the correct methods' do
-        expect(zoekt_index).to receive(:refresh_used_storage_bytes).once
-        expect(zoekt_index).to receive(:save!).once
-
-        if should_update_reserved_storage
-          expect(zoekt_index).to receive(:refresh_reserved_storage_bytes).once
-        else
-          expect(zoekt_index).not_to receive(:refresh_reserved_storage_bytes)
+      context 'when index has zoekt_repositories' do
+        before do
+          create_list(:zoekt_repository, 3, zoekt_index: zoekt_index)
         end
 
-        zoekt_index.update_storage_bytes!
-      end
-    end
-  end
+        context 'when sum of size_bytes of zoekt_repositories is 0' do
+          before do
+            zoekt_index.zoekt_repositories.update_all(size_bytes: 0)
+          end
 
-  describe '#refresh_used_storage_bytes', :freeze_time do
-    let_it_be(:initial_time) { 10.minutes.ago }
-    let_it_be(:current_time) { Time.zone.now }
-    let_it_be(:zoekt_index) do
-      build(:zoekt_index, used_storage_bytes_updated_at: initial_time)
-    end
+          it 'sets the used_storage_bytes to default 1 kilobytes', :freeze_time do
+            expect { zoekt_index.update_storage_bytes_and_watermark_level! }
+              .to change { zoekt_index.used_storage_bytes }.from(0).to(described_class::DEFAULT_USED_STORAGE_BYTES)
+                                                           .and change {
+                                                                  zoekt_index.used_storage_bytes_updated_at
+                                                                }.to(Time.zone.now)
+          end
+        end
 
-    context 'when there are repositories with size_bytes' do
-      let(:repository_size) { 100.megabytes }
-      let(:repositories_association) { instance_double(ActiveRecord::Associations::CollectionProxy) }
-
-      before do
-        allow(zoekt_index).to receive(:zoekt_repositories).and_return(repositories_association)
-        allow(repositories_association).to receive(:sum).with(:size_bytes).and_return(repository_size * 3)
-      end
-
-      it 'updates used_storage_bytes to the sum of repository sizes' do
-        expect { zoekt_index.refresh_used_storage_bytes }.to change {
-          zoekt_index.used_storage_bytes
-        }.to(repository_size * 3)
-      end
-
-      it 'updates used_storage_bytes_updated_at to current time' do
-        zoekt_index.refresh_used_storage_bytes
-        expect(zoekt_index.used_storage_bytes_updated_at).to be_like_time(current_time)
+        context 'when sum of size_bytes of zoekt_repositories is not 0' do
+          it 'sets the used_storage_bytes to sum of size_bytes', :freeze_time do
+            expect { zoekt_index.update_storage_bytes_and_watermark_level! }
+              .to change { zoekt_index.used_storage_bytes }.from(0).to(zoekt_index.zoekt_repositories.sum(:size_bytes))
+                                                           .and change {
+                                                                  zoekt_index.used_storage_bytes_updated_at
+                                                                }.to(Time.zone.now)
+          end
+        end
       end
     end
 
-    context 'when there are no repositories or all repositories have zero size' do
-      let(:repositories_association) { instance_double(ActiveRecord::Associations::CollectionProxy) }
+    describe 'reserved_storage_bytes assertion' do
+      context 'when index needs more reserved_storage_bytes' do
+        let_it_be_with_reload(:zoekt_index) do
+          create(:zoekt_index, :critical_watermark_exceeded, node: zoekt_node)
+        end
 
-      before do
-        allow(zoekt_index).to receive(:zoekt_repositories).and_return(repositories_association)
-        allow(repositories_association).to receive(:sum).with(:size_bytes).and_return(0)
+        context 'when node has enough unclaimed_storage_bytes to move the index to healthy' do
+          it 'bumps the reserved_storage_bytes and make index healthy' do
+            initial_reserved_storage_bytes = zoekt_index.reserved_storage_bytes
+            expect { zoekt_index.update_storage_bytes_and_watermark_level! }
+              .to change { zoekt_index.watermark_level }.from('critical_watermark_exceeded').to('healthy')
+            expect(zoekt_index.reload.reserved_storage_bytes).to be > initial_reserved_storage_bytes
+          end
+        end
+
+        context 'when node has some unclaimed_storage_bytes but not enough to change its watermark_level' do
+          it 'bumps the reserved_storage_bytes and does not change the watermark_level' do
+            initial_reserved_storage_bytes = zoekt_index.reserved_storage_bytes
+            allow_next_found_instance_of(Search::Zoekt::Node) do |instance|
+              allow(instance).to receive(:unclaimed_storage_bytes).and_return(1)
+            end
+            zoekt_index.update_storage_bytes_and_watermark_level!
+            expect(zoekt_index.reload.reserved_storage_bytes).to be > initial_reserved_storage_bytes
+            expect(zoekt_index).to be_critical_watermark_exceeded
+          end
+        end
+
+        context 'when node has some unclaimed_storage_bytes to move index to high_watermark_exceeded' do
+          it 'bumps the reserved_storage_bytes and move index to high_watermark_exceeded' do
+            initial_reserved_storage_bytes = zoekt_index.reserved_storage_bytes
+            allow_next_found_instance_of(Search::Zoekt::Node) do |instance|
+              allow(instance).to receive(:unclaimed_storage_bytes).and_return(1080)
+            end
+            zoekt_index.update_storage_bytes_and_watermark_level!
+            expect(zoekt_index.reload.reserved_storage_bytes).to be > initial_reserved_storage_bytes
+            expect(zoekt_index).to be_high_watermark_exceeded
+          end
+        end
+
+        context 'when node has some unclaimed_storage_bytes to move index to low_watermark_exceeded' do
+          it 'bumps the reserved_storage_bytes and move index to low_watermark_exceeded' do
+            initial_reserved_storage_bytes = zoekt_index.reserved_storage_bytes
+            allow_next_found_instance_of(Search::Zoekt::Node) do |instance|
+              allow(instance).to receive(:unclaimed_storage_bytes).and_return(1210)
+            end
+            zoekt_index.update_storage_bytes_and_watermark_level!
+            expect(zoekt_index.reload.reserved_storage_bytes).to be > initial_reserved_storage_bytes
+            expect(zoekt_index).to be_low_watermark_exceeded
+          end
+        end
+
+        context 'when node has 0 unclaimed_storage_bytes' do
+          it 'does not changes the reserved_storage_bytes and watermark_level of index' do
+            initial_reserved_storage_bytes = zoekt_index.reserved_storage_bytes
+            allow_next_found_instance_of(Search::Zoekt::Node) do |instance|
+              allow(instance).to receive(:unclaimed_storage_bytes).and_return(0)
+            end
+            zoekt_index.update_storage_bytes_and_watermark_level!
+            expect(zoekt_index.reload.reserved_storage_bytes).to eq initial_reserved_storage_bytes
+            expect(zoekt_index).to be_critical_watermark_exceeded
+          end
+        end
+
+        context 'when node has negative unclaimed_storage_bytes' do
+          it 'does not changes the reserved_storage_bytes and watermark_level of index' do
+            initial_reserved_storage_bytes = zoekt_index.reserved_storage_bytes
+            allow_next_found_instance_of(Search::Zoekt::Node) do |instance|
+              allow(instance).to receive(:unclaimed_storage_bytes).and_return(-1)
+            end
+            zoekt_index.update_storage_bytes_and_watermark_level!
+            expect(zoekt_index.reload.reserved_storage_bytes).to eq initial_reserved_storage_bytes
+            expect(zoekt_index).to be_critical_watermark_exceeded
+          end
+        end
       end
 
-      it 'sets used_storage_bytes to DEFAULT_USED_STORAGE_BYTES' do
-        expect { zoekt_index.refresh_used_storage_bytes }.to change {
-          zoekt_index.used_storage_bytes
-        }.to(described_class::DEFAULT_USED_STORAGE_BYTES)
-      end
+      context 'when index needs to shed reserved_storage_bytes' do
+        let_it_be_with_reload(:zoekt_index) { create(:zoekt_index, :overprovisioned) }
 
-      it 'updates used_storage_bytes_updated_at to current time' do
-        zoekt_index.refresh_used_storage_bytes
-        expect(zoekt_index.used_storage_bytes_updated_at).to be_like_time(current_time)
+        before do
+          create(:zoekt_repository, zoekt_index: zoekt_index, size_bytes: 10)
+        end
+
+        context 'when index is not ready' do
+          it 'does not sheds the reserved_storage_bytes and not changes the watermark_level' do
+            expect { zoekt_index.update_storage_bytes_and_watermark_level! }
+              .to not_change { zoekt_index.watermark_level }.and not_change { zoekt_index.reserved_storage_bytes }
+          end
+        end
+
+        context 'when index is ready' do
+          before do
+            zoekt_index.ready!
+          end
+
+          it 'does sheds the reserved_storage_bytes' do
+            initial_reserved_storage_bytes = zoekt_index.reserved_storage_bytes
+            expect { zoekt_index.update_storage_bytes_and_watermark_level! }
+              .to change { zoekt_index.watermark_level }.from('overprovisioned').to('healthy')
+            expect(zoekt_index.reload.reserved_storage_bytes).to be < initial_reserved_storage_bytes
+          end
+        end
       end
     end
   end
