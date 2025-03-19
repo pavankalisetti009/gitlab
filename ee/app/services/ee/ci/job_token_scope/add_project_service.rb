@@ -23,7 +23,7 @@ module EE
             "Project #{target.full_path} was added to inbound list of allowed projects for #{scope.full_path}"
           event_name = 'secure_ci_job_token_project_added'
 
-          if ::Feature.enabled?(:add_policies_to_ci_job_token, scope) && policies.present?
+          if scope.job_token_policies_enabled? && policies.present?
             audit_message += ", with default permissions: #{default_permissions}, " \
               "job token policies: #{policies.join(', ')}"
           end

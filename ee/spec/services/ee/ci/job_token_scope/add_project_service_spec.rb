@@ -45,13 +45,13 @@ RSpec.describe Ci::JobTokenScope::AddProjectService, feature_category: :continuo
         service_result
       end
 
-      context 'when feature-flag `add_policies_to_ci_job_token` is disabled' do
+      context 'when job token policies are disabled' do
         let(:expected_audit_message) do
           "Project #{target_project.full_path} was added to inbound list of allowed projects for #{project.full_path}"
         end
 
         before do
-          stub_feature_flags(add_policies_to_ci_job_token: false)
+          allow(project).to receive(:job_token_policies_enabled?).and_return(false)
         end
 
         it 'audits the event without policies' do
