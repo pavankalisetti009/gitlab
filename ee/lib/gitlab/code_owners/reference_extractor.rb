@@ -28,6 +28,8 @@ module Gitlab
         owner: Gitlab::Access::OWNER
       }.freeze
 
+      ROLES_MAP = POSSIBLE_ROLES.to_h { |role, role_value| [role_value, "@@#{role}"] }.freeze
+
       def initialize(text)
         # EE passes an Array to `text` in a few places, so we want to support both
         # here.
@@ -38,18 +40,32 @@ module Gitlab
         matches[:names]
       end
 
+      def raw_names
+        names.map { |name| "@#{name}" }
+      end
+
       def roles
         matches[:roles]
+      end
+
+      def raw_roles
+        roles.map { |role_value| ROLES_MAP[role_value] }
       end
 
       def emails
         matches[:emails]
       end
 
+      alias_method :raw_emails, :emails
+
       def references
         return [] if @text.blank?
 
-        @references ||= matches.values.flatten.uniq
+        @references ||= matches.values.flatten
+      end
+
+      def raw_references
+        raw_names + raw_roles + raw_emails
       end
 
       private
