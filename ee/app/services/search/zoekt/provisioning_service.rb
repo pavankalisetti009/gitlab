@@ -78,7 +78,6 @@ module Search
           return
         end
 
-        required_storage_bytes = 1.kilobyte if required_storage_bytes == 0
         Index.create!(
           replica: replica,
           zoekt_enabled_namespace_id: replica.zoekt_enabled_namespace_id,

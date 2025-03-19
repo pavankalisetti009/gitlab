@@ -119,15 +119,16 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
         expect(metadata3).to eq({ 'project_namespace_id_to' => 5, 'project_namespace_id_from' => 1 })
         metadata4 = enabled_namespace.replicas.second.indices.find_by_zoekt_node_id(nodes.fourth).metadata
         expect(metadata4).to eq({ 'project_namespace_id_from' => 6 })
-
         metadata5 = enabled_namespace2.replicas.first.indices.find_by_zoekt_node_id(nodes.first).metadata
         expect(metadata5).to eq({ 'project_namespace_id_to' => 3, 'project_namespace_id_from' => 1 })
         metadata6 = enabled_namespace2.replicas.first.indices.find_by_zoekt_node_id(nodes.second).metadata
         expect(metadata6).to eq({ 'project_namespace_id_from' => 4 })
         metadata7 = enabled_namespace2.replicas.second.indices.find_by_zoekt_node_id(nodes.third).metadata
         expect(metadata7).to eq({ 'project_namespace_id_to' => 3, 'project_namespace_id_from' => 1 })
-        metadata8 = enabled_namespace2.replicas.second.indices.find_by_zoekt_node_id(nodes.fourth).metadata
+        index = enabled_namespace2.replicas.second.indices.find_by_zoekt_node_id(nodes.fourth)
+        metadata8 = index.metadata
         expect(metadata8).to eq({ 'project_namespace_id_from' => 4 })
+        expect(index.reserved_storage_bytes).to eq 1.gigabyte
       end
     end
 
