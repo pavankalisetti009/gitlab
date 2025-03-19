@@ -313,6 +313,7 @@ describe('Sidebar Menu', () => {
           last_update: 1593993600000,
           review_requested_merge_requests: 4,
           todos: 112,
+          total_merge_requests: 7,
         });
       });
 

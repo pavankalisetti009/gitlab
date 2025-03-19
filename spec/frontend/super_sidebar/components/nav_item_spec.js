@@ -132,6 +132,7 @@ describe('NavItem component', () => {
         ${'assigned_issues'}                 | ${2}
         ${'assigned_merge_requests'}         | ${3}
         ${'review_requested_merge_requests'} | ${4}
+        ${'total_merge_requests'}            | ${7}
       `(
         'returns `$result` when nav item `pill_count_field` is `$pillCountField` and count is `$result`',
         ({ pillCountField, result }) => {
