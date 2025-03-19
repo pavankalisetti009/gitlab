@@ -23,6 +23,15 @@ module Ai
         where(active: true).first
       end
 
+      def activate!
+        return true if active?
+
+        self.class.transaction do
+          self.class.active&.update!(active: false)
+          update!(active: true)
+        end
+      end
+
       private
 
       def validate_options
