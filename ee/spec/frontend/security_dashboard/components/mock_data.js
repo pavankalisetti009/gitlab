@@ -150,6 +150,7 @@ export const containerScanningForRegistryVulnerability = {
   scanner: {
     id: 'scanner-1',
     vendor: 'GitLab',
+    name: 'Gemnasium',
   },
   issueLinks: {
     nodes: [
@@ -222,6 +223,7 @@ export const generateVulnerabilities = () => [
     scanner: {
       id: 'scanner-1',
       vendor: 'GitLab',
+      name: 'Gemnasium',
     },
     issueLinks: {
       nodes: [
@@ -283,7 +285,7 @@ export const generateVulnerabilities = () => [
       id: 'project-2',
       nameWithNamespace: 'Administrator / Vulnerability reports',
     },
-    scanner: { id: 'scanner-2', vendor: 'GitLab' },
+    scanner: { id: 'scanner-2', vendor: 'GitLab', name: 'GitLeaks' },
     vulnerabilityPath: '#',
     userNotesCount: 0,
     aiResolutionAvailable: false,
@@ -315,6 +317,7 @@ export const generateVulnerabilities = () => [
     scanner: {
       id: 'scanner-3',
       vendor: 'My Custom Scanner',
+      name: 'GitLeaks',
     },
     vulnerabilityPath: 'path',
     userNotesCount: 2,
@@ -344,7 +347,7 @@ export const generateVulnerabilities = () => [
       id: 'project-4',
       nameWithNamespace: 'Mixed Vulnerabilities / Rails App',
     },
-    scanner: { id: 'scanner-3', vendor: '' },
+    scanner: { id: 'scanner-3', vendor: '', name: 'GitLeaks' },
     vulnerabilityPath: 'path',
     userNotesCount: 3,
     aiResolutionAvailable: false,
@@ -371,7 +374,7 @@ export const generateVulnerabilities = () => [
       id: 'project-5',
       nameWithNamespace: 'Administrator / Security reports',
     },
-    scanner: { id: 'scanner-4', vendor: 'GitLab' },
+    scanner: { id: 'scanner-4', vendor: 'GitLab', name: 'GitLeaks' },
     vulnerabilityPath: 'path',
     userNotesCount: 4,
     aiResolutionAvailable: false,
@@ -400,7 +403,7 @@ export const generateVulnerabilities = () => [
       id: 'project-6',
       nameWithNamespace: 'Administrator / Security reports',
     },
-    scanner: { id: 'scanner-5', vendor: 'GitLab' },
+    scanner: { id: 'scanner-5', vendor: 'GitLab', name: 'GitLeaks' },
     vulnerabilityPath: 'path',
     userNotesCount: 5,
     aiResolutionAvailable: false,
@@ -430,7 +433,7 @@ export const generateVulnerabilities = () => [
       id: 'project-6',
       nameWithNamespace: 'Administrator / Security reports',
     },
-    scanner: { id: 'scanner-5', vendor: 'GitLab' },
+    scanner: { id: 'scanner-5', vendor: 'GitLab', name: 'GitLeaks' },
     vulnerabilityPath: 'path',
     userNotesCount: 5,
     aiResolutionAvailable: false,
@@ -462,6 +465,7 @@ export const generateFindings = () => [
     scanner: {
       id: 'scanner-1',
       vendor: 'GitLab',
+      name: 'GitLeaks',
     },
     state: 'DETECTED',
     dismissalReason: null,
