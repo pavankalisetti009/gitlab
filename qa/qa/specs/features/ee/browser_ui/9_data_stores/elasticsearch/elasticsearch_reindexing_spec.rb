@@ -43,8 +43,7 @@ module QA
           menu.search_for(project_file_content)
         end
 
-        file_path = "#{project.group.sandbox.path} / " \
-                    "#{project.group.path} / #{project.name}: #{project_file_name}"
+        file_path = "#{project.group.sandbox.path} / #{project.group.path} / #{project.name}"
 
         Page::Search::Results.perform do |search|
           search.switch_to_code
@@ -87,8 +86,7 @@ module QA
           Page::Search::Results.perform do |search|
             search.switch_to_code
 
-            file_path = "#{project.group.sandbox.path} / " \
-                        "#{project.group.path} / #{project.name}: #{template[:file_name]}"
+            file_path = "#{project.group.sandbox.path} / #{project.group.path} / #{project.name}"
 
             aggregate_failures "testing expectations" do
               expect(search).to have_project_in_search_result(project.name)
