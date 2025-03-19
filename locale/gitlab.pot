@@ -50161,7 +50161,7 @@ msgstr ""
 msgid "Runners|Copy registration token"
 msgstr ""
 
-msgid "Runners|Create a %{codeStart}main.tf%{codeEnd} file with the following Terraform configuration."
+msgid "Runners|Create a %{codeStart}main.tf%{codeEnd} file with the following Terraform configuration. Save this file in the directory most suitable to your Terraform environment. If you don't have a directory, create a new project, and then follow the guidelines to %{linkStart}set up Terraform with GitLab%{linkEnd}."
 msgstr ""
 
 msgid "Runners|Create a group runner"
