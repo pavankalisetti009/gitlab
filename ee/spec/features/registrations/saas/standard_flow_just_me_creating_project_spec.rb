@@ -49,7 +49,9 @@ RSpec.describe 'Standard flow for user picking just me and creating a project', 
 
       visit root_path
       click_on 'Member'
-      click_on 'Test Project'
+      within_testid('project-content') do
+        click_on 'Test Project'
+      end
 
       expect(page).to have_content("Initialized from 'NodeJS Express' project template")
     end
