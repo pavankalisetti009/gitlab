@@ -164,10 +164,6 @@ module EE
           resolver: ::Resolvers::Issuables::CustomFieldsResolver,
           experiment: { milestone: '17.10' }
 
-        field :allowed_statuses, ::Types::WorkItems::Widgets::StatusType.connection_type,
-          null: true, description: 'Allowed statuses for the namespace.',
-          experiment: { milestone: '17.8' }, resolver: ::Resolvers::WorkItems::Widgets::StatusResolver
-
         def product_analytics_stored_events_limit
           object.root_ancestor.product_analytics_stored_events_limit
         end

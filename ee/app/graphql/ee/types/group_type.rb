@@ -360,10 +360,6 @@ module EE
           resolver: ::Resolvers::Issuables::CustomFieldResolver,
           experiment: { milestone: '17.6' }
 
-        field :allowed_statuses, ::Types::WorkItems::Widgets::StatusType.connection_type,
-          null: true, description: 'Allowed statuses for the group.',
-          experiment: { milestone: '17.8' }, resolver: ::Resolvers::WorkItems::Widgets::StatusResolver
-
         field :project_compliance_requirements_status,
           ::Types::ComplianceManagement::ComplianceFramework::ProjectRequirementStatusType.connection_type,
           null: true,

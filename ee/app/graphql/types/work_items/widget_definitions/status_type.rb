@@ -10,7 +10,7 @@ module Types
 
         implements ::Types::WorkItems::WidgetDefinitionInterface
 
-        field :allowed_statuses, ::Types::WorkItems::Widgets::StatusType.connection_type,
+        field :allowed_statuses, [::Types::WorkItems::StatusType],
           null: true, experiment: { milestone: '17.8' },
           description: 'Allowed statuses for the work item type.',
           resolver: ::Resolvers::WorkItems::Widgets::StatusResolver

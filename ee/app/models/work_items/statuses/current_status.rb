@@ -17,6 +17,11 @@ module WorkItems
 
       validate :validate_status_exists
 
+      # As part of iteration 1, we only handle system-defined statuses
+      # See the POC MR details to handle custom statuses in iteration 2
+      # https://gitlab.com/gitlab-org/gitlab/-/merge_requests/178180
+      scope :for_work_items_with_statuses, ->(work_item_ids) { where(work_item_id: work_item_ids) }
+
       def status
         # In the future select system defined status or custom status
         # based on available data and setting in root namespace.

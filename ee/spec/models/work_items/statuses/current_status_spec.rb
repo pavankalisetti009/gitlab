@@ -115,6 +115,56 @@ RSpec.describe WorkItems::Statuses::CurrentStatus, feature_category: :team_plann
     end
   end
 
+  describe '.for_work_items_with_statuses' do
+    let_it_be(:work_item_2) { create(:work_item) }
+    let_it_be(:work_item_3) { create(:work_item) }
+
+    let_it_be(:system_defined_status_1) { WorkItems::Statuses::SystemDefined::Status.find(1) }
+    let_it_be(:system_defined_status_2) { WorkItems::Statuses::SystemDefined::Status.find(2) }
+
+    let_it_be(:current_status_1) do
+      create(:work_item_current_status, work_item: work_item, system_defined_status: system_defined_status_1)
+    end
+
+    let_it_be(:current_status_2) do
+      create(:work_item_current_status, work_item: work_item_2, system_defined_status: system_defined_status_2)
+    end
+
+    context 'when all work items have statuses' do
+      let_it_be(:work_item_ids) { [work_item.id, work_item_2.id] }
+
+      it 'returns all current statuses for the requested work items' do
+        expect(described_class.for_work_items_with_statuses(work_item_ids)).to contain_exactly(current_status_1,
+          current_status_2)
+      end
+    end
+
+    context 'when work items have no statuses' do
+      let_it_be(:work_item_ids) { [work_item_3.id] }
+
+      it 'returns an empty array' do
+        expect(described_class.for_work_items_with_statuses(work_item_ids)).to eq([])
+      end
+    end
+
+    context 'with a mix of work items with and without statuses' do
+      let_it_be(:work_item_ids) { [work_item.id, work_item_2.id, work_item_3.id] }
+
+      it 'returns only the statuses that exist' do
+        expect(described_class.for_work_items_with_statuses(work_item_ids)).to contain_exactly(current_status_1,
+          current_status_2)
+      end
+    end
+
+    context 'when no work item IDs are provided' do
+      let_it_be(:work_item_ids) { [] }
+
+      it 'returns an empty array' do
+        expect(described_class.for_work_items_with_statuses(work_item_ids)).to eq([])
+      end
+    end
+  end
+
   describe '#status' do
     it 'returns system_defined_status' do
       expect(current_status.status).to eq(current_status.system_defined_status)

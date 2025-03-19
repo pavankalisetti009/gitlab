@@ -17,13 +17,13 @@ RSpec.describe Resolvers::WorkItems::Widgets::StatusResolver, feature_category: 
     it 'fetches allowed statuses for a given work item type' do
       system_defined_statuses = ::WorkItems::Statuses::SystemDefined::Status.all
 
-      expect(resolve_statuses.items.map(&:name)).to eq(system_defined_statuses.map(&:name))
+      expect(resolve_statuses.map(&:name)).to eq(system_defined_statuses.map(&:name))
     end
   end
 
   shared_examples 'does not return system defined statuses' do
     it 'returns an empty array' do
-      expect(resolve_statuses&.items).to eq([])
+      expect(resolve_statuses).to eq([])
     end
   end
 

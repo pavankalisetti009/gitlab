@@ -340,6 +340,121 @@ RSpec.describe 'getting a work item list for a project', feature_category: :team
         expect(response).to have_gitlab_http_status(:success)
       end
     end
+
+    context 'with status widget' do
+      let_it_be(:work_item_1) { create(:work_item, :task, project: project) }
+      let_it_be(:work_item_2) { create(:work_item, :task, project: project) }
+
+      let(:fields) do
+        <<~QUERY
+          edges {
+            node {
+              widgets {
+                ... on WorkItemWidgetStatus {
+                  status {
+                    id
+                    name
+                    color
+                    iconName
+                    position
+                  }
+                }
+              }
+            }
+          }
+        QUERY
+      end
+
+      RSpec.shared_examples 'checks for N+1 queries' do
+        it 'avoids N+1 queries', :use_sql_query_cache do
+          control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
+            post_graphql(query, current_user: current_user)
+          end
+
+          expect do
+            post_graphql(query, current_user: current_user)
+          end.not_to exceed_query_limit(control)
+        end
+      end
+
+      context 'when feature is licensed' do
+        before do
+          stub_licensed_features(work_item_status: true)
+        end
+
+        context 'with current statuses' do
+          let_it_be(:current_status) { create(:work_item_current_status, work_item: work_item_1) }
+
+          it 'returns status data' do
+            post_graphql(query, current_user: current_user)
+
+            expect(widgets_data).to include(
+              hash_including(
+                'status' => {
+                  'id' => 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/1',
+                  'name' => 'To do',
+                  'iconName' => 'status-waiting',
+                  'color' => "#737278",
+                  'position' => 0
+                }
+              )
+            )
+          end
+
+          it_behaves_like 'checks for N+1 queries'
+        end
+
+        context 'without current statuses' do
+          it 'does not return status data' do
+            post_graphql(query, current_user: current_user)
+
+            expect(widgets_data).to include(
+              hash_including(
+                'status' => nil
+              )
+            )
+          end
+
+          it_behaves_like 'checks for N+1 queries'
+        end
+      end
+
+      context 'when feature is unlicensed' do
+        before do
+          stub_licensed_features(work_item_status: false)
+        end
+
+        context 'with current statuses' do
+          let_it_be(:current_status) { create(:work_item_current_status, work_item: work_item_1) }
+
+          it 'does not return status data' do
+            post_graphql(query, current_user: current_user)
+
+            expect(widgets_data).to include(
+              hash_including(
+                'status' => nil
+              )
+            )
+          end
+
+          it_behaves_like 'checks for N+1 queries'
+        end
+
+        context 'without current statuses' do
+          it 'does not return status data' do
+            post_graphql(query, current_user: current_user)
+
+            expect(widgets_data).to include(
+              hash_including(
+                'status' => nil
+              )
+            )
+          end
+
+          it_behaves_like 'checks for N+1 queries'
+        end
+      end
+    end
   end
 
   context 'with top level filters' do

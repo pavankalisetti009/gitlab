@@ -324,35 +324,106 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
       end
 
       describe 'status widget' do
-        let_it_be(:task_work_item) { create(:work_item, :task, project: project) }
-        let_it_be(:global_id) { task_work_item.to_global_id }
+        let_it_be(:work_item) { create(:work_item, :task, project: project) }
+        let_it_be(:global_id) { work_item.to_global_id }
+        let_it_be(:system_defined_status) { WorkItems::Statuses::SystemDefined::Status.find(1) }
+
         let(:work_item_fields) do
           <<~GRAPHQL
             id
             widgets {
               type
               ... on WorkItemWidgetStatus {
-                id
-                name
-                iconName
+                status {
+                  id
+                  name
+                  iconName
+                  color
+                  position
+                }
               }
             }
           GRAPHQL
         end
 
-        it 'returns mock status data' do
-          post_graphql(query, current_user: current_user)
+        context 'when feature is licensed' do
+          before do
+            stub_licensed_features(work_item_status: true)
 
-          expect(work_item_data).to include(
-            'widgets' => array_including(
-              hash_including(
-                'type' => 'STATUS',
-                'id' => 'gid://gitlab/WorkItems::Widgets::Status/10',
-                'name' => 'Status',
-                'iconName' => 'status icon'
+            post_graphql(query, current_user: current_user)
+          end
+
+          context 'with current status' do
+            let_it_be(:current_status) do
+              create(:work_item_current_status, work_item: work_item, system_defined_status: system_defined_status)
+            end
+
+            it 'returns status data' do
+              expect(work_item_data).to include(
+                'id' => work_item.to_gid.to_s,
+                'widgets' => include(
+                  hash_including(
+                    'type' => 'STATUS',
+                    'status' => {
+                      'id' => 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/1',
+                      'name' => 'To do',
+                      'iconName' => 'status-waiting',
+                      'color' => "#737278",
+                      'position' => 0
+                    }
+                  )
+                )
+              )
+            end
+          end
+
+          context 'without current status' do
+            it 'does not return status data' do
+              expect(work_item_data).to include(
+                'id' => work_item.to_gid.to_s,
+                'widgets' => include(
+                  hash_including(
+                    'type' => 'STATUS',
+                    'status' => nil
+                  )
+                )
+              )
+            end
+          end
+
+          context 'without authorized access' do
+            let_it_be(:current_user) { nil }
+
+            it 'returns nil' do
+              post_graphql(query, current_user: current_user)
+
+              expect(work_item_data).to be_blank
+              expect(graphql_errors.first["message"]).to eq(
+                "The resource that you are attempting to access does not exist or you don't have " \
+                  "permission to perform this action"
+              )
+            end
+          end
+        end
+
+        context 'when feature is unlicensed' do
+          before do
+            stub_licensed_features(work_item_status: false)
+
+            post_graphql(query, current_user: current_user)
+          end
+
+          it 'does not return status data' do
+            expect(work_item_data).to include(
+              'id' => work_item.to_gid.to_s,
+              'widgets' => include(
+                hash_including(
+                  'type' => 'STATUS',
+                  'status' => nil
+                )
               )
             )
-          )
+          end
         end
       end
 
