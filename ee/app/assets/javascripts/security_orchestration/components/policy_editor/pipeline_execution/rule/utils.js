@@ -3,13 +3,11 @@ import { getWeekdayNames } from '~/lib/utils/datetime_utility';
 import { DAILY, HOUR_IN_SECONDS } from '../constants';
 
 const DAY_IN_SECONDS = HOUR_IN_SECONDS * 24;
-const DEFAULT_START_TIME = '00:00';
 const DEFAULT_START_WEEKDAY = 'monday';
 const DEFAULT_START_MONTH_DAY = '1';
 const WEEKLY = 'weekly';
 const MONTHLY = 'monthly';
 
-export const isCadenceDaily = (cadence) => cadence === DAILY;
 export const isCadenceWeekly = (cadence) => cadence === WEEKLY;
 
 export const CADENCE_OPTIONS = [
@@ -20,7 +18,6 @@ export const CADENCE_OPTIONS = [
 
 const CADENCE_CONFIG = {
   [DAILY]: {
-    start_time: DEFAULT_START_TIME,
     time_window: { value: HOUR_IN_SECONDS },
   },
   [WEEKLY]: {
@@ -34,7 +31,7 @@ const CADENCE_CONFIG = {
 };
 
 export const updateScheduleCadence = ({ schedule, cadence }) => {
-  const { start_time, days, days_of_month, ...updatedSchedule } = schedule;
+  const { days, days_of_month, ...updatedSchedule } = schedule;
   updatedSchedule.type = cadence;
 
   if (CADENCE_CONFIG[cadence]) {

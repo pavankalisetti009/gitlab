@@ -16,6 +16,7 @@ describe('ScheduleForm', () => {
     time_window: { value: 3600 },
     branch_type: 'protected',
     timezone: 'America/New_York',
+    start_time: '00:00',
   };
   const mockTimezones = [
     { identifier: 'America/New_York', name: 'Eastern Time' },
@@ -45,7 +46,7 @@ describe('ScheduleForm', () => {
     it('displays the details', () => {
       createComponent();
       expect(wrapper.text()).toContain(
-        'at the following times: , start at , run for: , and timezone is',
+        'at the following times:  , start at , run for: , and timezone is',
       );
     });
 
@@ -88,13 +89,6 @@ describe('ScheduleForm', () => {
       });
     });
 
-    it('renders time dropdown for daily schedule', () => {
-      createComponent({ schedule: { type: 'daily', start_time: '09:00' } });
-      const timeDropdown = findTimeDropdown();
-      expect(timeDropdown.exists()).toBe(true);
-      expect(timeDropdown.props('selected')).toBe('09:00');
-    });
-
     describe('weekday dropdown', () => {
       it('renders weekday dropdown for weekly schedule', () => {
         createComponent({ schedule: { type: 'weekly', days: ['monday'] } });
@@ -102,6 +96,16 @@ describe('ScheduleForm', () => {
         expect(weekdayDropdown.exists()).toBe(true);
         expect(weekdayDropdown.props('selected')).toEqual(['monday']);
         expect(weekdayDropdown.props('multiple')).toBe(true);
+      });
+
+      it('does not render weekday dropdown for daily schedule', () => {
+        createComponent({ schedule: { type: 'daily' } });
+        expect(findWeekdayDropdown().exists()).toBe(false);
+      });
+
+      it('does not render weekday dropdown for monthly schedule', () => {
+        createComponent({ schedule: { type: 'monthly' } });
+        expect(findWeekdayDropdown().exists()).toBe(false);
       });
 
       describe('weekdayToggleText', () => {
@@ -161,7 +165,7 @@ describe('ScheduleForm', () => {
 
         expect(wrapper.emitted('changed')).toHaveLength(1);
         expect(wrapper.emitted('changed')).toMatchObject([
-          [{ type: 'daily', start_time: '00:00', time_window: { value: 3600 } }],
+          [{ type: 'daily', time_window: { value: 3600 } }],
         ]);
       });
 
@@ -200,7 +204,7 @@ describe('ScheduleForm', () => {
 
         const emittedSchedule = wrapper.emitted('changed')[0][0];
         expect(emittedSchedule).toHaveProperty('days');
-        expect(emittedSchedule).not.toHaveProperty('start_time');
+        expect(emittedSchedule).toHaveProperty('start_time');
         expect(emittedSchedule).not.toHaveProperty('days_of_month');
       });
     });
@@ -215,9 +219,8 @@ describe('ScheduleForm', () => {
       });
     });
 
-    describe('daily time dropdown', () => {
+    describe('time dropdown', () => {
       it('emits changed event when time is selected', async () => {
-        createComponent({ schedule: { type: 'daily', start_time: '09:00' } });
         const timeDropdown = findTimeDropdown();
         await timeDropdown.vm.$emit('select', '10:00');
         expect(wrapper.emitted('changed')).toEqual([

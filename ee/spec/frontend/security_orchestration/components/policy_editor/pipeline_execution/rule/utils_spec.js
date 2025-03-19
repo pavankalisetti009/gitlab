@@ -3,13 +3,13 @@ import { updateScheduleCadence } from 'ee/security_orchestration/components/poli
 describe('Pipeline execution rule utils', () => {
   describe('updateScheduleCadence', () => {
     const baseSchedule = {
+      start_time: '00:00',
       time_window: { value: 3600, distribution: 'random' },
       timezone: 'America/New_York',
     };
 
     const dailySchedule = {
       type: 'daily',
-      start_time: '00:00',
       ...baseSchedule,
     };
 
@@ -59,7 +59,6 @@ describe('Pipeline execution rule utils', () => {
       });
 
       expect(result).toHaveProperty('days');
-      expect(result).not.toHaveProperty('start_time');
       expect(result).not.toHaveProperty('days_of_month');
     });
 
