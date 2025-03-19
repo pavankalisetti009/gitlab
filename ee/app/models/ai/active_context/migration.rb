@@ -22,6 +22,43 @@ module Ai
       validates :retries_left, numericality: { greater_than_or_equal_to: 0 }
       validate :validate_zero_retries_left, if: -> { retries_left == 0 }
 
+      scope :processable, -> { where(status: [:pending, :in_progress]).order(:version) }
+
+      def self.current
+        processable.first
+      end
+
+      def mark_as_started!
+        update!(
+          status: :in_progress,
+          started_at: Time.zone.now
+        )
+      end
+
+      def mark_as_completed!
+        update!(
+          status: :completed,
+          completed_at: Time.zone.now
+        )
+      end
+
+      def mark_as_failed!(error)
+        update!(
+          status: :failed,
+          retries_left: 0,
+          error_message: "#{error.class}: #{error.message}"
+        )
+      end
+
+      def decrease_retries!(error)
+        if retries_left == 1
+          mark_as_failed!(error)
+        else
+          retries = retries_left - 1
+          update!(retries_left: retries)
+        end
+      end
+
       private
 
       def validate_zero_retries_left

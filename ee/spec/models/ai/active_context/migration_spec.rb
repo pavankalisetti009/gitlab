@@ -5,6 +5,8 @@ require 'spec_helper'
 RSpec.describe Ai::ActiveContext::Migration, feature_category: :global_search do
   using RSpec::Parameterized::TableSyntax
 
+  let_it_be(:connection) { create(:ai_active_context_connection) }
+
   describe 'associations' do
     it { is_expected.to belong_to(:connection).class_name('Ai::ActiveContext::Connection') }
   end
@@ -14,7 +16,7 @@ RSpec.describe Ai::ActiveContext::Migration, feature_category: :global_search do
       it { is_expected.to validate_presence_of(:version) }
 
       context 'for uniqueness validations' do
-        let!(:existing_migration) { create(:ai_active_context_migration) }
+        let!(:existing_migration) { create(:ai_active_context_migration, connection: connection) }
 
         it 'validates uniqueness of version scoped to connection_id' do
           new_migration = build(:ai_active_context_migration,
@@ -109,7 +111,7 @@ RSpec.describe Ai::ActiveContext::Migration, feature_category: :global_search do
   end
 
   describe 'database constraints' do
-    let(:migration) { create(:ai_active_context_migration) }
+    let(:migration) { create(:ai_active_context_migration, connection: connection) }
 
     it 'enforces version format through check constraint' do
       expect do
@@ -136,12 +138,90 @@ RSpec.describe Ai::ActiveContext::Migration, feature_category: :global_search do
     end
 
     it 'enforces unique combination of connection_id and version' do
-      existing = create(:ai_active_context_migration)
+      existing = create(:ai_active_context_migration, connection: connection)
       new_migration = build(:ai_active_context_migration, connection: existing.connection, version: existing.version)
 
       expect do
         new_migration.save!(validate: false)
       end.to raise_error(ActiveRecord::RecordNotUnique)
+    end
+  end
+
+  describe 'scopes' do
+    describe '.processable' do
+      let!(:pending) { create(:ai_active_context_migration, connection: connection, status: :pending) }
+      let!(:in_progress) { create(:ai_active_context_migration, connection: connection, status: :in_progress) }
+      let!(:completed_migration) { create(:ai_active_context_migration, connection: connection, status: :completed) }
+      let!(:failed) { create(:ai_active_context_migration, connection: connection, status: :failed) }
+
+      it 'returns migrations that are pending, in_progress, or failed with retries left' do
+        processable = described_class.processable
+
+        expect(processable).to include(pending, in_progress)
+        expect(processable).not_to include(completed_migration, failed)
+      end
+
+      it 'orders migrations by version' do
+        expect(described_class.processable.to_a).to eq([
+          pending,
+          in_progress
+        ])
+      end
+    end
+  end
+
+  describe '.current' do
+    context 'when there are processable migrations' do
+      let!(:older_migration) { create(:ai_active_context_migration, connection: connection, status: :pending) }
+      let!(:newer_migration) { create(:ai_active_context_migration, connection: connection, status: :pending) }
+
+      it 'returns the oldest processable migration by version' do
+        expect(described_class.current).to eq(older_migration)
+      end
+    end
+
+    context 'when there are no processable migrations' do
+      let!(:completed_migration) { create(:ai_active_context_migration, connection: connection, status: :completed) }
+      let!(:failed) { create(:ai_active_context_migration, connection: connection, status: :failed, retries_left: 0) }
+
+      it 'returns nil' do
+        expect(described_class.current).to be_nil
+      end
+    end
+  end
+
+  describe '#mark_as_failed!' do
+    let(:error) { StandardError.new('Something went wrong') }
+    let(:migration) { create(:ai_active_context_migration, connection: connection) }
+
+    it 'updates the status to failed, decrements retries_left, and sets error_message' do
+      expect { migration.mark_as_failed!(error) }
+        .to change { migration.status }.from('pending').to('failed')
+        .and change { migration.error_message }.from(nil).to('StandardError: Something went wrong')
+    end
+  end
+
+  describe '#decrease_retries!' do
+    let(:error) { StandardError.new('something went wrong') }
+
+    context 'when retries are available' do
+      let(:migration) { create(:ai_active_context_migration, connection: connection, retries_left: 3) }
+
+      it 'decreases retries_left by 1' do
+        expect { migration.decrease_retries!(error) }.to change { migration.retries_left }.from(3).to(2)
+      end
+    end
+
+    context 'when no retries are left' do
+      let(:migration) { create(:ai_active_context_migration, connection: connection, retries_left: 1) }
+
+      it 'marks the migration as failed' do
+        migration.decrease_retries!(error)
+
+        expect(migration.status).to eq('failed')
+        expect(migration.retries_left).to eq(0)
+        expect(migration.error_message).to include(error.message)
+      end
     end
   end
 end
