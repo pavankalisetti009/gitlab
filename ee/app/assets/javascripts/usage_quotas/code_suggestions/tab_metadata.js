@@ -1,7 +1,7 @@
 import { s__ } from '~/locale';
 import { parseBoolean } from '~/lib/utils/common_utils';
+import { createAsyncTabContentWrapper } from '~/usage_quotas/components/async_tab_content_wrapper';
 import apolloProvider from '../shared/provider';
-import CodeSuggestionsUsage from './components/code_suggestions_usage.vue';
 
 export const parseProvideData = (el) => {
   const {
@@ -71,6 +71,13 @@ export const getCodeSuggestionsTabMetadata = ({ includeEl = false } = {}) => {
   const el = document.querySelector('#js-code-suggestions-usage-app');
 
   if (!el) return false;
+
+  const CodeSuggestionsUsage = () => {
+    const component = import(
+      /* webpackChunkName: 'uq_code_suggestions' */ './components/code_suggestions_usage.vue'
+    );
+    return createAsyncTabContentWrapper(component);
+  };
 
   const codeSuggestionsTabMetadata = {
     title: s__('UsageQuota|GitLab Duo'),

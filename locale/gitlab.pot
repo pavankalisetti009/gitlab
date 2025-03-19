@@ -63009,7 +63009,16 @@ msgstr ""
 msgid "UsageQuotas|Container registry storage statistics are not used to calculate the total project storage. Total project storage is calculated after namespace container deduplication, where the total of all unique containers is added to the namespace storage total."
 msgstr ""
 
+msgid "UsageQuotas|Loading Usage Quotas tab content"
+msgstr ""
+
 msgid "UsageQuotas|Namespace transfer data used"
+msgstr ""
+
+msgid "UsageQuotas|Reload the page to try again"
+msgstr ""
+
+msgid "UsageQuotas|There was an error while loading the tab contents"
 msgstr ""
 
 msgid "UsageQuota|%{linkTitle} help link"

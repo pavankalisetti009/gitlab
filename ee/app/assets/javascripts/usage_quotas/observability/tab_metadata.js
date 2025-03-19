@@ -1,5 +1,5 @@
 import { s__ } from '~/locale';
-import ObservabilityUsageQuotaApp from './components/observability_usage_quota_app.vue';
+import { createAsyncTabContentWrapper } from '~/usage_quotas/components/async_tab_content_wrapper';
 
 export const parseProvideData = (element) => {
   return element.dataset.viewModel ? JSON.parse(element.dataset.viewModel) : {};
@@ -9,6 +9,13 @@ export const getObservabilityTabMetadata = ({ includeEl = false } = {}) => {
   const el = document.querySelector('#js-observability-usage-quota-app');
 
   if (!el) return false;
+
+  const ObservabilityUsageQuotaApp = () => {
+    const component = import(
+      /* webpackChunkName: 'uq_observability' */ './components/observability_usage_quota_app.vue'
+    );
+    return createAsyncTabContentWrapper(component);
+  };
 
   const observabilityTabMetadata = {
     title: s__('UsageQuota|Observability'),
