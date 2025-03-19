@@ -1,5 +1,5 @@
 export const MOCK_REPLICABLE_CLASS = {
-  graphqlRegistryClass: 'gid://gitlab/Geo::MockRegistry',
+  graphqlRegistryClass: 'Geo::MockRegistry',
   graphqlFieldName: 'testGraphqlFieldName',
   verificationEnabled: true,
 };

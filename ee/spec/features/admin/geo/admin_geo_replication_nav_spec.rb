@@ -58,16 +58,13 @@ RSpec.describe 'admin Geo Replication Nav', :js, :geo, feature_category: :geo_re
     end
 
     it 'displays the correct breadcrumbs for the project repository details page' do
-      visit replicable_details_admin_geo_node_path(id: secondary_node, replicable_name_plural: 'project_repositories',
+      details_path = replicable_details_admin_geo_node_path(id: secondary_node,
+        replicable_name_plural: 'project_repositories',
         replicable_id: 1)
 
-      breadcrumbs = page.all(:css, '.gl-breadcrumb-list > li')
+      visit details_path
 
-      expect(breadcrumbs.length).to eq(4)
-      expect(breadcrumbs[0].text).to eq('Admin area')
-      expect(breadcrumbs[1].text).to eq('Geo Sites')
-      expect(breadcrumbs[2].text).to eq('Project Repositories')
-      expect(breadcrumbs[3].text).to eq('1')
+      expect(page_breadcrumbs.last).to eq({ text: 'Geo::ProjectRepositoryRegistry/1', href: details_path })
     end
   end
 end
