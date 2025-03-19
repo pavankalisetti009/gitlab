@@ -38,7 +38,7 @@ duo_chat:
     - llama3
 duo_chat_explain_code:
   title: Explain Code
-  release_state: BETA
+  release_state: GA
   main_feature: GitLab Duo Chat
   compatible_llms:
     - mistral
@@ -48,7 +48,7 @@ duo_chat_explain_code:
     - llama3
 duo_chat_write_tests:
   title: Write Test
-  release_state: BETA
+  release_state: GA
   main_feature: GitLab Duo Chat
   compatible_llms:
     - mistral
@@ -59,7 +59,7 @@ duo_chat_write_tests:
     - llama3
 duo_chat_refactor_code:
   title: Refactor Code
-  release_state: BETA
+  release_state: GA
   main_feature: GitLab Duo Chat
   compatible_llms:
     - mistral
@@ -70,7 +70,7 @@ duo_chat_refactor_code:
     - llama3
 duo_chat_fix_code:
   title: Fix Code
-  release_state: BETA
+  release_state: GA
   main_feature: GitLab Duo Chat
   compatible_llms:
     - mistral

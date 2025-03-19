@@ -7,14 +7,14 @@ module Ai
     STABLE_FEATURES = {
       code_generations: 0,
       code_completions: 1,
-      duo_chat: 2
-    }.freeze
-
-    FLAGGED_FEATURES = {
+      duo_chat: 2,
       duo_chat_explain_code: 3,
       duo_chat_write_tests: 4,
       duo_chat_refactor_code: 5,
-      duo_chat_fix_code: 6,
+      duo_chat_fix_code: 6
+    }.freeze
+
+    FLAGGED_FEATURES = {
       duo_chat_troubleshoot_job: 7
     }.freeze
 
