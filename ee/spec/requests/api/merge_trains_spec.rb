@@ -311,7 +311,9 @@ RSpec.describe API::MergeTrains, feature_category: :continuous_integration do
     end
 
     context 'with valid parameters' do
-      let(:params) { { sha: merge_request.diff_head_sha, squash: true, when_pipeline_succeeds: false } }
+      let(:params) do
+        { sha: merge_request.diff_head_sha, squash: true, when_pipeline_succeeds: false, auto_merge: false }
+      end
 
       it_behaves_like 'succeeds to add to merge train'
     end
@@ -323,6 +325,20 @@ RSpec.describe API::MergeTrains, feature_category: :continuous_integration do
         subject
 
         expect(response).to have_gitlab_http_status(:created)
+      end
+    end
+
+    context 'with auto_merge enabled' do
+      let(:params) { { auto_merge: true } }
+
+      context 'when pipeline is not completed' do
+        let(:pipeline_status) { :running }
+
+        it 'returns status accepted' do
+          subject
+
+          expect(response).to have_gitlab_http_status(:accepted)
+        end
       end
     end
 
