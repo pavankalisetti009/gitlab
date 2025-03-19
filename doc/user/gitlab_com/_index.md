@@ -65,14 +65,43 @@ Similarly, you can clone a project's wiki to back it up. All files
 [uploaded after August 22, 2020](../project/wiki/_index.md#create-a-new-wiki-page)
 are included when cloning.
 
-## Email confirmation
+## Email
 
-GitLab.com has the:
+Email configuration settings, IP addressees, and aliases.
+
+### Confirmation settings
+
+GitLab.com uses these email confirmation settings:
 
 - [`email_confirmation_setting`](../../administration/settings/sign_up_restrictions.md#confirm-user-email)
-  setting set to **Hard**.
+  is set to **Hard**.
 - [`unconfirmed_users_delete_after_days`](../../administration/moderate_users.md#automatically-delete-unconfirmed-users)
-  setting set to three days.
+  is set to three days.
+
+### IP addresses
+
+GitLab.com uses [Mailgun](https://www.mailgun.com/) to send emails from the `mg.gitlab.com` domain,
+and has its own dedicated IP addresses:
+
+- `23.253.183.236`
+- `69.72.35.190`
+- `69.72.44.107`
+- `159.135.226.146`
+- `161.38.202.219`
+- `192.237.158.143`
+- `192.237.159.239`
+- `198.61.254.136`
+- `198.61.254.160`
+- `209.61.151.122`
+
+The IP addresses for `mg.gitlab.com` are subject to change at any time.
+
+### Service Desk alias
+
+GitLab.com has a mailbox configured for Service Desk with the email address:
+`contact-project+%{key}@incoming.gitlab.com`. To use this mailbox, configure the
+[custom suffix](../project/service_desk/configure.md#configure-a-suffix-for-service-desk-alias-email) in project
+settings.
 
 ## GitLab CI/CD
 
@@ -421,31 +450,6 @@ Most GitLab.com instance runners are deployed into Google Cloud in `us-east1`, e
 You can configure any IP-based firewall by looking up
 [IP address ranges or CIDR blocks for GCP](https://cloud.google.com/compute/docs/faq#find_ip_range).
 macOS runners are hosted on AWS in the `us-east-1` region, with runner managers hosted on Google Cloud. To configure IP-based firewall, you must allow both [AWS IP address ranges](https://docs.aws.amazon.com/vpc/latest/userguide/aws-ip-ranges.html) and [Google Cloud](https://cloud.google.com/compute/docs/faq#find_ip_range).
-
-## Mail configuration
-
-GitLab.com sends emails from the `mg.gitlab.com` domain by using [Mailgun](https://www.mailgun.com/),
-and has its own dedicated IP addresses:
-
-- `23.253.183.236`
-- `69.72.35.190`
-- `69.72.44.107`
-- `159.135.226.146`
-- `161.38.202.219`
-- `192.237.158.143`
-- `192.237.159.239`
-- `198.61.254.136`
-- `198.61.254.160`
-- `209.61.151.122`
-
-The IP addresses for `mg.gitlab.com` are subject to change at any time.
-
-### Service Desk alias email address
-
-On GitLab.com, there's a mailbox configured for Service Desk with the email address:
-`contact-project+%{key}@incoming.gitlab.com`. To use this mailbox, configure the
-[custom suffix](../project/service_desk/configure.md#configure-a-suffix-for-service-desk-alias-email) in project
-settings.
 
 ## Maximum number of reviewers and assignees
 
