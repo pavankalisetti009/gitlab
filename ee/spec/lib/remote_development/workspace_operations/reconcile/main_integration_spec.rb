@@ -287,7 +287,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
             egress_ip_rules: egress_ip_rules,
             max_resources_per_workspace: max_resources_per_workspace,
             default_resources_per_workspace_container: default_resources_per_workspace_container,
-            image_pull_secrets: workspace.workspaces_agent_config&.image_pull_secrets
+            image_pull_secrets: workspace.workspaces_agent_config.image_pull_secrets
           )
         end
 
@@ -676,7 +676,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
           egress_ip_rules: egress_ip_rules,
           max_resources_per_workspace: max_resources_per_workspace,
           default_resources_per_workspace_container: default_resources_per_workspace_container,
-          image_pull_secrets: unprovisioned_workspace.workspaces_agent_config&.image_pull_secrets
+          image_pull_secrets: unprovisioned_workspace.workspaces_agent_config.image_pull_secrets
         )
       end
 
