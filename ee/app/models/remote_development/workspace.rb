@@ -146,6 +146,16 @@ module RemoteDevelopment
       false
     end
 
+    # @return [Boolean]
+    def desired_state_running?
+      desired_state == RUNNING
+    end
+
+    # @return [Boolean]
+    def desired_state_terminated?
+      desired_state == TERMINATED
+    end
+
     # @return [String]
     def url
       URI::HTTPS.build(host: "#{url_prefix}.#{workspaces_agent_config.dns_zone}",

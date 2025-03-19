@@ -58,14 +58,11 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
   # NOTE: We are setting `expected_include_all_resources` into our fake `generated_config_to_apply` which is mocked to
   #       be returned from DesiredConfigGenerator. This allows us to perform assertions on the expected passed/returned
   #       value of `include_all_resources` using simple `let` statements, and avoid having to write complex mocks.
-  # NOTE: The generated_config_to_apply can include string keys because users can provide labels and annotations in
-  #       their agent configuration which we use in the DesiredConfigGenerator which is being mocked here.
   let(:generated_config_to_apply) do
     [
       {
         include_all_resources: expected_include_all_resources,
-        some_other_key: 1,
-        "some_other_string_key" => 2
+        some_other_key: 1
       }
     ]
   end

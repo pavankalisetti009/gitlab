@@ -50,7 +50,11 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
       default_runtime_class: "standard",
       default_resources_per_workspace_container:
         { requests: { cpu: "0.5", memory: "512Mi" }, limits: { cpu: "1", memory: "1Gi" } },
-      max_resources_per_workspace: { requests: { cpu: "1", memory: "1Gi" }, limits: { cpu: "2", memory: "4Gi" } },
+      # NOTE: This input version of max_resources_per_workspace is deeply UNSORTED, to verify the legacy behavior
+      # that the "workspaces.gitlab.com/max-resources-per-workspace-sha256" annotation should be calculated
+      # from the OpenSSL::Digest::SHA256.hexdigest of the #to_s of the SHALLOW sorted version of the hash. In other
+      # words, the hash is calculated with limits and requests in alphabetical order, but not memory and cpu.
+      max_resources_per_workspace: { requests: { memory: "1Gi", cpu: "1" }, limits: { memory: "4Gi", cpu: "2" } },
       annotations: { environment: "production", team: "engineering" },
       labels: { app: "workspace", tier: "development" },
       image_pull_secrets: [image_pull_secret],
@@ -74,7 +78,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
       workspaces_agent_config: workspaces_agent_config,
       name: "workspace-991-990-fedcba",
       namespace: "gl-rd-ns-991-990-fedcba",
-      desired_state: desired_state,
+      desired_state_running?: desired_state_running,
+      desired_state_terminated?: desired_state_terminated,
       actual_state: RemoteDevelopment::WorkspaceOperations::States::RUNNING,
       workspace_variables: workspace_variables,
       processed_devfile: input_processed_devfile_yaml
@@ -120,7 +125,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
   end
 
   context "when desired_state is terminated" do
-    let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::TERMINATED }
+    let(:desired_state_running) { false }
+    let(:desired_state_terminated) { true }
     let(:include_all_resources) { true }
     let(:golden_master_desired_config) { golden_master_desired_config_with_desired_state_terminated }
 
@@ -128,7 +134,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
   end
 
   context "when include_all_resources is true" do
-    let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
+    let(:desired_state_running) { true }
+    let(:desired_state_terminated) { false }
     let(:include_all_resources) { true }
     let(:golden_master_desired_config) { golden_master_desired_config_with_include_all_resources_true }
 
@@ -136,7 +143,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
   end
 
   context "when include_all_resources is false" do
-    let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
+    let(:desired_state_running) { true }
+    let(:desired_state_terminated) { false }
     let(:include_all_resources) { false }
     let(:golden_master_desired_config) { golden_master_desired_config_with_include_all_resources_false }
 
@@ -223,7 +231,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
             team: "engineering",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
           },
           labels: {
             app: "workspace",
@@ -244,7 +252,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
             team: "engineering",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
           },
           labels: {
             app: "workspace",
@@ -271,7 +279,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
             team: "engineering",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
           },
           labels: {
             app: "workspace",
@@ -293,7 +301,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
           },
           creationTimestamp: nil,
           labels: {
@@ -324,7 +332,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
                 "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
                 "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
                 "workspaces.gitlab.com/id": "993",
-                "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+                "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
               },
               creationTimestamp: nil,
               labels: {
@@ -506,7 +514,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
           },
           creationTimestamp: nil,
           labels: {
@@ -545,7 +553,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
           },
           creationTimestamp: nil,
           labels: {
@@ -584,7 +592,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
           },
           labels: {
             app: "workspace",
@@ -605,7 +613,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
           },
           labels: {
             app: "workspace",
@@ -687,7 +695,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
             team: "engineering",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
           },
           labels: {
             app: "workspace",
@@ -709,7 +717,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
           },
           labels: {
             app: "workspace",
@@ -741,7 +749,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-secrets-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
           },
           labels: {
             app: "workspace",
@@ -766,7 +774,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-secrets-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
           },
           labels: {
             app: "workspace",
@@ -792,7 +800,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
             team: "engineering",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
           },
           labels: {
             app: "workspace",
@@ -814,7 +822,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
           },
           creationTimestamp: nil,
           labels: {
@@ -845,7 +853,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
                 "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
                 "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
                 "workspaces.gitlab.com/id": "993",
-                "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+                "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
               },
               creationTimestamp: nil,
               labels: {
@@ -1027,7 +1035,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
           },
           creationTimestamp: nil,
           labels: {
@@ -1066,7 +1074,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
           },
           creationTimestamp: nil,
           labels: {
@@ -1105,7 +1113,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
           },
           labels: {
             app: "workspace",
@@ -1126,7 +1134,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
             "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
             "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
             "workspaces.gitlab.com/id": "993",
-            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "06879e20c353a4d871fb360635f6a87483987d44953ac6384af0451e8faa47ca"
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
           },
           labels: {
             app: "workspace",
