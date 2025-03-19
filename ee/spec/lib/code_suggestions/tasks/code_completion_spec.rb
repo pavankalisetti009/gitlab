@@ -44,9 +44,45 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
     )
   end
 
+  let(:anthropic_model_name) { 'claude-3-5-sonnet-20240620' }
+
+  let(:anthropic_request_body) do
+    {
+      'model_name' => anthropic_model_name,
+      'model_provider' => 'anthropic',
+      'current_file' => {
+        'file_name' => 'test.py',
+        'content_above_cursor' => 'sor',
+        'content_below_cursor' => 'som'
+      },
+      'telemetry' => [{ 'model_engine' => 'anthropic' }],
+      'prompt_version' => 3,
+      'prompt' => [
+        {
+          "content" => "You are a code completion tool that performs Fill-in-the-middle. Your task is to " \
+            "complete the Python code between the given prefix and suffix inside the file 'test.py'.\nYour " \
+            "task is to provide valid code without any additional explanations, comments, or feedback." \
+            "\n\nImportant:\n- You MUST NOT output any additional human text or explanation.\n- You MUST " \
+            "output code exclusively.\n- The suggested code MUST work by simply concatenating to the provided " \
+            "code.\n- You MUST not include any sort of markdown markup.\n- You MUST NOT repeat or modify any " \
+            "part of the prefix or suffix.\n- You MUST only provide the missing code that fits between " \
+            "them.\n\nIf you are not able to complete code based on the given instructions, return an " \
+            "empty result.",
+          "role" => "system"
+        },
+        {
+          "content" => "<SUFFIX>\nsome content_above_cursor\n</SUFFIX>\n" \
+            "<PREFIX>\nsome content_below_cursor\n</PREFIX>",
+          "role" => "user"
+        }
+      ]
+    }
+  end
+
   before do
     stub_const('CodeSuggestions::Tasks::Base::AI_GATEWAY_CONTENT_SIZE', 3)
     stub_feature_flags(incident_fail_over_completion_provider: false)
+    stub_feature_flags(use_claude_code_completion: false)
   end
 
   describe 'saas failover model' do
@@ -55,39 +91,6 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
     end
 
     let(:model_engine) { :anthropic }
-
-    let(:anthropic_request_body) do
-      {
-        'model_name' => 'claude-3-5-sonnet-20240620',
-        'model_provider' => 'anthropic',
-        'current_file' => {
-          'file_name' => 'test.py',
-          'content_above_cursor' => 'sor',
-          'content_below_cursor' => 'som'
-        },
-        'telemetry' => [{ 'model_engine' => 'anthropic' }],
-        'prompt_version' => 3,
-        'prompt' => [
-          {
-            "content" => "You are a code completion tool that performs Fill-in-the-middle. Your task is to " \
-              "complete the Python code between the given prefix and suffix inside the file 'test.py'.\nYour " \
-              "task is to provide valid code without any additional explanations, comments, or feedback." \
-              "\n\nImportant:\n- You MUST NOT output any additional human text or explanation.\n- You MUST " \
-              "output code exclusively.\n- The suggested code MUST work by simply concatenating to the provided " \
-              "code.\n- You MUST not include any sort of markdown markup.\n- You MUST NOT repeat or modify any " \
-              "part of the prefix or suffix.\n- You MUST only provide the missing code that fits between " \
-              "them.\n\nIf you are not able to complete code based on the given instructions, return an " \
-              "empty result.",
-            "role" => "system"
-          },
-          {
-            "content" => "<SUFFIX>\nsome content_above_cursor\n</SUFFIX>\n" \
-              "<PREFIX>\nsome content_below_cursor\n</PREFIX>",
-            "role" => "user"
-          }
-        ]
-      }
-    end
 
     it_behaves_like 'code suggestion task' do
       let(:expected_body) { anthropic_request_body }
@@ -206,6 +209,23 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
 
             it_behaves_like 'code suggestion task' do
               let(:expected_body) { request_body_for_vertrex_codestral }
+            end
+          end
+
+          context "when the group uses claude for code completion" do
+            let(:model_engine) { :anthropic }
+
+            before do
+              stub_feature_flags(fireworks_qwen_code_completion: false)
+              stub_feature_flags(code_completion_model_opt_out_from_fireworks_qwen: false)
+              stub_feature_flags(use_claude_code_completion: group2)
+              stub_feature_flags(disable_code_gecko_default: false)
+            end
+
+            it_behaves_like 'code suggestion task' do
+              let(:anthropic_model_name) { 'claude-3-5-haiku-20241022' }
+              let(:expected_body) { anthropic_request_body }
+              let(:expected_feature_name) { :code_suggestions }
             end
           end
         end

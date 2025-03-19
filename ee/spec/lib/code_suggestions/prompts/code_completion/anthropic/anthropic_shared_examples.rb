@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CodeSuggestions::Prompts::CodeCompletion::Anthropic, feature_category: :code_suggestions do
+RSpec.shared_examples 'anthropic code completion' do
   let_it_be(:current_user) { create(:user) }
 
   let(:content_above_cursor) do
@@ -41,7 +41,7 @@ RSpec.describe CodeSuggestions::Prompts::CodeCompletion::Anthropic, feature_cate
     it 'returns expected request params' do
       request_params = {
         model_provider: "anthropic",
-        model_name: "claude-3-5-sonnet-20240620",
+        model_name: model_name,
         prompt_version: 3,
         prompt: [
           {

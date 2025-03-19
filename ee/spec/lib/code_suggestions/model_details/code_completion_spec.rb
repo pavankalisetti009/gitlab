@@ -6,9 +6,25 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
   include GitlabSubscriptions::SaasSetAssignmentHelpers
 
   let_it_be(:user) { create(:user) }
+  let_it_be(:group1) do
+    create(:group).tap do |g|
+      setup_addon_purchase_and_seat_assignment(user, g, :code_suggestions)
+    end
+  end
+
+  let_it_be(:group2) do
+    create(:group).tap do |g|
+      setup_addon_purchase_and_seat_assignment(user, g, :duo_enterprise)
+    end
+  end
+
   let(:completions_model_details) { described_class.new(current_user: user) }
 
   shared_examples 'selects the correct model' do
+    before do
+      stub_feature_flags(use_claude_code_completion: false)
+    end
+
     context 'when Fireworks/Qwen beta FF is enabled' do
       before do
         stub_feature_flags(fireworks_qwen_code_completion: true)
@@ -48,18 +64,6 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
           allow(Gitlab).to receive(:org_or_com?).and_return(true)
         end
 
-        let_it_be(:group1) do
-          create(:group).tap do |g|
-            setup_addon_purchase_and_seat_assignment(user, g, :code_suggestions)
-          end
-        end
-
-        let_it_be(:group2) do
-          create(:group).tap do |g|
-            setup_addon_purchase_and_seat_assignment(user, g, :duo_enterprise)
-          end
-        end
-
         it 'returns the fireworks/qwen model' do
           expect(actual_result).to eq(expected_fireworks_result)
         end
@@ -81,15 +85,15 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
               expect(actual_result).to eq(expected_codestral_result)
             end
           end
-        end
 
-        describe 'executed queries' do
-          it 'executes the expected number of queries' do
-            # We are only expecting 3 queries:
-            # 1 - for ModelDetails::Completions#feature_setting
-            # 2 - for current_user#duo_available_namespace_ids in ModelDetails::Completions#user_duo_groups
-            # 3 - for Group.by_id(<group ids>) in ModelDetails::Completions#user_duo_groups
-            expect { actual_result }.not_to exceed_query_limit(3)
+          describe 'executed queries for user_duo_groups' do
+            it 'executes the expected number of queries' do
+              # We are only expecting 3 queries:
+              # 1 - for ModelDetails::Completions#feature_setting
+              # 2 - for current_user#duo_available_namespace_ids in ModelDetails::Completions#user_duo_groups
+              # 3 - for Group.by_id(<group ids>) in ModelDetails::Completions#user_duo_groups
+              expect { actual_result }.not_to exceed_query_limit(3)
+            end
           end
         end
       end
@@ -103,6 +107,16 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
 
       it 'returns the default model' do
         expect(actual_result).to eq(expected_default_result)
+      end
+
+      context "when one of user's root groups is using claude code completion model" do
+        before do
+          stub_feature_flags(use_claude_code_completion: group2)
+        end
+
+        it 'returns the claude model' do
+          expect(actual_result).to eq(expected_claude_result)
+        end
       end
     end
 
@@ -139,6 +153,8 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
 
       let(:expected_default_result) { {} }
 
+      let(:expected_claude_result) { {} }
+
       let(:expected_self_hosted_model_result) { {} }
     end
   end
@@ -159,7 +175,33 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
         CodeSuggestions::Prompts::CodeCompletion::VertexAi
       end
 
+      let(:expected_claude_result) do
+        CodeSuggestions::Prompts::CodeCompletion::Anthropic::ClaudeHaiku
+      end
+
       let(:expected_self_hosted_model_result) { nil }
+    end
+  end
+
+  describe '#any_user_groups_claude_code_completion?' do
+    before do
+      stub_feature_flags(use_claude_code_completion: false)
+    end
+
+    context "when none of the user's root groups is using claude code completion model" do
+      it 'returns false' do
+        expect(completions_model_details.any_user_groups_claude_code_completion?).to be_falsey
+      end
+    end
+
+    context "when one of user's root groups is using claude code completion model" do
+      before do
+        stub_feature_flags(use_claude_code_completion: group2)
+      end
+
+      it 'returns true' do
+        expect(completions_model_details.any_user_groups_claude_code_completion?).to be_truthy
+      end
     end
   end
 end
