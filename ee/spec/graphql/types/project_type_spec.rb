@@ -37,7 +37,7 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
       merge_trains pending_member_approvals observability_logs_links observability_metrics_links
       observability_traces_links dependencies security_exclusions security_exclusion
       compliance_standards_adherence target_branch_rules duo_workflow_status_check component_usages
-      vulnerability_archives allowed_statuses component_versions
+      vulnerability_archives component_versions
     ]
 
     expect(described_class).to include_graphql_fields(*expected_fields)

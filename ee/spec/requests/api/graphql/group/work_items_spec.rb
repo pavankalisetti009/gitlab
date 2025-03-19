@@ -103,7 +103,7 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
     # that implement the widget interface. Only `type` for the widgets field.
     context 'when querying the widget interface' do
       before do
-        stub_licensed_features(epics: true, subepics: true)
+        stub_licensed_features(epics: true, subepics: true, work_item_status: true)
       end
 
       let(:fields) do
@@ -152,6 +152,15 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
                   }
                 }
               }
+              ... on WorkItemWidgetStatus {
+                status {
+                  id
+                  name
+                  color
+                  iconName
+                  position
+                }
+              }
             }
           }
         GRAPHQL
@@ -182,6 +191,70 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
 
           expect(upvotes).to eq(3)
           expect(downvotes).to eq(1)
+        end
+      end
+
+      context 'when querying for WorkItemWidgetStatus' do
+        let_it_be(:work_item) { create(:work_item, :task, namespace: group) }
+        let(:work_items) { graphql_data_at(:group, :workItems, :nodes) }
+
+        context 'when feature is licensed' do
+          context 'with current statuses' do
+            let_it_be(:current_status) { create(:work_item_current_status, work_item: work_item) }
+
+            it 'returns status data' do
+              post_graphql(query, current_user: current_user)
+
+              expect(work_items).to include(
+                'widgets' => include(
+                  hash_including(
+                    'type' => 'STATUS',
+                    'status' => {
+                      'id' => 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/1',
+                      'name' => 'To do',
+                      'iconName' => 'status-waiting',
+                      'color' => "#737278",
+                      'position' => 0
+                    }
+                  )
+                )
+              )
+            end
+          end
+
+          context 'without current statuses' do
+            it 'does not return status data' do
+              post_graphql(query, current_user: current_user)
+
+              expect(work_items).to include(
+                'widgets' => include(
+                  hash_including(
+                    'type' => 'STATUS',
+                    'status' => nil
+                  )
+                )
+              )
+            end
+          end
+        end
+
+        context 'when feature is unlicensed' do
+          before do
+            stub_licensed_features(epics: true, subepics: true, work_item_status: false)
+
+            post_graphql(query, current_user: current_user)
+          end
+
+          it 'does not return status data' do
+            expect(work_items).to include(
+              'widgets' => include(
+                hash_including(
+                  'type' => 'STATUS',
+                  'status' => nil
+                )
+              )
+            )
+          end
         end
       end
     end

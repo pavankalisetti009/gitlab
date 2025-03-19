@@ -24,7 +24,7 @@ RSpec.shared_examples 'graphql work item type list request spec EE' do
   describe 'allowed statuses' do
     include_context 'with work item types request context EE'
 
-    it 'returns the allowed custom statuses' do
+    it 'returns the allowed statuses for supported namespace and feature' do
       stub_licensed_features(work_item_status: true)
       post_graphql(query, current_user: current_user)
 
@@ -35,9 +35,12 @@ RSpec.shared_examples 'graphql work item type list request spec EE' do
 
       expect(status_widgets).to be_present
       status_widgets.each do |widget|
-        expect(widget['allowedStatuses']).to be_present
-        expect(widget['allowedStatuses']['nodes']).to all(include('id', 'name', 'iconName', 'color',
-          'position'))
+        if parent&.resource_parent&.root_ancestor&.try(:work_item_status_feature_available?)
+          expect(widget['allowedStatuses']).to be_present
+          expect(widget['allowedStatuses']).to all(include('id', 'name', 'iconName', 'color', 'position'))
+        else
+          expect(widget['allowedStatuses']).to be_empty
+        end
       end
     end
   end

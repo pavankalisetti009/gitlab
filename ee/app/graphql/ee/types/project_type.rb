@@ -597,10 +597,6 @@ module EE
         field :target_branch_rules, ::Types::Projects::TargetBranchRuleType.connection_type,
           null: true,
           description: 'Target branch rules of the project.'
-
-        field :allowed_statuses, ::Types::WorkItems::Widgets::StatusType.connection_type,
-          null: true, description: 'Allowed statuses for the project.',
-          experiment: { milestone: '17.8' }, resolver: ::Resolvers::WorkItems::Widgets::StatusResolver
       end
 
       def tracking_key

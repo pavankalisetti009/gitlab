@@ -12,30 +12,11 @@ module Types
 
         implements ::Types::WorkItems::WidgetInterface
 
-        field :id, Types::GlobalIDType,
+        field :status, Types::WorkItems::StatusType,
           null: true,
-          experiment: { milestone: '17.8' },
-          description: 'ID of the status.'
-
-        field :name, GraphQL::Types::String,
-          null: true,
-          experiment: { milestone: '17.8' },
-          description: 'Name of the status.'
-
-        field :icon_name, GraphQL::Types::String,
-          null: true,
-          experiment: { milestone: '17.8' },
-          description: 'Icon name of the status.'
-
-        field :color, GraphQL::Types::String,
-          null: true,
-          experiment: { milestone: '17.10' },
-          description: 'Color of the status.'
-
-        field :position, GraphQL::Types::Int,
-          null: true,
-          experiment: { milestone: '17.10' },
-          description: 'Position of the status within its category.'
+          experiment: { milestone: '17.11' },
+          description: 'Status assigned to work item.',
+          resolver: Resolvers::WorkItems::Statuses::BulkStatusResolver
       end
       # rubocop:enable Graphql/AuthorizeTypes
     end

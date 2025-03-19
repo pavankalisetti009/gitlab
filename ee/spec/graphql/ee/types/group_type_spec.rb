@@ -49,7 +49,6 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
   it { expect(described_class).to have_graphql_field(:dependencies) }
   it { expect(described_class).to have_graphql_field(:components) }
   it { expect(described_class).to have_graphql_field(:custom_fields) }
-  it { expect(described_class).to have_graphql_field(:allowed_statuses) }
   it { expect(described_class).to have_graphql_field(:project_compliance_requirements_status) }
 
   describe 'components' do

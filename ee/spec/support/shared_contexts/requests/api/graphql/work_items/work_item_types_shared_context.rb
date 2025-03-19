@@ -31,7 +31,11 @@ RSpec.shared_context 'with work item types request context EE' do
         }
         ... on WorkItemWidgetDefinitionStatus {
           allowedStatuses {
-            nodes { id name iconName color position }
+            id
+            name
+            iconName
+            color
+            position
           }
         }
       }
@@ -80,47 +84,13 @@ RSpec.shared_context 'with work item types request context EE' do
 
   def status_widget_attributes(_work_item_type, base_attributes, resource_parent)
     unless resource_parent&.root_ancestor&.try(:work_item_status_feature_available?)
-      return base_attributes.merge({ 'allowedStatuses' => { 'nodes' => [] } })
+      return base_attributes.merge({ 'allowedStatuses' => [] })
     end
 
-    statuses = [
-      {
-        'id' => 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/1',
-        'name' => 'To do',
-        'iconName' => 'status-waiting',
-        'color' => '#535158',
-        'position' => 0
-      },
-      {
-        'id' => 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/2',
-        'name' => 'In progress',
-        'iconName' => 'status-running',
-        'color' => '#0b5cad',
-        'position' => 0
-      },
-      {
-        'id' => 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/3',
-        'name' => 'Done',
-        'iconName' => 'status-success',
-        'color' => '#23663b',
-        'position' => 0
-      },
-      {
-        'id' => 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/4',
-        'name' => "Won't do",
-        'iconName' => 'status-cancelled',
-        'color' => '#ae1901',
-        'position' => 0
-      },
-      {
-        'id' => 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/5',
-        'name' => 'Duplicate',
-        'iconName' => 'status-cancelled',
-        'color' => '#ae1901',
-        'position' => 10
-      }
-    ]
+    statuses = WorkItems::Statuses::SystemDefined::Status.all.map do |status|
+      status.attributes.symbolize_keys.merge(iconName: status.icon_name)
+    end
 
-    base_attributes.merge({ 'allowedStatuses' => { 'nodes' => statuses } })
+    base_attributes.merge({ 'allowedStatuses' => statuses })
   end
 end
