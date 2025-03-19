@@ -373,7 +373,6 @@ RSpec.describe Gitlab::UsageData, feature_category: :service_ping do
         create(:group_member, ldap: true, user: user)
         create(:cycle_analytics_stage)
         create(:compliance_framework_project_setting)
-        create(:compliance_framework)
         create(:compliance_framework, :with_pipeline)
       end
 
@@ -382,7 +381,6 @@ RSpec.describe Gitlab::UsageData, feature_category: :service_ping do
         ldap_users: 2,
         value_stream_management_customized_group_stages: 2,
         projects_with_compliance_framework: 2,
-        custom_compliance_frameworks: 6,
         compliance_frameworks_with_pipeline: 2,
         ldap_servers: 2,
         ldap_group_sync_enabled: true,
@@ -394,7 +392,6 @@ RSpec.describe Gitlab::UsageData, feature_category: :service_ping do
         ldap_users: 1,
         value_stream_management_customized_group_stages: 2,
         projects_with_compliance_framework: 2,
-        custom_compliance_frameworks: 3,
         compliance_frameworks_with_pipeline: 1,
         ldap_servers: 2,
         ldap_group_sync_enabled: true,
