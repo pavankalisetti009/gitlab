@@ -109,14 +109,17 @@ module Types
         experiment: { milestone: '17.9' },
         description: 'User defined variables associated with the workspace.', method: :user_provided_workspace_variables
 
+      # @return [String]
       def project_id
         "gid://gitlab/Project/#{object.project_id}"
       end
 
+      # @return [String]
       def editor
         'webide'
       end
 
+      # @return [Integer]
       def max_hours_before_termination
         ::RemoteDevelopment::WorkspaceOperations::MaxHoursBeforeTermination::MAX_HOURS_BEFORE_TERMINATION
       end

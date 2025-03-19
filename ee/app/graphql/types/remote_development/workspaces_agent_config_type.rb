@@ -80,10 +80,12 @@ module Types
       field :updated_at, Types::TimeType, null: false,
         description: 'Timestamp of the last update to any mutable workspaces agent config property.'
 
+      # @return [Integer]
       def max_hours_before_termination_limit
         120
       end
 
+      # @return [Integer]
       def default_max_hours_before_termination
         24
       end

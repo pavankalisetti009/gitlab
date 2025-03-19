@@ -11,8 +11,11 @@ module RemoteDevelopment
 
     private
 
+    # @return [void]
     def set_project_id
       self.project_id = item.project_id
+
+      nil
     end
   end
 end
