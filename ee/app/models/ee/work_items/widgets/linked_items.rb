@@ -13,6 +13,17 @@ module EE
           def quick_action_commands
             super + %i[blocks blocked_by]
           end
+
+          def sorting_keys
+            {
+              blocking_items_asc: {
+                description: 'Blocking items count by ascending order.'
+              },
+              blocking_items_desc: {
+                description: 'Blocking items count by descending order.'
+              }
+            }
+          end
         end
       end
     end

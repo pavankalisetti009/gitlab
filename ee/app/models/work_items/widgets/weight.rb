@@ -5,12 +5,27 @@ module WorkItems
     class Weight < Base
       include Gitlab::Utils::StrongMemoize
 
-      def self.quick_action_commands
-        [:weight, :clear_weight]
-      end
+      class << self
+        def quick_action_commands
+          [:weight, :clear_weight]
+        end
 
-      def self.quick_action_params
-        [:weight]
+        def quick_action_params
+          [:weight]
+        end
+
+        def sorting_keys
+          {
+            weight_asc: {
+              description: 'Weight by ascending order.',
+              experiment: { milestone: '17.11' }
+            },
+            weight_desc: {
+              description: 'Weight by descending order.',
+              experiment: { milestone: '17.11' }
+            }
+          }
+        end
       end
 
       def weight
