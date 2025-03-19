@@ -65328,6 +65328,9 @@ msgstr ""
 msgid "Vulnerability|Scanner:"
 msgstr ""
 
+msgid "Vulnerability|Scanner: %{scannerName}"
+msgstr ""
+
 msgid "Vulnerability|Search or filter vulnerabilities..."
 msgstr ""
 
