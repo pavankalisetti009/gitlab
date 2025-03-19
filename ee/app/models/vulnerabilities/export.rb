@@ -5,6 +5,7 @@ module Vulnerabilities
     include Gitlab::Utils::StrongMemoize
     include FileStoreMounter
     include SafelyChangeColumnDefault
+    include EachBatch
 
     columns_changing_default :organization_id
 
@@ -32,6 +33,8 @@ module Vulnerabilities
     validates :format, presence: true
     validates :file, presence: true, if: :finished?
     validate :only_one_exportable
+
+    scope :expired, -> { where(expires_at: ..Time.zone.now) }
 
     state_machine :status, initial: :created do
       event :start do

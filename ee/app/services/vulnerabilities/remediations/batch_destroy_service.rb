@@ -14,7 +14,7 @@ module Vulnerabilities
         raise argument_error unless remediations.is_a?(ActiveRecord::Relation)
 
         remediations
-          .tap { |remediations| destroy_uploads!(remediations) }
+          .tap { |remediations| Upload.destroy_for_associations!(remediations) }
           .then(&:delete_all)
           .then { |deleted_count| success_response(deleted_count) }
       end
@@ -25,18 +25,6 @@ module Vulnerabilities
 
       def argument_error
         ArgumentError.new('remediations must be of type ActiveRecord::Relation')
-      end
-
-      def destroy_uploads!(remediations)
-        # rubocop: disable CodeReuse/ActiveRecord -- couldn't find a Finder to use
-        Upload.where(
-          model_type: Vulnerabilities::Remediation,
-          model_id: remediations.pluck_primary_key,
-          uploader: AttachmentUploader
-        ).then { |uploads| [uploads, uploads.begin_fast_destroy] }
-          .tap { |uploads, _| uploads.delete_all }
-          .tap { |_, files| Upload.finalize_fast_destroy(files) }
-        # rubocop: enable CodeReuse/ActiveRecord
       end
 
       def success_response(deleted_count = 0)

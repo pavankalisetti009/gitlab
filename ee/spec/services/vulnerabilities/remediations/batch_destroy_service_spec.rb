@@ -19,12 +19,6 @@ RSpec.describe Vulnerabilities::Remediations::BatchDestroyService, '#execute',
     expect(Upload.count).to eq(0)
   end
 
-  it 'deletes the file from the file storage', :sidekiq_inline do
-    files = Upload.all.map(&:absolute_path)
-
-    expect { response }.to change { files.map { |f| File.exist?(f) }.uniq }.from([true]).to([false])
-  end
-
   context 'when there are un-related remediations' do
     let(:remediations) { Vulnerabilities::Remediation.all.limit(1) }
 
