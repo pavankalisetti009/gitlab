@@ -22,7 +22,7 @@ RSpec.describe ::WebIde::Settings, feature_category: :web_ide do # rubocop:disab
     )
     stub_licensed_features(disable_extensions_marketplace_for_enterprise_users: true)
     stub_application_setting(vscode_extension_marketplace: { enabled: true, preset: 'open_vsx' })
-    user.update!(extensions_marketplace_enabled: true)
+    user.update!(extensions_marketplace_opt_in_status: "enabled")
   end
 
   describe "default - enterprise group has extensions marketplace disabled" do

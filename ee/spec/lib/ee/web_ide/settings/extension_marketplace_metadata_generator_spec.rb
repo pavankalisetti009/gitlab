@@ -5,6 +5,7 @@ require "fast_spec_helper"
 RSpec.describe WebIde::Settings::ExtensionMarketplaceMetadataGenerator, feature_category: :web_ide do
   using RSpec::Parameterized::TableSyntax
 
+  let(:marketplace_home_url) { "https://example.com" }
   let(:user_class) do
     stub_const(
       "User",
@@ -26,7 +27,9 @@ RSpec.describe WebIde::Settings::ExtensionMarketplaceMetadataGenerator, feature_
         user: user,
         vscode_extension_marketplace_feature_flag_enabled: true
       },
-      settings: {}
+      settings: {
+        vscode_extension_marketplace_home_url: marketplace_home_url
+      }
     }
   end
 
@@ -50,7 +53,8 @@ RSpec.describe WebIde::Settings::ExtensionMarketplaceMetadataGenerator, feature_
       allow(user).to receive_messages(
         enterprise_user?: !!enterprise_group,
         enterprise_group: enterprise_group,
-        extensions_marketplace_opt_in_status: :unset
+        extensions_marketplace_opt_in_status: 'unset',
+        extensions_marketplace_opt_in_url: marketplace_home_url
       )
       allow(group).to receive(:enterprise_users_extensions_marketplace_enabled?).and_return(enterprise_group_enabled)
 
