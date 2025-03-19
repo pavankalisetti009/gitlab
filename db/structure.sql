@@ -21456,6 +21456,7 @@ CREATE TABLE protected_environment_deploy_access_levels (
     group_inheritance_type smallint DEFAULT 0 NOT NULL,
     protected_environment_project_id bigint,
     protected_environment_group_id bigint,
+    CONSTRAINT check_cee712b465 CHECK ((num_nonnulls(protected_environment_group_id, protected_environment_project_id) = 1)),
     CONSTRAINT check_deploy_access_levels_user_group_access_level_any_not_null CHECK ((num_nonnulls(user_id, group_id, access_level) = 1))
 );
 
