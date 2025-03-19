@@ -10,8 +10,8 @@ RSpec.describe Groups::UsageQuotasController, feature_category: :consumables_cos
     sign_in(user)
   end
 
-  describe 'GET #index' do
-    subject(:request) { get :index, params: { group_id: group } }
+  describe 'GET #root' do
+    subject(:request) { get :root, params: { group_id: group } }
 
     context 'when user has read_usage_quotas permission' do
       before do
@@ -25,7 +25,7 @@ RSpec.describe Groups::UsageQuotasController, feature_category: :consumables_cos
       it 'renders index with 200 status code' do
         request
 
-        expect(response).to render_template('groups/usage_quotas/index')
+        expect(response).to render_template('groups/usage_quotas/root')
         expect(response).to have_gitlab_http_status(:ok)
       end
     end

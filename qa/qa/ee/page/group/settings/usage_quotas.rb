@@ -14,7 +14,7 @@ module QA
               element 'namespace-usage-total-content'
             end
 
-            view 'app/views/groups/usage_quotas/index.html.haml' do
+            view 'app/views/groups/usage_quotas/root.html.haml' do
               element 'group-usage-message-content'
             end
 
