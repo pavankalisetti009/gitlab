@@ -78,7 +78,12 @@ module Gitlab
 
       def valid?
         parsed_data
-        validate_users
+
+        if project && Feature.enabled?(:accessible_code_owners_validation, project)
+          OwnerValidation::Process.new(project, self).execute
+        else
+          validate_users
+        end
 
         errors.none?
       end

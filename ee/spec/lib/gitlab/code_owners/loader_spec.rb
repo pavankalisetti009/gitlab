@@ -294,12 +294,18 @@ RSpec.describe Gitlab::CodeOwners::Loader, feature_category: :source_code_manage
     subject { loader.track_file_validation }
 
     context 'when file has no linting error' do
-      it 'sends errors for invalid user references' do
-        subject
+      context 'and accessible_code_owners_validation is disabled' do
+        before do
+          stub_feature_flags(accessible_code_owners_validation: false)
+        end
 
-        expect_snowplow_event(category: described_class.name, action: 'file_validation', label: 'owner_without_permission', project: project, extra: { file_path: "CODEOWNERS", line_number: 2 })
-        expect_snowplow_event(category: described_class.name, action: 'file_validation', label: 'owner_without_permission', project: project, extra: { file_path: "CODEOWNERS", line_number: 3 })
-        expect_snowplow_event(category: described_class.name, action: 'file_validation', label: 'owner_without_permission', project: project, extra: { file_path: "CODEOWNERS", line_number: 3 })
+        it 'sends errors for invalid user references', :aggregate_failures do
+          subject
+
+          expect_snowplow_event(category: described_class.name, action: 'file_validation', label: 'owner_without_permission', project: project, extra: { file_path: "CODEOWNERS", line_number: 2 })
+          expect_snowplow_event(category: described_class.name, action: 'file_validation', label: 'owner_without_permission', project: project, extra: { file_path: "CODEOWNERS", line_number: 3 })
+          expect_snowplow_event(category: described_class.name, action: 'file_validation', label: 'owner_without_permission', project: project, extra: { file_path: "CODEOWNERS", line_number: 3 })
+        end
       end
     end
 
