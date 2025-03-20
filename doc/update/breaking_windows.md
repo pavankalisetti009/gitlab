@@ -96,5 +96,4 @@ This window takes place on May 5 - 7, 2025 from 09:00 UTC to 22:00 UTC.
 | [Amazon S3 Signature Version 2](https://gitlab.com/gitlab-org/container-registry/-/issues/1449) | Low | Package | Project |
 | [Dependency Proxy token scope enforcement](https://gitlab.com/gitlab-org/gitlab/-/issues/426887) | High | Package | Group |
 | [Remove duoProAssignedUsersCount GraphQL field](https://gitlab.com/gitlab-org/gitlab/-/issues/498671) | Low | Plan | Group, project |
-| [S3 storage driver (AWS SDK v1) for the container registry](https://gitlab.com/gitlab-org/gitlab/-/issues/523095) | Low | Package | Instance |
 | [Remove `previousStageJobsOrNeeds` from GraphQL](https://gitlab.com/gitlab-org/gitlab/-/issues/424417) | Low | Verify | Instance |
