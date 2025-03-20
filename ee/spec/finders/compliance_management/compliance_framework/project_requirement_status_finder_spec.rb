@@ -69,7 +69,9 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectRequirementStat
     create(:project_requirement_compliance_status, compliance_requirement: other_requirement, project: other_project)
   end
 
-  subject(:finder_response) { described_class.new(root_group, user).execute }
+  let(:params) { {} }
+
+  subject(:finder_response) { described_class.new(root_group, user, params).execute }
 
   describe '#execute' do
     before_all do
@@ -113,6 +115,39 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectRequirementStat
           it 'returns list of requirement statuses for projects under subgroup' do
             expect(finder_response.to_a).to eq([requirement_status7, requirement_status5, requirement_status4,
               requirement_status3, requirement_status6])
+          end
+        end
+
+        context 'for project_ids filter' do
+          let(:params) { { project_id: project1.id } }
+
+          it 'returns requirement statuses for the specified project' do
+            expect(finder_response.to_a).to eq([requirement_status4, requirement_status3])
+          end
+        end
+
+        context 'for requirement_ids filter' do
+          let(:params) { { requirement_id: requirement1.id } }
+
+          it 'returns requirement statuses for the specified requirement' do
+            expect(finder_response.to_a).to eq([requirement_status5, requirement_status3, requirement_status1])
+          end
+        end
+
+        context 'for framework ids filter' do
+          let(:params) { { framework_id: framework1.id } }
+
+          it 'returns requirement statuses for the specified requirement' do
+            expect(finder_response.to_a).to eq([requirement_status5, requirement_status4, requirement_status3,
+              requirement_status2, requirement_status1, requirement_status6])
+          end
+        end
+
+        context 'for all filters' do
+          let(:params) { { project_id: project1.id, requirement_id: requirement1.id, framework_id: framework1.id } }
+
+          it 'returns requirement statuses for the specified filters' do
+            expect(finder_response.to_a).to eq([requirement_status3])
           end
         end
       end

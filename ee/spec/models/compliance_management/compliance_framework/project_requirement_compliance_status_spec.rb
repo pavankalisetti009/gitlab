@@ -153,4 +153,224 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectRequirementComp
       end
     end
   end
+
+  describe '.for_projects' do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:project1) { create(:project, namespace: namespace) }
+    let_it_be(:project2) { create(:project, namespace: namespace) }
+    let_it_be(:compliance_framework) { create(:compliance_framework, namespace: namespace) }
+    let_it_be(:requirement) { create(:compliance_requirement, framework: compliance_framework, namespace: namespace) }
+
+    let_it_be(:status1) do
+      create(:project_requirement_compliance_status, project: project1, compliance_requirement: requirement)
+    end
+
+    let_it_be(:status2) do
+      create(:project_requirement_compliance_status, project: project2, compliance_requirement: requirement)
+    end
+
+    context 'when given a single project ID' do
+      it 'returns statuses for the specified project' do
+        expect(described_class.for_projects(project1.id)).to contain_exactly(status1)
+      end
+    end
+
+    context 'when given multiple project IDs' do
+      it 'returns statuses for all specified projects' do
+        expect(described_class.for_projects([project1.id, project2.id])).to contain_exactly(status1, status2)
+      end
+    end
+
+    context 'when given an array with a single project ID' do
+      it 'returns statuses for the specified project' do
+        expect(described_class.for_projects([project1.id])).to contain_exactly(status1)
+      end
+    end
+
+    context 'when given an empty array' do
+      it 'returns an empty relation' do
+        expect(described_class.for_projects([])).to be_empty
+      end
+    end
+
+    context 'when given nil' do
+      it 'returns an empty relation' do
+        expect(described_class.for_projects(nil)).to be_empty
+      end
+    end
+
+    context 'when given non-existent project IDs' do
+      it 'returns an empty relation' do
+        expect(described_class.for_projects(non_existing_record_id)).to be_empty
+      end
+    end
+
+    context 'when given a mix of existing and non-existent project IDs' do
+      it 'returns statuses only for existing projects' do
+        expect(described_class.for_projects([project1.id, non_existing_record_id])).to contain_exactly(status1)
+      end
+    end
+
+    context 'when chained with other scopes' do
+      before do
+        status1.update!(pass_count: 5)
+        status2.update!(pass_count: 10)
+      end
+
+      it 'works correctly with other scopes' do
+        result = described_class.for_projects([project1.id, project2.id]).where('pass_count > ?', 7)
+        expect(result).to contain_exactly(status2)
+      end
+    end
+  end
+
+  describe '.for_requirements' do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:project) { create(:project, namespace: namespace) }
+    let_it_be(:compliance_framework) { create(:compliance_framework, namespace: namespace) }
+    let_it_be(:requirement1) do
+      create(:compliance_requirement, framework: compliance_framework, namespace: namespace, name: "requirement1")
+    end
+
+    let_it_be(:requirement2) do
+      create(:compliance_requirement, framework: compliance_framework, namespace: namespace, name: "requirement2")
+    end
+
+    let_it_be(:status1) do
+      create(:project_requirement_compliance_status, project: project, compliance_requirement: requirement1)
+    end
+
+    let_it_be(:status2) do
+      create(:project_requirement_compliance_status, project: project, compliance_requirement: requirement2)
+    end
+
+    context 'when given a single requirement ID' do
+      it 'returns statuses for the specified requirement' do
+        expect(described_class.for_requirements(requirement1.id)).to contain_exactly(status1)
+      end
+    end
+
+    context 'when given multiple requirement IDs' do
+      it 'returns statuses for all specified requirements' do
+        expect(described_class.for_requirements([requirement1.id,
+          requirement2.id])).to contain_exactly(status1, status2)
+      end
+    end
+
+    context 'when given an array with a single requirement ID' do
+      it 'returns statuses for the specified requirement' do
+        expect(described_class.for_requirements([requirement1.id])).to contain_exactly(status1)
+      end
+    end
+
+    context 'when given an empty array' do
+      it 'returns an empty relation' do
+        expect(described_class.for_requirements([])).to be_empty
+      end
+    end
+
+    context 'when given nil' do
+      it 'returns an empty relation' do
+        expect(described_class.for_requirements(nil)).to be_empty
+      end
+    end
+
+    context 'when given non-existent requirement IDs' do
+      it 'returns an empty relation' do
+        expect(described_class.for_requirements(non_existing_record_id)).to be_empty
+      end
+    end
+
+    context 'when given a mix of existing and non-existent requirement IDs' do
+      it 'returns statuses only for existing requirements' do
+        expect(described_class.for_requirements([requirement1.id, non_existing_record_id])).to contain_exactly(status1)
+      end
+    end
+
+    context 'when chained with other scopes' do
+      before do
+        status1.update!(pass_count: 5)
+        status2.update!(pass_count: 10)
+      end
+
+      it 'works correctly with other scopes' do
+        result = described_class.for_requirements([requirement1.id, requirement2.id]).where('pass_count > ?', 7)
+        expect(result).to contain_exactly(status2)
+      end
+    end
+  end
+
+  describe '.for_frameworks' do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:project) { create(:project, namespace: namespace) }
+    let_it_be(:framework1) { create(:compliance_framework, namespace: namespace, name: 'framework1', color: '#00ffaa') }
+    let_it_be(:framework2) { create(:compliance_framework, namespace: namespace, name: 'framework2', color: '#00ffab') }
+
+    let_it_be(:requirement1) { create(:compliance_requirement, framework: framework1, namespace: namespace) }
+    let_it_be(:requirement2) { create(:compliance_requirement, framework: framework2, namespace: namespace) }
+
+    let_it_be(:status1) do
+      create(:project_requirement_compliance_status, project: project, compliance_requirement: requirement1,
+        compliance_framework: framework1)
+    end
+
+    let_it_be(:status2) do
+      create(:project_requirement_compliance_status, project: project, compliance_requirement: requirement2,
+        compliance_framework: framework2)
+    end
+
+    context 'when given a single framework ID' do
+      it 'returns statuses for the specified framework' do
+        expect(described_class.for_frameworks(framework1.id)).to contain_exactly(status1)
+      end
+    end
+
+    context 'when given multiple framework IDs' do
+      it 'returns statuses for all specified frameworks' do
+        expect(described_class.for_frameworks([framework1.id, framework2.id])).to contain_exactly(status1, status2)
+      end
+    end
+
+    context 'when given an array with a single framework ID' do
+      it 'returns statuses for the specified framework' do
+        expect(described_class.for_frameworks([framework1.id])).to contain_exactly(status1)
+      end
+    end
+
+    context 'when given an empty array' do
+      it 'returns an empty relation' do
+        expect(described_class.for_frameworks([])).to be_empty
+      end
+    end
+
+    context 'when given nil' do
+      it 'returns an empty relation' do
+        expect(described_class.for_frameworks(nil)).to be_empty
+      end
+    end
+
+    context 'when given non-existent framework IDs' do
+      it 'returns an empty relation' do
+        expect(described_class.for_frameworks(non_existing_record_id)).to be_empty
+      end
+    end
+
+    context 'when given a mix of existing and non-existent framework IDs' do
+      it 'returns statuses only for existing frameworks' do
+        expect(described_class.for_frameworks([framework1.id, non_existing_record_id])).to contain_exactly(status1)
+      end
+    end
+
+    context 'when chained with other scopes' do
+      before do
+        status1.update!(pass_count: 5)
+        status2.update!(pass_count: 10)
+      end
+
+      it 'works correctly with other scopes' do
+        result = described_class.for_frameworks([framework1.id, framework2.id]).where('pass_count > ?', 7)
+        expect(result).to contain_exactly(status2)
+      end
+    end
+  end
 end

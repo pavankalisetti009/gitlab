@@ -15,10 +15,16 @@ module Resolvers
         authorize :read_compliance_adherence_report
         authorizes_object!
 
-        def resolve
+        argument :filters, Types::ComplianceManagement::ComplianceFramework::GroupProjectRequirementStatusInputType,
+          required: false,
+          default_value: {},
+          description: 'Filters applied when retrieving compliance requirement statuses.'
+
+        def resolve(**args)
           requirement_status_records = ::ComplianceManagement::ComplianceFramework::ProjectRequirementStatusFinder.new(
             group,
-            current_user
+            current_user,
+            args[:filters].to_h
           ).execute
 
           offset_pagination(requirement_status_records)
