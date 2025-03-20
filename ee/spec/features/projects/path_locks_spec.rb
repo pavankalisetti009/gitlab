@@ -6,12 +6,14 @@ RSpec.describe 'Path Locks', :js, feature_category: :source_code_management do
   include Spec::Support::Helpers::ModalHelpers
 
   let(:user) { create(:user) }
+  let(:other_user) { create(:user) }
   let(:project) { create(:project, :repository, namespace: user.namespace) }
   let(:tree_path) { project_tree_path(project, project.repository.root_ref) }
 
   before do
     stub_feature_flags(blob_overflow_menu: false)
     project.add_maintainer(user)
+    project.add_developer(other_user)
     sign_in(user)
 
     visit tree_path
@@ -46,6 +48,10 @@ RSpec.describe 'Path Locks', :js, feature_category: :source_code_management do
     accept_gl_confirm('Are you sure you want to lock VERSION?', button_text: 'Lock')
 
     expect(page).to have_button('Unlock')
+
+    sign_in other_user
+    visit project_blob_path(project, File.join('master', 'VERSION'))
+    expect(page).to have_button('Unlock', disabled: true)
   end
 
   it 'unlocking files' do
