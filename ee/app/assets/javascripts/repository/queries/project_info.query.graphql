@@ -1,4 +1,4 @@
-#import "ee_else_ce/repository/queries/path_locks.fragment.graphql"
+#import "ee/repository/queries/path_locks.fragment.graphql"
 
 query getProjectInfoEE($projectPath: ID!) {
   project(fullPath: $projectPath) {
