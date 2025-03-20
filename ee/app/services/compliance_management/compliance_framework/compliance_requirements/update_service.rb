@@ -3,21 +3,25 @@
 module ComplianceManagement
   module ComplianceFramework
     module ComplianceRequirements
-      class UpdateService < BaseService
-        attr_reader :params, :current_user, :requirement
-
-        def initialize(requirement:, params:, current_user:)
-          @requirement = requirement
-          @params = params
-          @current_user = current_user
-        end
-
+      class UpdateService < BaseRequirementsService
         def execute
           return ServiceResponse.error(message: _('Not permitted to update requirement')) unless permitted?
+          return control_limit_error if control_count_exceeded?
 
-          return error unless requirement.update(params)
+          begin
+            ComplianceManagement::ComplianceFramework::ComplianceRequirement.transaction do
+              requirement.update!(params)
+
+              update_controls
+            end
+          rescue ActiveRecord::RecordInvalid
+            return error
+          rescue InvalidControlError => e
+            return ServiceResponse.error(message: e.message, payload: e.message)
+          end
 
           audit_changes
+
           success
         end
 
@@ -25,10 +29,6 @@ module ComplianceManagement
 
         def permitted?
           can? current_user, :admin_compliance_framework, requirement.framework
-        end
-
-        def success
-          ServiceResponse.success(payload: { requirement: requirement })
         end
 
         def audit_changes
@@ -49,6 +49,13 @@ module ComplianceManagement
 
         def error
           ServiceResponse.error(message: _('Failed to update compliance requirement'), payload: requirement.errors)
+        end
+
+        def update_controls
+          return if controls.nil?
+
+          requirement.delete_compliance_requirements_controls
+          add_controls
         end
       end
     end

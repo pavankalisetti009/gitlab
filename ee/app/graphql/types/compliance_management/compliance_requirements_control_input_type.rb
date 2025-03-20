@@ -12,7 +12,7 @@ module Types
 
       argument :expression,
         GraphQL::Types::String,
-        required: true,
+        required: false,
         description: 'Expression of the compliance control.'
 
       argument :control_type,
