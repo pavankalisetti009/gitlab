@@ -13,11 +13,7 @@ RSpec.describe Security::ScanResultPolicies::GeneratePolicyViolationCommentServi
 
     let_it_be(:bot_user) { Users::Internal.security_bot }
 
-    let(:service) { described_class.new(merge_request, params) }
-    let(:params) do
-      { 'report_type' => report_type, 'violated_policy' => violated_policy, 'requires_approval' => requires_approval }
-    end
-
+    let(:service) { described_class.new(merge_request) }
     let(:expected_optional_approvals_note) { 'Consider including optional reviewers' }
     let(:expected_violation_note) { 'ask eligible approvers of each policy to approve this merge request' }
     let(:expected_fixed_note) { 'Security policy violations have been resolved' }

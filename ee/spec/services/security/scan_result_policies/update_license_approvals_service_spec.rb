@@ -129,7 +129,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateLicenseApprovalsService, feat
     end
 
     it_behaves_like 'requires approval'
-    it_behaves_like 'triggers policy bot comment', :license_scanning, true
+    it_behaves_like 'triggers policy bot comment', true
 
     it 'logs the violated rules' do
       expect(Gitlab::AppJsonLogger).to receive(:info).with(hash_including(
@@ -163,7 +163,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateLicenseApprovalsService, feat
       end
 
       it_behaves_like 'does not require approvals'
-      it_behaves_like 'triggers policy bot comment', :license_scanning, false
+      it_behaves_like 'triggers policy bot comment', false
       it_behaves_like 'merge request without scan result violations'
 
       it 'only logs evaluation' do
@@ -185,7 +185,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateLicenseApprovalsService, feat
         end
 
         it_behaves_like 'does not require approvals'
-        it_behaves_like 'triggers policy bot comment', :license_scanning, true
+        it_behaves_like 'triggers policy bot comment', true
         it_behaves_like 'persists a violation as warning'
       end
     end
@@ -233,7 +233,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateLicenseApprovalsService, feat
         end
 
         it_behaves_like 'requires approval'
-        it_behaves_like 'triggers policy bot comment', :license_scanning, true
+        it_behaves_like 'triggers policy bot comment', true
 
         context 'when feature flag "use_related_pipelines_for_policy_evaluation" is disabled' do
           before do
@@ -252,7 +252,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateLicenseApprovalsService, feat
           end
 
           it_behaves_like 'does not require approvals'
-          it_behaves_like 'triggers policy bot comment', :license_scanning, false
+          it_behaves_like 'triggers policy bot comment', false
 
           context 'when feature flag "use_related_pipelines_for_policy_evaluation" is disabled' do
             before do
@@ -274,7 +274,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateLicenseApprovalsService, feat
       end
 
       it_behaves_like 'does not require approvals'
-      it_behaves_like 'triggers policy bot comment', :license_scanning, false
+      it_behaves_like 'triggers policy bot comment', false
     end
 
     context 'when target branch pipeline is nil' do
@@ -307,7 +307,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateLicenseApprovalsService, feat
         end
 
         it_behaves_like 'does not require approvals'
-        it_behaves_like 'triggers policy bot comment', :license_scanning, true
+        it_behaves_like 'triggers policy bot comment', true
         it_behaves_like 'persists a violation as warning'
       end
     end
