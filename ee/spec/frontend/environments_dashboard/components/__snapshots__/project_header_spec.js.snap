@@ -62,12 +62,9 @@ exports[`Project Header matches the snapshot 1`] = `
     >
       <gl-disclosure-dropdown-item-stub
         data-testid="remove-project-button"
+        variant="danger"
       >
-        <span
-          class="gl-text-red-500"
-        >
-          Remove
-        </span>
+        Remove
       </gl-disclosure-dropdown-item-stub>
     </gl-disclosure-dropdown-stub>
   </div>

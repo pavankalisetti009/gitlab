@@ -221,11 +221,9 @@ export default {
       </gl-disclosure-dropdown-group>
 
       <gl-disclosure-dropdown-group v-if="canDestroy">
-        <gl-disclosure-dropdown-item v-gl-modal="$options.deleteModalId">
+        <gl-disclosure-dropdown-item v-gl-modal="$options.deleteModalId" variant="danger">
           <template #list-item>
-            <span class="gl-text-red-500">
-              {{ $options.i18n.deleteButtonText }}
-            </span>
+            {{ $options.i18n.deleteButtonText }}
           </template>
         </gl-disclosure-dropdown-item>
       </gl-disclosure-dropdown-group>
@@ -284,11 +282,9 @@ export default {
       </gl-disclosure-dropdown-group>
 
       <gl-disclosure-dropdown-group v-if="canDestroy">
-        <gl-disclosure-dropdown-item v-gl-modal="$options.deleteModalId">
+        <gl-disclosure-dropdown-item v-gl-modal="$options.deleteModalId" variant="danger">
           <template #list-item>
-            <span class="gl-text-red-500">
-              {{ $options.i18n.deleteButtonText }}
-            </span>
+            {{ $options.i18n.deleteButtonText }}
           </template>
         </gl-disclosure-dropdown-item>
       </gl-disclosure-dropdown-group>
