@@ -14,7 +14,8 @@ module SecurityHelper
       false_positive_doc_url: help_page_path('user/application_security/vulnerabilities/_index.md'),
       can_view_false_positive: can_view_false_positive?,
       has_projects: instance_security_dashboard.has_projects?.to_s,
-      dismissal_descriptions: dismissal_descriptions.to_json
+      dismissal_descriptions: dismissal_descriptions.to_json,
+      show_retention_alert: ::Gitlab.com?.to_s # rubocop:disable Gitlab/AvoidGitlabInstanceChecks -- reason: only needed to show the banner for .com users temporarily
     }
   end
 

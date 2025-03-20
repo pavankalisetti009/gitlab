@@ -386,7 +386,8 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
           can_admin_vulnerability: 'true',
           new_vulnerability_path: end_with('/security/vulnerabilities/new'),
           dismissal_descriptions: dismissal_descriptions_json,
-          hide_third_party_offers: 'false'
+          hide_third_party_offers: 'false',
+          show_retention_alert: 'false'
         }
       end
 
@@ -422,6 +423,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
           new_vulnerability_path: end_with('/security/vulnerabilities/new'),
           dismissal_descriptions: dismissal_descriptions_json,
           hide_third_party_offers: 'false',
+          show_retention_alert: 'false',
           vulnerability_quota: {
             critical: 'true',
             exceeded: 'false',

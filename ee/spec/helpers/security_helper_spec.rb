@@ -38,7 +38,8 @@ RSpec.describe SecurityHelper, feature_category: :vulnerability_management do
         false_positive_doc_url: help_page_path('user/application_security/vulnerabilities/_index.md'),
         can_view_false_positive: 'false',
         has_projects: 'true',
-        dismissal_descriptions: dismissal_descriptions_json
+        dismissal_descriptions: dismissal_descriptions_json,
+        show_retention_alert: 'false'
       })
     end
 

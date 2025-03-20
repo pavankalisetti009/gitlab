@@ -54025,6 +54025,9 @@ msgstr ""
 msgid "SecurityReports|Cluster"
 msgstr ""
 
+msgid "SecurityReports|Coming soon: retention policies"
+msgstr ""
+
 msgid "SecurityReports|Comment (required)"
 msgstr ""
 
@@ -54307,6 +54310,9 @@ msgid "SecurityReports|Sometimes a scanner can't determine a finding's severity.
 msgstr ""
 
 msgid "SecurityReports|Sorry, your filter produced no results"
+msgstr ""
+
+msgid "SecurityReports|Starting 2025-05-15, vulnerabilities that have not been updated in the last 12 months will automatically move the vulnerability archive for 3 years before deletion. To access the archive, on the left sidebar, select Secure &gt; Security Configuration &gt; Vulnerability Management."
 msgstr ""
 
 msgid "SecurityReports|Status"
