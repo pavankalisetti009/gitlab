@@ -5,6 +5,9 @@ query groupCustomRoles($fullPath: ID!) {
       nodes {
         id
         name
+        baseAccessLevel {
+          stringValue
+        }
         enabledPermissions {
           edges {
             node {

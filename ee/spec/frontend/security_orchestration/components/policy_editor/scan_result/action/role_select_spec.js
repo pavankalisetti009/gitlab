@@ -26,6 +26,7 @@ describe('RoleSelect component', () => {
   const defaultCustomRole = {
     id: 'gid://gitlab/MemberRole/1',
     name: 'Custom (Gitlab Org - 24)',
+    baseAccessLevel: { stringValue: 'REPORTER' },
     enabledPermissions: { edges: [{ node: { value: 'ADMIN_MERGE_REQUEST' } }] },
     __typename: 'MemberRole',
   };
@@ -35,12 +36,14 @@ describe('RoleSelect component', () => {
     {
       id: 'gid://gitlab/MemberRole/2',
       name: 'Custom (Gitlab Org - 25)',
+      baseAccessLevel: { stringValue: 'REPORTER' },
       enabledPermissions: { edges: [{ node: { value: 'ADMIN_PROTECTED_BRANCHES' } }] },
       __typename: 'MemberRole',
     },
     {
       id: 'gid://gitlab/MemberRole/3',
       name: 'Custom (Gitlab Org - 26)',
+      baseAccessLevel: { stringValue: 'REPORTER' },
       enabledPermissions: {
         edges: [
           { node: { value: 'ADMIN_PROTECTED_BRANCHES' } },

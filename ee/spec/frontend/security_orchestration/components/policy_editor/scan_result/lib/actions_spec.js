@@ -7,6 +7,7 @@ import {
   createActionFromApprovers,
   REQUIRE_APPROVAL_TYPE,
   WARN_TYPE,
+  isRoleApprover,
   mapYamlApproversActionsToSelectedApproverTypes,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib/actions';
 import { GROUP_TYPE, USER_TYPE, ROLE_TYPE } from 'ee/security_orchestration/constants';
@@ -97,6 +98,29 @@ describe('ACTION_LISTBOX_ITEMS', () => {
     const warnTypeEntry = ACTION_LISTBOX_ITEMS().find((item) => item.value === WARN_TYPE);
     expect(warnTypeEntry).toEqual({ value: WARN_TYPE, text: 'Warn in merge request' });
   });
+});
+describe('isRoleApprover', () => {
+  it.each`
+    baseAccessLevel                  | enabledPermissions                                              | expected
+    ${null}                          | ${null}                                                         | ${false}
+    ${null}                          | ${{ edges: [] }}                                                | ${false}
+    ${{ stringValue: 'GUEST' }}      | ${{ edges: [] }}                                                | ${false}
+    ${{ stringValue: 'REPORTER' }}   | ${{ edges: [] }}                                                | ${false}
+    ${{ stringValue: 'DEVELOPER' }}  | ${{ edges: [] }}                                                | ${true}
+    ${{ stringValue: 'MAINTAINER' }} | ${{ edges: [] }}                                                | ${true}
+    ${{ stringValue: 'OWNER' }}      | ${{ edges: [] }}                                                | ${false}
+    ${null}                          | ${{ edges: [{ node: { value: 'ADMIN_MERGE_REQUEST' } }] }}      | ${true}
+    ${{ stringValue: 'GUEST' }}      | ${{ edges: [{ node: { value: 'ADMIN_MERGE_REQUEST' } }] }}      | ${true}
+    ${{ stringValue: 'REPORTER' }}   | ${{ edges: [{ node: { value: 'ADMIN_MERGE_REQUEST' } }] }}      | ${true}
+    ${{ stringValue: 'DEVELOPER' }}  | ${{ edges: [{ node: { value: 'ADMIN_MERGE_REQUEST' } }] }}      | ${true}
+    ${{ stringValue: 'GUEST' }}      | ${{ edges: [{ node: { value: 'ADMIN_PROTECTED_BRANCHES' } }] }} | ${false}
+    ${{ stringValue: 'REPORTER' }}   | ${{ edges: [{ node: { value: 'ADMIN_PROTECTED_BRANCHES' } }] }} | ${false}
+  `(
+    'returns $expected when baseAccessLevel is $baseAccessLevel and enabledPermissions is $enabledPermissions',
+    ({ baseAccessLevel, enabledPermissions, expected }) => {
+      expect(isRoleApprover({ baseAccessLevel, enabledPermissions })).toBe(expected);
+    },
+  );
 });
 
 describe('mapYamlApproversActionsToSelectedApproverTypes', () => {
