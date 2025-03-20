@@ -43379,9 +43379,6 @@ ALTER TABLE ONLY cluster_agent_tokens
 ALTER TABLE ONLY requirements_management_test_reports
     ADD CONSTRAINT fk_rails_d1e8b498bf FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL;
 
-ALTER TABLE ONLY pool_repositories
-    ADD CONSTRAINT fk_rails_d2711daad4 FOREIGN KEY (source_project_id) REFERENCES projects(id) ON DELETE SET NULL;
-
 ALTER TABLE ONLY design_management_repository_states
     ADD CONSTRAINT fk_rails_d2a258cc5a FOREIGN KEY (design_management_repository_id) REFERENCES design_management_repositories(id) ON DELETE CASCADE;
 
