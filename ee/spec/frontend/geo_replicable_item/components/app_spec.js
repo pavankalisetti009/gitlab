@@ -5,9 +5,8 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import GeoReplicableItemApp from 'ee/geo_replicable_item/components/app.vue';
+import GeoReplicableItemRegistryInfo from 'ee/geo_replicable_item/components/geo_replicable_item_registry_info.vue';
 import buildReplicableItemQuery from 'ee/geo_replicable_item/graphql/replicable_item_query_builder';
-import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
-import TimeAgo from '~/vue_shared/components/time_ago_tooltip.vue';
 import { createAlert } from '~/alert';
 import {
   MOCK_REPLICABLE_CLASS,
@@ -70,9 +69,7 @@ describe('GeoReplicableItemApp', () => {
   };
 
   const findGlLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
-  const findCopyableRegistryInformation = () =>
-    wrapper.findAllByTestId('copyable-registry-information');
-  const findRegistryInformationCreatedAt = () => wrapper.findComponent(TimeAgo);
+  const findRegistryInfoComponent = () => wrapper.findComponent(GeoReplicableItemRegistryInfo);
 
   describe('loading state', () => {
     beforeEach(() => {
@@ -91,21 +88,12 @@ describe('GeoReplicableItemApp', () => {
       await waitForPromises();
     });
 
-    it.each`
-      index | title              | value
-      ${0}  | ${'Registry ID'}   | ${`${MOCK_REPLICABLE_CLASS.graphqlRegistryClass}/${defaultProps.replicableItemId}`}
-      ${1}  | ${'GraphQL ID'}    | ${MOCK_REPLICABLE_WITH_VERIFICATION.id}
-      ${2}  | ${'Replicable ID'} | ${MOCK_REPLICABLE_WITH_VERIFICATION.modelRecordId}
-    `('renders $title: $value with clipboard button', ({ index, title, value }) => {
-      const registryDetails = findCopyableRegistryInformation().at(index);
-
-      expect(registryDetails.text()).toBe(`${title}: ${value}`);
-      expect(registryDetails.findComponent(ClipboardButton).props('text')).toBe(String(value));
-    });
-
-    it('renders TimeAgo component for createAt', () => {
-      expect(findRegistryInformationCreatedAt().props('time')).toBe(
-        MOCK_REPLICABLE_WITH_VERIFICATION.createdAt,
+    it('renders registry info component with correct props', () => {
+      expect(findRegistryInfoComponent().props('replicableItem')).toStrictEqual(
+        MOCK_REPLICABLE_WITH_VERIFICATION,
+      );
+      expect(findRegistryInfoComponent().props('registryId')).toBe(
+        `${MOCK_REPLICABLE_CLASS.graphqlRegistryClass}/${defaultProps.replicableItemId}`,
       );
     });
   });
