@@ -8,6 +8,7 @@ export const subgroupsAndProjects = {
       descendantGroups: {
         nodes: [
           {
+            __typename: 'Group',
             id: 'gid://gitlab/Group/211',
             name: 'Test Subgroup',
             descendantGroupsCount: 0,
@@ -30,6 +31,7 @@ export const subgroupsAndProjects = {
       projects: {
         nodes: [
           {
+            __typename: 'Project',
             id: 'gid://gitlab/Project/19',
             name: 'security-reports-example',
             path: 'security-reports-example',
@@ -46,6 +48,7 @@ export const subgroupsAndProjects = {
             },
           },
           {
+            __typename: 'Project',
             id: 'gid://gitlab/Project/7',
             name: 'Flight',
             path: 'Flight',

@@ -3,6 +3,7 @@ query SubgroupsAndProjects($fullPath: ID!) {
     id
     descendantGroups(includeParentDescendants: false, first: 10) {
       nodes {
+        __typename
         id
         name
         descendantGroupsCount
@@ -23,6 +24,7 @@ query SubgroupsAndProjects($fullPath: ID!) {
     }
     projects(first: 10) {
       nodes {
+        __typename
         id
         name
         path
