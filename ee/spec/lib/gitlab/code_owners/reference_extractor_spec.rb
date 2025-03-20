@@ -147,6 +147,30 @@ RSpec.describe Gitlab::CodeOwners::ReferenceExtractor, feature_category: :source
     end
   end
 
+  describe '#raw_names' do
+    subject { extractor.raw_names }
+
+    it { is_expected.to contain_exactly('@user-1', '@user-2', '@user-4', '@group', '@group/nested-on/other-group') }
+  end
+
+  describe '#raw_roles' do
+    subject { extractor.raw_roles }
+
+    it { is_expected.to contain_exactly('@@developer', '@@owner') }
+  end
+
+  describe '#raw_emails' do
+    subject { extractor.raw_emails }
+
+    it { is_expected.to match_array(extractor.emails) }
+  end
+
+  describe '#raw_references' do
+    subject { extractor.raw_references }
+
+    it { is_expected.to match_array(extractor.raw_names + extractor.raw_roles + extractor.raw_emails) }
+  end
+
   def generate_email(left_length, right_length)
     "#{SecureRandom.alphanumeric(left_length)}@#{SecureRandom.alphanumeric(right_length)}"
   end
