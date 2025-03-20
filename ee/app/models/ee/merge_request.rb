@@ -683,7 +683,7 @@ module EE
     def find_diff_start_pipeline_with_security_reports
       find_pipeline_with_reports(
         last_diff_start_pipelines(limit: MAX_CHECKED_PIPELINES_FOR_SECURITY_REPORT_COMPARISON),
-        :has_sbom_reports?
+        :has_security_reports?
       )
     end
 
