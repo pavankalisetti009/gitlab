@@ -17,6 +17,10 @@ module Gitlab
         errors.append(error)
       end
 
+      def merge(other_errors)
+        errors.concat(other_errors.entries)
+      end
+
       private
 
       attr_reader :file, :errors

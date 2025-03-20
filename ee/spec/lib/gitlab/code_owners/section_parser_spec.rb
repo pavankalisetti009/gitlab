@@ -5,9 +5,17 @@ require 'spec_helper'
 RSpec.describe Gitlab::CodeOwners::SectionParser, feature_category: :source_code_management do
   using RSpec::Parameterized::TableSyntax
 
-  subject(:parser) { described_class.new(line, sectional_data) }
+  subject(:parser) { described_class.new(line, sectional_data, line_number) }
 
+  let(:line) { 'line' }
+  let(:line_number) { 1 }
   let(:sectional_data) { {} }
+
+  describe '#errors' do
+    subject(:errors) { parser.errors }
+
+    it { is_expected.to be_instance_of(Gitlab::CodeOwners::Errors) }
+  end
 
   describe '#execute' do
     subject(:section) { parser.execute }
@@ -19,24 +27,28 @@ RSpec.describe Gitlab::CodeOwners::SectionParser, feature_category: :source_code
     end
 
     context 'when line is a section header' do
+      let(:missing_section_name) { Gitlab::CodeOwners::Error.new(:missing_section_name, line_number) }
+      let(:invalid_approval_requirement) { Gitlab::CodeOwners::Error.new(:invalid_approval_requirement, line_number) }
+      let(:invalid_section_owner_format) { Gitlab::CodeOwners::Error.new(:invalid_section_owner_format, line_number) }
+
       where(:line, :name, :optional, :approvals, :default_owners, :sectional_data, :errors) do
-        '[]'                  | ''    | false | 0 | ''          | {}              | [:missing_section_name]
+        '[]'                  | ''    | false | 0 | ''          | {}              | [ref(:missing_section_name)]
         '[Doc]'               | 'Doc' | false | 0 | ''          | {}              | []
         '[Doc]'               | 'doc' | false | 0 | ''          | { 'doc' => {} } | []
         '[Doc]'               | 'Doc' | false | 0 | ''          | { 'foo' => {} } | []
         '^[Doc]'              | 'Doc' | true  | 0 | ''          | {}              | []
         '[Doc][1]'            | 'Doc' | false | 1 | ''          | {}              | []
-        '^[Doc][1]'           | 'Doc' | true  | 1 | ''          | {}              | [:invalid_approval_requirement]
-        '^[Doc][1] @doc'      | 'Doc' | true  | 1 | '@doc'      | {}              | [:invalid_approval_requirement]
-        '^[Doc][1] @doc @dev' | 'Doc' | true  | 1 | '@doc @dev' | {}              | [:invalid_approval_requirement]
-        '^[Doc][1] @gl/doc-1' | 'Doc' | true  | 1 | '@gl/doc-1' | {}              | [:invalid_approval_requirement]
+        '^[Doc][1]'           | 'Doc' | true  | 1 | ''          | {}              | [ref(:invalid_approval_requirement)]
+        '^[Doc][1] @doc'      | 'Doc' | true  | 1 | '@doc'      | {}              | [ref(:invalid_approval_requirement)]
+        '^[Doc][1] @doc @dev' | 'Doc' | true  | 1 | '@doc @dev' | {}              | [ref(:invalid_approval_requirement)]
+        '^[Doc][1] @gl/doc-1' | 'Doc' | true  | 1 | '@gl/doc-1' | {}              | [ref(:invalid_approval_requirement)]
         '[Doc][1] @doc'       | 'Doc' | false | 1 | '@doc'      | {}              | []
         '[Doc] @doc'          | 'Doc' | false | 0 | '@doc'      | {}              | []
         '^[Doc] @doc'         | 'Doc' | true  | 0 | '@doc'      | {}              | []
         '[Doc] @doc @rrr.dev @dev' | 'Doc' | false | 0 | '@doc @rrr.dev @dev' | {} | []
         '^[Doc] @doc @rrr.dev @dev' | 'Doc' | true | 0 | '@doc @rrr.dev @dev' | {} | []
         '[Doc][2] @doc @rrr.dev @dev' | 'Doc' | false | 2 | '@doc @rrr.dev @dev' | {} | []
-        '[Doc] malformed' | 'Doc' | false | 0 | 'malformed' | {} | [:invalid_section_owner_format]
+        '[Doc] malformed' | 'Doc' | false | 0 | 'malformed' | {} | [ref(:invalid_section_owner_format)]
       end
 
       with_them do
@@ -58,9 +70,11 @@ RSpec.describe Gitlab::CodeOwners::SectionParser, feature_category: :source_code
     end
 
     context 'when section header is invalid' do
+      let(:error) { Gitlab::CodeOwners::Error.new(:invalid_section_format, line_number) }
+
       where(:line, :status, :errors) do
-        '^[Invalid' | false | [:invalid_section_format]
-        '[Invalid'  | false | [:invalid_section_format]
+        '^[Invalid' | false | [ref(:error)]
+        '[Invalid'  | false | [ref(:error)]
       end
 
       with_them do

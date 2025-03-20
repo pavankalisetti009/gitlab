@@ -27,4 +27,17 @@ RSpec.describe Gitlab::CodeOwners::Errors, feature_category: :source_code_manage
     it { expect(errors.first).to eq(error) }
     it { expect(error_class).to have_received(:new).with(message, line_number) }
   end
+
+  describe '#merge(other_errors)' do
+    let(:other_message) { 'other_message' }
+    let(:other_line_number) { 'other_line_number' }
+    let(:other_errors) { described_class.new }
+
+    before do
+      other_errors.add(other_message, other_line_number)
+      errors.merge(other_errors)
+    end
+
+    it { expect(errors.entries).to match_array(other_errors.entries) }
+  end
 end
