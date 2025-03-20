@@ -526,7 +526,7 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
 
   context 'updating user cap params' do
     let_it_be(:user) { create(:user) }
-    let_it_be(:group) do
+    let_it_be_with_refind(:group) do
       create(:group, :public,
         namespace_settings: create(:namespace_settings, seat_control: :user_cap, new_user_signups_cap: 1))
     end
@@ -566,6 +566,16 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
         update_cap
 
         expect(member.reload).to be_awaiting
+      end
+    end
+
+    context 'when switching to block seat overages', :sidekiq_inline do
+      let(:attrs) { { seat_control: :block_overages, new_user_signups_cap: nil } }
+
+      it 'removes all pending members' do
+        update_cap
+
+        expect(group.members.map(&:user_id)).to eq([user.id])
       end
     end
   end
