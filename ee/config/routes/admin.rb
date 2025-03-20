@@ -56,6 +56,12 @@ namespace :admin do
     get 'duo_self_hosted(/*vueroute)', to: 'duo_self_hosted#index', as: :duo_self_hosted
     post 'duo_self_hosted/toggle_beta_models', to: 'terms_and_conditions#toggle_beta_models'
 
+    resources :duo_workflow_settings, only: [:create] do
+      collection do
+        post :disconnect
+      end
+    end
+
     resources :amazon_q_settings, only: [:index, :create] do
       collection do
         post :disconnect
