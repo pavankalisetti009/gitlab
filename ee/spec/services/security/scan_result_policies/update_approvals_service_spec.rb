@@ -23,7 +23,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
         ref: merge_request.source_branch, sha: merge_request.diff_head_sha)
     end
 
-    let_it_be(:target_pipeline) do
+    let_it_be_with_refind(:target_pipeline) do
       create(:ee_ci_pipeline, :success, :with_dependency_scanning_report, project: project,
         ref: merge_request.target_branch, sha: merge_request.diff_base_sha)
     end
@@ -468,6 +468,100 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
           before do
             merge_base_pipeline_scan.delete
           end
+
+          it_behaves_like 'does not update approvals_required'
+          it_behaves_like 'triggers policy bot comment', :scan_finding, true
+        end
+      end
+    end
+
+    context 'when there is no target pipeline with the common ancestor' do
+      let(:vulnerability_states) { %w[new_needs_triage new_dismissed] }
+      let(:vulnerabilities_allowed) { uuids.count - 1 }
+
+      before do
+        target_pipeline.delete
+      end
+
+      context 'with a fallback target branch pipeline' do
+        let_it_be(:latest_target_branch_pipeline) do
+          create(
+            :ee_ci_pipeline,
+            :success,
+            merge_request: merge_request,
+            project: project,
+            ref: merge_request.target_branch,
+            sha: merge_request.diff_base_sha)
+        end
+
+        let_it_be(:diff_start_sha_pipeline_scan) do
+          create(:security_scan, :succeeded, project: project, pipeline: latest_target_branch_pipeline,
+            scan_type: 'dependency_scanning')
+        end
+
+        let!(:diff_start_sha_pipeline_finding) do
+          create(:security_finding, scan: diff_start_sha_pipeline_scan, severity: 'high', scanner: scanner,
+            uuid: existing_uuid)
+        end
+
+        context 'when there are no violated approval rules' do
+          let(:existing_uuid) { uuids.first }
+
+          it_behaves_like 'sets approvals_required to 0'
+          it_behaves_like 'triggers policy bot comment', :scan_finding, false
+        end
+
+        context 'when there are violated approval rules' do
+          let(:existing_uuid) { SecureRandom.uuid }
+
+          it_behaves_like 'does not update approvals_required'
+          it_behaves_like 'triggers policy bot comment', :scan_finding, true
+        end
+      end
+
+      context 'with a target pipeline matching diff_start_sha' do
+        let_it_be(:diff_start_sha_target_pipeline) do
+          create(
+            :ee_ci_pipeline,
+            :success,
+            :with_sast_report,
+            merge_request: merge_request,
+            project: project,
+            ref: merge_request.target_branch,
+            merge_requests_as_head_pipeline: [merge_request],
+            sha: merge_request.diff_start_sha)
+        end
+
+        # Created to ensure we compare with diff_start_sha and not with a fallback pipeline for the target branch
+        let_it_be(:latest_target_branch_pipeline) do
+          create(
+            :ee_ci_pipeline,
+            :success,
+            merge_request: merge_request,
+            project: project,
+            ref: merge_request.target_branch,
+            sha: merge_request.diff_base_sha)
+        end
+
+        let_it_be(:diff_start_sha_pipeline_scan) do
+          create(:security_scan, :succeeded, project: project, pipeline: diff_start_sha_target_pipeline,
+            scan_type: 'dependency_scanning')
+        end
+
+        let!(:diff_start_sha_pipeline_finding) do
+          create(:security_finding, scan: diff_start_sha_pipeline_scan, severity: 'high', scanner: scanner,
+            uuid: existing_uuid)
+        end
+
+        context 'when there are no violated approval rules' do
+          let(:existing_uuid) { uuids.first }
+
+          it_behaves_like 'sets approvals_required to 0'
+          it_behaves_like 'triggers policy bot comment', :scan_finding, false
+        end
+
+        context 'when there are violated approval rules' do
+          let(:existing_uuid) { SecureRandom.uuid }
 
           it_behaves_like 'does not update approvals_required'
           it_behaves_like 'triggers policy bot comment', :scan_finding, true
