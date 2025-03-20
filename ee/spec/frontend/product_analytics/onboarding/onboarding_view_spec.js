@@ -90,7 +90,7 @@ describe('ProductAnalyticsOnboardingView', () => {
 
     it('creates an onboarding state component', () => {
       expect(findStateComponent().props()).toMatchObject({
-        state: '',
+        stateProp: '',
         pollState: false,
       });
     });

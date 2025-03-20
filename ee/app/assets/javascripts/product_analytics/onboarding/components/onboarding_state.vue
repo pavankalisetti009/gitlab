@@ -17,11 +17,11 @@ export default {
     },
   },
   model: {
-    prop: 'state',
+    prop: 'stateProp',
     event: 'change',
   },
   props: {
-    state: {
+    stateProp: {
       type: String,
       required: false,
       default: '',
@@ -41,13 +41,13 @@ export default {
     pollingEnabled() {
       // Automatically enable polling when waiting for events or loading
       return (
-        this.state === STATE_WAITING_FOR_EVENTS ||
-        this.state === STATE_LOADING_INSTANCE ||
+        this.stateProp === STATE_WAITING_FOR_EVENTS ||
+        this.stateProp === STATE_LOADING_INSTANCE ||
         this.pollState
       );
     },
     creatingInstance() {
-      return this.state === STATE_CREATE_INSTANCE || this.state === STATE_LOADING_INSTANCE;
+      return this.stateProp === STATE_CREATE_INSTANCE || this.stateProp === STATE_LOADING_INSTANCE;
     },
   },
   apollo: {
