@@ -33,12 +33,12 @@ module Types
         field :suggestion_size,
           GraphQL::Types::String,
           null: true,
-          description: 'Size of the code suggestion.'
+          description: 'Size of the code suggestion measured in lines of code.'
 
         field :unique_tracking_id,
           GraphQL::Types::String,
           null: true,
-          description: 'Unique tracking number.'
+          description: 'Unique tracking number of sequence of events for one suggestion.'
 
         def payload
           @payload ||= object.payload || {}
