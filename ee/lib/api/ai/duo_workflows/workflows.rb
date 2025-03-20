@@ -78,6 +78,11 @@ module API
               documentation: { example: [1] }
             optional :workflow_definition, type: String, desc: 'workflow type based on its capability',
               documentation: { example: 'software_developer' }
+            optional :allow_agent_to_request_user, type: Boolean,
+              desc: 'When this is enabled Duo Workflow may stop to ask the user questions before proceeding. ' \
+                'When it is disabled Duo Workflow will always just run through the workflow without ever asking ' \
+                'for user input. Defaults to true.',
+              documentation: { example: true }
           end
         end
 
