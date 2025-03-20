@@ -1,5 +1,6 @@
 <script>
 import { GlAvatar, GlIcon, GlTooltipDirective } from '@gitlab/ui';
+import TooltipOnTruncate from '~/vue_shared/components/tooltip_on_truncate/tooltip_on_truncate.vue';
 import { __, sprintf } from '~/locale';
 
 export default {
@@ -10,6 +11,7 @@ export default {
   components: {
     GlAvatar,
     GlIcon,
+    TooltipOnTruncate,
   },
   props: {
     data: {
@@ -49,8 +51,8 @@ export default {
       :alt="avatarAltText"
     />
 
-    <div class="gl-leading-20">
-      <div class="gl-mb-2 gl-flex gl-items-center gl-gap-2">
+    <div class="gl-min-w-0 gl-leading-24">
+      <div class="-gl-mb-1 gl-flex gl-items-center gl-gap-2">
         <gl-icon
           data-testid="namespace-metadata-namespace-type-icon"
           variant="subtle"
@@ -59,16 +61,21 @@ export default {
         <span class="gl-text-base gl-font-normal gl-text-subtle">{{ data.namespaceType }}</span>
       </div>
       <div class="gl-flex gl-items-center gl-gap-2">
-        <span class="gl-truncate-end gl-text-size-h2 gl-font-bold gl-text-strong">{{
-          namespaceFullName
-        }}</span>
-        <gl-icon
+        <tooltip-on-truncate
+          :title="namespaceFullName"
+          class="gl-truncate gl-text-size-h2 gl-font-bold"
+          boundary="viewport"
+          >{{ namespaceFullName }}</tooltip-on-truncate
+        >
+        <button
           v-gl-tooltip.viewport
-          data-testid="namespace-metadata-visibility-icon"
-          variant="subtle"
-          :name="data.visibilityLevelIcon"
+          data-testid="namespace-metadata-visibility-button"
+          class="gl-min-w-5 gl-border-0 gl-bg-transparent gl-p-0 gl-leading-0"
           :title="data.visibilityLevelTooltip"
-        />
+          :aria-label="data.visibilityLevelTooltip"
+        >
+          <gl-icon variant="subtle" :name="data.visibilityLevelIcon" />
+        </button>
       </div>
     </div>
   </div>
