@@ -43271,8 +43271,10 @@ msgstr ""
 msgid "Pipelines|\"Hello world\" with GitLab CI"
 msgstr ""
 
-msgid "Pipelines|%{counterLabel} more downstream pipelines"
-msgstr ""
+msgid "Pipelines|%{counterLabel} more downstream pipeline"
+msgid_plural "Pipelines|%{counterLabel} more downstream pipelines"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "Pipelines|Access GitLab University"
 msgstr ""
