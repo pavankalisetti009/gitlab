@@ -80,7 +80,8 @@ module Projects
         package_managers: [],
         component_names: [],
         source_types: [],
-        component_version_ids: []
+        component_version_ids: [],
+        not: { component_version_ids: [] }
       ).with_defaults(source_types: default_source_type_filters)
     end
 

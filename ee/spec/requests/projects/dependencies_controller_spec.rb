@@ -136,6 +136,11 @@ RSpec.describe Projects::DependenciesController, feature_category: :dependency_m
               let(:filter_value) { [occurrences.last.component_version_id] }
               let(:expected_results) { [occurrences.last] }
             end
+
+            it_behaves_like 'it can filter dependencies', :not do
+              let(:filter_value) { { component_version_ids: [occurrences.last.component_version_id] } }
+              let(:expected_results) { occurrences - [occurrences.last] }
+            end
           end
 
           shared_examples 'it can sort dependencies' do |sort|

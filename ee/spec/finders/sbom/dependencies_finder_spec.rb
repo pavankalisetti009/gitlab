@@ -185,38 +185,47 @@ RSpec.describe Sbom::DependenciesFinder, feature_category: :dependency_managemen
         end
       end
 
-      context 'when filtered by component IDs' do
-        let_it_be(:params) do
-          {
-            component_ids: [occurrence_1.component_id]
-          }
-        end
-
-        it 'returns only records corresponding to the filter' do
-          component_ids = dependencies.map(&:component_id)
-
-          expect(component_ids).to eq([occurrence_1.component_id])
-        end
-      end
-
       context 'when filtered by component version IDs' do
-        let_it_be(:params) do
-          {
-            component_version_ids: [occurrence_1.component_version_id]
-          }
-        end
-
         context 'when `version_filtering_on_project_level_dependency_list` feature flag is enabled' do
-          it 'returns only records corresponding to the filter' do
-            component_version_ids = dependencies.map(&:component_version_id)
+          context 'when negated filter present' do
+            let_it_be(:params) do
+              {
+                not: { component_version_ids: [occurrence_1.component_version_id] }
+              }
+            end
 
-            expect(component_version_ids).to eq([occurrence_1.component_version_id])
+            it 'returns only records corresponding to the filter' do
+              component_version_ids = dependencies.map(&:component_version_id)
+
+              expect(component_version_ids).to match_array([occurrence_2.component_version_id,
+                occurrence_3.component_version_id])
+            end
+          end
+
+          context 'when negated filter is not present' do
+            let_it_be(:params) do
+              {
+                component_version_ids: [occurrence_1.component_version_id]
+              }
+            end
+
+            it 'returns only records corresponding to the filter' do
+              component_version_ids = dependencies.map(&:component_version_id)
+
+              expect(component_version_ids).to eq([occurrence_1.component_version_id])
+            end
           end
         end
 
         context 'when `version_filtering_on_project_level_dependency_list` feature flag is disabled' do
           before do
             stub_feature_flags(version_filtering_on_project_level_dependency_list: false)
+          end
+
+          let_it_be(:params) do
+            {
+              component_version_ids: [occurrence_1.component_version_id]
+            }
           end
 
           it 'returns only records corresponding to the filter' do
