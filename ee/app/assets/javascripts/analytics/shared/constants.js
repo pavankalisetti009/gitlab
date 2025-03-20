@@ -51,6 +51,11 @@ export const DEFAULT_NULL_SERIES_OPTIONS = {
   },
 };
 
+export const AREA_CHART_SERIES_OPTIONS = {
+  areaStyle: { opacity: defaultAreaOpacity },
+  type: 'line',
+};
+
 export const BASE_FORECAST_SERIES_OPTIONS = {
   lineStyle: { type: 'dashed', color: DATA_VIZ_BLUE_500 },
   areaStyle: { opacity: defaultAreaOpacity, color: GRAY_50 },

@@ -18,6 +18,8 @@ export default {
     GlLink,
     GlSprintf,
     GlButton,
+    AreaChart: () =>
+      import('ee/analytics/analytics_dashboards/components/visualizations/area_chart.vue'),
     LineChart: () =>
       import('ee/analytics/analytics_dashboards/components/visualizations/line_chart.vue'),
     ColumnChart: () =>
