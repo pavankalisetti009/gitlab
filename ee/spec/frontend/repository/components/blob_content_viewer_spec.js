@@ -11,19 +11,20 @@ import waitForPromises from 'helpers/wait_for_promises';
 import BlobButtonGroup from '~/repository/components/blob_button_group.vue';
 import BlobContentViewer from '~/repository/components/blob_content_viewer.vue';
 import blobInfoQuery from 'shared_queries/repository/blob_info.query.graphql';
-import projectInfoQuery from '~/repository/queries/project_info.query.graphql';
+import projectInfoQuery from 'ee/repository/queries/project_info.query.graphql';
 import { isLoggedIn } from '~/lib/utils/common_utils';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import highlightMixin from '~/repository/mixins/highlight_mixin';
 import getRefMixin from '~/repository/mixins/get_ref';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import {
+  projectMock,
+  userPermissionsMock,
   simpleViewerMock,
   richViewerMock,
   propsMock,
   FILE_SIZE_3MB,
-} from 'jest/repository/mock_data';
-import { projectMock, userPermissionsMock } from 'ee_jest/repository/mock_data';
+} from 'ee_jest/repository/mock_data';
 import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
 
 jest.mock('~/lib/utils/common_utils');
@@ -171,7 +172,7 @@ describe('Blob content viewer component', () => {
         ${true}     | ${false}        | ${'root'}  | ${false}
         ${true}     | ${true}         | ${'peter'} | ${false}
       `(
-        'passes the correct lock states',
+        'passes the correct lock states when canPushCode is $canPushCode, canDownloadCode is $canDownloadCode, username is "$username"',
         async ({ canPushCode, canDownloadCode, username, canLock }) => {
           gon.current_username = username;
 
@@ -179,7 +180,7 @@ describe('Blob content viewer component', () => {
             pushCode: canPushCode,
             downloadCode: canDownloadCode,
             empty,
-            path: 'some/path/locked_file.js',
+            path: 'some/file.js',
           });
 
           expect(findBlobButtonGroup().props('canLock')).toBe(canLock);

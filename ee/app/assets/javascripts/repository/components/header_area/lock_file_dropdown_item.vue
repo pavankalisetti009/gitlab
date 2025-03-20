@@ -3,7 +3,6 @@ import { GlDisclosureDropdownItem, GlModal } from '@gitlab/ui';
 import { createAlert } from '~/alert';
 import { sprintf, __ } from '~/locale';
 import lockPathMutation from '~/repository/mutations/lock_path.mutation.graphql';
-import { DEFAULT_BLOB_INFO } from '~/repository/constants';
 
 export default {
   i18n: {
@@ -30,15 +29,13 @@ export default {
       type: String,
       required: true,
     },
-    pathLocks: {
-      type: Object,
-      required: false,
-      default: () => DEFAULT_BLOB_INFO.pathLocks,
+    canLock: {
+      type: Boolean,
+      required: true,
     },
-    userPermissions: {
-      type: Object,
-      required: false,
-      default: () => DEFAULT_BLOB_INFO.userPermissions,
+    isLocked: {
+      type: Boolean,
+      required: true,
     },
     isLoading: {
       type: Boolean,
@@ -81,24 +78,6 @@ export default {
           text: this.$options.i18n.actionCancel,
         },
       };
-    },
-    canLock() {
-      const { pushCode, downloadCode } = this.userPermissions;
-      const currentUsername = window.gon?.current_username;
-
-      if (this.pathLockedByUser && this.pathLockedByUser.username !== currentUsername) {
-        return false;
-      }
-
-      return pushCode && downloadCode;
-    },
-    pathLockedByUser() {
-      const pathLock = this.pathLocks?.nodes.find((node) => node.path === this.path);
-
-      return pathLock ? pathLock.user : null;
-    },
-    isLocked() {
-      return Boolean(this.pathLockedByUser);
     },
   },
   watch: {

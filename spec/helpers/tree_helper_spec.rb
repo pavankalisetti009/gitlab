@@ -117,6 +117,7 @@ RSpec.describe TreeHelper, feature_category: :source_code_management do
         project_id: project.id,
         ref: sha,
         ref_type: '',
+        root_ref: repository.root_ref,
         breadcrumbs: helper.breadcrumb_data_attributes,
         project_root_path: project_path(project),
         project_path: project.full_path,

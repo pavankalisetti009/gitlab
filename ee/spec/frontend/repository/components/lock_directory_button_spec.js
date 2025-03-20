@@ -12,7 +12,7 @@ import { useMockLocationHelper } from 'helpers/mock_window_location_helper';
 import LockDirectoryButton from 'ee_component/repository/components/lock_directory_button.vue';
 import {
   projectMock,
-  getProjectMockWithSpecifiedAccessLevel,
+  getProjectMockWithOverrides,
   exactDirectoryLock,
   upstreamDirectoryLock,
   downstreamDirectoryLock,
@@ -143,7 +143,7 @@ describe('LockDirectoryButton', () => {
         {
           name: 'user is does not have developer access level',
           data: {
-            project: getProjectMockWithSpecifiedAccessLevel(10),
+            project: getProjectMockWithOverrides({ accessLevel: 10 }),
           },
         },
       ];
@@ -215,7 +215,7 @@ describe('LockDirectoryButton', () => {
           projectInfoResolver: jest.fn().mockResolvedValue({
             data: {
               project: {
-                ...getProjectMockWithSpecifiedAccessLevel(40),
+                ...getProjectMockWithOverrides({ accessLevel: 40 }),
                 pathLocks: {
                   __typename: 'PathLockConnection',
                   nodes: [exactDirectoryLock],
@@ -368,7 +368,7 @@ describe('LockDirectoryButton', () => {
           name: 'user is does not have developer access level',
           data: {
             project: {
-              ...getProjectMockWithSpecifiedAccessLevel(10),
+              ...getProjectMockWithOverrides({ accessLevel: 10 }),
               pathLocks,
             },
           },
@@ -452,7 +452,7 @@ describe('LockDirectoryButton', () => {
           projectInfoResolvedValue: {
             data: {
               project: {
-                ...getProjectMockWithSpecifiedAccessLevel(10),
+                ...getProjectMockWithOverrides({ accessLevel: 10 }),
                 pathLocks: {
                   __typename: 'PathLockConnection',
                   nodes: [downstreamDirectoryLock],

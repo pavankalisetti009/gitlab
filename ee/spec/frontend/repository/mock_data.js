@@ -66,6 +66,7 @@ export const headerAppInjected = {
     'https://gitlab.com/example-group/example-project/-/jobs/artifacts/main/download?job=build',
   ],
   isBinary: false,
+  rootRef: 'main',
 };
 
 export const userPermissionsMock = {
@@ -77,7 +78,7 @@ export const userPermissionsMock = {
   __typename: 'ProjectPermissions',
 };
 
-const getProjectMembersWithAccessLevel = (accessLevel = 30) => {
+const getProjectMembersWithAccessLevel = (accessLevel) => {
   return {
     __typename: 'MemberInterfaceConnection',
     nodes: [
@@ -97,25 +98,32 @@ const getProjectMembersWithAccessLevel = (accessLevel = 30) => {
   };
 };
 
-export const getProjectMockWithSpecifiedAccessLevel = (accessLevel) => ({
+export const getProjectMockWithOverrides = ({
+  accessLevel = 30,
+  userPermissionsOverride = {},
+  pathLockNodesOverride = null,
+} = {}) => ({
   __typename: 'Project',
   id: 'gid://gitlab/Project/7',
-  userPermissions: userPermissionsMock,
+  userPermissions: { ...userPermissionsMock, ...userPermissionsOverride },
   pathLocks: {
     __typename: 'PathLockConnection',
-    nodes: [
-      {
-        __typename: 'PathLock',
-        id: 'gid://gitlab/PathLock/2',
-        path: 'some/path/locked_file.js',
-        user: {
-          id: 'gid://gitlab/User/1',
-          username: 'root',
-          name: 'Administrator',
-          __typename: 'UserCore',
-        },
-      },
-    ],
+    nodes:
+      pathLockNodesOverride !== null
+        ? pathLockNodesOverride
+        : [
+            {
+              __typename: 'PathLock',
+              id: 'gid://gitlab/PathLock/2',
+              path: 'some/file.js',
+              user: {
+                id: 'gid://gitlab/User/1',
+                username: 'root',
+                name: 'Administrator',
+                __typename: 'UserCore',
+              },
+            },
+          ],
   },
   repository: {
     empty: false,
@@ -123,7 +131,7 @@ export const getProjectMockWithSpecifiedAccessLevel = (accessLevel) => ({
   projectMembers: getProjectMembersWithAccessLevel(accessLevel),
 });
 
-export const projectMock = getProjectMockWithSpecifiedAccessLevel();
+export const projectMock = getProjectMockWithOverrides();
 
 export const exactDirectoryLock = {
   __typename: 'PathLock',
@@ -263,3 +271,60 @@ export const currentUserDataMock = {
   preferencesGitpodPath: 'preferences/gitpod/path',
   profileEnableGitpodPath: 'profile/enable/gitpod/path',
 };
+
+export const simpleViewerMock = {
+  __typename: 'RepositoryBlob',
+  id: '1',
+  name: 'some_file.js',
+  size: 123,
+  rawSize: 123,
+  rawTextBlob: 'raw content',
+  fileType: 'text',
+  language: 'javascript',
+  path: 'some_file.js',
+  webPath: 'some_file.js',
+  blamePath: 'blame/file.js',
+  editBlobPath: 'some_file.js/edit',
+  gitpodBlobUrl: 'https://gitpod.io#path/to/blob.js',
+  ideEditPath: 'some_file.js/ide/edit',
+  forkAndEditPath: 'some_file.js/fork/edit',
+  ideForkAndEditPath: 'some_file.js/fork/ide',
+  forkAndViewPath: 'some_file.js/fork/view',
+  codeNavigationPath: '',
+  projectBlobPathRoot: '',
+  environmentFormattedExternalUrl: '',
+  environmentExternalUrlForRouteMap: '',
+  canModifyBlob: true,
+  canModifyBlobWithWebIde: true,
+  canCurrentUserPushToBranch: true,
+  archived: false,
+  storedExternally: false,
+  externalStorageUrl: '',
+  externalStorage: 'lfs',
+  rawPath: 'some_file.js',
+  replacePath: 'some_file.js/replace',
+  pipelineEditorPath: 'path/to/pipeline/editor',
+  simpleViewer: {
+    fileType: 'text',
+    tooLarge: false,
+    type: 'simple',
+    renderError: null,
+  },
+  richViewer: null,
+};
+
+export const richViewerMock = {
+  ...simpleViewerMock,
+  richViewer: {
+    fileType: 'markup',
+    tooLarge: false,
+    type: 'rich',
+    renderError: null,
+  },
+};
+
+export const propsMock = { path: 'some_file.js', projectPath: 'some/path' };
+
+export const axiosMockResponse = { html: 'text', binary: true };
+
+export const FILE_SIZE_3MB = 3000000;

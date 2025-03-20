@@ -5,7 +5,7 @@ import VueApollo from 'vue-apollo';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import lockPathMutation from '~/repository/mutations/lock_path.mutation.graphql';
-import { projectMock, userPermissionsMock } from 'ee_jest/repository/mock_data';
+import { projectMock } from 'ee_jest/repository/mock_data';
 import LockFileDropdownItem from 'ee_component/repository/components/header_area/lock_file_dropdown_item.vue';
 import { createAlert } from '~/alert';
 
@@ -29,8 +29,8 @@ describe('LockFileDropdownItem component', () => {
         path: 'some/path/locked_file.js',
         projectPath: 'some/project/path',
         isLoading: false,
-        userPermissions: userPermissionsMock,
-        pathLocks: projectMock.pathLocks,
+        canLock: true,
+        isLocked: true,
         ...props,
       },
     });
@@ -54,10 +54,7 @@ describe('LockFileDropdownItem component', () => {
   it('renders disabled the lock dropdown item if user can not lock a file', async () => {
     createComponent({
       props: {
-        userPermissions: {
-          ...userPermissionsMock,
-          pushCode: false,
-        },
+        canLock: false,
       },
     });
     await waitForPromises();
@@ -94,11 +91,12 @@ describe('LockFileDropdownItem component', () => {
     });
   });
 
-  it('renders the Lock dropdown item label, when file is not locked', async () => {
+  it('renders the Lock dropdown item label, when file is not locked', () => {
     createComponent({
-      props: { pathLocks: { __typename: 'PathLockConnection', nodes: [] } },
+      props: {
+        isLocked: false,
+      },
     });
-    await waitForPromises();
 
     expect(findLockFileDropdownItem().props('item')).toMatchObject({
       text: 'Lock',
@@ -115,6 +113,12 @@ describe('LockFileDropdownItem component', () => {
 
   describe('Modal', () => {
     it('displays a confirm modal when the lock dropdown item is clicked', () => {
+      createComponent({
+        props: {
+          isLocked: true,
+        },
+      });
+
       findLockFileDropdownItem().vm.$emit('action');
 
       expect(findModal().text()).toBe('Are you sure you want to unlock locked_file.js?');
