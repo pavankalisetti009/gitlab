@@ -15,6 +15,28 @@ FactoryBot.define do
       }.to_json
     end
 
+    trait :project_visibility_not_internal do
+      name { 'project_visibility_not_internal' }
+      expression do
+        {
+          operator: "=",
+          field: "project_visibility",
+          value: "private"
+        }.to_json
+      end
+    end
+
+    trait :scanner_sast_running do
+      name { 'scanner_sast_running' }
+      expression do
+        {
+          operator: "=",
+          field: "scanner_sast_running",
+          value: true
+        }.to_json
+      end
+    end
+
     trait "external" do
       external_url { FFaker::Internet.unique.http_url }
       control_type { 'external' }

@@ -17,6 +17,19 @@ RSpec.describe Mutations::ComplianceManagement::ComplianceFramework::ComplianceR
   let_it_be(:developer) { create(:user) }
   let_it_be(:guest) { create(:user) }
 
+  let_it_be(:controls) do
+    [
+      {
+        expression: "{\"operator\":\"=\",\"field\":\"minimum_approvals_required\",\"value\":2}",
+        name: "minimum_approvals_required_2"
+      },
+      {
+        expression: "{\"operator\":\"=\",\"field\":\"project_visibility\",\"value\":\"private\"}",
+        name: "project_visibility_not_internal"
+      }
+    ]
+  end
+
   let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
   let(:params) do
     {
@@ -32,7 +45,7 @@ RSpec.describe Mutations::ComplianceManagement::ComplianceFramework::ComplianceR
     namespace.add_guest(guest)
   end
 
-  subject(:mutate) { mutation.resolve(id: global_id_of(requirement), params: params) }
+  subject(:mutate) { mutation.resolve(id: global_id_of(requirement), params: params, controls: controls) }
 
   context 'when feature is licensed' do
     before do
@@ -101,7 +114,12 @@ RSpec.describe Mutations::ComplianceManagement::ComplianceFramework::ComplianceR
       end
 
       it 'returns validation errors' do
-        expect(mutate[:errors]).to contain_exactly("Name can't be blank", "Description can't be blank")
+        expect(mutate[:errors])
+          .to contain_exactly(
+            "Name can't be blank",
+            "Description can't be blank",
+            "Failed to update compliance requirement"
+          )
       end
     end
   end

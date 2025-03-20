@@ -32,6 +32,12 @@ module ComplianceManagement
       has_many :project_requirement_compliance_statuses,
         class_name: 'ComplianceManagement::ComplianceFramework::ProjectRequirementComplianceStatus'
 
+      def delete_compliance_requirements_controls
+        ComplianceManagement::ComplianceFramework::ComplianceRequirementsControl
+          .where(compliance_requirement: self)
+          .delete_all
+      end
+
       private
 
       def requirements_count_per_framework

@@ -16,20 +16,53 @@ RSpec.describe 'Update a compliance requirement', feature_category: :compliance_
   let_it_be(:developer) { create(:user) }
   let_it_be(:guest) { create(:user) }
 
+  let(:controls) do
+    [
+      {
+        name: 'minimum_approvals_required_2',
+        expression: { operator: "=", field: "minimum_approvals_required", value: 2 }.to_json,
+        control_type: 'internal'
+      },
+      {
+        name: 'scanner_sast_running',
+        expression: { operator: "=", field: "scanner_sast_running", value: true }.to_json,
+        control_type: 'internal'
+      },
+      {
+        name: 'default_branch_protected',
+        expression: { operator: "=", field: "default_branch_protected", value: true }.to_json,
+        control_type: 'internal'
+      },
+      {
+        name: 'external_control',
+        control_type: 'external',
+        external_url: "https://external.test",
+        secret_token: 'token123'
+      }
+    ]
+  end
+
   let(:mutation) do
-    graphql_mutation(:update_compliance_requirement, { id: global_id_of(requirement), **mutation_params })
+    graphql_mutation(:update_compliance_requirement,
+      id: global_id_of(requirement),
+      params: mutation_params,
+      controls: controls
+    )
   end
 
   let(:mutation_params) do
     {
-      params: {
-        name: 'New Name',
-        description: 'New Description'
-      }
+      name: 'New Name',
+      description: 'New Description'
     }
   end
 
   subject(:mutate) { post_graphql_mutation(mutation, current_user: current_user) }
+
+  before do
+    create(:compliance_requirements_control, compliance_requirement: requirement)
+    create(:compliance_requirements_control, :project_visibility_not_internal, compliance_requirement: requirement)
+  end
 
   def mutation_response
     graphql_mutation_response(:update_compliance_requirement)
@@ -92,26 +125,99 @@ RSpec.describe 'Update a compliance requirement', feature_category: :compliance_
     context 'when current_user is group owner' do
       let(:current_user) { owner }
 
-      it_behaves_like 'a mutation that updates a compliance requirement'
+      context 'with valid params' do
+        context 'when controls are also passed' do
+          it_behaves_like 'a mutation that updates a compliance requirement'
+
+          it 'adds new compliance controls' do
+            mutate
+
+            requirement_controls = requirement.compliance_requirements_controls.order(id: :asc)
+
+            requirement_controls.each_with_index do |control, i|
+              expect(control).to have_attributes(
+                name: controls[i][:name],
+                expression: controls[i][:expression],
+                control_type: controls[i][:control_type],
+                external_url: controls[i][:external_url],
+                secret_token: controls[i][:secret_token]
+              )
+            end
+          end
+        end
+
+        context 'when controls param is missing' do
+          let(:mutation) do
+            graphql_mutation(:update_compliance_requirement,
+              id: global_id_of(requirement),
+              params: mutation_params
+            )
+          end
+
+          it_behaves_like 'a mutation that updates a compliance requirement'
+
+          it 'does not update existing controls' do
+            expect { mutate }.not_to change { requirement.compliance_requirements_controls }
+          end
+        end
+
+        context 'when controls param is an empty array' do
+          let(:controls) { [] }
+
+          it_behaves_like 'a mutation that updates a compliance requirement'
+
+          it 'deletes all control entries for the requirement' do
+            expect { mutate }.to change { requirement.compliance_requirements_controls.count }.from(2).to(0)
+          end
+        end
+      end
 
       context 'with invalid params' do
-        let(:mutation_params) do
-          {
-            params: {
+        context 'with invalid name' do
+          let(:mutation_params) do
+            {
               name: '',
               description: ''
             }
-          }
+          end
+
+          it 'returns an array of errors' do
+            mutate
+
+            expect(mutation_response['errors']).to contain_exactly "Description can't be blank", "Name can't be blank",
+              "Failed to update compliance requirement"
+          end
+
+          it 'does not update the requirement' do
+            expect { mutate }.to not_change { requirement.reload.attributes }
+          end
         end
 
-        it 'returns an array of errors' do
-          mutate
+        context 'with invalid controls param' do
+          let(:controls) do
+            [
+              {
+                expression: "{\"operator\":\"=\",\"field\":\"minimum_approvals_required\",\"value\":2}",
+                name: "minimum_approvals_required_2"
+              },
+              {
+                expression: "{\"operator\":\"=\",\"field\":\"project_visibility\",\"value\":\"invalid_value\"}",
+                name: "project_visibility_not_internal"
+              }
+            ]
+          end
 
-          expect(mutation_response['errors']).to contain_exactly "Description can't be blank", "Name can't be blank"
-        end
+          it 'returns an array of errors' do
+            mutate
 
-        it 'does not update the requirement' do
-          expect { mutate }.to not_change { requirement.reload.attributes }
+            expect(mutation_response['errors'])
+              .to contain_exactly "Failed to add compliance requirement control project_visibility_not_internal: " \
+                "Validation failed: Expression property '/value' is not one of: [\"private\", \"internal\", \"public\"]"
+          end
+
+          it 'does not update the requirement' do
+            expect { mutate }.to not_change { requirement.reload.attributes }
+          end
         end
       end
     end

@@ -60,4 +60,56 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirement,
     it { is_expected.to have_many(:project_control_compliance_statuses) }
     it { is_expected.to have_many(:project_requirement_compliance_statuses) }
   end
+
+  describe '#delete_compliance_requirements_controls' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:other_requirement) { create(:compliance_requirement) }
+    let_it_be(:other_control) { create(:compliance_requirements_control, compliance_requirement: other_requirement) }
+    let_it_be(:project) { create(:project, group: group) }
+    let_it_be(:framework) { create(:compliance_framework, namespace: group) }
+
+    let_it_be(:compliance_requirement) { create(:compliance_requirement, framework: framework) }
+    let_it_be(:control1) { create(:compliance_requirements_control, compliance_requirement: compliance_requirement) }
+    let_it_be(:control2) do
+      create(:compliance_requirements_control, :project_visibility_not_internal,
+        compliance_requirement: compliance_requirement)
+    end
+
+    before do
+      create(:project_control_compliance_status, compliance_requirement: compliance_requirement, project: project,
+        compliance_requirements_control: control1)
+      create(:project_control_compliance_status, compliance_requirement: compliance_requirement, project: project,
+        compliance_requirements_control: control2)
+    end
+
+    context 'when there are associated controls' do
+      it 'deletes all associated compliance_requirements_controls' do
+        expect do
+          compliance_requirement.delete_compliance_requirements_controls
+        end.to change { compliance_requirement.compliance_requirements_controls.count }.from(2).to(0)
+      end
+
+      it 'deletes all project controls statuses belonging to the requirement' do
+        expect do
+          compliance_requirement.delete_compliance_requirements_controls
+        end.to change { project.project_control_compliance_statuses.count }.from(2).to(0)
+      end
+
+      it 'does not delete any other compliance_requirements_controls' do
+        expect do
+          compliance_requirement.delete_compliance_requirements_controls
+        end.not_to change { other_requirement.compliance_requirements_controls.count }
+      end
+    end
+
+    context 'when there are no associated controls' do
+      let_it_be(:requirement_without_controls) { create(:compliance_requirement) }
+
+      it 'does not raise an error' do
+        expect do
+          requirement_without_controls.delete_compliance_requirements_controls
+        end.not_to raise_error
+      end
+    end
+  end
 end
