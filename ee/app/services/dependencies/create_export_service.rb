@@ -52,7 +52,7 @@ module Dependencies
         'create_dependency_list_export',
         user: author,
         project: project,
-        namespace: dependency_list_export.group || project.namespace,
+        namespace: dependency_list_export.group || project&.namespace,
         additional_properties: {
           label: dependency_list_export.export_type,
           property: exportable.class.name
