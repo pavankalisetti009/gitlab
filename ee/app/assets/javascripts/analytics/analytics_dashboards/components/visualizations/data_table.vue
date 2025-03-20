@@ -29,6 +29,7 @@ export default {
   },
   computed: {
     fields() {
+      // NOTE: we derive the field names from the keys in the first row of data
       if (this.data.length < 1) {
         return null;
       }
