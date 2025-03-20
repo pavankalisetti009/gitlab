@@ -80,9 +80,13 @@ export default {
         toggle-class="gl-flex gl-items-center !gl-px-3 gl-bg-transparent !gl-shadow-none"
         no-caret
       >
-        <gl-disclosure-dropdown-item data-testid="remove-project-button" @action="onRemove()">
+        <gl-disclosure-dropdown-item
+          data-testid="remove-project-button"
+          variant="danger"
+          @action="onRemove()"
+        >
           <template #list-item>
-            <span class="gl-text-red-500"> {{ $options.removeProjectText }} </span>
+            {{ $options.removeProjectText }}
           </template>
         </gl-disclosure-dropdown-item>
       </gl-disclosure-dropdown>
