@@ -299,7 +299,7 @@ We strongly recommend running the regression evaluator in at least the following
 
 | Environment                                                                 | Evaluation pipeline name                                  |
 | -----------                                                                 | ------------------------                                  |
-| Self-managed GitLab and a custom model that is widely adopted               | `duo-chat regression sm: [bedrock_mistral_8x7b_instruct]` |
+| GitLab Self-Managed and a custom model that is widely adopted               | `duo-chat regression sm: [bedrock_mistral_8x7b_instruct]` |
 | GitLab.com and GitLab Duo Enterprise add-on                                 | `duo-chat regression .com: [duo_enterprise]`              |
 | GitLab.com and GitLab Duo Pro add-on                                        | `duo-chat regression .com: [duo_pro]`                     |
 
