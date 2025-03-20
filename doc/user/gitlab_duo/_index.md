@@ -32,7 +32,7 @@ how and where you can access these features.
 The language models that are the source for GitLab Duo depend on where you're using it.
 
 - On GitLab.com: GitLab hosts the models and connects to them through the cloud-based AI gateway.
-- On GitLab Self-Managed, there are two options:
+- On GitLab Self-Managed, two options exist:
 
   - **GitLab** can [host the models and the cloud-based AI gateway](setup.md).
   - **Your organization** can [use GitLab Duo Self-Hosted](../../administration/gitlab_duo_self_hosted/_index.md),
