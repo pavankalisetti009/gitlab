@@ -60,6 +60,8 @@ const asTimeSeries = ({ metrics, targetMetric, daysCount, nullSeriesTitle = __('
     return [date, rest[targetMetric]];
   });
 
+  if (!rawData.some(([, value]) => Boolean(value))) return [];
+
   const data = { name: VALUE_STREAM_METRIC_TILE_METADATA[targetMetric].label, data: rawData };
   const [nullSeries, primarySeries] = buildNullSeries({ seriesData: [data], nullSeriesTitle });
   const additionalSeries = calculateAdditionalSeries({ targetMetric, rawData, daysCount });

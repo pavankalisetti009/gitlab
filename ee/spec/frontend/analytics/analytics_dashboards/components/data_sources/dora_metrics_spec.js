@@ -198,6 +198,24 @@ describe('Dora Metrics Data Source', () => {
           visualizationOptionOverrides: DORA_METRICS_CHARTS_ADDITIONAL_OPTS[query.metric],
         });
       });
+
+      describe('no data available', () => {
+        beforeEach(async () => {
+          mockResolvedQuery({ metrics: [] });
+          res = await fetch({
+            namespace,
+            query: {
+              ...query,
+              interval,
+            },
+            setVisualizationOverrides: mockSetVisualizationOverrides,
+          });
+        });
+
+        it('returns an empty array', () => {
+          expect(res).toEqual([]);
+        });
+      });
     });
   });
 });
