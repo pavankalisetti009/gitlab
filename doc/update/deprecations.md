@@ -1524,14 +1524,14 @@ to ensure the correct locations are being used to mirror the required scanner im
 
 </div>
 
-<div class="deprecation breaking-change" data-milestone="18.0">
+<div class="deprecation " data-milestone="18.0">
 
 ### REST API endpoint `pre_receive_secret_detection_enabled` is deprecated
 
 <div class="deprecation-notes">
 
 - Announced in GitLab <span class="milestone">17.9</span>
-- Removal in GitLab <span class="milestone">18.0</span> ([breaking change](https://docs.gitlab.com/update/terminology/#breaking-change))
+- Removal in GitLab <span class="milestone">18.0</span>
 - To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/gitlab/-/issues/514413).
 
 </div>
