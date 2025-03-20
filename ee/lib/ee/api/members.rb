@@ -229,7 +229,7 @@ module EE
           delete ":id/billable_members/:user_id", feature_category: :seat_cost_management do
             group = find_group!(params[:id])
 
-            result = ::BillableMembers::DestroyService.new(group, user_id: params[:user_id], current_user: current_user).execute
+            result = ::Members::ScheduleDeletionService.new(group, params[:user_id], current_user).execute
 
             if result[:status] == :success
               no_content!
