@@ -32,6 +32,18 @@ module Ai
         )
       end
 
+      def dup_as_duo_chat_thread!
+        transaction do
+          new_thread = self.class.new(attributes.except('id'))
+          new_thread.conversation_type = :duo_chat
+          new_thread.save!
+          messages.recent(::Gitlab::Llm::ChatStorage::Postgresql::MAX_MESSAGES).each do |message|
+            new_thread.messages.create(message.attributes.except('id', 'thread_id'))
+          end
+          new_thread
+        end
+      end
+
       private
 
       def populate_organization

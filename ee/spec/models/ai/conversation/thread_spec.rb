@@ -87,4 +87,57 @@ RSpec.describe Ai::Conversation::Thread, type: :model, feature_category: :duo_ch
   it_behaves_like 'it has loose foreign keys' do
     let(:factory_name) { :ai_conversation_thread }
   end
+
+  describe '#dup_as_duo_chat_thread!' do
+    let_it_be(:original_thread) do
+      create(:ai_conversation_thread, :with_messages, conversation_type: :duo_chat_legacy)
+    end
+
+    subject(:duplicated_thread) { original_thread.dup_as_duo_chat_thread! }
+
+    it 'clones thread and messages' do
+      expect do
+        duplicated_thread
+      end.to change { described_class.count }.by(1)
+        .and change { Ai::Conversation::Message.count }.by(2)
+
+      expect(duplicated_thread.conversation_type).to eq('duo_chat')
+
+      # Verify attributes
+      expect(duplicated_thread).to have_attributes(
+        conversation_type: 'duo_chat',
+        user_id: original_thread.user_id,
+        organization_id: original_thread.organization_id
+      )
+      expect(duplicated_thread.id).not_to eq(original_thread.id)
+
+      original_message = original_thread.messages.first
+      duplicated_message = duplicated_thread.messages.first
+
+      expect(duplicated_message).to have_attributes(
+        content: original_message.content,
+        role: original_message.role,
+        thread_id: duplicated_thread.id
+      )
+      expect(duplicated_message.id).not_to eq(original_message.id)
+      expect(duplicated_message.thread_id).not_to eq(original_message.thread_id)
+    end
+
+    context 'when transaction fails' do
+      before do
+        allow_next_instance_of(described_class) do |instance|
+          allow(instance).to receive(:save!).and_raise(ActiveRecord::RecordInvalid)
+        end
+      end
+
+      it 'does not create any records' do
+        expect do
+          duplicated_thread
+        rescue ActiveRecord::RecordInvalid
+          nil
+        end.to not_change(described_class, :count)
+          .and not_change(Ai::Conversation::Message, :count)
+      end
+    end
+  end
 end
