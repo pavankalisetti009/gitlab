@@ -46,31 +46,18 @@ module Dependencies
     end
 
     def track_export_creation
-      return unless tracking_event
-
       project = dependency_list_export.project
 
       track_internal_event(
-        tracking_event,
+        'create_dependency_list_export',
         user: author,
         project: project,
         namespace: dependency_list_export.group || project.namespace,
         additional_properties: {
-          label: dependency_list_export.export_type
+          label: dependency_list_export.export_type,
+          property: exportable.class.name
         }
       )
     end
-
-    def tracking_event
-      case exportable
-      when ::Project
-        "project_dependency_list_export_created"
-      when ::Group
-        "group_dependency_list_export_created"
-      when ::Ci::Pipeline
-        "pipeline_dependency_list_export_created"
-      end
-    end
-    strong_memoize_attr :tracking_event
   end
 end
