@@ -9,6 +9,8 @@ RSpec.describe MergeRequests::CloseService, feature_category: :code_review_workf
   let(:current_user) { merge_request.author }
   let(:service) { described_class.new(project: project, current_user: current_user) }
 
+  subject(:execute) { service.execute(merge_request) }
+
   describe '#execute' do
     it 'executes the close service' do
       expect_next_instance_of(described_class) do |instance|
@@ -16,11 +18,11 @@ RSpec.describe MergeRequests::CloseService, feature_category: :code_review_workf
           .with(merge_request)
       end
 
-      service.execute(merge_request)
+      execute
     end
 
     it 'publishes closed event' do
-      expect { service.execute(merge_request) }
+      expect { execute }
         .to publish_event(::MergeRequests::ClosedEvent).with(
           merge_request_id: merge_request.id
         )
@@ -30,7 +32,7 @@ RSpec.describe MergeRequests::CloseService, feature_category: :code_review_workf
       it 'removes the unmergeable flag after the service is run' do
         merge_request.approval_state.temporarily_unapprove!
 
-        service.execute(merge_request)
+        execute
 
         merge_request.reload
 
@@ -47,7 +49,7 @@ RSpec.describe MergeRequests::CloseService, feature_category: :code_review_workf
         it 'does not remove the unmergeable flag' do
           merge_request.approval_state.temporarily_unapprove!
 
-          service.execute(merge_request)
+          execute
 
           merge_request.reload
 

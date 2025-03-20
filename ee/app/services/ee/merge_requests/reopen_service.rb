@@ -9,6 +9,7 @@ module EE
       def execute(merge_request)
         super.tap do
           delete_approvals(merge_request)
+          resync_policies(merge_request)
 
           if current_user.project_bot?
             log_audit_event(merge_request, 'merge_request_reopened_by_project_bot',
@@ -27,6 +28,21 @@ module EE
             merge_request_id: merge_request.id
           })
         )
+      end
+
+      def resync_policies(merge_request)
+        return if ::Feature.disabled?(:cleanup_stale_policy_violations, project)
+        return unless project.licensed_feature_available?(:security_orchestration_policies)
+
+        # Ensure that we re-create violations and require approvals if they were previously set as optional
+        merge_request.synchronize_approval_rules_from_target_project
+
+        pipeline_id = merge_request.head_pipeline_id
+        return unless pipeline_id
+
+        ::Ci::SyncReportsToReportApprovalRulesWorker.perform_async(pipeline_id)
+        ::Security::ScanResultPolicies::SyncMergeRequestApprovalsWorker.perform_async(pipeline_id, merge_request.id)
+        ::Security::UnenforceablePolicyRulesPipelineNotificationWorker.perform_async(pipeline_id)
       end
     end
   end

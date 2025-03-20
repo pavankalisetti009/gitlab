@@ -209,46 +209,6 @@ RSpec.describe MergeRequests::PostMergeService, feature_category: :code_review_w
           execute
         end
       end
-
-      describe '#track_policies_running_violations' do
-        let(:policy) { create(:scan_result_policy_read, project: project) }
-
-        context 'with running_scan_result_policy_violations' do
-          let!(:violation) do
-            create(:scan_result_policy_violation, :running, project: project, merge_request: merge_request,
-              scan_result_policy_read: policy)
-          end
-
-          it 'logs a message' do
-            expect(Gitlab::AppJsonLogger).to receive(:info).with(a_hash_including(
-              workflow: 'approval_policy_evaluation',
-              message: 'Running scan result policy violations after merge',
-              merge_request_id: merge_request.id,
-              violation_ids: [violation.id]
-            ))
-
-            execute
-          end
-
-          context 'when feature is not licensed' do
-            let(:security_orchestration_enabled) { false }
-
-            it 'does not log a message' do
-              expect(Gitlab::AppJsonLogger).not_to receive(:info)
-
-              execute
-            end
-          end
-        end
-
-        context 'without running_scan_result_policy_violations' do
-          it 'does not log a message' do
-            expect(Gitlab::AppJsonLogger).not_to receive(:info)
-
-            execute
-          end
-        end
-      end
     end
 
     context 'when merge request is a blocker for other merge requests' do

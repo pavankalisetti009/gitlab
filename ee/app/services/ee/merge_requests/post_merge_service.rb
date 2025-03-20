@@ -4,7 +4,6 @@ module EE
   module MergeRequests
     module PostMergeService
       extend ::Gitlab::Utils::Override
-      include ::Security::ScanResultPolicies::PolicyLogger
 
       override :execute
       def execute(merge_request, source = nil)
@@ -28,7 +27,6 @@ module EE
         sync_security_scan_orchestration_policies(target_project)
         trigger_blocked_merge_requests_merge_status_updated(merge_request)
         track_policies_fallback_behavior(merge_request)
-        track_policies_running_violations(merge_request)
         publish_event_store_event(merge_request)
       end
 
@@ -90,23 +88,6 @@ module EE
         return unless project.licensed_feature_available?(:security_orchestration_policies)
 
         Security::ScanResultPolicies::FallbackBehaviorTrackingWorker.perform_async(merge_request.id)
-      end
-
-      def track_policies_running_violations(merge_request)
-        return unless project.licensed_feature_available?(:security_orchestration_policies)
-
-        violations = merge_request.running_scan_result_policy_violations
-        return if violations.none?
-
-        log_policy_evaluation('post_merge', 'Running scan result policy violations after merge',
-          project: project,
-          merge_request_id: merge_request.id,
-          merge_request_iid: merge_request.iid,
-          head_pipeline_id: merge_request.diff_head_pipeline&.id,
-          violation_ids: violations.map(&:id),
-          scan_result_policy_ids: violations.map(&:scan_result_policy_id),
-          approval_policy_rule_ids: violations.map(&:approval_policy_rule_id)
-        )
       end
 
       def trigger_blocked_merge_requests_merge_status_updated(merge_request)

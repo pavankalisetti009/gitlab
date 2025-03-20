@@ -64,5 +64,87 @@ RSpec.describe MergeRequests::ReopenService, feature_category: :code_review_work
           .from(2).to(0)
       end
     end
+
+    describe '#resync_policies' do
+      let(:feature_licensed) { true }
+      let_it_be(:scan_result_policy_read) { create(:scan_result_policy_read, project: project) }
+      let_it_be(:project_approval_rule) do
+        create(:approval_project_rule, :scan_finding, project: project, approvals_required: 1,
+          scan_result_policy_read: scan_result_policy_read)
+      end
+
+      before do
+        stub_licensed_features(security_orchestration_policies: feature_licensed)
+      end
+
+      it 'recreates policies violations based on approval rules' do
+        expect { merge_request_reopen_service }
+          .to change { merge_request.running_scan_result_policy_violations.count }.from(0).to(1)
+
+        expect(merge_request.scan_result_policy_violations.first)
+          .to have_attributes(
+            project: project, merge_request: merge_request, scan_result_policy_read: scan_result_policy_read
+          )
+      end
+
+      context 'with head pipeline' do
+        let_it_be(:head_pipeline) do
+          create(
+            :ee_ci_pipeline,
+            :with_license_scanning_feature_branch,
+            project: project,
+            ref: merge_request.source_branch,
+            sha: merge_request.diff_head_sha,
+            merge_requests_as_head_pipeline: [merge_request]
+          )
+        end
+
+        it 'triggers workers', :aggregate_failures do
+          expect(::Ci::SyncReportsToReportApprovalRulesWorker).to receive(:perform_async).with(head_pipeline.id)
+          expect(::Security::ScanResultPolicies::SyncMergeRequestApprovalsWorker)
+            .to receive(:perform_async).with(head_pipeline.id, merge_request.id)
+          expect(::Security::UnenforceablePolicyRulesPipelineNotificationWorker)
+            .to receive(:perform_async).with(head_pipeline.id)
+
+          merge_request_reopen_service
+        end
+
+        context 'when feature flag "cleanup_stale_policy_violations" is disabled' do
+          before do
+            stub_feature_flags(cleanup_stale_policy_violations: false)
+          end
+
+          it 'does not update the violations' do
+            expect { merge_request_reopen_service }.not_to change { merge_request.scan_result_policy_violations.count }
+          end
+
+          it 'does not trigger workers', :aggregate_failures do
+            expect(::Ci::SyncReportsToReportApprovalRulesWorker).not_to receive(:perform_async)
+            expect(::Security::ScanResultPolicies::SyncFindingsToApprovalRulesWorker).not_to receive(:perform_async)
+            expect(::Security::UnenforceablePolicyRulesPipelineNotificationWorker).not_to receive(:perform_async)
+
+            merge_request_reopen_service
+          end
+        end
+
+        context 'when feature is not licensed' do
+          let(:feature_licensed) { false }
+
+          it 'does not trigger workers', :aggregate_failures do
+            expect(::Ci::SyncReportsToReportApprovalRulesWorker).not_to receive(:perform_async)
+            expect(::Security::ScanResultPolicies::SyncFindingsToApprovalRulesWorker).not_to receive(:perform_async)
+            expect(::Security::UnenforceablePolicyRulesPipelineNotificationWorker).not_to receive(:perform_async)
+
+            merge_request_reopen_service
+          end
+
+          it 'does not recreate policies violations' do
+            expect { merge_request_reopen_service }.not_to change { merge_request.scan_result_policy_violations.count }
+
+            merge_request_reopen_service
+          end
+        end
+      end
+    end
   end
 end
