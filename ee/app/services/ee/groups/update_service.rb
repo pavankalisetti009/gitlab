@@ -37,7 +37,7 @@ module EE
         end
 
         update_cascading_settings
-        activate_pending_members
+        handle_pending_members
         update_amazon_q_service_account!
         publish_ai_settings_changed_event
       end
@@ -159,11 +159,14 @@ module EE
         end
       end
 
-      def activate_pending_members
+      def handle_pending_members
         settings = group.namespace_settings
 
-        if settings.previous_changes[:seat_control] == %w[user_cap off]
+        case settings.previous_changes[:seat_control]
+        when %w[user_cap off]
           ::Members::ActivateService.for_group(group).execute(current_user: current_user)
+        when %w[user_cap block_overages]
+          ::Members::DeletePendingMembersWorker.perform_async(group.id, current_user.id)
         end
       end
 
