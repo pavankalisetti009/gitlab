@@ -26,7 +26,7 @@ RSpec.shared_examples Integrations::Base::AmazonQ do
       integration.execute({ some_data: :data })
     end
 
-    context 'when a user can be found' do
+    context 'when a user can be found', :request_store do
       using RSpec::Parameterized::TableSyntax
 
       where(:object_kind, :event_id) do
@@ -49,6 +49,37 @@ RSpec.shared_examples Integrations::Base::AmazonQ do
           end
 
           integration.execute(data)
+        end
+      end
+
+      context 'and the user is a composite identity' do
+        let_it_be(:composite_identity_user) { create(:user, :service_account, composite_identity_enforced: true) }
+        let_it_be(:data) { { object_kind: :pipeline, user: { id: composite_identity_user.id } } }
+
+        it 'does not send events if user is not passed' do
+          expect(::Gitlab::Llm::QAi::Client).not_to receive(:new)
+
+          integration.execute(data)
+        end
+
+        context 'and it is scoped to a user' do
+          before do
+            ::Gitlab::Auth::Identity.fabricate(composite_identity_user).link!(user)
+          end
+
+          it 'sends an event to amazon q' do
+            ::Ai::Setting.instance.update!(amazon_q_role_arn: 'role-arn')
+
+            expect_next_instance_of(::Gitlab::Llm::QAi::Client, user) do |instance|
+              expect(instance).to receive(:create_event).with(
+                payload: { source: :web_hook, data: data },
+                role_arn: 'role-arn',
+                event_id: 'Pipeline Hook'
+              )
+            end
+
+            integration.execute(data)
+          end
         end
       end
     end
