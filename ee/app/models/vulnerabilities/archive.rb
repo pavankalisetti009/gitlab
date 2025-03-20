@@ -2,7 +2,12 @@
 
 module Vulnerabilities
   class Archive < Gitlab::Database::SecApplicationRecord
+    include PartitionedTable
+
     self.table_name = 'vulnerability_archives'
+    self.primary_key = :id
+
+    partitioned_by :date, strategy: :monthly, retain_for: 36.months
 
     belongs_to :project, optional: false
     has_many :archived_records, class_name: 'Vulnerabilities::ArchivedRecord'
