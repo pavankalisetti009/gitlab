@@ -3243,6 +3243,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: security_scan_result_policies_cleanup_merge_request_violations
+  :worker_name: Security::ScanResultPolicies::CleanupMergeRequestViolationsWorker
+  :feature_category: :security_policy_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: security_scan_result_policies_delete_scan_result_policy_reads
   :worker_name: Security::ScanResultPolicies::DeleteScanResultPolicyReadsWorker
   :feature_category: :security_policy_management
