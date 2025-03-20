@@ -61221,9 +61221,6 @@ msgstr ""
 msgid "Todos|Could not restore to-dos."
 msgstr ""
 
-msgid "Todos|Created"
-msgstr ""
-
 msgid "Todos|Design"
 msgstr ""
 
@@ -61344,6 +61341,9 @@ msgid "Todos|Raw text search is not currently supported. Please use the availabl
 msgstr ""
 
 msgid "Todos|Reason"
+msgstr ""
+
+msgid "Todos|Recommended"
 msgstr ""
 
 msgid "Todos|Remove snooze"
