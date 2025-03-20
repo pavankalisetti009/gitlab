@@ -51973,9 +51973,6 @@ msgstr ""
 msgid "Search (3 character minimum)"
 msgstr ""
 
-msgid "Search Within"
-msgstr ""
-
 msgid "Search a group"
 msgstr ""
 
@@ -52103,6 +52100,9 @@ msgid "Search to add %{title}"
 msgstr ""
 
 msgid "Search users"
+msgstr ""
+
+msgid "Search within"
 msgstr ""
 
 msgid "Search your projects"
