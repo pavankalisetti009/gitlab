@@ -13,6 +13,9 @@ module Ai
     belongs_to :amazon_q_oauth_application, class_name: 'Doorkeeper::Application', optional: true
     belongs_to :amazon_q_service_account_user, class_name: 'User', optional: true
 
+    belongs_to :duo_workflow_oauth_application, class_name: 'Doorkeeper::Application', optional: true
+    belongs_to :duo_workflow_service_account_user, class_name: 'User', optional: true
+
     def self.instance
       # rubocop:disable Performance/ActiveRecordSubtransactionMethods -- only
       # uses a subtransaction if creating a record, which should only happen
