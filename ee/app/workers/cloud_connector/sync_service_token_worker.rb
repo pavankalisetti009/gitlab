@@ -10,7 +10,8 @@ module CloudConnector
 
     idempotent!
 
-    sidekiq_options retry: 3
+    # Retry for up to approximately 17 hours
+    sidekiq_options retry: 12
 
     worker_has_external_dependencies!
 
