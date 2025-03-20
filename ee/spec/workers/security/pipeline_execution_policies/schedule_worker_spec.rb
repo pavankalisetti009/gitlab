@@ -17,7 +17,7 @@ RSpec.describe Security::PipelineExecutionPolicies::ScheduleWorker, feature_cate
     subject(:perform) { worker.perform }
 
     before do
-      allow(Random).to receive(:rand).with(time_window).and_return(delay)
+      allow(Random).to receive(:rand).and_return(delay)
 
       schedule.update!(next_run_at: 1.hour.ago)
     end
