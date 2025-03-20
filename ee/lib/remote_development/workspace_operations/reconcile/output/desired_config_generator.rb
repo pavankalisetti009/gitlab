@@ -329,10 +329,7 @@ module RemoteDevelopment
             gitlab_workspaces_proxy_namespace = workspaces_agent_config.gitlab_workspaces_proxy_namespace
             egress_ip_rules = workspaces_agent_config.network_policy_egress
 
-            policy_types = [
-              -"Ingress",
-              -"Egress"
-            ]
+            policy_types = %w[Ingress Egress]
 
             proxy_namespace_selector = {
               matchLabels: {
