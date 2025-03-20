@@ -89,10 +89,16 @@ module Sbom
     end
 
     def filter_by_component_version_ids
-      return if Feature.disabled?(:version_filtering_on_project_level_dependency_list, dependable) ||
-        params[:component_version_ids].blank?
+      negated_filter = params[:not]
 
-      @collection = @collection.filter_by_component_version_ids(params[:component_version_ids])
+      return if Feature.disabled?(:version_filtering_on_project_level_dependency_list, dependable) ||
+        (params[:component_version_ids].blank? && negated_filter.nil?)
+
+      if params[:component_version_ids]
+        @collection = @collection.filter_by_component_version_ids(params[:component_version_ids])
+      elsif negated_filter && negated_filter[:component_version_ids]
+        @collection = @collection.filter_by_non_component_version_ids(negated_filter[:component_version_ids])
+      end
     end
 
     def sort_direction
