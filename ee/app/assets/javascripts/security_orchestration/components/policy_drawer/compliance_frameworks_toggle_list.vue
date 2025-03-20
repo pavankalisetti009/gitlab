@@ -1,4 +1,5 @@
 <script>
+import { uniqueId } from 'lodash';
 import { GlLabel, GlPopover } from '@gitlab/ui';
 import { sprintf, __ } from '~/locale';
 import {
@@ -46,9 +47,15 @@ export default {
       return Math.max(difference, 0);
     },
     complianceFrameworksFormatted() {
-      return this.sanitizedLabelsTo === 0
-        ? this.complianceFrameworks
-        : this.complianceFrameworks.slice(0, this.sanitizedLabelsTo);
+      const sanatizedFrameworks =
+        this.sanitizedLabelsTo === 0
+          ? this.complianceFrameworks
+          : this.complianceFrameworks.slice(0, this.sanitizedLabelsTo);
+
+      return sanatizedFrameworks.map((framework) => ({
+        ...framework,
+        id: uniqueId(framework.id),
+      }));
     },
     sanitizedLabelsTo() {
       return Number.isNaN(this.labelsToShow) ? 0 : Math.ceil(this.labelsToShow);

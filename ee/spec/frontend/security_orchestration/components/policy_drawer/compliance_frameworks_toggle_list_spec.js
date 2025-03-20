@@ -3,6 +3,8 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import ComplianceFrameworksToggleList from 'ee/security_orchestration/components/policy_drawer/compliance_frameworks_toggle_list.vue';
 import { complianceFrameworksResponse as defaultNodes } from 'ee_jest/security_orchestration/mocks/mock_apollo';
 
+jest.mock('lodash/uniqueId', () => jest.fn((prefix) => `${prefix}_unique_id`));
+
 describe('ComplianceFrameworksToggleList', () => {
   let wrapper;
 
@@ -37,11 +39,13 @@ describe('ComplianceFrameworksToggleList', () => {
 
     it('sets the correct attributes on popovers', () => {
       const popovers = findAllPopovers();
+      const labels = findAllLabels();
 
       defaultNodes.forEach((node, index) => {
+        expect(labels.at(index).attributes('id')).toBe(`${node.id}_unique_id`);
         expect(popovers.at(index).props()).toMatchObject({
           title: node.name,
-          target: node.id,
+          target: `${node.id}_unique_id`,
         });
 
         expect(popovers.at(index).text()).toBe(node.description);
