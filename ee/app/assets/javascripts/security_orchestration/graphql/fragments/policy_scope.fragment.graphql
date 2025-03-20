@@ -7,6 +7,7 @@ fragment PolicyScope on PolicyScope {
       name
       color
       description
+      editPath
       projects {
         nodes {
           id

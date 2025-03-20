@@ -32,7 +32,7 @@ import {
   complianceFrameworks,
   generateMockResponse,
   openDrawer,
-  normaliseText,
+  normalizeText,
 } from './utils';
 
 Vue.use(VueApollo);
@@ -126,6 +126,8 @@ const defaultRequestHandlers = {
 describe('Policies List specific projects policy scope', () => {
   let wrapper;
   let requestHandlers;
+  const defaultRowText =
+    'Thisappliestofollowingcomplianceframeworks:test-0.0.1test-0.0.1Editcomplianceframeworktest-0.0.2test-0.0.2Editcomplianceframework';
 
   const createWrapper = ({ handlers = [], provide = {} } = {}) => {
     requestHandlers = {
@@ -176,13 +178,13 @@ describe('Policies List specific projects policy scope', () => {
       );
 
       it.each`
-        policyType              | policyScopeRowIndex | selectedRow                                     | expectedResult
-        ${'Pipeline execution'} | ${4}                | ${mockPipelineExecutionPoliciesProjectResponse} | ${'Thisappliestofollowingcomplianceframeworks:test-0.0.1test-0.0.1test-0.0.2test-0.0.2'}
-        ${'Scan execution'}     | ${1}                | ${mockScanExecutionPoliciesProjectResponse}     | ${'Thisappliestofollowingcomplianceframeworks:test-0.0.1test-0.0.1test-0.0.2test-0.0.2'}
-        ${'Scan Result'}        | ${2}                | ${mockScanResultPoliciesProjectResponse}        | ${'Thisappliestofollowingcomplianceframeworks:test-0.0.1test-0.0.1test-0.0.2test-0.0.2'}
+        policyType              | policyScopeRowIndex | selectedRow
+        ${'Pipeline execution'} | ${4}                | ${mockPipelineExecutionPoliciesProjectResponse}
+        ${'Scan execution'}     | ${1}                | ${mockScanExecutionPoliciesProjectResponse}
+        ${'Scan Result'}        | ${2}                | ${mockScanResultPoliciesProjectResponse}
       `(
         'scoped to linked groups when project is an SPP for $policyType',
-        async ({ policyScopeRowIndex, selectedRow, expectedResult }) => {
+        async ({ policyScopeRowIndex, selectedRow }) => {
           createWrapper({
             handlers: {
               linkedSppItemsResponse: mockLinkedSppItemsResponse({
@@ -194,13 +196,13 @@ describe('Policies List specific projects policy scope', () => {
 
           await waitForPromises();
 
-          expect(normaliseText(findAllListComponentScope().at(policyScopeRowIndex).text())).toBe(
-            expectedResult,
+          expect(normalizeText(findAllListComponentScope().at(policyScopeRowIndex).text())).toBe(
+            defaultRowText,
           );
 
           await openDrawer(findTable(), [selectedRow]);
 
-          expect(normaliseText(findScopeInfoRow().text())).toContain(expectedResult);
+          expect(normalizeText(findScopeInfoRow().text())).toContain(defaultRowText);
         },
       );
     });
@@ -208,13 +210,13 @@ describe('Policies List specific projects policy scope', () => {
 
   describe('group level', () => {
     it.each`
-      policyType              | policyScopeRowIndex | selectedRow                                     | expectedResult
-      ${'Pipeline execution'} | ${4}                | ${mockPipelineExecutionPoliciesProjectResponse} | ${'Thisappliestofollowingcomplianceframeworks:test-0.0.1test-0.0.1test-0.0.2test-0.0.2'}
-      ${'Scan execution'}     | ${1}                | ${mockScanExecutionPoliciesProjectResponse}     | ${'Thisappliestofollowingcomplianceframeworks:test-0.0.1test-0.0.1test-0.0.2test-0.0.2'}
-      ${'Scan Result'}        | ${2}                | ${mockScanResultPoliciesProjectResponse}        | ${'Thisappliestofollowingcomplianceframeworks:test-0.0.1test-0.0.1test-0.0.2test-0.0.2'}
+      policyType              | policyScopeRowIndex | selectedRow
+      ${'Pipeline execution'} | ${4}                | ${mockPipelineExecutionPoliciesProjectResponse}
+      ${'Scan execution'}     | ${1}                | ${mockScanExecutionPoliciesProjectResponse}
+      ${'Scan Result'}        | ${2}                | ${mockScanResultPoliciesProjectResponse}
     `(
       'scoped to linked groups on a group level for $policyType',
-      async ({ policyScopeRowIndex, selectedRow, expectedResult }) => {
+      async ({ policyScopeRowIndex, selectedRow }) => {
         createWrapper({
           provide: {
             namespaceType: NAMESPACE_TYPES.GROUP,
@@ -223,13 +225,13 @@ describe('Policies List specific projects policy scope', () => {
 
         await waitForPromises();
 
-        expect(normaliseText(findAllListComponentScope().at(policyScopeRowIndex).text())).toBe(
-          expectedResult,
+        expect(normalizeText(findAllListComponentScope().at(policyScopeRowIndex).text())).toBe(
+          defaultRowText,
         );
 
         await openDrawer(findTable(), [selectedRow]);
 
-        expect(normaliseText(findScopeInfoRow().text())).toContain(expectedResult);
+        expect(normalizeText(findScopeInfoRow().text())).toContain(defaultRowText);
       },
     );
   });

@@ -29,6 +29,7 @@ export const complianceFrameworks = [
   {
     color: '#ed9121',
     description: 'test-0.0.1',
+    editPath: 'path/to/framework/edit',
     id: 'gid://gitlab/ComplianceManagement::Framework/5',
     name: 'test-0.0.1',
     projects: [],
@@ -37,6 +38,7 @@ export const complianceFrameworks = [
   {
     color: '#ed9121',
     description: 'test-0.0.2',
+    editPath: 'path/to/framework/edit',
     id: 'gid://gitlab/ComplianceManagement::Framework/6',
     name: 'test-0.0.2',
     projects: [],
@@ -44,7 +46,7 @@ export const complianceFrameworks = [
   },
 ];
 
-export const normaliseText = (text) => text.replaceAll(/\r?\n|\r/g, '').replaceAll(' ', '');
+export const normalizeText = (text) => text.replaceAll(/\r?\n|\r/g, '').replaceAll(' ', '');
 
 export const generateMockResponse = (index, basis, newPayload) => ({
   ...basis[index],
