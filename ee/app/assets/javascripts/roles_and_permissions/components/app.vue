@@ -5,6 +5,8 @@ import { helpPagePath } from '~/helpers/help_page_helper';
 import { createAlert } from '~/alert';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import groupRolesQuery from '../graphql/group_roles.query.graphql';
 import instanceRolesQuery from '../graphql/instance_roles.query.graphql';
 import RolesTable from './roles_table.vue';
@@ -18,6 +20,7 @@ export default {
     description: s__(
       'MemberRole|Manage which actions users can take with %{linkStart}roles and permissions%{linkEnd}.',
     ),
+    roleCrudTitle: s__('MemberRole|Roles'),
     roleCount: s__(`MemberRole|%{defaultCount} Default %{customCount} Custom`),
     roleCountAdmin: s__(`MemberRole|%{adminCount} Admin`),
     newRoleText: s__('MemberRole|New role'),
@@ -31,6 +34,8 @@ export default {
     RolesTable,
     DeleteRoleModal,
     RolesExport,
+    PageHeading,
+    CrudComponent,
   },
   mixins: [glAbilitiesMixin(), glFeatureFlagMixin()],
   props: {
@@ -104,43 +109,45 @@ export default {
 
 <template>
   <section>
-    <h2 class="gl-mb-2">{{ $options.i18n.title }}</h2>
-
-    <p class="gl-mb-5 gl-text-subtle">
-      <gl-sprintf :message="$options.i18n.description">
-        <template #link="{ content }">
-          <gl-link :href="$options.userPermissionsDocPath" target="_blank">{{ content }}</gl-link>
-        </template>
-      </gl-sprintf>
-    </p>
-
-    <div class="gl-mb-4 gl-flex gl-flex-wrap gl-items-center gl-justify-between gl-gap-3">
-      <span data-testid="role-counts">
-        <gl-sprintf :message="$options.i18n.roleCount">
-          <template #defaultCount>
-            <span class="gl-font-bold">{{ defaultRoles.length }}</span>
-          </template>
-          <template #customCount>
-            <span class="gl-ml-3 gl-font-bold">{{ customRoles.length }}</span>
+    <page-heading :heading="$options.i18n.title">
+      <template #description>
+        <gl-sprintf :message="$options.i18n.description">
+          <template #link="{ content }">
+            <gl-link :href="$options.userPermissionsDocPath" target="_blank">{{ content }}</gl-link>
           </template>
         </gl-sprintf>
-        <gl-sprintf v-if="glFeatures.customAdminRoles" :message="$options.i18n.roleCountAdmin">
-          <template #adminCount>
-            <span class="gl-ml-3 gl-font-bold">{{ adminRoles.length }}</span>
-          </template>
-        </gl-sprintf>
-      </span>
+      </template>
+    </page-heading>
 
-      <div class="gl-flex gl-flex-wrap gl-gap-4">
+    <crud-component :title="$options.i18n.roleCrudTitle">
+      <template #description>
+        <span data-testid="role-counts">
+          <gl-sprintf :message="$options.i18n.roleCount">
+            <template #defaultCount>
+              <span class="gl-font-bold">{{ defaultRoles.length }}</span>
+            </template>
+            <template #customCount>
+              <span class="gl-ml-3 gl-font-bold">{{ customRoles.length }}</span>
+            </template>
+          </gl-sprintf>
+          <gl-sprintf v-if="glFeatures.customAdminRoles" :message="$options.i18n.roleCountAdmin">
+            <template #adminCount>
+              <span class="gl-ml-3 gl-font-bold">{{ adminRoles.length }}</span>
+            </template>
+          </gl-sprintf>
+        </span>
+      </template>
+
+      <template #actions>
         <roles-export v-if="canExportRoles" />
 
-        <gl-button v-if="newRolePath" :href="newRolePath" variant="confirm">
+        <gl-button v-if="newRolePath" :href="newRolePath" size="small">
           {{ $options.i18n.newRoleText }}
         </gl-button>
-      </div>
-    </div>
+      </template>
 
-    <roles-table :roles="roles" :busy="isLoading" @delete-role="roleToDelete = $event" />
+      <roles-table :roles="roles" :busy="isLoading" @delete-role="roleToDelete = $event" />
+    </crud-component>
 
     <delete-role-modal
       :role="roleToDelete"
