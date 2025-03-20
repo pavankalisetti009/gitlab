@@ -58,6 +58,7 @@ module EE
 
     class_methods do
       extend ::Gitlab::Utils::Override
+      include ::Gitlab::Utils::StrongMemoize
 
       def with_api_entity_associations
         super.preload(:sync_object)
@@ -74,6 +75,14 @@ module EE
 
         keyset_order.apply_cursor_conditions(non_epic_children.includes(:parent_link)).reorder(keyset_order)
       end
+
+      override :available_features_for_issue_types
+      def available_features_for_issue_types
+        super.tap do |available_features|
+          available_features[:move_and_clone] += %w[epic]
+        end
+      end
+      strong_memoize_attr :available_features_for_issue_types
     end
 
     def average_progress_of_children

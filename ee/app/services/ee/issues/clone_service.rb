@@ -24,6 +24,15 @@ module EE
             project: target_project)
         end
       end
+
+      override :verify_can_clone_issue!
+      def verify_can_clone_issue!(issue, _target_project)
+        if issue.is_a?(WorkItem) && issue.work_item_type.epic?
+          raise ::Issues::CloneService::CloneError, format(s_('CloneIssue|Cannot clone issues of \'%{issue_type}\' type.'), issue_type: issue.issue_type)
+        end
+
+        super
+      end
     end
   end
 end

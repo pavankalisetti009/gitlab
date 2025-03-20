@@ -1963,4 +1963,116 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
       end
     end
   end
+
+  describe 'clone issue command' do
+    let(:content) { "/clone #{group.full_path}" }
+    let(:group_service) { described_class.new(container: group, current_user: current_user) }
+    let_it_be(:work_item) { create(:work_item, :epic_with_legacy_epic, :group_level, namespace: group) }
+
+    before do
+      group.add_maintainer(current_user)
+      stub_licensed_features(epics: true)
+    end
+
+    context "when work item type is an epic" do
+      it "/clone is available" do
+        _, explanations = group_service.explain(content, work_item)
+
+        expected_string = "Clones this item, without comments, to #{group.full_path}."
+        expect(explanations).to match_array([_(expected_string)])
+      end
+
+      it "recognizes the clone action when move and clone commands are supported" do
+        expect(service.available_commands(work_item).pluck(:name)).to include(:clone)
+      end
+
+      it "does not recognize the clone action when move and clone commands are not supported" do
+        allow(work_item).to receive(:supports_move_and_clone?).and_return(false)
+        expect(service.available_commands(work_item).pluck(:name)).not_to include(:clone)
+      end
+
+      it 'returns the clone item message' do
+        _, _, message = service.execute("/clone #{group.full_path}", work_item)
+        translated_string = _("Cloned this item to %{group_full_path}.")
+        formatted_message = format(translated_string, group_full_path: group.full_path.to_s)
+
+        expect(message).to  eq(formatted_message)
+      end
+
+      it 'returns clone item failure message when the referenced group is not found' do
+        _, _, message = service.execute('/clone invalid', work_item)
+
+        expect(message).to eq(_("Unable to clone. Target project or group doesn't exist or doesn't support this item type."))
+      end
+
+      it 'returns clone item failure message when the path provided is to a project' do
+        _, _, message = service.execute("/clone #{project.full_path}", work_item)
+
+        expect(message).to eq(_("Unable to clone. Target project or group doesn't exist or doesn't support this item type."))
+      end
+
+      it 'returns clone item failure message when the referenced group not authorized' do
+        _, _, message = service.execute("/clone #{create(:group).full_path}", work_item)
+
+        expect(message).to eq(_("Unable to clone. Insufficient permissions."))
+      end
+    end
+  end
+
+  describe '/move issue command' do
+    let(:target_group) { create(:group) }
+    let(:content) { "/move #{target_group.full_path}" }
+    let(:group_service) { described_class.new(container: group, current_user: current_user) }
+    let_it_be(:work_item) { create(:work_item, :epic_with_legacy_epic, :group_level, namespace: group) }
+
+    before do
+      group.add_maintainer(current_user)
+      target_group.add_maintainer(current_user)
+      stub_licensed_features(epics: true)
+    end
+
+    context "when work item type is epic" do
+      it "/move is available" do
+        _, explanations = group_service.explain(content, work_item)
+
+        expected_string = "Moves this item to #{target_group.full_path}."
+        expect(explanations).to match_array([_(expected_string)])
+      end
+
+      it 'recognizes the move action when move and clone is supported' do
+        expect(service.available_commands(work_item).pluck(:name)).to include(:move)
+      end
+
+      it "does not recognize the move action when move and clone commands are not supported" do
+        allow(work_item).to receive(:supports_move_and_clone?).and_return(false)
+        expect(service.available_commands(work_item).pluck(:name)).not_to include(:move)
+      end
+
+      it "returns the move item message" do
+        _, _, message = service.execute(content, work_item)
+        translated_string = _("Moved this item to %{group_full_path}.")
+        formatted_message = format(translated_string, group_full_path: target_group.full_path.to_s)
+
+        expect(message).to  eq(formatted_message)
+      end
+
+      it "returns move item failure message when target group is not found" do
+        _, _, message = service.execute('/move invalid', work_item)
+
+        expect(message).to eq(_("Unable to move. Target project or group doesn't exist or doesn't support this item type."))
+      end
+
+      it "returns move item failure message when the path provided is to a project" do
+        _, _, message = service.execute("/move #{project.full_path}", work_item)
+
+        expect(message).to eq(_("Unable to move. Target project or group doesn't exist or doesn't support this item type."))
+      end
+
+      it 'returns move item failure message when the referenced group not authorized' do
+        _, _, message = service.execute("/move #{create(:group).full_path}", work_item)
+
+        expect(message).to eq(_("Unable to move. Insufficient permissions."))
+      end
+    end
+  end
 end

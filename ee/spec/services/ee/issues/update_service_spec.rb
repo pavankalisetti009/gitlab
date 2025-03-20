@@ -944,5 +944,121 @@ RSpec.describe Issues::UpdateService, feature_category: :team_planning do
         end
       end
     end
+
+    context 'clone a group level Epic work item' do
+      let_it_be(:work_item_epic) { create(:work_item, :epic_with_legacy_epic, :group_level, namespace: group) }
+      let_it_be(:sub_group) { create(:group, parent: group) }
+      let_it_be(:clone_service_class) { ::WorkItems::DataSync::CloneService }
+
+      before do
+        stub_licensed_features(epics: true)
+        group.add_owner(user)
+        sub_group.add_owner(user)
+      end
+
+      shared_examples 'does not call the clone service' do
+        it do
+          expect(::WorkItems::DataSync::CloneService).not_to receive(:new)
+
+          described_class.new(
+            container: group,
+            current_user: user,
+            params: { target_clone_container: sub_group, clone_with_notes: true }
+          ).execute(work_item_epic)
+        end
+      end
+
+      it 'calls the clone service with the proper issue and group' do
+        expect_next_instance_of(clone_service_class) do |service|
+          expect(service).to receive(:execute).and_call_original
+        end
+
+        new_issue = described_class.new(container: group, current_user: user, params: { target_clone_container: sub_group }).execute(work_item_epic)
+
+        expect(new_issue.namespace).to eq(sub_group)
+        expect(new_issue.title).to eq(work_item_epic.title)
+      end
+
+      context 'when licensed feature epics is not available' do
+        before do
+          stub_licensed_features(epics: false)
+        end
+
+        it_behaves_like 'does not call the clone service'
+      end
+
+      context 'when work_item_move_and_clone feature flag is disabled' do
+        before do
+          stub_feature_flags(work_item_move_and_clone: false)
+        end
+
+        it_behaves_like 'does not call the clone service'
+      end
+
+      context 'clone an epic with notes' do
+        it 'calls the move service with the proper issue and group' do
+          expect_next_instance_of(clone_service_class) do |service|
+            expect(service).to receive(:execute).and_call_original
+          end
+
+          new_issue = described_class.new(container: group, current_user: user, params: { target_clone_container: sub_group, clone_with_notes: true }).execute(work_item_epic)
+
+          expect(new_issue.namespace).to eq(sub_group)
+          expect(new_issue.title).to eq(work_item_epic.title)
+          expect(new_issue.notes.count).to eq(work_item_epic.notes.count)
+        end
+      end
+    end
+
+    context 'move a group level Epic work item' do
+      let_it_be(:work_item_epic) { create(:work_item, :epic_with_legacy_epic, :group_level, namespace: group) }
+      let_it_be(:sub_group) { create(:group, parent: group) }
+      let_it_be(:move_service_class) { ::WorkItems::DataSync::MoveService }
+
+      before do
+        stub_licensed_features(epics: true)
+        group.add_owner(user)
+        sub_group.add_owner(user)
+      end
+
+      shared_examples 'does not call the move service' do
+        it do
+          expect(::WorkItems::DataSync::MoveService).not_to receive(:new)
+
+          described_class.new(
+            container: group,
+            current_user: user,
+            params: { target_container: sub_group }
+          ).execute(work_item_epic)
+        end
+      end
+
+      it 'calls the move service with the proper issue and group' do
+        expect_next_instance_of(move_service_class) do |service|
+          expect(service).to receive(:execute).and_call_original
+        end
+
+        new_issue = described_class.new(container: group, current_user: user, params: { target_container: sub_group }).execute(work_item_epic)
+
+        expect(new_issue.namespace).to eq(sub_group)
+        expect(new_issue.title).to eq(work_item_epic.title)
+      end
+
+      context "when licensed feature epics is not available" do
+        before do
+          stub_licensed_features(epics: false)
+        end
+
+        it_behaves_like 'does not call the move service'
+      end
+
+      context "when work_item_move_and_clone feature flag is disabled" do
+        before do
+          stub_feature_flags(work_item_move_and_clone: false)
+        end
+
+        it_behaves_like 'does not call the move service'
+      end
+    end
   end
 end
