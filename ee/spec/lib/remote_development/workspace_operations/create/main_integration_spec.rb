@@ -53,7 +53,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
   end
 
   let(:tools_injector_image_from_settings) do
-    "registry.gitlab.com/gitlab-org/workspaces/gitlab-workspaces-tools:7.0.0"
+    "registry.gitlab.com/gitlab-org/workspaces/gitlab-workspaces-tools:8.0.0"
   end
 
   let(:vscode_extension_marketplace) do
