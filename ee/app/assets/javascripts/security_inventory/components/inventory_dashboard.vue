@@ -6,12 +6,15 @@ import {
   GlSkeletonLoader,
   GlEmptyState,
   GlTooltipDirective,
+  GlBreadcrumb,
+  GlLink,
 } from '@gitlab/ui';
 import EMPTY_SUBGROUP_SVG from '@gitlab/svgs/dist/illustrations/empty-state/empty-projects-md.svg?url';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { __, s__, n__, sprintf } from '~/locale';
 import ProjectAvatar from '~/vue_shared/components/project_avatar.vue';
 import { createAlert } from '~/alert';
+import { getLocationHash, PATH_SEPARATOR } from '~/lib/utils/url_utility';
 import SubgroupsAndProjectsQuery from '../graphql/subgroups_and_projects.query.graphql';
 
 export default {
@@ -22,6 +25,8 @@ export default {
     GlButton,
     GlSkeletonLoader,
     GlEmptyState,
+    GlBreadcrumb,
+    GlLink,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -47,6 +52,7 @@ export default {
   data() {
     return {
       children: [],
+      activeFullPath: this.groupFullPath,
     };
   },
   apollo: {
@@ -54,7 +60,7 @@ export default {
       query: SubgroupsAndProjectsQuery,
       variables() {
         return {
-          fullPath: this.groupFullPath,
+          fullPath: this.activeFullPath,
         };
       },
       update(data) {
@@ -77,6 +83,27 @@ export default {
     hasChildren() {
       return this.children.length > 0;
     },
+    crumbs() {
+      const pathParts = this.activeFullPath.split(PATH_SEPARATOR);
+      let cumulativePath = '';
+
+      return pathParts.map((path) => {
+        cumulativePath = cumulativePath ? `${cumulativePath}${PATH_SEPARATOR}${path}` : path;
+        return {
+          text: path,
+          to: {
+            hash: `#${cumulativePath}`,
+          },
+        };
+      });
+    },
+  },
+  created() {
+    this.handleLocationHashChange();
+    window.addEventListener('hashchange', this.handleLocationHashChange);
+  },
+  beforeDestroy() {
+    window.removeEventListener('hashchange', this.handleLocationHashChange);
   },
   methods: {
     transformData(data) {
@@ -154,12 +181,20 @@ export default {
     projectSecurityConfigurationPath(item) {
       return item?.webUrl ? `${item.webUrl}/-/security/configuration` : '#';
     },
+    handleLocationHashChange() {
+      let hash = getLocationHash();
+      if (!hash) {
+        hash = this.groupFullPath;
+      }
+      this.activeFullPath = hash;
+    },
   },
 };
 </script>
 
 <template>
   <div class="gl-mt-5">
+    <gl-breadcrumb :items="crumbs" :auto-resize="true" size="md" class="gl-mb-5" />
     <template v-if="isLoading">
       <gl-skeleton-loader />
     </template>
@@ -173,7 +208,11 @@ export default {
     </template>
     <gl-table-lite v-else :items="children" :fields="$options.fields" hover>
       <template #cell(name)="{ item }">
-        <div class="gl-flex gl-items-center">
+        <component
+          :is="isSubGroup(item) ? 'gl-link' : 'div'"
+          class="gl-flex gl-items-center !gl-text-default hover:gl-no-underline focus:gl-no-underline focus:gl-outline-none"
+          :href="isSubGroup(item) ? `#${item.fullPath}` : undefined"
+        >
           <gl-icon :name="iconName(item)" variant="subtle" class="gl-mr-4" />
           <project-avatar
             class="gl-mr-4"
@@ -187,7 +226,7 @@ export default {
               {{ projectAndSubgroupCountText(item) }}
             </span>
           </div>
-        </div>
+        </component>
       </template>
 
       <template #cell(vulnerabilities)="{ item: { vulnerabilitySeveritiesCount } }">
