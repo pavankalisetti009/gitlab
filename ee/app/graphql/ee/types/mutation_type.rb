@@ -167,6 +167,12 @@ module EE
         mount_mutation ::Mutations::RemoteDevelopment::WorkspaceOperations::Update
         mount_mutation ::Mutations::RemoteDevelopment::NamespaceClusterAgentMappingOperations::Create
         mount_mutation ::Mutations::RemoteDevelopment::NamespaceClusterAgentMappingOperations::Delete
+        mount_mutation ::Mutations::RemoteDevelopment::OrganizationClusterAgentMappingOperations::Create, experiment: {
+          milestone: '17.11'
+        }
+        mount_mutation ::Mutations::RemoteDevelopment::OrganizationClusterAgentMappingOperations::Delete, experiment: {
+          milestone: '17.11'
+        }
         mount_mutation ::Mutations::AuditEvents::Streaming::Headers::Destroy
         mount_mutation ::Mutations::AuditEvents::Streaming::Headers::Create
         mount_mutation ::Mutations::AuditEvents::Streaming::Headers::Update
