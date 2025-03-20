@@ -1,6 +1,6 @@
 <script>
 import { GlCollapsibleListbox, GlTooltipDirective, GlButton, GlIcon } from '@gitlab/ui';
-import { s__ } from '~/locale';
+import { s__, sprintf } from '~/locale';
 
 export default {
   name: 'SortingField',
@@ -45,6 +45,7 @@ export default {
   },
   i18n: {
     sorting_title: s__('SortOptions|Sort by'),
+    ariaLabel: (selected) => sprintf(s__('SortOptions|Sort by %{selected}'), { selected }),
   },
 };
 </script>
@@ -62,7 +63,7 @@ export default {
       <gl-button
         v-gl-tooltip="$options.i18n.sorting_title"
         data-testid="selected-date-range"
-        :aria-label="`${$options.i18n.sorting_title} ${selectedItem.text}`"
+        :aria-label="$options.i18n.ariaLabel(selectedItem.text)"
         :title="$options.i18n.sorting_title"
         class="gl-w-full"
         button-text-classes="gl-mr-[-4px] !gl-flex !gl-justify-between gl-w-full"
