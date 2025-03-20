@@ -166,7 +166,7 @@ RSpec.describe TreeHelper, feature_category: :source_code_management do
       let(:pipeline) { nil }
 
       it 'does not include download_artifacts' do
-        expect(subject[:download_artifacts]).to be nil
+        expect(subject[:download_artifacts]).to be_nil
       end
     end
   end
@@ -424,7 +424,7 @@ RSpec.describe TreeHelper, feature_category: :source_code_management do
       let(:user) { nil }
 
       it 'returns nil' do
-        expect(subject).to be nil
+        expect(subject).to be_nil
       end
     end
   end
