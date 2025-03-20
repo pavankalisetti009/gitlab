@@ -13,4 +13,16 @@ RSpec.describe Vulnerabilities::ArchivedRecord, feature_category: :vulnerability
     it { is_expected.to validate_uniqueness_of(:vulnerability_identifier) }
     it { is_expected.to validate_presence_of(:data) }
   end
+
+  describe '#archive=' do
+    let(:archived_record) { build(:vulnerability_archived_record, archive: nil) }
+    let(:archive) { create(:vulnerability_archive) }
+
+    subject(:set_archive) { archived_record.archive = archive }
+
+    it 'sets the archive and the date' do
+      expect { set_archive }.to change { archived_record.archive }.from(nil).to(archive)
+                            .and change { archived_record.date }.from(nil).to(archive.date)
+    end
+  end
 end
