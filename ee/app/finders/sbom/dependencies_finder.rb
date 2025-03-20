@@ -22,6 +22,7 @@ module Sbom
       setuptools
       apk
       conda
+      pub
     ].freeze
 
     # @param dependable [Organization, Group, Project] the container for detected SBoM occurrences

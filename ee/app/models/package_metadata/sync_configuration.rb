@@ -23,7 +23,8 @@ module PackageMetadata
       wolfi: "wolfi",
       cargo: "cargo",
       swift: "swift",
-      conda: "conda"
+      conda: "conda",
+      pub: "pub"
     }.with_indifferent_access.freeze
 
     def self.configs_for(data_type)
