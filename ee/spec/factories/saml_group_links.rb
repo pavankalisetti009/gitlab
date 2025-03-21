@@ -12,5 +12,9 @@ FactoryBot.define do
     trait :with_provider do
       provider { generate(:saml_provider_name) }
     end
+
+    trait :with_scim_group_uid do
+      scim_group_uid { "5a985f3c-24c4-4b07-96f3-406df371c8f4" }
+    end
   end
 end

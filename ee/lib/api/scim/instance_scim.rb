@@ -220,6 +220,30 @@ module API
             group_link = find_group_link(params[:id])
             present group_link, with: ::EE::API::Entities::Scim::Group
           end
+
+          desc 'Get SCIM groups' do
+            success ::EE::API::Entities::Scim::Groups
+          end
+          get do
+            check_access!
+
+            results = Authn::ScimGroupFinder.new.search(params)
+            response_page = scim_paginate(results)
+
+            excluded_attributes = (params[:excludedAttributes] || '').split(',').map(&:strip)
+
+            result_set = {
+              resources: response_page,
+              total_results: results.count,
+              items_per_page: per_page(params[:count]),
+              start_index: params[:startIndex]
+            }
+
+            status :ok
+            present result_set, with: ::EE::API::Entities::Scim::Groups, excluded_attributes: excluded_attributes
+          rescue Authn::ScimGroupFinder::UnsupportedFilter
+            scim_error!(message: 'Unsupported Filter')
+          end
         end
       end
     end

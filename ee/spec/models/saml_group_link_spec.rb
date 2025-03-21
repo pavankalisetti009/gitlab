@@ -160,6 +160,19 @@ RSpec.describe SamlGroupLink, feature_category: :system_access do
 
       it { is_expected.to be_valid }
     end
+
+    describe '.with_scim_group_uid' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:group_link_with_uid) { create(:saml_group_link, group: group, scim_group_uid: SecureRandom.uuid) }
+      let_it_be(:group_link_without_uid) { create(:saml_group_link, group: group, scim_group_uid: nil) }
+
+      it 'returns only links with non-nil scim_group_uid' do
+        results = described_class.with_scim_group_uid
+
+        expect(results).to include(group_link_with_uid)
+        expect(results).not_to include(group_link_without_uid)
+      end
+    end
   end
 
   describe '.first_by_scim_group_uid' do
