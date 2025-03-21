@@ -171,18 +171,6 @@ RSpec.describe Onboarding::StatusCreateService, feature_category: :onboarding do
             expect(execute).to be_a(ServiceResponse)
             expect(execute).to be_error
           end
-
-          context 'when no_onboarding_enterprise_users feature is disabled' do
-            before do
-              stub_feature_flags(no_onboarding_enterprise_users: false)
-            end
-
-            it 'places the user into onboarding' do
-              expect(execute[:user]).to be_onboarding_in_progress
-              expect(execute).to be_a(ServiceResponse)
-              expect(execute).to be_success
-            end
-          end
         end
 
         context 'when the user qualifies to be an enterprise user' do
@@ -200,18 +188,6 @@ RSpec.describe Onboarding::StatusCreateService, feature_category: :onboarding do
               expect(execute[:user]).not_to be_onboarding_in_progress
               expect(execute).to be_a(ServiceResponse)
               expect(execute).to be_error
-            end
-
-            context 'when no_onboarding_enterprise_users feature is disabled' do
-              before do
-                stub_feature_flags(no_onboarding_enterprise_users: false)
-              end
-
-              it 'places the user into onboarding' do
-                expect(execute[:user]).to be_onboarding_in_progress
-                expect(execute).to be_a(ServiceResponse)
-                expect(execute).to be_success
-              end
             end
           end
 
