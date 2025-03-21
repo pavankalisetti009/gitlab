@@ -14,10 +14,11 @@ module Gitlab
       HEADER_REGEX = /^#{REGEX.values_at(:optional, :name, :approvals, :default_owners).join}/
       REGEX_INVALID_SECTION = /^#{REGEX.values_at(:optional, :invalid_name).join}$/
 
-      def initialize(line, sectional_data)
+      def initialize(line, sectional_data, line_number)
         @line = line
         @sectional_data = sectional_data
-        @errors = []
+        @line_number = line_number
+        @errors = Errors.new
       end
 
       attr_reader :errors
@@ -26,19 +27,19 @@ module Gitlab
         section = fetch_section
 
         if section.present?
-          errors << :missing_section_name if section.name.blank?
-          errors << :invalid_approval_requirement if section.optional && section.approvals > 0
+          errors.add(:missing_section_name, line_number) if section.name.blank?
+          errors.add(:invalid_approval_requirement, line_number) if section.optional && section.approvals > 0
 
           if section.default_owners.present? && ReferenceExtractor.new(section.default_owners).references.blank?
-            errors << :invalid_section_owner_format
+            errors.add(:invalid_section_owner_format, line_number)
           end
 
           return section
         end
 
-        errors << :invalid_section_format if invalid_section?
+        errors.add(:invalid_section_format, line_number) if invalid_section?
 
-        nil
+        section
       end
 
       def valid?
@@ -47,7 +48,7 @@ module Gitlab
 
       private
 
-      attr_reader :line, :sectional_data
+      attr_reader :line, :sectional_data, :line_number
 
       def fetch_section
         match = line.match(HEADER_REGEX)
