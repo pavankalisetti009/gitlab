@@ -1,12 +1,9 @@
-query customFieldSelectOptions($fullPath: ID!, $fieldId: IssuablesCustomFieldID!) {
-  group(fullPath: $fullPath) {
+query customFieldSelectOptions($fieldId: IssuablesCustomFieldID!) {
+  customField(id: $fieldId) {
     id
-    customField(id: $fieldId) {
+    selectOptions {
       id
-      selectOptions {
-        id
-        value
-      }
+      value
     }
   }
 }
