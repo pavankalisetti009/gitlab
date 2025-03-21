@@ -4,6 +4,7 @@ import { shallowMount } from '@vue/test-utils';
 import { BV_HIDE_TOOLTIP } from '~/lib/utils/constants';
 import * as aiUtils from 'ee/ai/utils';
 import AiSummaryNotes from 'ee/notes/components/note_actions/ai_summarize_notes.vue';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 
 jest.mock('ee/ai/utils');
 jest.spyOn(aiUtils, 'sendDuoChatCommand');
@@ -11,6 +12,7 @@ jest.spyOn(aiUtils, 'sendDuoChatCommand');
 describe('AiSummarizeNotes component', () => {
   let wrapper;
   const resourceGlobalId = 'gid://gitlab/Issue/1';
+  const workItemType = 'issue';
 
   const findButton = () => wrapper.findComponent(GlButton);
 
@@ -18,6 +20,7 @@ describe('AiSummarizeNotes component', () => {
     wrapper = shallowMount(AiSummaryNotes, {
       propsData: {
         resourceGlobalId,
+        workItemType,
       },
     });
   };
@@ -59,6 +62,35 @@ describe('AiSummarizeNotes component', () => {
       await nextTick();
 
       expect(bsTooltipHide).toHaveBeenCalled();
+    });
+  });
+
+  describe('tracking', () => {
+    const { bindInternalEventDocument } = useMockInternalEventsTracking();
+
+    it('tracks the render and click event', async () => {
+      createWrapper();
+
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'render_ai_summarize_notes_button',
+        {
+          label: workItemType,
+        },
+        undefined,
+      );
+
+      findButton().vm.$emit('click');
+      await nextTick();
+
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'click_ai_summarize_notes_button',
+        {
+          label: workItemType,
+        },
+        undefined,
+      );
     });
   });
 });

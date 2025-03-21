@@ -2,6 +2,7 @@
 import { GlButton, GlTooltipDirective } from '@gitlab/ui';
 import { sendDuoChatCommand } from 'ee/ai/utils';
 import { BV_HIDE_TOOLTIP } from '~/lib/utils/constants';
+import { InternalEvents } from '~/tracking';
 
 export default {
   name: 'AiSummarizeNotes',
@@ -11,6 +12,7 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
+  mixins: [InternalEvents.mixin()],
   props: {
     loading: {
       type: Boolean,
@@ -26,6 +28,14 @@ export default {
       required: false,
       default: 'medium',
     },
+    workItemType: {
+      type: String,
+      default: '',
+      required: false,
+    },
+  },
+  mounted() {
+    this.trackEvent('render_ai_summarize_notes_button', { label: this.workItemType });
   },
   methods: {
     onClick() {
@@ -34,6 +44,8 @@ export default {
       if (this.loading) {
         return;
       }
+
+      this.trackEvent('click_ai_summarize_notes_button', { label: this.workItemType });
 
       sendDuoChatCommand({
         question: '/summarize_comments',
