@@ -203,14 +203,14 @@ module Search
         log_model_count(Search::Zoekt::Index, "Indices count")
         log_model_count(Search::Zoekt::Index, "Indices watermark levels", group_by: :watermark_level)
         log_model_count(Search::Zoekt::Repository, "Repositories count")
-        log_model_count(Search::Zoekt::Task, "Tasks count")
-        log_model_count(Search::Zoekt::Task.pending_or_processing, "Tasks pending/processing by type",
+        log_model_count(Search::Zoekt::Task.join_nodes, "Tasks count")
+        log_model_count(Search::Zoekt::Task.join_nodes.pending_or_processing, "Tasks pending/processing by type",
           group_by: :task_type)
       end
 
       # rubocop:disable CodeReuse/ActiveRecord -- we need to use group(:state).count here without a scope
-      def log_model_count(model, label, group_by: :state)
-        counts = model.group(group_by).count
+      def log_model_count(scope, label, group_by: :state)
+        counts = scope.group(group_by).count
         log(label, value: counts.values.sum, nested: counts)
       end
       # rubocop:enable CodeReuse/ActiveRecord
