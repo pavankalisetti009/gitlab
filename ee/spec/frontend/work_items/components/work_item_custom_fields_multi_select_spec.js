@@ -39,30 +39,26 @@ describe('WorkItemCustomFieldsMultiSelect', () => {
 
   const querySuccessHandler = jest.fn().mockResolvedValue({
     data: {
-      group: {
-        id: 'gid://gitlab/Group/33',
-        customField: {
-          id: '1-select',
-          selectOptions: [
-            {
-              id: 'select-1',
-              value: 'Option 1',
-              __typename: 'CustomFieldSelectOption',
-            },
-            {
-              id: 'select-2',
-              value: 'Option 2',
-              __typename: 'CustomFieldSelectOption',
-            },
-            {
-              id: 'select-3',
-              value: 'Option 3',
-              __typename: 'CustomFieldSelectOption',
-            },
-          ],
-          __typename: 'CustomField',
-        },
-        __typename: 'Group',
+      customField: {
+        id: '1-select',
+        selectOptions: [
+          {
+            id: 'select-1',
+            value: 'Option 1',
+            __typename: 'CustomFieldSelectOption',
+          },
+          {
+            id: 'select-2',
+            value: 'Option 2',
+            __typename: 'CustomFieldSelectOption',
+          },
+          {
+            id: 'select-3',
+            value: 'Option 3',
+            __typename: 'CustomFieldSelectOption',
+          },
+        ],
+        __typename: 'CustomField',
       },
     },
   });

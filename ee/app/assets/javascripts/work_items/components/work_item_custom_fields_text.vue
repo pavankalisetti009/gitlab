@@ -17,7 +17,7 @@ import {
 import updateWorkItemCustomFieldsMutation from 'ee/work_items/graphql/update_work_item_custom_fields.mutation.graphql';
 import { isValidURL } from '~/lib/utils/url_utility';
 
-export const CHARACTER_LIMIT = 540;
+export const CHARACTER_LIMIT = 1024;
 
 export default {
   CHARACTER_LIMIT,

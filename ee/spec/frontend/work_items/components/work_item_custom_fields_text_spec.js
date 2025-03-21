@@ -227,7 +227,7 @@ describe('WorkItemCustomFieldsText', () => {
       await findEditButton().vm.$emit('click');
 
       // Generates a string that's > 90% of the CHARACTER_LIMIT
-      const longText = 'a'.repeat(500); // CHARACTER_LIMIT is 540
+      const longText = 'a'.repeat(1000); // CHARACTER_LIMIT is 1024
       findInput().vm.$emit('input', longText);
 
       await nextTick();
@@ -269,7 +269,7 @@ describe('WorkItemCustomFieldsText', () => {
 
       expect(findInput().attributes()).toEqual(
         expect.objectContaining({
-          maxlength: '540',
+          maxlength: '1024',
           placeholder: 'Enter text',
         }),
       );

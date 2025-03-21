@@ -152,7 +152,6 @@ export default {
       query: customFieldSelectOptionsQuery,
       variables() {
         return {
-          fullPath: this.groupPath,
           fieldId: this.customFieldId,
         };
       },
@@ -160,7 +159,7 @@ export default {
         return !this.searchStarted || !this.customFieldId;
       },
       update(data) {
-        return data?.group?.customField?.selectOptions || [];
+        return data?.customField?.selectOptions || [];
       },
       error(e) {
         const msg = sprintf(
