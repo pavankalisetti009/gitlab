@@ -66,8 +66,8 @@ Secret push protection scans [files or commits](#coverage) for specific patterns
 matches a specific type of secret. To confirm which secrets are detected by secret push protection,
 see [Detected secrets](../detected_secrets.md). Only high-confidence patterns were chosen for secret
 push protection, to minimize the delay when pushing your commits and minimize the number of false
-alerts. You can [exclude](../exclusions.md) selected secrets from detection by secret push
-protection.
+alerts. For example, personal access tokens that use a custom prefix are not detected by secret push protection.
+You can [exclude](../exclusions.md) selected secrets from detection by secret push protection.
 
 ## Enable secret push protection
 
