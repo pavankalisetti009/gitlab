@@ -14,4 +14,11 @@ RSpec.describe GeoNodeNamespaceLink, :models, feature_category: :geo_replication
     it { is_expected.to validate_presence_of(:namespace_id) }
     it { is_expected.to validate_uniqueness_of(:namespace_id).scoped_to(:geo_node_id) }
   end
+
+  context 'with loose foreign key on geo_node_namespace_links.namespace_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:namespace) }
+      let_it_be(:model) { create(:geo_node_namespace_link, namespace: parent) }
+    end
+  end
 end
