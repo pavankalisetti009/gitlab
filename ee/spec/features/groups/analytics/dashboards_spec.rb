@@ -65,7 +65,7 @@ RSpec.describe 'Analytics Dashboard', :js, feature_category: :value_stream_manag
             expect(contribution_dashboard).to have_content _('Contributions Dashboard')
             expect(contribution_dashboard).to have_selector(dashboard_by_gitlab_testid)
 
-            expect(dora_metrics_dashboard).to have_content _('DORA Metrics')
+            expect(dora_metrics_dashboard).to have_content _('DORA metrics analytics')
             expect(dora_metrics_dashboard).to have_selector(dashboard_by_gitlab_testid)
 
             expect(custom_dashboard).to have_content _('Custom VSD')
@@ -86,7 +86,7 @@ RSpec.describe 'Analytics Dashboard', :js, feature_category: :value_stream_manag
           it 'does not render DORA metrics dashboard link' do
             dashboard_items_arr = page.all(dashboard_list_item_title).map(&:text)
 
-            expect(dashboard_items_arr).not_to include('DORA Metrics')
+            expect(dashboard_items_arr).not_to include('DORA metrics analytics')
           end
         end
       end

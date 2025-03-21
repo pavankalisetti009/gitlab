@@ -1,6 +1,6 @@
 
-title: DORA Metrics
-description: DORA metrics stats and trends
+title: DORA metrics analytics
+description: View current DORA metric performance and historical trends to analyze DevOps efficiency over time.
 status: experiment
 filters:
   dateRange:
