@@ -196,3 +196,25 @@ To index a namespace manually, run this command:
 namespace = Namespace.find_by_full_path('<top-level-group-to-index>')
 Search::Zoekt::EnabledNamespace.find_or_create_by(namespace: namespace)
 ```
+
+### Verify Zoekt node connections
+
+To verify that your Zoekt nodes are properly configured and connected,
+in a [Rails console session](../../administration/operations/rails_console.md#starting-a-rails-console-session):
+
+- Check the total number of configured Zoekt nodes:
+
+  ```ruby
+  Search::Zoekt::Node.count
+  ```
+
+- Check how many nodes are online:
+
+  ```ruby
+  Search::Zoekt::Node.online.count
+  ```
+
+Alternatively, you can use the `gitlab:zoekt:info` Rake task.
+
+If the number of online nodes is lower than the number of configured nodes or is zero when nodes are configured,
+you might have connectivity issues between GitLab and your Zoekt nodes.
