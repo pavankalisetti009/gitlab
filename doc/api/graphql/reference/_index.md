@@ -43536,6 +43536,7 @@ Values for package manager.
 | ----- | ----------- |
 | <a id="packagemanagerapk"></a>`APK` | Package manager: apk. |
 | <a id="packagemanagerbundler"></a>`BUNDLER` | Package manager: bundler. |
+| <a id="packagemanagercargo"></a>`CARGO` | Package manager: cargo. |
 | <a id="packagemanagercomposer"></a>`COMPOSER` | Package manager: composer. |
 | <a id="packagemanagerconan"></a>`CONAN` | Package manager: conan. |
 | <a id="packagemanagerconda"></a>`CONDA` | Package manager: conda. |
