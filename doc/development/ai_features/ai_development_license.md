@@ -282,7 +282,7 @@ If you're having issues with your Duo license setup:
 
 ## Additional resources
 
-- [AI Features Documentation](../ai_features/_index.md)
-- [Code Suggestions Development](../ai_features/code_suggestions.md)
-- [License Management Guidelines for Code Suggestions](../ai_features/code_suggestions.md#setup-instructions-to-use-gdk-with-the-code-suggestions-add-on)
+- [AI Features Documentation](_index.md)
+- [Code Suggestions Development](code_suggestions.md)
+- [License Management Guidelines for Code Suggestions](code_suggestions.md#setup-instructions-to-use-gdk-with-the-code-suggestions-add-on)
 - [Duo Enterprise License Access Process for Staging Environment](https://gitlab.com/gitlab-com/runbooks/-/blob/master/docs/duo/duo_license.md?ref_type=heads)
