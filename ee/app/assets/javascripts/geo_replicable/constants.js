@@ -64,3 +64,7 @@ export const GEO_BULK_ACTION_MODAL_ID = 'geo-bulk-action';
 export const GEO_TROUBLESHOOTING_LINK = helpPagePath(
   'administration/geo/replication/troubleshooting/_index.md',
 );
+
+export const TOKEN_TYPES = {
+  REPLICABLE_TYPE: 'replicable_type',
+};

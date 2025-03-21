@@ -26456,7 +26456,13 @@ msgstr ""
 msgid "Geo|Select groups to replicate"
 msgstr ""
 
+msgid "Geo|Select replicable type"
+msgstr ""
+
 msgid "Geo|Select shards to replicate"
+msgstr ""
+
+msgid "Geo|Selected replicable type"
 msgstr ""
 
 msgid "Geo|Selective (%{syncLabel})"
