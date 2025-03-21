@@ -1,6 +1,8 @@
 import { shallowMount } from '@vue/test-utils';
-import Vue, { nextTick } from 'vue';
+import Vue from 'vue';
 import VueRouter from 'vue-router';
+import waitForPromises from 'helpers/wait_for_promises';
+
 import QuerystringSync from 'ee/security_dashboard/components/shared/filters/querystring_sync.vue';
 
 Vue.use(VueRouter);
@@ -35,20 +37,20 @@ describe('Querystring Sync component', () => {
       ${'3, 2 , 1,3,2,1'} | ${['1', '2', '3']}
     `(
       'emits the input event with $expected when the querystring value is $values',
-      ({ values, expected }) => {
-        router.replace({ query: { values } });
+      async ({ values, expected }) => {
+        await router.replace({ query: { values } });
         createWrapper();
 
         expect(wrapper.emitted('input')[0][0]).toEqual(expected);
       },
     );
 
-    it('emits the querystring IDs when the browser is navigating', () => {
-      router.push({ query: { values: ['abc', 'def'] } });
+    it('emits the querystring IDs when the browser is navigating', async () => {
+      await router.push({ query: { values: ['abc', 'def'] } });
       createWrapper();
       // JSDom doesn't support window.history.back() and won't change the location nor fire the
       // popstate event, so we need to fake it by doing it manually.
-      router.replace({ query: { values: ['abc'] } });
+      await router.replace({ query: { values: ['abc'] } });
       window.dispatchEvent(new Event('popstate'));
 
       expect(wrapper.emitted('input')[1][0]).toEqual(['abc']);
@@ -70,7 +72,7 @@ describe('Querystring Sync component', () => {
       ${['1 ', ' 2 ', ' 3', '3', '2', '1']} | ${'1,2,3'}
     `('updates the querystring for value $value', async ({ value, expected }) => {
       wrapper.setProps({ value });
-      await nextTick();
+      await waitForPromises();
 
       expect(router.currentRoute.query.values).toBe(expected);
     });
@@ -89,10 +91,9 @@ describe('Querystring Sync component', () => {
     });
 
     it('does not update if the changed value is the same as the existing querystring', async () => {
-      router.replace({ query: { values: 'abc' } });
+      await router.replace({ query: { values: 'abc' } });
       const spy = jest.spyOn(router, 'push');
-      wrapper.setProps({ value: ['abc'] });
-      await nextTick();
+      await wrapper.setProps({ value: ['abc'] });
 
       expect(spy).not.toHaveBeenCalled();
     });
@@ -108,9 +109,10 @@ describe('Querystring Sync component', () => {
       ${'removes empty entries'}  | ${',,,1,2,3'}    | ${'1,2,3'}
       ${'handles no valid IDs'}   | ${',,,5,6,7'}    | ${undefined}
       ${'handles empty string'}   | ${''}            | ${undefined}
-    `('cleans up querystring - $description', ({ query, expected }) => {
-      router.replace({ query: { values: query } });
+    `('cleans up querystring - $description', async ({ query, expected }) => {
+      await router.replace({ query: { values: query } });
       createWrapper({ validValues: ['1', '2', '3'] });
+      await waitForPromises();
 
       expect(router.currentRoute.query.values).toEqual(expected);
     });
@@ -143,9 +145,10 @@ describe('Querystring Sync component', () => {
       expect(spy).toHaveBeenCalledWith('popstate', wrapper.vm.emitQuerystringIds);
     });
 
-    it('clears the querystring when the component is destroyed', () => {
-      router.replace({ query: { values: 'abc' } });
+    it('clears the querystring when the component is destroyed', async () => {
+      await router.replace({ query: { values: 'abc' } });
       createWrapper();
+      await waitForPromises();
 
       expect(router.currentRoute.query).toHaveProperty('values');
 
@@ -154,13 +157,15 @@ describe('Querystring Sync component', () => {
       expect(router.currentRoute.query).not.toHaveProperty('values');
     });
 
-    it('sets the querystring back to the default value when the component is destroyed', () => {
-      router.replace({ query: { values: 'abc' } });
+    it('sets the querystring back to the default value when the component is destroyed', async () => {
+      await router.replace({ query: { values: 'abc' } });
       createWrapper({ defaultValues: ['my-value'] });
+      await waitForPromises();
 
       expect(router.currentRoute.query).toHaveProperty('values');
 
       wrapper.destroy();
+      await waitForPromises();
 
       expect(router.currentRoute.query?.values).toBe('my-value');
     });
