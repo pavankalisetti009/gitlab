@@ -1,4 +1,6 @@
 <script>
+import $ from 'jquery';
+import SafeHtml from '~/vue_shared/directives/safe_html';
 import EventItem from 'ee/vue_shared/security_reports/components/event_item.vue';
 import HistoryComment from './history_comment.vue';
 
@@ -6,6 +8,9 @@ export default {
   components: {
     EventItem,
     HistoryComment,
+  },
+  directives: {
+    SafeHtml,
   },
   props: {
     discussion: {
@@ -23,6 +28,10 @@ export default {
     comments() {
       return this.notes.filter((x) => x !== this.systemNote);
     },
+    systemNoteHtml() {
+      // Remove paragraph tags so that note can be displayed inline.
+      return $(this.systemNote.bodyHtml).unwrap().html();
+    },
   },
 };
 </script>
@@ -38,7 +47,9 @@ export default {
       icon-class="timeline-icon"
       class="gl-m-5"
     >
-      <template #header-message>{{ systemNote.body }}</template>
+      <template #header-message>
+        <span v-safe-html="systemNoteHtml" class="md"></span>
+      </template>
     </event-item>
     <history-comment
       v-for="comment in comments"

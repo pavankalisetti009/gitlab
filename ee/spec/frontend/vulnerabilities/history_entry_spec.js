@@ -8,7 +8,8 @@ describe('History Entry', () => {
   const systemNote = {
     system: true,
     id: 1,
-    body: 'changed vulnerability status to dismissed',
+    body: 'changed vulnerability status to [dismissed](https://example.com)',
+    bodyHtml: '<p>changed vulnerability status to <a href="https://example.com">dismissed</a></p>',
     systemNoteIconName: 'cancel',
     createdAt: '2021-08-25T16:19:10Z',
     updatedAt: '2021-08-25T16:21:18Z',
@@ -44,7 +45,9 @@ describe('History Entry', () => {
   it('passes the expected values to the event item component', () => {
     createWrapper(systemNote);
 
-    expect(eventItem().text()).toContain(systemNote.body);
+    expect(eventItem().html()).toContain(
+      'changed vulnerability status to <a href="https://example.com">dismissed</a>',
+    );
     expect(eventItem().props()).toMatchObject({
       id: systemNote.id,
       author: systemNote.author,
