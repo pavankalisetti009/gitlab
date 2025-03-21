@@ -9,7 +9,7 @@ module ComplianceManagement
           @requirement = requirement
           @params = params
           @current_user = current_user
-          @controls = controls
+          @controls = controls || []
         end
 
         private
