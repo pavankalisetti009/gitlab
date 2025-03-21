@@ -13,7 +13,7 @@ export default class FilteredSearchProductivityAnalytics extends FilteredSearchM
       isGroup,
       useDefaultState: false,
       filteredSearchTokenKeys: ProductivityAnalyticsFilteredSearchTokenKeys,
-      placeholder: __('Filter results...'),
+      placeholder: __('Filter results…'),
     });
 
     this.isHandledAsync = true;

@@ -61,7 +61,7 @@ RSpec.describe 'Environment detail page', :js, feature_category: :environment_ma
     end
 
     it 'shows play button with manual job' do
-      expect(page).to have_button(s_('Environments|Deploy to...'), count: 2)
+      expect(page).to have_button(s_('Environments|Deploy to…'), count: 2)
       expect(page).to have_button('stop production', count: 2, visible: :all)
     end
   end

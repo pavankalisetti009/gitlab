@@ -36,7 +36,7 @@ export default class FilteredSearchIssueAnalytics extends FilteredSearchManager 
       isGroup: true,
       useDefaultState: false,
       filteredSearchTokenKeys: issuesAnalyticsTokenKeys,
-      placeholder: __('Filter results...'),
+      placeholder: __('Filter results…'),
     });
 
     this.isHandledAsync = true;

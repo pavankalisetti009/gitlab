@@ -18,8 +18,8 @@ describe('EE - DastSiteValidationBadge', () => {
   it.each`
     status               | variant      | label
     ${STATUS.NONE}       | ${'neutral'} | ${'Not validated'}
-    ${STATUS.INPROGRESS} | ${'info'}    | ${'Validating...'}
-    ${STATUS.PENDING}    | ${'info'}    | ${'Validating...'}
+    ${STATUS.INPROGRESS} | ${'info'}    | ${'Validating…'}
+    ${STATUS.PENDING}    | ${'info'}    | ${'Validating…'}
     ${STATUS.FAILED}     | ${'warning'} | ${'Validation failed'}
     ${STATUS.PASSED}     | ${'success'} | ${'Validated'}
   `('renders a $variant badge for $status status', ({ status, variant, label }) => {

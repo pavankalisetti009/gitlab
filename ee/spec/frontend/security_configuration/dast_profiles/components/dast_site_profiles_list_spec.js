@@ -154,8 +154,8 @@ describe('EE - DastSiteProfileList', () => {
     describe.each`
       status           | statusEnum                                | statusLabel            | buttonLabel            | isBtnDisabled
       ${'no'}          | ${DAST_SITE_VALIDATION_STATUS.NONE}       | ${''}                  | ${'Validate'}          | ${false}
-      ${'pending'}     | ${DAST_SITE_VALIDATION_STATUS.PENDING}    | ${'Validating...'}     | ${'Validate'}          | ${true}
-      ${'in-progress'} | ${DAST_SITE_VALIDATION_STATUS.INPROGRESS} | ${'Validating...'}     | ${'Validate'}          | ${true}
+      ${'pending'}     | ${DAST_SITE_VALIDATION_STATUS.PENDING}    | ${'Validating…'}       | ${'Validate'}          | ${true}
+      ${'in-progress'} | ${DAST_SITE_VALIDATION_STATUS.INPROGRESS} | ${'Validating…'}       | ${'Validate'}          | ${true}
       ${'passed'}      | ${DAST_SITE_VALIDATION_STATUS.PASSED}     | ${'Validated'}         | ${'Revoke validation'} | ${false}
       ${'failed'}      | ${DAST_SITE_VALIDATION_STATUS.FAILED}     | ${'Validation failed'} | ${'Retry validation'}  | ${false}
     `(
@@ -251,11 +251,11 @@ describe('EE - DastSiteProfileList', () => {
   describe('site validation stuck validation', () => {
     describe.each`
       timeElapsedMin | statusEnum                                | statusLabel            | buttonLabel           | isBtnDisabled
-      ${30}          | ${DAST_SITE_VALIDATION_STATUS.PENDING}    | ${'Validating...'}     | ${'Validate'}         | ${true}
+      ${30}          | ${DAST_SITE_VALIDATION_STATUS.PENDING}    | ${'Validating…'}       | ${'Validate'}         | ${true}
       ${62}          | ${DAST_SITE_VALIDATION_STATUS.PENDING}    | ${'Validation failed'} | ${'Retry validation'} | ${false}
-      ${null}        | ${DAST_SITE_VALIDATION_STATUS.PENDING}    | ${'Validating...'}     | ${'Validate'}         | ${true}
-      ${null}        | ${DAST_SITE_VALIDATION_STATUS.PENDING}    | ${'Validating...'}     | ${'Validate'}         | ${true}
-      ${30}          | ${DAST_SITE_VALIDATION_STATUS.INPROGRESS} | ${'Validating...'}     | ${'Validate'}         | ${true}
+      ${null}        | ${DAST_SITE_VALIDATION_STATUS.PENDING}    | ${'Validating…'}       | ${'Validate'}         | ${true}
+      ${null}        | ${DAST_SITE_VALIDATION_STATUS.PENDING}    | ${'Validating…'}       | ${'Validate'}         | ${true}
+      ${30}          | ${DAST_SITE_VALIDATION_STATUS.INPROGRESS} | ${'Validating…'}       | ${'Validate'}         | ${true}
       ${62}          | ${DAST_SITE_VALIDATION_STATUS.INPROGRESS} | ${'Validation failed'} | ${'Retry validation'} | ${false}
       ${30}          | ${DAST_SITE_VALIDATION_STATUS.PASSED}     | ${'Validated'}         | ${'Validate'}         | ${true}
       ${62}          | ${DAST_SITE_VALIDATION_STATUS.PASSED}     | ${'Validated'}         | ${'Validate'}         | ${true}
