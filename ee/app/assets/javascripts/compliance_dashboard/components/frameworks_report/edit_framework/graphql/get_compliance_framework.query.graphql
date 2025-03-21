@@ -48,6 +48,7 @@ query getComplianceFrameworkWithPolicies(
                 name
                 controlType
                 externalUrl
+                expression
               }
             }
           }

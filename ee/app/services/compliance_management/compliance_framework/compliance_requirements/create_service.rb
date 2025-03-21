@@ -9,7 +9,7 @@ module ComplianceManagement
           @params = params
           @current_user = current_user
           @requirement = ComplianceManagement::ComplianceFramework::ComplianceRequirement.new
-          @controls = controls
+          @controls = controls || []
         end
 
         def execute

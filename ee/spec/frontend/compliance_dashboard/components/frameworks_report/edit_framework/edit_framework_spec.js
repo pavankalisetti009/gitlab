@@ -453,12 +453,37 @@ describe('Edit Framework Form', () => {
         data: {
           createComplianceRequirement: {
             requirement: {
-              id: 'gid://gitlab/ComplianceManagement::Requirement/1',
-              name: 'SOC2',
-              description: 'Controls for SOC2',
+              id: 'gid://gitlab/ComplianceManagement::Requirement/2',
+              name: 'GitLab',
+              description: 'Controls used by GitLab',
               __typename: 'ComplianceManagement::Requirement',
               complianceRequirementsControls: {
-                nodes: [],
+                nodes: [
+                  {
+                    id: 'gid://gitlab/ComplianceManagement::Control/1',
+                    name: 'minimum_approvals_required',
+                    controlType: 'internal',
+                    expression: {
+                      __typename: 'IntegerExpression',
+                      field: 'minimum_approvals_required',
+                      operator: '=',
+                      value: 1,
+                    },
+                    externalUrl: null,
+                  },
+                  {
+                    id: 'gid://gitlab/ComplianceManagement::Control/2',
+                    name: 'scanner_sast_running',
+                    controlType: 'internal',
+                    expression: {
+                      __typename: 'BooleanExpression',
+                      field: 'scanner_sast_running',
+                      operator: '=',
+                      value: true,
+                    },
+                    externalUrl: null,
+                  },
+                ],
               },
             },
             errors: [],
@@ -514,8 +539,8 @@ describe('Edit Framework Form', () => {
               params: {
                 name: requirement.name,
                 description: requirement.description,
-                complianceRequirementsControls: [],
               },
+              controls: [],
             },
           }),
         );
@@ -555,8 +580,8 @@ describe('Edit Framework Form', () => {
               params: {
                 name: requirement.name,
                 description: requirement.description,
-                complianceRequirementsControls: [],
               },
+              controls: [],
             },
           }),
         );
@@ -658,8 +683,8 @@ describe('Edit Framework Form', () => {
             params: {
               name: updatedRequirement.name,
               description: updatedRequirement.description,
-              complianceRequirementsControls: [],
             },
+            controls: [],
           },
         }),
       );
@@ -728,12 +753,24 @@ describe('Edit Framework Form', () => {
                     id: 'gid://gitlab/ComplianceManagement::Control/1',
                     name: 'minimum_approvals_required',
                     controlType: 'internal',
+                    expression: {
+                      __typename: 'IntegerExpression',
+                      field: 'minimum_approvals_required',
+                      operator: '=',
+                      value: 1,
+                    },
                     externalUrl: null,
                   },
                   {
                     id: 'gid://gitlab/ComplianceManagement::Control/2',
                     name: 'scanner_sast_running',
                     controlType: 'internal',
+                    expression: {
+                      __typename: 'BooleanExpression',
+                      field: 'scanner_sast_running',
+                      operator: '=',
+                      value: true,
+                    },
                     externalUrl: null,
                   },
                 ],
@@ -847,9 +884,31 @@ describe('Edit Framework Form', () => {
               params: {
                 name: mockRequirements[1].name,
                 description: mockRequirements[1].description,
-                complianceRequirementsControls:
-                  mockRequirements[1].complianceRequirementsControls.nodes,
               },
+              controls: [
+                {
+                  controlType: 'internal',
+                  expression: {
+                    __typename: 'IntegerExpression',
+                    field: 'minimum_approvals_required',
+                    operator: '=',
+                    value: 1,
+                  },
+                  externalUrl: '',
+                  name: 'minimum_approvals_required',
+                },
+                {
+                  controlType: 'internal',
+                  expression: {
+                    __typename: 'BooleanExpression',
+                    field: 'scanner_sast_running',
+                    operator: '=',
+                    value: true,
+                  },
+                  externalUrl: '',
+                  name: 'scanner_sast_running',
+                },
+              ],
             },
           }),
         );
@@ -1010,7 +1069,7 @@ describe('Edit Framework Form', () => {
       expect(findRequirementsSection().exists()).toBe(true);
     });
 
-    it('render requiremnts section if editing framework', async () => {
+    it('render requirements section if editing framework', async () => {
       wrapper = createComponent(shallowMountExtended);
       await waitForPromises();
       expect(wrapper.findComponent(RequirementsSection).exists()).toBe(true);

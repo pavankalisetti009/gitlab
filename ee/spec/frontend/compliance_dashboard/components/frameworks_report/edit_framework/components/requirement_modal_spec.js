@@ -145,8 +145,6 @@ describe('RequirementModal', () => {
             requirement: {
               description,
               name,
-              controlExpression:
-                '{"operator":"AND","conditions":[{"id":"scanner_sast_running","field":"scanner_sast_running","operator":"=","value":true},{"id":"default_branch_protected","field":"default_branch_protected","operator":"=","value":true}]}',
             },
           },
         ],
@@ -186,8 +184,22 @@ describe('RequirementModal', () => {
             complianceRequirementsControls: {
               nodes: [],
             },
-            controlExpression:
-              '{"operator":"AND","conditions":[{"id":"scanner_sast_running","field":"scanner_sast_running","operator":"=","value":true},{"id":"default_branch_protected","field":"default_branch_protected","operator":"=","value":true}]}',
+            stagedControls: [
+              {
+                controlType: 'internal',
+                displayName: 'SAST Running',
+                expression: '{"field":"scanner_sast_running","operator":"=","value":true}',
+                id: undefined,
+                name: 'scanner_sast_running',
+              },
+              {
+                controlType: 'internal',
+                displayName: 'Default branch protected',
+                expression: '{"field":"default_branch_protected","operator":"=","value":true}',
+                id: undefined,
+                name: 'default_branch_protected',
+              },
+            ],
           },
           index: 0,
         },
@@ -235,7 +247,7 @@ describe('RequirementModal', () => {
             requirement: {
               description,
               name,
-              controlExpression: null,
+              stagedControls: [],
             },
           },
         ],

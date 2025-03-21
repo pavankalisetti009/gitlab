@@ -318,13 +318,16 @@ export default {
       await Promise.all(createRequirementPromises);
     },
     async createRequirementAtIndex(requirement, frameworkId, index = null) {
-      const controls =
-        requirement.complianceRequirementsControls?.nodes?.map((control) => ({
-          id: control.id,
-          name: control.name,
-          controlType: control.controlType,
-          externalUrl: control.externalUrl,
-        })) || [];
+      const controls = (
+        requirement.stagedControls ||
+        requirement.complianceRequirementsControls?.nodes ||
+        []
+      ).map((control) => ({
+        name: control.name,
+        controlType: control.controlType || 'internal',
+        externalUrl: control.externalUrl || '',
+        expression: control.expression || '',
+      }));
 
       const { data } = await this.$apollo.mutate({
         mutation: createRequirementMutation,
@@ -334,8 +337,8 @@ export default {
             params: {
               name: requirement.name,
               description: requirement.description,
-              complianceRequirementsControls: controls,
             },
+            controls,
           },
         },
         ...(this.isNewFramework
@@ -382,6 +385,13 @@ export default {
       });
     },
     async updateRequirement(requirement) {
+      const controls = (requirement.stagedControls || []).map((control) => ({
+        name: control.name,
+        controlType: control.controlType || 'internal',
+        externalUrl: control.externalUrl || '',
+        expression: control.expression || '',
+      }));
+
       const { data } = await this.$apollo.mutate({
         mutation: updateRequirementMutation,
         variables: {
@@ -390,9 +400,8 @@ export default {
             params: {
               name: requirement.name,
               description: requirement.description,
-              complianceRequirementsControls:
-                requirement.complianceRequirementsControls?.nodes || [],
             },
+            controls,
           },
         },
         update: (cache, result) => this.updateRequirementCacheOnUpdate(cache, result),
@@ -461,6 +470,9 @@ export default {
         try {
           if (requirement?.id) {
             await this.updateRequirement(requirement);
+            if (index !== null) {
+              this.requirements.splice(index, 1, requirement);
+            }
           }
         } catch (error) {
           this.setError(error, error);

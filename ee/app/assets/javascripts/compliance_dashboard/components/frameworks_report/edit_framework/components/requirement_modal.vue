@@ -50,7 +50,7 @@ export default {
     return {
       requirementData: null,
       validation: { ...requirementDefaultValidationState },
-      controlIds: [],
+      controls: [],
       searchQuery: '',
     };
   },
@@ -69,7 +69,7 @@ export default {
     },
     controlItems() {
       return this.gitlabStandardControls
-        .filter((control) => !this.controlIds.includes(control.id))
+        .filter((control) => !this.controls.some((c) => c?.name === control.id))
         .filter((control) => control.name.toLowerCase().includes(this.searchQuery.toLowerCase()))
         .map(({ id, name }) => ({ value: id, text: name }));
     },
@@ -97,10 +97,10 @@ export default {
     },
 
     canAddControl() {
-      return this.controlIds.length < maxControlsNumber;
+      return this.controls.length < maxControlsNumber;
     },
     controlsLength() {
-      return this.controlIds.filter(Boolean).length;
+      return this.controls.filter((control) => control?.name).length;
     },
   },
   watch: {
@@ -108,7 +108,7 @@ export default {
       immediate: true,
       handler(newRequirement) {
         this.requirementData = cloneDeep(newRequirement);
-        this.initializeControlIds();
+        this.initializeControls();
         this.validation = { ...requirementDefaultValidationState };
       },
     },
@@ -117,11 +117,24 @@ export default {
     show() {
       this.$refs.modal.show();
     },
-    initializeControlIds() {
-      const conditions = this.requirementData.controlExpression
-        ? JSON.parse(this.requirementData.controlExpression)?.conditions
-        : [];
-      this.controlIds = conditions.length ? conditions.map((condition) => condition.id) : [null];
+    initializeControls() {
+      const requirementControls = this.requirementData?.complianceRequirementsControls?.nodes || [];
+      if (requirementControls.length) {
+        this.controls = requirementControls.map((control) => {
+          const standardControl = this.gitlabStandardControls.find(
+            (ctrl) => ctrl.id === control.name,
+          );
+          return {
+            id: control.id,
+            name: standardControl?.id,
+            controlType: control.controlType,
+            expression: control.expression,
+            displayName: standardControl?.name,
+          };
+        });
+      } else {
+        this.controls = [null];
+      }
     },
     validateField(key) {
       this.validation[key] = Boolean(this.requirementData[key]);
@@ -136,39 +149,75 @@ export default {
     handleSubmit(event) {
       this.validateForm();
       if (this.isFormValid) {
-        const conditions = this.controlIds
-          .map((controlId) => this.gitlabStandardControls.find((ctrl) => ctrl.id === controlId))
-          .filter(Boolean)
-          .map((control) => ({ id: control.id, ...omit(control.expression, '__typename') }));
+        const stagedControls = this.controls
+          .map((control) => {
+            if (!control) return null;
 
-        this.requirementData.controlExpression = conditions.length
-          ? JSON.stringify({ operator: 'AND', conditions })
-          : null;
+            if (control.expression) {
+              const expressionWithoutTypename = omit(control.expression, '__typename');
+              const expression = Object.keys(expressionWithoutTypename).length
+                ? JSON.stringify(expressionWithoutTypename)
+                : null;
+              return {
+                ...control,
+                expression,
+              };
+            }
+
+            return {
+              ...control,
+              expression: null,
+            };
+          })
+          .filter(Boolean);
 
         const { index, ...requirement } = this.requirementData;
+        requirement.stagedControls = stagedControls;
         const eventName = this.isEdit ? requirementEvents.update : requirementEvents.create;
-        this.$emit(eventName, { requirement, index });
+
+        this.$emit(eventName, {
+          requirement,
+          index,
+        });
       } else {
         event.preventDefault();
       }
     },
-    getToggleText(controlId) {
-      const selectedItem = this.gitlabStandardControls.find((item) => item.id === controlId);
-      return selectedItem ? selectedItem.name : this.$options.i18n.toggleText;
+    getToggleText(control) {
+      return control?.controlType === 'external'
+        ? this.$options.i18n.externalControl
+        : control?.displayName || this.$options.i18n.toggleText;
     },
-    getSelected(controlId) {
-      return controlId || null;
+    getSelected(control) {
+      return control?.id || null;
     },
     addControl() {
       if (this.canAddControl) {
-        this.controlIds.push(null);
+        this.controls.push(null);
       }
     },
     removeControl(index) {
-      this.controlIds.splice(index, 1);
+      this.controls.splice(index, 1);
     },
-    onControlSelect(index, selectedValue) {
-      this.controlIds.splice(index, 1, selectedValue);
+    onControlSelect(index, selectedId) {
+      if (!selectedId) {
+        this.controls.splice(index, 1, null);
+        return;
+      }
+
+      const selectedControl = this.gitlabStandardControls.find((ctrl) => ctrl.id === selectedId);
+      if (selectedControl) {
+        this.controls.splice(index, 1, {
+          id: this.controls[index]?.id,
+          name: selectedControl.id,
+          expression: selectedControl.expression,
+          displayName: selectedControl.name,
+          controlType: 'internal',
+        });
+      }
+    },
+    disabled(control) {
+      return control?.controlType === 'external';
     },
   },
   requirementsDocsUrl,
@@ -186,8 +235,9 @@ export default {
     learnMore: __('Learn more.'),
     nameInputInvalid: s__('ComplianceFrameworks|Name is required'),
     descriptionInputInvalid: s__('ComplianceFrameworks|Description is required'),
-    addControl: s__('ComplianceFrameworks|Add a GitLab Control'),
+    addControl: s__('ComplianceFrameworks|Add a GitLab control'),
     toggleText: s__('ComplianceFrameworks|Choose a standard control'),
+    externalControl: s__('ComplianceFrameworks|External control'),
     removeControl: s__('ComplianceFrameworks|Remove control'),
   },
 };
@@ -243,7 +293,7 @@ export default {
     </p>
 
     <div
-      v-for="(controlId, index) in controlIds"
+      v-for="(control, index) in controls"
       :key="index"
       class="gl-mb-3 gl-flex gl-justify-between gl-rounded-base gl-bg-gray-10 gl-p-3"
     >
@@ -252,10 +302,11 @@ export default {
         positioning-strategy="fixed"
         boundary="viewport"
         :data-testid="`control-select-${index}`"
-        :selected="getSelected(controlId)"
+        :selected="getSelected(control)"
         searchable
-        :toggle-text="getToggleText(controlId)"
+        :toggle-text="getToggleText(control)"
         :items="controlItems"
+        :disabled="disabled(control)"
         @select="onControlSelect(index, $event)"
         @search="searchQuery = $event"
       />

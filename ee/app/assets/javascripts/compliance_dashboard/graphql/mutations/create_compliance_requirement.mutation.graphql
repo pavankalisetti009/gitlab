@@ -10,6 +10,7 @@ mutation createComplianceRequirement($input: CreateComplianceRequirementInput!) 
           name
           controlType
           externalUrl
+          expression
         }
       }
     }
