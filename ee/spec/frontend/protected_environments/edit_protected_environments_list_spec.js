@@ -591,6 +591,7 @@ describe('ee/protected_environments/edit_protected_environments_list.vue', () =>
         expect(dropdown.props()).toMatchObject({
           label: 'Select users',
           accessLevelsData: DEFAULT_ACCESS_LEVELS_DATA,
+          inherited: true,
         });
       });
 

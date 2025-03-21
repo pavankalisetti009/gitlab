@@ -277,6 +277,7 @@ export default {
         :disabled="disabled"
         :items="approvers"
         show-users
+        inherited
         @select="updateApprovers"
       />
       <template #description>
