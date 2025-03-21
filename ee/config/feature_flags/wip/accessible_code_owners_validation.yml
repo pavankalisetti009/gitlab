@@ -1,0 +1,9 @@
+---
+name: accessible_code_owners_validation
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/429261
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/184692
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/524437
+milestone: '17.11'
+group: group::source code
+type: wip
+default_enabled: false

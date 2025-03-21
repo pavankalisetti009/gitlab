@@ -571,12 +571,6 @@ RSpec.describe Gitlab::CodeOwners::File, feature_category: :source_code_manageme
         )
       end
 
-      it 'does not call UserPermissionCheck' do
-        expect(Gitlab::CodeOwners::UserPermissionCheck).not_to receive(:new)
-
-        file.valid?
-      end
-
       context 'with malformed owners' do
         context 'when entry owner is invalid' do
           let(:file_content) do
@@ -630,21 +624,130 @@ RSpec.describe Gitlab::CodeOwners::File, feature_category: :source_code_manageme
           file1 @reference
 
           README.md @other_reference
-
         CONTENT
       end
 
-      it 'calls UserPermissionCheck' do
-        expect(Gitlab::CodeOwners::UserPermissionCheck).to receive(:new).with(
-          project,
-          [
-            a_kind_of(Gitlab::CodeOwners::Entry),
-            a_kind_of(Gitlab::CodeOwners::Entry)
-          ],
-          limit: described_class::MAX_REFERENCES
-        ).and_return(instance_double(Gitlab::CodeOwners::UserPermissionCheck, errors: []))
+      it 'calls Gitlab::CodeOwners::OwnerValidation::Process' do
+        expect(Gitlab::CodeOwners::OwnerValidation::Process)
+          .to receive(:new)
+          .with(project, file)
+          .and_return(instance_double(Gitlab::CodeOwners::OwnerValidation::Process, execute: nil))
 
         file.valid?
+      end
+    end
+
+    context 'when accessible_code_owners_validation feature is disabled' do
+      before do
+        stub_feature_flags(accessible_code_owners_validation: false)
+      end
+
+      context 'when codeowners file has syntax errors' do
+        let(:file_content) do
+          <<~CONTENT
+          *.rb
+
+          []
+          *_spec.rb @gl-test
+
+          ^[Optional][5]
+          *.txt @user
+
+          [Invalid section
+
+          [OK section header]
+          CONTENT
+        end
+
+        it 'detects syntax errors' do
+          expect(file.valid?).to eq(false)
+
+          expect(file.errors).to match_array(
+            [
+              Gitlab::CodeOwners::Error.new(:missing_entry_owner, 1),
+              Gitlab::CodeOwners::Error.new(:missing_section_name, 3),
+              Gitlab::CodeOwners::Error.new(:invalid_approval_requirement, 6),
+              Gitlab::CodeOwners::Error.new(:invalid_section_format, 9),
+              Gitlab::CodeOwners::Error.new(:malformed_entry_owner, 9)
+            ]
+          )
+        end
+
+        it 'does not call UserPermissionCheck' do
+          expect(Gitlab::CodeOwners::UserPermissionCheck).not_to receive(:new)
+
+          file.valid?
+        end
+
+        context 'with malformed owners' do
+          context 'when entry owner is invalid' do
+            let(:file_content) do
+              <<~CONTENT
+              # Regular owner
+              *.rb @valid-user
+
+              # Just invalid owners
+              *.js not_a_user_not_an_email
+              CONTENT
+            end
+
+            it 'detects the invalid owner' do
+              expect(file.valid?).to eq(false)
+
+              expect(file.errors).to match_array(
+                [
+                  Gitlab::CodeOwners::Error.new(:malformed_entry_owner, 5)
+                ]
+              )
+            end
+          end
+
+          context 'when entry owner is a mix of invalid and valid owners' do
+            let(:file_content) do
+              <<~CONTENT
+                # Regular owner
+                *.rb @valid-user
+
+                # Mixed valid and invalid owners
+                *.js malformed @valid-user @valid-group another_malformed
+              CONTENT
+            end
+
+            it 'detects any invalid owner' do
+              expect(file.valid?).to eq(false)
+
+              expect(file.errors).to match_array(
+                [
+                  Gitlab::CodeOwners::Error.new(:malformed_entry_owner, 5)
+                ]
+              )
+            end
+          end
+        end
+      end
+
+      context 'when the codeowners file does not have syntax errors' do
+        let(:file_content) do
+          <<~CONTENT
+            file1 @reference
+
+            README.md @other_reference
+
+          CONTENT
+        end
+
+        it 'calls UserPermissionCheck' do
+          expect(Gitlab::CodeOwners::UserPermissionCheck).to receive(:new).with(
+            project,
+            [
+              a_kind_of(Gitlab::CodeOwners::Entry),
+              a_kind_of(Gitlab::CodeOwners::Entry)
+            ],
+            limit: described_class::MAX_REFERENCES
+          ).and_return(instance_double(Gitlab::CodeOwners::UserPermissionCheck, errors: []))
+
+          file.valid?
+        end
       end
     end
   end
