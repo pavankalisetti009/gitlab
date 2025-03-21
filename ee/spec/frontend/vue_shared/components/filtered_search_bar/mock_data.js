@@ -156,3 +156,62 @@ export const mockHealthToken = {
   operators: OPERATORS_IS,
   token: HealthToken,
 };
+
+export const mockNamespaceCustomFieldsResponse = {
+  data: {
+    namespace: {
+      id: 'gid://gitlab/Group/24',
+      customFields: {
+        count: 4,
+        nodes: [
+          {
+            id: 'gid://gitlab/Issuables::CustomField/26',
+            name: 'select type custom field',
+            fieldType: 'SINGLE_SELECT',
+            workItemTypes: [
+              {
+                id: 'gid://gitlab/WorkItems::Type/8',
+                name: 'Epic',
+                __typename: 'WorkItemType',
+              },
+              {
+                id: 'gid://gitlab/WorkItems::Type/1',
+                name: 'Issue',
+                __typename: 'WorkItemType',
+              },
+              {
+                id: 'gid://gitlab/WorkItems::Type/3',
+                name: 'Test Case',
+                __typename: 'WorkItemType',
+              },
+            ],
+            __typename: 'CustomField',
+          },
+          {
+            id: 'gid://gitlab/Issuables::CustomField/29',
+            name: 'Text type custom field',
+            fieldType: 'TEXT',
+            workItemTypes: [],
+            __typename: 'CustomField',
+          },
+          {
+            id: 'gid://gitlab/Issuables::CustomField/27',
+            name: 'Single select custom field',
+            fieldType: 'SINGLE_SELECT',
+            workItemTypes: [],
+            __typename: 'CustomField',
+          },
+          {
+            id: 'gid://gitlab/Issuables::CustomField/28',
+            name: 'Number type custom field',
+            fieldType: 'NUMBER',
+            workItemTypes: [],
+            __typename: 'CustomField',
+          },
+        ],
+        __typename: 'CustomFieldConnection',
+      },
+      __typename: 'Group',
+    },
+  },
+};
