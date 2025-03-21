@@ -151,7 +151,7 @@ end
 
 ### Subscription Plans
 
-Self-managed:
+GitLab Self-Managed:
 
 - `default`: Everyone.
 
