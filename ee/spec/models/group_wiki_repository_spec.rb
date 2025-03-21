@@ -133,4 +133,11 @@ RSpec.describe GroupWikiRepository, :geo do
       end
     end
   end
+
+  context 'with loose foreign key on group_wiki_repositories.group_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:group) }
+      let_it_be(:model) { create(:group_wiki_repository, group: parent) }
+    end
+  end
 end
