@@ -71,7 +71,7 @@ You can [exclude](../exclusions.md) selected secrets from detection by secret pu
 
 ## Enable secret push protection
 
-On GitLab Dedicated and Self-managed instances, you must:
+On GitLab Dedicated and GitLab Self-Managed instances, you must:
 
 1. [Allow secret push protection on the entire instance](#allow-the-use-of-secret-push-protection-in-your-gitlab-instance).
 1. [Enable secret push protection per project](#enable-secret-push-protection-in-a-project).
@@ -80,7 +80,7 @@ On GitLab.com, you must enable secret push protection per project.
 
 ### Allow the use of secret push protection in your GitLab instance
 
-On GitLab Dedicated and Self-managed instances, you must allow secret push protection before you can enable it in a project.
+On GitLab Dedicated and GitLab Self-Managed instances, you must allow secret push protection before you can enable it in a project.
 
 Prerequisites:
 
@@ -100,7 +100,7 @@ Secret push protection is allowed on the instance. To use this feature, you must
 Prerequisites:
 
 - You must have at least the Maintainer role for the project.
-- On GitLab Dedicated and Self-managed, you must allow secret push protection on the instance.
+- On GitLab Dedicated and GitLab Self-Managed, you must allow secret push protection on the instance.
 
 To enable secret push protection in a project:
 
