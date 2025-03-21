@@ -3,6 +3,7 @@
 class SamlGroupLink < ApplicationRecord
   include StripAttribute
   include MemberRoles::MemberRoleRelation
+  include ScimPaginatable
 
   base_access_level_attr :access_level
 
@@ -20,6 +21,7 @@ class SamlGroupLink < ApplicationRecord
   scope :by_group_id, ->(group_id) { where(group_id: group_id) }
   scope :by_scim_group_uid, ->(uid) { where(scim_group_uid: uid) }
   scope :by_assign_duo_seats, ->(value) { where(assign_duo_seats: value) }
+  scope :with_scim_group_uid, -> { where.not(scim_group_uid: nil) }
   scope :preload_group, -> { preload(group: :route) }
 
   def self.first_by_scim_group_uid(uid)

@@ -749,5 +749,104 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
         end
       end
     end
+
+    describe 'GET api/scim/v2/application/Groups' do
+      let(:filter_query) { '' }
+
+      subject(:api_request) do
+        url = "scim/v2/application/Groups#{filter_query}"
+        get api(url, user, version: '', access_token: scim_token)
+      end
+
+      before do
+        stub_feature_flags(self_managed_scim_group_sync: true)
+      end
+
+      it_behaves_like 'Not available to SaaS customers'
+      it_behaves_like 'Instance level SCIM license required'
+      it_behaves_like 'SCIM token authenticated'
+      it_behaves_like 'SAML SSO must be enabled'
+      it_behaves_like 'sets current organization'
+      it_behaves_like 'Groups feature flag check'
+
+      context 'with groups' do
+        before do
+          create(:saml_group_link, saml_group_name: 'Engineering', scim_group_uid: SecureRandom.uuid)
+          create(:saml_group_link, saml_group_name: 'Marketing', scim_group_uid: SecureRandom.uuid)
+        end
+
+        it 'responds with groups' do
+          api_request
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['Resources'].size).to eq(2)
+
+          group_names = json_response['Resources'].pluck('displayName')
+          expect(group_names).to match_array(%w[Engineering Marketing])
+
+          expect(json_response['Resources'].first).to include(
+            'id' => be_present,
+            'displayName' => be_present,
+            'schemas' => include('urn:ietf:params:scim:schemas:core:2.0:Group')
+          )
+        end
+
+        it 'sets values as required by the specification' do
+          api_request
+
+          expect(json_response['schemas']).to match_array(['urn:ietf:params:scim:api:messages:2.0:ListResponse'])
+          expect(json_response['itemsPerPage']).to be_present
+          expect(json_response['startIndex']).to eq(1)
+        end
+
+        context 'with filter parameter' do
+          let(:filter_query) { '?filter=displayName%20eq%20"Engineering"' }
+
+          it 'returns only matching groups' do
+            api_request
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response['Resources'].size).to eq(1)
+            expect(json_response['Resources'][0]['displayName']).to eq('Engineering')
+            expect(json_response['totalResults']).to eq(1)
+          end
+
+          context 'with unsupported filter format' do
+            let(:filter_query) { '?filter=unsupported%20filter' }
+
+            it 'returns an error for unsupported filter' do
+              api_request
+
+              expect(response).to have_gitlab_http_status(:precondition_failed)
+              expect(json_response['detail']).to eq('Unsupported Filter')
+            end
+          end
+        end
+
+        context 'with no matching groups' do
+          let(:filter_query) { '?filter=displayName%20eq%20"NonExistentGroup"' }
+
+          it 'returns empty resources array' do
+            api_request
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response['Resources']).to be_empty
+            expect(json_response['totalResults']).to eq(0)
+          end
+        end
+      end
+
+      context 'with excludedAttributes parameter' do
+        let(:filter_query) { '?excludedAttributes=members,meta' }
+
+        it 'passes excluded attributes to the presenter' do
+          expect(::EE::API::Entities::Scim::Groups).to receive(:represent)
+            .with(anything, hash_including(excluded_attributes: %w[members meta]))
+            .and_call_original
+
+          api_request
+        end
+      end
+    end
   end
 end
