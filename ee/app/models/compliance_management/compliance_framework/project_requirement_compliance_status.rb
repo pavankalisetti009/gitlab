@@ -25,6 +25,9 @@ module ComplianceManagement
       scope :in_optimization_finder_query, ->(_project_id_expression, id_expression) {
         where(arel_table[:id].eq(id_expression))
       }
+      scope :for_projects, ->(project_ids) { where(project_id: project_ids) }
+      scope :for_requirements, ->(requirement_ids) { where(compliance_requirement_id: requirement_ids) }
+      scope :for_frameworks, ->(framework_ids) { where(compliance_framework_id: framework_ids) }
 
       def self.delete_all_project_statuses(project_id)
         where(project_id: project_id).each_batch(of: 100) do |batch|

@@ -174,5 +174,110 @@ RSpec.describe 'getting the project compliance requirement statuses for a group'
         )
       end
     end
+
+    context 'with filters' do
+      context 'with project id filter' do
+        context 'when the project has compliance requirement statuses' do
+          it 'finds the filtered project compliance requirement statuses' do
+            post_graphql(query({ filters: { projectId: root_group_project.to_global_id.to_s } }),
+              current_user: current_user)
+
+            expect(requirement_statuses).to match_array([requirement_status2_output, requirement_status1_output])
+          end
+        end
+
+        context 'when the project does not have compliance requirement statuses' do
+          let_it_be(:project_without_status) { create(:project, group: group) }
+
+          it 'returns an empty array' do
+            post_graphql(query({ filters: { projectId: project_without_status.to_global_id.to_s } }),
+              current_user: current_user)
+
+            expect(requirement_statuses).to be_empty
+          end
+        end
+
+        context 'when the project id is not existent' do
+          let(:non_existent_project_id) { "gid://gitlab/Project/#{non_existing_record_id}" }
+
+          it 'returns an empty array' do
+            post_graphql(query({ filters: { projectId: non_existent_project_id } }), current_user: current_user)
+
+            expect(requirement_statuses).to be_empty
+          end
+        end
+      end
+
+      context 'with requirement id filter' do
+        context 'when the requirement has compliance requirement statuses' do
+          it 'finds the filtered project compliance requirement statuses' do
+            post_graphql(query({ filters: { requirementId: requirement1.to_global_id.to_s } }),
+              current_user: current_user)
+
+            expect(requirement_statuses).to match_array([requirement_status3_output, requirement_status1_output])
+          end
+        end
+
+        context 'when the requirement does not have compliance requirement statuses' do
+          let_it_be(:requirement_without_status) do
+            create(:compliance_requirement, namespace: group, framework: framework1, name: 'requirement_without_status')
+          end
+
+          it 'returns an empty array' do
+            post_graphql(query({ filters: { requirementId: requirement_without_status.to_global_id.to_s } }),
+              current_user: current_user)
+
+            expect(requirement_statuses).to be_empty
+          end
+        end
+
+        context 'when the requirement id is not existent' do
+          let(:non_existent_requirement_id) do
+            "gid://gitlab/ComplianceManagement::ComplianceFramework::ComplianceRequirement/#{non_existing_record_id}"
+          end
+
+          it 'returns an empty array' do
+            post_graphql(query({ filters: { requirementId: non_existent_requirement_id } }), current_user: current_user)
+
+            expect(requirement_statuses).to be_empty
+          end
+        end
+      end
+
+      context 'with framework id filter' do
+        context 'when the framework has compliance requirement statuses' do
+          it 'finds the filtered project compliance requirement statuses' do
+            post_graphql(query({ filters: { frameworkId: framework1.to_global_id.to_s } }),
+              current_user: current_user)
+
+            expect(requirement_statuses).to match_array([requirement_status4_output, requirement_status3_output,
+              requirement_status2_output, requirement_status1_output])
+          end
+        end
+
+        context 'when the framework does not have compliance requirement statuses' do
+          let_it_be(:framework_without_status) do
+            create(:compliance_framework, namespace: group, name: 'framework_without_status', color: '#ff00ae')
+          end
+
+          it 'returns an empty array' do
+            post_graphql(query({ filters: { frameworkId: framework_without_status.to_global_id.to_s } }),
+              current_user: current_user)
+
+            expect(requirement_statuses).to be_empty
+          end
+        end
+
+        context 'when the framework id is not existent' do
+          let(:non_existent_framework_id) { "gid://gitlab/ComplianceManagement::Framework/#{non_existing_record_id}" }
+
+          it 'returns an empty array' do
+            post_graphql(query({ filters: { frameworkId: non_existent_framework_id } }), current_user: current_user)
+
+            expect(requirement_statuses).to be_empty
+          end
+        end
+      end
+    end
   end
 end
