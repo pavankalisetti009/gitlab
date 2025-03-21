@@ -64,7 +64,9 @@ export default {
   computed: {
     requirementsWithControls() {
       return this.requirements.map((requirement) => {
-        const controls = this.getControls(requirement.complianceRequirementsControls?.nodes || []);
+        const controls = this.getControls(
+          requirement.stagedControls || requirement.complianceRequirementsControls?.nodes || [],
+        );
         return {
           ...requirement,
           controls,
@@ -105,7 +107,7 @@ export default {
               displayValue:
                 control.controlType === 'external'
                   ? `${this.$options.i18n.externalCheck} ${control.externalUrl}`
-                  : matchingGitLabControl?.name,
+                  : matchingGitLabControl?.name || this.$options.i18n.unknown,
             };
           })
           .filter(Boolean);
@@ -151,6 +153,7 @@ export default {
     newRequirement: s__('ComplianceFrameworks|New requirement'),
     externalCheck: s__('ComplianceFrameworks|Send via:'),
     external: s__('ComplianceFrameworks|External'),
+    unknown: s__('ComplianceFrameworks|Unknown'),
   },
   emptyRequirement,
   requirementEvents,

@@ -232,8 +232,8 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
         end
       end
 
-      context 'when controls is empty' do
-        let_it_be(:controls) { [] }
+      shared_examples 'creates requirement without controls' do |controls_value|
+        let_it_be(:controls) { controls_value }
 
         it 'creates a new compliance requirement' do
           expect { requirement_creator_response }.to change { framework.compliance_requirements.count }.by(1)
@@ -248,6 +248,14 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
             ComplianceManagement::ComplianceFramework::ComplianceRequirementsControl.count
           }
         end
+      end
+
+      context 'when controls is empty' do
+        include_examples 'creates requirement without controls', []
+      end
+
+      context 'when controls is nil' do
+        include_examples 'creates requirement without controls', nil
       end
     end
   end
