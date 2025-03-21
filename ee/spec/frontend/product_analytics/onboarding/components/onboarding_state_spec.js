@@ -28,14 +28,14 @@ describe('OnboardingState', () => {
   const createApolloSuccess = (state) =>
     jest.fn().mockResolvedValue(getProductAnalyticsStateResponse(state));
 
-  const createWrapper = (props = {}, apolloMock) => {
+  const createWrapper = ({ props = {}, apolloMock } = {}) => {
     wrapper = shallowMountExtended(OnboardingState, {
       apolloProvider: createMockApollo([[getProductAnalyticsState, apolloMock]]),
       provide: {
         namespaceFullPath: TEST_PROJECT_FULL_PATH,
       },
       propsData: {
-        state: '',
+        stateProp: '',
         pollState: false,
         ...props,
       },
@@ -49,7 +49,7 @@ describe('OnboardingState', () => {
 
   describe('default behaviour', () => {
     beforeEach(() => {
-      createWrapper({}, createApolloSuccess(STATE_CREATE_INSTANCE));
+      createWrapper({ apolloMock: createApolloSuccess(STATE_CREATE_INSTANCE) });
       return waitForPromises();
     });
 
@@ -60,7 +60,7 @@ describe('OnboardingState', () => {
 
   describe(`when the response is ${STATE_COMPLETE}`, () => {
     beforeEach(() => {
-      createWrapper({}, createApolloSuccess(STATE_COMPLETE));
+      createWrapper({ apolloMock: createApolloSuccess(STATE_COMPLETE) });
       return waitForPromises();
     });
 
@@ -71,7 +71,10 @@ describe('OnboardingState', () => {
 
   describe('when a fatal error occurs', () => {
     beforeEach(() => {
-      createWrapper(STATE_LOADING_INSTANCE, mockApolloFatalError);
+      createWrapper({
+        props: { stateProp: STATE_LOADING_INSTANCE },
+        apolloMock: mockApolloFatalError,
+      });
       return waitForPromises();
     });
 
@@ -90,7 +93,10 @@ describe('OnboardingState', () => {
     const mock = createApolloSuccess(STATE_CREATE_INSTANCE);
 
     it('polls when pollState is true', async () => {
-      createWrapper({ state: STATE_CREATE_INSTANCE, pollState: true }, mock);
+      createWrapper({
+        props: { stateProp: STATE_CREATE_INSTANCE, pollState: true },
+        apolloMock: mock,
+      });
 
       await waitForPromises();
 
@@ -106,7 +112,7 @@ describe('OnboardingState', () => {
       ${STATE_COMPLETE}           | ${false} | ${0}
     `('when the state is "$state"', ({ state, polls, pollInterval }) => {
       beforeEach(() => {
-        createWrapper({ state }, mock);
+        createWrapper({ props: { stateProp: state }, apolloMock: mock });
         return waitForPromises();
       });
 
