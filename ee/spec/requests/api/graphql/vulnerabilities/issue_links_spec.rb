@@ -76,44 +76,6 @@ RSpec.describe 'Query.vulnerabilities.issueLinks', feature_category: :vulnerabil
     it 'does not cause N+1 query issue' do
       query_issue_links # Calling this the first time issues more queries
 
-      # 1) Select personal access tokens
-      # 2) Savepoint
-      # 3) Insert into personal access tokens
-      # 4) Release savepoint
-      # 5) Select personal access tokens
-      # 6) Select current organization
-      # 7) Select user custom roler
-      # 8) Select geo nodes
-      # 9) Update personal access tokens(last used at)
-      # 10) Select user
-      # 11) Select user_detail
-      # 12) Authorization check
-      # 13) Select vulnerability_reads
-      # 14) Select vulnerabilities
-      # 15) Select project
-      # 16) Select route
-      # 17) Select vulnerability occurrences
-      # 18) Select vulnerability reads
-      # 19) Select vulnerability scanners
-      # 20) Select vulnerability identifiers join table
-      # 21) Select vulnerability identifiers
-      # 22) Select namespace
-      # 23) Select group links
-      # 24) Select project features
-      # 25) Authorization check
-      # 26) Select issue links
-      # 27) Select issues
-      # 28) Select issue project
-      # 29) Loading the project authorizations
-      # 30) Loading the namespace
-      # 31) Loading the user
-      # 32) Loading the organization
-      # 33) Loading the organization for access token (only inside specs)
-      # 34) Loading the organization_details for avatar_url
-      # 35/36) Likely transitional in nature during decomposition. Investigate when all tables are transitioned
-      # 37) Load last used IPs of personal access tokens
-      # 38) Saver current IP of the request in personal access token last used IPs
-      # https://gitlab.com/gitlab-org/gitlab/-/issues/480882
       expect { query_issue_links }.not_to exceed_query_limit(38)
     end
   end
