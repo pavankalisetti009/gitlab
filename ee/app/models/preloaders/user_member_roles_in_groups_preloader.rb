@@ -35,7 +35,7 @@ module Preloaders
       groups_with_traversal_ids = group_relation.filter_map do |group|
         next unless group.custom_roles_enabled?
 
-        [group.id, Arel.sql("ARRAY[#{group.traversal_ids.join(',')}]")]
+        [group.id, Arel.sql("ARRAY[#{group.traversal_ids_as_sql}]")]
       end
 
       return {} if groups_with_traversal_ids.empty?

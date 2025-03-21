@@ -35,7 +35,7 @@ module Preloaders
       projects_with_traversal_ids = projects_relation.filter_map do |project|
         next unless custom_roles_enabled_on?(project)
 
-        [project.id, Arel.sql("ARRAY[#{project.namespace.traversal_ids.join(',')}]")]
+        [project.id, Arel.sql("ARRAY[#{project.namespace.traversal_ids_as_sql}]")]
       end
 
       return {} if projects_with_traversal_ids.empty?
