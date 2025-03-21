@@ -9,7 +9,9 @@ import GeoReplicableEmptyState from 'ee/geo_replicable/components/geo_replicable
 import GeoReplicableFilterBar from 'ee/geo_replicable/components/geo_replicable_filter_bar.vue';
 import GeoReplicableFilteredSearchBar from 'ee/geo_replicable/components/geo_replicable_filtered_search_bar.vue';
 import initStore from 'ee/geo_replicable/store';
+import { processFilters } from 'ee/geo_replicable/filters';
 import { TEST_HOST } from 'spec/test_constants';
+import { setUrlParams, visitUrl } from '~/lib/utils/url_utility';
 import {
   MOCK_GEO_REPLICATION_SVG_PATH,
   MOCK_BASIC_GRAPHQL_DATA,
@@ -17,6 +19,21 @@ import {
   MOCK_GRAPHQL_REGISTRY,
   MOCK_REPLICABLE_TYPE_FILTER,
 } from '../mock_data';
+
+const MOCK_FILTERS = { foo: 'bar' };
+const MOCK_PROCESSED_FILTERS = { query: MOCK_FILTERS, url: { href: 'mock-url/params' } };
+const MOCK_UPDATED_URL = 'mock-url/params?foo=bar';
+
+jest.mock('~/lib/utils/url_utility', () => ({
+  ...jest.requireActual('~/lib/utils/url_utility'),
+  setUrlParams: jest.fn(() => MOCK_UPDATED_URL),
+  visitUrl: jest.fn(),
+}));
+
+jest.mock('ee/geo_replicable/filters', () => ({
+  ...jest.requireActual('ee/geo_replicable/filters'),
+  processFilters: jest.fn(() => MOCK_PROCESSED_FILTERS),
+}));
 
 Vue.use(Vuex);
 
@@ -149,6 +166,25 @@ describe('GeoReplicableApp', () => {
           MOCK_REPLICABLE_TYPE_FILTER,
         ]);
       });
+    });
+  });
+
+  describe('onSearch', () => {
+    beforeEach(() => {
+      createStore();
+      createComponent({ featureFlags: { geoReplicablesFilteredListView: true } });
+    });
+
+    it('processes filters and calls visitUrl', () => {
+      findGeoReplicableFilteredSearchBar().vm.$emit('search', MOCK_FILTERS);
+
+      expect(processFilters).toHaveBeenCalledWith(MOCK_FILTERS);
+      expect(setUrlParams).toHaveBeenCalledWith(
+        MOCK_PROCESSED_FILTERS.query,
+        MOCK_PROCESSED_FILTERS.url.href,
+        true,
+      );
+      expect(visitUrl).toHaveBeenCalledWith(MOCK_UPDATED_URL);
     });
   });
 
