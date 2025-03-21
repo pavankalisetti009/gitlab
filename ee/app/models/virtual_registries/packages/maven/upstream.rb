@@ -23,8 +23,8 @@ module VirtualRegistries
           encode_iv: false
         )
 
-        attr_encrypted :username
-        attr_encrypted :password
+        attr_encrypted :username # rubocop:disable Gitlab/Rails/AttrEncrypted -- will be fixed in a separate MR
+        attr_encrypted :password # rubocop:disable Gitlab/Rails/AttrEncrypted -- will be fixed in a separate MR
 
         validates :group, top_level_group: true, presence: true
         validates :url, addressable_url: { allow_localhost: false, allow_local_network: false }, presence: true

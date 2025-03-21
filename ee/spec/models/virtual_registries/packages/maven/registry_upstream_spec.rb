@@ -8,13 +8,13 @@ RSpec.describe VirtualRegistries::Packages::Maven::RegistryUpstream, type: :mode
   describe 'associations' do
     it { is_expected.to belong_to(:group) }
 
-    it do
+    it 'belongs to a registry' do
       is_expected.to belong_to(:registry)
         .class_name('VirtualRegistries::Packages::Maven::Registry')
         .inverse_of(:registry_upstream)
     end
 
-    it do
+    it 'belongs to an upstream' do
       is_expected.to belong_to(:upstream)
        .class_name('VirtualRegistries::Packages::Maven::Upstream')
       .inverse_of(:registry_upstream)
