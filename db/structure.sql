@@ -11764,7 +11764,8 @@ CREATE TABLE ci_trigger_requests (
     created_at timestamp without time zone,
     updated_at timestamp without time zone,
     commit_id bigint,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_66cc8518b2 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE ci_trigger_requests_id_seq
