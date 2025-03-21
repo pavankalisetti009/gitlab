@@ -45,10 +45,10 @@ export const VALIDATION_STATUS_TO_BADGE_VARIANT_MAP = {
 };
 
 const INPROGRESS_VALIDATION_PROPS = {
-  labelText: s__('DastSiteValidation|Validating...'),
+  labelText: s__('DastSiteValidation|Validating…'),
   name: 'status-running',
   class: 'gl-text-blue-500',
-  title: s__('DastSiteValidation|The validation is in progress. Please wait...'),
+  title: s__('DastSiteValidation|The validation is in progress. Please wait…'),
 };
 
 export const DAST_SITE_VALIDATION_STATUS_PROPS = {

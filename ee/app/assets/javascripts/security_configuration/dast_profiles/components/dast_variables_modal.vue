@@ -101,7 +101,7 @@ export default {
           ? s__('DastProfiles|Edit DAST variable')
           : s__('DastProfiles|Add DAST variable'),
         dropdownPlaceholder: s__('DastProfiles|Select a variable'),
-        searchPlaceholder: s__('DastProfiles|Search...'),
+        searchPlaceholder: s__('DastProfiles|Search…'),
         emptySearchResult: s__('DastProfiles|No variables found'),
         variableLabel: s__('DastProfiles|Variable'),
         valueLabel: s__('DastProfiles|Value'),

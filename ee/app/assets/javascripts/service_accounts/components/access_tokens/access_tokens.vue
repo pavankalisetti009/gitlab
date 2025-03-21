@@ -183,7 +183,7 @@ export default {
       <gl-filtered-search
         class="gl-min-w-0 gl-grow"
         :value="filters"
-        :placeholder="s__('AccessTokens|Search or filter access tokens...')"
+        :placeholder="s__('AccessTokens|Search or filter access tokens…')"
         :available-tokens="$options.fields"
         filtered-search-term-key="search"
         terms-as-tokens

@@ -62,7 +62,7 @@ describe('DependenciesFilteredSearch', () => {
     });
 
     it('displays the correct placeholder', () => {
-      expect(findFilteredSearch().props('placeholder')).toBe('Search or filter dependencies...');
+      expect(findFilteredSearch().props('placeholder')).toBe('Search or filter dependencies…');
     });
 
     it('passes the token configuration', () => {

@@ -29,7 +29,7 @@ export default {
   i18n: {
     corpusName: s__('CorpusManagement|Corpus name'),
     corpusFile: s__('CorpusManagement|Corpus file'),
-    uploadButtonText: __('Choose File...'),
+    uploadButtonText: __('Choose File…'),
     uploadMessage: s__('CorpusManagement|Corpus files must be in *.zip format. Maximum 5 GB'),
   },
   data() {

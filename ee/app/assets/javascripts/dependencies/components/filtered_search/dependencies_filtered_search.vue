@@ -30,7 +30,7 @@ export default {
     ...mapActions('allDependencies', ['setSearchFilterParameters', 'fetchDependencies']),
   },
   i18n: {
-    searchInputPlaceholder: s__('Dependencies|Search or filter dependencies...'),
+    searchInputPlaceholder: s__('Dependencies|Search or filter dependencies…'),
   },
 };
 </script>

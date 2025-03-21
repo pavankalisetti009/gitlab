@@ -32,7 +32,7 @@ module EE
     override :import_in_progress_title
     def import_in_progress_title
       if has_ci_cd_only_params?
-        _('Connecting...')
+        _('Connecting…')
       else
         super
       end
