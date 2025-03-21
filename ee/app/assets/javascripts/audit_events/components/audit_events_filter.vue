@@ -48,7 +48,10 @@ export default {
         }));
       }
 
-      return this.filterTokens;
+      return this.filterTokens.map((token) => ({
+        ...token,
+        disabled: false,
+      }));
     },
   },
   methods: {
