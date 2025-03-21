@@ -1,4 +1,6 @@
 <script>
+import { createAlert } from '~/alert';
+import { s__ } from '~/locale';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import {
   TOKEN_TYPE_EPIC,
@@ -11,12 +13,13 @@ import {
   TOKEN_TITLE_ITERATION,
   TOKEN_TITLE_WEIGHT,
   TOKEN_TYPE_HEALTH,
+  TOKEN_TYPE_CUSTOM_FIELD,
 } from 'ee/vue_shared/components/filtered_search_bar/constants';
+import namespaceCustomFieldsQuery from 'ee/vue_shared/components/filtered_search_bar/queries/custom_field_names.query.graphql';
 import { WORKSPACE_GROUP, WORKSPACE_PROJECT } from '~/issues/constants';
-import { convertToGraphQLId } from '~/graphql_shared/utils';
-import { TYPENAME_EPIC } from '~/graphql_shared/constants';
+import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { TYPENAME_EPIC, TYPENAME_ISSUE } from '~/graphql_shared/constants';
 import searchIterationsQuery from '../queries/search_iterations.query.graphql';
-
 import NewIssueDropdown from './new_issue_dropdown.vue';
 
 const EpicToken = () =>
@@ -29,6 +32,8 @@ const HealthToken = () =>
   import('ee/vue_shared/components/filtered_search_bar/tokens/health_token.vue');
 const ChildEpicIssueIndicator = () =>
   import('ee/issuable/child_epic_issue_indicator/components/child_epic_issue_indicator.vue');
+const CustomFieldToken = () =>
+  import('ee/vue_shared/components/filtered_search_bar/tokens/custom_field_token.vue');
 
 export default {
   name: 'IssuesListAppEE',
@@ -41,6 +46,7 @@ export default {
   inject: [
     'fullPath',
     'groupPath',
+    'hasCustomFieldsFeature',
     'hasIssueWeightsFeature',
     'hasIterationsFeature',
     'hasIssuableHealthStatusFeature',
@@ -50,7 +56,39 @@ export default {
   data() {
     return {
       filterParams: null,
+      customFields: [],
     };
+  },
+  apollo: {
+    customFields: {
+      query: namespaceCustomFieldsQuery,
+      skip() {
+        return !this.hasCustomFieldsFeature || !this.fullPath;
+      },
+      variables() {
+        return {
+          fullPath: this.fullPath,
+          active: true,
+        };
+      },
+      update(data) {
+        return (data.namespace?.customFields?.nodes || []).filter((field) => {
+          const fieldTypeAllowed = ['SINGLE_SELECT', 'MULTI_SELECT'].includes(field.fieldType);
+          const fieldAllowedOnWorkItem = field.workItemTypes.some(
+            (type) => type.name === TYPENAME_ISSUE,
+          );
+
+          return fieldTypeAllowed && fieldAllowedOnWorkItem;
+        });
+      },
+      error(error) {
+        createAlert({
+          message: s__('WorkItemCustomFields|Failed to load custom fields.'),
+          captureError: true,
+          error,
+        });
+      },
+    },
   },
   computed: {
     namespace() {
@@ -107,6 +145,19 @@ export default {
           icon: 'status-health',
           token: HealthToken,
           unique: false,
+        });
+      }
+
+      if (this.customFields.length > 0) {
+        this.customFields.forEach((field) => {
+          tokens.push({
+            type: `${TOKEN_TYPE_CUSTOM_FIELD}[${getIdFromGraphQLId(field.id)}]`,
+            title: field.name,
+            icon: 'multiple-choice',
+            field,
+            fullPath: this.fullPath,
+            token: CustomFieldToken,
+          });
         });
       }
 

@@ -31,14 +31,19 @@ import {
   TOKEN_TYPE_WEIGHT,
   TOKEN_TYPE_CREATED,
   TOKEN_TYPE_CLOSED,
+  TOKEN_TYPE_CUSTOM_FIELD,
   TOKEN_TYPE_SUBSCRIBED,
 } from 'ee/vue_shared/components/filtered_search_bar/constants';
 import BlockingIssuesCount from 'ee/issues/components/blocking_issues_count.vue';
 import IssuesListApp from 'ee/issues/list/components/issues_list_app.vue';
 import NewIssueDropdown from 'ee/issues/list/components/new_issue_dropdown.vue';
+import namespaceCustomFieldsQuery from 'ee/vue_shared/components/filtered_search_bar/queries/custom_field_names.query.graphql';
 import searchEpicsQuery from 'ee/vue_shared/components/filtered_search_bar/queries/search_epics.query.graphql';
 import ChildEpicIssueIndicator from 'ee/issuable/child_epic_issue_indicator/components/child_epic_issue_indicator.vue';
-import { mockGroupEpicsQueryResponse } from 'ee_jest/vue_shared/components/filtered_search_bar/mock_data';
+import {
+  mockGroupEpicsQueryResponse,
+  mockNamespaceCustomFieldsResponse,
+} from 'ee_jest/vue_shared/components/filtered_search_bar/mock_data';
 
 describe('EE IssuesListApp component', () => {
   let wrapper;
@@ -59,6 +64,7 @@ describe('EE IssuesListApp component', () => {
     hasAnyIssues: true,
     hasAnyProjects: true,
     hasBlockedIssuesFeature: true,
+    hasCustomFieldsFeature: true,
     hasEpicsFeature: true,
     hasIssueDateFilterFeature: true,
     hasIssuableHealthStatusFeature: true,
@@ -102,12 +108,14 @@ describe('EE IssuesListApp component', () => {
     okrsMvc = false,
     issuesQueryResponse = jest.fn().mockResolvedValue(defaultQueryResponse),
     issuesCountsQueryResponse = jest.fn().mockResolvedValue(getIssuesCountsQueryResponse),
+    customFieldsQueryHandler = jest.fn().mockResolvedValue(mockNamespaceCustomFieldsResponse),
   } = {}) => {
     return mount(IssuesListApp, {
       apolloProvider: createMockApollo([
         [getIssuesQuery, issuesQueryResponse],
         [getIssuesCountsQuery, issuesCountsQueryResponse],
         [searchEpicsQuery, jest.fn().mockResolvedValue(mockGroupEpicsQueryResponse)],
+        [namespaceCustomFieldsQuery, customFieldsQueryHandler],
       ]),
       provide: {
         glFeatures: {
@@ -145,10 +153,11 @@ describe('EE IssuesListApp component', () => {
     };
 
     describe.each`
-      feature         | property                    | tokenName      | type
-      ${'iterations'} | ${'hasIterationsFeature'}   | ${'Iteration'} | ${TOKEN_TYPE_ITERATION}
-      ${'epics'}      | ${'groupPath'}              | ${'Epic'}      | ${TOKEN_TYPE_EPIC}
-      ${'weights'}    | ${'hasIssueWeightsFeature'} | ${'Weight'}    | ${TOKEN_TYPE_WEIGHT}
+      feature            | property                    | tokenName        | type
+      ${'iterations'}    | ${'hasIterationsFeature'}   | ${'Iteration'}   | ${TOKEN_TYPE_ITERATION}
+      ${'epics'}         | ${'groupPath'}              | ${'Epic'}        | ${TOKEN_TYPE_EPIC}
+      ${'weights'}       | ${'hasIssueWeightsFeature'} | ${'Weight'}      | ${TOKEN_TYPE_WEIGHT}
+      ${'custom fields'} | ${'hasCustomFieldsFeature'} | ${'CustomField'} | ${TOKEN_TYPE_CUSTOM_FIELD}
     `('when $feature are not available', ({ property, tokenName, type }) => {
       beforeEach(() => {
         wrapper = mountComponent({ provide: { [property]: '' } });
@@ -204,6 +213,44 @@ describe('EE IssuesListApp component', () => {
           { type: TOKEN_TYPE_WEIGHT },
         ]);
       });
+    });
+  });
+
+  describe('custom fields', () => {
+    const mockCustomFields = mockNamespaceCustomFieldsResponse.data.namespace.customFields.nodes;
+    const allowedFields = mockCustomFields.filter(
+      (field) =>
+        ['SINGLE_SELECT', 'MULTI_SELECT'].includes(field.fieldType) &&
+        field.workItemTypes.some((type) => type.name === 'Epic'),
+    );
+    const customFieldsQueryHandler = jest.fn().mockResolvedValue(mockNamespaceCustomFieldsResponse);
+
+    beforeEach(async () => {
+      wrapper = mountComponent({
+        customFieldsQueryHandler,
+      });
+      await waitForPromises();
+    });
+
+    it('fetches custom fields when component is mounted', () => {
+      expect(customFieldsQueryHandler).toHaveBeenCalledWith({
+        fullPath: 'path/to/project',
+        active: true,
+      });
+    });
+
+    it('passes custom field tokens to WorkItemsListApp', () => {
+      const expectedTokens = allowedFields.map((field) => ({
+        type: `${TOKEN_TYPE_CUSTOM_FIELD}[${field.id.split('/').pop()}]`,
+        title: field.name,
+        icon: 'multiple-choice',
+        field,
+        fullPath: 'path/to/project',
+        token: expect.any(Function),
+      }));
+
+      expect(findIssuesListAppCE().props('eeSearchTokens').length).toBe(5);
+      expect(findIssuesListAppCE().props('eeSearchTokens')[4]).toMatchObject(expectedTokens[0]);
     });
   });
 

@@ -113,6 +113,7 @@ RSpec.describe EE::IssuesHelper, feature_category: :team_planning do
       before do
         stub_licensed_features(
           blocked_issues: true,
+          custom_fields: true,
           epics: true,
           issuable_health_status: true,
           issue_weights: true,
@@ -126,6 +127,7 @@ RSpec.describe EE::IssuesHelper, feature_category: :team_planning do
       it 'returns data with licensed features enabled' do
         expected = {
           has_blocked_issues_feature: 'true',
+          has_custom_fields_feature: 'true',
           has_issuable_health_status_feature: 'true',
           has_issue_weights_feature: 'true',
           has_iterations_feature: 'true',
@@ -151,6 +153,7 @@ RSpec.describe EE::IssuesHelper, feature_category: :team_planning do
       before do
         stub_licensed_features(
           blocked_issues: false,
+          custom_fields: false,
           epics: false,
           issuable_health_status: false,
           issue_weights: false,
@@ -164,6 +167,7 @@ RSpec.describe EE::IssuesHelper, feature_category: :team_planning do
       it 'returns data with licensed features disabled' do
         expected = {
           has_blocked_issues_feature: 'false',
+          has_custom_fields_feature: 'false',
           has_issuable_health_status_feature: 'false',
           has_issue_weights_feature: 'false',
           has_iterations_feature: 'false',
@@ -193,6 +197,7 @@ RSpec.describe EE::IssuesHelper, feature_category: :team_planning do
       before do
         stub_licensed_features(
           blocked_issues: true,
+          custom_fields: true,
           epics: true,
           group_bulk_edit: true,
           issuable_health_status: true,
@@ -208,6 +213,7 @@ RSpec.describe EE::IssuesHelper, feature_category: :team_planning do
         expected = {
           can_bulk_update: 'true',
           has_blocked_issues_feature: 'true',
+          has_custom_fields_feature: 'true',
           has_issuable_health_status_feature: 'true',
           has_issue_weights_feature: 'true',
           has_iterations_feature: 'true',
@@ -225,6 +231,7 @@ RSpec.describe EE::IssuesHelper, feature_category: :team_planning do
       before do
         stub_licensed_features(
           blocked_issues: false,
+          custom_fields: false,
           epics: false,
           group_bulk_edit: false,
           issuable_health_status: false,
@@ -240,6 +247,7 @@ RSpec.describe EE::IssuesHelper, feature_category: :team_planning do
         expected = {
           can_bulk_update: 'false',
           has_blocked_issues_feature: 'false',
+          has_custom_fields_feature: 'false',
           has_issuable_health_status_feature: 'false',
           has_issue_weights_feature: 'false',
           has_iterations_feature: 'false',
