@@ -61224,9 +61224,6 @@ msgstr ""
 msgid "Todos|Filter to-do items"
 msgstr ""
 
-msgid "Todos|First sent %{timeago}"
-msgstr ""
-
 msgid "Todos|For one hour"
 msgstr ""
 
@@ -61305,6 +61302,9 @@ msgid "Todos|Nothing left to do. High five!"
 msgstr ""
 
 msgid "Todos|OKR checkin requested"
+msgstr ""
+
+msgid "Todos|Previously snoozed"
 msgstr ""
 
 msgid "Todos|Raw text search is not currently supported"
