@@ -11,7 +11,7 @@ import ThroughputChart from 'ee/analytics/merge_request_analytics/components/thr
 import ThroughputStats from 'ee/analytics/merge_request_analytics/components/throughput_stats.vue';
 import throughputChartQueryBuilder from 'ee/analytics/merge_request_analytics/graphql/throughput_chart_query_builder';
 import { THROUGHPUT_CHART_STRINGS } from 'ee/analytics/merge_request_analytics/constants';
-import store from 'ee/analytics/merge_request_analytics/store';
+import createStore from 'ee/analytics/merge_request_analytics/store';
 import ChartSkeletonLoader from '~/vue_shared/components/resizable_chart/skeleton_loader.vue';
 import {
   throughputChartData,
@@ -46,7 +46,7 @@ describe('ThroughputChart', () => {
     const apolloProvider = createMockApollo([[query, queryResolver || defaultQueryResolver]]);
 
     wrapper = shallowMount(ThroughputChart, {
-      store,
+      store: createStore(),
       apolloProvider,
       provide: {
         fullPath,
