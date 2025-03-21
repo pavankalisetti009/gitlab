@@ -12,19 +12,19 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
   end
 
   describe 'associations' do
-    it do
+    it 'has many cache entries' do
       is_expected.to have_many(:cache_entries)
         .class_name('VirtualRegistries::Packages::Maven::Cache::Entry')
         .inverse_of(:upstream)
     end
 
-    it do
+    it 'has one registry upstream' do
       is_expected.to have_one(:registry_upstream)
         .class_name('VirtualRegistries::Packages::Maven::RegistryUpstream')
         .inverse_of(:upstream)
     end
 
-    it do
+    it 'has one registry' do
       is_expected.to have_one(:registry)
         .through(:registry_upstream)
         .class_name('VirtualRegistries::Packages::Maven::Registry')
@@ -64,9 +64,9 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
         if params[:valid]
           it { expect(upstream).to be_valid }
         else
-          it do
+          it 'is not valid' do
             expect(upstream).not_to be_valid
-            expect(upstream.errors).to contain_exactly(*error_messages)
+            expect(upstream.errors).to match_array(Array.wrap(error_messages))
           end
         end
       end
@@ -95,9 +95,9 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
         if params[:valid]
           it { expect(upstream).to be_valid }
         else
-          it do
+          it 'is not valid' do
             expect(upstream).not_to be_valid
-            expect(upstream.errors).to contain_exactly(error_message)
+            expect(upstream.errors).to match_array(Array.wrap(error_message))
           end
         end
       end
@@ -120,9 +120,11 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
             new_attributes = { url: new_url, username: new_user, password: new_pwd }.select { |_, v| v != :none }
             upstream.update!(new_attributes)
 
-            expect(upstream.reload.url).to eq(new_url)
-            expect(upstream.username).to eq(expected_user)
-            expect(upstream.password).to eq(expected_pwd)
+            expect(upstream.reload).to have_attributes(
+              url: new_url,
+              username: expected_user,
+              password: expected_pwd
+            )
           end
         end
       end
@@ -174,16 +176,17 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
     end
   end
 
-  context 'for credentials persistance' do
+  context 'for credentials persistence' do
     it 'persists and reads back credentials properly' do
       upstream.username = 'test'
       upstream.password = 'test'
 
       upstream.save!
 
-      upstream_read = upstream.reload
-      expect(upstream_read.username).to eq('test')
-      expect(upstream_read.password).to eq('test')
+      expect(upstream.reload).to have_attributes(
+        username: 'test',
+        password: 'test'
+      )
     end
   end
 

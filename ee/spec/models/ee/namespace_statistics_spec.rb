@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe NamespaceStatistics do
+RSpec.describe NamespaceStatistics, type: :model, feature_category: :consumables_cost_management do
   include WikiHelpers
 
   let_it_be(:user) { create(:user) }
@@ -101,5 +101,14 @@ RSpec.describe NamespaceStatistics do
         end
       end
     end
+  end
+
+  describe '#update_dependency_proxy_size' do
+    let_it_be(:statistics) { create(:namespace_statistics, namespace: group) }
+    let_it_be(:vreg_maven_cache_entry) { create(:virtual_registries_packages_maven_cache_entry, group: group, size: 50) }
+
+    subject { statistics.update_dependency_proxy_size }
+
+    it { is_expected.to eq 50 }
   end
 end

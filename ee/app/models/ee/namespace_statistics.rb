@@ -17,6 +17,13 @@ module EE
       self.wiki_size = namespace.wiki.repository.size.megabytes
     end
 
+    override :update_dependency_proxy_size
+    def update_dependency_proxy_size
+      super
+
+      self.dependency_proxy_size += ::VirtualRegistries::Packages::Maven::Cache::Entry.for_group(namespace).sum(:size)
+    end
+
     class_methods do
       extend ::Gitlab::Utils::Override
 
