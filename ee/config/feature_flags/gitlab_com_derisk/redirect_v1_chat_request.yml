@@ -1,0 +1,9 @@
+---
+name: redirect_v1_chat_request
+feature_issue_url: https://gitlab.com/gitlab-org/modelops/applied-ml/code-suggestions/ai-assist/-/issues/802
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/185477
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/526366
+milestone: '17.11'
+group: group::ai framework
+type: gitlab_com_derisk
+default_enabled: false

@@ -416,6 +416,32 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
         subject
       end
     end
+
+    describe "duo chat v1 request redirect" do
+      before do
+        allow(::Gitlab::AiGateway).to receive(:push_feature_flag)
+
+        allow_next_instance_of(::Gitlab::Duo::Chat::ReactExecutor) do |instance|
+          allow(instance).to receive(:execute).and_return(answer)
+        end
+      end
+
+      it 'pushes duo chat v1 request redirect FF to AI Gateway when enabled' do
+        stub_feature_flags(redirect_v1_chat_request: true)
+
+        expect(::Gitlab::AiGateway).to receive(:push_feature_flag).with(:redirect_v1_chat_request, user)
+
+        subject
+      end
+
+      it "doesn't push duo chat v1 request redirect FF to AI Gateway when disabled" do
+        stub_feature_flags(redirect_v1_chat_request: false)
+
+        expect(::Gitlab::AiGateway).not_to receive(:push_feature_flag).with(:redirect_v1_chat_request, user)
+
+        subject
+      end
+    end
   end
 end
 # rubocop:enable RSpec/MultipleMemoizedHelpers
