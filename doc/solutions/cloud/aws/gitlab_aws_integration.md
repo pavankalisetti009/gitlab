@@ -10,7 +10,7 @@ Learn how to integrate GitLab and AWS.
 
 This content is intended for GitLab team members as well as members of the wider community.
 
-Unless otherwise noted, all of this content applies to both GitLab.com and self-managed instances.
+Unless otherwise noted, all of this content applies to both GitLab.com and GitLab Self-Managed instances.
 
 This page attempts to index the ways in which GitLab can integrate with AWS. It does so whether the integration is the result of configuring general functionality, was built in to AWS or GitLab or is provided as a solution.
 
