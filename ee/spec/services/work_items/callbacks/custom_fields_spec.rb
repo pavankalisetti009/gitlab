@@ -42,6 +42,13 @@ RSpec.describe WorkItems::Callbacks::CustomFields, feature_category: :team_plann
       )
     end
 
+    it_behaves_like 'internal event tracking' do
+      let(:event) { 'change_work_item_custom_field_value' }
+      let(:category) { described_class.name }
+      let(:namespace) { group }
+      let(:user) { current_user }
+    end
+
     context 'when there are existing values' do
       before do
         create(:work_item_text_field_value, work_item: work_item, custom_field: text_field, value: 'existing text')
