@@ -9,7 +9,6 @@ import {
   CADENCE_OPTIONS,
   HOUR_MINUTE_LIST,
   WEEKDAY_OPTIONS,
-  isCadenceDaily,
   isCadenceWeekly,
   updateScheduleCadence,
 } from './utils';
@@ -21,6 +20,7 @@ export default {
   WEEKDAY_OPTIONS,
   i18n: {
     cadence: __('Cadence'),
+    cadenceDetail: s__('SecurityOrchestration|on every'),
     details: s__(
       'SecurityOrchestration|at the following times: %{cadenceSelector}, start at %{start}, run for: %{duration}, and timezone is %{timezoneSelector}',
     ),
@@ -55,9 +55,6 @@ export default {
     },
     cadence() {
       return this.schedule.type;
-    },
-    showTimeDropdown() {
-      return isCadenceDaily(this.cadence);
     },
     showWeekdayDropdown() {
       return isCadenceWeekly(this.cadence);
@@ -120,31 +117,29 @@ export default {
             :selected="cadence"
             @select="updateCadence"
           />
+
+          <template v-if="showWeekdayDropdown">
+            {{ $options.i18n.cadenceDetail }}
+            <gl-collapsible-listbox
+              multiple
+              data-testid="weekday-dropdown"
+              :aria-label="$options.i18n.weekly"
+              :items="$options.WEEKDAY_OPTIONS"
+              :selected="schedule.days"
+              :toggle-text="weekdayToggleText"
+              @select="updatePolicy('days', $event)"
+            />
+          </template>
         </template>
 
         <template #start>
-          <div class="gl-display-inline-block">
-            <template v-if="showTimeDropdown">
-              <gl-collapsible-listbox
-                data-testid="time-dropdown"
-                :aria-label="$options.i18n.time"
-                :items="$options.HOUR_MINUTE_LIST"
-                :selected="schedule.start_time"
-                @select="updatePolicy('start_time', $event)"
-              />
-            </template>
-            <template v-else-if="showWeekdayDropdown">
-              <gl-collapsible-listbox
-                multiple
-                data-testid="weekday-dropdown"
-                :aria-label="$options.i18n.weekly"
-                :items="$options.WEEKDAY_OPTIONS"
-                :selected="schedule.days"
-                :toggle-text="weekdayToggleText"
-                @select="updatePolicy('days', $event)"
-              />
-            </template>
-          </div>
+          <gl-collapsible-listbox
+            data-testid="time-dropdown"
+            :aria-label="$options.i18n.time"
+            :items="$options.HOUR_MINUTE_LIST"
+            :selected="schedule.start_time"
+            @select="updatePolicy('start_time', $event)"
+          />
         </template>
 
         <template #duration> </template>
