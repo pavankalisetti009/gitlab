@@ -81,10 +81,13 @@ describe('UserSelect component', () => {
     .mockResolvedValue(PROJECT_MEMBER_RESPONSE_WITH_DUPLICATE_AND_NULL);
   const groupSearchQueryHandlerSuccess = jest.fn().mockResolvedValue(GROUP_MEMBER_RESPONSE);
 
-  const createComponent = ({ propsData = {}, provide = {} } = {}) => {
+  const createComponent = ({ propsData = {}, provide = {}, handlers = {} } = {}) => {
     const fakeApollo = createMockApollo([
-      [searchProjectMembers, projectSearchQueryHandlerSuccess],
-      [searchGroupMembers, groupSearchQueryHandlerSuccess],
+      [
+        searchProjectMembers,
+        handlers.projectSearchQueryHandler || projectSearchQueryHandlerSuccess,
+      ],
+      [searchGroupMembers, handlers.groupSearchQueryHandler || groupSearchQueryHandlerSuccess],
     ]);
 
     wrapper = shallowMountExtended(UserSelect, {
@@ -325,6 +328,16 @@ describe('UserSelect component', () => {
         [{ user_approvers_ids: [1] }],
         [{ user_approvers_ids: [] }],
       ]);
+    });
+  });
+
+  describe('error handling', () => {
+    it('emits error when query fails', async () => {
+      createComponent({ handlers: { projectSearchQueryHandler: jest.fn().mockRejectedValue({}) } });
+      await waitForApolloAndVue();
+      await waitForPromises();
+
+      expect(wrapper.emitted('error')).toHaveLength(1);
     });
   });
 });

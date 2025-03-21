@@ -81,10 +81,16 @@ describe('GroupSelect component', () => {
     .fn()
     .mockResolvedValue(NAMESPACE_GROUP_RESPONSE);
 
-  const createComponent = ({ propsData = {}, provide = {} } = {}) => {
+  const createComponent = ({ propsData = {}, provide = {}, handlers = {} } = {}) => {
     const fakeApollo = createMockApollo([
-      [searchDescendantGroups, searchDescendantGroupsQueryHandlerSuccess],
-      [searchNamespaceGroups, searchNamespaceGroupsQueryHandlerSuccess],
+      [
+        searchDescendantGroups,
+        handlers.searchDescendantGroupsQueryHandler || searchDescendantGroupsQueryHandlerSuccess,
+      ],
+      [
+        searchNamespaceGroups,
+        handlers.searchNamespaceGroupsQueryHandler || searchNamespaceGroupsQueryHandlerSuccess,
+      ],
     ]);
 
     wrapper = mountExtended(GroupSelect, {
@@ -289,6 +295,21 @@ describe('GroupSelect component', () => {
       await wrapper.findByTestId(`listbox-item-${group2.id}`).vm.$emit('select', true);
 
       expect(wrapper.emitted('select-items')).toEqual([[{ group_approvers_ids: [2, 3] }]]);
+    });
+  });
+
+  describe('error handling', () => {
+    it('emits error when query fails', async () => {
+      createComponent({
+        handlers: {
+          searchNamespaceGroupsQueryHandler: jest.fn().mockRejectedValue({}),
+        },
+      });
+
+      await waitForApolloAndVue();
+      await waitForPromises();
+
+      expect(wrapper.emitted('error')).toHaveLength(1);
     });
   });
 });

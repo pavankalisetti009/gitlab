@@ -70,6 +70,9 @@ export default {
         return uniqBy(accumulatedUsers, 'id');
       },
       debounce: DEFAULT_DEBOUNCE_AND_THROTTLE_MS,
+      error() {
+        this.$emit('error');
+      },
     },
   },
   data() {

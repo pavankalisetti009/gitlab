@@ -37,9 +37,7 @@ describe('Skip ci for scan execution policy', () => {
       createWrapper({ glFeatures: { securityPoliciesSkipCi: true } });
     });
 
-    // quarantine: https://gitlab.com/gitlab-org/gitlab/-/issues/523910
-    // eslint-disable-next-line jest/no-disabled-tests
-    it.skip('allows to skip ci configuration for scan execution', async () => {
+    it('allows to skip ci configuration for scan execution', async () => {
       const verifyRuleMode = () => {
         expect(findSkipCiSelector().exists()).toBe(true);
       };
