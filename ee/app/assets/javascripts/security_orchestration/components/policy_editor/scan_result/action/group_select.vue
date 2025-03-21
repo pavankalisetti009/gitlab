@@ -52,6 +52,9 @@ export default {
         return uniqBy([...this.groups, ...groups], 'id');
       },
       debounce: DEFAULT_DEBOUNCE_AND_THROTTLE_MS,
+      error() {
+        this.$emit('error');
+      },
     },
   },
   inject: ['globalGroupApproversEnabled', 'rootNamespacePath'],
