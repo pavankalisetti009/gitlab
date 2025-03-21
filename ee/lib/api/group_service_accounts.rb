@@ -183,6 +183,29 @@ module API
             end
           end
 
+          desc 'Revoke personal access token' do
+            detail 'Revoke a personal access token.'
+            success code: 204
+            failure [
+              { code: 400, message: 'Bad Request' },
+              { code: 401, message: 'Unauthorized' },
+              { code: 403, message: 'Forbidden' },
+              { code: 404, message: 'Not Found' }
+            ]
+          end
+          delete ':token_id' do
+            validate_service_account_user
+
+            token_id = params[:token_id]
+            token = user.personal_access_tokens.find_by_id(token_id)
+
+            if token
+              revoke_token(token)
+            else
+              not_found!("Could not find personal access token with token_id: #{token_id}")
+            end
+          end
+
           desc 'Rotate personal access token' do
             detail 'Rotates a personal access token.'
             success Entities::PersonalAccessTokenWithToken

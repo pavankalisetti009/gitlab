@@ -776,6 +776,157 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
     end
   end
 
+  describe 'DELETE /groups/:id/service_accounts/:user_id/personal_access_tokens/:token_id' do
+    let(:group_id) { group.id }
+    let(:user_id) { service_account_user.id }
+    let(:token) { create(:personal_access_token, user: service_account_user) }
+    let(:token_id) { token.id }
+
+    let(:path) do
+      "/groups/#{group_id}/service_accounts/#{user_id}/personal_access_tokens/#{token_id}"
+    end
+
+    subject(:perform_request) do
+      delete(api(path, user))
+    end
+
+    context 'when the feature is licensed' do
+      before do
+        stub_licensed_features(service_accounts: true)
+      end
+
+      context 'when the user is an admin', :enable_admin_mode do
+        let_it_be(:user) { create(:admin) }
+
+        context 'when the group exists' do
+          it 'revokes the token' do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:no_content)
+            expect(token.reload.revoked?).to be_truthy
+          end
+        end
+      end
+
+      context 'when user is an owner' do
+        before do
+          group.add_owner(user)
+        end
+
+        context 'when the group exists' do
+          context 'when service account is a member of the group' do
+            before do
+              group.add_developer(service_account_user)
+            end
+
+            # TODO: Test momentarily disabled until we give permissions to group owners to revoke tokens.
+            # See https://gitlab.com/gitlab-org/gitlab/-/merge_requests/184287#note_2406933302
+            it 'revokes the token', skip: 'group owner has currently insufficient permissions' do
+              perform_request
+
+              expect(response).to have_gitlab_http_status(:no_content)
+              expect(token.reload.revoked?).to be_truthy
+            end
+          end
+
+          context 'when service account is not a member of the group' do
+            it 'returns error message' do
+              perform_request
+
+              expect(response).to have_gitlab_http_status(:bad_request)
+              expect(json_response['message']).to eq('400 Bad request - Not permitted to revoke')
+            end
+          end
+
+          context 'when token does not exist' do
+            let(:token_id) { non_existing_record_id }
+
+            it 'returns not found' do
+              perform_request
+
+              expect(response).to have_gitlab_http_status(:not_found)
+            end
+          end
+
+          context 'when token does not belong to service account user' do
+            before do
+              token.user = create(:user)
+              token.save!
+            end
+
+            it 'returns bad request' do
+              perform_request
+
+              expect(response).to have_gitlab_http_status(:not_found)
+            end
+          end
+
+          context 'when target user does not belong to group' do
+            before do
+              service_account_user.provisioned_by_group_id = nil
+              service_account_user.save!
+            end
+
+            it 'returns error' do
+              perform_request
+
+              expect(response).to have_gitlab_http_status(:not_found)
+            end
+          end
+
+          context 'when target user is not service accounts' do
+            let(:regular_user) { create(:user) }
+            let(:user_id) { regular_user.id }
+
+            before do
+              regular_user.provisioned_by_group_id = group.id
+              regular_user.save!
+              token.user = regular_user
+              token.save!
+            end
+
+            it 'returns bad request error' do
+              perform_request
+
+              expect(response).to have_gitlab_http_status(:bad_request)
+            end
+          end
+        end
+
+        context 'when group does not exist' do
+          let(:group_id) { non_existing_record_id }
+
+          it 'returns error' do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:not_found)
+          end
+        end
+      end
+
+      context 'when user is not an owner' do
+        it 'throws error' do
+          perform_request
+
+          expect(response).to have_gitlab_http_status(:forbidden)
+        end
+      end
+    end
+
+    context 'when the feature is not licensed' do
+      before do
+        stub_licensed_features(service_accounts: false)
+        group.add_owner(user)
+      end
+
+      it 'returns error' do
+        perform_request
+
+        expect(response).to have_gitlab_http_status(:forbidden)
+      end
+    end
+  end
+
   describe 'POST /groups/:id/service_accounts/:user_id/personal_access_tokens/:token_id/rotate' do
     let(:group_id) { group.id }
     let(:user_id) { service_account_user.id }
