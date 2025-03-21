@@ -23,7 +23,7 @@ override can improve the security and durability of your web application.
 ## On GitLab.com
 
 On GitLab.com, Git LFS requests are subject to
-[authenticated web request rate limits](../../user/gitlab_com/_index.md#gitlabcom-specific-rate-limits).
+[authenticated web request rate limits](../../user/gitlab_com/_index.md#rate-limits-on-gitlabcom).
 These limits are set to 1000 requests per minute per user.
 
 Each Git LFS object uploaded or downloaded generates an HTTP request that counts toward
