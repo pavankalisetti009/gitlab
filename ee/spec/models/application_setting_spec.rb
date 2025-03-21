@@ -1659,4 +1659,28 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       it { is_expected.to be false }
     end
   end
+
+  describe 'ClickHouseForAnalyticsEnabledEvent publishing' do
+    it 'publishes the event when use_clickhouse_for_analytics is changed to enabled', :freeze_time do
+      setting.update!(use_clickhouse_for_analytics: false)
+      expect do
+        setting.update!(use_clickhouse_for_analytics: true)
+      end.to publish_event(::Analytics::ClickHouseForAnalyticsEnabledEvent)
+                     .with(enabled_at: Time.current.iso8601)
+    end
+
+    it 'does not publish the event when use_clickhouse_for_analytics is changed to disabled' do
+      setting.update!(use_clickhouse_for_analytics: true)
+      expect do
+        setting.update!(use_clickhouse_for_analytics: false)
+      end.not_to publish_event(::Analytics::ClickHouseForAnalyticsEnabledEvent)
+    end
+
+    it 'does not publish the event when use_clickhouse_for_analytics is not changed' do
+      setting.update!(use_clickhouse_for_analytics: true)
+      expect do
+        setting.update!(use_clickhouse_for_analytics: true)
+      end.not_to publish_event(::Analytics::ClickHouseForAnalyticsEnabledEvent)
+    end
+  end
 end
