@@ -7,10 +7,11 @@ module Security
       include ::Security::ScanResultPolicies::PolicyViolationCommentGenerator
       include ::Security::ScanResultPolicies::PolicyLogger
 
+      REPORT_TYPE = :any_merge_request
+
       def initialize(merge_request)
         @merge_request = merge_request
-        @violations = Security::SecurityOrchestrationPolicies::UpdateViolationsService
-                        .new(merge_request, :any_merge_request)
+        @violations = Security::SecurityOrchestrationPolicies::UpdateViolationsService.new(merge_request)
         @violations_by_policy = {}
       end
 
@@ -155,7 +156,7 @@ module Security
 
       def save_violation_data(violated_policies)
         violated_policies.each do |policy|
-          violations.add_violation(policy, { commits: violations_by_policy[policy.id] })
+          violations.add_violation(policy, REPORT_TYPE, { commits: violations_by_policy[policy.id] })
         end
       end
     end

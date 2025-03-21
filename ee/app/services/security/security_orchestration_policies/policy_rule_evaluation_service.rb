@@ -8,10 +8,9 @@ module Security
       include ::Security::ScanResultPolicies::PolicyViolationCommentGenerator
       include ::Security::ScanResultPolicies::VulnerabilityStatesHelper
 
-      def initialize(merge_request, approval_rules, report_type)
+      def initialize(merge_request, approval_rules)
         @merge_request = merge_request
         @approval_rules = approval_rules
-        @report_type = report_type
         @passed_rules = Set.new
         @failed_rules = Set.new
       end
@@ -35,7 +34,9 @@ module Security
         failed_rules.add(approval_rule)
         return unless approval_rule.scan_result_policy_read
 
-        violations.add_violation(approval_rule.scan_result_policy_read, data, context: context)
+        violations.add_violation(
+          approval_rule.scan_result_policy_read, approval_rule.report_type, data, context: context
+        )
       end
 
       def error!(approval_rule, error, **extra_data)
@@ -57,7 +58,7 @@ module Security
 
       private
 
-      attr_reader :merge_request, :passed_rules, :failed_rules, :approval_rules, :report_type
+      attr_reader :merge_request, :passed_rules, :failed_rules, :approval_rules
 
       delegate :project, to: :merge_request
 
@@ -136,7 +137,7 @@ module Security
       strong_memoize_attr :active_scan_execution_policy_scans
 
       def violations
-        @violations ||= Security::SecurityOrchestrationPolicies::UpdateViolationsService.new(merge_request, report_type)
+        @violations ||= Security::SecurityOrchestrationPolicies::UpdateViolationsService.new(merge_request)
       end
 
       def track_unblock_event(rule)

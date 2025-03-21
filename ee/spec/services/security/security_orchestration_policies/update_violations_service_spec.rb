@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService, feature_category: :security_policy_management do
-  let(:service) { described_class.new(merge_request, :scan_finding) }
+  let(:service) { described_class.new(merge_request) }
   let_it_be(:project) { create(:project) }
   let_it_be(:merge_request, reload: true) do
     create(:merge_request, source_project: project, target_project: project)
@@ -77,7 +77,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
       end
 
       it 'stores the correct status' do
-        service.add_violation(policy_b, { uuid: { newly_detected: [123] } })
+        service.add_violation(policy_b, :scan_finding, { uuid: { newly_detected: [123] } })
         service.execute
 
         expect(last_violation.status).to eq('failed')
@@ -85,7 +85,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
       end
 
       it 'can persist violation data' do
-        service.add_violation(policy_b, { uuid: { newly_detected: [123] } })
+        service.add_violation(policy_b, :scan_finding, { uuid: { newly_detected: [123] } })
         service.execute
 
         expect(last_violation.violation_data)
@@ -112,7 +112,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
 
     context 'with pre-existing violations' do
       before do
-        service.add_violation(policy_a, { uuids: { newly_detected: [123] } })
+        service.add_violation(policy_a, :scan_finding, { uuids: { newly_detected: [123] } })
         service.execute
       end
 
@@ -201,7 +201,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
 
   describe '#add_violation' do
     subject(:violation_data) do
-      service.add_violation(policy_a, data, context: context)
+      service.add_violation(policy_a, :scan_finding, data, context: context)
       service.violation_data[policy_a.id]
     end
 
@@ -214,7 +214,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
     end
 
     it 'stores the correct status' do
-      service.add_violation(policy_a, data, context: context)
+      service.add_violation(policy_a, :scan_finding, data, context: context)
       service.execute
 
       expect(last_violation.status).to eq('failed')
@@ -227,7 +227,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
       end
 
       it 'persists the violation as failed', :aggregate_failures do
-        service.add_violation(policy_a, data, context: context)
+        service.add_violation(policy_a, :scan_finding, data, context: context)
         service.execute
 
         expect(last_violation.status).to eq('failed')
@@ -236,7 +236,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
 
     context 'when other data is present' do
       before do
-        service.add_violation(policy_a, { uuid: { previously_existing: [456] } })
+        service.add_violation(policy_a, :scan_finding, { uuid: { previously_existing: [456] } })
       end
 
       it 'merges the data for report_type' do

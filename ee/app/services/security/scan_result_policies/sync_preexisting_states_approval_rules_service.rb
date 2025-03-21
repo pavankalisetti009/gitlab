@@ -73,7 +73,7 @@ module Security
 
       def evaluation
         @evaluation ||= Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationService
-          .new(merge_request, approval_rules, :scan_finding)
+          .new(merge_request, approval_rules)
       end
 
       def build_violation_data(vulnerabilities)

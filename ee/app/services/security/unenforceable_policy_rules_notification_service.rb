@@ -42,7 +42,7 @@ module Security
 
       log_message(report_type, "Unenforceable #{report_type} rules detected")
       policy_evaluation = Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationService
-                            .new(merge_request, approval_rules, report_type)
+                            .new(merge_request, approval_rules)
 
       applicable_rules.each do |rule|
         policy_evaluation.error!(rule, :artifacts_missing, context: validation_context(report_type))
