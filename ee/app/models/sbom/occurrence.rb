@@ -184,6 +184,19 @@ module Sbom
       self.class.arel_table.grouping([database_serialized_traversal_ids, id])
     end
 
+    def purl
+      return unless purl_type
+
+      purl_namespace, _, purl_name = name.rpartition('/')
+
+      PackageUrl.new(
+        type: purl_type,
+        namespace: purl_namespace,
+        name: purl_name,
+        version: version
+      )
+    end
+
     def location
       {
         blob_path: input_file_blob_path,

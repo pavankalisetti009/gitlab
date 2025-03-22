@@ -738,6 +738,42 @@ RSpec.describe Sbom::Occurrence, type: :model, feature_category: :dependency_man
       end
     end
 
+    describe '#purl' do
+      let(:occurrence) { build(:sbom_occurrence, component: component) }
+
+      subject(:purl) { occurrence.purl }
+
+      context 'when component has no purl_type' do
+        let(:component) { build(:sbom_component, purl_type: nil) }
+
+        it { is_expected.to be_nil }
+      end
+
+      context 'when component has a namspace' do
+        let(:component) { build(:sbom_component, purl_type: :maven, name: 'foo/bar/bin') }
+
+        it 'initializes purl with namespace and name' do
+          expect(purl).to be_a(::Sbom::PackageUrl)
+          expect(purl.type).to eq('maven')
+          expect(purl.namespace).to eq('foo/bar')
+          expect(purl.name).to eq('bin')
+          expect(purl.version).to eq(occurrence.version)
+        end
+      end
+
+      context 'when component does not have a namespace' do
+        let(:component) { build(:sbom_component, purl_type: :maven, name: 'foo') }
+
+        it 'initializes purl without namepsace' do
+          expect(purl).to be_a(::Sbom::PackageUrl)
+          expect(purl.type).to eq('maven')
+          expect(purl.namespace).to be_empty
+          expect(purl.name).to eq('foo')
+          expect(purl.version).to eq(occurrence.version)
+        end
+      end
+    end
+
     describe '#location' do
       subject(:location) { occurrence.location }
 
