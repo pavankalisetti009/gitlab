@@ -390,7 +390,7 @@ module EE
           experiment: { milestone: '17.9' }
 
         field :component_versions,
-          [::Types::Sbom::ComponentVersionType],
+          ::Types::Sbom::ComponentVersionType.connection_type,
           null: false,
           authorize: :read_dependency,
           description: 'Find software dependency versions by component.',
