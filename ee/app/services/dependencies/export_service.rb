@@ -6,7 +6,8 @@ module Dependencies
       dependency_list: ::Sbom::Exporters::DependencyListService,
       sbom: ::Dependencies::ExportSerializers::Sbom::PipelineService,
       json_array: ::Sbom::Exporters::JsonArrayService,
-      csv: ::Sbom::Exporters::CsvService
+      csv: ::Sbom::Exporters::CsvService,
+      cyclonedx_1_6_json: ::Sbom::Exporters::Cyclonedx::V16JsonService
     }.freeze
 
     def self.execute(dependency_list_export)
@@ -83,7 +84,7 @@ module Dependencies
 
     def file_extension
       case dependency_list_export.export_type
-      when 'sbom'
+      when 'sbom', 'cyclonedx_1_6_json'
         'cdx.json'
       when 'dependency_list', 'json_array'
         'json'

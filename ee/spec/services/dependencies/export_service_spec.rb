@@ -33,7 +33,7 @@ RSpec.describe Dependencies::ExportService, feature_category: :dependency_manage
       allow(Time).to receive(:current).and_return(Time.new(2023, 11, 14, 0, 0, 0, '+00:00'))
     end
 
-    shared_examples_for 'writes export using exporter' do |exporter_class|
+    shared_examples_for 'writes export using exporter' do
       context 'when the export is not in `created` status' do
         let(:status) { running_status }
 
@@ -140,12 +140,18 @@ RSpec.describe Dependencies::ExportService, feature_category: :dependency_manage
         create(:dependency_list_export, project: nil, exportable: project, status: status, export_type: export_type)
       end
 
-      let(:expected_filename) do
+      let(:filename_prefix) do
         [
           'project_',
           project.id,
           '_dependencies_',
-          Time.current.utc.strftime('%FT%H%M'),
+          Time.current.utc.strftime('%FT%H%M')
+        ].join
+      end
+
+      let(:expected_filename) do
+        [
+          filename_prefix,
           '.',
           'json'
         ].join
@@ -158,7 +164,21 @@ RSpec.describe Dependencies::ExportService, feature_category: :dependency_manage
         expect(export_content).not_to include(registry_occurrence.name)
       end
 
-      it_behaves_like 'writes export using exporter', ::Sbom::Exporters::DependencyListService
+      context 'with different export types' do
+        using RSpec::Parameterized::TableSyntax
+
+        where(:export_type, :exporter_class, :expected_extension) do
+          :dependency_list    | ::Sbom::Exporters::DependencyListService     | 'json'
+          :csv                | ::Sbom::Exporters::CsvService                | 'csv'
+          :cyclonedx_1_6_json | ::Sbom::Exporters::Cyclonedx::V16JsonService | 'cdx.json'
+        end
+
+        with_them do
+          it_behaves_like 'writes export using exporter' do
+            let(:expected_filename) { "#{filename_prefix}.#{expected_extension}" }
+          end
+        end
+      end
     end
 
     context 'when the exportable is a group' do
@@ -192,7 +212,9 @@ RSpec.describe Dependencies::ExportService, feature_category: :dependency_manage
         expect(export_content).not_to include(archived_occurrence.name)
       end
 
-      it_behaves_like 'writes export using exporter', ::Sbom::Exporters::JsonArrayService
+      it_behaves_like 'writes export using exporter' do
+        let(:exporter_class) { ::Sbom::Exporters::JsonArrayService }
+      end
     end
 
     context 'when the exportable is a pipeline' do
@@ -217,7 +239,9 @@ RSpec.describe Dependencies::ExportService, feature_category: :dependency_manage
         })
       end
 
-      it_behaves_like 'writes export using exporter', ::Dependencies::ExportSerializers::Sbom::PipelineService
+      it_behaves_like 'writes export using exporter' do
+        let(:exporter_class) { ::Dependencies::ExportSerializers::Sbom::PipelineService }
+      end
     end
   end
 end
