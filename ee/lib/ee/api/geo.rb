@@ -411,7 +411,8 @@ module EE
                 summary 'Query the GraphQL endpoint of an existing Geo node'
                 success code: 200
                 failure [
-                  { code: 404, message: '404 GeoNode Not Found' }
+                  { code: 404, message: '404 GeoNode Not Found' },
+                  { code: 500, message: '500 Internal Server Error' }
                 ]
                 tags %w[geo]
               end
@@ -421,10 +422,11 @@ module EE
               post 'graphql' do
                 not_found!('GeoNode') unless geo_node
 
-                body = env['api.request.input']
+                response = ::Geo::GraphqlRequestService.new(geo_node, current_user).execute(env['api.request.input'])
+                error!({ error: 'An error occurred while processing the GraphQL request to the Geo node' }, 500) unless response
 
                 status 200
-                ::Geo::GraphqlRequestService.new(geo_node, current_user).execute(body) || {}
+                response
               end
             end
           end

@@ -640,15 +640,15 @@ RSpec.describe API::Geo, :aggregate_failures, feature_category: :geo_replication
       expect(json_response).to eq('testResponse' => 'result')
     end
 
-    it 'returns empty output if remote fails' do
+    it 'returns 500 with error if remote fails' do
       stub_request(:post, secondary_node.graphql_url)
         .with(body: { input: 'test' })
         .to_return(status: 500)
 
       post api("/geo/node_proxy/#{secondary_node.id}/graphql", admin, admin_mode: true), params: { input: 'test' }.to_json, headers: headers
 
-      expect(response).to have_gitlab_http_status(:ok)
-      expect(json_response).to be_empty
+      expect(response).to have_gitlab_http_status('500')
+      expect(json_response).to eq('error' => 'An error occurred while processing the GraphQL request to the Geo node')
     end
   end
 
