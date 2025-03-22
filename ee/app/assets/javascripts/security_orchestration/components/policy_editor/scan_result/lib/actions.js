@@ -132,6 +132,13 @@ export const DISABLED_BOT_MESSAGE_ACTION = { ...buildAction(BOT_MESSAGE_TYPE), e
 
 export const ROLE_PERMISSION_TO_APPROVE_MRS = 'ADMIN_MERGE_REQUEST';
 
+const BASE_ACCESS_LEVELS_WITH_APPROVAL = ['MAINTAINER', 'DEVELOPER'];
+
+export const isRoleApprover = ({ baseAccessLevel, enabledPermissions }) =>
+  enabledPermissions?.edges.some(
+    ({ node = {} }) => node.value === ROLE_PERMISSION_TO_APPROVE_MRS,
+  ) || BASE_ACCESS_LEVELS_WITH_APPROVAL.includes(baseAccessLevel?.stringValue);
+
 /**
  * Map selected approver ids or names to selected types
  * @param action approver action

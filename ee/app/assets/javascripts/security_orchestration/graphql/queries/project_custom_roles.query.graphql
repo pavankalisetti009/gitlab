@@ -5,6 +5,9 @@ query projectCustomRoles($fullPath: ID!) {
       nodes {
         id
         name
+        baseAccessLevel {
+          stringValue
+        }
         enabledPermissions {
           edges {
             node {

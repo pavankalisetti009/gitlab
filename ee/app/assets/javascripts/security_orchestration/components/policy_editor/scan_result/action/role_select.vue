@@ -3,7 +3,7 @@ import { GlCollapsibleListbox, GlIcon, GlTooltipDirective } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import { convertToTitleCase } from '~/lib/utils/text_utility';
-import { ROLE_PERMISSION_TO_APPROVE_MRS } from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
+import { isRoleApprover } from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
 import groupCustomRoles from 'ee/security_orchestration/graphql/queries/group_custom_roles.query.graphql';
 import projectCustomRoles from 'ee/security_orchestration/graphql/queries/project_custom_roles.query.graphql';
 import { isGroup } from 'ee/security_orchestration/components/utils';
@@ -37,11 +37,7 @@ export default {
       update(data = {}) {
         return (
           data[this.namespaceType]?.memberRoles?.nodes
-            .filter(({ enabledPermissions }) =>
-              enabledPermissions?.edges.some(
-                ({ node = {} }) => node.value === ROLE_PERMISSION_TO_APPROVE_MRS,
-              ),
-            )
+            .filter(isRoleApprover)
             .map(({ id, name }) => ({
               text: name,
               value: getIdFromGraphQLId(id),
