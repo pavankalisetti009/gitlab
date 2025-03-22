@@ -61,7 +61,6 @@ module EE
       after_save :save_verification_details
 
       belongs_to :mirror_user, class_name: 'User'
-      belongs_to :deleting_user, foreign_key: 'marked_for_deletion_by_user_id', class_name: 'User'
 
       has_one :wiki_repository, class_name: 'Projects::WikiRepository', inverse_of: :project
       has_one :push_rule, ->(project) { project&.feature_available?(:push_rules) ? all : none }, inverse_of: :project
@@ -313,11 +312,9 @@ module EE
           project_features: { builds_access_level: ::ProjectFeature::ENABLED }
         )
       end
-      scope :aimed_for_deletion, ->(date) { where('marked_for_deletion_at <= ?', date).without_deleted }
       scope :with_repos_templates, -> { where(namespace_id: ::Gitlab::CurrentSettings.current_application_settings.custom_project_templates_group_id) }
       scope :with_groups_level_repos_templates, -> { joins("INNER JOIN namespaces ON projects.namespace_id = namespaces.custom_project_templates_group_id") }
       scope :with_designs, -> { where(id: ::DesignManagement::Design.select(:project_id).distinct) }
-      scope :with_deleting_user, -> { includes(:deleting_user) }
       scope :with_compliance_framework_settings, -> { preload(:compliance_framework_settings) }
       scope :with_compliance_management_frameworks, -> { preload(:compliance_management_frameworks) }
       scope :has_vulnerabilities, -> { joins(:project_setting).merge(::ProjectSetting.has_vulnerabilities) }
@@ -329,10 +326,6 @@ module EE
       scope :with_security_setting, -> { preload(:security_setting) }
       scope :without_security_setting, -> { left_outer_joins(:security_setting).where(project_security_settings: { project_id: nil }) }
       scope :with_scan_result_policy_reads, -> { preload(:scan_result_policy_reads) }
-
-      scope :by_marked_for_deletion_on, ->(marked_for_deletion_on) do
-        where(marked_for_deletion_at: marked_for_deletion_on)
-      end
 
       scope :with_total_repository_size_greater_than, ->(value) do
         statistics = ::ProjectStatistics.arel_table
@@ -503,10 +496,6 @@ module EE
       accepts_nested_attributes_for :compliance_framework_settings, update_only: true, allow_destroy: true
 
       alias_attribute :fallback_approvals_required, :approvals_before_merge
-
-      ## marked_for_deletion_at is deprecated in our v5 REST API in favor of marked_for_deletion_on
-      ## https://docs.gitlab.com/ee/api/projects.html#removals-in-api-v5
-      alias_attribute :marked_for_deletion_on, :marked_for_deletion_at
 
       with_replicator Geo::ProjectRepositoryReplicator
 

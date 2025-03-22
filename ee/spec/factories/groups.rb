@@ -59,21 +59,6 @@ FactoryBot.define do
     end
   end
 
-  factory :group_with_deletion_schedule, parent: :group do
-    transient do
-      deleting_user { association(:user) }
-      marked_for_deletion_on { Date.current }
-    end
-
-    after(:create) do |group, evaluator|
-      create(:group_deletion_schedule,
-        group: group,
-        deleting_user: evaluator.deleting_user,
-        marked_for_deletion_on: evaluator.marked_for_deletion_on
-      )
-    end
-  end
-
   factory :group_with_managed_accounts, parent: :group do
     after(:create) do |group, evaluator|
       create(:saml_provider,
