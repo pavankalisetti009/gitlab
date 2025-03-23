@@ -224,6 +224,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
             force_include_all_resources: false
           )
           workspace.update!(desired_state_updated_at: desired_state_updated_at)
+          workspace.update!(actual_state_updated_at: actual_state_updated_at)
           workspace
         end
 
@@ -231,7 +232,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
           let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
           let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
           let(:created_at) { max_hours_before_termination.hours.ago + 1.minute }
-          let(:desired_state_updated_at) { workspaces_agent_config.max_active_hours_before_stop.hours.ago - 1.minute }
+          let(:desired_state_updated_at) { workspaces_agent_config.max_active_hours_before_stop.hours.ago - 70.seconds }
+          let(:actual_state_updated_at) { workspaces_agent_config.max_active_hours_before_stop.hours.ago - 1.minute }
 
           it_behaves_like 'workspace lifecycle management expectations',
             expected_desired_state: RemoteDevelopment::WorkspaceOperations::States::STOPPED
@@ -242,6 +244,10 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
           let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
           let(:created_at) { max_hours_before_termination.hours.ago + 1.minute }
           let(:desired_state_updated_at) do
+            workspaces_agent_config.max_stopped_hours_before_termination.hours.ago - 70.seconds
+          end
+
+          let(:actual_state_updated_at) do
             workspaces_agent_config.max_stopped_hours_before_termination.hours.ago - 1.minute
           end
 
@@ -367,10 +373,11 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
       context 'with timestamp precondition checks' do
         # rubocop:disable RSpec/ExpectInHook -- We want it this way - this before/after expectation structure reads clearly and cohesively for checking the timestamps before and after
         before do
-          # Ensure that both desired_state_updated_at and responded_to_agent_at are before Time.current,
-          # so that we can test for any necessary differences after processing updates them
+          # Ensure that both desired_state_updated_at, actual_stated_updated_at, and responded_to_agent_at are
+          # before Time.current, so that we can test for any necessary differences after processing updates them
           # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
           expect(workspace.desired_state_updated_at).to be_before(Time.current)
+          expect(workspace.actual_state_updated_at).to be_before(Time.current)
           # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
           expect(workspace.responded_to_agent_at).to be_before(Time.current)
         end
@@ -379,8 +386,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
           # After processing, the responded_to_agent_at should always have been updated
           workspace.reload
           # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
-          expect(workspace.responded_to_agent_at)
-            .not_to be_before(workspace.desired_state_updated_at)
+          expect(workspace.responded_to_agent_at).not_to be_before(workspace.desired_state_updated_at)
+          expect(workspace.responded_to_agent_at).not_to be_before(workspace.actual_state_updated_at)
         end
         # rubocop:enable RSpec/ExpectInHook
 
@@ -388,8 +395,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
           # rubocop:todo RSpec/ExpectInHook -- This could be moved to a shared example
           before do
             # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
-            expect(workspace.responded_to_agent_at)
-              .to be_after(workspace.desired_state_updated_at)
+            expect(workspace.responded_to_agent_at).to be_after(workspace.desired_state_updated_at)
+            expect(workspace.responded_to_agent_at).to be_after(workspace.actual_state_updated_at)
           end
           # rubocop:enable RSpec/ExpectInHook
 
@@ -461,8 +468,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
           # rubocop:disable RSpec/ExpectInHook -- This could be moved to a shared example
           before do
             # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
-            expect(workspace.responded_to_agent_at)
-              .to be_before(workspace.desired_state_updated_at)
+            expect(workspace.responded_to_agent_at).to be_before(workspace.desired_state_updated_at)
+            expect(workspace.responded_to_agent_at).to be_after(workspace.actual_state_updated_at)
           end
           # rubocop:enable RSpec/ExpectInHook
 

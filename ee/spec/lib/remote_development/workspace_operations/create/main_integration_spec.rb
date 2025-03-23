@@ -113,6 +113,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
         # noinspection RubyResolve
         expect(workspace.desired_state_updated_at).to eq(Time.current)
         expect(workspace.actual_state).to eq(RemoteDevelopment::WorkspaceOperations::States::CREATION_REQUESTED)
+        expect(workspace.actual_state_updated_at).to eq(Time.current)
         expect(workspace.name).to eq("workspace-#{agent.id}-#{user.id}-#{random_string}")
         namespace_prefix = RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::NAMESPACE_PREFIX
         expect(workspace.namespace).to eq("#{namespace_prefix}-#{agent.id}-#{user.id}-#{random_string}")

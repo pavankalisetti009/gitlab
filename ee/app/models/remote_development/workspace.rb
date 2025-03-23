@@ -63,6 +63,10 @@ module RemoteDevelopment
       where("desired_state_updated_at > responded_to_agent_at").or(where(responded_to_agent_at: nil))
     end
 
+    scope :with_actual_state_updated_more_recently_than_last_response_to_agent, -> do
+      where('actual_state_updated_at > responded_to_agent_at').or(where(responded_to_agent_at: nil))
+    end
+
     scope :forced_to_include_all_resources, -> { where(force_include_all_resources: true) }
     scope :by_names, ->(names) { where(name: names) }
     scope :by_user_ids, ->(ids) { where(user_id: ids) }
@@ -85,6 +89,11 @@ module RemoteDevelopment
 
     before_save :touch_desired_state_updated_at, if: ->(workspace) do
       workspace.new_record? || workspace.desired_state_changed?
+    end
+
+    # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-32287
+    before_save :touch_actual_state_updated_at, if: ->(workspace) do
+      workspace.new_record? || workspace.actual_state_changed?
     end
 
     # @return [nil, RemoteDevelopment::WorkspacesAgentConfig]
@@ -116,6 +125,13 @@ module RemoteDevelopment
       return true if responded_to_agent_at.nil?
 
       desired_state_updated_at > responded_to_agent_at
+    end
+
+    # @return [TrueClass, FalseClass]
+    def actual_state_updated_more_recently_than_last_response_to_agent?
+      return true if responded_to_agent_at.nil?
+
+      actual_state_updated_at > responded_to_agent_at
     end
 
     # @return [String]
@@ -256,6 +272,12 @@ module RemoteDevelopment
       self.desired_state_updated_at = Time.current.utc
 
       nil
+    end
+
+    # @return [Time]
+    def touch_actual_state_updated_at
+      # noinspection RubyMismatchedArgumentType - RBS type for #utc is Time, but db field is 'timestamp with time zone'
+      self.actual_state_updated_at = Time.current.utc
     end
   end
 end

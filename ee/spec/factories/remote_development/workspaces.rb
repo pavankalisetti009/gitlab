@@ -73,6 +73,7 @@ FactoryBot.define do
         # This is because successful convergence of actual & desired states may span more than 1 reconciliation cycle
         workspace.update!(
           desired_state_updated_at: 2.seconds.ago,
+          actual_state_updated_at: 3.seconds.ago,
           responded_to_agent_at: 1.second.ago
         )
       else
@@ -95,12 +96,14 @@ FactoryBot.define do
 
         if workspace.desired_state == workspace.actual_state
           # The most recent activity was a poll that reconciled the desired and actual state.
-          desired_state_updated_at = 2.seconds.ago
+          desired_state_updated_at = 3.seconds.ago
+          actual_state_updated_at = 2.seconds.ago
           responded_to_agent_at = 1.second.ago
         else
           # The most recent activity was a user action which updated the desired state to be different
           # than the actual state.
           desired_state_updated_at = 1.second.ago
+          actual_state_updated_at = 3.seconds.ago
           responded_to_agent_at = 2.seconds.ago
         end
 
@@ -108,10 +111,11 @@ FactoryBot.define do
           # NOTE: created_at and updated_at are not currently used in any logic, but we set them to be
           #       before desired_state_updated_at or responded_to_agent_at to ensure the record represents
           #       a realistic condition.
-          created_at: 3.seconds.ago,
-          updated_at: 3.seconds.ago,
+          created_at: 4.seconds.ago,
+          updated_at: 4.seconds.ago,
 
           desired_state_updated_at: desired_state_updated_at,
+          actual_state_updated_at: actual_state_updated_at,
           responded_to_agent_at: responded_to_agent_at
         )
       end

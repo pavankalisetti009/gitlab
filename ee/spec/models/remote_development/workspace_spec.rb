@@ -95,6 +95,11 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
           workspace.save!
           expect(workspace.desired_state_updated_at).to eq(Time.current)
         end
+
+        it "sets actual_state_updated_at" do
+          workspace.save!
+          expect(workspace.actual_state_updated_at).to eq(Time.current)
+        end
       end
 
       describe "when updating desired_state" do
@@ -107,6 +112,16 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
         end
       end
 
+      describe "when updating actual_state" do
+        it "sets desired_state_updated_at" do
+          # rubocop:todo Layout/LineLength -- this line will not be too long once we rename RemoteDevelopment namespace to Workspaces
+          expect { workspace.update!(actual_state: ::RemoteDevelopment::WorkspaceOperations::States::RUNNING) }.to change {
+            # rubocop:enable Layout/LineLength
+            workspace.actual_state_updated_at
+          }
+        end
+      end
+
       describe "when updating a field other than desired_state" do
         it "does not set desired_state_updated_at" do
           workspace.save!
@@ -114,6 +129,15 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
           expect { workspace.update!(actual_state: ::RemoteDevelopment::WorkspaceOperations::States::RUNNING) }.not_to change {
             # rubocop:enable Layout/LineLength
             workspace.desired_state_updated_at
+          }
+        end
+
+        it "does not set actual_state_updated_at" do
+          workspace.save!
+          # rubocop:todo Layout/LineLength -- this line will not be too long once we rename RemoteDevelopment namespace to Workspaces
+          expect { workspace.update!(actual_state: ::RemoteDevelopment::WorkspaceOperations::States::RUNNING) }.not_to change {
+            # rubocop:enable Layout/LineLength
+            workspace.actual_state_updated_at
           }
         end
       end
@@ -453,6 +477,107 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
 
             # NOTE: We will also test the corresponding method here, since its logic is the same as the scope
             expect(workspace.desired_state_updated_more_recently_than_last_response_to_agent?).to eq(false)
+          end
+        end
+      end
+    end
+
+    describe "with_actual_state_updated_more_recently_than_last_response_to_agent" do
+      context "when workspace responded_to_agent_at is nil" do
+        before do
+          workspace.save!
+          workspace.update!(
+            actual_state_updated_at: DateTime.now.advance(minutes: 20),
+            responded_to_agent_at: nil
+          )
+        end
+
+        it "returns workspace" do
+          expect(described_class.with_actual_state_updated_more_recently_than_last_response_to_agent)
+            .to include(workspace)
+        end
+      end
+
+      context "when actual_state_updated_at is greater than responded_to_agent_at" do
+        context "when responded_to_agent_at is nil" do
+          before do
+            workspace.save!
+            workspace.update!(
+              actual_state_updated_at: DateTime.now.advance(minutes: 20),
+              responded_to_agent_at: nil
+            )
+          end
+
+          it "returns true" do
+            # fixture sanity check
+            expect(workspace.responded_to_agent_at).to be_nil
+
+            expect(workspace.actual_state_updated_more_recently_than_last_response_to_agent?).to eq(true)
+          end
+        end
+
+        context "when responded_to_agent_at is not nil" do
+          context "when actual_state_updated_at is greater than responded_to_agent_at" do
+            before do
+              workspace.save!
+              workspace.update!(
+                actual_state_updated_at: DateTime.now.advance(minutes: 20),
+                responded_to_agent_at: DateTime.now.advance(minutes: 10)
+              )
+            end
+
+            it "includes workspace" do
+              # fixture sanity check
+              expect(workspace.actual_state_updated_at).to be > workspace.responded_to_agent_at
+
+              expect(described_class.with_actual_state_updated_more_recently_than_last_response_to_agent)
+                .to include(workspace)
+
+              # NOTE: We will also test the corresponding method here, since its logic is the same as the scope
+              expect(workspace.actual_state_updated_more_recently_than_last_response_to_agent?).to eq(true)
+            end
+          end
+
+          context "when actual_state_updated_at is equal to responded_to_agent_at" do
+            before do
+              workspace.save!
+              workspace.update!(
+                actual_state_updated_at: DateTime.now.advance(minutes: 10),
+                responded_to_agent_at: DateTime.now.advance(minutes: 10)
+              )
+            end
+
+            it "does not include workpace" do
+              # fixture sanity check
+              expect(workspace.actual_state_updated_at).to eq(workspace.responded_to_agent_at)
+
+              expect(described_class.with_actual_state_updated_more_recently_than_last_response_to_agent)
+                .not_to include(workspace)
+
+              # NOTE: We will also test the corresponding method here, since its logic is the same as the scope
+              expect(workspace.actual_state_updated_more_recently_than_last_response_to_agent?).to eq(false)
+            end
+          end
+
+          context "when actual_state_updated_at is less than responded_to_agent_at" do
+            before do
+              workspace.save!
+              workspace.update!(
+                actual_state_updated_at: DateTime.now.advance(minutes: 10),
+                responded_to_agent_at: DateTime.now.advance(minutes: 20)
+              )
+            end
+
+            it "does not include workpace" do
+              # fixture sanity check
+              expect(workspace.actual_state_updated_at).to be < workspace.responded_to_agent_at
+
+              expect(described_class.with_actual_state_updated_more_recently_than_last_response_to_agent)
+                .not_to include(workspace)
+
+              # NOTE: We will also test the corresponding method here, since its logic is the same as the scope
+              expect(workspace.actual_state_updated_more_recently_than_last_response_to_agent?).to eq(false)
+            end
           end
         end
       end
