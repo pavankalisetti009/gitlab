@@ -374,38 +374,37 @@ RSpec.shared_context 'with remote development shared fixtures' do
     max_resources_per_workspace_sha256 = Digest::SHA256.hexdigest(
       max_resources_per_workspace.sort.to_h.to_s
     )
-    extra_annotations = {
-      "config.k8s.io/owning-inventory": "#{workspace.name}-workspace-inventory",
+    common_annotations = {
       "workspaces.gitlab.com/host-template": host_template_annotation.to_s,
       "workspaces.gitlab.com/id": workspace.id.to_s,
       "workspaces.gitlab.com/max-resources-per-workspace-sha256":
         max_resources_per_workspace_sha256
     }
-    annotations = agent_annotations.merge(extra_annotations)
+    extra_annotations = common_annotations.merge(
+      { "config.k8s.io/owning-inventory": "#{workspace.name}-workspace-inventory" }
+    )
+    workspace_annotations = agent_annotations.merge(extra_annotations)
     extra_labels = {
       "agent.gitlab.com/id": workspace.agent.id.to_s
     }
     labels = agent_labels.merge(extra_labels)
-    extra_secrets_annotations = {
-      "config.k8s.io/owning-inventory": "#{workspace.name}-secrets-inventory",
-      "workspaces.gitlab.com/host-template": host_template_annotation.to_s,
-      "workspaces.gitlab.com/id": workspace.id.to_s,
-      "workspaces.gitlab.com/max-resources-per-workspace-sha256":
-        max_resources_per_workspace_sha256
-    }
+    extra_secrets_annotations = common_annotations.merge(
+      { "config.k8s.io/owning-inventory": "#{workspace.name}-secrets-inventory" }
+    )
     secrets_annotations = agent_annotations.merge(extra_secrets_annotations)
 
     workspace_inventory = workspace_inventory(
       workspace_name: workspace.name,
       workspace_namespace: workspace.namespace,
-      agent_id: workspace.agent.id
+      agent_id: workspace.agent.id,
+      annotations: workspace_annotations
     )
 
     workspace_deployment = workspace_deployment(
       workspace_name: workspace.name,
       workspace_namespace: workspace.namespace,
       labels: labels,
-      annotations: annotations,
+      annotations: workspace_annotations,
       spec_replicas: spec_replicas,
       default_resources_per_workspace_container: default_resources_per_workspace_container,
       allow_privilege_escalation: allow_privilege_escalation,
@@ -417,28 +416,31 @@ RSpec.shared_context 'with remote development shared fixtures' do
       workspace_name: workspace.name,
       workspace_namespace: workspace.namespace,
       labels: labels,
-      annotations: annotations
+      annotations: workspace_annotations
     )
 
     workspace_pvc = workspace_pvc(
       workspace_name: workspace.name,
       workspace_namespace: workspace.namespace,
       labels: labels,
-      annotations: annotations
+      annotations: workspace_annotations
     )
 
     workspace_network_policy = workspace_network_policy(
       workspace_name: workspace.name,
       workspace_namespace: workspace.namespace,
       labels: labels,
-      annotations: annotations,
+      annotations: workspace_annotations,
       egress_ip_rules: egress_ip_rules
     )
 
     workspace_secrets_inventory = workspace_secrets_inventory(
       workspace_name: workspace.name,
       workspace_namespace: workspace.namespace,
-      agent_id: workspace.agent.id
+      agent_id: workspace.agent.id,
+      # This should be the workspace annotations, not the secrets annotations, because this IS the secrets
+      # inventory, which is owned by the workspace inventory.
+      annotations: workspace_annotations
     )
 
     workspace_secret_environment = workspace_secret_environment(
@@ -466,7 +468,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
         workspace_name: workspace.name,
         workspace_namespace: workspace.namespace,
         labels: labels,
-        annotations: annotations,
+        annotations: workspace_annotations,
         max_resources_per_workspace: max_resources_per_workspace
       )
     end
@@ -476,7 +478,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
       namespace: workspace.namespace,
       image_pull_secrets: image_pull_secrets,
       labels: labels,
-      annotations: annotations
+      annotations: workspace_annotations
     )
 
     resources = []
@@ -505,15 +507,16 @@ RSpec.shared_context 'with remote development shared fixtures' do
   # @param [String] workspace_name
   # @param [String] workspace_namespace
   # @param [Integer] agent_id
+  # @param [Hash] annotations
   # @return [Hash]
-  def workspace_inventory(workspace_name:, workspace_namespace:, agent_id:)
+  def workspace_inventory(workspace_name:, workspace_namespace:, agent_id:, annotations:)
     {
       kind: "ConfigMap",
       apiVersion: "v1",
       metadata: {
         name: "#{workspace_name}-workspace-inventory",
         namespace: workspace_namespace.to_s,
-        annotations: {},
+        annotations: annotations,
         labels: {
           "cli-utils.sigs.k8s.io/inventory-id": "#{workspace_name}-workspace-inventory",
           "agent.gitlab.com/id": agent_id.to_s
@@ -1083,19 +1086,16 @@ RSpec.shared_context 'with remote development shared fixtures' do
   # @param [String] workspace_name
   # @param [String] workspace_namespace
   # @param [Integer] agent_id
+  # @param [Hash] annotations
   # @return [Hash]
-  def workspace_secrets_inventory(
-    workspace_name:,
-    workspace_namespace:,
-    agent_id:
-  )
+  def workspace_secrets_inventory(workspace_name:, workspace_namespace:, agent_id:, annotations:)
     {
       kind: "ConfigMap",
       apiVersion: "v1",
       metadata: {
         name: "#{workspace_name}-secrets-inventory",
         namespace: workspace_namespace.to_s,
-        annotations: {},
+        annotations: annotations,
         labels: {
           "cli-utils.sigs.k8s.io/inventory-id": "#{workspace_name}-secrets-inventory",
           "agent.gitlab.com/id": agent_id.to_s
