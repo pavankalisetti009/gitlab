@@ -623,6 +623,10 @@ module EE
       end
     end
 
+    def duo_never_on?
+      duo_availability == :never_on
+    end
+
     def enabled_expanded_logging
       ::Feature.enabled?(:expanded_ai_logging)
     end
