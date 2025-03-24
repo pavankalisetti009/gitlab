@@ -853,6 +853,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace: :cronjob
+- :name: cronjob:vulnerabilities_archival_schedule
+  :worker_name: Vulnerabilities::Archival::ScheduleWorker
+  :feature_category: :vulnerability_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace: :cronjob
 - :name: cronjob:vulnerabilities_delete_expired_exports
   :worker_name: Vulnerabilities::DeleteExpiredExportsWorker
   :feature_category: :dependency_management

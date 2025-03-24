@@ -17,7 +17,7 @@ module Resolvers
       end
 
       def ensure_feature_available!
-        raise_resource_not_available_error! unless Feature.enabled?(:vulnerability_archival, object)
+        raise_resource_not_available_error! unless Feature.enabled?(:vulnerability_archival, object.root_ancestor)
       end
     end
   end
