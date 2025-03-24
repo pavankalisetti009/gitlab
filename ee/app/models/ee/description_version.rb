@@ -3,6 +3,7 @@
 module EE
   module DescriptionVersion
     extend ActiveSupport::Concern
+    extend ::Gitlab::Utils::Override
 
     prepended do
       belongs_to :epic
@@ -20,7 +21,7 @@ module EE
     end
 
     def issuable
-      epic || work_item || super
+      super || epic || work_item
     end
 
     def previous_version
@@ -50,6 +51,14 @@ module EE
     end
 
     private
+
+    override :parent_namespace_id
+    def parent_namespace_id
+      super || case issuable
+               when Epic
+                 issuable.group_id
+               end
+    end
 
     def issuable_description_versions
       issuable.description_versions
