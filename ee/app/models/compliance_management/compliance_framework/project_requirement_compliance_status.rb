@@ -16,6 +16,7 @@ module ComplianceManagement
 
       validates :pass_count, :fail_count, :pending_count,
         numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+      validate :validate_associations
 
       scope :order_by_updated_at_and_id, ->(direction = :asc) { order(updated_at: direction, id: direction) }
 
@@ -33,6 +34,34 @@ module ComplianceManagement
         where(project_id: project_id).each_batch(of: 100) do |batch|
           batch.delete_all
         end
+      end
+
+      private
+
+      def validate_associations
+        framework_applied_to_project
+        project_belongs_to_same_namespace
+        requirement_belongs_to_same_framework
+      end
+
+      def framework_applied_to_project
+        return if project.nil? || compliance_framework.nil?
+        return if project.compliance_framework_settings.where(framework_id: compliance_framework.id).exists?
+
+        errors.add(:compliance_framework, "must be applied to the project.")
+      end
+
+      def project_belongs_to_same_namespace
+        return if project.nil? || namespace.nil? || project.namespace_id == namespace_id
+
+        errors.add(:project, "must belong to the same namespace.")
+      end
+
+      def requirement_belongs_to_same_framework
+        return if compliance_framework.nil? || compliance_requirement.nil? ||
+          compliance_requirement.framework_id == compliance_framework_id
+
+        errors.add(:compliance_requirement, "must belong to the same compliance framework.")
       end
     end
   end
