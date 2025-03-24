@@ -61334,9 +61334,6 @@ msgstr ""
 msgid "Todos|Could not merge"
 msgstr ""
 
-msgid "Todos|Could not restore to-dos."
-msgstr ""
-
 msgid "Todos|Design"
 msgstr ""
 
@@ -61398,12 +61395,6 @@ msgid "Todos|Label priority"
 msgstr ""
 
 msgid "Todos|Leave feedback"
-msgstr ""
-
-msgid "Todos|Mark all as done"
-msgstr ""
-
-msgid "Todos|Mark all as done failed. Try again later."
 msgstr ""
 
 msgid "Todos|Mark as done"
