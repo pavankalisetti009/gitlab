@@ -8,8 +8,10 @@ RSpec.describe DescriptionVersion, feature_category: :team_planning do
   end
 
   describe 'validations' do
+    let_it_be(:epic) { create(:epic) }
+
     it 'is valid when epic_id is set' do
-      expect(described_class.new(epic_id: 1)).to be_valid
+      expect(described_class.new(epic: epic)).to be_valid
     end
   end
 
@@ -85,6 +87,50 @@ RSpec.describe DescriptionVersion, feature_category: :team_planning do
         expect(epic.description_versions.third.deleted_at).to be_present
         expect(epic.description_versions.fourth.deleted_at).to be_nil
         expect(deleted_count).to eq(2)
+      end
+    end
+  end
+
+  describe 'ensure_namespace_id' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project, group: group) }
+
+    context 'when version belongs to a project work_item' do
+      let(:work_item) { create(:work_item, project: project) }
+      let(:version) { described_class.new(work_item: work_item) }
+
+      it 'sets the namespace id from the issue namespace id' do
+        expect(version.namespace_id).to be_nil
+
+        version.valid?
+
+        expect(version.namespace_id).to eq(work_item.namespace_id)
+      end
+    end
+
+    context 'when version belongs to a group work_item' do
+      let(:work_item) { create(:work_item, :group_level, namespace: group) }
+      let(:version) { described_class.new(work_item: work_item) }
+
+      it 'sets the namespace id from the issue namespace id' do
+        expect(version.namespace_id).to be_nil
+
+        version.valid?
+
+        expect(version.namespace_id).to eq(work_item.namespace_id)
+      end
+    end
+
+    context 'when version belongs to an epic' do
+      let(:epic) { create(:epic, group: group) }
+      let(:version) { described_class.new(epic: epic) }
+
+      it 'sets the namespace id from the epic group' do
+        expect(version.namespace_id).to be_nil
+
+        version.valid?
+
+        expect(version.namespace_id).to eq(epic.group_id)
       end
     end
   end

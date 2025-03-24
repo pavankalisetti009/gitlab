@@ -12,6 +12,9 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectRequirementComp
   end
 
   describe 'validations' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project, group: group) }
+
     it { is_expected.to validate_presence_of(:pass_count) }
     it { is_expected.to validate_presence_of(:fail_count) }
     it { is_expected.to validate_presence_of(:pending_count) }
@@ -32,6 +35,115 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectRequirementComp
         is_expected.to validate_uniqueness_of(:project_id)
                          .scoped_to(:compliance_requirement_id)
                          .with_message('has already been taken')
+      end
+    end
+
+    describe '#framework_applied_to_project' do
+      let_it_be(:compliance_framework) { create(:compliance_framework, namespace: group) }
+      let_it_be(:requirement) { create(:compliance_requirement, framework: compliance_framework, namespace: group) }
+
+      context 'when the framework is applied to the project' do
+        before do
+          create(:compliance_framework_project_setting, project: project,
+            compliance_management_framework: compliance_framework)
+        end
+
+        subject(:build_status) do
+          build(:project_requirement_compliance_status, project: project, compliance_requirement: requirement,
+            namespace: group, compliance_framework: compliance_framework)
+        end
+
+        it 'is valid' do
+          expect(build_status).to be_valid
+        end
+      end
+
+      context 'when the framework is not applied to the project' do
+        subject(:build_status) do
+          build(:project_requirement_compliance_status, project: project, compliance_requirement: requirement,
+            namespace: group, compliance_framework: compliance_framework)
+        end
+
+        it 'is invalid' do
+          expect(build_status).not_to be_valid
+          expect(build_status.errors[:compliance_framework]).to include('must be applied to the project.')
+        end
+      end
+    end
+
+    describe '#project_belongs_to_same_namespace' do
+      let_it_be(:other_project) { create(:project) }
+      let_it_be(:compliance_framework) { create(:compliance_framework, namespace: group) }
+      let_it_be(:requirement) { create(:compliance_requirement, framework: compliance_framework, namespace: group) }
+
+      before do
+        create(:compliance_framework_project_setting, project: project,
+          compliance_management_framework: compliance_framework)
+      end
+
+      context 'when the project belongs to the same namespace' do
+        subject(:build_status) do
+          build(:project_requirement_compliance_status, project: project, compliance_requirement: requirement,
+            namespace: group, compliance_framework: compliance_framework)
+        end
+
+        it 'is valid' do
+          expect(build_status).to be_valid
+        end
+      end
+
+      context 'when the project belongs to a different namespace' do
+        subject(:build_status) do
+          build(:project_requirement_compliance_status, project: other_project, compliance_requirement: requirement,
+            namespace: group, compliance_framework: compliance_framework)
+        end
+
+        it 'is invalid' do
+          expect(build_status).not_to be_valid
+          expect(build_status.errors[:project]).to include('must belong to the same namespace.')
+        end
+      end
+    end
+
+    describe '#requirement_belongs_to_framework' do
+      let_it_be(:compliance_framework1) do
+        create(:compliance_framework, namespace: group, name: 'framework1', color: '#00ffaa')
+      end
+
+      let_it_be(:compliance_framework2) do
+        create(:compliance_framework, namespace: group, name: 'framework2', color: '#00ffab')
+      end
+
+      let_it_be(:requirement1) { create(:compliance_requirement, framework: compliance_framework1, namespace: group) }
+      let_it_be(:requirement2) { create(:compliance_requirement, framework: compliance_framework2, namespace: group) }
+
+      before do
+        create(:compliance_framework_project_setting, project: project,
+          compliance_management_framework: compliance_framework1)
+      end
+
+      context 'when the requirement belongs to the same framework as the status' do
+        subject(:build_status) do
+          build(:project_requirement_compliance_status, project: project, compliance_framework: compliance_framework1,
+            compliance_requirement: requirement1, namespace: group)
+        end
+
+        it 'is valid' do
+          expect(build_status).to be_valid
+        end
+      end
+
+      context 'when the requirement does not belong to the same framework as the status' do
+        subject(:build_status) do
+          build(:project_requirement_compliance_status, project: project, compliance_framework: compliance_framework1,
+            compliance_requirement: requirement2, namespace: group)
+        end
+
+        it 'is invalid' do
+          expect(build_status).not_to be_valid
+          expect(build_status.errors[:compliance_requirement])
+            .to include('must belong to the same compliance framework.')
+        end
       end
     end
   end

@@ -2,23 +2,34 @@
 import { GlLoadingIcon } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import { pathSegments } from '~/lib/utils/url_utility';
+import { getReplicableTypeFilter } from '../filters';
 import GeoReplicable from './geo_replicable.vue';
 import GeoReplicableEmptyState from './geo_replicable_empty_state.vue';
 import GeoReplicableFilterBar from './geo_replicable_filter_bar.vue';
+import GeoReplicableFilteredSearchBar from './geo_replicable_filtered_search_bar.vue';
 
 export default {
   name: 'GeoReplicableApp',
   components: {
     GlLoadingIcon,
     GeoReplicableFilterBar,
+    GeoReplicableFilteredSearchBar,
     GeoReplicable,
     GeoReplicableEmptyState,
   },
+  mixins: [glFeatureFlagsMixin()],
   props: {
     geoReplicableEmptySvgPath: {
       type: String,
       required: true,
     },
+  },
+  data() {
+    return {
+      activeFilters: [],
+    };
   },
   computed: {
     ...mapState(['isLoading', 'replicableItems']),
@@ -27,17 +38,29 @@ export default {
     },
   },
   created() {
+    if (this.glFeatures.geoReplicablesFilteredListView) {
+      this.getFiltersFromQuery();
+    }
+
     this.fetchReplicableItems();
   },
   methods: {
     ...mapActions(['fetchReplicableItems']),
+    getFiltersFromQuery() {
+      const url = new URL(window.location.href);
+      const segments = pathSegments(url);
+
+      this.activeFilters = [getReplicableTypeFilter(segments.pop())];
+    },
   },
 };
 </script>
 
 <template>
   <article class="geo-replicable-container">
-    <geo-replicable-filter-bar />
+    <geo-replicable-filter-bar v-if="!glFeatures.geoReplicablesFilteredListView" />
+    <geo-replicable-filtered-search-bar v-else :active-filters="activeFilters" />
+
     <gl-loading-icon v-if="isLoading" size="xl" />
     <template v-else>
       <geo-replicable v-if="hasReplicableItems" />

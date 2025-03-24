@@ -86,3 +86,5 @@ module GitlabSubscriptions
     end
   end
 end
+
+GitlabSubscriptions::Trials::BaseApplyTrialService.prepend_mod

@@ -1,10 +1,33 @@
+import { TOKEN_TYPES } from 'ee/geo_replicable/constants';
+
 export const MOCK_GEO_REPLICATION_SVG_PATH = 'illustrations/empty-state/empty-geo-md.svg';
 
-export const MOCK_REPLICABLE_TYPE = 'designs';
+export const MOCK_REPLICABLE_TYPES = [
+  {
+    titlePlural: 'Design Management Repositories',
+    namePlural: 'design_management_repositories',
+    graphqlFieldName: 'designManagementRepositoryRegistries',
+    graphqlMutationRegistryClass: 'DESIGN_MANAGEMENT_REPOSITORY_REGISTRY',
+  },
+  {
+    titlePlural: 'Project Repositories',
+    namePlural: 'project_repositories',
+    graphqlFieldName: 'projectRepositoryRegistries',
+    graphqlMutationRegistryClass: 'PROJECT_REPOSITORY_REGISTRY',
+  },
+  {
+    titlePlural: 'Package Files',
+    namePlural: 'package_files',
+    graphqlFieldName: 'packageFileRegistries',
+    graphqlMutationRegistryClass: 'PACKAGE_FILE_REGISTRY',
+  },
+];
 
-export const MOCK_GRAPHQL_REGISTRY = 'designsRegistry';
+export const MOCK_REPLICABLE_TYPE = MOCK_REPLICABLE_TYPES[0].namePlural;
 
-export const MOCK_GRAPHQL_REGISTRY_CLASS = 'DESIGNS_REGISTRY';
+export const MOCK_GRAPHQL_REGISTRY = MOCK_REPLICABLE_TYPES[0].graphqlFieldName;
+
+export const MOCK_GRAPHQL_REGISTRY_CLASS = MOCK_REPLICABLE_TYPES[0].graphqlMutationRegistryClass;
 
 export const MOCK_BASIC_GRAPHQL_DATA = [
   {
@@ -41,3 +64,8 @@ export const MOCK_BASIC_GRAPHQL_QUERY_RESPONSE = {
 };
 
 export const MOCK_REPLICABLE_BASE_PATH = '/admin/geo/sites/2/replication/project_repositories';
+
+export const MOCK_REPLICABLE_TYPE_FILTER = {
+  type: TOKEN_TYPES.REPLICABLE_TYPE,
+  value: 'project_repositories',
+};

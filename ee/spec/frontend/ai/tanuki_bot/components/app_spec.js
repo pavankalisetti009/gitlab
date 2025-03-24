@@ -100,6 +100,7 @@ describeSkipVue3(skipReason, () => {
   const createComponent = ({
     initialState = {},
     propsData = { userId: MOCK_USER_ID, resourceId: MOCK_RESOURCE_ID },
+    data = {},
     glFeatures = { duoChatDynamicDimension: false },
   } = {}) => {
     const store = new Vuex.Store({
@@ -123,6 +124,9 @@ describeSkipVue3(skipReason, () => {
       store,
       apolloProvider,
       propsData,
+      data() {
+        return data;
+      },
       provide: {
         glFeatures,
       },
@@ -1043,9 +1047,6 @@ describeSkipVue3(skipReason, () => {
       describe('thread list loading', () => {
         beforeEach(() => {
           duoChatGlobalState.isShown = true;
-        });
-
-        it('auto-selects the most recent thread when in chat view', async () => {
           conversationThreadsQueryHandlerMock.mockResolvedValue(MOCK_THREADS_RESPONSE);
           threadQueryHandlerMock.mockResolvedValue({
             data: {
@@ -1054,10 +1055,12 @@ describeSkipVue3(skipReason, () => {
               },
             },
           });
-
           createComponent({
             glFeatures: { duoChatMultiThread: true },
           });
+        });
+
+        it('auto-selects the most recent thread when in chat view', async () => {
           const duoChat = findDuoChat();
           await waitForPromises();
           await nextTick();
@@ -1066,19 +1069,29 @@ describeSkipVue3(skipReason, () => {
           expect(duoChat.props('activeThreadId')).toBe(MOCK_THREADS[0].id);
         });
 
-        it('does not auto-select thread when in list view', async () => {
-          conversationThreadsQueryHandlerMock.mockResolvedValue(MOCK_THREADS_RESPONSE);
-          threadQueryHandlerMock.mockResolvedValue({
-            data: {
-              aiMessages: {
-                nodes: [MOCK_USER_MESSAGE, MOCK_TANUKI_MESSAGE],
-              },
-            },
-          });
+        it('preserves existing active thread when threads are loaded', async () => {
+          const existingThreadId = 'existing-thread-123';
 
           createComponent({
             glFeatures: { duoChatMultiThread: true },
+            data: {
+              activeThread: existingThreadId,
+            },
           });
+
+          const duoChat = findDuoChat();
+          await waitForPromises();
+          await nextTick();
+
+          expect(duoChat.props('activeThreadId')).toBe(existingThreadId);
+          expect(threadQueryHandlerMock).toHaveBeenCalledWith(
+            expect.objectContaining({
+              threadId: existingThreadId,
+            }),
+          );
+        });
+
+        it('does not auto-select thread when in list view', async () => {
           const duoChat = findDuoChat();
 
           duoChat.vm.$emit('back-to-list');
