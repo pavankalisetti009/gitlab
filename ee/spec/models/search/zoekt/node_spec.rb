@@ -506,17 +506,6 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
       node.save!
     end
 
-    context 'when feature flag zoekt_reduced_pull_frequency is disabled' do
-      before do
-        stub_feature_flags(zoekt_reduced_pull_frequency: false)
-        create_list(:zoekt_task, 2, node: node)
-      end
-
-      it 'returns default pull frequency' do
-        expect(node.task_pull_frequency).to eq described_class::TASK_PULL_FREQUENCY_DEFAULT
-      end
-    end
-
     context 'when pending tasks is more than the concurrency_limit of a node' do
       before do
         create_list(:zoekt_task, 2, node: node)
