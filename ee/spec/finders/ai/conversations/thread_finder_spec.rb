@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::Conversations::ThreadFinder, feature_category: :duo_chat do
+RSpec.describe Ai::Conversations::ThreadFinder, :clean_gitlab_redis_shared_state, feature_category: :duo_chat do
   let_it_be(:user) { create(:user) }
   let_it_be(:another_user) { create(:user) }
 
@@ -11,6 +11,7 @@ RSpec.describe Ai::Conversations::ThreadFinder, feature_category: :duo_chat do
   let_it_be(:thread_3) { create(:ai_conversation_thread, user: another_user) }
 
   let(:params) { {} }
+  let(:redis) { Gitlab::Redis::SharedState.with { |redis| redis } }
 
   subject(:threads) { described_class.new(user, params).execute }
 
@@ -46,11 +47,13 @@ RSpec.describe Ai::Conversations::ThreadFinder, feature_category: :duo_chat do
         end
 
         context 'when there is a legacy thread' do
-          let!(:legacy_thread) do
+          let_it_be(:legacy_thread) do
             create(:ai_conversation_thread, user: user, conversation_type: 'duo_chat_legacy')
           end
 
           it 'copies the last legacy thread as a new duo_chat thread' do
+            expect(::Ai::Conversation::LegacyDuoChatCopiedUser.include?(user.id)).to be(false)
+
             expect do
               result = finder.execute
 
@@ -61,6 +64,18 @@ RSpec.describe Ai::Conversations::ThreadFinder, feature_category: :duo_chat do
               expect(new_thread.id).to be > legacy_thread.id
               expect(new_thread.conversation_type).to eq('duo_chat')
             end.to change { Ai::Conversation::Thread.count }.by(1)
+
+            expect(::Ai::Conversation::LegacyDuoChatCopiedUser.include?(user.id)).to be(true)
+          end
+
+          context 'when user has copied a thread in the past' do
+            it 'does not copy the legacy thread' do
+              allow(::Ai::Conversation::LegacyDuoChatCopiedUser).to receive(:include?).with(user.id).and_return(true)
+
+              expect do
+                expect(finder.execute).to be_empty
+              end.not_to change { Ai::Conversation::Thread.count }
+            end
           end
         end
 
@@ -69,6 +84,8 @@ RSpec.describe Ai::Conversations::ThreadFinder, feature_category: :duo_chat do
             expect do
               expect(finder.execute).to be_empty
             end.not_to change { Ai::Conversation::Thread.count }
+
+            expect(::Ai::Conversation::LegacyDuoChatCopiedUser.include?(user.id)).to be(true)
           end
         end
       end
