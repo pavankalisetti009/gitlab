@@ -11,16 +11,17 @@ module Security
         @merge_request = merge_request
         @pipeline = pipeline
         @preexisting_states = preexisting_states
-        @approval_rules = merge_request
-                            .approval_rules
-                            .report_approver
-                            .license_scanning
-                            .with_scan_result_policy_read
-                            .including_scan_result_policy_read
       end
 
       def execute
         return if merge_request.merged?
+
+        approval_rules = merge_request
+                           .approval_rules
+                           .report_approver
+                           .license_scanning
+                           .with_scan_result_policy_read
+                           .including_scan_result_policy_read
         return if approval_rules.empty?
 
         if !preexisting_states && !scanner.results_available?
@@ -37,7 +38,7 @@ module Security
 
       private
 
-      attr_reader :merge_request, :pipeline, :preexisting_states, :approval_rules
+      attr_reader :merge_request, :pipeline, :preexisting_states
 
       delegate :project, to: :merge_request
 
@@ -107,8 +108,7 @@ module Security
       end
 
       def evaluation
-        @evaluation ||= Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationService
-          .new(merge_request, approval_rules)
+        @evaluation ||= Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationService.new(merge_request)
       end
 
       def source_pipeline

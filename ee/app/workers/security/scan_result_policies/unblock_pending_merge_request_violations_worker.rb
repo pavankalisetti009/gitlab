@@ -32,8 +32,7 @@ module Security
                                       .for_approval_policy_rules(violations.map(&:approval_policy_rule_id))
         return if approval_rules.blank?
 
-        evaluation = Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationService
-                       .new(merge_request, approval_rules)
+        evaluation = Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationService.new(merge_request)
         approval_rules.each { |rule| evaluation.skip!(rule) }
         evaluation.save
         log_policy_evaluation('unblock_pending_violations',
