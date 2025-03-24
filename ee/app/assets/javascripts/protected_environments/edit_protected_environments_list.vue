@@ -189,6 +189,7 @@ export default {
             :label="$options.i18n.accessDropdownLabel"
             :access-levels-data="accessLevelsData"
             show-users
+            inherited
             @hidden="setRule({ environment: addingEnvironment, newRules: $event })"
           />
         </gl-form-group>

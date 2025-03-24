@@ -98,6 +98,7 @@ describe('ee/protected_environments/add_approvers.vue', () => {
     expect(approvers.props()).toMatchObject({
       accessLevelsData,
       label: 'Select users',
+      inherited: true,
     });
   });
 

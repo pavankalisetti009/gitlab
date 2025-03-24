@@ -214,6 +214,7 @@ describe('ee/protected_environments/create_protected_environment.vue', () => {
       expect(dropdown.props()).toMatchObject({
         accessLevelsData,
         label: 'Select users',
+        inherited: true,
       });
     });
 

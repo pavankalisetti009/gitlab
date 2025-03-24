@@ -10732,6 +10732,9 @@ msgstr ""
 msgid "Branches|You're about to permanently delete the protected branch %{branchName}."
 msgstr ""
 
+msgid "Branches|default"
+msgstr ""
+
 msgid "Branches|diverged from upstream"
 msgstr ""
 
@@ -42866,6 +42869,9 @@ msgstr ""
 msgid "Pipeline triggers"
 msgstr ""
 
+msgid "PipelineCharts|All branches"
+msgstr ""
+
 msgid "PipelineCharts|An error has occurred when retrieving the analytics data"
 msgstr ""
 
@@ -43196,7 +43202,7 @@ msgstr ""
 msgid "PipelineSource|API"
 msgstr ""
 
-msgid "PipelineSource|Any"
+msgid "PipelineSource|Any source"
 msgstr ""
 
 msgid "PipelineSource|Chat"
@@ -61328,9 +61334,6 @@ msgstr ""
 msgid "Todos|Could not merge"
 msgstr ""
 
-msgid "Todos|Could not restore to-dos."
-msgstr ""
-
 msgid "Todos|Design"
 msgstr ""
 
@@ -61392,12 +61395,6 @@ msgid "Todos|Label priority"
 msgstr ""
 
 msgid "Todos|Leave feedback"
-msgstr ""
-
-msgid "Todos|Mark all as done"
-msgstr ""
-
-msgid "Todos|Mark all as done failed. Try again later."
 msgstr ""
 
 msgid "Todos|Mark as done"
