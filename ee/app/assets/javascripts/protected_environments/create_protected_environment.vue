@@ -255,6 +255,7 @@ export default {
             :disabled="disabled"
             :items="deployers"
             show-users
+            inherited
             @select="updateDeployers"
           />
         </gl-form-group>
