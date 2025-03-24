@@ -17,7 +17,7 @@ RSpec.shared_examples 'filtered search bar' do |tokens, sort_options, current_so
     "Epic" => 1,
 
     # Count must be at least 3 as `None` & `Any` are available by default
-    "My-Reaction" => 3
+    "My reaction" => 3
   }
 
   def select_token(token_name)
