@@ -327,6 +327,7 @@ export default {
         controlType: control.controlType || 'internal',
         externalUrl: control.externalUrl || '',
         expression: control.expression || '',
+        ...(control.secretToken && { secretToken: control.secretToken }),
       }));
 
       const { data } = await this.$apollo.mutate({
@@ -390,6 +391,7 @@ export default {
         controlType: control.controlType || 'internal',
         externalUrl: control.externalUrl || '',
         expression: control.expression || '',
+        ...(control.secretToken && { secretToken: control.secretToken }),
       }));
 
       const { data } = await this.$apollo.mutate({
