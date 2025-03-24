@@ -36,13 +36,7 @@ module EE
 
         # Ensure that we re-create violations and require approvals if they were previously set as optional
         merge_request.synchronize_approval_rules_from_target_project
-
-        pipeline_id = merge_request.head_pipeline_id
-        return unless pipeline_id
-
-        ::Ci::SyncReportsToReportApprovalRulesWorker.perform_async(pipeline_id)
-        ::Security::ScanResultPolicies::SyncMergeRequestApprovalsWorker.perform_async(pipeline_id, merge_request.id)
-        ::Security::UnenforceablePolicyRulesPipelineNotificationWorker.perform_async(pipeline_id)
+        merge_request.schedule_policy_synchronization
       end
     end
   end

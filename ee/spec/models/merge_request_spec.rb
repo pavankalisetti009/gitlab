@@ -3362,4 +3362,10 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
       end
     end
   end
+
+  describe '#schedule_policy_synchronization' do
+    subject(:execute) { merge_request.schedule_policy_synchronization }
+
+    it_behaves_like 'synchronizes policies for a merge request'
+  end
 end
