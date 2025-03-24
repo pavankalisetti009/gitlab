@@ -1142,4 +1142,173 @@ describe('Edit Framework Form', () => {
       expect(submitButton.props('disabled')).toBe(false);
     });
   });
+
+  describe('Creating requirements with external controls', () => {
+    let createRequirementMutationMock;
+    const mockFrameworkId = 'gid://gitlab/ComplianceManagement::Framework/1';
+
+    beforeEach(() => {
+      createRequirementMutationMock = jest.fn().mockResolvedValue({
+        data: {
+          createComplianceRequirement: {
+            requirement: {
+              id: 'gid://gitlab/ComplianceManagement::Requirement/2',
+              name: 'External Control Test',
+              description: 'Test external controls',
+              __typename: 'ComplianceManagement::Requirement',
+              complianceRequirementsControls: {
+                nodes: [
+                  {
+                    id: 'gid://gitlab/ComplianceManagement::Control/3',
+                    name: 'external_control',
+                    controlType: 'external',
+                    externalUrl: 'https://example.com/control',
+                    expression: null,
+                  },
+                ],
+              },
+            },
+            errors: [],
+          },
+        },
+      });
+    });
+
+    it('creates requirement with external control', async () => {
+      const stubHandlers = [
+        [getComplianceFrameworkQuery, createComplianceFrameworksReportResponse],
+        [createRequirementMutation, createRequirementMutationMock],
+      ];
+
+      wrapper = createComponent(mountExtended, {
+        requestHandlers: stubHandlers,
+        routeParams: { id: '1' },
+        provide: {
+          adherenceV2Enabled: true,
+        },
+      });
+      await waitForPromises();
+
+      const requirementsSection = wrapper.findComponent(RequirementsSection);
+      const externalRequirement = {
+        name: 'External Control Test',
+        description: 'Test external controls',
+        stagedControls: [
+          {
+            name: 'external_control',
+            controlType: 'external',
+            externalUrl: 'https://example.com/control',
+          },
+        ],
+      };
+
+      requirementsSection.vm.$emit(requirementEvents.create, { requirement: externalRequirement });
+      await waitForPromises();
+
+      expect(createRequirementMutationMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          input: {
+            complianceFrameworkId: mockFrameworkId,
+            params: {
+              name: externalRequirement.name,
+              description: externalRequirement.description,
+            },
+            controls: [
+              {
+                name: 'external_control',
+                controlType: 'external',
+                externalUrl: 'https://example.com/control',
+                expression: '',
+              },
+            ],
+          },
+        }),
+      );
+    });
+  });
+
+  describe('Updating requirements with external controls', () => {
+    let updateRequirementMutationMock;
+
+    beforeEach(() => {
+      updateRequirementMutationMock = jest.fn().mockResolvedValue({
+        data: {
+          updateComplianceRequirement: {
+            requirement: {
+              id: 'gid://gitlab/ComplianceManagement::Requirement/1',
+              name: 'Updated External Control',
+              description: 'Updated external control test',
+              __typename: 'ComplianceManagement::Requirement',
+              complianceRequirementsControls: {
+                nodes: [
+                  {
+                    id: 'gid://gitlab/ComplianceManagement::Control/3',
+                    name: 'updated_external_control',
+                    controlType: 'external',
+                    externalUrl: 'https://example.com/updated-control',
+                    expression: null,
+                  },
+                ],
+              },
+            },
+            errors: [],
+          },
+        },
+      });
+    });
+
+    it('updates requirement with modified external control', async () => {
+      const stubHandlers = [
+        [getComplianceFrameworkQuery, createComplianceFrameworksReportResponse],
+        [updateRequirementMutation, updateRequirementMutationMock],
+      ];
+
+      wrapper = createComponent(mountExtended, {
+        requestHandlers: stubHandlers,
+        routeParams: { id: '1' },
+        provide: {
+          adherenceV2Enabled: true,
+        },
+      });
+
+      await waitForPromises();
+
+      const requirementsSection = wrapper.findComponent(RequirementsSection);
+      const updatedRequirement = {
+        id: 'gid://gitlab/ComplianceManagement::Requirement/1',
+        name: 'Updated External Control',
+        description: 'Updated external control test',
+        stagedControls: [
+          {
+            name: 'updated_external_control',
+            controlType: 'external',
+            externalUrl: 'https://example.com/updated-control',
+          },
+        ],
+      };
+
+      requirementsSection.vm.$emit(requirementEvents.update, { requirement: updatedRequirement });
+      await waitForPromises();
+
+      expect(updateRequirementMutationMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          input: {
+            id: updatedRequirement.id,
+            params: {
+              name: updatedRequirement.name,
+              description: updatedRequirement.description,
+            },
+            controls: [
+              {
+                name: 'updated_external_control',
+                controlType: 'external',
+                externalUrl: 'https://example.com/updated-control',
+                expression: '',
+              },
+            ],
+          },
+        }),
+      );
+    });
+  });
 });

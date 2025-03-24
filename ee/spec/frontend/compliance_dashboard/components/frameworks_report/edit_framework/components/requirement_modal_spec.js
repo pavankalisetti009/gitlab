@@ -254,4 +254,88 @@ describe('RequirementModal', () => {
       ]);
     });
   });
+
+  describe('External Controls', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    const findAddExternalControlButton = () => wrapper.findByTestId('add-external-control-button');
+    const findExternalUrlInput = (index) => wrapper.findByTestId(`external-url-input-${index}`);
+    const findExternalSecretInput = (index) =>
+      wrapper.findByTestId(`external-secret-input-${index}`);
+
+    it('renders external control form when adding external control', async () => {
+      await findAddExternalControlButton().vm.$emit('click');
+      await nextTick();
+      expect(findExternalUrlInput(1).exists()).toBe(true);
+      expect(findExternalSecretInput(1).exists()).toBe(true);
+    });
+
+    it('saves requirement with external control data', async () => {
+      await findAddExternalControlButton().vm.$emit('click');
+      await nextTick();
+
+      const externalUrl = 'https://api.example.com';
+      const secretToken = 'secret123';
+
+      await findExternalUrlInput(1).vm.$emit('input', externalUrl);
+      await findExternalSecretInput(1).vm.$emit('input', secretToken);
+      await fillForm('Test Name', 'Test Description');
+
+      submitModalForm();
+      await waitForPromises();
+
+      expect(wrapper.emitted(requirementEvents.create)[0][0].requirement.stagedControls).toEqual([
+        {
+          controlType: 'external',
+          externalUrl,
+          secretToken,
+          name: 'external_control',
+          expression: null,
+        },
+      ]);
+    });
+
+    it('loads and displays existing external controls', async () => {
+      const existingRequirement = {
+        ...mockRequirements[0],
+        complianceRequirementsControls: {
+          nodes: [
+            {
+              id: '1',
+              name: 'external_control',
+              controlType: 'external',
+              externalUrl: 'https://api.example.com',
+              secretToken: 'secret123',
+            },
+          ],
+        },
+      };
+
+      createComponent({ requirement: existingRequirement });
+      await nextTick();
+
+      expect(findExternalUrlInput(0).attributes('value')).toBe('https://api.example.com');
+      expect(findExternalSecretInput(0).exists()).toBe(true);
+    });
+
+    it('allows mixing external and internal controls', async () => {
+      await findAddExternalControlButton().vm.$emit('click');
+      await addControl('scanner_sast_running', 1);
+      await nextTick();
+
+      expect(findExternalUrlInput(1).exists()).toBe(true);
+      expect(findControlAtIndex(2).exists()).toBe(true);
+    });
+
+    it('respects maximum control limit for external controls', async () => {
+      for (let i = 0; i < 5; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await findAddExternalControlButton().vm.$emit('click');
+      }
+
+      expect(findAddExternalControlButton().attributes('disabled')).toBeDefined();
+    });
+  });
 });
