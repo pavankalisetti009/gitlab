@@ -37,9 +37,9 @@ RSpec.describe CodeSuggestions::Prompts::CodeCompletion::AiGatewayCodeCompletion
 
   let(:dummy_message) do
     dummy_class.new(
-      feature_setting: ::Ai::FeatureSetting.find_by_feature(:code_completions),
-      params: params,
-      current_user: current_user
+      params,
+      current_user,
+      ::Ai::FeatureSetting.find_by_feature(:code_completions)
     )
   end
 
@@ -62,9 +62,9 @@ RSpec.describe CodeSuggestions::Prompts::CodeCompletion::AiGatewayCodeCompletion
   describe '#prompt' do
     it 'raises NotImplementedError for the abstract class' do
       expect(described_class.new(
-        feature_setting: ::Ai::FeatureSetting.find_by_feature(:code_completions),
-        params: params,
-        current_user: current_user
+        params,
+        current_user,
+        ::Ai::FeatureSetting.find_by_feature(:code_completions)
       ).prompt).to be_nil
     end
   end
