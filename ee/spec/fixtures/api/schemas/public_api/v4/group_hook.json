@@ -179,6 +179,9 @@
     },
     "branch_filter_strategy": {
       "type": "string"
+    },
+    "vulnerability_events": {
+      "type": "boolean"
     }
   },
   "additionalProperties": false

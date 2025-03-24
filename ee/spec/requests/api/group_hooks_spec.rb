@@ -58,6 +58,7 @@ RSpec.describe API::GroupHooks, :aggregate_failures, feature_category: :webhooks
         emoji_events
         resource_access_token_events
         member_events
+        vulnerability_events
       ]
     end
 

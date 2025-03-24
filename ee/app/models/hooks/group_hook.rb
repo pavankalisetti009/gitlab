@@ -31,7 +31,8 @@ class GroupHook < WebHook
     :resource_access_token_hooks,
     :subgroup_hooks,
     :tag_push_hooks,
-    :wiki_page_hooks
+    :wiki_page_hooks,
+    :vulnerability_hooks
   ]
 
   has_many :web_hook_logs, foreign_key: 'web_hook_id', inverse_of: :web_hook
