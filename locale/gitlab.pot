@@ -25075,9 +25075,6 @@ msgstr ""
 msgid "Failed to update compliance requirement control. Error: %{error_message}"
 msgstr ""
 
-msgid "Failed to update environment!"
-msgstr ""
-
 msgid "Failed to update framework"
 msgstr ""
 
@@ -47818,9 +47815,6 @@ msgstr ""
 msgid "ProtectedEnvironments|Users"
 msgstr ""
 
-msgid "ProtectedEnvironment|%{environment_name} will be writable for developers. Are you sure?"
-msgstr ""
-
 msgid "ProtectedEnvironment|Add new protected environment"
 msgstr ""
 
@@ -47897,9 +47891,6 @@ msgid "ProtectedEnvironment|Select environment tier"
 msgstr ""
 
 msgid "ProtectedEnvironment|Select groups"
-msgstr ""
-
-msgid "ProtectedEnvironment|Unprotect"
 msgstr ""
 
 msgid "ProtectedEnvironment|Users with at least the Developer role can write to unprotected environments. Are you sure you want to unprotect %{environment_name}?"
@@ -57739,9 +57730,6 @@ msgid "Successfully untrusted"
 msgstr ""
 
 msgid "Successfully updated %{last_updated_timeago}."
-msgstr ""
-
-msgid "Successfully updated the environment."
 msgstr ""
 
 msgid "Suggest code changes which can be immediately applied in one click. Try it out!"
