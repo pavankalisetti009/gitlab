@@ -33,7 +33,7 @@ module Mutations
         private
 
         def ensure_feature_available_for!(project)
-          raise_resource_not_available_error! unless Feature.enabled?(:vulnerability_archival, project)
+          raise_resource_not_available_error! unless Feature.enabled?(:vulnerability_archival, project.root_ancestor)
         end
       end
     end
