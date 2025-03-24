@@ -109,13 +109,10 @@ export default {
       },
       async result() {
         // Only auto-select if we don't have an active thread AND we're not in list view
-        if (
-          !this.activeThread &&
-          this.multithreadedView === 'chat' &&
-          this.aiConversationThreads.length > 0
-        ) {
-          const latestThread = this.selectLatestThread(this.aiConversationThreads);
-          await this.onThreadSelected({ id: latestThread.id });
+        if (this.multithreadedView === 'chat' && this.aiConversationThreads.length > 0) {
+          const activeThreadId =
+            this.activeThread || this.selectLatestThread(this.aiConversationThreads).id;
+          await this.onThreadSelected({ id: activeThreadId });
         }
       },
       error(err) {
