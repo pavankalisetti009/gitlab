@@ -43,9 +43,14 @@ module Security
       def unlink_policy
         security_policy.unlink_project!(project)
 
-        return unless security_policy.type_approval_policy?
+        sync_project_approval_policy_rules_service.delete_rules if security_policy.type_approval_policy?
 
-        sync_project_approval_policy_rules_service.delete_rules
+        return unless security_policy.type_pipeline_execution_schedule_policy?
+
+        security_policy
+          .security_pipeline_execution_project_schedules
+          .for_project(project)
+          .delete_all
       end
     end
   end

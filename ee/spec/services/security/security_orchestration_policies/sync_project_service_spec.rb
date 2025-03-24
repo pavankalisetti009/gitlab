@@ -232,6 +232,18 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectService, feat
             expect { service.execute }.not_to change { Security::ApprovalPolicyRuleProjectLink.count }
           end
         end
+
+        context 'with pipeline execution schedule policy' do
+          let_it_be_with_refind(:security_policy) { create(:security_policy, :pipeline_execution_schedule_policy) }
+
+          before do
+            create(:security_pipeline_execution_project_schedule, project: project, security_policy: security_policy)
+          end
+
+          it 'deletes project pipeline execution schedule' do
+            expect { service.execute }.to change { Security::PipelineExecutionProjectSchedule.count }.from(1).to(0)
+          end
+        end
       end
 
       context 'when policy gets enabled' do

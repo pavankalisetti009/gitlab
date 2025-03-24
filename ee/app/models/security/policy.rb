@@ -168,17 +168,6 @@ module Security
       }.merge(content_by_type)
     end
 
-    def content_by_type
-      content_hash = content.deep_symbolize_keys.slice(*POLICY_CONTENT_FIELDS[type.to_sym])
-
-      case type
-      when 'approval_policy', 'scan_execution_policy', 'vulnerability_management_policy'
-        content_hash.merge(rules: rules.map(&:typed_content).map(&:deep_symbolize_keys))
-      when 'pipeline_execution_policy'
-        content_hash
-      end
-    end
-
     def all_rules
       if type_approval_policy?
         approval_policy_rules
@@ -320,6 +309,17 @@ module Security
     end
 
     private
+
+    def content_by_type
+      content_hash = content.deep_symbolize_keys.slice(*POLICY_CONTENT_FIELDS[type.to_sym])
+
+      case type
+      when 'approval_policy', 'scan_execution_policy', 'vulnerability_management_policy'
+        content_hash.merge(rules: rules.map(&:typed_content).map(&:deep_symbolize_keys))
+      when 'pipeline_execution_policy', 'pipeline_execution_schedule_policy'
+        content_hash
+      end
+    end
 
     def link_policy_rules_project!(project, policy_rules = approval_policy_rules.undeleted)
       return if !type_approval_policy? || policy_rules.empty?
