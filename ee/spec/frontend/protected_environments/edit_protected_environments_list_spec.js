@@ -269,7 +269,10 @@ describe('ee/protected_environments/edit_protected_environments_list.vue', () =>
         expect(mock.history.put).toHaveLength(1);
 
         const [{ data }] = mock.history.put;
-        expect(JSON.parse(data)).toMatchObject({ ...environment, deploy_access_levels: rule });
+        expect(JSON.parse(data)).toMatchObject({
+          name: environment.name,
+          deploy_access_levels: rule,
+        });
       });
     });
 
@@ -364,7 +367,7 @@ describe('ee/protected_environments/edit_protected_environments_list.vue', () =>
         expect(mock.history.put).toHaveLength(1);
 
         const [{ data }] = mock.history.put;
-        expect(JSON.parse(data)).toMatchObject({ ...environment, approval_rules: rule });
+        expect(JSON.parse(data)).toMatchObject({ name: environment.name, approval_rules: rule });
       });
     });
 

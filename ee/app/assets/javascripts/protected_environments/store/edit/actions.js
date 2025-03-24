@@ -114,7 +114,7 @@ export const saveRule = ({ dispatch, state }, { environment, ruleKey }) => {
       ),
   );
   return dispatch('updateEnvironment', {
-    ...environment,
+    name: environment.name,
     [ruleKey]: newDeployAccessLevels,
   });
 };
