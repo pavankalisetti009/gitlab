@@ -1,7 +1,7 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { shallowMount } from '@vue/test-utils';
-import WorkItemDueDates from '~/work_items/components/work_item_due_dates.vue';
+import WorkItemDates from '~/work_items/components/work_item_dates.vue';
 import WorkItemProgress from 'ee/work_items/components/work_item_progress.vue';
 import WorkItemHealthStatus from 'ee/work_items/components/work_item_health_status.vue';
 import WorkItemWeight from 'ee/work_items/components/work_item_weight.vue';
@@ -61,7 +61,7 @@ describe('EE WorkItemAttributesWrapper component', () => {
   const findWorkItemProgress = () => wrapper.findComponent(WorkItemProgress);
   const findWorkItemColor = () => wrapper.findComponent(WorkItemColor);
   const findWorkItemHealthStatus = () => wrapper.findComponent(WorkItemHealthStatus);
-  const findWorkItemDueDates = () => wrapper.findComponent(WorkItemDueDates);
+  const findWorkItemDates = () => wrapper.findComponent(WorkItemDates);
   const findWorkItemCustomFields = () => wrapper.findComponent(WorkItemCustomFields);
 
   const createComponent = ({
@@ -304,7 +304,7 @@ describe('EE WorkItemAttributesWrapper component', () => {
     it('renders rolledup dates widget', async () => {
       await createComponentWithRolledupDates();
 
-      expect(findWorkItemDueDates().exists()).toBe(true);
+      expect(findWorkItemDates().exists()).toBe(true);
     });
   });
 

@@ -10,7 +10,7 @@ import WorkItemHealthStatus from 'ee/work_items/components/work_item_health_stat
 import WorkItemColor from 'ee/work_items/components/work_item_color.vue';
 import WorkItemIteration from 'ee/work_items/components/work_item_iteration.vue';
 import WorkItemWeight from 'ee/work_items/components/work_item_weight.vue';
-import WorkItemDueDates from '~/work_items/components/work_item_due_dates.vue';
+import WorkItemDates from '~/work_items/components/work_item_dates.vue';
 import { WORK_ITEM_TYPE_ENUM_EPIC, WORK_ITEM_TYPE_ENUM_ISSUE } from '~/work_items/constants';
 import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
 import createWorkItemMutation from '~/work_items/graphql/create_work_item.mutation.graphql';
@@ -51,7 +51,7 @@ describe('EE Create work item component', () => {
   const findIterationWidget = () => wrapper.findComponent(WorkItemIteration);
   const findWeightWidget = () => wrapper.findComponent(WorkItemWeight);
   const findColorWidget = () => wrapper.findComponent(WorkItemColor);
-  const findDueDatesWidget = () => wrapper.findComponent(WorkItemDueDates);
+  const findDatesWidget = () => wrapper.findComponent(WorkItemDates);
 
   const updateWorkItemTitle = async (title = 'Test title') => {
     findTitleInput().vm.$emit('updateDraft', title);
@@ -123,7 +123,7 @@ describe('EE Create work item component', () => {
     });
 
     it('renders the work item rolled up dates widget', () => {
-      expect(findDueDatesWidget().exists()).toBe(true);
+      expect(findDatesWidget().exists()).toBe(true);
     });
   });
 
