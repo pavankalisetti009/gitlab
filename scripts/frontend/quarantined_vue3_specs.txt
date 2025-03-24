@@ -52,7 +52,6 @@ ee/spec/frontend/product_analytics/onboarding/onboarding_view_spec.js
 ee/spec/frontend/projects/merge_requests/blocking_mr_input_root_spec.js
 ee/spec/frontend/projects/settings/branch_rules/components/view/index_spec.js
 ee/spec/frontend/projects/settings/components/shared_runners_toggle_spec.js
-ee/spec/frontend/protected_environments/protected_environment_edit_spec.js
 ee/spec/frontend/related_items_tree/components/related_items_tree_body_spec.js
 ee/spec/frontend/related_items_tree/components/tree_root_spec.js
 ee/spec/frontend/requirements/components/requirement_item_spec.js
