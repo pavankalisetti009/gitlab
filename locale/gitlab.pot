@@ -38731,6 +38731,9 @@ msgstr ""
 msgid "New users set to external"
 msgstr ""
 
+msgid "New work item"
+msgstr ""
+
 msgid "New! Suggest changes directly"
 msgstr ""
 
