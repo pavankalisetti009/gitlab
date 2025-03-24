@@ -352,7 +352,7 @@ export default {
           <span class="gl-font-bold gl-text-success">{{
             formatLineChangeAdditions(item.diffStatsSummary.additions)
           }}</span>
-          <span class="gl-font-bold gl-text-red-500">{{
+          <span class="gl-font-bold gl-text-danger">{{
             formatLineChangeDeletions(item.diffStatsSummary.deletions)
           }}</span>
         </div>

@@ -91,7 +91,7 @@ describe('GeoSiteCoreDetails', () => {
 
         describe(`when version mismatch is ${versionMismatch} and current site version is ${versionText}`, () => {
           it(`does ${versionMismatch ? '' : 'not '}render version with error color`, () => {
-            expect(findSiteVersion().classes('gl-text-red-500')).toBe(versionMismatch);
+            expect(findSiteVersion().classes('gl-text-danger')).toBe(versionMismatch);
           });
 
           it('does render version text correctly', () => {

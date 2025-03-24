@@ -41,7 +41,7 @@ export default {
     </template>
     <template #summary>
       <summary-cell
-        :class="{ 'gl-text-red-500': hasConflict }"
+        :class="{ 'gl-text-danger': hasConflict }"
         :label="s__('DastProfiles|Scan mode')"
         ><scan-type-badge :scan-type="profile.scanType"
       /></summary-cell>

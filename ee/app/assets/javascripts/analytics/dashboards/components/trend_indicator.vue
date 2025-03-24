@@ -27,7 +27,7 @@ export default {
       return this.change > 0;
     },
     textColor() {
-      return this.trendingUp !== this.invertColor ? 'gl-text-success' : 'gl-text-red-500';
+      return this.trendingUp !== this.invertColor ? 'gl-text-success' : 'gl-text-danger';
     },
     iconName() {
       return this.trendingUp ? 'trend-up' : 'trend-down';

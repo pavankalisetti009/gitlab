@@ -68,7 +68,7 @@ describe('PreScanVerificationStep', () => {
   `('should mark content as failed when status is failed', ({ status, expectedResult }) => {
     createComponent({ status });
 
-    expect(findPreScanVerificationStepText().classes('gl-text-red-500')).toEqual(expectedResult);
+    expect(findPreScanVerificationStepText().classes('gl-text-danger')).toEqual(expectedResult);
     expect(findPreScanVerificationStepText().classes('gl-text-subtle')).toEqual(!expectedResult);
   });
 });

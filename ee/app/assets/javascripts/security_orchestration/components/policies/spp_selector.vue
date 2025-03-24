@@ -217,7 +217,7 @@ export default {
       <div
         v-if="isErrorOfType($options.SEARCH_ERROR)"
         data-testid="error-message"
-        class="js-search-error-message gl-pb-3 gl-pl-7 gl-pr-3 gl-text-red-500"
+        class="js-search-error-message gl-pb-3 gl-pl-7 gl-pr-3 gl-text-danger"
       >
         {{ $options.i18n.errorNetworkMessage }}
       </div>

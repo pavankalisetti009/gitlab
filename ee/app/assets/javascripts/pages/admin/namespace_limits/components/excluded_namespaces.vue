@@ -94,7 +94,7 @@ export default {
     </gl-alert>
     <gl-table :items="exclusions" :fields="tableFields" :busy="loading">
       <template #table-busy>
-        <div class="gl-my-2 gl-text-center gl-text-red-500">
+        <div class="gl-my-2 gl-text-center gl-text-danger">
           <gl-loading-icon />
         </div>
       </template>

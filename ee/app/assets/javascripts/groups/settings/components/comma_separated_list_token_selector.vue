@@ -142,7 +142,7 @@ export default {
       <slot name="user-defined-token-content" :input-text="inputText"></slot>
     </template>
     <template #no-results-content>
-      <span class="gl-text-red-500">{{ computedErrorMessage }}</span>
+      <span class="gl-text-danger">{{ computedErrorMessage }}</span>
     </template>
   </gl-token-selector>
 </template>

@@ -219,18 +219,18 @@ export default {
       @input="parseBranches"
     />
 
-    <p v-if="hasValidationError" data-testid="validation-error" class="gl-my-2 gl-text-red-500">
+    <p v-if="hasValidationError" data-testid="validation-error" class="gl-my-2 gl-text-danger">
       {{ errorMessage }}
     </p>
 
-    <p v-if="hasDuplicates" data-testid="duplicate-error" class="gl-my-2 gl-text-red-500">
+    <p v-if="hasDuplicates" data-testid="duplicate-error" class="gl-my-2 gl-text-danger">
       {{ $options.i18n.duplicateErrorMessage }}
     </p>
 
     <p
       v-if="hasAsyncValidationError"
       data-testid="async-validation-error"
-      class="gl-my-2 gl-whitespace-pre-line gl-text-red-500"
+      class="gl-my-2 gl-whitespace-pre-line gl-text-danger"
     >
       <gl-sprintf :message="asyncValidationErrors">
         <template #bold="{ content }">

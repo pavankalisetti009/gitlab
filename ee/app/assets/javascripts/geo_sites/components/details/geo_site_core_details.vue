@@ -58,7 +58,7 @@ export default {
     <div class="gl-flex gl-flex-col lg:gl-mt-5">
       <span>{{ $options.i18n.gitlabVersion }}</span>
       <span
-        :class="{ 'gl-text-red-500': hasMismatchVersion }"
+        :class="{ 'gl-text-danger': hasMismatchVersion }"
         class="gl-font-bold"
         data-testid="site-version"
       >
