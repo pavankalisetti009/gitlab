@@ -19,7 +19,7 @@ import {
   THROUGHPUT_TABLE_STRINGS,
   THROUGHPUT_TABLE_TEST_IDS as TEST_IDS,
 } from 'ee/analytics/merge_request_analytics/constants';
-import store from 'ee/analytics/merge_request_analytics/store';
+import createStore from 'ee/analytics/merge_request_analytics/store';
 import {
   throughputTableData,
   startDate,
@@ -65,7 +65,7 @@ describe('ThroughputTable', () => {
     const { func = shallowMount, handlers = defaultHandlers() } = options;
     wrapper = func(ThroughputTable, {
       apolloProvider: createMockApolloProvider(handlers),
-      store,
+      store: createStore(),
       provide: {
         fullPath,
       },
