@@ -389,6 +389,19 @@ describe('AuditEventsStream', () => {
             new Error('Unknown destination category: something_else'),
           );
         });
+
+        it('updates list when destination is removed', async () => {
+          await waitForPromises();
+
+          expect(findLoadingIcon().exists()).toBe(false);
+          expect(streamingDestinationsQuerySpy).toHaveBeenCalledTimes(1);
+
+          const currentLength = findStreamItems().length;
+          findStreamItems().at(0).vm.$emit('deleted');
+          await waitForPromises();
+          expect(findStreamItems()).toHaveLength(currentLength - 1);
+          expect(findSuccessMessage().text()).toBe(DELETE_STREAM_MESSAGE);
+        });
       });
     });
   });
@@ -654,6 +667,19 @@ describe('AuditEventsStream', () => {
           findStreamItems().wrappers.forEach((streamItem, index) => {
             expect(streamItem.props('item').id).toBe(mockAllConsolidatedAPIDestinations[index].id);
           });
+        });
+
+        it('updates list when destination is removed', async () => {
+          await waitForPromises();
+
+          expect(findLoadingIcon().exists()).toBe(false);
+          expect(instanceStreamingDestinationsQuerySpy).toHaveBeenCalledTimes(1);
+
+          const currentLength = findStreamItems().length;
+          findStreamItems().at(0).vm.$emit('deleted');
+          await waitForPromises();
+          expect(findStreamItems()).toHaveLength(currentLength - 1);
+          expect(findSuccessMessage().text()).toBe(DELETE_STREAM_MESSAGE);
         });
       });
     });

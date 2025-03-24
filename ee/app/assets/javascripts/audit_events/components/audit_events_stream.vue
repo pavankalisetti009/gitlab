@@ -18,6 +18,7 @@ import {
 } from '../constants';
 import {
   removeAuditEventsStreamingDestination,
+  removeLegacyAuditEventsStreamingDestination,
   removeGcpLoggingAuditEventsStreamingDestination,
   removeAmazonS3AuditEventsStreamingDestination,
 } from '../graphql/cache_update';
@@ -163,7 +164,11 @@ export default {
       this.hideEditor();
     },
     async onDeletedDestination(id) {
-      removeAuditEventsStreamingDestination({
+      const removeFn = this.glFeatures.useConsolidatedAuditEventStreamDestApi
+        ? removeAuditEventsStreamingDestination
+        : removeLegacyAuditEventsStreamingDestination;
+
+      removeFn({
         store: this.$apollo.provider.defaultClient,
         fullPath: this.groupPath,
         destinationId: id,

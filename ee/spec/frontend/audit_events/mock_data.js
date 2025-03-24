@@ -669,6 +669,14 @@ export const instanceAmazonS3DestinationUpdateMutationPopulator = (errors = []) 
   };
 };
 
+export const streamingDestinationDeleteMutationPopulator = (errors = []) => ({
+  data: {
+    groupAuditEventStreamingDestinationsDelete: {
+      errors,
+    },
+  },
+});
+
 export const destinationDeleteMutationPopulator = (errors = []) => ({
   data: {
     externalAuditEventDestinationDestroy: {
