@@ -2798,6 +2798,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_81b53b626109() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."project_id"
+  FROM "packages_package_files"
+  WHERE "packages_package_files"."id" = NEW."package_file_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_8204480b3a2e() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -17036,7 +17052,8 @@ CREATE TABLE merge_request_user_mentions (
     mentioned_projects_ids bigint[],
     mentioned_groups_ids bigint[],
     note_id bigint,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_0f5d7f30e4 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE merge_request_user_mentions_id_seq
@@ -18727,6 +18744,7 @@ CREATE TABLE packages_debian_file_metadata (
     component text,
     architecture text,
     fields jsonb,
+    project_id bigint,
     CONSTRAINT check_2ebedda4b6 CHECK ((char_length(component) <= 255)),
     CONSTRAINT check_e6e1fffcca CHECK ((char_length(architecture) <= 255))
 );
@@ -35893,6 +35911,8 @@ CREATE INDEX index_packages_conan_package_revisions_on_project_id ON packages_co
 
 CREATE INDEX index_packages_conan_recipe_revisions_on_project_id ON packages_conan_recipe_revisions USING btree (project_id);
 
+CREATE INDEX index_packages_debian_file_metadata_on_project_id ON packages_debian_file_metadata USING btree (project_id);
+
 CREATE INDEX index_packages_debian_group_architectures_on_group_id ON packages_debian_group_architectures USING btree (group_id);
 
 CREATE INDEX index_packages_debian_group_component_files_on_component_id ON packages_debian_group_component_files USING btree (component_id);
@@ -40923,6 +40943,8 @@ CREATE TRIGGER trigger_80578cfbdaf9 BEFORE INSERT OR UPDATE ON push_event_payloa
 
 CREATE TRIGGER trigger_81b4c93e7133 BEFORE INSERT OR UPDATE ON pages_deployment_states FOR EACH ROW EXECUTE FUNCTION trigger_81b4c93e7133();
 
+CREATE TRIGGER trigger_81b53b626109 BEFORE INSERT OR UPDATE ON packages_debian_file_metadata FOR EACH ROW EXECUTE FUNCTION trigger_81b53b626109();
+
 CREATE TRIGGER trigger_8204480b3a2e BEFORE INSERT OR UPDATE ON incident_management_escalation_rules FOR EACH ROW EXECUTE FUNCTION trigger_8204480b3a2e();
 
 CREATE TRIGGER trigger_84d67ad63e93 BEFORE INSERT OR UPDATE ON wiki_page_slugs FOR EACH ROW EXECUTE FUNCTION trigger_84d67ad63e93();
@@ -41615,6 +41637,9 @@ ALTER TABLE ONLY lists
 
 ALTER TABLE ONLY approvals
     ADD CONSTRAINT fk_310d714958 FOREIGN KEY (merge_request_id) REFERENCES merge_requests(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY packages_debian_file_metadata
+    ADD CONSTRAINT fk_31440cf2d5 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY namespaces
     ADD CONSTRAINT fk_319256d87a FOREIGN KEY (file_template_project_id) REFERENCES projects(id) ON DELETE SET NULL;
