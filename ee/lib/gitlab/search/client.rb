@@ -5,7 +5,19 @@ module Gitlab
     class Client
       include ::Elastic::Latest::Routing
 
-      DELEGATED_METHODS = %i[cat count delete delete_by_query index indices reindex update_by_query search].freeze
+      DELEGATED_METHODS = %i[
+        cat
+        clear_scroll
+        count
+        delete
+        delete_by_query
+        index
+        indices
+        reindex
+        search
+        scroll
+        update_by_query
+      ].freeze
 
       delegate(*DELEGATED_METHODS, to: :adapter)
 
