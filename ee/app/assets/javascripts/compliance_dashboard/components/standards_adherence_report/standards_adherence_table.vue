@@ -192,18 +192,3 @@ export default {
     </div>
   </section>
 </template>
-
-<style>
-.gl-accordion-item-header {
-  .gl-button-text {
-    font-weight: bold;
-    color: black;
-    font-size: 14px;
-    margin-left: 10px;
-
-    .gl-dark & {
-      color: var(--gl-text-color-default);
-    }
-  }
-}
-</style>

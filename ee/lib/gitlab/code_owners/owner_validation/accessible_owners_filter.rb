@@ -3,7 +3,7 @@
 module Gitlab
   module CodeOwners
     module OwnerValidation
-      class AccessibleOwnersFinder < BaseFinder
+      class AccessibleOwnersFilter < BaseFilter
         ERROR_MESSAGE = :inaccessible_owner
 
         def execute
