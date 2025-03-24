@@ -18,9 +18,7 @@
     // elements within `issuable_body.vue`
     // and are specific to requirements.
     .title-container {
-      border-bottom-style: solid;
-      border-bottom-color: $gray-100;
-      border-bottom-width: $gl-border-size-1;
+      @apply gl-border-b;
       display: flex;
       padding-bottom: $gl-spacing-scale-3;
       align-items: flex-start;
