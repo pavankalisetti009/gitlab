@@ -3,6 +3,7 @@ import { stubComponent } from 'helpers/stub_component';
 import CodeSuggestionsUsage from 'ee/usage_quotas/code_suggestions/components/code_suggestions_usage.vue';
 import HealthCheckList from 'ee/usage_quotas/code_suggestions/components/health_check_list.vue';
 import DuoSeatUtilizationInfoCard from 'ee/ai/settings/components/duo_seat_utilization_info_card.vue';
+import DuoConfigurationSettingsInfoCard from 'ee/ai/settings/components/duo_configuration_settings_info_card.vue';
 import GitlabDuoHome from 'ee/ai/settings/pages/gitlab_duo_home.vue';
 import { DUO_PRO } from 'ee/usage_quotas/code_suggestions/constants';
 
@@ -15,11 +16,12 @@ describe('GitLab Duo Home', () => {
 
   let wrapper;
 
-  const createComponent = ({ isSaaS = true } = {}) => {
+  const createComponent = ({ isSaaS = true, duoConfigurable = true } = {}) => {
     wrapper = shallowMount(GitlabDuoHome, {
       propsData: {},
       provide: {
         isSaaS,
+        duoConfigurable,
       },
       stubs: {
         CodeSuggestionsUsage: stubComponent(CodeSuggestionsUsage, {
@@ -38,6 +40,8 @@ describe('GitLab Duo Home', () => {
   const findCodeSuggestionsUsage = () => wrapper.findComponent(CodeSuggestionsUsage);
   const findHealthCheckList = () => wrapper.findComponent(HealthCheckList);
   const findDuoSeatUtilizationInfoCard = () => wrapper.findComponent(DuoSeatUtilizationInfoCard);
+  const findDuoConfigurationSettingsInfoCard = () =>
+    wrapper.findComponent(DuoConfigurationSettingsInfoCard);
 
   describe('component rendering', () => {
     beforeEach(() => {
@@ -47,6 +51,7 @@ describe('GitLab Duo Home', () => {
     it('renders the components', () => {
       expect(findCodeSuggestionsUsage().exists()).toBe(true);
       expect(findDuoSeatUtilizationInfoCard().exists()).toBe(true);
+      expect(findDuoConfigurationSettingsInfoCard().exists()).toBe(true);
     });
 
     it(`passes the correct props to CodeSuggestionsUsage`, () => {
@@ -71,6 +76,18 @@ describe('GitLab Duo Home', () => {
 
       it('renders HealthCheckList', () => {
         expect(findHealthCheckList().exists()).toBe(true);
+      });
+    });
+
+    describe('when duoConfigurable is false', () => {
+      beforeEach(() => {
+        createComponent({ isSaaS: false, duoConfigurable: false });
+      });
+
+      it('hides DuoSeatUtilizationInfoCard component', () => {
+        expect(findHealthCheckList().exists()).toBe(true);
+        expect(findDuoSeatUtilizationInfoCard().exists()).toBe(false);
+        expect(findDuoConfigurationSettingsInfoCard().exists()).toBe(false);
       });
     });
 

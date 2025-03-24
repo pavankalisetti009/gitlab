@@ -13,7 +13,7 @@ export default {
     DuoSeatUtilizationInfoCard,
     DuoConfigurationSettingsInfoCard,
   },
-  inject: ['isSaaS'],
+  inject: ['isSaaS', 'duoConfigurable'],
   i18n: {
     gitlabDuoHomeTitle: __('GitLab Duo'),
     gitlabDuoHomeSubtitle: s__(
@@ -36,11 +36,12 @@ export default {
     <template #duo-card="{ totalValue, usageValue, duoTier }">
       <section class="gl-grid gl-gap-5 md:gl-grid-cols-2">
         <duo-seat-utilization-info-card
+          v-if="duoConfigurable"
           :total-value="totalValue"
           :usage-value="usageValue"
           :duo-tier="duoTier"
         />
-        <duo-configuration-settings-info-card />
+        <duo-configuration-settings-info-card v-if="duoConfigurable" />
       </section>
     </template>
   </code-suggestions-usage>
