@@ -52,6 +52,10 @@ export const INVALID_APPROVAL_REQUIREMENT = s__(
 
 export const INVALID_SECTION_FORMAT = s__('CodeownersValidation|Unparsable sections');
 
+export const INACCESSIBLE_OWNER = s__(
+  'CodeownersValidation|Contains owners which are not accessible within the project',
+);
+
 export const OWNER_WITHOUT_PERMISSION = s__(
   'CodeownersValidation|Contains owners without permission to approve merge requests',
 );
@@ -64,5 +68,6 @@ export const CODE_TO_MESSAGE = {
   missing_section_name: MISSING_SECTION_NAME,
   invalid_approval_requirement: INVALID_APPROVAL_REQUIREMENT,
   invalid_section_format: INVALID_SECTION_FORMAT,
+  inaccessible_owner: INACCESSIBLE_OWNER,
   owner_without_permission: OWNER_WITHOUT_PERMISSION,
 };
