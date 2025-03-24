@@ -10,6 +10,7 @@ RSpec.describe SystemCheck::RakeTask::GeoTask, feature_category: :geo_replicatio
       SystemCheck::Geo::LicenseCheck,
       SystemCheck::Geo::EnabledCheck,
       SystemCheck::Geo::CurrentNodeCheck,
+      SystemCheck::Geo::GeoDatabasePromotedCheck,
       SystemCheck::Geo::HTTPCloneEnabledCheck,
       SystemCheck::Geo::ClocksSynchronizationCheck,
       SystemCheck::App::GitUserDefaultSSHConfigCheck,

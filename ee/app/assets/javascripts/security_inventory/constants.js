@@ -1,4 +1,5 @@
 import { s__ } from '~/locale';
+import { CRITICAL, HIGH, MEDIUM, LOW, INFO, UNKNOWN } from 'ee/vulnerabilities/constants';
 
 const SAST_LABEL = s__('SecurityInventory|SAST');
 const DAST_LABEL = s__('SecurityInventory|DAST');
@@ -33,3 +34,13 @@ export const SCANNERS = [
     label: CONTAINER_SCANNING_LABEL,
   },
 ];
+
+export const SEVERITY_SEGMENTS = [CRITICAL, HIGH, MEDIUM, LOW];
+export const OTHER_SEVERITIES = [INFO, UNKNOWN];
+
+export const SEVERITY_BACKGROUND_COLORS = {
+  [CRITICAL]: 'gl-bg-red-800',
+  [HIGH]: 'gl-bg-red-600',
+  [MEDIUM]: 'gl-bg-orange-400',
+  [LOW]: 'gl-bg-orange-300',
+};

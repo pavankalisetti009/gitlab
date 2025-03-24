@@ -7,6 +7,7 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import InventoryDashboard from 'ee/security_inventory/components/inventory_dashboard.vue';
+import VulnerabilityIndicator from 'ee/security_inventory/components/vulnerability_indicator.vue';
 import SubgroupsAndProjectsQuery from 'ee/security_inventory/graphql/subgroups_and_projects.query.graphql';
 import { subgroupsAndProjects } from '../mock_data';
 
@@ -88,6 +89,9 @@ describe('InventoryDashboard', () => {
   });
 
   describe('Table rendering', () => {
+    const groupIndex = getIndexByType(mockChildren, 'Group');
+    const projectIndex = getIndexByType(mockChildren, 'Project');
+
     it('renders the GlTableLite component with correct fields', () => {
       const table = findTable();
       expect(table.exists()).toBe(true);
@@ -117,9 +121,6 @@ describe('InventoryDashboard', () => {
     it('renders correct elements for projects and subgroups', async () => {
       await createFullComponent();
 
-      const groupIndex = getIndexByType(mockChildren, 'Group');
-      const projectIndex = getIndexByType(mockChildren, 'Project');
-
       const subgroupLink = findNthTableRow(groupIndex).findComponent({ name: 'gl-link' });
       expect(subgroupLink.exists()).toBe(true);
       expect(subgroupLink.attributes('href')).toBe(`#${mockChildren[groupIndex].fullPath}`);
@@ -127,6 +128,31 @@ describe('InventoryDashboard', () => {
       const projectDiv = findNthTableRow(projectIndex).find('div');
       expect(projectDiv.exists()).toBe(true);
       expect(projectDiv.text()).toContain(mockChildren[projectIndex].name);
+    });
+
+    it('renders the vulnerability indicator for projects and subgroups', async () => {
+      await createFullComponent();
+
+      expect(
+        findNthTableRow(projectIndex).findComponent(VulnerabilityIndicator).props('counts'),
+      ).toStrictEqual({
+        critical: 10,
+        high: 5,
+        low: 4,
+        info: 0,
+        medium: 48,
+        unknown: 7,
+      });
+      expect(
+        findNthTableRow(groupIndex).findComponent(VulnerabilityIndicator).props('counts'),
+      ).toStrictEqual({
+        critical: 10,
+        high: 10,
+        low: 10,
+        info: 10,
+        medium: 20,
+        unknown: 20,
+      });
     });
   });
 

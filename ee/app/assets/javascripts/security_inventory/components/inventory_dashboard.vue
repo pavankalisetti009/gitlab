@@ -16,6 +16,7 @@ import ProjectAvatar from '~/vue_shared/components/project_avatar.vue';
 import { createAlert } from '~/alert';
 import { getLocationHash, PATH_SEPARATOR } from '~/lib/utils/url_utility';
 import SubgroupsAndProjectsQuery from '../graphql/subgroups_and_projects.query.graphql';
+import VulnerabilityIndicator from './vulnerability_indicator.vue';
 
 export default {
   components: {
@@ -27,6 +28,7 @@ export default {
     GlEmptyState,
     GlBreadcrumb,
     GlLink,
+    VulnerabilityIndicator,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -167,17 +169,6 @@ export default {
         subGroupsCount,
       });
     },
-    vulnerabilityTotal(vulnerabilitySeveritiesCount) {
-      const {
-        critical = 0,
-        high = 0,
-        medium = 0,
-        low = 0,
-        info = 0,
-        unknown = 0,
-      } = vulnerabilitySeveritiesCount || {};
-      return critical + high + medium + low + info + unknown;
-    },
     projectSecurityConfigurationPath(item) {
       return item?.webUrl ? `${item.webUrl}/-/security/configuration` : '#';
     },
@@ -230,7 +221,7 @@ export default {
       </template>
 
       <template #cell(vulnerabilities)="{ item: { vulnerabilitySeveritiesCount } }">
-        {{ vulnerabilityTotal(vulnerabilitySeveritiesCount) }}
+        <vulnerability-indicator :counts="vulnerabilitySeveritiesCount" />
       </template>
 
       <template #cell(toolCoverage)="">
