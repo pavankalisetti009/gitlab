@@ -35,6 +35,14 @@ module Gitlab
           def hash
             [name, package_manager, purl_type, version].hash
           end
+
+          def purl
+            return unless purl_type.present?
+
+            return "pkg:#{purl_type}/#{name}@#{version}" if version.present?
+
+            "pkg:#{purl_type}/#{name}"
+          end
         end
       end
     end

@@ -69,7 +69,7 @@ module Security
       end
 
       def rule_violated?(rule)
-        denied_licenses_with_dependencies = violation_checker.execute(rule.scan_result_policy_read)
+        denied_licenses_with_dependencies = denied_licenses_with_dependency(rule)
 
         if denied_licenses_with_dependencies.present?
           return true, build_violation_data(denied_licenses_with_dependencies)
@@ -78,19 +78,33 @@ module Security
         [false, nil]
       end
 
-      def violation_checker
-        report = scanner.report
-        target_branch_report = ::Gitlab::LicenseScanning.scanner_for_pipeline(project, target_branch_pipeline).report
+      def denied_licenses_with_dependency(rule)
+        if Feature.enabled?(:exclude_license_packages, project) && rule.scan_result_policy_read.licenses.present?
+          denied_licenses_with_dependencies = Security::MergeRequestApprovalPolicies::DeniedLicensesChecker.new(
+            project, report, target_branch_report, rule.scan_result_policy_read).denied_licenses_with_dependencies
+        else
+          denied_licenses_with_dependencies = violation_checker.execute(rule.scan_result_policy_read)
+        end
 
-        Security::ScanResultPolicies::LicenseViolationChecker.new(
-          project, report, target_branch_report
-        )
+        denied_licenses_with_dependencies
+      end
+
+      def violation_checker
+        Security::ScanResultPolicies::LicenseViolationChecker.new(project, report, target_branch_report)
       end
 
       def scanner
         ::Gitlab::LicenseScanning.scanner_for_pipeline(project, source_pipeline)
       end
       strong_memoize_attr :scanner
+
+      def report
+        scanner.report
+      end
+
+      def target_branch_report
+        ::Gitlab::LicenseScanning.scanner_for_pipeline(project, target_branch_pipeline).report
+      end
 
       def evaluation
         @evaluation ||= Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationService
