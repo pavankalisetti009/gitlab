@@ -47,7 +47,12 @@ RSpec.describe ::Sbom::Exporters::Cyclonedx::V16Service, feature_category: :vuln
             "version" => Gitlab::VERSION
           }
         ],
-        "authors" => [{ "name" => "GitLab", "email" => "support@gitlab.com" }],
+        "authors" => [
+          {
+            "name" => export.author.name,
+            "email" => export.author.email
+          }
+        ],
         "component" => {
           "type" => "application",
           "name" => project.name,

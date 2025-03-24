@@ -93,7 +93,7 @@ module Sbom
           {
             'timestamp' => timestamp,
             'tools' => [gitlab_tool],
-            'authors' => [gitlab_author],
+            'authors' => [author],
             'component' => metadata_component
           }
         end
@@ -106,10 +106,12 @@ module Sbom
           }
         end
 
-        def gitlab_author
+        def author
+          author = export.author
+
           {
-            'name' => VENDOR,
-            'email' => 'support@gitlab.com'
+            'name' => author.name,
+            'email' => author.email
           }
         end
 
