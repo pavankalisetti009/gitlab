@@ -24,6 +24,7 @@ module Security
     scope :runnable_schedules, -> { where(next_run_at: ...Time.zone.now) }
     scope :ordered_by_next_run_at, -> { order(:next_run_at, :id) }
     scope :including_security_policy_and_project, -> { includes(:security_policy, :project) }
+    scope :for_policy, ->(policy) { where(security_policy: policy) }
 
     def schedule_next_run!
       set_next_run_at

@@ -185,6 +185,23 @@ RSpec.describe ::Security::SyncPolicyWorker, feature_category: :security_policy_
       end
     end
 
+    context 'when policy scope changed' do
+      let(:event_payload) do
+        {
+          security_policy_id: policy.id,
+          diff: { policy_scope: { from: {}, to: { projects: { excluding: [{ id: project.id }] } } } },
+          rules_diff: { created: [], updated: [], deleted: [] }
+        }
+      end
+
+      it 'calls Security::SyncProjectPolicyWorker' do
+        expect(::Security::SyncProjectPolicyWorker).to receive(:perform_async).with(project.id, policy.id,
+          event_payload.deep_stringify_keys)
+
+        handle_event
+      end
+    end
+
     context 'when policy changes does not need refresh' do
       let(:event_payload) do
         {

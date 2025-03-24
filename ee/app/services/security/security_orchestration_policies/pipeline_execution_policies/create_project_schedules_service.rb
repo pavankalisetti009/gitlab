@@ -19,6 +19,11 @@ module Security
           schedules = policy.content.fetch("schedules")
 
           policy.transaction do
+            policy
+              .security_pipeline_execution_project_schedules
+              .for_project(project)
+              .delete_all
+
             policy.security_pipeline_execution_project_schedules.create!(attributes(schedules))
           end
 

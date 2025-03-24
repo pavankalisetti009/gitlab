@@ -141,6 +141,16 @@ RSpec.describe Security::PipelineExecutionProjectSchedule, feature_category: :se
         expect(recorder.count).to eq(3)
       end
     end
+
+    describe '.for_policy' do
+      let_it_be(:policy) { create(:security_policy, :pipeline_execution_schedule_policy) }
+      let_it_be(:schedule) { create(:security_pipeline_execution_project_schedule, security_policy: policy) }
+      let_it_be(:other_schedule) { create(:security_pipeline_execution_project_schedule) }
+
+      it 'returns schedules for the given policy' do
+        expect(described_class.for_policy(policy)).to contain_exactly(schedule)
+      end
+    end
   end
 
   describe 'callbacks' do

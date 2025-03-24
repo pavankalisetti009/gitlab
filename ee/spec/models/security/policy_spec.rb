@@ -456,6 +456,22 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
         )
       end
     end
+
+    context 'when policy is a pipeline execution schedule policy' do
+      let_it_be(:policy) { create(:security_policy, :pipeline_execution_schedule_policy) }
+
+      it 'returns the correct hash structure' do
+        expect(policy_hash).to eq(
+          name: policy.name,
+          description: policy.description,
+          enabled: true,
+          policy_scope: {},
+          schedules: [{ start_time: "00:00", time_window: { distribution: "random", value: 4000 }, type: "daily" }],
+          metadata: {},
+          content: { include: [{ file: "compliance-pipeline.yml", project: "compliance-project" }] }
+        )
+      end
+    end
   end
 
   describe '#rules' do

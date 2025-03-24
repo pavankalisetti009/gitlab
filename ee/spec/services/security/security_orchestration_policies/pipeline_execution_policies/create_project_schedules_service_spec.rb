@@ -79,6 +79,8 @@ RSpec.describe(
   end
 
   specify :aggregate_failures do
+    execute
+
     schedules = policy.security_pipeline_execution_project_schedules.order(id: :asc)
 
     schedules.each_with_index do |schedule, idx|
@@ -130,6 +132,20 @@ RSpec.describe(
 
     specify do
       expect { execute }.not_to change { policy.security_pipeline_execution_project_schedules.count }
+    end
+  end
+
+  context 'with already existing schedules' do
+    let!(:existing_schedules) do
+      create_list(:security_pipeline_execution_project_schedule, 3, project: project, security_policy: policy)
+    end
+
+    it 'does not create more schedules than before' do
+      expect { execute }.not_to change {
+        policy.security_pipeline_execution_project_schedules.for_project(project).count
+      }
+
+      expect(Security::PipelineExecutionProjectSchedule.where(id: existing_schedules.pluck(:id)).count).to eq(0)
     end
   end
 end
