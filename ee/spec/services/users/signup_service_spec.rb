@@ -12,6 +12,27 @@ RSpec.describe Users::SignupService, feature_category: :system_access do
 
     subject(:execute) { described_class.new(user, params: params, user_return_to: user_return_to).execute }
 
+    it 'logs the passed params' do
+      allow(Gitlab::AppLogger).to receive(:info).and_call_original
+      expect(Gitlab::AppLogger).to receive(:info).with(
+        message: "#{described_class.name}: user_return_to: #{user_return_to}, params: #{params.to_json}",
+        user_id: user.id)
+
+      execute
+    end
+
+    context 'when stop_welcome_redirection feature flag is disabled' do
+      before do
+        stub_feature_flags(stop_welcome_redirection: false)
+      end
+
+      it 'does not log the passed params' do
+        expect(Gitlab::AppLogger).not_to receive(:info)
+
+        execute
+      end
+    end
+
     context 'when updating name' do
       let(:params) { { name: 'New Name' } }
 

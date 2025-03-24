@@ -10,6 +10,7 @@ module Users
     end
 
     def execute
+      log_params if ::Feature.enabled?(:stop_welcome_redirection, user)
       assign_attributes
       inject_validators
 
@@ -35,6 +36,13 @@ module Users
     private
 
     attr_reader :user, :user_return_to, :onboarding_user_status
+
+    def log_params
+      Gitlab::AppLogger.info(
+        message: "#{self.class.name}: user_return_to: #{user_return_to}, params: #{params.to_json}",
+        user_id: user.id
+      )
+    end
 
     def payload
       { user: user }
