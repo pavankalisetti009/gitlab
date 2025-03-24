@@ -90,7 +90,7 @@ To determine the external Ingress IP address, or external Ingress hostname:
   cluster. This information can then be used to set up DNS entries and forwarding
   rules that allow external access to your deployed applications.
 
-Depending an your Ingress, the external IP address can be retrieved in various ways.
+Depending on your Ingress, the external IP address can be retrieved in various ways.
 This list provides a generic solution, and some GitLab-specific approaches:
 
 - In general, you can list the IP addresses of all load balancers by running:
