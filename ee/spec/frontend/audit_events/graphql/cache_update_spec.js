@@ -1,7 +1,7 @@
 import { InMemoryCache } from '@apollo/client/core';
 import {
   addAuditEventsStreamingDestination,
-  removeAuditEventsStreamingDestination,
+  removeLegacyAuditEventsStreamingDestination,
   addAuditEventStreamingHeader,
   removeAuditEventStreamingHeader,
   updateEventTypeFilters,
@@ -210,12 +210,12 @@ describe('Audit events GraphQL cache updates', () => {
       });
     });
 
-    describe('removeAuditEventsStreamingDestination', () => {
+    describe('removeLegacyAuditEventsStreamingDestination', () => {
       it('removes new destination to list of destinations for specific fullPath', () => {
         const [firstDestination, ...restDestinations] = getDestinations(GROUP1_PATH);
         const { length: originalDestinationsLengthForGroup2 } = getDestinations(GROUP2_PATH);
 
-        removeAuditEventsStreamingDestination({
+        removeLegacyAuditEventsStreamingDestination({
           store: cache,
           fullPath: GROUP1_PATH,
           destinationId: firstDestination.id,
@@ -230,7 +230,7 @@ describe('Audit events GraphQL cache updates', () => {
 
       it('does not throw on non-existing fullPath', () => {
         expect(() =>
-          removeAuditEventsStreamingDestination({
+          removeLegacyAuditEventsStreamingDestination({
             store: cache,
             fullPath: GROUP_NOT_IN_CACHE,
             destinationId: 'fake-id',
@@ -583,12 +583,12 @@ describe('Audit events GraphQL cache updates', () => {
       });
     });
 
-    describe('removeAuditEventsStreamingDestination', () => {
+    describe('removeLegacyAuditEventsStreamingDestination', () => {
       it('removes new destination to list of destinations for specific fullPath', () => {
         const [firstDestination, ...restDestinations] = getInstanceDestinations();
         const { length: originalInstanceDestinationsLength } = getInstanceDestinations();
 
-        removeAuditEventsStreamingDestination({
+        removeLegacyAuditEventsStreamingDestination({
           store: cache,
           fullPath: 'instance',
           destinationId: firstDestination.id,
@@ -603,7 +603,7 @@ describe('Audit events GraphQL cache updates', () => {
 
       it('does not throw on non-existing fullPath', () => {
         expect(() =>
-          removeAuditEventsStreamingDestination({
+          removeLegacyAuditEventsStreamingDestination({
             store: cache,
             fullPath: 'instance',
             destinationId: 'fake-id',

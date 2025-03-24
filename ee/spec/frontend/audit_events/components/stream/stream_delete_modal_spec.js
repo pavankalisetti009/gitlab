@@ -4,6 +4,7 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 
 import StreamDeleteModal from 'ee/audit_events/components/stream/stream_delete_modal.vue';
+import deleteGroupStreamingDestinationsQuery from 'ee/audit_events/graphql/mutations/delete_group_streaming_destination.mutation.graphql';
 import deleteExternalDestination from 'ee/audit_events/graphql/mutations/delete_external_destination.mutation.graphql';
 import deleteInstanceExternalDestination from 'ee/audit_events/graphql/mutations/delete_instance_external_destination.mutation.graphql';
 import googleCloudLoggingConfigurationDestroy from 'ee/audit_events/graphql/mutations/delete_gcp_logging_destination.mutation.graphql';
@@ -14,6 +15,8 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import {
   groupPath,
+  streamingDestinationDeleteMutationPopulator,
+  mockConsolidatedAPIExternalDestinations,
   destinationDeleteMutationPopulator,
   mockExternalDestinations,
   mockHttpType,
@@ -42,6 +45,16 @@ describe('StreamDeleteModal', () => {
   const instanceGcpLoggingDestination = mockInstanceGcpLoggingDestinations[0];
   const mockAmazonS3Destination = mockAmazonS3Destinations[0];
   const instanceAmazonS3Destination = mockInstanceAmazonS3Destinations[0];
+
+  const deleteStreamingSuccess = jest
+    .fn()
+    .mockResolvedValue(streamingDestinationDeleteMutationPopulator());
+  const deleteStreamingError = jest
+    .fn()
+    .mockResolvedValue(streamingDestinationDeleteMutationPopulator(['Random Error message']));
+  const deleteStreamingNetworkError = jest
+    .fn()
+    .mockRejectedValue(streamingDestinationDeleteMutationPopulator(['Network error']));
 
   const deleteSuccess = jest.fn().mockResolvedValue(destinationDeleteMutationPopulator());
   const deleteInstanceSuccess = jest
@@ -74,7 +87,7 @@ describe('StreamDeleteModal', () => {
   const findModal = () => wrapper.findComponent(GlModal);
   const clickDeleteFramework = () => findModal().vm.$emit('primary');
 
-  const createComponent = (resolverMock) => {
+  const createComponent = (resolverMock, useConsolidatedAuditEventStreamDestApi = false) => {
     const mockApollo = createMockApollo([[deleteExternalDestinationProvide, resolverMock]]);
 
     wrapper = shallowMount(StreamDeleteModal, {
@@ -85,6 +98,9 @@ describe('StreamDeleteModal', () => {
       },
       provide: {
         groupPath: groupPathProvide,
+        glFeatures: {
+          useConsolidatedAuditEventStreamDestApi,
+        },
       },
       stubs: {
         GlSprintf,
@@ -158,6 +174,51 @@ describe('StreamDeleteModal', () => {
       await waitForPromises();
 
       expect(wrapper.emitted('error')).toHaveLength(1);
+    });
+    describe('with useConsolidatedAuditEventStreamDestApi feature flag', () => {
+      beforeEach(() => {
+        deleteExternalDestinationProvide = deleteGroupStreamingDestinationsQuery;
+        [itemProvide] = mockConsolidatedAPIExternalDestinations;
+      });
+
+      it('calls the delete mutation with the destination ID', async () => {
+        createComponent(deleteStreamingSuccess, true);
+        clickDeleteFramework();
+
+        await waitForPromises();
+
+        expect(deleteStreamingSuccess).toHaveBeenCalledWith({
+          id: mockConsolidatedAPIExternalDestinations[0].id,
+          isInstance: false,
+        });
+      });
+
+      it('emits "delete" event when the destination is successfully deleted', async () => {
+        createComponent(deleteStreamingSuccess, true);
+        clickDeleteFramework();
+
+        await waitForPromises();
+
+        expect(wrapper.emitted('delete')).toHaveLength(1);
+      });
+
+      it('emits "error" event when there is a network error', async () => {
+        createComponent(deleteStreamingNetworkError, true);
+        clickDeleteFramework();
+
+        await waitForPromises();
+
+        expect(wrapper.emitted('error')).toHaveLength(1);
+      });
+
+      it('emits "error" event when there is a graphql error', async () => {
+        createComponent(deleteStreamingError, true);
+        clickDeleteFramework();
+
+        await waitForPromises();
+
+        expect(wrapper.emitted('error')).toHaveLength(1);
+      });
     });
   });
 

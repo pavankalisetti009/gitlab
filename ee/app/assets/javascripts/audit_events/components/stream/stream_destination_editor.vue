@@ -14,6 +14,7 @@ import {
 import { isEqual } from 'lodash';
 import { GlTooltipDirective as GlTooltip } from '@gitlab/ui/dist/directives/tooltip';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { createAlert } from '~/alert';
 import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
 import externalAuditEventDestinationCreate from '../../graphql/mutations/create_external_destination.mutation.graphql';
@@ -44,6 +45,7 @@ import {
 import {
   addAuditEventsStreamingDestination,
   removeAuditEventsStreamingDestination,
+  removeLegacyAuditEventsStreamingDestination,
   addAuditEventStreamingHeader,
   removeAuditEventStreamingHeader,
   updateEventTypeFilters,
@@ -83,6 +85,7 @@ export default {
   directives: {
     GlTooltip,
   },
+  mixins: [glFeatureFlagMixin()],
   inject: ['groupPath', 'maxHeaders'],
   props: {
     item: {
@@ -408,6 +411,9 @@ export default {
     },
     async deleteCreatedDestination(destinationId) {
       const { groupPath: fullPath, isInstance } = this;
+      const removeFn = this.glFeatures.useConsolidatedAuditEventStreamDestApi
+        ? removeAuditEventsStreamingDestination
+        : removeLegacyAuditEventsStreamingDestination;
       return this.$apollo.mutate({
         mutation: this.destinationVariables.destinationDestroyMutation,
         variables: {
@@ -421,7 +427,7 @@ export default {
             return;
           }
 
-          removeAuditEventsStreamingDestination({
+          removeFn({
             store: cache,
             fullPath,
             destinationId,
@@ -556,7 +562,6 @@ export default {
 
       this.errors = [];
       this.loading = true;
-
       try {
         const errors = [];
         const { errors: destinationErrors = [], externalAuditEventDestination } =
