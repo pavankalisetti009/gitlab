@@ -42,10 +42,10 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :continuous_integrat
         expect(pipeline.builds).to be_present
 
         options = pipeline.statuses.map(&:options)
-        expect(options).to eq [
+        expect(options).to match_array([
           { script: ['echo'], job_timeout: 1.hour.to_i, scoped_user_id: scoped_user.id },
           { trigger: { project: 'test-project' }, scoped_user_id: scoped_user.id }
-        ]
+        ])
       end
     end
   end

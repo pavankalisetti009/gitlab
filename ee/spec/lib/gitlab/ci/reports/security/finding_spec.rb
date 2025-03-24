@@ -482,45 +482,68 @@ RSpec.describe Gitlab::Ci::Reports::Security::Finding, feature_category: :vulner
   end
 
   describe '#location_fingerprint' do
-    let(:signature_1) { ::Gitlab::Ci::Reports::Security::FindingSignature.new(algorithm_type: 'location', signature_value: 'value1') }
-    let(:signature_2) { ::Gitlab::Ci::Reports::Security::FindingSignature.new(algorithm_type: 'scope_offset', signature_value: 'value2') }
-    let(:location) { build(:ci_reports_security_locations_sast) }
-    let(:finding) { build(:ci_reports_security_finding, vulnerability_finding_signatures_enabled: signatures_enabled, signatures: signatures, location: location) }
-
-    let(:fingerprint_from_location) { location.fingerprint }
-    let(:fingerprint_from_signature) { signature_2.signature_hex }
-
-    subject { finding.location_fingerprint }
-
-    context 'when the signatures feature is enabled' do
-      let(:signatures_enabled) { true }
-
-      context 'when the signatures are empty' do
-        let(:signatures) { [] }
-
-        it { is_expected.to eq(fingerprint_from_location) }
+    where(:vulnerability_signatures_dedup_by_type) { [true, false] }
+    with_them do
+      let(:signature_1) do
+        ::Gitlab::Ci::Reports::Security::FindingSignature.new(algorithm_type: 'location',
+          signature_value: 'value1',
+          qualified_signature: vulnerability_signatures_dedup_by_type)
       end
 
-      context 'when the signatures are not empty' do
-        let(:signatures) { [signature_1, signature_2] }
-
-        it { is_expected.to eq(fingerprint_from_signature) }
-      end
-    end
-
-    context 'when the signatures feature is not enabled' do
-      let(:signatures_enabled) { false }
-
-      context 'when the signatures are empty' do
-        let(:signatures) { [] }
-
-        it { is_expected.to eq(fingerprint_from_location) }
+      let(:signature_2) do
+        ::Gitlab::Ci::Reports::Security::FindingSignature.new(algorithm_type: 'scope_offset',
+          signature_value: 'value2',
+          qualified_signature: vulnerability_signatures_dedup_by_type)
       end
 
-      context 'when the signatures are not empty' do
-        let(:signatures) { [signature_1, signature_2] }
+      let(:location) { build(:ci_reports_security_locations_sast) }
+      let(:finding) { build(:ci_reports_security_finding, vulnerability_finding_signatures_enabled: signatures_enabled, signatures: signatures, location: location) }
 
-        it { is_expected.to eq(fingerprint_from_location) }
+      let(:fingerprint_from_location) { location.fingerprint }
+      let(:fingerprint_from_signature) { signature_2.signature_hex }
+
+      subject { finding.location_fingerprint }
+
+      describe 'signature_tuple format' do
+        it 'formats signature_tuple as algorithm_type:signature_value' do
+          if vulnerability_signatures_dedup_by_type
+            expect(signature_2.signature_hex).to eq("#{signature_2.algorithm_type}:#{signature_2.signature_sha.unpack1('H*')}")
+          else
+            expect(signature_2.signature_hex).to eq(signature_2.signature_sha.unpack1('H*').to_s)
+          end
+        end
+      end
+
+      context 'when the signatures feature is enabled' do
+        let(:signatures_enabled) { true }
+
+        context 'when the signatures are empty' do
+          let(:signatures) { [] }
+
+          it { is_expected.to eq(fingerprint_from_location) }
+        end
+
+        context 'when the signatures are not empty' do
+          let(:signatures) { [signature_1, signature_2] }
+
+          it { is_expected.to eq(fingerprint_from_signature) }
+        end
+      end
+
+      context 'when the signatures feature is not enabled' do
+        let(:signatures_enabled) { false }
+
+        context 'when the signatures are empty' do
+          let(:signatures) { [] }
+
+          it { is_expected.to eq(fingerprint_from_location) }
+        end
+
+        context 'when the signatures are not empty' do
+          let(:signatures) { [signature_1, signature_2] }
+
+          it { is_expected.to eq(fingerprint_from_location) }
+        end
       end
     end
   end

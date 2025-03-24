@@ -447,6 +447,29 @@ module EE
       end
     end
 
+    def schedule_policy_synchronization
+      if project.scan_result_policy_reads.targeting_commits.any?
+        # We need to make sure to run the merge request worker after hooks were called to
+        # get correct commit signatures
+        ::Security::ScanResultPolicies::SyncAnyMergeRequestApprovalRulesWorker.perform_async(id)
+      end
+
+      if approval_rules.by_report_types([:scan_finding, :license_scanning]).any?
+        ::Security::ScanResultPolicies::SyncPreexistingStatesApprovalRulesWorker.perform_async(id)
+      end
+
+      if head_pipeline_id
+        ::Ci::SyncReportsToReportApprovalRulesWorker.perform_async(head_pipeline_id)
+
+        # This is needed here to avoid inconsistent state when the scan result policy is updated after the
+        # head pipeline completes and before the merge request is created, we might have inconsistent state.
+        ::Security::ScanResultPolicies::SyncMergeRequestApprovalsWorker.perform_async(head_pipeline_id, id)
+        ::Security::UnenforceablePolicyRulesPipelineNotificationWorker.perform_async(head_pipeline_id)
+      else
+        ::Security::UnenforceablePolicyRulesNotificationWorker.perform_async(id)
+      end
+    end
+
     # TODO: Will be removed with https://gitlab.com/gitlab-org/gitlab/-/issues/504296
     def sync_project_approval_rules_for_policy_configuration(configuration_id)
       return if merged?

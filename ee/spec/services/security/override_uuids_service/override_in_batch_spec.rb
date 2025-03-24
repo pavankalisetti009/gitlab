@@ -95,8 +95,8 @@ RSpec.describe Security::OverrideUuidsService::OverrideInBatch, feature_category
       override
     end
 
-    def signature_sha(pipeline_data)
-      pipeline_data.signatures.first.signature_sha
+    def signature_key(pipeline_data)
+      pipeline_data.signatures.first.signature_hex
     end
 
     def ident_fingerprint(pipeline_data)
@@ -113,7 +113,7 @@ RSpec.describe Security::OverrideUuidsService::OverrideInBatch, feature_category
       db_data_hash.merge!(
         create_vulnerability_with_signatures(
           [
-            [scope_offset_compressed, signature_sha(pipeline_data)]
+            [scope_offset_compressed, signature_key(pipeline_data)]
           ],
           ident_fingerprint(pipeline_data)
         )
@@ -122,7 +122,7 @@ RSpec.describe Security::OverrideUuidsService::OverrideInBatch, feature_category
       mocked_test_obj([pipeline_data], db_data_hash).execute
 
       expect(pipeline_data.uuid).not_to eq("uuid1")
-      expect(pipeline_data.uuid).to eq(db_data_hash[signature_sha(pipeline_data)].finding.uuid)
+      expect(pipeline_data.uuid).to eq(db_data_hash[signature_key(pipeline_data)].finding.uuid)
     end
 
     it '(upgrade) override UUID with matching highest priority signature in db' do
@@ -144,7 +144,7 @@ RSpec.describe Security::OverrideUuidsService::OverrideInBatch, feature_category
       db_data_hash.merge!(
         create_vulnerability_with_signatures(
           [
-            [scope_offset_compressed, signature_sha(pipeline_data[0])]
+            [scope_offset_compressed, signature_key(pipeline_data[0])]
           ],
           ident_fingerprint(pipeline_data[0])
         )
@@ -152,7 +152,7 @@ RSpec.describe Security::OverrideUuidsService::OverrideInBatch, feature_category
 
       mocked_test_obj(pipeline_data, db_data_hash).execute
       expect(pipeline_data[0].uuid).not_to eq("uuid1")
-      expect(pipeline_data[0].uuid).to eq(db_data_hash[signature_sha(pipeline_data[0])].finding.uuid)
+      expect(pipeline_data[0].uuid).to eq(db_data_hash[signature_key(pipeline_data[0])].finding.uuid)
       expect(pipeline_data[1].uuid).to eq("uuid2")
     end
 
@@ -181,7 +181,7 @@ RSpec.describe Security::OverrideUuidsService::OverrideInBatch, feature_category
       db_data_hash.merge!(
         create_vulnerability_with_signatures(
           [
-            [scope_offset_compressed, signature_sha(pipeline_data[0])]
+            [scope_offset_compressed, signature_key(pipeline_data[0])]
           ],
           "non-matching"
         )
@@ -214,14 +214,14 @@ RSpec.describe Security::OverrideUuidsService::OverrideInBatch, feature_category
       db_data_hash.merge!(
         create_vulnerability_with_signatures(
           [
-            [scope_offset, signature_sha(pipeline_data[1])]
+            [scope_offset, signature_key(pipeline_data[1])]
           ],
           ident_fingerprint(pipeline_data[1])
         )
       )
 
       mocked_test_obj(pipeline_data, db_data_hash).execute
-      expect(pipeline_data[1].uuid).to eq(db_data_hash[signature_sha(pipeline_data[1])].finding.uuid)
+      expect(pipeline_data[1].uuid).to eq(db_data_hash[signature_key(pipeline_data[1])].finding.uuid)
     end
   end
 end

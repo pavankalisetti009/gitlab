@@ -17,7 +17,11 @@ module Vulnerabilities
     scope :eager_load_comparison_entities, -> { includes(finding: [:scanner, :primary_identifier]) }
 
     def signature_hex
-      signature_sha.unpack1("H*")
+      if dedup_by_type_enabled?
+        "#{algorithm_type}:#{signature_sha.unpack1('H*')}"
+      else
+        signature_sha.unpack1("H*")
+      end
     end
 
     def eql?(other)
@@ -27,5 +31,14 @@ module Vulnerabilities
     end
 
     alias_method :==, :eql?
+
+    private
+
+    def dedup_by_type_enabled?
+      return false unless finding&.project
+
+      finding.project.licensed_feature_available?(:vulnerability_finding_signatures) && Feature.enabled?(
+        :vulnerability_signatures_dedup_by_type, finding.project)
+    end
   end
 end

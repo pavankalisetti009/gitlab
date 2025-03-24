@@ -12,12 +12,6 @@ RSpec.describe MergeRequests::AfterCreateService, feature_category: :code_review
     subject(:execute) { service_object.execute(merge_request) }
 
     before do
-      allow(Ci::SyncReportsToReportApprovalRulesWorker).to receive(:perform_async)
-      allow(Security::ScanResultPolicies::SyncMergeRequestApprovalsWorker).to receive(:perform_async)
-      allow(Security::UnenforceablePolicyRulesPipelineNotificationWorker).to receive(:perform_async)
-      allow(Security::ScanResultPolicies::SyncAnyMergeRequestApprovalRulesWorker).to receive(:perform_async)
-      allow(Security::ScanResultPolicies::SyncPreexistingStatesApprovalRulesWorker).to receive(:perform_async)
-      allow(::Security::UnenforceablePolicyRulesNotificationWorker).to receive(:perform_async)
       allow(::MergeRequests::NotifyApproversWorker).to receive(:perform_in)
     end
 
@@ -38,89 +32,8 @@ RSpec.describe MergeRequests::AfterCreateService, feature_category: :code_review
       let(:namespace) { merge_request.target_project.namespace }
     end
 
-    context 'when the merge request has diff_head_pipeline' do
-      let(:pipeline_id) { 1881 }
-
-      before do
-        allow(merge_request).to receive(:head_pipeline_id).and_return(pipeline_id)
-        allow(merge_request).to receive(:update_head_pipeline).and_return(true)
-      end
-
-      it 'schedules a background job to sync policy approval rules' do
-        execute
-
-        expect(merge_request).to have_received(:update_head_pipeline).ordered
-        expect(Ci::SyncReportsToReportApprovalRulesWorker).to have_received(:perform_async).ordered.with(pipeline_id)
-        expect(Security::ScanResultPolicies::SyncMergeRequestApprovalsWorker)
-          .to have_received(:perform_async).ordered.with(pipeline_id, merge_request.id)
-        expect(Security::UnenforceablePolicyRulesPipelineNotificationWorker)
-          .to have_received(:perform_async).ordered.with(pipeline_id)
-      end
-
-      it 'does not schedule background job to check for unenforceable policy rules' do
-        execute
-
-        expect(::Security::UnenforceablePolicyRulesNotificationWorker).not_to have_received(:perform_async)
-      end
-    end
-
-    context 'when the merge request does not have diff_head_pipeline' do
-      it 'does not schedule a background job to sync policy approval rules' do
-        execute
-
-        expect(Ci::SyncReportsToReportApprovalRulesWorker).not_to have_received(:perform_async)
-        expect(Security::ScanResultPolicies::SyncMergeRequestApprovalsWorker).not_to have_received(:perform_async)
-        expect(Security::UnenforceablePolicyRulesPipelineNotificationWorker).not_to have_received(:perform_async)
-      end
-
-      it 'schedules background job to check for unenforceable policy rules' do
-        execute
-
-        expect(::Security::UnenforceablePolicyRulesNotificationWorker).to have_received(:perform_async)
-                                                                            .with(merge_request.id)
-      end
-
-      context 'when merge request has scan_finding rules' do
-        before do
-          create(:report_approver_rule, :scan_finding, merge_request: merge_request)
-        end
-
-        it 'enqueues SyncPreexistingStatesApprovalRulesWorker worker' do
-          execute
-
-          expect(Security::ScanResultPolicies::SyncPreexistingStatesApprovalRulesWorker).to(
-            have_received(:perform_async).with(merge_request.id)
-          )
-        end
-      end
-
-      context 'when merge request has license_finding rules' do
-        before do
-          create(:report_approver_rule, :license_scanning, merge_request: merge_request)
-        end
-
-        it 'enqueues SyncPreexistingStatesApprovalRulesWorker worker' do
-          execute
-
-          expect(Security::ScanResultPolicies::SyncPreexistingStatesApprovalRulesWorker).to(
-            have_received(:perform_async).with(merge_request.id)
-          )
-        end
-      end
-    end
-
-    context 'when merge request has scan_result_policy_reads targeting commits' do
-      before do
-        create(:scan_result_policy_read, :targeting_commits, project: project)
-      end
-
-      it 'enqueues SyncAnyMergeRequestApprovalRulesWorker worker' do
-        execute
-
-        expect(Security::ScanResultPolicies::SyncAnyMergeRequestApprovalRulesWorker).to(
-          have_received(:perform_async).with(merge_request.id)
-        )
-      end
+    describe 'policy synchronization' do
+      it_behaves_like 'synchronizes policies for a merge request'
     end
 
     describe 'suggested reviewers' do
