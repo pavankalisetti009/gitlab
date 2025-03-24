@@ -65,7 +65,7 @@ export default {
         ...(this.glFeatures.versionFilteringOnGroupLevelDependencyList
           ? [
               {
-                type: 'version',
+                type: 'component_version_ids',
                 title: __('Version'),
                 multiSelect: true,
                 unique: true,

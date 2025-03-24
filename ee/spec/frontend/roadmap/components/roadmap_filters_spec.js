@@ -312,7 +312,7 @@ describe('RoadmapFilters', () => {
           createComponent();
         });
 
-        it('includes `Author`, `Milestone`, `Confidential`, `Epic`, `Group`, `Label` and `My-Reaction` tokens', () => {
+        it('includes `Author`, `Milestone`, `Confidential`, `Epic`, `Group`, `Label` and `My reaction` tokens', () => {
           expect(findFilteredSearchBar().props('tokens')).toEqual([
             {
               ...mockAuthorTokenConfig,

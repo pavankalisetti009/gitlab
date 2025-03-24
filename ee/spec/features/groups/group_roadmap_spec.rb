@@ -54,7 +54,7 @@ RSpec.describe 'group epic roadmap', :js, feature_category: :portfolio_managemen
     let_it_be(:milestone_project) { create(:milestone, :with_dates, project: project, start_date: end_of_quarter - 10.days, due_date: end_of_quarter - 1.day) }
     let_it_be(:milestone_project_2) { create(:milestone, :with_dates, project: project, start_date: end_of_quarter - 10.days, due_date: end_of_quarter - 1.day) }
 
-    available_tokens = %w[Author Label Milestone Epic My-Reaction]
+    available_tokens = ['Author', 'Label', 'Milestone', 'Epic', 'My reaction']
     default_sort_option = 'Start date'
     available_sort_options = [default_sort_option, 'Due date']
 

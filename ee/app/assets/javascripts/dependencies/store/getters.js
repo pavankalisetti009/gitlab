@@ -8,6 +8,3 @@ export const totals = (state) =>
     }),
     {},
   );
-
-export const selectedComponents = ({ currentList, ...state }) =>
-  state[currentList].searchFilterParameters.component_names || [];

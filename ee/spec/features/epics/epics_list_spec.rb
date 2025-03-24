@@ -21,7 +21,7 @@ RSpec.describe 'epics list', :js, feature_category: :portfolio_management do
   end
 
   context 'epics list' do
-    available_tokens = %w[Author Label My-Reaction]
+    available_tokens = ['Author', 'Label', 'My reaction']
     default_sort_option = 'Start date'
     available_sort_options = ['Created date', 'Updated date', default_sort_option, 'Due date', 'Title']
 
