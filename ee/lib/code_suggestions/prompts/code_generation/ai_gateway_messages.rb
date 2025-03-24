@@ -28,7 +28,8 @@ module CodeSuggestions
                   **prompt_info
                 }
               }
-            ]
+            ],
+            **model_metadata
           }
         end
 
@@ -130,6 +131,14 @@ module CodeSuggestions
             'Generate the best possible code based on instructions.'
 
           { user_instruction: instruction }
+        end
+
+        def model_metadata
+          params = ::Gitlab::Llm::AiGateway::ModelMetadata.new(feature_setting: feature_setting).self_hosted_params
+
+          return {} unless params
+
+          { model_metadata: params }
         end
 
         def project

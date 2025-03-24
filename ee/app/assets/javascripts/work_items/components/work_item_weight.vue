@@ -1,5 +1,6 @@
 <script>
-import { GlButton, GlFormInput, GlTooltipDirective } from '@gitlab/ui';
+import { GlButton, GlFormGroup, GlFormInput, GlTooltipDirective } from '@gitlab/ui';
+import { isPositiveInteger } from '~/lib/utils/number_utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import Tracking from '~/tracking';
 import {
@@ -17,9 +18,10 @@ export default {
     GlTooltip: GlTooltipDirective,
   },
   components: {
-    WorkItemSidebarWidget,
     GlButton,
+    GlFormGroup,
     GlFormInput,
+    WorkItemSidebarWidget,
   },
   mixins: [Tracking.mixin()],
   inject: ['hasIssueWeightsFeature'],
@@ -48,7 +50,7 @@ export default {
   },
   data() {
     return {
-      dirtyWeight: this.widget.weight,
+      localWeight: this.widget.weight,
       isUpdating: false,
     };
   },
@@ -82,19 +84,27 @@ export default {
     },
   },
   methods: {
+    cancelEditing(stopEditing) {
+      this.resetWeight();
+      stopEditing();
+    },
     clearWeight(stopEditing) {
-      this.dirtyWeight = '';
+      this.localWeight = '';
       stopEditing();
       this.updateWeight();
+    },
+    resetWeight() {
+      this.localWeight = this.weight;
     },
     updateWeight() {
       if (!this.canUpdate) {
         return;
       }
 
-      const newWeight = this.dirtyWeight === '' ? null : Number(this.dirtyWeight);
+      const newWeight = isPositiveInteger(this.localWeight) ? Number(this.localWeight) : null;
 
       if (this.weight === newWeight) {
+        this.resetWeight();
         return;
       }
 
@@ -136,8 +146,8 @@ export default {
           }
         })
         .catch((error) => {
-          const msg = sprintfWorkItem(I18N_WORK_ITEM_ERROR_UPDATING, this.workItemType);
-          this.$emit('error', msg);
+          this.resetWeight();
+          this.$emit('error', sprintfWorkItem(I18N_WORK_ITEM_ERROR_UPDATING, this.workItemType));
           Sentry.captureException(error);
         })
         .finally(() => {
@@ -169,16 +179,18 @@ export default {
     </template>
     <template #editing-content="{ stopEditing }">
       <div class="gl-relative gl-px-2">
-        <gl-form-input
-          v-model="dirtyWeight"
-          autofocus
-          min="0"
-          :placeholder="__('Enter a number')"
-          type="number"
-          :aria-label="__('Enter a number')"
-          @keydown.enter="stopEditing"
-          @keydown.exact.esc.stop="stopEditing"
-        />
+        <gl-form-group :label="__('Weight')" label-for="weight-widget-input" label-sr-only>
+          <gl-form-input
+            id="weight-widget-input"
+            v-model="localWeight"
+            autofocus
+            min="0"
+            :placeholder="__('Enter a number')"
+            type="number"
+            @keydown.enter="stopEditing"
+            @keydown.exact.esc.stop="cancelEditing(stopEditing)"
+          />
+        </gl-form-group>
         <gl-button
           v-if="showRemoveWeight"
           v-gl-tooltip

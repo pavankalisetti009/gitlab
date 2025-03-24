@@ -53,7 +53,9 @@ RSpec.shared_examples 'code generation AI Gateway request params' do
     }
   end
 
-  subject { described_class.new(params, current_user) }
+  let(:feature_setting) { nil }
+
+  subject { described_class.new(params, current_user, feature_setting) }
 
   # rubocop:disable RSpec/MultipleMemoizedHelpers -- We need extra helpers to define tables
   describe '#request_params' do
@@ -147,6 +149,27 @@ RSpec.shared_examples 'code generation AI Gateway request params' do
 
         it 'returns expected request params' do
           expect(subject.request_params).to eq(expected_request_params)
+        end
+      end
+
+      context 'if feature setting is configured for a self-hosted model' do
+        let_it_be(:feature_setting) do
+          create(:ai_feature_setting, feature: :code_generations, provider: :self_hosted)
+        end
+
+        it 'returns expected request params' do
+          expect(subject.request_params).to eq(
+            {
+              **expected_request_params,
+              model_metadata: {
+                api_key: "token",
+                endpoint: "http://localhost:11434/v1",
+                identifier: "provider/some-model",
+                name: "mistral",
+                provider: :openai
+              }
+            }
+          )
         end
       end
 
