@@ -245,7 +245,7 @@ describe('ee/amazon_q_settings/components/app.vue', () => {
 
     it('renders save acknowledgement', () => {
       expect(findSaveWarning().text()).toBe(
-        'I understand that by selecting Save changes, GitLab creates a service account for Amazon Q and sends its credentials to AWS. Use of the Amazon Q Developer capabilities as part of GitLab Duo with Amazon Q is governed by the AWS Customer Agreement or other written agreement between you and AWS governing your use of AWS services.',
+        'I understand that by selecting Save changes, GitLab creates a service account for Amazon Q and sends its credentials to AWS. Use of the Amazon Q Developer capabilities as part of GitLab Duo with Amazon Q is governed by the AWS Customer Agreement or other written agreement between you and AWS governing your use of AWS services. Amazon Q Developer processes data across all US Regions and makes cross-region API calls when your requests require it.',
       );
 
       expect(findSaveWarningLink().attributes()).toEqual({

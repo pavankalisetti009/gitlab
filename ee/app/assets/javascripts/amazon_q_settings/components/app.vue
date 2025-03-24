@@ -228,7 +228,7 @@ export default {
   I18N_IAM_ROLE_ARN_VALID: s__("AmazonQ|IAM role's ARN is valid"),
   I18N_IAM_ROLE_ARN_INVALID: s__("AmazonQ|IAM role's ARN is not valid"),
   I18N_SAVE_ACKNOWLEDGE: s__(
-    'AmazonQ|I understand that by selecting Save changes, GitLab creates a service account for Amazon Q and sends its credentials to AWS. Use of the Amazon Q Developer capabilities as part of GitLab Duo with Amazon Q is governed by the %{helpStart}AWS Customer Agreement%{helpEnd} or other written agreement between you and AWS governing your use of AWS services.',
+    'AmazonQ|I understand that by selecting Save changes, GitLab creates a service account for Amazon Q and sends its credentials to AWS. Use of the Amazon Q Developer capabilities as part of GitLab Duo with Amazon Q is governed by the %{helpStart}AWS Customer Agreement%{helpEnd} or other written agreement between you and AWS governing your use of AWS services. Amazon Q Developer processes data across all US Regions and makes cross-region API calls when your requests require it.',
   ),
   I18N_WARNING_OFF_BY_DEFAULT: s__(
     'AmazonQ|Amazon Q will be turned off by default, but still be available to any groups or projects that have previously enabled it.',
