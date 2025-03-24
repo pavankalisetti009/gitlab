@@ -1,0 +1,11 @@
+query getProjectComponentVersions($componentId: SbomComponentID!, $fullPath: ID!) {
+  namespace: project(fullPath: $fullPath) {
+    id
+    componentVersions(componentId: $componentId, first: 100) {
+      nodes {
+        id
+        version
+      }
+    }
+  }
+}
