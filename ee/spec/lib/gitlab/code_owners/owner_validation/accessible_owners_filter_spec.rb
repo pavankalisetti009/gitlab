@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::CodeOwners::OwnerValidation::AccessibleOwnersFinder, feature_category: :source_code_management do
+RSpec.describe Gitlab::CodeOwners::OwnerValidation::AccessibleOwnersFilter, feature_category: :source_code_management do
   let_it_be(:project) { create(:project, :in_subgroup) }
   let_it_be(:guest) { create(:user, guest_of: project) }
   let_it_be(:developer) { create(:user, developer_of: project) }
@@ -24,36 +24,36 @@ RSpec.describe Gitlab::CodeOwners::OwnerValidation::AccessibleOwnersFinder, feat
   let_it_be(:output_users) { [guest, developer, maintainer] }
   let_it_be(:output_groups) { [invited_group, project_group, parent_group] }
 
-  subject(:finder) do
+  subject(:filter) do
     described_class.new(project, names: input_names, emails: input_emails).tap(&:execute)
   end
 
   it 'finds all of the users who are project members assigns them to output_users' do
-    expect(finder.output_users).to match_array(output_users)
+    expect(filter.output_users).to match_array(output_users)
   end
 
   it 'finds all groups which are invited or ancestors of the project and assigns them to output_groups' do
-    expect(finder.output_groups).to match_array(output_groups)
+    expect(filter.output_groups).to match_array(output_groups)
   end
 
   it 'maps all of the invalid input_names to invalid_names' do
-    expect(finder.invalid_names).to match_array(invalid_names)
+    expect(filter.invalid_names).to match_array(invalid_names)
   end
 
   it 'maps all of the valid input_names matching users to valid_usernames' do
-    expect(finder.valid_usernames).to match_array(valid_usernames)
+    expect(filter.valid_usernames).to match_array(valid_usernames)
   end
 
   it 'maps all of the valid input_names matching groups to valid_group_names' do
-    expect(finder.valid_group_names).to match_array(valid_group_names)
+    expect(filter.valid_group_names).to match_array(valid_group_names)
   end
 
   it 'maps all of the invalid input_names to invalid_names' do
-    expect(finder.invalid_emails).to match_array(invalid_emails)
+    expect(filter.invalid_emails).to match_array(invalid_emails)
   end
 
   it 'maps all of the valid input_emails to valid_emails' do
-    expect(finder.valid_emails).to match_array(valid_emails)
+    expect(filter.valid_emails).to match_array(valid_emails)
   end
 
   it 'does not perform N+1 queries', :request_store, :use_sql_query_cache do

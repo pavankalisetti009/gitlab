@@ -3,7 +3,7 @@
 module Gitlab
   module CodeOwners
     module OwnerValidation
-      class BaseFinder
+      class BaseFilter
         def initialize(project, users: nil, groups: nil, emails: nil, names: nil)
           @project = project
           @input_users = users
@@ -12,7 +12,7 @@ module Gitlab
           @input_emails = emails
         end
 
-        # Define a constant named ERROR_MESSAGE in the finder class which
+        # Define a constant named ERROR_MESSAGE in the filter class which
         # corresponds to one of the expected messages for
         # Gitlab::CodeOwners::Error.
         def error_message
