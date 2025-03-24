@@ -79,14 +79,6 @@ RSpec.describe Boards::Epics::CreateService, feature_category: :team_planning do
           it_behaves_like 'epic creation error', /Board not found/
         end
       end
-
-      context 'when work_item_epics_ssot feature flag is disabled' do
-        before do
-          stub_feature_flags(work_item_epics_ssot: false)
-        end
-
-        it_behaves_like 'success epic creation'
-      end
     end
 
     context 'when epics feature is not available' do

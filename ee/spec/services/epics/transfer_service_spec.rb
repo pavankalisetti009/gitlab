@@ -55,17 +55,6 @@ RSpec.describe Epics::TransferService, feature_category: :portfolio_management d
               .to publish_event(WorkItems::WorkItemCreatedEvent)
                     .with({ id: an_instance_of(Integer), namespace_id: new_group.id })
           end
-
-          context 'when work_item_epics_ssot feature flag is disabled' do
-            before do
-              stub_feature_flags(work_item_epics_ssot: false)
-            end
-
-            it 'publishes en epic event for the new epics' do
-              expect { service.execute }
-                .to publish_event(Epics::EpicCreatedEvent).with({ id: an_instance_of(Integer), group_id: new_group.id })
-            end
-          end
         end
 
         it 'does not recreate missing epics that are not applied to issues' do

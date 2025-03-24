@@ -83,7 +83,7 @@ module Epics
         parent: issue_epic,
         confidential: issue.confidential
       }.merge(
-        rewritten_old_entity_attributes(include_milestone: parent_group.work_item_epics_ssot_enabled?)
+        rewritten_old_entity_attributes(include_milestone: true)
       )
     end
 
