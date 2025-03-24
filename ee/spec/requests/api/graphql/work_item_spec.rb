@@ -1751,10 +1751,6 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
 
         before_all do
           group.add_guest(guest)
-        end
-
-        before do
-          stub_licensed_features(custom_fields: true)
 
           create(:work_item_text_field_value, work_item: work_item, custom_field: text_field, value: 'text value')
           create(:work_item_number_field_value, work_item: work_item, custom_field: number_field, value: 10)
@@ -1766,6 +1762,10 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
             custom_field_select_option: multi_select_option_3)
           create(:work_item_select_field_value, work_item: work_item, custom_field: multi_select_field,
             custom_field_select_option: multi_select_option_1)
+        end
+
+        before do
+          stub_licensed_features(custom_fields: true)
         end
 
         it 'returns widget information' do
@@ -1802,6 +1802,58 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
               )
             )
           )
+        end
+
+        context 'when only some custom field values are requested' do
+          let(:work_item_fields) do
+            <<~GRAPHQL
+              id
+              widgets {
+                type
+                ... on WorkItemWidgetCustomFields {
+                  customFieldValues(customFieldIds: ["#{text_field.to_gid}", "#{number_field.to_gid}"]) {
+                    customField {
+                      id
+                    }
+                    ... on WorkItemTextFieldValue {
+                      value
+                    }
+                    ... on WorkItemNumberFieldValue {
+                      value
+                    }
+                    ... on WorkItemSelectFieldValue {
+                      selectedOptions {
+                        id
+                      }
+                    }
+                  }
+                }
+              }
+            GRAPHQL
+          end
+
+          it 'only returns requested custom field values' do
+            post_graphql(query, current_user: current_user)
+
+            expect(work_item_data).to include(
+              'id' => work_item.to_gid.to_s,
+              'widgets' => include(
+                hash_including(
+                  'type' => 'CUSTOM_FIELDS',
+                  'customFieldValues' => [
+                    {
+                      'customField' => { 'id' => number_field.to_gid.to_s },
+                      'value' => 10
+                    },
+                    {
+                      'customField' => { 'id' => text_field.to_gid.to_s },
+                      'value' => 'text value'
+                    }
+                  ]
+                )
+              )
+            )
+          end
         end
       end
     end
