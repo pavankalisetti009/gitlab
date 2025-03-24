@@ -19,11 +19,6 @@ RSpec.describe ::Sbom::Exporters::Cyclonedx::V16Service, feature_category: :vuln
 
   subject(:output) { Gitlab::Json.parse(generate) }
 
-  before_all do
-    create(:sbom_occurrence, :yarn, project: project)
-    create(:sbom_occurrence, :nuget, project: project)
-  end
-
   def find_component(occurrence)
     output['components'].find { |component| component['name'] == occurrence.name }
   end
@@ -81,6 +76,15 @@ RSpec.describe ::Sbom::Exporters::Cyclonedx::V16Service, feature_category: :vuln
 
     it 'uses purl as bom-ref when there is a purl_type' do
       expect(find_component(record_with_purl_type)['bom-ref']).to start_with('pkg:')
+    end
+
+    it 'does not cause N+1 queries' do
+      control = ActiveRecord::QueryRecorder.new { described_class.new(export, sbom_occurrences).generate }
+
+      create(:sbom_occurrence, :yarn, project: project)
+      create(:sbom_occurrence, :nuget, project: project)
+
+      expect { described_class.new(export, sbom_occurrences).generate }.not_to exceed_query_limit(control)
     end
   end
 end

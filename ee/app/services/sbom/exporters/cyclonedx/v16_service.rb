@@ -35,7 +35,7 @@ module Sbom
         def sbom_occurrences
           [].tap do |arr|
             @sbom_occurrences.each_batch do |batch|
-              arr.concat(batch.to_a)
+              arr.concat(batch.with_component.with_version.to_a)
             end
           end
         end
