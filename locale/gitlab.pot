@@ -38050,10 +38050,10 @@ msgstr ""
 msgid "My company or team"
 msgstr ""
 
-msgid "My topic"
+msgid "My reaction"
 msgstr ""
 
-msgid "My-Reaction"
+msgid "My topic"
 msgstr ""
 
 msgid "N/A"
