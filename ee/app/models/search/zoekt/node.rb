@@ -157,7 +157,6 @@ module Search
       end
 
       def task_pull_frequency
-        return TASK_PULL_FREQUENCY_DEFAULT if Feature.disabled?(:zoekt_reduced_pull_frequency, Feature.current_request)
         return TASK_PULL_FREQUENCY_DEFAULT if tasks.pending.limit(concurrency_limit).count < concurrency_limit
 
         TASK_PULL_FREQUENCY_INCREASED
