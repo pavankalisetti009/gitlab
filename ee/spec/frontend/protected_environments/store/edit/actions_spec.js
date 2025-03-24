@@ -367,6 +367,31 @@ describe('ee/protected_environments/store/edit/actions', () => {
         ],
       );
     });
+
+    it('sends only environment name to update the environment', () => {
+      const environment = {
+        name: 'staging',
+        required_approval_count: 2,
+        deploy_access_levels: [{ group_id: 5, user_id: null, access_level: null }],
+      };
+      mockedState.newDeployAccessLevelsForEnvironment[environment.name] = [{ user_id: 1 }];
+
+      return testAction(
+        saveRule,
+        { environment, ruleKey: DEPLOYER_RULE_KEY },
+        mockedState,
+        [],
+        [
+          {
+            type: 'updateEnvironment',
+            payload: {
+              name: environment.name,
+              deploy_access_levels: [{ user_id: 1 }],
+            },
+          },
+        ],
+      );
+    });
   });
   describe('updateApproverInheritance', () => {
     let rule;
