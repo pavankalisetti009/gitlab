@@ -48,7 +48,6 @@ module Search
           )
 
           logger.info(log_data)
-          set_task_processing_queue_size_metric(node.metadata['name'], task_count_processing_queue)
         end
       end
 
@@ -60,13 +59,6 @@ module Search
         )
 
         logger.info(log_data)
-      end
-
-      def set_task_processing_queue_size_metric(node_name, count)
-        task_gauge = ::Gitlab::Metrics.gauge(:search_zoekt_task_processing_queue_size,
-          'Number of tasks waiting to be processed by Zoekt', {}, :max)
-
-        task_gauge.set({ node_name: node_name }, count)
       end
 
       def logger
