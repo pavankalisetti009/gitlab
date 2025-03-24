@@ -49,9 +49,9 @@ describe('Delete role modal', () => {
     beforeEach(() => createComponent());
 
     it('shows modal', () => {
-      expect(findModal().text()).toBe('Are you sure you want to delete this custom role?');
+      expect(findModal().text()).toBe('Are you sure you want to delete this role?');
       expect(findModal().props()).toMatchObject({
-        title: 'Delete custom role?',
+        title: 'Delete role?',
         actionText: 'Delete role',
         actionFn: wrapper.vm.deleteRole,
         modalId: 'delete-role-modal',
@@ -72,7 +72,7 @@ describe('Delete role modal', () => {
       it('runs delete mutation', () => {
         expect(defaultDeleteMutationHandler).toHaveBeenCalledTimes(1);
         expect(defaultDeleteMutationHandler).toHaveBeenCalledWith({
-          input: { id: 'gid://gitlab/MemberRole/5' },
+          id: 'gid://gitlab/MemberRole/5',
         });
       });
 
