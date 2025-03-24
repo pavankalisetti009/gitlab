@@ -141,7 +141,7 @@ export default {
       data-testid="secret-manager-toggle"
       @change="onToggleSecretManager"
     />
-    <p v-if="hasError" class="gl-mt-2 gl-text-red-500" data-testid="secret-manager-error">
+    <p v-if="hasError" class="gl-mt-2 gl-text-danger" data-testid="secret-manager-error">
       {{ __('Something went wrong. Please try again.') }}
     </p>
   </div>

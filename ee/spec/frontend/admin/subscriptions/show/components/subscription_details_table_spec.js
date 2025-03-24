@@ -188,7 +188,7 @@ describe('Subscription Details Table', () => {
       });
 
       it('shows the highlighted color for the last sync row', () => {
-        expect(findLastSyncRow().classes('gl-text-red-500')).toBe(true);
+        expect(findLastSyncRow().classes('gl-text-danger')).toBe(true);
       });
 
       it('shows the default row color for all other rows', () => {

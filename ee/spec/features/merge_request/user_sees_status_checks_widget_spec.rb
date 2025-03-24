@@ -63,7 +63,7 @@ RSpec.describe 'Merge request > User sees status checks widget', :js, feature_ca
     where(:check, :icon_class) do
       lazy { check_pending } | '.gl-text-gray-400'
       lazy { check_passed } | '.gl-text-success'
-      lazy { check_failed } | '.gl-text-red-500'
+      lazy { check_failed } | '.gl-text-danger'
     end
 
     with_them do

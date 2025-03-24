@@ -197,7 +197,7 @@ export default {
     </template>
     <template #summary>
       <summary-cell
-        :class="{ 'gl-text-red-500': hasConflict }"
+        :class="{ 'gl-text-danger': hasConflict }"
         :label="i18n.targetUrl"
         :value="profile.targetUrl"
       />

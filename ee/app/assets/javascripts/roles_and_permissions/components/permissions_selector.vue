@@ -221,7 +221,7 @@ export default {
       </gl-sprintf>
     </p>
 
-    <p v-if="!isValid" class="gl-text-red-500">{{ $options.i18n.permissionsSelectionError }}</p>
+    <p v-if="!isValid" class="gl-text-danger">{{ $options.i18n.permissionsSelectionError }}</p>
 
     <gl-alert
       v-if="isErrorLoadingPermissions"
@@ -269,7 +269,7 @@ export default {
       </template>
 
       <template #cell(name)="{ item }">
-        <span :class="{ 'gl-text-red-500': !isValid }" class="gl-whitespace-nowrap">
+        <span :class="{ 'gl-text-danger': !isValid }" class="gl-whitespace-nowrap">
           {{ item.name }}
 
           <gl-badge v-if="item.disabled" variant="info" class="gl-ml-2">

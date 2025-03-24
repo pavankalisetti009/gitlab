@@ -94,18 +94,18 @@ RSpec.shared_examples 'password complexity validations' do
           let(:complexity_rules) { [:number, :symbol] }
 
           it 'highlights not matched rules' do
-            expect(page).to have_selector('[data-testid="close-icon"].gl-text-red-500', count: 0)
-            expect(page).to have_selector('[data-testid="password-rule-text"].gl-text-red-500', count: 0)
+            expect(page).to have_selector('[data-testid="close-icon"].gl-text-danger', count: 0)
+            expect(page).to have_selector('[data-testid="password-rule-text"].gl-text-danger', count: 0)
 
             click_button submit_button_selector
 
             expect(page).to have_selector(
-              '[data-testid="close-icon"].gl-text-red-500',
+              '[data-testid="close-icon"].gl-text-danger',
               count: complexity_rules.size
             )
 
             expect(page).to have_selector(
-              '[data-testid="password-rule-text"].gl-text-red-500',
+              '[data-testid="password-rule-text"].gl-text-danger',
               count: complexity_rules.size
             )
           end

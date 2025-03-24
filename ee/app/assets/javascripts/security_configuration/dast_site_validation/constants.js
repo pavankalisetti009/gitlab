@@ -65,7 +65,7 @@ export const DAST_SITE_VALIDATION_STATUS_PROPS = {
   [DAST_SITE_VALIDATION_STATUS.FAILED]: {
     labelText: s__('DastSiteValidation|Validation failed'),
     name: 'status-failed',
-    class: 'gl-text-red-500',
+    class: 'gl-text-danger',
     title: s__('DastSiteValidation|The validation has failed. Please try again.'),
   },
   [DAST_SITE_VALIDATION_STATUS.NONE]: {
