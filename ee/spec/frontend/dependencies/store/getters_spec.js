@@ -41,31 +41,4 @@ describe('Dependencies getters', () => {
       });
     });
   });
-
-  describe('selectedComponents', () => {
-    it('returns the `component_name` array in `searchFilterParameters`', () => {
-      const mockComponentNames = ['component-1', 'component-2'];
-      const state = {
-        listFoo: {
-          searchFilterParameters: {
-            component_names: mockComponentNames,
-          },
-        },
-        currentList: 'listFoo',
-      };
-
-      expect(getters.selectedComponents(state)).toEqual(mockComponentNames);
-    });
-
-    it('returns empty array if `component_names` is not set', () => {
-      const state = {
-        listFoo: {
-          searchFilterParameters: {},
-        },
-        currentList: 'listFoo',
-      };
-
-      expect(getters.selectedComponents(state)).toEqual([]);
-    });
-  });
 });
