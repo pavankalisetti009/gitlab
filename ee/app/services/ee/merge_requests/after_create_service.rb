@@ -17,7 +17,7 @@ module EE
         end
 
         record_onboarding_progress(merge_request)
-        schedule_sync_for(merge_request)
+        merge_request.schedule_policy_synchronization
         schedule_fetch_suggested_reviewers(merge_request)
         schedule_approval_notifications(merge_request)
         schedule_duo_code_review(merge_request)
@@ -42,31 +42,6 @@ module EE
 
       def schedule_approval_notifications(merge_request)
         ::MergeRequests::NotifyApproversWorker.perform_in(APPROVERS_NOTIFICATION_DELAY, merge_request.id)
-      end
-
-      def schedule_sync_for(merge_request)
-        if merge_request.project.scan_result_policy_reads.targeting_commits.any?
-          # We need to make sure to run the merge request worker after hooks were called to
-          # get correct commit signatures
-          ::Security::ScanResultPolicies::SyncAnyMergeRequestApprovalRulesWorker.perform_async(merge_request.id)
-        end
-
-        if merge_request.approval_rules.by_report_types([:scan_finding, :license_scanning]).any?
-          ::Security::ScanResultPolicies::SyncPreexistingStatesApprovalRulesWorker.perform_async(merge_request.id)
-        end
-
-        pipeline_id = merge_request.head_pipeline_id
-
-        if pipeline_id
-          ::Ci::SyncReportsToReportApprovalRulesWorker.perform_async(pipeline_id)
-
-          # This is needed here to avoid inconsistent state when the scan result policy is updated after the
-          # head pipeline completes and before the merge request is created, we might have inconsistent state.
-          ::Security::ScanResultPolicies::SyncMergeRequestApprovalsWorker.perform_async(pipeline_id, merge_request.id)
-          ::Security::UnenforceablePolicyRulesPipelineNotificationWorker.perform_async(pipeline_id)
-        else
-          ::Security::UnenforceablePolicyRulesNotificationWorker.perform_async(merge_request.id)
-        end
       end
 
       def schedule_fetch_suggested_reviewers(merge_request)
