@@ -1,7 +1,7 @@
 <script>
 import { GlFilteredSearch } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
-import { mapActions, mapState } from 'vuex';
+import { mapActions } from 'vuex';
 import { s__ } from '~/locale';
 
 export default {
@@ -23,11 +23,8 @@ export default {
       default: false,
     },
   },
-  computed: {
-    ...mapState(['currentList']),
-  },
   methods: {
-    ...mapActions('allDependencies', ['setSearchFilterParameters', 'fetchDependencies']),
+    ...mapActions(['setSearchFilterParameters', 'fetchDependencies']),
   },
   i18n: {
     searchInputPlaceholder: s__('Dependencies|Search or filter dependencies…'),

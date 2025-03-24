@@ -135,7 +135,7 @@ describe('ee/dependencies/components/filtered_search/tokens/version_token.vue', 
 
   describe('when multiple components are selected', () => {
     beforeEach(() => {
-      store.state.allDependencies.componentIds = ['component-1', 'component-2'];
+      store.state.componentIds = ['component-1', 'component-2'];
     });
 
     it('shows the correct guidance message', () => {
@@ -156,7 +156,7 @@ describe('ee/dependencies/components/filtered_search/tokens/version_token.vue', 
   describe('when exactly one component is selected', () => {
     const componentIds = ['component-1'];
     beforeEach(() => {
-      store.state.allDependencies.componentIds = componentIds;
+      store.state.componentIds = componentIds;
     });
 
     it('does not show any guidance messages', () => {
@@ -180,7 +180,7 @@ describe('ee/dependencies/components/filtered_search/tokens/version_token.vue', 
 
   describe('when the versions have been fetched successfully', () => {
     beforeEach(async () => {
-      store.state.allDependencies.componentIds = ['component-1'];
+      store.state.componentIds = ['component-1'];
       await waitForPromises();
     });
 
@@ -227,7 +227,7 @@ describe('ee/dependencies/components/filtered_search/tokens/version_token.vue', 
       createComponent({
         projectHandler: jest.fn().mockRejectedValue(new Error('GraphQL error')),
       });
-      store.state.allDependencies.componentIds = ['component-1'];
+      store.state.componentIds = ['component-1'];
 
       await waitForPromises();
     });
@@ -243,7 +243,7 @@ describe('ee/dependencies/components/filtered_search/tokens/version_token.vue', 
   describe('when there is a next page', () => {
     beforeEach(async () => {
       createComponent(mockApolloHandlers([], true));
-      store.state.allDependencies.componentIds = ['component-1'];
+      store.state.componentIds = ['component-1'];
       await waitForPromises();
     });
 

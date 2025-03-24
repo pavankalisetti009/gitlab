@@ -5,9 +5,8 @@ import { mapActions, mapGetters, mapState } from 'vuex';
 import { getTimeago } from '~/lib/utils/datetime_utility';
 import { __, s__ } from '~/locale';
 import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
-import { DEPENDENCY_LIST_TYPES } from '../store/constants';
 import { NAMESPACE_ORGANIZATION, NAMESPACE_PROJECT } from '../constants';
-import { SORT_FIELD_SEVERITY } from '../store/modules/list/constants';
+import { SORT_FIELD_SEVERITY } from '../store/constants';
 import DependenciesActions from './dependencies_actions.vue';
 import SbomReportsErrorsAlert from './sbom_reports_errors_alert.vue';
 import PaginatedDependenciesTable from './paginated_dependencies_table.vue';
@@ -47,18 +46,8 @@ export default {
     },
   },
   computed: {
-    ...mapState(['currentList', 'listTypes']),
-    ...mapGetters(['isInitialized', 'totals']),
-    ...mapState(DEPENDENCY_LIST_TYPES.all.namespace, ['pageInfo']),
-    currentListIndex: {
-      get() {
-        return this.listTypes.map(({ namespace }) => namespace).indexOf(this.currentList);
-      },
-      set(index) {
-        const { namespace } = this.listTypes[index] || {};
-        this.setCurrentList(namespace);
-      },
-    },
+    ...mapGetters(['totals']),
+    ...mapState(['pageInfo', 'initialized']),
     showSbomReportsErrors() {
       return this.sbomReportsErrors.length > 0;
     },
@@ -95,7 +84,6 @@ export default {
       'setNamespaceType',
       'setPageInfo',
       'setSortField',
-      'setCurrentList',
     ]),
   },
   i18n: {
@@ -109,7 +97,7 @@ export default {
 </script>
 
 <template>
-  <gl-loading-icon v-if="!isInitialized" size="lg" class="mt-4" />
+  <gl-loading-icon v-if="!initialized" size="lg" class="mt-4" />
 
   <gl-empty-state
     v-else-if="!hasDependencies"
@@ -168,14 +156,10 @@ export default {
       <dependency-export-dropdown v-if="exportEndpoint" :container="namespaceType" />
     </header>
 
-    <dependencies-actions
-      v-if="!isOrganizationNamespace"
-      class="gl-mt-3"
-      :namespace="currentList"
-    />
+    <dependencies-actions v-if="!isOrganizationNamespace" class="gl-mt-3" />
 
     <article>
-      <paginated-dependencies-table :namespace="currentList" />
+      <paginated-dependencies-table />
     </article>
   </section>
 </template>

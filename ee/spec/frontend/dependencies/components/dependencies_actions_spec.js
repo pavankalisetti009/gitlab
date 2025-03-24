@@ -2,8 +2,7 @@ import { GlSorting } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import DependenciesActions from 'ee/dependencies/components/dependencies_actions.vue';
 import createStore from 'ee/dependencies/store';
-import { DEPENDENCY_LIST_TYPES } from 'ee/dependencies/store/constants';
-import { SORT_FIELDS } from 'ee/dependencies/store/modules/list/constants';
+import { SORT_FIELDS } from 'ee/dependencies/store/constants';
 import * as urlUtility from '~/lib/utils/url_utility';
 import { TEST_HOST } from 'helpers/test_constants';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -11,7 +10,6 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 describe('DependenciesActions component', () => {
   let store;
   let wrapper;
-  const { namespace } = DEPENDENCY_LIST_TYPES.all;
 
   const factory = ({ propsData, provide } = {}) => {
     store = createStore();
@@ -20,7 +18,6 @@ describe('DependenciesActions component', () => {
     wrapper = shallowMountExtended(DependenciesActions, {
       store,
       propsData: {
-        namespace,
         ...propsData,
       },
       provide: {
@@ -56,7 +53,7 @@ describe('DependenciesActions component', () => {
   describe('Sorting', () => {
     beforeEach(async () => {
       factory();
-      store.state[namespace].endpoint = `${TEST_HOST}/dependencies.json`;
+      store.state.endpoint = `${TEST_HOST}/dependencies.json`;
       jest.spyOn(urlUtility, 'updateHistory');
       await nextTick();
     });
@@ -71,16 +68,14 @@ describe('DependenciesActions component', () => {
       });
 
       expect(store.dispatch.mock.calls).toEqual(
-        expect.arrayContaining(
-          Object.keys(SORT_FIELDS).map((field) => [`${namespace}/setSortField`, field]),
-        ),
+        expect.arrayContaining(Object.keys(SORT_FIELDS).map((field) => ['setSortField', field])),
       );
     });
 
     it('dispatches the toggleSortOrder action on clicking the sort order button', () => {
       findSorting().vm.$emit('sortDirectionChange');
 
-      expect(store.dispatch).toHaveBeenCalledWith(`${namespace}/toggleSortOrder`);
+      expect(store.dispatch).toHaveBeenCalledWith('toggleSortOrder');
       expect(urlUtility.updateHistory).toHaveBeenCalledTimes(1);
       expect(urlUtility.updateHistory).toHaveBeenCalledWith({
         url: `${TEST_HOST}/`,

@@ -9,7 +9,6 @@ import SbomReportsErrorsAlert from 'ee/dependencies/components/sbom_reports_erro
 import DependencyExportDropdown from 'ee/dependencies/components/dependency_export_dropdown.vue';
 import PaginatedDependenciesTable from 'ee/dependencies/components/paginated_dependencies_table.vue';
 import createStore from 'ee/dependencies/store';
-import { DEPENDENCY_LIST_TYPES } from 'ee/dependencies/store/constants';
 import { NAMESPACE_ORGANIZATION } from 'ee/dependencies/constants';
 import { TEST_HOST } from 'helpers/test_constants';
 import { getDateInPast } from '~/lib/utils/datetime_utility';
@@ -19,8 +18,6 @@ describe('DependenciesApp component', () => {
   let store;
   let wrapper;
   let mock;
-
-  const { namespace: allNamespace } = DEPENDENCY_LIST_TYPES.all;
 
   const basicAppProvides = {
     hasDependencies: true,
@@ -57,14 +54,14 @@ describe('DependenciesApp component', () => {
 
   const setStateLoaded = () => {
     const total = 2;
-    Object.assign(store.state[allNamespace], {
+    Object.assign(store.state, {
       initialized: true,
       isLoading: false,
       dependencies: Array(total)
         .fill(null)
         .map((_, id) => ({ id })),
     });
-    store.state[allNamespace].pageInfo.total = total;
+    store.state.pageInfo.total = total;
   };
 
   const findDependenciesTables = () => wrapper.findAllComponents(PaginatedDependenciesTable);
@@ -105,7 +102,6 @@ describe('DependenciesApp component', () => {
   const expectDependenciesTable = () => {
     const tables = findDependenciesTables();
     expect(tables).toHaveLength(1);
-    expect(tables.at(0).props()).toEqual({ namespace: allNamespace });
   };
 
   const expectHeader = () => {
@@ -242,7 +238,7 @@ describe('DependenciesApp component', () => {
       });
 
       it('passes the correct namespace to dependencies actions component', () => {
-        expectComponentWithProps(DependenciesActions, { namespace: allNamespace });
+        expectComponentWithProps(DependenciesActions);
       });
 
       describe('where there is no pipeline info', () => {

@@ -6,8 +6,7 @@ import { __ } from '~/locale';
 import { setUrlParams, updateHistory } from '~/lib/utils/url_utility';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { NAMESPACE_PROJECT, NAMESPACE_GROUP } from '../constants';
-import { DEPENDENCY_LIST_TYPES } from '../store/constants';
-import { SORT_FIELDS, SORT_ASCENDING } from '../store/modules/list/constants';
+import { SORT_FIELDS, SORT_ASCENDING } from '../store/constants';
 
 export default {
   i18n: {
@@ -23,26 +22,11 @@ export default {
   },
   mixins: [glFeatureFlagsMixin()],
   inject: ['namespaceType'],
-  props: {
-    namespace: {
-      type: String,
-      required: true,
-      validator: (value) =>
-        Object.values(DEPENDENCY_LIST_TYPES).some(({ namespace }) => value === namespace),
-    },
-  },
   computed: {
     isSortAscending() {
       return this.sortOrder === SORT_ASCENDING;
     },
-    ...mapState({
-      sortField(state) {
-        return state[this.namespace].sortField;
-      },
-      sortOrder(state) {
-        return state[this.namespace].sortOrder;
-      },
-    }),
+    ...mapState(['sortField', 'sortOrder']),
     sortFieldName() {
       return SORT_FIELDS[this.sortField];
     },
@@ -69,11 +53,11 @@ export default {
     ...mapActions({
       setSortField(dispatch, field) {
         this.clearCursorParam();
-        dispatch(`${this.namespace}/setSortField`, field);
+        dispatch(`setSortField`, field);
       },
       toggleSortOrder(dispatch) {
         this.clearCursorParam();
-        dispatch(`${this.namespace}/toggleSortOrder`);
+        dispatch(`toggleSortOrder`);
       },
     }),
     clearCursorParam() {

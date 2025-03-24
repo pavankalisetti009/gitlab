@@ -142,7 +142,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions('allDependencies', ['setComponentIds']),
+    ...mapActions(['setComponentIds']),
     isComponentSelected(component) {
       return this.selectedComponents.some((c) => c.id === component.id);
     },

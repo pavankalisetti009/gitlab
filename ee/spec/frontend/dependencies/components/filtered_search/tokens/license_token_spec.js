@@ -84,7 +84,7 @@ describe('ee/dependencies/components/filtered_search/tokens/license_token.vue', 
 
   describe('when the component is initially rendered', () => {
     it('shows a loading indicator while fetching the list of licenses', () => {
-      store.state.allDependencies.fetchingLicensesInProgress = true;
+      store.state.fetchingLicensesInProgress = true;
       createComponent();
 
       expect(isLoadingSuggestions()).toBe(true);
@@ -93,10 +93,7 @@ describe('ee/dependencies/components/filtered_search/tokens/license_token.vue', 
     it('fetches the list of licenses from the correct endpoint', () => {
       createComponent();
 
-      expect(store.dispatch).toHaveBeenCalledWith(
-        'allDependencies/fetchLicenses',
-        TEST_GROUP_LICENSES_ENDPOINT,
-      );
+      expect(store.dispatch).toHaveBeenCalledWith('fetchLicenses', TEST_GROUP_LICENSES_ENDPOINT);
     });
 
     it.each([
@@ -108,7 +105,7 @@ describe('ee/dependencies/components/filtered_search/tokens/license_token.vue', 
     ])(
       'with $licenses.length licenses it contains a dynamic-scroller is "$expectDynamicScroller"',
       ({ licenses, expectDynamicScroller }) => {
-        store.state.allDependencies.licenses = licenses;
+        store.state.licenses = licenses;
         createComponent();
 
         expect(findDynamicScroller().exists()).toBe(expectDynamicScroller);
@@ -135,7 +132,7 @@ describe('ee/dependencies/components/filtered_search/tokens/license_token.vue', 
 
   describe('once the licenses have been fetched', () => {
     beforeEach(() => {
-      store.state.allDependencies.licenses = TEST_LICENSES;
+      store.state.licenses = TEST_LICENSES;
       createComponent();
     });
 

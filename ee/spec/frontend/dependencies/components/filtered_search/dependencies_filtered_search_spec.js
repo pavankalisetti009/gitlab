@@ -84,7 +84,7 @@ describe('DependenciesFilteredSearch', () => {
         const filterPayload = [{ type: 'license', value: { data: ['MIT'] } }];
         findFilteredSearch().vm.$emit('submit', filterPayload);
 
-        expect(store.dispatch).toHaveBeenCalledWith('allDependencies/fetchDependencies', {
+        expect(store.dispatch).toHaveBeenCalledWith('fetchDependencies', {
           page: 1,
         });
       });
