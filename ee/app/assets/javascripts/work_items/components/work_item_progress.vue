@@ -1,40 +1,29 @@
 <script>
-import { GlForm, GlFormInput, GlFormGroup, GlPopover, GlButton, GlLoadingIcon } from '@gitlab/ui';
+import { GlFormGroup, GlFormInput, GlPopover } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
-import { __ } from '~/locale';
 import Tracking from '~/tracking';
+import WorkItemSidebarWidget from '~/work_items/components/shared/work_item_sidebar_widget.vue';
 import {
-  sprintfWorkItem,
   I18N_WORK_ITEM_ERROR_UPDATING,
+  sprintfWorkItem,
   TRACKING_CATEGORY_SHOW,
   WORK_ITEM_TYPE_VALUE_OBJECTIVE,
 } from '~/work_items/constants';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
 
 export default {
-  inputId: 'progress-widget-input',
   minValue: 0,
   maxValue: 100,
   components: {
-    GlForm,
     GlFormInput,
     GlFormGroup,
     GlPopover,
-    GlButton,
-    GlLoadingIcon,
     HelpIcon,
+    WorkItemSidebarWidget,
   },
   mixins: [Tracking.mixin(), glFeatureFlagMixin()],
-  i18n: {
-    progressPopoverTitle: __('How is progress calculated?'),
-    progressPopoverContent: __(
-      'This field is auto-calculated based on the progress score of its direct children. You can overwrite this value but it will be replaced by the auto-calculation anytime the progress score of its direct children are updated.',
-    ),
-    progressTitle: __('Progress'),
-    invalidMessage: __('Enter a number from 0 to 100.'),
-  },
   props: {
     canUpdate: {
       type: Boolean,
@@ -57,15 +46,12 @@ export default {
   },
   data() {
     return {
-      isEditing: false,
       localProgress: this.progress,
       isUpdating: false,
     };
   },
   computed: {
-    placeholder() {
-      return this.canUpdate && this.isEditing ? __('Enter a number') : __('None');
-    },
+    // eslint-disable-next-line vue/no-unused-properties
     tracking() {
       return {
         category: TRACKING_CATEGORY_SHOW,
@@ -94,6 +80,10 @@ export default {
     },
   },
   methods: {
+    cancelEditing(stopEditing) {
+      this.resetProgress();
+      stopEditing();
+    },
     checkValidProgress(progress) {
       return (
         Number.isInteger(progress) &&
@@ -101,18 +91,21 @@ export default {
         progress <= this.$options.maxValue
       );
     },
+    resetProgress() {
+      this.localProgress = this.progress;
+    },
     updateProgress() {
       if (!this.canUpdate) return;
 
       if (this.localProgress === '') {
-        this.cancelEditing();
+        this.resetProgress();
         return;
       }
 
       const valueAsNumber = Number(this.localProgress);
 
       if (valueAsNumber === this.progress || !this.checkValidProgress(valueAsNumber)) {
-        this.cancelEditing();
+        this.resetProgress();
         return;
       }
 
@@ -136,97 +129,67 @@ export default {
           }
         })
         .catch((error) => {
-          const msg = sprintfWorkItem(I18N_WORK_ITEM_ERROR_UPDATING, this.workItemType);
-          this.localProgress = this.progress;
-          this.$emit('error', msg);
+          this.resetProgress();
+          this.$emit('error', sprintfWorkItem(I18N_WORK_ITEM_ERROR_UPDATING, this.workItemType));
           Sentry.captureException(error);
         })
         .finally(() => {
           this.isUpdating = false;
-          this.isEditing = false;
         });
-    },
-    cancelEditing() {
-      this.localProgress = this.progress;
-      this.isEditing = false;
     },
   },
 };
 </script>
 
 <template>
-  <div data-testid="work-item-progress-wrapper">
-    <div class="gl-flex gl-items-center gl-justify-between">
-      <h3 :class="{ 'gl-sr-only': isEditing }" class="gl-heading-5 !gl-mb-0">
-        {{ $options.i18n.progressTitle }}
-        <template v-if="showProgressPopover">
-          <help-icon id="okr-progress-popover-title" />
-          <gl-popover
-            triggers="hover"
-            target="okr-progress-popover-title"
-            placement="right"
-            :title="$options.i18n.progressPopoverTitle"
-            :content="$options.i18n.progressPopoverContent"
-          />
-        </template>
-      </h3>
-      <gl-button
-        v-if="canUpdate && !isEditing"
-        data-testid="edit-progress"
-        category="tertiary"
-        size="small"
-        @click="isEditing = true"
-        >{{ __('Edit') }}</gl-button
-      >
-    </div>
-    <gl-form v-if="isEditing" data-testid="work-item-progress" @submit.prevent="updateProgress">
-      <div class="gl-flex gl-items-center">
-        <label for="progress-widget-input" class="gl-mb-0"
-          >{{ $options.i18n.progressTitle }}
-          <template v-if="showProgressPopover">
-            <help-icon id="okr-progress-popover-label" />
-            <gl-popover
-              triggers="hover"
-              target="okr-progress-popover-label"
-              placement="right"
-              :title="$options.i18n.progressPopoverTitle"
-              :content="$options.i18n.progressPopoverContent"
-            />
-          </template>
-        </label>
-        <gl-loading-icon v-if="isUpdating" size="sm" inline class="gl-ml-3" />
-        <gl-button
-          data-testid="apply-progress"
-          category="tertiary"
-          size="small"
-          class="gl-ml-auto"
-          :disabled="isUpdating"
-          @click="updateProgress"
+  <work-item-sidebar-widget
+    :can-update="canUpdate"
+    :is-updating="isUpdating"
+    data-testid="work-item-progress"
+    @stopEditing="updateProgress"
+  >
+    <template #title>
+      {{ __('Progress') }}
+      <template v-if="showProgressPopover">
+        <button
+          id="okr-progress-popover-title"
+          class="gl-border-0 gl-bg-transparent gl-p-0 gl-leading-0"
         >
-          {{ __('Apply') }}
-        </gl-button>
-      </div>
-      <gl-form-group :invalid-feedback="$options.i18n.invalidMessage">
+          <help-icon />
+          <span class="gl-sr-only">{{ __('How is progress calculated?') }}</span>
+        </button>
+        <gl-popover
+          target="okr-progress-popover-title"
+          placement="right"
+          :title="__('How is progress calculated?')"
+          :content="
+            __(
+              'This field is auto-calculated based on the progress score of its direct children. You can overwrite this value but it will be replaced by the auto-calculation anytime the progress score of its direct children are updated.',
+            )
+          "
+        />
+      </template>
+    </template>
+    <template #content> {{ localProgress }}% </template>
+    <template #editing-content="{ stopEditing }">
+      <gl-form-group
+        :invalid-feedback="__('Enter a number from 0 to 100.')"
+        :label="__('Progress')"
+        label-for="progress-widget-input"
+        label-sr-only
+      >
         <gl-form-input
           id="progress-widget-input"
-          ref="input"
           v-model="localProgress"
           autofocus
           :min="$options.minValue"
           :max="$options.maxValue"
-          data-testid="work-item-progress-input"
-          class="hide-unfocused-input-decoration work-item-field-value !gl-max-w-full !gl-border-solid hover:!gl-border-strong"
-          :placeholder="placeholder"
           :state="isValidProgress"
-          width="sm"
           type="number"
-          @blur="updateProgress"
-          @keyup.escape="cancelEditing"
+          @keydown.enter="stopEditing"
+          @keydown.exact.esc.stop="cancelEditing(stopEditing)"
         />
       </gl-form-group>
-    </gl-form>
-    <span v-else class="gl-my-3" data-testid="progress-displayed-value">
-      {{ localProgress }}%
-    </span>
-  </div>
+    </template>
+  </work-item-sidebar-widget>
 </template>

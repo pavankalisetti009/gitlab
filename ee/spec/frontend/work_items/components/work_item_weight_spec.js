@@ -163,9 +163,25 @@ describe('WorkItemWeight component', () => {
       });
       await nextTick();
 
-      findInput().vm.$emit('keydown', new KeyboardEvent('keydown', { key: ESC_KEY }));
+      findInput().vm.$emit('keydown', new KeyboardEvent('keydown', { key: ENTER_KEY }));
 
       expect(mutationSpy).not.toHaveBeenCalled();
+    });
+
+    it('resets the weight value when pressing Escape key', async () => {
+      createComponent({ canUpdate: true, isEditing: true, weight: 11 });
+      await nextTick();
+
+      findInput().vm.$emit('input', '22');
+      await nextTick();
+
+      expect(findInput().props('value')).toBe('22');
+
+      findInput().vm.$emit('keydown', new KeyboardEvent('keydown', { key: ESC_KEY }));
+      await nextTick();
+
+      expect(wrapper.text()).toContain('11');
+      expect(wrapper.text()).not.toContain('22');
     });
 
     it('emits an error when there is a GraphQL error', async () => {
