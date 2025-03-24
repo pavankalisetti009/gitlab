@@ -5,7 +5,8 @@ require 'spec_helper'
 RSpec.describe Ci::CreatePipelineService, feature_category: :continuous_integration do # rubocop:disable RSpec/SpecFilePathFormat -- we breakdown Ci::CreatePipelineService E2E tests this way
   let_it_be(:project) { create(:project, :repository) }
   let(:ref) { 'refs/heads/master' }
-  let(:service) { described_class.new(project, user, { ref: ref }) }
+  let(:sha) { project.repository.commit(ref).sha }
+  let(:service) { described_class.new(project, user, { ref: ref, sha: sha }) }
 
   subject(:pipeline) { service.execute(:push).payload }
 
@@ -16,6 +17,7 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :continuous_integrat
     before_all do
       project.add_owner(user)
       project.add_maintainer(scoped_user)
+      project.update!(allow_composite_identities_to_run_pipelines: true)
     end
 
     before do
