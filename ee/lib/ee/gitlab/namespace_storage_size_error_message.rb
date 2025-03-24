@@ -22,20 +22,7 @@ module EE
       end
 
       def merge_error
-        manage_storage_url = link_to(
-          '',
-          ::Gitlab::Routing.url_helpers.help_page_path('user/storage_usage_quotas.md'),
-          target: '_blank',
-          rel: 'noopener noreferrer'
-        )
-        tag_pair_manage_storage_url = tag_pair(manage_storage_url, :link_start, :link_end)
-        safe_format(
-          _(
-            "Your namespace storage is full. This merge request cannot be merged. " \
-            "To continue, %{link_start}manage your storage usage%{link_end}."
-          ),
-          tag_pair_manage_storage_url
-        )
+        _("Your namespace storage is full. This merge request cannot be merged.")
       end
 
       def push_warning

@@ -2,6 +2,7 @@ import MockAdapter from 'axios-mock-adapter';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { createMockSubscription as createMockApolloSubscription } from 'mock-apollo-client';
+import { GlSprintf } from '@gitlab/ui';
 
 import approvedByCurrentUser from 'test_fixtures/graphql/merge_requests/approvals/approvals.query.graphql.json';
 import getStateQueryResponse from 'test_fixtures/graphql/merge_requests/get_state.query.graphql.json';
@@ -12,6 +13,7 @@ import MrWidgetOptions from 'ee/vue_merge_request_widget/mr_widget_options.vue';
 import WidgetContainer from 'ee/vue_merge_request_widget/components/widget/app.vue';
 import MrWidgetApprovals from 'ee_else_ce/vue_merge_request_widget/components/approvals/approvals.vue';
 import Loading from '~/vue_merge_request_widget/components/loading.vue';
+import eventHub from '~/vue_merge_request_widget/event_hub';
 
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { TEST_HOST } from 'helpers/test_constants';
@@ -51,6 +53,8 @@ describe('ee merge request widget options', () => {
   const findPipelineContainer = () => wrapper.findByTestId('pipeline-container');
   const findMergedPipelineContainer = () => wrapper.findByTestId('merged-pipeline-container');
   const findLoadingComponent = () => wrapper.findComponent(Loading);
+  const findMergeError = () => wrapper.findByTestId('merge-error');
+  const findManageStorageDocsLink = () => wrapper.findByText('manage your storage usage');
 
   const createComponent = ({ mountFn = shallowMountExtended, updatedMrData = {} } = {}) => {
     gl.mrWidgetData = { ...mockData, ...updatedMrData };
@@ -108,6 +112,7 @@ describe('ee merge request widget options', () => {
           ...updatedMrData,
         },
       },
+      stubs: { GlSprintf },
       apolloProvider,
     });
   };
@@ -287,6 +292,33 @@ describe('ee merge request widget options', () => {
       createComponent();
       await waitForPromises();
       expect(findLoadingComponent().exists()).toBe(false);
+    });
+  });
+
+  describe('merge error', () => {
+    const setupMergeError = async (error) => {
+      createComponent();
+      await waitForPromises();
+      eventHub.$emit('FailedToMerge', error);
+      await nextTick();
+    };
+
+    it('prevents XSS attacks by rendering merge error as plain text', async () => {
+      const maliciousError = '<div class="xss"><script>alert("XSS")</script></div>';
+      await setupMergeError(maliciousError);
+
+      expect(findMergeError().text()).toContain(maliciousError);
+      expect(findMergeError().element.querySelector('.xss')).toBe(null);
+    });
+
+    it('renders a docs link when storage is full', async () => {
+      const storageFullError = 'Your namespace storage is full';
+      await setupMergeError(storageFullError);
+
+      expect(findMergeError().text()).toContain(storageFullError);
+      expect(findManageStorageDocsLink().attributes('href')).toBe(
+        '/help/user/storage_usage_quotas',
+      );
     });
   });
 });

@@ -30,9 +30,7 @@ RSpec.describe EE::Gitlab::NamespaceStorageSizeErrorMessage, :saas, feature_cate
   describe '#merge_error' do
     it 'returns the expected message' do
       expected_message = 'Your namespace storage is full. ' \
-                         'This merge request cannot be merged. To continue, ' \
-                         '<a target="_blank" rel="noopener noreferrer" href="/help/user/storage_usage_quotas.md">' \
-                         'manage your storage usage</a>.'
+                         'This merge request cannot be merged.'
 
       expect(error_message.merge_error).to eq(expected_message)
     end

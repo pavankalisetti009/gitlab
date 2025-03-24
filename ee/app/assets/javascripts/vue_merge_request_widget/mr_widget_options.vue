@@ -1,6 +1,8 @@
 <script>
 import { GlSprintf, GlLink } from '@gitlab/ui';
+import { helpPagePath } from '~/helpers/help_page_helper';
 import SafeHtml from '~/vue_shared/directives/safe_html';
+import { s__ } from '~/locale';
 import reportsMixin from 'ee/vue_shared/security_reports/mixins/reports_mixin';
 import CEWidgetOptions from '~/vue_merge_request_widget/mr_widget_options.vue';
 import MrWidgetAlertMessage from '~/vue_merge_request_widget/components/mr_widget_alert_message.vue';
@@ -35,6 +37,10 @@ export default {
     BlockingMergeRequestsReport: () =>
       import('./components/blocking_merge_requests/blocking_merge_requests_report.vue'),
   },
+  manageStorageDocsMsg: s__(
+    'mrWidget|To continue, %{docLinkStart}manage your storage usage%{docLinkEnd}.',
+  ),
+  manageStorageDocsLink: helpPagePath('user/storage_usage_quotas'),
   directives: {
     SafeHtml,
   },
@@ -91,7 +97,15 @@ export default {
           data-testid="merge-error"
           class="mr-widget-section gl-rounded-b-none gl-border-b-section"
         >
-          <span v-safe-html="mergeError"></span>
+          <span>{{ mergeError }}</span>
+
+          <gl-sprintf v-if="showManageStorageDocsLink" :message="$options.manageStorageDocsMsg">
+            <template #docLink="{ content }">
+              <gl-link :href="$options.manageStorageDocsLink" target="_blank">
+                {{ content }}
+              </gl-link>
+            </template>
+          </gl-sprintf>
         </mr-widget-alert-message>
         <mr-widget-alert-message
           v-if="showMergePipelineForkWarning"
