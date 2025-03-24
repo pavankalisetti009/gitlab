@@ -65,7 +65,7 @@ To clear the cache:
 
 ## Base domain
 
-Specifying a base domain automatically sets `KUBE_INGRESS_BASE_DOMAIN` as an deployment variable.
+Specifying a base domain automatically sets `KUBE_INGRESS_BASE_DOMAIN` as a deployment variable.
 If you are using [Auto DevOps](../../../topics/autodevops/_index.md), this domain is used for the different
 stages. For example, Auto Review Apps and Auto Deploy.
 
