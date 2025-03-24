@@ -2,6 +2,10 @@
 import { GlModal, GlSprintf } from '@gitlab/ui';
 
 import { __, s__ } from '~/locale';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import deleteGroupStreamingDestinationsQuery from '../../graphql/mutations/delete_group_streaming_destination.mutation.graphql';
+import deleteInstanceStreamingDestinationsQuery from '../../graphql/mutations/delete_instance_streaming_destination.mutation.graphql';
+// Legacy Mutations 👇 To be removed in https://gitlab.com/gitlab-org/gitlab/-/issues/523881
 import deleteExternalDestination from '../../graphql/mutations/delete_external_destination.mutation.graphql';
 import deleteInstanceExternalDestination from '../../graphql/mutations/delete_instance_external_destination.mutation.graphql';
 import googleCloudLoggingConfigurationDestroy from '../../graphql/mutations/delete_gcp_logging_destination.mutation.graphql';
@@ -20,6 +24,7 @@ export default {
     GlModal,
     GlSprintf,
   },
+  mixins: [glFeatureFlagMixin()],
   inject: ['groupPath'],
   props: {
     item: {
@@ -36,6 +41,12 @@ export default {
       return this.groupPath === 'instance';
     },
     destinationDestroyMutation() {
+      if (this.glFeatures.useConsolidatedAuditEventStreamDestApi) {
+        return this.isInstance
+          ? deleteInstanceStreamingDestinationsQuery
+          : deleteGroupStreamingDestinationsQuery;
+      }
+
       switch (this.type) {
         case DESTINATION_TYPE_GCP_LOGGING:
           return this.isInstance
@@ -56,6 +67,12 @@ export default {
   },
   methods: {
     destinationErrors(data) {
+      if (this.glFeatures.useConsolidatedAuditEventStreamDestApi) {
+        return this.isInstance
+          ? data.instanceAuditEventStreamingDestinationsDelete.errors
+          : data.groupAuditEventStreamingDestinationsDelete.errors;
+      }
+
       switch (this.type) {
         case DESTINATION_TYPE_GCP_LOGGING:
           return this.isInstance

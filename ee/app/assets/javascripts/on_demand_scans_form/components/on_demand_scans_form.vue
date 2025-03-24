@@ -409,7 +409,7 @@ export default {
               :project-id="projectPath"
               :translations="$options.i18n.scanConfigurationBranchDropDown"
             />
-            <div v-if="!defaultBranch" class="gl-mt-3 gl-text-red-500">
+            <div v-if="!defaultBranch" class="gl-mt-3 gl-text-danger">
               {{ $options.i18n.scanConfigurationDefaultBranchLabel }}
             </div>
           </gl-form-group>

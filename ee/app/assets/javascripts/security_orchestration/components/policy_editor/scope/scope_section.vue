@@ -371,7 +371,7 @@ export default {
       <template v-if="showLinkedSppItemsError">
         <div data-testid="policy-scope-project-error" class="gl-flex gl-items-center gl-gap-3">
           <gl-icon name="status_warning" variant="danger" />
-          <p data-testid="policy-scope-project-error-text" class="gl-m-0 gl-text-red-500">
+          <p data-testid="policy-scope-project-error-text" class="gl-m-0 gl-text-danger">
             {{ $options.i18n.policyScopeErrorText }}
           </p>
         </div>

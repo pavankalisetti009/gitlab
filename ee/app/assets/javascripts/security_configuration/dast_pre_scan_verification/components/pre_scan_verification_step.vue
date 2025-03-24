@@ -46,7 +46,7 @@ export default {
       ].includes(this.status);
     },
     descriptionTextCssClass() {
-      return this.isFailedStatus ? 'gl-text-red-500' : 'gl-text-subtle';
+      return this.isFailedStatus ? 'gl-text-danger' : 'gl-text-subtle';
     },
   },
 };

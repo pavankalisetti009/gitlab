@@ -102,7 +102,7 @@ export default {
           <gl-form-checkbox v-model="hasAgreedToGCPZone" data-testid="region-agreement-checkbox">{{
             s__('ProductAnalytics|I agree to event collection and processing in this region.')
           }}</gl-form-checkbox>
-          <div v-if="gcpZoneError" class="gl-text-red-500" data-testid="gcp-zone-error">
+          <div v-if="gcpZoneError" class="gl-text-danger" data-testid="gcp-zone-error">
             {{ gcpZoneError }}
           </div>
         </div>

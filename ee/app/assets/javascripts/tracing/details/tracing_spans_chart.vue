@@ -158,7 +158,7 @@ export default {
               v-if="hasError(index)"
               data-testid="span-details-error-icon"
               name="status-alert"
-              class="gl-mr-3 gl-text-red-500"
+              class="gl-mr-3 gl-text-danger"
             />
           </div>
 

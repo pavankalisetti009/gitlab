@@ -294,7 +294,7 @@ export default {
         <gl-loading-icon size="lg" color="dark" class="gl-my-5" />
       </template>
       <template #cell(status)="{ item: { status } }">
-        <span v-if="isFailedStatus(status)" class="gl-text-red-500">
+        <span v-if="isFailedStatus(status)" class="gl-text-danger">
           <gl-icon name="status_failed" /> {{ __('Fail') }}
         </span>
         <span v-else class="gl-text-success">

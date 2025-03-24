@@ -197,7 +197,7 @@ export default {
           @keydown.meta.enter="submit"
         ></textarea>
       </div>
-      <div v-if="error" class="gl-text-red-500" data-testid="convert-description-modal-error">
+      <div v-if="error" class="gl-text-danger" data-testid="convert-description-modal-error">
         {{ error }}
       </div>
       <gl-alert variant="warning" :dismissible="false" class="mt-2">

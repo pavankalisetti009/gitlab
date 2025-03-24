@@ -143,7 +143,7 @@ export default {
       <p
         v-if="hasDuplicates && !hasValidationError"
         data-testid="error-duplicates-message"
-        class="gl-my-2 gl-text-red-500"
+        class="gl-my-2 gl-text-danger"
       >
         {{ $options.i18n.duplicatesError }}
       </p>
@@ -151,7 +151,7 @@ export default {
       <p
         v-if="hasValidationError"
         data-testid="error-validation-message"
-        class="gl-my-2 gl-text-red-500"
+        class="gl-my-2 gl-text-danger"
       >
         {{ errorMessage }}
       </p>

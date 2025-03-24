@@ -212,7 +212,7 @@ describe('Permissions Selector component', () => {
     it.each([true, false])('shows the expected text when isValid prop is %s', async (isValid) => {
       await createComponent({ mountFn: mountExtended, isValid });
 
-      expect(wrapper.find('tbody td span').classes('gl-text-red-500')).toBe(!isValid);
+      expect(wrapper.find('tbody td span').classes('gl-text-danger')).toBe(!isValid);
     });
   });
 });

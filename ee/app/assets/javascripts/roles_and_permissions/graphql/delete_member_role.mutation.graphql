@@ -1,5 +1,5 @@
-mutation deleteMemberRole($input: MemberRoleDeleteInput!) {
-  memberRoleDelete(input: $input) {
+mutation deleteMemberRole($id: MemberRoleID!) {
+  memberRoleDelete(input: { id: $id }) {
     errors
   }
 }

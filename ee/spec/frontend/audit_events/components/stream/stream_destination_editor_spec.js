@@ -8,6 +8,10 @@ import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { mountExtended, extendedWrapper } from 'helpers/vue_test_utils_helper';
+import {
+  removeAuditEventsStreamingDestination,
+  removeLegacyAuditEventsStreamingDestination,
+} from 'ee/audit_events/graphql/cache_update';
 import getNamespaceFiltersQuery from 'ee/audit_events/graphql/queries/get_namespace_filters.query.graphql';
 import externalAuditEventDestinationCreate from 'ee/audit_events/graphql/mutations/create_external_destination.mutation.graphql';
 import externalAuditEventDestinationUpdate from 'ee/audit_events/graphql/mutations/update_external_destination.mutation.graphql';
@@ -70,6 +74,8 @@ import {
 } from '../../mock_data';
 
 jest.mock('~/alert');
+jest.mock('ee/audit_events/graphql/cache_update');
+
 Vue.use(VueApollo);
 
 describe('StreamDestinationEditor', () => {
@@ -209,6 +215,31 @@ describe('StreamDestinationEditor', () => {
         value: mockNamespaceFilter('myGroup/project1'),
       });
       expect(findDeleteModal().props('item')).toBe(item);
+    });
+
+    describe('when there is an error on adding a destination header', () => {
+      it('should call removeAuditEventsStreamingDestination', async () => {
+        createComponent({
+          apolloHandlers: [
+            [
+              externalAuditEventDestinationCreate,
+              jest.fn().mockResolvedValue(destinationCreateMutationPopulator()),
+            ],
+            [
+              externalAuditEventDestinationHeaderCreate,
+              jest.fn().mockResolvedValue(destinationHeaderCreateMutationPopulator(['error'])),
+            ],
+            [deleteExternalDestination, defaultDeleteSpy],
+          ],
+          provide: {
+            glFeatures: { useConsolidatedAuditEventStreamDestApi: true },
+          },
+        });
+
+        await submitFormWithHeaders();
+
+        expect(removeAuditEventsStreamingDestination).toHaveBeenCalled();
+      });
     });
   });
 
@@ -389,6 +420,26 @@ describe('StreamDestinationEditor', () => {
         expect(findAlertErrors().at(0).text()).toBe(errorMsg);
         expect(wrapper.emitted('error')).toBeDefined();
         expect(wrapper.emitted('added')).toBeUndefined();
+      });
+
+      it('should call removeLegacyAuditEventsStreamingDestination when server returns error while adding headers', async () => {
+        createComponent({
+          apolloHandlers: [
+            [
+              externalAuditEventDestinationCreate,
+              jest.fn().mockResolvedValue(destinationCreateMutationPopulator()),
+            ],
+            [
+              externalAuditEventDestinationHeaderCreate,
+              jest.fn().mockResolvedValue(destinationHeaderCreateMutationPopulator(['error'])),
+            ],
+            [deleteExternalDestination, defaultDeleteSpy],
+          ],
+        });
+
+        await submitFormWithHeaders();
+
+        expect(removeLegacyAuditEventsStreamingDestination).toHaveBeenCalled();
       });
 
       it('should not emit add destination event and reports error when network error occurs while adding headers', async () => {
