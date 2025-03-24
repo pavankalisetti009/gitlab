@@ -20,13 +20,11 @@ module CodeSuggestions
         # TODO: After their migration to AIGW, both generations and completions will
         # use the same v3 `/completions` endpoint or v4 `/suggestions` endpoint.
         # See https://gitlab.com/gitlab-org/gitlab/-/issues/477891.
-        if task_name == 'code_generation' && !self_hosted?
-          return "#{base_url}/v4/code/suggestions" if supports_sse_streaming?
+        return "#{base_url}/v2/code/#{endpoint_name}" unless task_name == 'code_generation'
 
-          "#{base_url}/v3/code/completions"
-        else
-          "#{base_url}/v2/code/#{endpoint_name}"
-        end
+        return "#{base_url}/v4/code/suggestions" if supports_sse_streaming?
+
+        "#{base_url}/v3/code/completions"
       end
 
       def body

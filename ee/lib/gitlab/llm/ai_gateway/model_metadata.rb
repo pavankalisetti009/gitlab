@@ -14,12 +14,10 @@ module Gitlab
           amazon_q_params if ::Ai::AmazonQ.connected?
         end
 
-        private
-
-        attr_reader :feature_setting
-
         def self_hosted_params
-          self_hosted_model = feature_setting.self_hosted_model
+          self_hosted_model = feature_setting&.self_hosted_model
+
+          return unless self_hosted_model
 
           {
             provider: self_hosted_model.provider,
@@ -29,6 +27,10 @@ module Gitlab
             identifier: self_hosted_model.identifier
           }
         end
+
+        private
+
+        attr_reader :feature_setting
 
         def amazon_q_params
           {

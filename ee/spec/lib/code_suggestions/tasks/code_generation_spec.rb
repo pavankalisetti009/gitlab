@@ -149,7 +149,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
     it 'calls code creation Anthropic' do
       task.body
       expect(CodeSuggestions::Prompts::CodeGeneration::AiGatewayMessages)
-        .to have_received(:new).with(params, current_user)
+        .to have_received(:new).with(params, current_user, nil)
     end
 
     it_behaves_like 'code suggestion task' do
@@ -194,31 +194,83 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
     end
 
     context 'on setting the provider as `self_hosted`' do
+      let(:expected_feature_name) { :self_hosted_models }
       let_it_be(:feature_setting) { create(:ai_feature_setting, provider: :self_hosted) }
 
       it_behaves_like 'code suggestion task' do
-        let(:endpoint_path) { 'v2/code/generations' }
+        let(:endpoint_path) { 'v3/code/completions' }
         let(:expected_body) do
           {
-            "telemetry" => [],
-            "prompt_id" => "code_suggestions/generations",
-            "current_file" => {
-              "content_above_cursor" => "some content_above_cursor",
-              "content_below_cursor" => "some content_below_cursor",
-              "file_name" => "test.py"
+            'current_file' => {
+              'content_above_cursor' => 'some content_above_cursor',
+              'content_below_cursor' => 'some content_below_cursor',
+              'file_name' => 'test.py'
             },
-            "model_api_key" => "token",
-            "model_endpoint" => "http://localhost:11434/v1",
-            "model_identifier" => "provider/some-model",
-            "model_name" => "mistral",
-            "model_provider" => "litellm",
-            "prompt" => "",
-            "prompt_version" => 2,
-            "stream" => false
+            'prompt_components' => [
+              {
+                'payload' => {
+                  'content_above_cursor' => 'some content_above_cursor',
+                  'content_below_cursor' => 'some content_below_cursor',
+                  'file_name' => 'test.py',
+                  'language_identifier' => 'Python',
+                  'prompt_enhancer' => {
+                    "examples_array" => [
+                      {
+                        "example" => "class Project:\n  " \
+                          "def __init__(self, name, public):\n    " \
+                          "self.name = name\n    " \
+                          "self.visibility = 'PUBLIC' if public\n\n    " \
+                          "# is this project public?\n" \
+                          "{{cursor}}\n\n    " \
+                          "# print name of this project",
+                        "response" => "<new_code>def is_public(self):\n  return self.visibility == 'PUBLIC'",
+                        "trigger_type" => "comment"
+                      },
+                      {
+                        "example" => "def get_user(session):\n  # get the current user's name from the session data\n" \
+                          "{{cursor}}\n\n# is the current user an admin",
+                        "response" => "<new_code>username = None\nif 'username' in session:\n  username = " \
+                          "session['username']\nreturn username",
+                        "trigger_type" => "comment"
+                      },
+                      {
+                        "example" => "class Project:\n  def __init__(self, name, public):\n{{cursor}}",
+                        "response" => "<new_code>self.name = name\nself.visibility = 'PUBLIC' if public",
+                        "trigger_type" => "empty_function"
+                      },
+                      {
+                        "example" => "# get the current user's name from the session data\ndef get_user(session):\n" \
+                          "{{cursor}}\n\n# is the current user an admin",
+                        "response" => "<new_code>username = None\nif 'username' in session:\n  username = " \
+                          "session['username']\nreturn username",
+                        "trigger_type" => "empty_function"
+                      }
+                    ],
+                    'trimmed_content_above_cursor' => 'some content_above_cursor',
+                    'trimmed_content_below_cursor' => 'some content_below_cursor',
+                    "libraries" => [],
+                    "related_files" => [],
+                    "related_snippets" => [],
+                    'user_instruction' => 'Generate the best possible code based on instructions.'
+                  },
+                  'prompt_id' => 'code_suggestions/generations',
+                  'prompt_version' => '2.0.0',
+                  'stream' => false
+                },
+                'type' => 'code_editor_generation'
+              }
+            ],
+            "model_metadata" => {
+              "api_key" => "token",
+              "endpoint" => "http://localhost:11434/v1",
+              "identifier" => "provider/some-model",
+              "name" => "mistral",
+              "provider" => "openai"
+            },
+            'stream' => false,
+            'telemetry' => []
           }
         end
-
-        let(:expected_feature_name) { :self_hosted_models }
       end
     end
 

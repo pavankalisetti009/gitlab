@@ -32,7 +32,10 @@ module CodeSuggestions
 
       def self_hosted_prompt
         CodeSuggestions::Prompts::CodeCompletion::AiGatewayCodeCompletionMessage.new(
-          feature_setting: feature_setting, params: params, current_user: current_user)
+          params,
+          current_user,
+          feature_setting
+        )
       end
 
       def saas_prompt

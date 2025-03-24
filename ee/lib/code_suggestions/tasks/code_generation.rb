@@ -22,13 +22,10 @@ module CodeSuggestions
 
       def prompt
         if Feature.enabled?(:amazon_q_chat_and_code_suggestions, current_user) && ::Ai::AmazonQ.connected?
-          amazon_q_prompt
-        elsif self_hosted?
-          CodeSuggestions::Prompts::CodeGeneration::AiGatewaySelfHostedMessages.new(
-            feature_setting: feature_setting, params: params, current_user: current_user)
-        else
-          CodeSuggestions::Prompts::CodeGeneration::AiGatewayMessages.new(params, current_user)
+          return amazon_q_prompt
         end
+
+        CodeSuggestions::Prompts::CodeGeneration::AiGatewayMessages.new(params, current_user, feature_setting)
       end
 
       def amazon_q_prompt
