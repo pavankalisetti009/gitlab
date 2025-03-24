@@ -15018,6 +15018,9 @@ msgstr ""
 msgid "ComplianceFrameworks|Add a GitLab control"
 msgstr ""
 
+msgid "ComplianceFrameworks|Add an external control"
+msgstr ""
+
 msgid "ComplianceFrameworks|Add framework"
 msgstr ""
 
@@ -15069,9 +15072,6 @@ msgstr ""
 msgid "ComplianceFrameworks|Controls (optional)"
 msgstr ""
 
-msgid "ComplianceFrameworks|Controls are pre-defined rules that are configured for GitLab resources."
-msgstr ""
-
 msgid "ComplianceFrameworks|Create framework"
 msgstr ""
 
@@ -15114,13 +15114,22 @@ msgstr ""
 msgid "ComplianceFrameworks|External"
 msgstr ""
 
+msgid "ComplianceFrameworks|External URL"
+msgstr ""
+
 msgid "ComplianceFrameworks|External control"
+msgstr ""
+
+msgid "ComplianceFrameworks|GitLab controls are pre-defined rules that are configured for GitLab resources. External environmental controls use the API to check the status and details of an external environment."
 msgstr ""
 
 msgid "ComplianceFrameworks|Go to the %{linkStart}compliance center / project page%{linkEnd} to apply projects for this framework."
 msgstr ""
 
 msgid "ComplianceFrameworks|Go to the %{linkStart}policy management page%{linkEnd} to scope policies for this framework."
+msgstr ""
+
+msgid "ComplianceFrameworks|HMAC shared secret"
 msgstr ""
 
 msgid "ComplianceFrameworks|Invalid format"
@@ -15169,6 +15178,9 @@ msgid "ComplianceFrameworks|Project name"
 msgstr ""
 
 msgid "ComplianceFrameworks|Projects"
+msgstr ""
+
+msgid "ComplianceFrameworks|Provide a shared secret to be used when sending a request for an external check to authenticate request using HMAC."
 msgstr ""
 
 msgid "ComplianceFrameworks|Remove control"
@@ -15229,6 +15241,9 @@ msgid "ComplianceFrameworks|To link this policy and framework, edit the policy's
 msgstr ""
 
 msgid "ComplianceFrameworks|To unlink this policy and framework, edit the policy's scope."
+msgstr ""
+
+msgid "ComplianceFrameworks|URL to external system."
 msgstr ""
 
 msgid "ComplianceFrameworks|Unable to save this compliance framework. Please try again"
