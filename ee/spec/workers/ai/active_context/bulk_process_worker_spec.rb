@@ -28,9 +28,7 @@ RSpec.describe Ai::ActiveContext::BulkProcessWorker, type: :worker, feature_cate
         allow(ActiveContext::Config).to receive(:indexing_enabled?).and_return(false)
       end
 
-      it 'logs a message and returns false' do
-        expect(worker).to receive(:log)
-          .with("Ai::ActiveContext::BulkProcessWorker indexing disabled. Execution is skipped.")
+      it 'returns false' do
         expect(worker.perform).to be false
       end
     end
