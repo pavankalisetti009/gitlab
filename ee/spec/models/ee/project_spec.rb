@@ -112,6 +112,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     include_examples 'ci_cd_settings delegation' do
       let(:attributes_with_prefix) do
         {
+          'allow_composite_identities_to_run_pipelines' => '',
           'group_runners_enabled' => '',
           'default_git_depth' => 'ci_',
           'forward_deployment_enabled' => 'ci_',
