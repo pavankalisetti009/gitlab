@@ -6302,6 +6302,9 @@ msgstr ""
 msgid "AmazonQ|Amazon Q will be turned off for all groups, subgroups, and projects, even if they have previously enabled it."
 msgstr ""
 
+msgid "AmazonQ|An error occurred. Please try again later."
+msgstr ""
+
 msgid "AmazonQ|An unexpected error occurred while disconnecting Amazon Q. Please see the browser console log for more details."
 msgstr ""
 
@@ -6312,6 +6315,9 @@ msgid "AmazonQ|Apply changes to this merge request based on the comments (Beta)"
 msgstr ""
 
 msgid "AmazonQ|Are you sure? Removing the ARN will disconnect Amazon Q from GitLab and all related features will stop working."
+msgstr ""
+
+msgid "AmazonQ|Ask GitLab Duo with Amazon Q to suggest a solution for this issue"
 msgstr ""
 
 msgid "AmazonQ|Audience"
@@ -6465,6 +6471,9 @@ msgid "AmazonQ|Sorry, I'm not able to complete the request at this moment. Pleas
 msgstr ""
 
 msgid "AmazonQ|Status"
+msgstr ""
+
+msgid "AmazonQ|Suggest a fix"
 msgstr ""
 
 msgid "AmazonQ|This field is required"
@@ -26195,6 +26204,9 @@ msgstr ""
 msgid "Geo|%{label} should be between 1-999"
 msgstr ""
 
+msgid "Geo|%{noBoldStart}Next sync retry:%{noBoldEnd} Retry #%{retryCount} scheduled %{timeAgo}"
+msgstr ""
+
 msgid "Geo|%{timeAgoStr} (%{pendingEvents} events)"
 msgstr ""
 
@@ -26297,6 +26309,9 @@ msgstr ""
 msgid "Geo|Edit your search and try again."
 msgstr ""
 
+msgid "Geo|Error: %{message}"
+msgstr ""
+
 msgid "Geo|Errors:"
 msgstr ""
 
@@ -26369,6 +26384,9 @@ msgstr ""
 msgid "Geo|Last event ID processed"
 msgstr ""
 
+msgid "Geo|Last synced: %{timeAgo}"
+msgstr ""
+
 msgid "Geo|Last time verified"
 msgstr ""
 
@@ -26385,6 +26403,9 @@ msgid "Geo|Make everyone on your team more productive regardless of their locati
 msgstr ""
 
 msgid "Geo|Minimum interval in days"
+msgstr ""
+
+msgid "Geo|Missing on Primary!"
 msgstr ""
 
 msgid "Geo|Model record: %{modelRecordId}"
@@ -26424,6 +26445,9 @@ msgid "Geo|Object Storage replication"
 msgstr ""
 
 msgid "Geo|Offline"
+msgstr ""
+
+msgid "Geo|Pending"
 msgstr ""
 
 msgid "Geo|Primary"
@@ -26472,6 +26496,9 @@ msgid "Geo|Replicating"
 msgstr ""
 
 msgid "Geo|Replication Details"
+msgstr ""
+
+msgid "Geo|Replication information"
 msgstr ""
 
 msgid "Geo|Replication slot WAL"
@@ -26550,6 +26577,12 @@ msgid "Geo|Site name should be between 1 and 255 characters"
 msgstr ""
 
 msgid "Geo|Site's status was updated %{timeAgo}."
+msgstr ""
+
+msgid "Geo|Started"
+msgstr ""
+
+msgid "Geo|Status: %{badge}"
 msgstr ""
 
 msgid "Geo|Storage config"
@@ -43465,6 +43498,9 @@ msgid "Pipelines|Are you sure you want to remove the merge request %{title} from
 msgstr ""
 
 msgid "Pipelines|Are you sure you want to run this pipeline?"
+msgstr ""
+
+msgid "Pipelines|Array values must be in JSON format."
 msgstr ""
 
 msgid "Pipelines|Auto DevOps"

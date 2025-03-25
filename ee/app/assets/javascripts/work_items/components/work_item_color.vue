@@ -1,24 +1,22 @@
 <script>
 import {
-  GlForm,
-  GlIcon,
-  GlPopover,
-  GlLink,
+  GlButton,
   GlDisclosureDropdown,
   GlDisclosureDropdownItem,
-  GlButton,
-  GlLoadingIcon,
+  GlIcon,
+  GlLink,
+  GlPopover,
 } from '@gitlab/ui';
 import { validateHexColor } from '~/lib/utils/color_utils';
 import { __, s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import {
+  DEFAULT_EPIC_COLORS,
+  EPIC_COLORS,
   I18N_WORK_ITEM_ERROR_UPDATING,
   sprintfWorkItem,
-  WIDGET_TYPE_COLOR,
   TRACKING_CATEGORY_SHOW,
-  EPIC_COLORS,
-  DEFAULT_EPIC_COLORS,
+  WIDGET_TYPE_COLOR,
 } from '~/work_items/constants';
 import SidebarColorView from '~/sidebar/components/sidebar_color_view.vue';
 import SidebarColorPicker from '~/sidebar/components/sidebar_color_picker.vue';
@@ -26,18 +24,12 @@ import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutati
 import updateNewWorkItemMutation from '~/work_items/graphql/update_new_work_item.mutation.graphql';
 import { newWorkItemId } from '~/work_items/utils';
 import Tracking from '~/tracking';
+import WorkItemSidebarWidget from '~/work_items/components/shared/work_item_sidebar_widget.vue';
 
 export default {
-  i18n: {
-    colorLabel: __('Color'),
-    helpIconLabel: __('Learn more'),
-    helpIconText: __('An epic’s color is shown in roadmaps and epic boards.'),
-  },
   helpIconLink: helpPagePath('/user/group/epics/manage_epics', { anchor: 'epic-color' }),
-  inputId: 'color-widget-input',
-  suggestedColors: EPIC_COLORS,
+  EPIC_COLORS,
   components: {
-    GlForm,
     GlIcon,
     GlLink,
     GlPopover,
@@ -46,7 +38,7 @@ export default {
     GlDisclosureDropdown,
     GlDisclosureDropdownItem,
     GlButton,
-    GlLoadingIcon,
+    WorkItemSidebarWidget,
   },
   mixins: [Tracking.mixin()],
   props: {
@@ -91,9 +83,7 @@ export default {
       // If no, return Custom
       if (this.suggestedColorKeys.includes(this.color?.toLowerCase())) {
         return Object.values(
-          this.$options.suggestedColors.find(
-            (item) => Object.keys(item)[0] === this.color?.toLowerCase(),
-          ),
+          EPIC_COLORS.find((item) => Object.keys(item)[0] === this.color?.toLowerCase()),
         ).pop();
       }
       return __('Custom');
@@ -101,6 +91,7 @@ export default {
     textColor() {
       return this.workItemColorWidget?.textColor;
     },
+    // eslint-disable-next-line vue/no-unused-properties
     tracking() {
       return {
         category: TRACKING_CATEGORY_SHOW,
@@ -109,9 +100,7 @@ export default {
       };
     },
     suggestedColorKeys() {
-      return this.$options.suggestedColors.map((item) => {
-        return Object.keys(item).pop();
-      });
+      return EPIC_COLORS.map((item) => Object.keys(item).pop());
     },
     helpIconId() {
       return `help-icon-icon-${this.workItem?.iid}`;
@@ -212,70 +201,40 @@ export default {
   },
 };
 </script>
+
 <template>
-  <div class="work-item-color" data-testid="work-item-color">
-    <div v-if="!isEditing" class="gl-flex gl-items-center gl-gap-2">
-      <h3 class="gl-heading-5 !gl-mb-0">
-        {{ $options.i18n.colorLabel }}
-      </h3>
+  <work-item-sidebar-widget
+    :can-update="canUpdate"
+    :is-editing="isEditing"
+    :is-updating="isUpdating"
+    data-testid="work-item-color"
+    @startEditing="isEditing = true"
+    @stopEditing="isEditing = false"
+  >
+    <template #title>
+      {{ __('Color') }}
       <gl-link
         :id="helpIconId"
         class="gl-leading-0"
         :href="$options.helpIconLink"
-        :aria-label="$options.i18n.helpIconLabel"
+        :aria-label="__('Learn more')"
         data-testid="info-icon"
       >
         <gl-icon name="information-o" />
       </gl-link>
       <gl-popover :target="helpIconId">
-        {{ $options.i18n.helpIconText }}
+        {{ __('An epic’s color is shown in roadmaps and epic boards.') }}
         <gl-link :href="$options.helpIconLink">
           {{ __('See examples.') }}
         </gl-link>
       </gl-popover>
-      <gl-button
-        v-if="canUpdate"
-        data-testid="edit-color"
-        class="gl-ml-auto"
-        category="tertiary"
-        size="small"
-        @click="isEditing = true"
-        >{{ __('Edit') }}</gl-button
-      >
-    </div>
-    <gl-form v-if="isEditing">
-      <div class="gl-flex gl-items-center gl-gap-2">
-        <label :for="$options.inputId" class="gl-mb-0">{{ $options.i18n.colorLabel }}</label>
-        <gl-link
-          :id="helpIconId"
-          class="gl-leading-0"
-          :href="$options.helpIconLink"
-          :aria-label="$options.i18n.helpIconLabel"
-          data-testid="info-icon"
-        >
-          <gl-icon name="information-o" />
-        </gl-link>
-        <gl-popover :target="helpIconId">
-          {{ $options.i18n.helpIconText }}
-          <gl-link :href="$options.helpIconLink">
-            {{ __('See examples.') }}
-          </gl-link>
-        </gl-popover>
-        <gl-loading-icon v-if="isUpdating" size="sm" inline class="gl-ml-3" />
-        <gl-button
-          data-testid="apply-color"
-          category="tertiary"
-          size="small"
-          class="gl-ml-auto"
-          :disabled="isUpdating"
-          @click="updateColor"
-          >{{ __('Apply') }}</gl-button
-        >
-      </div>
+    </template>
+    <template #content>
+      <sidebar-color-view :color="color" :color-name="selectedColor" />
+    </template>
+    <template #editing-content>
       <gl-disclosure-dropdown
-        :id="$options.inputId"
         class="work-item-sidebar-dropdown"
-        category="tertiary"
         :auto-close="false"
         start-opened
         @hidden="updateColor"
@@ -296,8 +255,8 @@ export default {
               size="small"
               class="!gl-px-2 !gl-py-2 !gl-text-sm"
               @click="resetColor"
-              >{{ __('Reset') }}</gl-button
-            >
+              >{{ __('Reset') }}
+            </gl-button>
           </div>
         </template>
         <template #toggle>
@@ -306,16 +265,13 @@ export default {
         <gl-disclosure-dropdown-item>
           <sidebar-color-picker
             v-model="currentColor"
-            :autofocus="true"
-            :suggested-colors="$options.suggestedColors"
+            autofocus
+            :suggested-colors="$options.EPIC_COLORS"
             :error-message="errorMessage"
             class="gl-mt-3 gl-px-3"
           />
         </gl-disclosure-dropdown-item>
       </gl-disclosure-dropdown>
-    </gl-form>
-    <div v-else class="work-item-field-value">
-      <sidebar-color-view :color="color" :color-name="selectedColor" />
-    </div>
-  </div>
+    </template>
+  </work-item-sidebar-widget>
 </template>

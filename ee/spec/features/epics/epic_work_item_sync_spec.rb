@@ -219,23 +219,23 @@ RSpec.describe 'Epic Work Item sync', :js, feature_category: :portfolio_manageme
         find_by_testid('confidentiality-toggle-action').click
         wait_for_requests
 
-        within(find_by_testid('work-item-due-dates')) do
+        within_testid('work-item-due-dates') do
           click_button 'Edit'
-        end
-        fill_in('start-date-input', with: start_date.iso8601)
-        fill_in('due-date-input', with: due_date.iso8601)
-        find_by_testid('apply-button').click
-        wait_for_requests
-
-        find_by_testid('edit-color').click
-        click_link('Dark red')
-        wait_for_requests
-
-        within(find_by_testid('work-item-parent')) do
-          click_button 'Edit'
+          fill_in 'Start', with: start_date.iso8601
+          fill_in 'Due', with: due_date.iso8601
+          click_button 'Apply'
         end
 
-        set_parent(parent_epic.title)
+        within_testid('work-item-color') do
+          click_button 'Edit'
+          click_link 'Dark red'
+        end
+
+        within_testid('work-item-parent') do
+          click_button 'Edit'
+          send_keys(parent_epic.title)
+          select_listbox_item(parent_epic.title)
+        end
 
         work_item.reload
         epic = work_item.synced_epic
@@ -247,16 +247,6 @@ RSpec.describe 'Epic Work Item sync', :js, feature_category: :portfolio_manageme
         expect(work_item.color.color.to_s).to eq('#c91c00')
 
         expect(Gitlab::EpicWorkItemSync::Diff.new(epic, epic.work_item, strict_equal: true).attributes).to be_empty
-      end
-    end
-
-    def set_parent(parent_text)
-      within_testid('work-item-parent') do
-        send_keys(parent_text)
-        wait_for_requests
-
-        select_listbox_item(parent_text)
-        wait_for_requests
       end
     end
   end
