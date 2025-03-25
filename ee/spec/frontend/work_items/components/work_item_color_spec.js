@@ -1,24 +1,22 @@
-import { GlDisclosureDropdown, GlPopover, GlLink } from '@gitlab/ui';
+import { GlDisclosureDropdown, GlLink, GlPopover } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import createMockApollo from 'helpers/mock_apollo_helper';
-import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import {
+  epicType,
+  updateWorkItemMutationErrorResponse,
   updateWorkItemMutationResponseFactory,
   workItemByIidResponseFactory,
-  updateWorkItemMutationErrorResponse,
-  epicType,
 } from 'jest/work_items/mock_data';
 import WorkItemColor from 'ee/work_items/components/work_item_color.vue';
 import SidebarColorView from '~/sidebar/components/sidebar_color_view.vue';
 import SidebarColorPicker from '~/sidebar/components/sidebar_color_picker.vue';
 import { DEFAULT_COLOR } from '~/vue_shared/components/color_select_dropdown/constants';
+import WorkItemSidebarWidget from '~/work_items/components/shared/work_item_sidebar_widget.vue';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
 import { workItemColorWidget } from '../mock_data';
-
-const infoPopoverText = 'An epic’s color is shown in roadmaps and epic boards.';
-const infoPopoverLink = '/help/user/group/epics/manage_epics#epic-color';
 
 describe('WorkItemColor component', () => {
   Vue.use(VueApollo);
@@ -56,7 +54,10 @@ describe('WorkItemColor component', () => {
         workItem,
         fullPath: 'gitlab-org/gitlab',
       },
-      stubs,
+      stubs: {
+        WorkItemSidebarWidget,
+        ...stubs,
+      },
     });
   };
 
@@ -67,11 +68,12 @@ describe('WorkItemColor component', () => {
   const findInfoPopoverLink = () => wrapper.findComponent(GlLink);
   const findInfoIcon = () => wrapper.findByTestId('info-icon');
   const findColorHeaderTitle = () => wrapper.findByTestId('color-header-title');
-  const findEditButton = () => wrapper.findByTestId('edit-color');
-  const findApplyButton = () => wrapper.findByTestId('apply-color');
+  const findEditButton = () => wrapper.findByTestId('edit-button');
+  const findApplyButton = () => wrapper.findByTestId('apply-button');
 
   const selectColor = async (color) => {
-    await findEditButton().vm.$emit('click');
+    findEditButton().vm.$emit('click');
+    await nextTick();
     findSidebarColorPicker().vm.$emit('input', color);
     findDropdown().vm.$emit('hidden');
   };
@@ -82,7 +84,6 @@ describe('WorkItemColor component', () => {
     });
 
     it('renders the color view component with provided value', () => {
-      expect(findSidebarColorView().exists()).toBe(true);
       expect(findSidebarColorView().props('color')).toBe(selectedColor);
       expect(findSidebarColorView().props('colorName')).toBe('Custom');
     });
@@ -100,7 +101,6 @@ describe('WorkItemColor component', () => {
       });
 
       it('renders the color view component and the edit button', () => {
-        expect(findSidebarColorView().exists()).toBe(true);
         expect(findSidebarColorView().props('color')).toBe(selectedColor);
         expect(findEditButton().exists()).toBe(true);
       });
@@ -111,9 +111,8 @@ describe('WorkItemColor component', () => {
     });
 
     describe('when editing', () => {
-      beforeEach(async () => {
+      beforeEach(() => {
         createComponent({ workItem: mockWorkItem });
-        await nextTick();
         findEditButton().vm.$emit('click');
       });
 
@@ -127,11 +126,10 @@ describe('WorkItemColor component', () => {
         expect(findEditButton().exists()).toBe(false);
       });
 
-      it('updates the color if apply button is clicked after selecting input color', async () => {
+      it('updates the color if apply button is clicked after selecting input color', () => {
         findSidebarColorPicker().vm.$emit('input', selectedColor);
         findApplyButton().vm.$emit('click');
-
-        await waitForPromises();
+        findDropdown().vm.$emit('hidden');
 
         expect(successUpdateWorkItemMutationHandler).toHaveBeenCalledWith({
           input: {
@@ -145,12 +143,7 @@ describe('WorkItemColor component', () => {
 
       it('updates the color if dropdown is closed after selecting input color', async () => {
         createComponent({ mutationHandler: successUpdateWorkItemMutationHandler });
-
-        await nextTick();
-
-        selectColor(selectedColor);
-
-        await waitForPromises();
+        await selectColor(selectedColor);
 
         expect(successUpdateWorkItemMutationHandler).toHaveBeenCalledWith({
           input: {
@@ -169,14 +162,8 @@ describe('WorkItemColor component', () => {
       `(
         'emits an error when there is a $errorType',
         async ({ expectedErrorMessage, failureHandler }) => {
-          createComponent({
-            mutationHandler: failureHandler,
-          });
-
-          await nextTick();
-
-          selectColor(selectedColor);
-
+          createComponent({ mutationHandler: failureHandler });
+          await selectColor(selectedColor);
           await waitForPromises();
 
           expect(wrapper.emitted('error')).toEqual([[expectedErrorMessage]]);
@@ -186,9 +173,9 @@ describe('WorkItemColor component', () => {
   });
 
   it('renders the title in the dropdown header', async () => {
-    createComponent({ mountFn: mountExtended, stubs: { SidebarColorPicker: true } });
+    createComponent({ mountFn: mountExtended });
+    findEditButton().vm.$emit('click');
     await nextTick();
-    await findEditButton().vm.$emit('click');
 
     expect(findColorHeaderTitle().text()).toBe('Select a color');
   });
@@ -202,10 +189,12 @@ describe('WorkItemColor component', () => {
   it('renders info icon and popover with text', () => {
     createComponent();
 
-    expect(findInfoPopover().exists()).toBe(true);
-    expect(findInfoIcon().exists()).toBe(true);
-    expect(findInfoPopover().text()).toContain(infoPopoverText);
-
-    expect(findInfoPopoverLink().attributes('href')).toBe(infoPopoverLink);
+    expect(findInfoIcon().attributes('aria-label')).toBe('Learn more');
+    expect(findInfoPopover().text()).toContain(
+      'An epic’s color is shown in roadmaps and epic boards.',
+    );
+    expect(findInfoPopoverLink().attributes('href')).toBe(
+      '/help/user/group/epics/manage_epics#epic-color',
+    );
   });
 });
