@@ -20,6 +20,7 @@ import { useAccessTokens } from '../../stores/access_tokens';
 import AccessToken from './access_token.vue';
 import AccessTokenForm from './access_token_form.vue';
 import AccessTokenTable from './access_token_table.vue';
+import AccessTokenStatistics from './access_token_statistics.vue';
 
 export default {
   components: {
@@ -31,6 +32,7 @@ export default {
     AccessToken,
     AccessTokenForm,
     AccessTokenTable,
+    AccessTokenStatistics,
   },
   inject: ['accessTokenCreate', 'accessTokenRevoke', 'accessTokenRotate', 'accessTokenShow'],
   props: {
@@ -176,7 +178,8 @@ export default {
     </page-heading>
     <access-token v-if="token" />
     <access-token-form v-if="showCreateForm" />
-    <div class="gl-flex gl-flex-col gl-gap-3 gl-py-5 md:gl-flex-row">
+    <access-token-statistics />
+    <div class="gl-my-5 gl-flex gl-flex-col gl-gap-3 md:gl-flex-row">
       <gl-filtered-search
         class="gl-min-w-0 gl-grow"
         :value="filters"
