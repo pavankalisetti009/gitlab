@@ -138,6 +138,13 @@ module EE
       hierarchy_supports_parent?
     end
 
+    override :custom_notification_target_name
+    def custom_notification_target_name
+      return 'epic' if work_item_type.epic?
+
+      super
+    end
+
     private
 
     override :linked_work_items_query
