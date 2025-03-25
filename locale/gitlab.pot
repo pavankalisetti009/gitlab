@@ -39132,6 +39132,9 @@ msgstr ""
 msgid "No parent group"
 msgstr ""
 
+msgid "No pending comments"
+msgstr ""
+
 msgid "No phone number data for matching"
 msgstr ""
 
@@ -57478,6 +57481,9 @@ msgstr ""
 msgid "Submit the current review."
 msgstr ""
 
+msgid "Submit your review"
+msgstr ""
+
 msgid "Submit/save changes"
 msgstr ""
 
@@ -69019,6 +69025,9 @@ msgid "Your requirements will be imported in the background. After it's finished
 msgstr ""
 
 msgid "Your resource access tokens will expire in %{days_to_expire} or less"
+msgstr ""
+
+msgid "Your review"
 msgstr ""
 
 msgid "Your search didn't match any commits. Try a different query."
