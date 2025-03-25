@@ -37,7 +37,7 @@ RSpec.shared_context "with filter argument" do
     create(:ee_cluster_agent, :with_existing_workspaces_agent_config, project: project,
       created_by_user: authorized_user, name: "available-agent").tap do |agent|
       create(
-        :remote_development_namespace_cluster_agent_mapping,
+        :namespace_cluster_agent_mapping,
         user: authorized_user,
         agent: agent,
         namespace: namespace
@@ -49,7 +49,7 @@ RSpec.shared_context "with filter argument" do
     create(:cluster_agent, project: project, created_by_user: authorized_user,
       name: "directly-mapped-agent").tap do |agent|
       create(
-        :remote_development_namespace_cluster_agent_mapping,
+        :namespace_cluster_agent_mapping,
         user: authorized_user,
         agent: agent,
         namespace: namespace

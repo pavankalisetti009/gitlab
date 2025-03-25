@@ -38,7 +38,7 @@ RSpec.describe 'Group Workspaces Settings', :js, feature_category: :workspaces d
     context 'when there are mapped agents' do
       let_it_be(:cluster_agent_mapping) do
         create(
-          :remote_development_namespace_cluster_agent_mapping,
+          :namespace_cluster_agent_mapping,
           user: user, agent: agent,
           namespace: group
         )
@@ -60,7 +60,7 @@ RSpec.describe 'Group Workspaces Settings', :js, feature_category: :workspaces d
 
       let_it_be(:cluster_agent_mapping) do
         create(
-          :remote_development_namespace_cluster_agent_mapping,
+          :namespace_cluster_agent_mapping,
           user: user, agent: agent,
           namespace: group
         )

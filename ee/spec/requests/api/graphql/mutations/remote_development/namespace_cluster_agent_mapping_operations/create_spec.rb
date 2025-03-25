@@ -16,11 +16,15 @@ RSpec.describe 'Map a cluster agent to a group', feature_category: :workspaces d
     graphql_mutation(:namespace_create_remote_development_cluster_agent_mapping, mutation_args)
   end
 
+  let(:mutation_response) do
+    graphql_mutation_response(:namespace_create_remote_development_cluster_agent_mapping)
+  end
+
   let(:stub_service_payload) { { namespace_cluster_agent_mapping: created_mapping } }
   let(:stub_service_response) { ServiceResponse.success(payload: stub_service_payload) }
 
   let(:created_mapping) do
-    instance_double(RemoteDevelopment::NamespaceClusterAgentMapping)
+    create(:namespace_cluster_agent_mapping, namespace: namespace, agent: agent)
   end
 
   let(:all_mutation_args) do
@@ -52,8 +56,8 @@ RSpec.describe 'Map a cluster agent to a group', feature_category: :workspaces d
   end
 
   context 'when the params are valid' do
-    context 'when user has owner access to the group' do
-      it 'creates a mapping' do
+    shared_examples 'a successful mutation' do
+      it 'creates a mapping without errors' do
         expect(RemoteDevelopment::CommonService).to receive(:execute).with(expected_service_args) do
           stub_service_response
         end
@@ -61,21 +65,19 @@ RSpec.describe 'Map a cluster agent to a group', feature_category: :workspaces d
         post_graphql_mutation(mutation, current_user: current_user)
 
         expect_graphql_errors_to_be_empty
+
+        expect(mutation_response.dig('namespaceClusterAgentMapping', 'id')).not_to be_empty
       end
+    end
+
+    context 'when user has owner access to the group' do
+      it_behaves_like 'a successful mutation'
     end
 
     context 'when user is an admin' do
       let_it_be(:current_user) { create(:admin) }
 
-      it 'creates a mapping' do
-        expect(RemoteDevelopment::CommonService).to receive(:execute).with(expected_service_args) do
-          stub_service_response
-        end
-
-        post_graphql_mutation(mutation, current_user: current_user)
-
-        expect_graphql_errors_to_be_empty
-      end
+      it_behaves_like 'a successful mutation'
     end
   end
 

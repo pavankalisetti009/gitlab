@@ -128,7 +128,7 @@ RSpec.describe 'Creating a workspace', feature_category: :workspaces do
   context 'when workspace project and agent project ARE mapped' do
     before_all do
       create(
-        :remote_development_namespace_cluster_agent_mapping,
+        :namespace_cluster_agent_mapping,
         user: user,
         agent: agent,
         namespace: workspace_ancestor_namespace

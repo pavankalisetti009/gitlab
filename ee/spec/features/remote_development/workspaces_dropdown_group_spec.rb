@@ -66,7 +66,7 @@ RSpec.describe 'Remote Development workspaces dropdown group', :api, :js, featur
   shared_examples 'views and manages workspaces in workspaces dropdown group' do
     let_it_be(:cluster_agent_mapping) do
       create(
-        :remote_development_namespace_cluster_agent_mapping,
+        :namespace_cluster_agent_mapping,
         user: user, agent: agent,
         namespace: group
       )

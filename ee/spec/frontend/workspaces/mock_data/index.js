@@ -627,6 +627,14 @@ export const CREATE_CLUSTER_AGENT_MAPPING_MUTATION_RESULT = {
     namespaceCreateRemoteDevelopmentClusterAgentMapping: {
       clientMutationId: null,
       errors: [],
+      namespaceClusterAgentMapping: {
+        id: '',
+        namespaceId: '',
+        clusterAgentId: '',
+        creatorId: '',
+        createdAt: '',
+        updatedAt: '',
+      },
     },
   },
 };
@@ -636,6 +644,7 @@ export const CREATE_CLUSTER_AGENT_MAPPING_MUTATION_WITH_ERROR_RESULT = {
     namespaceCreateRemoteDevelopmentClusterAgentMapping: {
       clientMutationId: null,
       errors: ['Namespace cluster agent mapping already exists'],
+      namespaceClusterAgentMapping: null,
     },
   },
 };
