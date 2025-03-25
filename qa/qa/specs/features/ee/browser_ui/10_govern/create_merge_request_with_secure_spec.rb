@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Govern', :runner, product_group: :threat_insights do
+  RSpec.describe 'Govern', :runner, product_group: :security_insights do
     describe 'Security Reports in a Merge Request Widget' do
       let(:sast_vuln_count) { 8 }
       let(:dependency_scan_vuln_count) { 4 }
