@@ -1,6 +1,7 @@
 import MockAdapter from 'axios-mock-adapter';
 import { setActivePinia, createPinia } from 'pinia';
 import { useAccessTokens } from 'ee/service_accounts/stores/access_tokens';
+import { update2WeekFromNow } from 'ee/service_accounts/utils';
 import { createAlert } from '~/alert';
 import { smoothScrollTop } from '~/behaviors/smooth_scroll';
 import axios from '~/lib/utils/axios_utils';
@@ -16,6 +17,11 @@ jest.mock('~/alert', () => ({
   createAlert: jest.fn().mockImplementation(() => ({
     dismiss: mockAlertDismiss,
   })),
+}));
+
+jest.mock('ee/service_accounts/utils', () => ({
+  ...jest.requireActual('ee/service_accounts/utils'),
+  update2WeekFromNow: jest.fn(),
 }));
 
 jest.mock('~/behaviors/smooth_scroll');
@@ -45,6 +51,7 @@ describe('useAccessTokens store', () => {
       expect(store.urlRotate).toBe('');
       expect(store.urlShow).toBe('');
       expect(store.sorting).toEqual(DEFAULT_SORT);
+      expect(store.statistics).toEqual([]);
     });
   });
 
@@ -171,6 +178,39 @@ describe('useAccessTokens store', () => {
       });
     });
 
+    describe('fetchStatistics', () => {
+      const title = 'Active tokens';
+      const tooltipTitle = 'Filter for active tokens';
+      beforeEach(() => {
+        store.setup({ id, filters, urlShow });
+        update2WeekFromNow.mockReturnValueOnce([{ title, tooltipTitle, filters }]);
+      });
+
+      it('fetches all statistics successfully and updates the store', async () => {
+        mockAxios.onGet().replyOnce(HTTP_STATUS_OK, [], headers);
+        await store.fetchStatistics();
+
+        expect(store.statistics).toMatchObject([{ title, tooltipTitle, filters }]);
+      });
+
+      it('shows an alert if an error occurs while fetching', async () => {
+        mockAxios.onGet().replyOnce(HTTP_STATUS_INTERNAL_SERVER_ERROR);
+        await store.fetchStatistics();
+
+        expect(createAlert).toHaveBeenCalledWith({
+          message: 'Failed to fetch statistics.',
+        });
+      });
+
+      it('does not show an alert if an error is still on view', async () => {
+        store.alert = 'dummy';
+        mockAxios.onGet().replyOnce(HTTP_STATUS_INTERNAL_SERVER_ERROR);
+        await store.fetchStatistics();
+
+        expect(createAlert).toHaveBeenCalledTimes(0);
+      });
+    });
+
     describe('fetchTokens', () => {
       beforeEach(() => {
         store.setup({ id, filters, urlShow });
@@ -220,18 +260,6 @@ describe('useAccessTokens store', () => {
         store.setFilters([
           'my token',
           {
-            type: 'created',
-            value: { data: '2025-01-01', operator: '<' },
-          },
-          {
-            type: 'expires',
-            value: { data: '2025-01-01', operator: '<' },
-          },
-          {
-            type: 'last_used',
-            value: { data: '2025-01-01', operator: '≥' },
-          },
-          {
             type: 'state',
             value: { data: 'inactive', operator: '=' },
           },
@@ -243,9 +271,6 @@ describe('useAccessTokens store', () => {
           expect.objectContaining({
             url: urlShow,
             params: {
-              created_before: '2025-01-01',
-              expires_before: '2025-01-01',
-              last_used_after: '2025-01-01',
               page: 1,
               sort: 'expires_asc',
               state: 'inactive',
