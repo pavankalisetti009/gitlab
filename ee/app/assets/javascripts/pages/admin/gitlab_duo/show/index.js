@@ -25,6 +25,7 @@ export function mountGitlabDuoHomeApp() {
     areExperimentSettingsAllowed,
     duoAddOnStartDate,
     duoAddOnEndDate,
+    duoConfigurable,
   } = el.dataset;
 
   return new Vue({
@@ -45,6 +46,7 @@ export function mountGitlabDuoHomeApp() {
       experimentFeaturesEnabled: parseBoolean(experimentFeaturesEnabled),
       betaSelfHostedModelsEnabled: parseBoolean(betaSelfHostedModelsEnabled),
       areExperimentSettingsAllowed: parseBoolean(areExperimentSettingsAllowed),
+      duoConfigurable: parseBoolean(duoConfigurable),
       duoAddOnStartDate,
       duoAddOnEndDate,
     },
