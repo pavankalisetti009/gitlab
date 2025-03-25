@@ -30,7 +30,8 @@ RSpec.describe Gitlab::Geo::LogCursor::Events::CacheInvalidationEvent,
         message: 'Cache invalidation',
         cache_key: cache_key,
         cache_expired: false,
-        skippable: false
+        skippable: false,
+        correlation_id: a_kind_of(String)
       }
 
       expect(::Gitlab::JsonLogger)

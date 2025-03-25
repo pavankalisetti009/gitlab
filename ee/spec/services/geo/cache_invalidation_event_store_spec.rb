@@ -49,7 +49,8 @@ RSpec.describe Geo::CacheInvalidationEventStore, feature_category: :geo_replicat
           gitlab_host: "localhost",
           cache_key: '',
           message: 'Cache invalidation event could not be created',
-          error: "Validation failed: Key can't be blank"
+          error: "Validation failed: Key can't be blank",
+          correlation_id: a_kind_of(String)
         }
 
         expect(Gitlab::Geo::Logger).to receive(:error)

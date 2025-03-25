@@ -329,7 +329,10 @@ module Gitlab
       end
 
       def event_params
-        { model_record_id: model_record.id }
+        {
+          "model_record_id" => model_record.id,
+          "correlation_id" => Labkit::Correlation::CorrelationId.current_id
+        }
       end
 
       # Returns whether the actual data exists
