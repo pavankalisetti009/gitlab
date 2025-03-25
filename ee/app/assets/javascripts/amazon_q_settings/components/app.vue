@@ -10,6 +10,8 @@ import {
   GlFormRadio,
   GlSprintf,
   GlModalDirective,
+  GlFormCheckbox,
+  GlTooltipDirective,
 } from '@gitlab/ui';
 import axios from '~/lib/utils/axios_utils';
 import { createAndSubmitForm } from '~/lib/utils/create_and_submit_form';
@@ -20,26 +22,27 @@ import { createAlert } from '~/alert';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
 import { awsIamRoleArnRegex } from '~/lib/utils/regexp';
+import { AVAILABILITY_OPTIONS as AVAILABILITY_OPTIONS_VALUES } from 'ee/ai/settings/constants';
 import DisconnectSuccessAlert from './disconnect_success_alert.vue';
 import DisconnectWarningModal from './disconnect_warning_modal.vue';
 
 const AVAILABILITY_OPTIONS = [
   {
-    value: 'default_on',
+    value: AVAILABILITY_OPTIONS_VALUES.DEFAULT_ON,
     label: s__('AmazonQ|On by default'),
     helpText: s__(
       'AmazonQ|Features are available. However, any group, subgroup, or project can turn them off.',
     ),
   },
   {
-    value: 'default_off',
+    value: AVAILABILITY_OPTIONS_VALUES.DEFAULT_OFF,
     label: s__('AmazonQ|Off by default'),
     helpText: s__(
       'AmazonQ|Features are not available. However, any group, subgroup, or project can turn them on.',
     ),
   },
   {
-    value: 'never_on',
+    value: AVAILABILITY_OPTIONS_VALUES.NEVER_ON,
     label: s__('AmazonQ|Always off'),
     helpText: s__(
       'AmazonQ|Features are not available and cannot be turned on for any group, subgroup, or project.',
@@ -60,11 +63,13 @@ export default {
     GlFormInputGroup,
     GlFormRadioGroup,
     GlFormRadio,
+    GlFormCheckbox,
     GlSprintf,
     HelpPageLink,
   },
   directives: {
     GlModal: GlModalDirective,
+    GlTooltip: GlTooltipDirective,
   },
   props: {
     submitUrl: {
@@ -88,7 +93,7 @@ export default {
   },
   data() {
     return {
-      availability: this.amazonQSettings?.availability || 'default_on',
+      availability: this.amazonQSettings?.availability || AVAILABILITY_OPTIONS_VALUES.DEFAULT_ON,
       roleArn: this.amazonQSettings?.roleArn || '',
       ready: this.amazonQSettings?.ready || false,
       isSubmitting: false,
@@ -96,6 +101,7 @@ export default {
       isDisconnectWarningVisible: false,
       isDisconnectSuccessVisible: false,
       isValidated: false,
+      amazonQCodeReviewEnabled: this.amazonQSettings?.autoReviewEnabled || false,
     };
   },
   computed: {
@@ -103,18 +109,19 @@ export default {
       if (this.ready) {
         return {
           availability: this.availability,
+          auto_review_enabled: this.amazonQCodeReviewEnabled,
         };
       }
 
       return {
         availability: this.availability,
         role_arn: this.roleArn,
+        auto_review_enabled: this.amazonQCodeReviewEnabled,
       };
     },
     isRoleArnValid() {
       return awsIamRoleArnRegex.test(this.roleArn);
     },
-
     invalidFeedback() {
       if (!this.roleArn) {
         return this.$options.I18N_IAM_ROLE_ARN_REQUIRED_LABEL;
@@ -126,7 +133,6 @@ export default {
 
       return '';
     },
-
     roleArnDisabled() {
       return this.isSubmitting || this.ready;
     },
@@ -135,10 +141,10 @@ export default {
         return '';
       }
 
-      if (this.availability === 'never_on') {
+      if (this.availability === AVAILABILITY_OPTIONS_VALUES.NEVER_ON) {
         return this.$options.I18N_WARNING_NEVER_ON;
       }
-      if (this.availability === 'default_off') {
+      if (this.availability === AVAILABILITY_OPTIONS_VALUES.DEFAULT_OFF) {
         return this.$options.I18N_WARNING_OFF_BY_DEFAULT;
       }
       return '';
@@ -191,6 +197,12 @@ export default {
     showDisconnectWarning() {
       this.isDisconnectWarningVisible = true;
     },
+    shouldShowAmazonQCodeReview(value) {
+      return value === AVAILABILITY_OPTIONS_VALUES.DEFAULT_ON && this.ready;
+    },
+    handleCodeReviewToggle() {
+      this.$emit('auto-review-toggled', this.amazonQCodeReviewEnabled);
+    },
     async disconnect() {
       try {
         this.isDisconnecting = true;
@@ -200,6 +212,7 @@ export default {
         this.isDisconnectSuccessVisible = true;
         this.roleArn = '';
         this.ready = false;
+        this.amazonQCodeReviewEnabled = false;
       } catch (e) {
         // eslint-disable-next-line @gitlab/require-i18n-strings
         logError('Unexpected error while disconnecting Amazon Q.', e);
@@ -235,6 +248,10 @@ export default {
   ),
   I18N_WARNING_NEVER_ON: s__(
     'AmazonQ|Amazon Q will be turned off for all groups, subgroups, and projects, even if they have previously enabled it.',
+  ),
+  I18N_AMAZON_Q_CODE_REVIEW: s__('AmazonQ|Enable automatic code reviews'),
+  I18N_CODE_REVIEW_DISABLED_TOOLTIP: s__(
+    'AmazonQ|Automatic code reviews can only be enabled when Amazon Q is set to "On by default"',
   ),
   I18N_COPY: s__('AmazonQ|Copy to clipboard'),
   INPUT_PLACEHOLDER_ARN: 'arn:aws:iam::account-id:role/role-name',
@@ -326,14 +343,31 @@ export default {
     </gl-form-group>
     <gl-form-group class="!gl-mb-3" :label="s__('AmazonQ|Availability')">
       <gl-form-radio-group v-model="availability" name="availability">
-        <gl-form-radio
-          v-for="{ value, label, helpText } in $options.AVAILABILITY_OPTIONS"
-          :key="value"
-          :value="value"
-        >
-          {{ label }}
-          <template #help>{{ helpText }}</template>
-        </gl-form-radio>
+        <template v-for="{ value, label, helpText } in $options.AVAILABILITY_OPTIONS">
+          <gl-form-radio :key="value" :value="value">
+            {{ label }}
+            <template #help>{{ helpText }}</template>
+          </gl-form-radio>
+          <div
+            v-if="shouldShowAmazonQCodeReview(value)"
+            :key="`${value}-code-review-toggle`"
+            class="gl-my-3 gl-ml-6"
+            data-testid="amazon-q-code-review-toggle"
+          >
+            <gl-form-checkbox
+              v-model="amazonQCodeReviewEnabled"
+              v-gl-tooltip="
+                availability !== value ? $options.I18N_CODE_REVIEW_DISABLED_TOOLTIP : ''
+              "
+              class="gl-pl-6"
+              name="auto_review_enabled"
+              :disabled="availability !== value"
+              @change="handleCodeReviewToggle"
+            >
+              {{ $options.I18N_AMAZON_Q_CODE_REVIEW }}
+            </gl-form-checkbox>
+          </div>
+        </template>
       </gl-form-radio-group>
     </gl-form-group>
     <gl-alert v-if="availabilityWarning" class="gl-mb-5" :dismissible="false" variant="warning">{{
