@@ -9,8 +9,31 @@ module ComplianceManagement
         'merge_request_prevent_committers_approval' => :merge_requests_disable_committers_approval?,
         'project_visibility' => :project_visibility,
         'minimum_approvals_required' => :minimum_approvals_required,
-        'auth_sso_enabled' => :auth_sso_enabled?
+        'auth_sso_enabled' => :auth_sso_enabled?,
+        'scanner_sast_running' => :scanner_sast_running?,
+        'scanner_secret_detection_running' => :scanner_secret_detection_running?,
+        'scanner_dep_scanning_running' => :scanner_dep_scanning_running?,
+        'scanner_container_scanning_running' => :scanner_container_scanning_running?,
+        'scanner_license_compliance_running' => :scanner_license_compliance_running?,
+        'scanner_dast_running' => :scanner_dast_running?,
+        'scanner_api_security_running' => :scanner_api_security_running?,
+        'scanner_fuzz_testing_running' => :scanner_fuzz_testing_running?,
+        'scanner_code_quality_running' => :scanner_code_quality_running?,
+        'scanner_iac_running' => :scanner_iac_running?
       }.freeze
+
+      SECURITY_SCANNERS = [
+        :sast,
+        :secret_detection,
+        :dependency_scanning,
+        :container_scanning,
+        :license_compliance,
+        :dast,
+        :api_fuzzing,
+        :fuzz_testing,
+        :code_quality,
+        :iac
+      ].freeze
 
       class << self
         def map_field(project, field)
@@ -42,6 +65,55 @@ module ComplianceManagement
 
         def auth_sso_enabled?(project)
           ::Groups::SsoHelper.saml_provider_enabled?(project.group)
+        end
+
+        def scanner_sast_running?(project)
+          security_scanner_running?(:sast, project)
+        end
+
+        def scanner_secret_detection_running?(project)
+          security_scanner_running?(:secret_detection, project)
+        end
+
+        def scanner_dep_scanning_running?(project)
+          security_scanner_running?(:dependency_scanning, project)
+        end
+
+        def scanner_container_scanning_running?(project)
+          security_scanner_running?(:container_scanning, project)
+        end
+
+        def scanner_license_compliance_running?(project)
+          security_scanner_running?(:license_compliance, project)
+        end
+
+        def scanner_dast_running?(project)
+          security_scanner_running?(:dast, project)
+        end
+
+        def scanner_api_security_running?(project)
+          security_scanner_running?(:api_fuzzing, project)
+        end
+
+        def scanner_fuzz_testing_running?(project)
+          security_scanner_running?(:fuzz_testing, project)
+        end
+
+        def scanner_code_quality_running?(project)
+          security_scanner_running?(:code_quality, project)
+        end
+
+        def scanner_iac_running?(project)
+          security_scanner_running?(:iac, project)
+        end
+
+        def security_scanner_running?(scanner, project)
+          pipeline = project.latest_successful_pipeline_for_default_branch
+
+          return false if pipeline.nil?
+          return false unless SECURITY_SCANNERS.include?(scanner)
+
+          pipeline.job_artifacts.send(scanner).any? # rubocop: disable GitlabSecurity/PublicSend -- limited to supported scanners
         end
       end
     end

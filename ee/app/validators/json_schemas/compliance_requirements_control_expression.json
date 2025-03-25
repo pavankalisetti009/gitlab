@@ -12,7 +12,16 @@
         "merge_request_prevent_committers_approval",
         "project_visibility",
         "default_branch_protected",
-        "auth_sso_enabled"
+        "auth_sso_enabled",
+        "scanner_secret_detection_running",
+        "scanner_dep_scanning_running",
+        "scanner_container_scanning_running",
+        "scanner_license_compliance_running",
+        "scanner_dast_running",
+        "scanner_api_security_running",
+        "scanner_fuzz_testing_running",
+        "scanner_code_quality_running",
+        "scanner_iac_running"
       ]
     },
     "operator": {
@@ -45,7 +54,16 @@
               "merge_request_prevent_author_approval",
               "merge_request_prevent_committers_approval",
               "default_branch_protected",
-              "auth_sso_enabled"
+              "auth_sso_enabled",
+              "scanner_secret_detection_running",
+              "scanner_dep_scanning_running",
+              "scanner_container_scanning_running",
+              "scanner_license_compliance_running",
+              "scanner_dast_running",
+              "scanner_api_security_running",
+              "scanner_fuzz_testing_running",
+              "scanner_code_quality_running",
+              "scanner_iac_running"
             ]
           }
         }
