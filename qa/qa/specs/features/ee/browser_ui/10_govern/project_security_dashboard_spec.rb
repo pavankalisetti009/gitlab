@@ -89,7 +89,7 @@ module QA
 
         Page::Project::Issue::Show.perform do |issue|
           aggregate_failures "testing edited vulnerability issue" do
-            expect(issue).to have_title("Investigate vulnerability: #{vulnerability_name}")
+            expect(issue).to have_issue_title("Investigate vulnerability: #{vulnerability_name}")
             expect(issue).to have_text(edited_vulnerability_issue_description)
             expect(issue).to have_label(label.title)
           end
