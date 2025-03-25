@@ -162,7 +162,7 @@ describe('useAccessTokens store', () => {
           expect.objectContaining({
             params: {
               page: 1,
-              sort: 'expires_at_asc_id_desc',
+              sort: 'expires_asc',
               search: 'my token',
               user_id: 235,
             },
@@ -247,7 +247,7 @@ describe('useAccessTokens store', () => {
               expires_before: '2025-01-01',
               last_used_after: '2025-01-01',
               page: 1,
-              sort: 'expires_at_asc_id_desc',
+              sort: 'expires_asc',
               state: 'inactive',
               search: 'my token',
               user_id: 235,
@@ -361,7 +361,7 @@ describe('useAccessTokens store', () => {
           expect.objectContaining({
             params: {
               page: 1,
-              sort: 'expires_at_asc_id_desc',
+              sort: 'expires_asc',
               search: 'my token',
               user_id: 235,
             },
@@ -458,7 +458,7 @@ describe('useAccessTokens store', () => {
           expect.objectContaining({
             params: {
               page: 1,
-              sort: 'expires_at_asc_id_desc',
+              sort: 'expires_asc',
               search: 'my token',
               user_id: 235,
             },
@@ -530,7 +530,7 @@ describe('useAccessTokens store', () => {
   describe('getters', () => {
     describe('sort', () => {
       it('returns correct value', () => {
-        expect(store.sort).toBe('expires_at_asc_id_desc');
+        expect(store.sort).toBe('expires_asc');
 
         store.sorting = { value: 'name', isAsc: false };
 
