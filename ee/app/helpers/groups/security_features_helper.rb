@@ -33,7 +33,8 @@ module Groups::SecurityFeaturesHelper
   def group_level_security_inventory_data(group)
     {
       group_full_path: group.full_path,
-      group_name: group.name
+      group_name: group.name,
+      new_project_path: new_project_path(namespace_id: group.id)
     }
   end
 

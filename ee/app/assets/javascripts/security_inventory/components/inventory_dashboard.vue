@@ -33,11 +33,11 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  inject: ['groupFullPath'],
+  inject: ['groupFullPath', 'newProjectPath'],
   i18n: {
-    emptyStateTitle: s__('SecurityInventory|No projects found.'),
+    emptyStateTitle: s__('SecurityInventory|No projects found'),
     emptyStateDescription: s__(
-      'SecurityInventory|Add project to this group to start tracking their security posture.',
+      'SecurityInventory|Add projects to this group to start tracking their security posture.',
     ),
     errorFetchingChildren: s__(
       'SecurityInventory||An error occurred while fetching subgroups and projects. Please try again.',
@@ -195,6 +195,8 @@ export default {
         :description="$options.i18n.emptyStateDescription"
         :svg-path="$options.EMPTY_SUBGROUP_SVG"
         :svg-height="150"
+        :primary-button-text="__('New Project')"
+        :primary-button-link="newProjectPath"
       />
     </template>
     <gl-table-lite v-else :items="children" :fields="$options.fields" hover>

@@ -11,7 +11,7 @@ export default {
   i18n: {
     title: s__('SecurityInventory|Security inventory'),
     description: s__(
-      'SecurityInventory|View security coverage and vulnerabilities for all the projects in this group. Data is refreshed and may be upto 24 hours behind.',
+      'SecurityInventory|View security coverage and vulnerabilities for all the projects in this group.',
     ),
   },
 };
