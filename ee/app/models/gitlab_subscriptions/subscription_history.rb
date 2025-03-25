@@ -55,19 +55,6 @@ module GitlabSubscriptions
       )
     end
 
-    def self.latest_updated_history_by_hosted_plan_id(hosted_plan_id, scoped_namespace_ids)
-      arel_table
-        .project(arel_table[:namespace_id], arel_table[:created_at].maximum.as('last_created_at'))
-        .where(
-          arel_table[:change_type]
-            .eq(change_types[:gitlab_subscription_updated])
-            .and(arel_table[:hosted_plan_id].eq(hosted_plan_id.arel))
-            .and(arel_table[:namespace_id].in(scoped_namespace_ids.arel))
-        )
-        .group(arel_table[:namespace_id])
-        .as('latest_history')
-    end
-
     def self.create_from_change(change_type, attrs)
       create_attrs = attrs
         .slice(*TRACKED_ATTRIBUTES)
