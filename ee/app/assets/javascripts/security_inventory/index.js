@@ -11,7 +11,7 @@ export default () => {
     return null;
   }
 
-  const { groupFullPath, groupName } = el.dataset;
+  const { groupFullPath, groupName, newProjectPath } = el.dataset;
 
   return new Vue({
     el,
@@ -19,6 +19,7 @@ export default () => {
     provide: {
       groupFullPath,
       groupName,
+      newProjectPath,
     },
     render(createElement) {
       return createElement(App);
