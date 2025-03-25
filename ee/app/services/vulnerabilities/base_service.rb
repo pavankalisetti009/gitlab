@@ -33,7 +33,7 @@ module Vulnerabilities
     end
 
     def update_statistics
-      Vulnerabilities::Statistics::UpdateService.update_for(@vulnerability) if @changed
+      Vulnerabilities::StatisticsUpdateService.update_for(@vulnerability) if @changed
     end
 
     def authorized?
