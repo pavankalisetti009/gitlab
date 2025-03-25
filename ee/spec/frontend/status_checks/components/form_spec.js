@@ -46,6 +46,7 @@ describe('Status checks form', () => {
   const findUrlValidation = () => wrapper.findByTestId('url-group');
   const findBranchesValidation = () => wrapper.findByTestId('branches-group');
   const findSharedSecretInput = () => wrapper.findByTestId('shared-secret');
+  const findHmacEditButton = () => wrapper.findByTestId('override-hmac');
   const findBranchesErrorAlert = () => wrapper.findComponent(GlAlert);
 
   const findValidations = () => [
@@ -65,6 +66,7 @@ describe('Status checks form', () => {
       expect(findProtectedBranchesSelector().props('multiple')).toBe(true);
       expect(findSharedSecretInput().exists()).toBe(true);
       expect(findUrlInput().props('value')).toBe('');
+      expect(findHmacEditButton().exists()).toBe(false);
     });
 
     it('shows filled inputs when initial data is given', () => {
@@ -89,15 +91,15 @@ describe('Status checks form', () => {
       expect(inputsAreValid()).toBe(false);
       expect(findNameValidation().props('invalidFeedback')).toBe('Please provide a name.');
       expect(findBranchesValidation().props('invalidFeedback')).toBe(
-        'Please select a valid target branch.',
+        'Select a valid target branch.',
       );
       expect(findUrlValidation().props('invalidFeedback')).toBe('Please provide a valid URL.');
     });
 
     it.each`
       hmac     | description
-      ${false} | ${'Provide a shared secret to be used when sending a request for a status check to authenticate request using HMAC.'}
-      ${true}  | ${'There is currently a secret configured for this status check.'}
+      ${false} | ${'Provide a shared secret. This secret is used to authenticate requests for a status check using HMAC.'}
+      ${true}  | ${'A secret is currently configured for this status check.'}
     `('disables HMAC secret field when HMAC is enabled', ({ hmac, description }) => {
       createWrapper({
         statusCheck: { ...statusCheck, hmac },
@@ -133,13 +135,14 @@ describe('Status checks form', () => {
           name: statusCheck.name,
           url: statusCheck.externalUrl,
           sharedSecret: statusCheck.sharedSecret,
+          overrideHmac: false,
         },
       ]);
 
       expect(inputsAreValid()).toBe(false);
       expect(findNameValidation().props('invalidFeedback')).toBe('Name is already taken.');
       expect(findUrlValidation().props('invalidFeedback')).toBe(
-        'External API is already in use by another status check.',
+        'The specified external API is already in use by another status check.',
       );
     });
 
@@ -154,6 +157,7 @@ describe('Status checks form', () => {
           name: statusCheck.name,
           url: statusCheck.externalUrl,
           sharedSecret: 'secret',
+          overrideHmac: false,
         },
       ]);
       expect(inputsAreValid()).toBe(true);
@@ -208,6 +212,64 @@ describe('Status checks form', () => {
       });
 
       expect(Sentry.captureException.mock.calls).toEqual([[sentryError]]);
+    });
+  });
+
+  describe('override hmac secret', () => {
+    it('overrides existing shared secret', async () => {
+      createWrapper({ statusCheck: { ...statusCheck, hmac: true } });
+
+      expect(findHmacEditButton().exists()).toBe(true);
+      expect(Boolean(findSharedSecretInput().attributes('disabled'))).toBe(true);
+      expect(findHmacEditButton().props('disabled')).toBe(false);
+      expect(findHmacEditButton().attributes('title')).toBe(
+        'Enter a new value to overwrite the current secret.',
+      );
+
+      await findHmacEditButton().vm.$emit('click');
+
+      expect(findHmacEditButton().props('disabled')).toBe(true);
+      expect(Boolean(findSharedSecretInput().attributes('disabled'))).toBe(false);
+      expect(findSharedSecretInput().attributes('description')).toBe(
+        'Enter a new value to overwrite the current secret.',
+      );
+
+      await findForm().trigger('submit');
+
+      expect(wrapper.emitted('submit')).toContainEqual([
+        {
+          branches: statusCheck.protectedBranches,
+          name: statusCheck.name,
+          url: statusCheck.externalUrl,
+          sharedSecret: 'secret',
+          overrideHmac: true,
+        },
+      ]);
+    });
+
+    it('validates shared secret when override is enabled', async () => {
+      createWrapper({ statusCheck: { ...statusCheck, sharedSecret: '', hmac: true } });
+
+      await findForm().trigger('submit');
+
+      expect(wrapper.emitted('submit')).toContainEqual([
+        {
+          branches: statusCheck.protectedBranches,
+          name: statusCheck.name,
+          url: statusCheck.externalUrl,
+          sharedSecret: '',
+          overrideHmac: false,
+        },
+      ]);
+      expect(wrapper.emitted('submit')).toHaveLength(1);
+      expect(findSharedSecretInput().props('state')).toBe(true);
+
+      await findHmacEditButton().vm.$emit('click');
+
+      await findForm().trigger('submit');
+
+      expect(wrapper.emitted('submit')).toHaveLength(1);
+      expect(findSharedSecretInput().props('state')).toBe(false);
     });
   });
 });
