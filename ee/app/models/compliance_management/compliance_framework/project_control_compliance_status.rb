@@ -8,11 +8,7 @@ module ComplianceManagement
       belongs_to :namespace
       belongs_to :compliance_requirement
 
-      enum status: {
-        pass: 0,
-        fail: 1,
-        pending: 2
-      }
+      enum status: ::Enums::ComplianceManagement::ComplianceFramework::ProjectControlComplianceStatus.status
 
       validates :project_id, uniqueness: { scope: :compliance_requirements_control_id }
       validates_presence_of :status, :project, :namespace, :compliance_requirement,
@@ -20,6 +16,14 @@ module ComplianceManagement
 
       scope :for_project_and_control, ->(project_id, control_id) {
         where(project_id: project_id, compliance_requirements_control_id: control_id)
+      }
+
+      scope :for_projects, ->(project_ids) {
+        where(project_id: project_ids)
+      }
+
+      scope :for_requirements, ->(requirement_ids) {
+        where(compliance_requirement_id: requirement_ids)
       }
 
       def self.create_or_find_for_project_and_control(project, control)

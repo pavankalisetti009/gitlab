@@ -214,5 +214,161 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectControlComplian
         end.to raise_error(ActiveRecord::RecordInvalid)
       end
     end
+
+    describe '.for_projects' do
+      let_it_be(:namespace) { create(:group) }
+      let_it_be(:project1) { create(:project, namespace: namespace) }
+      let_it_be(:project2) { create(:project, namespace: namespace) }
+
+      let_it_be(:compliance_framework) { create(:compliance_framework, namespace: namespace) }
+      let_it_be(:requirement) { create(:compliance_requirement, framework: compliance_framework, namespace: namespace) }
+      let_it_be(:control) { create(:compliance_requirements_control, compliance_requirement: requirement) }
+
+      let_it_be(:status1) do
+        create(:project_control_compliance_status, project: project1, compliance_requirements_control: control,
+          compliance_requirement: requirement)
+      end
+
+      let_it_be(:status2) do
+        create(:project_control_compliance_status, project: project2, compliance_requirements_control: control,
+          compliance_requirement: requirement)
+      end
+
+      context 'when given a single project ID' do
+        it 'returns statuses for the specified project' do
+          expect(described_class.for_projects(project1.id)).to contain_exactly(status1)
+        end
+      end
+
+      context 'when given multiple project IDs' do
+        it 'returns statuses for all specified projects' do
+          expect(described_class.for_projects([project1.id, project2.id])).to contain_exactly(status1, status2)
+        end
+      end
+
+      context 'when given an array with a single project ID' do
+        it 'returns statuses for the specified project' do
+          expect(described_class.for_projects([project1.id])).to contain_exactly(status1)
+        end
+      end
+
+      context 'when given an empty array' do
+        it 'returns an empty relation' do
+          expect(described_class.for_projects([])).to be_empty
+        end
+      end
+
+      context 'when given nil' do
+        it 'returns an empty relation' do
+          expect(described_class.for_projects(nil)).to be_empty
+        end
+      end
+
+      context 'when given non-existent project IDs' do
+        it 'returns an empty relation' do
+          expect(described_class.for_projects(non_existing_record_id)).to be_empty
+        end
+      end
+
+      context 'when given a mix of existing and non-existent project IDs' do
+        it 'returns statuses only for existing projects' do
+          expect(described_class.for_projects([project1.id, non_existing_record_id])).to contain_exactly(status1)
+        end
+      end
+
+      context 'when chained with other scopes' do
+        before do
+          status1.update!(status: :pass)
+          status2.update!(status: :fail)
+        end
+
+        it 'works correctly with other scopes' do
+          result = described_class.for_projects([project1.id, project2.id]).where(status: :pass)
+          expect(result).to contain_exactly(status1)
+        end
+      end
+    end
+
+    describe '.for_requirements' do
+      let_it_be(:namespace) { create(:group) }
+      let_it_be(:project) { create(:project, namespace: namespace) }
+      let_it_be(:compliance_framework) { create(:compliance_framework, namespace: namespace) }
+      let_it_be(:requirement1) do
+        create(:compliance_requirement, framework: compliance_framework, namespace: namespace)
+      end
+
+      let_it_be(:requirement2) do
+        create(:compliance_requirement, framework: compliance_framework, namespace: namespace)
+      end
+
+      let_it_be(:control1) { create(:compliance_requirements_control, compliance_requirement: requirement1) }
+      let_it_be(:control2) { create(:compliance_requirements_control, compliance_requirement: requirement2) }
+
+      let_it_be(:status1) do
+        create(:project_control_compliance_status, project: project, compliance_requirements_control: control1,
+          compliance_requirement: requirement1)
+      end
+
+      let_it_be(:status2) do
+        create(:project_control_compliance_status, project: project, compliance_requirements_control: control2,
+          compliance_requirement: requirement2)
+      end
+
+      context 'when given a single requirement ID' do
+        it 'returns statuses for the specified requirement' do
+          expect(described_class.for_requirements(requirement1.id)).to contain_exactly(status1)
+        end
+      end
+
+      context 'when given multiple requirement IDs' do
+        it 'returns statuses for all specified requirements' do
+          expect(described_class.for_requirements([requirement1.id,
+            requirement2.id])).to contain_exactly(status1, status2)
+        end
+      end
+
+      context 'when given an array with a single requirement ID' do
+        it 'returns statuses for the specified requirement' do
+          expect(described_class.for_requirements([requirement1.id])).to contain_exactly(status1)
+        end
+      end
+
+      context 'when given an empty array' do
+        it 'returns an empty relation' do
+          expect(described_class.for_requirements([])).to be_empty
+        end
+      end
+
+      context 'when given nil' do
+        it 'returns an empty relation' do
+          expect(described_class.for_requirements(nil)).to be_empty
+        end
+      end
+
+      context 'when given non-existent requirement IDs' do
+        it 'returns an empty relation' do
+          expect(described_class.for_requirements(non_existing_record_id)).to be_empty
+        end
+      end
+
+      context 'when given a mix of existing and non-existent requirement IDs' do
+        it 'returns statuses only for existing requirements' do
+          expect(described_class.for_requirements([requirement1.id,
+            non_existing_record_id])).to contain_exactly(status1)
+        end
+      end
+
+      context 'when chained with other scopes' do
+        before do
+          status1.update!(status: :pass)
+          status2.update!(status: :fail)
+        end
+
+        it 'works correctly with other scopes' do
+          result = described_class.for_requirements([requirement1.id, requirement2.id]).where(status: :pass)
+          expect(result).to contain_exactly(status1)
+        end
+      end
+    end
   end
 end
