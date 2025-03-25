@@ -7,6 +7,7 @@ RSpec.describe AuditEvents::AuditEventStreamingWorker, feature_category: :audit_
 
   before do
     stub_licensed_features(external_audit_events: true)
+    stub_feature_flags(stream_audit_events_from_new_tables: false)
   end
 
   shared_context 'a successful audit event stream' do
@@ -371,6 +372,208 @@ RSpec.describe AuditEvents::AuditEventStreamingWorker, feature_category: :audit_
         subject { worker.perform('audit_operation', nil, audit_event.to_json) }
 
         it_behaves_like 'no HTTP calls are made'
+      end
+    end
+
+    context 'when model_class is provided' do
+      let(:group_audit_event) { create(:audit_events_group_audit_event) }
+      let(:audit_operation) { 'audit_operation' }
+
+      it 'delegates to AuditEvents::Processor' do
+        expect(AuditEvents::Processor).to receive(:fetch).with(
+          audit_event_id: group_audit_event.id,
+          audit_event_json: nil,
+          model_class: 'AuditEvents::GroupAuditEvent'
+        ).and_call_original
+
+        worker.perform(audit_operation, group_audit_event.id, nil, 'AuditEvents::GroupAuditEvent')
+      end
+
+      it 'delegates to AuditEvents::Processor with nil model_class' do
+        expect(AuditEvents::Processor).to receive(:fetch).with(
+          audit_event_id: group_audit_event.id,
+          audit_event_json: nil,
+          model_class: nil
+        ).and_call_original
+
+        worker.perform(audit_operation, group_audit_event.id)
+      end
+
+      context 'when constantize fails with NameError' do
+        let(:invalid_model_class) { 'NonExistentClass' }
+
+        it 'logs the error and returns nil' do
+          expect(AuditEvents::Processor).to receive(:fetch).with(
+            audit_event_id: group_audit_event.id,
+            audit_event_json: nil,
+            model_class: invalid_model_class
+          ).and_return(nil)
+
+          expect(worker).to receive(:log_extra_metadata_on_done).with(:error, "Failed to fetch audit event")
+
+          result = worker.perform(audit_operation, group_audit_event.id, nil, invalid_model_class)
+          expect(result).to be_nil
+        end
+      end
+
+      context 'when record is not found' do
+        let(:non_existent_id) { non_existing_record_id }
+
+        it 'logs the error and returns nil' do
+          expect(AuditEvents::Processor).to receive(:fetch).with(
+            audit_event_id: non_existent_id,
+            audit_event_json: nil,
+            model_class: 'AuditEvents::GroupAuditEvent'
+          ).and_return(nil)
+
+          expect(worker).to receive(:log_extra_metadata_on_done).with(:error, "Failed to fetch audit event")
+
+          result = worker.perform(audit_operation, non_existent_id, nil, 'AuditEvents::GroupAuditEvent')
+          expect(result).to be_nil
+        end
+      end
+    end
+
+    context 'when parsing audit event json fails' do
+      let(:invalid_json) { '{invalid_json' }
+
+      it 'logs the error and returns nil' do
+        expect(AuditEvents::Processor).to receive(:fetch).with(
+          audit_event_id: nil,
+          audit_event_json: invalid_json,
+          model_class: nil
+        ).and_return(nil)
+
+        expect(worker).to receive(:log_extra_metadata_on_done).with(:error, "Failed to fetch audit event")
+
+        result = worker.perform('audit_operation', nil, invalid_json)
+        expect(result).to be_nil
+      end
+    end
+
+    context 'when entity lookup fails during JSON parsing' do
+      let(:audit_event_json) do
+        {
+          group_id: non_existing_record_id,
+          author_id: create(:user).id,
+          entity_id: non_existing_record_id,
+          entity_type: 'Group',
+          created_at: Time.current
+        }.to_json
+      end
+
+      it 'logs the error and returns nil' do
+        expect(AuditEvents::Processor).to receive(:fetch).with(
+          audit_event_id: nil,
+          audit_event_json: audit_event_json,
+          model_class: nil
+        ).and_return(nil)
+
+        expect(worker).to receive(:log_extra_metadata_on_done).with(:error, "Failed to fetch audit event")
+
+        result = worker.perform('audit_operation', nil, audit_event_json)
+        expect(result).to be_nil
+      end
+    end
+  end
+
+  describe 'AuditEvents::Processor' do
+    describe '.fetch_from_json' do
+      let(:group) { create(:group) }
+      let(:project) { create(:project, group: group) }
+      let(:user) { create(:user) }
+      let(:author) { create(:user) }
+      let(:base_json) do
+        {
+          author_id: author.id,
+          entity_id: group.id,
+          entity_type: 'Group',
+          created_at: Time.current,
+          details: { custom_message: 'test message' }
+        }
+      end
+
+      context 'when feature flag is enabled' do
+        before do
+          stub_feature_flags(stream_audit_events_from_new_tables: true)
+        end
+
+        context 'with group_id present' do
+          let(:audit_event_json) do
+            base_json.merge(
+              group_id: group.id
+            ).to_json
+          end
+
+          it 'creates a GroupAuditEvent' do
+            event = AuditEvents::Processor.send(:fetch_from_json, audit_event_json)
+
+            expect(event).to be_a(AuditEvents::GroupAuditEvent)
+            expect(event.group_id).to eq(group.id)
+          end
+        end
+
+        context 'with project_id present' do
+          let(:audit_event_json) do
+            base_json.merge(
+              project_id: project.id
+            ).to_json
+          end
+
+          it 'creates a ProjectAuditEvent' do
+            event = AuditEvents::Processor.send(:fetch_from_json, audit_event_json)
+
+            expect(event).to be_a(AuditEvents::ProjectAuditEvent)
+            expect(event.project_id).to eq(project.id)
+          end
+        end
+
+        context 'with user_id present' do
+          let(:audit_event_json) do
+            base_json.merge(
+              user_id: user.id
+            ).to_json
+          end
+
+          it 'creates a UserAuditEvent' do
+            event = AuditEvents::Processor.send(:fetch_from_json, audit_event_json)
+
+            expect(event).to be_a(AuditEvents::UserAuditEvent)
+            expect(event.user_id).to eq(user.id)
+          end
+        end
+
+        context 'with no specific id present' do
+          let(:audit_event_json) do
+            base_json.to_json
+          end
+
+          it 'creates an InstanceAuditEvent' do
+            event = AuditEvents::Processor.send(:fetch_from_json, audit_event_json)
+
+            expect(event).to be_a(AuditEvents::InstanceAuditEvent)
+          end
+        end
+      end
+
+      context 'when feature flag is disabled' do
+        before do
+          stub_feature_flags(stream_audit_events_from_new_tables: false)
+        end
+
+        context 'with any id type' do
+          let(:audit_event_json) do
+            base_json.merge(
+              group_id: group.id
+            ).to_json
+          end
+
+          it 'creates a base AuditEvent' do
+            event = AuditEvents::Processor.send(:fetch_from_json, audit_event_json)
+
+            expect(event).to be_a(AuditEvent)
+          end
+        end
       end
     end
   end

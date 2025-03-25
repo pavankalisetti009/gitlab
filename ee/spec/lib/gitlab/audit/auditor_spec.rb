@@ -4,9 +4,9 @@ require 'spec_helper'
 
 RSpec.describe Gitlab::Audit::Auditor, feature_category: :audit_events do
   let(:name) { 'play_with_project_settings' }
-  let(:author) { build_stubbed(:user) }
-  let(:scope) { build_stubbed(:group) }
-  let(:target) { build_stubbed(:project) }
+  let_it_be(:author) { create(:user) }
+  let_it_be_with_reload(:scope) { create(:group) }
+  let(:target) { scope }
   let(:context) { { name: name, author: author, scope: scope, target: target } }
   let(:add_message) { 'Added an interesting field from project Gotham' }
   let(:remove_message) { 'Removed an interesting field from project Gotham' }
@@ -22,7 +22,9 @@ RSpec.describe Gitlab::Audit::Auditor, feature_category: :audit_events do
   subject(:auditor) { described_class }
 
   before do
+    allow(Gitlab::Audit::Type::Definition).to receive(:defined?).and_return(true)
     allow(Gitlab::Audit::Type::Definition).to receive(:defined?).with(name).and_return(true)
+    stub_feature_flags(stream_audit_events_from_new_tables: false)
   end
 
   shared_examples 'only streamed' do
@@ -59,25 +61,35 @@ RSpec.describe Gitlab::Audit::Auditor, feature_category: :audit_events do
       end
 
       shared_examples 'common audit event attributes' do |event_class, entity_type|
+        let(:scope) { create(entity_type.to_sym) } # rubocop:disable Rails/SaveBang -- Need to ignore, create! masks factory failures
+        let(:target) { scope }
+
+        before do
+          allow(Gitlab::Audit::Type::Definition).to receive(:defined?).and_return(true)
+
+          AuditEvent.delete_all
+          event_class.constantize.delete_all if event_class.present?
+        end
+
         it "syncs audit event into #{event_class}" do
-          expect { audit! }.to change(event_class.constantize, :count).by(expected_count)
+          audit!
 
-          created_audit_events = event_class.constantize.order(:id).limit(expected_count)
+          audit_events = AuditEvent.last(expected_count)
+          created_audit_events = event_class.constantize.last(expected_count)
 
-          audit_events = AuditEvent.order(:id).limit(expected_count)
+          expect(created_audit_events.size).to eq(expected_count)
+          expect(audit_events.size).to eq(expected_count)
 
-          created_audit_events.zip(audit_events).each do |created_event, audit_event|
-            expect(created_event).to have_attributes(
-              id: audit_event.id,
-              "#{entity_type}_id": scope.id,
-              author_id: author.id,
-              target_id: target.id,
-              event_name: name,
-              author_name: author.name,
-              entity_path: scope.full_path,
-              target_details: target.name,
-              target_type: entity_type.capitalize)
-          end
+          expect(created_audit_events).to all(have_attributes(
+            "#{entity_type}_id": scope.id,
+            author_id: author.id,
+            target_id: target.id,
+            event_name: name,
+            author_name: author.name,
+            entity_path: scope.full_path,
+            target_details: target.name,
+            target_type: entity_type.capitalize
+          ))
         end
       end
 
@@ -140,7 +152,7 @@ RSpec.describe Gitlab::Audit::Auditor, feature_category: :audit_events do
           it 'bulk-inserts audit events to database' do
             expect(AuditEvent).to receive(:bulk_insert!).with(include(kind_of(AuditEvent)), returns: :ids)
             expect(AuditEvents::UserAuditEvent).to receive(:bulk_insert!)
-              .with(include(kind_of(AuditEvents::UserAuditEvent)))
+              .with(include(kind_of(AuditEvents::UserAuditEvent)), returns: :ids)
 
             audit!
           end
@@ -623,6 +635,116 @@ RSpec.describe Gitlab::Audit::Auditor, feature_category: :audit_events do
 
       it 'returns the correct result when feature is available' do
         expect(auditor.new(context).audit_enabled?).to be(result)
+      end
+    end
+  end
+
+  describe '#log_events_and_stream' do
+    let(:audit_event) { create(:audit_event, entity_id: group.id, entity_type: 'Group', author_id: author.id) }
+    let(:events) { [audit_event] }
+    let(:saved_events) { [audit_event] }
+    let(:group) { create(:group) }
+
+    let(:group_audit_event) do
+      create(:audit_events_group_audit_event,
+        author_id: author.id,
+        target_group: group,
+        group_id: group.id
+      )
+    end
+
+    let(:new_audit_events) { [group_audit_event] }
+
+    subject(:auditor) { described_class.new(context) }
+
+    before do
+      allow(Gitlab::Audit::Type::Definition).to receive(:defined?).and_return(true)
+      allow(auditor).to receive(:log_authentication_event)
+      allow(auditor).to receive(:log_to_file)
+      allow(auditor).to receive_messages(log_to_new_tables: new_audit_events, log_to_database: saved_events)
+    end
+
+    context 'when feature flag :stream_audit_events_from_new_tables is enabled' do
+      before do
+        stub_feature_flags(stream_audit_events_from_new_tables: true)
+      end
+
+      it 'uses new audit events for streaming' do
+        expect(auditor).to receive(:send_to_stream).with(new_audit_events)
+
+        auditor.log_events_and_stream(events)
+      end
+    end
+
+    context 'when feature flag is disabled' do
+      before do
+        stub_feature_flags(stream_audit_events_from_new_tables: false)
+      end
+
+      it 'uses saved events for streaming' do
+        expect(auditor).to receive(:send_to_stream).with(saved_events)
+
+        auditor.log_events_and_stream(events)
+      end
+    end
+
+    describe '#determine_events_to_stream' do
+      context 'when new audit events are present' do
+        it 'returns filtered new events when feature flag is enabled' do
+          stub_feature_flags(stream_audit_events_from_new_tables: true)
+
+          expect(auditor).to receive(:filter_events_by_feature_flag).with(new_audit_events).and_return(new_audit_events)
+
+          result = auditor.send(:determine_events_to_stream, new_audit_events, saved_events, events)
+
+          expect(result).to eq(new_audit_events)
+        end
+
+        it 'returns saved events when feature flag is disabled' do
+          stub_feature_flags(stream_audit_events_from_new_tables: false)
+
+          expect(auditor).to receive(:filter_events_by_feature_flag).with(new_audit_events).and_return([])
+
+          result = auditor.send(:determine_events_to_stream, new_audit_events, saved_events, events)
+
+          expect(result).to eq(saved_events)
+        end
+      end
+
+      context 'when new audit events are not present but saved events exist' do
+        it 'returns saved events' do
+          result = auditor.send(:determine_events_to_stream, [], saved_events, events)
+
+          expect(result).to eq(saved_events)
+        end
+      end
+
+      context 'when neither new nor saved events exist' do
+        it 'returns original events' do
+          result = auditor.send(:determine_events_to_stream, [], [], events)
+
+          expect(result).to eq(events)
+        end
+      end
+    end
+
+    describe '#filter_events_by_feature_flag' do
+      let(:instance_scope) { Gitlab::Audit::InstanceScope.new }
+      let(:instance_audit_event) do
+        build(:audit_events_instance_audit_event).tap do |event|
+          allow(event).to receive(:entity).and_return(instance_scope)
+        end
+      end
+
+      let(:mixed_events) { [group_audit_event, instance_audit_event] }
+
+      it 'filters events based on feature flag for each entity' do
+        stub_feature_flags(stream_audit_events_from_new_tables: group)
+
+        result = auditor.send(:filter_events_by_feature_flag, mixed_events)
+
+        expect(result).to include(group_audit_event)
+        expect(result).not_to include(instance_audit_event)
       end
     end
   end
