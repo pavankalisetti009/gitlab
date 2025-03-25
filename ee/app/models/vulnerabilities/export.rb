@@ -113,7 +113,7 @@ module Vulnerabilities
     end
 
     def send_completion_email!
-      return unless email_delivery_enabled?
+      return unless send_email? && email_delivery_enabled?
 
       Vulnerabilities::ExportMailer.completion_email(self).deliver_now
     end

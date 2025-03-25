@@ -36,7 +36,7 @@ describe('Csv Button Export', () => {
 
   const mockCsvExportRequest = (download, status = 'finished') => {
     mock
-      .onPost(vulnerabilitiesExportEndpoint)
+      .onPost(vulnerabilitiesExportEndpoint, { send_email: true })
       .reply(HTTP_STATUS_ACCEPTED, { _links: { self: 'status/url' } });
 
     mock.onGet('status/url').reply(HTTP_STATUS_OK, { _links: { download }, status });
