@@ -83,5 +83,22 @@ RSpec.describe Clusters::Agents::Authorizations::CiAccess::Finder, feature_categ
         end
       end
     end
+
+    describe 'organization authorizations' do
+      before do
+        stub_application_setting(organization_cluster_agent_authorization_enabled: true)
+      end
+
+      it_behaves_like 'licensed access_as' do
+        let!(:authorization) do
+          create(
+            :agent_ci_access_organization_authorization,
+            agent: production_agent,
+            organization: production_agent.project.organization,
+            config: config
+          )
+        end
+      end
+    end
   end
 end
