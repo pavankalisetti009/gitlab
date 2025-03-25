@@ -65,6 +65,7 @@ RSpec.describe Vulnerabilities::Archival::ArchivedRecordBuilderService, feature_
     it 'builds a new instance of `Vulnerabilities::ArchivedRecord` with correct attributes' do
       expect(build_archived_record).to have_attributes(
         archive: archive,
+        date: archive.date,
         project: project,
         vulnerability_identifier: vulnerability.id,
         data: {
