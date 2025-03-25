@@ -33529,8 +33529,10 @@ msgstr ""
 msgid "Job|%{rawLinkStart}View raw%{rawLinkEnd} or %{fullLinkStart}full log%{fullLinkEnd}."
 msgstr ""
 
-msgid "Job|%{searchLength} results found for %{searchTerm}"
-msgstr ""
+msgid "Job|%{searchLength} result found for %{searchTerm}"
+msgid_plural "Job|%{searchLength} results found for %{searchTerm}"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "Job|Are you sure you want to erase this job log and artifacts?"
 msgstr ""
