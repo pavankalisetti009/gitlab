@@ -728,4 +728,67 @@ RSpec.describe AuditEventService, :request_store, feature_category: :audit_event
       end
     end
   end
+
+  describe '#unauth_security_event' do
+    before do
+      stub_licensed_features(extended_audit_events: true)
+      allow(Gitlab::Database).to receive(:read_write?).and_return(true)
+    end
+
+    context 'when the feature flag is enabled' do
+      let(:new_audit_event) { build(:audit_events_user_audit_event) }
+      let(:new_events) { [new_audit_event] }
+
+      before do
+        stub_feature_flags(stream_audit_events_from_new_tables: true)
+        allow(service).to receive(:log_to_new_tables).and_return(new_events)
+      end
+
+      it 'returns the new audit event when feature flag is enabled' do
+        event = service.unauth_security_event
+
+        expect(event).to eq(new_audit_event)
+      end
+
+      it 'logs to new tables when event is persisted' do
+        expect(service).to receive(:log_to_new_tables).with(
+          array_including(an_instance_of(AuditEvent)),
+          'AuditEvent'
+        )
+
+        service.unauth_security_event
+      end
+    end
+
+    context 'when the feature flag is disabled' do
+      let(:audit_event) { create(:audit_event) }
+      let(:new_audit_event) { build(:audit_events_user_audit_event) }
+      let(:new_events) { [new_audit_event] }
+
+      before do
+        stub_feature_flags(stream_audit_events_from_new_tables: false)
+        allow(service).to receive(:log_to_new_tables).and_return(new_events)
+      end
+
+      it 'returns the original audit event' do
+        allow(AuditEvent).to receive(:create).and_return(audit_event)
+
+        event = service.unauth_security_event
+
+        expect(event).to eq(audit_event)
+      end
+    end
+
+    it 'does not create an event when not enabled' do
+      stub_licensed_features(extended_audit_events: false)
+
+      expect { service.unauth_security_event }.not_to change(AuditEvent, :count)
+    end
+
+    it 'does not create an event when running on a read-only database' do
+      allow(Gitlab::Database).to receive(:read_write?).and_return(false)
+
+      expect { service.unauth_security_event }.not_to change(AuditEvent, :count)
+    end
+  end
 end

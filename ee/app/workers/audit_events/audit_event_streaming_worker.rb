@@ -12,31 +12,25 @@ module AuditEvents
     feature_category :audit_events
     loggable_arguments 0, 1
 
-    def perform(audit_operation, audit_event_id, audit_event_json = nil)
+    def perform(audit_operation, audit_event_id, audit_event_json = nil, model_class = nil)
       return if ::Gitlab::SilentMode.enabled?
+
       raise ArgumentError, 'audit_event_id and audit_event_json cannot be passed together' if audit_event_id.present? && audit_event_json.present?
 
-      audit_event = audit_event(audit_event_id, audit_event_json)
-      return if audit_event.nil?
+      audit_event = ::AuditEvents::Processor.fetch(
+        audit_event_id: audit_event_id,
+        audit_event_json: audit_event_json,
+        model_class: model_class
+      )
+
+      if audit_event.nil?
+        log_extra_metadata_on_done(:error, "Failed to fetch audit event")
+        return
+      end
 
       AuditEvents::ExternalDestinationStreamer.new(audit_operation, audit_event).stream_to_destinations
 
       log_extra_metadata_on_done(:audit_event_type, audit_operation)
-    end
-
-    private
-
-    # Fetches audit event from database if audit_event_id is present
-    # Or parses audit event json into instance of AuditEvent if audit_event_json is present
-    def audit_event(audit_event_id, audit_event_json)
-      return parse_audit_event_json(audit_event_json) if audit_event_json.present?
-
-      AuditEvent.find(audit_event_id) if audit_event_id.present?
-    end
-
-    def parse_audit_event_json(audit_event_json)
-      audit_event_json = Gitlab::Json.parse(audit_event_json).with_indifferent_access
-      AuditEvent.new(audit_event_json)
     end
   end
 end

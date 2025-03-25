@@ -120,7 +120,14 @@ module EE
 
       event = ::AuditEvent.create(payload)
 
-      log_to_new_tables([event], event.class.to_s) if event.persisted?
+      new_events = log_to_new_tables([event], event.class.to_s) if event.persisted?
+      new_event = new_events.first
+
+      if ::Gitlab::Audit::FeatureFlags.stream_from_new_tables?(new_event.entity)
+        event = new_event
+      else
+        event
+      end
 
       event
     end
