@@ -35926,6 +35926,9 @@ msgstr ""
 msgid "MemberRole|Could not update role."
 msgstr ""
 
+msgid "MemberRole|Create member role"
+msgstr ""
+
 msgid "MemberRole|Create role"
 msgstr ""
 
@@ -35966,6 +35969,9 @@ msgid "MemberRole|Direct users assigned"
 msgstr ""
 
 msgid "MemberRole|Dismiss Planner role promotion"
+msgstr ""
+
+msgid "MemberRole|Edit member role"
 msgstr ""
 
 msgid "MemberRole|Edit role"

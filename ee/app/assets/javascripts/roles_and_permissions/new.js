@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
-import CreateMemberRole from './components/create_member_role.vue';
+import RoleCreate from './components/manage_role/role_create.vue';
 
 Vue.use(VueApollo);
 
@@ -20,10 +20,10 @@ export const initCreateMemberRoleApp = () => {
 
   return new Vue({
     el,
-    name: 'CreateMemberRoleRoot',
+    name: 'CreateRoleRoot',
     apolloProvider,
     render(createElement) {
-      return createElement(CreateMemberRole, {
+      return createElement(RoleCreate, {
         props: { groupFullPath, listPagePath },
       });
     },

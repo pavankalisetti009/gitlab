@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
-import CreateMemberRole from './components/create_member_role.vue';
+import RoleEdit from './components/manage_role/role_edit.vue';
 
 Vue.use(VueApollo);
 
@@ -16,19 +16,15 @@ export const initEditMemberRoleApp = () => {
     return null;
   }
 
-  const { groupFullPath, listPagePath, roleId } = el.dataset;
+  const { listPagePath, roleId } = el.dataset;
 
   return new Vue({
     el,
-    name: 'EditMemberRoleRoot',
+    name: 'EditRoleRoot',
     apolloProvider,
     render(createElement) {
-      return createElement(CreateMemberRole, {
-        props: {
-          groupFullPath,
-          listPagePath,
-          roleId: Number(roleId),
-        },
+      return createElement(RoleEdit, {
+        props: { roleId: Number(roleId), listPagePath },
       });
     },
   });
