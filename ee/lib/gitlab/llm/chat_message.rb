@@ -33,7 +33,7 @@ module Gitlab
       end
 
       def active_record
-        @active_record ||= ::Ai::Conversation::Message.for_user(user).for_message_xid(id).first
+        @active_record ||= ::Ai::Conversation::Message.for_user(user).for_id(id).first
       end
 
       def chat?

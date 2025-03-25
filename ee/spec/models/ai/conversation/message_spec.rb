@@ -32,14 +32,20 @@ RSpec.describe Ai::Conversation::Message, feature_category: :duo_chat do
       end
     end
 
-    describe '.for_message_xid' do
-      subject(:for_message_xid) { described_class.for_message_xid(message_xid) }
-
+    describe '.for_id' do
       let_it_be(:message_xid) { SecureRandom.uuid }
-      let_it_be(:message_with_xid) { create(:ai_conversation_message, message_xid: message_xid) }
+      let_it_be(:message) { create(:ai_conversation_message, message_xid: message_xid) }
+
+      it 'returns message with the specified record id' do
+        expect(described_class.for_id(message.id)).to eq([message])
+      end
+
+      it 'returns message with the specified record id as string' do
+        expect(described_class.for_id(message.id.to_s)).to eq([message])
+      end
 
       it 'returns message with the specified message_xid' do
-        expect(for_message_xid).to eq([message_with_xid])
+        expect(described_class.for_id(message_xid)).to eq([message])
       end
     end
 
