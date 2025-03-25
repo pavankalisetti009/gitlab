@@ -138,30 +138,6 @@ RSpec.describe Gitlab::UsageData, feature_category: :service_ping do
     end
   end
 
-  describe '.integrations_usage' do
-    subject { described_class.integrations_usage }
-
-    context 'when integrations are blocked by settings' do
-      before do
-        stub_application_setting(
-          allow_all_integrations: false,
-          allowed_integrations: [Integrations::Jira.to_param]
-        )
-        stub_licensed_features(integrations_allow_list: true)
-      end
-
-      it 'includes all integrations, but blocked integrations are not counted as active' do
-        create(:asana_integration)
-        create(:jira_integration)
-
-        expect(Integrations::Asana).to be_blocked_by_settings
-        expect(Integrations::Jira).not_to be_blocked_by_settings
-        expect(subject[:projects_asana_active]).to eq(0)
-        expect(subject[:projects_jira_active]).to eq(1)
-      end
-    end
-  end
-
   describe '.requirements_counts' do
     subject { described_class.requirements_counts }
 
