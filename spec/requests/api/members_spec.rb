@@ -27,104 +27,6 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
     end
   end
 
-  shared_examples 'GET /:source_type/:id/members/(all)' do |source_type, all|
-    let(:members_url) do
-      "/#{source_type.pluralize}/#{source.id}/members".tap do |url|
-        url << "/all" if all
-      end
-    end
-
-    context "with :source_type == #{source_type.pluralize}" do
-      it_behaves_like 'a 404 response when source is private' do
-        let(:route) { get api(members_url, stranger) }
-      end
-
-      %i[maintainer developer access_requester stranger].each do |type|
-        context "when authenticated as a #{type}" do
-          it 'returns 200' do
-            user = public_send(type)
-
-            get api(members_url, user)
-
-            expect(response).to have_gitlab_http_status(:ok)
-            expect(response).to include_pagination_headers
-            expect(json_response).to be_an Array
-            expect(json_response.size).to eq(2)
-            expect(json_response.map { |u| u['id'] }).to match_array [maintainer.id, developer.id]
-            expect(json_response).to contain_exactly(
-              a_hash_including('created_by' => a_hash_including('id' => maintainer.id)),
-              hash_not_including('created_by')
-            )
-          end
-        end
-      end
-
-      it 'avoids N+1 queries' do
-        # Establish baseline
-        get api(members_url, maintainer)
-
-        control = ActiveRecord::QueryRecorder.new do
-          get api(members_url, maintainer)
-        end
-
-        project.add_developer(create(:user))
-
-        expect do
-          get api(members_url, maintainer)
-        end.not_to exceed_query_limit(control)
-      end
-
-      it 'does not return invitees' do
-        create(:"#{source_type}_member", invite_token: '123', invite_email: 'test@abc.com', source: source, user: nil)
-
-        get api(members_url, developer)
-
-        expect(response).to have_gitlab_http_status(:ok)
-        expect(response).to include_pagination_headers
-        expect(json_response).to be_an Array
-        expect(json_response.size).to eq(2)
-        expect(json_response.map { |u| u['id'] }).to match_array [maintainer.id, developer.id]
-      end
-
-      context 'with cross db check disabled' do
-        around do |example|
-          allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/343305') do
-            example.run
-          end
-        end
-
-        it 'finds members with query string' do
-          get api(members_url, developer), params: { query: maintainer.username }
-
-          expect(response).to have_gitlab_http_status(:ok)
-          expect(response).to include_pagination_headers
-          expect(json_response).to be_an Array
-          expect(json_response.count).to eq(1)
-          expect(json_response.first['username']).to eq(maintainer.username)
-        end
-      end
-
-      it 'finds members with the given user_ids' do
-        get api(members_url, developer), params: { user_ids: [maintainer.id, developer.id, stranger.id] }
-
-        expect(response).to have_gitlab_http_status(:ok)
-        expect(response).to include_pagination_headers
-        expect(json_response).to be_an Array
-        expect(json_response.map { |u| u['id'] }).to contain_exactly(maintainer.id, developer.id)
-      end
-
-      it 'finds all members with no query specified' do
-        get api(members_url, developer), params: { query: '' }
-
-        expect(response).to have_gitlab_http_status(:ok)
-        expect(response).to include_pagination_headers
-        expect(json_response).to be_an Array
-        expect(json_response.count).to eq(2)
-        expect(json_response.map { |u| u['id'] }).to match_array [maintainer.id, developer.id]
-      end
-    end
-  end
-
   describe 'GET /:source_type/:id/members/all' do
     let(:nested_user) { create(:user) }
     let(:project_user) { create(:user) }
@@ -420,65 +322,6 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
       it 'subgroup member cannot get parent group members list' do
         get api("/groups/#{group.id}/members/all/#{maintainer.id}", developer)
         expect(response).to have_gitlab_http_status(:forbidden)
-      end
-    end
-  end
-
-  shared_examples 'GET /:source_type/:id/members/(all/):user_id' do |source_type, all|
-    context "with :source_type == #{source_type.pluralize} and all == #{all}" do
-      it_behaves_like 'a 404 response when source is private' do
-        let(:route) { get api("/#{source_type.pluralize}/#{source.id}/members/#{all ? 'all/' : ''}#{developer.id}", stranger) }
-      end
-
-      context 'when authenticated as a non-member' do
-        %i[access_requester stranger].each do |type|
-          context "as a #{type}" do
-            it 'returns 200' do
-              user = public_send(type)
-              get api("/#{source_type.pluralize}/#{source.id}/members/#{all ? 'all/' : ''}#{developer.id}", user)
-
-              expect(response).to have_gitlab_http_status(:ok)
-              # User attributes
-              expect(json_response['id']).to eq(developer.id)
-              expect(json_response['name']).to eq(developer.name)
-              expect(json_response['username']).to eq(developer.username)
-              expect(json_response['state']).to eq(developer.state)
-              expect(json_response['avatar_url']).to eq(developer.avatar_url)
-              expect(json_response['web_url']).to eq(Gitlab::Routing.url_helpers.user_url(developer))
-
-              # Member attributes
-              expect(json_response['access_level']).to eq(Member::DEVELOPER)
-              expect(json_response['created_at'].to_time).to be_present
-            end
-          end
-        end
-      end
-
-      context 'with ancestral membership' do
-        shared_examples 'response with correct access levels' do
-          it do
-            get api("/#{source_type.pluralize}/#{source.id}/members/#{all ? 'all/' : ''}#{developer.id}", developer)
-
-            expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response['access_level']).to eq(Member::MAINTAINER)
-          end
-        end
-
-        before do
-          source.add_maintainer(developer)
-        end
-
-        include_examples 'response with correct access levels'
-
-        context 'having email invite' do
-          before do
-            Member
-              .find_by(source: group, user: developer)
-              .update!(invite_email: 'email@email.com')
-          end
-
-          include_examples 'response with correct access levels'
-        end
       end
     end
   end
@@ -1045,27 +888,208 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
     end
   end
 
-  # rubocop:disable Style/CombinableLoops -- new projects and groups must not be created for specs to pass
-  [false, true].each do |all|
-    it_behaves_like 'GET /:source_type/:id/members/(all)', 'project', all do
+  describe 'GET /:source_type/:id/members' do
+    shared_examples 'GET /:source_type/:id/members/(all)' do |source_type, all|
+      let(:members_url) do
+        "/#{source_type.pluralize}/#{source.id}/members".tap do |url|
+          url << "/all" if all
+        end
+      end
+
+      context "with :source_type == #{source_type.pluralize} and all == #{all}" do
+        it_behaves_like 'a 404 response when source is private' do
+          let(:route) { get api(members_url, stranger) }
+        end
+
+        %i[maintainer developer access_requester stranger].each do |type|
+          context "when authenticated as a #{type}" do
+            it 'returns 200' do
+              user = public_send(type)
+
+              get api(members_url, user)
+
+              expect(response).to have_gitlab_http_status(:ok)
+              expect(response).to include_pagination_headers
+              expect(json_response).to be_an Array
+              expect(json_response.size).to eq(2)
+              expect(json_response.map { |u| u['id'] }).to match_array [maintainer.id, developer.id]
+              expect(json_response).to contain_exactly(
+                a_hash_including('created_by' => a_hash_including('id' => maintainer.id)),
+                hash_not_including('created_by')
+              )
+            end
+          end
+        end
+
+        it 'avoids N+1 queries' do
+          # create the new user even before establishing the baseline
+          new_user = create(:user)
+
+          # Establish baseline
+          get api(members_url, maintainer)
+
+          control = ActiveRecord::QueryRecorder.new do
+            get api(members_url, maintainer)
+          end
+
+          project.add_developer(new_user)
+
+          expect do
+            get api(members_url, maintainer)
+          end.not_to exceed_query_limit(control)
+        end
+
+        it 'does not return invitees' do
+          create(:"#{source_type}_member", invite_token: '123', invite_email: 'test@abc.com', source: source, user: nil)
+
+          get api(members_url, developer)
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(response).to include_pagination_headers
+          expect(json_response).to be_an Array
+          expect(json_response.size).to eq(2)
+          expect(json_response.map { |u| u['id'] }).to match_array [maintainer.id, developer.id]
+        end
+
+        context 'with cross db check disabled' do
+          around do |example|
+            allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/343305') do
+              example.run
+            end
+          end
+
+          it 'finds members with query string' do
+            get api(members_url, developer), params: { query: maintainer.username }
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(response).to include_pagination_headers
+            expect(json_response).to be_an Array
+            expect(json_response.count).to eq(1)
+            expect(json_response.first['username']).to eq(maintainer.username)
+          end
+        end
+
+        it 'finds members with the given user_ids' do
+          get api(members_url, developer), params: { user_ids: [maintainer.id, developer.id, stranger.id] }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(response).to include_pagination_headers
+          expect(json_response).to be_an Array
+          expect(json_response.map { |u| u['id'] }).to contain_exactly(maintainer.id, developer.id)
+        end
+
+        it 'finds all members with no query specified' do
+          get api(members_url, developer), params: { query: '' }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(response).to include_pagination_headers
+          expect(json_response).to be_an Array
+          expect(json_response.count).to eq(2)
+          expect(json_response.map { |u| u['id'] }).to match_array [maintainer.id, developer.id]
+        end
+      end
+    end
+
+    it_behaves_like 'GET /:source_type/:id/members/(all)', 'project', false do
       let(:source) { project }
     end
 
-    it_behaves_like 'GET /:source_type/:id/members/(all)', 'group', all do
+    it_behaves_like 'GET /:source_type/:id/members/(all)', 'project', true do
+      let(:source) { project }
+    end
+
+    it_behaves_like 'GET /:source_type/:id/members/(all)', 'group', false do
+      let(:source) { group }
+    end
+
+    it_behaves_like 'GET /:source_type/:id/members/(all)', 'group', true do
       let(:source) { group }
     end
   end
 
-  [false, true].each do |all|
-    it_behaves_like 'GET /:source_type/:id/members/(all/):user_id', 'project', all do
-      let(:source) { all ? create(:project, :public, group: group) : project }
+  describe 'GET /:source_type/:id/members/:user_id' do
+    shared_examples 'GET /:source_type/:id/members/(all/):user_id' do |source_type, all|
+      let(:members_url) do
+        "/#{source_type.pluralize}/#{source.id}/members/".tap do |url|
+          url << "all/" if all
+          url << developer.id.to_s
+        end
+      end
+
+      context "with :source_type == #{source_type.pluralize} and all == #{all}" do
+        it_behaves_like 'a 404 response when source is private' do
+          let(:route) { get api(members_url, stranger) }
+        end
+
+        context 'when authenticated as a non-member' do
+          %i[access_requester stranger].each do |type|
+            context "as a #{type}" do
+              it 'returns 200' do
+                user = public_send(type)
+                get api(members_url, user)
+
+                expect(response).to have_gitlab_http_status(:ok)
+                # User attributes
+                expect(json_response['id']).to eq(developer.id)
+                expect(json_response['name']).to eq(developer.name)
+                expect(json_response['username']).to eq(developer.username)
+                expect(json_response['state']).to eq(developer.state)
+                expect(json_response['avatar_url']).to eq(developer.avatar_url)
+                expect(json_response['web_url']).to eq(Gitlab::Routing.url_helpers.user_url(developer))
+
+                # Member attributes
+                expect(json_response['access_level']).to eq(Member::DEVELOPER)
+                expect(json_response['created_at'].to_time).to be_present
+              end
+            end
+          end
+        end
+
+        context 'with ancestral membership' do
+          shared_examples 'response with correct access levels' do
+            it do
+              get api(members_url, developer)
+
+              expect(response).to have_gitlab_http_status(:ok)
+              expect(json_response['access_level']).to eq(Member::MAINTAINER)
+            end
+          end
+
+          before do
+            source.add_maintainer(developer)
+          end
+
+          include_examples 'response with correct access levels'
+
+          context 'having email invite' do
+            before do
+              Member
+                .find_by(source: group, user: developer)
+                .update!(invite_email: 'email@email.com')
+            end
+
+            include_examples 'response with correct access levels'
+          end
+        end
+      end
     end
 
-    it_behaves_like 'GET /:source_type/:id/members/(all/):user_id', 'group', all do
-      let(:source) { all ? create(:group, parent: group) : group }
+    it_behaves_like 'GET /:source_type/:id/members/(all/):user_id', 'project', false do
+      let(:source) { project }
+    end
+
+    it_behaves_like 'GET /:source_type/:id/members/(all/):user_id', 'project', true do
+      let_it_be(:source) { create(:project, :public, group: group) }
+    end
+
+    it_behaves_like 'GET /:source_type/:id/members/(all/):user_id', 'group', false do
+      let(:source) { group }
+    end
+
+    it_behaves_like 'GET /:source_type/:id/members/(all/):user_id', 'group', true do
+      let_it_be(:source) { create(:group, parent: group) }
     end
   end
-  # rubocop:enable Style/CombinableLoops
 
   describe 'POST /projects/:id/members' do
     context 'adding owner to project' do
