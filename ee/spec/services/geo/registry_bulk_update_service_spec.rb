@@ -23,12 +23,15 @@ RSpec.describe Geo::RegistryBulkUpdateService, :geo, feature_category: :geo_repl
     describe '#execute' do
       shared_examples 'a successful bulk action performed' do |success_message, worker_class|
         specify do
-          expect(worker_class).to receive(:perform_with_capacity).with(registry_class.name)
+          registry = registry_class.name
+          args = worker_class == Geo::BulkMarkVerificationPendingBatchWorker ? registry : [registry, {}]
+
+          expect(worker_class).to receive(:perform_with_capacity).with(*args)
 
           result = service.execute
 
           expect(result.message).to eq(success_message)
-          expect(result.payload[:registry_class]).to eq(registry_class.name)
+          expect(result.payload[:registry_class]).to eq(registry)
           expect(result.http_status).to eq(:ok)
         end
       end
@@ -67,7 +70,7 @@ RSpec.describe Geo::RegistryBulkUpdateService, :geo, feature_category: :geo_repl
 
         before do
           allow(Geo::BulkMarkPendingBatchWorker).to receive(:perform_with_capacity)
-                                                      .with(registry_class.name)
+                                                      .with(registry_class.name, {})
                                                       .and_raise(error)
         end
 
