@@ -30,6 +30,15 @@ module ComplianceManagement
         project_visibility_not_internal: 4,
         default_branch_protected: 5,
         auth_sso_enabled: 6,
+        scanner_secret_detection_running: 7,
+        scanner_dep_scanning_running: 8,
+        scanner_container_scanning_running: 9,
+        scanner_license_compliance_running: 10,
+        scanner_dast_running: 11,
+        scanner_api_security_running: 12,
+        scanner_fuzz_testing_running: 13,
+        scanner_code_quality_running: 14,
+        scanner_iac_running: 15,
         external_control: 10000
       }
 
