@@ -25,11 +25,21 @@ class SamlProvider < ApplicationRecord
     super(strip_left_to_right_chars(value))
   end
 
+  def certificate_fingerprint_algorithm
+    AuthHelper.certificate_fingerprint_algorithm(certificate_fingerprint)
+  end
+
   def settings
-    defaults.to_h.merge(
+    settings = defaults.to_h.merge(
       idp_cert_fingerprint: certificate_fingerprint,
       idp_sso_target_url: sso_url,
       attribute_statements: ::Gitlab::Auth::Saml::Config.default_attribute_statements
+    )
+
+    return settings unless Feature.enabled?(:explicit_group_saml_fingerprint_algorithm, group)
+
+    settings.merge(
+      idp_cert_fingerprint_algorithm: certificate_fingerprint_algorithm
     )
   end
 

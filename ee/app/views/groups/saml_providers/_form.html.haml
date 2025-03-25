@@ -29,7 +29,10 @@
         = s_('GroupSAML|Certificate fingerprint')
       = f.text_field :certificate_fingerprint, placeholder: 'e.g. 0a:1b:2c:3d:00:11:22:33:44:55:66:77:88:99:aa:bb:cc:dd:ee:ff', class: 'form-control', data: { testid: 'certificate-fingerprint-field' }
       .form-text.gl-text-subtle
-        = s_('GroupSAML|SHA1 fingerprint of the SAML token signing certificate. Get this from your identity provider, where it can also be called "Thumbprint".')
+        - if Feature.enabled?(:explicit_group_saml_fingerprint_algorithm, group)
+          = s_('GroupSAML|SHA1 or SHA256 fingerprint of the SAML token signing certificate. Get this from your identity provider, where it can also be called "Thumbprint".')
+        - else
+          = s_('GroupSAML|SHA1 fingerprint of the SAML token signing certificate. Get this from your identity provider, where it can also be called "Thumbprint".')
 
     .well-segment.borderless.gl-mb-3.col-12.col-lg-9.gl-p-0
       = f.label :default_membership_role, class: 'label-bold' do
