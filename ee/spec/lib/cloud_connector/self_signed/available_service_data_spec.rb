@@ -84,16 +84,16 @@ RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, feature_categor
 
     context 'when signing key is missing' do
       let(:fake_key_loader) do
-        Class.new(described_class::CachingKeyLoader) do
-          def self.signing_key
-            load_signing_key # don't actually cache the key
+        Class.new(::CloudConnector::CachingKeyLoader) do
+          def self.private_jwk
+            load_key # don't actually cache the key
           end
         end
       end
 
       before do
         stub_const(
-          'CloudConnector::SelfSigned::AvailableServiceData::CachingKeyLoader',
+          'CloudConnector::CachingKeyLoader',
           fake_key_loader
         )
         allow(CloudConnector::Keys).to receive(:current).and_return(nil)

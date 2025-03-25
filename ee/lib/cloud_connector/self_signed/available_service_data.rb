@@ -5,30 +5,6 @@ module CloudConnector
     class AvailableServiceData < BaseAvailableServiceData
       extend ::Gitlab::Utils::Override
 
-      class CachingKeyLoader
-        delegate :signing_key, to: :class
-
-        class << self
-          # Cache the key in process memory so that we don't perform disk IO every time
-          # an access token is created. This function should be called lazily the first
-          # time the signing key is needed.
-          def signing_key
-            @signing_key ||= load_signing_key
-          end
-
-          private
-
-          def load_signing_key
-            jwk = ::CloudConnector::Keys.current&.to_jwk
-            raise 'Cloud Connector: no key found' unless jwk
-
-            ::Gitlab::AppLogger.info(message: 'Cloud Connector key loaded', cc_kid: jwk.kid)
-
-            jwk
-          end
-        end
-      end
-
       attr_reader :backend
 
       def initialize(name, cut_off_date, bundled_with, backend)
@@ -36,12 +12,12 @@ module CloudConnector
 
         @bundled_with = bundled_with
         @backend = backend
-        @key_loader = CachingKeyLoader.new
+        @key_loader = ::CloudConnector::CachingKeyLoader.new
       end
 
       override :access_token
       def access_token(resource = nil, extra_claims: {})
-        jwk = @key_loader.signing_key
+        jwk = @key_loader.private_jwk
 
         token_counter.increment(kid: jwk.kid)
 
