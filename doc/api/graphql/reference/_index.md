@@ -47559,6 +47559,10 @@ see the associated mutation type above.
 | ---- | ---- | ----------- |
 | <a id="aidescriptioncomposerinputdescription"></a>`description` | [`String!`](#string) | Current description. |
 | <a id="aidescriptioncomposerinputresourceid"></a>`resourceId` | [`AiModelID!`](#aimodelid) | Global ID of the resource to mutate. |
+| <a id="aidescriptioncomposerinputsourcebranch"></a>`sourceBranch` | [`String`](#string) | Source branch of the changes. |
+| <a id="aidescriptioncomposerinputsourceprojectid"></a>`sourceProjectId` | [`ID`](#id) | ID of the project where the changes are from. |
+| <a id="aidescriptioncomposerinputtargetbranch"></a>`targetBranch` | [`String`](#string) | Target branch of where the changes will be merged into. |
+| <a id="aidescriptioncomposerinputtitle"></a>`title` | [`String!`](#string) | Current merge request title. |
 | <a id="aidescriptioncomposerinputuserprompt"></a>`userPrompt` | [`String!`](#string) | Prompt from user. |
 
 ### `AiExplainVulnerabilityInput`

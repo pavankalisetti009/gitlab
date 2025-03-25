@@ -72,20 +72,6 @@ module EE
         @user.allowed_to_use?(:summarize_review, licensed_feature: :summarize_review)
       end
 
-      condition(:description_composer_enabled) do
-        subject.project.project_setting.duo_features_enabled? &&
-          ::Feature.enabled?(:mr_description_composer, @user) &&
-          ::Gitlab::Llm::FeatureAuthorizer.new(
-            container: @subject.project,
-            feature_name: :description_composer,
-            user: @user
-          ).allowed?
-      end
-
-      condition(:user_allowed_to_use_description_composer) do
-        @user.allowed_to_use?(:description_composer, licensed_feature: :description_composer)
-      end
-
       def read_only?
         @subject.target_project&.namespace&.read_only?
       end
@@ -133,12 +119,6 @@ module EE
           user_allowed_to_use_summarize_review &
           can?(:read_merge_request)
       end.enable :access_summarize_review
-
-      rule do
-        description_composer_enabled &
-          user_allowed_to_use_description_composer &
-          can?(:read_merge_request)
-      end.enable :access_description_composer
     end
 
     private

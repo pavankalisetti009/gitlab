@@ -25,7 +25,7 @@ export default {
       this.isPreparingCsvExport = true;
 
       axios
-        .post(this.vulnerabilitiesExportEndpoint)
+        .post(this.vulnerabilitiesExportEndpoint, { send_email: true })
         .then(({ data }) => pollUntilComplete(data._links.self))
         .then(({ data }) => {
           if (data.status !== 'finished') {

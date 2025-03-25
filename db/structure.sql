@@ -24583,7 +24583,8 @@ CREATE TABLE vulnerability_exports (
     format smallint DEFAULT 0 NOT NULL,
     group_id bigint,
     organization_id bigint NOT NULL,
-    expires_at timestamp with time zone
+    expires_at timestamp with time zone,
+    send_email boolean DEFAULT false NOT NULL
 );
 
 CREATE SEQUENCE vulnerability_exports_id_seq

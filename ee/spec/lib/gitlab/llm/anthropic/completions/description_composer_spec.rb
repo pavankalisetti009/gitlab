@@ -8,13 +8,13 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::DescriptionComposer, feature
   let(:response_modifier) { double }
   let(:response_service) { double }
   let_it_be(:user) { create(:user) }
-  let_it_be(:merge_request) { create(:merge_request) }
+  let_it_be(:project) { create(:project) }
   let(:params) do
-    [user, merge_request, response_modifier, { options: { request_id: 'uuid', ai_action: :description_composer } }]
+    [user, project, response_modifier, { options: { request_id: 'uuid', ai_action: :description_composer } }]
   end
 
   let(:prompt_message) do
-    build(:ai_message, :description_composer, user: user, resource: merge_request, request_id: 'uuid')
+    build(:ai_message, :description_composer, user: user, resource: project, request_id: 'uuid')
   end
 
   subject(:generate) { described_class.new(prompt_message, prompt_class, options) }

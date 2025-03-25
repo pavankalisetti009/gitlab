@@ -8,11 +8,11 @@ module Gitlab
           DEFAULT_ERROR = 'An unexpected error has occurred.'
 
           def execute
-            response = response_for(user, merge_request)
+            response = response_for(user, project)
             response_modifier = modify_response(response)
 
             ::Gitlab::Llm::GraphqlSubscriptionResponseService.new(
-              user, merge_request, response_modifier, options: response_options
+              user, project, response_modifier, options: response_options
             ).execute
           rescue StandardError => error
             Gitlab::ErrorTracking.track_exception(error)
@@ -22,7 +22,7 @@ module Gitlab
             )
 
             ::Gitlab::Llm::GraphqlSubscriptionResponseService.new(
-              user, merge_request, response_modifier, options: response_options
+              user, project, response_modifier, options: response_options
             ).execute
 
             response_modifier
@@ -30,7 +30,7 @@ module Gitlab
 
           private
 
-          def merge_request
+          def project
             resource
           end
 
@@ -38,8 +38,8 @@ module Gitlab
             ::Gitlab::Llm::Anthropic::ResponseModifiers::DescriptionComposer.new(response)
           end
 
-          def response_for(user, merge_request)
-            template = ai_prompt_class.new(merge_request, options)
+          def response_for(user, project)
+            template = ai_prompt_class.new(user, project, options)
 
             Gitlab::Llm::Anthropic::Client
               .new(user, unit_primitive: 'description_composer', tracking_context: tracking_context)
