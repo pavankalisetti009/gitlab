@@ -99,5 +99,18 @@ describe('Section', () => {
       expect(findCollapse().props('visible')).toBe(true);
       expect(findCollapseButton().attributes('aria-label')).toBe('Collapse');
     });
+
+    it('emits toggle event when component is created and when expanded state changes', async () => {
+      createComponent();
+      expect(wrapper.emitted('toggle')).toHaveLength(1);
+      expect(wrapper.emitted('toggle')[0]).toEqual([false]);
+      await findCollapseButton().trigger('click');
+      expect(wrapper.emitted('toggle')).toHaveLength(2);
+      expect(wrapper.emitted('toggle')[1]).toEqual([true]);
+
+      await findCollapseButton().trigger('click');
+      expect(wrapper.emitted('toggle')).toHaveLength(3);
+      expect(wrapper.emitted('toggle')[2]).toEqual([false]);
+    });
   });
 });
