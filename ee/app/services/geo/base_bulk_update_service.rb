@@ -5,10 +5,11 @@ module Geo
     BULK_MARK_UPDATE_BATCH_SIZE = 1_000
     BULK_MARK_UPDATE_ROW_SCAN_MAX = 10_000
 
-    attr_reader :registry_class
+    attr_reader :registry_class, :params
 
-    def initialize(registry_class)
+    def initialize(registry_class, params = {})
       @registry_class = registry_class.safe_constantize
+      @params = params.with_indifferent_access
     end
 
     # @param max_batch_count [Integer] Maximum job concurrency of bulk mark update batch workers
@@ -81,6 +82,18 @@ module Geo
       Gitlab::Redis::SharedState.with do |redis|
         redis.get("#{bulk_mark_update_redis_key_prefix}:#{registry_class.table_name}").to_i
       end
+    end
+
+    def pending_relation_from_parameters
+      relation = registry_class
+      relation = relation.id_in(params[:ids]) if params[:ids]
+      relation = relation.with_state(params[:replication_state]) if params[:replication_state]
+
+      if params[:verification_state] && registry_class.replicator_class.verification_enabled?
+        relation = relation.available_verifiables.with_verification_state(params[:verification_state])
+      end
+
+      relation
     end
   end
 end
