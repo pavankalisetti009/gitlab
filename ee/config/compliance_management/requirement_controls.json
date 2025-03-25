@@ -61,5 +61,86 @@
       "operator": "=",
       "value": true
     }
+  },
+  {
+    "id": "scanner_secret_detection_running",
+    "name": "Secrets Detection Running",
+    "expression": {
+      "field": "scanner_secret_detection_running",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "scanner_dep_scanning_running",
+    "name": "Dependency Scanner Running",
+    "expression": {
+      "field": "scanner_dep_scanning_running",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "scanner_container_scanning_running",
+    "name": "Container Scanner Running",
+    "expression": {
+      "field": "scanner_container_scanning_running",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "scanner_license_compliance_running",
+    "name": "License Compliance Running",
+    "expression": {
+      "field": "scanner_license_compliance_running",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "scanner_dast_running",
+    "name": "DAST Running",
+    "expression": {
+      "field": "scanner_dast_running",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "scanner_api_security_running",
+    "name": "API Fuzz Testing Running",
+    "expression": {
+      "field": "scanner_api_security_running",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "scanner_fuzz_testing_running",
+    "name": "Fuzz Testing Running",
+    "expression": {
+      "field": "scanner_fuzz_testing_running",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "scanner_code_quality_running",
+    "name": "Code Quality Running",
+    "expression": {
+      "field": "scanner_code_quality_running",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "scanner_iac_running",
+    "name": "IaC Scanner Running",
+    "expression": {
+      "field": "scanner_iac_running",
+      "operator": "=",
+      "value": true
+    }
   }
 ]

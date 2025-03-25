@@ -14,7 +14,17 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
         'merge_request_prevent_committers_approval',
         'project_visibility',
         'minimum_approvals_required',
-        'auth_sso_enabled'
+        'auth_sso_enabled',
+        'scanner_sast_running',
+        'scanner_secret_detection_running',
+        'scanner_dep_scanning_running',
+        'scanner_container_scanning_running',
+        'scanner_license_compliance_running',
+        'scanner_dast_running',
+        'scanner_api_security_running',
+        'scanner_fuzz_testing_running',
+        'scanner_code_quality_running',
+        'scanner_iac_running'
       )
     end
 
@@ -91,6 +101,126 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
         it 'returns false' do
           expect(described_class.map_field(project_without_group, 'auth_sso_enabled')).to be false
         end
+      end
+    end
+
+    describe 'scanner_sast_running' do
+      it 'calls security_scanner_running? with scanner type sast' do
+        expect(described_class).to receive(:security_scanner_running?).with(:sast, project)
+
+        described_class.map_field(project, 'scanner_sast_running')
+      end
+    end
+
+    describe 'scanner_secret_detection_running' do
+      it 'calls security_scanner_running? with scanner type secret_detection' do
+        expect(described_class).to receive(:security_scanner_running?).with(:secret_detection, project)
+
+        described_class.map_field(project, 'scanner_secret_detection_running')
+      end
+    end
+
+    describe 'scanner_dep_scanning_running' do
+      it 'calls security_scanner_running? with scanner type dependency_scanning' do
+        expect(described_class).to receive(:security_scanner_running?).with(:dependency_scanning, project)
+
+        described_class.map_field(project, 'scanner_dep_scanning_running')
+      end
+    end
+
+    describe 'scanner_container_scanning_running' do
+      it 'calls security_scanner_running? with scanner type container_scanning' do
+        expect(described_class).to receive(:security_scanner_running?).with(:container_scanning, project)
+
+        described_class.map_field(project, 'scanner_container_scanning_running')
+      end
+    end
+
+    describe 'scanner_license_compliance_running' do
+      it 'calls security_scanner_running? with scanner type license_compliance' do
+        expect(described_class).to receive(:security_scanner_running?).with(:license_compliance, project)
+
+        described_class.map_field(project, 'scanner_license_compliance_running')
+      end
+    end
+
+    describe 'scanner_dast_running' do
+      it 'calls security_scanner_running? with scanner type dast' do
+        expect(described_class).to receive(:security_scanner_running?).with(:dast, project)
+
+        described_class.map_field(project, 'scanner_dast_running')
+      end
+    end
+
+    describe 'scanner_api_security_running' do
+      it 'calls security_scanner_running? with scanner type api_fuzzing' do
+        expect(described_class).to receive(:security_scanner_running?).with(:api_fuzzing, project)
+
+        described_class.map_field(project, 'scanner_api_security_running')
+      end
+    end
+
+    describe 'scanner_fuzz_testing_running' do
+      it 'calls security_scanner_running? with scanner type fuzz_testing' do
+        expect(described_class).to receive(:security_scanner_running?).with(:fuzz_testing, project)
+
+        described_class.map_field(project, 'scanner_fuzz_testing_running')
+      end
+    end
+
+    describe 'scanner_code_quality_running' do
+      it 'calls security_scanner_running? with scanner type code_quality' do
+        expect(described_class).to receive(:security_scanner_running?).with(:code_quality, project)
+
+        described_class.map_field(project, 'scanner_code_quality_running')
+      end
+    end
+
+    describe 'scanner_iac_running' do
+      it 'calls security_scanner_running? with scanner type iac' do
+        expect(described_class).to receive(:security_scanner_running?).with(:iac, project)
+
+        described_class.map_field(project, 'scanner_iac_running')
+      end
+    end
+
+    describe 'security_scanner_running?' do
+      let_it_be(:pipeline) { create(:ci_pipeline, :success, project: project) }
+      let_it_be(:build) { create(:ci_build, :secret_detection_report, :success, pipeline: pipeline, project: project) }
+
+      it 'returns true if the latest successful pipeline has the scanner job artifact' do
+        expect(described_class.send(:security_scanner_running?, :secret_detection, project)).to be true
+      end
+
+      it 'returns false if the latest successful pipeline does not have the scanner job artifact' do
+        expect(described_class.send(:security_scanner_running?, :sast, project)).to be false
+      end
+
+      it 'returns false if the scanner is not supported' do
+        expect(described_class.send(:security_scanner_running?, :foo, project)).to be false
+      end
+
+      it 'returns false if there is no latest successful pipeline' do
+        project = create(:project, namespace: namespace)
+        create(:ci_pipeline, project: project)
+
+        expect(described_class.send(:security_scanner_running?, :secret_detection, project)).to be false
+      end
+
+      it 'returns false if the latest pipeline has a scanner job artifact and has failed' do
+        project = create(:project, namespace: namespace)
+        pipeline = create(:ci_pipeline, :failed, project: project)
+        create(:ci_build, :secret_detection_report, :success, pipeline: pipeline, project: project)
+
+        expect(described_class.send(:security_scanner_running?, :secret_detection, project)).to be false
+      end
+
+      it 'returns false if the project has a successful pipeline with a job artifact for a non-default branch' do
+        project = create(:project, :repository, namespace: namespace)
+        pipeline = create(:ci_pipeline, :success, project: project, ref: 'non-default')
+        create(:ci_build, :secret_detection_report, :success, pipeline: pipeline, project: project)
+
+        expect(described_class.send(:security_scanner_running?, :secret_detection, project)).to be false
       end
     end
   end
