@@ -84,6 +84,8 @@ RSpec.describe Sbom::Component, type: :model, feature_category: :dependency_mana
     let_it_be(:occurrence_1) { create(:sbom_occurrence, component: component_1, project: project) }
     let_it_be(:component_2) { create(:sbom_component, name: "activesupport") }
     let_it_be(:occurrence) { create(:sbom_occurrence, component: component_2, project: project) }
+    let_it_be(:duplicated_component) { create(:sbom_component, name: "activerecord") }
+    let_it_be(:occurrence_for_duplicate) { create(:sbom_occurrence, component: duplicated_component, project: project) }
 
     subject(:results) { described_class.by_namespace(thing, query) }
 
@@ -102,7 +104,8 @@ RSpec.describe Sbom::Component, type: :model, feature_category: :dependency_mana
         let(:query) { nil }
 
         it 'returns all components' do
-          expect(results).to match_array([component_1, component_2])
+          names = results.map(&:name)
+          expect(names).to match_array(%w[activerecord activesupport])
         end
       end
     end
@@ -114,7 +117,8 @@ RSpec.describe Sbom::Component, type: :model, feature_category: :dependency_mana
         let(:query) { component_1.name }
 
         it 'returns matching components' do
-          expect(results).to match_array([component_1])
+          names = results.map(&:name)
+          expect(names).to match_array([query])
         end
       end
 
@@ -122,7 +126,8 @@ RSpec.describe Sbom::Component, type: :model, feature_category: :dependency_mana
         let(:query) { nil }
 
         it 'returns all components' do
-          expect(results).to match_array([component_1, component_2])
+          names = results.map(&:name)
+          expect(names).to match_array(%w[activerecord activesupport])
         end
       end
     end
