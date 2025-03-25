@@ -6290,6 +6290,9 @@ msgstr ""
 msgid "AmazonQ|Audience"
 msgstr ""
 
+msgid "AmazonQ|Automatic code reviews can only be enabled when Amazon Q is set to \"On by default\""
+msgstr ""
+
 msgid "AmazonQ|Availability"
 msgstr ""
 
@@ -6330,6 +6333,9 @@ msgid "AmazonQ|Delete the IAM identity provider created for AI gateway."
 msgstr ""
 
 msgid "AmazonQ|Delete the IAM role."
+msgstr ""
+
+msgid "AmazonQ|Enable automatic code reviews"
 msgstr ""
 
 msgid "AmazonQ|Enter the IAM role's ARN."

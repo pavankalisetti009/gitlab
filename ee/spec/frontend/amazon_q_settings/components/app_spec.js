@@ -9,6 +9,7 @@ import {
   GlFormRadioGroup,
   GlFormRadio,
   GlSprintf,
+  GlFormCheckbox,
 } from '@gitlab/ui';
 import MockAdapter from 'axios-mock-adapter';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -60,8 +61,11 @@ describe('ee/amazon_q_settings/components/app.vue', () => {
     });
   };
 
+  const event = new Event('submit');
+
   beforeEach(() => {
     mock = new MockAdapter(axios);
+    jest.spyOn(event, 'preventDefault');
   });
 
   afterEach(() => {
@@ -97,8 +101,20 @@ describe('ee/amazon_q_settings/components/app.vue', () => {
         value: x.attributes('value'),
         label: x.text(),
       }));
-  const setAvailability = (val) => findAvailabilityRadioGroup().vm.$emit('input', val);
 
+  const findAmazonQCodeReviewCheckbox = () => wrapper.findComponent(GlFormCheckbox);
+
+  const setAvailability = (val) => findAvailabilityRadioGroup().vm.$emit('input', val);
+  const setAmazonQCodeReviewEnabled = (val) => {
+    setAvailability('default_on');
+
+    const checkbox = findAmazonQCodeReviewCheckbox();
+    if (checkbox.exists()) {
+      checkbox.vm.$emit('input', val);
+    } else {
+      throw new Error('Could not find Amazon Q Code Review checkbox');
+    }
+  };
   // warning helpers -----
   const findAvailabilityWarning = () => findForm().findComponent(GlAlert);
   const findSaveWarning = () => findForm().find('[data-testid=amazon-q-save-warning]');
@@ -110,6 +126,7 @@ describe('ee/amazon_q_settings/components/app.vue', () => {
       .findAllComponents(GlButton)
       .wrappers.find((x) => x.text() === text);
   const findSubmitButton = () => findButton('Save changes');
+  const emitSubmitForm = () => findForm().vm.$emit('submit', event);
 
   describe('default', () => {
     beforeEach(() => {
@@ -258,12 +275,8 @@ describe('ee/amazon_q_settings/components/app.vue', () => {
   });
 
   describe('form validations', () => {
-    const event = new Event('submit');
-    const emitSubmitForm = () => findForm().vm.$emit('submit', event);
-
     beforeEach(() => {
       createWrapper();
-      jest.spyOn(event, 'preventDefault');
     });
 
     it('does not show any validations on load', () => {
@@ -322,6 +335,7 @@ describe('ee/amazon_q_settings/components/app.vue', () => {
         expect(createAndSubmitForm).toHaveBeenCalledWith({
           url: TEST_SUBMIT_URL,
           data: {
+            auto_review_enabled: false,
             availability: 'default_off',
             role_arn: TEST_AMAZON_Q_VALID_ROLE_ARN,
           },
@@ -389,21 +403,42 @@ describe('ee/amazon_q_settings/components/app.vue', () => {
     });
 
     describe('when submitting', () => {
-      beforeEach(async () => {
-        setAvailability('default_off');
+      describe('when auto review enabled', () => {
+        beforeEach(() => {
+          setArn(TEST_AMAZON_Q_VALID_ROLE_ARN);
+          setAvailability('default_on');
+          setAmazonQCodeReviewEnabled(true);
+          emitSubmitForm();
+        });
 
-        await nextTick();
-
-        findForm().vm.$emit('submit', new Event('submit'));
+        it('submits form with auto review enabled', () => {
+          expect(createAndSubmitForm).toHaveBeenCalledTimes(1);
+          expect(createAndSubmitForm).toHaveBeenCalledWith({
+            url: TEST_SUBMIT_URL,
+            data: {
+              auto_review_enabled: true,
+              availability: 'default_on',
+            },
+          });
+        });
       });
 
-      it('triggers submit form', () => {
-        expect(createAndSubmitForm).toHaveBeenCalledTimes(1);
-        expect(createAndSubmitForm).toHaveBeenCalledWith({
-          url: TEST_SUBMIT_URL,
-          data: {
-            availability: 'default_off',
-          },
+      describe('when auto review disabled', () => {
+        beforeEach(async () => {
+          setAvailability('default_off');
+          await nextTick();
+          findForm().vm.$emit('submit', new Event('submit'));
+        });
+
+        it('submits form with auto review disabled', () => {
+          expect(createAndSubmitForm).toHaveBeenCalledTimes(1);
+          expect(createAndSubmitForm).toHaveBeenCalledWith({
+            url: TEST_SUBMIT_URL,
+            data: {
+              auto_review_enabled: false,
+              availability: 'default_off',
+            },
+          });
         });
       });
     });
