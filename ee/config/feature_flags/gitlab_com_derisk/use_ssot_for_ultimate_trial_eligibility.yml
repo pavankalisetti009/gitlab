@@ -1,9 +1,0 @@
----
-name: use_ssot_for_ultimate_trial_eligibility
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/507860
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/181674
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/520557
-milestone: '17.10'
-group: group::acquisition
-type: gitlab_com_derisk
-default_enabled: false

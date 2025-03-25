@@ -159,7 +159,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
       fill_in_trial_form_for_new_group
 
       # trial failure
-      stub_cdot_namespace_eligible_trials
+      stub_cdot_namespace_eligible_trials # maybe we can do this cleaner, perhaps in metadata?
 
       submit_new_group_trial_selection_form(result: trial_failure, extra_params: new_group_attrs)
 
@@ -169,34 +169,6 @@ RSpec.describe 'Trial lead submission, group and trial creation', :with_current_
       submit_new_group_trial_selection_form(extra_params: new_group_attrs)
 
       expect_to_be_on_gitlab_duo_page
-    end
-
-    context 'when use_ssot_for_ultimate_trial_eligibility is disabled' do
-      it 'fills out form, submits and is sent to select namespace with errors and is then resolved' do
-        stub_feature_flags(use_ssot_for_ultimate_trial_eligibility: false)
-
-        sign_in(user)
-
-        visit new_trial_path
-
-        fill_in_company_information
-
-        submit_company_information_form
-
-        expect_to_be_on_namespace_creation
-
-        fill_in_trial_form_for_new_group
-
-        # trial failure
-        submit_new_group_trial_selection_form(result: trial_failure, extra_params: new_group_attrs)
-
-        expect_to_be_on_namespace_selection_with_errors
-
-        # success
-        submit_new_group_trial_selection_form(extra_params: new_group_attrs)
-
-        expect_to_be_on_gitlab_duo_page
-      end
     end
   end
 
