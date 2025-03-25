@@ -5,9 +5,9 @@ import {
   getLabels,
   getMilestone,
   getReactions,
-} from '~/work_items/pages/object_pools';
+} from '~/work_items/pages/local_board/object_pools';
 
-export { groupBy } from '~/work_items/pages/object_pools';
+export { groupBy } from '~/work_items/pages/local_board/object_pools';
 
 const healthStatusTitle = (status) => {
   const map = {
@@ -45,6 +45,7 @@ const getWeight = (widgets) => {
 const transformItem = (input) => {
   return {
     id: input.id,
+    iid: input.iid,
     title: input.title,
     state: input.state,
     type: input.workItemType,
