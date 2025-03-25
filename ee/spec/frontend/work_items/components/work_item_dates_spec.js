@@ -1,7 +1,7 @@
 import { GlDatepicker, GlFormRadio } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import WorkItemDates from '~/work_items/components/work_item_dates.vue';
+import WorkItemDates from 'ee/work_items/components/work_item_dates.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { mockTracking } from 'helpers/tracking_helper';
 import { stubComponent } from 'helpers/stub_component';

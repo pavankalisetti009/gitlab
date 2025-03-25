@@ -10,7 +10,7 @@ import WorkItemHealthStatus from 'ee/work_items/components/work_item_health_stat
 import WorkItemColor from 'ee/work_items/components/work_item_color.vue';
 import WorkItemIteration from 'ee/work_items/components/work_item_iteration.vue';
 import WorkItemWeight from 'ee/work_items/components/work_item_weight.vue';
-import WorkItemDates from '~/work_items/components/work_item_dates.vue';
+import WorkItemDates from 'ee/work_items/components/work_item_dates.vue';
 import { WORK_ITEM_TYPE_ENUM_EPIC, WORK_ITEM_TYPE_ENUM_ISSUE } from '~/work_items/constants';
 import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
 import createWorkItemMutation from '~/work_items/graphql/create_work_item.mutation.graphql';
