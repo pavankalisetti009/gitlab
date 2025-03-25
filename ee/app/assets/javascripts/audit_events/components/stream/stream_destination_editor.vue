@@ -10,9 +10,9 @@ import {
   GlInputGroupText,
   GlSprintf,
   GlTableLite,
+  GlTooltipDirective as GlTooltip,
 } from '@gitlab/ui';
 import { isEqual } from 'lodash';
-import { GlTooltipDirective as GlTooltip } from '@gitlab/ui/dist/directives/tooltip';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { createAlert } from '~/alert';
