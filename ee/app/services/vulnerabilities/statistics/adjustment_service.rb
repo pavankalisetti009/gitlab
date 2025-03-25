@@ -8,7 +8,7 @@ module Vulnerabilities
       UPSERT_SQL = <<~SQL
         INSERT INTO vulnerability_statistics
           (project_id, archived, traversal_ids, total, info, unknown, low, medium, high, critical, letter_grade, created_at, updated_at)
-          (%{stats_sql})
+          (%{new_values})
         ON CONFLICT (project_id)
         DO UPDATE SET
           total = EXCLUDED.total,
@@ -20,6 +20,7 @@ module Vulnerabilities
           critical = EXCLUDED.critical,
           letter_grade = EXCLUDED.letter_grade,
           updated_at = EXCLUDED.updated_at
+       RETURNING project_id
       SQL
 
       STATS_SQL = <<~SQL
@@ -71,6 +72,70 @@ module Vulnerabilities
         ) AS severity_counts ON severity_counts.project_id = project_ids.project_id
       SQL
 
+      SELECT_NEW_VALUES_SQL = <<~SQL
+        SELECT project_id, archived, traversal_ids, total, info, unknown, low, medium, high, critical, letter_grade, created_at, updated_at
+        FROM new_values
+      SQL
+
+      OLD_VALUES_SQL = <<~SQL
+        SELECT
+          project_id,
+          traversal_ids,
+          total,
+          critical,
+          high,
+          medium,
+          low,
+          unknown,
+          info
+        FROM vulnerability_statistics
+        WHERE project_id IN (SELECT project_id FROM new_values)
+      SQL
+
+      NAMESPACE_DIFF_SQL = <<~SQL
+          SELECT
+              new_values.traversal_ids[array_length(new_values.traversal_ids, 1)] AS namespace_id,
+              new_values.traversal_ids,
+              SUM(new_values.total - COALESCE(old_values.total, 0)) AS total,
+              SUM(new_values.info - COALESCE(old_values.info, 0)) AS info,
+              SUM(new_values.unknown - COALESCE(old_values.unknown, 0)) AS unknown,
+              SUM(new_values.low - COALESCE(old_values.low, 0)) AS low,
+              SUM(new_values.medium - COALESCE(old_values.medium, 0)) AS medium,
+              SUM(new_values.high - COALESCE(old_values.high, 0)) AS high,
+              SUM(new_values.critical - COALESCE(old_values.critical, 0)) AS critical
+          FROM new_values
+          LEFT JOIN old_values
+              ON new_values.project_id = old_values.project_id
+          WHERE EXISTS (
+              SELECT 1
+              FROM upserted
+              WHERE upserted.project_id = new_values.project_id
+          )
+          GROUP BY namespace_id, new_values.traversal_ids
+      SQL
+
+      UPSERT_WITH_DIFF_SQL = <<~SQL
+        WITH new_values AS (
+          %{stats_sql}
+        ), old_values AS (
+          %{old_values_sql}
+        ), upserted AS (
+          %{upsert_sql}
+        ), diff_values AS (
+          %{diff_sql}
+        )
+        SELECT *
+        FROM diff_values
+        WHERE
+          total != 0 OR
+          info != 0 OR
+          unknown != 0 OR
+          low != 0 OR
+          medium != 0 OR
+          high != 0 OR
+          critical != 0
+      SQL
+
       MAX_PROJECTS = 1_000
 
       def self.execute(project_ids)
@@ -87,7 +152,8 @@ module Vulnerabilities
         filter_project_ids
         return if project_ids.blank?
 
-        connection.execute(upsert_sql)
+        diffs = connection.execute(upsert_with_diffs_sql)
+        diffs.to_a
       end
 
       private
@@ -100,8 +166,29 @@ module Vulnerabilities
         self.project_ids = Project.id_in(project_ids).pluck_primary_key
       end
 
+      def upsert_with_diffs_sql
+        UPSERT_WITH_DIFF_SQL % {
+          stats_sql: stats_sql,
+          old_values_sql: old_values_sql,
+          upsert_sql: upsert_sql,
+          diff_sql: diff_sql
+        }
+      end
+
+      def diff_sql
+        NAMESPACE_DIFF_SQL
+      end
+
       def upsert_sql
-        UPSERT_SQL % { stats_sql: stats_sql }
+        UPSERT_SQL % { new_values: select_new_values_sql }
+      end
+
+      def old_values_sql
+        OLD_VALUES_SQL
+      end
+
+      def select_new_values_sql
+        SELECT_NEW_VALUES_SQL
       end
 
       def stats_sql
@@ -115,7 +202,7 @@ module Vulnerabilities
       def project_attributes_as_values_sql
         # rubocop:disable CodeReuse/ActiveRecord -- not reusable
         attributes = Project.where(id: project_ids).joins_namespace.limit(project_ids.length)
-                              .pluck(:id, :archived, :traversal_ids)
+                              .pluck(:id, :archived, :traversal_ids, :namespace_id)
         # rubocop:enable CodeReuse/ActiveRecord
 
         tuples = attributes.map do |row|

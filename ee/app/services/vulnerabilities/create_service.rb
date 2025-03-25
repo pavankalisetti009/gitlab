@@ -40,7 +40,7 @@ module Vulnerabilities
       end
 
       if vulnerability.persisted?
-        Statistics::UpdateService.update_for(vulnerability)
+        Vulnerabilities::StatisticsUpdateService.update_for(vulnerability)
       end
 
       vulnerability

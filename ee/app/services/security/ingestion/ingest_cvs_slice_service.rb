@@ -17,6 +17,7 @@ module Security
         IngestVulnerabilityFlags
         IngestVulnerabilityReads
         IngestVulnerabilityStatistics
+        IngestVulnerabilityNamespaceStatistics
         HooksExecution
       ].freeze
 

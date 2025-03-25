@@ -12,7 +12,9 @@ module Vulnerabilities
       feature_category :vulnerability_management
 
       def perform(project_ids)
-        AdjustmentService.execute(project_ids)
+        diffs = AdjustmentService.execute(project_ids)
+        NamespaceStatistics::UpdateService.execute(diffs)
+
         inserted_project_ids = HistoricalStatistics::AdjustmentService.execute(project_ids)
         NamespaceHistoricalStatistics::AdjustmentService.execute(inserted_project_ids)
       end
