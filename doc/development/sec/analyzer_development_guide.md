@@ -297,17 +297,41 @@ To backport a critical fix or patch to an earlier version, follow the steps belo
 
 ### Preparing analyzers for a major version release
 
-This major version release process applies to analyzers belonging to the following groups:
+This process applies to the following groups:
 
 - [Composition Analysis](https://handbook.gitlab.com/handbook/engineering/development/sec/secure/composition-analysis)
 - [Static Analysis (SAST)](https://handbook.gitlab.com/handbook/engineering/development/sec/secure/static-analysis)
+- [Secret Detection](https://handbook.gitlab.com/handbook/engineering/development/sec/secure/secret-detection)
 
 Other groups are reponsible for documenting their own major version release process.
 
+Choose one of the following scenarios based on whether the major version release contains breaking changes:
+
+1. [Major version release without breaking changes](#major-version-release-without-breaking-changes)
+1. [Major version release with breaking changes](#major-version-release-with-breaking-changes)
+
+#### Major version release without breaking changes
+
 Assuming the current analyzer release is `v{N}`:
 
+1. [Configure protected tags and branches](#configure-protected-tags-and-branches).
+1. When the milestone of the major release is almost complete, and there are no more changes to be merged into the `default` branch:
+   1. Create a `v{N}` branch from the `default` branch.
+   1. Create and merge a new Merge Request in the `default` branch containing only the following change to the `CHANGELOG.md` file:
+
+      ```markdown
+      ## v{N+1}.0.0
+      - Major version release (!<MR-ID>)
+      ```
+
+   1. [Configure scheduled pipelines](#configure-scheduled-pipelines).
+
+#### Major version release with breaking changes
+
+Assuming the current analyzer release is `v{N}`:
+
+1. [Configure protected tags and branches](#configure-protected-tags-and-branches).
 1. Create a new branch `v{N+1}` to "stage" breaking changes.
-1. Ensure the wildcard `v*` is set as both a [Protected Tag](../../user/project/protected_tags.md) and [Protected Branch](../../user/project/repository/branches/protected.md) for the project, and that the `gl-service-dev-secure-analyzers-automation` service account is `Allowed to create` protected tags. See step `3.1` of the [Officially supported images](#officially-supported-images) section for more details.
 1. In the milestones leading up to the major release milestone:
    - Merge non-breaking changes to the `default` branch (aka `master` or `main`)
    - Merge breaking changes to the `v{N+1}` branch, and create a separate `release candidate` entry in the `CHANGELOG.md` file for each change:
@@ -347,19 +371,30 @@ Assuming the current analyzer release is `v{N}`:
 
    1. Create a Merge Request to merge all the breaking changes from the `v{N+1}` branch into the `default` branch.
    1. Delete the `v{N+1}` branch, since it's no longer needed, as the `default` branch now contains all the changes from the `v{N+1}` branch.
-   1. Ensure three scheduled pipelines exist, creating them if necessary, and set `PUBLISH_IMAGES: true` for all of them:
-      - `Republish images v{N}` (against the `v{N}` branch)
-
-         This scheduled pipeline needs to be created
-      - `Daily build` (against the `default` branch)
-
-         This scheduled pipeline should already exist
-      - `Republish images v{N-1}` (against the `v{N-1}` branch)
-
-         This scheduled pipeline should already exist
-   1. Delete the scheduled pipeline for the `v{N-2}` branch (if it exists), since we only support [two previous major versions](https://about.gitlab.com/support/statement-of-support/#version-support).
+   1. [Configure scheduled pipelines](#configure-scheduled-pipelines).
 
 When the above steps have been completed for all the secure stage analyzers, and images for the `v{N+1}` release are available under `registry.gitlab.com/security-products/<ANALYZER-NAME>:<TAG>`, create a new MR to bump the major version for each analyzer in the [`SAST.gitlab-ci.yml`](https://gitlab.com/gitlab-org/gitlab/blob/master/lib/gitlab/ci/templates/Jobs/SAST.gitlab-ci.yml) and [`SAST.latest.gitlab-ci.yml`](https://gitlab.com/gitlab-org/gitlab/blob/master/lib/gitlab/ci/templates/Jobs/SAST.latest.gitlab-ci.yml) CI templates.
+
+##### Configure protected tags and branches
+
+1. Ensure the wildcard `v*` is set as both a [Protected Tag](../../user/project/protected_tags.md) and [Protected Branch](../../user/project/repository/branches/protected.md) for the project.
+1. Verify the [gl-service-dev-secure-analyzers-automation](https://gitlab.com/gl-service-dev-secure-analyzers-automation) service account is `Allowed to create` protected tags.
+
+   See step `3.1` of the [Officially supported images](#officially-supported-images) section for more details.
+
+##### Configure scheduled pipelines
+
+1. Ensure three scheduled pipelines exist, creating them if necessary, and set `PUBLISH_IMAGES: true` for all of them:
+   - `Republish images v{N}` (against the `v{N}` branch)
+
+      This scheduled pipeline needs to be created
+   - `Daily build` (against the `default` branch)
+
+      This scheduled pipeline should already exist
+   - `Republish images v{N-1}` (against the `v{N-1}` branch)
+
+      This scheduled pipeline should already exist
+1. Delete the scheduled pipeline for the `v{N-2}` branch (if it exists), since we only support [two previous major versions](https://about.gitlab.com/support/statement-of-support/#version-support).
 
 ## Development of new analyzers
 
@@ -505,7 +540,7 @@ In order to push images to this location:
 
    1. Add the wildcard `v*` as a [Protected Tag](../../user/project/protected_tags.md).
 
-      Ensure the `gl-service-dev-secure-analyzers-automation` account has been explicitly added to the list of accounts `Allowed to create` protected tags. This is required to allow the [`upsert git tag`](https://gitlab.com/gitlab-org/security-products/ci-templates/blob/2a3519d/includes-dev/upsert-git-tag.yml#L35-44) job to create new releases for the analyzer project.
+      Ensure the [gl-service-dev-secure-analyzers-automation](https://gitlab.com/gl-service-dev-secure-analyzers-automation) service account has been explicitly added to the list of accounts `Allowed to create` protected tags. This is required to allow the [`upsert git tag`](https://gitlab.com/gitlab-org/security-products/ci-templates/blob/2a3519d/includes-dev/upsert-git-tag.yml#L35-44) job to create new releases for the analyzer project.
 
    1. Add the wildcard `v*` as a [Protected Branch](../../user/project/repository/branches/protected.md).
 
