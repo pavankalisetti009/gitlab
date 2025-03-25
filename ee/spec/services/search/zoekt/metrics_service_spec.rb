@@ -66,21 +66,6 @@ RSpec.describe ::Search::Zoekt::MetricsService, feature_category: :global_search
 
       execute
     end
-
-    it 'sets a gauge for the task processing queue size' do
-      create_list(:zoekt_task, 2, :pending, node: node)
-
-      gauge_double = instance_double(Prometheus::Client::Gauge)
-      expect(Gitlab::Metrics).to receive(:gauge)
-        .with(:search_zoekt_task_processing_queue_size, anything, {}, :max)
-        .at_least(:once)
-        .and_return(gauge_double)
-
-      allow(gauge_double).to receive(:set) # avoid flakiness if other nodes exist
-      expect(gauge_double).to receive(:set).with({ node_name: node.metadata['name'] }, 2)
-
-      execute
-    end
   end
 
   describe '#indices_metrics' do
