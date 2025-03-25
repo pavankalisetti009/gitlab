@@ -7,6 +7,7 @@ import {
 } from '~/lib/utils/common_utils';
 import { __, sprintf } from '~/locale';
 import { HTTP_STATUS_CREATED } from '~/lib/utils/http_status';
+import { OPERATOR_NOT } from '~/vue_shared/components/filtered_search_bar/constants';
 import {
   FETCH_ERROR_MESSAGE,
   FETCH_ERROR_MESSAGE_WITH_DETAILS,
@@ -164,7 +165,9 @@ export const setSearchFilterParameters = ({ state, commit }, searchFilters = [])
   // given filters: [{ type: 'licenses', value: { data: ['MIT', 'GNU'] } }, { type: 'project', value: { data: ['GitLab'] } }
   // will result in the parameters: { licenses: ['MIT', 'GNU'], project: ['GitLab'] }
   searchFilters.forEach((searchFilter) => {
-    let filterData = searchFilter.value.data;
+    let { type } = searchFilter;
+    const { value } = searchFilter;
+    let filterData = value.data;
 
     // If a user types to filter available options the filter data will be a string and we just ignore it
     // as filters can only be applied via selecting an option from the dropdown
@@ -172,15 +175,18 @@ export const setSearchFilterParameters = ({ state, commit }, searchFilters = [])
       return;
     }
 
-    if (searchFilter.type === 'licenses') {
+    if (type === 'licenses') {
       // for the license filter we display the license name in the UI, but want to send the spdx-identifier to the API
       const getSpdxIdentifier = (licenseName) =>
         state.licenses.find(({ name }) => name === licenseName)?.spdxIdentifier || [];
 
       filterData = filterData.flatMap(getSpdxIdentifier);
     }
+    if (value.operator === OPERATOR_NOT) {
+      type = `not[${type}]`;
+    }
 
-    searchFilterParameters[searchFilter.type] = filterData;
+    searchFilterParameters[type] = filterData;
   });
 
   commit(types.SET_SEARCH_FILTER_PARAMETERS, searchFilterParameters);
