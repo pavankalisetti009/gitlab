@@ -11,6 +11,8 @@ module Ai
 
     partitioned_by :timestamp, strategy: :monthly, retain_for: 3.months
 
+    populate_sharding_key(:organization_id) { Gitlab::Current::Organization.new(user: user).organization&.id }
+
     attribute :timestamp, :datetime, default: -> { DateTime.current }
 
     enum event: {
@@ -28,8 +30,6 @@ module Ai
     validates :payload, json_schema: { filename: "code_suggestion_event" }, allow_blank: true
     validate :validate_recent_timestamp, on: :create
 
-    before_validation :populate_sharding_key
-
     def to_clickhouse_csv_row
       super.merge({
         unique_tracking_id: payload['unique_tracking_id'],
@@ -46,10 +46,6 @@ module Ai
     end
 
     private
-
-    def populate_sharding_key
-      self.organization_id ||= Gitlab::Current::Organization.new(user: user).organization&.id
-    end
 
     def validate_recent_timestamp
       return unless timestamp && timestamp < self.class.partitioning_strategy.retain_for.ago
