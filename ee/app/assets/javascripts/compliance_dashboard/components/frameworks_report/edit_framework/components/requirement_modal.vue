@@ -124,28 +124,34 @@ export default {
       this.$refs.modal.show();
     },
     initializeControls() {
-      const requirementControls = this.requirementData?.complianceRequirementsControls?.nodes || [];
-      if (requirementControls.length) {
-        this.controls = requirementControls.map((control) => {
+      const sourceControls = this.requirementData?.stagedControls?.length
+        ? this.requirementData.stagedControls
+        : this.requirementData?.complianceRequirementsControls?.nodes || [];
+
+      if (sourceControls.length) {
+        this.controls = sourceControls.map((control) => {
+          const standardControl = this.gitlabStandardControls.find(
+            (ctrl) => ctrl.id === control.name,
+          );
+
+          const baseControl = {
+            id: control.id,
+            name: control.name,
+            controlType: control.controlType,
+            displayName: control.controlType === 'external' ? control.name : standardControl?.name,
+          };
+
           if (control.controlType === 'external') {
             return {
-              id: control.id,
-              name: control.name,
-              controlType: control.controlType,
-              displayName: control.name,
+              ...baseControl,
               externalUrl: control.externalUrl,
               secretToken: control.secretToken,
             };
           }
-          const standardControl = this.gitlabStandardControls.find(
-            (ctrl) => ctrl.id === control.name,
-          );
+
           return {
-            id: control.id,
-            name: standardControl?.id,
-            controlType: control.controlType,
+            ...baseControl,
             expression: control.expression,
-            displayName: standardControl?.name,
           };
         });
       } else {
@@ -171,6 +177,12 @@ export default {
             if (!control.name) return null;
 
             if (control.expression) {
+              if (typeof control.expression === 'string') {
+                return {
+                  ...control,
+                  expression: control.expression,
+                };
+              }
               const expressionWithoutTypename = omit(control.expression, '__typename');
               const expression = Object.keys(expressionWithoutTypename).length
                 ? JSON.stringify(expressionWithoutTypename)

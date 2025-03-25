@@ -473,7 +473,21 @@ export default {
           if (requirement?.id) {
             await this.updateRequirement(requirement);
             if (index !== null) {
-              this.requirements.splice(index, 1, requirement);
+              const updatedRequirement = {
+                ...requirement,
+                complianceRequirementsControls: {
+                  nodes:
+                    requirement.stagedControls?.map((control) => ({
+                      id: control.id,
+                      name: control.name,
+                      controlType: control.controlType,
+                      expression: control.expression,
+                      __typename: 'ComplianceRequirementControl',
+                    })) || [],
+                  __typename: 'ComplianceRequirementControlConnection',
+                },
+              };
+              this.requirements.splice(index, 1, updatedRequirement);
             }
           }
         } catch (error) {

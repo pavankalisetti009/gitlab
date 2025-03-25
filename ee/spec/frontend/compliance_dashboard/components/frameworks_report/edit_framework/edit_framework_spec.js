@@ -732,6 +732,193 @@ describe('Edit Framework Form', () => {
 
       expect(Sentry.captureException).toHaveBeenCalled();
     });
+
+    it('preserves staged controls when editing a requirement multiple times', async () => {
+      const initialRequirement = {
+        id: 'gid://gitlab/ComplianceManagement::Requirement/1',
+        name: 'SOC2',
+        description: 'Controls for SOC2',
+        complianceRequirementsControls: {
+          nodes: [
+            {
+              id: 'gid://gitlab/ComplianceManagement::Control/1',
+              name: 'minimum_approvals_required',
+              controlType: 'internal',
+              expression: {
+                __typename: 'IntegerExpression',
+                field: 'minimum_approvals_required',
+                operator: '=',
+                value: 1,
+              },
+              externalUrl: null,
+            },
+          ],
+        },
+      };
+
+      updateRequirementMutationMock = jest.fn().mockResolvedValue({
+        data: {
+          updateComplianceRequirement: {
+            requirement: {
+              id: 'gid://gitlab/ComplianceManagement::Requirement/1',
+              name: 'SOC2 Updated',
+              description: 'Updated Controls for SOC2',
+              __typename: 'ComplianceManagement::Requirement',
+              complianceRequirementsControls: {
+                nodes: [
+                  {
+                    id: 'gid://gitlab/ComplianceManagement::Control/1',
+                    name: 'minimum_approvals_required',
+                    controlType: 'internal',
+                    expression: {
+                      __typename: 'IntegerExpression',
+                      field: 'minimum_approvals_required',
+                      operator: '=',
+                      value: 1,
+                    },
+                    externalUrl: null,
+                  },
+                  {
+                    id: 'gid://gitlab/ComplianceManagement::Control/2',
+                    name: 'scanner_sast_running',
+                    controlType: 'internal',
+                    expression: {
+                      __typename: 'BooleanExpression',
+                      field: 'scanner_sast_running',
+                      operator: '=',
+                      value: true,
+                    },
+                    externalUrl: null,
+                  },
+                ],
+                __typename: 'ComplianceRequirementControlConnection',
+              },
+            },
+            errors: [],
+          },
+        },
+      });
+
+      const mockFrameworkResponse = createComplianceFrameworksReportResponse();
+      mockFrameworkResponse.data.namespace.complianceFrameworks.nodes[0].complianceRequirements = {
+        nodes: [initialRequirement],
+      };
+
+      wrapper = createComponent(mountExtended, {
+        requestHandlers: [
+          [getComplianceFrameworkQuery, () => mockFrameworkResponse],
+          [updateRequirementMutation, updateRequirementMutationMock],
+        ],
+        routeParams: { id: '1' },
+        provide: {
+          adherenceV2Enabled: true,
+        },
+      });
+
+      await waitForPromises();
+
+      const requirementsSection = wrapper.findComponent(RequirementsSection);
+
+      const firstUpdateRequirement = {
+        ...initialRequirement,
+        name: 'SOC2 Updated',
+        description: 'Updated Controls for SOC2',
+        stagedControls: [
+          {
+            id: 'gid://gitlab/ComplianceManagement::Control/1',
+            name: 'minimum_approvals_required',
+            controlType: 'internal',
+            expression: {
+              __typename: 'IntegerExpression',
+              field: 'minimum_approvals_required',
+              operator: '=',
+              value: 1,
+            },
+            externalUrl: null,
+          },
+          {
+            id: 'gid://gitlab/ComplianceManagement::Control/2',
+            name: 'scanner_sast_running',
+            controlType: 'internal',
+            expression: {
+              __typename: 'BooleanExpression',
+              field: 'scanner_sast_running',
+              operator: '=',
+              value: true,
+            },
+            externalUrl: null,
+          },
+        ],
+      };
+
+      requirementsSection.vm.$emit(requirementEvents.update, {
+        requirement: firstUpdateRequirement,
+        index: 0,
+      });
+
+      await waitForPromises();
+
+      expect(updateRequirementMutationMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          input: {
+            id: firstUpdateRequirement.id,
+            params: {
+              name: firstUpdateRequirement.name,
+              description: firstUpdateRequirement.description,
+            },
+            controls: expect.arrayContaining([
+              expect.objectContaining({
+                name: 'minimum_approvals_required',
+                controlType: 'internal',
+              }),
+              expect.objectContaining({
+                name: 'scanner_sast_running',
+                controlType: 'internal',
+              }),
+            ]),
+          },
+        }),
+      );
+
+      expect(wrapper.vm.requirements[0].complianceRequirementsControls.nodes).toHaveLength(2);
+
+      const secondUpdateRequirement = {
+        ...wrapper.vm.requirements[0],
+        name: 'SOC2 Updated Again',
+        description: 'Twice Updated Controls for SOC2',
+      };
+
+      updateRequirementMutationMock.mockClear();
+
+      requirementsSection.vm.$emit(requirementEvents.update, {
+        requirement: secondUpdateRequirement,
+        index: 0,
+      });
+
+      await waitForPromises();
+
+      expect(updateRequirementMutationMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          input: {
+            id: secondUpdateRequirement.id,
+            params: {
+              name: secondUpdateRequirement.name,
+              description: secondUpdateRequirement.description,
+            },
+            controls: expect.arrayContaining([
+              expect.objectContaining({
+                name: 'minimum_approvals_required',
+                controlType: 'internal',
+              }),
+              expect.objectContaining({
+                name: 'scanner_sast_running',
+                controlType: 'internal',
+              }),
+            ]),
+          },
+        }),
+      );
+    });
   });
 
   describe('Deleting requirements', () => {
