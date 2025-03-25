@@ -13,7 +13,7 @@ import { s__ } from '~/locale';
 import memberRolePermissionsQuery from 'ee/roles_and_permissions/graphql/member_role_permissions.query.graphql';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { BASE_ROLES } from '~/access_level/constants';
-import { isPermissionPreselected } from '../utils';
+import { isPermissionPreselected } from '../../utils';
 
 export const FIELDS = [
   { key: 'checkbox', label: '' },
