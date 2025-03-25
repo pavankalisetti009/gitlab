@@ -10,7 +10,7 @@ RSpec.describe RemoteDevelopment::NamespaceClusterAgentMapping, feature_category
 
   subject(:namespace_cluster_agent_mapping) do
     create(
-      :remote_development_namespace_cluster_agent_mapping,
+      :namespace_cluster_agent_mapping,
       user: user,
       agent: agent,
       namespace: namespace

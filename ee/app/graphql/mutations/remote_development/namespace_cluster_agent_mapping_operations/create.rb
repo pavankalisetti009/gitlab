@@ -10,6 +10,12 @@ module Mutations
 
         authorize :admin_remote_development_cluster_agent_mapping
 
+        field :namespace_cluster_agent_mapping,
+          ::Types::RemoteDevelopment::NamespaceClusterAgentMappingType,
+          null: true,
+          experiment: { milestone: '17.10' },
+          description: 'Created namespace cluster agent mapping.'
+
         argument :cluster_agent_id,
           ::Types::GlobalIDType[::Clusters::Agent],
           required: true,
@@ -49,7 +55,7 @@ module Mutations
           response_object = response.success? ? response.payload[:namespace_cluster_agent_mapping] : nil
 
           {
-            workspace: response_object,
+            namespace_cluster_agent_mapping: response_object,
             errors: response.errors
           }
         end

@@ -23,13 +23,13 @@ RSpec.describe RemoteDevelopment::NamespaceClusterAgentMappingOperations::Valida
     let(:namespace_cluster_agent_mappings) do
       [
         build_stubbed(
-          :remote_development_namespace_cluster_agent_mapping,
+          :namespace_cluster_agent_mapping,
           user: user,
           namespace: namespace,
           agent: root_agent
         ),
         build_stubbed(
-          :remote_development_namespace_cluster_agent_mapping,
+          :namespace_cluster_agent_mapping,
           user: user,
           namespace: namespace,
           agent: nested_agent
