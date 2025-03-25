@@ -171,6 +171,17 @@ RSpec.describe Gitlab::Geo::LogCursor::Daemon, :clean_gitlab_redis_shared_state,
 
       daemon.send(:handle_events, batch, 55)
     end
+
+    it 'logs the correlation id passed in the payload' do
+      expect(daemon.send(:logger)).to receive(:info).with(
+        "#handle_events:",
+        first_id: batch.first.id,
+        last_id: batch.last.id,
+        correlation_id: Labkit::Correlation::CorrelationId.current_id
+      )
+
+      daemon.send(:handle_events, batch, 55)
+    end
   end
 
   describe '#handle_single_event' do
@@ -191,9 +202,35 @@ RSpec.describe Gitlab::Geo::LogCursor::Daemon, :clean_gitlab_redis_shared_state,
 
     it 'processes event when it is replayable' do
       allow(daemon).to receive(:can_replay?).and_return(true)
-      expect(daemon).to receive(:process_event).with(event_log.event, event_log)
+      expect(daemon).to receive(:process_event).with(event_log.event, event_log).and_call_original
 
       daemon.send(:handle_single_event, event_log)
+    end
+  end
+
+  describe '#process_event' do
+    context 'when NoMethodError occurs' do
+      let(:error_message) { 'undefined method' }
+      let(:event_log) { create(:geo_event_log) }
+      let(:logger) { Gitlab::Geo::LogCursor::Logger.new(described_class, :debug) }
+
+      before do
+        allow(daemon).to receive(:event_klass_for).with(event_log.event)
+          .and_raise(NoMethodError.new(error_message))
+        allow(Gitlab::Geo::LogCursor::Logger).to receive(:new).and_return(logger)
+        allow(daemon).to receive(:correlation_id).and_return('test-correlation-id')
+      end
+
+      it 'logs the error and re-raises it' do
+        expect(logger).to receive(:error).with(
+          error_message,
+          correlation_id: 'test-correlation-id'
+        )
+
+        # daemon.send(:process_event, event_log.event, event_log)
+        expect { daemon.send(:process_event, event_log.event, event_log) }
+          .to raise_error(NoMethodError, error_message)
+      end
     end
   end
 

@@ -61,7 +61,8 @@ RSpec.describe Geo::BlobDownloadService, feature_category: :geo_replication do
             primary_missing_file: false,
             reason: 'foo',
             download_time_s: a_kind_of(Float),
-            gitlab_host: a_kind_of(String)
+            gitlab_host: a_kind_of(String),
+            correlation_id: a_kind_of(String)
           }
         )
 
@@ -157,7 +158,8 @@ RSpec.describe Geo::BlobDownloadService, feature_category: :geo_replication do
                 primary_missing_file: false,
                 reason: nil,
                 download_time_s: a_kind_of(Float),
-                gitlab_host: a_kind_of(String)
+                gitlab_host: a_kind_of(String),
+                correlation_id: a_kind_of(String)
               }
             )
 

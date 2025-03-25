@@ -127,6 +127,10 @@ module GitlabSubscriptions
       deleted_assignments_count
     end
 
+    def seat_assignable?
+      AddOn.seat_assignable?(add_on.name)
+    end
+
     def lock_key_for_refreshing_user_assignments
       "#{self.class.name.underscore}:user_refresh:#{id}"
     end

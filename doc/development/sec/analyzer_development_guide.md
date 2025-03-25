@@ -129,6 +129,16 @@ To use Docker with `replace` in the `go.mod` file:
 1. Update the `replace` statement to make sure it matches the destination of the `COPY` statement in the step above:
    `replace gitlab.com/gitlab-org/security-products/analyzers/command/v3 => /command`
 
+### Testing container orchestration compatibility
+
+Users may use tools other than Docker to orchestrate their containers and run their analyzers,
+such as [containerd](https://containerd.io/), [Podman](https://podman.io/), or [skopeo](https://github.com/containers/skopeo).
+In order to avoid inadvertently adding proprietary Docker features which might break customer tools, we [run a periodic test](https://gitlab.com/gitlab-org/security-products/tests/analyzer-containerization-support/-/blob/main/.gitlab-ci.yml?ref_type=heads) for all analyzers, to ensure that these tools still function as expected, and a Slack alert is raised if a failure occurs.
+
+In addition to the periodic test, analyzers using the [`ci-templates` `docker-test.yml` template](https://gitlab.com/gitlab-org/security-products/ci-templates/-/blob/master/includes-dev/docker-test.yml) include a [`check docker manifest`](https://gitlab.com/gitlab-org/security-products/ci-templates/-/blob/c0f217560b134f4ebe6024b26a41f77cea885c2c/includes-dev/docker-test.yml#L157-165) test in their pipelines, to prevent proprietary Docker features from being merged in the first place.
+
+When creating a new analyzer, or changing the location of existing analyzer images, ensure that the analyzer is accounted for in the periodic test and consider using the shared [`ci-templates`](https://gitlab.com/gitlab-org/security-products/ci-templates/).
+
 ## Analyzer scripts
 
 The [analyzer-scripts](https://gitlab.com/gitlab-org/secure/tools/analyzer-scripts) repository contains scripts that can be used to interact with most analyzers. They enable you to build, run, and debug analyzers in a GitLab CI-like environment, and are particularly useful for locally validating changes to an analyzer.
@@ -414,10 +424,17 @@ Verify whether the underlying tool has:
 - Bundle-able dependencies to be packaged as a Docker image, to be executed using GitLab Runner's [Linux or Windows Docker executor](https://docs.gitlab.com/runner/executors/docker.html).
 - Compatible projects that can be detected based on filenames or extensions.
 - Offline execution (no internet access) or can be configured to use custom proxies and/or CA certificates.
+- The image is compatible with other container orchestration tools (see [testing container orchestration compatibility](#testing-container-orchestration-compatibility)).
 
 #### Dockerfile
 
-The `Dockerfile` should use an unprivileged user with the name `GitLab`. The reason this is necessary is to provide compatibility with Red Hat OpenShift instances, which don't allow containers to run as an admin (root) user. There are certain limitations to keep in mind when running a container as an unprivileged user, such as the fact that any files that need to be written on the Docker filesystem will require the appropriate permissions for the `GitLab` user. Please see the following merge request for more details: [Use GitLab user instead of root in Docker image](https://gitlab.com/gitlab-org/security-products/analyzers/gemnasium/-/merge_requests/130).
+The `Dockerfile` should use an unprivileged user with the name `GitLab`.
+This is necessary is to provide compatibility with Red Hat OpenShift instances,
+which don't allow containers to run as an admin (root) user.
+There are certain limitations to keep in mind when running a container as an unprivileged user,
+such as the fact that any files that need to be written on the Docker filesystem will require the appropriate permissions for the `GitLab` user.
+Please see the following merge request for more details:
+[Use GitLab user instead of root in Docker image](https://gitlab.com/gitlab-org/security-products/analyzers/gemnasium/-/merge_requests/130).
 
 #### Minimal vulnerability data
 

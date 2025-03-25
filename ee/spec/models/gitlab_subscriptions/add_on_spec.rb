@@ -93,4 +93,24 @@ RSpec.describe GitlabSubscriptions::AddOn, feature_category: :subscription_manag
       )
     end
   end
+
+  describe '.seat_assignable?' do
+    using RSpec::Parameterized::TableSyntax
+
+    where(:add_on_name, :result) do
+      'code_suggestions'  | true
+      'product_analytics' | false
+      'duo_enterprise'    | true
+      'duo_amazon_q'      | false
+      'duo_nano'          | false
+    end
+
+    with_them do
+      it 'returns correct value for different add-ons' do
+        seat_assignable = described_class.seat_assignable?(add_on_name)
+
+        expect(seat_assignable).to eq(result)
+      end
+    end
+  end
 end

@@ -46,7 +46,8 @@ module Geo
             payload: {
               model_record_id: record[:model_record_id],
               blob_path: record[:blob_path].to_s,
-              uploader_class: record[:uploader_class]
+              uploader_class: record[:uploader_class],
+              correlation_id: Labkit::Correlation::CorrelationId.current_id
             },
             created_at: Time.current.to_s
           }.deep_transform_keys(&:to_s)
@@ -91,7 +92,8 @@ module Geo
       Geo::EventWorker.perform_async(
         replicable_name,
         ::Geo::ReplicatorEvents::EVENT_CREATED,
-        { 'model_record_id' => model_record.id })
+        event_params
+      )
     end
 
     # Schedules a verification job after a model record is created/updated

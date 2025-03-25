@@ -66,7 +66,7 @@ RSpec.describe RemoteDevelopment::NamespaceClusterAgentsFinder, feature_category
       agent = mapping[0]
       namespace = mapping[1]
 
-      create(:remote_development_namespace_cluster_agent_mapping, user: user, agent: agent, namespace: namespace)
+      create(:namespace_cluster_agent_mapping, user: user, agent: agent, namespace: namespace)
     end
 
     # migrate out the project associated with migrated_nested_agent

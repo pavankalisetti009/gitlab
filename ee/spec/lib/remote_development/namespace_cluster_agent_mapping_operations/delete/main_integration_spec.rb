@@ -5,7 +5,7 @@ require 'spec_helper'
 # noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
 RSpec.describe ::RemoteDevelopment::NamespaceClusterAgentMappingOperations::Delete::Main, feature_category: :workspaces do
   let_it_be(:namespace_cluster_agent_mapping) do
-    create(:remote_development_namespace_cluster_agent_mapping)
+    create(:namespace_cluster_agent_mapping)
   end
 
   subject(:response) do
@@ -28,7 +28,7 @@ RSpec.describe ::RemoteDevelopment::NamespaceClusterAgentMappingOperations::Dele
   context 'when params are invalid' do
     context 'when a mapping does not exist for a given namespace and cluster agent' do
       let(:namespace_cluster_agent_mapping) do
-        build(:remote_development_namespace_cluster_agent_mapping)
+        build(:namespace_cluster_agent_mapping)
       end
 
       it 'does not create the mapping and returns an error' do

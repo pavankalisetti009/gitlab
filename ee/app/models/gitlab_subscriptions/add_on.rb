@@ -15,10 +15,13 @@ module GitlabSubscriptions
       code_suggestions: 1,
       product_analytics: 2,
       duo_enterprise: 3,
-      duo_amazon_q: 4
+      duo_amazon_q: 4,
+      duo_nano: 5
     }
 
-    DUO_ADD_ONS = %i[code_suggestions duo_enterprise duo_amazon_q].freeze
+    DUO_ADD_ONS = %i[code_suggestions duo_enterprise duo_amazon_q duo_nano].freeze
+
+    DUO_ADD_ONS_WITH_SEAT_ASSIGNMENTS = %w[code_suggestions duo_enterprise].freeze
 
     scope :duo_add_ons, -> { where(name: DUO_ADD_ONS) }
 
@@ -28,7 +31,8 @@ module GitlabSubscriptions
         code_suggestions: 'Add-on for GitLab Duo Pro.',
         product_analytics: 'Add-on for product analytics. Quantity suggests multiple of available stored event.',
         duo_enterprise: 'Add-on for GitLab Duo Enterprise.',
-        duo_amazon_q: 'Add-on for GitLab Duo with Amazon Q.'
+        duo_amazon_q: 'Add-on for GitLab Duo with Amazon Q.',
+        duo_nano: 'Add-on for Gitlab Duo Nano.'
       }
     end
 
@@ -43,6 +47,10 @@ module GitlabSubscriptions
       raise ::ArgumentError if
         add_on_name.eql?("product_analytics") &&
           ::Feature.disabled?(:product_analytics_billing, namespace, type: :development)
+    end
+
+    def self.seat_assignable?(add_on_name)
+      DUO_ADD_ONS_WITH_SEAT_ASSIGNMENTS.include?(add_on_name)
     end
   end
 end

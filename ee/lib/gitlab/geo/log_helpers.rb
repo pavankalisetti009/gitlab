@@ -37,7 +37,8 @@ module Gitlab
           class: self.class.name,
           gitlab_host: Gitlab.config.gitlab.host,
           message: message,
-          job_id: get_sidekiq_job_id
+          job_id: get_sidekiq_job_id,
+          correlation_id: Labkit::Correlation::CorrelationId.current_id
         }.merge(extra_log_data).compact
       end
 

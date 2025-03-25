@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 FactoryBot.define do
-  factory :remote_development_namespace_cluster_agent_mapping,
+  factory :namespace_cluster_agent_mapping,
     class: 'RemoteDevelopment::NamespaceClusterAgentMapping' do
     user
     agent factory: [:cluster_agent, :in_group]

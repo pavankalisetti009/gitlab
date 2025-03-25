@@ -91,7 +91,8 @@ RSpec.shared_examples 'a blob replicator' do
           "replicable_name" => replicator.replicable_name,
           "event_name" => ::Geo::ReplicatorEvents::EVENT_CREATED,
           "payload" => {
-            "model_record_id" => replicator.model_record.id
+            "model_record_id" => replicator.model_record.id,
+            "correlation_id" => an_instance_of(String)
           }
         )
       end

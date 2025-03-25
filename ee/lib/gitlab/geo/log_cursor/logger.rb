@@ -54,7 +54,8 @@ module Gitlab
             pid: PID,
             gitlab_host: Gitlab.config.gitlab.host,
             class: caller_name,
-            message: message
+            message: message,
+            correlation_id: Labkit::Correlation::CorrelationId.current_id
           }.merge(params)
         end
       end

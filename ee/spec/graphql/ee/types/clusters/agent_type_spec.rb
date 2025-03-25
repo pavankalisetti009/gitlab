@@ -75,8 +75,8 @@ RSpec.describe GitlabSchema.types['ClusterAgent'], feature_category: :deployment
       create(:workspaces_agent_config, cluster_agent_id: cluster_agent.id, project_id: project.id)
     end
 
-    let_it_be(:remote_development_namespace_cluster_agent_mapping) do
-      create(:remote_development_namespace_cluster_agent_mapping, agent: cluster_agent, namespace: group)
+    let_it_be(:namespace_cluster_agent_mapping) do
+      create(:namespace_cluster_agent_mapping, agent: cluster_agent, namespace: group)
     end
 
     let_it_be(:query) do
