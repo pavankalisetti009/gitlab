@@ -100,9 +100,6 @@ export default {
       this.fetchTokens();
     },
     handleSortDirectionChange(isAsc) {
-      if (this.sorting.value === 'expires') {
-        return;
-      }
       this.setSorting({ value: this.sorting.value, isAsc });
       this.fetchTokens();
     },

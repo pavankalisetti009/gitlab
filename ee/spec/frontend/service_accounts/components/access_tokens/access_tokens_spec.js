@@ -105,15 +105,6 @@ describe('AccessTokens', () => {
     expect(store.fetchTokens).toHaveBeenCalledTimes(2);
   });
 
-  it('ignores changes in sorting direction if sorting value is `expires`', () => {
-    createComponent();
-    expect(store.fetchTokens).toHaveBeenCalledTimes(1);
-    findSorting().vm.$emit('sortDirectionChange', false);
-
-    expect(store.setSorting).not.toHaveBeenCalledWith(expect.objectContaining({ isAsc: false }));
-    expect(store.fetchTokens).toHaveBeenCalledTimes(1);
-  });
-
   it('sets the sorting and fetches tokens when sorting direction is changed', () => {
     createComponent();
     expect(store.fetchTokens).toHaveBeenCalledTimes(1);
