@@ -14,8 +14,9 @@ module Vulnerabilities
       end
 
       def execute
-        vulnerability_archive.archived_records.new(
+        Vulnerabilities::ArchivedRecord.new(
           project: project,
+          archive: vulnerability_archive,
           vulnerability_identifier: vulnerability.id,
           data: archive_data,
           created_at: now,
