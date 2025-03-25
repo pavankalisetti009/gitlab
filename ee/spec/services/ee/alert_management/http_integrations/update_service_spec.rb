@@ -10,24 +10,24 @@ RSpec.describe AlertManagement::HttpIntegrations::UpdateService, feature_categor
 
   let(:payload_example) do
     {
-        'alert' => { 'name' => 'Test alert' },
-        'started_at' => Time.current.strftime('%d %B %Y, %-l:%M%p (%Z)')
+      'alert' => { 'name' => 'Test alert' },
+      'started_at' => Time.current.strftime('%d %B %Y, %-l:%M%p (%Z)')
     }
   end
 
   let(:payload_attribute_mapping) do
     {
-        'title' => { 'path' => %w[alert name], 'type' => 'string' },
-        'start_time' => { 'path' => %w[started_at], 'type' => 'datetime' }
+      'title' => { 'path' => %w[alert name], 'type' => 'string' },
+      'start_time' => { 'path' => %w[started_at], 'type' => 'datetime' }
     }
   end
 
   let(:params) do
     {
-        name: 'New name',
-        type_identifier: :prometheus,
-        payload_example: payload_example,
-        payload_attribute_mapping: payload_attribute_mapping
+      name: 'New name',
+      type_identifier: :prometheus,
+      payload_example: payload_example,
+      payload_attribute_mapping: payload_attribute_mapping
     }
   end
 

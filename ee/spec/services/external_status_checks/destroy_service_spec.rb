@@ -53,9 +53,9 @@ RSpec.describe ExternalStatusChecks::DestroyService, feature_category: :groups_a
         it 'logs an audit event' do
           expect { execute }.to change { AuditEvent.count }.by(1)
           expect(AuditEvent.last.details).to include({
-                                                       target_type: 'MergeRequests::ExternalStatusCheck',
-                                                       custom_message: 'Removed QA status check'
-                                                     })
+            target_type: 'MergeRequests::ExternalStatusCheck',
+            custom_message: 'Removed QA status check'
+          })
         end
       end
 

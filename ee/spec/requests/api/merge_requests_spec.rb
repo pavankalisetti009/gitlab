@@ -190,12 +190,12 @@ RSpec.describe API::MergeRequests, feature_category: :source_code_management do
   describe "POST /projects/:id/merge_requests" do
     def create_merge_request(args)
       defaults = {
-          title: 'Test merge_request',
-          source_branch: 'feature_conflict',
-          target_branch: 'master',
-          author: user,
-          labels: 'label, label2',
-          milestone_id: milestone.id
+        title: 'Test merge_request',
+        source_branch: 'feature_conflict',
+        target_branch: 'master',
+        author: user,
+        labels: 'label, label2',
+        milestone_id: milestone.id
       }
       defaults = defaults.merge(args)
       post api("/projects/#{project.id}/merge_requests", user), params: defaults

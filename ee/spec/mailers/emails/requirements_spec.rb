@@ -66,9 +66,9 @@ RSpec.describe Emails::Requirements do
     context 'when truncated' do
       let(:export_status) do
         {
-            rows_expected: 10,
-            rows_written: 10,
-            truncated: true
+          rows_expected: 10,
+          rows_written: 10,
+          truncated: true
         }
       end
 

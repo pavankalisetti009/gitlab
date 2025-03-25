@@ -25,19 +25,19 @@ RSpec.describe Projects::UnlinkForkService, :use_clean_rails_memory_store_cachin
       expect { service.execute }.to change(AuditEvent, :count).by(1)
 
       expect(AuditEvent.last).to have_attributes({
-                                                   author: user,
-                                                   entity_id: forked_project.id,
-                                                   target_type: project.class.name,
-                                                   details: {
-                                                     author_class: user.class.name,
-                                                     author_name: user.name,
-                                                     custom_message: "Project unlinked from #{project.name}",
-                                                     event_name: 'project_fork_relationship_removed',
-                                                     target_details: forked_project.name,
-                                                     target_id: forked_project.id,
-                                                     target_type: forked_project.class.name
-                                                   }
-                                                 })
+        author: user,
+        entity_id: forked_project.id,
+        target_type: project.class.name,
+        details: {
+          author_class: user.class.name,
+          author_name: user.name,
+          custom_message: "Project unlinked from #{project.name}",
+          event_name: 'project_fork_relationship_removed',
+          target_details: forked_project.name,
+          target_id: forked_project.id,
+          target_type: forked_project.class.name
+        }
+      })
     end
 
     it 'calls process bookeeping service' do
@@ -62,19 +62,19 @@ RSpec.describe Projects::UnlinkForkService, :use_clean_rails_memory_store_cachin
         expect { service.execute }.to change(AuditEvent, :count).by(1)
 
         expect(AuditEvent.last).to have_attributes({
-                                                     author: user,
-                                                     entity_id: forked_project.id,
-                                                     target_type: project.class.name,
-                                                     details: {
-                                                       author_class: user.class.name,
-                                                       author_name: user.name,
-                                                       custom_message: "Project unlinked from ",
-                                                       event_name: 'project_fork_relationship_removed',
-                                                       target_details: forked_project.name,
-                                                       target_id: forked_project.id,
-                                                       target_type: forked_project.class.name
-                                                     }
-                                                   })
+          author: user,
+          entity_id: forked_project.id,
+          target_type: project.class.name,
+          details: {
+            author_class: user.class.name,
+            author_name: user.name,
+            custom_message: "Project unlinked from ",
+            event_name: 'project_fork_relationship_removed',
+            target_details: forked_project.name,
+            target_id: forked_project.id,
+            target_type: forked_project.class.name
+          }
+        })
       end
     end
   end
