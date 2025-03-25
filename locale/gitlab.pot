@@ -43680,6 +43680,9 @@ msgstr ""
 msgid "Pipelines|Something went wrong while cleaning runners cache."
 msgstr ""
 
+msgid "Pipelines|Start using inputs"
+msgstr ""
+
 msgid "Pipelines|Start with a migration plan"
 msgstr ""
 
