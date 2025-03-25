@@ -1,6 +1,7 @@
 import { GlSprintf } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import { nextTick } from 'vue';
+import { stubComponent } from 'helpers/stub_component';
 import LicenseDropzone from 'ee/admin/application_settings/general/components/license_dropzone.vue';
 import { FILE_UPLOAD_ERROR_MESSAGE } from 'ee/admin/application_settings/general/constants';
 import { createAlert } from '~/alert';
@@ -17,6 +18,15 @@ describe('Upload dropzone component', () => {
     wrapper = shallowMount(LicenseDropzone, {
       stubs: {
         GlSprintf,
+        UploadDropzone: stubComponent(UploadDropzone, {
+          methods: {
+            openFileUpload() {},
+          },
+          template: `
+            <div>
+              <slot name="upload-text" :open-file-upload="openFileUpload"></slot>
+            </div>`,
+        }),
       },
     });
   }

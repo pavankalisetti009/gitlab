@@ -48,22 +48,16 @@ RSpec.describe Ai::CodeSuggestionEvent, feature_category: :code_suggestions do
   end
 
   describe '#organization_id' do
-    subject(:event) { described_class.new(user: user).tap(&:valid?) }
+    subject { described_class.new(user: user) }
 
-    it 'populates organization_id from default_organization' do
-      expect(event.organization_id).to eq(default_organization.id)
-    end
+    it { is_expected.to populate_sharding_key(:organization_id).with(default_organization.id) }
 
     context 'when user belongs to an organization' do
-      let!(:user_organization) do
-        create(:organization).tap do |org|
-          create(:organization_user, organization: org, user: user)
-        end
+      let(:user_organization) do
+        create(:organization).tap { |org| create(:organization_user, organization: org, user: user) }
       end
 
-      it 'populates organization_id from user' do
-        expect(event.organization_id).to eq(user_organization.id)
-      end
+      it { is_expected.to populate_sharding_key(:organization_id).with(user_organization.id) }
     end
   end
 

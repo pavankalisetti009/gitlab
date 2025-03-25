@@ -154,7 +154,6 @@ RSpec.describe Llm::Internal::CompletionService, :saas, feature_category: :ai_ab
             .and_return(completion)
 
           expect(completion).to receive(:execute)
-
           expect(Gitlab::Metrics::Sli::Apdex[:llm_completion])
             .to receive(:increment)
             .with(labels: { feature_category: anything, service_class: an_instance_of(String) }, success: true)
@@ -297,7 +296,13 @@ RSpec.describe Llm::Internal::CompletionService, :saas, feature_category: :ai_ab
           a_hash_including(
             message: "Nullifying resource to prevent unauthorized access",
             event_name: 'permission_denied',
-            ai_component: 'abstraction_layer')
+            ai_component: 'abstraction_layer',
+            user_id: user.to_gid,
+            resource_id: resource&.to_gid,
+            request_id: 'uuid',
+            action_name: ai_action_name,
+            client_subscription_id: nil
+          )
         )
 
         expect(Gitlab::Llm::CompletionsFactory).to receive(:completion!) do |prompt_message, _options|

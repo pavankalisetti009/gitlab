@@ -28,14 +28,50 @@ RSpec.describe 'User sees Security Configuration table', :js, feature_category: 
       )
     end
 
-    context 'with no SAST report' do
-      it 'shows SAST is not enabled' do
+    context 'enabling SAST' do
+      let(:test_data_sast_string_fields_array) do
+        [
+          %w[SECURE_ANALYZERS_PREFIX registry.example.com],
+          ['SAST_EXCLUDED_PATHS', 'foo, bar']
+        ]
+      end
+
+      let(:test_data_int_fields_array) do
+        [
+          %w[SEARCH_MAX_DEPTH 42]
+        ]
+      end
+
+      it 'shows SAST' do
         visit_configuration_page
 
         within_sast_card do
           expect(page).to have_text('SAST')
           expect(page).to have_text('Not enabled')
           expect(page).to have_link('Enable SAST')
+
+          click_link 'Enable SAST'
+          wait_for_requests
+
+          expect(page).to have_current_path("/#{project.full_path}/-/security/configuration/sast", ignore_query: true)
+        end
+
+        fill_sast_fields(test_data_sast_string_fields_array)
+        fill_sast_fields(test_data_int_fields_array)
+
+        click_button('Create merge request')
+        wait_for_requests
+
+        expect(page).to have_current_path(project_new_merge_request_path(project), ignore_query: true)
+
+        find_by_testid('diffs-tab').click
+
+        test_data_sast_string_fields_array.each do |key, value|
+          expect(page).to have_content("#{key}: #{value}")
+        end
+
+        test_data_int_fields_array.each do |field_type, field_value|
+          expect(page).to have_content("#{field_type}: '#{field_value}'")
         end
       end
     end
@@ -233,6 +269,14 @@ RSpec.describe 'User sees Security Configuration table', :js, feature_category: 
 
   def visit_configuration_page
     visit(project_security_configuration_path(project))
+  end
+
+  def fill_sast_fields(array)
+    array.each do |key, value|
+      element = find("[data-testid='#{key}-field']")
+      page.execute_script("arguments[0].innerHTML = ''", element.native)
+      element.set(value)
+    end
   end
 
   def within_sast_card
