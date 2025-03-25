@@ -334,7 +334,7 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
         it_behaves_like "service account user creation"
       end
 
-      context 'when current user is an owner' do
+      context 'when current user is a group owner' do
         let_it_be(:user) { create(:user) }
 
         before do
@@ -655,7 +655,7 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
         stub_licensed_features(service_accounts: true)
       end
 
-      context 'when user is an owner' do
+      context 'when user is a group owner' do
         before do
           group.add_owner(user)
         end
@@ -697,7 +697,7 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
             end
           end
 
-          context 'when target user does not belong to group' do
+          context 'when service account does not belong to the group' do
             before do
               service_account_user.provisioned_by_group_id = nil
               service_account_user.save!
@@ -710,7 +710,7 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
             end
           end
 
-          context 'when target user is not service accounts' do
+          context 'when target user is not a service account' do
             let(:regular_user) { create(:user) }
 
             before do
@@ -739,7 +739,7 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
         end
       end
 
-      context 'when user is not an owner' do
+      context 'when user is not a group owner' do
         before do
           group.add_maintainer(user)
         end
@@ -798,7 +798,7 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
       context 'when the user is an admin', :enable_admin_mode do
         let_it_be(:user) { create(:admin) }
 
-        context 'when the group exists' do
+        context 'when the group and token exist' do
           it 'revokes the token' do
             perform_request
 
@@ -808,17 +808,13 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
         end
       end
 
-      context 'when user is an owner' do
+      context 'when user is a group owner' do
         before do
           group.add_owner(user)
         end
 
         context 'when the group exists' do
-          context 'when service account is a member of the group' do
-            before do
-              group.add_developer(service_account_user)
-            end
-
+          context 'when the token exists and belongs to the service account user' do
             # TODO: Test momentarily disabled until we give permissions to group owners to revoke tokens.
             # See https://gitlab.com/gitlab-org/gitlab/-/merge_requests/184287#note_2406933302
             it 'revokes the token', skip: 'group owner has currently insufficient permissions' do
@@ -829,12 +825,22 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
             end
           end
 
-          context 'when service account is not a member of the group' do
+          context 'when revocation service fails' do
+            let(:error_message) { 'error message' }
+
+            before do
+              allow_next_instance_of(::PersonalAccessTokens::RevokeService) do |service|
+                allow(service).to receive(:execute).and_return(
+                  ServiceResponse.error(message: error_message)
+                )
+              end
+            end
+
             it 'returns error message' do
               perform_request
 
               expect(response).to have_gitlab_http_status(:bad_request)
-              expect(json_response['message']).to eq('400 Bad request - Not permitted to revoke')
+              expect(json_response['message']).to eq('400 Bad request - error message')
             end
           end
 
@@ -854,14 +860,15 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
               token.save!
             end
 
-            it 'returns bad request' do
+            it 'returns not found' do
               perform_request
 
               expect(response).to have_gitlab_http_status(:not_found)
+              expect(json_response['message']).to eq("404 Personal Access Token Not Found")
             end
           end
 
-          context 'when target user does not belong to group' do
+          context 'when service account does not belong to the group' do
             before do
               service_account_user.provisioned_by_group_id = nil
               service_account_user.save!
@@ -871,10 +878,11 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
               perform_request
 
               expect(response).to have_gitlab_http_status(:not_found)
+              expect(json_response['message']).to eq('404 User Not Found')
             end
           end
 
-          context 'when target user is not service accounts' do
+          context 'when target user is not a service account' do
             let(:regular_user) { create(:user) }
             let(:user_id) { regular_user.id }
 
@@ -904,7 +912,7 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
         end
       end
 
-      context 'when user is not an owner' do
+      context 'when user is not a group owner' do
         it 'throws error' do
           perform_request
 
@@ -946,7 +954,22 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
         stub_licensed_features(service_accounts: true)
       end
 
-      context 'when user is an owner' do
+      context 'when the user is an admin', :enable_admin_mode do
+        let_it_be(:user) { create(:admin) }
+
+        context 'when the group and token exist' do
+          it 'revokes the token' do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(token.reload.revoked?).to be_truthy
+            expect(json_response['token']).not_to eq(token.token)
+            expect(json_response['expires_at']).to eq((Date.today + 1.week).to_s)
+          end
+        end
+      end
+
+      context 'when user is a group owner' do
         before do
           group.add_owner(user)
         end
@@ -1008,7 +1031,7 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
             end
           end
 
-          context 'when target user does not belong to group' do
+          context 'when service account does not belong to the group' do
             before do
               service_account_user.provisioned_by_group_id = nil
               service_account_user.save!
@@ -1021,7 +1044,7 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
             end
           end
 
-          context 'when target user is not service accounts' do
+          context 'when target user is not a service account' do
             let(:regular_user) { create(:user) }
             let(:user_id) { regular_user.id }
 
@@ -1051,7 +1074,7 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
         end
       end
 
-      context 'when user is not an owner' do
+      context 'when user is not a group owner' do
         it 'throws error' do
           perform_request
 

@@ -202,7 +202,7 @@ module API
             if token
               revoke_token(token)
             else
-              not_found!("Could not find personal access token with token_id: #{token_id}")
+              not_found!('Personal Access Token')
             end
           end
 
