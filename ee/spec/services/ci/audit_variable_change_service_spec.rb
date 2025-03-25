@@ -68,6 +68,31 @@ RSpec.describe Ci::AuditVariableChangeService, feature_category: :ci_variables d
     end
   end
 
+  shared_examples 'audit_when_updating_variable_environment_scope' do
+    let(:action) { :update }
+
+    before do
+      variable.update!(environment_scope: 'gprd')
+    end
+
+    it 'logs audit event' do
+      expect { execute }.to change(AuditEvent, :count).from(0).to(1)
+    end
+
+    it 'logs variable environment_scope update' do
+      execute
+
+      audit_event = AuditEvent.last.presence
+
+      expect(audit_event.details[:custom_message]).to eq('Changed environment scope from * to gprd')
+      expect(audit_event.details[:target_details]).to eq(variable.key)
+    end
+
+    it_behaves_like 'sends correct event type in audit event stream' do
+      let_it_be(:event_type) { event_type }
+    end
+  end
+
   shared_examples 'audit value change' do
     let(:action) { :update }
 
@@ -198,6 +223,8 @@ RSpec.describe Ci::AuditVariableChangeService, feature_category: :ci_variables d
           let_it_be(:event_type) { "ci_instance_variable_updated" }
         end
       end
+
+      # instance variables do not have an environment_scope so we don't test that here
     end
 
     context 'with group variables' do
@@ -216,6 +243,12 @@ RSpec.describe Ci::AuditVariableChangeService, feature_category: :ci_variables d
 
       context 'when updating group variable protection' do
         it_behaves_like 'audit when updating variable protection' do
+          let_it_be(:event_type) { "ci_group_variable_updated" }
+        end
+      end
+
+      context 'when updating group variable environment_scope' do
+        it_behaves_like 'audit_when_updating_variable_environment_scope' do
           let_it_be(:event_type) { "ci_group_variable_updated" }
         end
       end
@@ -240,6 +273,12 @@ RSpec.describe Ci::AuditVariableChangeService, feature_category: :ci_variables d
 
       context 'when updating project variable protection' do
         it_behaves_like 'audit when updating variable protection' do
+          let_it_be(:event_type) { "ci_variable_updated" }
+        end
+      end
+
+      context 'when updating project variable environment_scope' do
+        it_behaves_like 'audit_when_updating_variable_environment_scope' do
           let_it_be(:event_type) { "ci_variable_updated" }
         end
       end
