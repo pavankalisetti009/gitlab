@@ -20,7 +20,7 @@ module GitlabSubscriptions
                    .new(
                      user: current_user,
                      namespace_id: general_params[:namespace_id],
-                     eligible_namespaces: @eligible_namespaces,
+                     eligible_namespaces: eligible_namespaces,
                      submit_path: trial_submit_path
                    )
         end
@@ -48,7 +48,7 @@ module GitlabSubscriptions
                    .new(
                      user: current_user,
                      namespace_id: general_params[:namespace_id],
-                     eligible_namespaces: @eligible_namespaces,
+                     eligible_namespaces: eligible_namespaces,
                      submit_path: trial_submit_path,
                      form_params: lead_form_params,
                      errors: @result.errors
@@ -65,8 +65,7 @@ module GitlabSubscriptions
       private
 
       def eligible_namespaces
-        @eligible_namespaces = Users::AddOnTrialEligibleNamespacesFinder
-                                 .new(current_user, add_on: :duo_enterprise).execute
+        Users::AddOnTrialEligibleNamespacesFinder.new(current_user, add_on: :duo_enterprise).execute
       end
       strong_memoize_attr :eligible_namespaces
 
