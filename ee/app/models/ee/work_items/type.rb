@@ -19,7 +19,8 @@ module EE
         okrs: ::WorkItems::Widgets::Progress,
         epic_colors: ::WorkItems::Widgets::Color,
         custom_fields: ::WorkItems::Widgets::CustomFields,
-        security_dashboard: ::WorkItems::Widgets::Vulnerabilities
+        security_dashboard: ::WorkItems::Widgets::Vulnerabilities,
+        work_item_status: ::WorkItems::Widgets::Status
       }.freeze
 
       LICENSED_TYPES = { epic: :epics, objective: :okrs, key_result: :okrs, requirement: :requirements }.freeze
@@ -60,6 +61,10 @@ module EE
 
           if ::Feature.disabled?(:custom_fields_feature, resource_parent.root_ancestor)
             unavailable_widgets << ::WorkItems::Widgets::CustomFields
+          end
+
+          unless resource_parent.try(:work_item_status_feature_available?)
+            unavailable_widgets << ::WorkItems::Widgets::Status
           end
 
           super.reject { |widget_def| unavailable_widgets.include?(widget_def.widget_class) }

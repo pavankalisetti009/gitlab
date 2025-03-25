@@ -88,6 +88,16 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
           expect(returned_widgets.map(&:widget_class)).not_to include(::WorkItems::Widgets::CustomFields)
         end
       end
+
+      context 'when work_item_status_feature_flag is disabled?' do
+        before do
+          stub_feature_flags(work_item_status_feature_flag: false)
+        end
+
+        it 'does not return status widget' do
+          expect(returned_widgets.map(&:widget_class)).not_to include(::WorkItems::Widgets::Status)
+        end
+      end
     end
 
     where(feature_widget: WorkItems::Type::LICENSED_WIDGETS.transform_values { |v| Array(v) }.to_a)

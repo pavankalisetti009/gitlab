@@ -350,6 +350,7 @@ RSpec.describe 'getting a work item list for a project', feature_category: :team
           edges {
             node {
               widgets {
+                type
                 ... on WorkItemWidgetStatus {
                   status {
                     id
@@ -427,13 +428,11 @@ RSpec.describe 'getting a work item list for a project', feature_category: :team
         context 'with current statuses' do
           let_it_be(:current_status) { create(:work_item_current_status, work_item: work_item_1) }
 
-          it 'does not return status data' do
+          it 'does not return status widget' do
             post_graphql(query, current_user: current_user)
 
-            expect(widgets_data).to include(
-              hash_including(
-                'status' => nil
-              )
+            expect(widgets_data).not_to include(
+              hash_including('type' => 'STATUS')
             )
           end
 
@@ -441,13 +440,11 @@ RSpec.describe 'getting a work item list for a project', feature_category: :team
         end
 
         context 'without current statuses' do
-          it 'does not return status data' do
+          it 'does not return status widget' do
             post_graphql(query, current_user: current_user)
 
-            expect(widgets_data).to include(
-              hash_including(
-                'status' => nil
-              )
+            expect(widgets_data).not_to include(
+              hash_including('type' => 'STATUS')
             )
           end
 
