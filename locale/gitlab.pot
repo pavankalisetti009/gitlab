@@ -16642,6 +16642,9 @@ msgstr ""
 msgid "ContainerRegistry|There are no container images stored for this project"
 msgstr ""
 
+msgid "ContainerRegistry|This container image tag cannot be overwritten or deleted."
+msgstr ""
+
 msgid "ContainerRegistry|This field is required."
 msgstr ""
 
@@ -16697,6 +16700,9 @@ msgid "ContainerRegistry|You are about to remove %{item}. Are you sure?"
 msgstr ""
 
 msgid "ContainerRegistry|You can add an image to this registry with the following commands:"
+msgstr ""
+
+msgid "ContainerRegistry|immutable"
 msgstr ""
 
 msgid "ContainerRegistry|index"
