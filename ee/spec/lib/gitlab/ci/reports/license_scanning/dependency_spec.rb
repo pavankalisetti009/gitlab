@@ -3,8 +3,14 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Ci::Reports::LicenseScanning::Dependency, feature_category: :software_composition_analysis do
+  let(:name) { 'bundler' }
+  let(:package_manager) { 'rubygems' }
+  let(:purl_type) { 'gem' }
+  let(:version) { '1.0.0' }
+
+  let(:attributes) { { name: name, package_manager: package_manager, purl_type: purl_type, version: version } }
+
   describe 'object equality' do
-    let(:attributes) { { name: 'bundler', package_manager: 'rubygems', purl_type: 'gem', version: '1.0.0' } }
     let(:dependency1) { described_class.new(attributes) }
 
     context 'when all fields are the same' do
@@ -83,6 +89,32 @@ RSpec.describe Gitlab::Ci::Reports::LicenseScanning::Dependency, feature_categor
       let(:project) { build_stubbed(:project) }
 
       specify { expect(subject).to eql("/#{project.full_path}/-/blob/master/#{lockfile}") }
+    end
+  end
+
+  describe "#purl" do
+    subject(:purl) { described_class.new(attributes).purl }
+
+    context "when version is present" do
+      it "returns the purl with version" do
+        is_expected.to eq("pkg:#{purl_type}/#{name}@#{version}")
+      end
+    end
+
+    context "when version is not present" do
+      let(:attributes) { { name: name, package_manager: package_manager, purl_type: purl_type } }
+
+      it "returns the purl with version" do
+        is_expected.to eq("pkg:#{purl_type}/#{name}")
+      end
+
+      context "when purl_type is not present" do
+        let(:attributes) { { name: name, package_manager: package_manager } }
+
+        it "returns nil" do
+          is_expected.to be_nil
+        end
+      end
     end
   end
 end

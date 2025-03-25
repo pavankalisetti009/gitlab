@@ -68,6 +68,42 @@ RSpec.describe Security::ScanResultPolicies::UpdateLicenseApprovalsService, feat
     end
   end
 
+  shared_examples 'saves a trimmed list of violated dependencies' do
+    it 'saves a trimmed list of violated dependencies' do
+      execute
+
+      expect(merge_request.scan_result_policy_violations.last.violation_data).to eq({
+        'context' => {
+          'pipeline_ids' => [pipeline.id],
+          'target_pipeline_ids' => [target_pipeline.id]
+        },
+        'violations' => {
+          'license_scanning' => {
+            'GNU' => dependencies.first(Security::ScanResultPolicyViolation::MAX_VIOLATIONS + 1)
+          }
+        }
+      })
+    end
+  end
+
+  shared_examples 'saves violation without pipeline id' do
+    it 'saves violation without pipeline id' do
+      execute
+
+      expect(merge_request.scan_result_policy_violations.last.violation_data).to eq({
+        'context' => {
+          'pipeline_ids' => [],
+          'target_pipeline_ids' => [target_pipeline.id]
+        },
+        'violations' => {
+          'license_scanning' => {
+            'GNU' => ['A']
+          }
+        }
+      })
+    end
+  end
+
   context 'when merge request is merged' do
     before do
       merge_request.update!(state: 'merged')
@@ -100,20 +136,21 @@ RSpec.describe Security::ScanResultPolicies::UpdateLicenseApprovalsService, feat
       end
     end
 
-    it 'saves a trimmed list of violated dependencies' do
-      execute
+    it_behaves_like 'saves a trimmed list of violated dependencies'
 
-      expect(merge_request.scan_result_policy_violations.last.violation_data).to eq({
-        'context' => {
-          'pipeline_ids' => [pipeline.id],
-          'target_pipeline_ids' => [target_pipeline.id]
-        },
-        'violations' => {
-          'license_scanning' => {
-            'GNU' => dependencies.first(Security::ScanResultPolicyViolation::MAX_VIOLATIONS + 1)
-          }
-        }
-      })
+    context 'when the licenses field is present' do
+      let(:licenses) { { denied: [{ name: 'MIT License' }] } }
+      let(:scan_result_policy_read) do
+        create(:scan_result_policy_read, project: project, license_states: license_states, licenses: licenses)
+      end
+
+      before do
+        allow_next_instance_of(Security::MergeRequestApprovalPolicies::DeniedLicensesChecker) do |checker|
+          allow(checker).to receive(:denied_licenses_with_dependencies).and_return({ 'GNU' => dependencies })
+        end
+      end
+
+      it_behaves_like 'saves a trimmed list of violated dependencies'
     end
   end
 
@@ -139,20 +176,21 @@ RSpec.describe Security::ScanResultPolicies::UpdateLicenseApprovalsService, feat
       execute
     end
 
-    it 'saves violation without pipeline id' do
-      execute
+    it_behaves_like 'saves violation without pipeline id'
 
-      expect(merge_request.scan_result_policy_violations.last.violation_data).to eq({
-        'context' => {
-          'pipeline_ids' => [],
-          'target_pipeline_ids' => [target_pipeline.id]
-        },
-        'violations' => {
-          'license_scanning' => {
-            'GNU' => ['A']
-          }
-        }
-      })
+    context 'when the licenses field is present' do
+      let(:licenses) { { denied: [{ name: 'MIT License' }] } }
+      let(:scan_result_policy_read) do
+        create(:scan_result_policy_read, project: project, license_states: license_states, licenses: licenses)
+      end
+
+      before do
+        allow_next_instance_of(Security::MergeRequestApprovalPolicies::DeniedLicensesChecker) do |checker|
+          allow(checker).to receive(:denied_licenses_with_dependencies).and_return({ 'GNU' => ['A'] })
+        end
+      end
+
+      it_behaves_like 'saves violation without pipeline id'
     end
 
     context 'when there are no violations' do
