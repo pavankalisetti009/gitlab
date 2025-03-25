@@ -5,9 +5,10 @@ module Geo
   class RegistryBulkUpdateService
     include ::Gitlab::Geo::LogHelpers
 
-    def initialize(action, registry_class)
+    def initialize(action, registry_class, params = {})
       @action = action
       @registry_class = registry_class
+      @params = params.deep_transform_keys(&:to_s)
     end
 
     def execute
@@ -25,7 +26,7 @@ module Geo
 
     private
 
-    attr_reader :action, :registry_class
+    attr_reader :action, :registry_class, :params
 
     def reverify_all
       Geo::BulkMarkVerificationPendingBatchWorker.perform_with_capacity(registry_class)
@@ -34,7 +35,7 @@ module Geo
     end
 
     def resync_all
-      Geo::BulkMarkPendingBatchWorker.perform_with_capacity(registry_class)
+      Geo::BulkMarkPendingBatchWorker.perform_with_capacity(registry_class, params)
 
       success_response(_('Registries enqueued to be resynced'))
     end

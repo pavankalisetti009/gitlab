@@ -27,6 +27,7 @@ describe('InventoryDashboard', () => {
 
   const defaultProvide = {
     groupFullPath: 'group/project',
+    newProjectPath: '/new',
   };
 
   const createComponentFactory =
@@ -84,7 +85,7 @@ describe('InventoryDashboard', () => {
       await waitForPromises();
 
       expect(findEmptyState().exists()).toBe(true);
-      expect(findEmptyState().props('title')).toBe('No projects found.');
+      expect(findEmptyState().props('title')).toBe('No projects found');
     });
   });
 

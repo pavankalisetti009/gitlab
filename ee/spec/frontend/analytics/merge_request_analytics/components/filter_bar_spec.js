@@ -288,11 +288,11 @@ describe('Filter bar', () => {
     'with a $stateKey updates the $paramKey url parameter',
     ({ stateKey, payload, paramKey, value }) => {
       beforeEach(() => {
-        commonUtils.historyPushState = jest.fn();
-        urlUtils.mergeUrlParams = jest.fn();
+        jest.spyOn(urlUtils, 'mergeUrlParams').mockImplementation();
+        jest.spyOn(commonUtils, 'historyPushState').mockImplementation();
 
         mock = new MockAdapter(axios);
-        wrapper = createComponent(storeConfig);
+        wrapper = createComponent(storeConfig());
 
         wrapper.vm.$store.dispatch('filters/setFilters', {
           ...initialFilterBarState,

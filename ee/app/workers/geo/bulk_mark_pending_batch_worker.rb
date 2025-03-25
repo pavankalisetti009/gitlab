@@ -21,29 +21,30 @@ module Geo
     loggable_arguments 0
 
     class << self
-      def perform_with_capacity(registry_class)
-        restart_redis_cursor(registry_class)
+      def perform_with_capacity(...)
+        restart_redis_cursor(...)
 
-        super(registry_class)
+        super(...)
       end
 
       private
 
-      def restart_redis_cursor(registry_class)
-        ::Geo::BulkMarkPendingService.new(registry_class).set_bulk_mark_update_cursor(INITIAL_REDIS_CURSOR)
+      def restart_redis_cursor(...)
+        ::Geo::BulkMarkPendingService.new(...).set_bulk_mark_update_cursor(INITIAL_REDIS_CURSOR)
       end
     end
 
-    def perform_work(registry_class)
-      ::Geo::BulkMarkPendingService.new(registry_class).bulk_mark_update_one_batch!
+    def perform_work(...)
+      ::Geo::BulkMarkPendingService.new(...).bulk_mark_update_one_batch!
     end
 
     # Number of remaining jobs that this worker needs to perform
     #
     # @param registry_class [String] Registry class of the data type being bulk resynced
+    # @param params [Hash] optional options to filter the records being resynced
     # @return [Integer] The number of remaining batches of registry rows that need to be marked pending
-    def remaining_work_count(registry_class)
-      @remaining_work_count ||= ::Geo::BulkMarkPendingService.new(registry_class)
+    def remaining_work_count(...)
+      @remaining_work_count ||= ::Geo::BulkMarkPendingService.new(...)
         .remaining_batches_to_bulk_mark_update(
           max_batch_count: max_running_jobs
         )

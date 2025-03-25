@@ -11,6 +11,7 @@ import {
 import { joinPaths } from '~/lib/utils/url_utility';
 import { s__ } from '~/locale';
 import { SORT_OPTIONS, DEFAULT_SORT } from '~/access_tokens/constants';
+import { serializeParams, update2WeekFromNow } from '../utils';
 
 /**
  * @typedef {{type: string, value: {data: string, operator: string}}} Filter
@@ -54,6 +55,8 @@ export const useAccessTokens = defineStore('accessTokens', {
       urlRotate: '',
       urlShow: '',
       sorting: DEFAULT_SORT,
+      /** @type{Array<{title: string, tooltipTitle: string, filters: Filters, value: number}>} */
+      statistics: [],
     };
   },
   actions: {
@@ -66,6 +69,7 @@ export const useAccessTokens = defineStore('accessTokens', {
      */
     async createToken({ name, description, expiresAt, scopes }) {
       this.alert?.dismiss();
+      this.alert = null;
       this.busy = true;
       try {
         const url = Api.buildUrl(this.urlCreate.replace(':id', this.id));
@@ -92,9 +96,38 @@ export const useAccessTokens = defineStore('accessTokens', {
         this.busy = false;
       }
     },
+    async fetchStatistics() {
+      try {
+        const updatedFilters = update2WeekFromNow();
+        this.statistics = await Promise.all(
+          updatedFilters.map(async (stat) => {
+            const params = serializeParams(stat.filters);
+            const { total } = await fetchTokens({
+              url: this.urlShow,
+              id: this.id,
+              params,
+              sort: this.sort,
+            });
+            return {
+              title: stat.title,
+              tooltipTitle: stat.tooltipTitle,
+              filters: stat.filters,
+              value: total,
+            };
+          }),
+        );
+      } catch {
+        if (!this.alert) {
+          this.alert = createAlert({
+            message: s__('AccessTokens|Failed to fetch statistics.'),
+          });
+        }
+      }
+    },
     async fetchTokens({ clearAlert } = { clearAlert: true }) {
       if (clearAlert) {
         this.alert?.dismiss();
+        this.alert = null;
       }
       this.busy = true;
       try {
@@ -108,6 +141,7 @@ export const useAccessTokens = defineStore('accessTokens', {
         this.tokens = convertObjectPropsToCamelCase(data, { deep: true });
         this.perPage = perPage;
         this.total = total;
+        await this.fetchStatistics();
       } catch {
         this.alert = createAlert({
           message: s__('AccessTokens|An error occurred while fetching the tokens.'),
@@ -121,6 +155,7 @@ export const useAccessTokens = defineStore('accessTokens', {
      */
     async revokeToken(tokenId) {
       this.alert?.dismiss();
+      this.alert = null;
       this.busy = true;
       this.showCreateForm = false;
       try {
@@ -149,6 +184,7 @@ export const useAccessTokens = defineStore('accessTokens', {
      */
     async rotateToken(tokenId, expiresAt) {
       this.alert?.dismiss();
+      this.alert = null;
       this.busy = true;
       this.showCreateForm = false;
       try {
@@ -223,22 +259,7 @@ export const useAccessTokens = defineStore('accessTokens', {
   },
   getters: {
     params() {
-      /** @type {Object<string, number|string>} */
-      const newParams = { page: this.page };
-
-      this.filters?.forEach((token) => {
-        if (typeof token === 'string') {
-          newParams.search = token;
-        } else if (['created', 'expires', 'last_used'].includes(token.type)) {
-          const isBefore = token.value.operator === '<';
-          const key = `${token.type}${isBefore ? '_before' : '_after'}`;
-          newParams[key] = token.value.data;
-        } else {
-          newParams[token.type] = token.value.data;
-        }
-      });
-
-      return newParams;
+      return serializeParams(this.filters, this.page);
     },
     sort() {
       const { value, isAsc } = this.sorting;
