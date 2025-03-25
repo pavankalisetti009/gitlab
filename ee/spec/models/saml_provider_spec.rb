@@ -151,12 +151,38 @@ RSpec.describe SamlProvider, feature_category: :system_access do
       expect(settings[:idp_cert_fingerprint]).to eq saml_provider.certificate_fingerprint
     end
 
+    it 'includes the fingerprint algorithm' do
+      expect(settings[:idp_cert_fingerprint_algorithm]).to eq 'http://www.w3.org/2000/09/xmldsig#sha1'
+    end
+
     it 'includes SSO URL' do
       expect(settings[:idp_sso_target_url]).to eq saml_provider.sso_url
     end
 
     it 'includes default attribute statements' do
       expect(settings[:attribute_statements]).to eq(::Gitlab::Auth::Saml::Config.default_attribute_statements)
+    end
+
+    it 'detects the SHA256 algorithm with a SHA256 fingerprint' do
+      saml_provider = build(
+        :saml_provider,
+        group: group,
+        certificate_fingerprint:
+          '73:2d:28:c2:d2:d0:34:9F:F8:9a:9c:74:23:BF:0a:cb:66:75:78:9b:01:4D:1F:7D:60:8f:ad:47:a2:30:d7:4a'
+      )
+      settings = saml_provider.settings
+
+      expect(settings[:idp_cert_fingerprint_algorithm]).to eq 'http://www.w3.org/2001/04/xmlenc#sha256'
+    end
+
+    context 'when explicit_group_saml_fingerprint_algorithm feature flag is disabled' do
+      before do
+        stub_feature_flags(explicit_group_saml_fingerprint_algorithm: false)
+      end
+
+      it 'does not include the fingerprint algorithm' do
+        expect(settings[:idp_cert_fingerprint_algorithm]).to be_nil
+      end
     end
 
     context 'when saml_message_max_byte_size present in gitlab settings ' do
