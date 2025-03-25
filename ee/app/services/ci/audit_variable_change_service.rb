@@ -12,7 +12,8 @@ module Ci
 
     SECURITY_COLUMNS = {
       protected: 'variable protection',
-      masked: 'variable masking'
+      masked: 'variable masking',
+      environment_scope: 'environment scope'
     }.freeze
 
     def execute
