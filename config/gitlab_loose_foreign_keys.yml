@@ -478,6 +478,10 @@ pages_deployments:
   - table: p_ci_builds
     column: ci_build_id
     on_delete: async_nullify
+pool_repositories:
+  - table: projects
+    column: source_project_id
+    on_delete: async_nullify
 project_authorizations:
   - table: users
     column: user_id
