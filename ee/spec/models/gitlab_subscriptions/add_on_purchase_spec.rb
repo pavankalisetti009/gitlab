@@ -769,6 +769,22 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
     end
   end
 
+  describe '.seat_assignable?' do
+    subject { add_on_purchase.seat_assignable? }
+
+    context 'when the associated add-on is seat assignable' do
+      let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise) }
+
+      it { is_expected.to eq(true) }
+    end
+
+    context 'when the associated add-on is not seat assignable' do
+      let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_nano) }
+
+      it { is_expected.to eq(false) }
+    end
+  end
+
   describe '#active?' do
     let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase) }
 
