@@ -74,7 +74,7 @@ RSpec.describe GitlabSubscriptions::Trials, feature_category: :subscription_mana
       Rails.cache.write("namespaces:eligible_trials:#{namespace.id}", trial_types)
     end
 
-    subject { described_class.namespace_eligible?(namespace, build(:user)) }
+    subject { described_class.namespace_eligible?(namespace) }
 
     context 'with a plan that is eligible for a trial' do
       where(plan: ::Plan::PLANS_ELIGIBLE_FOR_TRIAL)
@@ -100,34 +100,6 @@ RSpec.describe GitlabSubscriptions::Trials, feature_category: :subscription_mana
       let(:trial_types) { ['gitlab_duo_pro'] }
 
       it { is_expected.to be(false) }
-    end
-
-    context 'when use_ssot_for_ultimate_trial_eligibility is disabled' do
-      before do
-        stub_feature_flags(use_ssot_for_ultimate_trial_eligibility: false)
-      end
-
-      it { is_expected.to be(true) }
-
-      context 'with add_on concerns' do
-        let_it_be(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :gitlab_duo_pro) }
-
-        context 'when eligible' do
-          before do
-            create(:gitlab_subscription_add_on_purchase, add_on: duo_pro_add_on, namespace: namespace)
-          end
-
-          it { is_expected.to be(true) }
-        end
-
-        context 'when ineligible' do
-          before do
-            create(:gitlab_subscription_add_on_purchase, :active_trial, add_on: duo_pro_add_on, namespace: namespace)
-          end
-
-          it { is_expected.to be false }
-        end
-      end
     end
   end
 
@@ -163,7 +135,7 @@ RSpec.describe GitlabSubscriptions::Trials, feature_category: :subscription_mana
       Rails.cache.write("namespaces:eligible_trials:#{namespace.id}", trial_types)
     end
 
-    subject(:execute) { described_class.namespace_add_on_eligible?(namespace, build(:user)) }
+    subject(:execute) { described_class.namespace_add_on_eligible?(namespace) }
 
     it { is_expected.to be(true) }
 
@@ -171,30 +143,6 @@ RSpec.describe GitlabSubscriptions::Trials, feature_category: :subscription_mana
       let(:trial_types) { ['gitlab_duo_pro'] }
 
       it { is_expected.to be(false) }
-    end
-
-    context 'when use_ssot_for_ultimate_trial_eligibility is disabled' do
-      let_it_be(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :gitlab_duo_pro) }
-
-      before do
-        stub_feature_flags(use_ssot_for_ultimate_trial_eligibility: false)
-      end
-
-      context 'when eligible' do
-        before do
-          create(:gitlab_subscription_add_on_purchase, add_on: duo_pro_add_on, namespace: namespace)
-        end
-
-        it { is_expected.to be(true) }
-      end
-
-      context 'when ineligible' do
-        before do
-          create(:gitlab_subscription_add_on_purchase, :active_trial, add_on: duo_pro_add_on, namespace: namespace)
-        end
-
-        it { is_expected.to be(false) }
-      end
     end
   end
 
@@ -215,30 +163,6 @@ RSpec.describe GitlabSubscriptions::Trials, feature_category: :subscription_mana
       let(:trial_types) { ['gitlab_duo_pro'] }
 
       it { is_expected.to be_empty }
-    end
-
-    context 'when use_ssot_for_ultimate_trial_eligibility is disabled' do
-      let_it_be(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :gitlab_duo_pro) }
-
-      before do
-        stub_feature_flags(use_ssot_for_ultimate_trial_eligibility: false)
-      end
-
-      context 'when eligible' do
-        before do
-          create(:gitlab_subscription_add_on_purchase, add_on: duo_pro_add_on, namespace: namespace)
-        end
-
-        it { is_expected.to eq([namespace]) }
-      end
-
-      context 'when ineligible' do
-        before do
-          create(:gitlab_subscription_add_on_purchase, :active_trial, add_on: duo_pro_add_on, namespace: namespace)
-        end
-
-        it { is_expected.to be_empty }
-      end
     end
   end
 

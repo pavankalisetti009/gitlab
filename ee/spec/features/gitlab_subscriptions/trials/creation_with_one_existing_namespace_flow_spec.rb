@@ -176,24 +176,6 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
     end
   end
 
-  context 'when use_ssot_for_ultimate_trial_eligibility is disabled' do
-    context 'when creating lead and applying trial is successful' do
-      it 'fills out form, submits and lands on the duo page' do
-        stub_feature_flags(use_ssot_for_ultimate_trial_eligibility: false)
-
-        sign_in(user)
-
-        visit new_trial_path
-
-        fill_in_company_information
-
-        submit_single_namespace_trial_company_form(with_trial: true)
-
-        expect_to_be_on_gitlab_duo_page
-      end
-    end
-  end
-
   def submit_single_namespace_trial_company_form(**kwargs)
     submit_company_information_form(**kwargs, button_text: 'Activate my trial')
   end
