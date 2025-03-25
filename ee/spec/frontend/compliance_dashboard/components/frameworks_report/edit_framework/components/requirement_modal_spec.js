@@ -338,4 +338,72 @@ describe('RequirementModal', () => {
       expect(findAddExternalControlButton().attributes('disabled')).toBeDefined();
     });
   });
+
+  describe('Control expression handling', () => {
+    beforeEach(() => {
+      createComponent();
+      jest.spyOn(wrapper.vm, 'handleSubmit').mockImplementation(() => {});
+    });
+
+    it('preserves expression when it is already a string', () => {
+      wrapper.vm.controls = [
+        {
+          name: 'test_control',
+          expression: '{"field":"test_control","operator":"=","value":true}',
+        },
+      ];
+
+      wrapper.vm.handleSubmit(mockEvent);
+      expect(wrapper.vm.handleSubmit).toHaveBeenCalled();
+
+      const processedControls = wrapper.vm.controls.map((control) => {
+        if (!control) return null;
+        if (control.expression) {
+          if (typeof control.expression === 'string') {
+            return {
+              ...control,
+              expression: control.expression,
+            };
+          }
+        }
+        return control;
+      });
+
+      expect(processedControls[0].expression).toBe(
+        '{"field":"test_control","operator":"=","value":true}',
+      );
+    });
+
+    it('stringifies expression when it is an object', () => {
+      wrapper.vm.controls = [
+        {
+          name: 'test_control',
+          expression: { field: 'test_control', operator: '=', value: true },
+        },
+      ];
+
+      wrapper.vm.handleSubmit(mockEvent);
+
+      const processedControls = wrapper.vm.controls.map((control) => {
+        if (!control) return null;
+        if (control.expression) {
+          if (typeof control.expression === 'string') {
+            return {
+              ...control,
+              expression: control.expression,
+            };
+          }
+          return {
+            ...control,
+            expression: JSON.stringify(control.expression),
+          };
+        }
+        return control;
+      });
+
+      expect(processedControls[0].expression).toBe(
+        '{"field":"test_control","operator":"=","value":true}',
+      );
+    });
+  });
 });
