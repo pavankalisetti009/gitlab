@@ -96,8 +96,6 @@ module EE
       jsonb_accessor :cluster_agents,
         receptive_cluster_agents_enabled: [:boolean, { default: false }]
 
-      validates :cluster_agents, json_schema: { filename: 'application_setting_cluster_agents' }
-
       jsonb_accessor :user_seat_management,
         seat_control: [:integer, { default: SEAT_CONTROL_OFF }]
 
