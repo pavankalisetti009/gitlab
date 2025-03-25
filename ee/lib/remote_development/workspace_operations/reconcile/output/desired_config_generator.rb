@@ -63,7 +63,7 @@ module RemoteDevelopment
               name: workspace_inventory_name,
               namespace: workspace.namespace,
               labels: labels,
-              agent_annotations: agent_annotations
+              annotations: workspace_inventory_annotations
             )
 
             desired_config.append(*resources_from_devfile_parser)
@@ -94,7 +94,7 @@ module RemoteDevelopment
               desired_config: desired_config,
               name: secrets_inventory_name,
               labels: labels,
-              agent_annotations: agent_annotations,
+              annotations: workspace_inventory_annotations,
               namespace: workspace.namespace
             )
 
@@ -195,14 +195,14 @@ module RemoteDevelopment
           # @param [String] name
           # @param [String] namespace
           # @param [Hash<String, String>] labels
-          # @param [Hash<String, String>] agent_annotations
+          # @param [Hash<String, String>] annotations
           # @return [void]
           def self.append_inventory_config_map(
             desired_config:,
             name:,
             namespace:,
             labels:,
-            agent_annotations:
+            annotations:
           )
             extra_labels = { "cli-utils.sigs.k8s.io/inventory-id": name }
 
@@ -213,7 +213,7 @@ module RemoteDevelopment
                 name: name,
                 namespace: namespace,
                 labels: labels.merge(extra_labels),
-                annotations: agent_annotations
+                annotations: annotations
               }
             }
 
