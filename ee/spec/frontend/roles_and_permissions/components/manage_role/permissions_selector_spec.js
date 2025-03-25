@@ -4,12 +4,12 @@ import VueApollo from 'vue-apollo';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import PermissionsSelector, {
   FIELDS,
-} from 'ee/roles_and_permissions/components/permissions_selector.vue';
+} from 'ee/roles_and_permissions/components/manage_role/permissions_selector.vue';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import { stubComponent } from 'helpers/stub_component';
 import waitForPromises from 'helpers/wait_for_promises';
 import memberRolePermissionsQuery from 'ee/roles_and_permissions/graphql/member_role_permissions.query.graphql';
-import { mockPermissionsResponse, mockDefaultPermissions } from '../mock_data';
+import { mockPermissionsResponse, mockDefaultPermissions } from '../../mock_data';
 
 Vue.use(VueApollo);
 
