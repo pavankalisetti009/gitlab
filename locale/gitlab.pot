@@ -6302,6 +6302,9 @@ msgstr ""
 msgid "AmazonQ|Amazon Q will be turned off for all groups, subgroups, and projects, even if they have previously enabled it."
 msgstr ""
 
+msgid "AmazonQ|An error occurred. Please try again later."
+msgstr ""
+
 msgid "AmazonQ|An unexpected error occurred while disconnecting Amazon Q. Please see the browser console log for more details."
 msgstr ""
 
@@ -6312,6 +6315,9 @@ msgid "AmazonQ|Apply changes to this merge request based on the comments (Beta)"
 msgstr ""
 
 msgid "AmazonQ|Are you sure? Removing the ARN will disconnect Amazon Q from GitLab and all related features will stop working."
+msgstr ""
+
+msgid "AmazonQ|Ask GitLab Duo with Amazon Q to suggest a solution for this issue"
 msgstr ""
 
 msgid "AmazonQ|Audience"
@@ -6465,6 +6471,9 @@ msgid "AmazonQ|Sorry, I'm not able to complete the request at this moment. Pleas
 msgstr ""
 
 msgid "AmazonQ|Status"
+msgstr ""
+
+msgid "AmazonQ|Suggest a fix"
 msgstr ""
 
 msgid "AmazonQ|This field is required"
