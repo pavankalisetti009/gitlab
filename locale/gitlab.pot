@@ -36,9 +36,6 @@ msgstr ""
 msgid " This action will also delete:"
 msgstr ""
 
-msgid " Try to %{action} this file again."
-msgstr ""
-
 msgid " and "
 msgstr ""
 
