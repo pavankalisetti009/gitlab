@@ -19,7 +19,9 @@ module EE
       end
 
       def entity_id
-        entity.id
+        return if entity.is_a?(::Gitlab::Audit::NullEntity)
+
+        entity.id if entity.respond_to?(:id)
       end
 
       def entity_type

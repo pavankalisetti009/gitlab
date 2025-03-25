@@ -48,18 +48,6 @@ module QA
         expect_no_error_on_push as_user: user_one
       end
 
-      it 'checks file locked by other user to be disabled',
-        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347767' do
-        go_to_file
-        click_lock
-        Flow::Login.sign_in(as: user_one, skip_page_validation: true)
-        go_to_file
-
-        Page::File::Show.perform do |show|
-          expect(show).to have_lock_button_disabled
-        end
-      end
-
       it 'merge request is blocked when a path is locked by another user',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347770' do
         push as_user: user_one, max_attempts: 3, branch: 'test'

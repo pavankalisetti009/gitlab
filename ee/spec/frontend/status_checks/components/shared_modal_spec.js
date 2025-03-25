@@ -122,60 +122,64 @@ describe('Shared modal', () => {
 
   describe('Submission', () => {
     describe.each`
-      given          | expected
-      ${undefined}   | ${EMPTY_STATUS_CHECK}
-      ${statusCheck} | ${statusCheck}
-    `('when the $given status check is passed', ({ given, expected }) => {
-      beforeEach(() => {
-        createWrapper({ statusCheck: given });
-      });
-
-      it('submits the values and hides the modal', async () => {
-        await findModal().vm.$emit('ok', { preventDefault: () => null });
-        await findForm().vm.$emit('submit', formData);
-        await waitForPromises();
-
-        expect(submitMock).toHaveBeenCalled();
-        expect(action).toHaveBeenCalledWith({
-          externalUrl: formData.url,
-          id: expected?.id,
-          name: formData.name,
-          protectedBranchIds: formData.branches.map(({ id }) => id),
-          ...(given?.hmac ? {} : { sharedSecret: formData.sharedSecret }),
+      given          | formDataPayload                        | expected              | expectedPayload
+      ${undefined}   | ${formData}                            | ${EMPTY_STATUS_CHECK} | ${{ sharedSecret: formData.sharedSecret }}
+      ${statusCheck} | ${formData}                            | ${statusCheck}        | ${{}}
+      ${statusCheck} | ${{ ...formData, overrideHmac: true }} | ${statusCheck}        | ${{ sharedSecret: formData.sharedSecret }}
+    `(
+      'when the $given status check is passed',
+      ({ given, formDataPayload, expected, expectedPayload }) => {
+        beforeEach(() => {
+          createWrapper({ statusCheck: given });
         });
 
-        expect(hideMock).toHaveBeenCalled();
-      });
+        it('submits the values and hides the modal', async () => {
+          await findModal().vm.$emit('ok', { preventDefault: () => null });
+          await findForm().vm.$emit('submit', formDataPayload);
+          await waitForPromises();
 
-      it('submits the values, the API fails and does not hide the modal', async () => {
-        const message = ['Name has already been taken'];
+          expect(submitMock).toHaveBeenCalled();
+          expect(action).toHaveBeenCalledWith({
+            externalUrl: formData.url,
+            id: expected?.id,
+            name: formData.name,
+            protectedBranchIds: formData.branches.map(({ id }) => id),
+            ...expectedPayload,
+          });
 
-        action.mockRejectedValueOnce({
-          response: { data: { message } },
+          expect(hideMock).toHaveBeenCalled();
         });
 
-        await findModal().vm.$emit('ok', { preventDefault: () => null });
-        await findForm().vm.$emit('submit', formData);
-        await waitForPromises();
+        it('submits the values, the API fails and does not hide the modal', async () => {
+          const message = ['Name has already been taken'];
 
-        expect(submitMock).toHaveBeenCalled();
+          action.mockRejectedValueOnce({
+            response: { data: { message } },
+          });
 
-        expect(action).toHaveBeenCalledWith({
-          externalUrl: formData.url,
-          id: expected?.id,
-          name: formData.name,
-          ...(given?.hmac ? {} : { sharedSecret: formData.sharedSecret }),
-          protectedBranchIds: formData.branches.map(({ id }) => id),
+          await findModal().vm.$emit('ok', { preventDefault: () => null });
+          await findForm().vm.$emit('submit', formDataPayload);
+          await waitForPromises();
+
+          expect(submitMock).toHaveBeenCalled();
+
+          expect(action).toHaveBeenCalledWith({
+            externalUrl: formData.url,
+            id: expected?.id,
+            name: formData.name,
+            protectedBranchIds: formData.branches.map(({ id }) => id),
+            ...expectedPayload,
+          });
+
+          expect(hideMock).not.toHaveBeenCalled();
+
+          expect(findForm().props()).toMatchObject({
+            projectId,
+            serverValidationErrors: message,
+            statusCheck: expected,
+          });
         });
-
-        expect(hideMock).not.toHaveBeenCalled();
-
-        expect(findForm().props()).toMatchObject({
-          projectId,
-          serverValidationErrors: message,
-          statusCheck: expected,
-        });
-      });
-    });
+      },
+    );
   });
 });

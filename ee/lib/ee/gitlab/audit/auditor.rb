@@ -39,6 +39,41 @@ module EE
 
           scope.respond_to?(:licensed_feature_available?) && scope.licensed_feature_available?(:audit_events)
         end
+
+        override :log_events_and_stream
+        def log_events_and_stream(events)
+          log_authentication_event
+          saved_events = log_to_database(events)
+          new_audit_events = log_to_new_tables(saved_events, name)
+
+          events_to_stream = determine_events_to_stream(new_audit_events, saved_events, events)
+          log_to_file_and_stream(events_to_stream)
+        end
+
+        private
+
+        # Determines which events should be streamed based on a priority order:
+        # 1. New table events (if feature flag enabled for the entity)
+        # 2. Original saved events (fallback if no feature-flagged new events)
+        # 3. Original input events (fallback if nothing was saved)
+        def determine_events_to_stream(new_audit_events, saved_events, original_events)
+          if new_audit_events.present?
+            filtered_new_events = filter_events_by_feature_flag(new_audit_events)
+            filtered_new_events.presence || saved_events
+          elsif saved_events.present?
+            saved_events
+          else
+            original_events
+          end
+        end
+
+        # Filters events based on the 'stream_audit_events_from_new_tables' feature flag
+        # This controls which entities can use the new audit event tables
+        def filter_events_by_feature_flag(events)
+          events.select do |event|
+            ::Gitlab::Audit::FeatureFlags.stream_from_new_tables?(event.entity)
+          end
+        end
       end
     end
   end

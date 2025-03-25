@@ -1,5 +1,5 @@
 <script>
-import { GlAlert, GlFormGroup, GlFormInput } from '@gitlab/ui';
+import { GlAlert, GlButton, GlFormGroup, GlFormInput, GlTooltipDirective } from '@gitlab/ui';
 import { isEqual, isNumber } from 'lodash';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import ProtectedBranchesSelector from 'ee/vue_shared/components/branches_selector/protected_branches_selector.vue';
@@ -9,11 +9,50 @@ import { ALL_BRANCHES } from 'ee/vue_shared/components/branches_selector/constan
 import { EMPTY_STATUS_CHECK, NAME_TAKEN_SERVER_ERROR, URL_TAKEN_SERVER_ERROR } from '../constants';
 
 export default {
+  i18n: {
+    form: {
+      addStatusChecks: s__('StatusCheck|API to check'),
+      statusChecks: s__('StatusCheck|Status to check'),
+      statusChecksDescription: s__('StatusCheck|Invoke an external API as part of the pipeline.'),
+      nameLabel: s__('StatusCheck|Service name'),
+      nameDescription: s__('StatusCheck|Examples: QA, Security.'),
+      protectedBranchLabel: s__('StatusCheck|Target branch'),
+      protectedBranchDescription: s__(
+        'StatusCheck|Apply this status check to all branches or a specific protected branch.',
+      ),
+      sharedSecretLabel: s__('StatusCheck|HMAC Shared Secret'),
+      sharedSecretDescription: s__(
+        'StatusCheck|Provide a shared secret. This secret is used to authenticate requests for a status check using HMAC.',
+      ),
+      sharedSecretExistingDescription: s__(
+        'StatusCheck|A secret is currently configured for this status check.',
+      ),
+      overrideWarningMessage: s__(
+        'StatusChecks|Enter a new value to overwrite the current secret.',
+      ),
+      editSecret: s__('StatusChecks|Edit secret'),
+    },
+    validations: {
+      branchesRequired: __('Select a valid target branch.'),
+      branchesApiFailure: __('Unable to fetch branches list, please close the form and try again'),
+      nameTaken: __('Name is already taken.'),
+      nameMissing: __('Please provide a name.'),
+      urlTaken: s__(
+        'StatusCheck|The specified external API is already in use by another status check.',
+      ),
+      invalidUrl: __('Please provide a valid URL.'),
+      invalidSharedSecret: __('Please provide a shared secret.'),
+    },
+  },
   components: {
     ProtectedBranchesSelector,
     GlAlert,
+    GlButton,
     GlFormGroup,
     GlFormInput,
+  },
+  directives: {
+    GlTooltip: GlTooltipDirective,
   },
   props: {
     projectId: {
@@ -47,11 +86,14 @@ export default {
       sharedSecret,
       showValidation: false,
       url,
+      overrideHmac: false,
     };
   },
   computed: {
     isValid() {
-      return this.isValidName && this.isValidURL && this.isValidBranches;
+      return (
+        this.isValidName && this.isValidURL && this.isValidBranches && this.isValidSharedSecret
+      );
     },
     isValidBranches() {
       return this.branches.every((branch) => isEqual(branch, ALL_BRANCHES) || isNumber(branch?.id));
@@ -61,6 +103,12 @@ export default {
     },
     isValidURL() {
       return Boolean(this.url) && isValidURL(this.url);
+    },
+    isValidSharedSecret() {
+      return !this.overrideHmac || Boolean(this.sharedSecret);
+    },
+    hmacState() {
+      return !this.showValidation || this.isValidSharedSecret;
     },
     branchesState() {
       return !this.showValidation || this.isValidBranches;
@@ -92,12 +140,27 @@ export default {
       return this.$options.i18n.validations.invalidUrl;
     },
     sharedSecretDescription() {
-      return this.statusCheck.hmac
-        ? this.$options.i18n.form.sharedSecretExistingDescription
-        : this.$options.i18n.form.sharedSecretDescription;
+      if (this.overrideHmac) {
+        return this.$options.i18n.form.overrideWarningMessage;
+      }
+
+      if (this.hmacEnabled) {
+        return this.$options.i18n.form.sharedSecretExistingDescription;
+      }
+
+      return this.$options.i18n.form.sharedSecretDescription;
     },
     hmacEnabled() {
       return this.statusCheck.hmac;
+    },
+    hmacFieldDisabled() {
+      return this.hmacEnabled && !this.overrideHmac;
+    },
+    hmacFieldPlaceholder() {
+      return this.hmacFieldDisabled ? '••••••' : '';
+    },
+    overrideTooltipTitle() {
+      return this.overrideHmac ? '' : this.$options.i18n.form.overrideWarningMessage;
     },
   },
   watch: {
@@ -110,9 +173,9 @@ export default {
       this.showValidation = true;
 
       if (this.isValid) {
-        const { branches, name, url, sharedSecret } = this;
+        const { branches, name, url, sharedSecret, overrideHmac } = this;
 
-        this.$emit('submit', { branches, name, url, sharedSecret });
+        this.$emit('submit', { branches, name, url, sharedSecret, overrideHmac });
       }
     },
     setBranchApiError({ hasErrored, error }) {
@@ -122,35 +185,8 @@ export default {
 
       this.branchesApiFailed = hasErrored;
     },
-  },
-  i18n: {
-    form: {
-      addStatusChecks: s__('StatusCheck|API to check'),
-      statusChecks: s__('StatusCheck|Status to check'),
-      statusChecksDescription: s__(
-        'StatusCheck|Invoke an external API as part of the pipeline process.',
-      ),
-      nameLabel: s__('StatusCheck|Service name'),
-      nameDescription: s__('StatusCheck|Examples: QA, Security.'),
-      protectedBranchLabel: s__('StatusCheck|Target branch'),
-      protectedBranchDescription: s__(
-        'StatusCheck|Apply this status check to all branches or a specific protected branch.',
-      ),
-      sharedSecretLabel: s__('StatusCheck|HMAC Shared Secret'),
-      sharedSecretDescription: s__(
-        'StatusCheck|Provide a shared secret to be used when sending a request for a status check to authenticate request using HMAC.',
-      ),
-      sharedSecretExistingDescription: s__(
-        'StatusCheck|There is currently a secret configured for this status check.',
-      ),
-    },
-    validations: {
-      branchesRequired: __('Please select a valid target branch.'),
-      branchesApiFailure: __('Unable to fetch branches list, please close the form and try again'),
-      nameTaken: __('Name is already taken.'),
-      nameMissing: __('Please provide a name.'),
-      urlTaken: s__('StatusCheck|External API is already in use by another status check.'),
-      invalidUrl: __('Please provide a valid URL.'),
+    enableOverrideHmac() {
+      this.overrideHmac = true;
     },
   },
 };
@@ -202,19 +238,40 @@ export default {
           @apiError="setBranchApiError"
         />
       </gl-form-group>
-      <gl-form-group
-        :disabled="hmacEnabled"
-        :label="$options.i18n.form.sharedSecretLabel"
-        :description="sharedSecretDescription"
-        data-testid="shared-secret"
-      >
-        <gl-form-input
-          v-model="sharedSecret"
-          autocomplete="off"
-          name="shared-secret"
-          type="password"
-        />
-      </gl-form-group>
+      <div>
+        <div class="gl-flex gl-items-center gl-gap-2">
+          <label class="gl-mb-0">{{ $options.i18n.form.sharedSecretLabel }}</label>
+          <gl-button
+            v-if="hmacEnabled"
+            v-gl-tooltip.hover.top
+            :disabled="overrideHmac"
+            :title="overrideTooltipTitle"
+            data-testid="override-hmac"
+            category="primary"
+            variant="link"
+            @click="enableOverrideHmac"
+          >
+            {{ $options.i18n.form.editSecret }}
+          </gl-button>
+        </div>
+        <gl-form-group
+          :class="{ 'gl-mb-3': hmacEnabled }"
+          :disabled="hmacFieldDisabled"
+          :state="hmacState"
+          :description="sharedSecretDescription"
+          :invalid-feedback="$options.i18n.validations.invalidSharedSecret"
+          data-testid="shared-secret"
+        >
+          <gl-form-input
+            v-model="sharedSecret"
+            :state="hmacState"
+            :placeholder="hmacFieldPlaceholder"
+            autocomplete="off"
+            name="shared-secret"
+            type="password"
+          />
+        </gl-form-group>
+      </div>
     </form>
   </div>
 </template>
