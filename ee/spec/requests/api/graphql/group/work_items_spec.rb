@@ -245,12 +245,11 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
             post_graphql(query, current_user: current_user)
           end
 
-          it 'does not return status data' do
-            expect(work_items).to include(
+          it 'does not return status widget' do
+            expect(work_items).not_to include(
               'widgets' => include(
                 hash_including(
-                  'type' => 'STATUS',
-                  'status' => nil
+                  'type' => 'STATUS'
                 )
               )
             )

@@ -436,13 +436,11 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
             post_graphql(query, current_user: current_user)
           end
 
-          it 'does not return status data' do
-            expect(work_item_data).to include(
-              'id' => work_item.to_gid.to_s,
+          it 'does not return status widget' do
+            expect(work_item_data).not_to include(
               'widgets' => include(
                 hash_including(
-                  'type' => 'STATUS',
-                  'status' => nil
+                  'type' => 'STATUS'
                 )
               )
             )
