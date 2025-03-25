@@ -44186,6 +44186,9 @@ msgstr ""
 msgid "Please provide a name."
 msgstr ""
 
+msgid "Please provide a shared secret."
+msgstr ""
+
 msgid "Please provide a valid URL."
 msgstr ""
 
@@ -44214,9 +44217,6 @@ msgid "Please select a Jira project"
 msgstr ""
 
 msgid "Please select a valid target branch"
-msgstr ""
-
-msgid "Please select a valid target branch."
 msgstr ""
 
 msgid "Please select and add a member"
@@ -54678,6 +54678,9 @@ msgstr ""
 msgid "Select a template repository"
 msgstr ""
 
+msgid "Select a valid target branch."
+msgstr ""
+
 msgid "Select action"
 msgstr ""
 
@@ -57132,6 +57135,12 @@ msgstr ""
 msgid "StatusChecks|API to check"
 msgstr ""
 
+msgid "StatusChecks|Edit secret"
+msgstr ""
+
+msgid "StatusChecks|Enter a new value to overwrite the current secret."
+msgstr ""
+
 msgid "StatusChecks|Examples: QA, Security, Performance."
 msgstr ""
 
@@ -57157,6 +57166,9 @@ msgid "StatusCheck|%{failed} failed"
 msgstr ""
 
 msgid "StatusCheck|%{pending} pending"
+msgstr ""
+
+msgid "StatusCheck|A secret is currently configured for this status check."
 msgstr ""
 
 msgid "StatusCheck|API to check"
@@ -57186,9 +57198,6 @@ msgstr ""
 msgid "StatusCheck|Examples: QA, Security."
 msgstr ""
 
-msgid "StatusCheck|External API is already in use by another status check."
-msgstr ""
-
 msgid "StatusCheck|External API is already in use."
 msgstr ""
 
@@ -57198,7 +57207,7 @@ msgstr ""
 msgid "StatusCheck|HMAC Shared Secret"
 msgstr ""
 
-msgid "StatusCheck|Invoke an external API as part of the pipeline process."
+msgid "StatusCheck|Invoke an external API as part of the pipeline."
 msgstr ""
 
 msgid "StatusCheck|Name already exists."
@@ -57213,7 +57222,7 @@ msgstr ""
 msgid "StatusCheck|Please provide a valid URL."
 msgstr ""
 
-msgid "StatusCheck|Provide a shared secret to be used when sending a request for a status check to authenticate request using HMAC."
+msgid "StatusCheck|Provide a shared secret. This secret is used to authenticate requests for a status check using HMAC."
 msgstr ""
 
 msgid "StatusCheck|Service name"
@@ -57240,7 +57249,7 @@ msgstr ""
 msgid "StatusCheck|Target branch"
 msgstr ""
 
-msgid "StatusCheck|There is currently a secret configured for this status check."
+msgid "StatusCheck|The specified external API is already in use by another status check."
 msgstr ""
 
 msgid "StatusCheck|URL parameters are hidden for security reasons. For details of URL parameters, see the configuration for the status check service."
