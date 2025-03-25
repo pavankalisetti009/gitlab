@@ -17,6 +17,7 @@ additional_properties:
     description: size of the suggestion
 identifiers:
 - user
+- project
 product_group: code_creation
 milestone: '17.1'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/153881
