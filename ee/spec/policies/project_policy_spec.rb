@@ -4851,4 +4851,39 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
     end
   end
+
+  describe 'access_description_composer' do
+    let(:authorizer) { instance_double(::Gitlab::Llm::FeatureAuthorizer) }
+    let(:current_user) { can_read_mr ? reporter : nil }
+
+    where(:duo_features_enabled, :feature_flag_enabled, :llm_authorized, :can_read_mr, :allowed_to_use, :expected_result) do
+      true  | true  | true  | true  | true  | be_allowed(:access_description_composer)
+      true  | true  | true  | false | true  | be_disallowed(:access_description_composer)
+      true  | false | true  | true  | true  | be_disallowed(:access_description_composer)
+      true  | true  | false | true  | true  | be_disallowed(:access_description_composer)
+      false | true  | true  | true  | true  | be_disallowed(:access_description_composer)
+      true  | true  | true  | true  | false | be_disallowed(:access_description_composer)
+    end
+
+    with_them do
+      before do
+        allow(project)
+          .to receive_message_chain(:project_setting, :duo_features_enabled?)
+          .and_return(duo_features_enabled)
+
+        stub_feature_flags(mr_description_composer: feature_flag_enabled)
+
+        allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:new).and_return(authorizer)
+        allow(authorizer).to receive(:allowed?).and_return(llm_authorized)
+
+        if current_user
+          allow(current_user).to receive(:allowed_to_use?)
+              .with(:description_composer, licensed_feature: :description_composer)
+              .and_return(allowed_to_use)
+        end
+      end
+
+      it { is_expected.to expected_result }
+    end
+  end
 end

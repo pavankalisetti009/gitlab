@@ -3,16 +3,21 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Llm::Anthropic::Templates::DescriptionComposer, feature_category: :code_review_workflow do
-  let_it_be(:merge_request) { create(:merge_request) }
+  let_it_be(:user) { create(:user) }
+  let_it_be(:project) { create(:project, :repository) }
+  let_it_be(:merge_request) { create(:merge_request, source_project: project) }
 
   let(:params) do
     {
       description: 'Client merge request description',
-      user_prompt: 'Hello world from user prompt'
+      user_prompt: 'Hello world from user prompt',
+      title: merge_request.title,
+      source_branch: merge_request.source_branch,
+      target_branch: merge_request.target_branch
     }
   end
 
-  subject(:template) { described_class.new(merge_request, params) }
+  subject(:template) { described_class.new(user, project, params) }
 
   describe '#to_prompt' do
     it 'includes raw diff' do
@@ -31,6 +36,55 @@ RSpec.describe Gitlab::Llm::Anthropic::Templates::DescriptionComposer, feature_c
 
     it 'includes description sent from client' do
       expect(template.to_prompt[:messages][0][:content]).to include('Client merge request description')
+    end
+
+    context 'with source_project_id' do
+      let_it_be(:source_project) { create(:project) }
+
+      let(:params) do
+        {
+          source_project_id: source_project.id,
+          source_branch: merge_request.source_branch,
+          target_branch: merge_request.target_branch,
+          description: 'Client merge request description',
+          user_prompt: 'Hello world from user prompt',
+          title: merge_request.title
+        }
+      end
+
+      context 'when user can create a merge request in source project' do
+        before_all do
+          source_project.add_developer(user)
+        end
+
+        it 'uses project instead of source project' do
+          expect(Gitlab::Llm::Utils::MergeRequestTool).to receive(:extract_diff)
+            .with(
+              source_project: source_project,
+              source_branch: params[:source_branch],
+              target_project: project,
+              target_branch: params[:target_branch],
+              character_limit: 10000
+            )
+
+          template.to_prompt
+        end
+      end
+
+      context 'when user can not create a merge request in source project' do
+        it 'uses project instead of source project' do
+          expect(Gitlab::Llm::Utils::MergeRequestTool).to receive(:extract_diff)
+            .with(
+              source_project: project,
+              source_branch: params[:source_branch],
+              target_project: project,
+              target_branch: params[:target_branch],
+              character_limit: 10000
+            )
+
+          template.to_prompt
+        end
+      end
     end
   end
 end
