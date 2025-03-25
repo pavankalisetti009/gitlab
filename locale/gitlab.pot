@@ -52931,6 +52931,9 @@ msgstr ""
 msgid "SecurityInventory|View security coverage and vulnerabilities for all the projects in this group. Data is refreshed and may be upto 24 hours behind."
 msgstr ""
 
+msgid "SecurityInventory|View vulnerability report"
+msgstr ""
+
 msgid "SecurityInventory||An error occurred while fetching subgroups and projects. Please try again."
 msgstr ""
 
