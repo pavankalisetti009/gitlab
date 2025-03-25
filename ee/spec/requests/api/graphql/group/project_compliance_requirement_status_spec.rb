@@ -74,6 +74,7 @@ RSpec.describe 'getting the project compliance requirement statuses for a group'
           id
           name
           color
+          editPath
         }
       }
     GRAPHQL
@@ -115,9 +116,14 @@ RSpec.describe 'getting the project compliance requirement statuses for a group'
       'complianceFramework' => {
         'id' => requirement_status.compliance_framework.to_global_id.to_s,
         'name' => requirement_status.compliance_framework.name,
-        'color' => requirement_status.compliance_framework.color
+        'color' => requirement_status.compliance_framework.color,
+        'editPath' => edit_path(requirement_status, group)
       }
     }
+  end
+
+  def edit_path(requirement_status, group)
+    "/groups/#{group.name}/-/security/compliance_dashboard/frameworks/#{requirement_status.compliance_framework.id}"
   end
 
   def query(params = {})

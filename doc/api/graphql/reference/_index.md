@@ -23363,6 +23363,7 @@ Represents a ComplianceFramework associated with a Project.
 | <a id="complianceframeworkcompliancerequirements"></a>`complianceRequirements` | [`ComplianceRequirementConnection`](#compliancerequirementconnection) | Compliance requirements of the compliance framework. (see [Connections](#connections)) |
 | <a id="complianceframeworkdefault"></a>`default` | [`Boolean`](#boolean) | Default compliance framework for the group. |
 | <a id="complianceframeworkdescription"></a>`description` | [`String!`](#string) | Description of the compliance framework. |
+| <a id="complianceframeworkeditpath"></a>`editPath` | [`String!`](#string) | Web UI path to edit the compliance framework. |
 | <a id="complianceframeworkid"></a>`id` | [`ID!`](#id) | Compliance framework ID. |
 | <a id="complianceframeworkname"></a>`name` | [`String!`](#string) | Name of the compliance framework. |
 | <a id="complianceframeworkpipelineconfigurationfullpath"></a>`pipelineConfigurationFullPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Deprecated** in GitLab 17.4. Use pipeline execution policies instead. |

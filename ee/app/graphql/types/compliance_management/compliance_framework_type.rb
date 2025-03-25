@@ -70,8 +70,17 @@ module Types
         description: 'Vulnerability Management Policies of the compliance framework.',
         resolver: ::Resolvers::ComplianceManagement::SecurityPolicies::VulnerabilityManagementPolicyResolver
 
+      field :edit_path,
+        GraphQL::Types::String,
+        null: false,
+        description: 'Web UI path to edit the compliance framework.'
+
       def default
         object.id == object.namespace.namespace_settings.default_compliance_framework_id
+      end
+
+      def edit_path
+        Gitlab::Routing.url_helpers.group_security_compliance_dashboard_framework_path(object.namespace, object)
       end
     end
   end
