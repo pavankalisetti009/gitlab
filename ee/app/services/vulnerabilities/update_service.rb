@@ -19,7 +19,7 @@ module Vulnerabilities
       raise Gitlab::Access::AccessDeniedError unless can?(author, :admin_vulnerability, project)
 
       vulnerability.update!(vulnerability_params)
-      Statistics::UpdateService.update_for(vulnerability)
+      Vulnerabilities::StatisticsUpdateService.update_for(vulnerability)
 
       vulnerability
     end

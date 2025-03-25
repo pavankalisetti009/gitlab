@@ -43,7 +43,7 @@ module Vulnerabilities
 
         update_security_statistics!
 
-        Statistics::UpdateService.update_for(vulnerability)
+        Vulnerabilities::StatisticsUpdateService.update_for(vulnerability)
 
         ServiceResponse.success(payload: { vulnerability: vulnerability })
       end

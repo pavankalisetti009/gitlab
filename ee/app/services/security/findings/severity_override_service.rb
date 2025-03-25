@@ -53,7 +53,7 @@ module Security
           vulnerability.update!(severity: @severity)
           vulnerability.finding.update!(severity: @severity)
         end
-        Vulnerabilities::Statistics::UpdateService.update_for(vulnerability)
+        Vulnerabilities::StatisticsUpdateService.update_for(vulnerability)
       end
 
       def create_severity_override_record(vulnerability)
