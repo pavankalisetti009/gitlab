@@ -35,7 +35,8 @@ module Ai
 
       def generate_note_message
         command_map = case source
-                      when MergeRequest then q_merge_request_sub_commands
+                      when MergeRequest
+                        note.is_a?(DiffNote) ? q_merge_request_diff_sub_commands : q_merge_request_sub_commands
                       when Issue then q_issue_sub_commands
                       end
         command_map&.[](command.to_sym)
@@ -55,11 +56,18 @@ module Ai
           dev: s_("AmazonQ|I'm revising this merge request based on your feedback. " \
             "I'll update this comment and this merge request when I'm done."),
           fix: s_("AmazonQ|I'm generating a fix for this review finding. I'll update this comment when I'm done."),
-          test: s_("AmazonQ|:hourglass_flowing_sand: I'm creating unit tests for the selected lines of code. " \
+          test: s_("AmazonQ|I'm creating unit tests for this merge request. " \
             "I'll update this comment when I'm done."),
           review: s_("AmazonQ|I'm reviewing this merge request for security vulnerabilities, " \
             "quality issues, and deficiencies. I'll provide an update when I'm done.")
         }.freeze
+      end
+
+      def q_merge_request_diff_sub_commands
+        q_merge_request_sub_commands.merge(
+          test: s_("AmazonQ|I'm creating unit tests for the selected lines of code. " \
+            "I'll update this comment and this merge request when I'm done.")
+        ).freeze
       end
     end
   end
