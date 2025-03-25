@@ -81,7 +81,8 @@ module Gitlab
         end
 
         def handle_events(batch, previous_batch_last_id)
-          logger.info("#handle_events:", first_id: batch.first.id, last_id: batch.last.id)
+          logger.info("#handle_events:", first_id: batch.first.id, last_id: batch.last.id,
+            correlation_id: correlation_id)
 
           gap_tracking.previous_id = previous_batch_last_id
 
@@ -98,7 +99,8 @@ module Gitlab
           # If a project is deleted, the event log and its associated event data
           # could be purged from the log. We ignore this and move along.
           unless event
-            logger.warn("#handle_single_event: unknown event", event_log_id: event_log.id)
+            logger.warn("#handle_single_event: unknown event", event_log_id: event_log.id,
+              correlation_id: correlation_id)
             return
           end
 
@@ -113,7 +115,7 @@ module Gitlab
         def process_event(event, event_log)
           event_klass_for(event).new(event, event_log.created_at, logger).process
         rescue NoMethodError => e
-          logger.error(e.message)
+          logger.error(e.message, correlation_id: correlation_id(event&.payload))
           raise e
         end
 
@@ -199,8 +201,15 @@ module Gitlab
             event_log_id: event_log.id,
             event_id: event_log.event.id,
             event_type: event_log.event.class.name,
-            project_id: event_log.project_id
+            project_id: event_log.project_id,
+            correlation_id: correlation_id(event_log.event&.payload)
           }
+        end
+
+        def correlation_id(payload = {})
+          return payload['correlation_id'] if payload.is_a?(Hash) && payload.key?('correlation_id')
+
+          Labkit::Correlation::CorrelationId.current_or_new_id
         end
       end
     end

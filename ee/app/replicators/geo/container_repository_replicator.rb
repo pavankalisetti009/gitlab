@@ -87,7 +87,8 @@ module Geo
       Geo::EventWorker.perform_async(
         replicable_name,
         ::Geo::ReplicatorEvents::EVENT_UPDATED,
-        { 'model_record_id' => model_record.id })
+        event_params
+      )
     end
 
     # Schedules a verification job after a model record is created/updated

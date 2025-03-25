@@ -18,7 +18,10 @@ RSpec.describe Gitlab::Geo::LogCursor::Events::Event,
       expect(::Geo::EventWorker).to receive(:perform_async).with(
         "package_file",
         "created",
-        { "model_record_id" => replicable.id }
+        {
+          "model_record_id" => replicable.id,
+          "correlation_id" => an_instance_of(String)
+        }
       )
 
       subject.process
@@ -28,7 +31,10 @@ RSpec.describe Gitlab::Geo::LogCursor::Events::Event,
       expect_next_instance_of(::Geo::PackageFileReplicator) do |replicator|
         expect(replicator).to receive(:consume).with(
           :created,
-          { model_record_id: replicable.id }
+          {
+            model_record_id: replicable.id,
+            correlation_id: a_kind_of(String)
+          }
         )
       end
 

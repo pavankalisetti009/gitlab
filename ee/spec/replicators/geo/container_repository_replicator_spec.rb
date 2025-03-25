@@ -49,7 +49,10 @@ RSpec.describe Geo::ContainerRepositoryReplicator, :geo, feature_category: :geo_
           expect(::Geo::Event.last.attributes).to include(
             "replicable_name" => replicator.replicable_name,
             "event_name" => ::Geo::ReplicatorEvents::EVENT_UPDATED,
-            "payload" => { "model_record_id" => replicator.model_record.id })
+            "payload" => {
+              "model_record_id" => replicator.model_record.id,
+              "correlation_id" => an_instance_of(String)
+            })
         end
 
         context 'when replication feature flag is disabled' do
@@ -94,7 +97,8 @@ RSpec.describe Geo::ContainerRepositoryReplicator, :geo, feature_category: :geo_
             "event_name" => ::Geo::ReplicatorEvents::EVENT_DELETED,
             "payload" => {
               "model_record_id" => replicator.model_record.id,
-              "path" => replicator.model_record.path
+              "path" => replicator.model_record.path,
+              "correlation_id" => an_instance_of(String)
             })
         end
 

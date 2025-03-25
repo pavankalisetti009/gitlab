@@ -5,7 +5,15 @@ require 'spec_helper'
 RSpec.describe Gitlab::Geo::LogCursor::Logger, :geo, feature_category: :geo_replication do
   subject(:logger) { described_class.new(LoggerSpec) }
 
-  let(:data) { { pid: 111, class: 'LoggerSpec', gitlab_host: 'localhost', message: 'Test' } }
+  let(:data) do
+    {
+      pid: 111,
+      class: 'LoggerSpec',
+      gitlab_host: 'localhost',
+      message: 'Test',
+      correlation_id: a_kind_of(String)
+    }
+  end
 
   before do
     stub_const('LoggerSpec', Class.new)
@@ -38,6 +46,7 @@ RSpec.describe Gitlab::Geo::LogCursor::Logger, :geo, feature_category: :geo_repl
           class: "LoggerSpec",
           gitlab_host: 'localhost',
           message: 'Test',
+          correlation_id: a_kind_of(String),
           cursor_delay_s: be_within(0.01).of(0)
         }
       )

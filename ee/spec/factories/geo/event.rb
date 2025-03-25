@@ -7,7 +7,10 @@ FactoryBot.define do
 
     trait :package_file do
       payload do
-        { model_record_id: create(:package_file, :pom).id }
+        {
+          "model_record_id" => create(:package_file, :pom).id,
+          "correlation_id" => Labkit::Correlation::CorrelationId.current_or_new_id
+        }
       end
     end
   end

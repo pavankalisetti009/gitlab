@@ -28,7 +28,8 @@ RSpec.describe Gitlab::Geo::LogHelpers, feature_category: :geo_replication do
     it 'does not log empty job_id when running outside of job' do
       expect(Gitlab::Geo::Logger).to receive(:error).with({ class: 'FakeLogHelpersConsumer',
                                                             gitlab_host: 'localhost',
-                                                            message: 'Test message' })
+                                                            message: 'Test message',
+                                                            correlation_id: a_kind_of(String) })
 
       FakeLogHelpersConsumer.new.execute
     end
@@ -37,7 +38,8 @@ RSpec.describe Gitlab::Geo::LogHelpers, feature_category: :geo_replication do
       expect(Gitlab::Geo::Logger).to receive(:error).with({ class: 'FakeLogHelpersConsumer',
                                                             gitlab_host: 'localhost',
                                                             message: 'Test message',
-                                                            job_id: '5b9b108c7558fe3c32cc61a5' })
+                                                            job_id: '5b9b108c7558fe3c32cc61a5',
+                                                            correlation_id: a_kind_of(String) })
 
       stub_sidekiq_job_context(['TestWorker JID-5b9b108c7558fe3c32cc61a5']) do
         FakeLogHelpersConsumer.new.execute
