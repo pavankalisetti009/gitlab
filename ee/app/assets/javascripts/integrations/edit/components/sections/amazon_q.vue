@@ -29,6 +29,7 @@ export default {
           availability: amazonQProps.amazonQAvailability,
           roleArn: amazonQProps.amazonQRoleArn,
           ready: amazonQProps.amazonQReady,
+          autoReviewEnabled: amazonQProps.amazonQAutoReviewEnabled,
         },
       };
     },
