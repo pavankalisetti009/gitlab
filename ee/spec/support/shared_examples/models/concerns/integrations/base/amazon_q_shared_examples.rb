@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 RSpec.shared_examples Integrations::Base::AmazonQ do
-  subject(:integration) { described_class.new }
+  subject(:integration) { described_class.new(auto_review_enabled: auto_review_enabled, instance: true) }
+
+  let_it_be(:auto_review_enabled) { true }
 
   describe 'Validations' do
     context 'when active' do
@@ -10,10 +12,77 @@ RSpec.shared_examples Integrations::Base::AmazonQ do
       end
 
       it { is_expected.to validate_presence_of(:role_arn) }
+      it { is_expected.to validate_length_of(:role_arn).is_at_most(2048) }
+      it { is_expected.to validate_presence_of(:availability) }
+
+      describe '#role_arn' do
+        subject(:integration) { described_class.new(auto_review_enabled: auto_review_enabled, group: build(:group)) }
+
+        it 'can be changed only on instance level' do
+          integration.role_arn = "changed"
+
+          expect(integration).not_to be_valid
+        end
+      end
+
+      describe '#availability' do
+        it 'validates that the value is one of the defined options' do
+          is_expected.to validate_inclusion_of(
+            :availability
+          ).in_array(%w[default_on default_off never_on])
+            .with_message('must be one of: default_on, default_off, never_on')
+        end
+      end
     end
 
     context 'when inactive' do
       it { is_expected.not_to validate_presence_of(:role_arn) }
+      it { is_expected.not_to validate_presence_of(:availability) }
+      it { is_expected.not_to validate_inclusion_of(:availability).in_array(%w[default_on default_off never_on]) }
+    end
+
+    describe '#auto_review_enabled' do
+      context 'when integration is not available' do
+        subject(:integration) { described_class.new(availability: "default_off") }
+
+        it 'validates that the integration must be available' do
+          is_expected.to validate_inclusion_of(
+            :auto_review_enabled
+          ).in_array([false]).with_message("integration must be available")
+        end
+      end
+
+      it 'allows auto_review_enabled for available integrations' do
+        integration = described_class.new(availability: "default_on", instance: true, auto_review_enabled: true)
+
+        expect(integration).to be_valid
+      end
+    end
+
+    describe 'web hook events' do
+      using RSpec::Parameterized::TableSyntax
+
+      where(:merge_requests_events, :pipeline_events, :auto_review_enabled_value, :errors) do
+        pipeline_events_error = 'Pipeline events must be equal to auto_review_enabled'
+        merge_requests_events_error = 'Merge requests events must be equal to auto_review_enabled'
+
+        true  | true  | true  | []
+        true  | false | true  | [pipeline_events_error]
+        false | true  | true  | [merge_requests_events_error]
+        true  | true  | false | [pipeline_events_error, merge_requests_events_error]
+      end
+
+      with_them do
+        it 'validates that merge request and pipeline events equal to auto_review_enabled' do
+          integration = described_class.new(
+            availability: "default_on", instance: true, auto_review_enabled: auto_review_enabled_value,
+            merge_requests_events: merge_requests_events, pipeline_events: pipeline_events
+          )
+
+          expect(integration.valid?).to eq(errors.blank?)
+          expect(integration.errors.full_messages).to match_array(errors)
+        end
+      end
     end
   end
 
@@ -80,6 +149,16 @@ RSpec.shared_examples Integrations::Base::AmazonQ do
 
             integration.execute(data)
           end
+
+          context 'when auto_review_enabled is disabled' do
+            let_it_be(:auto_review_enabled) { false }
+
+            it 'does not send events if user is not passed' do
+              expect(::Gitlab::Llm::QAi::Client).not_to receive(:new)
+
+              integration.execute(data)
+            end
+          end
         end
       end
     end
@@ -94,6 +173,15 @@ RSpec.shared_examples Integrations::Base::AmazonQ do
 
         integration.execute({ object_kind: :pipeline, user: { id: user.id } })
       end
+    end
+  end
+
+  describe '#auto_review_enabled' do
+    it 'changes merge request and pipeline events' do
+      expect do
+        integration.update!(auto_review_enabled: false)
+      end.to change { integration.merge_requests_events }.from(true).to(false)
+          .and change { integration.pipeline_events }.from(true).to(false)
     end
   end
 

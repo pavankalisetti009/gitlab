@@ -86,7 +86,7 @@ module Admin
       end
 
       def permitted_params
-        params.permit(:role_arn, :availability)
+        params.permit(:role_arn, :availability, :auto_review_enabled)
       end
     end
   end

@@ -154,6 +154,8 @@ RSpec.describe EE::IntegrationsHelper, feature_category: :integrations do
     end
 
     context 'when integration is at the instance level' do
+      let_it_be(:integration) { create(:amazon_q_integration) }
+
       subject(:form_data) { helper.integration_form_data(build(:amazon_q_integration)) }
 
       context 'with Amazon Q integration' do
@@ -181,7 +183,8 @@ RSpec.describe EE::IntegrationsHelper, feature_category: :integrations do
               disconnect_url: disconnect_admin_ai_amazon_q_settings_path,
               ready: "true",
               role_arn: "role-arn",
-              availability: :default_on
+              availability: :default_on,
+              auto_review_enabled: "false"
             }.merge(identity_provider_params)
           })
 
@@ -193,7 +196,7 @@ RSpec.describe EE::IntegrationsHelper, feature_category: :integrations do
             expect(instance).to receive(:execute).and_return({ err: { message: 'failure' } })
           end
 
-          amazon_q_data
+          amazon_q_data(integration)
 
           expect(flash[:alert]).to eq('Something went wrong retrieving the identity provider payload. failure')
         end

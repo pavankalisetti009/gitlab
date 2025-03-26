@@ -5,13 +5,27 @@ module Integrations
     module AmazonQ
       extend ActiveSupport::Concern
 
+      AVAILABILITY_OPTIONS = %w[default_on default_off never_on].freeze
+
       included do
-        validates :role_arn, presence: true, if: :activated?
+        validates :role_arn, presence: true, length: { maximum: 2048 }, if: :activated?
+        validate :role_arn_changeable_on_instance_level
+        validates :availability, inclusion: {
+          in: AVAILABILITY_OPTIONS,
+          message: "must be one of: #{AVAILABILITY_OPTIONS.join(', ')}"
+        }, presence: true, if: :activated?
+        validates :auto_review_enabled, inclusion: { in: [false], message: "integration must be available" },
+          unless: ->(integration) { integration.availability == "default_on" }
+        validates :merge_requests_events, :pipeline_events, inclusion: { in: ->(i) {
+          [i.auto_review_enabled]
+        }, message: "must be equal to auto_review_enabled" }
 
         field :role_arn, required: true, api_only: true
+        field :availability, required: true, api_only: true
+        field :auto_review_enabled, type: :checkbox, api_only: true
 
-        attribute :merge_requests_events, default: true
-        attribute :pipeline_events, default: true
+        attribute :merge_requests_events, default: false
+        attribute :pipeline_events, default: false
 
         attribute :alert_events, default: false
         attribute :commit_events, default: false
@@ -23,6 +37,16 @@ module Integrations
         attribute :push_events, default: false
         attribute :tag_push_events, default: false
         attribute :wiki_page_events, default: false
+
+        def auto_review_enabled=(value)
+          # Implementation from prop_accessor since we don't have a super method at this stage
+          self.properties ||= {}
+          updated_properties['auto_review_enabled'] = :auto_review_enabled unless auto_review_enabled_changed?
+          self.properties = self.properties.merge('auto_review_enabled' => value)
+
+          self.merge_requests_events = value
+          self.pipeline_events = value
+        end
       end
 
       class_methods do
@@ -70,6 +94,7 @@ module Integrations
 
       def execute(data)
         return unless Feature.enabled?(:amazon_q_chat_and_code_suggestions, :instance)
+        return unless auto_review_enabled
 
         user = user_from_web_hook_data(data)
         return unless user
@@ -84,6 +109,12 @@ module Integrations
       end
 
       private
+
+      def role_arn_changeable_on_instance_level
+        return if instance_level? || new_record? || !role_arn_changed?
+
+        errors.add(:role_arn, "can be changed on only instance level")
+      end
 
       def user_from_web_hook_data(data)
         user = ::User.find_by_id(data.dig(:user, :id))

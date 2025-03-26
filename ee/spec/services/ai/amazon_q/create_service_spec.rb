@@ -8,7 +8,7 @@ RSpec.describe Ai::AmazonQ::CreateService, feature_category: :ai_agents do
     let_it_be(:user) { create(:admin) }
     let_it_be(:doorkeeper_application) { create(:doorkeeper_application) }
 
-    let(:params) { { role_arn: 'a', availability: 'default_off' } }
+    let(:params) { { role_arn: 'a', availability: 'default_on', auto_review_enabled: true } }
     let(:status) { 200 }
     let(:body) { 'success' }
 
@@ -17,6 +17,7 @@ RSpec.describe Ai::AmazonQ::CreateService, feature_category: :ai_agents do
       stub_licensed_features(service_accounts: true)
       stub_request(:post, "#{Gitlab::AiGateway.url}/v1/amazon_q/oauth/application")
         .and_return(status: status, body: body)
+      ::Gitlab::CurrentSettings.current_application_settings.update!(duo_availability: 'default_off')
     end
 
     subject(:instance) { described_class.new(user, params) }
@@ -76,7 +77,7 @@ RSpec.describe Ai::AmazonQ::CreateService, feature_category: :ai_agents do
         .to change { Ai::Setting.instance.amazon_q_role_arn }.from(nil).to('a')
         .and change {
           ::Gitlab::CurrentSettings.current_application_settings.duo_availability
-        }.from(:default_on).to(:default_off)
+        }.from(:default_off).to(:default_on)
     end
 
     it 'creates an audit event' do
@@ -87,7 +88,7 @@ RSpec.describe Ai::AmazonQ::CreateService, feature_category: :ai_agents do
 
       expect(AuditEvent.last.details).to include(
         event_name: 'q_onbarding_updated',
-        custom_message: "Changed availability to default_off, " \
+        custom_message: "Changed availability to default_on, " \
           "amazon_q_role_arn to a, " \
           "amazon_q_service_account_user_id to #{service_account.id}, " \
           "amazon_q_oauth_application_id to #{oauth_application.id}, " \
@@ -104,6 +105,10 @@ RSpec.describe Ai::AmazonQ::CreateService, feature_category: :ai_agents do
 
       expect(integration).to be_active
       expect(integration.role_arn).to eq('a')
+      expect(integration.availability).to eq("default_on")
+      expect(integration.auto_review_enabled).to be(true)
+      expect(integration.merge_requests_events).to be(true)
+      expect(integration.pipeline_events).to be(true)
       expect(PropagateIntegrationWorker).to have_received(:perform_async).with(integration.id)
     end
 

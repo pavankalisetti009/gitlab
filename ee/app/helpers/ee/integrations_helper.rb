@@ -53,7 +53,7 @@ module EE
       end
 
       if integration.is_a?(::Integrations::AmazonQ)
-        form_data[:amazon_q] = amazon_q_data
+        form_data[:amazon_q] = amazon_q_data(integration)
       end
 
       form_data
@@ -95,7 +95,7 @@ module EE
       }
     end
 
-    def amazon_q_data
+    def amazon_q_data(integration)
       result = ::Ai::AmazonQ::IdentityProviderPayloadFactory.new.execute
 
       identity_provider =
@@ -116,7 +116,8 @@ module EE
         disconnect_url: disconnect_admin_ai_amazon_q_settings_path,
         ready: ::Ai::Setting.instance.amazon_q_ready.to_s,
         role_arn: ::Ai::Setting.instance.amazon_q_role_arn,
-        availability: ::Gitlab::CurrentSettings.duo_availability
+        availability: ::Gitlab::CurrentSettings.duo_availability,
+        auto_review_enabled: integration.auto_review_enabled.to_s
       }.merge(identity_provider)
     end
 
