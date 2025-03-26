@@ -49,7 +49,7 @@ RSpec.describe Search::Zoekt::IndexMarkedAsToDeleteEventWorker, :zoekt_settings_
           .and not_change { repo_2.reload.state }
       end
 
-      it 'processes in repositories batches' do
+      it 'processes in repositories batches', :freeze_time do
         repo_batch_size = 2
         stub_const("#{described_class}::REPO_BATCH_SIZE", repo_batch_size)
 
@@ -64,7 +64,8 @@ RSpec.describe Search::Zoekt::IndexMarkedAsToDeleteEventWorker, :zoekt_settings_
         batch_double = instance_double(ActiveRecord::Relation, update_all: 2)
         allow(stubbed_repositories).to receive(:each_batch).with(of: repo_batch_size, column: :project_id)
           .and_yield(batch_double).and_yield(batch_double)
-        expect(batch_double).to receive(:update_all).with(state: :pending_deletion).twice.and_return(2)
+        expect(batch_double).to receive(:update_all).with(state: :pending_deletion, updated_at: Time.current)
+          .twice.and_return(2)
 
         expect_next_instance_of(described_class) do |instance|
           expect(instance).to receive(:log_extra_metadata_on_done).with(:indices_destroyed_count, 0)

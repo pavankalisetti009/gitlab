@@ -42,7 +42,7 @@ module Search
           end
 
           indices = node.indices.id_in(index_ids_to_evict).limit(MAX_INDICES_TO_EVICT)
-          updated_count = indices.update_all(state: :pending_eviction)
+          updated_count = indices.update_all(state: :pending_eviction, updated_at: Time.current)
 
           log_extra_metadata_on_done(:indices_updated_count, updated_count)
         end

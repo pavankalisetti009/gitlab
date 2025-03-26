@@ -22,7 +22,7 @@ module Search
         ::Search::Zoekt::Index.should_be_deleted.ordered.limit(INDEX_BATCH_SIZE).find_each do |idx|
           if idx.zoekt_repositories.exists?
             idx.zoekt_repositories.not_pending_deletion.each_batch(of: REPO_BATCH_SIZE, column: :project_id) do |batch|
-              result = batch.update_all(state: :pending_deletion)
+              result = batch.update_all(state: :pending_deletion, updated_at: Time.current)
               updated_count += result
             end
           else
