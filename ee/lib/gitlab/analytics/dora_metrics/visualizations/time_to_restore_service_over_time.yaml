@@ -14,3 +14,4 @@ options:
   yAxis:
     name: "Days for an open incident"
     type: value
+  includeLegendAvgMax: false

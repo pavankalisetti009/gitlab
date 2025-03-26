@@ -30,7 +30,9 @@ describe('LineChart Visualization', () => {
         option: { yAxis: {}, xAxis: {} },
         height: 'auto',
       });
+
       expect(findLineChart().attributes('responsive')).toBe('');
+      expect(findLineChart().props().includeLegendAvgMax).toBe(false);
     });
 
     it('should add minimum y-axis option when not defined', () => {
@@ -42,6 +44,12 @@ describe('LineChart Visualization', () => {
       expect(findLineChart().props().option).toMatchObject({
         yAxis: { min: 0 },
       });
+    });
+
+    it('can toggle the average / max values', () => {
+      createWrapper({ options: { includeLegendAvgMax: true } });
+
+      expect(findLineChart().props().includeLegendAvgMax).toBe(true);
     });
   });
 });

@@ -22,6 +22,9 @@ export default {
     },
   },
   computed: {
+    includeLegendAvgMax() {
+      return Boolean(this.options.includeLegendAvgMax);
+    },
     fullOptions() {
       return merge({ yAxis: { min: 0 } }, this.options);
     },
@@ -37,6 +40,7 @@ export default {
   <gl-line-chart
     :data="data"
     :option="fullOptions"
+    :include-legend-avg-max="includeLegendAvgMax"
     height="auto"
     responsive
     class="gl-overflow-hidden"
