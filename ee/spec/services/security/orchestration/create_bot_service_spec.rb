@@ -44,6 +44,17 @@ RSpec.describe Security::Orchestration::CreateBotService, feature_category: :sec
           expect(project.security_policy_bot).to be_present
         end
       end
+
+      context 'when sign up restriction is enabled with email domain allowlist' do
+        before do
+          stub_application_setting(domain_allowlist: ['example.com'])
+        end
+
+        it 'creates and assigns a bot user', :aggregate_failures do
+          expect { execute_service }.to change { User.count }.by(1)
+          expect(project.security_policy_bot).to be_present
+        end
+      end
     end
   end
 
