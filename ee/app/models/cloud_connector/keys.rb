@@ -56,9 +56,25 @@ module CloudConnector
     end
 
     def to_jwk
+      return unless rsa_key_pair
+
+      @jwk ||= ::JWT::JWK.new(rsa_key_pair, kid_generator: ::JWT::JWK::Thumbprint)
+    end
+
+    def public_key
+      return unless rsa_key_pair
+
+      @public_key ||= rsa_key_pair.public_key
+    end
+
+    def rsa_key_pair
       return unless secret_key
 
-      ::JWT::JWK.new(OpenSSL::PKey::RSA.new(secret_key), kid_generator: ::JWT::JWK::Thumbprint)
+      @rsa_key_pair ||= OpenSSL::PKey::RSA.new(secret_key)
+    end
+
+    def decode_token(encoded_token)
+      JWT.decode(encoded_token, public_key, true, algorithm: Gitlab::CloudConnector::JsonWebToken::SIGNING_ALGORITHM)
     end
   end
 end
