@@ -1,4 +1,4 @@
-import { GlLabel, GlPopover } from '@gitlab/ui';
+import { GlButton, GlLabel, GlPopover } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import ComplianceFrameworksToggleList from 'ee/security_orchestration/components/policy_drawer/compliance_frameworks_toggle_list.vue';
 import { complianceFrameworksResponse as defaultNodes } from 'ee_jest/security_orchestration/mocks/mock_apollo';
@@ -17,6 +17,7 @@ describe('ComplianceFrameworksToggleList', () => {
     });
   };
 
+  const findAllButtons = () => wrapper.findAllComponents(GlButton);
   const findAllLabels = () => wrapper.findAllComponents(GlLabel);
   const findAllPopovers = () => wrapper.findAllComponents(GlPopover);
   const findHeader = () => wrapper.findByTestId('compliance-frameworks-header');
@@ -48,8 +49,20 @@ describe('ComplianceFrameworksToggleList', () => {
           target: `${node.id}_unique_id`,
         });
 
-        expect(popovers.at(index).text()).toBe(node.description);
+        expect(popovers.at(index).text()).toContain(node.description);
       });
+    });
+
+    it('sets correct attributes on the edit button', () => {
+      const firstPopover = findAllPopovers().at(0);
+      const editButton = firstPopover.findComponent(GlButton);
+      expect(editButton.exists()).toBe(true);
+      expect(editButton.attributes('href')).toBe('/edit/framework/1');
+      expect(editButton.text()).toBe('Edit compliance framework');
+    });
+
+    it('does not render edit button when editPath is not provided', () => {
+      expect(findAllButtons()).toHaveLength(3);
     });
   });
 

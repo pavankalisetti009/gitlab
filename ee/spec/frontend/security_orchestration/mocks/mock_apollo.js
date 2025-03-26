@@ -94,6 +94,7 @@ export const complianceFrameworksResponse = [
     name: 'A1',
     default: true,
     description: 'description 1',
+    editPath: '/edit/framework/1',
     color: '#cd5b45',
     pipelineConfigurationFullPath: 'path 1',
     projects: { nodes: [] },
@@ -103,6 +104,7 @@ export const complianceFrameworksResponse = [
     name: 'B2',
     default: false,
     description: 'description 2',
+    editPath: '/edit/framework/2',
     color: '#cd5b45',
     pipelineConfigurationFullPath: 'path 2',
     projects: {
@@ -119,6 +121,7 @@ export const complianceFrameworksResponse = [
     name: 'a3',
     default: true,
     description: 'description 3',
+    editPath: '/edit/framework/3',
     color: '#cd5b45',
     pipelineConfigurationFullPath: 'path 3',
     projects: {
@@ -139,6 +142,7 @@ export const complianceFrameworksResponse = [
     name: 'a4',
     default: true,
     description: 'description 4',
+    editPath: '',
     color: '#cd5b45',
     pipelineConfigurationFullPath: 'path 4',
     projects: {

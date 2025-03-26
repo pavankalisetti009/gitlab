@@ -1,7 +1,7 @@
 <script>
 import { uniqueId } from 'lodash';
-import { GlLabel, GlPopover } from '@gitlab/ui';
-import { sprintf, __ } from '~/locale';
+import { GlButton, GlLabel, GlPopover } from '@gitlab/ui';
+import { sprintf, s__, __ } from '~/locale';
 import {
   COMPLIANCE_FRAMEWORKS_DESCRIPTION,
   COMPLIANCE_FRAMEWORKS_DESCRIPTION_NO_PROJECTS,
@@ -9,10 +9,14 @@ import {
 } from 'ee/security_orchestration/components/policy_drawer/constants';
 
 export default {
+  i18n: {
+    editButtonText: s__('ComplianceFrameworks|Edit compliance framework'),
+  },
   name: 'ComplianceFrameworksToggleList',
   components: {
     GlLabel,
     GlPopover,
+    GlButton,
   },
   props: {
     complianceFrameworks: {
@@ -101,7 +105,18 @@ export default {
     <div class="gl-flex gl-flex-wrap gl-gap-3">
       <div v-for="item in complianceFrameworksFormatted" :key="item.id">
         <gl-label :id="item.id" :background-color="item.color" :title="item.name" />
-        <gl-popover :title="item.name" :target="item.id">{{ item.description }}</gl-popover>
+        <gl-popover :title="item.name" :target="item.id">
+          <p>{{ item.description }}</p>
+          <gl-button
+            v-if="item.editPath"
+            size="small"
+            category="secondary"
+            variant="confirm"
+            :href="item.editPath"
+          >
+            {{ $options.i18n.editButtonText }}
+          </gl-button>
+        </gl-popover>
       </div>
     </div>
 
