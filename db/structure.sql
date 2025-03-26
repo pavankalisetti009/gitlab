@@ -25692,6 +25692,8 @@ CREATE TABLE workspaces_agent_configs (
     image_pull_secrets jsonb DEFAULT '[]'::jsonb NOT NULL,
     max_active_hours_before_stop smallint DEFAULT 36 NOT NULL,
     max_stopped_hours_before_termination smallint DEFAULT 744 NOT NULL,
+    shared_namespace text DEFAULT ''::text NOT NULL,
+    CONSTRAINT check_2de67a7a76 CHECK ((char_length(shared_namespace) <= 63)),
     CONSTRAINT check_557e75a230 CHECK ((max_stopped_hours_before_termination > 0)),
     CONSTRAINT check_58759a890a CHECK ((char_length(dns_zone) <= 256)),
     CONSTRAINT check_6d7baef494 CHECK (((max_active_hours_before_stop + max_stopped_hours_before_termination) <= 8760)),
