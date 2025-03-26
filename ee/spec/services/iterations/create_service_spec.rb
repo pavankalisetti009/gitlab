@@ -18,10 +18,10 @@ RSpec.describe Iterations::CreateService, feature_category: :team_planning do
       describe '#execute' do
         let(:params) do
           {
-              title: 'v2.1.9',
-              description: 'Patch release to fix security issue',
-              start_date: Time.current.to_s,
-              due_date: 1.day.from_now.to_s
+            title: 'v2.1.9',
+            description: 'Patch release to fix security issue',
+            start_date: Time.current.to_s,
+            due_date: 1.day.from_now.to_s
           }
         end
 
@@ -44,7 +44,7 @@ RSpec.describe Iterations::CreateService, feature_category: :team_planning do
         context 'invalid params' do
           let(:params) do
             {
-                description: 'Patch release to fix security issue'
+              description: 'Patch release to fix security issue'
             }
           end
 

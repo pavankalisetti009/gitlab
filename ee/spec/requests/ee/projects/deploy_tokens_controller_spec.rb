@@ -39,9 +39,9 @@ RSpec.describe Projects::DeployTokensController, feature_category: :continuous_d
 
       expect(AuditEvent.last.details[:custom_message]).to eq(expected_message)
       expect(AuditEvent.last.details).to include({
-                                                   custom_message: expected_message,
-                                                   action: :custom
-                                                 })
+        custom_message: expected_message,
+        action: :custom
+      })
     end
 
     it_behaves_like 'sends correct event type in audit event stream' do

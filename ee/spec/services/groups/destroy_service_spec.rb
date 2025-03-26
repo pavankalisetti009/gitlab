@@ -22,20 +22,20 @@ RSpec.describe Groups::DestroyService, feature_category: :groups_and_projects do
 
       let(:attributes) do
         {
-           author_id: user.id,
-           entity_id: group.id,
-           entity_type: 'Group',
-           details: {
-             remove: 'group',
-             author_name: user.name,
-             author_class: user.class.name,
-             event_name: "group_destroyed",
-             target_id: group.id,
-             target_type: 'Group',
-             target_details: group.full_path,
-             custom_message: 'Group destroyed'
-           }
-         }
+          author_id: user.id,
+          entity_id: group.id,
+          entity_type: 'Group',
+          details: {
+            remove: 'group',
+            author_name: user.name,
+            author_class: user.class.name,
+            event_name: "group_destroyed",
+            target_id: group.id,
+            target_type: 'Group',
+            target_details: group.full_path,
+            custom_message: 'Group destroyed'
+          }
+        }
       end
     end
   end
