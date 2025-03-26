@@ -1,4 +1,4 @@
-import { GlLink, GlIcon } from '@gitlab/ui';
+import { GlLink, GlIcon, GlTooltip } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import { workItemDevelopmentFeatureFlagNodes } from 'jest/work_items/mock_data';
 import WorkItemDevelopmentFfItem from 'ee/work_items/components/work_item_development/work_item_development_ff_item.vue';
@@ -21,6 +21,7 @@ describe('WorkItemDevelopmentFfItem', () => {
 
   const findFlagIcon = () => wrapper.findComponent(GlIcon);
   const findFlagLink = () => wrapper.findComponent(GlLink);
+  const findIconTooltip = () => wrapper.findComponent(GlTooltip);
 
   describe('feature flag status icon', () => {
     it.each`
@@ -29,11 +30,12 @@ describe('WorkItemDevelopmentFfItem', () => {
       ${'Disabled'} | ${'feature-flag-disabled'} | ${disabledFeatureFlag} | ${'gl-text-subtle'}
     `(
       'renders icon "$icon" when the state of the feature flag is "$state"',
-      ({ icon, iconClass, featureFlag }) => {
+      ({ state, icon, iconClass, featureFlag }) => {
         createComponent({ featureFlag });
 
         expect(findFlagIcon().props('name')).toBe(icon);
         expect(findFlagIcon().attributes('class')).toBe(iconClass);
+        expect(findIconTooltip().text()).toContain(state);
       },
     );
   });

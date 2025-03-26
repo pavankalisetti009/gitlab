@@ -1,11 +1,12 @@
 <script>
-import { GlIcon, GlLink } from '@gitlab/ui';
+import { GlIcon, GlLink, GlTooltip } from '@gitlab/ui';
 import { __ } from '~/locale';
 
 export default {
   components: {
     GlIcon,
     GlLink,
+    GlTooltip,
   },
   props: {
     itemContent: {
@@ -29,7 +30,7 @@ export default {
 
 <template>
   <div ref="flagInfo" class="gl-flex gl-items-center gl-gap-3">
-    <gl-icon :name="icon(itemContent)" :class="iconColor(itemContent)" />
+    <gl-icon ref="flagIcon" :name="icon(itemContent)" :class="iconColor(itemContent)" />
     <gl-link
       :href="itemContent.path"
       class="gl-truncate gl-font-semibold gl-text-default hover:gl-text-default hover:gl-underline"
@@ -37,5 +38,9 @@ export default {
       {{ itemContent.name }}
     </gl-link>
     <span class="gl-inline-block gl-text-subtle">{{ itemContent.reference }}</span>
+    <gl-tooltip :target="() => $refs.flagIcon.$el" placement="top">
+      <div class="gl-font-bold">{{ __('Feature flag') }}</div>
+      <div class="gl-text-subtle">{{ flagStatus(itemContent) }}</div>
+    </gl-tooltip>
   </div>
 </template>
