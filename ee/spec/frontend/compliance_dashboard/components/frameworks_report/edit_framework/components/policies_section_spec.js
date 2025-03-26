@@ -1,9 +1,10 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlTable, GlBadge, GlButton } from '@gitlab/ui';
+import { GlTable, GlBadge, GlButton, GlSkeletonLoader } from '@gitlab/ui';
 
 import PoliciesSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/policies_section.vue';
 import DrawerWrapper from 'ee/security_orchestration/components/policy_drawer/drawer_wrapper.vue';
+import EditSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/edit_section.vue';
 
 import complianceFrameworkPoliciesQuery from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/graphql/compliance_frameworks_policies.query.graphql';
 import namespacePoliciesQuery from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/graphql/namespace_policies.query.graphql';
@@ -184,15 +185,57 @@ describe('PoliciesSection component', () => {
       propsData: {
         fullPath: 'Commit451',
         graphqlId: 'gid://gitlab/ComplianceManagement::Framework/1',
+        count: 4,
       },
     });
   }
+
+  describe('when section is not expanded', () => {
+    beforeEach(() => {
+      wrapper = createComponent({
+        requestHandlers: [
+          [namespacePoliciesQuery, jest.fn()],
+          [complianceFrameworkPoliciesQuery, jest.fn()],
+        ],
+      });
+    });
+
+    it('does not fetch policies', () => {
+      const namespaceQuery = wrapper.vm.$apollo.queries.namespacePolicies;
+      const complianceQuery = wrapper.vm.$apollo.queries.complianceFrameworkPolicies;
+
+      expect(namespaceQuery.skip).toBe(true);
+      expect(complianceQuery.skip).toBe(true);
+    });
+  });
+
+  describe('when section is expanded', () => {
+    it('shows loading state while fetching', async () => {
+      const neverResolve = () =>
+        jest.fn().mockImplementation(() => {
+          return new Promise(() => {});
+        });
+      wrapper = createComponent({
+        requestHandlers: [
+          [namespacePoliciesQuery, neverResolve],
+          [complianceFrameworkPoliciesQuery, neverResolve],
+        ],
+      });
+
+      wrapper.findComponent(EditSection).vm.$emit('toggle', true);
+      await nextTick();
+
+      const table = findPoliciesTable();
+      expect(table.exists()).toBe(true);
+      expect(wrapper.findComponent(GlSkeletonLoader).exists()).toBe(true);
+    });
+  });
 
   describe('when multiple pages are present', () => {
     let namespaceLoadHandler;
     let complianceLoadHandler;
 
-    beforeEach(() => {
+    beforeEach(async () => {
       const responseWithNextPages = makeNamespacePoliciesResponse();
       responseWithNextPages.data.namespace.approvalPolicies.pageInfo.hasNextPage = true;
 
@@ -201,10 +244,7 @@ describe('PoliciesSection component', () => {
         .mockResolvedValueOnce(responseWithNextPages)
         .mockResolvedValueOnce(makeNamespacePoliciesResponse());
 
-      complianceLoadHandler = jest
-        .fn()
-        .mockResolvedValueOnce(makeCompliancePoliciesResponse())
-        .mockResolvedValueOnce(makeCompliancePoliciesResponse());
+      complianceLoadHandler = jest.fn().mockResolvedValueOnce(makeCompliancePoliciesResponse());
 
       wrapper = createComponent({
         requestHandlers: [
@@ -212,6 +252,9 @@ describe('PoliciesSection component', () => {
           [complianceFrameworkPoliciesQuery, complianceLoadHandler],
         ],
       });
+
+      wrapper.findComponent(EditSection).vm.$emit('toggle', true);
+      await waitForPromises();
     });
 
     it('loads next pages for namespace policies with appropriate cursors if has next pages', async () => {
@@ -257,7 +300,7 @@ describe('PoliciesSection component', () => {
   });
 
   describe('when loaded', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       wrapper = createComponent({
         requestHandlers: [
           [namespacePoliciesQuery, jest.fn().mockResolvedValue(makeNamespacePoliciesResponse())],
@@ -268,7 +311,9 @@ describe('PoliciesSection component', () => {
         ],
       });
 
-      return waitForPromises();
+      wrapper.findComponent(EditSection).vm.$emit('toggle', true);
+      await nextTick();
+      await waitForPromises();
     });
 
     it('renders title', () => {
@@ -316,8 +361,7 @@ describe('PoliciesSection component', () => {
       const { items: policies } = findPoliciesTable().vm.$attrs;
       const policyButtons = findPoliciesTable().findAllComponents(GlButton);
       expect(policyButtons).toHaveLength(policies.length);
-      policyButtons.at(0).vm.$emit('click');
-      await nextTick();
+      await policyButtons.at(0).trigger('click');
       expect(findDrawer().props('policy')).toEqual(policies[0]);
     });
 
@@ -333,6 +377,7 @@ describe('PoliciesSection component', () => {
         await wrapper.find('table tbody tr').trigger('click');
         await nextTick();
         expect(findDrawer().props('policy').name).toBe('test');
+
         findDrawer().vm.$emit('close');
         await nextTick();
         expect(findDrawer().props('policy')).toBeNull();

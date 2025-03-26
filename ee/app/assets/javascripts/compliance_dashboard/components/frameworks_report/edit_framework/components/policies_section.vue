@@ -1,5 +1,13 @@
 <script>
-import { GlBadge, GlButton, GlLoadingIcon, GlTable, GlIcon, GlSprintf, GlLink } from '@gitlab/ui';
+import {
+  GlBadge,
+  GlButton,
+  GlTable,
+  GlIcon,
+  GlSprintf,
+  GlLink,
+  GlSkeletonLoader,
+} from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import DrawerWrapper from 'ee/security_orchestration/components/policy_drawer/drawer_wrapper.vue';
 import { getPolicyType } from 'ee/security_orchestration/utils';
@@ -23,10 +31,10 @@ export default {
     GlIcon,
     GlBadge,
     GlButton,
-    GlLoadingIcon,
     GlSprintf,
     GlTable,
     GlLink,
+    GlSkeletonLoader,
   },
   provide() {
     return {
@@ -41,6 +49,10 @@ export default {
     },
     graphqlId: {
       type: String,
+      required: true,
+    },
+    count: {
+      type: Number,
       required: true,
     },
   },
@@ -70,6 +82,7 @@ export default {
         compliancePipelineExecutionPoliciesAfter: null,
         complianceVulnerabilityManagementPoliciesAfter: null,
       },
+      isExpanded: false,
     };
   },
 
@@ -105,7 +118,7 @@ export default {
         this.handleError(error);
       },
       skip() {
-        return this.namespacePoliciesLoaded;
+        return !this.isExpanded || this.namespacePoliciesLoaded;
       },
     },
     // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
@@ -140,7 +153,7 @@ export default {
         this.handleError(error);
       },
       skip() {
-        return this.policiesLoaded;
+        return !this.isExpanded || this.policiesLoaded;
       },
     },
   },
@@ -264,6 +277,14 @@ export default {
       this.selectedPolicy = null;
       this.$refs.policiesTable.$children[0].clearSelected();
     },
+
+    onSectionExpand(expanded) {
+      this.isExpanded = expanded;
+      if (expanded) {
+        this.$apollo.queries.namespacePolicies.refetch();
+        this.$apollo.queries.complianceFrameworkPolicies.refetch();
+      }
+    },
   },
 
   tableFields: [
@@ -295,10 +316,11 @@ export default {
   <edit-section
     :title="$options.i18n.policies"
     :description="$options.i18n.policiesDescription"
-    :items-count="policies.length"
+    :items-count="count"
+    @toggle="onSectionExpand"
   >
     <gl-table
-      v-if="policies.length"
+      v-if="count"
       ref="policiesTable"
       :items="policies"
       :fields="$options.tableFields"
@@ -325,7 +347,7 @@ export default {
       </template>
 
       <template #table-busy>
-        <gl-loading-icon size="lg" />
+        <gl-skeleton-loader :lines="count" equal-width-lines class="gl-mb-6" />
       </template>
     </gl-table>
     <drawer-wrapper

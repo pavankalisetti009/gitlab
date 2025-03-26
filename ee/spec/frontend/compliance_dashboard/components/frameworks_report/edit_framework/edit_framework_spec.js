@@ -32,6 +32,8 @@ import {
   createComplianceFrameworksReportResponse,
   createComplianceFrameworkMutationResponse,
   mockRequirements,
+  createFrameworkResponseWithEmptyPolicies,
+  createFrameworkResponseWithPolicy,
 } from '../../../mock_data';
 
 Vue.use(VueApollo);
@@ -1115,43 +1117,54 @@ describe('Edit Framework Form', () => {
       expect(findDeleteButton().exists()).toBe(false);
     });
 
-    it.each`
-      policyType                           | policyCursor | buttonState
-      ${'scanResultPolicies'}              | ${'MQ'}      | ${true}
-      ${'scanResultPolicies'}              | ${null}      | ${false}
-      ${'pipelineExecutionPolicies'}       | ${'MQ'}      | ${true}
-      ${'pipelineExecutionPolicies'}       | ${null}      | ${false}
-      ${'scanExecutionPolicies'}           | ${'MQ'}      | ${true}
-      ${'scanExecutionPolicies'}           | ${null}      | ${false}
-      ${'vulnerabilityManagementPolicies'} | ${'MQ'}      | ${true}
-      ${'vulnerabilityManagementPolicies'} | ${null}      | ${false}
-    `(
-      'sets disabled attribute to $buttonState and renders correct tooltip when $policyType has cursor $policyCursor',
-      async ({ policyType, policyCursor, buttonState }) => {
-        const response = createComplianceFrameworksReportResponse();
-        response.data.namespace.complianceFrameworks.nodes[0][policyType].pageInfo.startCursor =
-          policyCursor;
+    describe('when policy collections are empty', () => {
+      beforeEach(async () => {
+        const response = createFrameworkResponseWithEmptyPolicies();
 
         wrapper = createComponent(shallowMountExtended, {
           requestHandlers: [[getComplianceFrameworkQuery, () => response]],
         });
 
         await waitForPromises();
+      });
 
-        expect(findDeleteButton().props('disabled')).toBe(buttonState);
+      it('enables the delete button', () => {
+        expect(findDeleteButton().props('disabled')).toBe(false);
+      });
 
+      it('does not render a tooltip', () => {
+        expect(findDeleteButtonTooltip().exists()).toBe(false);
+      });
+    });
+
+    describe.each([
+      'scanResultPolicies',
+      'pipelineExecutionPolicies',
+      'scanExecutionPolicies',
+      'vulnerabilityManagementPolicies',
+    ])(`when %s collection has nodes`, (policyType) => {
+      beforeEach(async () => {
+        const response = createFrameworkResponseWithPolicy(policyType);
+
+        wrapper = createComponent(shallowMountExtended, {
+          requestHandlers: [[getComplianceFrameworkQuery, () => response]],
+        });
+
+        await waitForPromises();
+      });
+
+      it('disables the delete button', () => {
+        expect(findDeleteButton().props('disabled')).toBe(true);
+      });
+
+      it('renders the correct tooltip message', () => {
         const tooltip = findDeleteButtonTooltip();
-
-        if (buttonState) {
-          expect(tooltip.exists()).toBe(true);
-          expect(tooltip.attributes('title')).toBe(
-            "Compliance frameworks that have a scoped policy can't be deleted",
-          );
-        } else {
-          expect(tooltip.exists()).toBe(false);
-        }
-      },
-    );
+        expect(tooltip.exists()).toBe(true);
+        expect(tooltip.attributes('title')).toBe(
+          "Compliance frameworks that have a scoped policy can't be deleted",
+        );
+      });
+    });
 
     it('disables the delete button and shows correct tooltip when framework is default', async () => {
       const response = createComplianceFrameworksReportResponse();

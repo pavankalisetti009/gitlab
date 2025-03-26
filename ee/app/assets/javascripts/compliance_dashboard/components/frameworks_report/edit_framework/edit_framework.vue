@@ -129,7 +129,7 @@ export default {
     isDefaultFramework() {
       return this.formData.default;
     },
-    hasLinkedPolicies() {
+    policiesCount() {
       const {
         scanResultPolicies,
         scanExecutionPolicies,
@@ -144,7 +144,10 @@ export default {
         vulnerabilityManagementPolicies,
       ];
 
-      return Boolean(policies.some((policy) => policy?.pageInfo.startCursor));
+      return policies.reduce((total, policy) => total + (policy?.nodes?.length || 0), 0);
+    },
+    hasLinkedPolicies() {
+      return this.policiesCount > 0;
     },
     queryVariables() {
       return {
@@ -661,6 +664,7 @@ export default {
 
         <policies-section
           v-if="shouldRenderPolicySection"
+          :count="policiesCount"
           :is-expanded="isNewFramework"
           :full-path="groupPath"
           :graphql-id="graphqlId"
