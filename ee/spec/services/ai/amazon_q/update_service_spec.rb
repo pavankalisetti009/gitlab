@@ -6,15 +6,26 @@ RSpec.describe Ai::AmazonQ::UpdateService, feature_category: :ai_agents do
   describe '#execute' do
     let_it_be(:user) { create(:admin) }
     let_it_be_with_reload(:service_account) { create(:service_account) }
+    let_it_be(:integration) { create(:amazon_q_integration) }
 
-    let(:params) { { availability: 'default_off' } }
+    let_it_be(:project_integration) do
+      create(:amazon_q_integration, instance: false, project: create(:project), inherit_from_id: integration.id)
+    end
+
+    let_it_be(:group_integration) do
+      create(:amazon_q_integration, instance: false, group: create(:group), inherit_from_id: integration.id)
+    end
+
+    let(:params) { { availability: 'default_on', auto_review_enabled: true } }
     let(:status) { 200 }
     let(:body) { 'success' }
 
     subject(:instance) { described_class.new(user, params) }
 
     before do
+      stub_licensed_features(amazon_q: true)
       Ai::Setting.instance.update!(amazon_q_service_account_user_id: service_account.id)
+      ::Gitlab::CurrentSettings.current_application_settings.update!(duo_availability: 'default_off')
     end
 
     context 'with missing availability param' do
@@ -65,14 +76,33 @@ RSpec.describe Ai::AmazonQ::UpdateService, feature_category: :ai_agents do
       expect { instance.execute }
         .to change {
           ::Gitlab::CurrentSettings.current_application_settings.duo_availability
-        }.from(:default_on).to(:default_off)
+        }.from(:default_off).to(:default_on)
+    end
+
+    it 'updates integration settings', :sidekiq_inline do
+      expect { instance.execute }
+        .to change {
+          integration.reload.values_at(
+            :availability, :auto_review_enabled, :merge_requests_events, :pipeline_events
+          )
+        }.from(['default_on', false, false, false]).to(['default_on', true, true, true])
+        .and change {
+          project_integration.reload.values_at(
+            :availability, :auto_review_enabled, :merge_requests_events, :pipeline_events
+          )
+        }.from(['default_on', false, false, false]).to(['default_on', true, true, true])
+        .and change {
+          group_integration.reload.values_at(
+            :availability, :auto_review_enabled, :merge_requests_events, :pipeline_events
+          )
+        }.from(['default_on', false, false, false]).to(['default_on', true, true, true])
     end
 
     it 'creates an audit event' do
       expect { instance.execute }.to change { AuditEvent.count }.by(1)
       expect(AuditEvent.last.details).to include(
         event_name: 'q_onbarding_updated',
-        custom_message: 'Changed availability to default_off'
+        custom_message: 'Changed availability to default_on'
       )
     end
 
