@@ -51,9 +51,11 @@ RSpec.describe ProductAnalytics::Dashboard, feature_category: :product_analytics
   shared_examples 'returns the DORA Metrics dashboard' do
     it 'returns the value streams dashboard' do
       expect(dashboard).to be_a(described_class)
-      expect(dashboard.title).to eq('DORA Metrics')
+      expect(dashboard.title).to eq('DORA metrics analytics')
       expect(dashboard.slug).to eq('dora_metrics')
-      expect(dashboard.description).to eq('DORA metrics stats and trends')
+      expect(dashboard.description).to eq(
+        "View current DORA metric performance and historical trends to analyze DevOps efficiency over time."
+      )
     end
 
     it 'returns the correct panels' do
@@ -119,7 +121,7 @@ description: with missing properties
             'Audience',
             'Behavior',
             'Value Streams Dashboard',
-            'DORA Metrics',
+            'DORA metrics analytics',
             'AI impact analytics'
           ]
         )
@@ -170,7 +172,7 @@ description: with missing properties
         it 'excludes the dashboard from the list' do
           expected_dashboards =
             ["Audience", "Behavior", "Value Streams Dashboard", "AI impact analytics",
-              "DORA Metrics", "Dashboard Example 1"]
+              "DORA metrics analytics", "Dashboard Example 1"]
 
           expect(subject.map(&:title)).to eq(expected_dashboards)
         end
@@ -193,7 +195,7 @@ description: with missing properties
       subject { described_class.for(container: resource_parent, user: user) }
 
       it 'returns a collection of builtin dashboards' do
-        expect(subject.map(&:title)).to match_array(['Value Streams Dashboard', 'DORA Metrics',
+        expect(subject.map(&:title)).to match_array(['Value Streams Dashboard', 'DORA metrics analytics',
           'AI impact analytics', 'Contributions Dashboard'])
       end
 
@@ -205,7 +207,7 @@ description: with missing properties
         it 'returns custom and builtin dashboards' do
           expect(subject).to be_a(Array)
           expect(subject.map(&:title)).to match_array(
-            ['Value Streams Dashboard', 'AI impact analytics', 'DORA Metrics',
+            ['Value Streams Dashboard', 'AI impact analytics', 'DORA metrics analytics',
               'Dashboard Example 1', 'Contributions Dashboard']
           )
         end
@@ -224,7 +226,7 @@ description: with missing properties
 
         it 'excludes the dashboard from the list' do
           expect(subject.map(&:title)).to match_array(
-            ['Value Streams Dashboard', 'AI impact analytics', 'DORA Metrics',
+            ['Value Streams Dashboard', 'AI impact analytics', 'DORA metrics analytics',
               "Dashboard Example 1", 'Contributions Dashboard']
           )
         end
@@ -241,7 +243,7 @@ description: with missing properties
         end
 
         it 'excludes the dashboard from the list' do
-          expect(subject.map(&:title)).not_to include('DORA Metrics')
+          expect(subject.map(&:title)).not_to include('DORA metrics analytics')
         end
       end
     end
