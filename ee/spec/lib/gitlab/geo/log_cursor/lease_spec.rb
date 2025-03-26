@@ -30,11 +30,11 @@ RSpec.describe Gitlab::Geo::LogCursor::Lease, :clean_gitlab_redis_shared_state,
 
       expect(::Gitlab::JsonLogger).to receive(:debug).with(
         {
-         pid: 111,
-         class: 'Gitlab::Geo::LogCursor::Lease',
-         gitlab_host: "localhost",
-         message: 'Lease renewed.',
-         correlation_id: a_kind_of(String)
+          pid: 111,
+          class: 'Gitlab::Geo::LogCursor::Lease',
+          gitlab_host: "localhost",
+          message: 'Lease renewed.',
+          correlation_id: a_kind_of(String)
         })
 
       described_class.renew!

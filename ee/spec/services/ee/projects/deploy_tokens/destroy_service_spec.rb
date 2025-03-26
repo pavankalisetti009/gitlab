@@ -31,9 +31,9 @@ RSpec.describe Projects::DeployTokens::DestroyService, feature_category: :contin
       MESSAGE
 
       expect(AuditEvent.last.details).to include({
-                                                   custom_message: expected_message,
-                                                   action: :custom
-                                                 })
+        custom_message: expected_message,
+        action: :custom
+      })
     end
 
     it_behaves_like 'sends correct event type in audit event stream' do

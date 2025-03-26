@@ -27,9 +27,9 @@ RSpec.describe Projects::DeployTokens::CreateService, feature_category: :continu
         MESSAGE
 
         expect(AuditEvent.last.details).to include({
-                                                     custom_message: expected_message,
-                                                     action: :custom
-                                                   })
+          custom_message: expected_message,
+          action: :custom
+        })
       end
 
       it_behaves_like 'sends correct event type in audit event stream' do
@@ -46,9 +46,9 @@ RSpec.describe Projects::DeployTokens::CreateService, feature_category: :continu
         expected_message = "Attempted to create project deploy token but failed with message: Scopes can't be blank"
 
         expect(AuditEvent.last.details).to include({
-                                                     custom_message: expected_message,
-                                                     action: :custom
-                                                   })
+          custom_message: expected_message,
+          action: :custom
+        })
       end
 
       it_behaves_like 'sends correct event type in audit event stream' do

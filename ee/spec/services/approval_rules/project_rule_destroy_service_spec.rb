@@ -17,11 +17,11 @@ RSpec.describe ApprovalRules::ProjectRuleDestroyService do
       it 'adds an audit event' do
         expect { subject }.to change { AuditEvent.count }.by(1)
         expect(AuditEvent.last.details).to include({
-                                                     author_name: current_user.name,
-                                                     custom_message: 'Deleted approval rule',
-                                                     target_type: 'ApprovalProjectRule',
-                                                     target_id: project_rule.id
-                                                   })
+          author_name: current_user.name,
+          custom_message: 'Deleted approval rule',
+          target_type: 'ApprovalProjectRule',
+          target_id: project_rule.id
+        })
       end
 
       before do

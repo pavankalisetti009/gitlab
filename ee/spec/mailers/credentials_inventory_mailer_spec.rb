@@ -26,10 +26,10 @@ RSpec.describe CredentialsInventoryMailer do
 
     let(:params) do
       {
-          notification_email: ssh_key.user.notification_email_or_default,
-          title: ssh_key.title,
-          last_used_at: ssh_key.last_used_at,
-          created_at: ssh_key.created_at
+        notification_email: ssh_key.user.notification_email_or_default,
+        title: ssh_key.title,
+        last_used_at: ssh_key.last_used_at,
+        created_at: ssh_key.created_at
       }
     end
 

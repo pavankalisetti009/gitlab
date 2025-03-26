@@ -13,10 +13,10 @@ RSpec.describe 'Creating an Iteration', :freeze_time, feature_category: :team_pl
   let(:end_date) { 1.day.from_now.strftime('%F') }
   let(:attributes) do
     {
-        title: 'title',
-        description: 'some description',
-        start_date: start_date,
-        due_date: end_date
+      title: 'title',
+      description: 'some description',
+      start_date: start_date,
+      due_date: end_date
     }
   end
 

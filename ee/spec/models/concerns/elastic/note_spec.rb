@@ -97,18 +97,18 @@ RSpec.describe Note, :elastic, :clean_gitlab_redis_shared_state, feature_categor
         'confidential',
         'internal'
       ).merge({
-                'archived' => project.archived,
-                'issue' => {
-                  'assignee_id' => issue.assignee_ids,
-                  'author_id' => issue.author_id,
-                  'confidential' => issue.confidential
-                },
-                'hashed_root_namespace_id' => project.namespace.hashed_root_namespace_id,
-                'type' => note.es_type,
-                'visibility_level' => project.visibility_level,
-                'issues_access_level' => project.issues_access_level,
-                'schema_version' => Elastic::Latest::NoteInstanceProxy::SCHEMA_VERSION
-              })
+        'archived' => project.archived,
+        'issue' => {
+          'assignee_id' => issue.assignee_ids,
+          'author_id' => issue.author_id,
+          'confidential' => issue.confidential
+        },
+        'hashed_root_namespace_id' => project.namespace.hashed_root_namespace_id,
+        'type' => note.es_type,
+        'visibility_level' => project.visibility_level,
+        'issues_access_level' => project.issues_access_level,
+        'schema_version' => Elastic::Latest::NoteInstanceProxy::SCHEMA_VERSION
+      })
 
       expect(note.__elasticsearch__.as_indexed_json).to eq(expected_hash)
     end

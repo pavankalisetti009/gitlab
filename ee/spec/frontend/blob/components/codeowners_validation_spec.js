@@ -9,7 +9,12 @@ import {
 import VueApollo from 'vue-apollo';
 import Vue from 'vue';
 import { createAlert } from '~/alert';
-import { CODEOWNERS_VALIDATION_I18N, COLLAPSE_ID, DOCS_URL } from 'ee/blob/constants';
+import {
+  CODEOWNERS_VALIDATION_I18N,
+  COLLAPSE_ID,
+  DOCS_URL,
+  CODE_TO_MESSAGE,
+} from 'ee/blob/constants';
 import CodeownersValidation from 'ee/blob/components/codeowners_validation.vue';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import validateCodeownerFileQuery from 'ee/blob/queries/validate_codeowner_file.query.graphql';
@@ -90,6 +95,7 @@ describe('codeowners validation', () => {
     beforeEach(async () => {
       await createComponent();
     });
+
     it('renders the invalid syntax text', () => {
       expect(findInvalidMessage().text()).toBe(
         CODEOWNERS_VALIDATION_I18N.syntaxErrors(validateCodeownerFile.total),
@@ -112,10 +118,22 @@ describe('codeowners validation', () => {
       expect(findAccordionItems()).toHaveLength(validateCodeownerFile.validationErrors.length);
     });
 
-    it('renders links to line with error', () => {
-      const firstErrorLink = linksToErrors().at(0);
+    it('renders correct error message', () => {
+      findAccordionItems().wrappers.forEach((item, index) => {
+        const { code } = validateCodeownerFile.validationErrors[index];
+        const expectedErrorMessage = CODE_TO_MESSAGE[code];
+        expect(item.text()).toContain(expectedErrorMessage);
+      });
+    });
 
-      expect(linksToErrors()).toHaveLength(7);
+    it('renders links to line with error', () => {
+      const numErrorLines = validateCodeownerFile.validationErrors.reduce(
+        (sum, { lines }) => sum + lines.length,
+        0,
+      );
+      expect(linksToErrors()).toHaveLength(numErrorLines);
+
+      const firstErrorLink = linksToErrors().at(0);
       expect(firstErrorLink.text()).toBe('Line 2');
       expect(firstErrorLink.attributes('href')).toBe('#L2');
     });

@@ -8,10 +8,10 @@ RSpec.describe Gitlab::Ci::Reports::CoverageFuzzing::Report do
   describe '#add_crash' do
     let(:crash) do
       {
-          crash_address: "0x602000001573",
-          crash_type: "Heap-buffer-overflow\nREAD 1",
-          crash_state: "FuzzMe\nstart\nstart+0x0\n\n",
-          stacktrace_snippet: fixture_file('stacktrace_snippet.txt', dir: 'ee')
+        crash_address: "0x602000001573",
+        crash_type: "Heap-buffer-overflow\nREAD 1",
+        crash_state: "FuzzMe\nstart\nstart+0x0\n\n",
+        stacktrace_snippet: fixture_file('stacktrace_snippet.txt', dir: 'ee')
       }
     end
 

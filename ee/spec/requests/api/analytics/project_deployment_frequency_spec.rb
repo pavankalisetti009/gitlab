@@ -112,10 +112,10 @@ RSpec.describe API::Analytics::ProjectDeploymentFrequency, feature_category: :va
 
     it 'returns the expected deployment frequencies' do
       expect(response.parsed_body).to eq([{
-          "from" => "2020-02-01",
-          "to" => "2020-04-01",
-          "value" => 8
-        }])
+        "from" => "2020-02-01",
+        "to" => "2020-04-01",
+        "value" => 8
+      }])
     end
   end
 
