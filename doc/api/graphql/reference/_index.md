@@ -43334,11 +43334,25 @@ Values for sorting projects.
 | Value | Description |
 | ----- | ----------- |
 | <a id="namespaceprojectsortactivity_desc"></a>`ACTIVITY_DESC` | Sort by latest activity, descending order. |
+| <a id="namespaceprojectsortbuild_artifacts_size_asc"></a>`BUILD_ARTIFACTS_SIZE_ASC` | Sort by total build artifact size, ascending order. |
+| <a id="namespaceprojectsortbuild_artifacts_size_desc"></a>`BUILD_ARTIFACTS_SIZE_DESC` | Sort by total build artifact size, descending order. |
+| <a id="namespaceprojectsortcontainer_registry_size_asc"></a>`CONTAINER_REGISTRY_SIZE_ASC` | Sort by total container registry size, ascending order. |
+| <a id="namespaceprojectsortcontainer_registry_size_desc"></a>`CONTAINER_REGISTRY_SIZE_DESC` | Sort by total container registry size, descending order. |
 | <a id="namespaceprojectsortexcess_repo_storage_size_desc"></a>`EXCESS_REPO_STORAGE_SIZE_DESC` | Sort by excess repository storage size, descending order. |
+| <a id="namespaceprojectsortlfs_objects_size_asc"></a>`LFS_OBJECTS_SIZE_ASC` | Sort by total LFS object size, ascending order. |
+| <a id="namespaceprojectsortlfs_objects_size_desc"></a>`LFS_OBJECTS_SIZE_DESC` | Sort by total LFS object size, descending order. |
+| <a id="namespaceprojectsortpackages_size_asc"></a>`PACKAGES_SIZE_ASC` | Sort by total package size, ascending order. |
+| <a id="namespaceprojectsortpackages_size_desc"></a>`PACKAGES_SIZE_DESC` | Sort by total package size, descending order. |
+| <a id="namespaceprojectsortrepository_size_asc"></a>`REPOSITORY_SIZE_ASC` | Sort by total repository size, ascending order. |
+| <a id="namespaceprojectsortrepository_size_desc"></a>`REPOSITORY_SIZE_DESC` | Sort by total repository size, descending order. |
 | <a id="namespaceprojectsortsimilarity"></a>`SIMILARITY` | Most similar to the search query. |
+| <a id="namespaceprojectsortsnippets_size_asc"></a>`SNIPPETS_SIZE_ASC` | Sort by total snippet size, ascending order. |
+| <a id="namespaceprojectsortsnippets_size_desc"></a>`SNIPPETS_SIZE_DESC` | Sort by total snippet size, descending order. |
 | <a id="namespaceprojectsortstorage"></a>`STORAGE` {{< icon name="warning-solid" >}} | **Deprecated** in GitLab 16.9. Please use EXCESS_REPO_STORAGE_SIZE_DESC. |
 | <a id="namespaceprojectsortstorage_size_asc"></a>`STORAGE_SIZE_ASC` | Sort by total storage size, ascending order. |
 | <a id="namespaceprojectsortstorage_size_desc"></a>`STORAGE_SIZE_DESC` | Sort by total storage size, descending order. |
+| <a id="namespaceprojectsortwiki_size_asc"></a>`WIKI_SIZE_ASC` | Sort by total wiki size, ascending order. |
+| <a id="namespaceprojectsortwiki_size_desc"></a>`WIKI_SIZE_DESC` | Sort by total wiki size, descending order. |
 
 ### `NegatedIterationWildcardId`
 
