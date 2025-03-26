@@ -35320,9 +35320,6 @@ msgstr ""
 msgid "Manual Variables"
 msgstr ""
 
-msgid "ManualOrdering|Couldn't save the order of the issues"
-msgstr ""
-
 msgid "ManualVariables|There are no manually-specified variables for this pipeline"
 msgstr ""
 
