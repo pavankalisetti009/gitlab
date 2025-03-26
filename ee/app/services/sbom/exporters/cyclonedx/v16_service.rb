@@ -7,7 +7,6 @@ module Sbom
         include WriteBlob
 
         VENDOR = 'GitLab'
-        TOOL = 'GitLab dependency list export'
 
         def initialize(export, sbom_occurrences)
           @export = export
@@ -93,7 +92,7 @@ module Sbom
           {
             'timestamp' => timestamp,
             'tools' => [gitlab_tool],
-            'authors' => [author],
+            'manufacturer' => gitlab_manufacturer,
             'component' => metadata_component
           }
         end
@@ -101,17 +100,19 @@ module Sbom
         def gitlab_tool
           {
             'vendor' => VENDOR,
-            'name' => TOOL,
+            'name' => 'GitLab dependency list export',
             'version' => Gitlab::VERSION
           }
         end
 
-        def author
-          author = export.author
-
+        def gitlab_manufacturer
           {
-            'name' => author.name,
-            'email' => author.email
+            'name' => VENDOR,
+            'url' => ['https://about.gitlab.com/'],
+            'contact' => [{
+              'name' => 'GitLab Support',
+              'email' => 'support@gitlab.com'
+            }]
           }
         end
 
