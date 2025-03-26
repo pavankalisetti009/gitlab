@@ -14,3 +14,4 @@ options:
   yAxis:
     name: "Percentage of failed deployments"
     type: value
+  includeLegendAvgMax: false

@@ -115,6 +115,9 @@
         },
         "titleIcon": {
           "type": "string"
+        },
+        "includeLegendAvgMax": {
+          "type": "boolean"
         }
       },
       "title": "Options"

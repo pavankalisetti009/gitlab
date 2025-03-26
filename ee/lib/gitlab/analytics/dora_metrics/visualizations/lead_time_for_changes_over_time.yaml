@@ -14,3 +14,4 @@ options:
   yAxis:
     name: "Time from merge to deploy"
     type: value
+  includeLegendAvgMax: false
