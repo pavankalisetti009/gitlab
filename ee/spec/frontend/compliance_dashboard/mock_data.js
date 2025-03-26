@@ -632,3 +632,26 @@ export const mockedRoutes = [
   { name: ROUTE_NEW_FRAMEWORK_SUCCESS, fullPath: `/${ROUTE_FRAMEWORKS}/new/success` },
   { name: ROUTE_EDIT_FRAMEWORK, fullPath: `/${ROUTE_FRAMEWORKS}/123` },
 ];
+
+export const createFrameworkResponseWithEmptyPolicies = () => {
+  const response = createComplianceFrameworksReportResponse();
+  const framework = response.data.namespace.complianceFrameworks.nodes[0];
+
+  framework.scanResultPolicies = { nodes: [] };
+  framework.pipelineExecutionPolicies = { nodes: [] };
+  framework.scanExecutionPolicies = { nodes: [] };
+  framework.vulnerabilityManagementPolicies = { nodes: [] };
+
+  return response;
+};
+
+export const createFrameworkResponseWithPolicy = (policyType) => {
+  const response = createFrameworkResponseWithEmptyPolicies();
+  const framework = response.data.namespace.complianceFrameworks.nodes[0];
+
+  framework[policyType] = {
+    nodes: [{ name: `${policyType.replace(/([A-Z])/g, ' $1').trim()} Policy` }],
+  };
+
+  return response;
+};

@@ -45,7 +45,6 @@ export default {
       isExpanded: props.initiallyExpanded,
     };
   },
-
   computed: {
     collapseIconName() {
       return this.isExpanded ? 'chevron-lg-down' : 'chevron-lg-right';
@@ -60,10 +59,14 @@ export default {
       return this.itemsCount > 0 || this.isCompleted;
     },
   },
+  created() {
+    this.$emit('toggle', this.isExpanded);
+  },
 
   methods: {
     toggleExpand() {
       this.isExpanded = !this.isExpanded;
+      this.$emit('toggle', this.isExpanded);
     },
   },
   i18n: {
