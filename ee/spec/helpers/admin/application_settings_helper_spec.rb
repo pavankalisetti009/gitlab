@@ -173,7 +173,6 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
       expect(helper.admin_duo_home_app_data).to eq({
         duo_seat_utilization_path: '/admin/gitlab_duo/seat_utilization',
         duo_configuration_path: '/admin/gitlab_duo/configuration',
-        duo_configurable: 'false',
         add_duo_pro_seats_url: 'https://customers.staging.gitlab.com/gitlab/subscriptions/A-S00613274/duo_pro_seats',
         subscription_name: 'Test Subscription Name',
         is_bulk_add_on_assignment_enabled: 'true',
@@ -190,24 +189,26 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
     end
 
     context 'when the instance has a Duo purchase' do
-      let_it_be(:duo_start_date) { Date.current - 1.month }
-      let_it_be(:duo_end_date) { Date.current + 11.months }
-      let_it_be(:duo_purchase) do
-        create( # rubocop:disable RSpec/FactoryBot/AvoidCreate -- A persisted record is needed for querying
+      let(:duo_start_date) { Date.current - 1.month }
+      let(:duo_end_date) { Date.current + 11.months }
+      let(:duo_purchase) do
+        build(
           :gitlab_subscription_add_on_purchase, :self_managed, :duo_enterprise,
           started_at: duo_start_date,
           expires_on: duo_end_date
         )
       end
 
+      before do
+        allow(GitlabSubscriptions::AddOnPurchase).to receive_message_chain(
+          :for_self_managed, :for_duo_pro_or_duo_enterprise, :last
+        ).and_return(duo_purchase)
+      end
+
       it 'includes the correct values' do
         result = helper.admin_duo_home_app_data
 
-        expect(result).to include(
-          duo_add_on_start_date: duo_start_date,
-          duo_add_on_end_date: duo_end_date,
-          duo_configurable: 'true'
-        )
+        expect(result).to include(duo_add_on_start_date: duo_start_date, duo_add_on_end_date: duo_end_date)
       end
     end
 

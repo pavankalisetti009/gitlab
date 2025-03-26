@@ -18,7 +18,6 @@ module Admin
       {
         duo_seat_utilization_path: admin_gitlab_duo_seat_utilization_index_path,
         duo_configuration_path: admin_gitlab_duo_configuration_index_path,
-        duo_configurable: admin_display_duo_addon_settings?.to_s,
         add_duo_pro_seats_url: add_duo_pro_seats_url(subscription_name),
         subscription_name: subscription_name,
         is_bulk_add_on_assignment_enabled: 'true',
