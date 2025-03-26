@@ -3549,8 +3549,7 @@ class Project < ApplicationRecord
   end
 
   def job_token_policies_enabled?
-    Feature.enabled?(:add_policies_to_ci_job_token, self) ||
-      namespace.root_ancestor.namespace_settings&.job_token_policies_enabled?
+    namespace.root_ancestor.namespace_settings&.job_token_policies_enabled?
   end
   strong_memoize_attr :job_token_policies_enabled?
 

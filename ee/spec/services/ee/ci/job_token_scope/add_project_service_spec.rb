@@ -12,6 +12,10 @@ RSpec.describe Ci::JobTokenScope::AddProjectService, feature_category: :continuo
 
   let_it_be(:direction) { :inbound }
 
+  before do
+    allow(project).to receive(:job_token_policies_enabled?).and_return(true)
+  end
+
   subject(:service_result) do
     described_class.new(project, current_user).execute(target_project, default_permissions: false, policies: policies,
       direction: direction)

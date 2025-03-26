@@ -10028,22 +10028,16 @@ RSpec.describe Project, factory_default: :keep, feature_category: :groups_and_pr
 
     subject { project.job_token_policies_enabled? }
 
-    where(:flag_enabled, :setting_enabled, :result) do
-      true  | true  | true
-      true  | false | true
-      false | true  | true
-      false | false | false
-    end
+    where(:setting_enabled) { [true, false] }
 
     before do
       project.clear_memoization(:job_token_policies_enabled?)
-      stub_feature_flags(add_policies_to_ci_job_token: flag_enabled)
       allow(project).to receive_message_chain(:namespace, :root_ancestor, :namespace_settings,
         :job_token_policies_enabled?).and_return(setting_enabled)
     end
 
     with_them do
-      it { is_expected.to eq(result) }
+      it { is_expected.to eq(setting_enabled) }
     end
   end
 
