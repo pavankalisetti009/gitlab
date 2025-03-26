@@ -2,6 +2,7 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import createMemberRoleMutation from 'ee/roles_and_permissions/graphql/create_member_role.mutation.graphql';
+import createAdminRoleMutation from 'ee/roles_and_permissions/graphql/admin_role/create_role.mutation.graphql';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import RoleCreate from 'ee/roles_and_permissions/components/manage_role/role_create.vue';
 import RoleForm from 'ee/roles_and_permissions/components/manage_role/role_form.vue';
@@ -28,10 +29,18 @@ describe('RoleCreate', () => {
 
   const defaultCreateMutationHandler = getCreateMutationHandler();
 
-  const createComponent = ({ createMutationHandler = defaultCreateMutationHandler } = {}) => {
+  const createComponent = ({
+    createMutation = createMemberRoleMutation,
+    createMutationHandler = defaultCreateMutationHandler,
+    isAdminRole = false,
+  } = {}) => {
     wrapper = shallowMountExtended(RoleCreate, {
-      propsData: { groupFullPath: 'test-group', listPagePath: 'http://list/page/path' },
-      apolloProvider: createMockApollo([[createMemberRoleMutation, createMutationHandler]]),
+      propsData: {
+        groupFullPath: 'test-group',
+        listPagePath: 'http://list/page/path',
+      },
+      provide: { isAdminRole },
+      apolloProvider: createMockApollo([[createMutation, createMutationHandler]]),
     });
   };
 
@@ -116,6 +125,28 @@ describe('RoleCreate', () => {
       findRoleForm().vm.$emit('submit');
 
       expect(mockAlertDismiss).toHaveBeenCalled();
+    });
+  });
+
+  describe('for admin role', () => {
+    beforeEach(() =>
+      createComponent({ isAdminRole: true, createMutation: createAdminRoleMutation }),
+    );
+
+    it('shows the role form', () => {
+      expect(findRoleForm().props()).toMatchObject({
+        title: 'Create admin role',
+        showBaseRole: false,
+      });
+    });
+
+    it('calls create admin role mutation', () => {
+      wrapper.vm.saveRole({ a: '1' });
+
+      expect(defaultCreateMutationHandler).toHaveBeenCalledTimes(1);
+      expect(defaultCreateMutationHandler).toHaveBeenCalledWith(
+        expect.objectContaining({ a: '1' }),
+      );
     });
   });
 });

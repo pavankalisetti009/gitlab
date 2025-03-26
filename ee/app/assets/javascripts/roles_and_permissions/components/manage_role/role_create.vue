@@ -1,5 +1,6 @@
 <script>
 import createMemberRoleMutation from 'ee/roles_and_permissions/graphql/create_member_role.mutation.graphql';
+import createAdminRoleMutation from 'ee/roles_and_permissions/graphql/admin_role/create_role.mutation.graphql';
 import { s__, sprintf } from '~/locale';
 import { visitUrl } from '~/lib/utils/url_utility';
 import { createAlert } from '~/alert';
@@ -7,6 +8,7 @@ import RoleForm from './role_form.vue';
 
 export default {
   components: { RoleForm },
+  inject: ['isAdminRole'],
   props: {
     groupFullPath: {
       type: String,
@@ -24,6 +26,13 @@ export default {
       alert: null,
     };
   },
+  computed: {
+    titleText() {
+      return this.isAdminRole
+        ? s__('MemberRole|Create admin role')
+        : s__('MemberRole|Create member role');
+    },
+  },
   methods: {
     async saveRole(input) {
       try {
@@ -31,7 +40,7 @@ export default {
         this.isSubmitting = true;
 
         const { data } = await this.$apollo.mutate({
-          mutation: createMemberRoleMutation,
+          mutation: this.isAdminRole ? createAdminRoleMutation : createMemberRoleMutation,
           variables: { ...input, groupPath: this.groupFullPath },
         });
 
@@ -58,10 +67,10 @@ export default {
 
 <template>
   <role-form
-    :title="s__('MemberRole|Create member role')"
+    :title="titleText"
     :submit-text="s__('MemberRole|Create role')"
     :busy="isSubmitting"
-    show-base-role
+    :show-base-role="!isAdminRole"
     @submit="saveRole"
     @cancel="goToPreviousPage"
   />

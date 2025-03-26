@@ -51,7 +51,6 @@ export default {
   apollo: {
     memberRole: {
       query: memberRoleQuery,
-      errorPolicy: 'none', // This is needed to stop the result() block from being called when there's an error.
       variables() {
         return { id: convertToGraphQLId(TYPENAME_MEMBER_ROLE, this.roleId) };
       },

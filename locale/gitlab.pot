@@ -1412,6 +1412,9 @@ msgid_plural "%{strongStart}%{count}%{strongEnd} commits"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "%{strongStart}%{firstSelected}%{strongEnd} +%{length} more"
+msgstr ""
+
 msgid "%{strongStart}Merge reports (%{reportsCount}):%{strongEnd} %{summaryText}"
 msgstr ""
 
@@ -36019,6 +36022,9 @@ msgstr ""
 msgid "MemberRole|Could not update role."
 msgstr ""
 
+msgid "MemberRole|Create admin role"
+msgstr ""
+
 msgid "MemberRole|Create member role"
 msgstr ""
 
@@ -36062,6 +36068,9 @@ msgid "MemberRole|Direct users assigned"
 msgstr ""
 
 msgid "MemberRole|Dismiss Planner role promotion"
+msgstr ""
+
+msgid "MemberRole|Edit admin role"
 msgstr ""
 
 msgid "MemberRole|Edit member role"

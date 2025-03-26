@@ -3,10 +3,12 @@ import VueApollo from 'vue-apollo';
 import { GlLoadingIcon, GlAlert } from '@gitlab/ui';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import updateMemberRoleMutation from 'ee/roles_and_permissions/graphql/update_member_role.mutation.graphql';
+import updateAdminRoleMutation from 'ee/roles_and_permissions/graphql/admin_role/update_role.mutation.graphql';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import RoleEdit from 'ee/roles_and_permissions/components/manage_role/role_edit.vue';
 import RoleForm from 'ee/roles_and_permissions/components/manage_role/role_form.vue';
 import memberRoleQuery from 'ee/roles_and_permissions/graphql/role_details/member_role.query.graphql';
+import adminRoleQuery from 'ee/roles_and_permissions/graphql/admin_role/role.query.graphql';
 import waitForPromises from 'helpers/wait_for_promises';
 import { visitUrl } from '~/lib/utils/url_utility';
 import { createAlert } from '~/alert';
@@ -35,14 +37,21 @@ describe('RoleEdit', () => {
   const defaultUpdateMutationHandler = getUpdateMutationHandler();
 
   const createComponent = ({
+    roleQuery = memberRoleQuery,
+    updateMutation = updateMemberRoleMutation,
     roleQueryHandler = defaultRoleQueryHandler,
     updateMutationHandler = defaultUpdateMutationHandler,
+    isAdminRole = false,
   } = {}) => {
     wrapper = shallowMountExtended(RoleEdit, {
-      propsData: { listPagePath: 'http://list/page/path', roleId: 5 },
+      propsData: {
+        listPagePath: 'http://list/page/path',
+        roleId: 5,
+      },
+      provide: { isAdminRole },
       apolloProvider: createMockApollo([
-        [memberRoleQuery, roleQueryHandler],
-        [updateMemberRoleMutation, updateMutationHandler],
+        [roleQuery, roleQueryHandler],
+        [updateMutation, updateMutationHandler],
       ]),
     });
 
@@ -193,6 +202,33 @@ describe('RoleEdit', () => {
       findRoleForm().vm.$emit('submit');
 
       expect(mockAlertDismiss).toHaveBeenCalled();
+    });
+  });
+
+  describe('for admin role', () => {
+    beforeEach(() => {
+      return createComponent({
+        isAdminRole: true,
+        roleQuery: adminRoleQuery,
+        updateMutation: updateAdminRoleMutation,
+      });
+    });
+
+    it('shows role form', () => {
+      expect(findRoleForm().props()).toMatchObject({
+        title: 'Edit admin role',
+        showBaseRole: false,
+      });
+    });
+
+    it('calls update admin role mutation', () => {
+      wrapper.vm.saveRole({ a: '1' });
+
+      expect(defaultUpdateMutationHandler).toHaveBeenCalledTimes(1);
+      expect(defaultUpdateMutationHandler).toHaveBeenCalledWith({
+        id: 'gid://gitlab/MemberRole/5',
+        a: '1',
+      });
     });
   });
 });
