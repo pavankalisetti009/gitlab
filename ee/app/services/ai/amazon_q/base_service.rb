@@ -5,8 +5,6 @@ module Ai
     class BaseService
       include Gitlab::Utils::StrongMemoize
 
-      AVAILABILITY_OPTIONS = %w[default_on default_off never_on].freeze
-
       def initialize(user, params = {})
         @user = user
         @params = params
@@ -18,9 +16,11 @@ module Ai
 
       def availability_param_error
         return ServiceResponse.error(message: 'Missing availability parameter') unless params[:availability].present?
-        return if AVAILABILITY_OPTIONS.include?(params[:availability])
 
-        ServiceResponse.error(message: "availability must be one of: #{AVAILABILITY_OPTIONS.join(', ')}")
+        availability_options = Integrations::AmazonQ::AVAILABILITY_OPTIONS
+        return if availability_options.include?(params[:availability])
+
+        ServiceResponse.error(message: "availability must be one of: #{availability_options.join(', ')}")
       end
       strong_memoize_attr :availability_param_error
 
@@ -53,6 +53,26 @@ module Ai
           target: ai_settings,
           message: message[0...-2]
         })
+      end
+
+      def update_integration(params)
+        integration = Integration.find_or_initialize_non_project_specific_integration('amazon_q', instance: true)
+
+        unless integration
+          ai_settings.errors.add(:base,
+            "Failed to create an integration: Amazon Q is not available")
+
+          return false
+        end
+
+        if integration.update(active: true, **params)
+          PropagateIntegrationWorker.perform_async(integration.id)
+        else
+          ai_settings.errors.add(:base,
+            "Failed to create an integration: Error #{integration.errors.full_messages.to_sentence}")
+        end
+
+        integration.persisted?
       end
     end
   end

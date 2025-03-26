@@ -6,7 +6,7 @@ module Ai
       def execute
         return availability_param_error if availability_param_error
 
-        success = application_settings.update(duo_availability: params[:availability])
+        success = update_settings
         return ServiceResponse.error(message: application_settings.errors.full_messages.to_sentence) unless success
 
         create_audit_event(audit_availability: true, audit_ai_settings: false)
@@ -20,6 +20,14 @@ module Ai
         return result unless result.success?
 
         ServiceResponse.success
+      end
+
+      private
+
+      def update_settings
+        return unless application_settings.update(duo_availability: params[:availability])
+
+        update_integration(params)
       end
     end
   end

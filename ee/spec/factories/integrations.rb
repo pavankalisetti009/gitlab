@@ -42,5 +42,7 @@ FactoryBot.define do
     active { true }
     instance { true }
     role_arn { 'q' }
+    availability { 'default_on' }
+    auto_review_enabled { false }
   end
 end

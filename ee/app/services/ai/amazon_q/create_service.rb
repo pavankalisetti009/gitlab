@@ -26,7 +26,7 @@ module Ai
         return unless application_settings.update(duo_availability: params[:availability])
         return unless create_amazon_q_onboarding
 
-        create_integration(params)
+        update_integration(params)
       end
 
       def create_amazon_q_onboarding
@@ -66,26 +66,6 @@ module Ai
         return unless ai_settings.update(amazon_q_service_account_user_id: service_account.id)
 
         service_account
-      end
-
-      def create_integration(params)
-        integration = Integration.find_or_initialize_non_project_specific_integration('amazon_q', instance: true)
-
-        unless integration
-          ai_settings.errors.add(:base,
-            "Failed to create an integration: Amazon Q is not available")
-
-          return false
-        end
-
-        if integration.update(active: true, role_arn: params[:role_arn])
-          PropagateIntegrationWorker.perform_async(integration.id)
-        else
-          ai_settings.errors.add(:base,
-            "Failed to create an integration: Error #{integration.errors.full_messages.to_sentence}")
-        end
-
-        integration.persisted?
       end
 
       def ensure_service_account_block_status(service_account: nil)
