@@ -893,6 +893,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace: :cronjob
+- :name: cronjob:vulnerabilities_namespace_statistics_schedule
+  :worker_name: Vulnerabilities::NamespaceStatistics::ScheduleWorker
+  :feature_category: :security_asset_inventories
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace: :cronjob
 - :name: cronjob:vulnerabilities_orphaned_remediations_cleanup
   :worker_name: Vulnerabilities::OrphanedRemediationsCleanupWorker
   :feature_category: :vulnerability_management
@@ -3586,6 +3596,16 @@
 - :name: vulnerabilities_namespace_historical_statistics_update_traversal_ids
   :worker_name: Vulnerabilities::NamespaceHistoricalStatistics::UpdateTraversalIdsWorker
   :feature_category: :vulnerability_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
+- :name: vulnerabilities_namespace_statistics_adjustment
+  :worker_name: Vulnerabilities::NamespaceStatistics::AdjustmentWorker
+  :feature_category: :security_asset_inventories
   :has_external_dependencies: false
   :urgency: :low
   :resource_boundary: :unknown
