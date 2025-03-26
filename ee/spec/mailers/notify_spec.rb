@@ -344,6 +344,7 @@ RSpec.describe Notify, feature_category: :shared do
     end
 
     describe 'for compliance frameworks' do
+      let(:truncated) { false }
       let_it_be(:fedramp) { create :compliance_framework, name: 'FedRamp', namespace: group }
 
       subject do
@@ -351,6 +352,7 @@ RSpec.describe Notify, feature_category: :shared do
           user: current_user,
           group: group,
           attachment: "csv_data",
+          truncated: truncated,
           filename: "filename.csv"
         )
       end
@@ -358,6 +360,13 @@ RSpec.describe Notify, feature_category: :shared do
       it_behaves_like 'an email sent from GitLab'
       it { have_subject "#{group.name} | Compliance Framework Export" }
       it { is_expected.to have_body_text('A compliance frameworks CSV export for the group') }
+
+      context 'with truncated CSV file' do
+        let(:truncated) { true }
+
+        it_behaves_like 'an email sent from GitLab'
+        it { is_expected.to have_body_text('Note: This report was truncated to adhere to filesize limits of 15 MiB.') }
+      end
     end
   end
 
