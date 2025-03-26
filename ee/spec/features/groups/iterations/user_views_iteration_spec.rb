@@ -97,7 +97,7 @@ RSpec.describe 'User views iteration', :js, feature_category: :team_planning do
 
           wait_for_requests
 
-          click_button manual_cadence.title
+          find_by_testid('crud-collapse-toggle', match: :first).click
 
           expect(page).not_to have_content(iteration_period(iteration, use_thin_space: false))
         end
