@@ -51,10 +51,26 @@ RSpec.describe GitlabSubscriptions::MemberManagement::ProcessUserBillablePromoti
         context 'with skip_authorization set to true' do
           let(:skip_authorization) { true }
 
-          it 'returns an success' do
-            response = service.execute
+          context 'when status is approved' do
+            it 'returns success' do
+              response = service.execute
 
-            expect(response).to be_success
+              expect(response).to be_success
+              expect(member_approval.reload).to be_approved
+              expect(member_approval.reload.reviewed_by).to be_nil
+            end
+          end
+
+          context 'when status is denied' do
+            let(:status) { :denied }
+
+            it 'returns success' do
+              response = service.execute
+
+              expect(response).to be_success
+              expect(member_approval.reload).to be_denied
+              expect(member_approval.reload.reviewed_by).to be_nil
+            end
           end
         end
       end
@@ -139,7 +155,9 @@ RSpec.describe GitlabSubscriptions::MemberManagement::ProcessUserBillablePromoti
                 expect(response.message).to eq('Successfully processed request')
                 expect(response.payload).to eq({ user: user, status: status, result: :success })
                 expect(member_approval.reload.status).to eq('approved')
+                expect(member_approval.reload.reviewed_by).to eq(current_user)
                 expect(another_member_approval.reload.status).to eq('approved')
+                expect(another_member_approval.reload.reviewed_by).to eq(current_user)
 
                 member = src.reload.members.last
                 expect(member.user).to eq(user)
@@ -164,7 +182,9 @@ RSpec.describe GitlabSubscriptions::MemberManagement::ProcessUserBillablePromoti
                 expect(response.message).to eq('Successfully processed request')
                 expect(response.payload).to eq({ user: user, status: status, result: :success })
                 expect(member_approval.reload.status).to eq('denied')
+                expect(member_approval.reload.reviewed_by).to eq(current_user)
                 expect(another_member_approval.reload.status).to eq('denied')
+                expect(another_member_approval.reload.reviewed_by).to eq(current_user)
               end
             end
           end

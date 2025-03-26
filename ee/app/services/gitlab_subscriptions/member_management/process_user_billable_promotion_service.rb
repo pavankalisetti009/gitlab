@@ -51,7 +51,10 @@ module GitlabSubscriptions
             failed_member_approvals << member_approval
             Gitlab::AppLogger.error(message: "Failed to apply pending promotions: #{response[:message]}")
           else
-            member_approval.update!(status: :approved)
+            member_approval.update!(
+              status: :approved,
+              reviewed_by: current_user
+            )
             self.successful_promotion_count += 1
           end
         end
@@ -105,7 +108,11 @@ module GitlabSubscriptions
 
       def deny_member_approvals
         pending_approvals.each_batch do |batch|
-          batch.update_all(updated_at: Time.current, status: :denied)
+          batch.update_all(
+            updated_at: Time.current,
+            status: :denied,
+            reviewed_by_id: current_user&.id
+          )
         end
 
         success
@@ -113,7 +120,10 @@ module GitlabSubscriptions
 
       def approve_failed_member_approvals
         failed_member_approvals.each do |member_approval|
-          member_approval.update!(status: :approved)
+          member_approval.update!(
+            status: :approved,
+            reviewed_by: current_user
+          )
         end
       end
 
