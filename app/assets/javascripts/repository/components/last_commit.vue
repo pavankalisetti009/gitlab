@@ -49,7 +49,7 @@ export default {
         };
       },
       update: (data) => {
-        const lastCommit = data.project?.repository?.paginatedTree?.nodes[0]?.lastCommit;
+        const lastCommit = data.project?.repository?.lastCommit ?? {};
         const pipelines = lastCommit?.pipelines?.edges;
 
         return {
