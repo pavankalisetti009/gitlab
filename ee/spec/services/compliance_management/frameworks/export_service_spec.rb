@@ -42,7 +42,8 @@ RSpec.describe ComplianceManagement::Frameworks::ExportService, feature_category
           #{csv_header}
           EXPORT
 
-          expect(service.execute.payload).to eq export
+          expect(service.execute.payload[:csv]).to eq export
+          expect(service.execute.payload[:truncated]).to be false
         end
       end
 
@@ -71,7 +72,8 @@ RSpec.describe ComplianceManagement::Frameworks::ExportService, feature_category
           GDPR,sub_group_project
           EXPORT
 
-          expect(service.execute.payload).to eq export
+          expect(service.execute.payload[:csv]).to eq export
+          expect(service.execute.payload[:truncated]).to be false
         end
       end
     end

@@ -2,8 +2,9 @@
 
 module Emails
   module ComplianceFrameworks
-    def compliance_frameworks_csv_email(user:, group:, attachment:, filename:)
+    def compliance_frameworks_csv_email(user:, group:, attachment:, filename:, truncated: false)
       @group = group
+      @truncated = truncated
       attachments[filename] = { content: attachment, mime_type: 'text/csv' }
 
       email_with_layout(
