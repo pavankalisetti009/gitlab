@@ -5,6 +5,7 @@ module EE
     module Pipeline
       extend ActiveSupport::Concern
       extend ::Gitlab::Utils::Override
+      include ::Gitlab::InternalEventsTracking
 
       prepended do
         include UsageStatistics
@@ -100,6 +101,19 @@ module EE
 
             pipeline.run_after_commit do
               ::Ci::TriggerDownstreamSubscriptionsWorker.perform_async(pipeline.id)
+            end
+          end
+
+          after_transition any => ::Ci::Pipeline.completed_statuses do |pipeline|
+            next unless ::Feature.enabled?(:track_repository_xray_in_ci, pipeline.project, type: :gitlab_com_derisk)
+            next unless pipeline.complete_and_has_reports?(::Ci::JobArtifact.repository_xray_reports)
+
+            pipeline.run_after_commit do
+              track_internal_event(
+                'ci_repository_xray_artifact_created',
+                project: pipeline.project,
+                user: pipeline.user
+              )
             end
           end
         end
