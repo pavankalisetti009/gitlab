@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlTableLite, GlSkeletonLoader, GlEmptyState, GlBreadcrumb } from '@gitlab/ui';
+import { GlTableLite, GlSkeletonLoader, GlEmptyState, GlBreadcrumb, GlPopover } from '@gitlab/ui';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import { createAlert } from '~/alert';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -9,6 +9,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import InventoryDashboard from 'ee/security_inventory/components/inventory_dashboard.vue';
 import VulnerabilityIndicator from 'ee/security_inventory/components/vulnerability_indicator.vue';
 import SubgroupsAndProjectsQuery from 'ee/security_inventory/graphql/subgroups_and_projects.query.graphql';
+import projectVulnerabilityCounts from 'ee/security_inventory/components/project_vulnerability_counts.vue';
 import { subgroupsAndProjects } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -50,6 +51,9 @@ describe('InventoryDashboard', () => {
   const findTableRows = () => findTable().findAll('tbody tr');
   const findNthTableRow = (n) => findTableRows().at(n);
   const findBreadcrumb = () => wrapper.findComponent(GlBreadcrumb);
+  const findPopover = () => wrapper.findComponent(GlPopover);
+  const findProjectVulnerabilityCounts = () => wrapper.findComponent(projectVulnerabilityCounts);
+  const findVulnerabilityDiv = () => findNthTableRow(0).findAll('td').at(1).find('div');
 
   /* eslint-disable no-underscore-dangle */
   const getIndexByType = (children, type) => {
@@ -93,35 +97,42 @@ describe('InventoryDashboard', () => {
     const groupIndex = getIndexByType(mockChildren, 'Group');
     const projectIndex = getIndexByType(mockChildren, 'Project');
 
+    beforeEach(async () => {
+      await createFullComponent();
+    });
+
     it('renders the GlTableLite component with correct fields', () => {
-      const table = findTable();
-      expect(table.exists()).toBe(true);
-      expect(table.props('fields')).toHaveLength(4);
-      expect(table.props('fields').map((field) => field.key)).toEqual([
-        'name',
-        'vulnerabilities',
-        'toolCoverage',
-        'actions',
-      ]);
+      expect(findTable().exists()).toBe(true);
+      expect(findTable().props('fields')).toHaveLength(4);
+      expect(
+        findTable()
+          .props('fields')
+          .map((field) => field.key),
+      ).toEqual(['name', 'vulnerabilities', 'toolCoverage', 'actions']);
     });
 
-    it('renders correct values in table cells for projects and subgroups', async () => {
-      await createFullComponent();
+    it('renders correct values in table cells for projects and subgroups', () => {
+      expect(findTableRows()).toHaveLength(mockChildren.length);
+      expect(findNthTableRow(0).text()).toContain(mockChildren[0].name);
+      expect(findNthTableRow(0).findAll('td').at(2).text()).toBe('N/A');
 
-      const rows = findTableRows();
-      expect(rows).toHaveLength(mockChildren.length);
-
-      const row = rows.at(0);
-      const rowCells = row.findAll('td');
-
-      expect(rowCells.at(0).text()).toContain(mockChildren[0].name);
-      expect(rowCells.at(1).text()).toBe('80');
-      expect(rowCells.at(2).text()).toBe('N/A');
+      expect(findVulnerabilityDiv().text()).toBe('80');
+      expect(findVulnerabilityDiv().attributes('id')).toBe('vulnerabilities-count-0');
+      expect(findVulnerabilityDiv().classes()).toContain('gl-cursor-pointer');
     });
 
-    it('renders correct elements for projects and subgroups', async () => {
-      await createFullComponent();
+    it('render current values of vulnerabilities popover', () => {
+      expect(findPopover().exists()).toBe(true);
+      expect(findProjectVulnerabilityCounts().exists()).toBe(true);
+      expect(findPopover().props('target')).toBe(findVulnerabilityDiv().attributes('id'));
 
+      expect(findPopover().text()).toContain(
+        'Critical: 10 High: 10 Low: 10 Info: 10 Medium: 20 Unknown: 20',
+      );
+      expect(findPopover().text()).toContain('View vulnerability report');
+    });
+
+    it('renders correct elements for projects and subgroups', () => {
       const subgroupLink = findNthTableRow(groupIndex).findComponent({ name: 'gl-link' });
       expect(subgroupLink.exists()).toBe(true);
       expect(subgroupLink.attributes('href')).toBe(`#${mockChildren[groupIndex].fullPath}`);
@@ -131,9 +142,7 @@ describe('InventoryDashboard', () => {
       expect(projectDiv.text()).toContain(mockChildren[projectIndex].name);
     });
 
-    it('renders the vulnerability indicator for projects and subgroups', async () => {
-      await createFullComponent();
-
+    it('renders the vulnerability indicator for projects and subgroups', () => {
       expect(
         findNthTableRow(projectIndex).findComponent(VulnerabilityIndicator).props('counts'),
       ).toStrictEqual({

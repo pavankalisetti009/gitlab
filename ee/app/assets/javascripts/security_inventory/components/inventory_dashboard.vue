@@ -8,6 +8,7 @@ import {
   GlTooltipDirective,
   GlBreadcrumb,
   GlLink,
+  GlPopover,
 } from '@gitlab/ui';
 import EMPTY_SUBGROUP_SVG from '@gitlab/svgs/dist/illustrations/empty-state/empty-projects-md.svg?url';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -15,8 +16,10 @@ import { __, s__, n__, sprintf } from '~/locale';
 import ProjectAvatar from '~/vue_shared/components/project_avatar.vue';
 import { createAlert } from '~/alert';
 import { getLocationHash, PATH_SEPARATOR } from '~/lib/utils/url_utility';
+import { SEVERITY_CLASS_NAME_MAP } from 'ee/vue_shared/security_reports/components/constants';
 import SubgroupsAndProjectsQuery from '../graphql/subgroups_and_projects.query.graphql';
 import VulnerabilityIndicator from './vulnerability_indicator.vue';
+import ProjectVulnerabilityCounts from './project_vulnerability_counts.vue';
 
 export default {
   components: {
@@ -29,6 +32,8 @@ export default {
     GlBreadcrumb,
     GlLink,
     VulnerabilityIndicator,
+    GlPopover,
+    ProjectVulnerabilityCounts,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -43,6 +48,7 @@ export default {
       'SecurityInventory||An error occurred while fetching subgroups and projects. Please try again.',
     ),
     projectConfigurationTooltipTitle: s__('SecurityInventory|Manage security configuration'),
+    projectVulnerabilitiesTooltipTitle: s__('SecurityInventory|Project vulnerabilities'),
   },
   fields: [
     { key: 'name', label: __('Name') },
@@ -179,6 +185,16 @@ export default {
       }
       this.activeFullPath = hash;
     },
+    vulnerabilitiesCountsObject(vulnerabilitySeveritiesCount) {
+      return Object.entries(vulnerabilitySeveritiesCount)
+        .filter(([key]) => key !== '__typename')
+        .map(([key, value]) => ({
+          label: key,
+          value,
+          icon: `severity-${key}`,
+          iconColor: SEVERITY_CLASS_NAME_MAP[key],
+        }));
+    },
   },
 };
 </script>
@@ -222,8 +238,20 @@ export default {
         </component>
       </template>
 
-      <template #cell(vulnerabilities)="{ item: { vulnerabilitySeveritiesCount } }">
-        <vulnerability-indicator :counts="vulnerabilitySeveritiesCount" />
+      <template #cell(vulnerabilities)="{ item: { vulnerabilitySeveritiesCount, webUrl }, index }">
+        <div :id="`vulnerabilities-count-${index}`" class="gl-cursor-pointer">
+          <vulnerability-indicator :counts="vulnerabilitySeveritiesCount" />
+        </div>
+        <gl-popover
+          :title="$options.i18n.projectVulnerabilitiesTooltipTitle"
+          :target="`vulnerabilities-count-${index}`"
+          show-close-button
+        >
+          <project-vulnerability-counts
+            :severity-items="vulnerabilitiesCountsObject(vulnerabilitySeveritiesCount)"
+            :web-url="webUrl"
+          />
+        </gl-popover>
       </template>
 
       <template #cell(toolCoverage)="">

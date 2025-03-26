@@ -44,3 +44,5 @@ export const SEVERITY_BACKGROUND_COLORS = {
   [MEDIUM]: 'gl-bg-orange-400',
   [LOW]: 'gl-bg-orange-300',
 };
+
+export const VULNERABILITY_REPORT_LINK_LOCATION = '/-/security/vulnerability_report';

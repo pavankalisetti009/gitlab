@@ -53027,6 +53027,9 @@ msgstr ""
 msgid "SecurityInventory|No projects found"
 msgstr ""
 
+msgid "SecurityInventory|Project vulnerabilities"
+msgstr ""
+
 msgid "SecurityInventory|SAST"
 msgstr ""
 
