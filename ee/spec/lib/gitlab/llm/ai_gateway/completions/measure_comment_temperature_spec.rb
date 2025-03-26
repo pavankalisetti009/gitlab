@@ -28,7 +28,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::MeasureCommentTemperature, f
         prompt_name: :measure_comment_temperature,
         inputs: { content: content },
         model_metadata: nil,
-        prompt_version: nil
+        prompt_version: "^1.0.0"
       ).and_return(ai_response)
 
       expect(::Gitlab::Llm::GraphqlSubscriptionResponseService).to receive(:new).and_call_original
@@ -50,7 +50,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::MeasureCommentTemperature, f
           prompt_name: :measure_comment_temperature,
           inputs: { content: content },
           model_metadata: nil,
-          prompt_version: nil
+          prompt_version: "^1.0.0"
         ).and_return(ai_response)
 
         expect(::Gitlab::Llm::GraphqlSubscriptionResponseService).to receive(:new).and_call_original

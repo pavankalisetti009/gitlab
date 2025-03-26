@@ -55,7 +55,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::Base, feature_category: :ai_
             base_url: ::Gitlab::AiGateway.url,
             prompt_name: ai_action,
             inputs: inputs,
-            prompt_version: nil,
+            prompt_version: "^1.0.0",
             model_metadata: nil
           ).and_return(http_response)
         end
@@ -128,58 +128,75 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::Base, feature_category: :ai_
       it_behaves_like 'executing successfully'
     end
 
-    context 'when prompt_version is provided' do
+    context 'when feature setting is present' do
       before do
         allow(completion).to receive(:prompt_version).and_return('2.0.0')
       end
 
-      it 'includes prompt_version in the request body' do
-        expect(client).to receive(:complete_prompt).with(
-          base_url: ::Gitlab::AiGateway.url,
-          prompt_name: ai_action,
-          inputs: inputs,
-          prompt_version: '2.0.0',
-          model_metadata: nil
-        ).and_return(http_response)
+      context 'when feature setting is set to self hosted' do
+        let(:ai_action) { :duo_chat_explain_code }
 
-        expect(response_modifier_class).to receive(:new).with(processed_response)
-          .and_return(response_modifier)
-        expect(Gitlab::Llm::GraphqlSubscriptionResponseService).to receive(:new)
-          .with(user, resource, response_modifier, options: response_options).and_return(response_service)
-        expect(response_service).to receive(:execute).and_return(result)
+        let!(:feature_setting) do
+          create(:ai_feature_setting, feature: ai_action)
+        end
 
-        is_expected.to be(result)
+        it 'includes model_metadata in the request body, ignores the version' do
+          expect(client).to receive(:complete_prompt).with(
+            base_url: ::Gitlab::AiGateway.url,
+            prompt_name: ai_action,
+            inputs: inputs,
+            prompt_version: "^1.0.0",
+            model_metadata: {
+              provider: :openai,
+              name: 'mistral',
+              endpoint: 'http://localhost:11434/v1',
+              api_key: 'token',
+              identifier: 'provider/some-model'
+            }
+          ).and_return(http_response)
+
+          expect(response_modifier_class).to receive(:new)
+            .with(processed_response)
+            .and_return(response_modifier)
+
+          expect(Gitlab::Llm::GraphqlSubscriptionResponseService).to receive(:new)
+            .with(user, resource, response_modifier, options: response_options)
+            .and_return(response_service)
+
+          expect(response_service).to receive(:execute).and_return(result)
+
+          execute
+        end
       end
-    end
 
-    context 'when feature setting is present' do
-      let(:ai_action) { :duo_chat }
-      let!(:feature_setting) do
-        create(:ai_feature_setting, feature: ai_action)
-      end
+      context 'when feature setting is not set to self hosted' do
+        let(:ai_action) { :duo_chat_fix_code }
 
-      it 'includes model_metadata in the request body' do
-        expect(client).to receive(:complete_prompt).with(
-          base_url: ::Gitlab::AiGateway.url,
-          prompt_name: ai_action,
-          inputs: inputs,
-          prompt_version: nil,
-          model_metadata: {
-            provider: :openai,
-            name: 'mistral',
-            endpoint: 'http://localhost:11434/v1',
-            api_key: 'token',
-            identifier: 'provider/some-model'
-          }
-        ).and_return(http_response)
+        let!(:feature_setting) do
+          create(:ai_feature_setting, feature: ai_action, provider: :vendored)
+        end
 
-        expect(response_modifier_class).to receive(:new).with(processed_response)
-          .and_return(response_modifier)
-        expect(Gitlab::Llm::GraphqlSubscriptionResponseService).to receive(:new)
-          .with(user, resource, response_modifier, options: response_options).and_return(response_service)
-        expect(response_service).to receive(:execute).and_return(result)
+        it 'uses the version ignores the version' do
+          expect(client).to receive(:complete_prompt).with(
+            base_url: ::Gitlab::AiGateway.url,
+            prompt_name: ai_action,
+            inputs: inputs,
+            model_metadata: nil,
+            prompt_version: "2.0.0"
+          ).and_return(http_response)
 
-        is_expected.to be(result)
+          expect(response_modifier_class).to receive(:new)
+            .with(processed_response)
+            .and_return(response_modifier)
+
+          expect(Gitlab::Llm::GraphqlSubscriptionResponseService).to receive(:new)
+            .with(user, resource, response_modifier, options: response_options)
+            .and_return(response_service)
+
+          expect(response_service).to receive(:execute).and_return(result)
+
+          execute
+        end
       end
     end
   end

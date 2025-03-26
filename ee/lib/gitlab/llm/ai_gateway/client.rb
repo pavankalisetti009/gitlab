@@ -28,10 +28,7 @@ module Gitlab
           prompt_version: nil,
           model_metadata: nil
         )
-          prompt_modifier = (model_metadata.present? && model_metadata[:name]) || 'base'
-          full_prompt_name = "#{prompt_name}/#{prompt_modifier}"
-          version = prompt_version || ::Gitlab::Llm::PromptVersions.version_for_prompt(full_prompt_name)
-          body = { 'inputs' => inputs, 'prompt_version' => version }
+          body = { 'inputs' => inputs, 'prompt_version' => prompt_version }
 
           body['model_metadata'] = model_metadata if model_metadata.present?
 

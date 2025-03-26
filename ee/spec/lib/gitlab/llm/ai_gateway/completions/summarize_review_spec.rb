@@ -52,7 +52,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeReview, feature_cat
                 prompt_name: :summarize_review,
                 inputs: { draft_notes_content: draft_notes_content },
                 model_metadata: nil,
-                prompt_version: nil
+                prompt_version: "^2.0.0"
               )
               .and_return(example_response)
           end
