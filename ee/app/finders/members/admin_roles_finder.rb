@@ -7,5 +7,11 @@ module Members
     def member_roles
       can_return_admin_roles? ? MemberRole.admin : MemberRole.none
     end
+
+    def validate_arguments!
+      return if current_user.can?(:read_admin_member_role)
+
+      super
+    end
   end
 end

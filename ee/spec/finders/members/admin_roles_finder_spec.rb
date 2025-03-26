@@ -39,14 +39,30 @@ RSpec.describe Members::AdminRolesFinder, feature_category: :system_access do
   end
 
   context 'when on SaaS' do
-    let_it_be(:params) { { parent: create(:group) } }
-
     before do
       stub_saas_features(gitlab_com_subscriptions: true)
     end
 
-    it 'returns an empty array', :enable_admin_mode do
-      expect(find_member_roles).to be_empty
+    it 'returns only admin member roles', :enable_admin_mode do
+      expect(find_member_roles).to eq([member_role_admin])
+    end
+
+    context 'when custom_admin_roles feature flag is off' do
+      before do
+        stub_feature_flags(custom_admin_roles: false)
+      end
+
+      it 'returns an empty array', :enable_admin_mode do
+        expect(find_member_roles).to be_empty
+      end
+    end
+
+    context 'with parent param' do
+      let_it_be(:params) { { parent: create(:group) } }
+
+      it 'returns an empty array', :enable_admin_mode do
+        expect(find_member_roles).to be_empty
+      end
     end
   end
 end
