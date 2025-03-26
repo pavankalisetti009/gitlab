@@ -40,6 +40,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
     end
   end
 
+  # rubocop:disable RSpec/MultipleMemoizedHelpers -- helpers are needed
   describe '#request' do
     let(:logger) { instance_double(Gitlab::Llm::Logger) }
     let(:ai_client) { double }
@@ -56,6 +57,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
       }
     end
 
+    let(:prompt_version) { "2.0.0" }
     let(:user_prompt) { "some user request" }
     let(:options) { { model: model } }
     let(:prompt) { { prompt: user_prompt, options: options } }
@@ -260,7 +262,8 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
       let(:options) do
         {
           use_ai_gateway_agent_prompt: true,
-          inputs: inputs
+          inputs: inputs,
+          prompt_version: prompt_version
         }
       end
 
@@ -276,19 +279,14 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
       let(:prompt) { { prompt: user_prompt, options: options } }
       let(:inputs) { { field: :test_field } }
 
+      let(:unit_primitive) { :test }
+      let(:endpoint) { "#{described_class::BASE_PROMPTS_CHAT_ENDPOINT}/#{unit_primitive}" }
       let(:model_metadata) do
         { api_key: "token", endpoint: "http://localhost:11434/v1", name: "mistral", provider: :openai, identifier: 'provider/some-model' }
       end
 
       before_all do
         create(:cloud_connector_keys)
-      end
-
-      context 'with no unit primitive corresponding a feature setting' do
-        let(:unit_primitive) { :test }
-        let(:endpoint) { "#{described_class::BASE_PROMPTS_CHAT_ENDPOINT}/#{unit_primitive}" }
-
-        it_behaves_like 'performing request to the AI Gateway'
       end
 
       context 'with a unit primitive corresponding a feature setting' do
@@ -300,7 +298,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
             identifier: model_identifier)
         end
 
-        let_it_be(:sub_feature_setting) do
+        let_it_be(:self_hosted_sub_feature_setting) do
           create(
             :ai_feature_setting,
             feature: :duo_chat_explain_code,
@@ -308,6 +306,8 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
             self_hosted_model: self_hosted_model
           )
         end
+
+        let(:sub_feature_setting) { self_hosted_sub_feature_setting }
 
         let(:unit_primitive) { :explain_code }
 
@@ -318,7 +318,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
             stub_feature_flags(ai_duo_chat_sub_features_settings: false)
           end
 
-          # it fallsback to the chat feature settings
+          # it fallback to the chat feature settings
           it_behaves_like 'performing request to the AI Gateway'
         end
 
@@ -329,16 +329,41 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
           end
 
           it 'fetches the right prompt version' do
-            expect(Gitlab::Llm::PromptVersions).to receive(:version_for_prompt).with('chat/explain_code/mistral')
+            expect(Gitlab::Llm::PromptVersions).to receive(:version_for_prompt).with('chat/explain_code', 'mistral')
                                                                                .and_call_original
 
             expect(ai_client).to receive(:stream).with(url: url, body: body).and_return(response)
             expect(request).to eq(response)
           end
 
-          it_behaves_like 'performing request to the AI Gateway'
+          context 'and feature setting is not set for self_hosted' do
+            let(:unit_primitive) { :fix_code }
+
+            let!(:sub_feature_setting) do
+              create(
+                :ai_feature_setting,
+                feature: :duo_chat_fix_code,
+                provider: :vendored,
+                self_hosted_model: self_hosted_model
+              )
+            end
+
+            let(:body) do
+              {
+                stream: true,
+                inputs: inputs,
+                prompt_version: "2.0.0"
+              }
+            end
+
+            it 'uses the passed prompt version' do
+              expect(ai_client).to receive(:stream).with(url: url, body: body).and_return(response)
+              expect(request).to eq(response)
+            end
+          end
         end
       end
     end
   end
+  # rubocop:enable RSpec/MultipleMemoizedHelpers
 end

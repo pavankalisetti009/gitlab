@@ -38,7 +38,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeNewMergeRequest, fe
               prompt_name: :summarize_new_merge_request,
               inputs: { extracted_diff: extracted_diff },
               model_metadata: nil,
-              prompt_version: nil
+              prompt_version: "^2.0.0"
             )
             .and_return(example_response)
         end

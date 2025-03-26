@@ -131,10 +131,14 @@ module Gitlab
           "summarize_review/base": "^2.0.0"
         }.freeze
 
-        def version_for_prompt(prompt_name)
-          return unless prompt_name
+        def version_for_prompt(prompt_name, model_family)
+          full_name = if model_family.nil?
+                        "#{prompt_name}/base"
+                      else
+                        "#{prompt_name}/#{model_family}"
+                      end
 
-          VERSIONS[prompt_name.to_sym] || "^1.0.0"
+          VERSIONS[full_name.to_sym] || "^1.0.0"
         end
       end
     end

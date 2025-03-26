@@ -51,7 +51,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::CategorizeQuestion, feature_
       prompt_name: :categorize_question,
       inputs: inputs,
       model_metadata: nil,
-      prompt_version: nil
+      prompt_version: "^1.0.0"
     ).and_return(ai_response)
 
     expect(::Gitlab::Llm::GraphqlSubscriptionResponseService).to receive(:new).and_call_original

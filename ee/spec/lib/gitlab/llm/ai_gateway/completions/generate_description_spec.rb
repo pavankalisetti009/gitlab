@@ -39,7 +39,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::GenerateDescription, feature
         prompt_name: :generate_description,
         inputs: { content: content, template: expected_template },
         model_metadata: nil,
-        prompt_version: nil
+        prompt_version: "^1.0.0"
       ).and_return(ai_response)
 
       expect(::Gitlab::Llm::GraphqlSubscriptionResponseService).to receive(:new).and_call_original
@@ -61,7 +61,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::GenerateDescription, feature
           prompt_name: :generate_description,
           inputs: { content: content, template: expected_template },
           model_metadata: nil,
-          prompt_version: nil
+          prompt_version: "^1.0.0"
         ).and_return(ai_response)
 
         expect(::Gitlab::Llm::GraphqlSubscriptionResponseService).to receive(:new).and_call_original
