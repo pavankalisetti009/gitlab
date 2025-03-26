@@ -8,12 +8,22 @@ module Gitlab
         MAX_MESSAGES = 50
 
         def add(message)
-          data = dump_message(message)
+          # Message is stored only partially. Some data might be missing after reloading from storage.
+          data = message.to_h.slice(*%w[role referer_url])
 
-          data['message_xid'] = data.delete('id') if data['id']
-          data['error_details'] = data.delete('errors') if data['errors']
-          data['request_xid'] = data.delete('request_id') if data['request_id']
-          data.delete('timestamp') if data['timestamp']
+          extras = message.extras
+          if message.additional_context.present?
+            extras ||= {}
+            extras['additional_context'] = message.additional_context.to_a
+          end
+
+          data['extras'] = extras.to_json if extras
+          data['content'] = message.content[0, MAX_TEXT_LIMIT] if message.content
+          data['message_xid'] = message.id if message.id
+          data['error_details'] = message.errors.to_json if message.errors
+          data['request_xid'] = message.request_id if message.request_id
+
+          data.compact!
 
           result = current_thread.messages.create!(**data)
           current_thread.update_column(:last_updated_at, Time.current)
