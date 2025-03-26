@@ -4,7 +4,6 @@ import GroupDependenciesFilteredSearch from 'ee/dependencies/components/filtered
 import DependenciesFilteredSearch from 'ee/dependencies/components/filtered_search/dependencies_filtered_search.vue';
 import LicenseToken from 'ee/dependencies/components/filtered_search/tokens/license_token.vue';
 import ProjectToken from 'ee/dependencies/components/filtered_search/tokens/project_token.vue';
-import PackagerToken from 'ee/dependencies/components/filtered_search/tokens/package_manager_token.vue';
 import ComponentToken from 'ee/dependencies/components/filtered_search/tokens/component_token.vue';
 import VersionToken from 'ee/dependencies/components/filtered_search/tokens/version_token.vue';
 
@@ -21,7 +20,6 @@ describe('GroupDependenciesFilteredSearch', () => {
       provide: {
         belowGroupLimit: true,
         glFeatures: {
-          groupLevelDependenciesFilteringByPackager: true,
           versionFilteringOnGroupLevelDependencyList: true,
         },
         ...provide,
@@ -56,7 +54,6 @@ describe('GroupDependenciesFilteredSearch', () => {
       tokenTitle     | tokenConfig
       ${'License'}   | ${{ title: 'License', type: 'licenses', multiSelect: true, token: LicenseToken }}
       ${'Project'}   | ${{ title: 'Project', type: 'project_ids', multiSelect: true, token: ProjectToken }}
-      ${'Packager'}  | ${{ title: 'Packager', type: 'package_managers', multiSelect: true, token: PackagerToken }}
       ${'Component'} | ${{ title: 'Component', type: 'component_names', multiSelect: true, token: ComponentToken }}
       ${'Version'}   | ${{ title: 'Version', type: 'component_version_ids', multiSelect: true, token: VersionToken }}
     `('contains a "$tokenTitle" search token', ({ tokenConfig }) => {
@@ -64,28 +61,6 @@ describe('GroupDependenciesFilteredSearch', () => {
         expect.arrayContaining([
           expect.objectContaining({
             ...tokenConfig,
-          }),
-        ]),
-      );
-    });
-  });
-
-  describe('when group_level_dependencies_filtering_by_packager feature flag is disabled', () => {
-    it('does not contain a "Packager" search token', () => {
-      createComponent({
-        provide: {
-          belowGroupLimit: true,
-          glFeatures: { groupLevelDependenciesFilteringByPackager: false },
-        },
-      });
-
-      expect(findDependenciesFilteredSearch().props('tokens')).not.toMatchObject(
-        expect.arrayContaining([
-          expect.objectContaining({
-            title: 'Packager',
-            type: 'package_managers',
-            multiSelect: true,
-            token: PackagerToken,
           }),
         ]),
       );
