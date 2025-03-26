@@ -8282,9 +8282,6 @@ msgstr ""
 msgid "Are you sure you want to remove %{topic_name}?"
 msgstr ""
 
-msgid "Are you sure you want to remove the attachment?"
-msgstr ""
-
 msgid "Are you sure you want to remove the license?"
 msgstr ""
 
@@ -20036,9 +20033,6 @@ msgid "Delete table"
 msgstr ""
 
 msgid "Delete the pipeline"
-msgstr ""
-
-msgid "Delete this attachment"
 msgstr ""
 
 msgid "Delete this epic and release all child items?"

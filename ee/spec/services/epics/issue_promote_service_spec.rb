@@ -342,24 +342,6 @@ RSpec.describe Epics::IssuePromoteService, :aggregate_failures, feature_category
               weight: 3
             )
           end
-
-          it 'copies note attachments' do
-            create(:discussion_note_on_issue, :with_attachment, noteable: issue, project: issue.project)
-
-            epic = subject.execute(issue)
-
-            expect(epic.notes.user.first.attachment).to be_kind_of(AttachmentUploader)
-            expect_snowplow_event(
-              category: 'epics',
-              action: 'promote',
-              property: 'issue_id',
-              value: issue.id,
-              project: project,
-              user: user,
-              namespace: group,
-              weight: 3
-            )
-          end
         end
 
         context 'on other issue types' do
