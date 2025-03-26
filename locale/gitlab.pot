@@ -35713,7 +35713,7 @@ msgstr ""
 msgid "Maximum diff patch size (bytes)"
 msgstr ""
 
-msgid "Maximum duration of a session."
+msgid "Maximum duration of a session. Restart GitLab to apply changes."
 msgstr ""
 
 msgid "Maximum export size"
@@ -49909,9 +49909,6 @@ msgstr ""
 msgid "Response text"
 msgstr ""
 
-msgid "Restart GitLab to apply changes."
-msgstr ""
-
 msgid "Restart Terminal"
 msgstr ""
 
@@ -55450,9 +55447,6 @@ msgstr ""
 msgid "Session ID"
 msgstr ""
 
-msgid "Session duration (minutes)"
-msgstr ""
-
 msgid "Session|There was a error loading the user verification challenge. Refresh to try again."
 msgstr ""
 
@@ -55726,10 +55720,25 @@ msgstr ""
 msgid "Settings|All direct and inherited members of the group or project"
 msgstr ""
 
+msgid "Settings|Expire from time of last session activity"
+msgstr ""
+
+msgid "Settings|Expire from time of session creation"
+msgstr ""
+
 msgid "Settings|Expiry notification emails about group and project access tokens within this group should be sent to:"
 msgstr ""
 
 msgid "Settings|Only direct members of the group or project"
+msgstr ""
+
+msgid "Settings|Session duration, in minutes. Restart GitLab to apply changes."
+msgstr ""
+
+msgid "Settings|Session settings"
+msgstr ""
+
+msgid "Settings|Session timeout duration"
 msgstr ""
 
 msgid "Settings|Unable to load the merge request options settings. Try reloading the page."
