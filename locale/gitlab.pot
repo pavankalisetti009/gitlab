@@ -53056,7 +53056,7 @@ msgstr[1] ""
 msgid "Secrets"
 msgstr ""
 
-msgid "Secrets represent sensitive information your CI job needs to complete work."
+msgid "Secrets manager"
 msgstr ""
 
 msgid "Secrets|Actions"

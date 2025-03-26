@@ -13,8 +13,6 @@ RSpec.describe SecretsHelper, feature_category: :secrets_management do
       expect(subject).to include({
         project_path: project.full_path,
         project_id: project.id,
-        project_secrets_settings_path: project_settings_ci_cd_path(project, expand_secrets: true,
-          anchor: 'js-secrets-settings'),
         base_path: project_secrets_path(project)
       })
     end

@@ -38,16 +38,4 @@ describe('initProjectSecretsApp', () => {
       expect(injectVueAppBreadcrumbs).toHaveBeenCalledWith(expect.any(Object), SecretsBreadcrumbs);
     });
   });
-
-  describe('on /-/settings/ci_cd', () => {
-    beforeEach(() => {
-      setWindowLocation(`${TEST_HOST}/path/to/project/-/settings/ci_cd`);
-      createAppRoot();
-      initProjectSecretsApp();
-    });
-
-    it('does not inject breadcrumbs', () => {
-      expect(injectVueAppBreadcrumbs).not.toHaveBeenCalled();
-    });
-  });
 });

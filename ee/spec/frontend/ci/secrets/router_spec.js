@@ -1,12 +1,10 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
-import { TEST_HOST } from 'helpers/test_constants';
-import { visitUrl } from '~/lib/utils/url_utility';
 import SecretDetailsWrapper from 'ee/ci/secrets/components/secret_details/secret_details_wrapper.vue';
 import SecretFormWrapper from 'ee/ci/secrets/components/secret_form/secret_form_wrapper.vue';
 import SecretsTable from 'ee/ci/secrets/components/secrets_table/secrets_table.vue';
-import createRouter, { initNavigationGuards } from 'ee/ci/secrets/router';
+import createRouter from 'ee/ci/secrets/router';
 import SecretsApp from 'ee//ci/secrets/components/secrets_app.vue';
 import { getMatchedComponents } from '~/lib/utils/vue3compat/vue_router';
 
@@ -21,7 +19,6 @@ describe('Secrets router', () => {
   let router;
 
   const base = '/-/secrets';
-  const defaultLocation = `${TEST_HOST}${base}`;
 
   const groupProps = {
     groupId: '1',
@@ -31,22 +28,12 @@ describe('Secrets router', () => {
   const projectProps = {
     projectId: '2',
     projectPath: '/path/to/project',
-    projectSecretsSettingsPath: '/path/to/project/-/settings/ci_cd',
   };
 
   const editRoute = { name: 'edit', params: { secretName: 'SECRET_KEY' } };
 
-  const createRouterWithNavigationGuards = (basePath, props, location) => {
-    router = initNavigationGuards({
-      router: createRouter(basePath, props, location),
-      base: basePath,
-      props,
-      location,
-    });
-  };
-
-  const createSecretsApp = async ({ route, props, location = defaultLocation } = {}) => {
-    router = createRouter(base, props, location);
+  const createSecretsApp = async ({ route, props } = {}) => {
+    router = createRouter(base, props);
     if (route) {
       await router.push(route);
     }
@@ -78,7 +65,7 @@ describe('Secrets router', () => {
     ${'/secretName/details'} | ${'SecretDetailsWrapper'} | ${[SecretDetailsWrapper]}
     ${'/secretName/edit'}    | ${'SecretFormWrapper'}    | ${[SecretFormWrapper]}
   `('uses $componentNames for path "$path"', ({ path, components }) => {
-    router = createRouter(base, groupProps, defaultLocation);
+    router = createRouter(base, groupProps);
     const componentsForRoute = getMatchedComponents(router, path);
 
     expect(componentsForRoute).toStrictEqual(components);
@@ -89,7 +76,7 @@ describe('Secrets router', () => {
     ${'/secretName'}              | ${'details'}
     ${'/secretName/unknownroute'} | ${'index'}
   `('redirects from $path to $redirect', async ({ path, redirect }) => {
-    router = createRouter(base, groupProps, defaultLocation);
+    router = createRouter(base, groupProps);
 
     await router.push(path);
 
@@ -102,7 +89,7 @@ describe('Secrets router', () => {
     ${'project'} | ${projectProps} | ${projectProps.projectPath}
   `('$entity secrets form', ({ props, fullPath }) => {
     it('provides the correct props when visiting the index', async () => {
-      await createSecretsApp({ route: '/', props, location: defaultLocation });
+      await createSecretsApp({ route: '/', props });
 
       expect(wrapper.findComponent(SecretsTable).props()).toMatchObject({
         fullPath,
@@ -110,7 +97,7 @@ describe('Secrets router', () => {
     });
 
     it('provides the correct props when visiting the create form', async () => {
-      await createSecretsApp({ route: '/new', props, location: defaultLocation });
+      await createSecretsApp({ route: '/new', props });
 
       expect(wrapper.findComponent(SecretFormWrapper).props()).toMatchObject({
         fullPath,
@@ -118,60 +105,12 @@ describe('Secrets router', () => {
     });
 
     it('provides the correct props when visiting the edit form', async () => {
-      await createSecretsApp({ route: editRoute, props, location: defaultLocation });
+      await createSecretsApp({ route: editRoute, props });
 
       expect(wrapper.findComponent(SecretFormWrapper).props()).toMatchObject({
         fullPath,
         isEditing: true,
         secretName: 'SECRET_KEY',
-      });
-    });
-  });
-
-  describe('navigation guards', () => {
-    const secretsBase = '/path/to/project/-/secrets';
-    const settingsLocation = `${TEST_HOST}/path/to/project/-/settings/ci_cd`;
-    const secretsLocation = `${TEST_HOST}${secretsBase}`;
-
-    describe('on /-/settings/ci_cd', () => {
-      beforeEach(() => {
-        createRouterWithNavigationGuards(secretsBase, projectProps, settingsLocation);
-      });
-
-      it('navigating within the index route does not redirect', async () => {
-        await router.push('/?page=2');
-
-        expect(visitUrl).not.toHaveBeenCalled();
-      });
-
-      it.each([editRoute, '/new', '/secretName/details', '/secretName/edit'])(
-        'navigating to the non-index route %s redirects to the appropriate route in /-/secrets',
-        async (route) => {
-          await router.push(route);
-
-          expect(visitUrl).toHaveBeenCalledWith(expect.stringContaining(secretsBase));
-        },
-      );
-    });
-
-    describe('on /-/secrets', () => {
-      beforeEach(() => {
-        createRouterWithNavigationGuards(secretsBase, projectProps, secretsLocation);
-      });
-
-      it.each([editRoute, '/new', '/secretName/details', '/secretName/edit'])(
-        'navigating to the non-index route %s does not redirect',
-        async (route) => {
-          await router.push(route);
-
-          expect(visitUrl).not.toHaveBeenCalled();
-        },
-      );
-
-      it('navigating to the index route redirects to /-/settings/ci_cd', async () => {
-        await router.push('/');
-
-        expect(visitUrl).toHaveBeenCalledWith('/path/to/project/-/settings/ci_cd');
       });
     });
   });

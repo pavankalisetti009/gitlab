@@ -138,6 +138,29 @@ RSpec.describe 'Project navbar', :js, feature_category: :navigation do
     end
   end
 
+  context 'when secrets manager is available' do
+    let_it_be(:secrets_manager) { build(:project_secrets_manager, project: project) }
+    let(:secure_nav_item) do
+      {
+        nav_item: _('Secure'),
+        nav_sub_items: [
+          _('Audit events'),
+          _('Security configuration'),
+          _('Secrets manager')
+        ]
+      }
+    end
+
+    before do
+      stub_feature_flags(ci_tanukey_ui: true)
+      secrets_manager.save!
+
+      visit project_path(project)
+    end
+
+    it_behaves_like 'verified navigation bar'
+  end
+
   context 'when packages are available' do
     before do
       stub_config(packages: { enabled: true }, registry: { enabled: false })
