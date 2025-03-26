@@ -8,8 +8,8 @@ module EE
         include ::Gitlab::QuickActions::Dsl
 
         included do
-          desc { _('Use Amazon Q to streamline development workflow and project upgrades (Beta)') }
-          explanation { _('Use Amazon Q to streamline development workflow and project upgrades (Beta)') }
+          desc { _('Use Amazon Q to streamline development workflow and project upgrades') }
+          explanation { _('Use Amazon Q to streamline development workflow and project upgrades') }
           execution_message { _('Q got your message!') }
           params do
             case quick_action_target

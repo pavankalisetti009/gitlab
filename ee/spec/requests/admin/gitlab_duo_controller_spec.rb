@@ -104,7 +104,7 @@ RSpec.describe Admin::GitlabDuoController, :cloud_licenses, feature_category: :a
       context 'for AmazonQ banner' do
         using RSpec::Parameterized::TableSyntax
 
-        let_it_be(:amazon_q_banner) { s_('AmazonQ|Configure GitLab Duo with Amazon Q (Beta)') }
+        let_it_be(:amazon_q_banner) { s_('AmazonQ|Configure GitLab Duo with Amazon Q') }
 
         where(:amazon_q_available, :amazon_q_connected, :expected_banner) do
           true   | true   | false
