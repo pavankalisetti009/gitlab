@@ -14,9 +14,14 @@ export const receiveReplicableItemsSuccess = ({ commit }, data) =>
   commit(types.RECEIVE_REPLICABLE_ITEMS_SUCCESS, data);
 export const receiveReplicableItemsError = ({ state, commit }) => {
   createAlert({
-    message: sprintf(__('There was an error fetching the %{replicableType}'), {
-      replicableType: state.titlePlural,
-    }),
+    message: sprintf(
+      s__(
+        'Geo|There was an error fetching the %{replicableType}. The GraphQL API call to the secondary may have failed.',
+      ),
+      {
+        replicableType: state.titlePlural,
+      },
+    ),
   });
   commit(types.RECEIVE_REPLICABLE_ITEMS_ERROR);
 };

@@ -26648,6 +26648,9 @@ msgstr ""
 msgid "Geo|There was an error deleting the Geo Site"
 msgstr ""
 
+msgid "Geo|There was an error fetching the %{replicableType}. The GraphQL API call to the secondary may have failed."
+msgstr ""
+
 msgid "Geo|There was an error fetching the Geo Settings"
 msgstr ""
 
@@ -59896,9 +59899,6 @@ msgid "There was an error fetching projects"
 msgstr ""
 
 msgid "There was an error fetching stage total counts"
-msgstr ""
-
-msgid "There was an error fetching the %{replicableType}"
 msgstr ""
 
 msgid "There was an error fetching the cancelable jobs."
