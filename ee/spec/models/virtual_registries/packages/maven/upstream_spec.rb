@@ -36,11 +36,9 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
     it { is_expected.to validate_presence_of(:url) }
     it { is_expected.to validate_presence_of(:username) }
     it { is_expected.to validate_presence_of(:password) }
-    it { is_expected.to validate_uniqueness_of(:encrypted_username_iv).ignoring_case_sensitivity.allow_nil }
-    it { is_expected.to validate_uniqueness_of(:encrypted_password_iv).ignoring_case_sensitivity.allow_nil }
     it { is_expected.to validate_length_of(:url).is_at_most(255) }
-    it { is_expected.to validate_length_of(:username).is_at_most(255) }
-    it { is_expected.to validate_length_of(:password).is_at_most(255) }
+    it { is_expected.to validate_length_of(:username).is_at_most(510) }
+    it { is_expected.to validate_length_of(:password).is_at_most(510) }
     it { is_expected.to validate_numericality_of(:cache_validity_hours).only_integer.is_greater_than_or_equal_to(0) }
 
     context 'for url' do
@@ -62,12 +60,9 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
         end
 
         if params[:valid]
-          it { expect(upstream).to be_valid }
+          it { is_expected.to be_valid }
         else
-          it 'is not valid' do
-            expect(upstream).not_to be_valid
-            expect(upstream.errors).to match_array(Array.wrap(error_messages))
-          end
+          it { is_expected.to be_invalid.and have_attributes(errors: match_array(Array.wrap(error_messages))) }
         end
       end
     end
@@ -82,8 +77,8 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
         'user'      | nil          | false | "Password can't be blank"
         ''          | 'password'   | false | "Username can't be blank"
         'user'      | ''           | false | "Password can't be blank"
-        ('a' * 256) | 'password'   | false | 'Username is too long (maximum is 255 characters)'
-        'user'      | ('a' * 256)  | false | 'Password is too long (maximum is 255 characters)'
+        ('a' * 511) | 'password'   | false | 'Username is too long (maximum is 510 characters)'
+        'user'      | ('a' * 511)  | false | 'Password is too long (maximum is 510 characters)'
       end
 
       with_them do
@@ -93,12 +88,9 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
         end
 
         if params[:valid]
-          it { expect(upstream).to be_valid }
+          it { is_expected.to be_valid }
         else
-          it 'is not valid' do
-            expect(upstream).not_to be_valid
-            expect(upstream.errors).to match_array(Array.wrap(error_message))
-          end
+          it { is_expected.to be_invalid.and have_attributes(errors: match_array(Array.wrap(error_message))) }
         end
       end
 

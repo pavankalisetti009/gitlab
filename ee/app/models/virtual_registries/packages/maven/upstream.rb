@@ -13,29 +13,21 @@ module VirtualRegistries
           class_name: 'VirtualRegistries::Packages::Maven::Cache::Entry',
           inverse_of: :upstream
 
-        attr_encrypted_options.merge!(
-          mode: :per_attribute_iv,
-          key: Settings.attr_encrypted_db_key_base_32,
-          algorithm: 'aes-256-gcm',
-          marshal: true,
-          marshaler: ::Gitlab::Json,
-          encode: false,
-          encode_iv: false
-        )
-
-        attr_encrypted :username # rubocop:disable Gitlab/Rails/AttrEncrypted -- will be fixed in a separate MR
-        attr_encrypted :password # rubocop:disable Gitlab/Rails/AttrEncrypted -- will be fixed in a separate MR
+        encrypts :username, :password
 
         validates :group, top_level_group: true, presence: true
         validates :url, addressable_url: { allow_localhost: false, allow_local_network: false }, presence: true
         validates :username, presence: true, if: :password?
         validates :password, presence: true, if: :username?
-        validates :url, :username, :password, length: { maximum: 255 }
+        validates :url, length: { maximum: 255 }
+        validates :username, :password, length: { maximum: 510 }
         validates :cache_validity_hours, numericality: { greater_than_or_equal_to: 0, only_integer: true }
-        validates :encrypted_username_iv, :encrypted_password_iv, uniqueness: true, allow_nil: true
 
         before_validation :set_cache_validity_hours_for_maven_central, if: :url?, on: :create
         after_validation :reset_credentials, if: -> { persisted? && url_changed? }
+
+        ignore_columns %i[encrypted_username encrypted_username_iv encrypted_password encrypted_password_iv],
+          remove_with: '18.1', remove_after: '2025-05-20'
 
         prevent_from_serialization(:username, :password) if respond_to?(:prevent_from_serialization)
 
