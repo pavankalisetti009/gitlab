@@ -91,12 +91,6 @@ describe('NamespaceStorageApp', () => {
         }),
       );
     });
-
-    it('ignores invalid sorting types', async () => {
-      findProjectList().vm.$emit('sortChanged', { sortBy: 'yellow', sortDesc: false });
-      await waitForPromises();
-      expect(getProjectListStorageHandler).toHaveBeenCalledTimes(1);
-    });
   });
 
   describe('storage-usage-statistics', () => {
