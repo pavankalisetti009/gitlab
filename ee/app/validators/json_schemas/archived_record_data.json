@@ -35,6 +35,24 @@
         "type": "string"
       }
     },
+    "dismissed_at": {
+      "type": ["null", "date-time"]
+    },
+    "dismissed_by": {
+      "type": ["null", "string"]
+    },
+    "resolved_at": {
+      "type": ["null", "date-time"]
+    },
+    "resolved_by": {
+      "type": ["null", "string"]
+    },
+    "confirmed_at": {
+      "type": ["null", "date-time"]
+    },
+    "confirmed_by": {
+      "type": ["null", "string"]
+    },
     "created_at": {
       "type": "date-time"
     },
@@ -81,6 +99,7 @@
     "severity",
     "cve_value",
     "cwe_value",
+    "other_identifiers",
     "created_at",
     "location",
     "resolved_on_default_branch",

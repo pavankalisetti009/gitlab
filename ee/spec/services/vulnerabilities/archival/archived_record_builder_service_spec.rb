@@ -23,12 +23,18 @@ RSpec.describe Vulnerabilities::Archival::ArchivedRecordBuilderService, feature_
   end
 
   describe '#execute', :freeze_time do
+    let_it_be(:user) { create(:user, username: 'john.doe') }
     let_it_be(:project) { create(:project) }
     let_it_be(:archive) { create(:vulnerability_archive, project: project) }
     let_it_be(:finding) { create(:vulnerabilities_finding, description: 'Test Description') }
-    let_it_be(:vulnerability) do
+    let_it_be_with_refind(:vulnerability) do
       create(:vulnerability,
         :dismissed,
+        dismissed_by: user,
+        confirmed_at: Time.zone.now,
+        confirmed_by: user,
+        resolved_at: Time.zone.now,
+        resolved_by: user,
         project: project,
         findings: [finding],
         title: 'Test Title')
@@ -78,6 +84,8 @@ RSpec.describe Vulnerabilities::Archival::ArchivedRecordBuilderService, feature_
           cve_value: 'CVE-2018-1234',
           cwe_value: 'CWE-123',
           other_identifiers: ['OWASP-A01:2021'],
+          dismissed_at: vulnerability.dismissed_at.to_s,
+          dismissed_by: 'john.doe',
           created_at: vulnerability.created_at.to_s,
           location: {
             class: 'com.gitlab.security_products.tests.App',
@@ -100,6 +108,32 @@ RSpec.describe Vulnerabilities::Archival::ArchivedRecordBuilderService, feature_
         created_at: Time.zone.now,
         updated_at: Time.zone.now
       )
+    end
+
+    context 'when the vulnerability is confirmed' do
+      before do
+        vulnerability.update!(state: :confirmed)
+      end
+
+      it 'sets the confirmed at and confirmed by information' do
+        expect(build_archived_record[:data]).to match(hash_including(
+          'confirmed_at' => vulnerability.confirmed_at.to_s,
+          'confirmed_by' => 'john.doe'
+        ))
+      end
+    end
+
+    context 'when the vulnerability is resolved' do
+      before do
+        vulnerability.update!(state: :resolved)
+      end
+
+      it 'sets the resolved at and resolved by information' do
+        expect(build_archived_record[:data]).to match(hash_including(
+          'resolved_at' => vulnerability.resolved_at.to_s,
+          'resolved_by' => 'john.doe'
+        ))
+      end
     end
   end
 end

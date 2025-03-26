@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Vulnerabilities::Archival::Export::Exporters::CsvService, feature_category: :vulnerability_management do
   describe '#generate' do
-    let_it_be(:archived_record) { create(:vulnerability_archived_record) }
+    let_it_be(:archived_record) { create(:vulnerability_archived_record, :dismissed) }
 
     let(:export_csv_service) { described_class.new([archived_record.data]) }
 
@@ -26,7 +26,8 @@ RSpec.describe Vulnerabilities::Archival::Export::Exporters::CsvService, feature
       describe 'headers' do
         let(:expected_headers) do
           ['Tool', 'Scanner Name', 'Status', 'Vulnerability', 'Details', 'Severity', 'CVE', 'CWE', 'Other Identifiers',
-            'Detected At', 'Location', 'Activity', 'Comments', 'Full Path', 'CVSS Vectors', 'Dismissal Reason']
+            'Dismissed At', 'Dismissed By', 'Confirmed At', 'Confirmed By', 'Resolved At', 'Resolved By', 'Detected At',
+            'Location', 'Activity', 'Comments', 'Full Path', 'CVSS Vectors', 'Dismissal Reason']
         end
 
         it 'contains the expected headers' do
@@ -51,6 +52,12 @@ RSpec.describe Vulnerabilities::Archival::Export::Exporters::CsvService, feature
               'CVE' => 'CVE-2018-1234',
               'CWE' => 'CWE-123',
               'Other Identifiers' => 'OWASP-A01:2021',
+              'Dismissed At' => '2025-01-30 19:02:08 UTC',
+              'Dismissed By' => 'user',
+              'Confirmed At' => nil,
+              'Confirmed By' => nil,
+              'Resolved At' => nil,
+              'Resolved By' => nil,
               'Detected At' => '2025-01-29 19:02:08 UTC',
               'Location' => '{"class"=>"com.gitlab.security_products.tests.App", "end_line"=>29, ' \
                 '"file"=>"maven/src/main/java/com/gitlab/security_products/tests/App.java", ' \
