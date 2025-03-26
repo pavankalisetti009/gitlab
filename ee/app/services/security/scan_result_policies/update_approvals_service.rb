@@ -36,10 +36,6 @@ module Security
       private
 
       def pipeline_with_security_reports_exists?
-        if ::Feature.disabled?(:use_related_pipelines_for_policy_evaluation, project)
-          return pipeline.complete_or_manual? && pipeline.can_store_security_reports?
-        end
-
         # First check if our pipeline has reports before looking up related pipelines
         return true if pipeline.can_store_security_reports?
 

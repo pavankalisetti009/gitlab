@@ -273,15 +273,6 @@ RSpec.describe Security::ScanResultPolicies::UpdateLicenseApprovalsService, feat
         it_behaves_like 'requires approval'
         it_behaves_like 'triggers policy bot comment', true
 
-        context 'when feature flag "use_related_pipelines_for_policy_evaluation" is disabled' do
-          before do
-            stub_feature_flags(use_related_pipelines_for_policy_evaluation: false)
-          end
-
-          it_behaves_like 'requires approval'
-          it_behaves_like 'does not trigger policy bot comment'
-        end
-
         context 'when there are no violations' do
           before do
             allow_next_instance_of(Security::ScanResultPolicies::LicenseViolationChecker) do |checker|
@@ -291,15 +282,6 @@ RSpec.describe Security::ScanResultPolicies::UpdateLicenseApprovalsService, feat
 
           it_behaves_like 'does not require approvals'
           it_behaves_like 'triggers policy bot comment', false
-
-          context 'when feature flag "use_related_pipelines_for_policy_evaluation" is disabled' do
-            before do
-              stub_feature_flags(use_related_pipelines_for_policy_evaluation: false)
-            end
-
-            it_behaves_like 'requires approval'
-            it_behaves_like 'does not trigger policy bot comment'
-          end
         end
       end
     end
