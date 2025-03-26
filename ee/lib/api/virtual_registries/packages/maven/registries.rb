@@ -25,7 +25,7 @@ module API
             strong_memoize_attr :registry
 
             def policy_subject
-              ::VirtualRegistries::Packages::Policies::Group.new(group)
+              group.virtual_registry_policy_subject
             end
           end
 
