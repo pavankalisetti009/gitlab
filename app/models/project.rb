@@ -3792,7 +3792,7 @@ class Project < ApplicationRecord
   end
 
   def sync_project_namespace?
-    (changes.keys & %w[name path namespace_id namespace visibility_level shared_runners_enabled]).any? && project_namespace.present?
+    (changes.keys & Namespaces::ProjectNamespace::SYNCED_ATTRIBUTES).any? && project_namespace.present?
   end
 
   def reload_project_namespace_details
