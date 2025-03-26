@@ -76,16 +76,24 @@ RSpec.describe VirtualRegistries::Packages::Maven::Cache::Entry, type: :model, f
   end
 
   describe 'scopes' do
-    describe '.for_group' do
-      let_it_be(:cache_entry1) { create(:virtual_registries_packages_maven_cache_entry) }
-      let_it_be(:cache_entry2) { create(:virtual_registries_packages_maven_cache_entry) }
-      let_it_be(:cache_entry3) { create(:virtual_registries_packages_maven_cache_entry) }
+    let_it_be(:cache_entry1) { create(:virtual_registries_packages_maven_cache_entry) }
+    let_it_be(:cache_entry2) { create(:virtual_registries_packages_maven_cache_entry) }
+    let_it_be(:cache_entry3) { create(:virtual_registries_packages_maven_cache_entry) }
 
+    describe '.for_group' do
       let(:groups) { [cache_entry1.group, cache_entry2.group] }
 
       subject { described_class.for_group(groups) }
 
-      it { is_expected.to match_array([cache_entry1, cache_entry2]) }
+      it { is_expected.to contain_exactly(cache_entry1, cache_entry2) }
+    end
+
+    describe '.for_upstreams' do
+      let(:upstreams) { [cache_entry1.upstream, cache_entry2.upstream] }
+
+      subject { described_class.for_upstreams(upstreams) }
+
+      it { is_expected.to contain_exactly(cache_entry1, cache_entry2) }
     end
   end
 

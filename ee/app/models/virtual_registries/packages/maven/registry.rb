@@ -7,23 +7,26 @@ module VirtualRegistries
         ignore_column :cache_validity_hours, remove_with: '18.0', remove_after: '2025-04-23'
 
         belongs_to :group
-        has_one :registry_upstream,
+        has_many :registry_upstreams,
+          -> { order(position: :asc) },
           class_name: 'VirtualRegistries::Packages::Maven::RegistryUpstream',
           inverse_of: :registry
-        has_one :upstream, class_name: 'VirtualRegistries::Packages::Maven::Upstream', through: :registry_upstream
+        has_many :upstreams,
+          class_name: 'VirtualRegistries::Packages::Maven::Upstream',
+          through: :registry_upstreams
 
         validates :group, top_level_group: true, presence: true, uniqueness: true
 
         scope :for_group, ->(group) { where(group: group) }
 
-        before_destroy :destroy_upstream
+        before_destroy :delete_upstreams
 
         private
 
-        # TODO: revisit this when we support multiple upstreams.
-        # https://gitlab.com/gitlab-org/gitlab/-/issues/480461
-        def destroy_upstream
-          upstream&.destroy!
+        def delete_upstreams
+          VirtualRegistries::Packages::Maven::Upstream
+            .primary_key_in(registry_upstreams.select(:upstream_id))
+            .delete_all
         end
       end
     end

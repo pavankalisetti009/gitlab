@@ -22,6 +22,7 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
       is_expected.to have_one(:registry_upstream)
         .class_name('VirtualRegistries::Packages::Maven::RegistryUpstream')
         .inverse_of(:upstream)
+        .autosave(true)
     end
 
     it 'has one registry' do
@@ -52,6 +53,7 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
         'http://127.0.0.1'    | false | 'Url is blocked: Requests to localhost are not allowed'
         'maven.local'         | false | 'Url is blocked: Only allowed schemes are http, https'
         'http://192.168.1.2'  | false | 'Url is blocked: Requests to the local network are not allowed'
+        'http://foobar.x'     | false | 'Url is blocked: Host cannot be resolved or invalid'
       end
 
       with_them do

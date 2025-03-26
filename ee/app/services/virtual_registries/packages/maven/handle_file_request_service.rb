@@ -39,14 +39,16 @@ module VirtualRegistries
         def execute
           return ERRORS[:path_not_present] unless path.present?
           return ERRORS[:unauthorized] unless allowed?
-          return ERRORS[:no_upstreams] unless registry.upstream.present?
+          return ERRORS[:no_upstreams] if registry.upstreams.empty?
 
           if digest_request?
             download_cache_entry_digest
           elsif cache_response_still_valid?
             download_cache_entry
           else
-            check_upstream(registry.upstream)
+            # TODO change this to support multiple upstreams
+            # https://gitlab.com/gitlab-org/gitlab/-/issues/480461
+            check_upstream(registry.upstreams.first)
           end
 
         rescue *::Gitlab::HTTP::HTTP_ERRORS
@@ -56,13 +58,6 @@ module VirtualRegistries
         end
 
         private
-
-        def cache_entry
-          # TODO change this to support multiple upstreams
-          # https://gitlab.com/gitlab-org/gitlab/-/issues/480461
-          registry.upstream.default_cache_entries.find_by_relative_path(relative_path)
-        end
-        strong_memoize_attr :cache_entry
 
         def cache_response_still_valid?
           return false unless cache_entry
@@ -78,6 +73,15 @@ module VirtualRegistries
           cache_entry.update_column(:upstream_checked_at, Time.current)
           true
         end
+
+        def cache_entry
+          VirtualRegistries::Packages::Maven::Cache::Entry
+            .default
+            .for_group(registry.group)
+            .for_upstreams(registry.upstreams)
+            .find_by_relative_path(relative_path)
+        end
+        strong_memoize_attr :cache_entry
 
         def check_upstream(upstream)
           response = head_upstream(upstream: upstream)

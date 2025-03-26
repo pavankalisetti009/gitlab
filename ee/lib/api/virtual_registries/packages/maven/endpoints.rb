@@ -32,7 +32,7 @@ module API
           helpers do
             include ::Gitlab::Utils::StrongMemoize
 
-            delegate :group, :upstream, :registry_upstream, to: :registry
+            delegate :group, to: :registry
             alias_method :target_group, :group
 
             def registry
@@ -129,13 +129,11 @@ module API
                 UPSTREAM_GID_HEADER
               ) { nil }
 
-              # TODO: revisit this part when multiple upstreams are supported
-              # https://gitlab.com/gitlab-org/gitlab/-/issues/480461
-              # coherence check
-              not_found!('Upstream') unless upstream == GlobalID::Locator.locate(upstream_gid)
+              target_upstream = GlobalID::Locator.locate(upstream_gid)
+              not_found!('Upstream') unless registry.upstreams.include?(target_upstream)
 
               service_response = ::VirtualRegistries::Packages::Maven::Cache::Entries::CreateOrUpdateService.new(
-                upstream: upstream,
+                upstream: target_upstream,
                 current_user: current_user,
                 params: declared_params.merge(etag: etag, content_type: content_type)
               ).execute

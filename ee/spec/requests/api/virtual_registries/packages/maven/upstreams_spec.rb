@@ -17,7 +17,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
         api_request
 
         expect(response).to have_gitlab_http_status(:ok)
-        expect(Gitlab::Json.parse(response.body)).to contain_exactly(registry.upstream.as_json)
+        expect(Gitlab::Json.parse(response.body)).to contain_exactly(upstream.as_json)
       end
     end
 
@@ -117,7 +117,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
 
       with_them do
         before do
-          registry.upstream&.destroy!
+          registry.upstreams.each(&:destroy!)
           group.send(:"add_#{user_role}", user)
         end
 
@@ -151,7 +151,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
       end
 
       before do
-        registry.upstream&.destroy!
+        registry.upstreams.each(&:destroy!)
       end
 
       before_all do
@@ -167,13 +167,41 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
       end
     end
 
-    context 'with existing upstream' do
+    context 'with a full registry' do
       before_all do
         group.add_maintainer(user)
-        create(:virtual_registries_packages_maven_upstream, registry: registry)
+
+        # inserting upstreams and registry upstreams
+        # we can't create_list registry upstreams as the position column get set to 0
+        # for all records which violates a unique constraint.
+        # Therefore, we manually insert_all rows.
+        attributes = Array.new(VirtualRegistries::Packages::Maven::RegistryUpstream::MAX_UPSTREAMS_COUNT).map do |i|
+          {
+            group_id: registry.group_id,
+            url: "http://test.org/#{i}"
+          }
+        end
+
+        upstream_ids = VirtualRegistries::Packages::Maven::Upstream.insert_all(
+          attributes,
+          returning: :id
+        ).pluck("id")
+
+        VirtualRegistries::Packages::Maven::RegistryUpstream.insert_all(
+          upstream_ids.each_with_index.map do |upstream_id, i|
+            {
+              group_id: registry.group_id,
+              registry_id: registry.id,
+              upstream_id: upstream_id,
+              position: i + 1
+            }
+          end
+        )
       end
 
-      it_behaves_like 'returning response status', :conflict
+      it_behaves_like 'returning response status with message',
+        status: :bad_request,
+        message: { "registry_upstream.position" => ["must be less than or equal to 20"] }
     end
 
     context 'for authentication' do
@@ -182,7 +210,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
       end
 
       before do
-        registry.upstream&.destroy!
+        registry.upstreams.each(&:destroy!)
       end
 
       where(:token, :sent_as, :status) do
@@ -213,7 +241,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
         api_request
 
         expect(response).to have_gitlab_http_status(:ok)
-        expect(Gitlab::Json.parse(response.body)).to eq(registry.upstream.as_json)
+        expect(Gitlab::Json.parse(response.body)).to eq(upstream.as_json)
       end
     end
 

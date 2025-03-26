@@ -10,7 +10,7 @@ module API
           helpers do
             include ::Gitlab::Utils::StrongMemoize
 
-            delegate :group, :registry_upstream, to: :registry
+            delegate :group, to: :registry
 
             def target_group
               request.path.include?('/registries') ? group : upstream.group
@@ -48,7 +48,7 @@ module API
                   get do
                     authorize! :read_virtual_registry, registry
 
-                    present [registry.upstream].compact, with: Entities::VirtualRegistries::Packages::Maven::Upstream
+                    present registry.upstreams, with: Entities::VirtualRegistries::Packages::Maven::Upstream
                   end
 
                   desc 'Add a maven virtual registry upstream' do
@@ -77,15 +77,11 @@ module API
                   post do
                     authorize! :create_virtual_registry, registry
 
-                    conflict!(_('Upstream already exists')) if registry.upstream
+                    new_registry_upstream = registry.registry_upstreams.build(group:)
+                    new_upstream = new_registry_upstream
+                      .build_upstream(declared_params(include_missing: false).merge(group:))
 
-                    new_upstream = registry.build_upstream(declared_params(include_missing: false).merge(group:))
-                    registry_upstream.group = group
-
-                    ApplicationRecord.transaction do
-                      render_validation_error!(new_upstream) unless new_upstream.save
-                      render_validation_error!(registry_upstream) unless registry_upstream.save
-                    end
+                    render_validation_error!(new_upstream) unless new_upstream.save
 
                     present new_upstream, with: Entities::VirtualRegistries::Packages::Maven::Upstream
                   end

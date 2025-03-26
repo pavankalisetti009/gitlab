@@ -24671,7 +24671,9 @@ CREATE TABLE virtual_registries_packages_maven_registry_upstreams (
     registry_id bigint NOT NULL,
     upstream_id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL
+    updated_at timestamp with time zone NOT NULL,
+    "position" smallint DEFAULT 1 NOT NULL,
+    CONSTRAINT check_8e8de60b63 CHECK (((1 <= "position") AND ("position" <= 20)))
 );
 
 CREATE SEQUENCE virtual_registries_packages_maven_registry_upstreams_id_seq
@@ -33580,6 +33582,8 @@ CREATE INDEX idx_user_member_roles_on_member_role_id ON user_member_roles USING 
 
 CREATE UNIQUE INDEX idx_user_member_roles_on_user_id_unique ON user_member_roles USING btree (user_id);
 
+CREATE UNIQUE INDEX idx_vreg_pkgs_mvn_reg_upst_on_unique_regid_pos ON virtual_registries_packages_maven_registry_upstreams USING btree (registry_id, "position");
+
 CREATE INDEX idx_vuln_reads_for_filtering ON vulnerability_reads USING btree (project_id, state, dismissal_reason, severity DESC, vulnerability_id DESC NULLS LAST);
 
 CREATE UNIQUE INDEX idx_vuln_signatures_uniqueness_signature_sha ON vulnerability_finding_signatures USING btree (finding_id, algorithm_type, signature_sha);
@@ -38867,8 +38871,6 @@ CREATE INDEX user_uploads_store_idx ON user_uploads USING btree (store);
 CREATE INDEX user_uploads_uploaded_by_user_id_idx ON user_uploads USING btree (uploaded_by_user_id);
 
 CREATE INDEX user_uploads_uploader_path_idx ON user_uploads USING btree (uploader, path);
-
-CREATE UNIQUE INDEX virtual_reg_packages_maven_reg_upstreams_on_unique_reg_ids ON virtual_registries_packages_maven_registry_upstreams USING btree (registry_id);
 
 CREATE UNIQUE INDEX virtual_reg_packages_maven_reg_upstreams_on_unique_upstream_ids ON virtual_registries_packages_maven_registry_upstreams USING btree (upstream_id);
 
