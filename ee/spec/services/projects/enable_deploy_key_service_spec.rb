@@ -25,12 +25,12 @@ RSpec.describe Projects::EnableDeployKeyService do
     expect(audit_event.entity_id).to eq(project.id)
     expect(audit_event.entity_type).to eq(project.class.name)
     expect(audit_event.details).to include({
-                                             add: "deploy_key",
-                                             author_name: user.name,
-                                             custom_message: "Added deploy key",
-                                             target_details: deploy_key.title,
-                                             target_type: "DeployKey"
-                                           })
+      add: "deploy_key",
+      author_name: user.name,
+      custom_message: "Added deploy key",
+      target_details: deploy_key.title,
+      target_type: "DeployKey"
+    })
   end
 
   it_behaves_like 'sends correct event type in audit event stream' do

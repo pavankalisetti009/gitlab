@@ -29,21 +29,21 @@ RSpec.describe Projects::GroupLinks::CreateService, '#execute', feature_category
 
       let(:attributes) do
         {
-           author_id: user.id,
-           entity_id: group.id,
-           entity_type: 'Group',
-           details: {
-             add: 'project_access',
-             as: 'Developer',
-             author_name: user.name,
-             author_class: 'User',
-             custom_message: 'Added project group link',
-             event_name: 'project_group_link_created',
-             target_id: project.id,
-             target_type: 'Project',
-             target_details: project.full_path
-           }
-         }
+          author_id: user.id,
+          entity_id: group.id,
+          entity_type: 'Group',
+          details: {
+            add: 'project_access',
+            as: 'Developer',
+            author_name: user.name,
+            author_class: 'User',
+            custom_message: 'Added project group link',
+            event_name: 'project_group_link_created',
+            target_id: project.id,
+            target_type: 'Project',
+            target_details: project.full_path
+          }
+        }
       end
     end
 

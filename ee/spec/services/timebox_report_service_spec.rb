@@ -152,12 +152,12 @@ RSpec.shared_examples 'timebox chart' do |timebox_type|
       expect(response.payload[:burnup_time_series]).to eq(
         [
           {
-             date: timebox_start_date + 4.days,
-             scope_count: 2,
-             scope_weight: 2,
-             completed_count: 0,
-             completed_weight: 0
-           },
+            date: timebox_start_date + 4.days,
+            scope_count: 2,
+            scope_weight: 2,
+            completed_count: 0,
+            completed_weight: 0
+          },
           {
             date: timebox_start_date + 5.days,
             scope_count: 3,
