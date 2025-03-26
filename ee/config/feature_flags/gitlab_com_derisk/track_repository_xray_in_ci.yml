@@ -1,0 +1,9 @@
+---
+name: track_repository_xray_in_ci
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/516257
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/185189
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/525921
+milestone: '17.11'
+group: group::code creation
+type: gitlab_com_derisk
+default_enabled: false
