@@ -6,6 +6,10 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
   let(:user) { create(:user) }
   let(:group) { create(:group) }
 
+  before do
+    stub_feature_flags(downtier_delayed_deletion: false)
+  end
+
   describe 'PUT update' do
     before do
       group.add_owner(user)
