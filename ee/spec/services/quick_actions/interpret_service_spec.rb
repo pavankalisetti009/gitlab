@@ -1562,7 +1562,7 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
 
         it 'applies the correct explanation' do
           _, explanations = service.explain(content, issue)
-          expect(explanations).to eq(["Change item's parent to #{epic.to_reference}."])
+          expect(explanations).to eq(["Set #{epic.to_reference} as this item's parent item."])
         end
       end
 
@@ -1574,7 +1574,7 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
 
         it 'applies the correct explanation' do
           _, explanations = service.explain(content, issue_work_item)
-          expect(explanations).to eq(["Change item's parent to #{epic_work_item.to_reference}."])
+          expect(explanations).to eq(["Set #{epic_work_item.to_reference} as this item's parent item."])
         end
       end
     end

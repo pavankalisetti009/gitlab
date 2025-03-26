@@ -10,10 +10,7 @@ module EE
         prepended do
           before_connection_authorization do |projects, current_user|
             ::Preloaders::UserMaxAccessLevelInProjectsPreloader.new(projects, current_user).execute
-
-            if ::Feature.enabled?(:preload_member_roles, current_user)
-              ::Preloaders::UserMemberRolesInProjectsPreloader.new(projects: projects, user: current_user).execute
-            end
+            ::Preloaders::UserMemberRolesInProjectsPreloader.new(projects: projects, user: current_user).execute
           end
         end
 
