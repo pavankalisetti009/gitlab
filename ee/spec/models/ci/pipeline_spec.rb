@@ -536,6 +536,52 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
         end
       end
     end
+
+    describe 'ci_repository_xray_artifact_created event on pipeline completed' do
+      context 'when pipeline has a repository x-ray job artifact' do
+        let!(:pipeline_with_xray) do
+          create(:ci_empty_pipeline, status: :created, project: project, user: user).tap do |p|
+            create(:ee_ci_build, :repository_xray, pipeline: p, project: project)
+          end
+        end
+
+        subject(:succeed) { pipeline_with_xray.succeed }
+
+        it 'triggers `ci_repository_xray_artifact_created` events' do
+          # we have to include the `completed_pipeline_execution` event in the check, otherwise the test will fail
+          expected_events = %w[completed_pipeline_execution ci_repository_xray_artifact_created]
+          xray_usage_metrics = [
+            'redis_hll_counters.count_distinct_project_id_from_ci_repository_xray_artifact_created_monthly',
+            'redis_hll_counters.count_distinct_project_id_from_ci_repository_xray_artifact_created_weekly'
+          ]
+
+          expect { succeed }.to trigger_internal_events(*expected_events).with(
+            project: project,
+            user: user
+          ).and increment_usage_metrics(xray_usage_metrics)
+        end
+      end
+
+      context 'when pipeline does not have a repository x-ray job artifact' do
+        it_behaves_like 'internal event not tracked' do
+          subject { pipeline.succeed }
+
+          let(:event) { 'ci_repository_xray_artifact_created' }
+        end
+      end
+
+      context 'when `track_repository_xray_in_ci` FF is disabled' do
+        before do
+          stub_feature_flags(track_repository_xray_in_ci: false)
+        end
+
+        it_behaves_like 'internal event not tracked' do
+          subject { pipeline.succeed }
+
+          let(:event) { 'ci_repository_xray_artifact_created' }
+        end
+      end
+    end
   end
 
   describe '#latest_merged_result_pipeline?' do
