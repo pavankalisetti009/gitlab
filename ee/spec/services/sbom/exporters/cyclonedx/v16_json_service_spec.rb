@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Sbom::Exporters::Cyclonedx::V16Service, feature_category: :vulnerability_management do
+RSpec.describe ::Sbom::Exporters::Cyclonedx::V16JsonService, feature_category: :vulnerability_management do
   let_it_be(:project) { create(:project) }
   let_it_be(:export) { create(:dependency_list_export, project: project) }
   let_it_be(:sbom_occurrences) { project.sbom_occurrences }

@@ -3,7 +3,10 @@
 module Sbom
   module Exporters
     module Cyclonedx
-      class V16Service
+      # This exporter serializes the dependency list into a CycloneDX SBoM.
+      # It handles spec version 1.6 in JSON format.
+      # https://cyclonedx.org/docs/1.6/json/
+      class V16JsonService
         include WriteBlob
 
         VENDOR = 'GitLab'
