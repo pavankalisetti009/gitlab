@@ -6,12 +6,15 @@ import { TYPENAME_MEMBER_ROLE } from '~/graphql_shared/constants';
 import { createAlert } from '~/alert';
 import { visitUrl } from '~/lib/utils/url_utility';
 import memberRoleQuery from '../../graphql/role_details/member_role.query.graphql';
+import adminRoleQuery from '../../graphql/admin_role/role.query.graphql';
 import updateMemberRoleMutation from '../../graphql/update_member_role.mutation.graphql';
+import updateAdminRoleMutation from '../../graphql/admin_role/update_role.mutation.graphql';
 import { DETAILS_QUERYSTRING } from '../role_details/role_details.vue';
 import RoleForm from './role_form.vue';
 
 export default {
   components: { GlLoadingIcon, GlAlert, RoleForm },
+  inject: ['isAdminRole'],
   props: {
     roleId: {
       type: Number,
@@ -31,7 +34,9 @@ export default {
   },
   apollo: {
     memberRole: {
-      query: memberRoleQuery,
+      query() {
+        return this.isAdminRole ? adminRoleQuery : memberRoleQuery;
+      },
       variables() {
         return { id: this.roleGraphqlId };
       },
@@ -44,6 +49,11 @@ export default {
     roleGraphqlId() {
       return convertToGraphQLId(TYPENAME_MEMBER_ROLE, this.roleId);
     },
+    titleText() {
+      return this.isAdminRole
+        ? s__('MemberRole|Edit admin role')
+        : s__('MemberRole|Edit member role');
+    },
   },
   methods: {
     async saveRole(input) {
@@ -52,7 +62,7 @@ export default {
         this.isSubmitting = true;
 
         const response = await this.$apollo.mutate({
-          mutation: updateMemberRoleMutation,
+          mutation: this.isAdminRole ? updateAdminRoleMutation : updateMemberRoleMutation,
           variables: { ...input, id: this.roleGraphqlId },
         });
 
@@ -91,11 +101,11 @@ export default {
 
   <role-form
     v-else
-    :title="s__('MemberRole|Edit member role')"
+    :title="titleText"
     :role="memberRole"
     :submit-text="s__('MemberRole|Save role')"
     :busy="isSubmitting"
-    show-base-role
+    :show-base-role="!isAdminRole"
     @submit="saveRole"
     @cancel="goToPreviousPage"
   />
