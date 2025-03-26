@@ -1,27 +1,41 @@
 # frozen_string_literal: true
 
 RSpec.shared_examples Integrations::Base::AmazonQ do
-  subject(:integration) { described_class.new(auto_review_enabled: auto_review_enabled, instance: true) }
+  subject(:integration) { build(:amazon_q_integration, auto_review_enabled: auto_review_enabled) }
 
   let_it_be(:auto_review_enabled) { true }
 
   describe 'Validations' do
     context 'when active' do
-      before do
-        subject.active = true
-      end
-
       it { is_expected.to validate_presence_of(:role_arn) }
       it { is_expected.to validate_length_of(:role_arn).is_at_most(2048) }
       it { is_expected.to validate_presence_of(:availability) }
 
       describe '#role_arn' do
-        subject(:integration) { described_class.new(auto_review_enabled: auto_review_enabled, group: build(:group)) }
-
-        it 'can be changed only on instance level' do
+        it 'can be changed' do
           integration.role_arn = "changed"
 
-          expect(integration).not_to be_valid
+          expect(integration).to be_valid
+        end
+
+        context 'when integration is project-level' do
+          subject(:integration) { build(:amazon_q_integration, project: build(:project), instance: false) }
+
+          it 'cannot be changed' do
+            integration.role_arn = "changed"
+
+            expect(integration).not_to be_valid
+          end
+        end
+
+        context 'when integration is group-level' do
+          subject(:integration) { build(:amazon_q_integration, group: build(:group), instance: false) }
+
+          it 'cannot be changed' do
+            integration.role_arn = "changed"
+
+            expect(integration).not_to be_valid
+          end
         end
       end
 
@@ -36,6 +50,10 @@ RSpec.shared_examples Integrations::Base::AmazonQ do
     end
 
     context 'when inactive' do
+      before do
+        integration.active = false
+      end
+
       it { is_expected.not_to validate_presence_of(:role_arn) }
       it { is_expected.not_to validate_presence_of(:availability) }
       it { is_expected.not_to validate_inclusion_of(:availability).in_array(%w[default_on default_off never_on]) }
@@ -43,7 +61,9 @@ RSpec.shared_examples Integrations::Base::AmazonQ do
 
     describe '#auto_review_enabled' do
       context 'when integration is not available' do
-        subject(:integration) { described_class.new(availability: "default_off") }
+        before do
+          integration.availability = 'default_off'
+        end
 
         it 'validates that the integration must be available' do
           is_expected.to validate_inclusion_of(
@@ -53,7 +73,7 @@ RSpec.shared_examples Integrations::Base::AmazonQ do
       end
 
       it 'allows auto_review_enabled for available integrations' do
-        integration = described_class.new(availability: "default_on", instance: true, auto_review_enabled: true)
+        integration = build(:amazon_q_integration, availability: "default_on", auto_review_enabled: true)
 
         expect(integration).to be_valid
       end
@@ -74,8 +94,8 @@ RSpec.shared_examples Integrations::Base::AmazonQ do
 
       with_them do
         it 'validates that merge request and pipeline events equal to auto_review_enabled' do
-          integration = described_class.new(
-            availability: "default_on", instance: true, auto_review_enabled: auto_review_enabled_value,
+          integration = build(:amazon_q_integration,
+            auto_review_enabled: auto_review_enabled_value,
             merge_requests_events: merge_requests_events, pipeline_events: pipeline_events
           )
 
