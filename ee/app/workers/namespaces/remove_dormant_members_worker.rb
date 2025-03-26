@@ -65,10 +65,17 @@ module Namespaces
 
       ::GitlabSubscriptions::SeatAssignment.dormant_in_namespace(namespace, dormant_period).find_each do |assignment|
         next if namespace.owner_ids.include?(assignment.user_id)
-        next if assignment.user.bot?
+
+        user = assignment.user
+
+        next if user.bot?
 
         ::Gitlab::Auth::CurrentUserMode.optionally_run_in_admin_mode(admin_bot) do
-          ::Members::ScheduleDeletionService.new(namespace, assignment.user_id, admin_bot).execute
+          if user.enterprise_user_of_group?(namespace)
+            ::Users::DeactivateEnterpriseService.new(admin_bot, group: namespace).execute(user)
+          else
+            ::Members::ScheduleDeletionService.new(namespace, assignment.user_id, admin_bot).execute
+          end
         end
 
         dormant_count += 1

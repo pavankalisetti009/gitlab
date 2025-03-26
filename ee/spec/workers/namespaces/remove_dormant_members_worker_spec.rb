@@ -22,11 +22,11 @@ RSpec.describe Namespaces::RemoveDormantMembersWorker, :saas, feature_category: 
 
       context 'with dormant members', :enable_admin_mode do
         let_it_be(:active_assignment) do
-          create(:gitlab_subscription_seat_assignment, namespace: group, last_activity_on: Time.zone.today)
+          create_seat_assignment(namespace: group, last_active: Time.zone.today)
         end
 
         let_it_be(:dormant_assignment) do
-          create(:gitlab_subscription_seat_assignment, namespace: group, last_activity_on: 91.days.ago)
+          create_seat_assignment(namespace: group, last_active: 91.days.ago)
         end
 
         it_behaves_like 'an idempotent worker' do
@@ -76,6 +76,66 @@ RSpec.describe Namespaces::RemoveDormantMembersWorker, :saas, feature_category: 
             end.not_to change { Members::DeletionSchedule.count }
           end
         end
+
+        context 'with dormant enterprise users' do
+          let_it_be(:dormant_enterprise_user) { create(:enterprise_user, enterprise_group: group) }
+          let_it_be(:other_group_enterprise_user) { create(:enterprise_user) }
+          let_it_be(:dormant_regular_user) { create(:user) }
+
+          before do
+            create_seat_assignment(namespace: group, user: dormant_enterprise_user, last_active: 91.days.ago)
+            create_seat_assignment(namespace: group, user: other_group_enterprise_user, last_active: 91.days.ago)
+            create_seat_assignment(user: dormant_regular_user, last_active: 91.days.ago)
+          end
+
+          it_behaves_like 'an idempotent worker' do
+            it 'deactivates dormant enterprise users' do
+              perform_work
+
+              expect(dormant_enterprise_user.reload.deactivated?).to be true
+              expect(other_group_enterprise_user.reload.deactivated?).to be false
+            end
+
+            it 'does not deactivate non-enterprise users' do
+              perform_work
+
+              expect(dormant_regular_user.reload.deactivated?).to be false
+            end
+
+            include_examples 'audit event logging' do
+              let_it_be(:admin) { create(:admin) }
+
+              let(:operation) { perform_work }
+
+              let(:fail_condition!) do
+                allow_next_found_instance_of(User) do |user|
+                  allow(user).to receive(:deactivate).and_return(false)
+                end
+              end
+
+              let(:attributes) do
+                {
+                  author_id: admin.id,
+                  entity_id: dormant_enterprise_user.id,
+                  entity_type: 'User',
+                  details: {
+                    author_class: 'User',
+                    author_name: admin.name,
+                    event_name: 'user_deactivate',
+                    custom_message: 'Deactivated user',
+                    target_details: dormant_enterprise_user.username,
+                    target_id: dormant_enterprise_user.id,
+                    target_type: 'User'
+                  }
+                }
+              end
+
+              before do
+                allow(::Users::Internal).to receive(:admin_bot).and_return(admin)
+              end
+            end
+          end
+        end
       end
     end
 
@@ -116,5 +176,18 @@ RSpec.describe Namespaces::RemoveDormantMembersWorker, :saas, feature_category: 
 
       it { is_expected.to eq(0) }
     end
+  end
+
+  def create_seat_assignment(namespace: nil, user: nil, last_active: nil)
+    assignment = build(:gitlab_subscription_seat_assignment)
+
+    assignment.tap do |record|
+      record.namespace = namespace if namespace
+      record.user = user if user
+      record.last_activity_on = last_active if last_active
+    end
+
+    assignment.save!
+    assignment
   end
 end
