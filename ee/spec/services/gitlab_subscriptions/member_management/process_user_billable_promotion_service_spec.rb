@@ -212,6 +212,28 @@ RSpec.describe GitlabSubscriptions::MemberManagement::ProcessUserBillablePromoti
         end
       end
 
+      context 'when there is all failure for already billable user' do
+        let(:sub_group) { create(:group, parent: group) }
+
+        let!(:member_approval) do
+          create(:gitlab_subscription_member_management_member_approval, :to_developer,
+            member_namespace: sub_group, user: user, member: nil, old_access_level: nil)
+        end
+
+        let(:another_member_approval) { nil }
+
+        before do
+          group.add_maintainer(user)
+        end
+
+        it 'returns a partial success response' do
+          response = service.execute
+
+          expect(response).to be_success
+          expect(response.payload).to eq({ user: user, status: status, result: :partial_success })
+        end
+      end
+
       context 'when all promotions fail while applying' do
         before do
           allow_next_instance_of(Members::CreateService) do |instance|
