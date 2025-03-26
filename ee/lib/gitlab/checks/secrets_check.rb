@@ -75,14 +75,14 @@ module Gitlab
 
         # Skip if any commit has the special bypass flag `[skip secret push protection]`
         if skip_secret_detection_commit_message?
-          log_audit_event(_("commit message")) # Keeping this a string and not constant so I18N picks it up
-          track_spp_skipped("commit message")
+          audit_logger.log_skip_secret_push_protection(_("commit message")) # String and not constant for I18N
+          audit_logger.track_spp_skipped("commit message")
           return
         end
 
         if skip_secret_detection_push_option?
-          log_audit_event(_("push option")) # Keeping this a string and not constant so I18N picks it up
-          track_spp_skipped("push option")
+          audit_logger.log_skip_secret_push_protection(_("push option")) # Keep this a string and not constant for I18N
+          audit_logger.track_spp_skipped("push option")
           return
         end
 
@@ -134,7 +134,7 @@ module Gitlab
             )
 
           # Log audit events for exlusions that were applied.
-          log_applied_exclusions_audit_events(response.applied_exclusions)
+          audit_logger.log_applied_exclusions_audit_events(response.applied_exclusions)
 
           # Handle the response depending on the status returned.
           response = format_response(response)
@@ -229,6 +229,13 @@ module Gitlab
       ############################
       # Audits and Event Logging
 
+      def audit_logger
+        @audit_logger ||= Gitlab::Checks::SecretPushProtection::AuditLogger.new(
+          project: project,
+          changes_access: changes_access
+        )
+      end
+
       def secret_detection_logger
         @secret_detection_logger ||= ::Gitlab::SecretDetectionLogger.build
       end
@@ -246,74 +253,11 @@ module Gitlab
         )
       end
 
-      def log_audit_event(skip_method)
-        branch_name = changes_access.single_change_accesses.first.branch_name
-        message = "#{_('Secret push protection skipped via')} #{skip_method} on branch #{branch_name}"
-        audit_context = {
-          name: 'skip_secret_push_protection',
-          author: changes_access.user_access.user,
-          target: project,
-          scope: project,
-          message: message,
-          target_details: generate_target_details
-        }
-
-        ::Gitlab::Audit::Auditor.audit(audit_context)
-      end
-
-      def log_applied_exclusions_audit_events(applied_exclusions)
-        # Calling ::Gitlab::Audit::Auditor.audit directly in `gitlab-secret_detection` gem is not
-        # feasible so instead of doing that, we loop through exclusions that have been applied during
-        # scanning of either `rule` or `raw_value` type. For `path` exclusions, we create the audit events
-        # when applied while formatting the response.
-        applied_exclusions.each do |exclusion|
-          project_security_exclusion = get_project_security_exclusion_from_sds_exclusion(exclusion)
-          log_exclusion_audit_event(project_security_exclusion) unless project_security_exclusion.nil?
-        end
-      end
-
       def get_project_security_exclusion_from_sds_exclusion(exclusion)
         return exclusion if exclusion.is_a?(::Security::ProjectSecurityExclusion)
 
         # TODO When we implement 2-way SDS communication, we should add the type to this lookup
         project.security_exclusions.where(value: exclusion.value).first # rubocop:disable CodeReuse/ActiveRecord -- Need to be able to link GRPC::Exclusion to ProjectSecurityExclusion
-      end
-
-      def log_exclusion_audit_event(exclusion)
-        audit_context = {
-          name: 'project_security_exclusion_applied',
-          author: changes_access.user_access.user,
-          target: exclusion,
-          scope: project,
-          message: "An exclusion of type (#{exclusion.type}) with value (#{exclusion.value}) was " \
-                   "applied in Secret push protection"
-        }
-
-        ::Gitlab::Audit::Auditor.audit(audit_context)
-      end
-
-      def track_spp_skipped(skip_method)
-        track_internal_event(
-          'skip_secret_push_protection',
-          user: changes_access.user_access.user,
-          project: project,
-          namespace: project.namespace,
-          additional_properties: {
-            label: skip_method
-          }
-        )
-      end
-
-      def track_secret_found(secret_type)
-        track_internal_event(
-          'detect_secret_type_on_push',
-          user: changes_access.user_access.user,
-          project: changes_access.project,
-          namespace: changes_access.project.namespace,
-          additional_properties: {
-            label: secret_type
-          }
-        )
       end
 
       #######################
@@ -600,7 +544,7 @@ module Gitlab
       def build_finding_message(finding, type)
         case finding.status
         when ::Gitlab::SecretDetection::Core::Status::FOUND
-          track_secret_found(finding.description)
+          audit_logger.track_secret_found(finding.description)
 
           case type
           when :commit
@@ -737,7 +681,7 @@ module Gitlab
             File::FNM_DOTMATCH | File::FNM_EXTGLOB | File::FNM_PATHNAME
           )
 
-          log_exclusion_audit_event(exclusion) if matches
+          audit_logger.log_exclusion_audit_event(exclusion) if matches
 
           matches
         end

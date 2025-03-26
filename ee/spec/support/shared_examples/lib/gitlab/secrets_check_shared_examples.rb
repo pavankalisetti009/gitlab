@@ -1032,33 +1032,6 @@ RSpec.shared_examples 'scan detected secrets' do
       end
     end
   end
-
-  it_behaves_like 'internal event tracking' do
-    let(:event) { "detect_secret_type_on_push" }
-    let(:namespace) { project.namespace }
-    let(:label) { "GitLab personal access token" }
-    let(:category) { described_class.name }
-
-    before do
-      allow_next_instance_of(::Gitlab::SecretDetection::Core::Scanner) do |instance|
-        allow(instance).to receive(:secrets_scan)
-          .with(
-            [new_payload],
-            timeout: kind_of(Float),
-            exclusions: kind_of(Hash)
-          )
-          .once
-          .and_return(successful_scan_response)
-          .and_call_original
-      end
-
-      allow(secret_detection_logger).to receive(:info)
-    end
-
-    subject do
-      expect { super().validate! }.to raise_error(::Gitlab::GitAccess::ForbiddenError)
-    end
-  end
 end
 
 RSpec.shared_examples 'processes hunk headers' do
@@ -1113,7 +1086,8 @@ RSpec.shared_examples 'processes hunk headers' do
         expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
           if args[:message] == log_messages[:secrets_not_found]
             expect(args).to include(
-              "message" => log_messages[:secrets_not_found], "class" => "Gitlab::Checks::SecretsCheck")
+              "message" => log_messages[:secrets_not_found],
+              "class" => "Gitlab::Checks::SecretPushProtection::AuditLogger")
           end
         end
 
@@ -2010,13 +1984,6 @@ RSpec.shared_examples 'scan skipped when a commit has special bypass flag' do
     it 'skips the scanning process still' do
       expect { subject.validate! }.not_to raise_error
     end
-
-    it 'generates compare link with oldrev from first commit and newrev from last commit' do
-      test_comparison_path = generate_test_comparison_path(initial_commit, second_commit_with_secret)
-      expect { subject.validate! }.to change { AuditEvent.count }.by(1)
-      expect(AuditEvent.last.details[:target_details])
-        .to eq(test_comparison_path)
-    end
   end
 
   context 'when this is the initial commit on a new branch' do
@@ -2028,12 +1995,6 @@ RSpec.shared_examples 'scan skipped when a commit has special bypass flag' do
 
     it 'skips the scanning process still' do
       expect { subject.validate! }.not_to raise_error
-    end
-
-    it 'returns project name in target_details of the AuditEvent' do
-      expect { subject.validate! }.to change { AuditEvent.count }.by(1)
-      expect(AuditEvent.last.details[:target_details])
-        .to eq(project.name)
     end
   end
 
@@ -2051,24 +2012,6 @@ RSpec.shared_examples 'scan skipped when a commit has special bypass flag' do
     it 'does not create an AuditEvent' do
       expect { subject.validate! }.not_to change { AuditEvent.count }.from(0)
     end
-  end
-
-  it 'creates an audit event' do
-    test_comparison_path = generate_test_comparison_path(initial_commit, new_commit)
-    expect { subject.validate! }.to change { AuditEvent.count }.by(1)
-    expect(AuditEvent.last.details[:custom_message])
-      .to eq("Secret push protection skipped via commit message on branch master")
-
-    expect(AuditEvent.last.details[:target_details])
-      .to eq(test_comparison_path)
-  end
-
-  it_behaves_like 'internal event tracking' do
-    let(:event) { 'skip_secret_push_protection' }
-    let(:namespace) { project.namespace }
-    let(:label) { "commit message" }
-    let(:category) { described_class.name }
-    subject { super().validate! }
   end
 end
 
@@ -2121,13 +2064,6 @@ RSpec.shared_examples 'scan skipped when secret_push_protection.skip_all push op
     it 'skips the scanning process still' do
       expect { subject.validate! }.not_to raise_error
     end
-
-    it 'generates compare link with oldrev from first commit and newrev from last commit' do
-      test_comparison_path = generate_test_comparison_path(initial_commit, second_commit_with_secret)
-      expect { subject.validate! }.to change { AuditEvent.count }.by(1)
-      expect(AuditEvent.last.details[:target_details])
-        .to eq(test_comparison_path)
-    end
   end
 
   context 'when this is the initial commit on a new branch' do
@@ -2139,12 +2075,6 @@ RSpec.shared_examples 'scan skipped when secret_push_protection.skip_all push op
 
     it 'skips the scanning process still' do
       expect { subject.validate! }.not_to raise_error
-    end
-
-    it 'returns project name in target_details of the AuditEvent' do
-      expect { subject.validate! }.to change { AuditEvent.count }.by(1)
-      expect(AuditEvent.last.details[:target_details])
-        .to eq(project.name)
     end
   end
 
@@ -2162,24 +2092,6 @@ RSpec.shared_examples 'scan skipped when secret_push_protection.skip_all push op
     it 'does not create an AuditEvent' do
       expect { subject.validate! }.not_to change { AuditEvent.count }.from(0)
     end
-  end
-
-  it 'creates an audit event' do
-    test_comparison_path = generate_test_comparison_path(initial_commit, new_commit)
-    expect { subject.validate! }.to change { AuditEvent.count }.by(1)
-    expect(AuditEvent.last.details[:custom_message])
-      .to eq("Secret push protection skipped via push option on branch master")
-
-    expect(AuditEvent.last.details[:target_details])
-      .to eq(test_comparison_path)
-  end
-
-  it_behaves_like 'internal event tracking' do
-    let(:event) { 'skip_secret_push_protection' }
-    let(:namespace) { project.namespace }
-    let(:label) { "push option" }
-    let(:category) { described_class.name }
-    subject { super().validate! }
   end
 end
 
@@ -2229,22 +2141,6 @@ RSpec.shared_examples 'scan discarded secrets because they match exclusions' do
             found_secrets_docs_link
           )
         end
-      end
-
-      it 'creates an audit event for path exclusion' do
-        expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
-          if args[:message] == log_messages[:found_secrets]
-            expect(args).to include(
-              "message" => log_messages[:found_secrets], "class" => "Gitlab::Checks::SecretsCheck")
-          end
-        end
-
-        expect { secrets_check.validate! }.to change {
-                                                AuditEvent.count
-                                              }.by(1).and raise_error(::Gitlab::GitAccess::ForbiddenError)
-
-        expect(AuditEvent.last.details[:custom_message]).to eq(
-          "An exclusion of type (path) with value (file-exclusion-1.rb) was applied in Secret push protection")
       end
     end
 
@@ -2313,28 +2209,6 @@ RSpec.shared_examples 'scan discarded secrets because they match exclusions' do
           )
         end
       end
-
-      it 'creates audit events for all path exclusions' do
-        expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
-          if args[:message] == log_messages[:found_secrets]
-            expect(args).to include(
-              "message" => log_messages[:found_secrets], "class" => "Gitlab::Checks::SecretsCheck")
-          end
-        end
-
-        expect { secrets_check.validate! }.to change {
-                                                AuditEvent.count
-                                              }.by(4).and raise_error(::Gitlab::GitAccess::ForbiddenError)
-
-        expect(AuditEvent.first.details[:custom_message]).to eq(
-          "An exclusion of type (path) with value (file-exclusion-1.txt) was applied in Secret push protection")
-        expect(AuditEvent.second.details[:custom_message]).to eq(
-          "An exclusion of type (path) with value (spec/**/*.rb) was applied in Secret push protection")
-        expect(AuditEvent.third.details[:custom_message]).to eq(
-          "An exclusion of type (path) with value (spec/**/*.rb) was applied in Secret push protection")
-        expect(AuditEvent.last.details[:custom_message]).to eq(
-          "An exclusion of type (path) with value (spec/**/*.rb) was applied in Secret push protection")
-      end
     end
   end
 
@@ -2380,22 +2254,6 @@ RSpec.shared_examples 'scan discarded secrets because they match exclusions' do
           found_secrets_docs_link
         )
       end
-    end
-
-    it 'creates an audit event for the exclusion' do
-      expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
-        if args[:message] == log_messages[:found_secrets]
-          expect(args).to include(
-            "message" => log_messages[:found_secrets], "class" => "Gitlab::Checks::SecretsCheck")
-        end
-      end
-
-      expect { secrets_check.validate! }.to change {
-                                              AuditEvent.count
-                                            }.by(1).and raise_error(::Gitlab::GitAccess::ForbiddenError)
-
-      expect(AuditEvent.last.details[:custom_message]).to eq(
-        "An exclusion of type (rule) with value (gitlab_personal_access_token) was applied in Secret push protection")
     end
   end
 
@@ -2447,24 +2305,6 @@ RSpec.shared_examples 'scan discarded secrets because they match exclusions' do
           found_secrets_docs_link
         )
       end
-    end
-
-    it 'creates an audit event for the exclusion' do
-      expect(secret_detection_logger).to receive(:info).at_least(:once) do |args|
-        if args[:message] == log_messages[:found_secrets]
-          expect(args).to include(
-            "message" => log_messages[:found_secrets], "class" => "Gitlab::Checks::SecretsCheck")
-        end
-      end
-
-      expect { secrets_check.validate! }.to change {
-                                              AuditEvent.count
-                                            }.by(1).and raise_error(::Gitlab::GitAccess::ForbiddenError)
-
-      expect(AuditEvent.last.details[:custom_message]).to eq(
-        "An exclusion of type (raw_value) with value " \
-          "(glpat-01234567890123456789) was applied in Secret push protection" # gitleaks:allow
-      )
     end
   end
 end

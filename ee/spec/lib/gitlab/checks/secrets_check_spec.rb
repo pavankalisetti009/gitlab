@@ -168,31 +168,6 @@ RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection
     end
   end
 
-  # While we prefer not to test private methods directly, the structure of the shared examples
-  # makes testing this code difficult and time-sonsuming.
-  # Remove this if refactoring the shared exazmples makes this easier through testing public methods
-  describe '#get_project_security_exclusion_from_sds_exclusion' do
-    let_it_be(:project) { create(:project) }
-    let_it_be(:pse) { create(:project_security_exclusion, :with_rule, project: project) }
-
-    let(:sds_exclusion) do
-      Gitlab::SecretDetection::GRPC::Exclusion.new(
-        exclusion_type: Gitlab::SecretDetection::GRPC::ExclusionType::EXCLUSION_TYPE_RULE,
-        value: pse.value
-      )
-    end
-
-    it 'returns the same object if it is a ProjectSecurityExclusion' do
-      result = secrets_check.send(:get_project_security_exclusion_from_sds_exclusion, pse)
-      expect(result).to be pse
-    end
-
-    it 'returns the ProjectSecurityExclusion with the same value' do
-      result = secrets_check.send(:get_project_security_exclusion_from_sds_exclusion, sds_exclusion)
-      expect(result).to eq pse
-    end
-  end
-
   # Most of the shared examples exercise build_payload normally, but this tests it specifically for
   # a situation where the data is not a valid utf8 string after being forced into one.
   # Remove this if refactoring the shared exazmples makes this easier through testing public methods
