@@ -12,7 +12,6 @@ import {
 } from 'ee/analytics/dashboards/constants';
 import { percentChange } from 'ee/analytics/dashboards/utils';
 import DoraMetricsByProjectQuery from 'ee/analytics/dashboards/graphql/dora_metrics_by_project.query.graphql';
-import DoraMetricsByProjectLegacyQuery from 'ee/analytics/dashboards/graphql/dora_metrics_by_project_legacy.query.graphql';
 import { defaultClient } from '../graphql/client';
 
 const calculateTrends = (previous, current) =>
@@ -47,42 +46,6 @@ const fetchAllProjects = async (params) => {
 
   if (hasNextPage) {
     const { projects: nextNodes } = await fetchAllProjects({
-      ...params,
-      after: endCursor,
-    });
-    return {
-      projects: [...nodes, ...nextNodes],
-      count,
-    };
-  }
-
-  return {
-    projects: nodes,
-    count,
-  };
-};
-
-const fetchAllProjectsLegacy = async (params) => {
-  const {
-    data: {
-      group: {
-        projects: {
-          count,
-          nodes,
-          pageInfo: { endCursor, hasNextPage },
-        },
-      },
-    },
-  } = await defaultClient.query({
-    query: DoraMetricsByProjectLegacyQuery,
-    variables: {
-      ...params,
-      interval: BUCKETING_INTERVAL_MONTHLY,
-    },
-  });
-
-  if (hasNextPage) {
-    const { projects: nextNodes } = await fetchAllProjectsLegacy({
       ...params,
       after: endCursor,
     });
@@ -133,11 +96,7 @@ export default async function fetch({ namespace, isProject, setAlerts }) {
   const endDate = nDaysBefore(thisMonth, 1);
   const startDate = nMonthsBefore(thisMonth, 2);
 
-  const fetchFunc = gon.features?.doraProjectsComparisonSubgroups
-    ? fetchAllProjects
-    : fetchAllProjectsLegacy;
-
-  const { projects, count } = await fetchFunc({
+  const { projects, count } = await fetchAllProjects({
     startDate: toISODateFormat(startDate),
     endDate: toISODateFormat(endDate),
     fullPath: namespace,
