@@ -65094,6 +65094,9 @@ msgstr ""
 msgid "Violation"
 msgstr ""
 
+msgid "VirtualRegistry|Virtual registries"
+msgstr ""
+
 msgid "Visibility"
 msgstr ""
 
