@@ -17,6 +17,7 @@ module ComplianceManagement
       validates :name, uniqueness: { scope: :framework_id }
       validate :requirements_count_per_framework
       validates :name, :description, length: { maximum: 255 }
+      validate :framework_belongs_to_same_namespace
 
       has_many :security_policy_requirements,
         class_name: 'ComplianceManagement::ComplianceFramework::SecurityPolicyRequirement'
@@ -47,6 +48,12 @@ module ComplianceManagement
 
         errors.add(:framework, format(_("cannot have more than %{count} requirements"),
           count: MAX_COMPLIANCE_REQUIREMENTS_PER_FRAMEWORK_COUNT))
+      end
+
+      def framework_belongs_to_same_namespace
+        return if namespace_id.nil? || framework.nil? || namespace_id == framework.namespace_id
+
+        errors.add(:namespace, "must be the same as the framework's namespace.")
       end
     end
   end

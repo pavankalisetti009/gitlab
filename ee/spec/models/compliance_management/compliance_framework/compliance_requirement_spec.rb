@@ -49,6 +49,31 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirement,
         end
       end
     end
+
+    describe '#framework_belongs_to_namespace' do
+      let_it_be(:other_group) { create(:group) }
+
+      context 'when compliance framework belongs to the same group' do
+        subject(:build_requirement) do
+          build(:compliance_requirement, framework: compliance_framework, namespace: group, name: 'requirement1')
+        end
+
+        it 'is valid' do
+          expect(build_requirement).to be_valid
+        end
+      end
+
+      context 'when compliance framework belongs to a different group' do
+        subject(:build_requirement) do
+          build(:compliance_requirement, framework: compliance_framework, namespace: other_group)
+        end
+
+        it 'is invalid' do
+          expect(build_requirement).not_to be_valid
+          expect(build_requirement.errors[:namespace]).to include("must be the same as the framework's namespace.")
+        end
+      end
+    end
   end
 
   describe "associations" do
