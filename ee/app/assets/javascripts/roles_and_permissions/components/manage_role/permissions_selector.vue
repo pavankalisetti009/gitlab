@@ -10,10 +10,11 @@ import {
 } from '@gitlab/ui';
 import { pull } from 'lodash';
 import { s__ } from '~/locale';
-import memberRolePermissionsQuery from 'ee/roles_and_permissions/graphql/member_role_permissions.query.graphql';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { BASE_ROLES } from '~/access_level/constants';
 import { isPermissionPreselected } from '../../utils';
+import memberPermissionsQuery from '../../graphql/member_role_permissions.query.graphql';
+import adminPermissionsQuery from '../../graphql/admin_role/role_permissions.query.graphql';
 
 export const FIELDS = [
   { key: 'checkbox', label: '' },
@@ -41,6 +42,7 @@ export default {
     GlAlert,
     GlBadge,
   },
+  inject: ['isAdminRole'],
   model: {
     prop: 'permissions',
     event: 'change',
@@ -67,7 +69,9 @@ export default {
   },
   apollo: {
     availablePermissions: {
-      query: memberRolePermissionsQuery,
+      query() {
+        return this.isAdminRole ? adminPermissionsQuery : memberPermissionsQuery;
+      },
       update(data) {
         return data.memberRolePermissions?.nodes || [];
       },
@@ -213,7 +217,7 @@ export default {
       </span>
     </legend>
 
-    <p class="gl-mb-4">
+    <p v-if="!isAdminRole" class="gl-mb-4" data-testid="learn-more">
       <gl-sprintf :message="$options.i18n.customPermissionsDescription">
         <template #link="{ content }">
           <gl-link :href="docsPath" target="_blank">{{ content }}</gl-link>
@@ -221,7 +225,7 @@ export default {
       </gl-sprintf>
     </p>
 
-    <p v-if="!isValid" class="gl-text-danger">{{ $options.i18n.permissionsSelectionError }}</p>
+    <p v-if="!isValid" class="gl-text-red-500">{{ $options.i18n.permissionsSelectionError }}</p>
 
     <gl-alert
       v-if="isErrorLoadingPermissions"

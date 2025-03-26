@@ -1,4 +1,4 @@
-import { GlTable, GlFormCheckbox, GlAlert, GlSprintf } from '@gitlab/ui';
+import { GlTable, GlFormCheckbox, GlAlert, GlSprintf, GlLink } from '@gitlab/ui';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -8,7 +8,8 @@ import PermissionsSelector, {
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import { stubComponent } from 'helpers/stub_component';
 import waitForPromises from 'helpers/wait_for_promises';
-import memberRolePermissionsQuery from 'ee/roles_and_permissions/graphql/member_role_permissions.query.graphql';
+import memberPermissionsQuery from 'ee/roles_and_permissions/graphql/member_role_permissions.query.graphql';
+import adminPermissionsQuery from 'ee/roles_and_permissions/graphql/admin_role/role_permissions.query.graphql';
 import { mockPermissionsResponse, mockDefaultPermissions } from '../../mock_data';
 
 Vue.use(VueApollo);
@@ -22,13 +23,16 @@ describe('Permissions Selector component', () => {
   const createComponent = ({
     mountFn = shallowMountExtended,
     permissions = [],
+    permissionsQuery = memberPermissionsQuery,
     isValid = true,
     selectedBaseRole = null,
     availablePermissionsHandler = defaultAvailablePermissionsHandler,
+    isAdminRole = false,
   } = {}) => {
     wrapper = mountFn(PermissionsSelector, {
       propsData: { permissions, isValid, selectedBaseRole },
-      apolloProvider: createMockApollo([[memberRolePermissionsQuery, availablePermissionsHandler]]),
+      provide: { isAdminRole },
+      apolloProvider: createMockApollo([[permissionsQuery, availablePermissionsHandler]]),
       stubs: {
         GlSprintf,
         ...(mountFn === shallowMountExtended ? { GlTable: glTableStub } : {}),
@@ -45,6 +49,8 @@ describe('Permissions Selector component', () => {
   const findToggleAllCheckbox = () => wrapper.findByTestId('permission-checkbox-all');
   const findPermissionsSelectedMessage = () => wrapper.findByTestId('permissions-selected-message');
   const findAlert = () => wrapper.findComponent(GlAlert);
+  const findLearnMore = () => wrapper.findByTestId('learn-more');
+  const findLearnMoreLink = () => findLearnMore().findComponent(GlLink);
 
   const checkPermission = (value) => {
     findTable().vm.$emit('row-clicked', { value });
@@ -55,6 +61,22 @@ describe('Permissions Selector component', () => {
 
     expect(permissions.sort()).toEqual(expected.sort());
   };
+
+  describe('learn more description', () => {
+    beforeEach(() => createComponent());
+
+    it('shows text', () => {
+      expect(findLearnMore().text()).toBe('Learn more about available custom permissions.');
+    });
+
+    it('shows link', () => {
+      expect(findLearnMoreLink().text()).toBe('available custom permissions');
+      expect(findLearnMoreLink().props()).toMatchObject({
+        href: '/help/user/custom_roles/abilities',
+        target: '_blank',
+      });
+    });
+  });
 
   describe('available permissions', () => {
     describe('when loading', () => {
@@ -213,6 +235,20 @@ describe('Permissions Selector component', () => {
       await createComponent({ mountFn: mountExtended, isValid });
 
       expect(wrapper.find('tbody td span').classes('gl-text-danger')).toBe(!isValid);
+    });
+  });
+
+  describe('for admin role', () => {
+    beforeEach(() =>
+      createComponent({ isAdminRole: true, permissionsQuery: adminPermissionsQuery }),
+    );
+
+    it('calls the admin permissions query', () => {
+      expect(defaultAvailablePermissionsHandler).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not show learn more description', () => {
+      expect(findLearnMore().exists()).toBe(false);
     });
   });
 });
