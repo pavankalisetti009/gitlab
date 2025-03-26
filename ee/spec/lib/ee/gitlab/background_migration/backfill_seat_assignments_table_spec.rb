@@ -256,16 +256,19 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillSeatAssignmentsTable, featur
       let(:sub_batch_size) { 1 }
 
       before do
-        subscription_seat_assignments.create!(namespace_id: root_group.id, user_id: user.id)
-        subscription_seat_assignments.create!(namespace_id: root_group.id, user_id: other_user.id)
-        subscription_seat_assignments.create!(namespace_id: other_root_group.id, user_id: other_user.id)
+        subscription_seat_assignments.create!(namespace_id: root_group.id, user_id: user.id,
+          organization_id: organization.id)
+        subscription_seat_assignments.create!(namespace_id: root_group.id, user_id: other_user.id,
+          organization_id: organization.id)
+        subscription_seat_assignments.create!(namespace_id: other_root_group.id, user_id: other_user.id,
+          organization_id: organization.id)
       end
 
       it 'does not call insert for existing records' do
         expect(subscription_seat_assignments.count).to eq(3)
 
         expected_attributes = [
-          a_hash_including({ namespace_id: other_root_group.id, user_id: user.id })
+          a_hash_including({ namespace_id: other_root_group.id, user_id: user.id, organization_id: organization.id })
         ]
 
         expect(described_class::MigrationSeatAssignmentTable)

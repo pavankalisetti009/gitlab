@@ -23147,7 +23147,8 @@ CREATE TABLE subscription_seat_assignments (
     user_id bigint NOT NULL,
     last_activity_on timestamp with time zone,
     created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL
+    updated_at timestamp with time zone NOT NULL,
+    organization_id bigint DEFAULT 1 NOT NULL
 );
 
 CREATE SEQUENCE subscription_seat_assignments_id_seq
@@ -37035,6 +37036,8 @@ CREATE UNIQUE INDEX index_subscription_add_ons_on_name ON subscription_add_ons U
 
 CREATE INDEX index_subscription_addon_purchases_on_expires_on ON subscription_add_on_purchases USING btree (expires_on);
 
+CREATE INDEX index_subscription_seat_assignments_on_organization_id ON subscription_seat_assignments USING btree (organization_id);
+
 CREATE INDEX index_subscription_seat_assignments_on_user_id ON subscription_seat_assignments USING btree (user_id);
 
 CREATE INDEX index_subscription_user_add_on_assignments_on_organization_id ON subscription_user_add_on_assignments USING btree (organization_id);
@@ -42794,6 +42797,9 @@ ALTER TABLE ONLY duo_workflows_checkpoints
 
 ALTER TABLE ONLY packages_conan_package_revisions
     ADD CONSTRAINT fk_b482b1a2f8 FOREIGN KEY (package_reference_id) REFERENCES packages_conan_package_references(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY subscription_seat_assignments
+    ADD CONSTRAINT fk_b4bdbc61ee FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY protected_tag_create_access_levels
     ADD CONSTRAINT fk_b4eb82fe3c FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;

@@ -27,7 +27,10 @@ module GitlabSubscriptions
             break unless user_is_a_member?
 
             GitlabSubscriptions::SeatAssignment.create!(
-              namespace: namespace, user: user, last_activity_on: Time.current
+              namespace: namespace,
+              user: user,
+              last_activity_on: Time.current,
+              organization_id: namespace.organization_id || Organizations::Organization::DEFAULT_ORGANIZATION_ID
             )
           end
         end

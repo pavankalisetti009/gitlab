@@ -3,6 +3,7 @@
 FactoryBot.define do
   factory :gitlab_subscription_seat_assignment, class: 'GitlabSubscriptions::SeatAssignment' do
     namespace { association(:group) }
+    organization { association(:organization, :default) }
     user
 
     trait :active do
