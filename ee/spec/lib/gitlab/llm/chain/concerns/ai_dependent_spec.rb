@@ -80,7 +80,7 @@ RSpec.describe Gitlab::Llm::Chain::Concerns::AiDependent, feature_category: :duo
     let(:tool) { ::Gitlab::Llm::Chain::Tools::IssueReader::Executor.new(context: context, options: options) }
     let(:prompt_options) do
       tool.prompt.deep_merge({ options: { inputs: options, use_ai_gateway_agent_prompt: true,
-                                          prompt_version: '1.0.1-dev' } })
+                                          prompt_version: '^1.0.0' } })
     end
 
     before do
@@ -147,23 +147,6 @@ RSpec.describe Gitlab::Llm::Chain::Concerns::AiDependent, feature_category: :duo
       expect(logger).to have_received(:conditional_info).with(context.current_user, a_hash_including(
         message: "Content of the prompt from chat request", event_name: "prompt_content", ai_component: "duo_chat",
         prompt: expected_prompt))
-    end
-
-    context 'when duo_chat_identifier_parsers_claude_3_7 feature flag is disabled' do
-      before do
-        stub_feature_flags(duo_chat_identifier_parsers_claude_3_7: false)
-      end
-
-      let(:prompt_options) do
-        tool.prompt.deep_merge({ options: { inputs: options, use_ai_gateway_agent_prompt: true,
-                                            prompt_version: '^1.0.0' } })
-      end
-
-      it 'passes prompt and unit primitive to the ai_client' do
-        expect(ai_request).to receive(:request).with(prompt_options, unit_primitive: 'issue_reader')
-
-        tool.request
-      end
     end
   end
 end
