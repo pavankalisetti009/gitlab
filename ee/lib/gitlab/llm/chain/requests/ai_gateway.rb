@@ -138,7 +138,7 @@ module Gitlab
             model_family = model_metadata_params && model_metadata_params[:name]
             default_version = ::Gitlab::Llm::PromptVersions.version_for_prompt("chat/#{unit_primitive}", model_family)
 
-            params[:prompt_version] = if feature_setting&.self_hosted?
+            params[:prompt_version] = if feature_setting&.self_hosted? || ::Ai::AmazonQ.connected?
                                         default_version
                                       else
                                         prompt_version || default_version

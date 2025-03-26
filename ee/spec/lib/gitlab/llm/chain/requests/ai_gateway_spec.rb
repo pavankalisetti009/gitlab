@@ -233,7 +233,8 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
       let(:options) do
         {
           use_ai_gateway_agent_prompt: true,
-          inputs: inputs
+          inputs: inputs,
+          prompt_version: '2.0.0'
         }
       end
 
