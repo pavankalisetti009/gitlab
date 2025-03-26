@@ -269,5 +269,7 @@ constraints(::Constraints::GroupUrlConstrainer.new) do
         get :dashboard
       end
     end
+
+    resources :virtual_registries, only: [:index]
   end
 end

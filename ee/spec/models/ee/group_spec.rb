@@ -4563,4 +4563,10 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       it { is_expected.to eq(false) }
     end
   end
+
+  describe '#virtual_registry_policy_subject' do
+    subject { group.virtual_registry_policy_subject }
+
+    it { is_expected.to be_a(::VirtualRegistries::Packages::Policies::Group).and have_attributes(group:) }
+  end
 end

@@ -1125,6 +1125,10 @@ module EE
         .where(namespace_settings: { extended_grat_expiry_webhooks_execute: true })
     end
 
+    def virtual_registry_policy_subject
+      ::VirtualRegistries::Packages::Policies::Group.new(self)
+    end
+
     private
 
     def execute_async_hooks(group_hooks, hooks_scope, data)

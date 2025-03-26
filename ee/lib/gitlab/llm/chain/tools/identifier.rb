@@ -160,8 +160,6 @@ module Gitlab
 
           override :prompt_version
           def prompt_version
-            return '1.0.1-dev' if Feature.enabled?(:duo_chat_identifier_parsers_claude_3_7, context.current_user)
-
             PROMPT_VERSION
           end
         end

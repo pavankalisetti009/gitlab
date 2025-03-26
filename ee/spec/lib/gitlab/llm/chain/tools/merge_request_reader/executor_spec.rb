@@ -294,19 +294,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::MergeRequestReader::Executor, feature_
         it_behaves_like 'uses ai gateway agent prompt' do
           let(:prompt_class) { Gitlab::Llm::Chain::Tools::MergeRequestReader::Prompts::Anthropic }
           let(:unit_primitive) { 'merge_request_reader' }
-          let(:prompt_version) { '1.0.1-dev' }
-        end
-
-        context 'when duo_chat_identifier_parsers_claude_3_7 is disabled' do
-          before do
-            stub_feature_flags(duo_chat_identifier_parsers_claude_3_7: false)
-          end
-
-          it_behaves_like 'uses ai gateway agent prompt' do
-            let(:prompt_class) { Gitlab::Llm::Chain::Tools::MergeRequestReader::Prompts::Anthropic }
-            let(:unit_primitive) { 'merge_request_reader' }
-            let(:prompt_version) { '^1.0.0' }
-          end
+          let(:prompt_version) { '^1.0.0' }
         end
       end
     end
