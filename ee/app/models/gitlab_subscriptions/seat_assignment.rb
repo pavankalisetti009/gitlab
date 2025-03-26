@@ -4,6 +4,7 @@ module GitlabSubscriptions
   class SeatAssignment < ApplicationRecord
     belongs_to :namespace, optional: false
     belongs_to :user, optional: false
+    belongs_to :organization, class_name: 'Organizations::Organization'
 
     validates :namespace_id, uniqueness: { scope: :user_id }
 

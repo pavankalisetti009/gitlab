@@ -6,7 +6,7 @@ RSpec.describe GitlabSubscriptions::Members::ActivityService, :clean_gitlab_redi
   include ExclusiveLeaseHelpers
 
   let_it_be(:user) { create(:user) }
-  let_it_be(:namespace) { create(:group) }
+  let_it_be(:namespace) { create(:group, :with_organization) }
 
   let(:lease_key) { "gitlab_subscriptions:members_activity_event:#{namespace.id}:#{user.id}" }
   let(:instance) { described_class.new(user, namespace) }
@@ -35,7 +35,10 @@ RSpec.describe GitlabSubscriptions::Members::ActivityService, :clean_gitlab_redi
             expect(execute).to be_success
           end.to change {
             GitlabSubscriptions::SeatAssignment.where(
-              namespace: namespace, user: user, last_activity_on: Time.current
+              namespace: namespace,
+              user: user,
+              last_activity_on: Time.current,
+              organization_id: namespace.organization_id
             ).count
           }
         end

@@ -14,10 +14,17 @@ module GitlabSubscriptions
         return ServiceResponse.error(message: 'Invalid params') unless source&.root_ancestor
 
         namespace_id = source.root_ancestor.id
+        organization_id = source.root_ancestor.organization_id || Organizations::Organization::DEFAULT_ORGANIZATION_ID
 
         recently_added_members_user_ids.each_slice(BATCH_SIZE) do |batch|
           seat_assignments = batch.map do |user_id|
-            { namespace_id: namespace_id, user_id: user_id, created_at: Time.current, updated_at: Time.current }
+            {
+              namespace_id: namespace_id,
+              user_id: user_id,
+              created_at: Time.current,
+              updated_at: Time.current,
+              organization_id: organization_id
+            }
           end
 
           GitlabSubscriptions::SeatAssignment.insert_all(

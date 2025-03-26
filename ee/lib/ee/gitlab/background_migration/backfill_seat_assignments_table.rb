@@ -40,6 +40,7 @@ module EE
               {
                 namespace_id: row['root_namespace_id'],
                 user_id: row['user_id'],
+                organization_id: row['organization_id'],
                 created_at: current_time,
                 updated_at: current_time
               }
@@ -73,11 +74,12 @@ module EE
         def fetch_candidate_records(connection, sub_batch)
           sql = <<~SQL
             SELECT DISTINCT
-            user_id,
-              (SELECT traversal_ids[1] FROM namespaces WHERE id = members.member_namespace_id)
-            as root_namespace_id
-            FROM members
-            WHERE id IN (#{valid_members_subquery(sub_batch).select(:id).to_sql})
+                m.user_id,
+                n.traversal_ids[1] as root_namespace_id,
+                n.organization_id as organization_id
+            FROM members m
+            LEFT JOIN namespaces n ON n.id = m.member_namespace_id
+            WHERE m.id IN (#{valid_members_subquery(sub_batch).select(:id).to_sql})
           SQL
 
           connection.exec_query(sql)
@@ -87,7 +89,7 @@ module EE
           tuples = Arel::Nodes::ValuesList.new(records.map { |row| [row['root_namespace_id'], row['user_id']] }).to_sql
 
           sql = <<~SQL
-            SELECT namespace_id as root_namespace_id, user_id
+            SELECT namespace_id as root_namespace_id, user_id, organization_id
             FROM
             subscription_seat_assignments
             WHERE (namespace_id, user_id) IN (#{tuples})
