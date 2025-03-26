@@ -1,9 +1,0 @@
----
-name: dora_projects_comparison_subgroups
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/523240
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/184211
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/524641
-milestone: '17.10'
-group: group::optimize
-type: gitlab_com_derisk
-default_enabled: false
