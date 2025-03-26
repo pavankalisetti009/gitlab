@@ -24,7 +24,8 @@ module ComplianceManagement
       Notify.compliance_frameworks_csv_email(
         user: @user,
         group: @group,
-        attachment: csv_export.payload,
+        attachment: csv_export.payload[:csv],
+        truncated: csv_export.payload[:truncated],
         filename: filename
       ).deliver_now
     rescue ActiveRecord::RecordNotFound => e

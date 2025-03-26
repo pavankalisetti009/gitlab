@@ -14,7 +14,7 @@ module ComplianceManagement
         return ServiceResponse.error(message: 'namespace must be a group') unless group.is_a?(Group)
         return ServiceResponse.error(message: "Access to group denied for user with ID: #{user.id}") unless allowed?
 
-        ServiceResponse.success(payload: csv_builder.render(TARGET_FILESIZE))
+        ServiceResponse.success payload: payload
       end
 
       def email_export
@@ -43,6 +43,13 @@ module ComplianceManagement
         {
           'Name' => 'name',
           'Associated Projects' => ->(framework) { framework.projects.map(&:name).join(', ') }
+        }
+      end
+
+      def payload
+        {
+          csv: csv_builder.render(TARGET_FILESIZE),
+          truncated: csv_builder.truncated?
         }
       end
     end
