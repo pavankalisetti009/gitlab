@@ -8,6 +8,8 @@ module Security
     data_consistency :sticky
     feature_category :security_policy_management
 
+    # Value is based on 99.99th percentile of duration of the policy-related workers:
+    # https://log.gprd.gitlab.net/app/lens#/edit/b7df98a8-dea6-461b-b32c-95bd9ecf0ac8?_g=(filters%3A!()%2CrefreshInterval%3A(pause%3A!t%2Cvalue%3A60000)%2Ctime%3A(from%3Anow-1w%2Cto%3Anow))
     UNBLOCK_PENDING_VIOLATIONS_TIMEOUT = 90.seconds
 
     def perform(pipeline_id)
