@@ -16,67 +16,21 @@ RSpec.describe 'WorkItem Index', :elastic, :sidekiq_inline, feature_category: :g
     context 'when a work_item is created' do
       it 'tracks the work_item' do
         work_item_ref = build(:work_item, project: project)
-        expect(::Elastic::ProcessBookkeepingService).to receive(:track!).once do |*tracked_refs|
-          expect(tracked_refs.count).to eq(tracked_refs_count)
-
-          if tracked_refs_count == 1
-            expect(tracked_refs[0]).to be_a_kind_of(Gitlab::Elastic::DocumentReference)
-            expect(tracked_refs[0].klass).to eq(Issue)
-            expect(tracked_refs[0].db_id).to eq(work_item_ref.id.to_s)
-          else
-            expect(tracked_refs[0]).to be_a_kind_of(WorkItem)
-            expect(tracked_refs[1]).to be_a_kind_of(Gitlab::Elastic::DocumentReference)
-            expect(tracked_refs[1].klass).to eq(Issue)
-            expect(tracked_refs[1].db_id).to eq(work_item_ref.id.to_s)
-          end
-        end
-
+        expect(::Elastic::ProcessBookkeepingService).to receive(:track!).once.with(*[work_item_ref])
         work_item_ref.save!
       end
     end
 
     context 'when a work_item is updated' do
       it 'tracks the work_item' do
-        expect(::Elastic::ProcessBookkeepingService).to receive(:track!).once do |*tracked_refs|
-          expect(tracked_refs.count).to eq(tracked_refs_count)
-
-          if tracked_refs_count == 1
-            expect(tracked_refs[0]).to be_a_kind_of(Gitlab::Elastic::DocumentReference)
-            expect(tracked_refs[0].klass).to eq(Issue)
-            expect(tracked_refs[0].db_id).to eq(work_item.id.to_s)
-          else
-            expect(tracked_refs[0]).to be_a_kind_of(WorkItem)
-            expect(tracked_refs[1]).to be_a_kind_of(Gitlab::Elastic::DocumentReference)
-            expect(tracked_refs[1].klass).to eq(Issue)
-            expect(tracked_refs[1].db_id).to eq(work_item.id.to_s)
-          end
-        end
-
-        expect(::Elastic::ProcessBookkeepingService).to receive(:track!).once do |*tracked_refs|
-          expect(tracked_refs.count).to eq(1)
-          expect(tracked_refs[0]).to be_a_kind_of(WorkItem)
-        end
+        expect(::Elastic::ProcessBookkeepingService).to receive(:track!).once.with(*[work_item])
         work_item.update!(title: 'A new title')
       end
     end
 
     context 'when a work_item is deleted' do
       it 'tracks the work_item' do
-        expect(::Elastic::ProcessBookkeepingService).to receive(:track!).once do |*tracked_refs|
-          expect(tracked_refs.count).to eq(tracked_refs_count)
-
-          if tracked_refs_count == 1
-            expect(tracked_refs[0]).to be_a_kind_of(Gitlab::Elastic::DocumentReference)
-            expect(tracked_refs[0].klass).to eq(Issue)
-            expect(tracked_refs[0].db_id).to eq(work_item.id.to_s)
-          else
-            expect(tracked_refs[0]).to be_a_kind_of(WorkItem)
-            expect(tracked_refs[1]).to be_a_kind_of(Gitlab::Elastic::DocumentReference)
-            expect(tracked_refs[1].klass).to eq(Issue)
-            expect(tracked_refs[1].db_id).to eq(work_item.id.to_s)
-          end
-        end
-
+        expect(::Elastic::ProcessBookkeepingService).to receive(:track!).once.with(*[work_item])
         work_item.destroy!
       end
 
@@ -124,7 +78,7 @@ RSpec.describe 'WorkItem Index', :elastic, :sidekiq_inline, feature_category: :g
 
   context 'when migration is complete' do
     let(:index_name) { ::Search::Elastic::References::WorkItem.index }
-    let(:tracked_refs_count) { 2 }
+    let(:tracked_refs_count) { 1 }
 
     before do
       stub_ee_application_setting(elasticsearch_indexing: true)

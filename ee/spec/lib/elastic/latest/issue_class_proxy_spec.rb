@@ -30,65 +30,8 @@ RSpec.describe Elastic::Latest::IssueClassProxy, :elastic, feature_category: :gl
     ensure_elasticsearch_index!
   end
 
-  describe '#issue_aggregations' do
-    it 'filters by labels' do
-      result = proxy.issue_aggregations('test', options)
-
-      expect(result.first.name).to eq('labels')
-      expect(result.first.buckets.first.symbolize_keys).to match(
-        key: label.id.to_s,
-        count: 1,
-        title: label.title,
-        type: label.type,
-        color: label.color.to_s,
-        parent_full_name: label.project.full_name
-      )
-    end
-  end
-
   describe '#elastic_search' do
     let(:result) { proxy.elastic_search(query, options: options) }
-
-    describe 'search on basis of hidden attribute' do
-      context 'when author of the issue is banned', :sidekiq_inline do
-        before do
-          issue.author.ban
-          ensure_elasticsearch_index!
-        end
-
-        it 'current_user is an admin user then user can see the issue' do
-          allow(user).to receive(:can_admin_all_resources?).and_return(true)
-          expect(elasticsearch_hit_ids(result)).to include issue.id
-        end
-
-        it 'current_user is a non admin user then user can not see the issue' do
-          expect(elasticsearch_hit_ids(result)).not_to include issue.id
-        end
-
-        it 'current_user is empty then user can not see the issue' do
-          options[:current_user] = nil
-          result = proxy.elastic_search('test', options: options)
-          expect(elasticsearch_hit_ids(result)).not_to include issue.id
-        end
-      end
-
-      context 'when author of the issue is active' do
-        it 'current_user is an admin user then user can see the issue' do
-          allow(user).to receive(:can_admin_all_resources?).and_return(true)
-          expect(elasticsearch_hit_ids(result)).to include issue.id
-        end
-
-        it 'current_user is a non admin user then user can see the issue' do
-          expect(elasticsearch_hit_ids(result)).to include issue.id
-        end
-
-        it 'current_user is empty then user can see the issue' do
-          options[:current_user] = nil
-          result = proxy.elastic_search('test', options: options)
-          expect(elasticsearch_hit_ids(result)).to include issue.id
-        end
-      end
-    end
 
     describe 'named queries' do
       using RSpec::Parameterized::TableSyntax

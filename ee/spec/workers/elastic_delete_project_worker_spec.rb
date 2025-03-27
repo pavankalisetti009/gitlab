@@ -34,7 +34,6 @@ RSpec.describe ElasticDeleteProjectWorker, :elastic, feature_category: :global_s
 
     expect(project.reload.index_status).not_to be_nil
     expect(Project.elastic_search('*', **search_options).records).to include(project)
-    expect(Issue.elastic_search('*', **search_options).records).to include(issue)
     expect(items_in_index(work_item_index)).to include(issue.id)
     expect(Milestone.elastic_search('*', **search_options).records).to include(milestone)
     expect(Note.elastic_search('*', **search_options).records).to include(note)
@@ -54,7 +53,7 @@ RSpec.describe ElasticDeleteProjectWorker, :elastic, feature_category: :global_s
     ensure_elasticsearch_index!
 
     expect(Project.elastic_search('*', **search_options).total_count).to eq(0)
-    expect(Issue.elastic_search('*', **search_options).total_count).to eq(0)
+    expect(items_in_index(work_item_index)).not_to include(issue.id)
     expect(Milestone.elastic_search('*', **search_options).total_count).to eq(0)
     expect(Note.elastic_search('*', **search_options).total_count).to eq(0)
     expect(MergeRequest.elastic_search('*', **search_options).total_count).to eq(0)
@@ -155,7 +154,6 @@ RSpec.describe ElasticDeleteProjectWorker, :elastic, feature_category: :global_s
 
       expect(project.reload.index_status).not_to be_nil
       expect(Project.elastic_search('*', **search_options).records).to include(project)
-      expect(Issue.elastic_search('*', **search_options).records).to include(issue)
       expect(items_in_index(work_item_index)).to include(issue.id)
       expect(Milestone.elastic_search('*', **search_options).records).to include(milestone)
       expect(Note.elastic_search('*', **search_options).records).to include(note)
@@ -176,7 +174,7 @@ RSpec.describe ElasticDeleteProjectWorker, :elastic, feature_category: :global_s
 
       expect(Project.elastic_search('*', **search_options).total_count).to eq(1)
       expect(Project.elastic_search('*', **search_options).records).to include(project)
-      expect(Issue.elastic_search('*', **search_options).total_count).to eq(0)
+      expect(items_in_index(work_item_index)).not_to include(issue.id)
       expect(Milestone.elastic_search('*', **search_options).total_count).to eq(0)
       expect(Note.elastic_search('*', **search_options).total_count).to eq(0)
       expect(MergeRequest.elastic_search('*', **search_options).total_count).to eq(0)
@@ -204,7 +202,6 @@ RSpec.describe ElasticDeleteProjectWorker, :elastic, feature_category: :global_s
 
       expect(project.reload.index_status).not_to be_nil
       expect(Project.elastic_search('*', **search_options).records).to include(project)
-      expect(Issue.elastic_search('*', **search_options).records).to include(issue)
       expect(items_in_index(work_item_index)).to include(issue.id)
       expect(Milestone.elastic_search('*', **search_options).records).to include(milestone)
       expect(Note.elastic_search('*', **search_options).records).to include(note)
@@ -227,7 +224,6 @@ RSpec.describe ElasticDeleteProjectWorker, :elastic, feature_category: :global_s
 
       expect(project.reload.index_status).not_to be_nil
       expect(Project.elastic_search('*', **search_options).total_count).to eq(0)
-      expect(Issue.elastic_search('*', **search_options).records).to include(issue)
       expect(items_in_index(work_item_index)).to include(issue.id)
       expect(Milestone.elastic_search('*', **search_options).records).to include(milestone)
       expect(Note.elastic_search('*', **search_options).records).to include(note)
