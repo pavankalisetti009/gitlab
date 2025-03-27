@@ -61740,9 +61740,6 @@ msgstr ""
 msgid "Todos|Wiki page"
 msgstr ""
 
-msgid "Todos|Work item"
-msgstr ""
-
 msgid "Todos|You"
 msgstr ""
 

@@ -15,7 +15,6 @@ import {
 import Tracking from '~/tracking';
 import {
   TODO_TARGET_TYPE_ISSUE,
-  TODO_TARGET_TYPE_WORK_ITEM,
   TODO_TARGET_TYPE_MERGE_REQUEST,
   TODO_TARGET_TYPE_DESIGN,
   TODO_TARGET_TYPE_ALERT,
@@ -66,11 +65,6 @@ export const TARGET_TYPES = [
     id: 'Issue',
     value: TODO_TARGET_TYPE_ISSUE,
     title: s__('Todos|Issue'),
-  },
-  {
-    id: 'WorkItem',
-    value: TODO_TARGET_TYPE_WORK_ITEM,
-    title: s__('Todos|Work item'),
   },
   {
     id: 'MergeRequest',
