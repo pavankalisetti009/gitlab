@@ -8,7 +8,7 @@ RSpec.describe Ci::JobTokenScope::RemoveGroupService, feature_category: :continu
 
   let_it_be(:current_user) { create(:user, maintainer_of: project, developer_of: target_group) }
 
-  let_it_be(:policies) { %w[read_containers read_packages] }
+  let_it_be(:policies) { %w[read_deployments read_packages] }
 
   let_it_be(:group_link) do
     create(:ci_job_token_group_scope_link,
@@ -27,7 +27,7 @@ RSpec.describe Ci::JobTokenScope::RemoveGroupService, feature_category: :continu
   describe '#execute' do
     let(:expected_audit_message) do
       "Group #{target_group.full_path} was removed from list of allowed groups for #{project.full_path}, " \
-        "with job token policies: read_containers, read_packages"
+        "with job token policies: read_deployments, read_packages"
     end
 
     let(:audit_event) do
