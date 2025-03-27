@@ -15,7 +15,7 @@ module Projects
         push_frontend_feature_flag(:scan_execution_policy_action_limit, project)
         push_frontend_feature_flag(:exclude_license_packages, project.group)
         push_frontend_feature_flag(:security_policies_split_view, project.group)
-        push_frontend_feature_flag(:security_policy_approval_warn_mode, project)
+        push_frontend_feature_flag(:security_policy_approval_warn_mode, project.group)
       end
 
       feature_category :security_policy_management
