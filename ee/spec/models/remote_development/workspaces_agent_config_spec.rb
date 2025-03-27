@@ -22,6 +22,7 @@ RSpec.describe RemoteDevelopment::WorkspacesAgentConfig, feature_category: :work
   let(:allow_privilege_escalation) { false }
   let(:use_kubernetes_user_namespaces) { false }
   let(:default_runtime_class) { "" }
+  let(:shared_namespace) { "" }
 
   subject(:config) { agent.unversioned_latest_workspaces_agent_config }
 
@@ -44,6 +45,7 @@ RSpec.describe RemoteDevelopment::WorkspacesAgentConfig, feature_category: :work
         use_kubernetes_user_namespaces
         workspaces_per_user_quota
         workspaces_quota
+        shared_namespace
       ].map { |field| [field] }
     end
 
@@ -157,6 +159,22 @@ RSpec.describe RemoteDevelopment::WorkspacesAgentConfig, feature_category: :work
           expect(config).to be_valid
           expect(config.allow_privilege_escalation).to be(true)
           expect(config.default_runtime_class).to eq(default_runtime_class)
+        end
+      end
+
+      context 'when shared_namespace is set to non-empty value' do
+        let(:shared_namespace) { "test" }
+
+        subject(:config) do
+          build(
+            :workspaces_agent_config,
+            shared_namespace: shared_namespace
+          )
+        end
+
+        it 'allows the config to be created' do
+          expect(config).to be_valid
+          expect(config.shared_namespace).to eq(shared_namespace)
         end
       end
     end

@@ -76,7 +76,8 @@ module RemoteDevelopment
             :network_policy_enabled,
             :use_kubernetes_user_namespaces,
             :workspaces_per_user_quota,
-            :workspaces_quota
+            :workspaces_quota,
+            :shared_namespace
           ]
         )
         values = agent_config_settings.merge(normalized_config_from_file)
@@ -114,7 +115,8 @@ module RemoteDevelopment
           project_id: agent_model.project_id,
           use_kubernetes_user_namespaces: values[:use_kubernetes_user_namespaces],
           workspaces_per_user_quota: values[:workspaces_per_user_quota],
-          workspaces_quota: values[:workspaces_quota]
+          workspaces_quota: values[:workspaces_quota],
+          shared_namespace: values[:shared_namespace]
         })
       end
 
