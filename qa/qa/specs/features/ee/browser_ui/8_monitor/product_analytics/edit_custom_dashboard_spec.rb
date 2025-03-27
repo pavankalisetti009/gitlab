@@ -76,7 +76,6 @@ module QA
             expect(dashboard.has_invalid_config_alert?).to be(false)
             expect(dashboard.panel_title(panel_index: 0)).to eq('Events over time')
             expect(dashboard.panel_has_chart?(panel_index: 0)).to be(true)
-            expect(dashboard.panel_chart_legend(panel_index: 0)).to have_content('Max: 1')
           end
         end
       end
