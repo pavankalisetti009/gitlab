@@ -411,8 +411,8 @@ export const vulnerabilityDetails = {
     type: 'VulnerabilityDetailFileLocation',
     name: 'A vulnerable file',
     fileName: 'vulnerable.js',
-    lineStart: '3',
-    lineEnd: '5',
+    lineStart: 3,
+    lineEnd: 5,
   },
   text: {
     type: 'VulnerabilityDetailText',
