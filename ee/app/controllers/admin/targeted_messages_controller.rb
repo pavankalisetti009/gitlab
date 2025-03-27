@@ -5,6 +5,7 @@ module Admin
     feature_category :acquisition
 
     before_action :verify_targeted_messages_enabled!
+    before_action :find_targeted_message, only: [:edit, :update]
 
     def index
       @targeted_messages = Notifications::TargetedMessage.all
@@ -19,14 +20,35 @@ module Admin
       success = @targeted_message.save
 
       if success
-        redirect_to admin_targeted_messages_path, notice: _('Targeted message was successfully created.')
+        redirect_to admin_targeted_messages_path,
+          notice: s_('TargetedMessages|Targeted message was successfully created.')
       else
-        flash[:alert] = _('Failed to create targeted message.')
+        flash[:alert] = format(s_("TargetedMessages|Failed to create targeted message: " \
+          "%{error_message}"), error_message: @targeted_message.errors.full_messages.to_sentence)
         render :new
       end
     end
 
+    def edit; end
+
+    def update
+      success = @targeted_message.update(targeted_message_params)
+
+      if success
+        redirect_to admin_targeted_messages_path,
+          notice: s_('TargetedMessages|Targeted message was successfully updated.')
+      else
+        flash[:alert] = format(s_("TargetedMessages|Failed to update targeted message: " \
+          "%{error_message}"), error_message: @targeted_message.errors.full_messages.to_sentence)
+        render :edit
+      end
+    end
+
     private
+
+    def find_targeted_message
+      @targeted_message = Notifications::TargetedMessage.find(params.permit(:id)[:id])
+    end
 
     def verify_targeted_messages_enabled!
       render_404 unless Feature.enabled?(:targeted_messages_admin_ui, :instance) &&
@@ -55,15 +77,14 @@ module Admin
                               "#{invalid_namespace_ids.first(5).join(', ')} and #{invalid_namespace_ids.size - 5} more"
                             end
 
-          flash[:warning] =
-            format(_("The following namespace ids were invalid and have been ignored: %{invalid_ids_message}"),
-              invalid_ids_message: invalid_ids_msg)
+          flash[:warning] = format(s_("TargetedMessages|The following namespace ids were invalid and have been " \
+            "ignored: %{invalid_ids_message}"), invalid_ids_message: invalid_ids_msg)
         end
 
         valid_namespace_ids
       else
         flash[:warning] =
-          format(_("Failed to assign namespaces due to error processing CSV: %{error_message}"),
+          format(s_("TargetedMessages|Failed to assign namespaces due to error processing CSV: %{error_message}"),
             error_message: result.message)
         []
       end

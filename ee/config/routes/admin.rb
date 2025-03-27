@@ -120,5 +120,5 @@ namespace :admin do
     end
   end
 
-  resources :targeted_messages, only: [:index, :new, :create]
+  resources :targeted_messages, only: [:index, :new, :create, :edit, :update]
 end

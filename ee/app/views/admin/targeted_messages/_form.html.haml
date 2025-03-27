@@ -1,0 +1,11 @@
+= gitlab_ui_form_for @targeted_message, url: url, as: :targeted_message do |f|
+  .form-group
+    = f.label :target_type, s_('TargetedMessages|Target Type')
+    = f.select :target_type,
+              Notifications::TargetedMessage.target_types.map { |key, _| [key.humanize, key] },
+              { prompt: s_('TargetedMessages|Select a target type') },
+              { class: 'form-control' }
+  .form-group
+    = f.label :namespace_ids_csv, s_('TargetedMessages|Upload a csv file for targeted namespaces')
+    = f.file_field :namespace_ids_csv, class: 'form-control'
+  = f.submit submit_text, pajamas_button: true

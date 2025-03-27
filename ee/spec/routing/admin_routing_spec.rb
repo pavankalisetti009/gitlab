@@ -116,6 +116,8 @@ RSpec.describe 'EE-specific admin routing' do
   end
 
   describe Admin::TargetedMessagesController, 'routing' do
+    let(:targeted_message) { create(:targeted_message) }
+
     it 'routes to #index' do
       expect(get('/admin/targeted_messages')).to route_to('admin/targeted_messages#index')
     end
@@ -126,6 +128,16 @@ RSpec.describe 'EE-specific admin routing' do
 
     it 'routes to #create' do
       expect(post('/admin/targeted_messages')).to route_to('admin/targeted_messages#create')
+    end
+
+    it 'routes to #edit' do
+      expect(get("/admin/targeted_messages/#{targeted_message.id}/edit")).to route_to('admin/targeted_messages#edit',
+        id: targeted_message.to_param)
+    end
+
+    it 'routes patch /:id to #update' do
+      expect(patch("/admin/targeted_messages/#{targeted_message.id}")).to route_to('admin/targeted_messages#update',
+        id: targeted_message.to_param)
     end
   end
 end
