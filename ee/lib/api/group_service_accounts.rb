@@ -172,7 +172,7 @@ module API
             validate_service_account_user
 
             response = ::PersonalAccessTokens::CreateService.new(
-              current_user: current_user, target_user: user, organization_id: Current.organization_id,
+              current_user: current_user, target_user: user, organization_id: Current.organization&.id,
               params: declared_params.merge(group: user_group)
             ).execute
 

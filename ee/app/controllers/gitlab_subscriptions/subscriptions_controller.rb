@@ -186,7 +186,7 @@ module GitlabSubscriptions
       path = Namespace.clean_path(name)
 
       response = Groups::CreateService.new(
-        current_user, name: name, path: path, organization_id: Current.organization_id
+        current_user, name: name, path: path, organization_id: Current.organization&.id
       ).execute
 
       response[:group]
