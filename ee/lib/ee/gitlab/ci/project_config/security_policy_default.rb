@@ -44,7 +44,7 @@ module EE
 
           private
 
-          attr_reader :pipeline_policy_context
+          attr_reader :pipeline_policy_context, :source_branch
 
           def has_pipeline_execution_policies_defined?
             pipeline_policy_context&.has_execution_policy_pipelines?
@@ -75,8 +75,6 @@ module EE
           end
 
           def active_scan_execution_policies?
-            return applicable_policies.any? if triggered_for_mr_pipelines?
-
             service = ::Security::SecurityOrchestrationPolicies::PolicyBranchesService.new(project: project)
             applicable_policies.any? { |policy| applicable_for_branch?(service, policy) }
           end
@@ -99,7 +97,7 @@ module EE
           def applicable_for_branch?(service, policy)
             applicable_branches = service.scan_execution_branches(policy[:rules])
 
-            ref.in?(applicable_branches)
+            source_branch.in?(applicable_branches)
           end
         end
       end
