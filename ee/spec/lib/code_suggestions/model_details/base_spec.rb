@@ -45,6 +45,8 @@ RSpec.describe CodeSuggestions::ModelDetails::Base, feature_category: :code_sugg
   end
 
   context 'when Amazon Q is connected' do
+    let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_amazon_q) }
+
     it 'returns correct feature name and licensed feature' do
       stub_licensed_features(amazon_q: true)
       Ai::Setting.instance.update!(amazon_q_ready: true)

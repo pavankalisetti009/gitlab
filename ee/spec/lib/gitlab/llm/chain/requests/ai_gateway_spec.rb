@@ -224,6 +224,8 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
     end
 
     context 'when user amazon q is connected' do
+      let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_amazon_q) }
+
       let(:unit_primitive) { :explain_code }
       let(:endpoint) { "#{described_class::BASE_PROMPTS_CHAT_ENDPOINT}/#{unit_primitive}" }
       let(:inputs) { { field: :test_field } }

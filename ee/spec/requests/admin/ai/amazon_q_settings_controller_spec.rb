@@ -8,6 +8,7 @@ RSpec.describe Admin::Ai::AmazonQSettingsController, :enable_admin_mode, feature
   # Default organization needed for creating new users
   let_it_be(:default_organization) { create(:organization, :default) }
   let_it_be(:active_token) { create(:service_access_token, :active, token: JWT.encode({ sub: 'abc123' }, '')) }
+  let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_amazon_q) }
 
   let(:admin) { create(:admin) }
   let(:amazon_q_ready) { false }

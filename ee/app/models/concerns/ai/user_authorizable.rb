@@ -96,9 +96,7 @@ module Ai
       end
 
       def allowed_to_use?(ai_feature, service_name: nil, licensed_feature: :ai_features)
-        if amazon_q_connected?(ai_feature)
-          return allowed_to_use(ai_feature, service_name: :amazon_q_integration, licensed_feature: :amazon_q).allowed?
-        end
+        return true if amazon_q_connected?(ai_feature)
 
         allowed_to_use(ai_feature, service_name: service_name, licensed_feature: licensed_feature).allowed?
       end

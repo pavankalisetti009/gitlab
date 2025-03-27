@@ -320,6 +320,8 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
   end
 
   describe 'when amazon q is connected' do
+    let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_amazon_q) }
+
     before do
       stub_licensed_features(amazon_q: true)
       Ai::Setting.instance.update!(

@@ -917,7 +917,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
           before do
             stub_licensed_features(amazon_q: true)
-            Ai::Setting.instance.update!(amazon_q_ready: true)
+            allow(::Ai::AmazonQ).to receive(:connected?).and_return(true)
           end
 
           it 'is authorized' do

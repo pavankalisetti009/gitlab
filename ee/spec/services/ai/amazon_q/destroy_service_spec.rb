@@ -8,6 +8,7 @@ RSpec.describe Ai::AmazonQ::DestroyService, feature_category: :ai_agents do
     let_it_be(:service_account) { create(:service_account) }
     let_it_be(:doorkeeper_application) { create(:doorkeeper_application) }
     let_it_be(:role_arn) { SecureRandom.hex }
+    let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_amazon_q) }
 
     let(:params) { { role_arn: 'a' } }
     let(:status) { 204 }

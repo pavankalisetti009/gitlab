@@ -190,7 +190,7 @@ RSpec.describe Integration, feature_category: :integrations do
 
       context 'when it is enabled' do
         before do
-          stub_licensed_features(amazon_q: true)
+          allow(::Ai::AmazonQ).to receive(:feature_available?).and_return(true)
         end
 
         it 'includes amazon q integration' do

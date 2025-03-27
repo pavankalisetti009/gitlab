@@ -28,21 +28,26 @@ RSpec.describe Ai::AmazonQ, feature_category: :ai_abstraction_layer do
   end
 
   describe '#feature_available?' do
-    where(:add_on_purchase, :amazon_q_license_available, :ff_enabled, :result) do
-      nil                | true  | false | true
-      :product_analytics | true  | false | true
-      :gitlab_duo_pro    | true  | true  | true
-      :duo_enterprise    | true  | true  | true
-      :gitlab_duo_pro    | true  | false | false
-      :duo_enterprise    | true  | false | false
-      nil                | false | false | false
-      nil                | false | true  | false
+    where(:add_on_purchase, :amazon_q_license_available, :cut_off_date, :result) do
+      nil                | true  | 2.days.from_now | true
+      :product_analytics | true  | 2.days.from_now | true
+      :duo_amazon_q      | true  | 2.days.from_now | true
+      :duo_amazon_q      | true  | 2.days.ago      | true
+      :gitlab_duo_pro    | true  | 2.days.from_now | false
+      :duo_enterprise    | true  | 2.days.from_now | false
+      :gitlab_duo_pro    | true  | 2.days.from_now | false
+      nil                | false | 2.days.from_now | false
     end
 
     with_them do
       before do
+        create(:cloud_connector_access, data: {
+          available_services: [
+            { name: "amazon_q_integration", serviceStartTime: cut_off_date }
+          ]
+        })
+
         stub_licensed_features(amazon_q: amazon_q_license_available)
-        stub_feature_flags(amazon_q_chat_and_code_suggestions: ff_enabled)
 
         create(:gitlab_subscription_add_on_purchase, add_on_purchase, namespace: nil) if add_on_purchase.present?
       end

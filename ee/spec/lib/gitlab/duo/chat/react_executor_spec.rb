@@ -545,6 +545,8 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
     end
 
     context 'when amazon q is connected' do
+      let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_amazon_q) }
+
       before do
         stub_licensed_features(amazon_q: true)
         Ai::Setting.instance.update!(amazon_q_ready: true, amazon_q_role_arn: 'role-arn')

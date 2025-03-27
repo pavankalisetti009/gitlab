@@ -748,22 +748,18 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
         false | true  | true  | true  | be_allowed(policy)
         true  | false | true  | true  | be_disallowed(policy)
         true  | false | false | true  | be_disallowed(policy)
-        true  | true  | false | true  | be_disallowed(policy)
       end
 
       with_them do
         before do
           allow(::Gitlab::Saas).to receive(:feature_available?).with(:duo_chat_on_saas).and_return(duo_chat_on_saas)
 
-          Ai::Setting.instance.update!(amazon_q_ready: amazon_q_connected)
+          allow(::Ai::AmazonQ).to receive(:connected?).and_return(amazon_q_connected)
           stub_licensed_features(ai_chat: true, amazon_q: true)
           stub_feature_flags(amazon_q_chat_and_code_suggestions: ff_enabled)
 
           allow(current_user).to receive(:allowed_to_use).with(:duo_chat, service_name: nil,
             licensed_feature: :ai_features).and_return(::Ai::UserAuthorizable::Response.new(allowed?: false))
-
-          allow(current_user).to receive(:allowed_to_use).with(:duo_chat, service_name: :amazon_q_integration,
-            licensed_feature: :amazon_q).and_return(::Ai::UserAuthorizable::Response.new(allowed?: allowed_to_use))
         end
 
         it { is_expected.to duo_chat_enabled_for_user }
