@@ -29,7 +29,10 @@ module Security
                                 'could not be found.',
           ERROR_UNKNOWN => 'Pipeline configuration error: Artifacts required by policy `%{policy}` ' \
                                  'could not be found (%{report_type}).'
-        }
+        },
+        'EVALUATION_SKIPPED' => 'Policy `%{policy}` could not be evaluated within the specified timeframe ' \
+          'and, as a result, approvals are required for the policy. ' \
+          'Ensure that scanners are present in the latest pipeline.'
       }.freeze
 
       # These messages correspond to the possible errors above and are shown when a policy is configured to fail open
@@ -251,10 +254,8 @@ module Security
                    { scans: error['missing_scans']&.map(&:humanize)&.join(', ') }
                  when 'ARTIFACTS_MISSING'
                    { policy: violation.name, report_type: violation.report_type }
-                 when 'TARGET_PIPELINE_MISSING'
-                   { policy: violation.name }
                  else
-                   { error: error_key }
+                   { error: error_key, policy: violation.name }
                  end
 
         message_for_key = ERROR_MESSAGES[error_key] || ERROR_MESSAGES[ERROR_UNKNOWN]

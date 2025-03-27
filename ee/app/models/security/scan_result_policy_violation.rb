@@ -20,7 +20,8 @@ module Security
     enum status: {
       running: 0,
       failed: 1,
-      warn: 2
+      warn: 2,
+      skipped: 3
     }
 
     scope :including_scan_result_policy_reads, -> { includes(:scan_result_policy_read) }
@@ -36,7 +37,8 @@ module Security
     ERRORS = {
       scan_removed: 'SCAN_REMOVED',
       target_pipeline_missing: 'TARGET_PIPELINE_MISSING',
-      artifacts_missing: 'ARTIFACTS_MISSING'
+      artifacts_missing: 'ARTIFACTS_MISSING',
+      evaluation_skipped: 'EVALUATION_SKIPPED'
     }.freeze
 
     MAX_VIOLATIONS = 10

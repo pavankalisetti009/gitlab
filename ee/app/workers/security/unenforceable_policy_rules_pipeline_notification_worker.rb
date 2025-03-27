@@ -8,6 +8,8 @@ module Security
     data_consistency :sticky
     feature_category :security_policy_management
 
+    UNBLOCK_PENDING_VIOLATIONS_TIMEOUT = 90.seconds
+
     def perform(pipeline_id)
       pipeline = ::Ci::Pipeline.find_by_id(pipeline_id)
       # Worker is enqueued in MergeRequests::AfterCreate to unblock merge check if pipeline finishes
@@ -17,6 +19,11 @@ module Security
       project = pipeline.project
       return unless project.licensed_feature_available?(:security_orchestration_policies)
       return if project.approval_rules.with_scan_result_policy_read.none?
+
+      if ::Feature.enabled?(:policy_mergability_check, project)
+        Security::ScanResultPolicies::UnblockPendingMergeRequestViolationsWorker
+          .perform_in(UNBLOCK_PENDING_VIOLATIONS_TIMEOUT, pipeline_id)
+      end
 
       pipeline.opened_merge_requests_with_head_sha.each do |merge_request|
         Security::UnenforceablePolicyRulesNotificationService.new(merge_request).execute

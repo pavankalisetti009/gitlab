@@ -580,10 +580,6 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
   describe '#errors' do
     subject(:errors) { details.errors }
 
-    def build_violation_with_error(policy, error, **extra_data)
-      build_violation_details(policy, 'errors' => [{ 'error' => error, **extra_data }])
-    end
-
     context 'with SCAN_REMOVED error' do
       let_it_be(:violation1) do
         build_violation_with_error(policy1,
@@ -650,6 +646,20 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
       end
     end
 
+    context 'with EVALUATION_SKIPPED error' do
+      let_it_be(:violation1) do
+        build_violation_with_error(policy1,
+          Security::ScanResultPolicyViolation::ERRORS[:evaluation_skipped])
+      end
+
+      it 'returns associated error messages' do
+        expect(errors.pluck(:message)).to contain_exactly(
+          'Policy `Policy` could not be evaluated within the specified timeframe and, as a result, ' \
+          'approvals are required for the policy. Ensure that scanners are present in the latest pipeline.'
+        )
+      end
+    end
+
     context 'with unsupported error' do
       let_it_be(:violation1) { build_violation_with_error(policy2, 'unsupported') }
 
@@ -662,10 +672,6 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
 
   describe '#fail_open_messages' do
     subject(:fail_open_messages) { details.fail_open_messages }
-
-    def build_violation_with_error(policy, error, status)
-      build_violation_details(policy, { 'errors' => [{ 'error' => error }] }, status)
-    end
 
     context 'with a supported error' do
       context 'when violation is warn' do
@@ -745,5 +751,11 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
     it 'counts all violations' do
       expect(details.violations_count).to eq(2)
     end
+  end
+
+  private
+
+  def build_violation_with_error(policy, error, status = :failed, **extra_data)
+    build_violation_details(policy, { 'errors' => [{ 'error' => error, **extra_data }] }, status)
   end
 end
