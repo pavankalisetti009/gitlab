@@ -88,7 +88,7 @@ RSpec.describe GitlabSubscriptions::API::Internal::UpcomingReconciliations, :agg
               display_alert_from: Date.today - 2.days
             }
 
-            put upcoming_reconciliations_path(-1), headers: internal_api_headers, params: params
+            put upcoming_reconciliations_path(non_existing_record_id), headers: internal_api_headers, params: params
 
             expect(response).to have_gitlab_http_status(:not_found)
             expect(json_response['message']).to eq('404 Namespace Not Found')
@@ -208,7 +208,7 @@ RSpec.describe GitlabSubscriptions::API::Internal::UpcomingReconciliations, :agg
 
       context 'when namespace does not exist' do
         it 'returns namespace not found error' do
-          delete upcoming_reconciliations_path(-1), headers: internal_api_headers
+          delete upcoming_reconciliations_path(non_existing_record_id), headers: internal_api_headers
 
           expect(response).to have_gitlab_http_status(:not_found)
           expect(json_response['message']).to eq('404 Namespace Not Found')

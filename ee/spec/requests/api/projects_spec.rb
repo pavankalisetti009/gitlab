@@ -1190,7 +1190,7 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
             context 'invalid audit_event_id' do
               let(:path) { "/projects/#{project.id}/audit_events/an-invalid-id" }
 
-              it_behaves_like '400 response' do
+              it_behaves_like '404 response' do
                 let(:request) { get api(path, user) }
               end
             end
@@ -1304,7 +1304,7 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
             context 'invalid audit_event_id' do
               let(:path) { "/projects/#{project.id}/audit_events/an-invalid-id" }
 
-              it_behaves_like '400 response' do
+              it_behaves_like '404 response' do
                 let(:request) { get api(path, user) }
               end
             end

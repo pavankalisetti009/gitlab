@@ -11,6 +11,7 @@ module API
 
           AUTHENTICATE_REALM_HEADER = 'WWW-Authenticate'
           AUTHENTICATE_REALM_NAME = 'Basic realm="GitLab Virtual Registry"'
+          ETAG_HEADER_KEY = 'etag'
 
           SHA1_CHECKSUM_HEADER = 'x-checksum-sha1'
           MD5_CHECKSUM_HEADER = 'x-checksum-md5'
@@ -85,7 +86,7 @@ module API
             params do
               use :id_and_path
             end
-            get format: false do
+            get format: true do
               service_response = ::VirtualRegistries::Packages::Maven::HandleFileRequestService.new(
                 registry: registry,
                 current_user: current_user,
@@ -124,7 +125,7 @@ module API
               authorize!(:read_virtual_registry, registry)
 
               etag, content_type, upstream_gid = headers.fetch_values(
-                'Etag',
+                ETAG_HEADER_KEY,
                 ::Gitlab::Workhorse::SEND_DEPENDENCY_CONTENT_TYPE_HEADER,
                 UPSTREAM_GID_HEADER
               ) { nil }
