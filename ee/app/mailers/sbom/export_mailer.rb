@@ -20,9 +20,15 @@ module Sbom
                 exportable
               end
 
+      prefix = if exportable.is_a?(::Ci::Pipeline)
+                 exportable.project.name
+               else
+                 exportable.name
+               end
+
       mail_with_locale(
         to: export.author.notification_email_for(group),
-        subject: s_('Dependencies|Dependency list export')
+        subject: subject(prefix, s_('Dependencies|Dependency list export'))
       )
     end
   end
