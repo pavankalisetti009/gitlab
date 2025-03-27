@@ -10,7 +10,7 @@ module API
           NO_BROWSER_EXECUTION_RESPONSE_HEADERS = { 'Content-Security-Policy' => "default-src 'none'" }.freeze
           MAJOR_BROWSERS = %i[webkit firefox ie edge opera chrome].freeze
           WEB_BROWSER_ERROR_MESSAGE = 'This endpoint is not meant to be accessed by a web browser.'
-          UPSTREAM_GID_HEADER = 'X-Gitlab-Virtual-Registry-Upstream-Global-Id'
+          UPSTREAM_GID_HEADER = 'X-Gitlab-Virtual-Registry-Upstream-Global-Id'.downcase
           MAX_FILE_SIZE = 5.gigabytes
 
           included do

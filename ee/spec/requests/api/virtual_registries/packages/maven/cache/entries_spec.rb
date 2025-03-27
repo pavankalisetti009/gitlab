@@ -46,8 +46,8 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Cache::Entries, :aggrega
     context 'with invalid upstream' do
       where(:upstream_id, :status) do
         non_existing_record_id | :not_found
-        'foo'                  | :bad_request
-        ''                     | :bad_request
+        'foo'                  | :not_found
+        ''                     | :not_found
       end
 
       with_them do

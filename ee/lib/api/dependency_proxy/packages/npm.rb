@@ -97,7 +97,7 @@ module API
               requires :package_name, type: String, desc: 'Package name', regexp: Gitlab::Regex.npm_package_name_regex
               requires :file_name, type: String, desc: 'Package file name', file_path: true
             end
-            get '*package_name/-/*file_name', format: false do
+            get '*package_name/-/*file_name', format: true do
               package_file = ::Packages::PackageFileFinder.new(package, declared_params[:file_name]).execute! if package
 
               handle(package_file)
