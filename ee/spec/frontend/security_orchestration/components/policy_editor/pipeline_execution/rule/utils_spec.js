@@ -21,7 +21,7 @@ describe('Pipeline execution rule utils', () => {
 
     const monthlySchedule = {
       type: 'monthly',
-      days_of_month: '1',
+      days_of_month: [1],
       ...baseSchedule,
     };
 

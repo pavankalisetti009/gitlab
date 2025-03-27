@@ -4,11 +4,12 @@ import { DAILY, HOUR_IN_SECONDS } from '../constants';
 
 const DAY_IN_SECONDS = HOUR_IN_SECONDS * 24;
 const DEFAULT_START_WEEKDAY = 'monday';
-const DEFAULT_START_MONTH_DAY = '1';
+const DEFAULT_START_MONTH_DAY = 1;
 const WEEKLY = 'weekly';
 const MONTHLY = 'monthly';
 
 export const isCadenceWeekly = (cadence) => cadence === WEEKLY;
+export const isCadenceMonthly = (cadence) => cadence === MONTHLY;
 
 export const CADENCE_OPTIONS = [
   { value: DAILY, text: __('Daily') },
@@ -25,7 +26,7 @@ const CADENCE_CONFIG = {
     time_window: { value: DAY_IN_SECONDS },
   },
   [MONTHLY]: {
-    days_of_month: DEFAULT_START_MONTH_DAY,
+    days_of_month: [DEFAULT_START_MONTH_DAY],
     time_window: { value: DAY_IN_SECONDS },
   },
 };
@@ -63,3 +64,14 @@ export const HOUR_MINUTE_LIST = Array.from(Array(24).keys()).map((num) => {
 export const WEEKDAY_OPTIONS = getWeekdayNames().map((day) => {
   return { value: day.toLowerCase(), text: day };
 });
+
+/**
+ * Generate options for monthly day selection
+ * @returns {Array} Array of day options
+ */
+export const getMonthlyDayOptions = () => {
+  return Array.from({ length: 31 }, (_, i) => {
+    const day = i + 1;
+    return { value: day, text: day };
+  });
+};
