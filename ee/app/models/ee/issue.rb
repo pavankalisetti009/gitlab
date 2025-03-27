@@ -203,6 +203,15 @@ module EE
       super if weight_available?
     end
 
+    def es_parent
+      "group_#{namespace.root_ancestor.id}"
+    end
+
+    override :elastic_reference
+    def elastic_reference
+      ::Search::Elastic::References::WorkItem.serialize(self)
+    end
+
     override :maintain_elasticsearch_update
     def maintain_elasticsearch_update(updated_attributes: previous_changes.keys)
       super

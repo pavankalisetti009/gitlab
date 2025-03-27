@@ -1514,4 +1514,22 @@ RSpec.describe Issue, feature_category: :team_planning do
       end
     end
   end
+
+  describe '#elastic_reference' do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:issue) { create(:issue, namespace: namespace) }
+
+    it 'returns the string representation for the elasticsearch' do
+      expect(issue.elastic_reference).to eq("WorkItem|#{issue.id}|#{issue.es_parent}")
+    end
+  end
+
+  describe '#es_parent' do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:issue) { create(:issue, namespace: namespace) }
+
+    it 'returns to correct routing id' do
+      expect(issue.es_parent).to eq("group_#{issue.namespace.root_ancestor.id}")
+    end
+  end
 end

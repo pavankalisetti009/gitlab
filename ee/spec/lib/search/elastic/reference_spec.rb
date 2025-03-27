@@ -5,7 +5,8 @@ require 'spec_helper'
 RSpec.describe ::Search::Elastic::Reference, feature_category: :global_search do
   let(:instance) { described_class.new }
   let_it_be(:issue) { create(:issue) }
-  let(:serialized_issue) { "Issue #{issue.id} #{issue.id} project_#{issue.project.id}" }
+  let(:serialized_issue) { "Issue #{issue.id} #{issue.id} #{issue.es_parent}" }
+  let(:serialized_work_item) { "WorkItem|#{issue.id}|#{issue.es_parent}" }
 
   describe '#serialize' do
     context 'when item is a string' do
@@ -36,7 +37,7 @@ RSpec.describe ::Search::Elastic::Reference, feature_category: :global_search do
       let(:item) { issue }
 
       it 'returns the elastic reference of the ApplicationRecord' do
-        expect(described_class.serialize(item)).to eq(serialized_issue)
+        expect(described_class.serialize(item)).to eq(serialized_work_item)
       end
     end
 

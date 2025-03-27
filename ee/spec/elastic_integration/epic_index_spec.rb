@@ -60,12 +60,12 @@ RSpec.describe 'Epic index', :elastic_helpers, feature_category: :global_search 
 
     context 'when an epic is deleted' do
       it 'tracks the work item and epic' do
-        expect(::Elastic::ProcessBookkeepingService).to receive(:track!).with(*[WorkItem.find(epic.issue_id)]).once
         expect(::Elastic::ProcessBookkeepingService).to receive(:track!).once do |*tracked_refs|
           expect(tracked_refs.count).to eq(1)
           expect(tracked_refs[0].class).to eq(Epic)
           expect(tracked_refs[0].id).to eq(epic.id)
         end
+        expect(::Elastic::ProcessBookkeepingService).to receive(:track!).once.with(*[WorkItem.find(epic.issue_id)])
         epic.destroy!
       end
 

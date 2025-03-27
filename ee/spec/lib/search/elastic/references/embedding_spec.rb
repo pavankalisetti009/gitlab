@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe ::Search::Elastic::References::Embedding, feature_category: :global_search do
   let_it_be(:project) { create(:project) }
   let_it_be(:issue) { create(:issue, project: project) }
-  let(:routing) { "project_#{project.id}" }
+  let(:routing) { issue.es_parent }
   let(:embedding_ref) { described_class.new(Issue, issue.id, routing) }
   let(:embedding_ref_serialized) { "Embedding|Issue|#{issue.id}|#{routing}" }
   let(:work_item_embedding_ref) { described_class.new(WorkItem, issue.id, routing) }

@@ -102,20 +102,14 @@ module EE
 
     override :use_elasticsearch?
     def use_elasticsearch?
+      return project.use_elasticsearch? unless project.nil?
+
       namespace.use_elasticsearch?
     end
 
     override :supported_quick_action_commands
     def supported_quick_action_commands
       super + EE_COMMON_QUICK_ACTIONS_COMMANDS
-    end
-
-    def es_parent
-      "group_#{namespace.root_ancestor.id}"
-    end
-
-    def elastic_reference
-      ::Search::Elastic::References::WorkItem.serialize(self)
     end
 
     def lazy_user_notes
