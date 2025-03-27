@@ -1,5 +1,5 @@
 <script>
-import { GlCollapsibleListbox, GlSprintf } from '@gitlab/ui';
+import { GlCollapsibleListbox, GlSprintf, GlFormInput } from '@gitlab/ui';
 import { n__, s__, __, sprintf } from '~/locale';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import BranchSelection from 'ee/security_orchestration/components/policy_editor/scan_result/rule/branch_selection.vue';
@@ -9,10 +9,15 @@ import {
   CADENCE_OPTIONS,
   HOUR_MINUTE_LIST,
   WEEKDAY_OPTIONS,
+  TIME_UNIT_OPTIONS,
+  TIME_UNITS,
   isCadenceWeekly,
   isCadenceMonthly,
   updateScheduleCadence,
   getMonthlyDayOptions,
+  timeUnitToSeconds,
+  secondsToValue,
+  determineTimeUnit,
 } from './utils';
 
 export default {
@@ -20,27 +25,32 @@ export default {
   CADENCE_OPTIONS,
   HOUR_MINUTE_LIST,
   WEEKDAY_OPTIONS,
+  TIME_UNIT_OPTIONS,
   i18n: {
     cadence: __('Cadence'),
     cadenceDetail: s__('SecurityOrchestration|on every'),
     details: s__(
       'SecurityOrchestration|at the following times: %{cadenceSelector}, start at %{start}, run for: %{duration}, and timezone is %{timezoneSelector}',
     ),
+    duration: __('Duration'),
+    durationPlaceholder: __('Enter duration'),
     message: s__('SecurityOrchestration|Schedule to run for %{branchSelector}'),
-    time: __('Time'),
-    timezoneLabel: s__('ScanExecutionPolicy|on %{hostname}'),
-    timezonePlaceholder: s__('ScanExecutionPolicy|Select timezone'),
-    weekly: __('Weekly'),
-    weekdayDropdownPlaceholder: __('Select a day'),
     monthly: __('Monthly'),
     monthlyDaysLabel: s__('SecurityOrchestration|Days of month'),
     monthlyDaysPlaceholder: s__('SecurityOrchestration|Select days'),
+    time: __('Time'),
+    timezoneLabel: s__('ScanExecutionPolicy|on %{hostname}'),
+    timezonePlaceholder: s__('ScanExecutionPolicy|Select timezone'),
+    timeUnit: __('Time unit'),
+    weekly: __('Weekly'),
+    weekdayDropdownPlaceholder: __('Select a day'),
   },
   components: {
     BranchSelection,
     GlCollapsibleListbox,
     GlSprintf,
     TimezoneDropdown,
+    GlFormInput,
   },
   inject: ['timezones'],
   props: {
@@ -48,6 +58,12 @@ export default {
       type: Object,
       required: true,
     },
+  },
+  data() {
+    const seconds = this.schedule.time_window?.value || TIME_UNITS.HOUR;
+    return {
+      selectedTimeUnit: determineTimeUnit(seconds),
+    };
   },
   computed: {
     branchInfo() {
@@ -60,6 +76,27 @@ export default {
     },
     cadence() {
       return this.schedule.type;
+    },
+    durationValue() {
+      const seconds = this.schedule.time_window?.value || 0;
+      return Math.floor(secondsToValue(seconds, this.selectedTimeUnit));
+    },
+    monthlyDaysMessage() {
+      return n__('day of the month', 'days of the month', this.selectedMonthlyDays.length);
+    },
+    monthlyDayOptions() {
+      return getMonthlyDayOptions();
+    },
+    monthlyDaysToggleText() {
+      return getSelectedOptionsText({
+        options: this.monthlyDayOptions,
+        selected: this.selectedMonthlyDays,
+        placeholder: this.$options.i18n.monthlyDaysPlaceholder,
+        maxOptionsShown: 2,
+      });
+    },
+    selectedMonthlyDays() {
+      return this.schedule.days_of_month || [];
     },
     showMonthlyDropdown() {
       return isCadenceMonthly(this.cadence);
@@ -78,25 +115,11 @@ export default {
         maxOptionsShown: 2,
       });
     },
-    monthlyDayOptions() {
-      return getMonthlyDayOptions();
-    },
-    selectedMonthlyDays() {
-      return this.schedule.days_of_month || [];
-    },
-    monthlyDaysToggleText() {
-      return getSelectedOptionsText({
-        options: this.monthlyDayOptions,
-        selected: this.selectedMonthlyDays,
-        placeholder: this.$options.i18n.monthlyDaysPlaceholder,
-        maxOptionsShown: 2,
-      });
-    },
-    monthlyDaysMessage() {
-      return n__('day of the month', 'days of the month', this.selectedMonthlyDays.length);
-    },
   },
   methods: {
+    handleMonthlyDaysInput(selectedDays) {
+      this.updatePolicy('days_of_month', selectedDays);
+    },
     updateBranchConfig({ branch_type, branches }) {
       const {
         branch_type: oldBranchType,
@@ -116,8 +139,20 @@ export default {
     updatePolicy(key, value) {
       this.$emit('changed', { ...this.schedule, [key]: value });
     },
-    handleMonthlyDaysInput(selectedDays) {
-      this.updatePolicy('days_of_month', selectedDays);
+    updateDurationValue(value) {
+      if (value) {
+        const seconds = timeUnitToSeconds(parseInt(value, 10), this.selectedTimeUnit);
+        this.updateTimeWindow(seconds);
+      }
+    },
+    updateDurationUnit(unit) {
+      this.selectedTimeUnit = unit;
+      const seconds = timeUnitToSeconds(this.durationValue, this.selectedTimeUnit);
+      this.updateTimeWindow(seconds);
+    },
+    updateTimeWindow(seconds) {
+      const timeWindow = { ...this.schedule.time_window, value: seconds };
+      this.updatePolicy('time_window', timeWindow);
     },
   },
 };
@@ -187,7 +222,27 @@ export default {
           />
         </template>
 
-        <template #duration> </template>
+        <template #duration>
+          <div class="gl-flex gl-gap-3">
+            <gl-form-input
+              class="gl-inline-block gl-w-12"
+              data-testid="duration-input"
+              :aria-label="$options.i18n.duration"
+              :value="durationValue"
+              type="number"
+              :min="1"
+              :placeholder="$options.i18n.durationPlaceholder"
+              @update="updateDurationValue"
+            />
+            <gl-collapsible-listbox
+              data-testid="time-unit-dropdown"
+              :aria-label="$options.i18n.timeUnit"
+              :items="$options.TIME_UNIT_OPTIONS"
+              :selected="selectedTimeUnit"
+              @select="updateDurationUnit"
+            />
+          </div>
+        </template>
 
         <template #timezoneSelector>
           <timezone-dropdown
