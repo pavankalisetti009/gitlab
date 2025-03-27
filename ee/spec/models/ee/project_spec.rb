@@ -21,8 +21,6 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     it { is_expected.to delegate_method(:only_allow_merge_if_all_status_checks_passed).to(:project_setting) }
     it { is_expected.to delegate_method(:security_policy_management_project).to(:security_orchestration_policy_configuration) }
 
-    it { is_expected.to belong_to(:deleting_user) }
-
     it { is_expected.to have_one(:import_state).class_name('ProjectImportState') }
     it { is_expected.to have_one(:wiki_repository).class_name('Projects::WikiRepository').inverse_of(:project) }
     it { is_expected.to have_one(:push_rule).inverse_of(:project) }
@@ -549,32 +547,6 @@ RSpec.describe Project, feature_category: :groups_and_projects do
         allow(Integrations::JiraCloudApp).to receive(:blocked_by_settings?).and_return(true)
 
         is_expected.to eq(false)
-      end
-    end
-
-    describe '.not_aimed_for_deletion' do
-      let_it_be(:project) { create(:project) }
-      let_it_be(:delayed_deletion_project) { create(:project, marked_for_deletion_at: Date.current) }
-
-      it do
-        expect(described_class.not_aimed_for_deletion).to contain_exactly(project)
-      end
-    end
-
-    describe '.by_marked_for_deletion_on' do
-      let_it_be(:project) { create(:project) }
-      let_it_be(:marked_for_deletion_project) { create(:project, marked_for_deletion_at: Date.parse('2024-01-01')) }
-
-      context 'when marked_for_deletion_on is present' do
-        it 'return projects marked for deletion' do
-          expect(described_class.by_marked_for_deletion_on(Date.parse('2024-01-01'))).to contain_exactly(marked_for_deletion_project)
-        end
-      end
-
-      context 'when marked_for_deletion_on is not present' do
-        it 'return projects not marked for deletion' do
-          expect(described_class.by_marked_for_deletion_on(nil)).to contain_exactly(project)
-        end
       end
     end
 
@@ -4943,13 +4915,6 @@ RSpec.describe Project, feature_category: :groups_and_projects do
 
     context 'when product analytics is not enabled' do
       it { is_expected.to be_nil }
-    end
-  end
-
-  context 'with loose foreign key on projects.marked_for_deletion_by_user_id' do
-    it_behaves_like 'cleanup by a loose foreign key' do
-      let_it_be(:parent) { create(:user) }
-      let_it_be(:model) { create(:project, deleting_user: parent) }
     end
   end
 

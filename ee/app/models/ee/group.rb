@@ -79,8 +79,6 @@ module EE
       has_many :provisioned_users, through: :provisioned_user_details, source: :user
       has_one :group_merge_request_approval_setting, inverse_of: :group
 
-      has_one :deletion_schedule, class_name: 'GroupDeletionSchedule'
-
       has_one :group_wiki_repository
       has_many :repository_storage_moves, class_name: 'Groups::RepositoryStorageMove', inverse_of: :container
 
@@ -99,8 +97,6 @@ module EE
       # WIP v2 approval rules as part of https://gitlab.com/groups/gitlab-org/-/epics/12955
       has_many :v2_approval_rules_groups, class_name: 'MergeRequests::ApprovalRulesGroup', inverse_of: :group
       has_many :v2_approval_rules, through: :v2_approval_rules_groups, class_name: 'MergeRequests::ApprovalRule', source: :approval_rule
-
-      delegate :deleting_user, :marked_for_deletion_on, to: :deletion_schedule, allow_nil: true
 
       delegate :repository_read_only,
         :default_compliance_framework,
@@ -131,16 +127,6 @@ module EE
         numericality: { only_integer: true, greater_than: 0, less_than_or_equal_to: :max_auth_lifetime }
 
       validate :custom_project_templates_group_allowed, if: :custom_project_templates_group_id_changed?
-
-      scope :aimed_for_deletion, ->(date) { joins(:deletion_schedule).where('group_deletion_schedules.marked_for_deletion_on <= ?', date) }
-      scope :not_aimed_for_deletion, -> { where.missing(:deletion_schedule) }
-      scope :with_deletion_schedule, -> { preload(deletion_schedule: :deleting_user) }
-      scope :with_deletion_schedule_only, -> { preload(:deletion_schedule) }
-
-      scope :by_marked_for_deletion_on, ->(marked_for_deletion_on) do
-        joins(:deletion_schedule)
-          .where(group_deletion_schedules: { marked_for_deletion_on: marked_for_deletion_on })
-      end
 
       scope :with_saml_provider, -> { preload(:saml_provider) }
       scope :with_saml_group_links, -> { joins(:saml_group_links) }
