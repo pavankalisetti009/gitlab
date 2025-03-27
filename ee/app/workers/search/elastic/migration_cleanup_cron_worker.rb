@@ -17,7 +17,6 @@ module Search
       def perform
         return false unless ::Gitlab::Saas.feature_available?(:advanced_search)
         return false unless ::Gitlab::CurrentSettings.elasticsearch_indexing?
-        return false unless ::Feature.enabled?(:search_migration_cleanup, Feature.current_request)
 
         count = Search::Elastic::MigrationCleanupService.execute(dry_run: false)
 
