@@ -52,13 +52,7 @@ module Gitlab
 
         # @return [Ai::AiResource::BaseAiResource]
         def authorized_resource
-          resource_wrapper_class = "Ai::AiResource::#{resource.class}".safe_constantize
-          # We need to implement it for all models we want to take into considerations
-          raise ArgumentError, "#{resource.class} is not a valid AiResource class" unless resource_wrapper_class
-
-          return unless Utils::ChatAuthorizer.resource(resource: resource, user: current_user).allowed?
-
-          resource_wrapper_class.new(current_user, resource)
+          ::Ai::AiResource::Wrapper.new(current_user, resource).wrap
         end
       end
     end
