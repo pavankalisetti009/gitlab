@@ -55,6 +55,9 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
   let(:labels) { {} }
   let(:image_pull_secrets) { [] }
 
+  let(:saved_shared_namespace) { "" }
+  let(:shared_namespace) { nil }
+
   let_it_be(:agent, refind: true) { create(:cluster_agent) }
 
   let(:dns_zone_in_config) { dns_zone }
@@ -91,6 +94,8 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
       remote_development_config['workspaces_quota'] = quota
       remote_development_config['workspaces_per_user_quota'] = quota
     end
+
+    remote_development_config['shared_namespace'] = shared_namespace if shared_namespace
 
     # noinspection RubyMismatchedArgumentType - RubyMine is misinterpreting types for Hash values
     remote_development_config['allow_privilege_escalation'] = allow_privilege_escalation if allow_privilege_escalation
@@ -148,6 +153,7 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
         expect(config_instance.workspaces_per_user_quota).to eq(saved_quota)
         expect(config_instance.workspaces_quota).to eq(saved_quota)
         expect(config_instance.image_pull_secrets).to eq(image_pull_secrets)
+        expect(config_instance.shared_namespace).to eq(saved_shared_namespace)
 
         expect(result)
           .to be_ok_result(RemoteDevelopment::Messages::AgentConfigUpdateSuccessful.new(
@@ -215,6 +221,20 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
 
             it_behaves_like 'successful update'
           end
+        end
+
+        context 'when shared_namespace is not explicitly specified in the config passed' do
+          let(:shared_namespace) { nil }
+          let(:saved_shared_namespace) { "" }
+
+          it_behaves_like 'successful update'
+        end
+
+        context 'when shared_namespace key is explicitly specified in the config passed' do
+          let(:shared_namespace) { "my-shared-namespace" }
+          let(:saved_shared_namespace) { "my-shared-namespace" }
+
+          it_behaves_like 'successful update'
         end
 
         context 'when gitlab_workspaces_proxy is present in the config passed' do

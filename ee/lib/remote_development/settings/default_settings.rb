@@ -38,6 +38,7 @@ module RemoteDevelopment
           network_policy_enabled: [true, :Boolean],
           partial_reconciliation_interval_seconds: [10, Integer],
           project_cloner_image: ["alpine/git:2.45.2", String],
+          shared_namespace: ["", String],
           tools_injector_image: [
             "registry.gitlab.com/gitlab-org/workspaces/gitlab-workspaces-tools:8.0.0", String
           ],
