@@ -5,7 +5,9 @@ import {
   GlIcon,
   GlLoadingIcon,
   GlIntersperse,
+  GlIntersectionObserver,
 } from '@gitlab/ui';
+import produce from 'immer';
 // eslint-disable-next-line no-restricted-imports
 import { mapState } from 'vuex';
 import { createAlert } from '~/alert';
@@ -20,6 +22,7 @@ export default {
     GlIcon,
     GlLoadingIcon,
     GlIntersperse,
+    GlIntersectionObserver,
   },
   inject: ['projectFullPath'],
   props: {
@@ -40,16 +43,14 @@ export default {
     return {
       versions: [],
       selectedVersionIds: [],
+      pageInfo: {},
     };
   },
   apollo: {
     versions: {
       query: getProjectComponentVersions,
       variables() {
-        return {
-          componentId: this.componentIds?.[0],
-          fullPath: this.projectFullPath,
-        };
+        return this.queryVariables;
       },
       update(data) {
         return data.namespace.componentVersions.nodes.map(({ version, id }) => ({
@@ -57,15 +58,14 @@ export default {
           id: getIdFromGraphQLId(id),
         }));
       },
+      result({ data }) {
+        this.pageInfo = data?.namespace.componentVersions.pageInfo || {};
+      },
       skip() {
         return this.noSelectedComponent || this.multipleSelectedComponents;
       },
       error() {
-        createAlert({
-          message: s__(
-            'Dependencies|There was an error fetching the versions for the selected component. Please try again later.',
-          ),
-        });
+        this.showError();
       },
     },
   },
@@ -78,6 +78,12 @@ export default {
         // in which only the last selected item is being displayed.
         // more information: https://gitlab.com/gitlab-org/gitlab-ui/-/issues/2381
         data: this.active ? null : this.selectedVersionIds,
+      };
+    },
+    queryVariables() {
+      return {
+        componentId: this.componentIds?.[0],
+        fullPath: this.projectFullPath,
       };
     },
     noSelectedComponent() {
@@ -95,6 +101,9 @@ export default {
     selectedVersions() {
       return this.versions.filter(({ id }) => this.isVersionSelected(id));
     },
+    hasNextPage() {
+      return this.pageInfo.hasNextPage;
+    },
   },
   methods: {
     isVersionSelected(id) {
@@ -106,6 +115,35 @@ export default {
       } else {
         this.selectedVersionIds.push(id);
       }
+    },
+    bottomReached() {
+      if (this.isLoading) return;
+
+      const variables = {
+        after: this.pageInfo.endCursor,
+        ...this.queryVariables,
+      };
+
+      this.$apollo.queries.versions
+        .fetchMore({
+          variables,
+          updateQuery(previousResult, { fetchMoreResult }) {
+            return produce(fetchMoreResult, (draftData) => {
+              draftData.namespace.componentVersions.nodes = [
+                ...previousResult.namespace.componentVersions.nodes,
+                ...draftData.namespace.componentVersions.nodes,
+              ];
+            });
+          },
+        })
+        .catch(this.showError);
+    },
+    showError() {
+      createAlert({
+        message: s__(
+          'Dependencies|There was an error fetching the versions for the selected component. Please try again later.',
+        ),
+      });
     },
   },
 };
@@ -127,7 +165,12 @@ export default {
       </gl-intersperse>
     </template>
     <template #suggestions>
-      <gl-loading-icon v-if="isLoading" size="sm" />
+      <div v-if="noSelectedComponent" class="gl-p-2 gl-text-secondary">
+        {{ s__('Dependencies|To filter by version, filter by one component first') }}
+      </div>
+      <div v-else-if="multipleSelectedComponents" class="gl-p-2 gl-text-secondary">
+        {{ s__('Dependencies|To filter by version, select exactly one component first') }}
+      </div>
       <template v-else>
         <gl-filtered-search-suggestion v-for="{ version, id } in versions" :key="id" :value="id">
           <div class="gl-flex gl-items-center">
@@ -141,12 +184,8 @@ export default {
             {{ version }}
           </div>
         </gl-filtered-search-suggestion>
-        <div v-if="noSelectedComponent" class="gl-p-2 gl-text-secondary">
-          {{ s__('Dependencies|To filter by version, filter by one component first') }}
-        </div>
-        <div v-else-if="multipleSelectedComponents" class="gl-p-2 gl-text-secondary">
-          {{ s__('Dependencies|To filter by version, select exactly one component first') }}
-        </div>
+        <gl-loading-icon v-if="isLoading" size="sm" />
+        <gl-intersection-observer v-if="hasNextPage" @appear="bottomReached" />
       </template>
     </template>
   </gl-filtered-search-token>

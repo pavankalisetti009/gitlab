@@ -4,6 +4,7 @@ import {
   GlFilteredSearchSuggestion,
   GlFilteredSearchToken,
   GlIcon,
+  GlIntersectionObserver,
   GlIntersperse,
   GlLoadingIcon,
 } from '@gitlab/ui';
@@ -30,37 +31,46 @@ const TEST_VERSIONS = [
     version: '2.0.0',
   },
 ];
+const DEFAULT_PAGE_INFO = {
+  __typename: 'PageInfo',
+  hasNextPage: false,
+  hasPreviousPage: false,
+  startCursor: null,
+  endCursor: null,
+};
 const FULL_PATH = 'gitlab-org/project-1';
 
 describe('ee/dependencies/components/filtered_search/tokens/version_token.vue', () => {
   let wrapper;
   let store;
-  let handlerMocks;
+  let requestHandlers;
 
   const createVuexStore = () => {
     store = createStore();
   };
 
-  const createMockApolloProvider = ({ handlers = {} } = {}) => {
-    const defaultHandlers = {
+  const mockApolloHandlers = (nodes = TEST_VERSIONS, hasNextPage = false) => {
+    return {
       projectHandler: jest.fn().mockResolvedValue({
         data: {
           namespace: {
-            id: 'gid://gitlab/Project/1',
+            id: '1',
             componentVersions: {
-              nodes: TEST_VERSIONS,
+              nodes,
+              pageInfo: { ...DEFAULT_PAGE_INFO, hasNextPage },
             },
           },
         },
       }),
     };
-    handlerMocks = { ...defaultHandlers, ...handlers };
-
-    const requestHandlers = [[getProjectComponentVersions, handlerMocks.projectHandler]];
-    return createMockApollo(requestHandlers);
   };
 
-  const createComponent = (handlers = {}) => {
+  const createMockApolloProvider = (handlers) => {
+    requestHandlers = handlers;
+    return createMockApollo([[getProjectComponentVersions, requestHandlers.projectHandler]]);
+  };
+
+  const createComponent = (handlers = mockApolloHandlers()) => {
     wrapper = shallowMountExtended(VersionToken, {
       store,
       apolloProvider: createMockApolloProvider(handlers),
@@ -119,7 +129,7 @@ describe('ee/dependencies/components/filtered_search/tokens/version_token.vue', 
     });
 
     it('does not fetch versions', () => {
-      expect(handlerMocks.projectHandler).not.toHaveBeenCalled();
+      expect(requestHandlers.projectHandler).not.toHaveBeenCalled();
     });
   });
 
@@ -139,7 +149,7 @@ describe('ee/dependencies/components/filtered_search/tokens/version_token.vue', 
     });
 
     it('does not fetch versions', () => {
-      expect(handlerMocks.projectHandler).not.toHaveBeenCalled();
+      expect(requestHandlers.projectHandler).not.toHaveBeenCalled();
     });
   });
 
@@ -162,7 +172,7 @@ describe('ee/dependencies/components/filtered_search/tokens/version_token.vue', 
     });
 
     it('fetches the list of versions', () => {
-      expect(handlerMocks.projectHandler).toHaveBeenCalledWith(
+      expect(requestHandlers.projectHandler).toHaveBeenCalledWith(
         expect.objectContaining({ fullPath: FULL_PATH, componentId: componentIds[0] }),
       );
     });
@@ -215,9 +225,7 @@ describe('ee/dependencies/components/filtered_search/tokens/version_token.vue', 
   describe('when there is an error fetching the versions', () => {
     beforeEach(async () => {
       createComponent({
-        handlers: {
-          projectHandler: jest.fn().mockRejectedValue(new Error('GraphQL error')),
-        },
+        projectHandler: jest.fn().mockRejectedValue(new Error('GraphQL error')),
       });
       store.state.allDependencies.componentIds = ['component-1'];
 
@@ -229,6 +237,22 @@ describe('ee/dependencies/components/filtered_search/tokens/version_token.vue', 
         message:
           'There was an error fetching the versions for the selected component. Please try again later.',
       });
+    });
+  });
+
+  describe('when there is a next page', () => {
+    beforeEach(async () => {
+      createComponent(mockApolloHandlers([], true));
+      store.state.allDependencies.componentIds = ['component-1'];
+      await waitForPromises();
+    });
+
+    it('fetches more versions when scrolled to the bottom', () => {
+      expect(requestHandlers.projectHandler).toHaveBeenCalledTimes(1);
+
+      wrapper.findComponent(GlIntersectionObserver).vm.$emit('appear');
+
+      expect(requestHandlers.projectHandler).toHaveBeenCalledTimes(2);
     });
   });
 });
