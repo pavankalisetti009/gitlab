@@ -240,26 +240,6 @@ module Gitlab
         @secret_detection_logger ||= ::Gitlab::SecretDetectionLogger.build
       end
 
-      def generate_target_details
-        changes = changes_access.changes
-        old_rev = changes.first&.dig(:oldrev)
-        new_rev = changes.last&.dig(:newrev)
-
-        return project.name if old_rev.nil? || new_rev.nil?
-
-        ::Gitlab::Utils.append_path(
-          ::Gitlab::Routing.url_helpers.root_url,
-          ::Gitlab::Routing.url_helpers.project_compare_path(project, from: old_rev, to: new_rev)
-        )
-      end
-
-      def get_project_security_exclusion_from_sds_exclusion(exclusion)
-        return exclusion if exclusion.is_a?(::Security::ProjectSecurityExclusion)
-
-        # TODO When we implement 2-way SDS communication, we should add the type to this lookup
-        project.security_exclusions.where(value: exclusion.value).first # rubocop:disable CodeReuse/ActiveRecord -- Need to be able to link GRPC::Exclusion to ProjectSecurityExclusion
-      end
-
       #######################
       # Load Payloads
 
