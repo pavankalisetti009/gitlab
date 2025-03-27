@@ -32,11 +32,11 @@ RSpec.describe Search::Zoekt::OrphanedIndexEventWorker, :zoekt_settings_enabled,
         expect([idx, idx2, idx3, idx4].all? { |i| i.reload.orphaned? }).to be true
       end
 
-      it 'only processes a single batch of index records' do
+      it 'only processes a single batch of index records', :freeze_time do
         scope = Search::Zoekt::Index.limit(batch_size)
         allow(Search::Zoekt::Index).to receive_message_chain(:should_be_marked_as_orphaned, :ordered).and_return(scope)
         expect(scope).to receive(:limit).with(batch_size).and_return(scope)
-        expect(scope).to receive(:update_all).with(state: :orphaned).exactly(:once)
+        expect(scope).to receive(:update_all).with(state: :orphaned, updated_at: Time.current).exactly(:once)
         consume_event(subscriber: described_class, event: event)
       end
     end

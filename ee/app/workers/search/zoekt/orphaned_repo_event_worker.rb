@@ -17,7 +17,7 @@ module Search
         scope = Search::Zoekt::Repository.should_be_marked_as_orphaned
         return unless scope.exists?
 
-        updated_rows = scope.limit(BATCH_SIZE).update_all(state: :orphaned)
+        updated_rows = scope.limit(BATCH_SIZE).update_all(state: :orphaned, updated_at: Time.current)
         log_extra_metadata_on_done(:repositories_updated_count, updated_rows)
 
         reemit_event(updated_rows: updated_rows)

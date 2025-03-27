@@ -139,19 +139,20 @@ module Search
       end
 
       def self.update_task_states(states:)
-        Search::Zoekt::Task.id_in(states[:orphaned]).update_all(state: :orphaned) if states[:orphaned].any?
-        Search::Zoekt::Task.id_in(states[:skipped]).update_all(state: :skipped) if states[:skipped].any?
+        id_in(states[:orphaned]).update_all(state: :orphaned, updated_at: Time.current) if states[:orphaned].any?
+        id_in(states[:skipped]).update_all(state: :skipped, updated_at: Time.current) if states[:skipped].any?
 
         if states[:valid].any?
-          Search::Zoekt::Task.id_in(states[:valid]).where.not(state: [:orphaned, :skipped, :done, :failed])
-                             .update_all(state: :processing)
+          id_in(states[:valid]).where.not(state: [:orphaned, :skipped, :done, :failed]).update_all(
+            state: :processing, updated_at: Time.current
+          )
         end
 
         return unless states[:done].any?
 
-        done_tasks = Search::Zoekt::Task.id_in(states[:done])
-        done_tasks.update_all(state: :done)
-        Search::Zoekt::Repository.id_in(done_tasks.select(:zoekt_repository_id)).update_all(state: :ready)
+        done_tasks = id_in(states[:done])
+        done_tasks.update_all(state: :done, updated_at: Time.current)
+        Repository.id_in(done_tasks.select(:zoekt_repository_id)).update_all(state: :ready, updated_at: Time.current)
       end
 
       def set_project_identifier

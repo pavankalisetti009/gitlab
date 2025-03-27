@@ -17,7 +17,7 @@ module Search
         indices = Index.initializing.with_all_finished_repositories.ordered.limit(BATCH_SIZE)
         return unless indices.exists?
 
-        log_extra_metadata_on_done(:indices_ready_count, indices.update_all(state: :ready))
+        log_extra_metadata_on_done(:indices_ready_count, indices.update_all(state: :ready, updated_at: Time.current))
       end
     end
   end

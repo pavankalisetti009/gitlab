@@ -78,11 +78,13 @@ module Search
           )
         end
         Search::Zoekt::Task.bulk_insert!(tasks)
-        repo_ids = tasks.map(&:zoekt_repository_id)
-        deleted_repo_ids = tasks.select(&:delete_repo?).map(&:zoekt_repository_id)
-        active_repo_ids = repo_ids - deleted_repo_ids
-        Repository.id_in(active_repo_ids).pending.each_batch { |repos| repos.update_all(state: :initializing) }
-        Repository.id_in(deleted_repo_ids).each_batch { |repos| repos.update_all(state: :deleted) }
+        ids = tasks.map(&:zoekt_repository_id)
+        deleted_ids = tasks.select(&:delete_repo?).map(&:zoekt_repository_id)
+        active_ids = ids - deleted_ids
+        Repository.id_in(active_ids).pending.each_batch do |repos|
+          repos.update_all(state: :initializing, updated_at: Time.current)
+        end
+        Repository.id_in(deleted_ids).each_batch { |repos| repos.update_all(state: :deleted, updated_at: Time.current) }
       end
 
       private

@@ -18,7 +18,7 @@ module Search
         indices = Search::Zoekt::Index.should_be_pending_eviction.limit(BATCH_SIZE)
         return unless indices.exists?
 
-        updated_count = indices.update_all(state: :pending_eviction)
+        updated_count = indices.update_all(state: :pending_eviction, updated_at: Time.current)
 
         log_extra_metadata_on_done(:indices_updated_count, updated_count)
       end
