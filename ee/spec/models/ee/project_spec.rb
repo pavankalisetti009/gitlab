@@ -71,6 +71,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     it { is_expected.to have_many(:security_pipeline_execution_config_links).class_name('Security::PipelineExecutionPolicyConfigLink') }
 
     it { is_expected.to have_one(:github_integration) }
+    it { is_expected.to have_one(:amazon_q_integration) }
     it { is_expected.to have_many(:zoekt_repositories) }
     it { is_expected.to have_one(:google_cloud_platform_artifact_registry_integration) }
     it { is_expected.to have_one(:google_cloud_platform_workload_identity_federation_integration) }

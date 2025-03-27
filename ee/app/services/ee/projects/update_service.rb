@@ -230,6 +230,19 @@ module EE
                   end
 
         service.execute
+
+        integration_params =
+          if duo_features_enabled == 'true'
+            { availability: 'default_on', auto_review_enabled: params[:amazon_q_auto_review_enabled] }
+          else
+            { availability: 'never_on', auto_review_enabled: false }
+          end
+
+        project.amazon_q_integration.update(integration_params.compact)
+      end
+
+      def non_assignable_project_params
+        super + [:amazon_q_auto_review_enabled]
       end
     end
   end

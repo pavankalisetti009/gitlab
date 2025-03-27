@@ -70,6 +70,7 @@ module EE
       has_one :google_cloud_platform_artifact_registry_integration, class_name: 'Integrations::GoogleCloudPlatform::ArtifactRegistry'
       has_one :google_cloud_platform_workload_identity_federation_integration, class_name: 'Integrations::GoogleCloudPlatform::WorkloadIdentityFederation'
       has_one :git_guardian_integration, class_name: 'Integrations::GitGuardian'
+      has_one :amazon_q_integration, class_name: 'Integrations::AmazonQ'
 
       has_one :status_page_setting, inverse_of: :project, class_name: 'StatusPage::ProjectSetting'
       has_many :compliance_framework_settings, class_name: 'ComplianceManagement::ComplianceFramework::ProjectSettings', inverse_of: :project

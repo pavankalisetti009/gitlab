@@ -831,10 +831,13 @@ RSpec.describe Projects::UpdateService, '#execute', feature_category: :groups_an
   end
 
   describe 'when updating duo_features_enabled' do
-    using RSpec::Parameterized::TableSyntax
+    let_it_be(:project) { create(:project) }
+    let_it_be(:integration) { create(:amazon_q_integration, instance: false, project: project, auto_review_enabled: true) }
 
     let(:add_instance) { Ai::AmazonQ::ServiceAccountMemberAddService.new(project) }
     let(:remove_instance) { Ai::AmazonQ::ServiceAccountMemberRemoveService.new(user, project) }
+
+    using RSpec::Parameterized::TableSyntax
 
     before do
       allow(Ai::AmazonQ::ServiceAccountMemberAddService).to receive(:new).with(project).and_return(add_instance)
@@ -843,13 +846,16 @@ RSpec.describe Projects::UpdateService, '#execute', feature_category: :groups_an
       allow(remove_instance).to receive(:execute).and_call_original
     end
 
-    where(:attrs, :amazon_q_connected, :expected_service) do
-      { duo_features_enabled: 'true' }  | true | Ai::AmazonQ::ServiceAccountMemberAddService
-      { duo_features_enabled: 'false' } | true | Ai::AmazonQ::ServiceAccountMemberRemoveService
-      { duo_features_enabled: 'true' }  | false | nil
-      { duo_features_enabled: 'false' } | false | nil
-      {} | true | nil
-      {} | false | nil
+    where(:attrs, :amazon_q_connected, :auto_review_enabled, :expected_service, :expected_integration_params) do
+      { duo_features_enabled: 'true' }  | true  | true  | Ai::AmazonQ::ServiceAccountMemberAddService    | ['default_on', true]
+      { duo_features_enabled: 'true' }  | true  | nil   | Ai::AmazonQ::ServiceAccountMemberAddService    | ['default_on', true]
+      { duo_features_enabled: 'true' }  | true  | false | Ai::AmazonQ::ServiceAccountMemberAddService    | ['default_on', false]
+      { duo_features_enabled: 'false' } | true  | false | Ai::AmazonQ::ServiceAccountMemberRemoveService | ['never_on', false]
+      { duo_features_enabled: 'false' } | true  | true  | Ai::AmazonQ::ServiceAccountMemberRemoveService | ['never_on', false]
+      { duo_features_enabled: 'true' }  | false | false | nil                                            | ['default_on', true]
+      { duo_features_enabled: 'false' } | false | false | nil                                            | ['default_on', true]
+      {}                                | true  | false | nil                                            | ['default_on', true]
+      {}                                | false | false | nil                                            | ['default_on', true]
     end
 
     with_them do
@@ -864,11 +870,15 @@ RSpec.describe Projects::UpdateService, '#execute', feature_category: :groups_an
 
       it 'triggers the expected service' do
         allow(::Ai::AmazonQ).to receive(:connected?).and_return(amazon_q_connected)
+        integration.update!(auto_review_enabled: false) if auto_review_enabled
 
-        update_project(project, user, { project_setting_attributes: attrs })
+        params = { amazon_q_auto_review_enabled: auto_review_enabled, project_setting_attributes: attrs }
+        update_project(project, user, params)
 
         expect_on_service(Ai::AmazonQ::ServiceAccountMemberAddService, add_instance)
         expect_on_service(Ai::AmazonQ::ServiceAccountMemberRemoveService, remove_instance)
+
+        expect(integration.reload.values_at(:availability, :auto_review_enabled)).to eq(expected_integration_params)
       end
     end
   end

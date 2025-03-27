@@ -672,14 +672,21 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
     it { is_expected.to include(expected_data) }
 
     context "if AmazonQ is connected" do
-      where(connected: [true, false])
+      let_it_be(:integration) { create(:amazon_q_integration, instance: false, project: project) }
+
+      where(
+        connected: [true, false],
+        auto_review_enabled: [true, false]
+      )
       with_them do
         before do
           allow(::Ai::AmazonQ).to receive(:connected?).and_return(connected)
+          integration.update!(auto_review_enabled: auto_review_enabled)
         end
 
         it 'sets amazonQAvailable to the correct value' do
           expect(data[:amazonQAvailable]).to eq(connected)
+          expect(data[:amazonQAutoReviewEnabled]).to eq(auto_review_enabled)
         end
       end
     end
