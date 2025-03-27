@@ -41,7 +41,7 @@ RSpec.describe Glql::BaseController, feature_category: :integrations do
 
       it 'tracks SLI metrics for each successful glql query' do
         expect(Gitlab::Metrics::GlqlSlis).to receive(:record_apdex).with({
-          labels: qlql_sli_labels,
+          labels: qlql_sli_labels.merge(error_type: nil),
           success: true
         })
 
