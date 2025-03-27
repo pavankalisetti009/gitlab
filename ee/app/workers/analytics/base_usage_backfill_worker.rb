@@ -1,18 +1,12 @@
 # frozen_string_literal: true
 
 module Analytics
-  # Backfills usage data to ClickHouse from Postgres when ClickHouse was enabled for analytics
-  class CodeSuggestionsUsageBackfillWorker < ClickHouse::SyncStrategies::BaseSyncStrategy
-    include Gitlab::EventStore::Subscriber
-
-    data_consistency :sticky
-    feature_category :value_stream_management
-    urgency :low
-    idempotent!
-
+  # Base backfill worker for all Ai::UsageEvent models
+  # rubocop:disable Scalability/IdempotentWorker -- this is abstract worker.
+  class BaseUsageBackfillWorker < ClickHouse::SyncStrategies::BaseSyncStrategy
     RESCHEDULING_DELAY = 1.minute
 
-    def handle_event(event)
+    def execute_with_rescheduling(event)
       execute.tap do |result|
         log_extra_metadata_on_done(:result, result)
 
@@ -39,11 +33,7 @@ module Analytics
         user_id: :user_id,
         timestamp: :casted_timestamp,
         event: :raw_event,
-        namespace_path: :namespace_path,
-        suggestion_size: :suggestion_size,
-        language: :language,
-        branch_name: :branch_name,
-        unique_tracking_id: :unique_tracking_id
+        namespace_path: :namespace_path
       }
     end
 
@@ -51,19 +41,16 @@ module Analytics
       row.attributes.merge(row['payload']).symbolize_keys.slice(*csv_mapping.values)
     end
 
-    def insert_query
-      <<~SQL.squish
-          INSERT INTO code_suggestion_usages (#{csv_mapping.keys.join(', ')})
-          SETTINGS async_insert=1, wait_for_async_insert=1 FORMAT CSV
-      SQL
-    end
-
-    def model_class
-      ::Ai::CodeSuggestionEvent
-    end
-
     def enabled?
       super && Gitlab::ClickHouse.globally_enabled_for_analytics?
     end
+
+    def insert_query
+      <<~SQL.squish
+          INSERT INTO #{model_class.clickhouse_table_name} (#{csv_mapping.keys.join(', ')})
+          SETTINGS async_insert=1, wait_for_async_insert=1 FORMAT CSV
+      SQL
+    end
   end
+  # rubocop:enable Scalability/IdempotentWorker
 end

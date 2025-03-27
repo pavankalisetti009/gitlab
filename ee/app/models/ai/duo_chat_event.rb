@@ -3,6 +3,7 @@
 module Ai
   class DuoChatEvent < ApplicationRecord
     include PartitionedTable
+    include EachBatch
     include UsageEvent
 
     self.table_name = "ai_duo_chat_events"
