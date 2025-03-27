@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe EE::NamespaceUserCapReachedAlertHelper, :use_clean_rails_memory_store_caching do
   include ReactiveCachingHelpers
 
-  describe '#display_namespace_user_cap_reached_alert?' do
+  describe '#display_namespace_user_cap_reached_alert?', :freeze_time do
     subject(:display_alert?) { helper.display_namespace_user_cap_reached_alert?(group) }
 
     context 'with a non persisted namespace' do
@@ -33,6 +33,7 @@ RSpec.describe EE::NamespaceUserCapReachedAlertHelper, :use_clean_rails_memory_s
         allow(helper).to receive(:can?).with(owner, :admin_namespace, group).and_return(true)
         allow(helper).to receive(:can?).with(developer, :admin_namespace, group).and_return(false)
         allow(group).to receive(:user_cap_available?).and_return(true)
+        set_dismissed(false)
 
         stub_cache(group)
       end
@@ -66,6 +67,14 @@ RSpec.describe EE::NamespaceUserCapReachedAlertHelper, :use_clean_rails_memory_s
         expect(display_alert?).to be false
       end
 
+      it 'returns false if the alert has been dismissed' do
+        set_dismissed(true)
+
+        sign_in(owner)
+
+        expect(display_alert?).to be false
+      end
+
       def sign_in(user)
         allow(helper).to receive(:current_user).and_return(user)
       end
@@ -75,6 +84,28 @@ RSpec.describe EE::NamespaceUserCapReachedAlertHelper, :use_clean_rails_memory_s
         result = group_with_fresh_memoization.calculate_reactive_cache
         stub_reactive_cache(group, result)
       end
+
+      def set_dismissed(dismissed)
+        allow(helper).to receive(:user_dismissed_for_group).with(
+          "namespace_user_cap_reached_alert",
+          group,
+          30.days.ago
+        ).and_return(dismissed)
+      end
+    end
+  end
+
+  describe '#namespace_user_cap_reached_alert_callout_data' do
+    subject(:callout_data) { helper.namespace_user_cap_reached_alert_callout_data(group) }
+
+    let(:group) { build_stubbed(:group) }
+
+    it 'returns the group callout data' do
+      expect(callout_data).to eq({
+        feature_id: 'namespace_user_cap_reached_alert',
+        dismiss_endpoint: group_callouts_path,
+        group_id: group.id
+      })
     end
   end
 end
