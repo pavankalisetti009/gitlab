@@ -169,7 +169,7 @@ e2e:test-on-omnibus-ee:
     - .omnibus-trigger-base
     - .qa:rules:test-on-omnibus-ee
   needs:
-    - build-assets-image
+    - compile-production-assets
     - build-qa-image
     - e2e-test-pipeline-generate
   variables:
@@ -200,7 +200,7 @@ e2e:test-on-omnibus-ee-nightly:
     - .omnibus-trigger-base
     - .qa:rules:test-on-omnibus-nightly
   needs:
-    - build-assets-image
+    - compile-production-assets
     - build-qa-image
     - e2e-test-pipeline-generate
   variables:
@@ -246,7 +246,7 @@ e2e:test-on-cng:
     - .qa:rules:e2e:test-on-cng
   stage: qa
   needs:
-    - build-assets-image
+    - compile-production-assets
     - e2e-test-pipeline-generate
   variables:
     QA_RUN_TYPE: e2e-test-on-cng
