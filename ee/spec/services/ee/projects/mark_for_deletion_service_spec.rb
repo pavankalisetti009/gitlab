@@ -3,56 +3,54 @@
 require 'spec_helper'
 
 RSpec.describe Projects::MarkForDeletionService, feature_category: :groups_and_projects do
-  let(:user) { create(:user, :with_namespace) }
-  let(:marked_for_deletion_at) { nil }
-  let!(:project) do
-    create(:project,
-      :repository,
-      namespace: user.namespace,
-      marked_for_deletion_at: marked_for_deletion_at)
+  let_it_be(:user) { create(:user, :with_namespace) }
+  let_it_be_with_reload(:project) do
+    create(:project, :repository, namespace: user.namespace)
   end
 
-  let(:original_project_path) { project.path }
-  let(:original_project_name) { project.name }
+  subject(:result) { described_class.new(project, user).execute }
 
-  context 'with delayed delete feature turned on' do
+  context 'when the delayed delete feature is licensed' do
     before do
       stub_licensed_features(
         adjourned_deletion_for_projects_and_groups: true,
         security_orchestration_policies: true)
     end
 
-    context 'when marking project for deletion' do
-      subject(:execute) { described_class.new(project, user).execute }
+    it 'does not hide the project', :aggregate_failures do
+      expect(result[:status]).to eq(:success)
+      expect(project).not_to be_hidden
+    end
 
-      it 'marks project as archived and marked for deletion' do
-        expect(Namespaces::ScheduleAggregationWorker).to receive(:perform_async)
-         .with(project.namespace_id).and_call_original
-        expect(execute[:status]).to eq(:success)
-        expect(Project.unscoped.all).to include(project)
-        expect(project.archived).to be(true)
-        expect(project.marked_for_deletion_at).not_to be_nil
-        expect(project.deleting_user).to eq(user)
+    context 'when the delayed delete feature is not licensed for the project' do
+      before do
+        allow(project).to receive(:licensed_feature_available?).and_return(false)
       end
 
-      it 'renames project name' do
-        expect { execute }.to change {
-          project.name
-        }.from(original_project_name).to("#{original_project_name}-deleted-#{project.id}")
+      context 'when the downtier_delayed_deletion feature flag is enabled' do
+        it 'does not hide the project', :aggregate_failures do
+          expect(result[:status]).to eq(:success)
+          expect(project).not_to be_hidden
+        end
       end
 
-      it 'renames project path' do
-        expect { execute }.to change {
-          project.path
-        }.from(original_project_path).to("#{original_project_path}-deleted-#{project.id}")
+      context 'when the downtier_delayed_deletion feature flag is disabled' do
+        before do
+          stub_feature_flags(downtier_delayed_deletion: false)
+        end
+
+        it 'hides the project', :aggregate_failures do
+          expect(result[:status]).to eq(:success)
+          expect(project).to be_hidden
+        end
       end
     end
 
     context 'when marking project for deletion once again' do
       let(:marked_for_deletion_at) { 2.days.ago }
 
-      it 'does not change original date' do
-        result = described_class.new(project, user).execute
+      it 'does not change original date', :freeze_time, :aggregate_failures do
+        project.update!(marked_for_deletion_at: marked_for_deletion_at)
 
         expect(result[:status]).to eq(:success)
         expect(project.marked_for_deletion_at).to eq(marked_for_deletion_at.to_date)
@@ -60,8 +58,6 @@ RSpec.describe Projects::MarkForDeletionService, feature_category: :groups_and_p
     end
 
     context 'when attempting to mark security policy project for deletion' do
-      subject(:result) { described_class.new(project, user).execute }
-
       before do
         create(
           :security_orchestration_policy_configuration,
@@ -105,69 +101,19 @@ RSpec.describe Projects::MarkForDeletionService, feature_category: :groups_and_p
           hash_including(name: 'project_deletion_marked')
         ).and_call_original
 
-        expect { described_class.new(project, user).execute }
-          .to change { AuditEvent.count }.by(3)
+        expect { result }.to change { AuditEvent.count }.by(3)
       end
     end
   end
 
-  context 'with delayed delete feature turned off' do
-    context 'when marking project for deletion' do
-      before do
-        described_class.new(project, user).execute
-      end
-
-      it 'does not change project attributes' do
-        expect(Namespaces::ScheduleAggregationWorker).not_to receive(:perform_async)
-         .with(project.namespace.id)
-
-        result = described_class.new(project, user).execute
-
-        expect(result[:status]).to eq(:error)
-        expect(result[:message]).to eq('Cannot mark project for deletion: feature not supported')
-        expect(Project.all).to include(project)
-
-        expect(project.archived).to be(false)
-        expect(project.marked_for_deletion_at).to be_nil
-        expect(project.deleting_user).to be_nil
-      end
-    end
-  end
-
-  describe "#project_update_service_params" do
-    subject(:service) { described_class.new(project, user) }
-
-    context 'when delayed deletion feature is not available' do
-      before do
-        allow(project).to receive(:feature_available?)
-          .with(:adjourned_deletion_for_projects_and_groups).and_return(false)
-      end
-
-      it "creates the params for project update service" do
-        project_update_service_params = service.send(:project_update_service_params)
-
-        expect(project_update_service_params[:marked_for_deletion_at]).not_to be_nil
-        expect(project_update_service_params[:archived]).to be(true)
-        expect(project_update_service_params[:hidden]).to be(true)
-        expect(project_update_service_params[:deleting_user]).to eq(user)
-        expect(project_update_service_params[:name]).to eq("#{original_project_name}-deleted-#{project.id}")
-      end
+  context 'when delayed deletion is not licensed' do
+    before do
+      stub_licensed_features(adjourned_deletion_for_projects_and_groups: false)
+      stub_feature_flags(downtier_delayed_deletion: false)
     end
 
-    context 'when delayed deletion feature is available' do
-      before do
-        stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
-      end
-
-      it "creates the params for project update service" do
-        project_update_service_params = service.send(:project_update_service_params)
-
-        expect(project_update_service_params[:marked_for_deletion_at]).not_to be_nil
-        expect(project_update_service_params[:archived]).to be(true)
-        expect(project_update_service_params.has_key?(:hidden)).to be(false)
-        expect(project_update_service_params[:deleting_user]).to eq(user)
-        expect(project_update_service_params[:name]).to eq("#{original_project_name}-deleted-#{project.id}")
-      end
+    it 'returns an error' do
+      expect(result).to eq({ status: :error, message: 'Cannot mark project for deletion: feature not supported' })
     end
   end
 end

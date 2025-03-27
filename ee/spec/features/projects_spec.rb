@@ -73,6 +73,7 @@ RSpec.describe 'Project', :js, feature_category: :groups_and_projects do
           before do
             sign_in user
             visit edit_project_path(project)
+            stub_feature_flags(downtier_delayed_deletion: false)
           end
 
           it 'deletes project delayed and is not restorable', :freeze_time do
