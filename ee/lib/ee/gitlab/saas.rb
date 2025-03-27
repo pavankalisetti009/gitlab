@@ -36,6 +36,7 @@ module EE
           ci_component_usages_in_projects
           deduplicate_ci_tags
           targeted_messages
+          instance_push_limit
         ].freeze
 
       CONFIG_FILE_ROOT = 'ee/config/saas_features'
