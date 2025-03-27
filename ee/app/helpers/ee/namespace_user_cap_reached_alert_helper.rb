@@ -10,24 +10,18 @@ module EE
       root_namespace = namespace.root_ancestor
 
       return false unless root_namespace.user_cap_available?
-      return false if alert_has_been_dismissed?(root_namespace)
+      return false if user_dismissed_for_group("namespace_user_cap_reached_alert", root_namespace, 30.days.ago)
       return false if current_page?(pending_members_group_usage_quotas_path(root_namespace))
 
       can?(current_user, :admin_namespace, root_namespace) && root_namespace.user_cap_reached?(use_cache: true)
     end
 
-    def hide_user_cap_alert_cookie_id(root_namespace)
-      "hide_user_cap_alert_#{root_namespace.id}"
-    end
-
-    def content_class
-      "container-limited" unless current_user.layout == "fluid"
-    end
-
-    private
-
-    def alert_has_been_dismissed?(root_namespace)
-      cookies[hide_user_cap_alert_cookie_id(root_namespace)] == 'true'
+    def namespace_user_cap_reached_alert_callout_data(namespace)
+      {
+        feature_id: "namespace_user_cap_reached_alert",
+        dismiss_endpoint: group_callouts_path,
+        group_id: namespace.root_ancestor.id
+      }
     end
   end
 end
