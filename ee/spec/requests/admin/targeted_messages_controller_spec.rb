@@ -30,6 +30,18 @@ RSpec.describe Admin::TargetedMessagesController, :enable_admin_mode, :saas, fea
     end
   end
 
+  describe 'GET #edit' do
+    before do
+      targeted_message.save!
+    end
+
+    it 'renders edit template' do
+      get edit_admin_targeted_message_path(targeted_message)
+      expect(response).to have_gitlab_http_status(:ok)
+      expect(response.body).to render_template(:edit)
+    end
+  end
+
   describe 'POST #create' do
     it 'persists the message and redirects to index on success' do
       post admin_targeted_messages_path, params: targeted_message_params
@@ -40,7 +52,7 @@ RSpec.describe Admin::TargetedMessagesController, :enable_admin_mode, :saas, fea
     it 'does not persist and renders the new page on failure' do
       post admin_targeted_messages_path, params: invalid_targeted_message_params
       expect(response.body).to render_template(:new)
-      expect(flash[:alert]).to eq('Failed to create targeted message.')
+      expect(flash[:alert]).to eq("Failed to create targeted message: Target type can't be blank")
     end
 
     context 'with targeted message namespace ids' do
@@ -102,6 +114,54 @@ RSpec.describe Admin::TargetedMessagesController, :enable_admin_mode, :saas, fea
           expect(flash[:warning])
             .to eq("Failed to assign namespaces due to error processing CSV: StandardError")
         end
+      end
+    end
+  end
+
+  describe 'PATCH #update' do
+    let_it_be(:targeted_message, reload: true) { create(:targeted_message) }
+
+    it 'updates the message and redirects to index on success' do
+      patch admin_targeted_message_path(targeted_message), params: targeted_message_params
+      expect(response).to redirect_to(admin_targeted_messages_path)
+      expect(flash[:notice]).to eq('Targeted message was successfully updated.')
+    end
+
+    it 'does not update and renders the edit page on failure' do
+      patch admin_targeted_message_path(targeted_message), params: invalid_targeted_message_params
+      expect(response.body).to render_template(:edit)
+      expect(flash[:alert]).to eq("Failed to update targeted message: Target type can't be blank")
+    end
+
+    context 'with updating targeted message namespace ids' do
+      let_it_be(:old_targeted_namespaces) do
+        create_list(:targeted_message_namespace, 3, targeted_message: targeted_message)
+      end
+
+      let(:old_targeted_namespace_ids) { old_targeted_namespaces.map(&:namespace_id) }
+      let_it_be(:new_targeted_namespace_ids) { [create(:namespace).id, create(:namespace).id] }
+      let(:targeted_message_params_with_csv) do
+        targeted_message_params.deep_symbolize_keys.deep_merge(targeted_message: { namespace_ids_csv: 'stubbed_file' })
+      end
+
+      before do
+        allow_next_instance_of(Notifications::TargetedMessages::ProcessCsvService) do |service|
+          allow(service).to receive(:execute).and_return(
+            ServiceResponse.success(payload: {
+              valid_namespace_ids: new_targeted_namespace_ids,
+              invalid_namespace_ids: []
+            }))
+        end
+      end
+
+      it 'replaces targeted namespaces with new set' do
+        expect(targeted_message.targeted_message_namespaces.map(&:namespace_id))
+          .to match(old_targeted_namespace_ids)
+
+        patch admin_targeted_message_path(targeted_message), params: targeted_message_params_with_csv
+
+        expect(targeted_message.reload.targeted_message_namespaces.map(&:namespace_id))
+          .to match(new_targeted_namespace_ids)
       end
     end
   end

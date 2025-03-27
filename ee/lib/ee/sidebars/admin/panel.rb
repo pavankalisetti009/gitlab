@@ -31,12 +31,17 @@ module EE
             ::Sidebars::Admin::Menus::SubscriptionMenu.new(context)
           )
 
-          insert_gilab_duo_menu
+          insert_gitlab_duo_menu
+
+          insert_menu_after(
+            ::Sidebars::Admin::Menus::MessagesMenu,
+            ::Sidebars::Admin::Menus::TargetedMessagesMenu.new(context)
+          )
         end
 
         private
 
-        def insert_gilab_duo_menu
+        def insert_gitlab_duo_menu
           return unless !gitlab_com_subscription? && License.current&.paid?
 
           insert_menu_after(

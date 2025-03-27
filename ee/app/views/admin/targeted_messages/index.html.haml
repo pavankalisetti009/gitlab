@@ -11,16 +11,25 @@
     = render Pajamas::ButtonComponent.new(href: new_admin_targeted_message_path, size: :small) do
       = s_('AdminArea|Add new message')
   - c.with_body do
-    .gl-grid.gl-grid-cols-3.gl-py-4.gl-border-b.gl-font-bold
+    .gl-grid.gl-grid-cols-4.gl-py-4.gl-border-b.gl-font-bold
       .gl-text-left
         = _('ID')
       .gl-text-left
         = _('Target type')
-      = _('Created at')
+      .gl-text-left
+        = _('Created at')
+      .gl-text-left
     - @targeted_messages.each do |targeted_message|
-      .gl-grid.gl-grid-cols-3.gl-py-4
+      .gl-grid.gl-grid-cols-4.gl-py-4
         .gl-text-left
           = targeted_message.id
         .gl-text-left
           = targeted_message.target_type.humanize
-        = targeted_message.created_at.strftime('%B %d, %Y at %H:%M %Z')
+        .gl-text-left
+          = targeted_message.created_at.strftime('%B %d, %Y at %H:%M %Z')
+        .gl-text-right
+          = render Pajamas::ButtonComponent.new(href: edit_admin_targeted_message_path(targeted_message),
+            variant: :default,
+            category: :tertiary,
+            icon: 'pencil',
+            size: :small)

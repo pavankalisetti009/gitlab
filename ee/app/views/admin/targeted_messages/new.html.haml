@@ -1,18 +1,7 @@
 - add_to_breadcrumbs _("Targeted Messages"), admin_targeted_messages_path
 - breadcrumb_title _("New")
-- page_title _("Create a new targeted message")
+- page_title s_("TargetedMessages|Create a new targeted message")
 
-= render ::Layouts::PageHeadingComponent.new(_("New targeted message"))
+= render ::Layouts::PageHeadingComponent.new(s_("TargetedMessages|New targeted message"))
 
-= gitlab_ui_form_for @targeted_message, url: admin_targeted_messages_path, as: :targeted_message do |f|
-  .form-group
-    = f.label :target_type, _('Target Type')
-    = f.select :target_type,
-              Notifications::TargetedMessage.target_types.map { |key, _| [key.humanize, key] },
-              { prompt: _('Select a target type') },
-              { class: 'form-control' }
-  .form-group
-    = f.label :namespace_ids_csv, _('Upload a csv file for targeted namespaces')
-    = f.file_field :namespace_ids_csv, class: 'form-control'
-  = f.submit _('Create'), pajamas_button: true
-
+= render 'form', url: admin_targeted_messages_path, submit_text: _('Create')

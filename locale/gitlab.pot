@@ -5395,6 +5395,9 @@ msgstr ""
 msgid "Admin|Subscription"
 msgstr ""
 
+msgid "Admin|Targeted messages"
+msgstr ""
+
 msgid "Admin|The number of max seats in your namespace exceeds the number of seats in your subscription. On %{qrtlyDate}, quarterly reconciliation occurs and you are automatically billed a prorated amount for the overage. No action is needed from you. If you have a credit card on file, it will be charged. Otherwise, you will receive an invoice. For more information about the timing of the invoicing process, view the documentation."
 msgstr ""
 
@@ -17439,9 +17442,6 @@ msgstr ""
 msgid "Create a new repository"
 msgstr ""
 
-msgid "Create a new targeted message"
-msgstr ""
-
 msgid "Create a personal access token on your account to pull or push via %{protocol}."
 msgstr ""
 
@@ -24886,9 +24886,6 @@ msgstr ""
 msgid "Failed to assign a user because no user was found."
 msgstr ""
 
-msgid "Failed to assign namespaces due to error processing CSV: %{error_message}"
-msgstr ""
-
 msgid "Failed to assign the framework to the project"
 msgstr ""
 
@@ -24941,9 +24938,6 @@ msgid "Failed to create repository"
 msgstr ""
 
 msgid "Failed to create resources"
-msgstr ""
-
-msgid "Failed to create targeted message."
 msgstr ""
 
 msgid "Failed to create wiki"
@@ -38881,9 +38875,6 @@ msgid "New subgroup"
 msgstr ""
 
 msgid "New tag"
-msgstr ""
-
-msgid "New targeted message"
 msgstr ""
 
 msgid "New test case"
@@ -54850,9 +54841,6 @@ msgstr ""
 msgid "Select a role"
 msgstr ""
 
-msgid "Select a target type"
-msgstr ""
-
 msgid "Select a template repository"
 msgstr ""
 
@@ -58525,9 +58513,6 @@ msgstr ""
 msgid "Target Path"
 msgstr ""
 
-msgid "Target Type"
-msgstr ""
-
 msgid "Target branch"
 msgstr ""
 
@@ -58555,7 +58540,43 @@ msgstr ""
 msgid "Targeted Messages"
 msgstr ""
 
-msgid "Targeted message was successfully created."
+msgid "Targeted message"
+msgstr ""
+
+msgid "TargetedMessages|Create a new targeted message"
+msgstr ""
+
+msgid "TargetedMessages|Edit targeted message"
+msgstr ""
+
+msgid "TargetedMessages|Failed to assign namespaces due to error processing CSV: %{error_message}"
+msgstr ""
+
+msgid "TargetedMessages|Failed to create targeted message: %{error_message}"
+msgstr ""
+
+msgid "TargetedMessages|Failed to update targeted message: %{error_message}"
+msgstr ""
+
+msgid "TargetedMessages|New targeted message"
+msgstr ""
+
+msgid "TargetedMessages|Select a target type"
+msgstr ""
+
+msgid "TargetedMessages|Target Type"
+msgstr ""
+
+msgid "TargetedMessages|Targeted message was successfully created."
+msgstr ""
+
+msgid "TargetedMessages|Targeted message was successfully updated."
+msgstr ""
+
+msgid "TargetedMessages|The following namespace ids were invalid and have been ignored: %{invalid_ids_message}"
+msgstr ""
+
+msgid "TargetedMessages|Upload a csv file for targeted namespaces"
 msgstr ""
 
 msgid "Task"
@@ -59280,9 +59301,6 @@ msgid "The following items will NOT be exported:"
 msgstr ""
 
 msgid "The following items will be exported:"
-msgstr ""
-
-msgid "The following namespace ids were invalid and have been ignored: %{invalid_ids_message}"
 msgstr ""
 
 msgid "The following personal access token was revoked by an administrator, %{username}."
@@ -63260,9 +63278,6 @@ msgid "Upload New File"
 msgstr ""
 
 msgid "Upload a certificate for your domain with all intermediates"
-msgstr ""
-
-msgid "Upload a csv file for targeted namespaces"
 msgstr ""
 
 msgid "Upload a private key for your certificate"
