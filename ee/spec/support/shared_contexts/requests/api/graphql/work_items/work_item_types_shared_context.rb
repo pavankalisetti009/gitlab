@@ -3,6 +3,8 @@
 RSpec.shared_context 'with work item types request context EE' do
   include_context 'with work item types request context'
 
+  let_it_be(:widget_definitions_map) { WorkItems::WidgetDefinition.all.group_by(&:work_item_type_id) }
+
   let(:work_item_type_fields) do
     <<~GRAPHQL
       id
@@ -82,8 +84,8 @@ RSpec.shared_context 'with work item types request context EE' do
     end
   end
 
-  def status_widget_attributes(_work_item_type, base_attributes, resource_parent)
-    unless resource_parent&.root_ancestor&.try(:work_item_status_feature_available?)
+  def status_widget_attributes(work_item_type, base_attributes, resource_parent)
+    unless status_widget_available_for?(work_item_type, resource_parent)
       return base_attributes.merge({ 'allowedStatuses' => [] })
     end
 
@@ -92,5 +94,18 @@ RSpec.shared_context 'with work item types request context EE' do
     end
 
     base_attributes.merge({ 'allowedStatuses' => statuses })
+  end
+
+  def status_widget_available_for?(work_item_type, resource_parent)
+    widget_available_for?(work_item_type_id: work_item_type.id, widget_type: 'status') &&
+      resource_parent&.root_ancestor&.try(:work_item_status_feature_available?)
+  end
+
+  def widget_available_for?(widget_type:, work_item_type_id: nil, work_item_type_name: nil)
+    raise unless work_item_type_id.present? || work_item_type_name.present?
+
+    work_item_type_id = WorkItems::Type.find_by_name(work_item_type_name).id unless work_item_type_id.present?
+
+    widget_definitions_map[work_item_type_id].any? { |definition| definition.widget_type == widget_type }
   end
 end

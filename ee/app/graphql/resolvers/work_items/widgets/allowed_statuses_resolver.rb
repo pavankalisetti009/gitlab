@@ -3,7 +3,7 @@
 module Resolvers
   module WorkItems
     module Widgets
-      class StatusResolver < Resolvers::WorkItems::BaseResolver
+      class AllowedStatusesResolver < Resolvers::WorkItems::BaseResolver
         type [::Types::WorkItems::Widgets::StatusType], null: true
 
         alias_method :widget_definition, :object
