@@ -129,6 +129,12 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
           expect(response).to render_template 'groups/work_items/show'
         end
 
+        it 'sets the page title to New epic' do
+          get :new, params: { group_id: group }
+
+          expect(assigns(:page_title)).to eq(['New epic'])
+        end
+
         context 'when work_item_epics is disabled' do
           before do
             stub_feature_flags(work_item_epics: false, namespace_level_work_items: false)

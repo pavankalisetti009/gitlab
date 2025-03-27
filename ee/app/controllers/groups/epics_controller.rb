@@ -55,6 +55,7 @@ class Groups::EpicsController < Groups::ApplicationController
 
   def new
     if work_item_view?
+      page_title _('New epic')
       render 'groups/work_items/show'
     else
       @noteable = Epic.new
