@@ -5,7 +5,7 @@ module Llm
     def valid?
       super &&
         resource.is_a?(Project) &&
-        Ability.allowed?(user, :summarize_new_merge_request, resource)
+        user.can?(:access_summarize_new_merge_request, resource)
     end
 
     private
