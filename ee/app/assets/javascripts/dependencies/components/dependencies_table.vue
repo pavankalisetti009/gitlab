@@ -137,6 +137,9 @@ export default {
       showDetails();
       this.$emit('row-click', item);
     },
+    hasDependencyPaths(item) {
+      return item.location.dependencyPaths?.length > 0;
+    },
     toggleDrawer(drawerId, drawerItem) {
       if (this.drawerId === drawerId) {
         this.closeDrawer();
@@ -145,20 +148,30 @@ export default {
       }
     },
     toggleDrawerProject(item) {
-      const { name, version, occurrenceId } = item;
+      const {
+        name,
+        version,
+        occurrenceId,
+        location: { dependencyPaths },
+      } = item;
+
       const drawerId = occurrenceId;
-      const drawerItem = { component: { name, version }, project: {} };
+      const drawerItem = { dependencyPaths, component: { name, version }, project: {} };
       this.toggleDrawer(drawerId, drawerItem);
     },
     toggleDrawerGroup(item, emittedItem) {
       // On group level, occurrenceId isn't unique, so we use project and location
       // from emittedItem to create a unique ID and pass that extra data to the drawer.
       const { name, version, occurrenceId } = item;
-      const { project, location } = emittedItem;
-      const drawerId = occurrenceId + project.name + location.path;
-      const drawerItem = {
-        component: { name, version },
+      const {
         project,
+        location: { dependency_paths: dependencyPaths, path },
+      } = emittedItem;
+      const drawerId = occurrenceId + project.name + path;
+      const drawerItem = {
+        dependencyPaths,
+        project,
+        component: { name, version },
       };
       this.toggleDrawer(drawerId, drawerItem);
     },
@@ -194,6 +207,7 @@ export default {
       v-if="showDrawer"
       :component="drawerDependency.component"
       :project="drawerDependency.project"
+      :dependency-paths="drawerDependency.dependencyPaths"
       :show-drawer="showDrawer"
       @close="closeDrawer"
     />
@@ -256,8 +270,8 @@ export default {
         <template v-else-if="item.location">
           <dependency-location :location="item.location" />
           <gl-button
-            v-if="glFeatures.dependencyPaths"
-            class="gl-mt-2"
+            v-if="glFeatures.dependencyPaths && hasDependencyPaths(item)"
+            class="gl-mt-2 gl-block"
             size="small"
             data-testid="dependency-path-button"
             @click="toggleDrawerProject(item)"
