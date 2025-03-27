@@ -72,12 +72,8 @@ module EE
         false
       end
 
-      condition(:ai_features_enabled) do
-        ::Gitlab::CurrentSettings.duo_features_enabled?
-      end
-
       condition(:ai_features_banned) do
-        ::Gitlab::CurrentSettings.lock_duo_features_enabled?
+        ::Gitlab::CurrentSettings.duo_never_on?
       end
 
       condition(:user_allowed_to_use_glab_ask_git_command) do

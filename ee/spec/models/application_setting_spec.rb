@@ -434,6 +434,23 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       end
     end
 
+    describe '#duo_never_on?' do
+      it 'returns true when duo_availability is "never_on"' do
+        setting.duo_availability = "never_on"
+        expect(setting.duo_never_on?).to be true
+      end
+
+      it 'returns false when duo_availability is "default_on"' do
+        setting.duo_availability = "default_on"
+        expect(setting.duo_never_on?).to be false
+      end
+
+      it 'returns false when duo_availability is "default_off"' do
+        setting.duo_availability = "default_off"
+        expect(setting.duo_never_on?).to be false
+      end
+    end
+
     describe '#enabled_expanded_logging' do
       before do
         stub_feature_flags(expanded_ai_logging: feature_flag_status)
