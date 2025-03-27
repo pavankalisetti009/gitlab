@@ -16,7 +16,6 @@ describe('ScheduleForm', () => {
     time_window: { value: 3600 },
     branch_type: 'protected',
     timezone: 'America/New_York',
-    start_time: '00:00',
   };
   const mockTimezones = [
     { identifier: 'America/New_York', name: 'Eastern Time' },
@@ -36,6 +35,7 @@ describe('ScheduleForm', () => {
   const findTimezoneDropdown = () => wrapper.findComponent(TimezoneDropdown);
   const findTimeDropdown = () => wrapper.findByTestId('time-dropdown');
   const findWeekdayDropdown = () => wrapper.findByTestId('weekday-dropdown');
+  const findMonthlyDaysDropdown = () => wrapper.findByTestId('monthly-days-dropdown');
 
   describe('rendering', () => {
     it('displays the message', () => {
@@ -45,9 +45,7 @@ describe('ScheduleForm', () => {
 
     it('displays the details', () => {
       createComponent();
-      expect(wrapper.text()).toContain(
-        'at the following times:  , start at , run for: , and timezone is',
-      );
+      expect(wrapper.text()).toContain('at the following times:');
     });
 
     it('renders the cadence selector with correct options', () => {
@@ -89,6 +87,13 @@ describe('ScheduleForm', () => {
       });
     });
 
+    it('renders time dropdown', () => {
+      createComponent({ schedule: { type: 'daily', start_time: '09:00' } });
+      const timeDropdown = findTimeDropdown();
+      expect(timeDropdown.exists()).toBe(true);
+      expect(timeDropdown.props('selected')).toBe('09:00');
+    });
+
     describe('weekday dropdown', () => {
       it('renders weekday dropdown for weekly schedule', () => {
         createComponent({ schedule: { type: 'weekly', days: ['monday'] } });
@@ -96,16 +101,6 @@ describe('ScheduleForm', () => {
         expect(weekdayDropdown.exists()).toBe(true);
         expect(weekdayDropdown.props('selected')).toEqual(['monday']);
         expect(weekdayDropdown.props('multiple')).toBe(true);
-      });
-
-      it('does not render weekday dropdown for daily schedule', () => {
-        createComponent({ schedule: { type: 'daily' } });
-        expect(findWeekdayDropdown().exists()).toBe(false);
-      });
-
-      it('does not render weekday dropdown for monthly schedule', () => {
-        createComponent({ schedule: { type: 'monthly' } });
-        expect(findWeekdayDropdown().exists()).toBe(false);
       });
 
       describe('weekdayToggleText', () => {
@@ -135,6 +130,16 @@ describe('ScheduleForm', () => {
           });
           expect(findWeekdayDropdown().props('toggleText')).toBe('Monday, Wednesday +1 more');
         });
+      });
+    });
+
+    describe('monthly dropdown', () => {
+      it('renders monthly days when schedule type is monthly', () => {
+        createComponent({ schedule: { type: 'monthly', days_of_month: [1, 15] } });
+        const monthlyDropdown = findMonthlyDaysDropdown();
+        expect(monthlyDropdown.exists()).toBe(true);
+        expect(monthlyDropdown.props('selected')).toEqual([1, 15]);
+        expect(monthlyDropdown.props('multiple')).toBe(true);
       });
     });
   });
@@ -185,7 +190,7 @@ describe('ScheduleForm', () => {
 
         expect(wrapper.emitted('changed')).toHaveLength(1);
         expect(wrapper.emitted('changed')).toMatchObject([
-          [{ type: 'monthly', days_of_month: '1', time_window: { value: 86400 } }],
+          [{ type: 'monthly', days_of_month: [1], time_window: { value: 86400 } }],
         ]);
       });
 

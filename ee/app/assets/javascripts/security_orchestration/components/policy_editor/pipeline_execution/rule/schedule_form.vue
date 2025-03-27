@@ -1,6 +1,6 @@
 <script>
 import { GlCollapsibleListbox, GlSprintf } from '@gitlab/ui';
-import { s__, __, sprintf } from '~/locale';
+import { n__, s__, __, sprintf } from '~/locale';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import BranchSelection from 'ee/security_orchestration/components/policy_editor/scan_result/rule/branch_selection.vue';
 import TimezoneDropdown from '~/vue_shared/components/timezone_dropdown/timezone_dropdown.vue';
@@ -10,7 +10,9 @@ import {
   HOUR_MINUTE_LIST,
   WEEKDAY_OPTIONS,
   isCadenceWeekly,
+  isCadenceMonthly,
   updateScheduleCadence,
+  getMonthlyDayOptions,
 } from './utils';
 
 export default {
@@ -30,6 +32,9 @@ export default {
     timezonePlaceholder: s__('ScanExecutionPolicy|Select timezone'),
     weekly: __('Weekly'),
     weekdayDropdownPlaceholder: __('Select a day'),
+    monthly: __('Monthly'),
+    monthlyDaysLabel: s__('SecurityOrchestration|Days of month'),
+    monthlyDaysPlaceholder: s__('SecurityOrchestration|Select days'),
   },
   components: {
     BranchSelection,
@@ -56,6 +61,9 @@ export default {
     cadence() {
       return this.schedule.type;
     },
+    showMonthlyDropdown() {
+      return isCadenceMonthly(this.cadence);
+    },
     showWeekdayDropdown() {
       return isCadenceWeekly(this.cadence);
     },
@@ -69,6 +77,23 @@ export default {
         placeholder: this.$options.i18n.weekdayDropdownPlaceholder,
         maxOptionsShown: 2,
       });
+    },
+    monthlyDayOptions() {
+      return getMonthlyDayOptions();
+    },
+    selectedMonthlyDays() {
+      return this.schedule.days_of_month || [];
+    },
+    monthlyDaysToggleText() {
+      return getSelectedOptionsText({
+        options: this.monthlyDayOptions,
+        selected: this.selectedMonthlyDays,
+        placeholder: this.$options.i18n.monthlyDaysPlaceholder,
+        maxOptionsShown: 2,
+      });
+    },
+    monthlyDaysMessage() {
+      return n__('day of the month', 'days of the month', this.selectedMonthlyDays.length);
     },
   },
   methods: {
@@ -90,6 +115,9 @@ export default {
     },
     updatePolicy(key, value) {
       this.$emit('changed', { ...this.schedule, [key]: value });
+    },
+    handleMonthlyDaysInput(selectedDays) {
+      this.updatePolicy('days_of_month', selectedDays);
     },
   },
 };
@@ -129,6 +157,23 @@ export default {
               :toggle-text="weekdayToggleText"
               @select="updatePolicy('days', $event)"
             />
+          </template>
+
+          <template v-else-if="showMonthlyDropdown">
+            {{ $options.i18n.cadenceDetail }}
+            <div class="gl-flex gl-items-center">
+              <gl-collapsible-listbox
+                class="gl-mr-3"
+                multiple
+                data-testid="monthly-days-dropdown"
+                :aria-label="$options.i18n.monthlyDaysLabel"
+                :items="monthlyDayOptions"
+                :selected="selectedMonthlyDays"
+                :toggle-text="monthlyDaysToggleText"
+                @select="handleMonthlyDaysInput"
+              />
+              {{ monthlyDaysMessage }}
+            </div>
           </template>
         </template>
 
