@@ -914,15 +914,6 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
 
             it_behaves_like 'sets approvals_required to 0'
             it_behaves_like 'triggers policy bot comment', false
-
-            context 'when feature flag "use_related_pipelines_for_policy_evaluation" is disabled' do
-              before do
-                stub_feature_flags(use_related_pipelines_for_policy_evaluation: false)
-              end
-
-              it_behaves_like 'does not update approvals_required'
-              it_behaves_like 'does not trigger policy bot comment'
-            end
           end
         end
 
@@ -948,15 +939,6 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
 
             it_behaves_like 'does not update approvals_required'
             it_behaves_like 'triggers policy bot comment', true
-
-            context 'when feature flag "use_related_pipelines_for_policy_evaluation" is disabled' do
-              before do
-                stub_feature_flags(use_related_pipelines_for_policy_evaluation: false)
-              end
-
-              it_behaves_like 'does not update approvals_required'
-              it_behaves_like 'does not trigger policy bot comment'
-            end
           end
 
           context 'when security scan is removed in related pipeline' do

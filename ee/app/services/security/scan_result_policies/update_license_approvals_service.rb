@@ -112,8 +112,7 @@ module Security
       end
 
       def source_pipeline
-        return pipeline if pipeline.nil? || pipeline.has_sbom_reports? ||
-          ::Feature.disabled?(:use_related_pipelines_for_policy_evaluation, project)
+        return pipeline if pipeline.nil? || pipeline.has_sbom_reports?
 
         # We use dependency_scanning_reports instead of SBOM reports because
         # container scanning job also generates SBOM reports. We might pick a pipeline with CS job and not DS job.
