@@ -53,22 +53,70 @@ RSpec.describe API::License, :aggregate_failures, :api, feature_category: :plan_
     let(:path) { '/license/usage_export' }
     let(:csv) { 'csv,response' }
 
-    it_behaves_like 'GET request permissions for admin mode'
+    subject(:license_usage_export_request) { get api(path, admin, admin_mode: true) }
 
-    it 'retrieves the license usage data if admin is logged in' do
-      expect_next_instance_of(HistoricalUserData::CsvService, license.historical_data) do |service|
-        expect(service).to receive(:generate).and_return(csv)
+    shared_examples 'successful license usage export response' do
+      it 'retrieves the license usage data' do
+        expect_next_instance_of(HistoricalUserData::CsvService, license.historical_data) do |service|
+          expect(service).to receive(:generate).and_return(csv)
+        end
+
+        license_usage_export_request
+        expect(response).to have_gitlab_http_status(:ok)
+
+        expect(response.body).to eq(csv)
       end
-
-      get api(path, admin, admin_mode: true)
-      expect(response).to have_gitlab_http_status(:ok)
-
-      expect(response.body).to eq(csv)
     end
 
-    it 'denies access if not admin' do
-      get api(path, user)
-      expect(response).to have_gitlab_http_status(:forbidden)
+    before do
+      allow(License).to receive(:current).and_return(license)
+    end
+
+    it_behaves_like 'GET request permissions for admin mode'
+
+    context 'when logged in as admin' do
+      context 'when current license is not an offline cloud license' do
+        it_behaves_like 'successful license usage export response'
+
+        it 'does not update license_usage_data_exported setting' do
+          license_usage_export_request
+
+          expect(Gitlab::CurrentSettings.license_usage_data_exported).to be false
+        end
+      end
+
+      context 'when current license is an offline cloud license' do
+        let(:license) { build(:license, data: build(:gitlab_license, :offline).export) }
+
+        context 'when CSV export is successful' do
+          it_behaves_like 'successful license usage export response'
+
+          it 'updates license_usage_data_exported setting' do
+            license_usage_export_request
+
+            expect(Gitlab::CurrentSettings.license_usage_data_exported).to be true
+          end
+        end
+
+        context 'when CSV export is not successful' do
+          it 'does not update license_usage_data_exported setting' do
+            expect_next_instance_of(HistoricalUserData::CsvService, license.historical_data) do |service|
+              expect(service).to receive(:generate).and_raise(StandardError)
+            end
+
+            license_usage_export_request
+
+            expect(Gitlab::CurrentSettings.license_usage_data_exported).to be false
+          end
+        end
+      end
+    end
+
+    context 'when logged in as non-admin' do
+      it 'denies access' do
+        get api(path, user)
+        expect(response).to have_gitlab_http_status(:forbidden)
+      end
     end
   end
 
