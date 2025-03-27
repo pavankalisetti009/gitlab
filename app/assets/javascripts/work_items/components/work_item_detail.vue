@@ -138,13 +138,7 @@ export default {
     WorkItemCreateBranchMergeRequestSplitButton,
   },
   mixins: [glFeatureFlagMixin(), trackingMixin],
-  inject: [
-    'fullPath',
-    'reportAbusePath',
-    'groupPath',
-    'hasSubepicsFeature',
-    'hasLinkedItemsEpicsFeature',
-  ],
+  inject: ['fullPath', 'groupPath', 'hasSubepicsFeature', 'hasLinkedItemsEpicsFeature'],
   props: {
     isModal: {
       type: Boolean,
@@ -1225,7 +1219,6 @@ export default {
               :assignees="workItemAssignees && workItemAssignees.assignees.nodes"
               :can-set-work-item-metadata="canAssignUnassignUser"
               :can-summarize-comments="canSummarizeComments"
-              :report-abuse-path="reportAbusePath"
               :is-discussion-locked="isDiscussionLocked"
               :is-work-item-confidential="workItem.confidential"
               :new-comment-template-paths="newCommentTemplatePaths"

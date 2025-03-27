@@ -125,6 +125,7 @@ export default {
     };
   },
   computed: {
+    // eslint-disable-next-line vue/no-unused-properties
     tracking() {
       return {
         category: TRACKING_CATEGORY_SHOW,
@@ -386,7 +387,6 @@ export default {
               :note-url="noteUrl"
               :show-reply="showReply"
               :show-edit="hasAdminPermission"
-              :note-id="note.id"
               :is-author-an-assignee="isAuthorAnAssignee"
               :show-assign-unassign="canSetWorkItemMetadata && hasAuthor"
               :can-report-abuse="!isCurrentUserAuthorOfNote"
@@ -396,7 +396,6 @@ export default {
               :max-access-level-of-author="note.maxAccessLevelOfAuthor"
               :project-name="projectName"
               :can-resolve="canResolve"
-              :resolvable="isDiscussionResolvable"
               :is-resolved="isDiscussionResolved"
               :is-resolving="isResolving"
               :resolved-by="discussionResolvedBy"
@@ -440,7 +439,6 @@ export default {
               ref="noteBody"
               :note="note"
               :has-admin-note-permission="hasAdminPermission"
-              :has-replies="hasReplies"
               :is-updating="isUpdating"
               @updateNote="updateNote"
             />
@@ -459,7 +457,6 @@ export default {
               :full-path="fullPath"
               :note="note"
               :work-item-iid="workItemIid"
-              :is-modal="isModal"
             />
           </div>
         </div>
