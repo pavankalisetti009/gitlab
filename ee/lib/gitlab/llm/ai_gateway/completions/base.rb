@@ -72,7 +72,7 @@ module Gitlab
           end
 
           def prompt_version_or_default
-            return prompt_version if prompt_version && !feature_setting&.self_hosted?
+            return prompt_version if prompt_version && (!feature_setting&.self_hosted? && !::Ai::AmazonQ.connected?)
 
             ::Gitlab::Llm::PromptVersions.version_for_prompt(
               prompt_message.ai_action,

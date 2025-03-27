@@ -128,6 +128,35 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::Base, feature_category: :ai_
       it_behaves_like 'executing successfully'
     end
 
+    context 'when Amazon Q is connected' do
+      before do
+        allow(completion).to receive(:prompt_version).and_return('2.0.0')
+        allow(::Ai::AmazonQ).to receive(:connected?).and_return(true)
+      end
+
+      it 'includes model_metadata in the request body, ignores the version' do
+        expect(client).to receive(:complete_prompt).with(
+          base_url: ::Gitlab::AiGateway.url,
+          prompt_name: ai_action,
+          inputs: inputs,
+          prompt_version: "^1.0.0",
+          model_metadata: { name: :amazon_q, provider: :amazon_q, role_arn: nil }
+        ).and_return(http_response)
+
+        expect(response_modifier_class).to receive(:new)
+          .with(processed_response)
+          .and_return(response_modifier)
+
+        expect(Gitlab::Llm::GraphqlSubscriptionResponseService).to receive(:new)
+          .with(user, resource, response_modifier, options: response_options)
+          .and_return(response_service)
+
+        expect(response_service).to receive(:execute).and_return(result)
+
+        execute
+      end
+    end
+
     context 'when feature setting is present' do
       before do
         allow(completion).to receive(:prompt_version).and_return('2.0.0')
