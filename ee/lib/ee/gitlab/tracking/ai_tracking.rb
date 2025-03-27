@@ -6,7 +6,7 @@ module EE
       module AiTracking
         extend ::Gitlab::Utils::Override
 
-        POSSIBLE_MODELS = [Ai::CodeSuggestionEvent, Ai::DuoChatEvent].freeze
+        POSSIBLE_MODELS = [Ai::CodeSuggestionEvent, Ai::DuoChatEvent, Ai::TroubleshootJobEvent].freeze
 
         override :track_event
         def track_event(event_name, **context_hash)
@@ -31,13 +31,14 @@ module EE
           return unless matched_model
 
           context_hash = context_hash.with_indifferent_access
+
           context_hash[:event] = event_name
           context_hash[:project] ||= ::Project.find(context_hash[:project_id]) if context_hash[:project_id]
           context_hash[:namespace] ||= ::Namespace.find(context_hash[:namespace_id]) if context_hash[:namespace_id]
 
           context_hash[:namespace_path] ||= build_traversal_path(context_hash)
 
-          basic_attributes = context_hash.slice(*matched_model::PERMITTED_ATTRIBUTES)
+          basic_attributes = context_hash.slice(*matched_model.permitted_attributes)
           payload_attributes = context_hash.slice(*matched_model.payload_attributes)
 
           matched_model.new(basic_attributes.merge(payload: payload_attributes))

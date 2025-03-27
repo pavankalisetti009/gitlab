@@ -13,7 +13,7 @@ module UsageEvents
     MAX_RUNTIME = 200.seconds
     BATCH_SIZE = 1000
 
-    MODELS = [Ai::DuoChatEvent, Ai::CodeSuggestionEvent].freeze
+    MODELS = [Ai::DuoChatEvent, Ai::CodeSuggestionEvent, Ai::TroubleshootJobEvent].freeze
 
     def perform
       total_inserted_rows = 0
