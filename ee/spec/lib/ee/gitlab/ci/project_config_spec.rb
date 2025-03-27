@@ -10,6 +10,7 @@ RSpec.describe Gitlab::Ci::ProjectConfig, feature_category: :pipeline_compositio
   let(:bridge) { nil }
   let(:triggered_for_branch) { true }
   let(:ref) { 'master' }
+  let(:source_branch) { 'master' }
   let(:has_execution_policy_pipelines) { false }
   let(:has_overriding_execution_policy_pipelines) { false }
   let(:creating_policy_pipeline) { false }
@@ -36,6 +37,7 @@ RSpec.describe Gitlab::Ci::ProjectConfig, feature_category: :pipeline_compositio
       pipeline_source_bridge: bridge,
       triggered_for_branch: triggered_for_branch,
       ref: ref,
+      source_branch: source_branch,
       pipeline_policy_context: pipeline_policy_context
     )
   end
@@ -243,7 +245,15 @@ RSpec.describe Gitlab::Ci::ProjectConfig, feature_category: :pipeline_compositio
             context 'when triggered for merge request pipelines' do
               let(:source) { :merge_request_event }
 
-              it_behaves_like 'includes security policies default pipeline configuration content'
+              context 'when ref and source branch are the same' do
+                it_behaves_like 'includes security policies default pipeline configuration content'
+              end
+
+              context 'when ref and source branch are different' do
+                let(:ref) { 'refs/merge-requests/1/head' }
+
+                it_behaves_like 'includes security policies default pipeline configuration content'
+              end
             end
 
             context 'when source is passed as string' do
@@ -336,6 +346,20 @@ RSpec.describe Gitlab::Ci::ProjectConfig, feature_category: :pipeline_compositio
           end
 
           it_behaves_like 'with pipeline execution policies enforced'
+
+          context 'when triggered for merge request pipelines' do
+            let(:source) { :merge_request_event }
+
+            context 'when ref and source branch are the same' do
+              it_behaves_like 'does not include security policies default pipeline configuration content'
+            end
+
+            context 'when ref and source branch are different' do
+              let(:ref) { 'refs/merge-requests/1/head' }
+
+              it_behaves_like 'does not include security policies default pipeline configuration content'
+            end
+          end
         end
 
         context 'when the policy should not be enforced to the pipeline source' do
