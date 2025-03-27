@@ -263,7 +263,6 @@ module EE
         @subject.can_suggest_reviewers?
       end
 
-      with_scope :subject
       condition(:summarize_new_merge_request_enabled) do
         ::Feature.enabled?(:add_ai_summary_for_new_mr, subject) &&
           ::Gitlab::Llm::FeatureAuthorizer.new(
@@ -273,7 +272,10 @@ module EE
           ).allowed?
       end
 
-      with_scope :subject
+      condition(:user_allowed_to_use_summarize_new_merge_request) do
+        @user&.allowed_to_use?(:summarize_new_merge_request, licensed_feature: :summarize_new_merge_request)
+      end
+
       condition(:generate_description_enabled) do
         ::Gitlab::Llm::FeatureAuthorizer.new(
           container: subject,
@@ -282,7 +284,6 @@ module EE
         ).allowed?
       end
 
-      with_scope :subject
       condition(:summarize_notes_allowed) do
         next false unless @user
 
@@ -1054,8 +1055,10 @@ module EE
       end
 
       rule do
-        summarize_new_merge_request_enabled & can?(:create_merge_request_in)
-      end.enable :summarize_new_merge_request
+        summarize_new_merge_request_enabled &
+          user_allowed_to_use_summarize_new_merge_request &
+          can?(:create_merge_request_in)
+      end.enable :access_summarize_new_merge_request
 
       rule do
         generate_description_enabled & can?(:create_issue)

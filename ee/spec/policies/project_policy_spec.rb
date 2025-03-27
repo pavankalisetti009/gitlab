@@ -3782,46 +3782,34 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
     end
 
-    describe 'summarize_new_merge_request policy' do
-      let_it_be(:namespace) { group }
-      let_it_be(:project) { private_project }
-      let_it_be(:current_user) { maintainer }
-
+    describe 'access_summarize_new_merge_request' do
       let(:authorizer) { instance_double(::Gitlab::Llm::FeatureAuthorizer) }
+      let(:current_user) { user_can_create_mr ? developer : nil }
 
-      before do
-        allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:new).and_return(authorizer)
-        allow(project).to receive(:namespace).and_return(namespace)
+      where(:feature_flag_enabled, :llm_authorized, :user_can_create_mr, :user_allowed_to_use, :expected_result) do
+        true  | true  | true  | true  | be_allowed(:access_summarize_new_merge_request)
+        true  | true  | false | true  | be_disallowed(:access_summarize_new_merge_request)
+        true  | false | true  | true  | be_disallowed(:access_summarize_new_merge_request)
+        false | true  | true  | true  | be_disallowed(:access_summarize_new_merge_request)
+        true  | true  | true  | false | be_disallowed(:access_summarize_new_merge_request)
       end
 
-      context "when feature is authorized" do
+      with_them do
         before do
-          allow(authorizer).to receive(:allowed?).and_return(true)
+          # Setup feature flag
+          stub_feature_flags(add_ai_summary_for_new_mr: feature_flag_enabled)
+
+          # Setup LLM authorizer
+          allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:new).and_return(authorizer)
+          allow(authorizer).to receive(:allowed?).and_return(llm_authorized)
+
+          # Setup user permissions for creating MRs
+          allow(current_user).to receive(:allowed_to_use?)
+            .with(:summarize_new_merge_request, licensed_feature: :summarize_new_merge_request)
+            .and_return(user_allowed_to_use)
         end
 
-        it { is_expected.to be_allowed(:summarize_new_merge_request) }
-
-        context 'when add_ai_summary_for_new_mr feature flag is disabled' do
-          before do
-            stub_feature_flags(add_ai_summary_for_new_mr: false)
-          end
-
-          it { is_expected.to be_disallowed(:summarize_new_merge_request) }
-        end
-
-        context 'when user cannot create_merge_request_in' do
-          let(:current_user) { guest }
-
-          it { is_expected.to be_disallowed(:summarize_new_merge_request) }
-        end
-      end
-
-      context "when feature is not authorized" do
-        before do
-          allow(authorizer).to receive(:allowed?).and_return(false)
-        end
-
-        it { is_expected.to be_disallowed(:summarize_new_merge_request) }
+        it { is_expected.to expected_result }
       end
     end
 
