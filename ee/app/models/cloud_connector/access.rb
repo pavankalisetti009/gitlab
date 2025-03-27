@@ -9,5 +9,7 @@ module CloudConnector
     self.table_name = 'cloud_connector_access'
     validates :data, json_schema: { filename: "cloud_connector_access" }
     validates :data, presence: true
+
+    validates :catalog, json_schema: { filename: "cloud_connector_access_catalog" }, allow_nil: true
   end
 end
