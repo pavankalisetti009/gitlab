@@ -102,7 +102,7 @@ module EE
       end
 
       def reset_approvals?(merge_request, newrev)
-        merge_request.rebase_commit_is_different?(newrev) && !merge_request.merge_train_car && super
+        !merge_request.merge_train_car && super
       end
 
       override :abort_auto_merges?

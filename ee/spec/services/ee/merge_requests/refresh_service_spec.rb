@@ -722,8 +722,8 @@ RSpec.describe MergeRequests::RefreshService, feature_category: :code_review_wor
             reload_mrs
           end
 
-          it 'does not reset approvals' do
-            expect(merge_request.approvals).not_to be_empty
+          it 'resets approvals' do
+            expect(merge_request.approvals).to be_empty
             expect(approval_todos(merge_request)).to be_empty
           end
         end

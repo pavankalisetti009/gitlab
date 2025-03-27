@@ -31,10 +31,6 @@ module MergeRequests
       end
     end
 
-    def reset_approvals?(merge_request, newrev)
-      super && merge_request.rebase_commit_sha != newrev
-    end
-
     def reset_approvals(merge_request, newrev = nil, patch_id_sha: nil, cause: :new_push)
       return unless reset_approvals?(merge_request, newrev)
 
