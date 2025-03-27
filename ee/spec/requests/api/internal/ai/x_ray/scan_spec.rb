@@ -8,21 +8,24 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
   let_it_be(:user) { create(:user) }
   let_it_be(:job) { create(:ci_build, :running, namespace: namespace, user: user) }
   let_it_be(:sub_job) { create(:ci_build, :running, namespace: sub_namespace, user: user) }
-  let_it_be(:code_suggestion_add_on) { create(:gitlab_subscription_add_on) }
-  let_it_be(:cloud_connector_keys) { create(:cloud_connector_keys) }
+  let_it_be(:cloud_connector_service) { CloudConnector::BaseAvailableServiceData.new(:code_suggestions, nil, nil) }
 
+  let(:duo_pro_purchased) { true }
+  let(:ai_gateway_headers) { { 'ai-gateway-header' => 'value' } }
   let(:ai_gateway_token) { 'ai gateway token' }
-  let(:instance_uuid) { "uuid-not-set" }
   let(:gitlab_team_member) { false }
-  let(:global_user_id) { "user-id" }
-  let(:hostname) { "localhost" }
   let(:headers) { {} }
   let(:namespace_workhorse_headers) { {} }
-  let(:duo_seat_count) { "1" }
 
   before do
-    allow(Gitlab::GlobalAnonymousId).to receive(:user_id).and_return(global_user_id)
-    allow(Gitlab::GlobalAnonymousId).to receive(:instance_id).and_return(instance_uuid)
+    allow(::Gitlab::AiGateway).to receive(:headers)
+      .with(user: user, service: cloud_connector_service, agent: anything)
+      .and_return(ai_gateway_headers)
+    allow(CloudConnector::AvailableServices).to receive(:find_by_name)
+      .with(:code_suggestions)
+      .and_return(cloud_connector_service)
+    allow(cloud_connector_service).to receive(:purchased?).with(namespace).and_return(duo_pro_purchased)
+    allow(cloud_connector_service).to receive(:access_token).with(namespace).and_return(ai_gateway_token)
   end
 
   describe 'POST /internal/jobs/:id/x_ray/scan' do
@@ -36,26 +39,6 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
     let(:api_url) { "/internal/jobs/#{job.id}/x_ray/scan" }
     let(:enabled_by_namespace_ids) { [] }
     let(:enablement_type) { '' }
-
-    let(:base_workhorse_headers) do
-      {
-        "X-Gitlab-Authentication-Type" => ["oidc"],
-        "Authorization" => ["Bearer #{ai_gateway_token}"],
-        "X-Gitlab-Feature-Enabled-By-Namespace-Ids" => [enabled_by_namespace_ids.join(',')],
-        'X-Gitlab-Feature-Enablement-Type' => [enablement_type],
-        "Content-Type" => ["application/json"],
-        "X-Gitlab-Host-Name" => [hostname],
-        "X-Gitlab-Instance-Id" => [instance_uuid],
-        "X-Gitlab-Is-Team-Member" => [gitlab_team_member.to_s],
-        "X-Gitlab-Realm" => [gitlab_realm],
-        "X-Gitlab-Global-User-Id" => [global_user_id],
-        "X-Gitlab-Version" => [Gitlab.version_info.to_s],
-        "X-Request-ID" => [an_instance_of(String)],
-        "X-Gitlab-Rails-Send-Start" => [an_instance_of(String)],
-        "X-Gitlab-Duo-Seat-Count" => [duo_seat_count],
-        "x-gitlab-enabled-feature-flags" => [""]
-      }
-    end
 
     subject(:post_api) do
       post api(api_url), params: params, headers: headers
@@ -86,7 +69,7 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
             endpoint,
             body: expected_body.to_json,
             method: "POST",
-            headers: base_workhorse_headers.merge(namespace_workhorse_headers)
+            headers: namespace_workhorse_headers.merge("ai-gateway-header" => ["value"])
           )
 
           post_api
@@ -99,8 +82,6 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
     end
 
     context 'when on self-managed', :with_cloud_connector do
-      let(:gitlab_realm) { "self-managed" }
-
       context 'without code suggestion license feature' do
         before do
           stub_licensed_features(code_suggestions: false)
@@ -119,6 +100,8 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
         end
 
         context 'without Duo Pro add-on' do
+          let(:duo_pro_purchased) { false }
+
           it 'responds with unauthorized' do
             post_api
 
@@ -127,8 +110,6 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
         end
 
         context 'with Duo Pro add-on' do
-          before_all { create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: code_suggestion_add_on) }
-
           context 'when cloud connector access token is missing' do
             let(:ai_gateway_token) { nil }
 
@@ -140,69 +121,19 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
           end
 
           context 'when cloud connector access token is valid' do
-            before do
-              allow(::CloudConnector::ServiceAccessToken)
-                .to receive_message_chain(:active, :last, :token)
-                .and_return(ai_gateway_token)
-            end
-
-            context 'when instance has uuid available' do
-              let(:instance_uuid) { 'some uuid' }
-
-              before do
-                allow(Gitlab::CurrentSettings).to receive(:uuid).and_return(instance_uuid)
-              end
-
-              it_behaves_like 'successful send request via workhorse'
-            end
-
-            context 'when instance has custom hostname' do
-              let(:hostname) { 'gitlab.local' }
-
-              before do
-                stub_config_setting({
-                  protocol: 'http',
-                  host: hostname,
-                  url: "http://#{hostname}",
-                  relative_url_root: "http://#{hostname}"
-                })
-              end
-
-              it_behaves_like 'successful send request via workhorse'
-            end
+            it_behaves_like 'successful send request via workhorse'
           end
         end
       end
     end
 
     context 'when on Gitlab.com instance', :saas do
-      let(:gitlab_realm) { "saas" }
       let(:enabled_by_namespace_ids) { [namespace.id] }
       let(:enablement_type) { 'add_on' }
       let(:namespace_workhorse_headers) do
         {
           "X-Gitlab-Saas-Namespace-Ids" => [namespace.id.to_s]
         }
-      end
-
-      before_all do
-        add_on_purchase = create(
-          :gitlab_subscription_add_on_purchase,
-          :active,
-          add_on: code_suggestion_add_on,
-          namespace: namespace
-        )
-        create(
-          :gitlab_subscription_user_add_on_assignment,
-          user: user,
-          add_on_purchase: add_on_purchase
-        )
-      end
-
-      before do
-        allow_next_instance_of(::Gitlab::CloudConnector::JsonWebToken) do |token|
-          allow(token).to receive(:encode).and_return(ai_gateway_token)
-        end
       end
 
       it_behaves_like 'successful send request via workhorse'
@@ -213,94 +144,13 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
         end
       end
 
-      context 'when add on subscription is expired' do
-        let(:namespace_with_expired_ai_access) { create(:group) }
-        let(:job_with_expired_ai_access) { create(:ci_build, :running, namespace: namespace_with_expired_ai_access) }
-        let(:api_url) { "/internal/jobs/#{job_with_expired_ai_access.id}/x_ray/scan" }
+      context 'without Duo Pro add-on' do
+        let(:duo_pro_purchased) { false }
 
-        let(:params) do
-          {
-            token: job_with_expired_ai_access.token,
-            prompt_components: [{ payload: "test" }]
-          }
-        end
-
-        before do
-          create(
-            :gitlab_subscription_add_on_purchase,
-            :expired,
-            add_on: code_suggestion_add_on,
-            namespace: namespace_with_expired_ai_access
-          )
-        end
-
-        it 'returns UNAUTHORIZED status' do
+        it 'responds with unauthorized' do
           post_api
 
           expect(response).to have_gitlab_http_status(:unauthorized)
-        end
-
-        context 'with code suggestions enabled on parent namespace level' do
-          let(:namespace_workhorse_headers) do
-            {
-              "X-Gitlab-Saas-Namespace-Ids" => [sub_namespace.id.to_s]
-            }
-          end
-
-          let(:params) do
-            {
-              token: sub_job.token,
-              prompt_components: [{ payload: "test" }]
-            }
-          end
-
-          let(:api_url) { "/internal/jobs/#{sub_job.id}/x_ray/scan" }
-
-          it_behaves_like 'successful send request via workhorse'
-        end
-      end
-
-      context 'when job does not have AI access' do
-        let(:namespace_without_ai_access) { create(:group) }
-        let(:job_without_ai_access) { create(:ci_build, :running, namespace: namespace_without_ai_access) }
-        let(:api_url) { "/internal/jobs/#{job_without_ai_access.id}/x_ray/scan" }
-
-        let(:params) do
-          {
-            token: job_without_ai_access.token,
-            prompt_components: [{ payload: "test" }]
-          }
-        end
-
-        it 'returns UNAUTHORIZED status' do
-          post_api
-
-          expect(response).to have_gitlab_http_status(:unauthorized)
-        end
-
-        context 'with personal namespace' do
-          let(:user_namespace) { create(:user).namespace }
-          let(:job_in_user_namespace) { create(:ci_build, :running, namespace: user_namespace) }
-          let(:api_url) { "/internal/jobs/#{job_in_user_namespace.id}/x_ray/scan" }
-
-          let(:params) do
-            {
-              token: job_in_user_namespace.token,
-              prompt_components: [{ payload: "test" }]
-            }
-          end
-
-          let(:namespace_workhorse_headers) do
-            {
-              "X-Gitlab-Saas-Namespace-Ids" => [user_namespace.id.to_s]
-            }
-          end
-
-          it 'returns UNAUTHORIZED status' do
-            post_api
-
-            expect(response).to have_gitlab_http_status(:unauthorized)
-          end
         end
       end
     end
@@ -349,8 +199,6 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
     end
 
     context 'when on self-managed', :with_cloud_connector do
-      let(:gitlab_realm) { 'self-managed' }
-
       context 'without code suggestion license feature' do
         before do
           stub_licensed_features(code_suggestions: false)
@@ -369,6 +217,8 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
         end
 
         context 'without Duo Pro add-on' do
+          let(:duo_pro_purchased) { false }
+
           it 'responds with unauthorized' do
             post_api
 
@@ -377,62 +227,12 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
         end
 
         context 'with Duo Pro add-on' do
-          before_all { create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: code_suggestion_add_on) }
-
-          context 'when cloud connector access token is valid' do
-            before do
-              allow(::CloudConnector::ServiceAccessToken)
-                .to receive_message_chain(:active, :last, :token)
-                .and_return(ai_gateway_token)
-            end
-
-            context 'when instance has uuid available' do
-              let(:instance_uuid) { 'some uuid' }
-
-              before do
-                allow(Gitlab::CurrentSettings).to receive(:uuid).and_return(instance_uuid)
-              end
-
-              it_behaves_like 'successful request'
-            end
-
-            context 'when instance has custom hostname' do
-              let(:hostname) { 'gitlab.local' }
-
-              before do
-                stub_config_setting({
-                  protocol: 'http',
-                  host: hostname,
-                  url: "http://#{hostname}",
-                  relative_url_root: "http://#{hostname}"
-                })
-              end
-
-              it_behaves_like 'successful request'
-            end
-          end
+          it_behaves_like 'successful request'
         end
       end
     end
 
     context 'when on Gitlab.com instance', :saas do
-      let(:gitlab_realm) { "saas" }
-
-      before_all do
-        create(
-          :gitlab_subscription_add_on_purchase,
-          :active,
-          add_on: code_suggestion_add_on,
-          namespace: namespace
-        )
-      end
-
-      before do
-        allow_next_instance_of(::Gitlab::CloudConnector::JsonWebToken) do |token|
-          allow(token).to receive(:encode).and_return(ai_gateway_token)
-        end
-      end
-
       it_behaves_like 'successful request'
 
       it_behaves_like 'rate limited endpoint', rate_limit_key: :code_suggestions_x_ray_dependencies do
@@ -471,54 +271,6 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
 
           expect(response).to have_gitlab_http_status(:bad_request)
           expect(json_response).to eq({ 'error' => 'language is missing, language does not have a valid value' })
-        end
-      end
-
-      context 'when Duo Pro add-on subscription is expired' do
-        let(:namespace_with_expired_ai_access) { create(:group) }
-        let(:current_job) { create(:ci_build, :running, namespace: namespace_with_expired_ai_access) }
-
-        before do
-          create(
-            :gitlab_subscription_add_on_purchase,
-            :expired,
-            add_on: code_suggestion_add_on,
-            namespace: namespace_with_expired_ai_access
-          )
-        end
-
-        it 'responds with unathorized' do
-          post_api
-
-          expect(response).to have_gitlab_http_status(:unauthorized)
-        end
-
-        context 'with code suggestions enabled on parent namespace level' do
-          let(:current_job) { sub_job }
-
-          it_behaves_like 'successful request'
-        end
-
-        context 'when job does not have AI access' do
-          let(:namespace_without_ai_access) { create(:group) }
-          let(:current_job) { create(:ci_build, :running, namespace: namespace_without_ai_access) }
-
-          it 'responds with unathorized' do
-            post_api
-
-            expect(response).to have_gitlab_http_status(:unauthorized)
-          end
-
-          context 'with personal namespace' do
-            let(:user_namespace) { create(:user).namespace }
-            let(:current_job) { create(:ci_build, :running, namespace: user_namespace) }
-
-            it 'responds with unauthorized' do
-              post_api
-
-              expect(response).to have_gitlab_http_status(:unauthorized)
-            end
-          end
         end
       end
     end

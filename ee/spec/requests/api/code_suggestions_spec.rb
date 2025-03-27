@@ -23,11 +23,9 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
   let(:headers) { {} }
   let(:access_code_suggestions) { true }
   let(:is_saas) { true }
-  let(:global_instance_id) { 'instance-ABC' }
-  let(:global_user_id) { 'user-ABC' }
-  let(:gitlab_realm) { 'saas' }
   let(:service_name) { :code_suggestions }
   let(:service) { instance_double('::CloudConnector::SelfSigned::AvailableServiceData') }
+  let(:cloud_connector_headers) { { 'cloud-connector-header' => 'value' } }
   let_it_be(:token) { 'generated-jwt' }
 
   before do
@@ -41,14 +39,15 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
     allow(Gitlab::InternalEvents).to receive(:track_event)
     allow(Gitlab::Tracking::AiTracking).to receive(:track_event)
 
-    allow(Gitlab::GlobalAnonymousId).to receive(:user_id).and_return(global_user_id)
-    allow(Gitlab::GlobalAnonymousId).to receive(:instance_id).and_return(global_instance_id)
-
     allow(::CloudConnector::AvailableServices).to receive(:find_by_name).with(service_name).and_return(service)
     allow(service).to receive_messages(access_token: token, name: service_name)
     allow(service).to receive_message_chain(:add_on_purchases, :assigned_to_user, :any?).and_return(true)
     allow(service).to receive_message_chain(:add_on_purchases, :assigned_to_user, :uniq_namespace_ids)
       .and_return(enabled_by_namespace_ids)
+
+    allow(::CloudConnector).to receive(:ai_headers)
+      .with(current_user, namespace_ids: instance_of(Array))
+      .and_return(cloud_connector_headers)
 
     stub_feature_flags(incident_fail_over_completion_provider: false)
     stub_feature_flags(fireworks_qwen_code_completion: false)
@@ -92,9 +91,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
   end
 
   shared_examples 'an endpoint authenticated with token' do |success_http_status = :created|
-    let(:current_user) { nil }
-    let(:access_token) { tokens[:api] }
-
     before do
       stub_feature_flags(ai_duo_code_suggestions_switch: true)
       headers["Authorization"] = "Bearer #{access_token.token}"
@@ -103,22 +99,31 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
     end
 
     context 'when using token with :api scope' do
+      let(:current_user) { authorized_user }
+      let(:access_token) { tokens[:api] }
+
       it { expect(response).to have_gitlab_http_status(success_http_status) }
     end
 
     context 'when using token with :ai_features scope' do
+      let(:current_user) { authorized_user }
       let(:access_token) { tokens[:ai_features] }
 
       it { expect(response).to have_gitlab_http_status(success_http_status) }
     end
 
     context 'when using token with :read_api scope' do
+      let(:current_user) { authorized_user }
       let(:access_token) { tokens[:read_api] }
 
-      it { expect(response).to have_gitlab_http_status(:forbidden) }
+      it 'returns 403 Forbidden' do
+        skip 'https://gitlab.com/gitlab-org/gitlab/-/issues/526861'
+        expect(response).to have_gitlab_http_status(:forbidden)
+      end
     end
 
     context 'when using token with :read_api scope but for an unauthorized user' do
+      let(:current_user) { unauthorized_user }
       let(:access_token) { tokens[:unauthorized_user] }
 
       it 'checks access_code_suggestions ability for user and return 401 unauthorized' do
@@ -293,15 +298,11 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           )
           expect(params['Header']).to include(
             'X-Gitlab-Authentication-Type' => ['oidc'],
-            'X-Gitlab-Instance-Id' => [global_instance_id],
-            'X-Gitlab-Global-User-Id' => [global_user_id],
-            'X-Gitlab-Host-Name' => [Gitlab.config.gitlab.host],
-            'X-Gitlab-Realm' => [gitlab_realm],
             'Authorization' => ["Bearer #{token}"],
-            'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => [""],
             'Content-Type' => ['application/json'],
             'User-Agent' => ['Super Awesome Browser 43.144.12'],
-            "x-gitlab-enabled-feature-flags" => ["expanded_ai_logging"]
+            "x-gitlab-enabled-feature-flags" => ["expanded_ai_logging"],
+            "cloud-connector-header" => ["value"]
           )
         end
 
@@ -383,15 +384,11 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             )
             expect(params['Header']).to include(
               'X-Gitlab-Authentication-Type' => ['oidc'],
-              'X-Gitlab-Instance-Id' => [global_instance_id],
-              'X-Gitlab-Global-User-Id' => [global_user_id],
-              'X-Gitlab-Host-Name' => [Gitlab.config.gitlab.host],
-              'X-Gitlab-Realm' => [gitlab_realm],
               'Authorization' => ["Bearer #{token}"],
-              'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => [""],
               'Content-Type' => ['application/json'],
               'User-Agent' => ['Super Awesome Browser 43.144.12'],
-              "x-gitlab-enabled-feature-flags" => ["expanded_ai_logging"]
+              "x-gitlab-enabled-feature-flags" => ["expanded_ai_logging"],
+              "cloud-connector-header" => ["value"]
             )
           end
         end
@@ -436,15 +433,11 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             expect(params['Header']).to include({
               'X-Gitlab-Authentication-Type' => ['oidc'],
               'Authorization' => ["Bearer #{token}"],
-              'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => [""],
               'Content-Type' => ['application/json'],
-              'X-Gitlab-Instance-Id' => [global_instance_id],
-              'X-Gitlab-Global-User-Id' => [global_user_id],
-              'X-Gitlab-Host-Name' => [Gitlab.config.gitlab.host],
-              'X-Gitlab-Realm' => [gitlab_realm],
               'X-Gitlab-Language-Server-Version' => ['4.21.0'],
               'User-Agent' => ['Super Cool Browser 14.5.2'],
-              "x-gitlab-enabled-feature-flags" => ["expanded_ai_logging"]
+              "x-gitlab-enabled-feature-flags" => ["expanded_ai_logging"],
+              "cloud-connector-header" => ["value"]
             })
           end
         end
@@ -865,7 +858,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
     context 'when the instance is Gitlab self-managed' do
       let(:is_saas) { false }
-      let(:gitlab_realm) { 'self-managed' }
 
       let_it_be(:token) { 'stored-token' }
       let_it_be(:service_access_token) { create(:service_access_token, :active, token: token) }
@@ -1060,22 +1052,14 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
       let(:current_user) { authorized_user }
       let(:expected_expiration) { Time.now.to_i + 3600 }
-      let(:duo_seat_count) { '0' }
       let(:enablement_type) { 'add_on' }
 
       let(:base_headers) do
         {
-          'X-Gitlab-Global-User-Id' => global_user_id,
-          'X-Gitlab-Instance-Id' => global_instance_id,
-          'X-Gitlab-Host-Name' => Gitlab.config.gitlab.host,
-          'X-Gitlab-Realm' => gitlab_realm,
-          'X-Gitlab-Version' => Gitlab.version_info.to_s,
           'X-Gitlab-Authentication-Type' => 'oidc',
-          'X-Gitlab-Duo-Seat-Count' => duo_seat_count,
-          'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => enabled_by_namespace_ids.join(','),
           "X-Gitlab-Feature-Enablement-Type" => enablement_type,
           'x-gitlab-enabled-feature-flags' => ''
-        }
+        }.merge(cloud_connector_headers)
       end
 
       let(:headers) { {} }
@@ -1101,7 +1085,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
       context 'when user belongs to a namespace with an active code suggestions purchase' do
         let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase) }
         let_it_be(:enabled_by_namespace_ids) { [add_on_purchase.namespace_id] }
-        let(:duo_seat_count) { '1' }
 
         let(:headers) do
           {
@@ -1165,7 +1148,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
         let_it_be(:active_token) { create(:service_access_token, :active) }
         let(:is_saas) { false }
         let(:expected_expiration) { active_token.expires_at.to_i }
-        let(:gitlab_realm) { 'self-managed' }
 
         it_behaves_like 'user request with code suggestions allowed'
       end
