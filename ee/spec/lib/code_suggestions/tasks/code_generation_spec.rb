@@ -284,6 +284,8 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
   end
 
   context 'when amazon q is connected' do
+    let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_amazon_q) }
+
     let(:unsafe_params) do
       {
         "prompt_components" => [

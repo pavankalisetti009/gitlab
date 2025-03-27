@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Ai::AmazonQ::UpdateService, feature_category: :ai_agents do
   describe '#execute' do
+    let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_amazon_q) }
     let_it_be(:user) { create(:admin) }
     let_it_be_with_reload(:service_account) { create(:service_account) }
     let_it_be(:integration) { create(:amazon_q_integration) }

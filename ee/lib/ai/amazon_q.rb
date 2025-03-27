@@ -6,14 +6,13 @@ module Ai
       def feature_available?
         return false unless License.feature_available?(:amazon_q)
 
-        # When this feature flag is enabled, Duo Chat and Code Suggestions become available to a user
-        # and are powered by Q API.
-        # Let's return true when the feature flag is enabled to simplify the development.
-        # But when the feature flag is removed, we may still want to check that Duo Pro or Enterprise is not purchased
-        # to avoid conflicts.
-        return true if ::Feature.enabled?(:amazon_q_chat_and_code_suggestions, :instance)
+        service = CloudConnector::AvailableServices.find_by_name(:amazon_q_integration)
 
-        !duo_features_available?
+        if service.free_access?
+          !::GitlabSubscriptions::AddOnPurchase.for_duo_pro_or_duo_enterprise.active.exists?
+        else
+          ::GitlabSubscriptions::AddOnPurchase.for_duo_amazon_q.active.exists?
+        end
       end
 
       def connected?
@@ -58,10 +57,6 @@ module Ai
 
       def ai_settings
         Ai::Setting.instance
-      end
-
-      def duo_features_available?
-        ::GitlabSubscriptions::AddOnPurchase.by_namespace(nil).for_duo_pro_or_duo_enterprise.active.exists?
       end
     end
   end
