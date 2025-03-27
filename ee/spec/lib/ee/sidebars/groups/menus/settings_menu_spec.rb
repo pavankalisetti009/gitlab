@@ -31,6 +31,7 @@ RSpec.describe Sidebars::Groups::Menus::SettingsMenu, feature_category: :navigat
         let(:item_id) { :service_accounts }
 
         before do
+          stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
           stub_licensed_features(service_accounts: true)
         end
 

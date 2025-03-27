@@ -5,6 +5,7 @@ import { createTestingPinia } from '@pinia/testing';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 
 import { useServiceAccounts } from 'ee/service_accounts/stores/service_accounts';
+import DeleteServiceAccountModal from 'ee/service_accounts/components/service_accounts/delete_service_account_modal.vue';
 import ServiceAccounts from 'ee/service_accounts/components/service_accounts/service_accounts.vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { TEST_HOST } from 'helpers/test_constants';
@@ -18,27 +19,38 @@ const findPageHeading = () => wrapper.findComponent(PageHeading);
 const findAddServiceAccountButton = () => findPageHeading().findComponent(GlButton);
 const findTable = () => wrapper.findComponent(GlTable);
 const findDisclosure = () => wrapper.findComponent(GlDisclosureDropdown);
+const findDisclosureButton = (index) =>
+  findDisclosure().findAll('button.gl-new-dropdown-item-content').at(index);
+const findModal = () => wrapper.findComponent(DeleteServiceAccountModal);
 
 describe('Service Accounts', () => {
   const serviceAccountsPath = `${TEST_HOST}/service_accounts`;
+  const serviceAccountsDeletePath = '/api/v4/users';
   const serviceAccountsDocsPath = `${TEST_HOST}/ee/user/profile/service_accounts.html`;
 
   const pinia = createTestingPinia();
   const store = useServiceAccounts();
 
+  const $router = {
+    push: jest.fn(),
+  };
+
   const createComponent = () => {
     wrapper = mountExtended(ServiceAccounts, {
       pinia,
-      stubs: {},
+      mocks: {
+        $router,
+      },
       provide: {
         serviceAccountsPath,
+        serviceAccountsDeletePath,
         serviceAccountsDocsPath,
       },
     });
   };
 
   beforeAll(() => {
-    store.serviceAccounts = [{ name: 'Service Account 1', username: 'test user' }];
+    store.serviceAccounts = [{ id: 1, name: 'Service Account 1', username: 'test user' }];
   });
 
   beforeEach(() => {
@@ -46,19 +58,13 @@ describe('Service Accounts', () => {
   });
 
   it('fetches service accounts when it is rendered', () => {
-    expect(store.fetchServiceAccounts).toHaveBeenCalledWith(serviceAccountsPath, {
-      page: 1,
-      perPage: 8,
-    });
+    expect(store.fetchServiceAccounts).toHaveBeenCalledWith(serviceAccountsPath, { page: 1 });
   });
 
   it('fetches service accounts when the page is changed', () => {
     findPagination().vm.$emit('input', 2);
 
-    expect(store.fetchServiceAccounts).toHaveBeenCalledWith(serviceAccountsPath, {
-      page: 2,
-      perPage: 8,
-    });
+    expect(store.fetchServiceAccounts).toHaveBeenCalledWith(serviceAccountsPath, { page: 2 });
   });
 
   describe('table', () => {
@@ -112,7 +118,7 @@ describe('Service Accounts', () => {
       describe('options', () => {
         it('shows the options dropdown', () => {
           const options = wrapper.findByTestId('cell-options').findComponent(GlDisclosureDropdown);
-          expect(options.props('items')).toEqual([
+          expect(options.props('items')).toMatchObject([
             {
               text: 'Manage Access Tokens',
             },
@@ -128,6 +134,38 @@ describe('Service Accounts', () => {
               variant: 'danger',
             },
           ]);
+        });
+
+        it('routes to the token management when click on manage access token button', () => {
+          findDisclosureButton(0).trigger('click');
+
+          expect($router.push).toHaveBeenCalledWith({
+            name: 'access_tokens',
+            params: { id: 1 },
+            replace: true,
+          });
+        });
+
+        it('set the account and delete type when click on the delete account button', () => {
+          findDisclosureButton(2).trigger('click');
+
+          expect(store.setServiceAccount).toHaveBeenCalledWith({
+            id: 1,
+            name: 'Service Account 1',
+            username: 'test user',
+          });
+          expect(store.setDeleteType).toHaveBeenCalledWith('soft');
+        });
+
+        it('set the account and delete type when click on the delete account and contribution button', () => {
+          findDisclosureButton(3).trigger('click');
+
+          expect(store.setServiceAccount).toHaveBeenCalledWith({
+            id: 1,
+            name: 'Service Account 1',
+            username: 'test user',
+          });
+          expect(store.setDeleteType).toHaveBeenCalledWith('hard');
         });
       });
     });
@@ -148,6 +186,34 @@ describe('Service Accounts', () => {
 
       expect(addServiceAccountButton.emitted()).toHaveProperty('click');
       expect(store.addServiceAccount).toHaveBeenCalled();
+    });
+  });
+
+  describe('modal', () => {
+    beforeEach(() => {
+      store.deleteType = 'soft';
+      store.serviceAccount = {
+        id: 1,
+        name: 'Service Account 1',
+        username: 'test user',
+      };
+      createComponent();
+    });
+
+    it('shows the modal when the delete button is clicked', () => {
+      expect(findModal().exists()).toBe(true);
+    });
+
+    it('call deleteUser when modal is submitted', () => {
+      findModal().vm.$emit('submit');
+
+      expect(store.deleteUser).toHaveBeenCalledWith(serviceAccountsDeletePath);
+    });
+
+    it('resets deleteType when modal is cancelled', () => {
+      findModal().vm.$emit('cancel');
+
+      expect(store.setDeleteType).toHaveBeenCalledWith(null);
     });
   });
 });

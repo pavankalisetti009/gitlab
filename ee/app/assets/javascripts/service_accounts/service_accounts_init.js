@@ -12,6 +12,7 @@ export default (el) => {
   const {
     basePath,
     serviceAccountsPath,
+    serviceAccountsDeletePath,
     serviceAccountsDocsPath,
     accessTokenMaxDate,
     accessTokenMinDate,
@@ -34,6 +35,7 @@ export default (el) => {
       accessTokenMaxDate,
       accessTokenMinDate,
       accessTokenCreate,
+      serviceAccountsDeletePath,
       accessTokenRevoke,
       accessTokenRotate,
       accessTokenShow,

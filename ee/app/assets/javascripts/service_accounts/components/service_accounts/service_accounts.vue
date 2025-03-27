@@ -14,9 +14,10 @@ import { mapActions, mapState } from 'pinia';
 import { s__ } from '~/locale';
 
 import PageHeading from '~/vue_shared/components/page_heading.vue';
+
 import { useServiceAccounts } from '../../stores/service_accounts';
 
-const PAGE_SIZE = 8;
+import DeleteServiceAccountModal from './delete_service_account_modal.vue';
 
 export default {
   components: {
@@ -30,29 +31,72 @@ export default {
     GlButton,
     GlDisclosureDropdown,
     PageHeading,
+    DeleteServiceAccountModal,
   },
-  inject: ['serviceAccountsPath', 'serviceAccountsDocsPath'],
-  data() {
-    return {
-      currentPage: 1,
-    };
-  },
+  inject: ['serviceAccountsPath', 'serviceAccountsDeletePath', 'serviceAccountsDocsPath'],
   computed: {
-    ...mapState(useServiceAccounts, ['serviceAccounts', 'serviceAccountCount', 'busy']),
+    ...mapState(useServiceAccounts, [
+      'serviceAccounts',
+      'serviceAccount',
+      'serviceAccountCount',
+      'busy',
+      'deleteType',
+      'page',
+      'perPage',
+    ]),
   },
   created() {
-    this.fetchServiceAccounts(this.serviceAccountsPath, {
-      page: this.currentPage,
-      perPage: this.$options.PAGE_SIZE,
-    });
+    this.fetchServiceAccounts(this.serviceAccountsPath, { page: this.page });
   },
   methods: {
-    ...mapActions(useServiceAccounts, ['fetchServiceAccounts', 'addServiceAccount']),
-    pageServiceAccounts(page) {
-      this.fetchServiceAccounts(this.serviceAccountsPath, {
-        page,
-        perPage: this.$options.PAGE_SIZE,
+    ...mapActions(useServiceAccounts, [
+      'fetchServiceAccounts',
+      'addServiceAccount',
+      'deleteUser',
+      'setDeleteType',
+      'setServiceAccount',
+    ]),
+    deleteAccount() {
+      this.deleteUser(this.serviceAccountsDeletePath);
+    },
+    routeToAccessTokensManagement(serviceAccountId) {
+      this.$router.push({
+        name: 'access_tokens',
+        params: { id: serviceAccountId },
+        replace: true,
       });
+    },
+    pageServiceAccounts(page) {
+      this.fetchServiceAccounts(this.serviceAccountsPath, { page });
+    },
+    optionsItems(serviceAccount) {
+      return [
+        {
+          text: s__('ServiceAccounts|Manage Access Tokens'),
+          action: () => {
+            this.routeToAccessTokensManagement(serviceAccount.id);
+          },
+        },
+        {
+          text: s__('ServiceAccounts|Edit'),
+        },
+        {
+          text: s__('ServiceAccounts|Delete Account'),
+          action: () => {
+            this.setServiceAccount(serviceAccount);
+            this.setDeleteType('soft');
+          },
+          variant: 'danger',
+        },
+        {
+          text: s__('ServiceAccounts|Delete Account and Contributions'),
+          action: () => {
+            this.setServiceAccount(serviceAccount);
+            this.setDeleteType('hard');
+          },
+          variant: 'danger',
+        },
+      ];
     },
   },
   fields: [
@@ -60,28 +104,14 @@ export default {
       key: 'name',
       label: s__('ServiceAccounts|Name'),
       thAttr: { 'data-testid': 'header-name' },
+      thClass: '!gl-border-t-0',
     },
     {
       key: 'options',
       label: '',
       tdClass: 'gl-text-end',
       tdAttr: { 'data-testid': 'cell-options' },
-    },
-  ],
-  optionsItems: [
-    {
-      text: s__('ServiceAccounts|Manage Access Tokens'),
-    },
-    {
-      text: s__('ServiceAccounts|Edit'),
-    },
-    {
-      text: s__('ServiceAccounts|Delete Account'),
-      variant: 'danger',
-    },
-    {
-      text: s__('ServiceAccounts|Delete Account and Contributions'),
-      variant: 'danger',
+      thClass: '!gl-border-t-0',
     },
   ],
   i18n: {
@@ -91,7 +121,6 @@ export default {
     ),
     addServiceAccount: s__('ServiceAccounts|Add Service Account'),
   },
-  PAGE_SIZE,
 };
 </script>
 
@@ -113,7 +142,7 @@ export default {
       </template>
     </page-heading>
 
-    <gl-tabs>
+    <gl-tabs content-class="gl-pt-0">
       <gl-tab>
         <template #title>
           <span>{{ $options.i18n.title }}</span>
@@ -123,7 +152,7 @@ export default {
         <gl-table
           :items="serviceAccounts"
           :fields="$options.fields"
-          :per-page="$options.PAGE_SIZE"
+          :per-page="perPage"
           :busy="busy"
         >
           <template #cell(name)="{ item }">
@@ -131,27 +160,35 @@ export default {
             <div data-testid="service-account-username">{{ item.username }}</div>
           </template>
 
-          <template #cell(options)>
+          <template #cell(options)="{ item }">
             <gl-disclosure-dropdown
               :disabled="busy"
               icon="ellipsis_v"
               :no-caret="true"
               category="tertiary"
               :fluid-width="true"
-              :items="$options.optionsItems"
+              :items="optionsItems(item)"
             />
           </template>
         </gl-table>
 
         <gl-pagination
-          v-model="currentPage"
+          :value="page"
           :disabled="busy"
-          :per-page="$options.PAGE_SIZE"
+          :per-page="perPage"
           :total-items="serviceAccountCount"
           align="center"
           @input="pageServiceAccounts"
         />
       </gl-tab>
     </gl-tabs>
+
+    <delete-service-account-modal
+      v-if="deleteType"
+      :delete-type="deleteType"
+      :name="serviceAccount.name"
+      @cancel="setDeleteType(null)"
+      @submit="deleteAccount"
+    />
   </div>
 </template>

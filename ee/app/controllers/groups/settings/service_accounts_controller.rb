@@ -18,7 +18,8 @@ module Groups
       end
 
       def authorize_admin_service_accounts!
-        render_404 unless can?(current_user, :admin_service_accounts, group)
+        render_404 unless can?(current_user, :create_service_account, group) &&
+          can?(current_user, :delete_service_account, group)
       end
 
       def ensure_root_group!
