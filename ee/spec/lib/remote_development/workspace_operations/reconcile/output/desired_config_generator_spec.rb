@@ -71,8 +71,10 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
     end
 
     context 'when desired_state results in started=true' do
-      it 'returns expected config with the replicas set to one' do
-        expect(workspace_resources).to eq(expected_config)
+      it 'returns expected config with the replicas set to one', :unlimited_max_formatted_output_length do
+        actual = workspace_resources
+        expected = expected_config
+        expect(actual).to eq(expected)
         workspace_resources => [
           *_,
           {

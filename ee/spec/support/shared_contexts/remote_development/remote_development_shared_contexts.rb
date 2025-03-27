@@ -374,37 +374,34 @@ RSpec.shared_context 'with remote development shared fixtures' do
     max_resources_per_workspace_sha256 = Digest::SHA256.hexdigest(
       max_resources_per_workspace.sort.to_h.to_s
     )
-    common_annotations = {
+    common_annotations = agent_annotations.merge({
       "workspaces.gitlab.com/host-template": host_template_annotation.to_s,
       "workspaces.gitlab.com/id": workspace.id.to_s,
       "workspaces.gitlab.com/max-resources-per-workspace-sha256":
         max_resources_per_workspace_sha256
-    }
-    extra_annotations = common_annotations.merge(
+    })
+    workspace_inventory_annotations = common_annotations.merge(
       { "config.k8s.io/owning-inventory": "#{workspace.name}-workspace-inventory" }
     )
-    workspace_annotations = agent_annotations.merge(extra_annotations)
-    extra_labels = {
+    labels = agent_labels.merge({
       "agent.gitlab.com/id": workspace.agent.id.to_s
-    }
-    labels = agent_labels.merge(extra_labels)
-    extra_secrets_annotations = common_annotations.merge(
+    })
+    secrets_inventory_annotations = common_annotations.merge(
       { "config.k8s.io/owning-inventory": "#{workspace.name}-secrets-inventory" }
     )
-    secrets_annotations = agent_annotations.merge(extra_secrets_annotations)
 
-    workspace_inventory = workspace_inventory(
+    workspace_inventory_config_map = workspace_inventory_config_map(
       workspace_name: workspace.name,
       workspace_namespace: workspace.namespace,
       agent_id: workspace.agent.id,
-      annotations: workspace_annotations
+      annotations: common_annotations
     )
 
     workspace_deployment = workspace_deployment(
       workspace_name: workspace.name,
       workspace_namespace: workspace.namespace,
       labels: labels,
-      annotations: workspace_annotations,
+      annotations: workspace_inventory_annotations,
       spec_replicas: spec_replicas,
       default_resources_per_workspace_container: default_resources_per_workspace_container,
       allow_privilege_escalation: allow_privilege_escalation,
@@ -416,48 +413,46 @@ RSpec.shared_context 'with remote development shared fixtures' do
       workspace_name: workspace.name,
       workspace_namespace: workspace.namespace,
       labels: labels,
-      annotations: workspace_annotations
+      annotations: workspace_inventory_annotations
     )
 
     workspace_pvc = workspace_pvc(
       workspace_name: workspace.name,
       workspace_namespace: workspace.namespace,
       labels: labels,
-      annotations: workspace_annotations
+      annotations: workspace_inventory_annotations
     )
 
     workspace_network_policy = workspace_network_policy(
       workspace_name: workspace.name,
       workspace_namespace: workspace.namespace,
       labels: labels,
-      annotations: workspace_annotations,
+      annotations: workspace_inventory_annotations,
       egress_ip_rules: egress_ip_rules
     )
 
-    workspace_secrets_inventory = workspace_secrets_inventory(
+    secrets_inventory_config_map = secrets_inventory_config_map(
       workspace_name: workspace.name,
       workspace_namespace: workspace.namespace,
       agent_id: workspace.agent.id,
-      # This should be the workspace annotations, not the secrets annotations, because this IS the secrets
-      # inventory, which is owned by the workspace inventory.
-      annotations: workspace_annotations
+      annotations: common_annotations
     )
 
-    workspace_secret_environment = workspace_secret_environment(
+    secret_environment = secret_environment(
       workspace_name: workspace.name,
       workspace_namespace: workspace.namespace,
       labels: labels,
-      annotations: secrets_annotations,
+      annotations: secrets_inventory_annotations,
       workspace_variables_environment: workspace_variables_environment || get_workspace_variables_environment(
         workspace_variables: workspace.workspace_variables
       )
     )
 
-    workspace_secret_file = workspace_secret_file(
+    secret_file = secret_file(
       workspace_name: workspace.name,
       workspace_namespace: workspace.namespace,
       labels: labels,
-      annotations: secrets_annotations,
+      annotations: secrets_inventory_annotations,
       workspace_variables_file: workspace_variables_file || get_workspace_variables_file(
         workspace_variables: workspace.workspace_variables
       )
@@ -468,7 +463,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
         workspace_name: workspace.name,
         workspace_namespace: workspace.namespace,
         labels: labels,
-        annotations: workspace_annotations,
+        annotations: workspace_inventory_annotations,
         max_resources_per_workspace: max_resources_per_workspace
       )
     end
@@ -478,11 +473,11 @@ RSpec.shared_context 'with remote development shared fixtures' do
       namespace: workspace.namespace,
       image_pull_secrets: image_pull_secrets,
       labels: labels,
-      annotations: workspace_annotations
+      annotations: workspace_inventory_annotations
     )
 
     resources = []
-    resources << workspace_inventory if include_inventory
+    resources << workspace_inventory_config_map if include_inventory
     resources << workspace_deployment
     resources << workspace_service
     resources << workspace_pvc
@@ -490,12 +485,12 @@ RSpec.shared_context 'with remote development shared fixtures' do
     unless core_resources_only
       resources << workspace_service_account
       resources << workspace_network_policy if include_network_policy
-      resources << workspace_secrets_inventory if include_inventory
+      resources << secrets_inventory_config_map if include_inventory
 
       if include_all_resources
         resources << workspace_resource_quota unless max_resources_per_workspace.blank?
-        resources << workspace_secret_environment
-        resources << workspace_secret_file
+        resources << secret_environment
+        resources << secret_file
       end
     end
 
@@ -509,7 +504,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
   # @param [Integer] agent_id
   # @param [Hash] annotations
   # @return [Hash]
-  def workspace_inventory(workspace_name:, workspace_namespace:, agent_id:, annotations:)
+  def workspace_inventory_config_map(workspace_name:, workspace_namespace:, agent_id:, annotations:)
     {
       kind: "ConfigMap",
       apiVersion: "v1",
@@ -1088,7 +1083,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
   # @param [Integer] agent_id
   # @param [Hash] annotations
   # @return [Hash]
-  def workspace_secrets_inventory(workspace_name:, workspace_namespace:, agent_id:, annotations:)
+  def secrets_inventory_config_map(workspace_name:, workspace_namespace:, agent_id:, annotations:)
     {
       kind: "ConfigMap",
       apiVersion: "v1",
@@ -1110,7 +1105,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
   # @param [Hash] annotations
   # @param [Hash] workspace_variables_environment
   # @return [Hash]
-  def workspace_secret_environment(
+  def secret_environment(
     workspace_name:,
     workspace_namespace:,
     labels:,
@@ -1137,7 +1132,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
   # @param [Hash] annotations
   # @param [Hash] workspace_variables_file
   # @return [Hash]
-  def workspace_secret_file(
+  def secret_file(
     workspace_name:,
     workspace_namespace:,
     labels:,

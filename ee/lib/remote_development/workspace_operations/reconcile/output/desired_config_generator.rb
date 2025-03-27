@@ -63,7 +63,7 @@ module RemoteDevelopment
               name: workspace_inventory_name,
               namespace: workspace.namespace,
               labels: labels,
-              annotations: workspace_inventory_annotations
+              annotations: common_annotations
             )
 
             desired_config.append(*resources_from_devfile_parser)
@@ -93,9 +93,9 @@ module RemoteDevelopment
             append_inventory_config_map(
               desired_config: desired_config,
               name: secrets_inventory_name,
+              namespace: workspace.namespace,
               labels: labels,
-              annotations: workspace_inventory_annotations,
-              namespace: workspace.namespace
+              annotations: common_annotations
             )
 
             # NOTE: We will perform append_secret here in order to complete
