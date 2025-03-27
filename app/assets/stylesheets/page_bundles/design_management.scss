@@ -55,10 +55,6 @@ $design-pin-diameter-sm: 24px;
 .design-list-item {
   height: 160px;
   text-decoration: none;
-
-  &:hover {
-    border-color: var(--gray-400, $gray-400);
-  }
 }
 
 .design-note-pin {
