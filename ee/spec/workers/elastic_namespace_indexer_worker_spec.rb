@@ -98,8 +98,10 @@ RSpec.describe ElasticNamespaceIndexerWorker, feature_category: :global_search d
             end
 
             it 'calls Elastic::ProcessBookkeepingService.maintain_indexed_namespace_associations!' do
-              expect(Elastic::ProcessBookkeepingService).to receive(:maintain_indexed_namespace_associations!)
-                .with(parent_group, sub_group, sub_child_group).once
+              expect(Elastic::ProcessBookkeepingService).to receive(
+                :maintain_indexed_namespace_associations!) do |*groups|
+                expect(groups).to match_array([parent_group, sub_group, sub_child_group])
+              end
 
               worker.perform(*job_args)
             end
