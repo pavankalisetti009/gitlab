@@ -150,6 +150,10 @@ module EE
         attrs << { analytics_dashboards_pointer_attributes: [:id, :target_project_id, :_destroy] }
       end
 
+      if ::Ai::AmazonQ.connected?
+        attrs << :amazon_q_auto_review_enabled
+      end
+
       if allow_mirror_params?
         attrs + mirror_params
       else

@@ -33,6 +33,7 @@ module EE
         requirementsAvailable: project.feature_available?(:requirements),
         licensedAiFeaturesAvailable: project.licensed_ai_features_available?,
         amazonQAvailable: Ai::AmazonQ.connected?,
+        amazonQAutoReviewEnabled: project.amazon_q_integration&.auto_review_enabled.present?,
         duoFeaturesLocked: project.project_setting.duo_features_enabled_locked?,
         requestCveAvailable: ::Gitlab.com?,
         cveIdRequestHelpPath: help_page_path('user/application_security/cve_id_request.md'),
