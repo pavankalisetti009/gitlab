@@ -52,6 +52,12 @@ RSpec.describe Glql::BaseController, feature_category: :integrations do
 
         execute_request
       end
+
+      it 'does not fail when SLIs were initialized' do
+        Gitlab::Metrics::GlqlSlis.initialize_slis!
+
+        expect { execute_request }.not_to raise_error
+      end
     end
 
     context 'when a single ActiveRecord::QueryAborted error occurs' do
