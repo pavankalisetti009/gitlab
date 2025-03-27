@@ -13,13 +13,13 @@ module EE
           execution_message { _('Q got your message!') }
           params do
             case quick_action_target
-            when ::Issue
+            when ::Issue, ::WorkItem
               "<#{::Ai::AmazonQ::Commands::ISSUE_SUBCOMMANDS.join(' | ')}>"
             when ::MergeRequest
               "<#{::Ai::AmazonQ::Commands::MERGE_REQUEST_SUBCOMMANDS.join(' | ')}>"
             end
           end
-          types Issue, MergeRequest
+          types Issue, MergeRequest, WorkItem
           condition do
             Ability.allowed?(current_user, :trigger_amazon_q, quick_action_target) &&
               (quick_action_target.is_a?(Issue) || quick_action_target.persisted?)

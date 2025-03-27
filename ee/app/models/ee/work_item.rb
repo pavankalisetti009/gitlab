@@ -5,6 +5,8 @@ module EE
     extend ActiveSupport::Concern
     extend ::Gitlab::Utils::Override
 
+    EE_COMMON_QUICK_ACTIONS_COMMANDS = [:q].freeze
+
     prepended do
       include FilterableByTestReports
 
@@ -101,6 +103,11 @@ module EE
     override :use_elasticsearch?
     def use_elasticsearch?
       namespace.use_elasticsearch?
+    end
+
+    override :supported_quick_action_commands
+    def supported_quick_action_commands
+      super + EE_COMMON_QUICK_ACTIONS_COMMANDS
     end
 
     def es_parent

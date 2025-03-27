@@ -62,6 +62,8 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
   end
 
   describe '#supported_quick_action_commands' do
+    let(:work_item) { build(:work_item, :issue) }
+
     subject { work_item.supported_quick_action_commands }
 
     before do
@@ -98,6 +100,10 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
       it 'omits labels related quick action commands' do
         is_expected.not_to include(:weight, :clear_weight)
       end
+    end
+
+    it 'includes ee specific quick actions' do
+      is_expected.to include(:q)
     end
   end
 
