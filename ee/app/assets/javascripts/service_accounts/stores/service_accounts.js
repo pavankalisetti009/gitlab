@@ -1,8 +1,10 @@
 import { defineStore } from 'pinia';
 import axios from '~/lib/utils/axios_utils';
 import { parseIntPagination, normalizeHeaders } from '~/lib/utils/common_utils';
+import { joinPaths } from '~/lib/utils/url_utility';
+import Api from '~/api';
 
-import { createAlert } from '~/alert';
+import { createAlert, VARIANT_INFO } from '~/alert';
 import { s__ } from '~/locale';
 
 export const useServiceAccounts = defineStore('serviceAccounts', {
@@ -10,19 +12,31 @@ export const useServiceAccounts = defineStore('serviceAccounts', {
     return {
       alert: null,
       serviceAccounts: [],
+      serviceAccount: null,
       serviceAccountCount: 0,
       busy: false,
+      url: '',
+      page: 1,
+      perPage: 8,
+      deleteType: null,
     };
   },
   actions: {
-    async fetchServiceAccounts(url, { page, perPage }) {
-      this.alert?.dismiss();
+    async fetchServiceAccounts(url, { page, clearAlert = true }) {
+      this.url = url;
+      this.page = page;
+
+      if (clearAlert) {
+        this.alert?.dismiss();
+        this.alert = null;
+      }
       this.busy = true;
+
       try {
         const { data, headers } = await axios.get(url, {
           params: {
             page,
-            per_page: perPage,
+            per_page: this.perPage,
             orderBy: 'name',
           },
         });
@@ -39,8 +53,41 @@ export const useServiceAccounts = defineStore('serviceAccounts', {
         this.busy = false;
       }
     },
+    setServiceAccount(serviceAccount) {
+      this.serviceAccount = serviceAccount;
+    },
+    setDeleteType(deleteType) {
+      this.deleteType = deleteType;
+    },
     addServiceAccount() {
       // TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/509870
+    },
+    async deleteUser(url) {
+      this.busy = true;
+      this.alert?.dismiss();
+      this.alert = null;
+      const serviceAccountId = this.serviceAccount.id;
+      try {
+        const href = Api.buildUrl(joinPaths(url, `${serviceAccountId}`));
+        await axios.delete(href, {
+          data: {
+            id: serviceAccountId,
+            hard_delete: this.deleteType === 'hard',
+          },
+        });
+        this.alert = createAlert({
+          message: s__('ServiceAccounts|The service account is being deleted.'),
+          variant: VARIANT_INFO,
+        });
+        await this.fetchServiceAccounts(this.url, { page: 1, clearAlert: false });
+      } catch {
+        this.alert = createAlert({
+          message: s__('ServiceAccounts|An error occurred while deleting the service account.'),
+        });
+      } finally {
+        this.deleteType = null;
+        this.busy = false;
+      }
     },
   },
   getters: {},

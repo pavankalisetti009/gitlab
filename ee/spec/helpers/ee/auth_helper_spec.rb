@@ -331,6 +331,7 @@ RSpec.describe EE::AuthHelper do
         base_path: '/admin/application_settings/service_accounts',
         service_accounts: {
           path: 'http://localhost/api/v4/service_accounts',
+          delete_path: '/api/v4/users',
           docs_path: '/help/user/profile/service_accounts.md'
         },
         access_token: {
@@ -360,6 +361,7 @@ RSpec.describe EE::AuthHelper do
         base_path: '/groups/my-group-path/-/settings/service_accounts',
         service_accounts: {
           path: 'http://localhost/api/v4/groups/4/service_accounts',
+          delete_path: '/api/v4/groups/4/service_accounts',
           docs_path: '/help/user/profile/service_accounts.md'
         },
         access_token: {

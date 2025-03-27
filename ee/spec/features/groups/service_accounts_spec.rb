@@ -8,6 +8,7 @@ RSpec.describe 'Service Accounts', feature_category: :user_management do
   let_it_be(:group_owner) { create(:user, owner_of: [group]) }
 
   before do
+    stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
     stub_licensed_features(service_accounts: true)
   end
 

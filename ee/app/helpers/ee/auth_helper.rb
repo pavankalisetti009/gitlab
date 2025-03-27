@@ -115,6 +115,7 @@ module EE
         base_path: admin_application_settings_service_accounts_path,
         service_accounts: {
           path: expose_url(api_v4_service_accounts_path),
+          delete_path: api_v4_users_path,
           docs_path: help_page_path('user/profile/service_accounts.md')
         },
         access_token: {
@@ -132,6 +133,7 @@ module EE
         base_path: group_settings_service_accounts_path(group),
         service_accounts: {
           path: expose_url(api_v4_groups_service_accounts_path(id: group.id)),
+          delete_path: api_v4_groups_service_accounts_path(id: group.id),
           docs_path: help_page_path('user/profile/service_accounts.md')
         },
         access_token: {

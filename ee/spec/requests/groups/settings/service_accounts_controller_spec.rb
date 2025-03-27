@@ -129,6 +129,10 @@ RSpec.describe Groups::Settings::ServiceAccountsController, feature_category: :u
   describe 'GET #index' do
     subject(:get_method) { get(group_settings_service_accounts_path(group)) }
 
+    before do
+      stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
+    end
+
     it_behaves_like 'access control', [:default_roles_assignees]
   end
 end
