@@ -164,7 +164,7 @@ export default {
       });
     },
     visualizationOptions() {
-      return merge(this.visualization.options, this.visualizationOptionOverrides);
+      return merge({}, this.visualization.options, this.visualizationOptionOverrides);
     },
     aggregatedQueryOverrides() {
       return {
