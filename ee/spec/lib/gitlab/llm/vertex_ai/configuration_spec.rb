@@ -12,6 +12,7 @@ RSpec.describe Gitlab::Llm::VertexAi::Configuration, feature_category: :ai_abstr
   let(:current_token) { SecureRandom.uuid }
   let(:enabled_by_namespace_ids) { [1, 2] }
   let(:enablement_type) { 'add_on' }
+  let(:cloud_connector_headers) { { 'cloud-connector-header-key' => 'value' } }
   let(:auth_response) do
     instance_double(Ai::UserAuthorizable::Response,
       namespace_ids: enabled_by_namespace_ids, enablement_type: enablement_type)
@@ -37,22 +38,21 @@ RSpec.describe Gitlab::Llm::VertexAi::Configuration, feature_category: :ai_abstr
 
   describe '#headers' do
     it 'returns headers with text host header replacing host value' do
+      expect(::CloudConnector).to receive(:ai_headers)
+        .with(user, namespace_ids: enabled_by_namespace_ids)
+        .and_return(cloud_connector_headers)
+
       expect(configuration.headers).to include(
         {
           'Accept' => 'application/json',
           'Authorization' => "Bearer #{current_token}",
-          "X-Gitlab-Feature-Enabled-By-Namespace-Ids" => enabled_by_namespace_ids.join(','),
           'X-Gitlab-Feature-Enablement-Type' => enablement_type,
           'Host' => host,
           'Content-Type' => 'application/json',
           'X-Gitlab-Authentication-Type' => 'oidc',
-          'X-Gitlab-Global-User-Id' => be_an(String),
-          'X-Gitlab-Host-Name' => be_an(String),
-          'X-Gitlab-Instance-Id' => be_an(String),
-          'X-Gitlab-Realm' => be_an(String),
           'X-Gitlab-Unit-Primitive' => unit_primitive,
-          'X-Request-ID' => be_an(String)
-        }
+          'X-Request-ID' => be_a(String)
+        }.merge(cloud_connector_headers)
       )
     end
   end

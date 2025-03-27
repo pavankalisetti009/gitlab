@@ -52,6 +52,8 @@ RSpec.describe API::SecurityScans, feature_category: :static_application_securit
       }
     end
 
+    let(:cloud_connector_headers) { { 'cloud-connector-header' => 'value' } }
+
     let(:file_path) { 'scripts/test.py' }
     let(:content) do
       <<~CONTENT
@@ -85,6 +87,7 @@ RSpec.describe API::SecurityScans, feature_category: :static_application_securit
       service = instance_double('::CloudConnector::SelfSigned::AvailableServiceData')
       allow(::CloudConnector::AvailableServices).to receive(:find_by_name).and_return(service)
       allow(service).to receive_messages({ free_access?: false, allowed_for?: true, access_token: jwt })
+      allow(::CloudConnector).to receive(:headers).and_return(cloud_connector_headers)
     end
 
     context 'when user can access the security scan api for the project' do
@@ -142,10 +145,10 @@ RSpec.describe API::SecurityScans, feature_category: :static_application_securit
           'ResponseHeaderTimeout' => '55s'
         )
         expect(params['Header']).to include(
-          'X-Gitlab-Host-Name' => [Gitlab.config.gitlab.host],
           'Authorization' => ["Bearer #{jwt}"],
           'Content-Type' => ['application/json'],
-          'User-Agent' => ['Super Awesome Browser 43.144.12']
+          'User-Agent' => ['Super Awesome Browser 43.144.12'],
+          'cloud-connector-header' => ['value']
         )
       end
     end

@@ -18,10 +18,10 @@ RSpec.describe ::CloudConnector, feature_category: :cloud_connector do
   shared_examples 'building HTTP headers' do
     let(:expected_headers) do
       {
-        'X-Gitlab-Host-Name' => Gitlab.config.gitlab.host,
-        'X-Gitlab-Instance-Id' => an_instance_of(String),
-        'X-Gitlab-Realm' => ::CloudConnector::GITLAB_REALM_SELF_MANAGED,
-        'X-Gitlab-Version' => Gitlab.version_info.to_s
+        'x-gitlab-host-name' => Gitlab.config.gitlab.host,
+        'x-gitlab-instance-id' => an_instance_of(String),
+        'x-gitlab-realm' => ::CloudConnector::GITLAB_REALM_SELF_MANAGED,
+        'x-gitlab-version' => Gitlab.version_info.to_s
       }
     end
 
@@ -31,14 +31,14 @@ RSpec.describe ::CloudConnector, feature_category: :cloud_connector do
       let(:user) { build(:user, id: 1) }
 
       it 'generates a hash with the required fields based on the user' do
-        expect(headers).to match(expected_headers.merge('X-Gitlab-Global-User-Id' => an_instance_of(String)))
+        expect(headers).to match(expected_headers.merge('x-gitlab-global-user-id' => an_instance_of(String)))
       end
     end
 
     context 'when the the user argument is nil' do
       let(:user) { nil }
 
-      it 'generates a hash without `X-Gitlab-Global-User-Id`' do
+      it 'generates a hash without `x-gitlab-global-user-id`' do
         expect(headers).to match(expected_headers)
       end
     end
@@ -51,8 +51,8 @@ RSpec.describe ::CloudConnector, feature_category: :cloud_connector do
   describe '.ai_headers' do
     let(:expected_headers) do
       super().merge(
-        'X-Gitlab-Duo-Seat-Count' => '0',
-        'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => namespace_ids.join(',')
+        'x-gitlab-duo-seat-count' => '0',
+        'x-gitlab-feature-enabled-by-namespace-ids' => namespace_ids.join(',')
       )
     end
 
@@ -70,7 +70,7 @@ RSpec.describe ::CloudConnector, feature_category: :cloud_connector do
           receive(:maximum_duo_seat_count).with(namespace_ids: namespace_ids).and_return(5)
         )
 
-        expect(headers).to include('X-Gitlab-Duo-Seat-Count' => '5')
+        expect(headers).to include('x-gitlab-duo-seat-count' => '5')
       end
     end
   end
