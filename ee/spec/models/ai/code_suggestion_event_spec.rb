@@ -83,7 +83,8 @@ RSpec.describe Ai::CodeSuggestionEvent, feature_category: :code_suggestions do
         suggestion_size: 3,
         language: 'foo',
         unique_tracking_id: 'bar',
-        branch_name: 'main'
+        branch_name: 'main',
+        namespace_path: nil
       })
     end
   end

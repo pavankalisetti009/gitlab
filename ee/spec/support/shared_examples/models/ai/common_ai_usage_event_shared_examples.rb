@@ -13,7 +13,8 @@ RSpec.shared_examples 'common ai_usage_event' do
   describe '#to_clickhouse_csv_row', :freeze_time do
     let(:event) { described_class.new(attributes.with_indifferent_access) }
     let(:attributes) do
-      { user: user, timestamp: '2021-01-01'.to_datetime, event: described_class.events.each_key.first }
+      { user: user, timestamp: '2021-01-01'.to_datetime,
+        event: described_class.events.each_key.first, namespace_path: '1/2' }
     end
 
     let(:user) { build_stubbed(:user) }
@@ -22,7 +23,8 @@ RSpec.shared_examples 'common ai_usage_event' do
       expect(event.to_clickhouse_csv_row).to include(
         user_id: user.id,
         timestamp: '2021-01-01'.to_datetime.to_f,
-        event: described_class.events.each_value.first
+        event: described_class.events.each_value.first,
+        namespace_path: '1/2'
       )
     end
   end
