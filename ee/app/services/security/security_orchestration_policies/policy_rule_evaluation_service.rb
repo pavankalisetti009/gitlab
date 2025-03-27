@@ -45,15 +45,16 @@ module Security
           return
         end
 
-        if approval_rule.scan_result_policy_read&.fail_open?
-          passed_rules.add(approval_rule)
-        else
-          failed_rules.add(approval_rule)
-        end
+        process_default_behaviour(approval_rule)
 
         return unless approval_rule.scan_result_policy_read
 
         violations.add_error(approval_rule.scan_result_policy_read, error, **extra_data)
+      end
+
+      def skip!(approval_rule)
+        process_default_behaviour(approval_rule)
+        violations.skip(approval_rule.scan_result_policy_read) if approval_rule.scan_result_policy_read
       end
 
       private
@@ -74,6 +75,29 @@ module Security
         false
       end
 
+      def process_default_behaviour(rule)
+        if rule.scan_result_policy_read&.fail_open?
+          passed_rules.add(rule)
+        else
+          failed_rules.add(rule)
+        end
+      end
+
+      def violations
+        @violations ||= Security::SecurityOrchestrationPolicies::UpdateViolationsService.new(merge_request)
+      end
+
+      def track_unblock_event(rule)
+        track_internal_event(
+          'unblock_approval_rule_using_scan_execution_policy',
+          project: project,
+          additional_properties: {
+            label: rule.scanners.join(',')
+          }
+        )
+      end
+
+      # Refactor the methods below with PORO classes: https://gitlab.com/gitlab-org/gitlab/-/issues/504305
       def execution_policy_scan_enforced?(rule)
         scanners = extract_scanners(rule)
         return false if scanners.blank?
@@ -135,20 +159,6 @@ module Security
         # rubocop:enable Database/AvoidUsingPluckWithoutLimit, CodeReuse/ActiveRecord
       end
       strong_memoize_attr :active_scan_execution_policy_scans
-
-      def violations
-        @violations ||= Security::SecurityOrchestrationPolicies::UpdateViolationsService.new(merge_request)
-      end
-
-      def track_unblock_event(rule)
-        track_internal_event(
-          'unblock_approval_rule_using_scan_execution_policy',
-          project: project,
-          additional_properties: {
-            label: rule.scanners.join(',')
-          }
-        )
-      end
     end
   end
 end

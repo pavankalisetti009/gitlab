@@ -384,6 +384,53 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationServ
       end
     end
 
+    describe '#skip!' do
+      it 'adds violations for the skipped rules', :aggregate_failures do
+        service.skip!(approval_rule_1)
+        execute
+
+        expect(violated_policies).to contain_exactly policy_a
+        violation = merge_request.scan_result_policy_violations.first
+        expect(violation).to be_skipped
+        expect(violation.violation_data).to eq({ 'errors' => ['error' => 'EVALUATION_SKIPPED'] })
+      end
+
+      it 'blocks the rule by resetting approvals' do
+        approval_rule_1.update!(approvals_required: 0)
+        service.skip!(approval_rule_1)
+
+        expect { execute }.to change { approval_rule_1.reload.approvals_required }.from(0).to(1)
+      end
+
+      context 'when approval rule has no scan_result_policy_read' do
+        it 'does not create violations' do
+          approval_project_rule_1.update!(scan_result_policy_read: nil)
+          approval_rule_1.update!(scan_result_policy_read: nil)
+          service.skip!(approval_rule_1)
+
+          expect { execute }.not_to change { violated_policies }
+        end
+      end
+
+      context 'when rule should fail open' do
+        before do
+          policy_b.update!(fallback_behavior: { fail: 'open' })
+          service.skip!(approval_rule_2)
+        end
+
+        it 'adds warning violations for the skipped rules' do
+          expect { execute }.to change { violated_policies.size }.from(0).to(1)
+          violation = merge_request.scan_result_policy_violations.first
+          expect(violation).to be_warn
+          expect(violation.violation_data).to eq({ 'errors' => ['error' => 'EVALUATION_SKIPPED'] })
+        end
+
+        it 'unblocks the rule by removing required approvals' do
+          expect { execute }.to change { approval_rule_2.reload.approvals_required }.from(1).to(0)
+        end
+      end
+    end
+
     describe 'policy bot comment' do
       context 'with failing rules' do
         before do

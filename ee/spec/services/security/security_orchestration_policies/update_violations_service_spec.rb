@@ -334,4 +334,48 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
       end
     end
   end
+
+  describe '#skip' do
+    it 'adds a specific error into violation data and persists the violation as skipped', :aggregate_failures do
+      service.skip(policy_a)
+      service.execute
+
+      expect(violated_policies).to contain_exactly(policy_a)
+      expect(last_violation).to be_skipped
+      expect(last_violation.violation_data).to match(
+        { 'errors' => [{ 'error' => 'EVALUATION_SKIPPED' }] }
+      )
+    end
+
+    context 'when policy is fail-open' do
+      before do
+        policy_a.update!(fallback_behavior: { fail: 'open' })
+      end
+
+      it 'persists the violation as warning', :aggregate_failures do
+        service.skip(policy_a)
+        service.execute
+
+        expect(violated_policies).to contain_exactly(policy_a)
+        expect(last_violation).to be_warn
+        expect(last_violation.violation_data).to match(
+          { 'errors' => [{ 'error' => 'EVALUATION_SKIPPED' }] }
+        )
+      end
+    end
+
+    context 'when other error is present for a skipped policy' do
+      it 'merges the errors and persists it as failed', :aggregate_failures do
+        service.skip(policy_a)
+        service.add_error(policy_a, :artifacts_missing)
+        service.execute
+
+        expect(violated_policies).to contain_exactly(policy_a)
+        expect(last_violation).to be_failed
+        expect(last_violation.violation_data).to match(
+          { 'errors' => array_including({ 'error' => 'ARTIFACTS_MISSING' }, { 'error' => 'EVALUATION_SKIPPED' }) }
+        )
+      end
+    end
+  end
 end
