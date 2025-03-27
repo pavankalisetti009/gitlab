@@ -72,7 +72,7 @@ module EE
         elasticsearch_max_code_indexing_concurrency: [:integer, { default: 30 }]
 
       validates :clickhouse, json_schema: { filename: "application_setting_clickhouse" }
-      validates :search, json_schema: { filename: 'application_setting_search' }
+      validates :search, json_schema: { filename: 'application_setting_ee_search' }
       validates :duo_workflow, json_schema: { filename: "application_setting_duo_workflow" }
       validates :integrations, json_schema: { filename: "application_setting_integrations" }
       validates :elasticsearch, json_schema: { filename: "application_setting_elasticsearch" }
