@@ -23211,6 +23211,9 @@ msgstr ""
 msgid "Enter confidential issue URL"
 msgstr ""
 
+msgid "Enter duration"
+msgstr ""
+
 msgid "Enter epic URL"
 msgstr ""
 
@@ -29826,6 +29829,9 @@ msgid "Hour"
 msgstr ""
 
 msgid "Hour (UTC)"
+msgstr ""
+
+msgid "Hours"
 msgstr ""
 
 msgid "Housekeeping"
@@ -60894,6 +60900,9 @@ msgid "Time tracking"
 msgstr ""
 
 msgid "Time tracking report"
+msgstr ""
+
+msgid "Time unit"
 msgstr ""
 
 msgid "Time until first merge request"

@@ -1,8 +1,7 @@
 import { __ } from '~/locale';
 import { getWeekdayNames } from '~/lib/utils/datetime_utility';
-import { DAILY, HOUR_IN_SECONDS } from '../constants';
+import { DAILY } from '../constants';
 
-const DAY_IN_SECONDS = HOUR_IN_SECONDS * 24;
 const DEFAULT_START_WEEKDAY = 'monday';
 const DEFAULT_START_MONTH_DAY = 1;
 const WEEKLY = 'weekly';
@@ -17,17 +16,30 @@ export const CADENCE_OPTIONS = [
   { value: MONTHLY, text: __('Monthly') },
 ];
 
+// Constants for time units in seconds
+export const TIME_UNITS = {
+  MINUTE: 60,
+  HOUR: 3600,
+  DAY: 86400, // 24 hours * 60 minutes * 60 seconds
+};
+
+export const TIME_UNIT_OPTIONS = [
+  { value: TIME_UNITS.MINUTE, text: __('Minutes') },
+  { value: TIME_UNITS.HOUR, text: __('Hours') },
+  { value: TIME_UNITS.DAY, text: __('Days') },
+];
+
 const CADENCE_CONFIG = {
   [DAILY]: {
-    time_window: { value: HOUR_IN_SECONDS },
+    time_window: { value: TIME_UNITS.MINUTE },
   },
   [WEEKLY]: {
     days: DEFAULT_START_WEEKDAY,
-    time_window: { value: DAY_IN_SECONDS },
+    time_window: { value: TIME_UNITS.DAY },
   },
   [MONTHLY]: {
     days_of_month: [DEFAULT_START_MONTH_DAY],
-    time_window: { value: DAY_IN_SECONDS },
+    time_window: { value: TIME_UNITS.DAY },
   },
 };
 
@@ -74,4 +86,39 @@ export const getMonthlyDayOptions = () => {
     const day = i + 1;
     return { value: day, text: day };
   });
+};
+
+/**
+ * Converts a value and time unit to seconds
+ * @param {Number} value - The numeric value
+ * @param {Number} unit - The time unit in seconds (from TIME_UNITS)
+ * @returns {Number} Total seconds
+ */
+export const timeUnitToSeconds = (value, unit) => {
+  return value * unit;
+};
+
+/**
+ * Converts seconds to a value in the specified unit
+ * @param {Number} seconds
+ * @param {Number} unit - The time unit to convert to
+ * @returns {Number} Value in the specified unit
+ */
+export const secondsToValue = (seconds, unit) => {
+  return seconds / unit;
+};
+
+/**
+ * Determines the most appropriate time unit for a given number of seconds
+ * @param {Number} seconds
+ * @returns {Number} The appropriate time unit from TIME_UNITS
+ */
+export const determineTimeUnit = (seconds) => {
+  if (seconds % TIME_UNITS.DAY === 0 && seconds >= TIME_UNITS.DAY) {
+    return TIME_UNITS.DAY;
+  }
+  if (seconds % TIME_UNITS.HOUR === 0 && seconds >= TIME_UNITS.HOUR) {
+    return TIME_UNITS.HOUR;
+  }
+  return TIME_UNITS.MINUTE;
 };

@@ -1,6 +1,64 @@
-import { updateScheduleCadence } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/rule/utils';
+import {
+  determineTimeUnit,
+  secondsToValue,
+  timeUnitToSeconds,
+  updateScheduleCadence,
+  TIME_UNITS,
+} from 'ee/security_orchestration/components/policy_editor/pipeline_execution/rule/utils';
 
 describe('Pipeline execution rule utils', () => {
+  describe('time unit utilities', () => {
+    describe('timeUnitToSeconds', () => {
+      it('converts hours to seconds correctly', () => {
+        expect(timeUnitToSeconds(2, TIME_UNITS.HOUR)).toBe(7200);
+      });
+
+      it('converts days to seconds correctly', () => {
+        expect(timeUnitToSeconds(1, TIME_UNITS.DAY)).toBe(86400);
+      });
+
+      it('handles seconds correctly', () => {
+        expect(timeUnitToSeconds(30, TIME_UNITS.MINUTE)).toBe(1800);
+      });
+    });
+
+    describe('secondsToValue', () => {
+      it('converts seconds to minutes correctly', () => {
+        expect(secondsToValue(60, TIME_UNITS.MINUTE)).toBe(1);
+      });
+
+      it('converts seconds to hours correctly', () => {
+        expect(secondsToValue(7200, TIME_UNITS.HOUR)).toBe(2);
+      });
+
+      it('converts seconds to days correctly', () => {
+        expect(secondsToValue(86400, TIME_UNITS.DAY)).toBe(1);
+      });
+    });
+
+    describe('determineTimeUnit', () => {
+      it('selects days for values divisible by 86400', () => {
+        expect(determineTimeUnit(86400)).toBe(TIME_UNITS.DAY);
+        expect(determineTimeUnit(172800)).toBe(TIME_UNITS.DAY);
+      });
+
+      it('selects hours for values divisible by 3600 but not 86400', () => {
+        expect(determineTimeUnit(3600)).toBe(TIME_UNITS.HOUR);
+        expect(determineTimeUnit(7200)).toBe(TIME_UNITS.HOUR);
+      });
+
+      it('selects minute for other values', () => {
+        expect(determineTimeUnit(60)).toBe(TIME_UNITS.MINUTE);
+        expect(determineTimeUnit(120)).toBe(TIME_UNITS.MINUTE);
+      });
+
+      it('defaults to minutes for zero or negative values', () => {
+        expect(determineTimeUnit(0)).toBe(TIME_UNITS.MINUTE);
+        expect(determineTimeUnit(-60)).toBe(TIME_UNITS.MINUTE);
+      });
+    });
+  });
+
   describe('updateScheduleCadence', () => {
     const baseSchedule = {
       start_time: '00:00',
@@ -29,7 +87,7 @@ describe('Pipeline execution rule utils', () => {
       expect(updateScheduleCadence({ schedule: weeklySchedule, cadence: 'daily' })).toEqual(
         expect.objectContaining({
           ...dailySchedule,
-          time_window: { value: 3600, distribution: 'random' },
+          time_window: { value: 60, distribution: 'random' },
         }),
       );
     });
