@@ -22,6 +22,10 @@ module API
       end
 
       resource :usage_export do
+        after do
+          Gitlab::CurrentSettings.update(license_usage_data_exported: true) if ::License.current.offline_cloud_license?
+        end
+
         desc 'Retrieve license usage data' do
           detail 'Get usage data on the currently active license'
           tags LICENSES_TAGS
