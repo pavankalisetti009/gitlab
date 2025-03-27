@@ -13,6 +13,8 @@ import getSppLinkedProjectsGroups from 'ee/security_orchestration/graphql/querie
 import getSppLinkedGroups from 'ee/security_orchestration/graphql/queries/get_spp_linked_groups.graphql';
 import getGroupProjects from 'ee/security_orchestration/graphql/queries/get_group_projects.query.graphql';
 import securityPolicyProjectCreated from 'ee/security_orchestration/graphql/queries/security_policy_project_created.subscription.graphql';
+import searchProjectMembers from '~/graphql_shared/queries/project_user_members_search.query.graphql';
+import searchGroupMembers from '~/graphql_shared/queries/group_users_search.query.graphql';
 import { createSppSubscriptionHandler } from '../utils';
 
 const defaultNodes = [
@@ -134,11 +136,43 @@ const mockApolloProjectHandlers = () => {
   };
 };
 
+const mockUserHandlers = (nodes = []) => {
+  return {
+    searchProjectMembers: jest.fn().mockResolvedValue({
+      data: {
+        project: {
+          id: 'gid://gitlab/Project/6',
+          projectMembers: {
+            nodes,
+            __typename: 'MemberInterfaceConnection',
+          },
+          __typename: 'Project',
+        },
+      },
+    }),
+    searchGroupMembers: jest.fn().mockResolvedValue({
+      data: {
+        workspace: {
+          id: 'gid://gitlab/Group/6',
+          users: {
+            nodes,
+            pageInfo: mockPageInfo(),
+            __typename: 'GroupMemberConnection',
+          },
+          __typename: 'Group',
+        },
+      },
+    }),
+  };
+};
+
 export const defaultHandlers = {
   ...mockApolloHandlers(),
   sppLinkedItemsHandler: createSppLinkedItemsHandler(),
   sppLinkedGroupsHandler: createSppLinkedGroupsHandler(),
   securityPolicyProjectCreatedHandler: createSppSubscriptionHandler(),
+  searchProjectMembersHandler: mockUserHandlers().searchProjectMembers,
+  searchGroupMembersHandler: mockUserHandlers().searchGroupMembers,
 };
 
 export const createMockApolloProvider = (handlers = defaultHandlers) => {
@@ -151,5 +185,7 @@ export const createMockApolloProvider = (handlers = defaultHandlers) => {
     [getSppLinkedGroups, handlers.sppLinkedGroupsHandler],
     [getGroupProjects, mockApolloProjectHandlers],
     [securityPolicyProjectCreated, handlers.securityPolicyProjectCreatedHandler],
+    [searchProjectMembers, handlers.searchProjectMembersHandler],
+    [searchGroupMembers, handlers.searchGroupMembersHandler],
   ]);
 };

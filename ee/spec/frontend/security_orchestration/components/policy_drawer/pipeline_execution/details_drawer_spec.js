@@ -57,7 +57,7 @@ describe('PipelineExecutionDrawer', () => {
       createComponent({ propsData: { policy: mockProjectPipelineExecutionPolicy } });
 
       expect(findSummary().exists()).toBe(true);
-      expect(findConfigurationRow().exists()).toBe(false);
+      expect(findConfigurationRow().exists()).toBe(true);
       expect(findSummaryFields()).toHaveLength(1);
       const text = trimText(findSummaryFields().at(0).text());
       expect(text).toContain('Project : gitlab-policies/js6');
@@ -91,7 +91,6 @@ describe('PipelineExecutionDrawer', () => {
     it('renders default configuration row if there is no configuration in policy', () => {
       createComponent({
         propsData: { policy: mockProjectPipelineExecutionPolicy },
-        provide: { glFeatures: { securityPoliciesSkipCi: true } },
       });
 
       expect(findConfigurationRow().exists()).toBe(true);
@@ -100,7 +99,6 @@ describe('PipelineExecutionDrawer', () => {
     it('renders configuration row when there is a configuration', () => {
       createComponent({
         propsData: { policy: mockProjectPipelineExecutionWithConfigurationPolicy },
-        provide: { glFeatures: { securityPoliciesSkipCi: true } },
       });
 
       expect(findConfigurationRow().exists()).toBe(true);

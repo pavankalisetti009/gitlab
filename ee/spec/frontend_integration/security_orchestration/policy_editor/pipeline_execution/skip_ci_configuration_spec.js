@@ -41,7 +41,7 @@ describe('Skip ci for pipeline execution policy', () => {
 
   describe('allow skip ci', () => {
     beforeEach(async () => {
-      createWrapper({ glFeatures: { securityPoliciesSkipCi: true } });
+      createWrapper();
       await waitForPromises();
     });
 

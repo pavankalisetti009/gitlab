@@ -34,7 +34,7 @@ describe('Skip ci for scan execution policy', () => {
 
   describe('allow skip ci', () => {
     beforeEach(() => {
-      createWrapper({ glFeatures: { securityPoliciesSkipCi: true } });
+      createWrapper();
     });
 
     it('allows to skip ci configuration for scan execution', async () => {

@@ -379,13 +379,7 @@ describe('EditorComponent', () => {
 
   describe('skip ci configuration', () => {
     it('renders skip ci configuration', () => {
-      factory({
-        provide: {
-          glFeatures: {
-            securityPoliciesSkipCi: true,
-          },
-        },
-      });
+      factory();
 
       expect(findSkipCiSelector().exists()).toBe(true);
       expect(findSkipCiSelector().props('skipCiConfiguration')).toEqual({});
