@@ -5,6 +5,7 @@ require "fast_spec_helper"
 RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::ResponsePayloadBuilder, feature_category: :workspaces do
   include_context 'with remote development shared fixtures'
 
+  let(:update_types) { RemoteDevelopment::WorkspaceOperations::Reconcile::UpdateTypes }
   let(:logger) { instance_double(Logger) }
   let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
   let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
@@ -59,7 +60,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
   #       value of `include_all_resources` using simple `let` statements, and avoid having to write complex mocks.
   # NOTE: The generated_config_to_apply can include string keys because users can provide labels and annotations in
   #       their agent configuration which we use in the DesiredConfigGenerator which is being mocked here.
-  let(:generated_config_to_apply) do
+  let(:single_resource) do
     [
       {
         include_all_resources: expected_include_all_resources,
@@ -67,6 +68,33 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
         "some_other_string_key" => 2
       }
     ]
+  end
+
+  let(:multiple_resources) do
+    [
+      {
+        a: 1
+      },
+      {
+        b: 2
+      },
+      {
+        c: 3
+      }
+    ]
+  end
+
+  let(:no_resource) { nil }
+
+  let(:generated_config_to_apply) do
+    case generated_config_to_apply_type
+    when :single_resource
+      single_resource
+    when :multiple_resources
+      multiple_resources
+    when :no_resource
+      nil
+    end
   end
 
   let(:expected_returned_workspace_rails_infos) do
@@ -111,8 +139,12 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
 
   before do
     allow(workspace)
-      .to receive(:desired_state_updated_more_recently_than_last_response_to_agent?)
-            .and_return(desired_state_updated_more_recently_than_last_response_to_agent)
+      .to receive_messages(
+        desired_state_updated_more_recently_than_last_response_to_agent?:
+          desired_state_updated_more_recently_than_last_response_to_agent,
+        desired_state_terminated_and_actual_state_not_terminated?:
+          desired_state_terminated_and_actual_state_not_terminated
+      )
   end
 
   context "when workspace.desired_config_generator_version is current version" do
@@ -124,108 +156,53 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
         .with(hash_including(include_all_resources: expected_include_all_resources)) { generated_config_to_apply }
     end
 
-    context "when update_type is FULL" do
-      let(:desired_state_updated_more_recently_than_last_response_to_agent) { false }
-      let(:update_type) { RemoteDevelopment::WorkspaceOperations::Reconcile::UpdateTypes::FULL }
-      let(:expected_include_all_resources) { true }
+    using RSpec::Parameterized::TableSyntax
 
-      it "includes config_to_apply with all resources included" do
-        expect(returned_value).to eq(expected_returned_value)
-      end
-
-      context "when config_to_apply contains multiple resources" do
-        let(:generated_config_to_apply) do
-          [
-            {
-              a: 1
-            },
-            {
-              b: 2
-            },
-            {
-              c: 3
-            }
-          ]
-        end
-
-        it "includes all resources" do
-          expect(returned_value).to eq(expected_returned_value)
-          returned_value[:response_payload][:workspace_rails_infos].first[:config_to_apply]
-          returned_value => {
-            response_payload: {
-              workspace_rails_infos: [
-                {
-                  config_to_apply: config_to_apply_yaml_stream
-                },
-              ]
-            }
-          }
-          loaded_multiple_docs = YAML.load_stream(config_to_apply_yaml_stream)
-          expect(loaded_multiple_docs.size).to eq(3)
-        end
-      end
+    # rubocop:disable Layout/LineLength -- Required for formatting of table
+    where(
+      :update_type,
+      :force_include_all_resources,
+      :desired_state_updated_more_recently_than_last_response_to_agent,
+      :desired_state_terminated_and_actual_state_not_terminated,
+      :generated_config_to_apply_type,
+      :expected_include_all_resources,
+      :expected_workspace_resources_included_type
+    ) do
+      update_types::FULL    | false  | false | false | :multiple_resources | true | described_class::ALL_RESOURCES_INCLUDED
+      update_types::FULL    | true   | true  | true  | :single_resource | true | described_class::ALL_RESOURCES_INCLUDED
+      update_types::FULL    | true   | true  | false | :single_resource | true | described_class::ALL_RESOURCES_INCLUDED
+      update_types::FULL    | true   | false | true  | :single_resource | true | described_class::ALL_RESOURCES_INCLUDED
+      update_types::FULL    | true   | false | false | :single_resource | true | described_class::ALL_RESOURCES_INCLUDED
+      update_types::FULL    | false  | true  | true  | :single_resource | true | described_class::ALL_RESOURCES_INCLUDED
+      update_types::FULL    | false  | true  | false | :single_resource | true | described_class::ALL_RESOURCES_INCLUDED
+      update_types::FULL    | false  | false | true  | :single_resource | true | described_class::ALL_RESOURCES_INCLUDED
+      update_types::FULL    | false  | false | false | :single_resource | true | described_class::ALL_RESOURCES_INCLUDED
+      update_types::PARTIAL | true   | true  | true  | :single_resource | true  | described_class::ALL_RESOURCES_INCLUDED
+      update_types::PARTIAL | true   | true  | false | :single_resource | true  | described_class::ALL_RESOURCES_INCLUDED
+      update_types::PARTIAL | true   | false | true  | :single_resource | true  | described_class::ALL_RESOURCES_INCLUDED
+      update_types::PARTIAL | true   | false | false | :single_resource | true  | described_class::ALL_RESOURCES_INCLUDED
+      update_types::PARTIAL | false  | true  | true  | :single_resource | false | described_class::PARTIAL_RESOURCES_INCLUDED
+      update_types::PARTIAL | false  | true  | false | :single_resource | false | described_class::PARTIAL_RESOURCES_INCLUDED
+      update_types::PARTIAL | false  | false | true  | :single_resource | false | described_class::PARTIAL_RESOURCES_INCLUDED
+      update_types::PARTIAL | false  | false | false | :no_resource | false | described_class::NO_RESOURCES_INCLUDED
     end
+    # rubocop:enable Layout/LineLength
 
-    context "when update_type is PARTIAL" do
-      let(:update_type) { RemoteDevelopment::WorkspaceOperations::Reconcile::UpdateTypes::PARTIAL }
-
-      context 'when force_include_all_resources is true' do
-        let(:force_include_all_resources) { true }
-        let(:expected_include_all_resources) { true }
-
-        context "when workspace.desired_state_updated_more_recently_than_last_response_to_agent == true" do
-          let(:desired_state_updated_more_recently_than_last_response_to_agent) { true }
-
-          it "includes config_to_apply with all resources included" do
-            expect(returned_value).to eq(expected_returned_value)
-          end
-        end
-
-        context "when workspace.desired_state_updated_more_recently_than_last_response_to_agent == false" do
-          let(:desired_state_updated_more_recently_than_last_response_to_agent) { false }
-
-          it "includes config_to_apply with all resources included" do
-            expect(returned_value).to eq(expected_returned_value)
-          end
-        end
-      end
-
-      context 'when force_include_all_resources is false' do
-        let(:force_include_all_resources) { false }
-        let(:expected_include_all_resources) { false }
-
-        context "when workspace.desired_state_updated_more_recently_than_last_response_to_agent == true" do
-          let(:desired_state_updated_more_recently_than_last_response_to_agent) { true }
-          let(:expected_workspace_resources_included_type) do
-            described_class::PARTIAL_RESOURCES_INCLUDED
-          end
-
-          it "includes config_to_apply without all resources included" do
-            expect(returned_value).to eq(expected_returned_value)
-          end
-        end
-
-        context "when workspace.desired_state_updated_more_recently_than_last_response_to_agent == false" do
-          let(:desired_state_updated_more_recently_than_last_response_to_agent) { false }
-          let(:generated_config_to_apply) { nil }
-          let(:expected_workspace_resources_included_type) do
-            described_class::NO_RESOURCES_INCLUDED
-          end
-
-          it "does not includes config_to_apply and returns it as an empty string" do
-            expect(returned_value).to eq(expected_returned_value)
-          end
-        end
+    with_them do
+      it "expected resources are included in config_to_apply" do
+        expect(returned_value).to eq(expected_returned_value)
       end
     end
   end
 
+  # rubocop:disable RSpec/MultipleMemoizedHelpers -- needed helpers for multiple cases
   context "when workspace.desired_config_generator_version is a previous version" do
     let(:previous_desired_config_generator_version) { 2 }
-
+    let(:generated_config_to_apply_type) { :single_resource }
     let(:desired_config_generator_version) { previous_desired_config_generator_version }
-    let(:update_type) { RemoteDevelopment::WorkspaceOperations::Reconcile::UpdateTypes::FULL }
+    let(:update_type) { update_types::FULL }
     let(:desired_state_updated_more_recently_than_last_response_to_agent) { false }
+    let(:desired_state_terminated_and_actual_state_not_terminated) { false }
     let(:expected_include_all_resources) { true }
 
     before do
@@ -249,4 +226,5 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
       expect(returned_value).to eq(expected_returned_value)
     end
   end
+  # rubocop:enable RSpec/MultipleMemoizedHelpers
 end

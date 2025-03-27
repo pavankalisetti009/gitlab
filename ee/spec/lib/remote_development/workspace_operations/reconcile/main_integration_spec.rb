@@ -456,6 +456,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
             create_config_to_apply_yaml_stream(
               workspace: workspace,
               started: expected_value_for_started,
+              desired_state_is_terminated: desired_state == RemoteDevelopment::WorkspaceOperations::States::TERMINATED,
               egress_ip_rules: egress_ip_rules,
               max_resources_per_workspace: max_resources_per_workspace,
               default_resources_per_workspace_container: default_resources_per_workspace_container,

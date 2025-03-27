@@ -44,12 +44,15 @@ module RemoteDevelopment
             end
 
             # For a PARTIAL update, return:
-            # 1. WorkspaceOperations with_desired_state_updated_more_recently_than_last_response_to_agent
-            # 2. WorkspaceOperations which we received from the agent in the agent_infos array
+            # 1. Workspaces with_desired_state_updated_more_recently_than_last_response_to_agent
+            # 2. Workspaces with_desired_state_terminated_and_actual_state_not_terminated
+            # 3. Workspaces which we received from the agent in the agent_infos array
+            # 4. Workspaces which have force_include_all_resources set to true
             workspaces_from_agent_infos_ids = workspaces_from_agent_infos.map(&:id)
             agent
               .workspaces
               .with_desired_state_updated_more_recently_than_last_response_to_agent
+              .or(agent.workspaces.with_desired_state_terminated_and_actual_state_not_terminated)
               .or(agent.workspaces.id_in(workspaces_from_agent_infos_ids))
               .or(agent.workspaces.forced_to_include_all_resources)
               .order_id_asc

@@ -561,6 +561,7 @@ module RemoteDevelopment
       expected_config_to_apply_yaml_stream = create_config_to_apply_yaml_stream(
         workspace: workspace,
         started: false,
+        desired_state_is_terminated: true,
         **additional_args_for_create_config_to_apply_yaml_stream
       )
 
@@ -580,8 +581,13 @@ module RemoteDevelopment
 
     # @param [Workspace] workspace
     # @param [QA::Resource::Clusters::AgentToken] agent_token
+    # @param [Hash] additional_args_for_create_config_to_apply_yaml_stream
     # @return [void]
-    def simulate_fourteenth_poll(workspace:, agent_token:)
+    def simulate_fourteenth_poll(
+      workspace:,
+      agent_token:,
+      **additional_args_for_create_config_to_apply_yaml_stream
+    )
       # SIMULATE RECONCILE REQUEST FROM AGENTK UPDATING WORKSPACE TO STOPPING ACTUAL_STATE
 
       workspace_agent_info = create_workspace_agent_info_hash(
@@ -592,6 +598,13 @@ module RemoteDevelopment
         resource_version: nil # NOTE: Resource version returned in agent_infos is null in actual_state=Terminating case
       )
 
+      expected_config_to_apply_yaml_stream = create_config_to_apply_yaml_stream(
+        workspace: workspace,
+        started: false,
+        desired_state_is_terminated: true,
+        **additional_args_for_create_config_to_apply_yaml_stream
+      )
+
       simulate_poll(
         workspace: workspace,
         agent_token: agent_token,
@@ -600,7 +613,7 @@ module RemoteDevelopment
         expected_desired_state: TERMINATED,
         expected_actual_state: TERMINATING,
         expected_resource_version: '6',
-        expected_config_to_apply_yaml_stream: ""
+        expected_config_to_apply_yaml_stream: expected_config_to_apply_yaml_stream
       )
 
       nil

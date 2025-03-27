@@ -474,7 +474,11 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
       )
 
       # SIMULATE RECONCILE REQUEST FROM AGENTK UPDATING WORKSPACE TO TERMINATING ACTUAL_STATE
-      simulate_fourteenth_poll(workspace: workspace.reload, agent_token: agent_token)
+      simulate_fourteenth_poll(
+        workspace: workspace.reload,
+        agent_token: agent_token,
+        **additional_args_for_expected_config_to_apply
+      )
 
       # SIMULATE RECONCILE REQUEST FROM AGENTK UPDATING WORKSPACE TO TERMINATED ACTUAL_STATE
       simulate_fifteenth_poll(workspace: workspace.reload, agent_token: agent_token)
