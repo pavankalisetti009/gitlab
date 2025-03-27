@@ -15,6 +15,7 @@ class Gitlab::Seeder::AiUsageStats # rubocop:disable Style/ClassAndModuleChildre
   CODE_PUSH_SAMPLE = 10
   CS_EVENT_COUNT_SAMPLE = 5
   CHAT_EVENT_COUNT_SAMPLE = 2
+  TROUBLESHOOT_EVENT_COUNT_SAMPLE = 2
   TIME_PERIOD_DAYS = 90
 
   attr_reader :project
@@ -81,6 +82,16 @@ class Gitlab::Seeder::AiUsageStats # rubocop:disable Style/ClassAndModuleChildre
           user: user,
           event: 'request_duo_chat_response',
           timestamp: rand(TIME_PERIOD_DAYS).days.ago).store_to_clickhouse
+      end
+
+      next unless project.builds.count > 0
+
+      TROUBLESHOOT_EVENT_COUNT_SAMPLE.times do
+        Ai::TroubleshootJobEvent.new(
+          user: user,
+          event: 'troubleshoot_job',
+          job: project.builds.sample,
+          timestamp: rand(TIME_PERIOD_DAYS).days.ago).save!
       end
     end
   end
