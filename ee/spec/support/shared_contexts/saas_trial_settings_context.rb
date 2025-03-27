@@ -7,7 +7,7 @@
 # - .com specific type things google tag manager(gtm)
 # things that don't belong in here:
 # - unsettled feature flag settings in SaaS(still in rollout), instead test both branches to cover SaaS
-RSpec.shared_context 'with saas settings for in-app trial flows', shared_context: :metadata do # rubocop: disable RSpec/SharedGroupsMetadata
+RSpec.shared_context 'with saas settings for in-app trial flows' do
   include Features::TrialHelpers
 
   before do
