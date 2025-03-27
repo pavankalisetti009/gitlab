@@ -2,6 +2,7 @@ import { GlButton, GlLink, GlSprintf } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { VARIANT_DANGER, VARIANT_WARNING, VARIANT_INFO } from '~/alert';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import { cloneWithoutReferences } from '~/lib/utils/common_utils';
 import { HTTP_STATUS_BAD_REQUEST } from '~/lib/utils/http_status';
 import LineChart from 'ee/analytics/analytics_dashboards/components/visualizations/line_chart.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -515,8 +516,8 @@ describe('AnalyticsDashboardPanel', () => {
     });
 
     describe('setVisualizationOverrides callback', () => {
+      const optionsClone = cloneWithoutReferences(mockPanel.visualization.options);
       const visualizationOptionOverrides = { description: 'found 10 items' };
-      const optsRes = { ...mockPanel.visualization.options, ...visualizationOptionOverrides };
 
       beforeEach(() => {
         mockFetch.mockImplementation(({ setVisualizationOverrides }) => {
@@ -529,7 +530,15 @@ describe('AnalyticsDashboardPanel', () => {
       });
 
       it('can update visualizationOptions', () => {
-        expect(findVisualization().props('options')).toEqual(optsRes);
+        expect(findVisualization().props('options')).toStrictEqual({
+          xAxis: { name: 'Time', type: 'time' },
+          yAxis: { name: 'Counts', type: 'time' },
+          description: 'found 10 items',
+        });
+      });
+
+      it('does not modify the original visualization options', () => {
+        expect(mockPanel.visualization.options).toStrictEqual(optionsClone);
       });
     });
   });
