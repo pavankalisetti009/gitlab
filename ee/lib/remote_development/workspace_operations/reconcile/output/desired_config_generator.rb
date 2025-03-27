@@ -30,11 +30,35 @@ module RemoteDevelopment
               max_resources_per_workspace: max_resources_per_workspace
             )
 
+            labels = workspaces_agent_config.labels.merge({ "agent.gitlab.com/id": workspace.agent.id.to_s })
+
             workspace_inventory_name = "#{workspace.name}-workspace-inventory"
             workspace_inventory_annotations =
               common_annotations.merge("config.k8s.io/owning-inventory": workspace_inventory_name)
 
-            labels = workspaces_agent_config.labels.merge({ "agent.gitlab.com/id": workspace.agent.id.to_s })
+            secrets_inventory_name = "#{workspace.name}-secrets-inventory"
+            secrets_inventory_annotations =
+              common_annotations.merge("config.k8s.io/owning-inventory": secrets_inventory_name)
+
+            desired_config = []
+
+            append_inventory_config_map(
+              desired_config: desired_config,
+              name: workspace_inventory_name,
+              namespace: workspace.namespace,
+              labels: labels,
+              annotations: common_annotations
+            )
+
+            append_inventory_config_map(
+              desired_config: desired_config,
+              name: secrets_inventory_name,
+              namespace: workspace.namespace,
+              labels: labels,
+              annotations: common_annotations
+            )
+
+            return desired_config if workspace.desired_state == TERMINATED
 
             resources_from_devfile_parser = DevfileParser.get_all(
               processed_devfile: workspace.processed_devfile,
@@ -56,16 +80,6 @@ module RemoteDevelopment
             # in an invalid configuration being applied to the cluster.
             return [] if resources_from_devfile_parser.empty?
 
-            desired_config = []
-
-            append_inventory_config_map(
-              desired_config: desired_config,
-              name: workspace_inventory_name,
-              namespace: workspace.namespace,
-              labels: labels,
-              annotations: common_annotations
-            )
-
             desired_config.append(*resources_from_devfile_parser)
 
             append_image_pull_secrets_service_account(
@@ -84,18 +98,6 @@ module RemoteDevelopment
               namespace: workspace.namespace,
               labels: labels,
               annotations: workspace_inventory_annotations
-            )
-
-            secrets_inventory_name = "#{workspace.name}-secrets-inventory"
-            secrets_inventory_annotations =
-              common_annotations.merge("config.k8s.io/owning-inventory": secrets_inventory_name)
-
-            append_inventory_config_map(
-              desired_config: desired_config,
-              name: secrets_inventory_name,
-              namespace: workspace.namespace,
-              labels: labels,
-              annotations: common_annotations
             )
 
             # NOTE: We will perform append_secret here in order to complete

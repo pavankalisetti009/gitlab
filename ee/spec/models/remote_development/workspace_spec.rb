@@ -583,6 +583,55 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
       end
     end
 
+    describe "with_desired_state_terminated_and_actual_state_not_terminated" do
+      context "when workspace desired_state is not terminated" do
+        let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
+
+        context "when workspace actual_state is not terminated" do
+          let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
+
+          it "returns workspace" do
+            workspace.save!
+            expect(described_class.with_desired_state_terminated_and_actual_state_not_terminated)
+              .to_not include(workspace)
+          end
+        end
+
+        context "when workspace actual_state is terminated" do
+          let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::TERMINATED }
+
+          it "returns workspace" do
+            workspace.save!
+            expect(described_class.with_desired_state_terminated_and_actual_state_not_terminated)
+              .to_not include(workspace)
+          end
+        end
+      end
+
+      context "when workspace desired_state is terminated" do
+        let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::TERMINATED }
+
+        context "when workspace actual_state is not terminated" do
+          let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
+
+          it "returns workspace" do
+            workspace.save!
+            expect(described_class.with_desired_state_terminated_and_actual_state_not_terminated).to include(workspace)
+          end
+        end
+
+        context "when workspace actual_state is terminated" do
+          let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::TERMINATED }
+
+          it "returns workspace" do
+            workspace.save!
+            expect(described_class.with_desired_state_terminated_and_actual_state_not_terminated)
+              .to_not include(workspace)
+          end
+        end
+      end
+    end
+
     describe "desired_state_not_terminated" do
       context "when workspace desired_state is not terminated" do
         let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }

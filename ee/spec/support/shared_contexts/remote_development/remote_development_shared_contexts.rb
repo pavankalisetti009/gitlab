@@ -325,6 +325,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
 
   # @param [RemoteDevelopment::Workspace] workspace
   # @param [Boolean] started
+  # @param [Boolean] desired_state_is_terminated
   # @param [Hash] workspace_variables_environment
   # @param [Hash] workspace_variables_file
   # @param [Boolean] include_inventory
@@ -347,6 +348,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
   def create_config_to_apply_v3(
     workspace:,
     started:,
+    desired_state_is_terminated: false,
     workspace_variables_environment: nil,
     workspace_variables_file: nil,
     include_inventory: true,
@@ -478,6 +480,10 @@ RSpec.shared_context 'with remote development shared fixtures' do
 
     resources = []
     resources << workspace_inventory_config_map if include_inventory
+    resources << secrets_inventory_config_map if include_inventory
+
+    return resources if desired_state_is_terminated
+
     resources << workspace_deployment
     resources << workspace_service
     resources << workspace_pvc
@@ -485,7 +491,6 @@ RSpec.shared_context 'with remote development shared fixtures' do
     unless core_resources_only
       resources << workspace_service_account
       resources << workspace_network_policy if include_network_policy
-      resources << secrets_inventory_config_map if include_inventory
 
       if include_all_resources
         resources << workspace_resource_quota unless max_resources_per_workspace.blank?
@@ -506,16 +511,16 @@ RSpec.shared_context 'with remote development shared fixtures' do
   # @return [Hash]
   def workspace_inventory_config_map(workspace_name:, workspace_namespace:, agent_id:, annotations:)
     {
-      kind: "ConfigMap",
       apiVersion: "v1",
+      kind: "ConfigMap",
       metadata: {
-        name: "#{workspace_name}-workspace-inventory",
-        namespace: workspace_namespace.to_s,
         annotations: annotations,
         labels: {
-          "cli-utils.sigs.k8s.io/inventory-id": "#{workspace_name}-workspace-inventory",
-          "agent.gitlab.com/id": agent_id.to_s
-        }
+          "agent.gitlab.com/id": agent_id.to_s,
+          "cli-utils.sigs.k8s.io/inventory-id": "#{workspace_name}-workspace-inventory"
+        },
+        name: "#{workspace_name}-workspace-inventory",
+        namespace: workspace_namespace.to_s
       }
     }
   end
@@ -1085,16 +1090,16 @@ RSpec.shared_context 'with remote development shared fixtures' do
   # @return [Hash]
   def secrets_inventory_config_map(workspace_name:, workspace_namespace:, agent_id:, annotations:)
     {
-      kind: "ConfigMap",
       apiVersion: "v1",
+      kind: "ConfigMap",
       metadata: {
-        name: "#{workspace_name}-secrets-inventory",
-        namespace: workspace_namespace.to_s,
         annotations: annotations,
         labels: {
-          "cli-utils.sigs.k8s.io/inventory-id": "#{workspace_name}-secrets-inventory",
-          "agent.gitlab.com/id": agent_id.to_s
-        }
+          "agent.gitlab.com/id": agent_id.to_s,
+          "cli-utils.sigs.k8s.io/inventory-id": "#{workspace_name}-secrets-inventory"
+        },
+        name: "#{workspace_name}-secrets-inventory",
+        namespace: workspace_namespace.to_s
       }
     }
   end

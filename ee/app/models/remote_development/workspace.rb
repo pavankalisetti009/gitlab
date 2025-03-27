@@ -67,6 +67,10 @@ module RemoteDevelopment
       where('actual_state_updated_at > responded_to_agent_at').or(where(responded_to_agent_at: nil))
     end
 
+    scope :with_desired_state_terminated_and_actual_state_not_terminated, -> do
+      where(desired_state: TERMINATED).and(where.not(actual_state: TERMINATED))
+    end
+
     scope :forced_to_include_all_resources, -> { where(force_include_all_resources: true) }
     scope :by_names, ->(names) { where(name: names) }
     scope :by_user_ids, ->(ids) { where(user_id: ids) }
@@ -74,14 +78,10 @@ module RemoteDevelopment
     scope :by_agent_ids, ->(ids) { where(cluster_agent_id: ids) }
     scope :by_actual_states, ->(actual_states) { where(actual_state: actual_states) }
     scope :desired_state_not_terminated, -> do
-      where.not(
-        desired_state: RemoteDevelopment::WorkspaceOperations::States::TERMINATED
-      )
+      where.not(desired_state: TERMINATED)
     end
     scope :actual_state_not_terminated, -> do
-      where.not(
-        actual_state: RemoteDevelopment::WorkspaceOperations::States::TERMINATED
-      )
+      where.not(actual_state: TERMINATED)
     end
 
     before_validation :set_workspaces_agent_config_version,
@@ -132,6 +132,13 @@ module RemoteDevelopment
       return true if responded_to_agent_at.nil?
 
       actual_state_updated_at > responded_to_agent_at
+    end
+
+    # @return [Boolean]
+    def desired_state_terminated_and_actual_state_not_terminated?
+      return true if desired_state == TERMINATED && actual_state != TERMINATED
+
+      false
     end
 
     # @return [String]

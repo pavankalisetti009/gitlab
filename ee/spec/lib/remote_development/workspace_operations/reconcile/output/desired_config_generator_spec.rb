@@ -13,6 +13,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
     let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
     let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
     let(:started) { true }
+    let(:desired_state_is_terminated) { false }
     let(:include_all_resources) { false }
     let(:deployment_resource_version_from_agent) { workspace.deployment_resource_version }
     let(:network_policy_enabled) { true }
@@ -48,6 +49,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
       create_config_to_apply(
         workspace: workspace,
         started: started,
+        desired_state_is_terminated: desired_state_is_terminated,
         include_network_policy: workspace.workspaces_agent_config.network_policy_enabled,
         include_all_resources: include_all_resources,
         egress_ip_rules: workspace.workspaces_agent_config.network_policy_egress,
@@ -68,6 +70,29 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
         include_all_resources: include_all_resources,
         logger: logger
       )
+    end
+
+    context 'when desired_state terminated' do
+      let(:desired_state_is_terminated) { true }
+      let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::TERMINATED }
+
+      it 'returns expected config with only inventory config maps', :unlimited_max_formatted_output_length do
+        actual = workspace_resources
+        expected = expected_config
+        expect(actual).to eq(expected)
+
+        workspace_resources.each do |resource|
+          resource => {
+            kind: "ConfigMap",
+            metadata: {
+              name: String => name
+            }
+          }
+
+          expect(name).to end_with("-inventory")
+          expect(resource).not_to have_key(:data)
+        end
+      end
     end
 
     context 'when desired_state results in started=true' do
