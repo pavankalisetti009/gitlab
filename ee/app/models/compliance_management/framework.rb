@@ -4,6 +4,7 @@ module ComplianceManagement
   class Framework < ApplicationRecord
     include StripAttribute
     include Gitlab::SQL::Pattern
+    include EachBatch
 
     self.table_name = 'compliance_management_frameworks'
 
@@ -47,6 +48,23 @@ module ComplianceManagement
           Arel.sql('CASE WHEN pipeline_configuration_full_path IS NULL THEN 1 ELSE 0 END'),
           Arel.sql('project_compliance_framework_settings.created_at ASC NULLS LAST')
         )
+    }
+
+    scope :with_requirements_and_internal_controls, -> {
+      joins(compliance_requirements: :compliance_requirements_controls)
+        .where(compliance_requirements_controls: { control_type: :internal })
+        .includes(compliance_requirements: :compliance_requirements_controls)
+    }
+
+    scope :with_project_settings, -> {
+      joins(:project_settings)
+        .includes(project_settings: :project)
+    }
+
+    scope :with_active_internal_controls, -> {
+      with_requirements_and_internal_controls
+        .with_project_settings
+        .distinct
     }
 
     def self.search(query)

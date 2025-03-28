@@ -263,6 +263,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace: :cronjob
+- :name: cronjob:compliance_management_framework_evaluation_scheduler
+  :worker_name: ComplianceManagement::FrameworkEvaluationSchedulerWorker
+  :feature_category: :compliance_management
+  :has_external_dependencies: false
+  :urgency: :throttled
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace: :cronjob
 - :name: cronjob:compliance_management_merge_requests_compliance_violations_consistency
   :worker_name: ComplianceManagement::MergeRequests::ComplianceViolationsConsistencyWorker
   :feature_category: :compliance_management
@@ -1686,6 +1696,16 @@
 - :name: compliance_management_pipl_user_paid_status_check
   :worker_name: ComplianceManagement::Pipl::UserPaidStatusCheckWorker
   :feature_category: :instance_resiliency
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
+- :name: compliance_management_project_compliance_evaluator
+  :worker_name: ComplianceManagement::ProjectComplianceEvaluatorWorker
+  :feature_category: :compliance_management
   :has_external_dependencies: false
   :urgency: :low
   :resource_boundary: :unknown

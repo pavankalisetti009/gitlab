@@ -62,6 +62,12 @@ module ComplianceManagement
       validates :name, uniqueness: { scope: :compliance_requirement_id }, if: :internal?
       validates :secret_token, presence: true, if: :external?
 
+      scope :internal_for_framework, ->(framework_id) {
+        joins(compliance_requirement: :framework)
+          .where(control_type: :internal)
+          .where(compliance_management_frameworks: { id: framework_id })
+      }
+
       def expression_as_hash(symbolize_names: false)
         ::Gitlab::Json.parse(expression, symbolize_names: symbolize_names)
       rescue JSON::ParserError
