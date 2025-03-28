@@ -42,24 +42,6 @@ module Gitlab
 
         attr_reader :user, :agent_version_id, :thread
 
-        def dump_message(message)
-          # Message is stored only partially. Some data might be missing after reloading from storage.
-          result = message.to_h.slice(*%w[id request_id role content referer_url])
-
-          extras = message.extras
-          if message.additional_context.present?
-            extras ||= {}
-            extras['additional_context'] = message.additional_context.to_a
-          end
-
-          result['errors'] = message.errors&.to_json
-          result['extras'] = extras&.to_json
-          result['timestamp'] = message.timestamp&.to_s
-          result['content'] = result['content'][0, MAX_TEXT_LIMIT] if result['content']
-
-          result.compact
-        end
-
         def load_message(data)
           data['extras'] = ::Gitlab::Json.parse(data['extras']) if data['extras']
           data['errors'] = ::Gitlab::Json.parse(data['errors']) if data['errors']
