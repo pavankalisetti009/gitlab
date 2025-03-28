@@ -61,6 +61,7 @@ export default {
     yamlPreview: s__('SecurityOrchestration|.yaml preview'),
     rulesHeader: s__('SecurityOrchestration|Rules'),
     yamlHeader: s__('SecurityOrchestration|Yaml'),
+    resizerLabel: s__("SecurityOrchestration|Drag with a mouse to adjust editor's width"),
   },
   STATUS_OPTIONS: [
     { value: true, text: __('Enabled') },
@@ -450,6 +451,7 @@ export default {
             <template #thumbnail>
               <gl-button
                 class="security-policies-drag-thumbnail !gl-min-h-7 !gl-min-w-5 !gl-rounded-none !gl-border-0 !gl-bg-strong"
+                :aria-label="$options.i18n.resizerLabel"
                 icon="grip"
                 size="small"
               />

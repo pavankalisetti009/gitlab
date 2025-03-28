@@ -1,5 +1,6 @@
 <script>
 import { GlButton } from '@gitlab/ui';
+import { __ } from '~/locale';
 
 export default {
   name: 'EditorLayoutCollapseHeader',
@@ -35,6 +36,9 @@ export default {
     iconNameRightName() {
       return this.collapsed ? 'chevron-double-lg-left' : 'chevron-double-lg-right';
     },
+    label() {
+      return this.collapsed ? __('Expand') : __('Collapse');
+    },
   },
 };
 </script>
@@ -48,6 +52,7 @@ export default {
         category="tertiary"
         size="small"
         :icon="iconNameRightName"
+        :aria-label="label"
         @click="$emit('toggle', !collapsed)"
       />
       <div v-if="!collapsed">
@@ -60,6 +65,7 @@ export default {
         category="tertiary"
         size="small"
         :icon="iconName"
+        :aria-label="label"
         @click="$emit('toggle', !collapsed)"
       />
     </div>
@@ -69,6 +75,7 @@ export default {
       class="security-policies-drag-thumbnail gl-ml-3 !gl-min-h-7 !gl-min-w-6 !gl-rounded-none !gl-border-0 !gl-bg-strong"
       icon="redo"
       size="small"
+      :aria-label="__('Reset')"
       @click="$emit('reset-size')"
     />
   </div>
