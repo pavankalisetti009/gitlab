@@ -90,6 +90,9 @@ export default {
     onCopy() {
       this.$emit('onCopy');
     },
+    onShowForkSuggestion() {
+      this.$emit('showForkSuggestion');
+    },
   },
 };
 </script>
@@ -104,5 +107,6 @@ export default {
     :ee-is-locked="isLocked"
     :ee-can-lock="canLock"
     @copy="onCopy"
+    @showForkSuggestion="onShowForkSuggestion"
   />
 </template>
