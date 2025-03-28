@@ -655,3 +655,32 @@ export const createFrameworkResponseWithPolicy = (policyType) => {
 
   return response;
 };
+
+export const addRequirementsToFrameworks = (frameworksData) => {
+  return frameworksData.map((framework) => ({
+    ...framework,
+    complianceRequirements: {
+      nodes: mockRequirements,
+    },
+  }));
+};
+
+export const createManyRequirements = (count = 15) => {
+  return Array(count)
+    .fill()
+    .map((_, i) => ({
+      id: `gid://gitlab/ComplianceManagement::Requirement/${i + 10}`,
+      name: `Requirement ${i}`,
+      description: `Description ${i}`,
+      __typename: 'ComplianceManagement::Requirement',
+      complianceRequirementsControls: { nodes: [] },
+    }));
+};
+
+export const createFrameworksWithManyRequirements = (frameworksData, count = 15) => {
+  const manyRequirements = createManyRequirements(count);
+  return frameworksData.map((framework) => ({
+    ...framework,
+    complianceRequirements: { nodes: manyRequirements },
+  }));
+};

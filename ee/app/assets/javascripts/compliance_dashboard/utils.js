@@ -10,6 +10,8 @@ import {
   FRAMEWORKS_FILTER_TYPE_PROJECT,
   FRAMEWORKS_FILTER_TYPE_GROUP,
   GRAPHQL_FRAMEWORK_TYPE,
+  EXTERNAL_CONTROL_URL_LABEL,
+  UNKNOWN_CONTROL_LABEL,
 } from './constants';
 
 export const isTopLevelGroup = (groupPath, rootPath) => groupPath === rootPath;
@@ -147,4 +149,31 @@ export const isGraphqlFieldMissingError = (error, field) => {
       e?.message?.startsWith(`Field '${field}' doesn't exist on type`),
     ),
   );
+};
+
+export const getControls = (requirementControlNodes, complianceRequirementControls) => {
+  if (!requirementControlNodes?.length) {
+    return [];
+  }
+  try {
+    return requirementControlNodes
+      .map((control) => {
+        if (!['internal', 'external'].includes(control.controlType)) {
+          return null;
+        }
+        const matchingGitLabControl = complianceRequirementControls.find(
+          (gitLabControl) => gitLabControl.id === control.name,
+        );
+        return {
+          ...control,
+          displayValue:
+            control.controlType === 'external'
+              ? `${EXTERNAL_CONTROL_URL_LABEL} ${control.externalUrl}`
+              : matchingGitLabControl?.name || UNKNOWN_CONTROL_LABEL,
+        };
+      })
+      .filter(Boolean);
+  } catch (error) {
+    return [];
+  }
 };

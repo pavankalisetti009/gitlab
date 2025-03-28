@@ -277,4 +277,88 @@ describe('compliance report utils', () => {
       expect(utils.isGraphqlFieldMissingError(new Error('test'), 'foo')).toBe(false);
     });
   });
+
+  describe('getControls', () => {
+    it.each([[], null, undefined])(
+      'returns empty array when requirementControlNodes is %p',
+      (requirementControlNodes) => {
+        expect(utils.getControls(requirementControlNodes, [])).toEqual([]);
+      },
+    );
+
+    it('filters out controls with unsupported control types', () => {
+      const requirementControlNodes = [
+        { name: 'control1', controlType: 'internal' },
+        { name: 'control2', controlType: 'unsupported' },
+        { name: 'control3', controlType: 'external', externalUrl: 'https://example.com' },
+      ];
+      const complianceRequirementControls = [];
+
+      const result = utils.getControls(requirementControlNodes, complianceRequirementControls);
+
+      expect(result.length).toBe(2);
+      expect(result[0].name).toBe('control1');
+      expect(result[1].name).toBe('control3');
+    });
+
+    it('sets displayValue to external control URL label for external controls', () => {
+      const externalUrl = 'https://example.com';
+      const requirementControlNodes = [{ name: 'control1', controlType: 'external', externalUrl }];
+      const complianceRequirementControls = [];
+
+      const result = utils.getControls(requirementControlNodes, complianceRequirementControls);
+
+      expect(result[0].displayValue).toBe(`Send via: ${externalUrl}`);
+    });
+
+    it('sets displayValue to matching GitLab control name for internal controls', () => {
+      const controlName = 'control-id';
+      const gitLabControlName = 'GitLab Control Name';
+      const requirementControlNodes = [{ name: controlName, controlType: 'internal' }];
+      const complianceRequirementControls = [{ id: controlName, name: gitLabControlName }];
+
+      const result = utils.getControls(requirementControlNodes, complianceRequirementControls);
+
+      expect(result[0].displayValue).toBe(gitLabControlName);
+    });
+
+    it('sets displayValue to unknown label when no matching GitLab control found', () => {
+      const requirementControlNodes = [{ name: 'nonexistent-control', controlType: 'internal' }];
+      const complianceRequirementControls = [
+        { id: 'different-control', name: 'Different Control' },
+      ];
+
+      const result = utils.getControls(requirementControlNodes, complianceRequirementControls);
+
+      expect(result[0].displayValue).toBe('Unknown');
+    });
+
+    it('returns empty array when an error occurs', () => {
+      const requirementControlNodes = 'not-an-array'; // This will cause an error
+      const complianceRequirementControls = [];
+
+      expect(utils.getControls(requirementControlNodes, complianceRequirementControls)).toEqual([]);
+    });
+
+    it('handles mixed internal and external controls correctly', () => {
+      const internalControlId = 'internal-control';
+      const internalControlName = 'Internal Control';
+      const externalUrl = 'https://example.com';
+
+      const requirementControlNodes = [
+        { name: internalControlId, controlType: 'internal' },
+        { name: 'external-control', controlType: 'external', externalUrl },
+        { name: 'unknown-internal', controlType: 'internal' },
+      ];
+
+      const complianceRequirementControls = [{ id: internalControlId, name: internalControlName }];
+
+      const result = utils.getControls(requirementControlNodes, complianceRequirementControls);
+
+      expect(result.length).toBe(3);
+      expect(result[0].displayValue).toBe(internalControlName);
+      expect(result[1].displayValue).toBe(`Send via: ${externalUrl}`);
+      expect(result[2].displayValue).toBe('Unknown');
+    });
+  });
 });

@@ -6,13 +6,22 @@ import {
   GlPopover,
   GlSprintf,
   GlLoadingIcon,
+  GlAccordion,
+  GlAccordionItem,
 } from '@gitlab/ui';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import FrameworkInfoDrawer from 'ee/compliance_dashboard/components/frameworks_report/framework_info_drawer.vue';
 import projectsInNamespaceWithFrameworkQuery from 'ee/compliance_dashboard/components/frameworks_report/graphql/projects_in_namespace_with_framework.query.graphql';
+import complianceRequirementControlsQuery from 'ee/compliance_dashboard/graphql/compliance_requirement_controls.query.graphql';
 import { shallowMountExtended, extendedWrapper } from 'helpers/vue_test_utils_helper';
-import { createFramework, mockPageInfo } from 'ee_jest/compliance_dashboard/mock_data';
+import {
+  createFramework,
+  mockPageInfo,
+  mockRequirements,
+  mockInternalControls,
+  mockExternalControl,
+} from 'ee_jest/compliance_dashboard/mock_data';
 import { DOCS_URL_IN_EE_DIR } from 'jh_else_ce/lib/utils/url_utility';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -22,9 +31,19 @@ Vue.use(VueApollo);
 describe('FrameworkInfoDrawer component', () => {
   let wrapper;
 
-  function createMockApolloProvider({ projectsInNamespaceResolverMock }) {
+  function createMockApolloProvider({
+    projectsInNamespaceResolverMock,
+    complianceRequirementControlsResolverMock = jest.fn().mockResolvedValue({
+      data: {
+        complianceRequirementControls: {
+          controlExpressions: [...mockInternalControls, mockExternalControl],
+        },
+      },
+    }),
+  }) {
     return createMockApollo([
       [projectsInNamespaceWithFrameworkQuery, projectsInNamespaceResolverMock],
+      [complianceRequirementControlsQuery, complianceRequirementControlsResolverMock],
     ]);
   }
 
@@ -34,9 +53,20 @@ describe('FrameworkInfoDrawer component', () => {
 
   const GROUP_PATH = 'foo';
   const PROJECT_PATH = 'bar';
+  const EXPECTED_REQUIREMENTS_COUNT = 3;
 
-  const defaultFramework = createFramework({ id: 1, isDefault: true, projects: 3 });
-  const nonDefaultFramework = createFramework({ id: 2 });
+  const defaultFramework = createFramework({
+    id: 1,
+    isDefault: true,
+    projects: 3,
+    complianceRequirements: { nodes: mockRequirements },
+  });
+
+  const nonDefaultFramework = createFramework({
+    id: 2,
+    complianceRequirements: { nodes: [] },
+  });
+
   const policiesCount =
     defaultFramework.scanExecutionPolicies.nodes.length +
     defaultFramework.scanResultPolicies.nodes.length +
@@ -55,6 +85,16 @@ describe('FrameworkInfoDrawer component', () => {
 
   const findDescriptionTitle = () => wrapper.findByTestId('sidebar-description-title');
   const findDescription = () => wrapper.findByTestId('sidebar-description');
+
+  const findRequirementsSection = () => wrapper.findByTestId('requirements');
+  const findRequirementsTitle = () => wrapper.findByTestId('sidebar-requirements-title');
+  const findRequirementsCount = () => wrapper.findByTestId('requirements-count-badge');
+  const findRequirementsAccordion = () => findRequirementsSection().findComponent(GlAccordion);
+  const findAllRequirementsAccordionItems = () =>
+    findRequirementsSection().findAllComponents(GlAccordionItem);
+  const findExternalControlBadges = () =>
+    wrapper.findAllComponents(GlBadge).filter((badge) => badge.text() === 'External');
+
   const findProjectsTitle = () => wrapper.findByTestId('sidebar-projects-title');
   const findProjectsLinks = () =>
     wrapper.findByTestId('sidebar-projects').findAllComponents(GlLink);
@@ -73,9 +113,17 @@ describe('FrameworkInfoDrawer component', () => {
     props = {},
     provide = {},
     projectsInNamespaceResolverMock = pendingPromiseMock,
+    complianceRequirementControlsResolverMock = jest.fn().mockResolvedValue({
+      data: {
+        complianceRequirementControls: {
+          controlExpressions: [...mockInternalControls, mockExternalControl],
+        },
+      },
+    }),
   } = {}) => {
     const apolloProvider = createMockApolloProvider({
       projectsInNamespaceResolverMock,
+      complianceRequirementControlsResolverMock,
     });
 
     wrapper = shallowMountExtended(FrameworkInfoDrawer, {
@@ -88,10 +136,13 @@ describe('FrameworkInfoDrawer component', () => {
         GlSprintf,
         GlButton,
         BButton: false,
+        GlAccordion,
+        GlAccordionItem,
       },
       provide: {
         groupSecurityPoliciesPath: '/group-policies',
         canAccessRootAncestorComplianceCenter: true,
+        adherenceV2Enabled: true,
         ...provide,
       },
       mocks: {
@@ -288,6 +339,148 @@ describe('FrameworkInfoDrawer component', () => {
       it('does not render edit button popover', () => {
         expect(findPopover().exists()).toBe(false);
       });
+    });
+  });
+
+  describe('requirements display', () => {
+    beforeEach(async () => {
+      const frameworkWithRequirements = {
+        ...defaultFramework,
+        complianceRequirements: {
+          nodes: mockRequirements,
+        },
+      };
+
+      createComponent({
+        props: {
+          groupPath: GROUP_PATH,
+          projectPath: PROJECT_PATH,
+          rootAncestor: {
+            path: GROUP_PATH,
+          },
+          framework: frameworkWithRequirements,
+        },
+      });
+
+      await waitForPromises();
+    });
+
+    it('renders the requirements title', () => {
+      expect(findRequirementsTitle().text()).toBe('Requirements');
+    });
+
+    it('renders the requirements count', () => {
+      expect(findRequirementsCount().text()).toBe(EXPECTED_REQUIREMENTS_COUNT.toString());
+    });
+
+    it('renders the requirements accordion when requirements exist', () => {
+      const accordion = findRequirementsAccordion();
+      expect(accordion.exists()).toBe(true);
+    });
+
+    it('displays requirement description correctly', () => {
+      expect(findAllRequirementsAccordionItems().at(0).text()).toContain('Controls for SOC2');
+      expect(findAllRequirementsAccordionItems().at(1).text()).toContain('Controls used by GitLab');
+      expect(findAllRequirementsAccordionItems().at(2).text()).toContain(
+        'Requirement with external control',
+      );
+    });
+
+    it('does not show requirements section when adherenceV2Enabled is false', () => {
+      createComponent({
+        props: {
+          groupPath: GROUP_PATH,
+          projectPath: PROJECT_PATH,
+          rootAncestor: {
+            path: GROUP_PATH,
+          },
+          framework: defaultFramework,
+        },
+        provide: {
+          groupSecurityPoliciesPath: '/group-policies',
+          canAccessRootAncestorComplianceCenter: true,
+          adherenceV2Enabled: false,
+        },
+      });
+
+      expect(findRequirementsSection().exists()).toBe(false);
+    });
+  });
+
+  describe('requirements with controls', () => {
+    beforeEach(async () => {
+      const frameworkWithRequirements = {
+        ...defaultFramework,
+        complianceRequirements: {
+          nodes: mockRequirements,
+        },
+      };
+
+      createComponent({
+        props: {
+          groupPath: GROUP_PATH,
+          projectPath: PROJECT_PATH,
+          rootAncestor: {
+            path: GROUP_PATH,
+          },
+          framework: frameworkWithRequirements,
+        },
+      });
+
+      await waitForPromises();
+    });
+
+    it('displays external control badge for external controls', () => {
+      const badges = findExternalControlBadges();
+      expect(badges.length).toBeGreaterThan(0);
+    });
+
+    it('displays internal controls correctly', () => {
+      expect(findExternalControlBadges().length).toBe(1);
+    });
+  });
+
+  describe('requirements loading state', () => {
+    it('shows loading icon when controls are being fetched', () => {
+      createComponent({
+        props: {
+          groupPath: GROUP_PATH,
+          projectPath: PROJECT_PATH,
+          rootAncestor: {
+            path: GROUP_PATH,
+          },
+          framework: defaultFramework,
+        },
+        complianceRequirementControlsResolverMock: pendingPromiseMock,
+      });
+
+      expect(findRequirementsCount().findComponent(GlLoadingIcon).exists()).toBe(true);
+    });
+  });
+
+  describe('framework without requirements', () => {
+    it('shows the requirements section with empty state when no requirements exist', async () => {
+      const frameworkWithoutRequirements = {
+        ...defaultFramework,
+        complianceRequirements: { nodes: [] },
+      };
+
+      createComponent({
+        props: {
+          groupPath: GROUP_PATH,
+          projectPath: PROJECT_PATH,
+          rootAncestor: {
+            path: GROUP_PATH,
+          },
+          framework: frameworkWithoutRequirements,
+        },
+      });
+
+      await waitForPromises();
+
+      expect(findRequirementsSection().exists()).toBe(true);
+      expect(findRequirementsCount().text()).toBe('0');
+      expect(findRequirementsAccordion().exists()).toBe(false);
     });
   });
 

@@ -17,6 +17,8 @@ import { stubComponent } from 'helpers/stub_component';
 import {
   createComplianceFrameworksReportResponse,
   createFramework,
+  addRequirementsToFrameworks,
+  createFrameworksWithManyRequirements,
 } from 'ee_jest/compliance_dashboard/mock_data';
 import FrameworksTable from 'ee/compliance_dashboard/components/frameworks_report/frameworks_table.vue';
 import FrameworkInfoDrawer from 'ee/compliance_dashboard/components/frameworks_report/framework_info_drawer.vue';
@@ -54,6 +56,8 @@ describe('FrameworksTable component', () => {
   const rowCheckIndex = 0;
   const modalStub = { show: jest.fn(), hide: jest.fn() };
   const GlModalStub = stubComponent(GlModal, { methods: modalStub });
+  const frameworksWithRequirements = addRequirementsToFrameworks(frameworks);
+  const frameworksWithManyRequirements = createFrameworksWithManyRequirements(frameworks, 15);
 
   const findTable = () => wrapper.findComponent(GlTable);
   const findTableHeaders = () => findTable().findAll('th > div > span');
@@ -75,6 +79,7 @@ describe('FrameworksTable component', () => {
   const findSetAsDefaultActionTooltip = () => wrapper.findByTestId('set-as-default-tooltip');
   const findDeleteModal = () => wrapper.findComponent(DeleteModal);
   const findBadge = () => wrapper.findComponent(FrameworkBadge);
+  const findRequirementsColumn = (idx) => findTableRowData(idx).at(1);
 
   const toggleSidebar = async () => {
     findTableRow(rowCheckIndex).trigger('click');
@@ -111,7 +116,10 @@ describe('FrameworksTable component', () => {
         GlTooltip: createMockDirective('gl-tooltip'),
       },
       provide: {
+        adherenceV2Enabled:
+          options.adherenceV2Enabled !== undefined ? options.adherenceV2Enabled : true,
         groupSecurityPoliciesPath: '/example-group-security-policies-path',
+        policyDisplayLimit: 10,
       },
       mocks: {
         $route: { query: currentQueryParams },
@@ -149,10 +157,11 @@ describe('FrameworksTable component', () => {
 
     it('has the correct table headers for top-level group', () => {
       wrapper = createComponent({ isLoading: false });
-      const headerTexts = findTableHeaders().wrappers.map((h) => h.text());
 
+      const headerTexts = findTableHeaders().wrappers.map((h) => h.text());
       expect(headerTexts).toStrictEqual([
         'Frameworks',
+        'Requirements',
         'Associated projects',
         'Policies',
         'Action',
@@ -177,9 +186,9 @@ describe('FrameworksTable component', () => {
   describe('when projectPath is provided', () => {
     it('has the correct table headers', () => {
       wrapper = createComponent({ isLoading: false, groupPath: null, projectPath: 'foo/bar' });
-      const headerTexts = findTableHeaders().wrappers.map((h) => h.text());
 
-      expect(headerTexts).toStrictEqual(['Frameworks', 'Policies', 'Action']);
+      const headerTexts = findTableHeaders().wrappers.map((h) => h.text());
+      expect(headerTexts).toStrictEqual(['Frameworks', 'Requirements', 'Policies', 'Action']);
     });
 
     it('does not render search bar', () => {
@@ -222,6 +231,77 @@ describe('FrameworksTable component', () => {
     });
   });
 
+  describe('Requirements column', () => {
+    it('displays requirements names in the requirements column', () => {
+      wrapper = createComponent({
+        frameworks: frameworksWithRequirements,
+        isLoading: false,
+      });
+
+      const requirementsColumn = findRequirementsColumn(0);
+      const findRequirementItems = requirementsColumn.findAll('[data-testid="requirement-item"]');
+
+      expect(requirementsColumn.text()).toContain('SOC2');
+      expect(requirementsColumn.text()).toContain('GitLab');
+      expect(requirementsColumn.text()).toContain('External');
+      expect(findRequirementItems.length).toBe(3);
+    });
+
+    it('separates requirements with commas', () => {
+      wrapper = createComponent({
+        frameworks: frameworksWithRequirements,
+        isLoading: false,
+      });
+
+      const requirementsColumn = findRequirementsColumn(0);
+      const findRequirementItems = requirementsColumn.findAll('[data-testid="requirement-item"]');
+
+      expect(requirementsColumn.text()).toContain('SOC2,');
+      expect(requirementsColumn.text()).toContain('GitLab,');
+      expect(findRequirementItems.length).toBe(3);
+    });
+
+    it(`limits the displayed requirements to 10 items`, () => {
+      wrapper = createComponent({
+        frameworks: frameworksWithManyRequirements,
+        isLoading: false,
+      });
+
+      const requirementsColumn = findRequirementsColumn(0);
+      const findRequirementItems = requirementsColumn.findAll('[data-testid="requirement-item"]');
+
+      expect(findRequirementItems.length).toBe(10);
+    });
+
+    it('does not show and X more when requirements are within display limit', () => {
+      wrapper = createComponent({
+        frameworks: frameworksWithRequirements,
+        isLoading: false,
+      });
+
+      const requirementsColumn = findRequirementsColumn(0);
+      const findRequirementItems = requirementsColumn.findAll('[data-testid="requirement-item"]');
+
+      expect(requirementsColumn.text()).not.toContain('and');
+      expect(requirementsColumn.text()).not.toContain('more');
+      expect(findRequirementItems.length).toBe(3);
+    });
+
+    it('does not render the requirements column when adherenceV2Enabled is false', () => {
+      wrapper = createComponent(
+        {
+          frameworks: frameworksWithRequirements,
+          isLoading: false,
+        },
+        {},
+        { adherenceV2Enabled: false },
+      );
+
+      const headerTexts = findTableHeaders().wrappers.map((h) => h.text());
+      expect(headerTexts).not.toContain('Requirements');
+    });
+  });
+
   describe('when there are policies', () => {
     beforeEach(() => {
       wrapper = createComponent({
@@ -231,9 +311,9 @@ describe('FrameworksTable component', () => {
     });
 
     it.each(Object.keys(frameworks))('has the correct data for row %s', (idx) => {
-      const frameworkPolicies = findTableRowData(idx)
-        .wrappers.map((d) => d.text())
-        .at(2);
+      const policyCell = findTableRowData(idx).at(3);
+      const frameworkPolicies = policyCell.text();
+
       expect(frameworkPolicies).toMatch(
         [
           ...frameworks[idx].scanExecutionPolicies.nodes,
@@ -256,14 +336,13 @@ describe('FrameworksTable component', () => {
     });
 
     it.each(Object.keys(frameworks))('has the correct data for row %s', (idx) => {
-      const [frameworkName, associatedProjects] = findTableRowData(idx).wrappers.map((d) =>
-        d.text(),
-      );
+      const [frameworkName] = findTableRowData(idx).wrappers.map((d) => d.text());
       expect(frameworkName).toContain(frameworks[idx].name);
-      expect(associatedProjects).toContain(projects[idx].name);
-      expect(associatedProjects).toContain(`and ${PROJECTS_TOTAL_COUNT - projects.length} more`);
-      expect(findTableLinks(idx).wrappers).toHaveLength(2);
-      expect(findTableLinks(idx).wrappers.map((w) => w.attributes('href'))).toStrictEqual(
+
+      const projectLinks = findTableLinks(idx);
+
+      expect(projectLinks.wrappers).toHaveLength(2);
+      expect(projectLinks.wrappers.map((w) => w.attributes('href'))).toStrictEqual(
         projects.map((p) => p.webUrl),
       );
     });

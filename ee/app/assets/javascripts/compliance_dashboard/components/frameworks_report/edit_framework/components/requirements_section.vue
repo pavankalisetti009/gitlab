@@ -11,6 +11,8 @@ import {
 import { s__, __ } from '~/locale';
 import { createAlert } from '~/alert';
 import { emptyRequirement, requirementEvents } from '../constants';
+import { EXTERNAL_CONTROL_LABEL } from '../../../../constants';
+import { getControls } from '../../../../utils';
 
 import complianceRequirementControlsQuery from '../../../../graphql/compliance_requirement_controls.query.graphql';
 import EditSection from './edit_section.vue';
@@ -90,30 +92,7 @@ export default {
       this.requirementToEdit = null;
     },
     getControls(requirementControlNodes) {
-      if (!requirementControlNodes?.length) {
-        return [];
-      }
-      try {
-        return requirementControlNodes
-          .map((control) => {
-            if (!['internal', 'external'].includes(control.controlType)) {
-              return null;
-            }
-            const matchingGitLabControl = this.complianceRequirementControls.find(
-              (gitLabControl) => gitLabControl.id === control.name,
-            );
-            return {
-              ...control,
-              displayValue:
-                control.controlType === 'external'
-                  ? `${this.$options.i18n.externalCheck} ${control.externalUrl}`
-                  : matchingGitLabControl?.name || this.$options.i18n.unknown,
-            };
-          })
-          .filter(Boolean);
-      } catch (error) {
-        return [];
-      }
+      return getControls(requirementControlNodes, this.complianceRequirementControls);
     },
   },
   tableFields: [
@@ -151,12 +130,10 @@ export default {
     actionEdit: __('Edit'),
     actionDelete: __('Delete'),
     newRequirement: s__('ComplianceFrameworks|New requirement'),
-    externalCheck: s__('ComplianceFrameworks|Send via:'),
-    external: s__('ComplianceFrameworks|External'),
-    unknown: s__('ComplianceFrameworks|Unknown'),
   },
   emptyRequirement,
   requirementEvents,
+  EXTERNAL_CONTROL_LABEL,
 };
 </script>
 <template>
@@ -189,7 +166,7 @@ export default {
           <li v-for="control in item.controls" :key="control.id">
             {{ control.displayValue }}
             <gl-badge v-if="control.controlType === 'external'">
-              {{ $options.i18n.external }}
+              {{ $options.EXTERNAL_CONTROL_LABEL }}
             </gl-badge>
           </li>
         </ul>

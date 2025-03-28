@@ -45,6 +45,7 @@ export default () => {
     featureProjectsReportEnabled,
     featureSecurityPoliciesEnabled,
     adherenceV2Enabled,
+    policyDisplayLimit,
     activeComplianceFrameworks,
   } = el.dataset;
 
@@ -104,6 +105,7 @@ export default () => {
       groupSecurityPoliciesPath,
       featureSecurityPoliciesEnabled: parseBoolean(featureSecurityPoliciesEnabled),
       adherenceV2Enabled: parseBoolean(adherenceV2Enabled),
+      policyDisplayLimit: Number(policyDisplayLimit),
       activeComplianceFrameworks: parseBoolean(activeComplianceFrameworks),
     },
 

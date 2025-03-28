@@ -15033,6 +15033,9 @@ msgstr ""
 msgid "ComplianceFrameworksReport|Compliance framework ID"
 msgstr ""
 
+msgid "ComplianceFrameworksReport|Controls"
+msgstr ""
+
 msgid "ComplianceFrameworksReport|Copy ID"
 msgstr ""
 
@@ -15067,6 +15070,9 @@ msgid "ComplianceFrameworksReport|Policies"
 msgstr ""
 
 msgid "ComplianceFrameworksReport|Remove as default framework"
+msgstr ""
+
+msgid "ComplianceFrameworksReport|Requirements"
 msgstr ""
 
 msgid "ComplianceFrameworksReport|Set as default framework"
