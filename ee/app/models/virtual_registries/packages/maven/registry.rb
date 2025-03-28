@@ -4,7 +4,7 @@ module VirtualRegistries
   module Packages
     module Maven
       class Registry < ApplicationRecord
-        ignore_column :cache_validity_hours, remove_with: '17.8', remove_after: '2024-12-23'
+        ignore_column :cache_validity_hours, remove_with: '18.0', remove_after: '2025-04-23'
 
         belongs_to :group
         has_one :registry_upstream,
