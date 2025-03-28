@@ -52,20 +52,6 @@ RSpec.describe 'AiAction for Summarize New Merge Request', :saas, feature_catego
     expect(graphql_mutation_response(:ai_action)['errors']).to eq([])
   end
 
-  context 'when ai_global_switch feature flag is disabled' do
-    before do
-      stub_feature_flags(ai_global_switch: false)
-    end
-
-    it 'returns nil' do
-      expect(Llm::CompletionWorker).not_to receive(:perform_for)
-
-      post_graphql_mutation(mutation, current_user: current_user)
-
-      expect(fresh_response_data['errors'][0]['message']).to eq("required feature flag is disabled.")
-    end
-  end
-
   context 'when experiment_features_enabled disabled' do
     before do
       group.namespace_settings.update!(experiment_features_enabled: false)

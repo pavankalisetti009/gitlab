@@ -59,14 +59,6 @@ RSpec.describe Llm::SummarizeNewMergeRequestService, :saas, feature_category: :c
       it { is_expected.to be_error.and have_attributes(message: eq(described_class::INVALID_MESSAGE)) }
     end
 
-    context 'when general feature flag is disabled' do
-      before do
-        stub_feature_flags(ai_global_switch: false)
-      end
-
-      it { is_expected.to be_error.and have_attributes(message: eq(described_class::INVALID_MESSAGE)) }
-    end
-
     context 'when project is not a project' do
       let(:project) { create(:epic, group: group) }
 

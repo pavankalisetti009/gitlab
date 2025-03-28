@@ -95,7 +95,7 @@ module Gitlab
             feature_category: :code_review_workflow,
             execute_method: ::Llm::SummarizeNewMergeRequestService,
             maturity: :beta,
-            self_managed: false,
+            self_managed: true,
             internal: false
           },
           generate_cube_query: {
