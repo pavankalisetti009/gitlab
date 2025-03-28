@@ -13,4 +13,5 @@ export const RELEASE_STATES = {
 export const DUO_MAIN_FEATURES = {
   CODE_SUGGESTIONS: 'Code Suggestions',
   DUO_CHAT: 'GitLab Duo Chat',
+  OTHER_GITLAB_DUO_FEATURES: 'Other GitLab Duo features',
 };
