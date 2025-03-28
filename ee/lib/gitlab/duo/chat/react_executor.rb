@@ -19,7 +19,7 @@ module Gitlab
 
         MAX_ITERATIONS = 10
         MAX_RETRY_STEP_FORWARD = 2
-        MAX_TTFT_TIME = 5.seconds
+        MAX_TTFT_TIME = 10.seconds
         SLI_LABEL = {
           feature_category: ::Gitlab::Llm::Utils::AiFeaturesCatalogue::LIST[:chat][:feature_category],
           service_class: ::Gitlab::Llm::Utils::AiFeaturesCatalogue::LIST[:chat][:service_class].name
