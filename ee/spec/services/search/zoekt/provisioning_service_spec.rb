@@ -156,13 +156,197 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
       end
     end
 
-    context 'when there is an error initializing an index' do
-      it 'logs an error and does not creates anything' do
-        allow(::Search::Zoekt::Index).to receive(:new).once.and_raise(StandardError, 'Index initialization failed')
+    context 'when one index can not be created among multiple indices from the plan' do
+      let(:plan) do
+        {
+          namespaces: [
+            {
+              namespace_id: namespace.id,
+              enabled_namespace_id: enabled_namespace.id,
+              replicas: [
+                {
+                  indices: [
+                    {
+                      node_id: non_existing_record_id,
+                      required_storage_bytes: 3.gigabytes,
+                      max_storage_bytes: 90.gigabytes,
+                      projects: { project_namespace_id_from: 1, project_namespace_id_to: 5 }
+                    },
+                    {
+                      node_id: nodes.second.id,
+                      required_storage_bytes: 2.gigabytes,
+                      max_storage_bytes: 80.gigabytes,
+                      projects: { project_namespace_id_from: 6, project_namespace_id_to: nil }
+                    }
+                  ]
+                },
+                {
+                  indices: [
+                    {
+                      node_id: nodes.third.id,
+                      required_storage_bytes: 3.gigabytes,
+                      max_storage_bytes: 90.gigabytes,
+                      projects: { project_namespace_id_from: 1, project_namespace_id_to: 5 }
+                    },
+                    {
+                      node_id: nodes.fourth.id,
+                      required_storage_bytes: 2.gigabytes,
+                      max_storage_bytes: 80.gigabytes,
+                      projects: { project_namespace_id_from: 6, project_namespace_id_to: nil }
+                    }
+                  ]
+                }
+              ],
+              errors: [],
+              namespace_required_storage_bytes: 10.gigabytes
+            },
+            {
+              namespace_id: namespace2.id,
+              enabled_namespace_id: enabled_namespace2.id,
+              replicas: [
+                {
+                  indices: [
+                    {
+                      node_id: nodes.first.id,
+                      required_storage_bytes: 2.gigabytes,
+                      max_storage_bytes: 90.gigabytes,
+                      projects: { project_namespace_id_from: 1, project_namespace_id_to: 3 }
+                    },
+                    {
+                      node_id: nodes.second.id,
+                      required_storage_bytes: 1.gigabyte,
+                      max_storage_bytes: 80.gigabytes,
+                      projects: { project_namespace_id_from: 4, project_namespace_id_to: nil }
+                    }
+                  ]
+                },
+                {
+                  indices: [
+                    {
+                      node_id: nodes.third.id,
+                      required_storage_bytes: 2.gigabytes,
+                      max_storage_bytes: 90.gigabytes,
+                      projects: { project_namespace_id_from: 1, project_namespace_id_to: 3 }
+                    },
+                    {
+                      node_id: nodes.fourth.id,
+                      required_storage_bytes: 1.gigabyte,
+                      max_storage_bytes: 80.gigabytes,
+                      projects: { project_namespace_id_from: 4, project_namespace_id_to: nil }
+                    }
+                  ]
+                }
+              ],
+              errors: [],
+              namespace_required_storage_bytes: 6.gigabytes
+            }
+          ],
+          total_required_storage_bytes: 16.gigabytes,
+          failures: []
+        }
+      end
 
+      it 'is atomic, does not creates any index or replica' do
         result = provisioning_result
+        expect(result[:errors]).to include(a_hash_including(details: /Couldn't find Search::Zoekt::Node with/))
+        expect(Search::Zoekt::Replica.count).to be_zero
+        expect(Search::Zoekt::Index.count).to be_zero
+      end
+    end
 
-        expect(result[:errors]).to include(a_hash_including(details: 'Index initialization failed'))
+    context 'when one index reserved_storage_bytes is not sufficient at the time of indices creation' do
+      let(:plan) do
+        {
+          namespaces: [
+            {
+              namespace_id: namespace.id,
+              enabled_namespace_id: enabled_namespace.id,
+              replicas: [
+                {
+                  indices: [
+                    {
+                      node_id: nodes.first.id,
+                      required_storage_bytes: 11.gigabytes,
+                      max_storage_bytes: 90.gigabytes,
+                      projects: { project_namespace_id_from: 1, project_namespace_id_to: 5 }
+                    },
+                    {
+                      node_id: nodes.second.id,
+                      required_storage_bytes: 2.gigabytes,
+                      max_storage_bytes: 80.gigabytes,
+                      projects: { project_namespace_id_from: 6, project_namespace_id_to: nil }
+                    }
+                  ]
+                },
+                {
+                  indices: [
+                    {
+                      node_id: nodes.third.id,
+                      required_storage_bytes: 3.gigabytes,
+                      max_storage_bytes: 90.gigabytes,
+                      projects: { project_namespace_id_from: 1, project_namespace_id_to: 5 }
+                    },
+                    {
+                      node_id: nodes.fourth.id,
+                      required_storage_bytes: 2.gigabytes,
+                      max_storage_bytes: 80.gigabytes,
+                      projects: { project_namespace_id_from: 6, project_namespace_id_to: nil }
+                    }
+                  ]
+                }
+              ],
+              errors: [],
+              namespace_required_storage_bytes: 10.gigabytes
+            },
+            {
+              namespace_id: namespace2.id,
+              enabled_namespace_id: enabled_namespace2.id,
+              replicas: [
+                {
+                  indices: [
+                    {
+                      node_id: nodes.first.id,
+                      required_storage_bytes: 2.gigabytes,
+                      max_storage_bytes: 90.gigabytes,
+                      projects: { project_namespace_id_from: 1, project_namespace_id_to: 3 }
+                    },
+                    {
+                      node_id: nodes.second.id,
+                      required_storage_bytes: 1.gigabyte,
+                      max_storage_bytes: 80.gigabytes,
+                      projects: { project_namespace_id_from: 4, project_namespace_id_to: nil }
+                    }
+                  ]
+                },
+                {
+                  indices: [
+                    {
+                      node_id: nodes.third.id,
+                      required_storage_bytes: 2.gigabytes,
+                      max_storage_bytes: 90.gigabytes,
+                      projects: { project_namespace_id_from: 1, project_namespace_id_to: 3 }
+                    },
+                    {
+                      node_id: nodes.fourth.id,
+                      required_storage_bytes: 1.gigabyte,
+                      max_storage_bytes: 80.gigabytes,
+                      projects: { project_namespace_id_from: 4, project_namespace_id_to: nil }
+                    }
+                  ]
+                }
+              ],
+              errors: [],
+              namespace_required_storage_bytes: 6.gigabytes
+            }
+          ],
+          total_required_storage_bytes: 16.gigabytes,
+          failures: []
+        }
+      end
+
+      it 'does not creates any index or replica' do
+        result = provisioning_result
+        expect(result[:errors]).to include(a_hash_including(details: /unclaimed storage bytes and cannot fit/))
         expect(Search::Zoekt::Replica.count).to be_zero
         expect(Search::Zoekt::Index.count).to be_zero
       end

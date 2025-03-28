@@ -59,41 +59,30 @@ module Search
 
       def process_replica(namespace_id:, enabled_namespace_id:, replica_plan:)
         replica = Replica.create!(namespace_id: namespace_id, zoekt_enabled_namespace_id: enabled_namespace_id)
-
-        replica_plan[:indices].each do |index_plan|
-          process_index(replica, index_plan)
-        end
+        process_indices!(replica, replica_plan[:indices])
       end
 
-      def process_index(replica, index_plan)
-        node = Node.find(index_plan[:node_id])
-        required_storage_bytes = index_plan[:required_storage_bytes]
-
-        if required_storage_bytes > node.unclaimed_storage_bytes
-          log_error(
-            :node_capacity_exceeded,
-            "Node #{node.id} has #{node.unclaimed_storage_bytes} unclaimed storage bytes and " \
+      def process_indices!(replica, indices_plan)
+        zoekt_indices = indices_plan.map do |index_plan|
+          node = Node.find(index_plan[:node_id])
+          required_storage_bytes = index_plan[:required_storage_bytes]
+          if required_storage_bytes > node.unclaimed_storage_bytes
+            error_details = "Node #{node.id} has #{node.unclaimed_storage_bytes} unclaimed storage bytes and " \
               "cannot fit #{required_storage_bytes} bytes."
-          )
-          return
+            log_error(:node_capacity_exceeded, error_details)
+            raise StandardError, error_details
+          end
+
+          {
+            zoekt_enabled_namespace_id: replica.zoekt_enabled_namespace_id,
+            zoekt_replica_id: replica.id,
+            zoekt_node_id: node.id,
+            namespace_id: replica.namespace_id,
+            reserved_storage_bytes: required_storage_bytes,
+            metadata: index_plan[:projects].compact
+          } # Workaround: we remove nil project_namespace_id_to since it is not a valid property in json validator.
         end
-
-        Index.create!(
-          replica: replica,
-          zoekt_enabled_namespace_id: replica.zoekt_enabled_namespace_id,
-          namespace_id: replica.namespace_id,
-          zoekt_node_id: node.id,
-          reserved_storage_bytes: required_storage_bytes,
-
-          # Workaround: we remove nil project_namespace_id_to since it is not a valid property in json validator.
-          metadata: index_plan[:projects].compact
-        )
-
-        update_node_storage(node, required_storage_bytes)
-      end
-
-      def update_node_storage(node, used_bytes)
-        node.update!(used_bytes: node.used_bytes + used_bytes)
+        Index.insert_all(zoekt_indices) if zoekt_indices.present?
       end
 
       def log_error(message, details, trace = [])
