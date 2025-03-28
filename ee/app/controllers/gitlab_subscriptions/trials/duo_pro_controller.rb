@@ -15,10 +15,12 @@ module GitlabSubscriptions
 
           render :step_namespace
         else
-          set_group_name
           track_event('render_duo_pro_lead_page')
 
-          render :step_lead
+          render GitlabSubscriptions::Trials::DuoPro::LeadFormComponent.new(
+            user: current_user,
+            namespace_id: general_params[:namespace_id],
+            eligible_namespaces: eligible_namespaces)
         end
       end
 
@@ -39,9 +41,12 @@ module GitlabSubscriptions
           # namespace not found/not permitted to create
           render_404
         elsif @result.reason == GitlabSubscriptions::Trials::CreateDuoProService::LEAD_FAILED
-          set_group_name
-
-          render :step_lead_failed
+          render GitlabSubscriptions::Trials::DuoPro::LeadFormWithErrorsComponent.new(
+            user: current_user,
+            namespace_id: general_params[:namespace_id],
+            eligible_namespaces: eligible_namespaces,
+            form_params: lead_form_params,
+            errors: @result.errors)
         else
           # trial creation failed
           params[:namespace_id] = @result.payload[:namespace_id] # rubocop:disable Rails/StrongParams -- Not working for assignment
@@ -52,8 +57,14 @@ module GitlabSubscriptions
 
       private
 
+      def lead_form_params
+        params.permit(
+          :first_name, :last_name, :company_name, :company_size, :phone_number, :country, :state
+        ).to_h.symbolize_keys
+      end
+
       def eligible_namespaces
-        @eligible_namespaces = Users::AddOnTrialEligibleNamespacesFinder.new(current_user, add_on: :duo_pro).execute
+        Users::AddOnTrialEligibleNamespacesFinder.new(current_user, add_on: :duo_pro).execute
       end
       strong_memoize_attr :eligible_namespaces
 

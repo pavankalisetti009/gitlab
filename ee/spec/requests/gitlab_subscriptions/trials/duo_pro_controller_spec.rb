@@ -48,40 +48,6 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
     it { is_expected.to have_gitlab_http_status(:forbidden) }
   end
 
-  shared_examples 'group_name assignment' do
-    context 'when there is only one eligible namespace' do
-      it 'assigns the group_name to the eligible group name' do
-        request
-
-        expect(assigns(:group_name)).to eq(group_for_trial.name)
-      end
-    end
-
-    context 'when there are multiple eligible namespaces' do
-      before_all do
-        create(:group_with_plan, plan: :premium_plan, owners: user)
-      end
-
-      context 'when namespace_id is provided' do
-        it 'assigns the group_name provided from params' do
-          request
-
-          expect(assigns(:group_name)).to eq(group_for_trial.name)
-        end
-      end
-
-      context 'when namespace_id is not provided' do
-        let(:namespace_id) { {} }
-
-        it 'assigns the group_name to nil' do
-          request
-
-          expect(assigns(:group_name)).to be_nil
-        end
-      end
-    end
-  end
-
   describe 'GET new' do
     let(:group_for_trial) { group }
     let(:namespace_id) { { namespace_id: group_for_trial.id } }
@@ -102,10 +68,6 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
       end
 
       it { is_expected.to render_lead_form }
-
-      it_behaves_like 'group_name assignment' do
-        let(:request) { get_new }
-      end
 
       context 'with tracking page render' do
         it_behaves_like 'internal event tracking' do
@@ -241,10 +203,6 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
           let(:failure_reason) { :lead_failed }
 
           it { is_expected.to have_gitlab_http_status(:ok).and render_lead_form }
-
-          it_behaves_like 'group_name assignment' do
-            let(:request) { post_create }
-          end
         end
 
         context 'when lead creation is successful, but we need to select a namespace next to apply trial' do
