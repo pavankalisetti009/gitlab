@@ -1,6 +1,15 @@
 # frozen_string_literal: true
 
 RSpec.shared_examples 'common ai_usage_event' do
+  describe '#before_validation' do
+    it 'floors timestamp to 3 digits' do
+      event = described_class.new(timestamp: '2021-01-01 01:02:03.123456789'.to_datetime)
+      expect do
+        event.validate
+      end.to change { event.timestamp }.to('2021-01-01 01:02:03.123'.to_datetime)
+    end
+  end
+
   describe '#to_clickhouse_csv_row', :freeze_time do
     let(:event) { described_class.new(attributes.with_indifferent_access) }
     let(:attributes) do
@@ -12,7 +21,7 @@ RSpec.shared_examples 'common ai_usage_event' do
     it 'returns 3 required fields' do
       expect(event.to_clickhouse_csv_row).to include(
         user_id: user.id,
-        timestamp: '2021-01-01'.to_datetime.to_i,
+        timestamp: '2021-01-01'.to_datetime.to_f,
         event: described_class.events.each_value.first
       )
     end
