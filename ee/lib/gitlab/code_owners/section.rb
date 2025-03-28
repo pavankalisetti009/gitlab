@@ -5,11 +5,12 @@ module Gitlab
     class Section
       DEFAULT = 'codeowners'
 
-      attr_reader :name, :optional, :approvals, :default_owners
+      attr_reader :name, :optional, :raw_approvals, :approvals, :default_owners
 
-      def initialize(name:, optional: false, approvals: 0, default_owners: nil)
+      def initialize(name:, optional: false, raw_approvals: nil, approvals: 0, default_owners: nil)
         @name = name
         @optional = optional
+        @raw_approvals = raw_approvals
         @approvals = approvals
         @default_owners = default_owners.to_s.strip
       end

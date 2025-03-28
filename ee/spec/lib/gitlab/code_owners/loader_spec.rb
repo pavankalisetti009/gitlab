@@ -325,7 +325,6 @@ RSpec.describe Gitlab::CodeOwners::Loader, feature_category: :source_code_manage
 
         expect_snowplow_event(category: described_class.name, action: 'file_validation', label: 'missing_entry_owner', project: project, extra: { file_path: "CODEOWNERS", line_number: 2 })
         expect_snowplow_event(category: described_class.name, action: 'file_validation', label: 'invalid_section_format', project: project, extra: { file_path: "CODEOWNERS", line_number: 4 })
-        expect_snowplow_event(category: described_class.name, action: 'file_validation', label: 'missing_entry_owner', project: project, extra: { file_path: "CODEOWNERS", line_number: 4 })
       end
     end
   end

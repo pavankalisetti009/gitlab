@@ -565,8 +565,7 @@ RSpec.describe Gitlab::CodeOwners::File, feature_category: :source_code_manageme
             Gitlab::CodeOwners::Error.new(:missing_entry_owner, 1),
             Gitlab::CodeOwners::Error.new(:missing_section_name, 3),
             Gitlab::CodeOwners::Error.new(:invalid_approval_requirement, 6),
-            Gitlab::CodeOwners::Error.new(:invalid_section_format, 9),
-            Gitlab::CodeOwners::Error.new(:malformed_entry_owner, 9)
+            Gitlab::CodeOwners::Error.new(:invalid_section_format, 9)
           ]
         )
       end
@@ -662,14 +661,11 @@ RSpec.describe Gitlab::CodeOwners::File, feature_category: :source_code_manageme
         it 'detects syntax errors' do
           expect(file.valid?).to eq(false)
 
-          expect(file.errors).to match_array(
-            [
-              Gitlab::CodeOwners::Error.new(:missing_entry_owner, 1),
-              Gitlab::CodeOwners::Error.new(:missing_section_name, 3),
-              Gitlab::CodeOwners::Error.new(:invalid_approval_requirement, 6),
-              Gitlab::CodeOwners::Error.new(:invalid_section_format, 9),
-              Gitlab::CodeOwners::Error.new(:malformed_entry_owner, 9)
-            ]
+          expect(file.errors).to contain_exactly(
+            Gitlab::CodeOwners::Error.new(:missing_entry_owner, 1),
+            Gitlab::CodeOwners::Error.new(:missing_section_name, 3),
+            Gitlab::CodeOwners::Error.new(:invalid_approval_requirement, 6),
+            Gitlab::CodeOwners::Error.new(:invalid_section_format, 9)
           )
         end
 
