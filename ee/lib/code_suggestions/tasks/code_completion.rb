@@ -20,7 +20,7 @@ module CodeSuggestions
       end
 
       def prompt
-        if Feature.enabled?(:amazon_q_chat_and_code_suggestions, current_user) && ::Ai::AmazonQ.connected?
+        if ::Ai::AmazonQ.connected?
           amazon_q_prompt
         elsif self_hosted?
           self_hosted_prompt

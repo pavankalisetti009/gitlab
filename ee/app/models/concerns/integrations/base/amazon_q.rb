@@ -93,7 +93,6 @@ module Integrations
       end
 
       def execute(data)
-        return unless Feature.enabled?(:amazon_q_chat_and_code_suggestions, :instance)
         return unless auto_review_enabled
 
         user = user_from_web_hook_data(data)

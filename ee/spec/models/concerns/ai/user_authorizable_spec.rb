@@ -271,23 +271,21 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
 
       using RSpec::Parameterized::TableSyntax
 
-      where(:amazon_q_connected, :ff_enabled, :ai_feature, :service_name, :licensed_feature) do
-        false | true  | :duo_chat              | nil                   | :ai_features
-        true  | true  | :duo_chat              | :amazon_q_integration | :amazon_q
-        true  | true  | :code_suggestions      | :amazon_q_integration | :amazon_q
-        true  | true  | :troubleshoot_job      | :amazon_q_integration | :amazon_q
-        true  | true  | :explain_vulnerability | :amazon_q_integration | :amazon_q
-        true  | true  | :resolve_vulnerability | :amazon_q_integration | :amazon_q
-        true  | true  | :summarize_comments    | :amazon_q_integration | :amazon_q
-        true  | true  | :sast                  | nil                   | :ai_features
-        true  | false | :resolve_vulnerability | nil                   | :ai_features
+      where(:amazon_q_connected, :ai_feature, :service_name, :licensed_feature) do
+        false | :duo_chat              | nil                   | :ai_features
+        true  | :duo_chat              | :amazon_q_integration | :amazon_q
+        true  | :code_suggestions      | :amazon_q_integration | :amazon_q
+        true  | :troubleshoot_job      | :amazon_q_integration | :amazon_q
+        true  | :explain_vulnerability | :amazon_q_integration | :amazon_q
+        true  | :resolve_vulnerability | :amazon_q_integration | :amazon_q
+        true  | :summarize_comments    | :amazon_q_integration | :amazon_q
+        true  | :sast                  | nil                   | :ai_features
       end
 
       with_them do
         before do
           Ai::Setting.instance.update!(amazon_q_ready: amazon_q_connected)
           stub_licensed_features(amazon_q: true)
-          stub_feature_flags(amazon_q_chat_and_code_suggestions: ff_enabled)
         end
 
         it 'checks whether the feature is available in Amazon Q' do

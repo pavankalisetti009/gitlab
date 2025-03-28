@@ -745,12 +745,11 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
     end
 
     context 'when amazon q is connected' do
-      where(:duo_chat_on_saas, :amazon_q_connected, :allowed_to_use, :ff_enabled, :duo_chat_enabled_for_user) do
-        true  | true  | true  | true  | be_allowed(policy)
-        true  | true  | true  | false | be_disallowed(policy)
-        false | true  | true  | true  | be_allowed(policy)
-        true  | false | true  | true  | be_disallowed(policy)
-        true  | false | false | true  | be_disallowed(policy)
+      where(:duo_chat_on_saas, :amazon_q_connected, :allowed_to_use, :duo_chat_enabled_for_user) do
+        true  | true  | true  | be_allowed(policy)
+        false | true  | true  | be_allowed(policy)
+        true  | false | true  | be_disallowed(policy)
+        true  | false | false | be_disallowed(policy)
       end
 
       with_them do
@@ -759,7 +758,6 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
 
           allow(::Ai::AmazonQ).to receive(:connected?).and_return(amazon_q_connected)
           stub_licensed_features(ai_chat: true, amazon_q: true)
-          stub_feature_flags(amazon_q_chat_and_code_suggestions: ff_enabled)
 
           allow(current_user).to receive(:allowed_to_use).with(:duo_chat, service_name: nil,
             licensed_feature: :ai_features).and_return(::Ai::UserAuthorizable::Response.new(allowed?: false))
