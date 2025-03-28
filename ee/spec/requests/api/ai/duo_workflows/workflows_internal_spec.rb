@@ -73,6 +73,37 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
     end
   end
 
+  describe 'GET /ai/duo_workflows/workflows/:id/checkpoints/:checkpoint_id' do
+    it 'returns the checkpoint' do
+      checkpoint = create(:duo_workflows_checkpoint, workflow: workflow)
+      checkpoint_write = create(:duo_workflows_checkpoint_write, thread_ts: checkpoint.thread_ts,
+        workflow: checkpoint.workflow)
+      path = "/ai/duo_workflows/workflows/#{workflow.id}/checkpoints/#{checkpoint.id}"
+
+      get api(path, user)
+      expect(response).to have_gitlab_http_status(:ok)
+      expect(json_response['id']).to eq(checkpoint.id)
+      expect(json_response['thread_ts']).to eq(checkpoint.thread_ts)
+      expect(json_response['parent_ts']).to eq(checkpoint.parent_ts)
+      expect(json_response).to have_key('checkpoint')
+      expect(json_response).to have_key('metadata')
+      expect(json_response['checkpoint_writes'][0]['id']).to eq(checkpoint_write.id)
+    end
+
+    context 'when a checkpoint from a workflow belongs to a different user' do
+      it 'returns 404' do
+        workflow = create(:duo_workflows_workflow, project: project)
+        checkpoint = create(:duo_workflows_checkpoint, workflow: workflow)
+        create(:duo_workflows_checkpoint_write, thread_ts: checkpoint.thread_ts,
+          workflow: checkpoint.workflow)
+        path = "/ai/duo_workflows/workflows/#{workflow.id}/checkpoints/#{checkpoint.id}"
+        get api(path, user)
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+  end
+
   describe 'POST /ai/duo_workflows/workflows/:id/checkpoint_writes_batch' do
     let(:params) do
       {

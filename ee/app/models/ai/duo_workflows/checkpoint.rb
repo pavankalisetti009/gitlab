@@ -20,6 +20,7 @@ module Ai
       after_save :touch_workflow
 
       scope :ordered_with_writes, -> { includes(:checkpoint_writes).order(thread_ts: :desc) }
+      scope :with_checkpoint_writes, -> { includes(:checkpoint_writes) }
 
       private
 
