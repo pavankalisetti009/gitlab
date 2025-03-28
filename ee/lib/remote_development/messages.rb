@@ -53,6 +53,9 @@ module RemoteDevelopment
     AgentConfigUpdateSkippedBecauseNoConfigFileEntryFound = Class.new(Gitlab::Fp::Message)
     AgentConfigUpdateSuccessful = Class.new(Gitlab::Fp::Message)
 
+    # AgentPrerequisitesOperations domain events
+    AgentPrerequisitesSuccessful = Class.new(Gitlab::Fp::Message)
+
     # Workspace domain events
     WorkspaceCreateSuccessful = Class.new(Gitlab::Fp::Message)
     WorkspaceUpdateSuccessful = Class.new(Gitlab::Fp::Message)

@@ -124,6 +124,73 @@ RSpec.describe API::Internal::Kubernetes, feature_category: :deployment_manageme
     end
   end
 
+  describe 'POST /internal/kubernetes/modules/remote_development/prerequisites' do
+    let(:method) { :post }
+    let(:api_url) { '/internal/kubernetes/modules/remote_development/prerequisites' }
+    let(:params) { { some_param: "" } }
+    let(:expected_service_args) do
+      {
+        domain_main_class: ::RemoteDevelopment::AgentPrerequisitesOperations::Main,
+        domain_main_class_args: {
+          agent: agent
+        }
+      }
+    end
+
+    let(:stub_service_payload) { { "some_payload" => "" } }
+    let(:stub_service_response) do
+      ServiceResponse.success(payload: stub_service_payload)
+    end
+
+    before do
+      stub_licensed_features(remote_development: true)
+    end
+
+    include_examples 'authorization'
+    include_examples 'agent authentication'
+
+    context 'when service response is successful' do
+      let(:service_response) { ServiceResponse.success(payload: {}) }
+
+      it 'returns service response with payload' do
+        expect(RemoteDevelopment::CommonService).to receive(:execute).with(expected_service_args) do
+          stub_service_response
+        end
+
+        send_request(params: params)
+
+        expect(response).to have_gitlab_http_status(:created)
+        expect(json_response).to eq(stub_service_payload)
+      end
+    end
+
+    context 'when service response is not successful' do
+      let(:stub_service_response) { ServiceResponse.error(message: 'error', reason: :not_found) }
+
+      it 'returns service response with error' do
+        expect(RemoteDevelopment::CommonService).to receive(:execute).with(expected_service_args) do
+          stub_service_response
+        end
+
+        send_request(params: params)
+
+        expect(response).to have_gitlab_http_status(:internal_server_error)
+      end
+    end
+
+    context 'when remote_development feature is unlicensed' do
+      before do
+        stub_licensed_features(remote_development: false)
+      end
+
+      it 'returns service response with payload' do
+        send_request(params: params)
+
+        expect(response).to have_gitlab_http_status(:forbidden)
+      end
+    end
+  end
+
   describe 'POST /internal/kubernetes/agent_configuration' do
     def send_request(headers: {}, params: {})
       post api('/internal/kubernetes/agent_configuration'), params: params, headers: headers.reverse_merge(jwt_auth_headers)
