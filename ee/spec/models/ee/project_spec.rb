@@ -796,13 +796,43 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       end
     end
 
-    describe '.without_zoekt_repositories' do
+    describe '.without_zoekt_repositories_for_index' do
       let_it_be(:not_indexed_project) { create(:project) }
-      let_it_be(:zoekt_repository) { create(:zoekt_repository) }
-      let_it_be(:indexed_project) { zoekt_repository.project }
+      let_it_be(:zoekt_index_1) { create(:zoekt_index) }
+      let_it_be(:zoekt_index_2) { create(:zoekt_index) }
+      let_it_be(:zoekt_repository_1) { create(:zoekt_repository, zoekt_index: zoekt_index_1) }
+      let_it_be(:indexed_project_1) { zoekt_repository_1.project }
 
-      it 'only matches indexed projects' do
-        expect(described_class.without_zoekt_repositories).to contain_exactly(not_indexed_project)
+      # Project indexed in a different index but not in index_1
+      let_it_be(:zoekt_repository_2) { create(:zoekt_repository, zoekt_index: zoekt_index_2) }
+      let_it_be(:indexed_project_2) { zoekt_repository_2.project }
+
+      # Project indexed in both indices
+      let_it_be(:zoekt_repository_3) do
+        create(:zoekt_repository, project: indexed_project_2, zoekt_index: zoekt_index_1)
+      end
+
+      context 'when checking for index_1' do
+        it 'returns projects not indexed in the specified index' do
+          expect(described_class.without_zoekt_repositories_for_index(zoekt_index_1.id))
+            .to contain_exactly(not_indexed_project)
+        end
+      end
+
+      context 'when checking for index_2' do
+        it 'returns projects not indexed in the specified index' do
+          expect(described_class.without_zoekt_repositories_for_index(zoekt_index_2.id))
+            .to contain_exactly(not_indexed_project, indexed_project_1)
+        end
+      end
+
+      context 'with multiple projects' do
+        let_it_be(:additional_projects) { create_list(:project, 3) }
+
+        it 'returns all projects not indexed in the specified index' do
+          expect(described_class.without_zoekt_repositories_for_index(zoekt_index_1.id).count)
+            .to eq(1 + additional_projects.size)
+        end
       end
     end
 

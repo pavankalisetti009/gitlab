@@ -62,7 +62,7 @@ module Search
         project_namespaces.each_batch(of: BATCH_SIZE) do |project_namespaces_batch|
           scope = ::Project.by_project_namespace(project_namespaces_batch.select(:id))
 
-          project_ids = scope.without_zoekt_repositories.pluck_primary_key
+          project_ids = scope.without_zoekt_repositories_for_index(index.id).pluck_primary_key
           next if project_ids.empty?
 
           result = insert_repositories(index: index, project_ids: project_ids)

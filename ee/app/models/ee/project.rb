@@ -433,9 +433,10 @@ module EE
           :repository_languages, :group, namespace: :owner)
       end
 
-      scope :without_zoekt_repositories, -> do
-        left_joins(:zoekt_repositories).where(zoekt_repositories: { id: nil })
-      end
+      scope :without_zoekt_repositories_for_index, ->(index_id) {
+        where("NOT EXISTS (SELECT 1 FROM zoekt_repositories WHERE zoekt_repositories.project_id = projects.id " \
+          "AND zoekt_repositories.zoekt_index_id = ?)", index_id)
+      }
 
       delegate :shared_runners_seconds, to: :statistics, allow_nil: true
 
