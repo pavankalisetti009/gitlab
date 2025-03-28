@@ -14569,6 +14569,12 @@ msgstr ""
 msgid "ColorMode|Light"
 msgstr ""
 
+msgid "ColorPicker|Enter any hex color or choose one of the suggested colors below."
+msgstr ""
+
+msgid "ColorPicker|Enter any hex color."
+msgstr ""
+
 msgid "ColorWidget|An error occurred while updating color."
 msgstr ""
 
@@ -23230,12 +23236,6 @@ msgid "Enter admin mode"
 msgstr ""
 
 msgid "Enter an integer number between 0 and 100"
-msgstr ""
-
-msgid "Enter any color or choose one of the suggested colors below."
-msgstr ""
-
-msgid "Enter any color."
 msgstr ""
 
 msgid "Enter at least three characters to search"
