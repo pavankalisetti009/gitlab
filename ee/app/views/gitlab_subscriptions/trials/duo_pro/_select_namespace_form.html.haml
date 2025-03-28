@@ -20,4 +20,4 @@
         = render Pajamas::ButtonComponent.new(type: :submit, variant: :confirm) do
           = s_('DuoProTrial|Activate my trial')
 
-  = render 'advantages_list'
+  = render GitlabSubscriptions::Trials::DuoPro::AdvantagesListComponent.new

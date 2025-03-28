@@ -2,15 +2,6 @@
 
 module GitlabSubscriptions
   module TrialsHelper
-    def create_duo_pro_lead_form_data(eligible_namespaces)
-      submit_path = trials_duo_pro_path(
-        step: GitlabSubscriptions::Trials::CreateDuoProService::LEAD,
-        namespace_id: params[:namespace_id]
-      )
-
-      _lead_form_data(eligible_namespaces).merge(submit_path: submit_path)
-    end
-
     def duo_trial_namespace_selector_data(namespaces, namespace_create_errors)
       namespace_selector_data(namespace_create_errors).merge(
         any_trial_eligible_namespaces: namespaces.any?.to_s,
@@ -64,20 +55,6 @@ module GitlabSubscriptions
 
     def current_namespaces_for_selector(namespaces)
       namespaces.map { |n| { text: n.name, value: n.id.to_s } }
-    end
-
-    def _lead_form_data(eligible_namespaces)
-      {
-        first_name: current_user.first_name,
-        last_name: current_user.last_name,
-        email_domain: current_user.email_domain,
-        company_name: current_user.organization,
-        submit_button_text: trial_submit_text(eligible_namespaces)
-      }.merge(
-        params.permit(
-          :first_name, :last_name, :company_name, :company_size, :phone_number, :country, :state
-        ).to_h.symbolize_keys
-      )
     end
 
     def namespace_selector_data(namespace_create_errors)
