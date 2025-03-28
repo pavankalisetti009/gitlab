@@ -22346,7 +22346,7 @@ CI input saved for a pipeline schedule.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="ciinputsfieldname"></a>`name` | [`String!`](#string) | Name of the input. |
-| <a id="ciinputsfieldvalue"></a>`value` | [`CiInputsValueInputType`](#ciinputsvalueinputtype) | Value of the input. |
+| <a id="ciinputsfieldvalue"></a>`value` | [`CiInputsValue`](#ciinputsvalue) | Value of the input. |
 
 ### `CiInputsSpec`
 
@@ -22356,10 +22356,10 @@ Input for pipeline creation.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="ciinputsspecdefault"></a>`default` | [`CiInputsValueInputType`](#ciinputsvalueinputtype) | Default value for the input, if provided. |
+| <a id="ciinputsspecdefault"></a>`default` | [`CiInputsValue`](#ciinputsvalue) | Default value for the input, if provided. |
 | <a id="ciinputsspecdescription"></a>`description` | [`String`](#string) | Description of the input. |
 | <a id="ciinputsspecname"></a>`name` | [`String!`](#string) | Name of the input. |
-| <a id="ciinputsspecoptions"></a>`options` | [`CiInputsValueInputType`](#ciinputsvalueinputtype) | Possible values that the input can take, if provided. |
+| <a id="ciinputsspecoptions"></a>`options` | [`CiInputsValue`](#ciinputsvalue) | Possible values that the input can take, if provided. |
 | <a id="ciinputsspecregex"></a>`regex` | [`String`](#string) | Regular expression pattern that the input value must match if provided. |
 | <a id="ciinputsspecrequired"></a>`required` | [`Boolean!`](#boolean) | Indicates whether the input is required. |
 | <a id="ciinputsspectype"></a>`type` | [`CiInputsType!`](#ciinputstype) | Input data type. |
@@ -45448,7 +45448,7 @@ A `CiCatalogResourcesVersionID` is a global ID. It is encoded as a string.
 
 An example `CiCatalogResourcesVersionID` is: `"gid://gitlab/Ci::Catalog::Resources::Version/1"`.
 
-### `CiInputsValueInputType`
+### `CiInputsValue`
 
 Value for a CI input. Can be a string, array, number, or boolean.
 
@@ -47847,7 +47847,7 @@ Attributes for defining an input.
 | ---- | ---- | ----------- |
 | <a id="ciinputsinputdestroy"></a>`destroy` | [`Boolean`](#boolean) | Set to `true` to delete the input. |
 | <a id="ciinputsinputname"></a>`name` | [`String!`](#string) | Name of the input. |
-| <a id="ciinputsinputvalue"></a>`value` | [`CiInputsValueInputType!`](#ciinputsvalueinputtype) | Value of the input. |
+| <a id="ciinputsinputvalue"></a>`value` | [`CiInputsValue!`](#ciinputsvalue) | Value of the input. |
 
 ### `CiVariableInput`
 
