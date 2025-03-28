@@ -6,11 +6,12 @@ import {
   GlDisclosureDropdown,
   GlDisclosureDropdownItem,
   GlBadge,
+  GlTooltip,
 } from '@gitlab/ui';
 
-import { s__, __ } from '~/locale';
+import { s__, __, sprintf } from '~/locale';
 import { createAlert } from '~/alert';
-import { emptyRequirement, requirementEvents } from '../constants';
+import { emptyRequirement, requirementEvents, maxRequirementsNumber } from '../constants';
 import { EXTERNAL_CONTROL_LABEL } from '../../../../constants';
 import { getControls } from '../../../../utils';
 
@@ -29,6 +30,7 @@ export default {
     GlDisclosureDropdown,
     GlDisclosureDropdownItem,
     GlBadge,
+    GlTooltip,
   },
   props: {
     requirements: {
@@ -74,6 +76,17 @@ export default {
           controls,
         };
       });
+    },
+    addingRequirementsDisabled() {
+      return this.requirements.length >= maxRequirementsNumber;
+    },
+    disabledAddRequirementBtnText() {
+      return sprintf(
+        s__(
+          'ComplianceFrameworks|You can create a maximum of %{maxRequirementsNumber} requirements',
+        ),
+        { maxRequirementsNumber },
+      );
     },
   },
   methods: {
@@ -205,15 +218,23 @@ export default {
         <gl-loading-icon size="lg" />
       </template>
     </gl-table>
-    <gl-button
-      variant="link"
-      class="gl-ml-5"
-      data-testid="add-requirement-button"
-      @click="showRequirementModal($options.emptyRequirement)"
-    >
-      {{ $options.i18n.newRequirement }}
-    </gl-button>
-
+    <gl-tooltip
+      v-if="addingRequirementsDisabled"
+      placement="right"
+      :target="() => $refs.addRequirementBtn"
+      :title="disabledAddRequirementBtnText"
+    />
+    <div ref="addRequirementBtn" class="gl-inline-block">
+      <gl-button
+        variant="link"
+        class="gl-ml-5"
+        data-testid="add-requirement-button"
+        :disabled="addingRequirementsDisabled"
+        @click="showRequirementModal($options.emptyRequirement)"
+      >
+        {{ $options.i18n.newRequirement }}
+      </gl-button>
+    </div>
     <requirement-modal
       v-if="requirementToEdit"
       ref="requirementModal"
