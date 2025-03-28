@@ -21,7 +21,6 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
   describe 'default values' do
     it { expect(setting.receptive_cluster_agents_enabled).to be false }
     it { expect(setting.security_approval_policies_limit).to eq(5) }
-    it { expect(setting.use_clickhouse_for_analytics).to be false }
     it { expect(setting.zoekt_auto_delete_lost_nodes).to be true }
     it { expect(setting.zoekt_auto_index_root_namespace).to be false }
     it { expect(setting.zoekt_cpu_to_tasks_ratio).to eq(1.0) }

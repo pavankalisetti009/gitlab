@@ -656,37 +656,6 @@ RSpec.describe 'Admin updates EE-only settings' do
     end
   end
 
-  describe 'Analytics reports settings', feature_category: :value_stream_management do
-    before do
-      allow(Gitlab::ClickHouse).to receive(:configured?).and_return(true)
-    end
-
-    it 'enables clickhouse settings' do
-      visit general_admin_application_settings_path
-
-      page.within('#js-analytics-settings') do
-        check 'Enable ClickHouse'
-
-        click_button 'Save changes'
-      end
-
-      expect(page).to have_content 'Application settings saved successfully'
-      expect(current_settings.use_clickhouse_for_analytics).to be_truthy
-    end
-
-    context 'when ClickHouse is not configured' do
-      it 'disables checkbox to enable ClickHouse' do
-        allow(Gitlab::ClickHouse).to receive(:configured?).and_return(false)
-
-        visit general_admin_application_settings_path
-
-        page.within('#js-analytics-settings') do |page|
-          expect(page).to have_field('application_setting_use_clickhouse_for_analytics', disabled: true)
-        end
-      end
-    end
-  end
-
   def current_settings
     ApplicationSetting.current_without_cache
   end
