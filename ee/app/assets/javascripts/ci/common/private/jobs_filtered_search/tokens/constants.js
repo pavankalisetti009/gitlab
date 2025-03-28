@@ -11,8 +11,24 @@ const EE_JOB_SOURCES = [
     value: 'ONDEMAND_DAST_VALIDATION',
   },
   {
-    text: s__('JobSource|Security Policy'),
+    text: s__('JobSource|Security Orchestration Policy'),
     value: 'SECURITY_ORCHESTRATION_POLICY',
+  },
+  {
+    text: s__('JobSource|Pipeline Execution Policy'),
+    value: 'PIPELINE_EXECUTION_POLICY',
+  },
+  {
+    text: s__('JobSource|Pipeline Execution Policy Schedule'),
+    value: 'PIPELINE_EXECUTION_POLICY_SCHEDULE',
+  },
+  {
+    text: s__('JobSource|Scan Execution Policy'),
+    value: 'SCAN_EXECUTION_POLICY',
+  },
+  {
+    text: s__('JobSource|Duo Workflow'),
+    value: 'DUO_WORKFLOW',
   },
 ];
 
