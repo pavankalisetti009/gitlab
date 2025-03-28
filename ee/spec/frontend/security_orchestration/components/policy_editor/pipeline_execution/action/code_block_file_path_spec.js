@@ -32,6 +32,7 @@ describe('CodeBlockFilePath', () => {
 
     wrapper = shallowMountExtended(CodeBlockFilePath, {
       propsData: {
+        strategy: INJECT,
         ...propsData,
       },
       stubs,
