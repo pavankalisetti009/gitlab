@@ -309,6 +309,12 @@ module EE
             'Available only when feature flag `custom_fields_feature` is enabled.',
           resolver: ::Resolvers::Issuables::CustomFieldResolver,
           experiment: { milestone: '17.10' }
+
+        field :ldap_admin_role_links,
+          ::Types::Authz::LdapAdminRoleLinkType.connection_type,
+          description: 'LDAP admin links. Available only for GitLab Self-Managed.',
+          resolver: ::Resolvers::Authz::LdapAdminRoleLinksResolver,
+          experiment: { milestone: '17.11' }
       end
 
       def vulnerability(id:)
