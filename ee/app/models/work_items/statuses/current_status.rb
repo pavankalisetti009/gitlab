@@ -13,9 +13,10 @@ module WorkItems
       belongs_to_fixed_items :system_defined_status, fixed_items_class: WorkItems::Statuses::SystemDefined::Status
       # In the future add association to custom status
 
-      validates :work_item_id, presence: true
+      validates :work_item_id, presence: true, unless: -> { validation_context == :status_callback }
 
       validate :validate_status_exists
+      validate :validate_allowed_status
 
       # As part of iteration 1, we only handle system-defined statuses
       # See the POC MR details to handle custom statuses in iteration 2
@@ -42,6 +43,14 @@ module WorkItems
         return if system_defined_status.present?
 
         errors.add(:system_defined_status, "not provided or references non-existent system defined status")
+      end
+
+      def validate_allowed_status
+        # In the future also check that custom status is allowed.
+        return if system_defined_status.nil?
+        return if system_defined_status.allowed_for_work_item?(work_item)
+
+        errors.add(:system_defined_status, "not allowed for this work item type")
       end
     end
   end

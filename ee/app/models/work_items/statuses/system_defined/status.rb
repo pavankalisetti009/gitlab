@@ -53,6 +53,23 @@ module WorkItems
         # We don't plan to change the position of the status for system defined lifecycles.
         attribute :position, :integer, default: 0
 
+        class << self
+          def find_by_work_item_and_name(work_item, status_name)
+            base_type = work_item.work_item_type.base_type.to_sym
+            # Status is only valid if it belongs to the lifecycle of the work item type.
+            Lifecycle.of_work_item_base_type(base_type)&.find_available_status_by_name(status_name)
+          end
+        end
+
+        def allowed_for_work_item?(work_item)
+          return false unless work_item.present?
+
+          lifecycle = Lifecycle.of_work_item_base_type(work_item.work_item_type.base_type.to_sym)
+          return false unless lifecycle.present?
+
+          lifecycle.has_status_id?(id)
+        end
+
         def icon_name
           CATEGORY_ICONS[category]
         end

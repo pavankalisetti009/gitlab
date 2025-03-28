@@ -29,6 +29,35 @@ module EE
               @updates[:progress] = update_progress(frequency)
             end
           end
+
+          desc { s_("WorkItemStatus|Set status") }
+          explanation do |_, status_name|
+            format(s_("WorkItemStatus|Set status to %{status_name}."), status_name: status_name)
+          end
+          types WorkItem
+          params 'Name of the status'
+          condition do
+            quick_action_target.resource_parent&.root_ancestor&.work_item_status_feature_available? &&
+              current_user.can?(:"update_#{quick_action_target.to_ability_name}", quick_action_target)
+          end
+          parse_params do |status_name|
+            status = ::WorkItems::Statuses::SystemDefined::Status.find_by_work_item_and_name(
+              quick_action_target,
+              status_name
+            )
+            [status, status_name]
+          end
+          command :status do |status, status_name|
+            if status
+              @updates[:status] = status
+              @execution_message[:status] =
+                format(s_("WorkItemStatus|Status set to %{status_name}."), status_name: status.name)
+            else
+              @execution_message[:status] =
+                format(s_("WorkItemStatus|%{status_name} is not a valid status for this item."),
+                  { status_name: status_name })
+            end
+          end
         end
 
         private

@@ -67,6 +67,20 @@ RSpec.describe WorkItems::Statuses::SystemDefined::Lifecycle, feature_category: 
     end
   end
 
+  describe '#has_status_id?' do
+    let(:status_id) { 2 }
+
+    subject { described_class.find(1).has_status_id?(status_id) }
+
+    it { is_expected.to be true }
+
+    context 'when status id is not in lifecycle' do
+      let(:status_id) { 99 }
+
+      it { is_expected.to be false }
+    end
+  end
+
   describe 'default status methods' do
     {
       default_open_status: 1,

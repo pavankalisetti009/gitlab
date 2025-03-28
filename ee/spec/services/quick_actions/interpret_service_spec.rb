@@ -1530,6 +1530,104 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
       end
     end
 
+    describe 'status command' do
+      shared_examples 'a failed command execution' do
+        it 'fails with message' do
+          _, updates, message = execute_command
+
+          expect(message).to eq(expected_message)
+          expect(updates).not_to have_key(:status)
+        end
+      end
+
+      shared_examples 'a successful command execution' do
+        it 'adds status reference to updates with message' do
+          _, updates, message = execute_command
+
+          expect(message).to eq(expected_message)
+          expect(updates[:status]).to have_attributes(
+            id: 2,
+            name: 'In progress'
+          )
+        end
+      end
+
+      shared_examples 'command is not available' do
+        it 'is not part of the available commands' do
+          expect(service.available_commands(work_item)).not_to include(a_hash_including(name: :status))
+        end
+      end
+
+      let_it_be_with_reload(:work_item) { create(:work_item, :task, project: project) }
+
+      let(:content) { '/status in progress' }
+      let(:expected_message) { format(s_("WorkItemStatus|Status set to %{status_name}."), status_name: 'In progress') }
+      let(:generic_error_message) { 'Could not apply status command.' }
+
+      subject(:execute_command) { service.execute(content, work_item) }
+
+      before do
+        stub_licensed_features(work_item_status: true)
+      end
+
+      it 'is part of the available commands' do
+        expect(service.available_commands(work_item)).to include(a_hash_including(name: :status))
+      end
+
+      it 'returns correct explain message' do
+        _, explanations = service.explain(content, work_item)
+
+        expect(explanations).to match_array([
+          # Lower case version because we use status_name and not status object
+          format(s_("WorkItemStatus|Set status to %{status_name}."), status_name: 'in progress')
+        ])
+      end
+
+      it_behaves_like 'a successful command execution'
+
+      context 'when status name does not reference a valid status' do
+        let(:content) { '/status invalid' }
+        let(:expected_message) do
+          format(
+            s_("WorkItemStatus|%{status_name} is not a valid status for this item."), { status_name: 'invalid' }
+          )
+        end
+
+        it_behaves_like 'a failed command execution'
+      end
+
+      context 'when status widget is not available for work item type' do
+        let_it_be_with_reload(:work_item) { create(:work_item, :ticket, project: project) }
+
+        let(:expected_message) { generic_error_message }
+
+        it_behaves_like 'command is not available'
+        it_behaves_like 'a failed command execution'
+      end
+
+      context 'when work_item_status licensed feature is disabled' do
+        let(:expected_message) { generic_error_message }
+
+        before do
+          stub_licensed_features(work_item_status: false)
+        end
+
+        it_behaves_like 'command is not available'
+        it_behaves_like 'a failed command execution'
+      end
+
+      context 'when work_item_status_feature_flag feature flag is disabled' do
+        let(:expected_message) { generic_error_message }
+
+        before do
+          stub_feature_flags(work_item_status_feature_flag: false)
+        end
+
+        it_behaves_like 'command is not available'
+        it_behaves_like 'a failed command execution'
+      end
+    end
+
     it_behaves_like 'quick actions that change work item type ee'
   end
 
