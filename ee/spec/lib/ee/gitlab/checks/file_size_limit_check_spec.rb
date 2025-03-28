@@ -57,50 +57,111 @@ RSpec.describe Gitlab::Checks::FileSizeLimitCheck, feature_category: :source_cod
   end
 
   describe '#validate!' do
-    context 'when the global file limit is smaller than the push rule file size limit' do
-      let(:push_rule_limit) { 50 }
-      let(:global_limit) { 20 }
+    describe 'when self-managed (global limit ignored)' do
+      context 'when the global file limit is smaller than the push rule file size limit' do
+        let(:push_rule_limit) { 50 }
+        let(:global_limit) { 20 }
 
-      it_behaves_like 'checks file size limit', 20
+        it_behaves_like 'checks file size limit', 50
+      end
     end
 
-    context 'when the push rule file limit is smaller than the global file size limit' do
-      let(:push_rule_limit) { 10 }
-      let(:global_limit) { 50 }
-
-      it_behaves_like 'checks file size limit', 10
-    end
-
-    context 'when the push rule does not exist' do
-      let(:push_rule) { nil }
-      let(:global_limit) { 50 }
-
-      it_behaves_like 'checks file size limit', 50
-    end
-
-    context 'when the global file limit is nil' do
-      let(:push_rule_limit) { 30 }
-      let(:global_limit) { nil }
-
-      it_behaves_like 'checks file size limit', 30
-    end
-
-    context 'when the push rule limit is 0' do
-      let(:push_rule_limit) { 0 }
-      let(:global_limit) { 20 }
-
-      it_behaves_like 'checks file size limit', 20
-    end
-
-    context 'when feature flag "push_rule_file_size_limit" is disabled' do
-      let(:push_rule_limit) { 30 }
-      let(:global_limit) { 10 }
-
+    context 'when on Saas' do
       before do
-        stub_feature_flags(push_rule_file_size_limit: false)
+        stub_saas_features(instance_push_limit: true)
       end
 
-      it_behaves_like 'checks file size limit', 10
+      context 'when the global file limit is smaller than the push rule file size limit' do
+        let(:push_rule_limit) { 50 }
+        let(:global_limit) { 20 }
+
+        it_behaves_like 'checks file size limit', 20
+      end
+
+      context 'when the push rule file limit is smaller than the global file size limit' do
+        let(:push_rule_limit) { 10 }
+        let(:global_limit) { 50 }
+
+        it_behaves_like 'checks file size limit', 10
+      end
+
+      context 'when the push rule does not exist' do
+        let(:push_rule) { nil }
+        let(:global_limit) { 50 }
+
+        it_behaves_like 'checks file size limit', 50
+      end
+
+      context 'when the global file limit is nil' do
+        let(:push_rule_limit) { 30 }
+        let(:global_limit) { nil }
+
+        it_behaves_like 'checks file size limit', 30
+      end
+
+      context 'when the push rule limit is 0' do
+        let(:push_rule_limit) { 0 }
+        let(:global_limit) { 20 }
+
+        it_behaves_like 'checks file size limit', 20
+      end
+
+      context 'when feature flag "push_rule_file_size_limit" is disabled' do
+        let(:push_rule_limit) { 30 }
+        let(:global_limit) { 10 }
+
+        before do
+          stub_feature_flags(push_rule_file_size_limit: false)
+        end
+
+        it_behaves_like 'checks file size limit', 10
+
+        describe '#validate!' do
+          it 'checks for file sizes' do
+            expect_next_instance_of(Gitlab::Checks::FileSizeCheck::HookEnvironmentAwareAnyOversizedBlobs,
+              project: project,
+              changes: changes,
+              file_size_limit_megabytes: global_limit
+            ) do |check|
+              expect(check).to receive(:find).and_call_original
+            end
+            expect(file_size_check.logger).to receive(:log_timed).with('Checking for blobs over the file size limit')
+              .and_call_original
+            expect(Gitlab::AppJsonLogger).to receive(:info).with('Checking for blobs over the file size limit')
+
+            file_size_check.validate!
+          end
+
+          context 'when there are oversized blobs' do
+            let(:mock_blob_id) { "88acbfafb1b8fdb7c51db870babce21bd861ac4f" }
+            let(:mock_blob_size) { 300 * 1024 * 1024 } # 300 MiB
+            let(:size_msg) { "300" }
+            let(:blob_double) { instance_double(Gitlab::Git::Blob, size: mock_blob_size, id: mock_blob_id) }
+
+            before do
+              allow_next_instance_of(Gitlab::Checks::FileSizeCheck::HookEnvironmentAwareAnyOversizedBlobs,
+                project: project,
+                changes: changes,
+                file_size_limit_megabytes: global_limit
+              ) do |check|
+                allow(check).to receive(:find).and_return([blob_double])
+              end
+            end
+
+            it 'logs a message with blob size and raises an exception' do
+              expect(Gitlab::AppJsonLogger).to receive(:info).with('Checking for blobs over the file size limit')
+              expect(Gitlab::AppJsonLogger).to receive(:info).with(
+                message: 'Found blob over global limit',
+                blob_details: [{ "id" => mock_blob_id, "size" => mock_blob_size }]
+              )
+              expect do
+                file_size_check.validate!
+              end.to raise_exception(Gitlab::GitAccess::ForbiddenError,
+                /- #{mock_blob_id} \(#{size_msg} MiB\)/)
+            end
+          end
+        end
+      end
     end
   end
 end

@@ -12,7 +12,7 @@ module EE
         override :file_size_limit
         def file_size_limit
           if ::Feature.enabled?(:push_rule_file_size_limit, project)
-            global_limit = super
+            global_limit = plan_limit
             return global_limit if push_rule.nil?
 
             push_rule_limit = push_rule.max_file_size
@@ -21,8 +21,14 @@ module EE
 
             [push_rule_limit, global_limit].min
           else
-            super
+            plan_limit
           end
+        end
+
+        def plan_limit
+          return unless ::Gitlab::Saas.feature_available?(:instance_push_limit)
+
+          project.actual_limits.file_size_limit_mb
         end
       end
     end
