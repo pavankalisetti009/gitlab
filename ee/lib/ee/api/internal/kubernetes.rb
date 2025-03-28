@@ -75,6 +75,28 @@ module EE
                 end
 
                 route_setting :authentication, cluster_agent_token_allowed: true
+                post '/prerequisites', urgency: :low, feature_category: :workspaces do
+                  unless ::License.feature_available?(:remote_development)
+                    forbidden!('"remote_development" licensed feature is not available')
+                  end
+
+                  domain_main_class_args = {
+                    agent: agent
+                  }
+
+                  response = ::RemoteDevelopment::CommonService.execute(
+                    domain_main_class: ::RemoteDevelopment::AgentPrerequisitesOperations::Main,
+                    domain_main_class_args: domain_main_class_args
+                  )
+
+                  if response.success?
+                    response.payload
+                  else
+                    render_api_error!({ error: response.message }, response.http_status)
+                  end
+                end
+
+                route_setting :authentication, cluster_agent_token_allowed: true
                 post '/reconcile', urgency: :low, feature_category: :workspaces do
                   unless ::License.feature_available?(:remote_development)
                     forbidden!('"remote_development" licensed feature is not available')
