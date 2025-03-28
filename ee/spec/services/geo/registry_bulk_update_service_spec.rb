@@ -24,9 +24,7 @@ RSpec.describe Geo::RegistryBulkUpdateService, :geo, feature_category: :geo_repl
       shared_examples 'a successful bulk action performed' do |success_message, worker_class|
         specify do
           registry = registry_class.name
-          args = worker_class == Geo::BulkMarkVerificationPendingBatchWorker ? registry : [registry, {}]
-
-          expect(worker_class).to receive(:perform_with_capacity).with(*args)
+          expect(worker_class).to receive(:perform_with_capacity).with(registry, {})
 
           result = service.execute
 

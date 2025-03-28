@@ -29,7 +29,7 @@ module Geo
     attr_reader :action, :registry_class, :params
 
     def reverify_all
-      Geo::BulkMarkVerificationPendingBatchWorker.perform_with_capacity(registry_class)
+      Geo::BulkMarkVerificationPendingBatchWorker.perform_with_capacity(registry_class, params)
 
       success_response(_('Registries enqueued to be reverified'))
     end
