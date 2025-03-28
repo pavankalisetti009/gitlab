@@ -77,6 +77,7 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
   it { is_expected.to be_disallowed(:manage_subscription) }
   it { is_expected.to be_disallowed(:read_cloud_connector_status) }
   it { is_expected.to be_disallowed(:read_admin_subscription) }
+  it { is_expected.to be_disallowed(:manage_ldap_admin_links) }
 
   context 'when admin mode enabled', :enable_admin_mode do
     it { expect(described_class.new(admin, [user])).to be_allowed(:read_licenses) }
@@ -86,6 +87,7 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
     it { expect(described_class.new(admin, [user])).to be_allowed(:manage_subscription) }
     it { expect(described_class.new(admin, [user])).to be_allowed(:read_cloud_connector_status) }
     it { expect(described_class.new(admin, [user])).to be_allowed(:read_admin_subscription) }
+    it { expect(described_class.new(admin, [user])).to be_allowed(:manage_ldap_admin_links) }
   end
 
   context 'when admin mode disabled' do
@@ -96,6 +98,7 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
     it { expect(described_class.new(admin, [user])).to be_disallowed(:manage_subscription) }
     it { expect(described_class.new(admin, [user])).to be_disallowed(:read_cloud_connector_status) }
     it { expect(described_class.new(admin, [user])).to be_disallowed(:read_admin_subscription) }
+    it { expect(described_class.new(admin, [user])).to be_disallowed(:manage_ldap_admin_links) }
   end
 
   shared_examples 'analytics policy' do |action|

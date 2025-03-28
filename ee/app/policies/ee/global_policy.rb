@@ -158,6 +158,7 @@ module EE
         enable :read_jobs_statistics
         enable :read_licenses
         enable :read_runner_usage
+        enable :manage_ldap_admin_links
       end
 
       rule { admin & user_allowed_to_manage_self_hosted_models_settings }.policy do
