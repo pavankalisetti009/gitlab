@@ -23,6 +23,72 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
   shared_examples 'selects the correct model' do
     before do
       stub_feature_flags(use_claude_code_completion: false)
+      stub_feature_flags(use_fireworks_codestral_code_completion: false)
+    end
+
+    context 'when Fireworks/Codestral FF is enabled' do
+      before do
+        stub_feature_flags(code_completion_opt_out_fireworks: false)
+        stub_feature_flags(use_fireworks_codestral_code_completion: true)
+        stub_feature_flags(disable_code_gecko_default: false)
+      end
+
+      context 'on GitLab self-managed' do
+        before do
+          allow(Gitlab).to receive(:org_or_com?).and_return(false)
+        end
+
+        it 'returns the fireworks/codestral model' do
+          expect(actual_result).to eq(expected_fireworks_codestral_result)
+        end
+
+        context 'when opted out of Fireworks through the ops FF' do
+          before do
+            stub_feature_flags(code_completion_opt_out_fireworks: true)
+          end
+
+          it 'returns the codegecko model' do
+            expect(actual_result).to eq(expected_default_result)
+          end
+
+          context 'when code gecko is disabled' do
+            it 'returns codestral on vertex' do
+              stub_feature_flags(disable_code_gecko_default: true)
+
+              expect(actual_result).to eq(expected_codestral_result)
+            end
+          end
+        end
+      end
+
+      context 'on GitLab saas' do
+        before do
+          allow(Gitlab).to receive(:org_or_com?).and_return(true)
+        end
+
+        it 'returns the fireworks/codestral model' do
+          expect(actual_result).to eq(expected_fireworks_codestral_result)
+        end
+
+        context "when one of user's root groups has opted out of Fireworks" do
+          before do
+            # opt out for group2
+            stub_feature_flags(code_completion_opt_out_fireworks: group2)
+          end
+
+          it 'returns the code gecko model' do
+            expect(actual_result).to eq(expected_default_result)
+          end
+
+          context 'when code gecko is disabled' do
+            it 'returns codestral on vertex' do
+              stub_feature_flags(disable_code_gecko_default: true)
+
+              expect(actual_result).to eq(expected_codestral_result)
+            end
+          end
+        end
+      end
     end
 
     context 'when Fireworks/Qwen beta FF is enabled' do
@@ -151,6 +217,13 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
         }
       end
 
+      let(:expected_fireworks_codestral_result) do
+        {
+          model_provider: 'fireworks_ai',
+          model_name: 'codestral-2501'
+        }
+      end
+
       let(:expected_default_result) { {} }
 
       let(:expected_claude_result) { {} }
@@ -168,7 +241,11 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
       end
 
       let(:expected_codestral_result) do
-        CodeSuggestions::Prompts::CodeCompletion::CodestralVertex
+        CodeSuggestions::Prompts::CodeCompletion::VertexCodestral
+      end
+
+      let(:expected_fireworks_codestral_result) do
+        CodeSuggestions::Prompts::CodeCompletion::FireworksCodestral
       end
 
       let(:expected_default_result) do
