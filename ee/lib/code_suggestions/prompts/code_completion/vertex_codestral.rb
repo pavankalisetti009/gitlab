@@ -3,7 +3,7 @@
 module CodeSuggestions
   module Prompts
     module CodeCompletion
-      class CodestralVertex < CodeSuggestions::Prompts::Base
+      class VertexCodestral < CodeSuggestions::Prompts::Base
         GATEWAY_PROMPT_VERSION = 1
         MODEL_NAME = 'codestral-2501'
         MODEL_PROVIDER = 'vertex-ai'
