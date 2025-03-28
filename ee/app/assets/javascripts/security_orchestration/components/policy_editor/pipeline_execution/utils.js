@@ -12,14 +12,9 @@ export const validatePolicy = (policy) => {
   const error = {};
 
   const contentKeys = ['include'];
-  const pipelineConfigStrategies = [
-    'inject_policy',
-    'inject_ci',
-    'override_project_ci',
-    'schedule',
-  ];
+  const pipelineConfigStrategies = ['inject_policy', 'inject_ci', 'override_project_ci'];
   const hasInvalidPipelineConfigStrategy = (strategy) =>
-    !pipelineConfigStrategies.includes(strategy);
+    strategy && !pipelineConfigStrategies.includes(strategy);
 
   if (
     hasInvalidKey(policy?.content || {}, contentKeys) ||

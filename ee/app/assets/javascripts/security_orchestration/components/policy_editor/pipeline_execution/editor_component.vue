@@ -118,7 +118,7 @@ export default {
       return this.existingPolicy?.name;
     },
     strategy() {
-      return this.policy?.pipeline_config_strategy || '';
+      return this.policy?.pipeline_config_strategy || SCHEDULE;
     },
     content() {
       return this.policy?.content || {};
@@ -193,13 +193,12 @@ export default {
       this.updateYamlEditorValue(this.policy);
     },
     handleUpdateStrategy(value) {
-      this.handleUpdateProperty('pipeline_config_strategy', value);
-
       if (value === SCHEDULE) {
-        this.policy = { ...this.policy, schedules: [DEFAULT_SCHEDULE] };
+        const { pipeline_config_strategy, ...policy } = this.policy;
+        this.policy = { ...policy, schedules: [DEFAULT_SCHEDULE] };
       } else {
         const { schedules, ...policy } = this.policy;
-        this.policy = policy;
+        this.policy = { ...policy, pipeline_config_strategy: value };
       }
 
       this.updateYamlEditorValue(this.policy);

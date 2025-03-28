@@ -1,6 +1,7 @@
 import { POLICY_SCOPE_MOCK } from 'ee_jest/security_orchestration/mocks/mock_apollo';
 import { fromYaml } from 'ee/security_orchestration/components/utils';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
+import { DEFAULT_SCHEDULE } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/constants';
 
 /**
  * Naming convention for mocks:
@@ -37,6 +38,32 @@ export const mockWithInjectCiPipelineExecutionObject = {
   pipeline_config_strategy: 'inject_ci',
   type: 'pipeline_execution_policy',
 };
+
+export const mockScheduledPipelineExecutionObject = {
+  content: { include: [{ project: '' }] },
+  description: '',
+  enabled: true,
+  name: '',
+  schedules: [DEFAULT_SCHEDULE],
+  type: 'pipeline_execution_policy',
+};
+
+export const mockScheduledPipelineExecutionManifest = `pipeline_execution_policy:
+  - name: ''
+    description: ''
+    enabled: true
+    schedules:
+      - branch_type: "protected"
+        start_time: "00:00"
+        time_window:
+          distribution: "random"
+          value: 3600
+        timezone: "America/New_York"
+        type: "daily"
+    content:
+      include:
+        - project: ''
+`;
 
 export const mockWithScopePipelineExecutionObject = {
   ...mockPipelineExecutionObject,

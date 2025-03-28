@@ -223,10 +223,7 @@ describe('EditorComponent', () => {
       expect(findPolicyEditorLayout().props('policy')).not.toHaveProperty('schedules');
       await findActionSection().vm.$emit('update-strategy', SCHEDULE);
       expect(findPolicyEditorLayout().props('policy')).toEqual(
-        expect.objectContaining({
-          pipeline_config_strategy: SCHEDULE,
-          schedules: [DEFAULT_SCHEDULE],
-        }),
+        expect.objectContaining({ schedules: [DEFAULT_SCHEDULE] }),
       );
     });
 

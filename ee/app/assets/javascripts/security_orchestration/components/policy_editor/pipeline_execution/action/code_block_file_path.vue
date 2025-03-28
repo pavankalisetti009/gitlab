@@ -85,8 +85,7 @@ export default {
   props: {
     strategy: {
       type: String,
-      required: false,
-      default: INJECT,
+      required: true,
       validator: validateStrategyValues,
     },
     filePath: {
