@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationService, feature_category: :security_policy_management do
-  let(:service) { described_class.new(merge_request, approval_rules) }
+  let(:service) { described_class.new(merge_request) }
   let_it_be_with_reload(:project) { create(:project, :repository) }
   let_it_be(:merge_request, reload: true) do
     create(:merge_request, source_project: project, target_project: project)
@@ -72,7 +72,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationServ
   end
 
   let(:report_type) { :scan_finding }
-  let(:approval_rules) { merge_request.approval_rules.scan_finding }
 
   def violated_policies
     merge_request.scan_result_policy_violations.reload.map(&:scan_result_policy_read)

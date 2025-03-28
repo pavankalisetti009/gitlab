@@ -8,9 +8,8 @@ module Security
       include ::Security::ScanResultPolicies::PolicyViolationCommentGenerator
       include ::Security::ScanResultPolicies::VulnerabilityStatesHelper
 
-      def initialize(merge_request, approval_rules)
+      def initialize(merge_request)
         @merge_request = merge_request
-        @approval_rules = approval_rules
         @passed_rules = Set.new
         @failed_rules = Set.new
       end
@@ -59,7 +58,7 @@ module Security
 
       private
 
-      attr_reader :merge_request, :passed_rules, :failed_rules, :approval_rules
+      attr_reader :merge_request, :passed_rules, :failed_rules
 
       delegate :project, to: :merge_request
 

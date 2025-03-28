@@ -8,12 +8,11 @@ module Security
       include ::Security::ScanResultPolicies::PolicyLogger
       include ::Security::ScanResultPolicies::RelatedPipelines
 
-      attr_reader :pipeline, :merge_request, :approval_rules
+      attr_reader :pipeline, :merge_request
 
       def initialize(merge_request:, pipeline:)
         @pipeline = pipeline
         @merge_request = merge_request
-        @approval_rules = merge_request.approval_rules.scan_finding
       end
 
       def execute
@@ -22,6 +21,7 @@ module Security
           return
         end
 
+        approval_rules = merge_request.approval_rules.scan_finding
         approval_rules_with_newly_detected_states = filter_newly_detected_rules(:scan_finding, approval_rules)
         return if approval_rules_with_newly_detected_states.empty?
 
@@ -167,8 +167,7 @@ module Security
       end
 
       def evaluation
-        @evaluation ||= Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationService
-          .new(merge_request, approval_rules)
+        @evaluation ||= Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationService.new(merge_request)
       end
 
       def security_scan_types(pipeline_ids)

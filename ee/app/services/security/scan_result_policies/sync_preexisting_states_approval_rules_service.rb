@@ -8,12 +8,12 @@ module Security
 
       def initialize(merge_request)
         @merge_request = merge_request
-        @approval_rules = merge_request.approval_rules.scan_finding.including_scan_result_policy_read
       end
 
       def execute
         return if merge_request.merged?
 
+        approval_rules = merge_request.approval_rules.scan_finding.including_scan_result_policy_read
         rules_with_preexisting_states = approval_rules.reject do |rule|
           include_newly_detected?(rule)
         end
@@ -26,7 +26,7 @@ module Security
 
       private
 
-      attr_reader :merge_request, :approval_rules
+      attr_reader :merge_request
 
       delegate :project, to: :merge_request, private: true
 
@@ -72,8 +72,7 @@ module Security
       end
 
       def evaluation
-        @evaluation ||= Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationService
-          .new(merge_request, approval_rules)
+        @evaluation ||= Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationService.new(merge_request)
       end
 
       def build_violation_data(vulnerabilities)
