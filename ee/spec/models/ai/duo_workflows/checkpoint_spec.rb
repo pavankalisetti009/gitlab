@@ -34,6 +34,15 @@ RSpec.describe Ai::DuoWorkflows::Checkpoint, feature_category: :duo_workflow do
     end
   end
 
+  describe '.with_checkpoint_writes' do
+    it 'returns checkpoint, including checkpoint_writes' do
+      result = described_class.with_checkpoint_writes
+
+      expect(result).to match_array([checkpoint2, checkpoint1])
+      expect(result[0].association(:checkpoint_writes)).to be_loaded
+    end
+  end
+
   describe 'associations' do
     describe '#checkpoint_writes' do
       let_it_be(:write3) { create(:duo_workflows_checkpoint_write, thread_ts: checkpoint1.thread_ts) }

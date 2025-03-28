@@ -99,6 +99,21 @@ module API
                     checkpoints = workflow.checkpoints.ordered_with_writes
                     present paginate(checkpoints), with: ::API::Entities::Ai::DuoWorkflows::Checkpoint
                   end
+
+                  namespace '/:checkpoint_id' do
+                    params do
+                      requires :checkpoint_id, type: Integer, desc: 'The ID of the checkpoint',
+                        documentation: { example: 1 }
+                    end
+                    get do
+                      workflow = find_workflow!(params[:id])
+                      checkpoint = workflow.checkpoints.with_checkpoint_writes.find_by_id(params[:checkpoint_id])
+
+                      not_found! unless checkpoint
+
+                      present checkpoint, with: ::API::Entities::Ai::DuoWorkflows::Checkpoint
+                    end
+                  end
                 end
 
                 namespace :checkpoint_writes_batch do
