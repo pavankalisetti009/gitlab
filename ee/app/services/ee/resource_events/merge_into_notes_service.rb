@@ -15,7 +15,7 @@ module EE
 
       override :synthetic_notes
       def synthetic_notes
-        super + ee_synthetic_notes
+        super.concat(ee_synthetic_notes)
       end
 
       def ee_synthetic_notes
