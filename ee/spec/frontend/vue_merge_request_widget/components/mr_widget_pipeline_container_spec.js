@@ -20,6 +20,7 @@ describe('MrWidgetPipelineContainer', () => {
         MrWidgetContainer: stubComponent(MrWidgetContainer, {
           template: RENDER_ALL_SLOTS_TEMPLATE,
         }),
+        MergeTrainPositionIndicator,
       },
       ...options,
     });
