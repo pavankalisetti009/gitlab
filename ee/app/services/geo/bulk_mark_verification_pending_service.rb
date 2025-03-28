@@ -24,7 +24,7 @@ module Geo
     # Method that sets the registries that need to be updated
     override :pending_to_update_relation
     def pending_to_update_relation
-      registry_class.verification_not_pending
+      pending_relation_from_parameters.verification_not_pending
     end
   end
 end

@@ -21,30 +21,30 @@ module Geo
     loggable_arguments 0
 
     class << self
-      def perform_with_capacity(registry_class)
-        restart_redis_cursor(registry_class)
+      def perform_with_capacity(...)
+        restart_redis_cursor(...)
 
-        super(registry_class)
+        super(...)
       end
 
       private
 
-      def restart_redis_cursor(registry_class)
-        ::Geo::BulkMarkVerificationPendingService.new(registry_class)
+      def restart_redis_cursor(...)
+        ::Geo::BulkMarkVerificationPendingService.new(...)
              .set_bulk_mark_update_cursor(INITIAL_REDIS_CURSOR)
       end
     end
 
-    def perform_work(registry_class)
-      ::Geo::BulkMarkVerificationPendingService.new(registry_class).bulk_mark_update_one_batch!
+    def perform_work(...)
+      ::Geo::BulkMarkVerificationPendingService.new(...).bulk_mark_update_one_batch!
     end
 
     # Number of remaining jobs that this worker needs to perform
     #
     # @param registry_class [String] Registry class of the data type being bulk verified
     # @return [Integer] The number of remaining batches of registry rows that need to be marked as pending to verify
-    def remaining_work_count(registry_class)
-      @remaining_work_count ||= ::Geo::BulkMarkVerificationPendingService.new(registry_class)
+    def remaining_work_count(...)
+      @remaining_work_count ||= ::Geo::BulkMarkVerificationPendingService.new(...)
          .remaining_batches_to_bulk_mark_update(
            max_batch_count: max_running_jobs
          )
