@@ -41376,6 +41376,7 @@ AI features that can be configured through the Duo self-hosted feature settings.
 | <a id="aifeaturesduo_chat_refactor_code"></a>`DUO_CHAT_REFACTOR_CODE` | Duo chat refactor code feature setting. |
 | <a id="aifeaturesduo_chat_troubleshoot_job"></a>`DUO_CHAT_TROUBLESHOOT_JOB` | Duo chat troubleshoot job feature setting. |
 | <a id="aifeaturesduo_chat_write_tests"></a>`DUO_CHAT_WRITE_TESTS` | Duo chat write test feature setting. |
+| <a id="aifeaturesgenerate_commit_message"></a>`GENERATE_COMMIT_MESSAGE` | Generate commit message feature setting. |
 
 ### `AiMessageRole`
 

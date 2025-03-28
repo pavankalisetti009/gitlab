@@ -89,3 +89,13 @@ duo_chat_troubleshoot_job:
     - claude_3
     - gpt
     - llama3
+generate_commit_message:
+  title: Generate Commit Message
+  release_state: BETA
+  main_feature: Other GitLab Duo features
+  compatible_llms:
+    - mistral
+    - mixtral
+    - claude_3
+    - gpt
+    - llama3

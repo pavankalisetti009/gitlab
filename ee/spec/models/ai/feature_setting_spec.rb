@@ -291,4 +291,68 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
       end
     end
   end
+
+  describe 'feature constants' do
+    shared_examples_for 'feature metadata validation' do |features, expected_release_state|
+      it 'has valid metadata for all features', :aggregate_failures do
+        features.each_key do |feature|
+          expect(described_class::FEATURE_METADATA.keys).to include(feature.to_s),
+            "Expected #{feature} to have valid metadata in `feature_metadata.yml`, but it does not exist. " \
+              "Please add it."
+          metadata = described_class::FEATURE_METADATA.fetch(feature.to_s, {})
+          expect(metadata).to include('title', 'main_feature', 'compatible_llms', 'release_state')
+          expect(metadata.fetch('release_state', 'no value')).to eq(expected_release_state),
+            "Expected #{feature} to have #{expected_release_state} release state," \
+              "but got #{metadata.fetch('release_state', 'no value')}"
+        end
+      end
+    end
+
+    describe 'STABLE_FEATURES' do
+      it 'contains the expected stable features' do
+        expect(described_class::STABLE_FEATURES).to eq({
+          code_generations: 0,
+          code_completions: 1,
+          duo_chat: 2,
+          duo_chat_explain_code: 3,
+          duo_chat_write_tests: 4,
+          duo_chat_refactor_code: 5,
+          duo_chat_fix_code: 6
+        }.freeze)
+      end
+
+      include_examples 'feature metadata validation', described_class::STABLE_FEATURES, 'GA'
+    end
+
+    describe 'FLAGGED_FEATURES' do
+      it 'contains the expected flagged features' do
+        expect(described_class::FLAGGED_FEATURES).to eq({
+          duo_chat_troubleshoot_job: 7,
+          generate_commit_message: 8
+        }.freeze)
+      end
+
+      include_examples 'feature metadata validation', described_class::FLAGGED_FEATURES, 'BETA'
+    end
+
+    describe 'feature metadata completeness' do
+      it 'includes all features defined in feature_metadata.yml', :aggregate_failures do
+        metadata_features = described_class::FEATURE_METADATA.keys
+        features_in_code = described_class::FEATURES.keys.map(&:to_s)
+
+        metadata_features.each do |feature|
+          expect(features_in_code).to include(feature),
+            "Feature '#{feature}' is defined in feature_metadata.yml " \
+              "but missing from STABLE_FEATURES or FLAGGED_FEATURES constants"
+        end
+      end
+
+      it 'has no duplicate feature IDs' do
+        feature_ids = described_class::FEATURES.values
+        expect(feature_ids).to match_array(feature_ids.uniq),
+          "Duplicate feature IDs found: " \
+            "#{feature_ids.group_by { |feature_id| feature_id }.select { |_, v| v.size > 1 }.keys}"
+      end
+    end
+  end
 end
