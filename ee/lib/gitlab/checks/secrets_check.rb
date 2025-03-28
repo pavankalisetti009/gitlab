@@ -144,8 +144,8 @@ module Gitlab
 
           response
         # TODO: Perhaps have a separate message for each and better logging?
-        rescue ::Gitlab::SecretDetection::Core::Scanner::RulesetParseError,
-          ::Gitlab::SecretDetection::Core::Scanner::RulesetCompilationError => e
+        rescue ::Gitlab::SecretDetection::Core::Ruleset::RulesetParseError,
+          ::Gitlab::SecretDetection::Core::Ruleset::RulesetCompilationError => e
 
           message = format(ERROR_MESSAGES[:scan_initialization_error], { error_msg: e.message })
           secret_detection_logger.error(build_structured_payload(message:))

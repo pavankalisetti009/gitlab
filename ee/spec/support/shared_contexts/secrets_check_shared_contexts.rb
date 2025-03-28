@@ -167,8 +167,17 @@ RSpec.shared_context 'secrets check context' do
   let(:saas_feature_enabled) { true }
   let(:is_dedicated) { false }
 
+  # used for checking logged messages
+  let(:log_levels) { %i[info debug warn error fatal unknown] }
+  let(:logged_messages) { Hash.new { |hash, key| hash[key] = [] } }
+
   before do
     allow(::Gitlab::SecretDetectionLogger).to receive(:build).and_return(secret_detection_logger)
+
+    # allow the logger to receive messages of different levels
+    log_levels.each do |level|
+      allow(secret_detection_logger).to receive(level) { |msg| logged_messages[level] << msg }
+    end
 
     # The SDS is not the primary use case currently so we don't need to call it by default
     stub_feature_flags(use_secret_detection_service: false)
