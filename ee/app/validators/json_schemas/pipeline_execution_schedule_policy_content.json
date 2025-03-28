@@ -103,6 +103,7 @@
               },
               "days": {
                 "type": "array",
+                "uniqueItems": true,
                 "items": {
                   "type": "string",
                   "enum": [
@@ -169,6 +170,7 @@
               },
               "days_of_month": {
                 "type": "array",
+                "uniqueItems": true,
                 "items": {
                   "type": "integer",
                   "minimum": 1,
