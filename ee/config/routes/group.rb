@@ -200,6 +200,10 @@ constraints(::Constraints::GroupUrlConstrainer.new) do
         resources :frameworks, only: [:show], constraints: ->(req) {
           req.format == :json && req.path_parameters[:id].match?(/\d+/)
         }
+
+        namespace :exports do
+          get :compliance_status_report, constraints: { format: :csv }
+        end
       end
       resource :compliance_dashboard, path: 'compliance_dashboard(/*vueroute)', only: [:show]
       resource :discover, only: [:show], controller: :discover
