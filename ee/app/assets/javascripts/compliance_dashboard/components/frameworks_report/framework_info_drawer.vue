@@ -1,5 +1,8 @@
 <script>
 import {
+  GlAlert,
+  GlAccordion,
+  GlAccordionItem,
   GlBadge,
   GlDrawer,
   GlButton,
@@ -10,18 +13,23 @@ import {
   GlPopover,
 } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
-import { isTopLevelGroup } from '../../utils';
-import { POLICY_SCOPES_DOCS_URL, i18n as mainI18n } from '../../constants';
+import { isTopLevelGroup, getControls } from '../../utils';
+import { POLICY_SCOPES_DOCS_URL, EXTERNAL_CONTROL_LABEL, i18n as mainI18n } from '../../constants';
+import complianceRequirementControlsQuery from '../../graphql/compliance_requirement_controls.query.graphql';
 import projectsInNamespaceWithFrameworkQuery from './graphql/projects_in_namespace_with_framework.query.graphql';
 
 export default {
   name: 'FrameworkInfoDrawer',
   components: {
+    GlAlert,
+    GlAccordion,
+    GlAccordionItem,
     GlBadge,
     GlDrawer,
     GlButton,
@@ -32,7 +40,11 @@ export default {
     GlPopover,
     HelpIcon,
   },
-  inject: ['groupSecurityPoliciesPath', 'canAccessRootAncestorComplianceCenter'],
+  inject: [
+    'groupSecurityPoliciesPath',
+    'canAccessRootAncestorComplianceCenter',
+    'adherenceV2Enabled',
+  ],
   props: {
     groupPath: {
       type: String,
@@ -58,12 +70,14 @@ export default {
   data() {
     return {
       after: null,
+      controls: [],
       projects: {
         nodes: [],
         pageInfo: {
           hasNextPage: false,
         },
       },
+      error: null,
     };
   },
   apollo: {
@@ -85,6 +99,19 @@ export default {
           ...data.namespace.projects,
           nodes: [...this.projects.nodes, ...data.namespace.projects.nodes],
         };
+      },
+    },
+    controls: {
+      query: complianceRequirementControlsQuery,
+      update: (data) => data.complianceRequirementControls.controlExpressions || [],
+      error(error) {
+        this.error = s__(
+          'ComplianceFrameworks|Error fetching compliance requirements controls data. Please refresh the page.',
+        );
+        Sentry.captureException(error);
+      },
+      skip() {
+        return !this.adherenceV2Enabled;
       },
     },
   },
@@ -150,9 +177,14 @@ export default {
       navigator?.clipboard?.writeText(this.normalisedFrameworkId);
       this.$toast.show(this.$options.i18n.copyIdToastText);
     },
+
+    getControls(expression) {
+      return getControls(expression, this.controls);
+    },
   },
   DRAWER_Z_INDEX,
   POLICY_SCOPES_DOCS_URL,
+  EXTERNAL_CONTROL_LABEL,
   i18n: {
     defaultFramework: s__('ComplianceFrameworksReport|Default'),
     editFramework: s__('ComplianceFrameworksReport|Edit framework'),
@@ -170,6 +202,8 @@ export default {
     frameworkDescription: s__('ComplianceFrameworksReport|Description'),
     associatedProjects: s__('ComplianceFrameworksReport|Associated Projects'),
     policies: s__('ComplianceFrameworksReport|Policies'),
+    complianceRequirements: s__('ComplianceFrameworksReport|Requirements'),
+    controls: s__('ComplianceFrameworksReport|Controls'),
   },
 };
 </script>
@@ -231,8 +265,8 @@ export default {
     </template>
 
     <template v-if="framework" #default>
-      <div class="gl-flex gl-flex-col">
-        <div data-testid="sidebar-id" class="gl-mb-5">
+      <div class="-gl-mx-5 gl-flex gl-flex-col">
+        <div data-testid="sidebar-id" class="gl-mb-5 gl-px-5">
           <div class="gl-flex gl-items-baseline">
             <h3 class="gl-heading-3" data-testid="sidebar-id-title">
               {{ $options.i18n.frameworkIdTitle }}
@@ -268,7 +302,7 @@ export default {
             >
           </div>
         </div>
-        <div class="gl-border-t gl-mb-5">
+        <div class="gl-border-t gl-mb-5 gl-px-5">
           <h3 class="gl-heading-3 gl-mt-5" data-testid="sidebar-description-title">
             {{ $options.i18n.frameworkDescription }}
           </h3>
@@ -276,7 +310,61 @@ export default {
             {{ framework.description }}
           </span>
         </div>
-        <div v-if="framework.projects" class="gl-border-t" data-testid="sidebar-projects">
+        <div v-if="adherenceV2Enabled" data-testid="requirements">
+          <gl-alert v-if="error" variant="danger" @dismiss="error = null"> {{ error }} </gl-alert>
+          <div class="gl-border-t gl-px-5">
+            <div class="gl-flex gl-items-center gl-gap-1">
+              <h3 data-testid="sidebar-requirements-title" class="gl-heading-3 gl-mt-5">
+                {{ $options.i18n.complianceRequirements }}
+              </h3>
+              <gl-badge class="gl-ml-2" variant="muted" data-testid="requirements-count-badge">
+                <template v-if="$apollo.queries.controls.loading">
+                  <gl-loading-icon size="sm" />
+                </template>
+                <template v-else>{{ framework.complianceRequirements.nodes.length }}</template>
+              </gl-badge>
+            </div>
+            <gl-accordion
+              v-if="framework.complianceRequirements.nodes.length"
+              class="-gl-mx-5 gl-mb-5"
+              :header-level="3"
+            >
+              <gl-accordion-item
+                v-for="requirement in framework.complianceRequirements.nodes"
+                :key="requirement.id"
+                header-class="gl-bg-strong gl-py-5 gl-pl-3"
+                class="gl-mb-2 gl-bg-subtle"
+                :title="requirement.name"
+              >
+                <div class="gl-pb-5">
+                  <p>{{ requirement.description }}</p>
+                  <template
+                    v-if="
+                      getControls(requirement.complianceRequirementsControls.nodes, controls).length
+                    "
+                  >
+                    <h4 class="gl-text-base gl-font-bold">{{ $options.i18n.controls }}:</h4>
+                    <ul class="-gl-mx-6">
+                      <li
+                        v-for="control in getControls(
+                          requirement.complianceRequirementsControls.nodes,
+                          controls,
+                        )"
+                        :key="control.id"
+                      >
+                        {{ control.displayValue }}
+                        <gl-badge v-if="control.controlType === 'external'">
+                          {{ $options.EXTERNAL_CONTROL_LABEL }}
+                        </gl-badge>
+                      </li>
+                    </ul>
+                  </template>
+                </div>
+              </gl-accordion-item>
+            </gl-accordion>
+          </div>
+        </div>
+        <div v-if="framework.projects" class="gl-border-t gl-px-5" data-testid="sidebar-projects">
           <div class="gl-flex gl-items-center gl-gap-1">
             <h3 data-testid="sidebar-projects-title" class="gl-heading-3 gl-mt-5">
               {{ associatedProjectsTitle }}
@@ -309,7 +397,7 @@ export default {
             {{ __('Load more') }}
           </gl-button>
         </div>
-        <div class="gl-border-t" data-testid="sidebar-policies">
+        <div class="gl-border-t gl-px-5" data-testid="sidebar-policies">
           <div class="gl-flex gl-items-center gl-gap-1">
             <h3 data-testid="sidebar-policies-title" class="gl-heading-3 gl-mt-5">
               {{ policiesTitle }}

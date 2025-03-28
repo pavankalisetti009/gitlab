@@ -46,6 +46,7 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
+  inject: ['adherenceV2Enabled', 'policyDisplayLimit'],
   props: {
     groupPath: {
       type: String,
@@ -99,9 +100,18 @@ export default {
       return !this.frameworks.length && !this.isLoading && !this.isTopLevelGroup;
     },
     tableFields() {
-      return this.projectPath || !this.isTopLevelGroup
-        ? this.$options.fields.filter((f) => f.key !== 'associatedProjects')
-        : this.$options.fields;
+      const omittedFields = [];
+      if (this.projectPath || !this.isTopLevelGroup) {
+        omittedFields.push('associatedProjects');
+      }
+
+      if (!this.adherenceV2Enabled) {
+        omittedFields.push('requirements');
+      }
+
+      return omittedFields.length === 0
+        ? this.$options.fields
+        : this.$options.fields.filter((f) => !omittedFields.includes(f.key));
     },
   },
   methods: {
@@ -235,6 +245,14 @@ export default {
     remainingProjectsCount(projects) {
       return projects.count - projects.nodes.length;
     },
+
+    remainingRequirementsCount(requirements) {
+      return requirements.nodes.length - this.policyDisplayLimit;
+    },
+
+    lastVisiblePolicyIndex(requirements) {
+      return Math.min(requirements.length, this.policyDisplayLimit) - 1;
+    },
   },
   fields: [
     {
@@ -243,6 +261,13 @@ export default {
       thClass: 'md:gl-max-w-26 !gl-align-middle',
       tdClass: 'md:gl-max-w-26 !gl-align-middle gl-cursor-pointer',
       sortable: true,
+    },
+    {
+      key: 'requirements',
+      label: __('Requirements'),
+      thClass: 'md:gl-max-w-26 gl-whitespace-nowrap !gl-align-middle',
+      tdClass: 'md:gl-max-w-26 !gl-align-middle gl-cursor-pointer',
+      sortable: false,
     },
     {
       key: 'associatedProjects',
@@ -345,6 +370,22 @@ export default {
     >
       <template #cell(frameworkName)="{ item }">
         <framework-badge :framework="item" :popover-mode="isTopLevelGroup ? 'edit' : 'details'" />
+      </template>
+      <template #cell(requirements)="{ item: { complianceRequirements: requirements } }">
+        <div
+          v-for="(requirement, index) in requirements.nodes.slice(0, policyDisplayLimit)"
+          :key="requirement.id"
+          class="gl-inline-block"
+          data-testid="requirement-item"
+        >
+          {{ requirement.name
+          }}<span v-if="index < lastVisiblePolicyIndex(requirements.nodes)">,&nbsp;</span>
+        </div>
+        <template v-if="remainingRequirementsCount(requirements) > 0">
+          <gl-sprintf :message="$options.i18n.andMore">
+            <template #count>{{ remainingRequirementsCount(requirements) }}</template>
+          </gl-sprintf>
+        </template>
       </template>
       <template #cell(associatedProjects)="{ item: { projects } }">
         <div

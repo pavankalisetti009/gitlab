@@ -64,6 +64,22 @@ fragment ComplianceFrameworkConnectionDetails on ComplianceFrameworkConnection {
         }
       }
     }
+    complianceRequirements {
+      nodes {
+        id
+        name
+        description
+        complianceRequirementsControls {
+          nodes {
+            id
+            name
+            controlType
+            expression
+            externalUrl
+          }
+        }
+      }
+    }
   }
   pageInfo {
     ...PageInfo

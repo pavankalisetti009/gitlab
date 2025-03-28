@@ -13,8 +13,6 @@ module EE
         {
           feature_frameworks_report_enabled: true.to_s,
           feature_security_policies_enabled: can?(current_user, :read_security_orchestration_policies, group).to_s,
-          adherence_v2_enabled: ::Feature.enabled?(:enable_standards_adherence_dashboard_v2, group).to_s,
-
           violations_csv_export_path: violations_report && group_security_compliance_violation_reports_path(
             group, format: :csv),
           project_frameworks_csv_export_path: group_security_compliance_project_framework_reports_path(group,
@@ -64,10 +62,13 @@ module EE
 
         can_access_root_ancestor_compliance_center: can_access_root_ancestor_compliance_center.to_s,
         feature_adherence_report_enabled: adherence_report.to_s,
+        adherence_v2_enabled: ::Feature.enabled?(:enable_standards_adherence_dashboard_v2, group).to_s,
+
         feature_violations_report_enabled: violations_report.to_s,
         active_compliance_frameworks: group.active_compliance_frameworks?.to_s,
         feature_projects_report_enabled: true.to_s,
-        can_admin_compliance_frameworks: can_admin_compliance_frameworks.to_s
+        can_admin_compliance_frameworks: can_admin_compliance_frameworks.to_s,
+        policy_display_limit: 10
       }
     end
 
