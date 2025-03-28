@@ -125,20 +125,21 @@ module Gitlab
           next if skip?(line)
 
           section_parser = SectionParser.new(line, parsed_sectional_data, line_number)
-          parsed_section = section_parser.execute
 
           # Report errors even if the section is successfully parsed
           errors.merge(section_parser.errors) unless section_parser.valid?
 
-          # Detect section headers and consider next lines in the file as part ot the section.
-          if parsed_section
-            current_section = parsed_section
+          # If this line is a section header, set current_section to the parsed
+          # section.
+          #
+          # Unparsable section headers will be skipped. An error is added to
+          # aid the end user.
+          if section_parser.section_header?
+            current_section = section_parser.section
             parsed_sectional_data[current_section.name] ||= {}
-
-            next
+          elsif !section_parser.unparsable_section_header?
+            parse_entry(line, parsed_sectional_data, current_section, line_number)
           end
-
-          parse_entry(line, parsed_sectional_data, current_section, line_number)
         end
 
         parsed_sectional_data

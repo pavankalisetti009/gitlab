@@ -128,11 +128,11 @@ RSpec.describe 'Validate code owner file', feature_category: :source_code_manage
       it 'validates the file on that path' do
         expected_errors = [
           { "code" => "invalid_section_format", "lines" => [1] },
-          { "code" => "missing_entry_owner", "lines" => [1, 2] }
+          { "code" => "missing_entry_owner", "lines" => [2] }
         ]
 
         expect(validation)
-          .to eq({ "total" => 3, "validationErrors" => expected_errors })
+          .to eq({ "total" => 2, "validationErrors" => expected_errors })
       end
     end
 
@@ -192,12 +192,11 @@ RSpec.describe 'Validate code owner file', feature_category: :source_code_manage
 
     it 'returns no error in validateCodeownerFile field' do
       expected_errors = [
-        { "code" => "missing_entry_owner", "lines" => [2, 4] },
+        { "code" => "missing_entry_owner", "lines" => [2] },
         { "code" => "invalid_section_format", "lines" => [4] }
       ]
 
-      expect(validation)
-        .to eq({ "total" => 3, "validationErrors" => expected_errors })
+      expect(validation).to eq({ "total" => 2, "validationErrors" => expected_errors })
     end
   end
 
