@@ -48,9 +48,8 @@ RSpec.describe 'Group Workspaces Settings', :js, feature_category: :workspaces d
         expect(page).to have_content agent.name
 
         click_button 'Agent Information'
-        # TODO: Update tests to handle requestAnimationFrame issue (https://gitlab.com/gitlab-org/gitlab/-/issues/526127)
-        # expect(page).to have_content('Connected')
-        # expect(page).to have_content(project.name)
+        expect(page).to have_content('Connected')
+        expect(page).to have_content(project.name)
       end
     end
 
@@ -89,27 +88,26 @@ RSpec.describe 'Group Workspaces Settings', :js, feature_category: :workspaces d
           click_button 'Block'
         end
 
-        # TODO: Update tests to handle requestAnimationFrame issue (https://gitlab.com/gitlab-org/gitlab/-/issues/526127)
-        # expect(page).to have_content('Block agent')
-        #
-        # click_button 'Block agent'
-        #
-        # wait_for_requests
-        #
-        # # Reverts the block action by allowing the agent
-        # within first_agent_row_selector do
-        #   expect(page).to have_content('Blocked')
-        #
-        #   click_button 'Allow'
-        #
-        #   wait_for_requests
-        # end
-        #
-        # expect(page).to have_content('Allow agent')
-        #
-        # click_button 'Allow agent'
-        #
-        # expect(page).to have_content('Allowed')
+        expect(page).to have_content('Block agent')
+
+        click_button 'Block agent'
+
+        wait_for_requests
+
+        # Reverts the block action by allowing the agent
+        within first_agent_row_selector do
+          expect(page).to have_content('Blocked')
+
+          click_button 'Allow'
+
+          wait_for_requests
+        end
+
+        expect(page).to have_content('Allow agent')
+
+        click_button 'Allow agent'
+
+        expect(page).to have_content('Allowed')
       end
     end
   end
