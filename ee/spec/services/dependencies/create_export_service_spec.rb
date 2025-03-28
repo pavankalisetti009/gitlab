@@ -66,5 +66,55 @@ RSpec.describe Dependencies::CreateExportService, feature_category: :dependency_
 
       result
     end
+
+    context 'when export is for a project' do
+      where(:export_type) { %i[dependency_list csv] }
+      let(:params) { { export_type: export_type } }
+
+      with_them do
+        it_behaves_like 'internal event tracking' do
+          let(:event) { 'create_dependency_list_export' }
+          let(:category) { described_class.name }
+          let(:namespace) { group }
+          let(:label) { export_type.to_s }
+          let(:property) { 'Project' }
+        end
+      end
+    end
+
+    context 'when export is for a group' do
+      where(:export_type) { %i[json_array csv] }
+      let(:params) { { export_type: export_type } }
+
+      subject(:result) { described_class.new(group, user, params).execute }
+
+      with_them do
+        it_behaves_like 'internal event tracking' do
+          let(:event) { 'create_dependency_list_export' }
+          let(:category) { described_class.name }
+          let(:project) { nil }
+          let(:namespace) { group }
+          let(:label) { export_type.to_s }
+          let(:property) { 'Group' }
+        end
+      end
+    end
+
+    context 'when export is for a pipeline' do
+      let_it_be(:pipeline) { build_stubbed(:ci_pipeline, project: project) }
+
+      let(:export_type) { :sbom }
+      let(:params) { { export_type: export_type } }
+
+      subject(:result) { described_class.new(pipeline, user, params).execute }
+
+      it_behaves_like 'internal event tracking' do
+        let(:event) { 'create_dependency_list_export' }
+        let(:category) { described_class.name }
+        let(:namespace) { group }
+        let(:label) { export_type.to_s }
+        let(:property) { 'Ci::Pipeline' }
+      end
+    end
   end
 end
