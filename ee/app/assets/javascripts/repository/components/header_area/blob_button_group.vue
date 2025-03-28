@@ -36,11 +36,16 @@ export default {
       default: false,
     },
   },
+  methods: {
+    onShowForkSuggestion() {
+      this.$emit('showForkSuggestion');
+    },
+  },
 };
 </script>
 
 <template>
-  <ce-blob-button-group v-bind="$props">
+  <ce-blob-button-group v-bind="$props" @showForkSuggestion="onShowForkSuggestion">
     <template v-if="glFeatures.fileLocks" #lock-file-item>
       <lock-file-dropdown-item
         :name="blobInfo.name"
