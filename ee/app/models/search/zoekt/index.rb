@@ -127,6 +127,19 @@ module Search
         zoekt_repositories.find_or_create_by!(project_identifier: identifier, project: project)
       end
 
+      def project_namespace_id_exhaustive_range
+        case [metadata['project_namespace_id_from'], metadata['project_namespace_id_to']]
+        in [nil, nil]
+          nil
+        in [nil, id_to]
+          (..id_to)
+        in [id_from, nil]
+          (id_from..)
+        in [id_from, id_to]
+          id_from..id_to
+        end
+      end
+
       private
 
       def storage_percent_used

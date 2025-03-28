@@ -122,6 +122,48 @@ RSpec.describe Search::Zoekt::InitialIndexingEventWorker, :zoekt_settings_enable
       end
     end
 
+    context 'when metadata has only project_namespace_id_to' do
+      let(:pn_id_to) { project_namespace_ids_for_namespace(namespace).last }
+      let(:expected_project_ids) do
+        Namespaces::ProjectNamespace.where(id: ..pn_id_to).filter_map do |p_ns|
+          p_ns.project.id if p_ns.project.root_ancestor == namespace
+        end
+      end
+
+      before do
+        zoekt_index.update!(metadata: { project_namespace_id_to: pn_id_to })
+      end
+
+      it 'creates pending zoekt_repositories for projects whose project_namespace is in range (..pn_id_to)' do
+        expect(zoekt_repositories_for_index(zoekt_index)).to be_empty
+        expect { consume_event(subscriber: described_class, event: event) }
+          .to change { zoekt_index.reload.state }.from('pending').to('initializing')
+        expect(zoekt_repositories_for_index(zoekt_index).pluck(:project_id)).to match_array(expected_project_ids)
+        expect(zoekt_repositories_for_index(zoekt_index).all?(&:pending?)).to be true
+      end
+    end
+
+    context 'when metadata has project_namespace_id_from explicitly set to nil' do
+      let(:pn_id_to) { project_namespace_ids_for_namespace(namespace).last }
+      let(:expected_project_ids) do
+        Namespaces::ProjectNamespace.where(id: ..pn_id_to).filter_map do |p_ns|
+          p_ns.project.id if p_ns.project.root_ancestor == namespace
+        end
+      end
+
+      before do
+        zoekt_index.update!(metadata: { project_namespace_id_from: nil, project_namespace_id_to: pn_id_to })
+      end
+
+      it 'creates pending zoekt_repositories for projects whose project_namespace is in range (..pn_id_to)' do
+        expect(zoekt_repositories_for_index(zoekt_index)).to be_empty
+        expect { consume_event(subscriber: described_class, event: event) }
+          .to change { zoekt_index.reload.state }.from('pending').to('initializing')
+        expect(zoekt_repositories_for_index(zoekt_index).pluck(:project_id)).to match_array(expected_project_ids)
+        expect(zoekt_repositories_for_index(zoekt_index).all?(&:pending?)).to be true
+      end
+    end
+
     context 'when index is not in pending' do
       let(:data) do
         { index_id: zoekt_index.id }
