@@ -172,5 +172,123 @@ RSpec.describe ComplianceManagement::Framework, :models, feature_category: :comp
           'Second Framework', 'Third Framework'])
       end
     end
+
+    describe '.with_requirements_and_internal_controls' do
+      let_it_be(:framework) { create(:compliance_framework) }
+      let_it_be(:requirement) { create(:compliance_requirement, framework: framework) }
+      let_it_be(:internal_control) do
+        create(:compliance_requirements_control, compliance_requirement: requirement)
+      end
+
+      let_it_be(:external_control) do
+        create(:compliance_requirements_control, :external, compliance_requirement: requirement)
+      end
+
+      it 'includes frameworks with internal controls' do
+        expect(described_class.with_requirements_and_internal_controls).to include(framework)
+      end
+
+      it 'excludes external controls' do
+        controls = described_class.with_requirements_and_internal_controls
+                                  .first
+                                  .compliance_requirements
+                                  .first
+                                  .compliance_requirements_controls
+
+        expect(controls).to include(internal_control)
+        expect(controls).not_to include(external_control)
+      end
+    end
+
+    describe '.with_project_settings' do
+      let_it_be(:framework) { create(:compliance_framework) }
+      let_it_be(:project_setting) do
+        create(:compliance_framework_project_setting,
+          compliance_management_framework: framework,
+          project: project
+        )
+      end
+
+      it 'includes frameworks with project settings' do
+        expect(described_class.with_project_settings).to include(framework)
+      end
+
+      it 'excludes frameworks without project settings' do
+        framework_without_settings = create(:compliance_framework)
+
+        expect(described_class.with_project_settings).not_to include(framework_without_settings)
+      end
+    end
+
+    describe '.with_active_internal_controls' do
+      let_it_be(:framework) { create(:compliance_framework) }
+      let_it_be(:requirement) { create(:compliance_requirement, framework: framework) }
+      let_it_be(:internal_control) do
+        create(:compliance_requirements_control, compliance_requirement: requirement)
+      end
+
+      let_it_be(:project_setting) do
+        create(:compliance_framework_project_setting,
+          compliance_management_framework: framework,
+          project: project
+        )
+      end
+
+      let_it_be(:mixed_framework) { create(:compliance_framework) }
+      let_it_be(:mixed_requirement) { create(:compliance_requirement, framework: mixed_framework) }
+      let_it_be(:mixed_internal_control) do
+        create(:compliance_requirements_control, compliance_requirement: mixed_requirement)
+      end
+
+      let_it_be(:mixed_external_control) do
+        create(:compliance_requirements_control, :external, compliance_requirement: mixed_requirement)
+      end
+
+      let_it_be(:mixed_project_setting) do
+        create(:compliance_framework_project_setting,
+          compliance_management_framework: mixed_framework,
+          project: project
+        )
+      end
+
+      let_it_be(:external_only_framework) { create(:compliance_framework) }
+      let_it_be(:external_requirement) { create(:compliance_requirement, framework: external_only_framework) }
+      let_it_be(:external_only_control) do
+        create(:compliance_requirements_control, :external, compliance_requirement: external_requirement)
+      end
+
+      let_it_be(:external_project_setting) do
+        create(:compliance_framework_project_setting,
+          compliance_management_framework: external_only_framework,
+          project: project
+        )
+      end
+
+      it 'includes frameworks with internal controls and project settings' do
+        result = described_class.with_active_internal_controls
+
+        expect(result).to include(framework)
+        expect(result).to include(mixed_framework)
+        expect(result.count).to eq(2)
+      end
+
+      it 'excludes frameworks with only external controls' do
+        expect(described_class.with_active_internal_controls).not_to include(external_only_framework)
+      end
+
+      it 'excludes frameworks without project settings' do
+        framework_without_settings = create(:compliance_framework)
+        requirement = create(:compliance_requirement, framework: framework_without_settings)
+        create(:compliance_requirements_control, compliance_requirement: requirement)
+
+        expect(described_class.with_active_internal_controls).not_to include(framework_without_settings)
+      end
+
+      it 'returns unique results' do
+        result = described_class.with_active_internal_controls
+
+        expect(result.count).to eq(result.distinct.count)
+      end
+    end
   end
 end
