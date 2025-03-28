@@ -91,16 +91,18 @@ RSpec.describe Search::Zoekt::PlanningService, feature_category: :global_search 
         expect(indices_plan.pluck(:node_id).uniq.size).to eq(2)
         projects = indices_plan.first[:projects]
         p_ns = ::Namespace.by_root_id(group1.id).project_namespaces.order(:id)
-        expect(projects).to eq({ project_namespace_id_from: p_ns[0].id, project_namespace_id_to: p_ns[0].id })
+        expect(projects).to eq({ project_namespace_id_from: nil, project_namespace_id_to: p_ns[0].id })
+        first_index_project_namespace_id_to = projects[:project_namespace_id_to]
         projects = indices_plan.last[:projects]
-        expect(projects).to eq({ project_namespace_id_from: p_ns[1].id, project_namespace_id_to: nil })
+        expect(projects).to eq(
+          { project_namespace_id_from: first_index_project_namespace_id_to.next, project_namespace_id_to: nil }
+        )
 
         namespace2_plan = plan[:namespaces].find { |n| n[:enabled_namespace_id] == enabled_namespace2.id }
         indices_plan = namespace2_plan[:replicas].flat_map { |replica| replica[:indices] }
         expect(indices_plan.size).to eq(1)
         projects = indices_plan.first[:projects]
-        p_ns = ::Namespace.by_root_id(group2.id).project_namespaces.order(:id)
-        expect(projects).to eq({ project_namespace_id_from: p_ns[0].id, project_namespace_id_to: nil })
+        expect(projects).to eq({ project_namespace_id_from: nil, project_namespace_id_to: nil })
       end
     end
   end
@@ -139,7 +141,6 @@ RSpec.describe Search::Zoekt::PlanningService, feature_category: :global_search 
       assigned_projects = result[:namespaces][0][:replicas].flat_map { |r| r[:indices].flat_map { |i| i[:projects] } }
       lower, upper = assigned_projects.pluck(:project_namespace_id_from, :project_namespace_id_to).flatten.uniq
       id_range = upper.blank? ? lower.. : lower..upper
-
       project_ids = group1.projects.by_project_namespace(id_range).pluck(:id)
 
       expect(project_ids).to match_array(group1.projects.pluck(:id))

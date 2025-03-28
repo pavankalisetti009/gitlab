@@ -163,10 +163,10 @@ module Search
 
         def assign_project_to_index(node, stats, replica_indices)
           project_size = scaled_size(stats)
-
-          index = replica_indices
-                    .select { |idx| idx[:required_storage_bytes] + project_size <= idx[:max_storage_bytes] }
-                    .min_by { |idx| idx[:max_storage_bytes] - (idx[:required_storage_bytes] + project_size) }
+          last_index = replica_indices.last
+          if last_index && (last_index[:required_storage_bytes] + project_size) <= last_index[:max_storage_bytes]
+            index = last_index
+          end
 
           unless index
             if replica_indices.size >= max_indices_per_replica
@@ -183,7 +183,7 @@ module Search
             @used_node_ids.add(node[:id])
           end
 
-          add_project_to_index(index, stats)
+          add_project_to_index(index, stats, last_index: last_index)
           node[:unclaimed_storage_bytes] -= project_size
         end
 
@@ -197,8 +197,11 @@ module Search
           }
         end
 
-        def add_project_to_index(index, stats)
-          index[:projects][:project_namespace_id_from] ||= project_namespace_id
+        def add_project_to_index(index, stats, last_index:)
+          unless index == last_index || last_index.nil?
+            index[:projects][:project_namespace_id_from] ||= last_index[:projects][:project_namespace_id_to].next
+          end
+
           index[:projects][:project_namespace_id_to] = project_namespace_id
           index[:required_storage_bytes] += scaled_size(stats)
         end
