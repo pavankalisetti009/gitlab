@@ -278,6 +278,16 @@ export const namespaceWorkItemsWithoutEpicSupport = {
                   ],
                   __typename: 'WorkItemTypeConnection',
                 },
+                allowedParentTypes: {
+                  nodes: [
+                    {
+                      id: 'gid://gitlab/WorkItems::Type/8',
+                      name: 'Epic',
+                      __typename: 'WorkItemType',
+                    },
+                  ],
+                  __typename: 'WorkItemTypeConnection',
+                },
                 __typename: 'WorkItemWidgetDefinitionHierarchy',
               },
               {
