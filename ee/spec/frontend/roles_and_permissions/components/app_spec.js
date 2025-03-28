@@ -1,4 +1,10 @@
-import { GlButton, GlLink, GlSprintf } from '@gitlab/ui';
+import {
+  GlButton,
+  GlLink,
+  GlSprintf,
+  GlDisclosureDropdown,
+  GlDisclosureDropdownItem,
+} from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -51,7 +57,13 @@ describe('Roles app', () => {
         glAbilities: { exportGroupMemberships },
       },
       propsData: { groupFullPath, newRolePath },
-      stubs: { GlSprintf, PageHeading, CrudComponent },
+      stubs: {
+        GlSprintf,
+        PageHeading,
+        CrudComponent,
+        GlDisclosureDropdown,
+        GlDisclosureDropdownItem,
+      },
       mocks: { $toast: { show: mockToastShow } },
     });
 
@@ -62,6 +74,8 @@ describe('Roles app', () => {
   const findRoleCounts = () => wrapper.findByTestId('role-counts');
   const findDeleteModal = () => wrapper.findComponent(DeleteRoleModal);
   const findRolesExport = () => wrapper.findComponent(RolesExport);
+  const findDisclosureDropdown = () => wrapper.findComponent(GlDisclosureDropdown);
+  const findNewRoleButton = () => wrapper.findComponent(GlButton);
 
   describe('common behavior', () => {
     beforeEach(() => {
@@ -111,10 +125,46 @@ describe('Roles app', () => {
     });
   });
 
+  describe('new role button', () => {
+    it('shows split dropdown button when admin roles can be created', () => {
+      createComponent({ groupFullPath: '' });
+
+      expect(findDisclosureDropdown().props()).toMatchObject({
+        toggleText: 'New role',
+        placement: 'bottom-end',
+        fluidWidth: true,
+        items: [
+          {
+            text: 'Member role',
+            href: 'new/role/path',
+            description: 'Create a role to manage member permissions for groups and projects.',
+          },
+          {
+            text: 'Admin role',
+            href: 'new/role/path?admin',
+            description: 'Create a role to manage permissions in the Admin area.',
+          },
+        ],
+      });
+    });
+
+    it.each`
+      phrase                                  | options
+      ${'for SaaS'}                           | ${{ groupFullPath: 'group' }}
+      ${'when admin roles cannot be created'} | ${{ customAdminRoles: false }}
+    `('shows new role button $phrase', ({ options }) => {
+      createComponent(options);
+
+      expect(findDisclosureDropdown().exists()).toBe(false);
+      expect(findNewRoleButton().text()).toBe('New role');
+      expect(findNewRoleButton().attributes('href')).toBe('new/role/path');
+    });
+  });
+
   describe.each`
     type          | groupFullPath   | queryHandler                        | expectedQueryData
     ${'group'}    | ${'test-group'} | ${groupRolesSuccessQueryHandler}    | ${{ fullPath: 'test-group' }}
-    ${'instance'} | ${null}         | ${instanceRolesSuccessQueryHandler} | ${{}}
+    ${'instance'} | ${''}           | ${instanceRolesSuccessQueryHandler} | ${{}}
   `('for $type-level roles', ({ groupFullPath, queryHandler, expectedQueryData }) => {
     beforeEach(() => createComponent({ groupFullPath }));
 
@@ -139,7 +189,7 @@ describe('Roles app', () => {
   });
 
   describe('for Self-Managed', () => {
-    beforeEach(() => createComponent({ groupFullPath: null }));
+    beforeEach(() => createComponent({ groupFullPath: '' }));
 
     it('shows role counts', () => {
       expect(findRoleCounts().text()).toBe('6 Default 2 Custom 2 Admin');
