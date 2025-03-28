@@ -7,6 +7,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import GeoReplicableItemApp from 'ee/geo_replicable_item/components/app.vue';
 import GeoReplicableItemRegistryInfo from 'ee/geo_replicable_item/components/geo_replicable_item_registry_info.vue';
 import GeoReplicableItemReplicationInfo from 'ee/geo_replicable_item/components/geo_replicable_item_replication_info.vue';
+import GeoReplicableItemVerificationInfo from 'ee/geo_replicable_item/components/geo_replicable_item_verification_info.vue';
 import buildReplicableItemQuery from 'ee/geo_replicable_item/graphql/replicable_item_query_builder';
 import { createAlert } from '~/alert';
 import {
@@ -73,6 +74,8 @@ describe('GeoReplicableItemApp', () => {
   const findRegistryInfoComponent = () => wrapper.findComponent(GeoReplicableItemRegistryInfo);
   const findReplicationInfoComponent = () =>
     wrapper.findComponent(GeoReplicableItemReplicationInfo);
+  const findVerificationInfoComponent = () =>
+    wrapper.findComponent(GeoReplicableItemVerificationInfo);
 
   describe('loading state', () => {
     beforeEach(() => {
@@ -110,6 +113,36 @@ describe('GeoReplicableItemApp', () => {
 
     it('renders replication info component', () => {
       expect(findReplicationInfoComponent().exists()).toBe(true);
+    });
+  });
+
+  describe('verification information', () => {
+    describe('when verification is disabled', () => {
+      beforeEach(async () => {
+        createComponent({
+          props: { replicableClass: { ...MOCK_REPLICABLE_CLASS, verificationEnabled: false } },
+        });
+
+        await waitForPromises();
+      });
+
+      it('does not render the verification info component', () => {
+        expect(findVerificationInfoComponent().exists()).toBe(false);
+      });
+    });
+
+    describe('when verification is enabled', () => {
+      beforeEach(async () => {
+        createComponent({
+          props: { replicableClass: { ...MOCK_REPLICABLE_CLASS, verificationEnabled: true } },
+        });
+
+        await waitForPromises();
+      });
+
+      it('renders the verification info component', () => {
+        expect(findVerificationInfoComponent().exists()).toBe(true);
+      });
     });
   });
 

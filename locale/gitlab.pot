@@ -26267,6 +26267,9 @@ msgstr ""
 msgid "Geo|%{noBoldStart}Next sync retry:%{noBoldEnd} Retry #%{retryCount} scheduled %{timeAgo}"
 msgstr ""
 
+msgid "Geo|%{noBoldStart}Next verification retry:%{noBoldEnd} Retry #%{retryCount} scheduled %{timeAgo}"
+msgstr ""
+
 msgid "Geo|%{timeAgoStr} (%{pendingEvents} events)"
 msgstr ""
 
@@ -26304,6 +26307,9 @@ msgid "Geo|Allowed Geo IP should be between 1 and 255 characters"
 msgstr ""
 
 msgid "Geo|Allowed Geo IP should contain valid IP addresses"
+msgstr ""
+
+msgid "Geo|Checksum: %{verificationChecksum}"
 msgstr ""
 
 msgid "Geo|Checksummed"
@@ -26373,6 +26379,9 @@ msgid "Geo|Error: %{message}"
 msgstr ""
 
 msgid "Geo|Errors:"
+msgstr ""
+
+msgid "Geo|Expected checksum: %{verificationChecksum}"
 msgstr ""
 
 msgid "Geo|External URL"
@@ -26448,6 +26457,9 @@ msgid "Geo|Last synced: %{timeAgo}"
 msgstr ""
 
 msgid "Geo|Last time verified"
+msgstr ""
+
+msgid "Geo|Last verified: %{timeAgo}"
 msgstr ""
 
 msgid "Geo|Learn more about Geo"
@@ -26648,6 +26660,9 @@ msgstr ""
 msgid "Geo|Storage config"
 msgstr ""
 
+msgid "Geo|Succeeded"
+msgstr ""
+
 msgid "Geo|Synced"
 msgstr ""
 
@@ -26745,6 +26760,9 @@ msgid "Geo|Verification failed - %{error}"
 msgstr ""
 
 msgid "Geo|Verification information"
+msgstr ""
+
+msgid "Geo|Verification started: %{timeAgo}"
 msgstr ""
 
 msgid "Geo|Verification status"

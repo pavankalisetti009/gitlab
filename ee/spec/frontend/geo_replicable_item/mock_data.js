@@ -15,7 +15,7 @@ export const MOCK_REPLICABLE_WITH_VERIFICATION = {
   retryAt: null,
   retryCount: null,
   state: 'SYNCED',
-  verificationChecksum: null,
+  verificationChecksum: '1395a9bd59ff0e7d2207bd9cde6b67ee4a2f56fd',
   verificationChecksumMismatched: false,
   verificationFailure: null,
   verificationRetryAt: null,
