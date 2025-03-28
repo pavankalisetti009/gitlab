@@ -8,6 +8,8 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import InventoryDashboard from 'ee/security_inventory/components/inventory_dashboard.vue';
 import VulnerabilityIndicator from 'ee/security_inventory/components/vulnerability_indicator.vue';
+import GroupToolCoverageIndicator from 'ee/security_inventory/components/group_tool_coverage_indicator.vue';
+import ProjectToolCoverageIndicator from 'ee/security_inventory/components/project_tool_coverage_indicator.vue';
 import SubgroupsAndProjectsQuery from 'ee/security_inventory/graphql/subgroups_and_projects.query.graphql';
 import projectVulnerabilityCounts from 'ee/security_inventory/components/project_vulnerability_counts.vue';
 import { subgroupsAndProjects } from '../mock_data';
@@ -114,7 +116,6 @@ describe('InventoryDashboard', () => {
     it('renders correct values in table cells for projects and subgroups', () => {
       expect(findTableRows()).toHaveLength(mockChildren.length);
       expect(findNthTableRow(0).text()).toContain(mockChildren[0].name);
-      expect(findNthTableRow(0).findAll('td').at(2).text()).toBe('N/A');
 
       expect(findVulnerabilityDiv().text()).toBe('80');
       expect(findVulnerabilityDiv().attributes('id')).toBe('vulnerabilities-count-0');
@@ -163,6 +164,19 @@ describe('InventoryDashboard', () => {
         medium: 20,
         unknown: 20,
       });
+    });
+
+    it('renders tool coverage indicators for projects and subgroups', async () => {
+      await createFullComponent();
+
+      expect(
+        findNthTableRow(projectIndex)
+          .findComponent(ProjectToolCoverageIndicator)
+          .props('securityScanners'),
+      ).toMatchObject({ enabled: ['SAST', 'SAST_ADVANCED'], pipelineRun: ['SAST'] });
+      expect(findNthTableRow(groupIndex).findComponent(GroupToolCoverageIndicator).exists()).toBe(
+        true,
+      );
     });
   });
 

@@ -39,6 +39,10 @@ query SubgroupsAndProjects($fullPath: ID!) {
           medium
           unknown
         }
+        securityScanners {
+          enabled
+          pipelineRun
+        }
       }
     }
   }
