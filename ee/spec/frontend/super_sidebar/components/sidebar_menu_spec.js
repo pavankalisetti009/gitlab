@@ -166,19 +166,9 @@ describe('EE Sidebar Menu', () => {
       `(
         'asyncCount prop returns the sidebar object for `$component` when it exists',
         async ({ panelType, componentAsyncProp }) => {
-          const asyncCountData = {
-            openIssuesCount: 8,
-            openMergeRequestsCount: 2,
-            openEpicsCount: 1,
-
-            __typename: 'NamespaceSidebar',
-          };
-
           handler = jest.fn().mockResolvedValue(
             sidebarDataCountResponse({
-              openIssuesCount: 8,
-              openMergeRequestsCount: 2,
-              openEpicsCount: 1,
+              openEpicsCount: 0,
             }),
           );
 
@@ -193,25 +183,18 @@ describe('EE Sidebar Menu', () => {
           await waitForPromises();
 
           expect(handler).toHaveBeenCalled();
-          expect(componentAsyncProp().wrappers.map((w) => w.props('asyncCount'))[0]).toMatchObject(
-            asyncCountData,
-          );
+          expect(componentAsyncProp().wrappers.map((w) => w.props('asyncCount'))[0]).toMatchObject({
+            openIssuesCount: '8',
+            openMergeRequestsCount: '236.5k',
+            openEpicsCount: '0',
+          });
         },
       );
 
       it('asyncCount prop returns the sidebar object for PinnedSection when it exists', async () => {
-        const asyncCountData = {
-          openIssuesCount: 8,
-          openMergeRequestsCount: 2,
-          openEpicsCount: 1,
-          __typename: 'NamespaceSidebar',
-        };
-
         handler = jest.fn().mockResolvedValue(
           sidebarDataCountResponse({
-            openIssuesCount: 8,
-            openMergeRequestsCount: 2,
-            openEpicsCount: 1,
+            openEpicsCount: 0,
           }),
         );
 
@@ -226,7 +209,11 @@ describe('EE Sidebar Menu', () => {
         await waitForPromises();
 
         expect(handler).toHaveBeenCalled();
-        expect(findPinnedSection().props('asyncCount')).toMatchObject(asyncCountData);
+        expect(findPinnedSection().props('asyncCount')).toMatchObject({
+          openIssuesCount: '8',
+          openMergeRequestsCount: '236.5k',
+          openEpicsCount: '0',
+        });
       });
     });
 

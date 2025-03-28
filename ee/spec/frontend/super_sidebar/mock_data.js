@@ -128,10 +128,10 @@ export const sidebarData = {
 };
 
 export const sidebarDataCountResponse = ({
-  openIssuesCount = null,
-  openMergeRequestsCount = null,
+  openIssuesCount = 8,
+  openMergeRequestsCount = 236456,
   openEpicsCount = null,
-}) => {
+} = {}) => {
   return {
     data: {
       namespace: {
