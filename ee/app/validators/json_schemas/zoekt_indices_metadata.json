@@ -12,7 +12,10 @@
       ]
     },
     "project_namespace_id_from": {
-      "type": "integer"
+      "type": [
+        "integer",
+        null
+      ]
     },
     "project_namespace_id_to": {
       "type": [

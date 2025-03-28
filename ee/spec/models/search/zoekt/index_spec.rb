@@ -46,6 +46,52 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
       expect(described_class.new(metadata: { 'project_id_from' => 123, 'project_id_to' => 456 })).to be_valid
       expect(described_class.new(metadata: { 'project_id_from' => 123, 'project_id_to' => nil })).to be_valid
     end
+
+    describe 'metadata JSON schema validation' do
+      context 'with valid metadata' do
+        it 'allows valid project_namespace_id values' do
+          metadata = { 'project_namespace_id_from' => 123, 'project_namespace_id_to' => 456 }
+          index = described_class.new(metadata: metadata)
+          expect(index).to be_valid
+        end
+
+        it 'allows nil project_namespace_id_from' do
+          metadata = { 'project_namespace_id_from' => nil, 'project_namespace_id_to' => 456 }
+          index = described_class.new(metadata: metadata)
+          expect(index).to be_valid
+        end
+
+        it 'allows nil project_namespace_id_to' do
+          metadata = { 'project_namespace_id_from' => 123, 'project_namespace_id_to' => nil }
+          index = described_class.new(metadata: metadata)
+          expect(index).to be_valid
+        end
+
+        it 'allows mixed project_id and project_namespace_id values' do
+          index = described_class.new(metadata: {
+            'project_id_from' => 123,
+            'project_namespace_id_from' => 456
+          })
+          expect(index).to be_valid
+        end
+
+        it 'allows additional properties' do
+          index = described_class.new(metadata: {
+            'project_id_from' => 123,
+            'additional_property' => 'value'
+          })
+          expect(index).to be_valid
+        end
+      end
+
+      context 'with invalid metadata' do
+        it 'rejects string values for project_id_from' do
+          index = described_class.new(metadata: { 'project_id_from' => '123' })
+          expect(index).to be_invalid
+          expect(index.errors[:metadata]).to be_present
+        end
+      end
+    end
   end
 
   describe 'scopes' do
@@ -485,6 +531,32 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
 
       zoekt_index.state = :ready
       expect(zoekt_index).not_to be_should_be_deleted
+    end
+  end
+
+  describe '#project_namespace_id_exhaustive_range' do
+    using RSpec::Parameterized::TableSyntax
+
+    let(:zoekt_index) { build(:zoekt_index) }
+
+    where(:id_from, :id_to, :expected_range) do
+      100   | 200  | (100..200)
+      100   | nil  | (100..)
+      nil   | 200  | (..200)
+      nil   | nil  | nil
+    end
+
+    with_them do
+      before do
+        metadata = {}
+        metadata['project_namespace_id_from'] = id_from unless id_from.nil?
+        metadata['project_namespace_id_to'] = id_to unless id_to.nil?
+        zoekt_index.metadata = metadata
+      end
+
+      it 'returns the expected range' do
+        expect(zoekt_index.project_namespace_id_exhaustive_range).to eq(expected_range)
+      end
     end
   end
 

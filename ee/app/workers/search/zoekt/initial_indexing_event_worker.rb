@@ -40,15 +40,16 @@ module Search
       end
 
       def create_repositories(namespace:, index:)
-        if index.metadata['project_namespace_id_from'].present?
-          return create_repositories_for_project_range(namespace: namespace, index: index)
+        range_ids = index.project_namespace_id_exhaustive_range
+
+        if range_ids
+          return create_repositories_for_project_range(namespace: namespace, index: index, range_ids: range_ids)
         end
 
         create_repositories_with_scope(namespace: namespace, index: index)
       end
 
-      def create_repositories_for_project_range(namespace:, index:)
-        range_ids = determine_project_namespaces_id_range(index)
+      def create_repositories_for_project_range(namespace:, index:, range_ids:)
         create_repositories_with_scope(namespace: namespace, index: index) { |scope| scope.id_in(range_ids) }
       end
 
@@ -74,12 +75,6 @@ module Search
         end
 
         fully_inserted
-      end
-
-      def determine_project_namespaces_id_range(index)
-        return (index.metadata['project_namespace_id_from']..) if index.metadata['project_namespace_id_to'].blank?
-
-        index.metadata['project_namespace_id_from']..index.metadata['project_namespace_id_to']
       end
 
       def insert_repositories(index:, project_ids:)
