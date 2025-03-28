@@ -46,6 +46,10 @@ export const subgroupsAndProjects = {
               medium: 48,
               unknown: 7,
             },
+            securityScanners: {
+              enabled: ['SAST', 'SAST_ADVANCED'],
+              pipelineRun: ['SAST'],
+            },
           },
           {
             __typename: 'Project',
@@ -62,6 +66,10 @@ export const subgroupsAndProjects = {
               info: 0,
               medium: 0,
               unknown: 0,
+            },
+            securityScanners: {
+              enabled: ['SAST', 'SAST_ADVANCED'],
+              pipelineRun: [],
             },
           },
         ],

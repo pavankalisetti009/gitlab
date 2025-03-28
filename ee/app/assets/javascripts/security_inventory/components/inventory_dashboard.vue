@@ -20,6 +20,8 @@ import { SEVERITY_CLASS_NAME_MAP } from 'ee/vue_shared/security_reports/componen
 import SubgroupsAndProjectsQuery from '../graphql/subgroups_and_projects.query.graphql';
 import VulnerabilityIndicator from './vulnerability_indicator.vue';
 import ProjectVulnerabilityCounts from './project_vulnerability_counts.vue';
+import ProjectToolCoverageIndicator from './project_tool_coverage_indicator.vue';
+import GroupToolCoverageIndicator from './group_tool_coverage_indicator.vue';
 
 export default {
   components: {
@@ -34,6 +36,8 @@ export default {
     VulnerabilityIndicator,
     GlPopover,
     ProjectVulnerabilityCounts,
+    GroupToolCoverageIndicator,
+    ProjectToolCoverageIndicator,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -149,7 +153,15 @@ export default {
     },
     transformProjects(nodes) {
       return nodes.map(
-        ({ id, name, avatarUrl, webUrl, fullPath, vulnerabilitySeveritiesCount }) => ({
+        ({
+          id,
+          name,
+          avatarUrl,
+          webUrl,
+          fullPath,
+          vulnerabilitySeveritiesCount,
+          securityScanners,
+        }) => ({
           id,
           type: 'project',
           name,
@@ -157,6 +169,7 @@ export default {
           webUrl,
           fullPath,
           vulnerabilitySeveritiesCount,
+          securityScanners,
         }),
       );
     },
@@ -254,8 +267,9 @@ export default {
         </gl-popover>
       </template>
 
-      <template #cell(toolCoverage)="">
-        {{ __('N/A') }}
+      <template #cell(toolCoverage)="{ item }">
+        <group-tool-coverage-indicator v-if="isSubGroup(item)" />
+        <project-tool-coverage-indicator v-else :security-scanners="item.securityScanners" />
       </template>
 
       <template #cell(actions)="{ item }">

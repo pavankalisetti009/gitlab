@@ -10,8 +10,20 @@ const CONTAINER_SCANNING_LABEL = s__('SecurityInventory|CS');
 
 export const SCANNERS = [
   {
+    scanner: 'DEPENDENCY_SCANNING',
+    label: DEPENDENCY_SCANNING_LABEL,
+  },
+  {
     scanner: 'SAST',
     label: SAST_LABEL,
+  },
+  {
+    scanner: 'SECRET_DETECTION',
+    label: SECRET_DETECTION_LABEL,
+  },
+  {
+    scanner: 'CONTAINER_SCANNING',
+    label: CONTAINER_SCANNING_LABEL,
   },
   {
     scanner: 'DAST',
@@ -20,18 +32,6 @@ export const SCANNERS = [
   {
     scanner: 'SAST_IAC',
     label: SAST_IAC_LABEL,
-  },
-  {
-    scanner: 'SECRET_DETECTION',
-    label: SECRET_DETECTION_LABEL,
-  },
-  {
-    scanner: 'DEPENDENCY_SCANNING',
-    label: DEPENDENCY_SCANNING_LABEL,
-  },
-  {
-    scanner: 'CONTAINER_SCANNING',
-    label: CONTAINER_SCANNING_LABEL,
   },
 ];
 
