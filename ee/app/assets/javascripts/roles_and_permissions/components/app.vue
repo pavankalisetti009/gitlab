@@ -1,6 +1,6 @@
 <script>
-import { GlSprintf, GlLink, GlButton } from '@gitlab/ui';
-import { s__ } from '~/locale';
+import { GlSprintf, GlLink, GlButton, GlDisclosureDropdown } from '@gitlab/ui';
+import { s__, __ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { createAlert } from '~/alert';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
@@ -20,7 +20,7 @@ export default {
     description: s__(
       'MemberRole|Manage which actions users can take with %{linkStart}roles and permissions%{linkEnd}.',
     ),
-    roleCrudTitle: s__('MemberRole|Roles'),
+    roleCrudTitle: __('Roles'),
     roleCount: s__(`MemberRole|%{defaultCount} Default %{customCount} Custom`),
     roleCountAdmin: s__(`MemberRole|%{adminCount} Admin`),
     newRoleText: s__('MemberRole|New role'),
@@ -31,6 +31,7 @@ export default {
     GlSprintf,
     GlLink,
     GlButton,
+    GlDisclosureDropdown,
     RolesTable,
     DeleteRoleModal,
     RolesExport,
@@ -95,6 +96,25 @@ export default {
         this.glFeatures.membersPermissionsDetailedExport && this.glAbilities.exportGroupMemberships
       );
     },
+    canCreateAdminRole() {
+      return this.glFeatures.customAdminRoles && this.newRolePath && !this.groupFullPath.length;
+    },
+    newRoleItems() {
+      return [
+        {
+          text: s__('MemberRole|Member role'),
+          href: this.newRolePath,
+          description: s__(
+            'MemberRole|Create a role to manage member permissions for groups and projects.',
+          ),
+        },
+        {
+          text: s__('MemberRole|Admin role'),
+          href: `${this.newRolePath}?admin`,
+          description: s__('MemberRole|Create a role to manage permissions in the Admin area.'),
+        },
+      ];
+    },
   },
   methods: {
     processRoleDeletion() {
@@ -119,29 +139,47 @@ export default {
       </template>
     </page-heading>
 
-    <crud-component :title="$options.i18n.roleCrudTitle">
-      <template #description>
-        <span data-testid="role-counts">
-          <gl-sprintf :message="$options.i18n.roleCount">
-            <template #defaultCount>
-              <span class="gl-font-bold">{{ defaultRoles.length }}</span>
-            </template>
-            <template #customCount>
-              <span class="gl-ml-3 gl-font-bold">{{ customRoles.length }}</span>
-            </template>
-          </gl-sprintf>
-          <gl-sprintf v-if="glFeatures.customAdminRoles" :message="$options.i18n.roleCountAdmin">
-            <template #adminCount>
-              <span class="gl-ml-3 gl-font-bold">{{ adminRoles.length }}</span>
-            </template>
-          </gl-sprintf>
-        </span>
+    <crud-component>
+      <template #title>
+        <div>
+          {{ $options.i18n.roleCrudTitle }}
+
+          <span data-testid="role-counts" class="gl-ml-2 gl-text-sm gl-font-normal gl-text-subtle">
+            <gl-sprintf :message="$options.i18n.roleCount">
+              <template #defaultCount>
+                <span class="gl-font-bold">{{ defaultRoles.length }}</span>
+              </template>
+              <template #customCount>
+                <span class="gl-ml-3 gl-font-bold">{{ customRoles.length }}</span>
+              </template>
+            </gl-sprintf>
+            <gl-sprintf v-if="glFeatures.customAdminRoles" :message="$options.i18n.roleCountAdmin">
+              <template #adminCount>
+                <span class="gl-ml-3 gl-font-bold">{{ adminRoles.length }}</span>
+              </template>
+            </gl-sprintf>
+          </span>
+        </div>
       </template>
 
       <template #actions>
         <roles-export v-if="canExportRoles" />
 
-        <gl-button v-if="newRolePath" :href="newRolePath" size="small">
+        <gl-disclosure-dropdown
+          v-if="canCreateAdminRole"
+          :items="newRoleItems"
+          :toggle-text="$options.i18n.newRoleText"
+          placement="bottom-end"
+          fluid-width
+        >
+          <template #list-item="{ item }">
+            <div class="gl-mx-3 gl-w-34">
+              <div class="gl-font-bold">{{ item.text }}</div>
+              <div class="gl-mt-2 gl-text-subtle">{{ item.description }}</div>
+            </div>
+          </template>
+        </gl-disclosure-dropdown>
+        <gl-button v-else-if="newRolePath" :href="newRolePath" size="small">
           {{ $options.i18n.newRoleText }}
         </gl-button>
       </template>

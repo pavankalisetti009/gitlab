@@ -18,7 +18,8 @@ RSpec.describe 'Instance-level Member Roles', feature_category: :permissions do
   end
 
   def create_role(access_level, name, description, permissions)
-    click_link s_('MemberRole|New role')
+    click_button s_('MemberRole|New role')
+    click_link s_('MemberRole|Member role')
     wait_for_requests
 
     fill_in 'Name', with: name
