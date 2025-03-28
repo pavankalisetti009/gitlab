@@ -21,7 +21,6 @@ module Search
       def execute
         return false unless ::Gitlab::Saas.feature_available?(:advanced_search)
         return false unless ::Gitlab::CurrentSettings.elasticsearch_indexing?
-        return false unless ::Feature.enabled?(:search_migration_cleanup, ::Feature.current_request)
 
         @migrations_to_remove = []
         @total_removed = 0

@@ -72,16 +72,6 @@ RSpec.describe Search::Elastic::MigrationCleanupService, feature_category: :glob
           stub_ee_application_setting(elasticsearch_indexing: true)
         end
 
-        context 'when search_migration_cleanup flag is false' do
-          before do
-            stub_feature_flags(search_migration_cleanup: false)
-          end
-
-          it 'returns false' do
-            expect(service.execute).to be(false)
-          end
-        end
-
         context 'when dry_run is true' do
           let(:dry_run) { true }
 

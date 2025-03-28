@@ -32,46 +32,28 @@ RSpec.describe Search::Elastic::MigrationCleanupCronWorker, feature_category: :g
       end
 
       context 'when elasticsearch indexing is enabled' do
+        let(:cleanup_count) { 5 }
+
         before do
           stub_ee_application_setting(elasticsearch_indexing: true)
+          allow(Search::Elastic::MigrationCleanupService).to receive(:execute)
+            .with(dry_run: false).and_return(cleanup_count)
         end
 
-        context 'when search_migration_cleanup feature flag is not enabled' do
-          before do
-            stub_feature_flags(search_migration_cleanup: false)
-          end
+        it 'calls the cleanup service with dry_run: false' do
+          expect(Search::Elastic::MigrationCleanupService).to receive(:execute).with(dry_run: false)
 
-          it 'returns false without performing cleanup' do
-            expect(Search::Elastic::MigrationCleanupService).not_to receive(:execute)
-
-            expect(perform).to be(false)
-          end
+          perform
         end
 
-        context 'when search_migration_cleanup feature flag is enabled' do
-          let(:cleanup_count) { 5 }
+        it 'logs the total cleanup count as extra metadata' do
+          expect(worker).to receive(:log_extra_metadata_on_done).with(:cleanup_total_count, cleanup_count)
 
-          before do
-            stub_feature_flags(search_migration_cleanup: true)
-            allow(Search::Elastic::MigrationCleanupService).to receive(:execute)
-              .with(dry_run: false).and_return(cleanup_count)
-          end
+          perform
+        end
 
-          it 'calls the cleanup service with dry_run: false' do
-            expect(Search::Elastic::MigrationCleanupService).to receive(:execute).with(dry_run: false)
-
-            perform
-          end
-
-          it 'logs the total cleanup count as extra metadata' do
-            expect(worker).to receive(:log_extra_metadata_on_done).with(:cleanup_total_count, cleanup_count)
-
-            perform
-          end
-
-          it 'returns true after successful execution' do
-            expect(perform).to be(true)
-          end
+        it 'returns true after successful execution' do
+          expect(perform).to be(true)
         end
       end
     end
