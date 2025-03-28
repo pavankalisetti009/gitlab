@@ -629,7 +629,7 @@ RSpec.describe Gitlab::LicenseScanning::PackageLicenses, feature_category: :soft
         ]
       end
 
-      context 'when a component is not supported by license scanning' do
+      context 'when a component is container scanning related' do
         let(:components_to_fetch) do
           [
             Hashie::Mash.new({ name: "beego", purl_type: "rpm", version: "v1.10.0",
@@ -643,9 +643,9 @@ RSpec.describe Gitlab::LicenseScanning::PackageLicenses, feature_category: :soft
               purl_type: 'rpm',
               version: 'v1.10.0',
               licenses: [{
-                "name" => "unknown",
-                "spdx_identifier" => "unknown",
-                "url" => nil
+                "name" => 'Custom License',
+                "spdx_identifier" => "Custom-License",
+                "url" => 'https://custom-license.com'
               }]
             )
           )
