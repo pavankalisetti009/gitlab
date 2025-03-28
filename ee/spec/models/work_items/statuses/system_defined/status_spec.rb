@@ -23,6 +23,47 @@ RSpec.describe WorkItems::Statuses::SystemDefined::Status, feature_category: :te
     end
   end
 
+  describe '.find_by_work_item_and_name' do
+    let(:work_item) { build_stubbed(:work_item, :task) }
+    let(:status_name) { 'in progress' }
+
+    subject { described_class.find_by_work_item_and_name(work_item, status_name) }
+
+    it { is_expected.to have_attributes(id: 2, name: 'In progress') }
+
+    context 'when there is no lifecycle assigned to the work item type' do
+      let(:work_item) { build_stubbed(:work_item, :epic) }
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'when status_name does not resolve to a valid status' do
+      let(:status_name) { 'invalid' }
+
+      it { is_expected.to be_nil }
+    end
+  end
+
+  describe '#allowed_for_work_item?' do
+    let(:work_item) { build_stubbed(:work_item, :task) }
+
+    subject { described_class.find(1).allowed_for_work_item?(work_item) }
+
+    it { is_expected.to be true }
+
+    context 'when work item is not present' do
+      let(:work_item) { nil }
+
+      it { is_expected.to be false }
+    end
+
+    context 'when work item type does not have a lifecycle assigned' do
+      let(:work_item) { build_stubbed(:work_item, :epic) }
+
+      it { is_expected.to be false }
+    end
+  end
+
   describe '#icon_name' do
     it 'returns the correct icon name for the status category' do
       expect(status.icon_name).to eq('status-waiting')

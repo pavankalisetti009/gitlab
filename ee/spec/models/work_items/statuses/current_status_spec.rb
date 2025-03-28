@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe WorkItems::Statuses::CurrentStatus, feature_category: :team_planning do
-  let_it_be(:work_item) { create(:work_item) }
+  let_it_be(:work_item) { create(:work_item, :task) }
 
   subject(:current_status) { build_stubbed(:work_item_current_status) }
 
@@ -45,6 +45,15 @@ RSpec.describe WorkItems::Statuses::CurrentStatus, feature_category: :team_plann
     it { is_expected.to validate_presence_of(:work_item_id) }
 
     describe '#validate_status_exists' do
+      shared_examples 'failing validation' do
+        it 'is not valid' do
+          expect(current_status).not_to be_valid
+          expect(current_status.errors[:system_defined_status]).to include(
+            "not provided or references non-existent system defined status"
+          )
+        end
+      end
+
       context 'when system_defined_status is present' do
         it { is_expected.to be_valid }
       end
@@ -52,10 +61,30 @@ RSpec.describe WorkItems::Statuses::CurrentStatus, feature_category: :team_plann
       context 'when system_defined_status is not present' do
         subject(:current_status) { build(:work_item_current_status, system_defined_status: nil) }
 
+        it_behaves_like 'failing validation'
+      end
+
+      context 'when system_defined_status_id references a non existing status' do
+        subject(:current_status) { build(:work_item_current_status, system_defined_status_id: 99) }
+
+        it_behaves_like 'failing validation'
+      end
+    end
+
+    describe '#validate_allowed_status' do
+      context 'when allowed system_defined_status is present' do
+        it { is_expected.to be_valid }
+      end
+
+      context 'when work item type does not have a lifecycle assigned' do
+        let_it_be(:work_item) { create(:work_item, :epic) }
+
+        subject(:current_status) { build_stubbed(:work_item_current_status, work_item: work_item) }
+
         it 'is not valid' do
           expect(current_status).not_to be_valid
           expect(current_status.errors[:system_defined_status]).to include(
-            "not provided or references non-existent system defined status"
+            "not allowed for this work item type"
           )
         end
       end

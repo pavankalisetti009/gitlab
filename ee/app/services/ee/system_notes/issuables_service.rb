@@ -173,6 +173,19 @@ module EE
         create_note(NoteSummary.new(noteable, project, author, body, action: 'notify_service'))
       end
 
+      # Called when the status of a work item is changed
+      #
+      # Example Note text:
+      #
+      #   "set status to `Done`"
+      #
+      # Returns the created Note object
+      def change_work_item_status(status)
+        body = format("set status to **%{status_name}**", status_name: status.name)
+
+        create_note(NoteSummary.new(noteable, project, author, body, action: 'work_item_status'))
+      end
+
       private
 
       def block_message(issuable_type, noteable_reference, type)

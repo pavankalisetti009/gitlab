@@ -51,6 +51,10 @@ module WorkItems
           statuses.find { |status| status.matches_name?(name) }
         end
 
+        def has_status_id?(status_id)
+          statuses.map(&:id).include?(status_id)
+        end
+
         def default_open_status
           Status.find(default_open_status_id)
         end
