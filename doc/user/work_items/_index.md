@@ -36,7 +36,7 @@ GitLab supports the following work item types:
 - [Issues](../project/issues/_index.md): Track tasks, features, and bugs.
 - [Epics](../group/epics/_index.md): Manage large initiatives across multiple milestones and issues.
 - [Tasks](../tasks.md): Track small units of work.
-- [Objectives and key results)](../okrs.md): Track strategic goals and their measurable outcomes.
+- [Objectives and key results](../okrs.md): Track strategic goals and their measurable outcomes.
 - [Test cases](../../ci/test_cases/_index.md): Integrate test planning directly into your GitLab workflows.
 
 ## View all work items

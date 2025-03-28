@@ -976,7 +976,7 @@ curl --request POST \
   changes in the file changed the line number. For the discussion about a fix, see
   [issue 32516](https://gitlab.com/gitlab-org/gitlab/-/issues/325161).
 - If you specify incorrect `base`, `head`, `start`, or `SHA` parameters, you might run
-  into the bug described in [issue #296829)](https://gitlab.com/gitlab-org/gitlab/-/issues/296829).
+  into the bug described in [issue #296829](https://gitlab.com/gitlab-org/gitlab/-/issues/296829).
 
 To create a new thread:
 
