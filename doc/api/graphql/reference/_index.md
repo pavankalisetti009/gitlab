@@ -25486,6 +25486,15 @@ Aggregated summary of changes.
 | <a id="discussionresolved"></a>`resolved` | [`Boolean!`](#boolean) | Indicates if the object is resolved. |
 | <a id="discussionresolvedat"></a>`resolvedAt` | [`Time`](#time) | Timestamp of when the object was resolved. |
 | <a id="discussionresolvedby"></a>`resolvedBy` | [`UserCore`](#usercore) | User who resolved the object. |
+| <a id="discussionuserpermissions"></a>`userPermissions` | [`DiscussionPermissions!`](#discussionpermissions) | Permissions for the current user on the resource. |
+
+### `DiscussionPermissions`
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="discussionpermissionsresolvenote"></a>`resolveNote` | [`Boolean!`](#boolean) | If `true`, the user can perform `resolve_note` on this resource. |
 
 ### `Dora`
 
