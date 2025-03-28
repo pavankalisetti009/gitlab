@@ -1,7 +1,14 @@
 <script>
-import { GlAlert, GlButton, GlForm, GlFormGroup, GlFormInput, GlFormTextarea } from '@gitlab/ui';
+import {
+  GlAlert,
+  GlButton,
+  GlForm,
+  GlFormGroup,
+  GlFormInput,
+  GlFormTextarea,
+  GlTooltipDirective as GlTooltip,
+} from '@gitlab/ui';
 import { isEmpty } from 'lodash';
-import { GlTooltipDirective as GlTooltip } from '@gitlab/ui/dist/directives/tooltip';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { createAlert } from '~/alert';
 import amazonS3ConfigurationCreate from '../../graphql/mutations/create_amazon_s3_destination.mutation.graphql';
