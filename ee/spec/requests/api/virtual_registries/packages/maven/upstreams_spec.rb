@@ -35,8 +35,8 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
     context 'with invalid registry' do
       where(:registry_id, :status) do
         non_existing_record_id | :not_found
-        'foo'                  | :not_found
-        ''                     | :not_found
+        'foo'                  | :bad_request
+        ''                     | :bad_request
       end
 
       with_them do
@@ -132,7 +132,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
     context 'with invalid registry' do
       where(:registry_id, :status) do
         non_existing_record_id | :not_found
-        'foo'                  | :not_found
+        'foo'                  | :bad_request
         ''                     | :not_found
       end
 
