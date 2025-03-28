@@ -33,7 +33,7 @@ module Gitlab
         end
 
         def set_has_feedback(message)
-          user.ai_conversation_messages.for_message_xid(message.id).update!(has_feedback: true)
+          user.ai_conversation_messages.for_id(message.id).update!(has_feedback: true)
           clear_memoization(:messages)
         end
 
@@ -65,7 +65,7 @@ module Gitlab
         end
 
         def update_message_extras(message)
-          user.ai_conversation_messages.for_message_xid(message.id).update!(extras: message.extras.to_json)
+          user.ai_conversation_messages.for_id(message.id).update!(extras: message.extras.to_json)
           clear_memoization(:messages)
         end
 
