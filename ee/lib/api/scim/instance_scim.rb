@@ -270,6 +270,28 @@ module API
 
             no_content!
           end
+
+          desc 'Replace a SCIM group'
+          params do
+            requires :id, type: String, desc: 'The SCIM group ID'
+            requires :schemas, type: Array, desc: 'SCIM schemas'
+            requires :displayName, type: String, desc: 'Group display name'
+            optional :members, type: Array, desc: 'Group members'
+          end
+          put ':id' do
+            check_access!
+
+            saml_group_links = SamlGroupLink.by_scim_group_uid(params[:id])
+            scim_not_found!(message: "Group #{params[:id]} not found") unless saml_group_links.exists?
+
+            ::EE::Gitlab::Scim::GroupSyncPutService.new(
+              scim_group_uid: params[:id],
+              members: params[:members] || [],
+              display_name: params[:displayName]
+            ).execute
+
+            present saml_group_links.first, with: ::EE::API::Entities::Scim::Group
+          end
         end
       end
     end

@@ -1077,5 +1077,190 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
         end
       end
     end
+
+    describe 'PUT api/scim/v2/application/Groups/:id' do
+      let(:scim_group_uid) { SecureRandom.uuid }
+      let!(:saml_group_link) do
+        create(:saml_group_link, saml_group_name: 'engineering', scim_group_uid: scim_group_uid)
+      end
+
+      let!(:identity) { create(:scim_identity, user: create(:user), group: nil) }
+
+      let(:put_params) do
+        {
+          schemas: ['urn:ietf:params:scim:schemas:core:2.0:Group'],
+          displayName: 'Engineering',
+          members: [
+            { value: identity.extern_uid, display: identity.user.name }
+          ]
+        }
+      end
+
+      subject(:api_request) do
+        put api("scim/v2/application/Groups/#{scim_group_uid}", user, version: '', access_token: scim_token),
+          params: put_params
+      end
+
+      it_behaves_like 'Groups feature flag check'
+      it_behaves_like 'Not available to SaaS customers'
+      it_behaves_like 'Instance level SCIM license required'
+      it_behaves_like 'SCIM token authenticated'
+      it_behaves_like 'SAML SSO must be enabled'
+      it_behaves_like 'sets current organization'
+
+      context 'with valid parameters' do
+        it 'responds with 200 OK and the group' do
+          api_request
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['id']).to eq(scim_group_uid)
+          expect(json_response['displayName']).to eq('engineering')
+        end
+
+        it 'enqueues a job to add the user to the group' do
+          expect(::Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
+            .with(scim_group_uid, [identity.user.id], 'add')
+            .once
+
+          api_request
+        end
+
+        context 'with existing group members not in the PUT request' do
+          let!(:other_user) { create(:user) }
+          let!(:other_identity) { create(:scim_identity, user: other_user, extern_uid: 'other-extern-uid', group: nil) }
+
+          before do
+            create(:identity, user: other_user, provider: 'scim', saml_provider: nil)
+            saml_group_link.group.add_member(other_user, Gitlab::Access::DEVELOPER)
+          end
+
+          it 'enqueues a job to remove existing members not in the request' do
+            expect(::Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
+              .with(scim_group_uid, [other_user.id], 'remove')
+              .once
+
+            expect(::Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
+              .with(scim_group_uid, [identity.user.id], 'add')
+              .once
+
+            api_request
+          end
+        end
+
+        context 'with multiple group links sharing the same SCIM ID' do
+          let!(:another_group) { create(:group) }
+          let!(:another_group_link) do
+            create(:saml_group_link,
+              group: another_group,
+              saml_group_name: 'engineering',
+              scim_group_uid: scim_group_uid)
+          end
+
+          it 'enqueues a single job that will handle all linked groups' do
+            expect(::Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
+              .with(scim_group_uid, [identity.user.id], 'add')
+              .once
+
+            api_request
+          end
+        end
+
+        context 'with non-SCIM members in the group' do
+          let!(:regular_user) { create(:user) }
+
+          before do
+            saml_group_link.group.add_member(regular_user, Gitlab::Access::DEVELOPER)
+          end
+
+          it 'does not enqueue a job to remove non-SCIM members' do
+            expect(::Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
+              .with(scim_group_uid, [identity.user.id], 'add')
+              .once
+
+            expect(::Authn::SyncScimGroupMembersWorker).not_to receive(:perform_async)
+              .with(scim_group_uid, [regular_user.id], 'remove')
+
+            api_request
+          end
+        end
+      end
+
+      context 'with empty members array' do
+        let(:put_params) do
+          {
+            schemas: ['urn:ietf:params:scim:schemas:core:2.0:Group'],
+            displayName: 'Engineering',
+            members: []
+          }
+        end
+
+        before do
+          saml_group_link.group.add_member(identity.user, Gitlab::Access::DEVELOPER)
+          create(:identity, user: identity.user, provider: 'scim', saml_provider: nil)
+        end
+
+        it 'enqueues a job to remove all SCIM members from the group' do
+          expect(::Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
+            .with(scim_group_uid, [identity.user.id], 'remove')
+            .once
+
+          api_request
+        end
+      end
+
+      context 'with non-existent SCIM group ID' do
+        subject(:api_request) do
+          put api("scim/v2/application/Groups/non-existent-id", user, version: '', access_token: scim_token),
+            params: put_params
+        end
+
+        it 'returns a 404 not found' do
+          api_request
+
+          expect(response).to have_gitlab_http_status(:not_found)
+          expect(json_response['detail']).to include('Group non-existent-id not found')
+        end
+      end
+
+      context 'with missing required parameters' do
+        let(:put_params) do
+          {
+            schemas: ['urn:ietf:params:scim:schemas:core:2.0:Group']
+          }
+        end
+
+        it 'returns a 400 bad request' do
+          api_request
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+          expect(json_response['error']).to include('displayName is missing')
+        end
+      end
+
+      context 'with non-existent user identities' do
+        let(:put_params) do
+          {
+            schemas: ['urn:ietf:params:scim:schemas:core:2.0:Group'],
+            displayName: 'Engineering',
+            members: [
+              { value: 'non-existent-identity' }
+            ]
+          }
+        end
+
+        it 'responds with 200 OK' do
+          api_request
+
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+
+        it 'does not enqueue a job to add users' do
+          expect(::Authn::SyncScimGroupMembersWorker).not_to receive(:perform_async)
+            .with(scim_group_uid, anything, 'add')
+
+          api_request
+        end
+      end
+    end
   end
 end
