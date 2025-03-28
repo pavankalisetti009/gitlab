@@ -2982,9 +2982,6 @@ msgstr ""
 msgid "AccessTokens|Created"
 msgstr ""
 
-msgid "AccessTokens|Created date"
-msgstr ""
-
 msgid "AccessTokens|Description"
 msgstr ""
 
@@ -3102,9 +3099,6 @@ msgid "AccessTokens|Keep this token secret. Anyone who has it can create issues 
 msgstr ""
 
 msgid "AccessTokens|Keep this token secret. Anyone who has it can read activity and issue RSS feeds or your calendar feed as if they were you. If that happens, %{linkStart}reset this token%{linkEnd}."
-msgstr ""
-
-msgid "AccessTokens|Last used date"
 msgstr ""
 
 msgid "AccessTokens|Last used:"
@@ -17907,16 +17901,7 @@ msgstr ""
 msgid "Credentials"
 msgstr ""
 
-msgid "CredentialsInventory|Active"
-msgstr ""
-
-msgid "CredentialsInventory|Created date"
-msgstr ""
-
 msgid "CredentialsInventory|Deleted user"
-msgstr ""
-
-msgid "CredentialsInventory|Expiration date"
 msgstr ""
 
 msgid "CredentialsInventory|Expired"
@@ -17926,12 +17911,6 @@ msgid "CredentialsInventory|GPG Keys"
 msgstr ""
 
 msgid "CredentialsInventory|GPG keys"
-msgstr ""
-
-msgid "CredentialsInventory|Inactive"
-msgstr ""
-
-msgid "CredentialsInventory|Last used date"
 msgstr ""
 
 msgid "CredentialsInventory|No credentials found"
@@ -17956,9 +17935,6 @@ msgid "CredentialsInventory|SSH keys"
 msgstr ""
 
 msgid "CredentialsInventory|Search or filter credentials…"
-msgstr ""
-
-msgid "CredentialsInventory|State"
 msgstr ""
 
 msgid "CredentialsInventory|Type"

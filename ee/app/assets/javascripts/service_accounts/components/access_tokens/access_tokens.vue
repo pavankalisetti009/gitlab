@@ -1,20 +1,8 @@
 <script>
-import {
-  GlButton,
-  GlFilteredSearch,
-  GlFilteredSearchToken,
-  GlPagination,
-  GlSorting,
-} from '@gitlab/ui';
+import { GlButton, GlFilteredSearch, GlPagination, GlSorting } from '@gitlab/ui';
 import { mapActions, mapState } from 'pinia';
-import { __, s__ } from '~/locale';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import {
-  OPERATORS_AFTER_BEFORE,
-  OPERATORS_IS,
-} from '~/vue_shared/components/filtered_search_bar/constants';
-import DateToken from '~/vue_shared/components/filtered_search_bar/tokens/date_token.vue';
-import { SORT_OPTIONS } from '~/access_tokens/constants';
+import { FILTER_OPTIONS, SORT_OPTIONS } from '~/access_tokens/constants';
 
 import { useAccessTokens } from '../../stores/access_tokens';
 import AccessToken from './access_token.vue';
@@ -106,56 +94,7 @@ export default {
       this.fetchTokens();
     },
   },
-  fields: [
-    {
-      icon: 'status',
-      title: s__('AccessTokens|State'),
-      type: 'state',
-      token: GlFilteredSearchToken,
-      operators: OPERATORS_IS,
-      unique: true,
-      options: [
-        { value: 'active', title: s__('AccessTokens|Active') },
-        { value: 'inactive', title: s__('AccessTokens|Inactive') },
-      ],
-    },
-    {
-      icon: 'remove',
-      title: s__('AccessTokens|Revoked'),
-      type: 'revoked',
-      token: GlFilteredSearchToken,
-      operators: OPERATORS_IS,
-      unique: true,
-      options: [
-        { value: 'true', title: __('Yes') },
-        { value: 'false', title: __('No') },
-      ],
-    },
-    {
-      icon: 'history',
-      title: s__('AccessTokens|Created date'),
-      type: 'created',
-      token: DateToken,
-      operators: OPERATORS_AFTER_BEFORE,
-      unique: true,
-    },
-    {
-      icon: 'history',
-      title: s__('AccessTokens|Expiration date'),
-      type: 'expires',
-      token: DateToken,
-      operators: OPERATORS_AFTER_BEFORE,
-      unique: true,
-    },
-    {
-      icon: 'history',
-      title: s__('AccessTokens|Last used date'),
-      type: 'last_used',
-      token: DateToken,
-      operators: OPERATORS_AFTER_BEFORE,
-      unique: true,
-    },
-  ],
+  FILTER_OPTIONS,
   SORT_OPTIONS,
 };
 </script>
@@ -184,7 +123,7 @@ export default {
         class="gl-min-w-0 gl-grow"
         :value="filters"
         :placeholder="s__('AccessTokens|Search or filter access tokens…')"
-        :available-tokens="$options.fields"
+        :available-tokens="$options.FILTER_OPTIONS"
         filtered-search-term-key="search"
         terms-as-tokens
         @submit="search"
