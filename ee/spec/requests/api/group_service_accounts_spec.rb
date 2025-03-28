@@ -91,10 +91,10 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
       expect(json_response['message']).to eq('404 User Not Found')
     end
 
-    it "returns a 404 for invalid ID" do
+    it "returns a 400 for invalid ID" do
       perform_enqueued_jobs { delete api("/groups/#{group_id}/service_accounts/ASDF", admin, admin_mode: true) }
 
-      expect(response).to have_gitlab_http_status(:not_found)
+      expect(response).to have_gitlab_http_status(:bad_request)
     end
 
     context "when hard delete disabled" do
@@ -285,10 +285,10 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
         expect(json_response['message']).to eq('404 User Not Found')
       end
 
-      it "returns a 404 for invalid user ID" do
+      it "returns a 400 for invalid user ID" do
         patch api("/groups/#{group_id}/service_accounts/ASDF", user), params: params
 
-        expect(response).to have_gitlab_http_status(:not_found)
+        expect(response).to have_gitlab_http_status(:bad_request)
       end
 
       context 'when target user is not a service account' do
