@@ -221,7 +221,7 @@ RSpec.describe SmartcardController, type: :request, feature_category: :system_ac
 
               subject
 
-              expect(flash[:alert]).to eql('Failed to signing using smartcard authentication')
+              expect(flash[:alert]).to eql('Failed to sign in using smart card authentication.')
               expect(response).to redirect_to(new_user_session_path)
               expect(request.env['warden']).not_to be_authenticated
             end
