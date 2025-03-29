@@ -65,7 +65,7 @@ class SmartcardController < ApplicationController
   def sign_in_with(certificate)
     user = certificate.find_or_create_user
     unless user&.persisted?
-      flash[:alert] = _('Failed to signing using smartcard authentication')
+      flash[:alert] = _('Failed to sign in using smart card authentication.')
       redirect_to new_user_session_path
 
       return
