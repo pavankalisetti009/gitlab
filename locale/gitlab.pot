@@ -9964,6 +9964,9 @@ msgstr ""
 msgid "Blame|Older"
 msgstr ""
 
+msgid "Blob"
+msgstr ""
+
 msgid "BlobViewer|Copy contents"
 msgstr ""
 
