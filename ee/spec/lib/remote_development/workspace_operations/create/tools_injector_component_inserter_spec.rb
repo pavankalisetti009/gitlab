@@ -9,7 +9,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::ToolsInjectorComp
   let(:expected_processed_devfile_name) { "example.tools-injector-inserted-devfile.yaml" }
   let(:expected_processed_devfile) { yaml_safe_load_symbolized(read_devfile_yaml(expected_processed_devfile_name)) }
   let(:tools_injector_image_from_settings) do
-    "registry.gitlab.com/gitlab-org/workspaces/gitlab-workspaces-tools:8.0.0"
+    "registry.gitlab.com/gitlab-org/workspaces/gitlab-workspaces-tools:9.0.0"
   end
 
   let(:settings) do
