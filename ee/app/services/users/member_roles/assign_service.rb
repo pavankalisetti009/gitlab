@@ -39,7 +39,7 @@ module Users
 
       def assign
         user_member_role = if params[:member_role]
-                             handle_assignement
+                             handle_assignment
                            else
                              existing_user_member_role.destroy! if existing_user_member_role
 
@@ -49,7 +49,7 @@ module Users
         ServiceResponse.success(payload: { user_member_role: user_member_role })
       end
 
-      def handle_assignement
+      def handle_assignment
         if existing_user_member_role
           existing_user_member_role.tap do |user_role|
             user_role.update!(member_role: params[:member_role])
