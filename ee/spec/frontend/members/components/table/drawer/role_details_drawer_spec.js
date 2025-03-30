@@ -26,6 +26,7 @@ describe('Role details drawer', () => {
       propsData: { member },
       stubs: {
         GlSprintf,
+        RoleBadges,
         MembersTableCell: stubComponent(MembersTableCell, {
           render() {
             return this.$scopedSlots.default({

@@ -34,7 +34,6 @@ ee/spec/frontend/iterations/components/iteration_form_spec.js
 ee/spec/frontend/iterations/components/iteration_report_issues_spec.js
 ee/spec/frontend/members/components/action_dropdowns/user_action_dropdown_spec.js
 ee/spec/frontend/members/components/modals/ldap_override_confirmation_modal_spec.js
-ee/spec/frontend/members/components/table/drawer/role_details_drawer_spec.js
 ee/spec/frontend/members/components/table/drawer/role_updater_spec.js
 ee/spec/frontend/members/components/table/max_role_spec.js
 ee/spec/frontend/members/components/table/members_table_spec.js
