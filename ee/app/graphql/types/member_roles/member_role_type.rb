@@ -31,6 +31,12 @@ module Types
       def enabled_permissions
         object.enabled_permissions(current_user).keys
       end
+
+      def users_count
+        object.users_count if object.respond_to?(:users_count)
+
+        object.users.count
+      end
     end
     # rubocop: enable Graphql/AuthorizeTypes
   end

@@ -35,9 +35,7 @@ module Types
       end
 
       def users_count
-        object.users_count if object.respond_to?(:users_count)
-
-        object.users.count
+        object.user_member_roles.count
       end
 
       def edit_path
