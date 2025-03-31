@@ -197,30 +197,6 @@ RSpec.describe GitlabSubscriptions::API::Internal::AddOnPurchases, :aggregate_fa
 
       it_behaves_like 'bulk add-on purchase provision service endpoint'
     end
-
-    # this method of authentication is deprecated and will be removed in
-    # https://gitlab.com/gitlab-org/gitlab/-/issues/473625
-    context 'when authenticating with a personal access token' do
-      subject(:result) do
-        post api(add_on_purchases_path, user, admin_mode: true), params: params
-        response
-      end
-
-      let(:user) { create(:admin) }
-      let(:admin_mode) { true }
-      let(:add_on_purchases_path) do
-        "/internal/gitlab_subscriptions/namespaces/#{namespace_id}/subscription_add_on_purchases"
-      end
-
-      it_behaves_like 'bulk add-on purchase provision service endpoint'
-
-      context 'with a non-admin user' do
-        let(:user) { create(:user) }
-        let(:admin_mode) { false }
-
-        it { is_expected.to have_gitlab_http_status(:forbidden) }
-      end
-    end
   end
 
   describe 'GET /namespaces/:id/subscription_add_on_purchases/:add_on_name' do
@@ -282,81 +258,6 @@ RSpec.describe GitlabSubscriptions::API::Internal::AddOnPurchases, :aggregate_fa
             'purchase_xid' => add_on_purchase.purchase_xid,
             'trial' => add_on_purchase.trial
           )
-        end
-      end
-    end
-
-    # this method of authentication is deprecated and will be removed in
-    # https://gitlab.com/gitlab-org/gitlab/-/issues/473625
-    context 'when authenticating with a personal access token' do
-      let_it_be(:admin) { create(:admin) }
-      let_it_be(:purchase_xid) { 'S-A00000001' }
-
-      let(:add_on_purchases_path) do
-        "/internal/gitlab_subscriptions/namespaces/#{namespace_id}/subscription_add_on_purchases/#{add_on_name}"
-      end
-
-      subject(:get_add_on_purchase) do
-        get api(add_on_purchases_path, user, admin_mode: admin_mode)
-
-        response
-      end
-
-      context 'with a non-admin user' do
-        let_it_be(:admin_mode) { false }
-        let_it_be(:user) { create(:user) }
-
-        it 'returns :forbidden' do
-          get_add_on_purchase
-
-          expect(response).to have_gitlab_http_status(:forbidden)
-        end
-      end
-
-      context 'with admin user' do
-        let_it_be(:admin_mode) { true }
-        let_it_be(:user) { admin }
-
-        context 'when the namespace cannot be found' do
-          let(:namespace_id) { non_existing_record_id }
-
-          it { is_expected.to have_gitlab_http_status(:not_found) }
-        end
-
-        context 'when the add-on cannot be found' do
-          let(:add_on_name) { 'non-existing-add-on' }
-
-          it { is_expected.to have_gitlab_http_status(:not_found) }
-        end
-
-        context 'when the add-on purchase does not exist' do
-          it { is_expected.to have_gitlab_http_status(:not_found) }
-        end
-
-        context 'when the add-on purchase exists' do
-          it 'returns the found add-on purchase' do
-            add_on_purchase = create(
-              :gitlab_subscription_add_on_purchase,
-              namespace: namespace,
-              add_on: add_on,
-              quantity: 5,
-              purchase_xid: purchase_xid
-            )
-
-            get_add_on_purchase
-
-            expect(response).to have_gitlab_http_status(:success)
-            expect(json_response).to eq(
-              'namespace_id' => namespace_id,
-              'namespace_name' => namespace.name,
-              'add_on' => add_on.name.titleize,
-              'quantity' => add_on_purchase.quantity,
-              'started_on' => add_on_purchase.started_at.to_s,
-              'expires_on' => add_on_purchase.expires_on.to_s,
-              'purchase_xid' => add_on_purchase.purchase_xid,
-              'trial' => add_on_purchase.trial
-            )
-          end
         end
       end
     end
