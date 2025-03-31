@@ -124,10 +124,11 @@ Some of the jobs are using images from Docker Hub, where we also use
 images from our [Dependency Proxy](../../user/packages/dependency_proxy/_index.md).
 By default, this variable is set from the value of `${GITLAB_DEPENDENCY_PROXY}`.
 
-`${GITLAB_DEPENDENCY_PROXY}` is a group CI/CD variable defined in
-[`gitlab-org`](https://gitlab.com/gitlab-org) and [`gitlab-com`](https://gitlab.com/gitlab-com) groups as
-`${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/`. This means when we use an image
-defined as:
+- `CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX` is [a GitLab predefined CI/CD variable](../../ci/variables/predefined_variables.md) that gives the top-level group image prefix to pull images through the Dependency Proxy.
+- `GITLAB_DEPENDENCY_PROXY` is a CI/CD variable in the [`gitlab-org`](https://gitlab.com/gitlab-org) and the [`gitlab-com`](https://gitlab.com/gitlab-com) groups. It is defined as `${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/`.
+- `GITLAB_DEPENDENCY_PROXY_ADDRESS` is defined in the `gitlab-org/gitlab` project. It defaults to `"${GITLAB_DEPENDENCY_PROXY}"`, but is overridden in some cases (see the workaround section below).
+
+In practice, when we use an image defined as:
 
 ```yaml
 image: ${GITLAB_DEPENDENCY_PROXY_ADDRESS}alpine:edge
