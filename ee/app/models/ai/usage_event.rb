@@ -27,7 +27,8 @@ module Ai
       {
         event: self.class.events[event],
         timestamp: timestamp.to_f,
-        user_id: user&.id
+        user_id: user&.id,
+        namespace_path: namespace_path
       }
     end
 

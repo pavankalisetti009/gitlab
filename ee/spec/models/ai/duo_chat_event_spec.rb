@@ -82,6 +82,7 @@ RSpec.describe Ai::DuoChatEvent, feature_category: :value_stream_management do
       expect(event.to_clickhouse_csv_row).to eq({
         user_id: user.id,
         event: described_class.events[:request_duo_chat_response],
+        namespace_path: nil,
         timestamp: 1.day.ago.to_f
       })
     end
