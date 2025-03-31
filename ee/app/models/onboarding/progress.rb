@@ -10,6 +10,7 @@ module Onboarding
 
     ACTIONS = [
       :created,
+      :duo_seat_assigned,
       :merge_request_created,
       :pipeline_created,
       :user_added,

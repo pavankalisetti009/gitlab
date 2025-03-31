@@ -32,7 +32,13 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignments::Saas::CreateService, f
 
         expect(::Onboarding::CreateIterableTriggerWorker).to receive(:perform_async).with(params)
 
-        subject
+        response
+      end
+
+      it 'invokes an async onboarding progress update' do
+        expect(Onboarding::ProgressService).to receive(:async).with(namespace.id, 'duo_seat_assigned')
+
+        response
       end
     end
 
@@ -40,7 +46,13 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignments::Saas::CreateService, f
       it 'does not create an iterable trigger' do
         expect(::Onboarding::CreateIterableTriggerWorker).not_to receive(:perform_async)
 
-        subject
+        response
+      end
+
+      it 'does not invoke an async onboarding progress update' do
+        expect(Onboarding::ProgressService).not_to receive(:async)
+
+        response
       end
     end
 

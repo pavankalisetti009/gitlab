@@ -26,6 +26,12 @@ export const ACTION_LABELS = {
     section: 'workspace',
     position: 0,
   },
+  duoSeatAssigned: {
+    title: s__('LearnGitLab|Assign a GitLab Duo seat to your colleagues'),
+    trackLabel: 'duo_seat_assigned',
+    section: 'workspace',
+    position: 1,
+  },
   pipelineCreated: {
     title: s__("LearnGitLab|Set up your first project's CI/CD"),
     actionLabel: s__('LearnGitLab|Set up CI/CD'),

@@ -42,6 +42,10 @@ exports[`Learn GitLab Section Card renders correctly 1`] = `
       value="[object Object]"
     />
     <learn-gitlab-section-link-stub
+      action="duoSeatAssigned"
+      value="[object Object]"
+    />
+    <learn-gitlab-section-link-stub
       action="mergeRequestCreated"
       value="[object Object]"
     />

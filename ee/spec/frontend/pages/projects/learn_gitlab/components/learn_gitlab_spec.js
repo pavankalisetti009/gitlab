@@ -22,6 +22,7 @@ jest.mock('~/lib/utils/url_utility', () => ({
 describe('Learn GitLab', () => {
   let wrapper;
 
+  const completionPercentage = 23;
   const findProgressBarBlock = () => wrapper.findByTestId('progress-bar-block');
   const findEndTutorialButton = () => wrapper.findByTestId('end-tutorial-button');
 
@@ -48,7 +49,7 @@ describe('Learn GitLab', () => {
     });
 
     it('renders the progress bar label', () => {
-      expect(findProgressBarBlock().text()).toContain('9 tasks to go');
+      expect(findProgressBarBlock().text()).toContain('10 tasks to go');
     });
 
     it('renders the end tutorial button', () => {
@@ -56,7 +57,9 @@ describe('Learn GitLab', () => {
     });
 
     it('renders the progress bar with correct percentage', () => {
-      expect(wrapper.findComponent(CircularProgressBar).props('percentage')).toBe(25);
+      expect(wrapper.findComponent(CircularProgressBar).props('percentage')).toBe(
+        completionPercentage,
+      );
     });
   });
 
@@ -110,7 +113,7 @@ describe('Learn GitLab', () => {
         {
           label: 'learn_gitlab',
           property: 'progress_percentage_on_end',
-          value: 25,
+          value: completionPercentage,
         },
         undefined,
       );
@@ -182,7 +185,7 @@ describe('Learn GitLab', () => {
       eventHub.$emit('showSuccessfulInvitationsAlert');
 
       expect(spy).toHaveBeenCalledWith('updatePillValue', {
-        value: '25%',
+        value: `${completionPercentage}%`,
         itemId: 'learn_gitlab',
       });
     });

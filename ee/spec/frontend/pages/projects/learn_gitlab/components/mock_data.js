@@ -19,6 +19,11 @@ export const testActions = {
     svg: 'http://example.com/images/illustration.svg',
     enabled: true,
   },
+  duoSeatAssigned: {
+    url: 'http://example.com/',
+    completed: false,
+    enabled: true,
+  },
   pipelineCreated: {
     url: 'http://example.com/',
     completed: false,

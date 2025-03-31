@@ -25,12 +25,12 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
     >
       <div
         class="circular-progress-bar"
-        style="--gray100: #dcdcde; --logo-url: url(file-mock); --percentage: 25%; --progress-bar-color: #e24329;"
+        style="--gray100: #dcdcde; --logo-url: url(file-mock); --percentage: 23%; --progress-bar-color: #e24329;"
       />
       <div
         class="gl-font-bold gl-mt-5 gl-text-center gl-text-lg"
       >
-        9 tasks to go
+        10 tasks to go
       </div>
       <div
         class="gl-flex gl-justify-center gl-mt-3"
@@ -198,6 +198,26 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
                 </svg>
                 Invite your colleagues
               </span>
+            </div>
+          </div>
+          <div
+            class="gl-mb-2"
+          >
+            <div
+              class="gl-flex gl-items-center"
+            >
+              <div>
+                <a
+                  class="gl-link"
+                  data-testid="uncompleted-learn-gitlab-link"
+                  data-track-action="click_link"
+                  data-track-label="duo_seat_assigned"
+                  href="http://example.com/"
+                  target="_self"
+                >
+                  Assign a GitLab Duo seat to your colleagues
+                </a>
+              </div>
             </div>
           </div>
           <div
