@@ -44,7 +44,6 @@ export default {
   },
   data() {
     return {
-      approvals: '0',
       deployers: [],
       approvers: [],
       disabled: false,

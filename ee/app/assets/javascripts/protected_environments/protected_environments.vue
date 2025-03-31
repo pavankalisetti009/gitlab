@@ -109,10 +109,6 @@ export default {
     clearEnvironment() {
       this.environmentToUnprotect = null;
     },
-    showAddForm() {
-      this.isAddFormVisible = true;
-      this.$refs.crud.showForm();
-    },
     hideAddForm() {
       this.isAddFormVisible = false;
       this.$refs.crud.hideForm();
