@@ -16,12 +16,6 @@ RSpec.describe Clusters::Agent, feature_category: :deployment_management do
       .inverse_of(:agent)
   end
 
-  describe '.for_projects' do
-    it 'return agents for selected projects' do
-      expect(described_class.for_projects([agent_1.project, agent_3.project])).to contain_exactly(agent_1, agent_3)
-    end
-  end
-
   describe 'unversioned_latest_workspaces_agent_config scopes' do
     let_it_be(:agent_with_remote_development_enabled) do
       create(:ee_cluster_agent, :with_existing_workspaces_agent_config).tap do |agent|

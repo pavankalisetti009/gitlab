@@ -40,7 +40,6 @@ module EE
           inverse_of: :agent,
           foreign_key: 'cluster_agent_id'
 
-        scope :for_projects, ->(projects) { where(project: projects) }
         scope :for_organizations, ->(organization_ids) {
           where(project_id: ::Project.in_organization(organization_ids).select('id'))
         }

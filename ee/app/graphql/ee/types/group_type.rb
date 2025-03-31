@@ -158,13 +158,6 @@ module EE
           description: 'Indicates whether to regularly prune stale group runners. Defaults to false.',
           method: :allow_stale_runner_pruning?
 
-        field :cluster_agents,
-          ::Types::Clusters::AgentType.connection_type,
-          extras: [:lookahead],
-          null: true,
-          description: 'Cluster agents associated with projects in the group and its subgroups.',
-          resolver: ::Resolvers::Clusters::AgentsResolver
-
         field :enforce_free_user_cap,
           ::GraphQL::Types::Boolean,
           null: true,
