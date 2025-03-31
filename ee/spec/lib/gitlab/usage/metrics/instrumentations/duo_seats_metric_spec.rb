@@ -100,35 +100,83 @@ RSpec.describe Gitlab::Usage::Metrics::Instrumentations::DuoSeatsMetric, feature
       it_behaves_like 'a correct instrumented metric value',
         { time_frame: 'none', options: { subscription_type: 'enterprise', seats_type: 'assigned' } }
     end
+
+    context 'when there are active Duo purchases' do
+      let_it_be(:user) { create(:user) }
+
+      let_it_be(:duo_enterprise_purchase) do
+        create(:gitlab_subscription_add_on_purchase, :duo_enterprise, quantity: 3)
+      end
+
+      before_all do
+        create(
+          :gitlab_subscription_user_add_on_assignment,
+          user: user,
+          add_on_purchase: duo_enterprise_purchase
+        )
+      end
+
+      describe 'purchased seats' do
+        let(:expected_value) { 3 }
+
+        it_behaves_like 'a correct instrumented metric value',
+          { time_frame: 'none', options: { subscription_type: 'enterprise', seats_type: 'purchased' } }
+      end
+
+      describe 'assigned seats' do
+        let(:expected_value) { 1 }
+
+        it_behaves_like 'a correct instrumented metric value',
+          { time_frame: 'none', options: { subscription_type: 'enterprise', seats_type: 'assigned' } }
+      end
+    end
   end
 
-  context 'when there are active Duo purchases' do
-    let_it_be(:user) { create(:user) }
+  context "when metric type is amazon_q" do
+    context 'when there are no active Duo purchases' do
+      let(:expected_value) { nil }
 
-    let_it_be(:duo_enterprise_purchase) do
-      create(:gitlab_subscription_add_on_purchase, :duo_enterprise, quantity: 3)
-    end
-
-    before_all do
-      create(
-        :gitlab_subscription_user_add_on_assignment,
-        user: user,
-        add_on_purchase: duo_enterprise_purchase
-      )
-    end
-
-    describe 'purchased seats' do
-      let(:expected_value) { 3 }
+      before do
+        allow(GitlabSubscriptions::AddOnPurchase)
+          .to receive(:for_duo_amazon_q)
+          .and_return(GitlabSubscriptions::AddOnPurchase.none)
+      end
 
       it_behaves_like 'a correct instrumented metric value',
-        { time_frame: 'none', options: { subscription_type: 'enterprise', seats_type: 'purchased' } }
-    end
-
-    describe 'assigned seats' do
-      let(:expected_value) { 1 }
+        { time_frame: 'none', options: { subscription_type: 'amazon_q', seats_type: 'purchased' } }
 
       it_behaves_like 'a correct instrumented metric value',
-        { time_frame: 'none', options: { subscription_type: 'enterprise', seats_type: 'assigned' } }
+        { time_frame: 'none', options: { subscription_type: 'amazon_q', seats_type: 'assigned' } }
+    end
+
+    context 'when there are active Duo purchases' do
+      let_it_be(:user) { create(:user) }
+
+      let_it_be(:duo_amazon_q_purchase) do
+        create(:gitlab_subscription_add_on_purchase, :duo_amazon_q, quantity: 7)
+      end
+
+      before_all do
+        create(
+          :gitlab_subscription_user_add_on_assignment,
+          user: user,
+          add_on_purchase: duo_amazon_q_purchase
+        )
+      end
+
+      describe 'purchased seats' do
+        let(:expected_value) { 7 }
+
+        it_behaves_like 'a correct instrumented metric value',
+          { time_frame: 'none', options: { subscription_type: 'amazon_q', seats_type: 'purchased' } }
+      end
+
+      describe 'assigned seats' do
+        let(:expected_value) { 1 }
+
+        it_behaves_like 'a correct instrumented metric value',
+          { time_frame: 'none', options: { subscription_type: 'amazon_q', seats_type: 'assigned' } }
+      end
     end
   end
 end
