@@ -22,6 +22,7 @@ describe('ComplianceReportsApp component', () => {
   const defaultInjects = {
     mergeCommitsCsvExportPath: '/csv',
     projectFrameworksCsvExportPath: '/project_frameworks_report.csv',
+    complianceStatusReportExportPath: '/project_requirement_statuses.csv',
     violationsCsvExportPath: '/compliance_violation_reports.csv',
     adherencesCsvExportPath: '/compliance_standards_adherences.csv',
     frameworksCsvExportPath: '/compliance_frameworks_report.csv',
@@ -270,6 +271,7 @@ describe('ComplianceReportsApp component', () => {
       {},
       {
         projectFrameworksCsvExportPath: null,
+        complianceStatusReportExportPath: null,
         mergeCommitsCsvExportPath: null,
         violationsCsvExportPath: null,
         adherencesCsvExportPath: null,

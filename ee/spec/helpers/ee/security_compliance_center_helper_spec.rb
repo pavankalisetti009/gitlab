@@ -85,17 +85,34 @@ RSpec.describe EE::SecurityComplianceCenterHelper, feature_category: :security_p
       end
 
       it 'includes export paths' do
+        compliance_status_report_export_path =
+          group_security_compliance_dashboard_exports_compliance_status_report_path(group, format: :csv)
+
         is_expected.to include(
           violations_csv_export_path: group_security_compliance_violation_reports_path(group, format: :csv),
           project_frameworks_csv_export_path: group_security_compliance_project_framework_reports_path(group,
             format: :csv),
           adherences_csv_export_path: group_security_compliance_standards_adherence_reports_path(group, format: :csv),
           frameworks_csv_export_path: group_security_compliance_framework_reports_path(group, format: :csv),
-          merge_commits_csv_export_path: group_security_merge_commit_reports_path(group)
+          merge_commits_csv_export_path: group_security_merge_commit_reports_path(group),
+          compliance_status_report_export_path: compliance_status_report_export_path
         )
       end
 
       it_behaves_like 'includes compliance center app data'
+
+      context 'with enable_standards_adherence_dashboard_v2 off' do
+        before do
+          stub_feature_flags(enable_standards_adherence_dashboard_v2: false)
+        end
+
+        it 'returns the expected value for attribues based on ff' do
+          is_expected.to include(
+            compliance_status_report_export_path: nil,
+            adherence_v2_enabled: "false"
+          )
+        end
+      end
     end
   end
 end
