@@ -8,6 +8,10 @@ module EE
       group = container.is_a?(Group) ? container : container.group
       adherence_report = can?(current_user, :read_compliance_adherence_report, container)
       violations_report = can?(current_user, :read_compliance_violations_report, container)
+      if ::Feature.enabled?(:enable_standards_adherence_dashboard_v2, group)
+        compliance_status_report_export_path =
+          group_security_compliance_dashboard_exports_compliance_status_report_path(group, format: :csv)
+      end
 
       if container.is_a?(Group)
         {
@@ -21,6 +25,7 @@ module EE
             group, format: :csv),
           frameworks_csv_export_path: group_security_compliance_framework_reports_path(group, format: :csv),
           merge_commits_csv_export_path: group_security_merge_commit_reports_path(group),
+          compliance_status_report_export_path: compliance_status_report_export_path,
           pipeline_configuration_full_path_enabled: can?(current_user, :admin_compliance_pipeline_configuration,
             group).to_s,
           pipeline_configuration_enabled: group.licensed_feature_available?(:compliance_pipeline_configuration).to_s,

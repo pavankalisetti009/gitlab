@@ -31,6 +31,7 @@ export default {
   },
   mixins: [Tracking.mixin(), glAbilitiesMixin()],
   inject: [
+    'complianceStatusReportExportPath',
     'mergeCommitsCsvExportPath',
     'projectFrameworksCsvExportPath',
     'violationsCsvExportPath',
@@ -64,6 +65,7 @@ export default {
     },
     hasAtLeastOneExportAvailable() {
       return (
+        this.complianceStatusReportExportPath ||
         this.projectFrameworksCsvExportPath ||
         this.mergeCommitsCsvExportPath ||
         this.violationsCsvExportPath ||
@@ -142,6 +144,7 @@ export default {
       <template #actions>
         <reports-export
           v-if="hasAtLeastOneExportAvailable"
+          :compliance-status-report-export-path="complianceStatusReportExportPath"
           :project-frameworks-csv-export-path="projectFrameworksCsvExportPath"
           :merge-commits-csv-export-path="mergeCommitsCsvExportPath"
           :violations-csv-export-path="violationsCsvExportPath"

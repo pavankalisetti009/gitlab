@@ -37,6 +37,11 @@ export default {
       required: false,
       default: null,
     },
+    complianceStatusReportExportPath: {
+      type: String,
+      required: false,
+      default: null,
+    },
     violationsCsvExportPath: {
       type: String,
       required: false,
@@ -62,6 +67,19 @@ export default {
   computed: {
     exportItems() {
       const items = [];
+
+      if (this.complianceStatusReportExportPath) {
+        items.push({
+          value: 'compliance_status_report_export',
+          text: this.$options.i18n.complianceStatusReportExportTitle,
+          href: this.complianceStatusReportExportPath,
+          extraAttrs: {
+            'data-track-action': 'click_export',
+            'data-track-label': 'export_compliance_status_report',
+          },
+          tooltipText: `${this.$options.i18n.tooltipTexts.complianceStatusReport} ${this.$options.i18n.tooltipTexts.ending}`,
+        });
+      }
 
       if (this.adherencesCsvExportPath) {
         items.push({
@@ -165,6 +183,9 @@ export default {
     adherencesExportTitle: s__('Compliance Center Export|Export standards adherence report'),
     frameworksExportTitle: s__('Compliance Center Export|Export frameworks report'),
     violationsExportTitle: s__('Compliance Center Export|Export violations report'),
+    complianceStatusReportExportTitle: s__(
+      'Compliance Center Export|Export compliance status report',
+    ),
     projectFrameworksExportTitle: s__('Compliance Center Export|Export list of project frameworks'),
     custodyCommitsExportTitle: s__('Compliance Center Export|Export chain of custody report'),
     custodyCommitExportTitle: s__(
@@ -180,6 +201,9 @@ export default {
       ),
       frameworks: s__(
         'Compliance Center Export|Export contents of the compliance frameworks report as a CSV file.',
+      ),
+      complianceStatusReport: s__(
+        'Compliance Center Export|Export contents of the compliance status report as a CSV file.',
       ),
       projectFrameworks: s__(
         'Compliance Center Export|Export a list of compliance frameworks for a project as a CSV file.',
@@ -231,7 +255,11 @@ export default {
           />
         </gl-form-group>
         <div class="gl-float-right gl-my-3">
-          <gl-button size="small" @click="exportCustodyCommitDisclosure = false">
+          <gl-button
+            size="small"
+            data-testid="merge-commit-cancel-button"
+            @click="exportCustodyCommitDisclosure = false"
+          >
             {{ __('Cancel') }}
           </gl-button>
           <gl-button
