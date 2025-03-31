@@ -41,7 +41,7 @@ module Search
       end
 
       def fetch_available_nodes
-        ::Search::Zoekt::Node.with_positive_unclaimed_storage_bytes
+        ::Search::Zoekt::Node.with_positive_unclaimed_storage_bytes.online
       end
     end
   end
