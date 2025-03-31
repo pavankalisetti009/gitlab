@@ -64,15 +64,14 @@ export default {
         },
       };
     },
-    modalMessage() {
-      return sprintf(this.$options.i18n.modal.message[this.action], {
-        tokenName: this.selectedToken?.name,
-      });
-    },
     modalTitle() {
-      return sprintf(this.$options.i18n.modal.title[this.action], {
-        tokenName: this.selectedToken?.name,
-      });
+      return sprintf(
+        this.$options.i18n.modal.title[this.action],
+        {
+          tokenName: this.selectedToken?.name,
+        },
+        false,
+      );
     },
   },
   methods: {
@@ -158,16 +157,16 @@ export default {
       },
       message: {
         revoke: s__(
-          'AccessTokens|Are you sure you want to revoke the token "%{tokenName}"? This action cannot be undone. Any tools that rely on this access token will stop working.',
+          'AccessTokens|Are you sure you want to revoke the token %{tokenName}? This action cannot be undone. Any tools that rely on this access token will stop working.',
         ),
 
         rotate: s__(
-          'AccessTokens|Are you sure you want to rotate the token "%{tokenName}"? This action cannot be undone. Any tools that rely on this access token will stop working.',
+          'AccessTokens|Are you sure you want to rotate the token %{tokenName}? This action cannot be undone. Any tools that rely on this access token will stop working.',
         ),
       },
       title: {
-        revoke: s__('AccessTokens|Revoke the token "%{tokenName}"?'),
-        rotate: s__('AccessTokens|Rotate the token "%{tokenName}"?'),
+        revoke: s__("AccessTokens|Revoke the token '%{tokenName}'?"),
+        rotate: s__("AccessTokens|Rotate the token '%{tokenName}'?"),
       },
     },
   },
@@ -297,7 +296,11 @@ export default {
       modal-id="token-action-modal"
       @primary="actionToken"
     >
-      {{ modalMessage }}
+      <gl-sprintf :message="$options.i18n.modal.message[action]">
+        <template #tokenName
+          ><code>{{ selectedToken && selectedToken.name }}</code></template
+        >
+      </gl-sprintf>
     </gl-modal>
   </div>
 </template>

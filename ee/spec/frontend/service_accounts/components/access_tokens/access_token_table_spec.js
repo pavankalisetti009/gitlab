@@ -1,4 +1,4 @@
-import { GlBadge, GlDisclosureDropdown, GlModal, GlIcon, GlTable } from '@gitlab/ui';
+import { GlBadge, GlDisclosureDropdown, GlIcon, GlModal, GlTable } from '@gitlab/ui';
 import { createTestingPinia } from '@pinia/testing';
 import Vue from 'vue';
 import { PiniaVuePlugin } from 'pinia';
@@ -18,7 +18,7 @@ describe('AccessTokenTable', () => {
   const defaultToken = {
     active: true,
     id: 1,
-    name: 'My name',
+    name: 'My name <super token>',
   };
 
   const createComponent = (props = {}) => {
@@ -93,7 +93,7 @@ describe('AccessTokenTable', () => {
         createComponent();
 
         const field = wrapper.findByTestId('field-name');
-        expect(field.text()).toBe('My name');
+        expect(field.text()).toBe('My name <super token>');
         expect(field.classes()).toContain('gl-font-bold');
       });
 
@@ -306,7 +306,7 @@ describe('AccessTokenTable', () => {
 
       expect(modal.props()).toMatchObject({
         visible: true,
-        title: 'Revoke the token "My name"?',
+        title: "Revoke the token 'My name <super token>'?",
         actionPrimary: {
           text: 'Revoke',
           attributes: { variant: 'danger' },
@@ -316,7 +316,7 @@ describe('AccessTokenTable', () => {
         },
       });
       expect(modal.text()).toBe(
-        'Are you sure you want to revoke the token "My name"? This action cannot be undone. Any tools that rely on this access token will stop working.',
+        'Are you sure you want to revoke the token My name <super token>? This action cannot be undone. Any tools that rely on this access token will stop working.',
       );
     });
 
@@ -338,7 +338,7 @@ describe('AccessTokenTable', () => {
 
       expect(modal.props()).toMatchObject({
         visible: true,
-        title: 'Rotate the token "My name"?',
+        title: "Rotate the token 'My name <super token>'?",
         actionPrimary: {
           text: 'Rotate',
           attributes: { variant: 'danger' },
@@ -348,7 +348,7 @@ describe('AccessTokenTable', () => {
         },
       });
       expect(modal.text()).toBe(
-        'Are you sure you want to rotate the token "My name"? This action cannot be undone. Any tools that rely on this access token will stop working.',
+        'Are you sure you want to rotate the token My name <super token>? This action cannot be undone. Any tools that rely on this access token will stop working.',
       );
     });
 
