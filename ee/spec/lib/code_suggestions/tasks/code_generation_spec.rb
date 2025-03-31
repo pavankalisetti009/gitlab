@@ -296,46 +296,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
               "content_below_cursor" => "some content_below_cursor",
               "file_name" => "test.py",
               "language_identifier" => "Python",
-              "prompt_enhancer" => {
-                "examples_array" => [
-                  {
-                    "example" => "class Project:\n  " \
-                      "def __init__(self, name, public):\n    " \
-                      "self.name = name\n    " \
-                      "self.visibility = 'PUBLIC' if public\n\n    " \
-                      "# is this project public?\n" \
-                      "{{cursor}}\n\n    " \
-                      "# print name of this project",
-                    "response" => "<new_code>def is_public(self):\n  return self.visibility == 'PUBLIC'",
-                    "trigger_type" => "comment"
-                  },
-                  {
-                    "example" => "def get_user(session):\n  # get the current user's name from the session data\n" \
-                      "{{cursor}}\n\n# is the current user an admin",
-                    "response" => "<new_code>username = None\nif 'username' in session:\n  username = " \
-                      "session['username']\nreturn username",
-                    "trigger_type" => "comment"
-                  },
-                  {
-                    "example" => "class Project:\n  def __init__(self, name, public):\n{{cursor}}",
-                    "response" => "<new_code>self.name = name\nself.visibility = 'PUBLIC' if public",
-                    "trigger_type" => "empty_function"
-                  },
-                  {
-                    "example" => "# get the current user's name from the session data\ndef get_user(session):\n" \
-                      "{{cursor}}\n\n# is the current user an admin",
-                    "response" => "<new_code>username = None\nif 'username' in session:\n  username = " \
-                      "session['username']\nreturn username",
-                    "trigger_type" => "empty_function"
-                  }
-                ],
-                "libraries" => [],
-                "related_files" => [],
-                "related_snippets" => [],
-                "trimmed_content_above_cursor" => "some content_above_cursor",
-                "trimmed_content_below_cursor" => "some content_below_cursor",
-                "user_instruction" => "Generate the best possible code based on instructions."
-              },
+              "prompt_enhancer" => {},
               "prompt_id" => "code_suggestions/generations",
               "prompt_version" => "2.0.0",
               "stream" => false
@@ -374,26 +335,58 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
                 "content_below_cursor" => "some content_below_cursor",
                 "file_name" => "test.py",
                 "language_identifier" => "Python",
-                "model_name" => "amazon_q",
-                "model_provider" => "amazon_q",
-                "role_arn" => "role::arn",
-                "stream" => false
+                "stream" => false,
+                "prompt_id" => 'code_suggestions/generations',
+                "prompt_version" => "2.0.0",
+                'prompt_enhancer' => {
+                  "examples_array" => [
+                    {
+                      "example" => "class Project:\n  " \
+                        "def __init__(self, name, public):\n    " \
+                        "self.name = name\n    " \
+                        "self.visibility = 'PUBLIC' if public\n\n    " \
+                        "# is this project public?\n" \
+                        "{{cursor}}\n\n    " \
+                        "# print name of this project",
+                      "response" => "<new_code>def is_public(self):\n  return self.visibility == 'PUBLIC'",
+                      "trigger_type" => "comment"
+                    },
+                    {
+                      "example" => "def get_user(session):\n  # get the current user's name from the session data\n" \
+                        "{{cursor}}\n\n# is the current user an admin",
+                      "response" => "<new_code>username = None\nif 'username' in session:\n  username = " \
+                        "session['username']\nreturn username",
+                      "trigger_type" => "comment"
+                    },
+                    {
+                      "example" => "class Project:\n  def __init__(self, name, public):\n{{cursor}}",
+                      "response" => "<new_code>self.name = name\nself.visibility = 'PUBLIC' if public",
+                      "trigger_type" => "empty_function"
+                    },
+                    {
+                      "example" => "# get the current user's name from the session data\ndef get_user(session):\n" \
+                        "{{cursor}}\n\n# is the current user an admin",
+                      "response" => "<new_code>username = None\nif 'username' in session:\n  username = " \
+                        "session['username']\nreturn username",
+                      "trigger_type" => "empty_function"
+                    }
+                  ],
+                  'trimmed_content_above_cursor' => 'some content_above_cursor',
+                  'trimmed_content_below_cursor' => 'some content_below_cursor',
+                  "libraries" => [],
+                  "related_files" => [],
+                  "related_snippets" => [],
+                  'user_instruction' => 'Generate the best possible code based on instructions.'
+                }
               }
             }
-          ]
+          ],
+          "model_metadata" => {
+            "name" => "amazon_q",
+            "provider" => "amazon_q",
+            "role_arn" => "role::arn"
+          }
         }
-      end
-    end
-
-    context 'when amazon_q_chat_and_code_suggestions is disabled' do
-      before do
-        stub_feature_flags(amazon_q_chat_and_code_suggestions: false)
-      end
-
-      it_behaves_like 'code suggestion task' do
-        let(:endpoint_path) { 'v3/code/completions' }
-        let(:expected_feature_name) { :code_suggestions }
-        let(:expected_body) { unsafe_params }
       end
     end
   end

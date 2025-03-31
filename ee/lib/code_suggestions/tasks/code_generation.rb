@@ -21,15 +21,7 @@ module CodeSuggestions
       end
 
       def prompt
-        if Feature.enabled?(:amazon_q_chat_and_code_suggestions, current_user) && ::Ai::AmazonQ.connected?
-          return amazon_q_prompt
-        end
-
         CodeSuggestions::Prompts::CodeGeneration::AiGatewayMessages.new(params, current_user, feature_setting)
-      end
-
-      def amazon_q_prompt
-        CodeSuggestions::Prompts::CodeGeneration::AmazonQ.new(params, current_user)
       end
 
       strong_memoize_attr :prompt

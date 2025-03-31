@@ -134,7 +134,7 @@ module CodeSuggestions
         end
 
         def model_metadata
-          params = ::Gitlab::Llm::AiGateway::ModelMetadata.new(feature_setting: feature_setting).self_hosted_params
+          params = ::Gitlab::Llm::AiGateway::ModelMetadata.new(feature_setting: feature_setting).to_params
 
           return {} unless params
 
