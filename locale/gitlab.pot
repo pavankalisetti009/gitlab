@@ -4992,6 +4992,12 @@ msgstr ""
 msgid "AdminUsers|Could not load user group counts. Please refresh the page to try again."
 msgstr ""
 
+msgid "AdminUsers|Create"
+msgstr ""
+
+msgid "AdminUsers|Create service account"
+msgstr ""
+
 msgid "AdminUsers|Deactivate"
 msgstr ""
 
@@ -5020,6 +5026,12 @@ msgid "AdminUsers|Delete user"
 msgstr ""
 
 msgid "AdminUsers|Delete user and contributions"
+msgstr ""
+
+msgid "AdminUsers|Edit"
+msgstr ""
+
+msgid "AdminUsers|Edit service account"
 msgstr ""
 
 msgid "AdminUsers|Export permissions as CSV (max 100,000 users)"
@@ -5212,6 +5224,9 @@ msgid "AdminUsers|Unblock"
 msgstr ""
 
 msgid "AdminUsers|Unblock user %{username}?"
+msgstr ""
+
+msgid "AdminUsers|Unique username that can be called for usage across GitLab"
 msgstr ""
 
 msgid "AdminUsers|Unlock user %{username}?"
@@ -55223,6 +55238,12 @@ msgstr ""
 msgid "ServiceAccounts|Add Service Account"
 msgstr ""
 
+msgid "ServiceAccounts|An error occurred creating the service account."
+msgstr ""
+
+msgid "ServiceAccounts|An error occurred updating the service account."
+msgstr ""
+
 msgid "ServiceAccounts|An error occurred while deleting the service account."
 msgstr ""
 
@@ -55251,6 +55272,12 @@ msgid "ServiceAccounts|Service accounts are non-human accounts that allow intera
 msgstr ""
 
 msgid "ServiceAccounts|The service account is being deleted."
+msgstr ""
+
+msgid "ServiceAccounts|The service account was created."
+msgstr ""
+
+msgid "ServiceAccounts|The service account was updated."
 msgstr ""
 
 msgid "ServiceAccount|No more seats are available to create Service Account User"

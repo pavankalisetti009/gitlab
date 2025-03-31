@@ -329,9 +329,11 @@ RSpec.describe EE::AuthHelper do
     it 'returns data for the service accounts UI' do
       expect(helper.admin_service_accounts_data).to match(a_hash_including({
         base_path: '/admin/application_settings/service_accounts',
+        is_group: 'false',
         service_accounts: {
           path: 'http://localhost/api/v4/service_accounts',
-          delete_path: '/api/v4/users',
+          edit_path: 'http://localhost/api/v4/users',
+          delete_path: 'http://localhost/api/v4/users',
           docs_path: '/help/user/profile/service_accounts.md'
         },
         access_token: {
@@ -359,9 +361,11 @@ RSpec.describe EE::AuthHelper do
     it 'returns data for the service accounts UI' do
       expect(helper.groups_service_accounts_data(group)).to match(a_hash_including({
         base_path: '/groups/my-group-path/-/settings/service_accounts',
+        is_group: 'true',
         service_accounts: {
           path: 'http://localhost/api/v4/groups/4/service_accounts',
-          delete_path: '/api/v4/groups/4/service_accounts',
+          edit_path: 'http://localhost/api/v4/groups/4/service_accounts',
+          delete_path: 'http://localhost/api/v4/groups/4/service_accounts',
           docs_path: '/help/user/profile/service_accounts.md'
         },
         access_token: {

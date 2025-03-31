@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import { pinia } from '~/pinia/instance';
+import { parseBoolean } from '~/lib/utils/common_utils';
 
 import createRouter from './router';
 import app from './service_accounts_app.vue';
@@ -11,12 +12,14 @@ export default (el) => {
 
   const {
     basePath,
+    isGroup,
     serviceAccountsPath,
     serviceAccountsDeletePath,
     serviceAccountsDocsPath,
     accessTokenMaxDate,
     accessTokenMinDate,
     accessTokenCreate,
+    serviceAccountsEditPath,
     accessTokenRevoke,
     accessTokenRotate,
     accessTokenShow,
@@ -30,11 +33,13 @@ export default (el) => {
     router,
     pinia,
     provide: {
+      isGroup: parseBoolean(isGroup),
       serviceAccountsPath,
       serviceAccountsDocsPath,
       accessTokenMaxDate,
       accessTokenMinDate,
       accessTokenCreate,
+      serviceAccountsEditPath,
       serviceAccountsDeletePath,
       accessTokenRevoke,
       accessTokenRotate,

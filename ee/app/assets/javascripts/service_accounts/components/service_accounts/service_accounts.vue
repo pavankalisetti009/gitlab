@@ -18,6 +18,7 @@ import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { useServiceAccounts } from '../../stores/service_accounts';
 
 import DeleteServiceAccountModal from './delete_service_account_modal.vue';
+import CreateEditServiceAccountModal from './create_edit_service_account_modal.vue';
 
 export default {
   components: {
@@ -32,8 +33,15 @@ export default {
     GlDisclosureDropdown,
     PageHeading,
     DeleteServiceAccountModal,
+    CreateEditServiceAccountModal,
   },
-  inject: ['serviceAccountsPath', 'serviceAccountsDeletePath', 'serviceAccountsDocsPath'],
+  inject: [
+    'isGroup',
+    'serviceAccountsPath',
+    'serviceAccountsEditPath',
+    'serviceAccountsDeletePath',
+    'serviceAccountsDocsPath',
+  ],
   computed: {
     ...mapState(useServiceAccounts, [
       'serviceAccounts',
@@ -41,23 +49,41 @@ export default {
       'serviceAccountCount',
       'busy',
       'deleteType',
+      'createEditType',
       'page',
       'perPage',
     ]),
   },
   created() {
-    this.fetchServiceAccounts(this.serviceAccountsPath, { page: this.page });
+    this.fetchServiceAccounts(this.serviceAccountsPath, {
+      page: this.page,
+    });
   },
   methods: {
     ...mapActions(useServiceAccounts, [
       'fetchServiceAccounts',
-      'addServiceAccount',
       'deleteUser',
+      'createServiceAccount',
+      'editServiceAccount',
       'setDeleteType',
       'setServiceAccount',
+      'setCreateEditType',
+      'clearAlert',
     ]),
+    addServiceAccount() {
+      this.clearAlert();
+      this.setServiceAccount(null);
+      this.setCreateEditType('create');
+    },
     deleteAccount() {
       this.deleteUser(this.serviceAccountsDeletePath);
+    },
+    async createEditAccount(values) {
+      if (this.createEditType === 'create') {
+        await this.createServiceAccount(this.serviceAccountsPath, values);
+      } else {
+        await this.editServiceAccount(this.serviceAccountsEditPath, values, this.isGroup);
+      }
     },
     routeToAccessTokensManagement(serviceAccountId) {
       this.$router.push({
@@ -74,15 +100,22 @@ export default {
         {
           text: s__('ServiceAccounts|Manage Access Tokens'),
           action: () => {
+            this.clearAlert();
             this.routeToAccessTokensManagement(serviceAccount.id);
           },
         },
         {
           text: s__('ServiceAccounts|Edit'),
+          action: () => {
+            this.clearAlert();
+            this.setServiceAccount(serviceAccount);
+            this.setCreateEditType('edit');
+          },
         },
         {
           text: s__('ServiceAccounts|Delete Account'),
           action: () => {
+            this.clearAlert();
             this.setServiceAccount(serviceAccount);
             this.setDeleteType('soft');
           },
@@ -91,6 +124,7 @@ export default {
         {
           text: s__('ServiceAccounts|Delete Account and Contributions'),
           action: () => {
+            this.clearAlert();
             this.setServiceAccount(serviceAccount);
             this.setDeleteType('hard');
           },
@@ -116,10 +150,6 @@ export default {
   ],
   i18n: {
     title: s__('ServiceAccounts|Service Accounts'),
-    titleDescription: s__(
-      'ServiceAccounts|Service accounts are non-human accounts that allow interactions between software applications, systems, or services. %{learnMore}',
-    ),
-    addServiceAccount: s__('ServiceAccounts|Add Service Account'),
   },
 };
 </script>
@@ -128,7 +158,13 @@ export default {
   <div>
     <page-heading :heading="$options.i18n.title">
       <template #description>
-        <gl-sprintf :message="$options.i18n.titleDescription">
+        <gl-sprintf
+          :message="
+            s__(
+              'ServiceAccounts|Service accounts are non-human accounts that allow interactions between software applications, systems, or services. %{learnMore}',
+            )
+          "
+        >
           <template #learnMore>
             <gl-link :href="serviceAccountsDocsPath">{{ __('Learn more') }}</gl-link>
           </template>
@@ -137,7 +173,7 @@ export default {
 
       <template #actions>
         <gl-button variant="confirm" @click="addServiceAccount">
-          {{ $options.i18n.addServiceAccount }}
+          {{ s__('ServiceAccounts|Add Service Account') }}
         </gl-button>
       </template>
     </page-heading>
@@ -157,7 +193,7 @@ export default {
         >
           <template #cell(name)="{ item }">
             <div class="gl-font-bold" data-testid="service-account-name">{{ item.name }}</div>
-            <div data-testid="service-account-username">{{ item.username }}</div>
+            <div data-testid="service-account-username">@{{ item.username }}</div>
           </template>
 
           <template #cell(options)="{ item }">
@@ -189,6 +225,14 @@ export default {
       :name="serviceAccount.name"
       @cancel="setDeleteType(null)"
       @submit="deleteAccount"
+    />
+
+    <create-edit-service-account-modal
+      v-if="createEditType"
+      :service-account-action-type="createEditType"
+      :service-account="serviceAccount"
+      @cancel="setCreateEditType(null)"
+      @submit="createEditAccount"
     />
   </div>
 </template>

@@ -6,6 +6,7 @@ import {
   HTTP_STATUS_OK,
   HTTP_STATUS_INTERNAL_SERVER_ERROR,
   HTTP_STATUS_NO_CONTENT,
+  HTTP_STATUS_CREATED,
 } from '~/lib/utils/http_status';
 import { createAlert, VARIANT_INFO } from '~/alert';
 import { useServiceAccounts } from 'ee/service_accounts/stores/service_accounts';
@@ -28,11 +29,15 @@ describe('useAccessTokens store', () => {
     'X-Total': 1,
   };
 
+  const values = {
+    username: 'service_account_group_33_71573d686886d1e49b90c9705f4f534b',
+    name: 'Service account user',
+  };
+
   const serviceAccounts = [
     {
       id: 85,
-      username: 'service_account_group_33_71573d686886d1e49b90c9705f4f534b',
-      name: 'Service account user',
+      ...values,
     },
   ];
 
@@ -52,6 +57,8 @@ describe('useAccessTokens store', () => {
       expect(store.page).toBe(1);
       expect(store.perPage).toBe(8);
       expect(store.deleteType).toBeNull();
+      expect(store.createEditType).toBeNull();
+      expect(store.createEditError).toBeNull();
     });
   });
 
@@ -118,6 +125,192 @@ describe('useAccessTokens store', () => {
         store.setDeleteType('hard');
 
         expect(store.deleteType).toBe('hard');
+      });
+    });
+
+    describe('setCreateEditType', () => {
+      it('sets the createEditType', () => {
+        store.setCreateEditType('create');
+
+        expect(store.createEditType).toBe('create');
+      });
+    });
+
+    describe('clear alert', () => {
+      it('clears the alert', () => {
+        store.alert = createAlert({ message: 'dummy' });
+        store.createEditError = 'my error';
+        store.clearAlert();
+
+        expect(store.alert).toBe(null);
+        expect(store.createEditError).toBe(null);
+      });
+    });
+
+    describe('createServiceAccount', () => {
+      it('sets busy to true', () => {
+        store.createServiceAccount(url, values);
+
+        expect(store.busy).toBe(true);
+      });
+
+      it('clears the alert', () => {
+        store.alert = createAlert({ message: 'dummy' });
+        expect(mockAlertDismiss).toHaveBeenCalledTimes(0);
+        store.createServiceAccount(url, values);
+
+        expect(mockAlertDismiss).toHaveBeenCalledTimes(1);
+      });
+
+      it('calls the create endpoint with the correct params', async () => {
+        await store.createServiceAccount(url, values);
+
+        expect(mockAxios.history.post[0]).toEqual(
+          expect.objectContaining({
+            url,
+            data: '{"username":"service_account_group_33_71573d686886d1e49b90c9705f4f534b","name":"Service account user"}',
+          }),
+        );
+      });
+
+      it('shows alert', async () => {
+        mockAxios.onPost().replyOnce(HTTP_STATUS_CREATED);
+        await store.createServiceAccount(url, values);
+
+        expect(createAlert).toHaveBeenCalledWith({
+          message: 'The service account was created.',
+          variant: VARIANT_INFO,
+        });
+      });
+
+      it('reset the createEditType', async () => {
+        store.createEditType = 'create';
+        mockAxios.onPost().replyOnce(HTTP_STATUS_CREATED);
+        await store.createServiceAccount(url, values);
+
+        expect(store.createEditType).toBe(null);
+      });
+
+      it('fetches service accounts', async () => {
+        mockAxios.onPost().replyOnce(HTTP_STATUS_CREATED);
+        mockAxios.onGet().replyOnce(HTTP_STATUS_OK, serviceAccounts, headers);
+        await store.createServiceAccount(url, values);
+
+        expect(store.serviceAccounts).toHaveLength(1);
+      });
+
+      it('does not clear the alert on fetching service accounts', async () => {
+        mockAxios.onPost().replyOnce(HTTP_STATUS_CREATED);
+        mockAxios.onGet().replyOnce(HTTP_STATUS_OK, serviceAccounts, headers);
+        await store.createServiceAccount(url, values);
+
+        expect(mockAlertDismiss).toHaveBeenCalledTimes(0);
+      });
+
+      it('sets the createEditError', async () => {
+        mockAxios.onPost().replyOnce(HTTP_STATUS_INTERNAL_SERVER_ERROR);
+        await store.createServiceAccount(url, values);
+
+        expect(store.createEditError).toBe('An error occurred creating the service account.');
+      });
+
+      it('reset the busy state', async () => {
+        await store.createServiceAccount(url, values);
+
+        expect(store.busy).toBe(false);
+      });
+    });
+
+    describe('editServiceAccount', () => {
+      beforeEach(() => {
+        [store.serviceAccount] = serviceAccounts;
+      });
+
+      it('sets busy to true', () => {
+        store.editServiceAccount(url, values, false);
+
+        expect(store.busy).toBe(true);
+      });
+
+      it('clears the alert', () => {
+        store.alert = createAlert({ message: 'dummy' });
+        expect(mockAlertDismiss).toHaveBeenCalledTimes(0);
+        store.editServiceAccount(url, values, false);
+
+        expect(mockAlertDismiss).toHaveBeenCalledTimes(1);
+      });
+
+      describe('admin level', () => {
+        it('calls the edit endpoint with the correct params', async () => {
+          await store.editServiceAccount(url, values, false);
+
+          expect(mockAxios.history.put[0]).toEqual(
+            expect.objectContaining({
+              url: `${url}/85`,
+              data: '{"username":"service_account_group_33_71573d686886d1e49b90c9705f4f534b","name":"Service account user"}',
+            }),
+          );
+        });
+      });
+
+      describe('group level', () => {
+        it('calls the edit endpoint with the correct params', async () => {
+          await store.editServiceAccount(url, values, true);
+
+          expect(mockAxios.history.patch[0]).toEqual(
+            expect.objectContaining({
+              url: `${url}/85`,
+              data: '{"username":"service_account_group_33_71573d686886d1e49b90c9705f4f534b","name":"Service account user"}',
+            }),
+          );
+        });
+      });
+
+      it('shows alert', async () => {
+        mockAxios.onPut().replyOnce(HTTP_STATUS_OK);
+        await store.editServiceAccount(url, values, false);
+
+        expect(createAlert).toHaveBeenCalledWith({
+          message: 'The service account was updated.',
+          variant: VARIANT_INFO,
+        });
+      });
+
+      it('reset the createEditType', async () => {
+        store.createEditType = 'edit';
+        mockAxios.onPut().replyOnce(HTTP_STATUS_OK);
+        await store.editServiceAccount(url, values, false);
+
+        expect(store.createEditType).toBe(null);
+      });
+
+      it('fetches service accounts', async () => {
+        mockAxios.onPut().replyOnce(HTTP_STATUS_OK);
+        mockAxios.onGet().replyOnce(HTTP_STATUS_OK, serviceAccounts, headers);
+        await store.editServiceAccount(url, values, false);
+
+        expect(store.serviceAccounts).toHaveLength(1);
+      });
+
+      it('does not clear the alert on fetching service accounts', async () => {
+        mockAxios.onPut().replyOnce(HTTP_STATUS_OK);
+        mockAxios.onGet().replyOnce(HTTP_STATUS_OK, serviceAccounts, headers);
+        await store.editServiceAccount(url, values, false);
+
+        expect(mockAlertDismiss).toHaveBeenCalledTimes(0);
+      });
+
+      it('sets the createEditError', async () => {
+        mockAxios.onPut().replyOnce(HTTP_STATUS_INTERNAL_SERVER_ERROR);
+        await store.editServiceAccount(url, values, false);
+
+        expect(store.createEditError).toBe('An error occurred updating the service account.');
+      });
+
+      it('reset the busy state', async () => {
+        await store.editServiceAccount(url, values, false);
+
+        expect(store.busy).toBe(false);
       });
     });
 

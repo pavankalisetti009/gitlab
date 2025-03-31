@@ -19,6 +19,8 @@ export const useServiceAccounts = defineStore('serviceAccounts', {
       page: 1,
       perPage: 8,
       deleteType: null,
+      createEditType: null,
+      createEditError: null,
     };
   },
   actions: {
@@ -27,8 +29,7 @@ export const useServiceAccounts = defineStore('serviceAccounts', {
       this.page = page;
 
       if (clearAlert) {
-        this.alert?.dismiss();
-        this.alert = null;
+        this.clearAlert();
       }
       this.busy = true;
 
@@ -53,19 +54,72 @@ export const useServiceAccounts = defineStore('serviceAccounts', {
         this.busy = false;
       }
     },
-    setServiceAccount(serviceAccount) {
-      this.serviceAccount = serviceAccount;
+    setServiceAccount(account) {
+      this.serviceAccount = account;
     },
     setDeleteType(deleteType) {
       this.deleteType = deleteType;
     },
-    addServiceAccount() {
-      // TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/509870
+    setCreateEditType(actionType) {
+      this.createEditType = actionType;
+    },
+    clearAlert() {
+      this.alert?.dismiss();
+      this.alert = null;
+      this.createEditError = null;
+    },
+    async createServiceAccount(url, values) {
+      this.busy = true;
+      this.clearAlert();
+
+      try {
+        const href = Api.buildUrl(url);
+        await axios.post(href, values);
+
+        this.alert = createAlert({
+          message: s__('ServiceAccounts|The service account was created.'),
+          variant: VARIANT_INFO,
+        });
+        this.createEditType = null;
+
+        await this.fetchServiceAccounts(this.url, { page: 1, clearAlert: false });
+      } catch (error) {
+        this.createEditError =
+          error.response?.data?.message ??
+          s__('ServiceAccounts|An error occurred creating the service account.');
+      } finally {
+        this.busy = false;
+      }
+    },
+    async editServiceAccount(url, values, isGroup) {
+      this.busy = true;
+      this.clearAlert();
+
+      try {
+        const href = Api.buildUrl(joinPaths(url, `${this.serviceAccount.id}`));
+        if (isGroup) {
+          await axios.patch(href, values);
+        } else {
+          await axios.put(href, values);
+        }
+
+        this.alert = createAlert({
+          message: s__('ServiceAccounts|The service account was updated.'),
+          variant: VARIANT_INFO,
+        });
+        this.createEditType = null;
+        await this.fetchServiceAccounts(this.url, { page: 1, clearAlert: false });
+      } catch (error) {
+        this.createEditError =
+          error.response?.data?.message ??
+          s__('ServiceAccounts|An error occurred updating the service account.');
+      } finally {
+        this.busy = false;
+      }
     },
     async deleteUser(url) {
       this.busy = true;
-      this.alert?.dismiss();
-      this.alert = null;
+      this.clearAlert();
       const serviceAccountId = this.serviceAccount.id;
       try {
         const href = Api.buildUrl(joinPaths(url, `${serviceAccountId}`));
