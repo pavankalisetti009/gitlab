@@ -34,7 +34,12 @@ describe('~/security_configuration/components/app', () => {
         securityTrainingEnabled: true,
         ...propsData,
       },
-      provide: { ...provideMock, userIsProjectAdmin: true, ...provide },
+      provide: {
+        ...provideMock,
+        vulnerabilityArchiveExportPath: '/some/path',
+        userIsProjectAdmin: true,
+        ...provide,
+      },
       stubs: {
         UserCalloutDismisser: makeMockUserCalloutDismisser({
           dismiss: userCalloutDismissSpy,
