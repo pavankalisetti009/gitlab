@@ -28,30 +28,30 @@ const VULNERABILITIES_ALIAS = 'vulnerabilities';
 export const Q_ISSUE_SUB_COMMANDS = {
   dev: {
     header: s__('AmazonQ|dev'),
-    description: s__('AmazonQ|Create a merge request to incorporate Amazon Q suggestions (Beta)'),
+    description: s__('AmazonQ|Create a merge request to incorporate Amazon Q suggestions'),
   },
   transform: {
     header: s__('AmazonQ|transform'),
-    description: s__('AmazonQ|Upgrade Java Maven application to Java 17 (Beta)'),
+    description: s__('AmazonQ|Upgrade Java Maven application to Java 17'),
   },
 };
 
 export const Q_MERGE_REQUEST_SUB_COMMANDS = {
   dev: {
     header: s__('AmazonQ|dev'),
-    description: s__('AmazonQ|Apply changes to this merge request based on the comments (Beta)'),
+    description: s__('AmazonQ|Apply changes to this merge request based on the comments'),
   },
   fix: {
     header: s__('AmazonQ|fix'),
-    description: s__('AmazonQ|Create fixes for review findings (Beta)'),
+    description: s__('AmazonQ|Create fixes for review findings'),
   },
   review: {
     header: s__('AmazonQ|review'),
-    description: s__('AmazonQ|Review merge request for code quality and security issues (Beta)'),
+    description: s__('AmazonQ|Review merge request for code quality and security issues'),
   },
   test: {
     header: s__('AmazonQ|test'),
-    description: s__('AmazonQ|Create unit tests for this merge request (Beta)'),
+    description: s__('AmazonQ|Create unit tests for this merge request'),
   },
 };
 
@@ -60,7 +60,7 @@ export const Q_MERGE_REQUEST_DIFF_SUB_COMMANDS = {
   test: {
     header: s__('AmazonQ|test'),
     description: s__(
-      'AmazonQ|Create unit tests for selected lines of code in Java or Python files (Beta)',
+      'AmazonQ|Create unit tests for selected lines of code in Java or Python files',
     ),
   },
 };
