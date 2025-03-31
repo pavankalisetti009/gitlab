@@ -94,7 +94,7 @@ module Geo
       }
       metadata.merge!(download_result.extra_details) if download_result.extra_details
 
-      log_info("Blob download", metadata)
+      log_warning("Blob download", metadata)
     end
 
     def track_exception(exception)
