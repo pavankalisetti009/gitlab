@@ -58,7 +58,7 @@ module Vulnerabilities
           UPSERT_SQL,
           project_id: stat_diff.project_id,
           archived: project.archived,
-          traversal_ids: "'{#{project.namespace.traversal_ids.join(',')}}'",
+          traversal_ids: "'{#{project.namespace.traversal_ids_as_sql}}'",
           insert_attributes: insert_attributes,
           insert_values: insert_values,
           letter_grade: letter_grade,
