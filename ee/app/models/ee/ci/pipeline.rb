@@ -105,7 +105,6 @@ module EE
           end
 
           after_transition any => ::Ci::Pipeline.completed_statuses do |pipeline|
-            next unless ::Feature.enabled?(:track_repository_xray_in_ci, pipeline.project, type: :gitlab_com_derisk)
             next unless pipeline.complete_and_has_reports?(::Ci::JobArtifact.repository_xray_reports)
 
             pipeline.run_after_commit do

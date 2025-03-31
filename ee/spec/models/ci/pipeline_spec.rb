@@ -569,18 +569,6 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
           let(:event) { 'ci_repository_xray_artifact_created' }
         end
       end
-
-      context 'when `track_repository_xray_in_ci` FF is disabled' do
-        before do
-          stub_feature_flags(track_repository_xray_in_ci: false)
-        end
-
-        it_behaves_like 'internal event not tracked' do
-          subject { pipeline.succeed }
-
-          let(:event) { 'ci_repository_xray_artifact_created' }
-        end
-      end
     end
   end
 
