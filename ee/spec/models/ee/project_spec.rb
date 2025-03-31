@@ -3704,6 +3704,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
   describe '#self_or_ancestor_marked_for_deletion' do
     context 'delayed deletion feature is not available' do
       before do
+        stub_feature_flags(downtier_delayed_deletion: false)
         stub_licensed_features(adjourned_deletion_for_projects_and_groups: false)
       end
 
@@ -3801,6 +3802,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       before do
         stub_licensed_features(adjourned_deletion_for_projects_and_groups: licensed?)
         stub_application_setting(deletion_adjourned_period: adjourned_period)
+        stub_feature_flags(downtier_delayed_deletion: false)
       end
 
       it { is_expected.to be result }
@@ -3834,6 +3836,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       let_it_be(:project) { create(:project, group: group) }
 
       before do
+        stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
         stub_application_setting(deletion_adjourned_period: adjourned_period)
       end
 

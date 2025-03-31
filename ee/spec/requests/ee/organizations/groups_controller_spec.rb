@@ -7,6 +7,10 @@ RSpec.describe Organizations::GroupsController, feature_category: :cell do
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group, :public, organization: organization) }
 
+  before do
+    stub_feature_flags(downtier_delayed_deletion: false)
+  end
+
   describe 'DELETE #destroy' do
     subject(:gitlab_request) { delete groups_organization_path(organization, id: group.to_param) }
 

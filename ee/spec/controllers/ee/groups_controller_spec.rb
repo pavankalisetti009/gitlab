@@ -12,6 +12,10 @@ RSpec.describe GroupsController, :with_current_organization, feature_category: :
   let_it_be(:subgroup) { create(:group, :private, parent: group) }
   let_it_be(:subgroup2) { create(:group, :private, parent: subgroup) }
 
+  before do
+    stub_feature_flags(downtier_delayed_deletion: false)
+  end
+
   describe 'GET #show' do
     render_views
     let(:namespace) { group }

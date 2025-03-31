@@ -15,6 +15,10 @@ RSpec.describe 'groups/settings/_remove.html.haml' do
     ]
   end
 
+  before do
+    stub_feature_flags(downtier_delayed_deletion: false)
+  end
+
   describe 'render' do
     before do
       allow(group).to receive(:licensed_feature_available?).and_return(false)
