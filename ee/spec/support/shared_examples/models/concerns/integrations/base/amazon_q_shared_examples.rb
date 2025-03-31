@@ -182,18 +182,6 @@ RSpec.shared_examples Integrations::Base::AmazonQ do
         end
       end
     end
-
-    context 'when amazon_q_chat_and_code_suggestions is disabled' do
-      before do
-        stub_feature_flags(amazon_q_chat_and_code_suggestions: false)
-      end
-
-      it 'does not send events' do
-        expect(::Gitlab::Llm::QAi::Client).not_to receive(:new)
-
-        integration.execute({ object_kind: :pipeline, user: { id: user.id } })
-      end
-    end
   end
 
   describe '#auto_review_enabled' do

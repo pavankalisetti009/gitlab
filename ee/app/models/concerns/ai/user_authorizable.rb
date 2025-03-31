@@ -137,9 +137,7 @@ module Ai
       private
 
       def amazon_q_connected?(ai_feature)
-        return false unless ::Feature.enabled?(:amazon_q_chat_and_code_suggestions, self) && ::Ai::AmazonQ.connected?
-
-        AMAZON_Q_FEATURES.include?(ai_feature)
+        ::Ai::AmazonQ.connected? && AMAZON_Q_FEATURES.include?(ai_feature)
       end
 
       def namespaces_allowed_in_com(maturity)

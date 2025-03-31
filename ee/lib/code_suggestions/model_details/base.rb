@@ -20,17 +20,14 @@ module CodeSuggestions
       end
 
       def feature_name
-        return :amazon_q_integration if Feature.enabled?(:amazon_q_chat_and_code_suggestions,
-          current_user) && ::Ai::AmazonQ.connected?
-
+        return :amazon_q_integration if ::Ai::AmazonQ.connected?
         return :self_hosted_models if self_hosted?
 
         :code_suggestions
       end
 
       def licensed_feature
-        return :amazon_q if Feature.enabled?(:amazon_q_chat_and_code_suggestions,
-          current_user) && ::Ai::AmazonQ.connected?
+        return :amazon_q if ::Ai::AmazonQ.connected?
 
         :ai_features
       end

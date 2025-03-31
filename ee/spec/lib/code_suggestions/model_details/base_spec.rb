@@ -54,19 +54,5 @@ RSpec.describe CodeSuggestions::ModelDetails::Base, feature_category: :code_sugg
       expect(completions_model_details.feature_name).to eq(:amazon_q_integration)
       expect(completions_model_details.licensed_feature).to eq(:amazon_q)
     end
-
-    context 'when amazon_q_chat_and_code_suggestions is disabled' do
-      before do
-        stub_feature_flags(amazon_q_chat_and_code_suggestions: false)
-      end
-
-      it 'returns correct feature name and licensed feature' do
-        stub_licensed_features(amazon_q: true)
-        Ai::Setting.instance.update!(amazon_q_ready: true)
-
-        expect(completions_model_details.feature_name).to eq(:code_suggestions)
-        expect(completions_model_details.licensed_feature).to eq(:ai_features)
-      end
-    end
   end
 end

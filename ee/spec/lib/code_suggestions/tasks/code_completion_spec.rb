@@ -461,17 +461,5 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
         })
       end
     end
-
-    context 'when amazon_q_chat_and_code_suggestions is disabled' do
-      before do
-        stub_feature_flags(amazon_q_chat_and_code_suggestions: false)
-        stub_feature_flags(disable_code_gecko_default: false)
-      end
-
-      it_behaves_like 'code suggestion task' do
-        let(:expected_feature_name) { :code_suggestions }
-        let(:expected_body) { unsafe_params.merge(prompt_version: 1) }
-      end
-    end
   end
 end

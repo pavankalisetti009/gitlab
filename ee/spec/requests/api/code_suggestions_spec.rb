@@ -967,20 +967,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
             expect(response).to have_gitlab_http_status(:ok)
           end
-
-          context 'when amazon_q_chat_and_code_suggestions is disabled' do
-            let(:service_name) { :code_suggestions }
-
-            before do
-              stub_feature_flags(amazon_q_chat_and_code_suggestions: false)
-            end
-
-            it 'is unauthorized' do
-              post_api
-
-              expect(response).to have_gitlab_http_status(:ok)
-            end
-          end
         end
       end
 
