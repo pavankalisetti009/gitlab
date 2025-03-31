@@ -117,6 +117,7 @@ export default {
       terminated: { ...DEFAULT_WORKSPACES_DATA },
       terminatingWorkspaces: [],
       loading: true,
+      // eslint-disable-next-line vue/no-unused-properties -- userWorkspacesTabList is required for Apollo query management
       userWorkspacesTabList: [],
       paginationVariables: {
         first: WORKSPACES_LIST_PAGE_SIZE,

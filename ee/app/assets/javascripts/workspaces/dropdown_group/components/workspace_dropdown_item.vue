@@ -26,12 +26,6 @@ export default {
     },
   },
   computed: {
-    dropdownItem() {
-      return {
-        href: this.workspace.url,
-        text: this.workspace.name,
-      };
-    },
     displayState() {
       return calculateDisplayState(this.workspace.actualState, this.workspace.desiredState);
     },

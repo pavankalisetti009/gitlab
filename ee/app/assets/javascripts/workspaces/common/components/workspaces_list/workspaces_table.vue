@@ -1,5 +1,5 @@
 <script>
-import { __, sprintf } from '~/locale';
+import { __ } from '~/locale';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import { WORKSPACE_STATES, WORKSPACE_DESIRED_STATES } from '../../constants';
 import WorkspaceStateIndicator from '../workspace_state_indicator.vue';
@@ -25,27 +25,8 @@ export default {
       type: Array,
       required: true,
     },
-    tabsMode: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
-    transitionProps: {
-      type: Object,
-      required: false,
-      default: undefined,
-    },
   },
   methods: {
-    devfileRefAndPathDisplay(ref, path) {
-      if (!ref || !path) {
-        return '';
-      }
-      return sprintf(__(`%{path} on %{ref}`), { ref, path });
-    },
-    isTerminated(workspace) {
-      return workspace.actualState === WORKSPACE_STATES.terminated;
-    },
     getWorkspaceDisplayState(workspace) {
       return calculateDisplayState(workspace.actualState, workspace.desiredState);
     },
