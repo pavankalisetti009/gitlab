@@ -51,8 +51,6 @@ module API
           organization_id = user_group.organization_id
           service_params = declared_params.merge({ organization_id: organization_id, namespace_id: params[:id] })
 
-          service_params.delete(:email) unless Feature.enabled?(:group_service_account_custom_email, user_group)
-
           response = ::Namespaces::ServiceAccounts::CreateService
                        .new(current_user, service_params)
                        .execute
