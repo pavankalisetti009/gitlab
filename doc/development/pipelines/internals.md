@@ -125,7 +125,7 @@ images from our [Dependency Proxy](../../user/packages/dependency_proxy/_index.m
 By default, this variable is set from the value of `${GITLAB_DEPENDENCY_PROXY}`.
 
 `${GITLAB_DEPENDENCY_PROXY}` is a group CI/CD variable defined in
-[`gitlab-org`](https://gitlab.com/gitlab-org) as
+[`gitlab-org`](https://gitlab.com/gitlab-org) and [`gitlab-com`](https://gitlab.com/gitlab-com) groups as
 `${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/`. This means when we use an image
 defined as:
 
