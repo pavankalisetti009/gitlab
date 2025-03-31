@@ -10,13 +10,9 @@ RSpec.describe Groups::RestoreService, feature_category: :groups_and_projects do
       deleting_user: user)
   end
 
-  subject { described_class.new(group, user, {}).execute }
+  subject(:execute) { described_class.new(group, user, {}).execute }
 
-  before do
-    stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
-  end
-
-  context 'restoring the group' do
+  context 'when restoring the group' do
     context 'with a user that can admin the group' do
       before do
         group.add_owner(user)
@@ -24,23 +20,23 @@ RSpec.describe Groups::RestoreService, feature_category: :groups_and_projects do
 
       context 'for a group that has been marked for deletion' do
         it 'removes the mark for deletion' do
-          subject
+          execute
 
           expect(group.marked_for_deletion_on).to be_nil
           expect(group.deleting_user).to be_nil
         end
 
         it 'returns success' do
-          result = subject
+          result = execute
 
           expect(result).to eq({ status: :success })
         end
 
-        context 'restoring fails' do
+        context 'when restoring fails' do
           it 'returns error' do
             allow(group.deletion_schedule).to receive(:destroy).and_return(false)
 
-            result = subject
+            result = execute
 
             expect(result).to eq({ status: :error, message: 'Could not restore the group' })
           end
@@ -51,26 +47,16 @@ RSpec.describe Groups::RestoreService, feature_category: :groups_and_projects do
         let(:group) { create(:group) }
 
         it 'does not change the attributes associated with delayed deletion' do
-          subject
+          execute
 
           expect(group.marked_for_deletion_on).to be_nil
           expect(group.deleting_user).to be_nil
         end
 
         it 'returns error' do
-          result = subject
+          result = execute
 
           expect(result).to eq({ status: :error, message: 'Group has not been marked for deletion' })
-        end
-      end
-
-      context 'audit events' do
-        it 'logs audit event' do
-          expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
-            hash_including(name: 'group_restored')
-          ).and_call_original
-
-          expect { subject }.to change { AuditEvent.count }.by(1)
         end
       end
 
@@ -79,7 +65,7 @@ RSpec.describe Groups::RestoreService, feature_category: :groups_and_projects do
 
         expect(::Gitlab::AppLogger).to receive(:info).with("User #{user.id} restored group #{group.full_path}")
 
-        subject
+        execute
       end
 
       context 'when the group is deletion is in progress' do
@@ -93,21 +79,15 @@ RSpec.describe Groups::RestoreService, feature_category: :groups_and_projects do
 
     context 'with a user that cannot admin the group' do
       it 'does not restore the group' do
-        subject
+        execute
 
         expect(group.marked_for_deletion?).to be_truthy
       end
 
       it 'returns error' do
-        result = subject
+        result = execute
 
         expect(result).to eq({ status: :error, message: 'You are not authorized to perform this action' })
-      end
-
-      context 'audit events' do
-        it 'does not log audit event' do
-          expect { subject }.not_to change { AuditEvent.count }
-        end
       end
     end
   end
