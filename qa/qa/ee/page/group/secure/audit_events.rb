@@ -16,7 +16,7 @@ module QA
               element 'stream-destinations'
             end
 
-            view 'ee/app/assets/javascripts/audit_events/components/stream/stream_destination_editor.vue' do
+            view 'ee/app/assets/javascripts/audit_events/components/stream/stream_http_destination_editor.vue' do
               element 'destination-name'
               element 'destination-url'
               element 'stream-destination-add-button'

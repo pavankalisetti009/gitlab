@@ -31,7 +31,7 @@ import deleteInstanceExternalDestinationFilters from 'ee/audit_events/graphql/mu
 import addInstanceExternalDestinationFilters from 'ee/audit_events/graphql/mutations/add_instance_external_destination_filters.mutation.graphql';
 import addExternalDestinationNamespaceFilters from 'ee/audit_events/graphql/mutations/add_external_destination_namespace_filters.mutation.graphql';
 import deleteExternalDestinationNamespaceFilters from 'ee/audit_events/graphql/mutations/delete_external_destination_namespace_filters.mutation.graphql';
-import StreamDestinationEditor from 'ee/audit_events/components/stream/stream_destination_editor.vue';
+import StreamHttpDestinationEditor from 'ee/audit_events/components/stream/stream_http_destination_editor.vue';
 import StreamEventTypeFilters from 'ee/audit_events/components/stream/stream_event_type_filters.vue';
 import StreamNamespaceFilters from 'ee/audit_events/components/stream//stream_namespace_filters.vue';
 import StreamDeleteModal from 'ee/audit_events/components/stream/stream_delete_modal.vue';
@@ -78,7 +78,7 @@ jest.mock('ee/audit_events/graphql/cache_update');
 
 Vue.use(VueApollo);
 
-describe('StreamDestinationEditor', () => {
+describe('StreamHttpDestinationEditor', () => {
   let wrapper;
   let groupPathProvide = groupPath;
 
@@ -100,7 +100,7 @@ describe('StreamDestinationEditor', () => {
       [getNamespaceFiltersQuery, jest.fn().mockResolvedValue(getMockNamespaceFilters())],
     ];
     const mockApollo = createMockApollo([...apolloHandlers, ...STATIC_HANDLERS]);
-    wrapper = mountFn(StreamDestinationEditor, {
+    wrapper = mountFn(StreamHttpDestinationEditor, {
       attachTo: document.body,
       provide: {
         groupPath: groupPathProvide,
@@ -243,7 +243,7 @@ describe('StreamDestinationEditor', () => {
     });
   });
 
-  describe('Group StreamDestinationEditor', () => {
+  describe('Group StreamHttpDestinationEditor', () => {
     describe('when initialized', () => {
       describe('destinations URL', () => {
         beforeEach(() => {
@@ -1105,7 +1105,7 @@ describe('StreamDestinationEditor', () => {
     });
   });
 
-  describe('Instance StreamDestinationEditor', () => {
+  describe('Instance StreamHttpDestinationEditor', () => {
     beforeEach(() => {
       groupPathProvide = instanceGroupPath;
     });

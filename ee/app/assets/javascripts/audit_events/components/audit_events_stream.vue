@@ -32,7 +32,7 @@ import instanceGcpLoggingDestinationsQuery from '../graphql/queries/get_instance
 import amazonS3DestinationsQuery from '../graphql/queries/get_amazon_s3_destinations.query.graphql';
 import instanceAmazonS3DestinationsQuery from '../graphql/queries/get_instance_amazon_s3_destinations.query.graphql';
 import StreamEmptyState from './stream/stream_empty_state.vue';
-import StreamDestinationEditor from './stream/stream_destination_editor.vue';
+import StreamHttpDestinationEditor from './stream/stream_http_destination_editor.vue';
 import StreamGcpLoggingDestinationEditor from './stream/stream_gcp_logging_destination_editor.vue';
 import StreamAmazonS3DestinationEditor from './stream/stream_amazon_s3_destination_editor.vue';
 import StreamItem from './stream/stream_item.vue';
@@ -43,7 +43,7 @@ export default {
     GlAlert,
     GlLoadingIcon,
     GlDisclosureDropdown,
-    StreamDestinationEditor,
+    StreamHttpDestinationEditor,
     StreamGcpLoggingDestinationEditor,
     StreamAmazonS3DestinationEditor,
     StreamEmptyState,
@@ -379,7 +379,7 @@ export default {
       />
     </div>
     <div v-if="isEditorVisible" class="gl-border gl-mb-4 gl-rounded-base gl-p-4">
-      <stream-destination-editor
+      <stream-http-destination-editor
         v-if="editorType === $options.DESTINATION_TYPE_HTTP"
         @added="onAddedDestination"
         @error="clearSuccessMessage"

@@ -17,7 +17,7 @@ import {
   DESTINATION_TYPE_AMAZON_S3,
   UPDATE_STREAM_MESSAGE,
 } from '../../constants';
-import StreamDestinationEditor from './stream_destination_editor.vue';
+import StreamHttpDestinationEditor from './stream_http_destination_editor.vue';
 import StreamGcpLoggingDestinationEditor from './stream_gcp_logging_destination_editor.vue';
 import StreamAmazonS3DestinationEditor from './stream_amazon_s3_destination_editor.vue';
 
@@ -31,7 +31,7 @@ export default {
     GlCollapse,
     GlButton,
     GlIcon,
-    StreamDestinationEditor,
+    StreamHttpDestinationEditor,
     StreamGcpLoggingDestinationEditor,
     StreamAmazonS3DestinationEditor,
   },
@@ -150,7 +150,7 @@ export default {
       >
         {{ successMessage }}
       </gl-alert>
-      <stream-destination-editor
+      <stream-http-destination-editor
         v-if="type == $options.DESTINATION_TYPE_HTTP"
         :item="item"
         class="gl-pb-5 gl-pl-6 gl-pr-0"

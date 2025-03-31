@@ -28,7 +28,7 @@ import {
 jest.mock('~/alert');
 Vue.use(VueApollo);
 
-describe('StreamDestinationEditor', () => {
+describe('StreamAmazonS3DestinationEditor', () => {
   let wrapper;
   let groupPathProvide = groupPath;
 
@@ -106,7 +106,7 @@ describe('StreamDestinationEditor', () => {
     });
   });
 
-  describe('Group amazon S3 StreamDestinationEditor', () => {
+  describe('Group amazon S3 stream destination editor', () => {
     describe('when initialized', () => {
       beforeEach(() => {
         createComponent();
@@ -455,7 +455,7 @@ describe('StreamDestinationEditor', () => {
     });
   });
 
-  describe('Instance amazon S3 StreamDestinationEditor', () => {
+  describe('Instance amazon S3 stream destination editor', () => {
     beforeEach(() => {
       groupPathProvide = instanceGroupPath;
     });

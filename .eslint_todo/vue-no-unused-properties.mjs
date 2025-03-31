@@ -373,7 +373,6 @@ export default {
     'ee/app/assets/javascripts/approvals/mr_edit/app.vue',
     'ee/app/assets/javascripts/approvals/project_settings/project_rules.vue',
     'ee/app/assets/javascripts/audit_events/components/stream/stream_delete_modal.vue',
-    'ee/app/assets/javascripts/audit_events/components/stream/stream_destination_editor.vue',
     'ee/app/assets/javascripts/billings/components/zuora_simple.vue',
     'ee/app/assets/javascripts/billings/subscriptions/components/subscription_table.vue',
     'ee/app/assets/javascripts/boards/components/board_form.vue',
