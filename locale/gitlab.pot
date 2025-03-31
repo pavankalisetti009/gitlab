@@ -1767,8 +1767,10 @@ msgstr ""
 msgid "+ %{numberOfHiddenAssignees} more"
 msgstr ""
 
-msgid "+ %{n} more deployments"
-msgstr ""
+msgid "+ %{n} more deployment"
+msgid_plural "+ %{n} more deployments"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "+%d more"
 msgid_plural "+%d more"
