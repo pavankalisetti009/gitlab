@@ -16,7 +16,8 @@ module Ai
 
     FLAGGED_FEATURES = {
       duo_chat_troubleshoot_job: 7,
-      generate_commit_message: 8
+      generate_commit_message: 8,
+      summarize_new_merge_request: 9
     }.freeze
 
     FEATURES = STABLE_FEATURES.merge(FLAGGED_FEATURES)

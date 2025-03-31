@@ -99,3 +99,13 @@ generate_commit_message:
     - claude_3
     - gpt
     - llama3
+summarize_new_merge_request:
+  title: Summarize New Merge Request
+  release_state: BETA
+  main_feature: Other GitLab Duo features
+  compatible_llms:
+    - mistral
+    - mixtral
+    - claude_3
+    - gpt
+    - llama3
