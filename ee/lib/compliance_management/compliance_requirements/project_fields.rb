@@ -19,7 +19,15 @@ module ComplianceManagement
         'scanner_api_security_running' => :scanner_api_security_running?,
         'scanner_fuzz_testing_running' => :scanner_fuzz_testing_running?,
         'scanner_code_quality_running' => :scanner_code_quality_running?,
-        'scanner_iac_running' => :scanner_iac_running?
+        'scanner_iac_running' => :scanner_iac_running?,
+        'code_changes_requires_code_owners' => :code_changes_requires_code_owners?,
+        'reset_approvals_on_push' => :reset_approvals_on_push?,
+        'status_checks_required' => :status_checks_required?,
+        'require_branch_up_to_date' => :require_branch_up_to_date?,
+        'resolve_discussions_required' => :resolve_discussions_required?,
+        'require_linear_history' => :require_linear_history?,
+        'restrict_push_merge_access' => :restrict_push_merge_access?,
+        'force_push_disabled' => :force_push_disabled?
       }.freeze
 
       SECURITY_SCANNERS = [
@@ -114,6 +122,38 @@ module ComplianceManagement
           return false unless SECURITY_SCANNERS.include?(scanner)
 
           pipeline.job_artifacts.send(scanner).any? # rubocop: disable GitlabSecurity/PublicSend -- limited to supported scanners
+        end
+
+        def code_changes_requires_code_owners?(project)
+          ProtectedBranch.branch_requires_code_owner_approval?(project, project.default_branch)
+        end
+
+        def reset_approvals_on_push?(project)
+          project.reset_approvals_on_push
+        end
+
+        def status_checks_required?(project)
+          project.only_allow_merge_if_all_status_checks_passed
+        end
+
+        def require_branch_up_to_date?(project)
+          [:rebase_merge, :ff].include?(project.merge_method)
+        end
+
+        def resolve_discussions_required?(project)
+          project.only_allow_merge_if_all_discussions_are_resolved
+        end
+
+        def require_linear_history?(project)
+          [:rebase_merge, :merge].exclude?(project.merge_method)
+        end
+
+        def restrict_push_merge_access?(project)
+          !project.all_protected_branches.any?(&:allow_force_push)
+        end
+
+        def force_push_disabled?(project)
+          !ProtectedBranch.allow_force_push?(project, project.default_branch)
         end
       end
     end
