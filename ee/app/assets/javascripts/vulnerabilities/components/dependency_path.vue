@@ -18,6 +18,11 @@ export default {
       type: Object,
       required: true,
     },
+    dependencyPathsLimitExceeded: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
@@ -51,6 +56,7 @@ export default {
         :show-drawer="isDrawerOpen"
         :component="dependency.component"
         :dependency-paths="dependency.dependencyPaths"
+        :limit-exceeded="dependencyPathsLimitExceeded"
         @close="closeDrawer"
       />
     </mounting-portal>

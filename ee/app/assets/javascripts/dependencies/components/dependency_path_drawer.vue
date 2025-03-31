@@ -1,5 +1,5 @@
 <script>
-import { GlDrawer, GlTruncateText, GlBadge } from '@gitlab/ui';
+import { GlDrawer, GlTruncateText, GlBadge, GlAlert } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
@@ -27,6 +27,7 @@ export default {
     GlDrawer,
     GlTruncateText,
     GlBadge,
+    GlAlert,
   },
   props: {
     dependencyPaths: {
@@ -42,6 +43,11 @@ export default {
       type: Object,
       required: false,
       default: () => {},
+    },
+    limitExceeded: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
     showDrawer: {
       type: Boolean,
@@ -64,6 +70,9 @@ export default {
     projectTitle: s__('Vulnerability|Project'),
     componentTitle: s__('Vulnerability|Component'),
     circularDependencyBadgeText: s__('Vulnerability|circular dependency'),
+    maxDepthWarning: s__(
+      'Vulnerability|Resolve the vulnerability in these dependencies to see additional paths. GitLab shows a maximum of 20 dependency paths per vulnerability.',
+    ),
   },
   getContentWrapperHeight,
   DRAWER_Z_INDEX,
@@ -116,5 +125,10 @@ export default {
         </gl-truncate-text>
       </li>
     </ul>
+    <template #footer>
+      <gl-alert v-if="limitExceeded" :dismissible="false" variant="warning">
+        {{ $options.i18n.maxDepthWarning }}
+      </gl-alert>
+    </template>
   </gl-drawer>
 </template>
