@@ -5,7 +5,7 @@ module Gitlab
     module Metrics
       module Instrumentations
         class DuoSeatsMetric < GenericMetric
-          SUBSCRIPTION_TYPES = %w[pro enterprise].freeze
+          SUBSCRIPTION_TYPES = %w[pro enterprise amazon_q].freeze
           SEATS_TYPES = %w[purchased assigned].freeze
 
           def initialize(metric_definition)
@@ -35,6 +35,8 @@ module Gitlab
                         GitlabSubscriptions::AddOnPurchase.for_gitlab_duo_pro
                       when "enterprise"
                         GitlabSubscriptions::AddOnPurchase.for_duo_enterprise
+                      when "amazon_q"
+                        GitlabSubscriptions::AddOnPurchase.for_duo_amazon_q
                       end
 
             active_duo = add_ons.active.first
