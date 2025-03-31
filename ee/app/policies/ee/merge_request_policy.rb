@@ -45,6 +45,14 @@ module EE
         can?(:reporter_access, @subject.target_project)
       end
 
+      condition(:target_project_internal) do
+        @subject.target_project&.internal?
+      end
+
+      condition(:user_allowed_to_read_target_project_merge_requests) do
+        can?(:read_merge_request, @subject.target_project)
+      end
+
       with_scope :subject
       condition(:custom_roles_allowed) do
         subject&.project&.custom_roles_enabled?
@@ -93,6 +101,13 @@ module EE
       rule { external_status_checks_enabled & target_project_reporter }.policy do
         enable :read_external_status_check_response
       end
+
+      rule do
+        external_status_checks_enabled &
+          target_project_internal &
+          ~external_user &
+          user_allowed_to_read_target_project_merge_requests
+      end.enable :read_external_status_check_response
 
       rule { external_status_checks_enabled & target_project_developer }.policy do
         enable :provide_status_check_response

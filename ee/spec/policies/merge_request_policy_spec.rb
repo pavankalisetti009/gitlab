@@ -18,6 +18,7 @@ RSpec.describe MergeRequestPolicy, :aggregate_failures, feature_category: :code_
   let_it_be(:fork_maintainer) { create(:user) }
 
   let(:project) { create(:project, :internal) }
+
   let(:owner) { project.owner }
   let(:forked_project) { fork_project(project) }
   let(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
@@ -259,7 +260,7 @@ RSpec.describe MergeRequestPolicy, :aggregate_failures, feature_category: :code_
       :maintainer | false  | false
       :owner      | false  | false
       :admin      | false  | false
-      :guest      | true   | false
+      :guest      | true   | ref(:allowed_for_guest)
       :reporter   | true   | ref(:allowed_for_reporter)
       :developer  | true   | true
       :maintainer | true   | true
@@ -282,6 +283,7 @@ RSpec.describe MergeRequestPolicy, :aggregate_failures, feature_category: :code_
   describe 'retry_failed_status_checks' do
     let(:policy) { :retry_failed_status_checks }
     let(:allowed_for_reporter) { false }
+    let(:allowed_for_guest) { false }
 
     it_behaves_like 'external_status_check_access'
   end
@@ -290,12 +292,42 @@ RSpec.describe MergeRequestPolicy, :aggregate_failures, feature_category: :code_
     let(:policy) { :read_external_status_check_response }
     let(:allowed_for_reporter) { true }
 
-    it_behaves_like 'external_status_check_access'
+    context 'when project is internal' do
+      let(:project) { create(:project, :internal) }
+
+      context 'when user is external' do
+        let(:allowed_for_guest) { false }
+
+        before do
+          current_user.update!(external: true)
+        end
+
+        it_behaves_like 'external_status_check_access'
+      end
+
+      context 'when user is internal' do
+        let(:allowed_for_guest) { true }
+
+        before do
+          current_user.update!(external: false)
+        end
+
+        it_behaves_like 'external_status_check_access'
+      end
+    end
+
+    context 'when project is private' do
+      let(:project) { create(:project, :private) }
+      let(:allowed_for_guest) { false }
+
+      it_behaves_like 'external_status_check_access'
+    end
   end
 
   describe 'provide_status_check_response' do
     let(:policy) { :provide_status_check_response }
     let(:allowed_for_reporter) { false }
+    let(:allowed_for_guest) { false }
 
     it_behaves_like 'external_status_check_access'
   end
