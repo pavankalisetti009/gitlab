@@ -76,6 +76,11 @@ export default {
       required: false,
       default: null,
     },
+    chatTitle: {
+      type: String,
+      required: false,
+      default: null,
+    },
   },
   apollo: {
     // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
@@ -497,7 +502,7 @@ export default {
         :active-thread-id="activeThread"
         :is-multithreaded="glFeatures.duoChatMultiThread"
         :slash-commands="aiSlashCommands"
-        :title="$options.i18n.gitlabChat"
+        :title="chatTitle"
         :dimensions="dimensions"
         :messages="messages"
         :error="error"

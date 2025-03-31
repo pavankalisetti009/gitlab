@@ -120,6 +120,10 @@ describeSkipVue3(skipReason, () => {
       [getAiSlashCommands, slashCommandsQueryHandlerMock],
     ]);
 
+    if (duoChatGlobalState.isShown !== false) {
+      duoChatGlobalState.isShown = true;
+    }
+
     wrapper = shallowMountExtended(TanukiBotChatApp, {
       store,
       apolloProvider,
@@ -1161,6 +1165,39 @@ describeSkipVue3(skipReason, () => {
           conversationType: expectedType,
         }),
       );
+    });
+  });
+
+  describe('chatTitle functionality', () => {
+    beforeEach(() => {
+      duoChatGlobalState.isShown = true;
+    });
+
+    it('passes chatTitle prop to DuoChat component', async () => {
+      const chatTitle = 'Custom Chat Title';
+      createComponent({ propsData: { chatTitle } });
+      await nextTick();
+      expect(findDuoChat().props('title')).toBe(chatTitle);
+    });
+
+    it('passes null as title to DuoChat component when no chatTitle is provided', async () => {
+      createComponent();
+      await nextTick();
+      expect(findDuoChat().props('title')).toBeNull();
+    });
+
+    it('updates DuoChat title when chatTitle prop changes', async () => {
+      const localWrapper = shallowMountExtended(TanukiBotChatApp, {
+        propsData: { chatTitle: 'Initial Title' },
+        store: new Vuex.Store({ actions: actionSpies }),
+        apolloProvider: createMockApollo([]),
+      });
+      duoChatGlobalState.isShown = true;
+      await nextTick();
+      expect(localWrapper.findComponent(DuoChat).props('title')).toBe('Initial Title');
+
+      await localWrapper.setProps({ chatTitle: 'Updated Title' });
+      expect(localWrapper.findComponent(DuoChat).props('title')).toBe('Updated Title');
     });
   });
 });
