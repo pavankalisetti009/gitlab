@@ -191,6 +191,9 @@ module Search
       end
 
       def log_enabled_namespaces
+        group_count = Group.top_level.count
+        log("Group count", value: group_count)
+
         total_count = Search::Zoekt::EnabledNamespace.count
         with_missing_indices = Search::Zoekt::EnabledNamespace.with_missing_indices.count
         with_search_disabled = Search::Zoekt::EnabledNamespace.search_disabled.count

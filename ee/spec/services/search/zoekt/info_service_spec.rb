@@ -150,6 +150,7 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
 
     context 'when displaying indexing status' do
       before do
+        allow(Group).to receive_message_chain(:top_level, :count).and_return(10)
         allow(Search::Zoekt::EnabledNamespace).to receive_messages(
           count: 0,
           with_missing_indices: instance_double(ActiveRecord::Relation, count: 0),
@@ -185,6 +186,9 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
           service.execute
 
           expect(logger).to have_received(:info).ordered.with("\n#{Rainbow('Indexing status').bright.yellow.underline}")
+
+          # Verify the new Group count information is displayed
+          expect(logger).to have_received(:info).with(/Group count:.+10/)
 
           namespace_msg = /EnabledNamespace count:.+0 \(without indices: #{Rainbow('0').red}, /
           namespace_msg_part2 = /with search disabled: #{Rainbow('0').yellow}\)/
@@ -224,6 +228,7 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
           service.execute
 
           expect(logger).to have_received(:info).with("\n#{Rainbow('Indexing status').bright.yellow.underline}")
+          expect(logger).to have_received(:info).with(/Group count:.+10/)
           expect(logger).to have_received(:info).with(/EnabledNamespace count:.+0/)
           expect(logger).to have_received(:info).with(/Replicas count:.+3/)
         end
