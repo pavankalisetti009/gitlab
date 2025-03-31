@@ -69,9 +69,7 @@ export default {
       return this.totalSeatsUsed == null;
     },
     percentage() {
-      if (this.hasFreePlan || this.hasNoSeatsInSubscription || this.activeTrial) {
-        return null;
-      }
+      if (this.hasFreePlan || this.hasNoSeatsInSubscription || this.activeTrial) return null;
       return Math.round((this.billableMembersCount * 100) / this.totalSeatsUsed);
     },
     seatsStatisticsText() {
@@ -81,7 +79,7 @@ export default {
       return s__('Billings|Seats in use / Seats in subscription');
     },
     shouldDisplayUnlimitedSeatText() {
-      return this.hasFreePlan;
+      return this.hasFreePlan && !this.hasLimitedFreePlan;
     },
     totalSeatsUsed() {
       if (this.hasNoSubscription) {
