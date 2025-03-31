@@ -190,7 +190,11 @@ module EE
       end
 
       def secrets_integration
-        ::Ci::Secrets::Integration.new(variables: variables, project: project)
+        if ::Feature.enabled?(:enable_secrets_provider_check_on_pre_assign_runner_checks, project)
+          ::Ci::Secrets::Integration.new(variables: variables_encompassing_secrets_configs, project: project)
+        else
+          ::Ci::Secrets::Integration.new(variables: variables, project: project)
+        end
       end
 
       def playable?
@@ -295,6 +299,14 @@ module EE
         ::Gitlab::Ci::Variables::Collection.new(
           project.google_cloud_platform_artifact_registry_integration&.ci_variables || []
         )
+      end
+
+      def variables_encompassing_secrets_configs
+        # We DO NOT need to pass all the build.variables to the Secrets Integration because scoped_variables and job_variables
+        # are the ONLY two subsets of variables that may potentially include information for integration with secrets providers.
+        ::Gitlab::Ci::Variables::Collection.new
+          .concat(scoped_variables)
+          .concat(job_variables)
       end
 
       def pages_config
