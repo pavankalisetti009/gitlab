@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module Groups
+module Groups # rubocop:disable Gitlab/BoundedContexts -- existing top-level module
   class RestoreService < Groups::BaseService
     def execute
       return error(_('You are not authorized to perform this action')) unless can?(current_user, :remove_group, group)
@@ -29,20 +29,9 @@ module Groups
     end
 
     def log_event
-      log_audit_event
       log_info("User #{current_user.id} restored group #{group.full_path}")
-    end
-
-    def log_audit_event
-      audit_context = {
-        name: 'group_restored',
-        author: current_user,
-        scope: group,
-        target: group,
-        message: 'Group restored'
-      }
-
-      ::Gitlab::Audit::Auditor.audit(audit_context)
     end
   end
 end
+
+Groups::RestoreService.prepend_mod

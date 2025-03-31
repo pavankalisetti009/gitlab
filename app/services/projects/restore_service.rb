@@ -31,30 +31,16 @@ module Projects
       result
     end
 
+    private
+
     def log_event
-      log_audit_event
       log_info("User #{current_user.id} restored project #{project.full_path}")
     end
 
-    def log_audit_event
-      audit_context = {
-        name: 'project_restored',
-        author: current_user,
-        scope: project,
-        target: project,
-        message: 'Project restored'
-      }
-
-      ::Gitlab::Audit::Auditor.audit(audit_context)
-    end
-
-    private
-
     def suffix
-      strong_memoize(:suffix) do
-        original_path_taken?(project) ? "-#{SecureRandom.alphanumeric(5)}" : ""
-      end
+      original_path_taken?(project) ? "-#{SecureRandom.alphanumeric(5)}" : ""
     end
+    strong_memoize_attr :suffix
 
     def original_path_taken?(project)
       existing_project = ::Project.find_by_full_path(original_value(project.full_path))
@@ -71,3 +57,5 @@ module Projects
     end
   end
 end
+
+Projects::RestoreService.prepend_mod
