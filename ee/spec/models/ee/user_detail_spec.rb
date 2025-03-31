@@ -74,12 +74,14 @@ RSpec.describe UserDetail, feature_category: :system_access do
       it 'correctly handles string values' do
         value = 'basics'
         user_detail.onboarding_status_registration_objective = value
+
         expect(user_detail.onboarding_status_registration_objective).to eq(value)
       end
 
       it 'correctly handles integer values' do
         value = 0
         user_detail.onboarding_status_registration_objective = value
+
         expect(user_detail.onboarding_status_registration_objective).to eq('basics')
       end
     end
@@ -88,12 +90,14 @@ RSpec.describe UserDetail, feature_category: :system_access do
       it 'returns nil for an invalid string value' do
         value = "something_invalid"
         user_detail.onboarding_status_registration_objective = value
+
         expect(user_detail.onboarding_status_registration_objective).to be_nil
       end
 
       it 'returns nil for an invalid integer value' do
         value = 100
         user_detail.onboarding_status_registration_objective = value
+
         expect(user_detail.onboarding_status_registration_objective).to be_nil
       end
     end
@@ -106,12 +110,14 @@ RSpec.describe UserDetail, feature_category: :system_access do
       it 'correctly handles string values' do
         value = '0'
         user_detail.onboarding_status_role = value
+
         expect(user_detail.onboarding_status_role).to eq(0)
       end
 
       it 'correctly handles integer values' do
         value = 0
         user_detail.onboarding_status_role = value
+
         expect(user_detail.onboarding_status_role).to eq(0)
       end
     end
@@ -119,7 +125,34 @@ RSpec.describe UserDetail, feature_category: :system_access do
     it 'passes nil to super when value is not present' do
       value = ''
       user_detail.onboarding_status_role = value
+
       expect(user_detail.onboarding_status_role).to be_nil
+    end
+  end
+
+  describe '#onboarding_status_joining_project=' do
+    let(:user_detail) { build(:user_detail) }
+
+    context 'when given valid values' do
+      it 'correctly handles true' do
+        value = 'true'
+        user_detail.onboarding_status_joining_project = value
+
+        expect(user_detail.onboarding_status_joining_project).to be(true)
+      end
+
+      it 'correctly handles false' do
+        value = 'false'
+        user_detail.onboarding_status_joining_project = value
+
+        expect(user_detail.onboarding_status_joining_project).to be(false)
+      end
+    end
+
+    it 'is false when value is nil' do
+      user_detail.onboarding_status_joining_project = nil
+
+      expect(user_detail.onboarding_status_joining_project).to be(false)
     end
   end
 

@@ -77,11 +77,6 @@ module Registrations
                       .merge(onboarding_registration_type_params)
                       .merge(onboarding_in_progress: onboarding_status_presenter.continue_full_onboarding?)
 
-      # Since onboarding_status_joining_project is not a real db column(jsonb attribute), we need to convert it to
-      # boolean at this level.
-      base_params[:onboarding_status_joining_project] =
-        ::Gitlab::Utils.to_boolean(base_params[:onboarding_status_joining_project])
-
       # Dup registration_objective info for registration_objective and onboarding_status_registration_objective
       if base_params[:registration_objective].present?
         base_params[:onboarding_status_registration_objective] = base_params[:registration_objective]
