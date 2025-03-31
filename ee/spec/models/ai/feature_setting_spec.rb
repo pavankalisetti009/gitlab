@@ -328,7 +328,8 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
       it 'contains the expected flagged features' do
         expect(described_class::FLAGGED_FEATURES).to eq({
           duo_chat_troubleshoot_job: 7,
-          generate_commit_message: 8
+          generate_commit_message: 8,
+          summarize_new_merge_request: 9
         }.freeze)
       end
 
