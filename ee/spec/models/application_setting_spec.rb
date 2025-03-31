@@ -53,6 +53,8 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     it { expect(setting.global_search_snippet_titles_enabled).to be(true) }
     it { expect(setting.global_search_users_enabled).to be(true) }
     it { expect(setting.global_search_wiki_enabled).to be(true) }
+    it { expect(setting.global_search_block_anonymous_searches_enabled).to be(false) }
+    it { expect(setting.global_search_limited_indexing_enabled).to be(false) }
   end
 
   describe 'validations' do
