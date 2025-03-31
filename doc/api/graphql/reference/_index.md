@@ -5491,7 +5491,7 @@ Input type: `DestroyPackagesInput`
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="mutationdestroypackagesclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
-| <a id="mutationdestroypackagesids"></a>`ids` | [`[PackagesPackageID!]!`](#packagespackageid) | Global IDs of the Packages. Max 20. |
+| <a id="mutationdestroypackagesids"></a>`ids` | [`[PackagesPackageID!]!`](#packagespackageid) | Global IDs of the Packages. Max 100. |
 
 #### Fields
 
