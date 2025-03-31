@@ -24,6 +24,7 @@ module Groups
         push_frontend_ability(ability: :resolve_vulnerability_with_ai, resource: @group, user: current_user)
         push_frontend_feature_flag(:vulnerability_report_type_scanner_filter, @group, type: :gitlab_com_derisk)
         push_frontend_feature_flag(:new_issue_attachment_from_vulnerability_bulk_action, @group, type: :wip)
+        push_frontend_feature_flag(:asynchronous_vulnerability_export_delivery_for_groups, @group)
       end
 
       def index
