@@ -54,8 +54,8 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
 
     context 'with existent callback class' do
       it 'returns nil' do
-        expect(described_class.sync_callback_class('related_vulnerabilities')).to eq(
-          ::WorkItems::DataSync::NonWidgets::RelatedVulnerabilities
+        expect(described_class.sync_callback_class('pending_escalations')).to eq(
+          ::WorkItems::DataSync::NonWidgets::PendingEscalations
         )
       end
     end

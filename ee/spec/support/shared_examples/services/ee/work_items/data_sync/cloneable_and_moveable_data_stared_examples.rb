@@ -87,12 +87,12 @@ RSpec.shared_examples 'cloneable and moveable for ee widget data' do
   let_it_be(:widgets) do
     [
       # for hierarchy widget, ensure that epic(through epic_issue) is being copied to the new work item
-      { widget: :hierarchy,    assoc_name: :epic,                    eval_value: :wi_epic,                expected: epic,                    operations: [move, clone] },
-      { widget: :weight,       assoc_name: :weights_source,          eval_value: :wi_weights_source,      expected: weights_source,          operations: [move, clone] },
-      { widget: :linked_items, assoc_name: :linked_work_items,       eval_value: :wi_linked_items,        expected: related_items,           operations: [move] },
+      { widget: :hierarchy,       assoc_name: :epic,                    eval_value: :wi_epic,                expected: epic,                    operations: [move, clone] },
+      { widget: :weight,          assoc_name: :weights_source,          eval_value: :wi_weights_source,      expected: weights_source,          operations: [move, clone] },
+      { widget: :linked_items,    assoc_name: :linked_work_items,       eval_value: :wi_linked_items,        expected: related_items,           operations: [move] },
       # these are non widget associations, but we can test these the same way
-      {                        assoc_name: :related_vulnerabilities, eval_value: :wi_vulnerabilities,     expected: related_vulnerabilities, operations: [move] },
-      {                        assoc_name: :pending_escalations,     eval_value: :wi_pending_escalations, expected: pending_escalations,     operations: [move] }
+      { widget: :vulnerabilities, assoc_name: :related_vulnerabilities, eval_value: :wi_vulnerabilities,     expected: related_vulnerabilities, operations: [move] },
+      {                           assoc_name: :pending_escalations,     eval_value: :wi_pending_escalations, expected: pending_escalations,     operations: [move] }
     ]
   end
   # rubocop: enable Layout/LineLength
