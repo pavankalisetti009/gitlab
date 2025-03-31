@@ -8,7 +8,6 @@ $item-height: 50px;
 $details-cell-width: px-to-rem(320px);
 $timeline-cell-height: 32px;
 $timeline-cell-width: 180px;
-$border-style: 1px solid var(--gray-100, $gray-100);
 $roadmap-gradient-dark-gray: rgba(0, 0, 0, 0.15);
 $roadmap-gradient-gray: rgba(255, 255, 255, 0.001);
 $scroll-top-gradient: linear-gradient(to bottom, $roadmap-gradient-dark-gray 0%, $roadmap-gradient-gray 100%);
@@ -79,7 +78,7 @@ html.group-epics-roadmap-html {
 }
 
 .group-epics-roadmap:nth-of-type(1) {
-  border-bottom: $border-style;
+  @apply gl-border-b;
 
   .top-bar-container {
     border-bottom: 0;
@@ -117,7 +116,7 @@ html.group-epics-roadmap-html {
   .timeline-header-item {
     float: left;
     height: $header-item-height;
-    border-bottom: $border-style;
+    @apply gl-border-b;
     background-color: var(--white, $white);
   }
 
@@ -157,8 +156,7 @@ html.group-epics-roadmap-html {
 
     .item-label {
       padding: $gl-padding-8 $gl-padding;
-      border-right: $border-style;
-      border-bottom: $border-style;
+      @apply gl-border-b gl-border-r;
     }
 
     .item-sublabel {
@@ -223,7 +221,7 @@ html.group-epics-roadmap-html {
 .epic-details-cell,
 .epic-timeline-cell {
   float: left;
-  border-bottom: $border-style;
+  @apply gl-border-b;
 }
 
 // Ensure that last epic item doesn't have bottom border
@@ -258,7 +256,7 @@ html.group-epics-roadmap-html {
   position: relative;
   width: $timeline-cell-width;
   background-color: transparent;
-  border-right: $border-style;
+  @apply gl-border-r;
 
   &:last-child {
     border-right: 0;

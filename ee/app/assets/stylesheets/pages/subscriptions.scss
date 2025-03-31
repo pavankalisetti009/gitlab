@@ -55,7 +55,7 @@ $subscriptions-full-width-lg: 541px;
     list-style-type: decimal;
 
     .phase {
-      border-bottom: 5px solid $gray-100;
+      border-bottom: 5px solid var(--gl-border-color-default);
       @apply gl-text-subtle;
       flex-basis: 100%;
       font-size: $gl-font-size-12;

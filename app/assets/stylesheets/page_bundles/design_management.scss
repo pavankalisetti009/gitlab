@@ -161,7 +161,7 @@ $design-pin-diameter-sm: 24px;
 
     &::before {
       content: '';
-      border-left: 1px solid var(--gray-100, $gray-100);
+      @apply gl-border-l;
       position: absolute;
       left: 11px;
       top: -17px;
