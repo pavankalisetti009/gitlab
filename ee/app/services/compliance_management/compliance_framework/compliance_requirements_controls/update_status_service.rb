@@ -34,6 +34,8 @@ module ComplianceManagement
           old_status = control_status.status_before_last_save
           new_status = control_status.status
 
+          return if old_status == new_status
+
           audit_context = {
             name: "compliance_control_status_#{new_status}",
             scope: project,
