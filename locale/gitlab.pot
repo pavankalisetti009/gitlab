@@ -22156,6 +22156,9 @@ msgstr ""
 msgid "DuoChat|GitLab Duo Chat"
 msgstr ""
 
+msgid "DuoChat|GitLab Duo with Amazon Q"
+msgstr ""
+
 msgid "DuoChat|Give feedback"
 msgstr ""
 
@@ -26955,6 +26958,12 @@ msgid "GitLab Community Edition"
 msgstr ""
 
 msgid "GitLab Duo"
+msgstr ""
+
+msgid "GitLab Duo Chat"
+msgstr ""
+
+msgid "GitLab Duo Chat with Amazon Q"
 msgstr ""
 
 msgid "GitLab Duo Pro seats"
