@@ -12,6 +12,12 @@ RSpec.describe Projects::Security::ConfigurationPresenter, feature_category: :so
   describe '#to_h' do
     subject(:result) { presenter.to_h }
 
+    it 'includes the vulnerability archive export path' do
+      expect(result[:vulnerability_archive_export_path]).to eq(
+        "/api/v4/security/projects/#{project.id}/vulnerability_archive_exports"
+      )
+    end
+
     it 'reports security_training_enabled' do
       allow(project).to receive(:security_training_available?).and_return(true)
 

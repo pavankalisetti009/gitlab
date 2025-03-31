@@ -6,7 +6,16 @@ module EE
       module ConfigurationPresenter
         extend ::Gitlab::Utils::Override
 
+        override :to_h
+        def to_h
+          super.merge(vulnerability_archive_export_path: vulnerability_archive_export_path)
+        end
+
         private
+
+        def vulnerability_archive_export_path
+          api_v4_security_projects_vulnerability_archive_exports_path(id: project.id)
+        end
 
         override :container_scanning_for_registry_enabled
         def container_scanning_for_registry_enabled
