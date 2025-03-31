@@ -190,7 +190,7 @@ describe('useAccessTokens store', () => {
         mockAxios.onGet().replyOnce(HTTP_STATUS_OK, [], headers);
         await store.fetchStatistics();
 
-        expect(store.statistics).toMatchObject([{ title, tooltipTitle, filters }]);
+        expect(store.statistics).toMatchObject([{ title, tooltipTitle, filters, value: 1 }]);
       });
 
       it('shows an alert if an error occurs while fetching', async () => {
