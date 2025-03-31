@@ -17,6 +17,13 @@ title: Guidelines for implementing Enterprise Edition features
   [EE features list](https://about.gitlab.com/features/).
 <!-- markdownlint-enable MD044 -->
 
+## Runtime modes in development
+
+1. **EE Unlicensed**: this is what you have from a plain GDK installation, if you've installed from the [main repository](https://gitlab.com/gitlab-org/gitlab)
+1. **EE licensed**: when you [add a valid license to your GDK](https://gitlab.com/gitlab-org/customers-gitlab-com/-/blob/main/doc/setup/gitlab.md#adding-a-license-from-staging-customers-portal-to-your-gdk)
+1. **GitLab.com SaaS**: when you [simulate SaaS](#simulate-a-saas-instance)
+1. **CE**: in any of the states above, when you [simulate CE](#simulate-a-ce-instance-with-a-licensed-gdk)
+
 ## SaaS-only feature
 
 Use the following guidelines when you develop a feature that is only applicable for SaaS (for example, a CustomersDot integration).
