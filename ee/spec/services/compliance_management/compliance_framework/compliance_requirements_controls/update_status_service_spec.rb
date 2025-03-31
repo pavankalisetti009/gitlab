@@ -193,6 +193,35 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
             )
         end
       end
+
+      context 'when the status is already the same as the requested status' do
+        before do
+          described_class.new(current_user: user, control: control, project: project, status_value: 'pass').execute
+        end
+
+        it 'does not audit when updating to the same status' do
+          service.execute
+
+          expect(::Gitlab::Audit::Auditor).not_to have_received(:audit).with(
+            name: 'compliance_control_status_pass',
+            scope: project,
+            target: project_control_compliance_status,
+            message: "Changed compliance control status from 'pass' to 'pass'",
+            author: user
+          )
+        end
+
+        it 'returns success' do
+          result = service.execute
+
+          expect(result.success?).to be true
+          expect(result.payload[:status]).to eq('pass')
+        end
+
+        it 'does not track any events' do
+          expect { service.execute }.not_to trigger_internal_events
+        end
+      end
     end
 
     context 'with invalid params' do
