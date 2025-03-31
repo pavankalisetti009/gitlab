@@ -58,12 +58,14 @@ RSpec.describe Gitlab::Checks::FileSizeLimitCheck, feature_category: :source_cod
 
   describe '#validate!' do
     describe 'when self-managed (global limit ignored)' do
-      context 'when the global file limit is smaller than the push rule file size limit' do
-        let(:push_rule_limit) { 50 }
-        let(:global_limit) { 20 }
-
-        it_behaves_like 'checks file size limit', 50
+      before do
+        stub_saas_features(instance_push_limit: false)
       end
+
+      let(:push_rule_limit) { 50 }
+      let(:global_limit) { 20 }
+
+      it_behaves_like 'checks file size limit', 50
     end
 
     context 'when on Saas' do
@@ -71,18 +73,26 @@ RSpec.describe Gitlab::Checks::FileSizeLimitCheck, feature_category: :source_cod
         stub_saas_features(instance_push_limit: true)
       end
 
-      context 'when the global file limit is smaller than the push rule file size limit' do
-        let(:push_rule_limit) { 50 }
-        let(:global_limit) { 20 }
-
-        it_behaves_like 'checks file size limit', 20
+      where(:push_rule_limit, :global_limit, :expected_limit) do
+        [
+          [50, 20, 20],
+          [10, 50, 10],
+          [30, nil, 30],
+          [0, 20, 20]
+        ]
       end
 
-      context 'when the push rule file limit is smaller than the global file size limit' do
-        let(:push_rule_limit) { 10 }
-        let(:global_limit) { 50 }
-
-        it_behaves_like 'checks file size limit', 10
+      with_them do
+        it "passes the correct file size limit to HookEnvironmentAwareAnyOversizedBlobs" do
+          expect_next_instance_of(Gitlab::Checks::FileSizeCheck::HookEnvironmentAwareAnyOversizedBlobs,
+            project: project,
+            changes: changes,
+            file_size_limit_megabytes: expected_limit
+          ) do |check|
+            expect(check).to receive(:find).and_call_original
+          end
+          file_size_check.validate!
+        end
       end
 
       context 'when the push rule does not exist' do
@@ -90,20 +100,6 @@ RSpec.describe Gitlab::Checks::FileSizeLimitCheck, feature_category: :source_cod
         let(:global_limit) { 50 }
 
         it_behaves_like 'checks file size limit', 50
-      end
-
-      context 'when the global file limit is nil' do
-        let(:push_rule_limit) { 30 }
-        let(:global_limit) { nil }
-
-        it_behaves_like 'checks file size limit', 30
-      end
-
-      context 'when the push rule limit is 0' do
-        let(:push_rule_limit) { 0 }
-        let(:global_limit) { 20 }
-
-        it_behaves_like 'checks file size limit', 20
       end
 
       context 'when feature flag "push_rule_file_size_limit" is disabled' do
