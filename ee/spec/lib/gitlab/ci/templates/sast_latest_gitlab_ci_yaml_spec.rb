@@ -157,6 +157,12 @@ RSpec.describe 'SAST.latest.gitlab-ci.yml', feature_category: :continuous_integr
           'Ruby with disabled advanced SAST'                  | { 'config/routes.rb' => '' }                 | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'false' }                                                | %w[semgrep-sast]
           'Javascript with disabled advanced SAST'            | { 'app.js' => '' }                           | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'false' }                                                | %w[semgrep-sast]
           'C# with disabled advanced SAST'                    | { 'app.cs' => '' }                           | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'false' }                                                | %w[semgrep-sast]
+          'Python with Static Reachability'                   | { 'app.py' => '' }                           | { 'GITLAB_STATIC_REACHABILITY_ENABLED' => 'true' }                                           | %w[gitlab-static-reachability gitlab-enrich-cdx-results semgrep-sast]
+          'Python with Static Reachability and advanced SAST' | { 'app.py' => '' }                           | { 'GITLAB_STATIC_REACHABILITY_ENABLED' => 'true', 'GITLAB_ADVANCED_SAST_ENABLED' => 'true' } | %w[gitlab-static-reachability gitlab-enrich-cdx-results gitlab-advanced-sast]
+          'Java with Static Reachability'                     | { 'app.java' => '' }                         | { 'GITLAB_STATIC_REACHABILITY_ENABLED' => 'true' }                                           | %w[gitlab-static-reachability gitlab-enrich-cdx-results semgrep-sast]
+          'Java with Static Reachability and advanced SAST'   | { 'app.java' => '' }                         | { 'GITLAB_STATIC_REACHABILITY_ENABLED' => 'true', 'GITLAB_ADVANCED_SAST_ENABLED' => 'true' } | %w[gitlab-static-reachability gitlab-enrich-cdx-results gitlab-advanced-sast]
+          'JSP with Static Reachability'                      | { 'app.jsp' => '' }                          | { 'GITLAB_STATIC_REACHABILITY_ENABLED' => 'true' }                                           | %w[gitlab-static-reachability gitlab-enrich-cdx-results]
+          'JSP with Static Reachability and advanced SAST'    | { 'app.jsp' => '' }                          | { 'GITLAB_STATIC_REACHABILITY_ENABLED' => 'true', 'GITLAB_ADVANCED_SAST_ENABLED' => 'true' } | %w[gitlab-static-reachability gitlab-enrich-cdx-results gitlab-advanced-sast]
         end
 
         with_them do
