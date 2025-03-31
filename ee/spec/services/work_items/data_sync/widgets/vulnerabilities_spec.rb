@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe WorkItems::DataSync::NonWidgets::RelatedVulnerabilities, feature_category: :team_planning do
+RSpec.describe WorkItems::DataSync::Widgets::Vulnerabilities, feature_category: :team_planning do
   let_it_be(:current_user) { create(:user) }
   let_it_be_with_reload(:work_item) { create(:work_item) }
   let_it_be(:vulnerabilities_issue_link) { create_list(:vulnerabilities_issue_link, 2, issue: work_item) }
