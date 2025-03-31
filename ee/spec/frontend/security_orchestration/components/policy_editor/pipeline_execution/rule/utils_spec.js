@@ -4,10 +4,12 @@ import {
   secondsToValue,
   timeUnitToSeconds,
   updateScheduleCadence,
+} from 'ee/security_orchestration/components/policy_editor/pipeline_execution/rule/utils';
+import {
   MAXIMUM_SECONDS,
   MINIMUM_SECONDS,
   TIME_UNITS,
-} from 'ee/security_orchestration/components/policy_editor/pipeline_execution/rule/utils';
+} from 'ee/security_orchestration/components/policy_editor/pipeline_execution/rule/constants';
 
 describe('Pipeline execution rule utils', () => {
   describe('getValueWithinLimits', () => {

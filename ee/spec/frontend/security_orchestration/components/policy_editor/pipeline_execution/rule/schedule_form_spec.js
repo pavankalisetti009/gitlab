@@ -4,11 +4,11 @@ import ScheduleForm from 'ee/security_orchestration/components/policy_editor/pip
 import BranchSelection from 'ee/security_orchestration/components/policy_editor/scan_result/rule/branch_selection.vue';
 import TimezoneDropdown from '~/vue_shared/components/timezone_dropdown/timezone_dropdown.vue';
 import {
-  TIME_UNITS,
-  MINIMUM_SECONDS,
-  MAXIMUM_SECONDS,
   DEFAULT_TIME_PER_UNIT,
-} from 'ee/security_orchestration/components/policy_editor/pipeline_execution/rule/utils';
+  MAXIMUM_SECONDS,
+  MINIMUM_SECONDS,
+  TIME_UNITS,
+} from 'ee/security_orchestration/components/policy_editor/pipeline_execution/rule/constants';
 
 jest.mock('ee/security_orchestration/components/policy_editor/utils', () => ({
   ...jest.requireActual('ee/security_orchestration/components/policy_editor/utils'),
