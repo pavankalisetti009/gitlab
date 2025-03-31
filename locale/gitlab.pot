@@ -1177,9 +1177,6 @@ msgstr ""
 msgid "%{owner} %{created_date} ago."
 msgstr ""
 
-msgid "%{path} on %{ref}"
-msgstr ""
-
 msgid "%{percentage}%%"
 msgstr ""
 

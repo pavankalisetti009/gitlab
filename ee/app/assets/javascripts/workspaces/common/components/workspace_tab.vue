@@ -58,24 +58,14 @@ export default {
       required: true,
     },
   },
-  data() {
-    return {
-      withTableRowTransition: true,
-    };
-  },
   computed: {
     isEmpty() {
       return !this.workspaces.length && !this.loading;
-    },
-    transitionProps() {
-      const transitionProps = { name: 'fade', delay: 200, duration: 300 };
-      return this.withTableRowTransition ? transitionProps : undefined;
     },
   },
   methods: {
     clearError() {
       this.$emit('error', '');
-      this.withTableRowTransition = true;
     },
     onUpdateFailed({ error }) {
       // TODO: review type of error, may need to be a different type or cast to string
@@ -83,7 +73,6 @@ export default {
     },
     onPaginationInput(paginationVariables) {
       this.$emit('onPaginationInput', { tab: this.tabName, paginationVariables });
-      this.withTableRowTransition = false;
     },
   },
   i18n,
@@ -109,8 +98,6 @@ export default {
       />
       <div v-else>
         <workspaces-table
-          tabs-mode
-          :transition-props="transitionProps"
           data-testid="workspace-list-item"
           :workspaces="workspaces"
           @updateFailed="onUpdateFailed"
