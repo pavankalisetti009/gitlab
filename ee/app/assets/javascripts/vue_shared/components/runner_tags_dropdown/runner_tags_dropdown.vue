@@ -1,5 +1,6 @@
 <script>
 import { GlCollapsibleListbox } from '@gitlab/ui';
+import produce from 'immer';
 import { debounce, uniq } from 'lodash';
 import { s__, __ } from '~/locale';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
@@ -133,15 +134,32 @@ export default {
       return this.isProject ? projectRunnerTags : groupRunnerTags;
     },
   },
-  created() {
+  async created() {
     this.debouncedSearchKeyUpdate = debounce(this.setSearchKey, DEFAULT_DEBOUNCE_AND_THROTTLE_MS);
+
+    if (this.value.length) {
+      await this.getExistingTags(this.value);
+    }
   },
   methods: {
+    doesTagExist(tag) {
+      return this.tags.includes(tag) || this.selected.includes(tag);
+    },
     isTagSelected(tag) {
       return this.selected?.includes(tag);
     },
-    doesTagExist(tag) {
-      return this.tags.includes(tag) || this.selected.includes(tag);
+    async getExistingTags(tags) {
+      this.$apollo.queries.tagList.fetchMore({
+        variables: { fullPath: this.namespacePath, tagList: tags },
+        updateQuery: (previousResult, { fetchMoreResult }) => {
+          return produce(fetchMoreResult, (draftData) => {
+            draftData[this.namespaceType].runners.nodes = [
+              ...(previousResult[this.namespaceType].runners?.nodes || []),
+              ...draftData[this.namespaceType].runners.nodes,
+            ];
+          });
+        },
+      });
     },
     sortTags() {
       this.tags.sort((a) => (this.isTagSelected(a) ? -1 : 1));
