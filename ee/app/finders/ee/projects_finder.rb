@@ -13,7 +13,7 @@ module EE
   #     include_hidden: boolean
   #     filter_expired_saml_session_projects: boolean
   module ProjectsFinder
-    include ::Projects::Filterable
+    include Gitlab::Auth::Saml::SsoSessionFilterable
     extend ::Gitlab::Utils::Override
 
     private
@@ -62,6 +62,10 @@ module EE
 
     def by_hidden(items)
       params[:include_hidden].present? ? items : items.not_hidden
+    end
+
+    def by_saml_sso_session(collection)
+      filter_by_saml_sso_session(collection, :filter_expired_saml_session_projects)
     end
   end
 end

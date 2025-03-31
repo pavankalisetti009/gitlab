@@ -36,9 +36,13 @@ RSpec.describe 'getting organization information', feature_category: :cell do
   end
 
   context 'when requesting groups' do
+    before do
+      stub_licensed_features(group_saml: true)
+    end
+
     let_it_be(:saml_group) do
       create(:group, organization: organization, developers: current_user) do |group|
-        create(:saml_provider, group: group)
+        create(:saml_provider, group: group, enabled: true, enforced_sso: true)
         create(:group_saml_identity, saml_provider: group.saml_provider, user: current_user)
       end
     end
@@ -68,10 +72,27 @@ RSpec.describe 'getting organization information', feature_category: :cell do
     end
 
     context 'when current user has no active SAML session' do
-      it 'excludes SAML group' do
-        request_organization
+      context 'when in the context of web activity' do
+        around do |example|
+          session = { 'warden.user.user.key' => [[current_user.id], current_user.authenticatable_salt] }
+          Gitlab::Session.with_session(session) do
+            example.run
+          end
+        end
 
-        expect(groups).to contain_exactly(a_graphql_entity_for(group))
+        it 'filters out SAML groups' do
+          request_organization
+
+          expect(groups).to contain_exactly(a_graphql_entity_for(group))
+        end
+      end
+
+      context 'when not in the context of web activity' do
+        it 'includes SAML groups' do
+          request_organization
+
+          expect(groups).to contain_exactly(a_graphql_entity_for(saml_group))
+        end
       end
     end
   end

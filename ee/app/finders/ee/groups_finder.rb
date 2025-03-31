@@ -2,6 +2,7 @@
 
 module EE
   module GroupsFinder
+    include Gitlab::Auth::Saml::SsoSessionFilterable
     extend ::Gitlab::Utils::Override
 
     private
@@ -15,15 +16,7 @@ module EE
     end
 
     def by_saml_sso_session(groups)
-      return groups unless filter_expired_saml_session_groups?
-
-      groups.by_not_in_root_id(current_user.expired_sso_session_saml_providers.select(:group_id))
-    end
-
-    def filter_expired_saml_session_groups?
-      return false if current_user.nil? || current_user.can_read_all_resources?
-
-      params.fetch(:filter_expired_saml_session_groups, false)
+      filter_by_saml_sso_session(groups, :filter_expired_saml_session_groups)
     end
 
     def by_repository_storage(groups)
