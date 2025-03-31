@@ -13,6 +13,7 @@ import {
   HTTP_STATUS_NOT_FOUND,
   HTTP_STATUS_OK,
 } from '~/lib/utils/http_status';
+import { DASHBOARD_TYPE_GROUP, DASHBOARD_TYPE_PROJECT } from 'ee/security_dashboard/constants';
 
 jest.mock('~/alert');
 jest.mock('~/lib/utils/downloader');
@@ -20,90 +21,213 @@ jest.mock('~/lib/utils/downloader');
 const mockReportDate = formatDate(new Date(), 'isoDateTime');
 const vulnerabilitiesExportEndpoint = `${TEST_HOST}/vulnerability_findings.csv`;
 
-describe('Csv Button Export', () => {
-  let mock;
+const groupProps = {
+  entity: 'group',
+  dashboardType: DASHBOARD_TYPE_GROUP,
+  glFeatures: {
+    asynchronousVulnerabilityExportDeliveryForGroups: true,
+  },
+};
+
+const projectProps = {
+  entity: 'project',
+  dashboardType: DASHBOARD_TYPE_PROJECT,
+  glFeatures: {
+    asynchronousVulnerabilityExportDeliveryForProjects: true,
+  },
+};
+
+describe('CsvExportButton', () => {
   let wrapper;
+  let mock;
 
-  const findCsvExportButton = () => wrapper.findComponent(GlButton);
+  const findButton = () => wrapper.findComponent(GlButton);
 
-  const createComponent = () => {
-    return shallowMount(CsvExportButton, {
+  const createComponent = ({ glFeatures = {}, dashboardType = DASHBOARD_TYPE_PROJECT } = {}) => {
+    wrapper = shallowMount(CsvExportButton, {
       provide: {
         vulnerabilitiesExportEndpoint,
+        glFeatures,
+        dashboardType,
       },
     });
   };
 
-  const mockCsvExportRequest = (download, status = 'finished') => {
+  const mockSyncExportRequest = (download, status = 'finished') => {
     mock
-      .onPost(vulnerabilitiesExportEndpoint, { send_email: true })
+      .onPost(vulnerabilitiesExportEndpoint)
       .reply(HTTP_STATUS_ACCEPTED, { _links: { self: 'status/url' } });
 
     mock.onGet('status/url').reply(HTTP_STATUS_OK, { _links: { download }, status });
   };
 
-  describe('when the user sees the button for the first time', () => {
+  const mockAsyncExportRequest = (status = HTTP_STATUS_ACCEPTED) => {
+    mock.onPost(vulnerabilitiesExportEndpoint, { send_email: true }).reply(status);
+  };
+
+  beforeEach(() => {
+    mock = new MockAdapter(axios);
+  });
+
+  afterEach(() => {
+    mock.restore();
+  });
+
+  describe('synchronous export (feature flag disabled)', () => {
     beforeEach(() => {
-      mock = new MockAdapter(axios);
-      wrapper = createComponent();
+      createComponent({ glFeatures: {} });
     });
 
-    it('renders correctly', () => {
-      expect(findCsvExportButton().text()).toBe('Export');
+    it('renders button with correct text', () => {
+      expect(findButton().text()).toBe('Export');
     });
 
-    it('will start the download when clicked', async () => {
+    it('downloads CSV on successful export job completion', async () => {
       const url = 'download/url';
-      mockCsvExportRequest(url);
+      mockSyncExportRequest(url);
 
-      findCsvExportButton().vm.$emit('click');
+      findButton().vm.$emit('click');
       await axios.waitForAll();
 
-      expect(mock.history.post).toHaveLength(1); // POST is the create report endpoint.
-      expect(mock.history.get).toHaveLength(1); // GET is the poll endpoint.
-      expect(downloader).toHaveBeenCalledTimes(1);
       expect(downloader).toHaveBeenCalledWith({
         fileName: `csv-export-${mockReportDate}.csv`,
         url,
       });
     });
 
-    it('shows the alert error when the export job status is failed', async () => {
-      mockCsvExportRequest('', 'failed');
+    it('shows error alert on export failure', async () => {
+      mock.onPost(vulnerabilitiesExportEndpoint).reply(HTTP_STATUS_NOT_FOUND);
 
-      findCsvExportButton().vm.$emit('click');
+      findButton().vm.$emit('click');
+      await axios.waitForAll();
+
+      expect(createAlert).toHaveBeenCalledWith({
+        message: 'There was an error while generating the report.',
+        variant: 'danger',
+        dismissible: true,
+      });
+    });
+
+    it('shows error alert on failed export status', async () => {
+      mockSyncExportRequest('', 'failed');
+
+      findButton().vm.$emit('click');
       await axios.waitForAll();
 
       expect(downloader).not.toHaveBeenCalled();
       expect(createAlert).toHaveBeenCalledWith({
         message: 'There was an error while generating the report.',
+        variant: 'danger',
+        dismissible: true,
       });
     });
+  });
 
-    it('shows the alert error when backend fails to generate the export', async () => {
-      mock.onPost(vulnerabilitiesExportEndpoint).reply(HTTP_STATUS_NOT_FOUND, {});
+  describe('asynchronous export (feature flag enabled)', () => {
+    describe.each`
+      props
+      ${groupProps}
+      ${projectProps}
+    `('CsvExportButton for $props.entity dashboard', ({ props }) => {
+      beforeEach(() => {
+        createComponent({
+          glFeatures: props.glFeatures,
+          dashboardType: props.dashboardType,
+        });
+      });
 
-      findCsvExportButton().vm.$emit('click');
-      await axios.waitForAll();
+      it(`sends async export request and shows success alert for ${props.entity}`, async () => {
+        mockAsyncExportRequest();
 
-      expect(createAlert).toHaveBeenCalledWith({
-        message: 'There was an error while generating the report.',
+        findButton().vm.$emit('click');
+        await axios.waitForAll();
+
+        expect(mock.history.post[0].data).toBe(JSON.stringify({ send_email: true }));
+        expect(createAlert).toHaveBeenCalledWith({
+          message: 'The report is being generated and will be sent to your email.',
+          variant: 'info',
+          dismissible: true,
+        });
+      });
+
+      it(`shows error alert when async export fails for ${props.entity}`, async () => {
+        mockAsyncExportRequest(HTTP_STATUS_NOT_FOUND);
+
+        findButton().vm.$emit('click');
+        await axios.waitForAll();
+
+        expect(createAlert).toHaveBeenCalledWith({
+          message: 'There was an error while generating the report.',
+          variant: 'danger',
+          dismissible: true,
+        });
       });
     });
+  });
 
-    it('displays the export icon when not loading and the loading icon when loading', async () => {
-      expect(findCsvExportButton().props()).toMatchObject({
-        icon: 'export',
-        loading: false,
-      });
+  describe('button loading state', () => {
+    beforeEach(() => {
+      createComponent({ glFeatures: {} });
+    });
 
-      findCsvExportButton().vm.$emit('click');
+    it('toggles loading and icon correctly', async () => {
+      const url = 'download/url';
+      mockSyncExportRequest(url);
+
+      findButton().vm.$emit('click');
       await nextTick();
 
-      expect(findCsvExportButton().props()).toMatchObject({
-        icon: '',
+      expect(findButton().props()).toMatchObject({
         loading: true,
+        icon: '',
       });
+
+      await axios.waitForAll();
+
+      expect(findButton().props()).toMatchObject({
+        loading: false,
+        icon: 'export',
+      });
+    });
+  });
+
+  describe('tooltip', () => {
+    it('shows "Export as CSV" when async export is disabled', () => {
+      createComponent({ glFeatures: {} });
+
+      expect(findButton().attributes('title')).toBe('Export as CSV');
+    });
+
+    describe.each`
+      props
+      ${groupProps}
+      ${projectProps}
+    `('when async export is enabled for $props.entity', ({ props }) => {
+      it(`shows "Send as CSV to email" for ${props.entity}`, () => {
+        createComponent({ glFeatures: props.glFeatures, dashboardType: props.dashboardType });
+
+        expect(findButton().attributes('title')).toBe('Send as CSV to email');
+      });
+    });
+  });
+
+  describe('button disabled state', () => {
+    it('enables the button when vulnerabilitiesExportEndpoint is provided', () => {
+      createComponent();
+
+      expect(findButton().props('disabled')).toBe(false);
+    });
+
+    it('disables the button when vulnerabilitiesExportEndpoint is not provided', () => {
+      wrapper = shallowMount(CsvExportButton, {
+        provide: {
+          vulnerabilitiesExportEndpoint: null,
+          glFeatures: {},
+          dashboardType: DASHBOARD_TYPE_PROJECT,
+        },
+      });
+
+      expect(findButton().props('disabled')).toBe(true);
     });
   });
 });
