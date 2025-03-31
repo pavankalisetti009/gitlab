@@ -45,6 +45,13 @@ module Projects
       data
     end
 
+    def can_assign_duo_seats?(project)
+      root = project.root_ancestor
+
+      GitlabSubscriptions::Duo.any_active_add_on_purchase_for_namespace?(root) &&
+        can?(current_user, :read_usage_quotas, root)
+    end
+
     def can_start_trial?(project)
       root = project.root_ancestor
       root.has_free_or_no_subscription? && can?(current_user, :admin_namespace, root)
@@ -104,6 +111,10 @@ module Projects
           ),
           code_owners_enabled: new_trial_path_with_glm(namespace_id: namespace_id, content: ONBOARDING_CODE_OWNERS)
         }
+      end
+
+      if can_assign_duo_seats?(project)
+        urls[:duo_seat_assigned] = group_settings_gitlab_duo_seat_utilization_index_path(project.root_ancestor)
       end
 
       urls.merge(trial_items)

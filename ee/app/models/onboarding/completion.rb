@@ -6,6 +6,7 @@ module Onboarding
 
     ACTION_PATHS = [
       :created, # represents "create a repository" item and always checked
+      :duo_seat_assigned,
       :pipeline_created,
       :trial_started,
       :required_mr_approvals_enabled,

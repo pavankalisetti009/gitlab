@@ -12,7 +12,16 @@ module GitlabSubscriptions
         def after_success_hook
           super
 
-          create_iterable_trigger if duo_pro? || duo_enterprise?
+          duo_success_actions if duo_pro? || duo_enterprise?
+        end
+
+        def duo_success_actions
+          enqueue_onboarding_progress_action
+          create_iterable_trigger
+        end
+
+        def enqueue_onboarding_progress_action
+          ::Onboarding::ProgressService.async(namespace.id, 'duo_seat_assigned')
         end
 
         def create_iterable_trigger

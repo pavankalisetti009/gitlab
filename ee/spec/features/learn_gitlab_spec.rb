@@ -14,6 +14,7 @@ RSpec.describe 'Learn Gitlab concerns', :feature, :js, :saas, feature_category: 
         trial_starts_on: Date.today,
         trial_ends_on: 10.days.from_now
       ) do |g|
+        create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :trial, namespace: g)
         create(:onboarding_progress, namespace: g)
       end
     end
@@ -32,11 +33,19 @@ RSpec.describe 'Learn Gitlab concerns', :feature, :js, :saas, feature_category: 
       sign_in(user)
     end
 
-    it 'displays alert with Explore paid plans link and Invite more members button' do
+    it 'displays alert with Explore paid plans link, Invite more members button and duo seat assignment' do
       visit namespace_project_learn_gitlab_path(group, project)
 
       expect(page).to have_selector(alert_selector)
       expect(page).to have_link(text: 'Explore paid plans', href: group_billings_path(group))
+
+      expect(page).to(
+        have_link(
+          text: 'Assign a GitLab Duo seat to your colleagues',
+          href: group_settings_gitlab_duo_seat_utilization_index_path(group)
+        )
+      )
+
       expect(page).to have_button('Invite more members')
 
       click_button 'Invite more members'

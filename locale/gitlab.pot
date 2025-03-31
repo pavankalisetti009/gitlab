@@ -34607,6 +34607,9 @@ msgstr ""
 msgid "LearnGitLab|Analyze your application for vulnerabilities with DAST"
 msgstr ""
 
+msgid "LearnGitLab|Assign a GitLab Duo seat to your colleagues"
+msgstr ""
+
 msgid "LearnGitLab|Complete these tasks first so you can enjoy GitLab's features to their fullest:"
 msgstr ""
 

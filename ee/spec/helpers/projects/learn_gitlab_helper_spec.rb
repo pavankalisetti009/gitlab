@@ -3,8 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe Projects::LearnGitlabHelper, feature_category: :onboarding do
-  using RSpec::Parameterized::TableSyntax
-
   let_it_be(:user) { create(:user) }
 
   before do
@@ -112,7 +110,7 @@ RSpec.describe Projects::LearnGitlabHelper, feature_category: :onboarding do
       expect(onboarding_actions_data).to match(result)
     end
 
-    context 'for trial- and subscription-related actions' do
+    context 'for trial and subscription-related actions' do
       let(:disabled_message) { s_('LearnGitlab|Contact your administrator to start a free Ultimate trial.') }
 
       context 'when namespace has free or no subscription' do
@@ -211,6 +209,38 @@ RSpec.describe Projects::LearnGitlabHelper, feature_category: :onboarding do
           }
 
           expect(onboarding_actions_data).to include(result)
+        end
+      end
+    end
+
+    context 'for duo seat assignment' do
+      using RSpec::Parameterized::TableSyntax
+
+      let(:url) { group_settings_gitlab_duo_seat_utilization_index_path(namespace) }
+
+      where(:active_duo_addon?, :can_read_usage_quotas?, :result, :expected_url) do
+        true  | true  | true  | ref(:url)
+        true  | false | false | nil
+        false | true  | false | nil
+        false | false | false | nil
+      end
+
+      with_them do
+        before do
+          allow(GitlabSubscriptions::Duo)
+            .to receive(:any_active_add_on_purchase_for_namespace?).with(namespace).and_return(active_duo_addon?)
+          allow(helper).to receive(:can?).and_call_original
+          allow(helper)
+            .to receive(:can?).with(user, :read_usage_quotas, namespace).and_return(can_read_usage_quotas?)
+        end
+
+        subject(:onboarding_actions_data) do
+          Gitlab::Json.parse(helper.learn_gitlab_data(project)[:actions]).deep_symbolize_keys
+        end
+
+        it 'has expected results' do
+          expect(onboarding_actions_data.key?(:duo_seat_assigned)).to be(result)
+          expect(onboarding_actions_data.dig(:duo_seat_assigned, :url)).to eq(expected_url)
         end
       end
     end
