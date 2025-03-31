@@ -61498,9 +61498,6 @@ msgstr ""
 msgid "Todos|Due today"
 msgstr ""
 
-msgid "Todos|Epic"
-msgstr ""
-
 msgid "Todos|Failed adding todo. Try again later."
 msgstr ""
 
@@ -61534,7 +61531,7 @@ msgstr ""
 msgid "Todos|Isn't an empty To-Do List beautiful?"
 msgstr ""
 
-msgid "Todos|Issue"
+msgid "Todos|Issue or Epic"
 msgstr ""
 
 msgid "Todos|It's how you always know what to work on next."

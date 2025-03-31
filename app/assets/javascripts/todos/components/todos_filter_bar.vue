@@ -18,7 +18,6 @@ import {
   TODO_TARGET_TYPE_MERGE_REQUEST,
   TODO_TARGET_TYPE_DESIGN,
   TODO_TARGET_TYPE_ALERT,
-  TODO_TARGET_TYPE_EPIC,
   TODO_TARGET_TYPE_SSH_KEY,
   TODO_TARGET_TYPE_WIKI_PAGE,
   TODO_ACTION_TYPE_ASSIGNED,
@@ -64,7 +63,7 @@ export const TARGET_TYPES = [
     // eslint-disable-next-line @gitlab/require-i18n-strings
     id: 'Issue',
     value: TODO_TARGET_TYPE_ISSUE,
-    title: s__('Todos|Issue'),
+    title: s__('Todos|Issue or Epic'),
   },
   {
     id: 'MergeRequest',
@@ -80,12 +79,6 @@ export const TARGET_TYPES = [
     id: 'AlertManagement::Alert',
     value: TODO_TARGET_TYPE_ALERT,
     title: s__('Todos|Alert'),
-  },
-  {
-    // eslint-disable-next-line @gitlab/require-i18n-strings
-    id: 'Epic',
-    value: TODO_TARGET_TYPE_EPIC,
-    title: s__('Todos|Epic'),
   },
   {
     // eslint-disable-next-line @gitlab/require-i18n-strings
