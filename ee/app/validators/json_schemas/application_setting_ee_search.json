@@ -35,6 +35,14 @@
     "global_search_wiki_enabled": {
       "type": "boolean",
       "description": "Enable global search for wikis"
+    },
+    "global_search_block_anonymous_searches_enabled": {
+      "type": "boolean",
+      "description": "Enable blocking of anonymous global search requests"
+    },
+    "global_search_limited_indexing_enabled": {
+      "type": "boolean",
+      "description": "Enable global search for limited indexing"
     }
   }
 }
