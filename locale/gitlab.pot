@@ -64228,6 +64228,9 @@ msgstr ""
 msgid "UserMapping|Placeholder deleted"
 msgstr ""
 
+msgid "UserMapping|Placeholder top-level group:"
+msgstr ""
+
 msgid "UserMapping|Placeholder user"
 msgstr ""
 
