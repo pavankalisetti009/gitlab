@@ -113,10 +113,12 @@ module EE
     def admin_service_accounts_data
       {
         base_path: admin_application_settings_service_accounts_path,
+        is_group: false.to_s,
         service_accounts: {
           path: expose_url(api_v4_service_accounts_path),
-          delete_path: api_v4_users_path,
-          docs_path: help_page_path('user/profile/service_accounts.md')
+          edit_path: expose_url(api_v4_users_path),
+          docs_path: help_page_path('user/profile/service_accounts.md'),
+          delete_path: expose_url(api_v4_users_path)
         },
         access_token: {
           **expires_at_field_data,
@@ -131,10 +133,12 @@ module EE
     def groups_service_accounts_data(group)
       {
         base_path: group_settings_service_accounts_path(group),
+        is_group: true.to_s,
         service_accounts: {
           path: expose_url(api_v4_groups_service_accounts_path(id: group.id)),
-          delete_path: api_v4_groups_service_accounts_path(id: group.id),
-          docs_path: help_page_path('user/profile/service_accounts.md')
+          edit_path: expose_url(api_v4_groups_service_accounts_path(id: group.id)),
+          docs_path: help_page_path('user/profile/service_accounts.md'),
+          delete_path: expose_url(api_v4_groups_service_accounts_path(id: group.id))
         },
         access_token: {
           **expires_at_field_data,

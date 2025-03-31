@@ -5,6 +5,7 @@ import { createTestingPinia } from '@pinia/testing';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 
 import { useServiceAccounts } from 'ee/service_accounts/stores/service_accounts';
+import CreateEditServiceAccountModal from 'ee/service_accounts/components/service_accounts/create_edit_service_account_modal.vue';
 import DeleteServiceAccountModal from 'ee/service_accounts/components/service_accounts/delete_service_account_modal.vue';
 import ServiceAccounts from 'ee/service_accounts/components/service_accounts/service_accounts.vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
@@ -21,12 +22,16 @@ const findTable = () => wrapper.findComponent(GlTable);
 const findDisclosure = () => wrapper.findComponent(GlDisclosureDropdown);
 const findDisclosureButton = (index) =>
   findDisclosure().findAll('button.gl-new-dropdown-item-content').at(index);
-const findModal = () => wrapper.findComponent(DeleteServiceAccountModal);
+const findDeleteModal = () => wrapper.findComponent(DeleteServiceAccountModal);
+const findCreateEditServiceAccountModal = () =>
+  wrapper.findComponent(CreateEditServiceAccountModal);
 
 describe('Service Accounts', () => {
   const serviceAccountsPath = `${TEST_HOST}/service_accounts`;
+  const serviceAccountsEditPath = `${TEST_HOST}/service_accounts`;
   const serviceAccountsDeletePath = '/api/v4/users';
   const serviceAccountsDocsPath = `${TEST_HOST}/ee/user/profile/service_accounts.html`;
+  const isGroup = false;
 
   const pinia = createTestingPinia();
   const store = useServiceAccounts();
@@ -35,22 +40,30 @@ describe('Service Accounts', () => {
     push: jest.fn(),
   };
 
-  const createComponent = () => {
+  const createComponent = (provide = {}) => {
     wrapper = mountExtended(ServiceAccounts, {
       pinia,
       mocks: {
         $router,
       },
       provide: {
+        isGroup,
         serviceAccountsPath,
+        serviceAccountsEditPath,
         serviceAccountsDeletePath,
         serviceAccountsDocsPath,
+        ...provide,
       },
     });
   };
 
+  const values = {
+    name: 'Service Account 1',
+    username: 'test_user',
+  };
+
   beforeAll(() => {
-    store.serviceAccounts = [{ id: 1, name: 'Service Account 1', username: 'test user' }];
+    store.serviceAccounts = [{ id: 1, ...values }];
   });
 
   beforeEach(() => {
@@ -111,7 +124,7 @@ describe('Service Accounts', () => {
           const name = wrapper.findByTestId('service-account-name');
           const username = wrapper.findByTestId('service-account-username');
           expect(name.text()).toBe('Service Account 1');
-          expect(username.text()).toBe('test user');
+          expect(username.text()).toBe('@test_user');
         });
       });
 
@@ -152,7 +165,7 @@ describe('Service Accounts', () => {
           expect(store.setServiceAccount).toHaveBeenCalledWith({
             id: 1,
             name: 'Service Account 1',
-            username: 'test user',
+            username: 'test_user',
           });
           expect(store.setDeleteType).toHaveBeenCalledWith('soft');
         });
@@ -163,7 +176,7 @@ describe('Service Accounts', () => {
           expect(store.setServiceAccount).toHaveBeenCalledWith({
             id: 1,
             name: 'Service Account 1',
-            username: 'test user',
+            username: 'test_user',
           });
           expect(store.setDeleteType).toHaveBeenCalledWith('hard');
         });
@@ -185,35 +198,95 @@ describe('Service Accounts', () => {
       addServiceAccountButton.vm.$emit('click');
 
       expect(addServiceAccountButton.emitted()).toHaveProperty('click');
-      expect(store.addServiceAccount).toHaveBeenCalled();
+      expect(store.setCreateEditType).toHaveBeenCalledWith('create');
+      expect(store.setServiceAccount).toHaveBeenCalledWith(null);
     });
   });
 
-  describe('modal', () => {
-    beforeEach(() => {
-      store.deleteType = 'soft';
-      store.serviceAccount = {
-        id: 1,
-        name: 'Service Account 1',
-        username: 'test user',
-      };
-      createComponent();
+  describe('modals', () => {
+    describe('delete', () => {
+      beforeEach(() => {
+        store.deleteType = 'soft';
+        store.serviceAccount = {
+          id: 1,
+          name: 'Service Account 1',
+          username: 'test user',
+        };
+        createComponent();
+      });
+
+      it('shows the modal when the deleteType is set', () => {
+        expect(findDeleteModal().exists()).toBe(true);
+      });
+
+      it('call deleteUser when modal is submitted', () => {
+        findDeleteModal().vm.$emit('submit');
+
+        expect(store.deleteUser).toHaveBeenCalledWith(serviceAccountsDeletePath);
+      });
+
+      it('resets deleteType when modal is cancelled', () => {
+        findDeleteModal().vm.$emit('cancel');
+
+        expect(store.setDeleteType).toHaveBeenCalledWith(null);
+      });
     });
 
-    it('shows the modal when the delete button is clicked', () => {
-      expect(findModal().exists()).toBe(true);
+    describe('create', () => {
+      beforeEach(() => {
+        store.createEditType = 'create';
+        createComponent();
+      });
+
+      it('shows the modal when the createEditType is set', () => {
+        expect(findCreateEditServiceAccountModal().exists()).toBe(true);
+      });
+
+      it('call createServiceAccount when modal is submitted', () => {
+        findCreateEditServiceAccountModal().vm.$emit('submit', values);
+
+        expect(store.createServiceAccount).toHaveBeenCalledWith(serviceAccountsPath, values);
+      });
+
+      it('resets createEditType when modal is cancelled', () => {
+        findCreateEditServiceAccountModal().vm.$emit('cancel');
+
+        expect(store.setCreateEditType).toHaveBeenCalledWith(null);
+      });
     });
 
-    it('call deleteUser when modal is submitted', () => {
-      findModal().vm.$emit('submit');
+    describe('edit', () => {
+      beforeEach(() => {
+        store.createEditType = 'edit';
+        createComponent();
+      });
 
-      expect(store.deleteUser).toHaveBeenCalledWith(serviceAccountsDeletePath);
-    });
+      it('shows the modal when the createEditType is set', () => {
+        expect(findCreateEditServiceAccountModal().exists()).toBe(true);
+      });
 
-    it('resets deleteType when modal is cancelled', () => {
-      findModal().vm.$emit('cancel');
+      describe('when in admin area', () => {
+        it('call editServiceAccount when modal is submitted', () => {
+          findCreateEditServiceAccountModal().vm.$emit('submit', values);
 
-      expect(store.setDeleteType).toHaveBeenCalledWith(null);
+          expect(store.editServiceAccount).toHaveBeenCalledWith(serviceAccountsPath, values, false);
+        });
+      });
+
+      describe('when in the group area', () => {
+        it('call editServiceAccount when modal is submitted', () => {
+          createComponent({ isGroup: true });
+          findCreateEditServiceAccountModal().vm.$emit('submit', values);
+
+          expect(store.editServiceAccount).toHaveBeenCalledWith(serviceAccountsPath, values, true);
+        });
+      });
+
+      it('resets createEditType when modal is cancelled', () => {
+        findCreateEditServiceAccountModal().vm.$emit('cancel');
+
+        expect(store.setCreateEditType).toHaveBeenCalledWith(null);
+      });
     });
   });
 });
