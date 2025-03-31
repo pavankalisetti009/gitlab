@@ -1,6 +1,5 @@
 <script>
 import { GlButton } from '@gitlab/ui';
-import { uniqueId } from 'lodash';
 
 export default {
   components: {
@@ -23,9 +22,6 @@ export default {
       type: Object,
       required: true,
     },
-  },
-  data() {
-    return { isAddingRule: false, modalId: uniqueId('add-protected-environment-modal') };
   },
   computed: {
     rules() {
