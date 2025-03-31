@@ -1,5 +1,4 @@
 <script>
-import $ from 'jquery';
 import SafeHtml from '~/vue_shared/directives/safe_html';
 import EventItem from 'ee/vue_shared/security_reports/components/event_item.vue';
 import HistoryComment from './history_comment.vue';
@@ -28,11 +27,9 @@ export default {
     comments() {
       return this.notes.filter((x) => x !== this.systemNote);
     },
-    systemNoteHtml() {
-      // Remove paragraph tags so that note can be displayed inline.
-      return $(this.systemNote.bodyHtml).unwrap().html();
-    },
   },
+  // Remove paragraph tags so that markdown can be displayed inline.
+  safeHtmlConfig: { FORBID_TAGS: ['p'] },
 };
 </script>
 
@@ -48,7 +45,7 @@ export default {
       class="gl-m-5"
     >
       <template #header-message>
-        <span v-safe-html="systemNoteHtml" class="md"></span>
+        <span v-safe-html:[$options.safeHtmlConfig]="systemNote.bodyHtml" class="md"></span>
       </template>
     </event-item>
     <history-comment
