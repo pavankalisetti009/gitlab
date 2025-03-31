@@ -8,7 +8,6 @@ RSpec.describe 'New project from template', :js, feature_category: :source_code_
   before do
     stub_feature_flags(new_project_creation_form: false)
     stub_licensed_features(custom_project_templates: true)
-
     sign_in(user)
 
     visit new_project_path
@@ -25,6 +24,17 @@ RSpec.describe 'New project from template', :js, feature_category: :source_code_
         expect(page).to have_link('Built-in', href: '#built-in')
         expect(page).to have_link('Instance', href: '#custom-instance-project-templates')
         expect(page).to have_link('Group', href: '#custom-group-project-templates')
+      end
+    end
+
+    context 'when SaaS', :saas do
+      it 'shows only Built-in and Group tabs' do
+        page.within('#create-from-template-pane') do
+          expect(page).to have_link('Built-in', href: '#built-in')
+          expect(page).to have_link('Group', href: '#custom-group-project-templates')
+
+          expect(page).not_to have_link('Instance', href: '#custom-instance-project-templates')
+        end
       end
     end
   end

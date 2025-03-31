@@ -28,15 +28,25 @@ RSpec.describe 'Project', feature_category: :source_code_management do
         end
       end
 
-      it 'shows custom projects templates tab' do
-        page.within '.project-template .custom-instance-project-templates-tab' do
-          expect(page).to have_content 'Instance'
+      context 'Instance tab' do
+        it 'shows custom projects templates tab' do
+          page.within '.project-template .custom-instance-project-templates-tab' do
+            expect(page).to have_content 'Instance'
+          end
         end
-      end
 
-      it 'displays the number of projects templates available to the user' do
-        page.within '.project-template .custom-instance-project-templates-tab span.badge' do
-          expect(page).to have_content '3'
+        it 'displays the number of projects templates available to the user' do
+          page.within '.project-template .custom-instance-project-templates-tab span.badge' do
+            expect(page).to have_content '3'
+          end
+        end
+
+        context 'when SaaS', :saas do
+          it 'does not show Instance tab' do
+            page.within '.project-template' do
+              expect(page).not_to have_content 'Instance'
+            end
+          end
         end
       end
 
