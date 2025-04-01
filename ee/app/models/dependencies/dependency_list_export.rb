@@ -29,7 +29,8 @@ module Dependencies
       dependency_list: 0,
       sbom: 1,
       json_array: 2,
-      csv: 3
+      csv: 3,
+      cyclonedx_1_6_json: 10
     }
 
     scope :expired, -> { where(expires_at: ..Time.zone.now) }
