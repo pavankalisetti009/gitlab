@@ -1013,4 +1013,44 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
       )
     end
   end
+
+  context 'with status widget input' do
+    let_it_be(:work_item_type) { create(:work_item_type, :task) }
+
+    let(:status_id) { 2 }
+    let(:status_gid) { 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/2' }
+    let(:expected_error_message) do
+      "Following widget keys are not supported by #{work_item_type.name} type: [:status_widget]"
+    end
+
+    let(:current_user) { developer }
+    let(:mutation) { graphql_mutation(:workItemCreate, input, 'workItem { id }') }
+    let(:input) do
+      {
+        'namespacePath' => project.full_path,
+        'workItemTypeId' => work_item_type.to_gid.to_s,
+        'title' => 'New work item',
+        'statusWidget' => {
+          'status' => status_gid
+        }
+      }
+    end
+
+    it_behaves_like 'work item mutation with status widget with error'
+
+    context 'when work_item_status feature is licensed' do
+      before do
+        stub_licensed_features(work_item_status: true)
+      end
+
+      it_behaves_like 'successful work item mutation with status widget'
+      it_behaves_like 'work item status widget mutation rejects invalid inputs'
+
+      context 'when work item type does not support status widget' do
+        let_it_be(:work_item_type) { create(:work_item_type, :non_default) }
+
+        it_behaves_like 'work item mutation with status widget with error'
+      end
+    end
+  end
 end

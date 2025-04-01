@@ -103,6 +103,6 @@ RSpec.describe WorkItems::Statuses::SystemDefined::Status, feature_category: :te
     # AR like methods are tested in this module
     it { is_expected.to include(ActiveRecord::FixedItemsModel::Model) }
     it { is_expected.to include(GlobalID::Identification) }
-    it { is_expected.to include(WorkItems::Statuses::SharedConstants) }
+    it { is_expected.to include(WorkItems::Statuses::Status) }
   end
 end

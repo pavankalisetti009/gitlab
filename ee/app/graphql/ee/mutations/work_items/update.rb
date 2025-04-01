@@ -35,6 +35,11 @@ module EE
             required: false,
             description: 'Input for custom fields widget.',
             experiment: { milestone: '17.10' }
+
+          argument :status_widget, ::Types::WorkItems::Widgets::StatusInputType,
+            required: false,
+            description: 'Input for status widget.',
+            experiment: { milestone: '17.11' }
         end
       end
     end
