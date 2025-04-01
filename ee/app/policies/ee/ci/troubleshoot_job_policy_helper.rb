@@ -9,7 +9,11 @@ module EE
         attr_reader :user
 
         condition(:troubleshoot_job_cloud_connector_authorized) do
-          user&.allowed_to_use?(:troubleshoot_job)
+          if Ai::FeatureSetting.find_by_feature(:duo_chat_troubleshoot_job)&.self_hosted?
+            user&.allowed_to_use?(:troubleshoot_job, service_name: :self_hosted_models)
+          else
+            user&.allowed_to_use?(:troubleshoot_job)
+          end
         end
 
         condition(:troubleshoot_job_with_ai_authorized) do

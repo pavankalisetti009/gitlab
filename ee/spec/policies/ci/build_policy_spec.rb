@@ -112,5 +112,32 @@ RSpec.describe Ci::BuildPolicy, feature_category: :continuous_integration do
         it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
       end
     end
+
+    context 'when self-hosted AI feature' do
+      using RSpec::Parameterized::TableSyntax
+
+      where(:user_access, :licensed, :allowed) do
+        true  | true  | true
+        true  | false | false
+        false | true  | false
+        false | false | false
+      end
+
+      with_them do
+        before do
+          create(:ai_feature_setting, feature: :duo_chat_troubleshoot_job, provider: :self_hosted)
+          allow(user).to receive(:allowed_to_use?)
+            .with(:troubleshoot_job, service_name: :self_hosted_models)
+            .and_return(user_access)
+
+          allow(project).to receive(:licensed_feature_available?)
+            .with(:troubleshoot_job).and_return(licensed)
+        end
+
+        let(:policy) { :troubleshoot_job_with_ai }
+
+        it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
+      end
+    end
   end
 end
