@@ -163,10 +163,9 @@ module Gitlab
                 starting_index = item[:starting_position]
                 ending_index = item[:ending_position]
 
-                url_authorized = url_authorized?(link)
-                url_in_markdown_block = within_markdown_block?(markdown_blocks, starting_index, ending_index)
-
-                next if url_authorized || url_in_markdown_block
+                next if url_authorized?(link)
+                next if within_markdown_block?(markdown_blocks, starting_index, ending_index)
+                next if contains_safe_relative_urls?(link)
 
                 links_to_sanitize[link] ||= []
                 add_link_if_unique_position(links_to_sanitize[link], link, starting_index,
@@ -372,6 +371,51 @@ module Gitlab
             }x # Flag: extended mode (x) for readability
 
             text.scan(regex)
+          end
+
+          def extract_markdown_urls(text)
+            regex = %r{
+              \[                       # Opening square bracket for link text
+                [^\]]*                 # Any characters except closing bracket (the link text)
+              \]                       # Closing square bracket
+              \(                       # Opening parenthesis for URL
+                (                      # Start capturing group for the URL
+                  [^)]*                # Any characters except closing parenthesis
+                )                      # End capturing group
+              \)                       # Closing parenthesis
+            }x # Flag: extended mode (x) for readability
+
+            text.scan(regex).flatten
+          end
+
+          def relative_url_without_embedded_urls?(url)
+            # Check if the string starts with a slash
+            return false unless url.start_with?('/')
+
+            # Check for common URL schemes that might be embedded
+            url_schemes = %r{
+              (?:                                # Start of non-capturing group
+                (?:https?|ftp|mailto|tel|        # Common web protocols
+                   file|data|ssh|git)            # Other protocols
+                :?//                             # Protocol separator (with optional colon)
+              )                                  # End of non-capturing group
+              |                                  # OR
+              (?:                                # Start of non-capturing group
+                www\.                            # URLs starting with www.
+              )                                  # End of non-capturing group
+            }ix # Flags: case insensitive (i), extended mode (x) for readability
+
+            # Return true only if no URL schemes are found
+            !url.match?(url_schemes)
+          end
+
+          def contains_safe_relative_urls?(text)
+            # Extract URL portion of markdown link
+            url = extract_markdown_urls(text).first
+            return false unless url
+
+            # Filter to only include safe relative URLs
+            relative_url_without_embedded_urls?(url)
           end
 
           def extract_data_links(text)
