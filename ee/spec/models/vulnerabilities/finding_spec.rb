@@ -1668,6 +1668,7 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
 
   context 'with loose foreign key on vulnerability_occurrences.initial_pipeline_id' do
     it_behaves_like 'cleanup by a loose foreign key' do
+      let(:lfk_column) { :initial_pipeline_id }
       let_it_be(:parent) { create(:ci_pipeline) }
       let_it_be(:model) { create(:vulnerabilities_finding, initial_pipeline_id: parent.id) }
     end
@@ -1675,6 +1676,7 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
 
   context 'with loose foreign key on vulnerability_occurrences.latest_pipeline_id' do
     it_behaves_like 'cleanup by a loose foreign key' do
+      let(:lfk_column) { :latest_pipeline_id }
       let_it_be(:parent) { create(:ci_pipeline) }
       let_it_be(:model) { create(:vulnerabilities_finding, latest_pipeline_id: parent.id) }
     end
