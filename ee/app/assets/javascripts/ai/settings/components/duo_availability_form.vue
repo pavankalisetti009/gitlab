@@ -6,6 +6,12 @@ import { AVAILABILITY_OPTIONS } from '../constants';
 
 export default {
   name: 'DuoAvailabilityForm',
+  availabilityOptions: {
+    defaultOn: AVAILABILITY_OPTIONS.DEFAULT_ON,
+    defaultOff: AVAILABILITY_OPTIONS.DEFAULT_OFF,
+    alwaysOff: AVAILABILITY_OPTIONS.NEVER_ON,
+  },
+
   i18n: {
     sectionTitle: __('Availability'),
     defaultOnText: s__('AiPowered|On by default'),
@@ -20,9 +26,6 @@ export default {
     alwaysOffHelpText: s__(
       'AiPowered|Features are not available and cannot be turned on for any group, subgroup, or project.',
     ),
-    defaultOnString: AVAILABILITY_OPTIONS.DEFAULT_ON,
-    defaultOffString: AVAILABILITY_OPTIONS.DEFAULT_OFF,
-    alwaysOffString: AVAILABILITY_OPTIONS.NEVER_ON,
   },
   components: {
     GlSprintf,
@@ -51,6 +54,7 @@ export default {
       );
     },
   },
+
   methods: {
     radioChanged() {
       this.$emit('change', this.duoAvailabilityState);
@@ -63,17 +67,20 @@ export default {
     <h5>{{ $options.i18n.sectionTitle }}</h5>
     <gl-form-radio-group v-model="duoAvailabilityState">
       <gl-form-radio
-        :value="$options.i18n.defaultOnString"
+        :value="$options.availabilityOptions.defaultOn"
         :disabled="areDuoSettingsLocked"
         @change="radioChanged"
       >
         {{ $options.i18n.defaultOnText }}
+
+        <slot name="amazon-q-settings"></slot>
+
         <template #help>
           <gl-sprintf :message="$options.i18n.defaultOnHelpText" />
         </template>
       </gl-form-radio>
       <gl-form-radio
-        :value="$options.i18n.defaultOffString"
+        :value="$options.availabilityOptions.defaultOff"
         :disabled="areDuoSettingsLocked"
         @change="radioChanged"
       >
@@ -83,7 +90,7 @@ export default {
         </template>
       </gl-form-radio>
       <gl-form-radio
-        :value="$options.i18n.alwaysOffString"
+        :value="$options.availabilityOptions.alwaysOff"
         :disabled="areDuoSettingsLocked"
         @change="radioChanged"
       >
