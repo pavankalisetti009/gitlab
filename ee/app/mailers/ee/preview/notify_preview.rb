@@ -28,6 +28,17 @@ module EE
           ::Notify.project_mirror_user_changed_email(user.id, 'deleted_user_name', project.id).message
         end
 
+        def group_scheduled_for_deletion
+          cleanup do
+            group.create_deletion_schedule!(
+              marked_for_deletion_on: Time.current,
+              deleting_user: user
+            )
+
+            ::Notify.group_scheduled_for_deletion(user.id, group.id).message
+          end
+        end
+
         def send_admin_notification
           ::Notify.send_admin_notification(user.id, 'Email subject from admin', 'Email body from admin').message
         end

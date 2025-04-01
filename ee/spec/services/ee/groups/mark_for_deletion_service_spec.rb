@@ -30,6 +30,58 @@ RSpec.describe Groups::MarkForDeletionService, feature_category: :groups_and_pro
           expect(execute).to eq({ status: :success })
         end
 
+        describe 'group deletion notification' do
+          context 'when group_deletion_notification_email feature flag is enabled' do
+            context 'when adjourned deletion is enabled' do
+              it 'sends notification email' do
+                expect_next_instance_of(NotificationService) do |service|
+                  expect(service).to receive(:group_scheduled_for_deletion).with(group)
+                end
+
+                execute
+              end
+            end
+
+            context 'when adjourned deletion is disabled' do
+              before do
+                allow(group).to receive(:adjourned_deletion?).and_return(false)
+              end
+
+              it 'does not send notification email' do
+                expect(NotificationService).not_to receive(:new)
+
+                execute
+              end
+            end
+
+            context 'when feature flag is enabled for specific group' do
+              before do
+                stub_feature_flags(group_deletion_notification_email: group)
+              end
+
+              it 'sends notification email' do
+                expect_next_instance_of(NotificationService) do |service|
+                  expect(service).to receive(:group_scheduled_for_deletion).with(group)
+                end
+
+                execute
+              end
+            end
+          end
+
+          context 'when group_deletion_notification_email feature flag is disabled' do
+            before do
+              stub_feature_flags(group_deletion_notification_email: false)
+            end
+
+            it 'does not send notification email' do
+              expect(NotificationService).not_to receive(:new)
+
+              execute
+            end
+          end
+        end
+
         context 'when marking for deletion fails' do
           before do
             expect_next_instance_of(GroupDeletionSchedule) do |group_deletion_schedule|
@@ -64,6 +116,12 @@ RSpec.describe Groups::MarkForDeletionService, feature_category: :groups_and_pro
         it 'returns error' do
           expect(execute).to eq({ status: :error, message: 'Group has been already marked for deletion' })
         end
+
+        it 'does not send notification email again' do
+          expect(NotificationService).not_to receive(:new)
+
+          execute
+        end
       end
 
       context 'for audit events' do
@@ -86,6 +144,12 @@ RSpec.describe Groups::MarkForDeletionService, feature_category: :groups_and_pro
 
       it 'returns error' do
         expect(execute).to eq({ status: :error, message: 'You are not authorized to perform this action' })
+      end
+
+      it 'does not send notification email' do
+        expect(NotificationService).not_to receive(:new)
+
+        execute
       end
 
       context 'for audit events' do
