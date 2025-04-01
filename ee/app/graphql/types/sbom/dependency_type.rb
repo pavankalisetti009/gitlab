@@ -31,6 +31,9 @@ module Types
 
       field :vulnerability_count, GraphQL::Types::Int,
         null: false, description: 'Number of vulnerabilities within the dependency.'
+
+      field :component, Types::Sbom::ComponentType,
+        null: false, description: 'Information about the component associated to the dependency.'
     end
   end
 end
