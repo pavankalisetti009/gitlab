@@ -1511,4 +1511,50 @@ describe('Edit Framework Form', () => {
       );
     });
   });
+
+  describe('Requirements ordering', () => {
+    it('sorts requirements by ID in ascending order', async () => {
+      const unsortedRequirements = {
+        nodes: [
+          {
+            id: 'gid://gitlab/ComplianceManagement::Requirement/3',
+            name: 'Third',
+            description: 'Third requirement',
+            complianceRequirementsControls: {
+              nodes: [],
+            },
+          },
+          {
+            id: 'gid://gitlab/ComplianceManagement::Requirement/1',
+            name: 'First',
+            description: 'First requirement',
+            complianceRequirementsControls: {
+              nodes: [],
+            },
+          },
+          {
+            id: 'gid://gitlab/ComplianceManagement::Requirement/2',
+            name: 'Second',
+            description: 'Second requirement',
+            complianceRequirementsControls: {
+              nodes: [],
+            },
+          },
+        ],
+      };
+
+      const mockResponse = createComplianceFrameworksReportResponse();
+      mockResponse.data.namespace.complianceFrameworks.nodes[0].complianceRequirements =
+        unsortedRequirements;
+
+      wrapper = createComponent(mountExtended, {
+        requestHandlers: [[getComplianceFrameworkQuery, () => mockResponse]],
+      });
+
+      await waitForPromises();
+
+      const sortedRequirements = wrapper.vm.requirements;
+      expect(sortedRequirements.map((r) => r.name)).toEqual(['First', 'Second', 'Third']);
+    });
+  });
 });
