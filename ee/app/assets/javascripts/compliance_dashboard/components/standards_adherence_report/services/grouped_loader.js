@@ -1,0 +1,40 @@
+import groupComplianceRequirementsStatusesQuery from '../graphql/queries/group_compliance_requirements_statuses.query.graphql';
+
+const DEFAULT_PAGESIZE = 20;
+
+export class GroupedLoader {
+  constructor(options = {}) {
+    this.groupBy = options.groupBy || null;
+    this.apollo = options.apollo;
+    this.pageSize = options.pageSize || DEFAULT_PAGESIZE;
+
+    this.fullPath = options.fullPath;
+    if (!this.apollo || !this.fullPath) {
+      throw new Error('Missing apollo client or fullPath');
+    }
+  }
+
+  async loadPage(options = {}) {
+    const result = await this.apollo.query({
+      query: groupComplianceRequirementsStatusesQuery,
+      variables: {
+        fullPath: this.fullPath,
+        [options.before ? 'last' : 'first']: this.pageSize,
+        ...options,
+      },
+    });
+
+    const statuses = result.data.group.projectComplianceRequirementsStatus;
+    this.pageInfo = statuses.pageInfo;
+
+    return {
+      data: [
+        {
+          group: null,
+          children: statuses.nodes,
+        },
+      ],
+      pageInfo: this.pageInfo,
+    };
+  }
+}

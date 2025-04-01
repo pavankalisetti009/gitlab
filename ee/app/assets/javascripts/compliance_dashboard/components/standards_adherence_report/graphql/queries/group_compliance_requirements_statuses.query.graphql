@@ -1,0 +1,66 @@
+query groupComplianceRequirementsStatuses(
+  $fullPath: ID!
+  $first: Int
+  $last: Int
+  $before: String
+  $after: String
+  $filters: GroupProjectRequirementComplianceStatusInput
+) {
+  group(fullPath: $fullPath) {
+    id
+    projectComplianceRequirementsStatus(
+      first: $first
+      last: $last
+      before: $before
+      after: $after
+      filters: $filters
+    ) {
+      nodes {
+        id
+        pendingCount
+        passCount
+        failCount
+        updatedAt
+        complianceFramework {
+          id
+          name
+          default
+          color
+        }
+        complianceRequirement {
+          id
+          name
+          description
+          complianceRequirementsControls {
+            nodes {
+              id
+            }
+          }
+        }
+        project {
+          id
+          name
+          webUrl
+          complianceControlStatus {
+            nodes {
+              id
+              status
+              complianceRequirementsControl {
+                id
+                name
+                controlType
+                externalUrl
+              }
+            }
+          }
+        }
+      }
+      pageInfo {
+        startCursor
+        endCursor
+        hasNextPage
+        hasPreviousPage
+      }
+    }
+  }
+}
