@@ -66,6 +66,7 @@ const activeTdClasses = `gl-whitespace-nowrap gl-w-2 ${tdClasses}`;
 const actionsTdClasses = `gl-w-2 !gl-py-3 !gl-px-0 !gl-border-0`;
 
 export default {
+  name: 'StreamHttpDestinationEditor',
   components: {
     GlAlert,
     GlButton,
@@ -728,9 +729,6 @@ export default {
       if (firstSameHeader) {
         firstSameHeader.validationErrors.name = '';
       }
-    },
-    updateEventTypeFilters(newFilters) {
-      this.filters = newFilters;
     },
     formSubmission() {
       return this.isEditing ? this.updateDestination() : this.addDestination();

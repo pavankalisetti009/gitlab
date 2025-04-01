@@ -21,7 +21,7 @@ import {
   DELETE_STREAM_MESSAGE,
 } from 'ee/audit_events/constants';
 import AuditEventsStream from 'ee/audit_events/components/audit_events_stream.vue';
-import StreamDestinationEditor from 'ee/audit_events/components/stream/stream_destination_editor.vue';
+import StreamHttpDestinationEditor from 'ee/audit_events/components/stream/stream_http_destination_editor.vue';
 import StreamGcpLoggingDestinationEditor from 'ee/audit_events/components/stream/stream_gcp_logging_destination_editor.vue';
 import StreamAmazonS3DestinationEditor from 'ee/audit_events/components/stream/stream_amazon_s3_destination_editor.vue';
 import StreamItem from 'ee/audit_events/components/stream/stream_item.vue';
@@ -84,7 +84,7 @@ describe('AuditEventsStream', () => {
         GlAlert: true,
         GlLoadingIcon: true,
         StreamItem: true,
-        StreamDestinationEditor: true,
+        StreamHttpDestinationEditor: true,
         StreamGcpLoggingDestinationEditor: true,
         StreamAmazonS3DestinationEditor: true,
         StreamEmptyState: true,
@@ -100,7 +100,7 @@ describe('AuditEventsStream', () => {
   const findGcpLoggingDropdownItem = () => findDisclosureDropdownItem(1);
   const findAmazonS3DropdownItem = () => findDisclosureDropdownItem(2);
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
-  const findStreamDestinationEditor = () => wrapper.findComponent(StreamDestinationEditor);
+  const findStreamHttpDestinationEditor = () => wrapper.findComponent(StreamHttpDestinationEditor);
   const findStreamGcpLoggingDestinationEditor = () =>
     wrapper.findComponent(StreamGcpLoggingDestinationEditor);
   const findStreamAmazonS3DestinationEditor = () =>
@@ -216,26 +216,26 @@ describe('AuditEventsStream', () => {
 
       it('shows http destination editor', async () => {
         expect(findLoadingIcon().exists()).toBe(false);
-        expect(findStreamDestinationEditor().exists()).toBe(false);
+        expect(findStreamHttpDestinationEditor().exists()).toBe(false);
 
         expect(findAddDestinationButton().props('toggleText')).toBe('Add streaming destination');
 
         await findHttpDropdownItem().trigger('click');
 
-        expect(findStreamDestinationEditor().exists()).toBe(true);
+        expect(findStreamHttpDestinationEditor().exists()).toBe(true);
       });
 
       it('exits edit mode when an external http destination is added', async () => {
         expect(findLoadingIcon().exists()).toBe(false);
-        expect(findStreamDestinationEditor().exists()).toBe(false);
+        expect(findStreamHttpDestinationEditor().exists()).toBe(false);
 
         await findHttpDropdownItem().trigger('click');
 
-        const streamDestinationEditorComponent = findStreamDestinationEditor();
+        const streamHttpDestinationEditorComponent = findStreamHttpDestinationEditor();
 
-        expect(streamDestinationEditorComponent.exists()).toBe(true);
+        expect(streamHttpDestinationEditorComponent.exists()).toBe(true);
 
-        streamDestinationEditorComponent.vm.$emit('added');
+        streamHttpDestinationEditorComponent.vm.$emit('added');
         await waitForPromises();
 
         expect(findSuccessMessage().text()).toBe(ADD_STREAM_MESSAGE);
@@ -294,14 +294,14 @@ describe('AuditEventsStream', () => {
       it('clears the success message if an error occurs afterwards', async () => {
         await findHttpDropdownItem().trigger('click');
 
-        findStreamDestinationEditor().vm.$emit('added');
+        findStreamHttpDestinationEditor().vm.$emit('added');
         await waitForPromises();
 
         expect(findSuccessMessage().text()).toBe(ADD_STREAM_MESSAGE);
 
         await findHttpDropdownItem().trigger('click');
 
-        await findStreamDestinationEditor().vm.$emit('error');
+        await findStreamHttpDestinationEditor().vm.$emit('error');
 
         expect(findSuccessMessage().exists()).toBe(false);
       });
@@ -534,21 +534,21 @@ describe('AuditEventsStream', () => {
       });
 
       it('shows http destination editor', async () => {
-        expect(findStreamDestinationEditor().exists()).toBe(false);
+        expect(findStreamHttpDestinationEditor().exists()).toBe(false);
 
         await findHttpDropdownItem().trigger('click');
 
-        expect(findStreamDestinationEditor().exists()).toBe(true);
+        expect(findStreamHttpDestinationEditor().exists()).toBe(true);
       });
 
       it('exits edit mode when an http external destination is added', async () => {
-        expect(findStreamDestinationEditor().exists()).toBe(false);
+        expect(findStreamHttpDestinationEditor().exists()).toBe(false);
 
         await findHttpDropdownItem().trigger('click');
 
-        expect(findStreamDestinationEditor().exists()).toBe(true);
+        expect(findStreamHttpDestinationEditor().exists()).toBe(true);
 
-        findStreamDestinationEditor().vm.$emit('added');
+        findStreamHttpDestinationEditor().vm.$emit('added');
         await waitForPromises();
 
         expect(findSuccessMessage().text()).toBe(ADD_STREAM_MESSAGE);
@@ -599,14 +599,14 @@ describe('AuditEventsStream', () => {
       it('clears the success message if an error occurs afterwards', async () => {
         await findHttpDropdownItem().trigger('click');
 
-        findStreamDestinationEditor().vm.$emit('added');
+        findStreamHttpDestinationEditor().vm.$emit('added');
         await waitForPromises();
 
         expect(findSuccessMessage().text()).toBe(ADD_STREAM_MESSAGE);
 
         await findHttpDropdownItem().trigger('click');
 
-        await findStreamDestinationEditor().vm.$emit('error');
+        await findStreamHttpDestinationEditor().vm.$emit('error');
 
         expect(findSuccessMessage().exists()).toBe(false);
       });

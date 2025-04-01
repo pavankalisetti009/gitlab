@@ -28,7 +28,7 @@ import {
 jest.mock('~/alert');
 Vue.use(VueApollo);
 
-describe('StreamDestinationEditor', () => {
+describe('StreamGcpLoggingDestinationEditor', () => {
   let wrapper;
   let groupPathProvide = groupPath;
 
@@ -105,7 +105,7 @@ describe('StreamDestinationEditor', () => {
     });
   });
 
-  describe('Group GCP Logging StreamDestinationEditor', () => {
+  describe('Group GCP Logging stream destination editor', () => {
     describe('when initialized', () => {
       beforeEach(() => {
         createComponent();
@@ -462,7 +462,7 @@ describe('StreamDestinationEditor', () => {
     });
   });
 
-  describe('Instance GCP Logging StreamDestinationEditor', () => {
+  describe('Instance GCP Logging stream destination editor', () => {
     beforeEach(() => {
       groupPathProvide = instanceGroupPath;
     });

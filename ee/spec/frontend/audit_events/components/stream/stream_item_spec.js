@@ -3,7 +3,7 @@ import { mountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { STREAM_ITEMS_I18N, UPDATE_STREAM_MESSAGE } from 'ee/audit_events/constants';
 import StreamItem from 'ee/audit_events/components/stream/stream_item.vue';
-import StreamDestinationEditor from 'ee/audit_events/components/stream/stream_destination_editor.vue';
+import StreamHttpDestinationEditor from 'ee/audit_events/components/stream/stream_http_destination_editor.vue';
 import StreamGcpLoggingDestinationEditor from 'ee/audit_events/components/stream/stream_gcp_logging_destination_editor.vue';
 import StreamAmazonS3DestinationEditor from 'ee/audit_events/components/stream/stream_amazon_s3_destination_editor.vue';
 import {
@@ -38,7 +38,7 @@ describe('StreamItem', () => {
         groupPath: groupPathProvide,
       },
       stubs: {
-        StreamDestinationEditor: true,
+        StreamHttpDestinationEditor: true,
         StreamGcpLoggingDestinationEditor: true,
         StreamAmazonS3DestinationEditor: true,
       },
@@ -46,7 +46,7 @@ describe('StreamItem', () => {
   };
 
   const findToggleButton = () => wrapper.findByTestId('toggle-btn');
-  const findEditor = () => wrapper.findComponent(StreamDestinationEditor);
+  const findEditor = () => wrapper.findComponent(StreamHttpDestinationEditor);
   const findAlert = () => wrapper.findComponent(GlAlert);
   const findGcpLoggingEditor = () => wrapper.findComponent(StreamGcpLoggingDestinationEditor);
   const findAmazonS3Editor = () => wrapper.findComponent(StreamAmazonS3DestinationEditor);
