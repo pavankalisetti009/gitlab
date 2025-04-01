@@ -1,14 +1,16 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlForm, GlFormInput } from '@gitlab/ui';
+import { GlFormInput } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import WorkItemCustomFieldNumber from 'ee/work_items/components/work_item_custom_fields_number.vue';
 import { newWorkItemId } from '~/work_items/utils';
-import { CUSTOM_FIELDS_TYPE_NUMBER, CUSTOM_FIELDS_TYPE_TEXT } from '~/work_items/constants';
 import updateWorkItemCustomFieldsMutation from 'ee/work_items/graphql/update_work_item_custom_fields.mutation.graphql';
+import { ENTER_KEY } from '~/lib/utils/keys';
+import WorkItemSidebarWidget from '~/work_items/components/shared/work_item_sidebar_widget.vue';
+import { CUSTOM_FIELDS_TYPE_NUMBER, CUSTOM_FIELDS_TYPE_TEXT } from '~/work_items/constants';
 import { customFieldsWidgetResponseFactory } from 'jest/work_items/mock_data';
 
 describe('WorkItemCustomFieldsNumber', () => {
@@ -16,7 +18,6 @@ describe('WorkItemCustomFieldsNumber', () => {
 
   Vue.use(VueApollo);
 
-  const defaultWorkItemType = 'Task';
   const defaultWorkItemId = 'gid://gitlab/WorkItem/1';
 
   const defaultField = {
@@ -40,19 +41,12 @@ describe('WorkItemCustomFieldsNumber', () => {
     },
   });
 
-  const findComponent = () => wrapper.findComponent(WorkItemCustomFieldNumber);
-  const findHeader = () => wrapper.find('h3');
-  const findEditButton = () => wrapper.find('[data-testid="edit-number"]');
-  const findApplyButton = () => wrapper.find('[data-testid="apply-number"]');
-  const findLabel = () => wrapper.find('label');
-  const findForm = () => wrapper.findComponent(GlForm);
+  const findEditButton = () => wrapper.find('[data-testid="edit-button"]');
   const findInput = () => wrapper.findComponent(GlFormInput);
   const findValue = () => wrapper.find('[data-testid="custom-field-value"]');
 
   const createComponent = ({
     canUpdate = true,
-    workItemType = defaultWorkItemType,
-    workItemId = defaultWorkItemId,
     customField = defaultField,
     mutationHandler = mutationSuccessHandler,
   } = {}) => {
@@ -61,32 +55,29 @@ describe('WorkItemCustomFieldsNumber', () => {
       propsData: {
         canUpdate,
         customField,
-        workItemType,
-        workItemId,
+        workItemType: 'Task',
+        workItemId: defaultWorkItemId,
+      },
+      stubs: {
+        WorkItemSidebarWidget,
       },
     });
   };
 
   describe('rendering', () => {
-    it('renders if custom field exists and type is correct', async () => {
+    it('renders if custom field exists and type is correct', () => {
       createComponent();
 
-      await nextTick();
-
-      expect(findComponent().exists()).toBe(true);
-      expect(findHeader().exists()).toBe(true);
+      expect(wrapper.text()).toContain('Number custom field label');
     });
 
-    it('does not render if custom field is empty', async () => {
+    it('does not render if custom field is empty', () => {
       createComponent({ customField: {} });
 
-      await nextTick();
-
-      expect(findComponent().exists()).toBe(true);
-      expect(findHeader().exists()).toBe(false);
+      expect(wrapper.text()).toContain('');
     });
 
-    it('does not render if custom field type is incorrect', async () => {
+    it('does not render if custom field type is incorrect', () => {
       createComponent({
         customField: {
           customField: {
@@ -98,67 +89,19 @@ describe('WorkItemCustomFieldsNumber', () => {
         },
       });
 
-      await nextTick();
-
-      expect(findComponent().exists()).toBe(true);
-      expect(findHeader().exists()).toBe(false);
-    });
-  });
-
-  describe('label', () => {
-    it('shows header when not editing', () => {
-      createComponent();
-
-      expect(findHeader().exists()).toBe(true);
-      expect(findHeader().classes('gl-sr-only')).toBe(false);
-      expect(findLabel().exists()).toBe(false);
+      expect(wrapper.text()).toContain('');
     });
 
-    it('shows label and hides header while editing', async () => {
+    it('renders number input when editing', async () => {
       createComponent();
 
       findEditButton().vm.$emit('click');
-
       await nextTick();
 
-      expect(findLabel().exists()).toBe(true);
-      expect(findHeader().classes('gl-sr-only')).toBe(true);
-    });
-  });
-
-  describe('edit button', () => {
-    it('is not shown if user cannot edit', () => {
-      createComponent({ canUpdate: false });
-
-      expect(findEditButton().exists()).toBe(false);
-    });
-
-    it('is shown if user can edit', () => {
-      createComponent({ canUpdate: true });
-
-      expect(findEditButton().exists()).toBe(true);
-    });
-
-    it('triggers edit mode on click', async () => {
-      createComponent();
-
-      findEditButton().vm.$emit('click');
-
-      await nextTick();
-
-      expect(findLabel().exists()).toBe(true);
-      expect(findForm().exists()).toBe(true);
-    });
-
-    it('is replaced by Apply button while editing', async () => {
-      createComponent();
-
-      findEditButton().vm.$emit('click');
-
-      await nextTick();
-
-      expect(findEditButton().exists()).toBe(false);
-      expect(findApplyButton().exists()).toBe(true);
+      expect(findInput().attributes()).toMatchObject({
+        min: '0',
+        type: 'number',
+      });
     });
   });
 
@@ -200,48 +143,9 @@ describe('WorkItemCustomFieldsNumber', () => {
     });
   });
 
-  describe('form and input', () => {
-    it('is not shown while not editing', () => {
-      createComponent();
-
-      expect(findForm().exists()).toBe(false);
-    });
-
-    it('is shown while editing', async () => {
-      createComponent();
-
-      findEditButton().vm.$emit('click');
-
-      await nextTick();
-
-      expect(findForm().exists()).toBe(true);
-    });
-
-    it('input element is not shown while not editing', () => {
-      createComponent();
-
-      expect(findInput().exists()).toBe(false);
-    });
-
-    it('input has number-y attributes', async () => {
-      createComponent();
-
-      findEditButton().vm.$emit('click');
-
-      await nextTick();
-
-      expect(findInput().attributes()).toEqual(
-        expect.objectContaining({
-          min: '0',
-          type: 'number',
-        }),
-      );
-    });
-  });
-
   describe('updating the value', () => {
     it('does not call "workItemUpdate" mutation when option is selected if is create flow', async () => {
-      createComponent({ workItemId: newWorkItemId(defaultWorkItemType) });
+      createComponent({ workItemId: newWorkItemId('Task') });
       await nextTick();
 
       const newValue = '10';
@@ -257,15 +161,12 @@ describe('WorkItemCustomFieldsNumber', () => {
 
     it('sends mutation with correct variables when updating number', async () => {
       createComponent();
-      await nextTick();
-
       const newValue = '10';
 
-      await findEditButton().vm.$emit('click');
+      findEditButton().vm.$emit('click');
+      await nextTick();
       findInput().vm.$emit('input', newValue);
-      findInput().vm.$emit('blur');
-
-      await waitForPromises();
+      findInput().vm.$emit('keydown', new KeyboardEvent('keydown', { key: ENTER_KEY }));
 
       expect(mutationSuccessHandler).toHaveBeenCalledWith({
         input: {
@@ -282,13 +183,11 @@ describe('WorkItemCustomFieldsNumber', () => {
 
     it('sends null when clearing the field', async () => {
       createComponent();
+
+      findEditButton().vm.$emit('click');
       await nextTick();
-
-      await findEditButton().vm.$emit('click');
       findInput().vm.$emit('input', '');
-      findInput().vm.$emit('blur');
-
-      await waitForPromises();
+      findInput().vm.$emit('keydown', new KeyboardEvent('keydown', { key: ENTER_KEY }));
 
       expect(mutationSuccessHandler).toHaveBeenCalledWith({
         input: {
@@ -301,6 +200,17 @@ describe('WorkItemCustomFieldsNumber', () => {
           ],
         },
       });
+    });
+
+    it('does not call mutation when the input value is the same', async () => {
+      createComponent();
+
+      findEditButton().vm.$emit('click');
+      await nextTick();
+      findInput().vm.$emit('input', '5');
+      findInput().vm.$emit('keydown', new KeyboardEvent('keydown', { key: ENTER_KEY }));
+
+      expect(mutationSuccessHandler).not.toHaveBeenCalled();
     });
 
     it('emits error event when mutation returns an error', async () => {
@@ -316,12 +226,11 @@ describe('WorkItemCustomFieldsNumber', () => {
       });
 
       createComponent({ mutationHandler });
+
+      findEditButton().vm.$emit('click');
       await nextTick();
-
-      await findEditButton().vm.$emit('click');
       findInput().vm.$emit('input', '10');
-      findInput().vm.$emit('blur');
-
+      findInput().vm.$emit('keydown', new KeyboardEvent('keydown', { key: ENTER_KEY }));
       await waitForPromises();
 
       expect(wrapper.emitted('error')).toEqual([
@@ -336,12 +245,11 @@ describe('WorkItemCustomFieldsNumber', () => {
       const errorHandler = jest.fn().mockRejectedValue(new Error());
 
       createComponent({ mutationHandler: errorHandler });
+
+      findEditButton().vm.$emit('click');
       await nextTick();
-
-      await findEditButton().vm.$emit('click');
       findInput().vm.$emit('input', '200');
-      findInput().vm.$emit('blur');
-
+      findInput().vm.$emit('keydown', new KeyboardEvent('keydown', { key: ENTER_KEY }));
       await waitForPromises();
 
       expect(wrapper.emitted('error')).toEqual([
