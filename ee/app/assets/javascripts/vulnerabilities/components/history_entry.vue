@@ -1,4 +1,5 @@
 <script>
+import SafeHtml from '~/vue_shared/directives/safe_html';
 import EventItem from 'ee/vue_shared/security_reports/components/event_item.vue';
 import HistoryComment from './history_comment.vue';
 
@@ -6,6 +7,9 @@ export default {
   components: {
     EventItem,
     HistoryComment,
+  },
+  directives: {
+    SafeHtml,
   },
   props: {
     discussion: {
@@ -24,6 +28,8 @@ export default {
       return this.notes.filter((x) => x !== this.systemNote);
     },
   },
+  // Remove paragraph tags so that markdown can be displayed inline.
+  safeHtmlConfig: { FORBID_TAGS: ['p'] },
 };
 </script>
 
@@ -38,7 +44,9 @@ export default {
       icon-class="timeline-icon"
       class="gl-m-5"
     >
-      <template #header-message>{{ systemNote.body }}</template>
+      <template #header-message>
+        <span v-safe-html:[$options.safeHtmlConfig]="systemNote.bodyHtml" class="md"></span>
+      </template>
     </event-item>
     <history-comment
       v-for="comment in comments"
