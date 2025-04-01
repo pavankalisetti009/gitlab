@@ -244,6 +244,32 @@ module API
           rescue Authn::ScimGroupFinder::UnsupportedFilter
             scim_error!(message: 'Unsupported Filter')
           end
+
+          desc 'Update a SCIM group'
+          params do
+            requires :id, type: String, desc: 'The SCIM group ID'
+            requires :schemas, type: Array, desc: 'SCIM schemas'
+            requires :Operations, type: Array, desc: 'Operations to perform' do
+              requires :op, type: String,
+                values: { value: ->(v) { %w[add].include?(v.to_s.downcase) } },
+                desc: 'Operation type'
+              optional :path, type: String, desc: 'Path to modify'
+              optional :value, types: [Array, String, Hash], desc: 'Value for the operation'
+            end
+          end
+          patch ':id' do
+            check_access!
+
+            saml_group_links = SamlGroupLink.by_scim_group_uid(params[:id])
+            scim_not_found!(message: "Group #{params[:id]} not found") if saml_group_links.empty?
+
+            ::EE::Gitlab::Scim::GroupSyncPatchService.new(
+              group_links: saml_group_links,
+              operations: params[:Operations]
+            ).execute
+
+            no_content!
+          end
         end
       end
     end
