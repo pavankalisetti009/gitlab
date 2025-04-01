@@ -121,6 +121,40 @@ RSpec.describe Gitlab::CodeOwners::OwnerValidation::AccessibleOwnersFilter, feat
     end
   end
 
+  describe '#valid_entry?(reference_extractor)' do
+    let(:reference_extractor) { instance_double(Gitlab::CodeOwners::ReferenceExtractor, names: names, emails: emails) }
+    let(:names) { ['bar'] }
+    let(:invalid_names) { ['foo'] }
+    let(:emails) { ['bar@mail.com'] }
+    let(:invalid_emails) { ['foo@mail.com'] }
+
+    before do
+      allow(filter).to receive_messages(invalid_names: invalid_names, invalid_emails: invalid_emails)
+    end
+
+    context 'when reference_extractor contains no invalid references' do
+      it 'returns true' do
+        expect(filter.valid_entry?(reference_extractor)).to be(true)
+      end
+    end
+
+    context 'when reference_extractor.names includes invalid_names' do
+      let(:names) { %w[foo bar] }
+
+      it 'returns false' do
+        expect(filter.valid_entry?(reference_extractor)).to be(false)
+      end
+    end
+
+    context 'when reference_extractor.emails includes invalid_emails' do
+      let(:emails) { %w[foo@mail.com bar@mail.com] }
+
+      it 'returns false' do
+        expect(filter.valid_entry?(reference_extractor)).to be(false)
+      end
+    end
+  end
+
   it 'avoids N+1 queries', :request_store, :use_sql_query_cache do
     # Reload the project manually, outside of the control
     project_id = project.id

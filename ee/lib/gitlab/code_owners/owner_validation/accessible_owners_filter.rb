@@ -51,6 +51,11 @@ module Gitlab
         end
         strong_memoize_attr :valid_emails
 
+        def valid_entry?(references)
+          valid_references?(references.names, invalid_names) &&
+            valid_references?(references.emails, invalid_emails)
+        end
+
         private
 
         attr_reader :project, :input_names, :input_emails
@@ -59,6 +64,10 @@ module Gitlab
           input_names - valid_group_names
         end
         strong_memoize_attr :group_filtered_input_names
+
+        def valid_references?(references, invalid_references)
+          !references.intersect?(invalid_references)
+        end
       end
     end
   end
