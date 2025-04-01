@@ -200,7 +200,7 @@ module API
             token = user.personal_access_tokens.find_by_id(token_id)
 
             if token
-              revoke_token(token)
+              revoke_token(token, group: user_group)
             else
               not_found!('Personal Access Token')
             end
