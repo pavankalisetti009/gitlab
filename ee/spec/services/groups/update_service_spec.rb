@@ -650,6 +650,9 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
   end
 
   context 'when updating duo_availability' do
+    let_it_be(:group) { create(:group, :public) }
+    let_it_be_with_refind(:integration) { create(:amazon_q_integration, instance: false, group: group) }
+
     using RSpec::Parameterized::TableSyntax
 
     where(:duo_availability, :amazon_q_connected, :expected_result) do
@@ -676,6 +679,40 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
         end
 
         update_group(group, user, params)
+      end
+    end
+
+    context 'when updating Amazon Q auto_review_enabled' do
+      let(:params) { { duo_availability: 'default_on', amazon_q_auto_review_enabled: true } }
+
+      it 'does not change Amazon Q integration' do
+        expect(PropagateIntegrationWorker).not_to receive(:perform_async)
+        expect { update_group(group, user, params) }.not_to change {
+          group.amazon_q_integration.reload.auto_review_enabled
+        }
+      end
+
+      context 'when Amazon Q is connected' do
+        before do
+          allow(::Ai::AmazonQ).to receive(:connected?).and_return(true)
+        end
+
+        it 'changes Amazon Q integration values' do
+          expect(PropagateIntegrationWorker).to receive(:perform_async).with(integration.id)
+          expect { update_group(group, user, params) }.to change {
+            group.amazon_q_integration.reload.auto_review_enabled
+          }.from(false).to(true)
+        end
+
+        context 'when amazon_q_auto_review_enabled is nil' do
+          let(:params) { { duo_availability: 'default_on', amazon_q_auto_review_enabled: nil } }
+
+          it 'does not update auto_review_enabled setting' do
+            expect { update_group(group, user, params) }.not_to change {
+              group.amazon_q_integration.reload.auto_review_enabled
+            }
+          end
+        end
       end
     end
   end

@@ -650,6 +650,20 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
         end
       end
     end
+
+    context 'amazon_q_auto_review_enabled' do
+      let_it_be(:integration) { create(:amazon_q_integration, instance: false, group: group) }
+
+      it 'updates auto_review_enabled field of Amazon Q integration' do
+        allow(::Ai::AmazonQ).to receive(:connected?).and_return(true)
+
+        expect do
+          put api("/groups/#{group.id}", user), params: { duo_availability: 'default_on', amazon_q_auto_review_enabled: true }
+        end.to change { group.amazon_q_integration.reload.auto_review_enabled }.from(false).to(true)
+
+        expect(response).to have_gitlab_http_status(:ok)
+      end
+    end
   end
 
   describe "POST /groups" do

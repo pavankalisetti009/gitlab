@@ -38,7 +38,7 @@ module EE
 
         update_cascading_settings
         handle_pending_members
-        update_amazon_q_service_account!
+        update_amazon_q!
         publish_ai_settings_changed_event
       end
 
@@ -170,8 +170,17 @@ module EE
         end
       end
 
-      def update_amazon_q_service_account!
+      def update_amazon_q!
         return unless ::Ai::AmazonQ.connected?
+
+        integration_params = {
+          availability: params[:duo_availability], auto_review_enabled: params[:amazon_q_auto_review_enabled]
+        }.compact
+
+        if group.amazon_q_integration.update(integration_params)
+          PropagateIntegrationWorker.perform_async(group.amazon_q_integration.id)
+        end
+
         return unless params[:duo_availability] == 'never_on'
 
         ::Ai::AmazonQ::ServiceAccountMemberRemoveService.new(current_user, group).execute
@@ -191,6 +200,10 @@ module EE
         ::NamespaceSettings::AiRelatedSettingsChangedEvent::AI_RELATED_SETTINGS.any? do |setting|
           group.namespace_settings.saved_change_to_attribute?(setting)
         end
+      end
+
+      def non_assignable_group_params
+        super + [:amazon_q_auto_review_enabled]
       end
     end
   end

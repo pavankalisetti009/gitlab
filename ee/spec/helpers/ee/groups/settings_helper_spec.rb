@@ -124,11 +124,16 @@ RSpec.describe EE::Groups::SettingsHelper do
   describe 'group_amazon_q_settings_view_model_data' do
     subject(:group_amazon_q_settings_view_model_data) { helper.group_amazon_q_settings_view_model_data }
 
+    before do
+      group.amazon_q_integration = build(:amazon_q_integration, instance: false, auto_review_enabled: true)
+    end
+
     it 'returns the expected data' do
       is_expected.to eq(
         {
           group_id: group.id.to_s,
           init_availability: group.namespace_settings.duo_availability.to_s,
+          init_auto_review_enabled: true,
           cascading_settings_data: { locked_by_application_setting: false, locked_by_ancestor: false },
           are_duo_settings_locked: group.namespace_settings.duo_features_enabled_locked?
         }
@@ -144,6 +149,7 @@ RSpec.describe EE::Groups::SettingsHelper do
         {
           groupId: "7",
           initAvailability: "default_on",
+          initAutoReviewEnabled: false,
           areDuoSettingsLocked: false,
           cascadingSettingsData: { lockedByApplicationSetting: false, lockedByAncestor: false }
         }.to_json

@@ -898,6 +898,7 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
   end
 
   describe 'Amazon Q settings' do
+    let_it_be(:integration) { create(:amazon_q_integration, group: group, instance: false) }
     let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_amazon_q) }
 
     let(:amazon_q_user) { create(:user, :service_account) }
