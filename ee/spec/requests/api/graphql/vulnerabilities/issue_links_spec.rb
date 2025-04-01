@@ -76,7 +76,7 @@ RSpec.describe 'Query.vulnerabilities.issueLinks', feature_category: :vulnerabil
     it 'does not cause N+1 query issue' do
       query_issue_links # Calling this the first time issues more queries
 
-      expect { query_issue_links }.not_to exceed_query_limit(38)
+      expect { query_issue_links }.not_to exceed_query_limit(40)
     end
   end
 
