@@ -17,7 +17,7 @@ module EE
       override :revocation_permitted?
 
       def revocation_permitted?
-        super || managed_user_revocation_allowed?
+        super || managed_user_revocation_allowed? || managed_service_account_revocation_allowed?
       end
 
       def managed_user_revocation_allowed?
@@ -26,6 +26,14 @@ module EE
         token.user&.group_managed_account? &&
           token.user&.managing_group == group &&
           can?(current_user, :admin_group_credentials_inventory, group)
+      end
+
+      def managed_service_account_revocation_allowed?
+        return false unless token.present?
+
+        token.user.service_account? &&
+          token.user.provisioned_by_group == group &&
+          current_user.can?(:admin_service_accounts, token.user.provisioned_by_group)
       end
 
       def send_audit_event(token, response)
