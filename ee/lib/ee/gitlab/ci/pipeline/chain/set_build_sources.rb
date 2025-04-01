@@ -15,9 +15,8 @@ module EE
 
             override :scan_execution_policy_build?
             def scan_execution_policy_build?(build)
-              scan_types = ::Security::ScanExecutionPolicy::PIPELINE_SCAN_TYPES
-                .map(&:dasherize).join('|')
-              build.name.match("^(#{scan_types})-\\d+$")
+              command.pipeline_policy_context.scan_execution_context(pipeline.source_ref_path)
+                .job_injected?(build)
             end
           end
         end

@@ -102,7 +102,13 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
 
     context 'with security policy' do
       let(:scan_execution_policy) do
-        build(:scan_execution_policy, actions: [{ scan: 'secret_detection' }])
+        build(:scan_execution_policy, actions: [
+          { scan: 'secret_detection' },
+          { scan: 'sast_iac' },
+          { scan: 'container_scanning' },
+          { scan: 'sast' },
+          { scan: 'dast', site_profile: '', scanner_profile: '' }
+        ])
       end
 
       let(:project_policy_yaml) do
@@ -122,14 +128,18 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
           "build" => nil,
           "namespace_policy_job" => "pipeline_execution_policy",
           "rspec" => nil,
+          "dast-on-demand-0" => "scan_execution_policy",
           "secret-detection-0" => "scan_execution_policy",
+          "kics-iac-sast-1" => "scan_execution_policy",
+          "container-scanning-2" => "scan_execution_policy",
+          "semgrep-sast-3" => "scan_execution_policy",
           "project_policy_job" => "pipeline_execution_policy"
         }
 
         pipeline = nil
         expect do
           pipeline = execute.payload
-        end.to change { Ci::BuildSource.count }.by(5)
+        end.to change { Ci::BuildSource.count }.by(9)
 
         pipeline.builds.each do |build|
           source = Ci::BuildSource.find_by(build_id: build.id, project_id: project.id)

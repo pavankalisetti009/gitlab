@@ -160,4 +160,14 @@ RSpec.describe Gitlab::Ci::Pipeline::ScanExecutionPolicies::PipelineContext, fea
       it { is_expected.to be(false) }
     end
   end
+
+  describe '#job_injected?' do
+    it 'stores array of job names' do
+      context.collect_injected_job_names([:job1, "job-2"])
+
+      expect(context.job_injected?(instance_double(::Ci::Build, name: 'job1'))).to be(true)
+      expect(context.job_injected?(instance_double(::Ci::Build, name: 'job-2'))).to be(true)
+      expect(context.job_injected?(instance_double(::Ci::Build, name: 'job3'))).to be(false)
+    end
+  end
 end
