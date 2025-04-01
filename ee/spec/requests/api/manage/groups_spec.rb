@@ -313,8 +313,4 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
       end
     end
   end
-
-  def dpop_headers_for(user)
-    { "dpop" => generate_dpop_proof_for(user).proof }
-  end
 end

@@ -3,15 +3,22 @@
 require 'spec_helper'
 
 RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category: :user_management do
+  include Auth::DpopTokenHelper
+
   let_it_be(:organization) { create(:organization) }
   let_it_be(:user) { create(:user) }
+  let_it_be(:personal_access_token) { create(:personal_access_token, user: user) }
   let(:current_user) { create(:user) }
   let(:group) { create(:group, organization: organization) }
   let(:subgroup) { create(:group, :private, parent: group) }
-  let!(:service_account_user) { create(:user, :service_account, provisioned_by_group: group) }
+
+  let_it_be(:service_account_user) { create(:user, :service_account) }
 
   before do
     stub_application_setting_enum('email_confirmation_setting', 'hard')
+
+    service_account_user.provisioned_by_group_id = group.id
+    service_account_user.save!
   end
 
   RSpec.shared_examples "service account user deletion" do
@@ -631,6 +638,148 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
     end
   end
 
+  describe "GET /groups/:id/service_accounts/:user_id/personal_access_tokens" do
+    let(:group_id) { group.id }
+    let(:target_user_id) { service_account_user.id }
+    let(:path) { "/groups/#{group_id}/service_accounts/#{target_user_id}/personal_access_tokens" }
+    let(:params) { nil }
+
+    subject(:perform_request) { get(api(path, user), params: params) }
+
+    context 'when the feature is licensed' do
+      before do
+        stub_licensed_features(service_accounts: true)
+      end
+
+      context 'when the user is a top-level-group owner' do
+        before do
+          group.add_owner(user)
+        end
+
+        context 'when the service_account is provisioned_by the group' do
+          let_it_be(:current_user) { user }
+          let_it_be(:active_token1) { create(:personal_access_token, user: service_account_user) }
+          let_it_be(:active_token2) { create(:personal_access_token, user: service_account_user) }
+          let_it_be(:expired_token1) do
+            create(:personal_access_token, user: service_account_user, expires_at: 1.year.ago)
+          end
+
+          let_it_be(:expired_token2) do
+            create(:personal_access_token, user: service_account_user, expires_at: 1.year.ago)
+          end
+
+          let_it_be(:revoked_token1) { create(:personal_access_token, user: service_account_user, revoked: true) }
+          let_it_be(:revoked_token2) { create(:personal_access_token, user: service_account_user, revoked: true) }
+
+          let_it_be(:created_2_days_ago_token) do
+            create(:personal_access_token, user: service_account_user, created_at: 2.days.ago)
+          end
+
+          let_it_be(:named_token) { create(:personal_access_token, user: service_account_user, name: 'test_1') }
+          let_it_be(:last_used_2_days_ago_token) do
+            create(:personal_access_token, user: service_account_user, last_used_at: 2.days.ago)
+          end
+
+          let_it_be(:last_used_2_months_ago_token) do
+            create(:personal_access_token, user: service_account_user, last_used_at: 2.months.ago)
+          end
+
+          let_it_be(:created_at_asc) do
+            [
+              created_2_days_ago_token,
+              active_token1,
+              active_token2,
+              expired_token1,
+              expired_token2,
+              revoked_token1,
+              revoked_token2,
+              named_token,
+              last_used_2_days_ago_token,
+              last_used_2_months_ago_token
+            ]
+          end
+
+          it_behaves_like 'an access token GET API with access token params'
+        end
+
+        context 'when the service_account is not provisioned_by the group' do
+          before do
+            service_account_user.provisioned_by_group_id = nil
+            service_account_user.save!
+          end
+
+          it 'returns error' do
+            perform_request
+
+            expect(response).to have_gitlab_http_status(:not_found)
+          end
+        end
+
+        context 'when the target_user (service_account) is not a service account' do
+          let(:regular_user) { create(:user) }
+
+          before do
+            regular_user.provisioned_by_group_id = group.id
+            regular_user.save!
+          end
+
+          it 'returns bad request error' do
+            get api(
+              "/groups/#{group_id}/service_accounts/#{regular_user.id}/personal_access_tokens", user
+            ), params: params
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+          end
+        end
+      end
+
+      context 'when group does not exist' do
+        let(:group_id) { non_existing_record_id }
+
+        it "returns error" do
+          perform_request
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+
+      context 'when user is not a top-level-group owner' do
+        before do
+          group.add_maintainer(user)
+        end
+
+        it 'returns error' do
+          perform_request
+
+          expect(response).to have_gitlab_http_status(:forbidden)
+        end
+      end
+
+      context 'without authentication' do
+        it 'returns error' do
+          perform_request
+
+          expect(response).to have_gitlab_http_status(:forbidden)
+        end
+      end
+    end
+
+    context 'when feature is not licensed' do
+      let(:group_id) { group.id }
+
+      before do
+        stub_licensed_features(service_accounts: false)
+        group.add_owner(user)
+      end
+
+      it 'returns error' do
+        perform_request
+
+        expect(response).to have_gitlab_http_status(:forbidden)
+      end
+    end
+  end
+
   describe "POST /groups/:id/service_accounts/:user_id/personal_access_tokens" do
     let(:name) { 'new pat' }
     let(:description) { 'description' }
@@ -873,7 +1022,12 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
 
           context 'when the service account does not belong to the group' do
             let(:other_group) { create(:group) }
-            let(:service_account_user) { create(:user, :service_account, provisioned_by_group: other_group) }
+            let_it_be(:service_account_user) { create(:user, :service_account) }
+
+            before do
+              service_account_user.provisioned_by_group_id = other_group.id
+              service_account_user.save!
+            end
 
             it 'returns not found' do
               revoke_token
