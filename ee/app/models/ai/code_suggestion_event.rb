@@ -3,6 +3,7 @@
 module Ai
   class CodeSuggestionEvent < ApplicationRecord
     include PartitionedTable
+    include EachBatch
     include UsageEvent
 
     self.table_name = "ai_code_suggestion_events"
