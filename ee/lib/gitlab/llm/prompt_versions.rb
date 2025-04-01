@@ -86,6 +86,8 @@ module Gitlab
           "chat/troubleshoot_job/claude_3": "^1.0.0",
           "chat/troubleshoot_job/mistral": "^1.0.0",
           "chat/troubleshoot_job/mixtral": "^1.0.0",
+          "chat/troubleshoot_job/gpt": "^1.0.0",
+          "chat/troubleshoot_job/llama3": "^1.0.0",
           "chat/write_tests/amazon_q": "^1.0.0",
           "chat/write_tests/base": "^1.0.0",
           "chat/write_tests/claude_3": "^1.0.0",
@@ -128,6 +130,12 @@ module Gitlab
           "model_configuration/check/mixtral": "^1.0.0",
           "resolve_vulnerability/base": "^1.0.0",
           "summarize_new_merge_request/base": "^2.0.0",
+          "summarize_new_merge_request/amazon_q": "^1.0.0",
+          "summarize_new_merge_request/claude_3": "^1.0.0",
+          "summarize_new_merge_request/mistral": "^1.0.0",
+          "summarize_new_merge_request/mixtral": "^1.0.0",
+          "summarize_new_merge_request/gpt": "^1.0.0",
+          "summarize_new_merge_request/llama3": "^1.0.0",
           "summarize_review/base": "^2.0.0"
         }.freeze
 
