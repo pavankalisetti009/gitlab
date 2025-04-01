@@ -3,10 +3,11 @@
 require 'spec_helper'
 
 RSpec.describe API::ComplianceExternalControls, feature_category: :compliance_management do
-  let_it_be(:project) { create(:project) }
-  let_it_be(:project2) { create(:project) }
-  let_it_be(:framework) { create(:compliance_framework, projects: [project]) }
-  let_it_be(:requirement) { create(:compliance_requirement, framework: framework) }
+  let_it_be(:group) { create(:group) }
+  let_it_be(:project) { create(:project, namespace: group) }
+  let_it_be(:project2) { create(:project, namespace: group) }
+  let_it_be(:framework) { create(:compliance_framework, projects: [project], namespace: group) }
+  let_it_be(:requirement) { create(:compliance_requirement, framework: framework, namespace: group) }
   let_it_be(:control) do
     create(:compliance_requirements_control, control_type: :external, secret_token: 'foo',
       compliance_requirement: requirement, external_url: 'https://example.com')

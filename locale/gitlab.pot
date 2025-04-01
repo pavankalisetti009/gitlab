@@ -71152,6 +71152,12 @@ msgstr ""
 msgid "must belong to same project of the work item."
 msgstr ""
 
+msgid "must belong to the compliance requirement."
+msgstr ""
+
+msgid "must belong to the same namespace."
+msgstr ""
+
 msgid "must contain only a discord user ID."
 msgstr ""
 
@@ -71555,6 +71561,9 @@ msgid "should be greater than or equal to %{access} inherited membership from gr
 msgstr ""
 
 msgid "should have length between 16 to 24 characters."
+msgstr ""
+
+msgid "should have the compliance requirement's framework applied to it."
 msgstr ""
 
 msgid "should use only one of: %{requirements}"
