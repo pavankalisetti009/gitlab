@@ -828,6 +828,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
       :container_scanning  | [:with_container_scanning_reports]                         | :container_scanning
       :dast                | [:with_dast_reports]                                       | :dast
       :dependency_scanning | [:with_dependency_scanning_reports]                        | :dependency_scanning
+      :dependency_scanning | [:with_cyclonedx_reports]                                  | :dependency_scanning
       :license_scanning    | [:with_cyclonedx_reports]                                  | :license_scanning
       :coverage_fuzzing    | [:with_coverage_fuzzing_reports]                           | :coverage_fuzzing
       :secret_detection    | [:with_secret_detection_reports]                           | :secret_detection
@@ -920,6 +921,12 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
         before do
           merge_request.diff_head_pipeline.block!
         end
+
+        it { is_expected.to be_truthy }
+      end
+
+      context 'when head pipeline has cyclonedx reports' do
+        let(:merge_request) { create(:ee_merge_request, :with_cyclonedx_reports, source_project: project) }
 
         it { is_expected.to be_truthy }
       end

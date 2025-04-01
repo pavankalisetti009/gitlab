@@ -336,7 +336,7 @@ module EE
         sast: report_type_enabled?(:sast),
         container_scanning: report_type_enabled?(:container_scanning),
         dast: report_type_enabled?(:dast),
-        dependency_scanning: report_type_enabled?(:dependency_scanning),
+        dependency_scanning: report_type_enabled?(:dependency_scanning) || report_type_enabled?(:cyclonedx),
         license_scanning: report_type_enabled?(:license_scanning),
         coverage_fuzzing: report_type_enabled?(:coverage_fuzzing),
         secret_detection: report_type_enabled?(:secret_detection),
@@ -349,7 +349,9 @@ module EE
     end
 
     def has_dependency_scanning_reports?
-      !!diff_head_pipeline&.complete_or_manual_and_has_reports?(::Ci::JobArtifact.of_report_type(:dependency_list))
+      !!diff_head_pipeline&.complete_or_manual_and_has_reports?(::Ci::JobArtifact.with_file_types(%w[
+        dependency_scanning cyclonedx
+      ]))
     end
 
     def compare_dependency_scanning_reports(current_user)
