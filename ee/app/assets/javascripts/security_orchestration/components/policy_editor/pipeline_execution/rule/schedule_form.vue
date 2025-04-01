@@ -1,13 +1,17 @@
 <script>
 import { GlCollapsibleListbox, GlSprintf, GlFormInput } from '@gitlab/ui';
+import { debounce } from 'lodash';
 import { n__, s__, __, sprintf } from '~/locale';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
+import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import BranchSelection from 'ee/security_orchestration/components/policy_editor/scan_result/rule/branch_selection.vue';
 import TimezoneDropdown from '~/vue_shared/components/timezone_dropdown/timezone_dropdown.vue';
 import { getHostname } from '../../utils';
 import {
   CADENCE_OPTIONS,
+  DEFAULT_TIME_PER_UNIT,
   HOUR_MINUTE_LIST,
+  MINIMUM_SECONDS_IN_MINUTES,
   WEEKDAY_OPTIONS,
   TIME_UNIT_OPTIONS,
   TIME_UNITS,
@@ -18,14 +22,15 @@ import {
   timeUnitToSeconds,
   secondsToValue,
   determineTimeUnit,
+  getValueWithinLimits,
 } from './utils';
 
 export default {
   name: 'ScheduleForm',
   CADENCE_OPTIONS,
   HOUR_MINUTE_LIST,
-  WEEKDAY_OPTIONS,
   TIME_UNIT_OPTIONS,
+  WEEKDAY_OPTIONS,
   i18n: {
     cadence: __('Cadence'),
     cadenceDetail: s__('SecurityOrchestration|on every'),
@@ -79,7 +84,9 @@ export default {
     },
     durationValue() {
       const seconds = this.schedule.time_window?.value || 0;
-      return Math.floor(secondsToValue(seconds, this.selectedTimeUnit));
+      return (
+        Math.floor(secondsToValue(seconds, this.selectedTimeUnit)) || MINIMUM_SECONDS_IN_MINUTES
+      );
     },
     monthlyDaysMessage() {
       return n__('day of the month', 'days of the month', this.selectedMonthlyDays.length);
@@ -116,6 +123,15 @@ export default {
       });
     },
   },
+  created() {
+    this.handleUpdateDuration = debounce(
+      this.updateDurationValue,
+      DEFAULT_DEBOUNCE_AND_THROTTLE_MS,
+    );
+  },
+  destroyed() {
+    this.handleUpdateDuration.cancel();
+  },
   methods: {
     handleMonthlyDaysInput(selectedDays) {
       this.updatePolicy('days_of_month', selectedDays);
@@ -141,14 +157,14 @@ export default {
     },
     updateDurationValue(value) {
       if (value) {
-        const seconds = timeUnitToSeconds(parseInt(value, 10), this.selectedTimeUnit);
+        const valueInSeconds = timeUnitToSeconds(parseInt(value, 10), this.selectedTimeUnit);
+        const seconds = getValueWithinLimits(valueInSeconds);
         this.updateTimeWindow(seconds);
       }
     },
     updateDurationUnit(unit) {
       this.selectedTimeUnit = unit;
-      const seconds = timeUnitToSeconds(this.durationValue, this.selectedTimeUnit);
-      this.updateTimeWindow(seconds);
+      this.updateTimeWindow(DEFAULT_TIME_PER_UNIT[unit]);
     },
     updateTimeWindow(seconds) {
       const timeWindow = { ...this.schedule.time_window, value: seconds };
@@ -232,7 +248,7 @@ export default {
               type="number"
               :min="1"
               :placeholder="$options.i18n.durationPlaceholder"
-              @update="updateDurationValue"
+              @update="handleUpdateDuration"
             />
             <gl-collapsible-listbox
               data-testid="time-unit-dropdown"

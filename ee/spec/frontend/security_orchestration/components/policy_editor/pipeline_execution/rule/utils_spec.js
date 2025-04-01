@@ -1,12 +1,63 @@
 import {
   determineTimeUnit,
+  getValueWithinLimits,
   secondsToValue,
   timeUnitToSeconds,
   updateScheduleCadence,
+  MAXIMUM_SECONDS,
+  MINIMUM_SECONDS,
   TIME_UNITS,
 } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/rule/utils';
 
 describe('Pipeline execution rule utils', () => {
+  describe('getValueWithinLimits', () => {
+    it('returns the same value when within limits', () => {
+      const validValue = Math.floor((MAXIMUM_SECONDS + MINIMUM_SECONDS) / 2);
+      expect(getValueWithinLimits(validValue)).toBe(validValue);
+    });
+
+    it('returns the minimum value when input is below minimum', () => {
+      const belowMinimum = MINIMUM_SECONDS - 100;
+      expect(getValueWithinLimits(belowMinimum)).toBe(MINIMUM_SECONDS);
+    });
+
+    it('returns the maximum value when input is above maximum', () => {
+      const aboveMaximum = MAXIMUM_SECONDS + 100;
+      expect(getValueWithinLimits(aboveMaximum)).toBe(MAXIMUM_SECONDS);
+    });
+
+    it('returns the minimum value when input is exactly the minimum', () => {
+      expect(getValueWithinLimits(MINIMUM_SECONDS)).toBe(MINIMUM_SECONDS);
+    });
+
+    it('returns the maximum value when input is exactly the maximum', () => {
+      expect(getValueWithinLimits(MAXIMUM_SECONDS)).toBe(MAXIMUM_SECONDS);
+    });
+
+    it('handles non-integer inputs by converting them to integers', () => {
+      const floatValue = MINIMUM_SECONDS + 10.5;
+      // JavaScript's Math.min/max don't truncate floats
+      expect(getValueWithinLimits(floatValue)).toBe(floatValue);
+    });
+
+    it('handles negative values by returning minimum', () => {
+      expect(getValueWithinLimits(-100)).toBe(MINIMUM_SECONDS);
+    });
+
+    it('handles zero by returning minimum if minimum is positive', () => {
+      if (MINIMUM_SECONDS > 0) {
+        expect(getValueWithinLimits(0)).toBe(MINIMUM_SECONDS);
+      } else {
+        expect(getValueWithinLimits(0)).toBe(0);
+      }
+    });
+
+    it('handles extreme values without overflow', () => {
+      expect(getValueWithinLimits(Number.MAX_SAFE_INTEGER)).toBe(MAXIMUM_SECONDS);
+      expect(getValueWithinLimits(Number.MIN_SAFE_INTEGER)).toBe(MINIMUM_SECONDS);
+    });
+  });
+
   describe('time unit utilities', () => {
     describe('timeUnitToSeconds', () => {
       it('converts hours to seconds correctly', () => {
