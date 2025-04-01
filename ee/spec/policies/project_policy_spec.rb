@@ -3786,12 +3786,11 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       let(:authorizer) { instance_double(::Gitlab::Llm::FeatureAuthorizer) }
       let(:current_user) { user_can_create_mr ? developer : nil }
 
-      where(:feature_flag_enabled, :llm_authorized, :user_can_create_mr, :user_allowed_to_use, :expected_result) do
-        true  | true  | true  | true  | be_allowed(:access_summarize_new_merge_request)
-        true  | true  | false | true  | be_disallowed(:access_summarize_new_merge_request)
-        true  | false | true  | true  | be_disallowed(:access_summarize_new_merge_request)
-        false | true  | true  | true  | be_disallowed(:access_summarize_new_merge_request)
-        true  | true  | true  | false | be_disallowed(:access_summarize_new_merge_request)
+      where(:feature_flag_enabled, :llm_authorized, :user_can_create_mr, :expected_result) do
+        true  | true  | true  | be_allowed(:access_summarize_new_merge_request)
+        true  | true  | false | be_disallowed(:access_summarize_new_merge_request)
+        true  | false | true  | be_disallowed(:access_summarize_new_merge_request)
+        false | true  | true  | be_disallowed(:access_summarize_new_merge_request)
       end
 
       with_them do
@@ -3802,11 +3801,6 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           # Setup LLM authorizer
           allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:new).and_return(authorizer)
           allow(authorizer).to receive(:allowed?).and_return(llm_authorized)
-
-          # Setup user permissions for creating MRs
-          allow(current_user).to receive(:allowed_to_use?)
-            .with(:summarize_new_merge_request, licensed_feature: :summarize_new_merge_request)
-            .and_return(user_allowed_to_use)
         end
 
         it { is_expected.to expected_result }
@@ -4844,13 +4838,12 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     let(:authorizer) { instance_double(::Gitlab::Llm::FeatureAuthorizer) }
     let(:current_user) { can_read_mr ? reporter : nil }
 
-    where(:duo_features_enabled, :feature_flag_enabled, :llm_authorized, :can_read_mr, :allowed_to_use, :expected_result) do
-      true  | true  | true  | true  | true  | be_allowed(:access_description_composer)
-      true  | true  | true  | false | true  | be_disallowed(:access_description_composer)
-      true  | false | true  | true  | true  | be_disallowed(:access_description_composer)
-      true  | true  | false | true  | true  | be_disallowed(:access_description_composer)
-      false | true  | true  | true  | true  | be_disallowed(:access_description_composer)
-      true  | true  | true  | true  | false | be_disallowed(:access_description_composer)
+    where(:duo_features_enabled, :feature_flag_enabled, :llm_authorized, :can_read_mr, :expected_result) do
+      true  | true  | true  | true  | be_allowed(:access_description_composer)
+      true  | true  | true  | false | be_disallowed(:access_description_composer)
+      true  | false | true  | true  | be_disallowed(:access_description_composer)
+      true  | true  | false | true  | be_disallowed(:access_description_composer)
+      false | true  | true  | true  | be_disallowed(:access_description_composer)
     end
 
     with_them do
@@ -4861,13 +4854,9 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
         stub_feature_flags(mr_description_composer: feature_flag_enabled)
 
-        allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:new).and_return(authorizer)
-        allow(authorizer).to receive(:allowed?).and_return(llm_authorized)
-
         if current_user
-          allow(current_user).to receive(:allowed_to_use?)
-              .with(:description_composer, licensed_feature: :description_composer)
-              .and_return(allowed_to_use)
+          allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:new).and_return(authorizer)
+          allow(authorizer).to receive(:allowed?).and_return(llm_authorized)
         end
       end
 

@@ -268,12 +268,9 @@ module EE
           ::Gitlab::Llm::FeatureAuthorizer.new(
             container: subject,
             feature_name: :summarize_new_merge_request,
-            user: @user
+            user: @user,
+            licensed_feature: :summarize_new_merge_request
           ).allowed?
-      end
-
-      condition(:user_allowed_to_use_summarize_new_merge_request) do
-        @user&.allowed_to_use?(:summarize_new_merge_request, licensed_feature: :summarize_new_merge_request)
       end
 
       condition(:generate_description_enabled) do
@@ -1055,9 +1052,7 @@ module EE
       end
 
       rule do
-        summarize_new_merge_request_enabled &
-          user_allowed_to_use_summarize_new_merge_request &
-          can?(:create_merge_request_in)
+        summarize_new_merge_request_enabled & can?(:create_merge_request_in)
       end.enable :access_summarize_new_merge_request
 
       rule do
@@ -1202,18 +1197,13 @@ module EE
           ::Gitlab::Llm::FeatureAuthorizer.new(
             container: @subject,
             feature_name: :description_composer,
-            user: @user
+            user: @user,
+            licensed_feature: :description_composer
           ).allowed?
       end
 
-      condition(:user_allowed_to_use_description_composer) do
-        @user&.allowed_to_use?(:description_composer, licensed_feature: :description_composer)
-      end
-
       rule do
-        description_composer_enabled &
-          user_allowed_to_use_description_composer &
-          can?(:read_merge_request)
+        description_composer_enabled & can?(:read_merge_request)
       end.enable :access_description_composer
     end
 
