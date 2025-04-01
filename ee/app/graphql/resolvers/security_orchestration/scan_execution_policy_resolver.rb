@@ -13,7 +13,7 @@ module Resolvers
         required: false
 
       argument :relationship, ::Types::SecurityOrchestration::SecurityPolicyRelationTypeEnum,
-        description: 'Filter policies by the given policy relationship.',
+        description: 'Filter policies by the given policy relationship. Default is DIRECT.',
         required: false,
         default_value: :direct
 
