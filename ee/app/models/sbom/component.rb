@@ -47,6 +47,7 @@ module Sbom
           .where(sbom_occurrences: { project_id: namespace.id })
           .where('sbom_components.name ILIKE ?', "%#{sanitized_query}%")
           .order(name: :asc)
+          .select_distinct(on: "name")
           .limit(limit)
         # rubocop:enable GitlabSecurity/SqlInjection
       else
@@ -119,7 +120,21 @@ module Sbom
       }
 
       sql = sanitize_sql_array([sql, query_params])
-      where("id IN (#{sql})").order(name: :asc).limit(limit) # rubocop:disable GitlabSecurity/SqlInjection -- sanitized above
+      where("id IN (#{sql})") # rubocop:disable GitlabSecurity/SqlInjection -- sanitized above
+        .select_distinct(on: "name")
+        .order(name: :asc)
+        .limit(limit)
+    end
+
+    def self.select_distinct(on:)
+      select_values = column_names.map do |column|
+        connection.quote_table_name("#{table_name}.#{column}")
+      end
+
+      distinct_values = Array(on).map { |column| arel_table[column] }
+      distinct_sql = Arel::Nodes::DistinctOn.new(distinct_values).to_sql
+
+      select("#{distinct_sql} #{select_values.join(', ')}")
     end
   end
 end
