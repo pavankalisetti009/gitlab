@@ -45,6 +45,8 @@ module Gitlab
           "chat/explain_vulnerability/claude_3": "^1.0.0",
           "chat/explain_vulnerability/mistral": "^1.0.0",
           "chat/explain_vulnerability/mixtral": "^1.0.0",
+          "chat/explain_vulnerability/gpt": "^1.0.0",
+          "chat/explain_vulnerability/llama3": "^1.0.0",
           "chat/fix_code/amazon_q": "^1.0.0",
           "chat/fix_code/base": "^1.0.0",
           "chat/fix_code/claude_3": "^1.0.0",
