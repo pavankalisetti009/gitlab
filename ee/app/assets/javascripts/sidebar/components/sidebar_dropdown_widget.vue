@@ -6,6 +6,7 @@ import { WORK_ITEM_TYPE_NAME_EPIC } from '~/work_items/constants';
 import { getIdFromGraphQLId, convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_WORK_ITEM, TYPENAME_ISSUE } from '~/graphql_shared/constants';
 import { createAlert } from '~/alert';
+import { findHierarchyWidget } from '~/work_items/utils';
 import {
   dropdowni18nText,
   IssuableAttributeType,
@@ -263,7 +264,7 @@ export default {
       });
     },
     setParentData(workItem) {
-      const parent = workItem?.widgets?.find((widget) => widget.type === 'HIERARCHY')?.parent;
+      const parent = findHierarchyWidget(workItem)?.parent;
 
       this.issuable = {
         ...this.issuable,

@@ -2,7 +2,7 @@
 import { GlIcon } from '@gitlab/ui';
 import IssueCardTimeInfo from '~/issues/list/components/issue_card_time_info.vue';
 import IssueHealthStatus from 'ee/related_items_tree/components/issue_health_status.vue';
-import { isHealthStatusWidget, isWeightWidget } from '~/work_items/utils';
+import { findHealthStatusWidget, findWeightWidget } from '~/work_items/utils';
 import WorkItemAttribute from '~/vue_shared/components/work_item_attribute.vue';
 
 export default {
@@ -26,15 +26,13 @@ export default {
   },
   computed: {
     healthStatus() {
-      return (
-        this.issue.healthStatus || this.issue.widgets?.find(isHealthStatusWidget)?.healthStatus
-      );
+      return this.issue.healthStatus || findHealthStatusWidget(this.issue)?.healthStatus;
     },
     showHealthStatus() {
       return this.hasIssuableHealthStatusFeature && this.healthStatus && !this.isWorkItemList;
     },
     weight() {
-      return this.issue.weight || this.issue.widgets?.find(isWeightWidget)?.weight;
+      return this.issue.weight || findWeightWidget(this.issue)?.weight;
     },
     showWeight() {
       return this.hasIssueWeightsFeature && this.weight != null;

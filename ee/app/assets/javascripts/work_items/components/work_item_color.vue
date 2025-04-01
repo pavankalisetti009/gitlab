@@ -22,7 +22,7 @@ import SidebarColorView from '~/sidebar/components/sidebar_color_view.vue';
 import SidebarColorPicker from '~/sidebar/components/sidebar_color_picker.vue';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
 import updateNewWorkItemMutation from '~/work_items/graphql/update_new_work_item.mutation.graphql';
-import { newWorkItemId } from '~/work_items/utils';
+import { findColorWidget, newWorkItemId } from '~/work_items/utils';
 import Tracking from '~/tracking';
 import WorkItemSidebarWidget from '~/work_items/components/shared/work_item_sidebar_widget.vue';
 
@@ -72,7 +72,7 @@ export default {
       return this.workItem?.workItemType?.name;
     },
     workItemColorWidget() {
-      return this.workItem?.widgets?.find((widget) => widget.type === WIDGET_TYPE_COLOR);
+      return findColorWidget(this.workItem);
     },
     color() {
       return this.workItemColorWidget?.color;
