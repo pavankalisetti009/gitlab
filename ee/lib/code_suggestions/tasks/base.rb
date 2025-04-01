@@ -9,7 +9,7 @@ module CodeSuggestions
         to: :model_details
       delegate :supports_sse_streaming?, to: :client
 
-      def initialize(params: {}, unsafe_passthrough_params: {}, current_user: nil, client: nil)
+      def initialize(current_user:, params: {}, unsafe_passthrough_params: {}, client: nil)
         @params = params
         @unsafe_passthrough_params = unsafe_passthrough_params
         @client = client || CodeSuggestions::Client.new({})

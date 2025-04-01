@@ -125,7 +125,7 @@ module Gitlab
             }
           }
 
-          CodeSuggestions::Tasks::CodeCompletion.new(unsafe_passthrough_params: inputs)
+          CodeSuggestions::Tasks::CodeCompletion.new(unsafe_passthrough_params: inputs, current_user: user)
         end
         strong_memoize_attr :task
 
@@ -136,7 +136,8 @@ module Gitlab
 
           AiGateway::SelfHostedModels::Tasks::ModelConfigCheck.new(
             unsafe_passthrough_params: inputs,
-            self_hosted_model: self_hosted_model
+            self_hosted_model: self_hosted_model,
+            current_user: user
           )
         end
       end
