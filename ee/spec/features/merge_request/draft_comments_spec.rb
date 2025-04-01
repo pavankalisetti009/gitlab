@@ -13,6 +13,8 @@ RSpec.describe 'Merge request > Batch comments', :js, :sidekiq_inline, feature_c
   end
 
   before do
+    stub_feature_flags(improved_review_experience: false)
+
     create(:draft_note, merge_request: merge_request, author: current_user)
 
     sign_in(current_user)
