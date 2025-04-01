@@ -13,10 +13,19 @@ module EE
         result = create_deletion_schedule
         log_audit_event if result[:status] == :success
 
+        send_group_deletion_notification
+
         result
       end
 
       private
+
+      def send_group_deletion_notification
+        return unless ::Feature.enabled?(:group_deletion_notification_email, group) &&
+          group.adjourned_deletion?
+
+        ::NotificationService.new.group_scheduled_for_deletion(group)
+      end
 
       def create_deletion_schedule
         deletion_schedule = group.build_deletion_schedule(deletion_schedule_params)
