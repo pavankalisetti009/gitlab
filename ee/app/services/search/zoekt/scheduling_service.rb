@@ -263,9 +263,13 @@ module Search
       end
 
       def initial_indexing
-        ::Search::Zoekt::Index.pending.ordered.limit(INITIAL_INDEXING_LIMIT).each do |index|
-          dispatch InitialIndexingEvent do
-            { index_id: index.id }
+        nodes_to_process = Search::Zoekt::Node.online.with_pending_indices
+
+        nodes_to_process.find_each do |node|
+          node.indices.pending.ordered.limit(INITIAL_INDEXING_LIMIT).each do |index|
+            dispatch InitialIndexingEvent do
+              { index_id: index.id }
+            end
           end
         end
       end
