@@ -38911,6 +38911,9 @@ msgid_plural "New issues"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "New issue look"
+msgstr ""
+
 msgid "New issue title"
 msgstr ""
 
@@ -66473,6 +66476,9 @@ msgid "We’ve introduced improvements to issues and epics, such as the ability 
 msgstr ""
 
 msgid "We’ve introduced some improvements to the epic page such as real time updates, additional features, and a refreshed design. Have questions or thoughts on the changes?"
+msgstr ""
+
+msgid "We’ve introduced some improvements to the issue page such as real time updates, additional features, and a refreshed design. Have questions or thoughts on the changes?"
 msgstr ""
 
 msgid "What are some examples?"

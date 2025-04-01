@@ -14,7 +14,11 @@ module QA
       it 'shows the set weight in the issue page, in the milestone page, and in the issues list page', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347986' do
         issue.visit!
 
-        Page::Project::Issue::Show.perform do |show|
+        work_item_enabled = Page::Project::Issue::Show.perform(&:work_item_enabled?)
+        show_page_type = work_item_enabled ? Page::Project::WorkItem::Show : Page::Project::Issue::Show
+        index_page_type = Page::Project::Issue::Index
+
+        show_page_type.perform do |show|
           expect(show.weight_label_value).to have_content(weight)
 
           show.click_milestone_link
@@ -26,7 +30,7 @@ module QA
 
         Page::Project::Menu.perform(&:go_to_work_items)
 
-        Page::Project::Issue::Index.perform do |index|
+        index_page_type.perform do |index|
           expect(index.issuable_weight).to have_content(weight)
         end
       end

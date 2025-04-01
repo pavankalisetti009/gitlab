@@ -134,10 +134,20 @@ module QA
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347981' do
           issue.visit!
 
-          Page::Project::Issue::Show.perform do |show|
-            show.wait_for_related_issues_to_load
-            show.comment("/epic #{issue.project.group.web_url}/-/epics/#{epic.iid}")
-            show.comment("/remove_epic")
+          work_item_enabled = Page::Project::Issue::Show.perform(&:work_item_enabled?)
+
+          if work_item_enabled
+            Page::Project::WorkItem::Show.perform do |show|
+              show.wait_for_child_items_to_load
+              show.comment("/set_parent #{issue.project.group.web_url}/-/epics/#{epic.iid}")
+              show.comment("/remove_parent")
+            end
+          else
+            Page::Project::Issue::Show.perform do |show|
+              show.wait_for_related_issues_to_load
+              show.comment("/epic #{issue.project.group.web_url}/-/epics/#{epic.iid}")
+              show.comment("/remove_epic")
+            end
           end
 
           epic.visit!
@@ -145,12 +155,12 @@ module QA
           if EE::Page::Group::WorkItem::Epic::Show.perform(&:work_item_epic?)
             EE::Page::Group::WorkItem::Epic::Show.perform do |show|
               expect(show).to have_system_note(/(added)([\w\-# ]+)(issue)/)
-              expect(show).to have_system_note('removed issue')
+              expect(show).to have_system_note('removed')
             end
           else
             EE::Page::Group::Epic::Show.perform do |show|
-              expect(show).to have_system_note('added issue')
-              expect(show).to have_system_note('removed issue')
+              expect(show).to have_system_note('added')
+              expect(show).to have_system_note('removed')
             end
           end
         end

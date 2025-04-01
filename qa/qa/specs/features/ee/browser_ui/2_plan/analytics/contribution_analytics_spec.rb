@@ -15,7 +15,11 @@ module QA
         Flow::Login.sign_in
 
         issue.visit!
-        Page::Project::Issue::Show.perform(&:click_close_issue_button)
+
+        work_item_enabled = Page::Project::Issue::Show.perform(&:work_item_enabled?)
+        show_page_type = work_item_enabled ? Page::Project::WorkItem::Show : Page::Project::Issue::Show
+
+        show_page_type.perform(&:click_close_issue_button)
 
         mr.visit!
         Page::MergeRequest::Show.perform(&:merge!)
