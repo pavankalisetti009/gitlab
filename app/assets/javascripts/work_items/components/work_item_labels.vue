@@ -356,7 +356,7 @@ export default {
       </div>
     </template>
     <template #readonly>
-      <div class="gl-mt-1 gl-flex gl-flex-wrap gl-gap-2">
+      <div class="gl-mt-1 gl-flex gl-flex-wrap gl-gap-2" data-testid="selected-label-content">
         <gl-label
           v-for="label in localLabels"
           :key="label.id"
@@ -366,6 +366,7 @@ export default {
           :scoped="scopedLabel(label)"
           :show-close-button="canUpdate"
           :target="labelFilterUrl(label)"
+          :data-testid="label.title"
           @close="removeLabel(label)"
         />
       </div>

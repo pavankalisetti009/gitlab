@@ -18,10 +18,12 @@ module QA
 
       let(:issue) { create(:issue, project: project, title: "issue-to-test-iterations-#{SecureRandom.hex(8)}") }
 
+      let(:group_iteration) do
+        create(:group_iteration, group: iteration_group, start_date: start_date, due_date: due_date)
+      end
+
       before do
         Flow::Login.sign_in
-
-        create(:group_cadence, group: iteration_group, start_date: start_date)
       end
 
       it(
@@ -31,8 +33,11 @@ module QA
       ) do
         issue.visit!
 
-        Page::Project::Issue::Show.perform do |issue|
-          issue.assign_iteration(period, period_display)
+        work_item_enabled = Page::Project::Issue::Show.perform(&:work_item_enabled?)
+        page_type = work_item_enabled ? Page::Project::WorkItem::Show : Page::Project::Issue::Show
+
+        page_type.perform do |issue|
+          issue.assign_iteration(period, period_display, group_iteration)
 
           expect(issue).to have_iteration(period_display)
 

@@ -30,7 +30,7 @@ module QA
               end
             end
 
-            def assign_iteration(iteration_period, expected_link_text)
+            def assign_iteration(iteration_period, expected_link_text, _)
               within_element('iteration-container') do
                 click_element('edit-button')
                 click_on(iteration_period.to_s)

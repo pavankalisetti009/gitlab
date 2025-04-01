@@ -32,7 +32,10 @@ module QA
         'correctly applies simple and multiple colon scoped pairs labels',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347993'
       ) do
-        Page::Project::Issue::Show.perform do |show|
+        work_item_enabled = Page::Project::Issue::Show.perform(&:work_item_enabled?)
+        page_type = work_item_enabled ? Page::Project::WorkItem::Show : Page::Project::Issue::Show
+
+        page_type.perform do |show|
           show.select_labels(
             [
               new_label_same_scope,

@@ -710,6 +710,7 @@ export default {
     <gl-modal
       ref="modal"
       modal-id="work-item-confirm-delete"
+      data-testid="work-item-confirm-delete"
       :title="i18n.deleteWorkItem"
       :ok-title="i18n.deleteWorkItem"
       ok-variant="danger"
