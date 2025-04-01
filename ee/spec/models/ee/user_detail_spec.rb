@@ -34,6 +34,7 @@ RSpec.describe UserDetail, feature_category: :system_access do
 
   context 'with loose foreign key on user_details.provisioned_by_group_id' do
     it_behaves_like 'cleanup by a loose foreign key' do
+      let(:lfk_column) { :provisioned_by_group_id }
       let_it_be(:parent) { create(:group) }
       let_it_be(:model) { create(:user, provisioned_by_group: parent).user_detail }
     end
@@ -41,6 +42,7 @@ RSpec.describe UserDetail, feature_category: :system_access do
 
   context 'with loose foreign key on user_details.enterprise_group_id' do
     it_behaves_like 'cleanup by a loose foreign key' do
+      let(:lfk_column) { :enterprise_group_id }
       let_it_be(:parent) { create(:group) }
       let_it_be(:model) { create(:user, enterprise_group: parent).user_detail }
     end
