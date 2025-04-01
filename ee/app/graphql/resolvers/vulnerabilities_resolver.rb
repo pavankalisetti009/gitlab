@@ -107,7 +107,7 @@ module Resolvers
     end
 
     def unconditional_includes
-      [{ vulnerability: [:findings, :vulnerability_read] }]
+      [{ vulnerability: [{ project: [:namespace, :group] }, :findings, :vulnerability_read] }]
     end
 
     def preloads
