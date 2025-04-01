@@ -380,7 +380,8 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
     let(:task) do
       described_class.new(
         params: params,
-        unsafe_passthrough_params: unsafe_params
+        unsafe_passthrough_params: unsafe_params,
+        current_user: current_user
       )
     end
 

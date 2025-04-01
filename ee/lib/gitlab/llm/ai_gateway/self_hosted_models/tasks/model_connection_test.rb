@@ -6,8 +6,8 @@ module Gitlab
       module SelfHostedModels
         module Tasks
           class ModelConnectionTest < ::CodeSuggestions::Tasks::CodeCompletion
-            def initialize(unsafe_passthrough_params:, self_hosted_model:)
-              super(unsafe_passthrough_params: unsafe_passthrough_params)
+            def initialize(unsafe_passthrough_params:, self_hosted_model:, current_user:)
+              super(unsafe_passthrough_params: unsafe_passthrough_params, current_user: current_user)
 
               @self_hosted_model = self_hosted_model
             end

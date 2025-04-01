@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Llm::AiGateway::SelfHostedModels::Tasks::ModelConnectionTest, feature_category: :"self-hosted_models" do
+  let_it_be(:user) { create(:user) }
   let_it_be(:params) do
     {
       current_file: {
@@ -17,7 +18,8 @@ RSpec.describe Gitlab::Llm::AiGateway::SelfHostedModels::Tasks::ModelConnectionT
   subject(:instance) do
     described_class.new(
       unsafe_passthrough_params: params,
-      self_hosted_model: self_hosted_model
+      self_hosted_model: self_hosted_model,
+      current_user: user
     )
   end
 

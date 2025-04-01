@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe CodeSuggestions::Tasks::Base, feature_category: :code_suggestions do
   let(:klass) { ChildTaskClass }
+  let(:user) { create(:user) }
 
   before do
     stub_const('ChildTaskClass',
@@ -18,14 +19,21 @@ RSpec.describe CodeSuggestions::Tasks::Base, feature_category: :code_suggestions
     )
   end
 
+  describe '#initialization' do
+    it 'raises Argument error' do
+      # current user is a mandatory param
+      expect { klass.new }.to raise_error(ArgumentError, 'missing keyword: :current_user')
+    end
+  end
+
   describe '#endpoint' do
     it 'raies NotImplementedError' do
-      expect { klass.new.endpoint }.to raise_error(NotImplementedError)
+      expect { klass.new(current_user: user).endpoint }.to raise_error(NotImplementedError)
     end
   end
 
   describe '#feature_disabled?' do
-    subject(:feature_disabled?) { klass.new.feature_disabled? }
+    subject(:feature_disabled?) { klass.new(current_user: user).feature_disabled? }
 
     it 'returns false' do
       expect(feature_disabled?).to eq(false)
