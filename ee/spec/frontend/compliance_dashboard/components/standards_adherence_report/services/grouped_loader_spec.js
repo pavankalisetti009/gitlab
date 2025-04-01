@@ -4,6 +4,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import { createMockGroupComplianceRequirementsStatusesData } from './mock_data';
 
 describe('GroupedLoader', () => {
+  let loader;
   let mockApollo;
   let mockQueryResponse;
   let mockGroupRequirementsStatusQuery;
@@ -14,18 +15,15 @@ describe('GroupedLoader', () => {
   beforeEach(() => {
     mockQueryResponse = createMockGroupComplianceRequirementsStatusesData();
     mockGroupRequirementsStatusQuery = jest.fn().mockResolvedValue(mockQueryResponse);
-    mockApollo = createMockApollo([
-      [groupComplianceRequirementsStatusesQuery, mockGroupRequirementsStatusQuery],
-    ]);
+    mockApollo = createMockApollo(
+      [[groupComplianceRequirementsStatusesQuery, mockGroupRequirementsStatusQuery]],
+      {},
+      { typePolicies: { Query: { fields: { group: { merge: true } } } } },
+    );
+    loader = new GroupedLoader({ apollo: mockApollo.defaultClient, fullPath });
   });
 
   describe('loadPage', () => {
-    let loader;
-
-    beforeEach(() => {
-      loader = new GroupedLoader({ apollo: mockApollo.defaultClient, fullPath });
-    });
-
     it('calls the Apollo query with the correct parameters for first page', async () => {
       await loader.loadPage();
 
@@ -77,6 +75,65 @@ describe('GroupedLoader', () => {
       expect(loader.pageInfo).toEqual(
         mockQueryResponse.data.group.projectComplianceRequirementsStatus.pageInfo,
       );
+    });
+  });
+
+  describe('pagination methods', () => {
+    describe('resetPagination', () => {
+      it('resets pageInfo to default values', async () => {
+        await loader.loadPage();
+        loader.resetPagination();
+
+        expect(loader.pageInfo).toEqual({
+          startCursor: null,
+          endCursor: null,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        });
+      });
+    });
+
+    describe('setPageSize', () => {
+      it('updates pageSize and resets pagination', async () => {
+        const newPageSize = 50;
+        await loader.loadPage();
+        loader.setPageSize(newPageSize);
+        mockGroupRequirementsStatusQuery.mockClear();
+        await loader.loadPage();
+
+        expect(mockGroupRequirementsStatusQuery).toHaveBeenCalledWith({
+          first: newPageSize,
+          fullPath,
+        });
+      });
+    });
+
+    describe('loadNextPage', () => {
+      it('calls loadPage with after cursor', async () => {
+        const data = await loader.loadPage();
+        mockGroupRequirementsStatusQuery.mockClear();
+        await loader.loadNextPage();
+
+        expect(mockGroupRequirementsStatusQuery).toHaveBeenCalledWith({
+          after: data.pageInfo.endCursor,
+          first: DEFAULT_PAGESIZE,
+          fullPath,
+        });
+      });
+    });
+
+    describe('loadPrevPage', () => {
+      it('calls loadPage with before cursor', async () => {
+        const data = await loader.loadPage();
+        mockGroupRequirementsStatusQuery.mockClear();
+        await loader.loadPrevPage();
+
+        expect(mockGroupRequirementsStatusQuery).toHaveBeenCalledWith({
+          before: data.pageInfo.startCursor,
+          last: DEFAULT_PAGESIZE,
+          fullPath,
+        });
+      });
     });
   });
 });

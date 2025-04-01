@@ -2,6 +2,13 @@ import groupComplianceRequirementsStatusesQuery from '../graphql/queries/group_c
 
 const DEFAULT_PAGESIZE = 20;
 
+const defaultPageInfo = () => ({
+  startCursor: null,
+  endCursor: null,
+  hasNextPage: false,
+  hasPreviousPage: false,
+});
+
 export class GroupedLoader {
   constructor(options = {}) {
     this.groupBy = options.groupBy || null;
@@ -36,5 +43,26 @@ export class GroupedLoader {
       ],
       pageInfo: this.pageInfo,
     };
+  }
+
+  resetPagination() {
+    this.pageInfo = defaultPageInfo();
+  }
+
+  setPageSize(newPageSize) {
+    this.pageSize = newPageSize;
+    this.resetPagination();
+  }
+
+  loadNextPage() {
+    return this.loadPage({
+      after: this.pageInfo.endCursor,
+    });
+  }
+
+  loadPrevPage() {
+    return this.loadPage({
+      before: this.pageInfo.startCursor,
+    });
   }
 }

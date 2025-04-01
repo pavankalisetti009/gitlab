@@ -1,6 +1,8 @@
 import { shallowMount } from '@vue/test-utils';
 import { nextTick } from 'vue';
-import { GlAlert, GlLoadingIcon } from '@gitlab/ui';
+import { GlAlert, GlLoadingIcon, GlKeysetPagination } from '@gitlab/ui';
+import waitForPromises from 'helpers/wait_for_promises';
+import PageSizeSelector from '~/vue_shared/components/page_size_selector.vue';
 import StandardsAdherenceTableV2 from 'ee/compliance_dashboard/components/standards_adherence_report/standards_adherence_table_v2.vue';
 import DetailsDrawer from 'ee/compliance_dashboard/components/standards_adherence_report/components/details_drawer/details_drawer.vue';
 import GroupedTable from 'ee/compliance_dashboard/components/standards_adherence_report/components/grouped_table/grouped_table.vue';
@@ -18,6 +20,17 @@ describe('StandardsAdherenceTableV2', () => {
   const findDetailsDrawer = () => wrapper.findComponent(DetailsDrawer);
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findAlert = () => wrapper.findComponent(GlAlert);
+
+  const waitForNextPageLoad = async () => {
+    // triggers loading state
+    await nextTick();
+    // wait for resolve
+    await waitForPromises();
+    // render
+    await nextTick();
+    // extra tick for Vue.js 3
+    await nextTick();
+  };
 
   const groupPath = 'group/path';
   const mockItems = {
@@ -65,7 +78,7 @@ describe('StandardsAdherenceTableV2', () => {
 
       expect(GroupedLoader).toHaveBeenCalledWith({
         fullPath: groupPath,
-        apollo: wrapper.vm.$apollo,
+        apollo: expect.any(Object),
       });
       expect(GroupedLoader.mock.instances.at(-1).loadPage).toHaveBeenCalled();
     });
@@ -156,6 +169,63 @@ describe('StandardsAdherenceTableV2', () => {
         'projectComplianceRequirementsStatus',
       );
       expect(findAlert().text()).toContain(GRAPHQL_FIELD_MISSING_ERROR_MESSAGE);
+    });
+  });
+
+  describe('pagination', () => {
+    beforeEach(() => {
+      GroupedLoader.mockImplementation(function mockGroupedLoader() {
+        this.loadPage = jest.fn().mockResolvedValue(mockItems);
+        this.loadNextPage = jest.fn().mockResolvedValue({
+          data: [{ group: null, children: { category3: [{ id: '3', name: 'Requirement 3' }] } }],
+          pageInfo: { hasNextPage: false, hasPreviousPage: true },
+        });
+        this.loadPrevPage = jest.fn().mockResolvedValue(mockItems);
+        this.setPageSize = jest.fn();
+      });
+
+      createComponent();
+      return nextTick();
+    });
+
+    const findPagination = () => wrapper.findComponent(GlKeysetPagination);
+    const findPageSizeSelector = () => wrapper.findComponent(PageSizeSelector);
+
+    it('displays pagination component when pageInfo is available', () => {
+      expect(findPagination().exists()).toBe(true);
+    });
+
+    it('loads next page when next is clicked', async () => {
+      findPagination().vm.$emit('next');
+
+      expect(GroupedLoader.mock.instances[0].loadNextPage).toHaveBeenCalled();
+
+      await waitForNextPageLoad();
+
+      expect(findGroupedTable().props('items')).toEqual([
+        { group: null, children: { category3: [{ id: '3', name: 'Requirement 3' }] } },
+      ]);
+    });
+
+    it('loads previous page when prev is clicked', async () => {
+      findPagination().vm.$emit('prev');
+
+      expect(GroupedLoader.mock.instances[0].loadPrevPage).toHaveBeenCalled();
+
+      await waitForNextPageLoad();
+
+      expect(findGroupedTable().props('items')).toEqual(mockItems.data);
+    });
+
+    it('updates page size and reloads data when page size changes', async () => {
+      const newPageSize = 50;
+      findPageSizeSelector().vm.$emit('input', newPageSize);
+
+      expect(GroupedLoader.mock.instances[0].setPageSize).toHaveBeenCalledWith(newPageSize);
+      expect(GroupedLoader.mock.instances[0].loadPage).toHaveBeenCalled();
+
+      await waitForNextPageLoad();
+      expect(wrapper.findComponent(PageSizeSelector).props('value')).toBe(newPageSize);
     });
   });
 });

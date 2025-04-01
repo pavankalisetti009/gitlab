@@ -157,7 +157,7 @@ export const createMockGroupComplianceRequirementsStatusesData = () => ({
           startCursor: 'eyJpZCI6IjEifQ==',
           endCursor: 'eyJpZCI6IjMifQ==',
           hasNextPage: true,
-          hasPreviousPage: false,
+          hasPreviousPage: true,
         },
       },
     },
