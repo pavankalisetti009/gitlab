@@ -61718,7 +61718,7 @@ msgstr ""
 msgid "Todos|Isn't an empty To-Do List beautiful?"
 msgstr ""
 
-msgid "Todos|Issue or Epic"
+msgid "Todos|Issue"
 msgstr ""
 
 msgid "Todos|It's how you always know what to work on next."
