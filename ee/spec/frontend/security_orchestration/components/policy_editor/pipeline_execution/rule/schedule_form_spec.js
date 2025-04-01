@@ -3,7 +3,12 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import ScheduleForm from 'ee/security_orchestration/components/policy_editor/pipeline_execution/rule/schedule_form.vue';
 import BranchSelection from 'ee/security_orchestration/components/policy_editor/scan_result/rule/branch_selection.vue';
 import TimezoneDropdown from '~/vue_shared/components/timezone_dropdown/timezone_dropdown.vue';
-import { TIME_UNITS } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/rule/utils';
+import {
+  TIME_UNITS,
+  MINIMUM_SECONDS,
+  MAXIMUM_SECONDS,
+  DEFAULT_TIME_PER_UNIT,
+} from 'ee/security_orchestration/components/policy_editor/pipeline_execution/rule/utils';
 
 jest.mock('ee/security_orchestration/components/policy_editor/utils', () => ({
   ...jest.requireActual('ee/security_orchestration/components/policy_editor/utils'),
@@ -158,13 +163,13 @@ describe('ScheduleForm', () => {
         ]);
       });
 
-      it('selects hours as default unit for 60 minutes', () => {
+      it('selects hours as default unit for 3600 seconds (1 hour)', () => {
         createComponent({ schedule: { time_window: { value: 3600 } } });
         expect(findTimeUnitDropdown().props('selected')).toBe(TIME_UNITS.HOUR);
         expect(findDurationInput().props('value')).toBe(1);
       });
 
-      it('selects days as default unit for 1440 minutes', () => {
+      it('selects days as default unit for 86400 seconds (1 day)', () => {
         createComponent({ schedule: { time_window: { value: 86400 } } });
         expect(findTimeUnitDropdown().props('selected')).toBe(TIME_UNITS.DAY);
         expect(findDurationInput().props('value')).toBe(1);
@@ -174,6 +179,11 @@ describe('ScheduleForm', () => {
         createComponent({ schedule: { time_window: { value: 400 } } });
         expect(findTimeUnitDropdown().props('selected')).toBe(TIME_UNITS.MINUTE);
         expect(findDurationInput().props('value')).toBe(6);
+      });
+
+      it('uses minimum value of 10 when duration would be 0', () => {
+        createComponent({ schedule: { time_window: { value: 0 } } });
+        expect(findDurationInput().props('value')).toBe(10);
       });
     });
   });
@@ -281,36 +291,50 @@ describe('ScheduleForm', () => {
 
     describe('duration controls', () => {
       it('updates time_window.value when duration value changes', async () => {
-        createComponent({ schedule: { time_window: { value: 60 } } });
-        await findDurationInput().vm.$emit('update', '2');
+        createComponent({ schedule: { time_window: { value: 3600 } } });
+        await findDurationInput().vm.$emit('update', 2);
 
         expect(wrapper.emitted('changed')).toEqual([
-          [{ time_window: { value: 120 } }], // 2 hours = 120 minutes
+          [{ time_window: { value: 7200 } }], // 2 hours = 7200 seconds
         ]);
       });
 
-      it('updates time_window.value when time unit changes', async () => {
-        createComponent({ schedule: { time_window: { value: 60 } } });
+      it('applies minimum limit when duration is too small', async () => {
+        createComponent({ schedule: { time_window: { value: 1 } } });
+        await findDurationInput().vm.$emit('update', 1);
+
+        // With TIME_UNITS.MINUTE selected, 1 minute = 60 seconds, which is below MINIMUM_SECONDS (600)
+        // So it should be capped at MINIMUM_SECONDS
+        expect(wrapper.emitted('changed')[0][0].time_window.value).toBe(MINIMUM_SECONDS);
+      });
+
+      it('applies maximum limit when duration is too large', async () => {
+        createComponent({ schedule: { time_window: { value: 3600 } } });
+        // Set time unit to days first
         await findTimeUnitDropdown().vm.$emit('select', TIME_UNITS.DAY);
-        expect(wrapper.emitted('changed')).toEqual([[{ time_window: { value: 0 } }]]);
+
+        // Then set a very large number of days
+        await findDurationInput().vm.$emit('update', 100);
+
+        // 100 days exceeds MAXIMUM_SECONDS, so it should be capped
+        expect(wrapper.emitted('changed')[1][0].time_window.value).toBe(MAXIMUM_SECONDS);
       });
 
-      it('preserves the equivalent duration when changing units', async () => {
-        createComponent({ schedule: { time_window: { value: 7200 } } }); // 2 hours
+      it('uses DEFAULT_TIME_PER_UNIT when time unit changes', async () => {
+        createComponent({ schedule: { time_window: { value: 3600 } } });
+        await findTimeUnitDropdown().vm.$emit('select', TIME_UNITS.DAY);
 
-        // Change from hours to days
-        await findTimeUnitDropdown().vm.$emit('select', TIME_UNITS.HOUR);
-
-        // Should still represent 7200 seconds (2 hours)
-        expect(wrapper.emitted('changed')[0][0].time_window.value).toBe(7200);
+        expect(wrapper.emitted('changed')[0][0].time_window.value).toBe(
+          DEFAULT_TIME_PER_UNIT[TIME_UNITS.DAY],
+        );
       });
 
-      it('handles non-integer inputs correctly', async () => {
-        createComponent({ schedule: { time_window: { value: 60 } } });
-        await findDurationInput().vm.$emit('update', '2.5');
+      it('ignores empty or invalid inputs', async () => {
+        createComponent({ schedule: { time_window: { value: 3600 } } });
+        await findDurationInput().vm.$emit('update', '');
 
-        // Should convert to integer (2 hours = 120 minutes)
-        expect(wrapper.emitted('changed')[0][0].time_window.value).toBe(120);
+        // Should not emit a change event for empty input
+        expect(wrapper.emitted('changed')).toBe(undefined);
       });
     });
   });

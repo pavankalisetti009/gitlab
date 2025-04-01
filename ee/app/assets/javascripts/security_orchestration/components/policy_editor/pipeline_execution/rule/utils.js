@@ -7,6 +7,9 @@ const DEFAULT_START_MONTH_DAY = 1;
 const WEEKLY = 'weekly';
 const MONTHLY = 'monthly';
 
+export const MINIMUM_SECONDS = 600; // 10 minutes, set in ee/app/validators/json_schemas/security_orchestration_policy.json
+export const MINIMUM_SECONDS_IN_MINUTES = MINIMUM_SECONDS / 60;
+export const MAXIMUM_SECONDS = 2629746; // 30 days, set in ee/app/validators/json_schemas/security_orchestration_policy.json
 export const isCadenceWeekly = (cadence) => cadence === WEEKLY;
 export const isCadenceMonthly = (cadence) => cadence === MONTHLY;
 
@@ -21,6 +24,13 @@ export const TIME_UNITS = {
   MINUTE: 60,
   HOUR: 3600,
   DAY: 86400, // 24 hours * 60 minutes * 60 seconds
+};
+
+// Constants for time units in seconds
+export const DEFAULT_TIME_PER_UNIT = {
+  [TIME_UNITS.MINUTE]: MINIMUM_SECONDS,
+  [TIME_UNITS.HOUR]: TIME_UNITS.HOUR,
+  [TIME_UNITS.DAY]: TIME_UNITS.DAY,
 };
 
 export const TIME_UNIT_OPTIONS = [
@@ -41,6 +51,15 @@ const CADENCE_CONFIG = {
     days_of_month: [DEFAULT_START_MONTH_DAY],
     time_window: { value: TIME_UNITS.DAY },
   },
+};
+
+/**
+ * Ensures the time is within the limits
+ * @param {number} time - Time value in seconds
+ * @returns {number} Time value capped between MINIMUM_SECONDS and MAXIMUM_SECONDS
+ */
+export const getValueWithinLimits = (time) => {
+  return Math.max(Math.min(time, MAXIMUM_SECONDS), MINIMUM_SECONDS);
 };
 
 export const updateScheduleCadence = ({ schedule, cadence }) => {
