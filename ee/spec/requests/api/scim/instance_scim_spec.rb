@@ -848,5 +848,230 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
         end
       end
     end
+
+    describe 'PATCH api/scim/v2/application/Groups/:id' do
+      let(:scim_group_uid) { SecureRandom.uuid }
+      let!(:saml_group_link) do
+        create(:saml_group_link, saml_group_name: 'engineering', scim_group_uid: scim_group_uid)
+      end
+
+      let!(:identity) { create(:scim_identity, user: create(:user), group: nil) }
+
+      let(:patch_params) do
+        {
+          schemas: ['urn:ietf:params:scim:api:messages:2.0:PatchOp'],
+          Operations: [
+            {
+              op: 'Add',
+              path: 'members',
+              value: [
+                { value: identity.extern_uid }
+              ]
+            }
+          ]
+        }
+      end
+
+      subject(:api_request) do
+        patch api("scim/v2/application/Groups/#{scim_group_uid}", user, version: '', access_token: scim_token),
+          params: patch_params
+      end
+
+      it_behaves_like 'Groups feature flag check'
+      it_behaves_like 'Not available to SaaS customers'
+      it_behaves_like 'Instance level SCIM license required'
+      it_behaves_like 'SCIM token authenticated'
+      it_behaves_like 'SAML SSO must be enabled'
+      it_behaves_like 'sets current organization'
+
+      context 'with valid parameters' do
+        it 'responds with 204 No Content' do
+          expect { api_request }.to change { saml_group_link.group.users.count }.by(1)
+
+          expect(response).to have_gitlab_http_status(:no_content)
+        end
+
+        it 'adds the user to the group' do
+          expect { api_request }.to change { saml_group_link.group.users.include?(identity.user) }.from(false).to(true)
+        end
+
+        context 'with case-insensitive operation matching' do
+          let(:patch_params) do
+            {
+              schemas: ['urn:ietf:params:scim:api:messages:2.0:PatchOp'],
+              Operations: [
+                {
+                  op: 'ADD',
+                  path: 'MEMBERS',
+                  value: [
+                    { value: identity.extern_uid }
+                  ]
+                }
+              ]
+            }
+          end
+
+          it 'matches operations case-insensitively' do
+            expect { api_request }.to change {
+              saml_group_link.group.users.include?(identity.user)
+            }.from(false).to(true)
+            expect(response).to have_gitlab_http_status(:no_content)
+          end
+        end
+      end
+
+      context 'with invalid operation parameters' do
+        context 'with missing operations array' do
+          let(:patch_params) do
+            {
+              schemas: ['urn:ietf:params:scim:api:messages:2.0:PatchOp']
+            }
+          end
+
+          it 'returns a 400 bad request with operation validation error' do
+            api_request
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(json_response['error']).to include('Operations is missing')
+          end
+        end
+
+        context 'with empty operations array' do
+          let(:patch_params) do
+            {
+              schemas: ['urn:ietf:params:scim:api:messages:2.0:PatchOp'],
+              Operations: []
+            }
+          end
+
+          it 'returns a 400 bad request with operation validation error' do
+            api_request
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(json_response['error']).to include('Operations[0][op] is missing')
+          end
+        end
+
+        context 'with invalid operation type' do
+          let(:patch_params) do
+            {
+              schemas: ['urn:ietf:params:scim:api:messages:2.0:PatchOp'],
+              Operations: [
+                {
+                  op: 'InvalidOperation',
+                  path: 'members',
+                  value: [
+                    { value: identity.extern_uid }
+                  ]
+                }
+              ]
+            }
+          end
+
+          it 'returns a 400 bad request with operation validation error' do
+            api_request
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(json_response['error']).to include('Operations[0][op] does not have a valid value')
+          end
+        end
+
+        context 'with missing required parameters' do
+          let(:patch_params) do
+            {
+              schemas: ['urn:ietf:params:scim:api:messages:2.0:PatchOp'],
+              Operations: [
+                {
+                  path: 'members',
+                  value: [
+                    { value: identity.extern_uid }
+                  ]
+                }
+              ]
+            }
+          end
+
+          it 'returns a 400 bad request with missing parameter error' do
+            api_request
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(json_response['error']).to include('Operations[0][op] is missing')
+          end
+        end
+      end
+
+      context 'with multiple group links sharing the same SCIM ID' do
+        let!(:another_group) { create(:group) }
+        let!(:another_group_link) do
+          create(:saml_group_link,
+            group: another_group,
+            saml_group_name: 'engineering',
+            scim_group_uid: scim_group_uid)
+        end
+
+        it 'adds the user to all linked groups' do
+          expect { api_request }.to change {
+            saml_group_link.group.users.include?(identity.user) &&
+              another_group.users.include?(identity.user)
+          }.from(false).to(true)
+        end
+      end
+
+      context 'with externalId operation' do
+        let(:patch_params) do
+          {
+            schemas: ['urn:ietf:params:scim:api:messages:2.0:PatchOp'],
+            Operations: [
+              {
+                op: 'Add',
+                path: 'externalId',
+                value: 'new-external-id'
+              }
+            ]
+          }
+        end
+
+        it 'responds with 204 No Content' do
+          expect { api_request }.not_to change { saml_group_link.group.users.count }
+
+          expect(response).to have_gitlab_http_status(:no_content)
+        end
+      end
+
+      context 'with non-existent SCIM group ID' do
+        subject(:api_request) do
+          patch api("scim/v2/application/Groups/non-existent-id", user, version: '', access_token: scim_token),
+            params: patch_params
+        end
+
+        it 'returns a 404 not found' do
+          api_request
+
+          expect(response).to have_gitlab_http_status(:not_found)
+          expect(json_response['detail']).to include('Group non-existent-id not found')
+        end
+      end
+
+      context 'with invalid user identity' do
+        let(:patch_params) do
+          {
+            schemas: ['urn:ietf:params:scim:api:messages:2.0:PatchOp'],
+            Operations: [
+              {
+                op: 'Add',
+                path: 'members',
+                value: [
+                  { value: 'non-existent-identity' }
+                ]
+              }
+            ]
+          }
+        end
+
+        it 'responds with 204 No Content but does not add any users' do
+          expect { api_request }.not_to change { saml_group_link.group.users.count }
+
+          expect(response).to have_gitlab_http_status(:no_content)
+        end
+      end
+    end
   end
 end
