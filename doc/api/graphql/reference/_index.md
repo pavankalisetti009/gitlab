@@ -8462,6 +8462,7 @@ Input type: `NamespaceDeleteRemoteDevelopmentClusterAgentMappingInput`
 | ---- | ---- | ----------- |
 | <a id="mutationnamespacedeleteremotedevelopmentclusteragentmappingclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationnamespacedeleteremotedevelopmentclusteragentmappingerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
+| <a id="mutationnamespacedeleteremotedevelopmentclusteragentmappingnamespaceclusteragentmapping"></a>`namespaceClusterAgentMapping` {{< icon name="warning-solid" >}} | [`NamespaceClusterAgentMapping`](#namespaceclusteragentmapping) | **Deprecated:** **Status**: Experiment. Introduced in GitLab 17.11. |
 
 ### `Mutation.namespaceSettingsUpdate`
 

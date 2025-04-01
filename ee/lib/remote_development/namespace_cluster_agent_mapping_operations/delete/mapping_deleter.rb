@@ -14,14 +14,19 @@ module RemoteDevelopment
             cluster_agent: Clusters::Agent => cluster_agent
           }
 
-          delete_count = NamespaceClusterAgentMapping.delete_by(
-            namespace_id: namespace.id,
-            cluster_agent_id: cluster_agent.id
-          )
+          mapping = NamespaceClusterAgentMapping.for_namespaces([namespace.id])
+                                                .for_agents([cluster_agent.id])
+                                                .first
+
+          return Gitlab::Fp::Result.err(NamespaceClusterAgentMappingNotFound.new) unless mapping
+
+          delete_count = mapping.delete
 
           return Gitlab::Fp::Result.err(NamespaceClusterAgentMappingNotFound.new) if delete_count == 0
 
-          Gitlab::Fp::Result.ok(NamespaceClusterAgentMappingDeleteSuccessful.new({}))
+          Gitlab::Fp::Result.ok(NamespaceClusterAgentMappingDeleteSuccessful.new({
+            namespace_cluster_agent_mapping: mapping
+          }))
         end
       end
     end

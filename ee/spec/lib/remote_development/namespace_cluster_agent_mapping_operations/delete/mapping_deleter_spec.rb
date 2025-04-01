@@ -21,18 +21,16 @@ RSpec.describe ::RemoteDevelopment::NamespaceClusterAgentMappingOperations::Dele
   end
 
   context 'when mapping exists for given cluster agent and namespace' do
-    let(:creator) { create(:user) }
-
-    before do
-      RemoteDevelopment::NamespaceClusterAgentMapping.new(
-        namespace_id: namespace.id,
-        cluster_agent_id: agent.id,
-        creator_id: creator.id
-      ).save!
+    let_it_be(:creator) { create(:user) }
+    let_it_be(:mapping) do
+      create(:namespace_cluster_agent_mapping, namespace: namespace, agent: agent, user: creator)
     end
 
     it 'returns an ok Result indicating that the mapping has been deleted' do
-      expect(result).to be_ok_result(RemoteDevelopment::Messages::NamespaceClusterAgentMappingDeleteSuccessful.new({}))
+      expected = RemoteDevelopment::Messages::NamespaceClusterAgentMappingDeleteSuccessful.new({
+        namespace_cluster_agent_mapping: mapping
+      })
+      expect(result).to be_ok_result(expected)
     end
   end
 end
