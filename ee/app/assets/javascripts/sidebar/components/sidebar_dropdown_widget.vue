@@ -2,7 +2,7 @@
 import { __ } from '~/locale';
 import SidebarDropdownWidget from '~/sidebar/components/sidebar_dropdown_widget.vue';
 import { TYPE_ISSUE, TYPE_MERGE_REQUEST, TYPE_EPIC } from '~/issues/constants';
-import { WORK_ITEM_TYPE_VALUE_EPIC } from '~/work_items/constants';
+import { WORK_ITEM_TYPE_NAME_EPIC } from '~/work_items/constants';
 import { getIdFromGraphQLId, convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_WORK_ITEM, TYPENAME_ISSUE } from '~/graphql_shared/constants';
 import { createAlert } from '~/alert';
@@ -212,7 +212,7 @@ export default {
         }
 
         // Set actual data for work item epic or legacy epic
-        if (workItemType?.name === WORK_ITEM_TYPE_VALUE_EPIC) {
+        if (workItemType?.name === WORK_ITEM_TYPE_NAME_EPIC) {
           response = await this.updateWorkItem({
             input: {
               id: this.issuableId,
@@ -235,7 +235,7 @@ export default {
           });
         } else {
           this.hasWorkItemParent =
-            workItemType?.name === WORK_ITEM_TYPE_VALUE_EPIC && this.showWorkItemEpics;
+            workItemType?.name === WORK_ITEM_TYPE_NAME_EPIC && this.showWorkItemEpics;
           this.$emit('attribute-updated', response.data);
         }
       } catch (error) {
