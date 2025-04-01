@@ -26,7 +26,7 @@ RSpec.describe Admin::RunnersController, :enable_admin_mode, feature_category: :
 
   shared_examples 'accessible when user has read_admin_cicd ability through a custom role' do
     context 'when user has read_admin_cicd ability through a custom role' do
-      let_it_be_with_refind(:role) { create(:admin_role, :read_admin_cicd, user: user) }
+      let_it_be_with_refind(:role) { create(:admin_member_role, :read_admin_cicd, user: user) }
 
       it { is_expected.to have_gitlab_http_status(:ok) }
     end

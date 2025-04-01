@@ -3252,7 +3252,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       shared_examples 'admin custom roles abilities' do
         context 'when custom roles feature is unavailable' do
           before do
-            create(:admin_role, *member_role_abilities, user: current_user)
+            create(:admin_member_role, *member_role_abilities, user: current_user)
 
             stub_licensed_features(custom_roles: false)
           end
@@ -3267,7 +3267,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
           context 'when a role enables the abilities' do
             before do
-              create(:admin_role, *member_role_abilities, user: current_user)
+              create(:admin_member_role, *member_role_abilities, user: current_user)
             end
 
             it { expect_allowed(*allowed_abilities) }

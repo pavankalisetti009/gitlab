@@ -6,7 +6,7 @@ RSpec.describe Authz::Admin, feature_category: :permissions do
   subject(:instance_authorization) { described_class.new(user) }
 
   let_it_be(:user) { create(:user) }
-  let_it_be(:admin_role) { create(:admin_role, :read_admin_dashboard, user: user) }
+  let_it_be(:admin_role) { create(:admin_member_role, :read_admin_dashboard, user: user) }
 
   before do
     stub_licensed_features(custom_roles: true)

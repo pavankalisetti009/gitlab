@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe "Admin::Projects", feature_category: :groups_and_projects do
   let_it_be_with_reload(:project) { create(:project, :with_namespace_settings) }
   let_it_be(:user) { create(:user) }
-  let_it_be(:role) { create(:admin_role, :read_admin_dashboard, user: user) }
+  let_it_be(:role) { create(:admin_member_role, :read_admin_dashboard, user: user) }
 
   let(:current_user) { user }
 

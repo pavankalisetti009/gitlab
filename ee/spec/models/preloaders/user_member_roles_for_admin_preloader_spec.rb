@@ -9,7 +9,7 @@ RSpec.describe Preloaders::UserMemberRolesForAdminPreloader, feature_category: :
   subject(:result) { described_class.new(user: user).execute }
 
   shared_examples 'custom roles' do |ability|
-    let_it_be(:member_role) { create(:admin_role, ability, user: user) }
+    let_it_be(:member_role) { create(:admin_member_role, ability, user: user) }
 
     let(:expected_abilities) { [ability].compact }
 

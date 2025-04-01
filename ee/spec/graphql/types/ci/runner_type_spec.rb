@@ -33,7 +33,7 @@ RSpec.describe GitlabSchema.types['CiRunner'], feature_category: :runner do
       let_it_be(:current_user) { create(:user) }
 
       before do
-        create(:admin_role, :read_admin_cicd, user: current_user)
+        create(:admin_member_role, :read_admin_cicd, user: current_user)
 
         stub_licensed_features(custom_roles: true)
       end

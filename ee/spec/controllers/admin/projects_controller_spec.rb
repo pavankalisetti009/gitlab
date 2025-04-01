@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Admin::ProjectsController, :geo, feature_category: :groups_and_projects do
   let_it_be(:admin) { create(:admin) }
   let_it_be(:user) { create(:user) }
-  let_it_be(:role) { create(:admin_role, :read_admin_dashboard, user: user) }
+  let_it_be(:role) { create(:admin_member_role, :read_admin_dashboard, user: user) }
 
   describe 'GET /projects' do
     subject(:get_admin_projects) { get :index }

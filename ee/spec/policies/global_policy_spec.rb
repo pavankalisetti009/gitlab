@@ -918,7 +918,7 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
 
     with_them do
       context 'when a user is assigned an admin custom role' do
-        let!(:role) { create(:admin_role, custom_ability, user: current_user) }
+        let!(:role) { create(:admin_member_role, custom_ability, user: current_user) }
 
         context 'when custom_roles feature is enabled' do
           before do
