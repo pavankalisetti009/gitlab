@@ -472,9 +472,20 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
         expect(group_data[:is_adjourned_deletion_enabled]).to be true
       end
 
-      it 'permanent_deletion_date returns correct date' do
-        expect(group_data[:permanent_deletion_date]).to \
-          eq(pending_delete_group.permanent_deletion_date(Time.now.utc).strftime('%F'))
+      it 'permanent_deletion_date returns correct date', :freeze_time do
+        expect(group_data[:permanent_deletion_date])
+          .to eq(::Gitlab::CurrentSettings.deletion_adjourned_period.days.since(Date.current).strftime('%F'))
+      end
+    end
+
+    context 'with adjourned deletion enabled globally' do
+      before do
+        stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
+      end
+
+      it 'permanent_deletion_date returns correct date', :freeze_time do
+        expect(group_data[:permanent_deletion_date])
+          .to eq(::Gitlab::CurrentSettings.deletion_adjourned_period.days.since(Date.current).strftime('%F'))
       end
     end
   end

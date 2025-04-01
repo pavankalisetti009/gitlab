@@ -22,7 +22,7 @@ module EE
         result = ::Groups::MarkForDeletionService.new(group, current_user).execute
 
         if result[:status] == :success
-          removal_time = permanent_deletion_date_formatted(group, Time.current.utc)
+          removal_time = helpers.permanent_deletion_date_formatted(Date.current)
           message = _("'%{group_name}' has been scheduled for removal on %{removal_time}.")
 
           render json: { message: format(message, group_name: group.name, removal_time: removal_time) }

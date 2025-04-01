@@ -5,6 +5,7 @@ require 'spec_helper'
 RSpec.describe GroupsController, :with_current_organization, feature_category: :groups_and_projects do
   include ExternalAuthorizationServiceHelpers
   using RSpec::Parameterized::TableSyntax
+  include NamespacesHelper
 
   let_it_be(:user) { create(:user, organizations: [current_organization]) }
   let_it_be(:group) { create(:group, :public, organization: current_organization) }
@@ -294,7 +295,11 @@ RSpec.describe GroupsController, :with_current_organization, feature_category: :
             it 'returns json with message' do
               subject
 
-              expect(json_response['message']).to eq("'#{group.name}' has been scheduled for deletion and will be deleted on #{permanent_deletion_date_formatted(group, group.marked_for_deletion_on)}.")
+              # FIXME: Replace `group.marked_for_deletion_on` with `group` after https://gitlab.com/gitlab-org/gitlab/-/work_items/527085
+              expect(json_response['message'])
+              .to eq(
+                "'#{group.name}' has been scheduled for deletion and will be deleted on " \
+                  "#{permanent_deletion_date_formatted(group.marked_for_deletion_on)}.")
             end
           end
         end

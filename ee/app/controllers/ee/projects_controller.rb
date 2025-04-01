@@ -58,7 +58,8 @@ module EE
           flash[:toast] = format(
             _("Deleting project '%{project_name}'. All data will be removed on %{date}."),
             project_name: project.full_name,
-            date: helpers.permanent_deletion_date_formatted(project, project.marked_for_deletion_at)
+            # FIXME: Replace `project.marked_for_deletion_at` with `project` after https://gitlab.com/gitlab-org/gitlab/-/work_items/527085
+            date: helpers.permanent_deletion_date_formatted(project.marked_for_deletion_at)
           )
           redirect_to dashboard_projects_path, status: :found
         end

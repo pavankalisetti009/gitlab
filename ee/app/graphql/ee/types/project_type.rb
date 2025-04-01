@@ -4,6 +4,7 @@ module EE
   module Types
     module ProjectType
       extend ActiveSupport::Concern
+      include ::NamespacesHelper
 
       prepended do
         field :security_scanners, ::Types::SecurityScanners,
@@ -678,7 +679,7 @@ module EE
 
       def permanent_deletion_date
         if project.adjourned_deletion? || License.feature_available?(:adjourned_deletion_for_projects_and_groups)
-          project.permanent_deletion_date(Time.now.utc).strftime('%F')
+          permanent_deletion_date_formatted(Date.current)
         end
       end
 

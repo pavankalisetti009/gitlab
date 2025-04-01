@@ -59,7 +59,8 @@ module EE
               message: format(
                 _("'%{group_name}' has been scheduled for deletion and will be deleted on %{date}."),
                 group_name: group.name,
-                date: permanent_deletion_date_formatted(group, group.marked_for_deletion_on)
+                # FIXME: Replace `group.marked_for_deletion_on` with `group` after https://gitlab.com/gitlab-org/gitlab/-/work_items/527085
+                date: helpers.permanent_deletion_date_formatted(group.marked_for_deletion_on)
               )
             }
           end
