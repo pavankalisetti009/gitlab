@@ -1,7 +1,7 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { shallowMount } from '@vue/test-utils';
-import WorkItemDates from '~/work_items/components/work_item_dates.vue';
+import WorkItemDates from 'ee/work_items/components/work_item_dates.vue';
 import WorkItemProgress from 'ee/work_items/components/work_item_progress.vue';
 import WorkItemHealthStatus from 'ee/work_items/components/work_item_health_status.vue';
 import WorkItemWeight from 'ee/work_items/components/work_item_weight.vue';

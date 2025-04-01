@@ -1,5 +1,5 @@
 <script>
-import { GlDatepicker, GlFormGroup } from '@gitlab/ui';
+import { GlDatepicker, GlFormGroup, GlFormRadio } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { findStartAndDueDateWidget, newWorkItemId } from '~/work_items/utils';
 import { s__ } from '~/locale';
@@ -10,10 +10,10 @@ import {
   sprintfWorkItem,
   TRACKING_CATEGORY_SHOW,
   WIDGET_TYPE_START_AND_DUE_DATE,
-} from '../constants';
-import updateWorkItemMutation from '../graphql/update_work_item.mutation.graphql';
-import updateNewWorkItemMutation from '../graphql/update_new_work_item.mutation.graphql';
-import WorkItemSidebarWidget from './shared/work_item_sidebar_widget.vue';
+} from '~/work_items/constants';
+import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
+import updateNewWorkItemMutation from '~/work_items/graphql/update_new_work_item.mutation.graphql';
+import WorkItemSidebarWidget from '~/work_items/components/shared/work_item_sidebar_widget.vue';
 
 const nullObjectDate = new Date(0);
 
@@ -26,6 +26,7 @@ export default {
   components: {
     GlDatepicker,
     GlFormGroup,
+    GlFormRadio,
     WorkItemSidebarWidget,
   },
   mixins: [Tracking.mixin()],
@@ -97,7 +98,7 @@ export default {
     tracking() {
       return {
         category: TRACKING_CATEGORY_SHOW,
-        label: 'item_dates',
+        label: 'item_rolledup_dates',
         property: `type_${this.workItemType}`,
       };
     },
@@ -164,6 +165,57 @@ export default {
         this.localDueDate = this.localStartDate;
       }
     },
+    updateRollupType() {
+      this.isUpdating = true;
+
+      this.track('updated_rollup_type');
+
+      if (this.workItemId === newWorkItemId(this.workItemType)) {
+        this.$apollo.mutate({
+          mutation: updateNewWorkItemMutation,
+          variables: {
+            input: {
+              workItemType: this.workItemType,
+              fullPath: this.fullPath,
+              rolledUpDates: {
+                isFixed: this.rollupType === ROLLUP_TYPE_FIXED,
+                rollUp: this.shouldRollUp,
+              },
+            },
+          },
+        });
+
+        this.isUpdating = false;
+        return;
+      }
+
+      this.$apollo
+        .mutate({
+          mutation: updateWorkItemMutation,
+          variables: {
+            input: {
+              id: this.workItemId,
+              startAndDueDateWidget: {
+                isFixed: this.rollupType === ROLLUP_TYPE_FIXED,
+              },
+            },
+          },
+          optimisticResponse: this.optimisticResponse,
+        })
+        .then(({ data }) => {
+          if (data.workItemUpdate.errors.length) {
+            throw new Error(data.workItemUpdate.errors.join('; '));
+          }
+        })
+        .catch((error) => {
+          const message = sprintfWorkItem(I18N_WORK_ITEM_ERROR_UPDATING, this.workItemType);
+          this.$emit('error', message);
+          Sentry.captureException(error);
+        })
+        .finally(() => {
+          this.isUpdating = false;
+        });
+    },
     updateDates() {
       if (this.datesUnchanged) {
         return;
@@ -202,6 +254,7 @@ export default {
             input: {
               id: this.workItemId,
               startAndDueDateWidget: {
+                isFixed: true,
                 dueDate: this.localDueDate ? toISODateFormat(this.localDueDate) : null,
                 startDate: this.localStartDate ? toISODateFormat(this.localStartDate) : null,
               },
@@ -238,6 +291,25 @@ export default {
       {{ s__('WorkItem|Dates') }}
     </template>
     <template #content>
+      <fieldset v-if="shouldRollUp" class="gl-mt-2 gl-flex gl-gap-5">
+        <legend class="gl-sr-only">{{ s__('WorkItem|Dates') }}</legend>
+        <gl-form-radio
+          v-model="rollupType"
+          value="fixed"
+          :disabled="!canUpdate || isUpdating"
+          @change="updateRollupType"
+        >
+          {{ s__('WorkItem|Fixed') }}
+        </gl-form-radio>
+        <gl-form-radio
+          v-model="rollupType"
+          value="inherited"
+          :disabled="!canUpdate || isUpdating"
+          @change="updateRollupType"
+        >
+          {{ s__('WorkItem|Inherited') }}
+        </gl-form-radio>
+      </fieldset>
       <p class="gl-m-0 gl-py-1">
         <span class="gl-inline-block gl-min-w-8">{{ s__('WorkItem|Start') }}:</span>
         <span data-testid="start-date-value" :class="{ 'gl-text-subtle': !startDate }">
