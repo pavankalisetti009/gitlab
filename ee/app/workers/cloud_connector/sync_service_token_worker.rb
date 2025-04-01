@@ -10,14 +10,21 @@ module CloudConnector
 
     idempotent!
 
-    # Retry for up to approximately 17 hours
-    sidekiq_options retry: 12
+    sidekiq_options retry: 3
 
     worker_has_external_dependencies!
 
     feature_category :cloud_connector
 
     def perform(params = {})
+      # We only refresh the token if we either force a refresh, we have no token or the token's expiration date is
+      # within 2 days from now
+      access_token = ::CloudConnector::ServiceAccessToken.last
+      unless params[:force] || access_token.nil? || access_token.refresh_required?
+        log_extra_metadata_on_done(:result, 'skipping token refresh')
+        return
+      end
+
       # We should refrain from using License.current, because it can cause state drift
       # when Sidekiq jobs update and read license data and execute in different workers.
       # We only maintain this for backwards-compatibility.

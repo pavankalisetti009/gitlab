@@ -18,7 +18,7 @@ RSpec.describe '1_settings', feature_category: :shared do
     context 'sync_service_token_worker cron job' do
       # explicit use of UTC for self-managed instances to ensure job runs after a SyncSeatLink job
       it 'schedules the job at the correct time' do
-        expect(cron_jobs.dig('sync_service_token_worker', 'cron')).to match(/[1-5]{0,1}[0-9]{1,2} [56] \* \* \* UTC/)
+        expect(cron_jobs.dig('sync_service_token_worker', 'cron')).to match(/[1-5]{0,1}[0-9]{1,2} \* \* \* \* UTC/)
       end
     end
 

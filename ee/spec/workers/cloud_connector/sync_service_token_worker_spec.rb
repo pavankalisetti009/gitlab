@@ -53,6 +53,57 @@ RSpec.describe CloudConnector::SyncServiceTokenWorker, type: :worker, feature_ca
           sync_service_token
         end
       end
+
+      context 'when the last valid token is valid for less than 2 days', :freeze_time do
+        let!(:service_access_token) { create(:service_access_token, expires_at: 1.day.from_now) }
+
+        context 'when there is a force: true param' do
+          let(:job_args) { [{ license_id: license.id, force: true }] }
+
+          it 'executes the SyncCloudConnectorAccessService' do
+            expect_next_instance_of(::CloudConnector::SyncCloudConnectorAccessService) do |instance|
+              expect(instance).to receive(:execute).and_return(service_response)
+            end
+            expect(worker).not_to receive(:log_extra_metadata_on_done)
+
+            sync_service_token
+          end
+        end
+
+        it 'executes the SyncCloudConnectorAccessService' do
+          expect_next_instance_of(::CloudConnector::SyncCloudConnectorAccessService) do |instance|
+            expect(instance).to receive(:execute).and_return(service_response)
+          end
+          expect(worker).not_to receive(:log_extra_metadata_on_done)
+
+          sync_service_token
+        end
+      end
+
+      context 'when the last valid token is valid for more than 2 days', :freeze_time do
+        let!(:service_access_token) { create(:service_access_token, expires_at: 3.days.from_now) }
+
+        context 'when there is a force: true param' do
+          let(:job_args) { [{ license_id: license.id, force: true }] }
+
+          it 'executes the SyncCloudConnectorAccessService' do
+            expect_next_instance_of(::CloudConnector::SyncCloudConnectorAccessService) do |instance|
+              expect(instance).to receive(:execute).and_return(service_response)
+            end
+            expect(worker).not_to receive(:log_extra_metadata_on_done)
+
+            sync_service_token
+          end
+        end
+
+        it 'does not execute the SyncCloudConnectorAccessService' do
+          expect(::CloudConnector::SyncCloudConnectorAccessService).not_to receive(:new)
+          expect(worker).to receive(:log_extra_metadata_on_done)
+                              .with(:result, 'skipping token refresh').twice
+
+          sync_service_token
+        end
+      end
     end
   end
 end
