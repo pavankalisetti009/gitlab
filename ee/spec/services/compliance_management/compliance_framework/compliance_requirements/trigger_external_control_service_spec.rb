@@ -4,10 +4,21 @@ require 'spec_helper'
 
 RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements::TriggerExternalControlService,
   feature_category: :compliance_management do
-  let_it_be(:project) { create(:project) }
-  let_it_be(:compliance_requirement) { create(:compliance_requirement) }
+  let_it_be(:group) { create(:group) }
+  let_it_be(:project) { create(:project, namespace: group) }
+  let_it_be(:framework) { create(:compliance_framework, namespace: group) }
+  let_it_be(:compliance_requirement) { create(:compliance_requirement, namespace: group, framework: framework) }
   let_it_be(:control) do
-    create(:compliance_requirements_control, :external, compliance_requirement: compliance_requirement)
+    create(:compliance_requirements_control,
+      :external,
+      compliance_requirement: compliance_requirement,
+      namespace: group
+    )
+  end
+
+  before do
+    create(:compliance_framework_project_setting, project: project,
+      compliance_management_framework: framework)
   end
 
   subject(:service) { described_class.new(project, control) }

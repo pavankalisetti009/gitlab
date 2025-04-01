@@ -14,6 +14,10 @@ module ComplianceManagement
       validates_presence_of :status, :project, :namespace, :compliance_requirement,
         :compliance_requirements_control
 
+      validate :control_belongs_to_requirement
+      validate :framework_applied_to_project
+      validate :project_belongs_to_same_namespace
+
       scope :for_project_and_control, ->(project_id, control_id) {
         where(project_id: project_id, compliance_requirements_control_id: control_id)
       }
@@ -44,6 +48,34 @@ module ComplianceManagement
         else
           raise e
         end
+      end
+
+      private
+
+      def control_belongs_to_requirement
+        return unless compliance_requirements_control_id_changed? || compliance_requirement_id_changed?
+
+        return if compliance_requirement_id.nil? || compliance_requirements_control.nil? ||
+          compliance_requirements_control.compliance_requirement_id == compliance_requirement_id
+
+        errors.add(:compliance_requirements_control, _("must belong to the compliance requirement."))
+      end
+
+      def framework_applied_to_project
+        return unless project_id_changed? || compliance_requirement_id_changed?
+        return if project.nil? || compliance_requirement.nil?
+
+        return if ComplianceManagement::ComplianceFramework::ProjectSettings.by_framework_and_project(project.id,
+          compliance_requirement.framework.id).exists?
+
+        errors.add(:project, _("should have the compliance requirement's framework applied to it."))
+      end
+
+      def project_belongs_to_same_namespace
+        return unless project_id_changed? || namespace_id_changed?
+        return if namespace_id.nil? || project.nil? || project.namespace_id == namespace_id
+
+        errors.add(:project, _("must belong to the same namespace."))
       end
     end
   end

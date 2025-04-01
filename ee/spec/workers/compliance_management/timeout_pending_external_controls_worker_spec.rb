@@ -3,8 +3,16 @@
 require 'spec_helper'
 
 RSpec.describe ComplianceManagement::TimeoutPendingExternalControlsWorker, feature_category: :compliance_management do
-  let_it_be(:project) { create(:project) }
-  let_it_be(:control) { create(:compliance_requirements_control, :external) }
+  let_it_be(:group) { create(:group) }
+  let_it_be(:project) { create(:project, namespace: group) }
+  let_it_be(:framework) { create(:compliance_framework, namespace: group) }
+  let_it_be(:compliance_requirement) { create(:compliance_requirement, namespace: group, framework: framework) }
+  let_it_be(:control) do
+    create(:compliance_requirements_control,
+      :external,
+      compliance_requirement: compliance_requirement,
+      namespace: group)
+  end
 
   let(:worker) { described_class.new }
   let(:args) { { control_id: control.id, project_id: project.id } }
@@ -34,6 +42,7 @@ RSpec.describe ComplianceManagement::TimeoutPendingExternalControlsWorker, featu
         create(:project_control_compliance_status,
           project: project,
           compliance_requirements_control: control,
+          compliance_requirement: compliance_requirement,
           status: :pending
         )
       end

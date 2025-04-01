@@ -4,17 +4,12 @@ require 'spec_helper'
 
 RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirementsControls::UpdateStatusService,
   feature_category: :compliance_management do
-  let_it_be(:project) { create(:project) }
-  let_it_be(:requirement) do
-    create(:compliance_requirement, framework: create(:compliance_framework))
-  end
-
+  let_it_be(:group) { create(:group) }
+  let_it_be(:project) { create(:project, namespace: group) }
+  let_it_be(:framework) { create(:compliance_framework, namespace: group) }
+  let_it_be(:requirement) { create(:compliance_requirement, namespace: group, framework: framework) }
   let_it_be(:control) do
-    create(:compliance_requirements_control,
-      compliance_requirement: requirement,
-      control_type: :external,
-      external_url: 'https://example.com',
-      secret_token: 'foo')
+    create(:compliance_requirements_control, :external, compliance_requirement: requirement, namespace: group)
   end
 
   let_it_be(:project_control_compliance_status) do
