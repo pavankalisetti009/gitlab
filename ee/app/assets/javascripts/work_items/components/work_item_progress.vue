@@ -9,7 +9,7 @@ import {
   I18N_WORK_ITEM_ERROR_UPDATING,
   sprintfWorkItem,
   TRACKING_CATEGORY_SHOW,
-  WORK_ITEM_TYPE_VALUE_OBJECTIVE,
+  WORK_ITEM_TYPE_NAME_OBJECTIVE,
 } from '~/work_items/constants';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
 
@@ -61,7 +61,7 @@ export default {
     },
     showProgressPopover() {
       return (
-        this.glFeatures.okrAutomaticRollups && this.workItemType === WORK_ITEM_TYPE_VALUE_OBJECTIVE
+        this.glFeatures.okrAutomaticRollups && this.workItemType === WORK_ITEM_TYPE_NAME_OBJECTIVE
       );
     },
     isValidProgress() {

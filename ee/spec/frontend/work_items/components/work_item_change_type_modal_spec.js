@@ -14,11 +14,11 @@ import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_ite
 import getWorkItemDesignListQuery from '~/work_items/components/design_management/graphql/design_collection.query.graphql';
 import promoteToEpicMutation from '~/issues/show/queries/promote_to_epic.mutation.graphql';
 import {
-  WORK_ITEM_TYPE_VALUE_TASK,
+  WORK_ITEM_TYPE_NAME_TASK,
   WORK_ITEM_WIDGETS_NAME_MAP,
-  WORK_ITEM_TYPE_VALUE_ISSUE,
+  WORK_ITEM_TYPE_NAME_ISSUE,
   WORK_ITEM_TYPE_ENUM_EPIC,
-  WORK_ITEM_TYPE_VALUE_KEY_RESULT,
+  WORK_ITEM_TYPE_NAME_KEY_RESULT,
 } from '~/work_items/constants';
 
 import {
@@ -34,11 +34,11 @@ describe('WorkItemChangeTypeModal component', () => {
   const graphqlError = 'GraphQL error';
   const keyResultTypeId =
     namespaceWorkItemTypesQueryResponse.data.workspace.workItemTypes.nodes.find(
-      (item) => item.name === WORK_ITEM_TYPE_VALUE_KEY_RESULT,
+      (item) => item.name === WORK_ITEM_TYPE_NAME_KEY_RESULT,
     ).id;
 
   const issueTypeId = namespaceWorkItemTypesQueryResponse.data.workspace.workItemTypes.nodes.find(
-    (item) => item.name === WORK_ITEM_TYPE_VALUE_ISSUE,
+    (item) => item.name === WORK_ITEM_TYPE_NAME_ISSUE,
   ).id;
 
   const namespaceWorkItemTypesQuerySuccessHandler = jest
@@ -91,7 +91,7 @@ describe('WorkItemChangeTypeModal component', () => {
 
   const createComponent = ({
     widgets = [],
-    workItemType = WORK_ITEM_TYPE_VALUE_TASK,
+    workItemType = WORK_ITEM_TYPE_NAME_TASK,
     promoteToEpicMutationHandler = promoteToEpicMutationSuccessHandler,
     typesQuerySuccessHandler = namespaceWorkItemTypesQuerySuccessHandler,
   } = {}) => {
@@ -126,7 +126,7 @@ describe('WorkItemChangeTypeModal component', () => {
   const findEpicTypeOption = () => findGlFormSelect().findAll('option').at(2);
 
   it('renders epic type as an option when work item type is an issue', async () => {
-    createComponent({ workItemType: WORK_ITEM_TYPE_VALUE_ISSUE });
+    createComponent({ workItemType: WORK_ITEM_TYPE_NAME_ISSUE });
 
     await waitForPromises();
 
@@ -136,7 +136,7 @@ describe('WorkItemChangeTypeModal component', () => {
 
   it('does not render epic type as an option when it is not supported', async () => {
     createComponent({
-      workItemType: WORK_ITEM_TYPE_VALUE_ISSUE,
+      workItemType: WORK_ITEM_TYPE_NAME_ISSUE,
       typesQuerySuccessHandler: namespaceWorkItemTypesWithoutEpicQuerySuccessHandler,
     });
 
@@ -147,7 +147,7 @@ describe('WorkItemChangeTypeModal component', () => {
 
   it('renders objective and key result types as select options', async () => {
     createComponent({
-      workItemType: WORK_ITEM_TYPE_VALUE_ISSUE,
+      workItemType: WORK_ITEM_TYPE_NAME_ISSUE,
       typesQuerySuccessHandler: namespaceWorkItemTypesWithOKRsQuerySuccessHandler,
     });
 
@@ -160,9 +160,9 @@ describe('WorkItemChangeTypeModal component', () => {
     // These are possible use cases of conflicts among issues EE widgets
     // Other widgets are shared between all the work item types
     it.each`
-      widgetType                              | widgetData                             | workItemType                  | typeTobeConverted           | expectedString
-      ${WORK_ITEM_WIDGETS_NAME_MAP.ITERATION} | ${workItemChangeTypeWidgets.ITERATION} | ${WORK_ITEM_TYPE_VALUE_ISSUE} | ${WORK_ITEM_TYPE_ENUM_EPIC} | ${'Iteration'}
-      ${WORK_ITEM_WIDGETS_NAME_MAP.WEIGHT}    | ${workItemChangeTypeWidgets.WEIGHT}    | ${WORK_ITEM_TYPE_VALUE_ISSUE} | ${WORK_ITEM_TYPE_ENUM_EPIC} | ${'Weight'}
+      widgetType                              | widgetData                             | workItemType                 | typeTobeConverted           | expectedString
+      ${WORK_ITEM_WIDGETS_NAME_MAP.ITERATION} | ${workItemChangeTypeWidgets.ITERATION} | ${WORK_ITEM_TYPE_NAME_ISSUE} | ${WORK_ITEM_TYPE_ENUM_EPIC} | ${'Iteration'}
+      ${WORK_ITEM_WIDGETS_NAME_MAP.WEIGHT}    | ${workItemChangeTypeWidgets.WEIGHT}    | ${WORK_ITEM_TYPE_NAME_ISSUE} | ${WORK_ITEM_TYPE_ENUM_EPIC} | ${'Weight'}
     `(
       'shows warning message in case of $widgetType widget',
       async ({ workItemType, widgetData, typeTobeConverted, expectedString }) => {
@@ -185,7 +185,7 @@ describe('WorkItemChangeTypeModal component', () => {
 
   describe('promote issue to epic', () => {
     it('successfully changes a work item type when conditions are met', async () => {
-      createComponent({ workItemType: WORK_ITEM_TYPE_VALUE_ISSUE });
+      createComponent({ workItemType: WORK_ITEM_TYPE_NAME_ISSUE });
 
       await waitForPromises();
 
@@ -213,7 +213,7 @@ describe('WorkItemChangeTypeModal component', () => {
       'emits an error when there is a $errorType',
       async ({ expectedErrorMessage, failureHandler }) => {
         createComponent({
-          workItemType: WORK_ITEM_TYPE_VALUE_ISSUE,
+          workItemType: WORK_ITEM_TYPE_NAME_ISSUE,
           promoteToEpicMutationHandler: failureHandler,
         });
 
@@ -235,9 +235,9 @@ describe('WorkItemChangeTypeModal component', () => {
   describe('when okrs are enabled', () => {
     // These are possible use cases of conflicts among OKR widgets
     it.each`
-      widgetType                              | widgetData                             | workItemType                       | typeTobeConverted  | expectedString
-      ${WORK_ITEM_WIDGETS_NAME_MAP.MILESTONE} | ${workItemChangeTypeWidgets.MILESTONE} | ${WORK_ITEM_TYPE_VALUE_ISSUE}      | ${keyResultTypeId} | ${'Milestone'}
-      ${WORK_ITEM_WIDGETS_NAME_MAP.PROGRESS}  | ${workItemChangeTypeWidgets.PROGRESS}  | ${WORK_ITEM_TYPE_VALUE_KEY_RESULT} | ${issueTypeId}     | ${'Progress'}
+      widgetType                              | widgetData                             | workItemType                      | typeTobeConverted  | expectedString
+      ${WORK_ITEM_WIDGETS_NAME_MAP.MILESTONE} | ${workItemChangeTypeWidgets.MILESTONE} | ${WORK_ITEM_TYPE_NAME_ISSUE}      | ${keyResultTypeId} | ${'Milestone'}
+      ${WORK_ITEM_WIDGETS_NAME_MAP.PROGRESS}  | ${workItemChangeTypeWidgets.PROGRESS}  | ${WORK_ITEM_TYPE_NAME_KEY_RESULT} | ${issueTypeId}     | ${'Progress'}
     `(
       'shows warning message in case of $widgetType widget',
       async ({ workItemType, widgetData, typeTobeConverted, expectedString }) => {

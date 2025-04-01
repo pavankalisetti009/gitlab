@@ -11,7 +11,7 @@ import {
   FORM_TYPES,
   WORK_ITEM_TYPE_ENUM_TASK,
   WORK_ITEM_TYPE_ENUM_KEY_RESULT,
-  WORK_ITEM_TYPE_VALUE_ISSUE,
+  WORK_ITEM_TYPE_NAME_ISSUE,
   SEARCH_DEBOUNCE,
 } from '~/work_items/constants';
 import projectWorkItemsQuery from '~/work_items/graphql/project_work_items.query.graphql';
@@ -63,7 +63,7 @@ describe('WorkItemLinksForm', () => {
     parentIteration = null,
     parentMilestone = null,
     formType = FORM_TYPES.create,
-    parentWorkItemType = WORK_ITEM_TYPE_VALUE_ISSUE,
+    parentWorkItemType = WORK_ITEM_TYPE_NAME_ISSUE,
     childrenType = WORK_ITEM_TYPE_ENUM_TASK,
     updateMutation = updateMutationResolver,
     createMutation = createMutationResolver,

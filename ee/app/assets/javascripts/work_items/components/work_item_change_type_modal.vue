@@ -7,10 +7,10 @@ import WorkItemChangeTypeModal from '~/work_items/components/work_item_change_ty
 import promoteToEpicMutation from '~/issues/show/queries/promote_to_epic.mutation.graphql';
 import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
 import {
-  WORK_ITEM_TYPE_VALUE_EPIC,
+  WORK_ITEM_TYPE_NAME_EPIC,
   WIDGET_TYPE_WEIGHT,
   WORK_ITEM_TYPE_ENUM_EPIC,
-  WORK_ITEM_TYPE_VALUE_ISSUE,
+  WORK_ITEM_TYPE_NAME_ISSUE,
   WIDGET_TYPE_ASSIGNEES,
 } from '~/work_items/constants';
 
@@ -93,11 +93,10 @@ export default {
     },
     allowedWorkItems() {
       const isEpicSupportedType =
-        this.supportedConversionTypes.findIndex(
-          ({ name }) => name === WORK_ITEM_TYPE_VALUE_EPIC,
-        ) !== -1;
+        this.supportedConversionTypes.findIndex(({ name }) => name === WORK_ITEM_TYPE_NAME_EPIC) !==
+        -1;
 
-      if (this.workItemType === WORK_ITEM_TYPE_VALUE_ISSUE && isEpicSupportedType) {
+      if (this.workItemType === WORK_ITEM_TYPE_NAME_ISSUE && isEpicSupportedType) {
         return [
           {
             text: __('Epic (Promote to group)'),
@@ -144,7 +143,7 @@ export default {
     },
     getEpicWidgetDefinitions({ workItemTypes }) {
       const epicWidgets = workItemTypes.find(
-        (widget) => widget.name === WORK_ITEM_TYPE_VALUE_EPIC,
+        (widget) => widget.name === WORK_ITEM_TYPE_NAME_EPIC,
       )?.widgetDefinitions;
       const updatedWidgetDefinitions = epicWidgets.filter((widget) => {
         if (widget.type === WIDGET_TYPE_WEIGHT) {

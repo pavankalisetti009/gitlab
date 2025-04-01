@@ -20,7 +20,7 @@ import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
 import { TYPE_ISSUE } from '~/issues/constants';
-import { WORK_ITEM_TYPE_VALUE_EPIC, WORK_ITEM_TYPE_ENUM_EPIC } from '~/work_items/constants';
+import { WORK_ITEM_TYPE_NAME_EPIC, WORK_ITEM_TYPE_ENUM_EPIC } from '~/work_items/constants';
 import { clickEdit, search } from '../helpers';
 
 import {
@@ -405,7 +405,7 @@ describe('SidebarDropdownWidget', () => {
               // Set work item Epic as Epic value
               findSidebarDropdown().vm.$emit('change', {
                 id: 'gid://gitlab/WorkItem/4',
-                workItemType: { name: WORK_ITEM_TYPE_VALUE_EPIC },
+                workItemType: { name: WORK_ITEM_TYPE_NAME_EPIC },
               });
 
               // Assert work item Epic is set to null before setting the new Epic value
@@ -492,7 +492,7 @@ describe('SidebarDropdownWidget', () => {
               // Set work item Epic as Epic value
               findSidebarDropdown().vm.$emit('change', {
                 id: 'gid://gitlab/WorkItem/4',
-                workItemType: { name: WORK_ITEM_TYPE_VALUE_EPIC },
+                workItemType: { name: WORK_ITEM_TYPE_NAME_EPIC },
               });
 
               // Assert legacy Epic is set to null before setting the new Epic value
@@ -559,7 +559,7 @@ describe('SidebarDropdownWidget', () => {
               // Set null as Epic value
               findSidebarDropdown().vm.$emit('change', {
                 id: 'gid://gitlab/WorkItem/4',
-                workItemType: { name: WORK_ITEM_TYPE_VALUE_EPIC },
+                workItemType: { name: WORK_ITEM_TYPE_NAME_EPIC },
               });
 
               await waitForPromises();

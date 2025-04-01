@@ -10,7 +10,7 @@ import {
   WIDGET_TYPE_WEIGHT,
   WIDGET_TYPE_ITERATION,
   WIDGET_TYPE_START_AND_DUE_DATE,
-  WORK_ITEM_TYPE_VALUE_EPIC,
+  WORK_ITEM_TYPE_NAME_EPIC,
 } from '~/work_items/constants';
 import { humanTimeframe, isInPast, localeDateFormat, newDate } from '~/lib/utils/datetime_utility';
 import timeagoMixin from '~/vue_shared/mixins/timeago';
@@ -119,7 +119,7 @@ export default {
       return humanTimeframe(newDate(this.startDate), newDate(this.dueDate));
     },
     weightTooltip() {
-      return this.workItemType === WORK_ITEM_TYPE_VALUE_EPIC ? __('Issue weight') : __('Weight');
+      return this.workItemType === WORK_ITEM_TYPE_NAME_EPIC ? __('Issue weight') : __('Weight');
     },
     isOverdue() {
       if (!this.dueDate) {
