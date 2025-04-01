@@ -106,7 +106,7 @@ RSpec.describe Ci::RunnerPolicy, feature_category: :runner do
             it { expect_disallowed(*abilities) }
 
             context "when the user has the `#{params[:custom_permission]}` permission" do
-              let!(:role) { create(:admin_role, custom_permission, user: user) }
+              let!(:role) { create(:admin_member_role, custom_permission, user: user) }
 
               it { expect_allowed(*abilities) }
 

@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe 'User with read_admin_monitoring', :enable_admin_mode, feature_category: :audit_events do
   let_it_be(:current_user) { create(:user) }
   let_it_be(:permission) { :read_admin_monitoring }
-  let_it_be(:role) { create(:admin_role, permission, user: current_user) }
+  let_it_be(:role) { create(:admin_member_role, permission, user: current_user) }
 
   before do
     stub_licensed_features(admin_audit_log: true, custom_roles: true)

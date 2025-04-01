@@ -13,7 +13,7 @@ RSpec.describe API::Statistics, 'Statistics', :aggregate_failures, feature_categ
     end
 
     context 'when user is allowed to access_admin_area thanks to custom role', :enable_admin_mode do
-      let_it_be(:role) { create(:admin_role, :read_admin_dashboard, user: user) }
+      let_it_be(:role) { create(:admin_member_role, :read_admin_dashboard, user: user) }
 
       it 'returns success' do
         get_statistics
