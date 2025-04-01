@@ -63,15 +63,14 @@ RSpec.describe Search::Zoekt::SelectionService, feature_category: :global_search
     end
 
     context 'with available nodes selection' do
-      let_it_be(:eligible_node) { create(:zoekt_node, total_bytes: 100.gigabytes, used_bytes: 50.gigabytes) }
+      let_it_be(:eligible_node) { create(:zoekt_node, :enough_free_space) }
+      let_it_be(:offline_node) { create(:zoekt_node, :offline, :enough_free_space) }
       # Node with no unclaimed storage.
-      let_it_be(:ineligible_node) do
-        create(:zoekt_node, total_bytes: 100.gigabytes, used_bytes: 100.gigabytes)
-      end
+      let_it_be(:no_storage_node) { create(:zoekt_node, total_bytes: 100.gigabytes, used_bytes: 100.gigabytes) }
 
-      it 'returns only nodes with positive unclaimed storage bytes' do
+      it 'returns only online nodes with positive unclaimed storage bytes' do
         expect(resource_pool.nodes).to include(eligible_node)
-        expect(resource_pool.nodes).not_to include(ineligible_node)
+        expect(resource_pool.nodes).not_to include(no_storage_node, offline_node)
       end
     end
 
@@ -95,10 +94,7 @@ RSpec.describe Search::Zoekt::SelectionService, feature_category: :global_search
 
     context 'when no eligible nodes exist' do
       before do
-        # Stub the node scope to return an empty array.
-        allow(::Search::Zoekt::Node)
-          .to receive(:with_positive_unclaimed_storage_bytes)
-          .and_return([])
+        Search::Zoekt::Node.update_all(last_seen_at: (Search::Zoekt::Node::ONLINE_DURATION_THRESHOLD + 1.minute).ago)
       end
 
       it 'returns an empty array for nodes' do
