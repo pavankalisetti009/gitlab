@@ -156,6 +156,30 @@ module API
         end
 
         resource ":user_id/personal_access_tokens" do
+          desc 'Get a list of all personal access tokens' do
+            detail 'Get a list of all personal access tokens'
+            success Entities::PersonalAccessToken
+            failure [
+              { code: 401, message: '401 Unauthorized' },
+              { code: 404, message: '404 Personal access token(s) Not Found' }
+            ]
+          end
+
+          params do
+            use :access_token_params
+            use :pagination
+          end
+
+          get do
+            validate_service_account_user
+
+            service_account_pats = ::PersonalAccessTokensFinder.new(finder_params(user), user).execute
+
+            next not_found!('Personal access token(s)') if service_account_pats.empty?
+
+            present paginate_with_strategies(service_account_pats), with: Entities::PersonalAccessToken
+          end
+
           desc 'Create a personal access token. Available only for group owners.' do
             detail 'This feature was introduced in GitLab 16.1'
             success Entities::PersonalAccessTokenWithToken
