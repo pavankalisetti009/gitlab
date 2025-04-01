@@ -503,7 +503,7 @@ end
 group :development, :test do
   gem 'deprecation_toolkit', '~> 1.5.1', require: false, feature_category: :shared
   gem 'bullet', '~> 7.2.0', feature_category: :shared
-  gem 'parser', '= 3.3.7.1', feature_category: :shared
+  gem 'parser', '= 3.3.7.4', feature_category: :shared
   gem 'pry-byebug', feature_category: :shared
   gem 'pry-rails', '~> 0.3.9', feature_category: :shared
   gem 'pry-shell', '~> 0.6.4', feature_category: :shared
