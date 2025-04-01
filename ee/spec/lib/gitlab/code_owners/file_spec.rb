@@ -473,6 +473,13 @@ RSpec.describe Gitlab::CodeOwners::File, feature_category: :source_code_manageme
         CONTENT
       end
 
+      before_all do
+        group_x = create(:group, name: 'group-x')
+        create(:project_group_link, project: project, group: group_x)
+        ruby_devs = create(:group, name: 'ruby-devs')
+        create(:project_group_link, project: project, group: ruby_devs)
+      end
+
       before do
         allow(Gitlab::CodeOwners::UserPermissionCheck).to receive(:new).and_return(instance_double(
           Gitlab::CodeOwners::UserPermissionCheck, errors: []))
@@ -498,7 +505,7 @@ RSpec.describe Gitlab::CodeOwners::File, feature_category: :source_code_manageme
         expect(entries).to be_empty
       end
 
-      it 'does not require owners for exclusion patterns' do
+      it 'does not require owners for exclusion patterns', :aggregate_failures do
         expect(file.valid?).to eq(true)
 
         expect(file.errors).to be_empty

@@ -213,7 +213,7 @@ RSpec.describe 'Validate code owner file', feature_category: :source_code_manage
     let_it_be(:code_owners_content) do
       <<~CODEOWNERS
       docs/* @#{documentation_owner.username}
-      docs/CODEOWNERS @#{owner.username} owner2@gitlab.org @#{owner2.username} @#{documentation_owner.username}
+      docs/CODEOWNERS @#{owner.username} @#{owner2.username} @#{documentation_owner.username}
       spec/* @#{test_owner.username} @#{nested_group.parent.full_path} @#{nested_group.full_path}
       CODEOWNERS
     end
