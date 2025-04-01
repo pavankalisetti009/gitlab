@@ -5,15 +5,20 @@ module Ai
     module Dependencies
       module ConfigFiles
         class JavaGradle < Base
-          START_SECTION_REGEX = /^dependencies {/ # Identifies the dependencies section
+          START_DEPS_SECTION_REGEX = /^dependencies {/ # Identifies the dependencies section
           END_SECTION_REGEX = /^}$/
+          START_EXT_SECTION_REGEX = /^ext {/ # Identifies the ext section where variables are set
           PREFIX_REGEX = /^['"]?(implementation|testImplementation)['"]?/ # Appears before each dependency
           LONG_FORM_NAME_REGEX = /name:\s*(?<value>[^,\s]*)/
           LONG_FORM_VERSION_REGEX = /version:\s*(?<value>[^,\s]*)/
+          # Matches value of digits and periods between double or single quotes
+          VALID_VERSION_REGEX = /(?<quote>["'])(?<value>[\d+(\.)]*)\k<quote>/
           QUOTED_VALUE_REGEX = /(?<quote>["'])(?<value>[^"']+)\k<quote>/ # Matches value between double or single quotes
           INLINE_COMMENT_REGEX = %r{\s+//.*$}
           STRING_INTERPOLATION_CHAR = '$'
           EXCLUDE_KEYWORD = '('
+
+          attr_reader :versions_to_be_interpolated, :names_to_be_interpolated
 
           def self.file_name_glob
             'build.gradle'
@@ -26,6 +31,10 @@ module Ai
           private
 
           ### Example format:
+          #
+          # ext {
+          #     arcgisVersion = '4.5.0'
+          # }
           #
           # dependencies {
           #     // Short form: <group>:<name>:<version>
@@ -43,23 +52,42 @@ module Ai
           #     implementation project(':utils')
           #     runtimeOnly files('libs/a.jar', 'libs/b.jar')
           #
-          #     // TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/481317
-          #     // String interpolation is not currently supported; below outputs nil as version
+          #     // String interpolation is supported. The versions are read from the 'ext' section
           #     implementation "com.esri.arcgisruntime:arcgis-java:$arcgisVersion"
           # }
           #
           def extract_libs
+            @versions_to_be_interpolated = {}
+            @names_to_be_interpolated = {}
             libs = []
             in_deps_section = false
+            in_ext_section = false
 
             content.each_line do |line|
               line.strip!
               line.gsub!(INLINE_COMMENT_REGEX, '')
 
+              if in_ext_section
+                if END_SECTION_REGEX.match?(line)
+                  in_ext_section = false
+                  next
+                end
+
+                split = line.delete(' ').split('=')
+
+                if VALID_VERSION_REGEX.match?(split[1])
+                  versions_to_be_interpolated["$#{split[0]}"] = split[1].delete!('"\'')
+                elsif QUOTED_VALUE_REGEX.match?(split[1])
+                  names_to_be_interpolated["$#{split[0]}"] = split[1].delete!('"\'')
+                end
+              elsif START_EXT_SECTION_REGEX.match?(line)
+                in_ext_section = true
+              end
+
               if in_deps_section
-                libs << parse_lib(line) if self.class::PREFIX_REGEX.match?(line)
+                libs << parse_lib(line) if PREFIX_REGEX.match?(line)
                 break if END_SECTION_REGEX.match?(line)
-              elsif START_SECTION_REGEX.match?(line)
+              elsif START_DEPS_SECTION_REGEX.match?(line)
                 in_deps_section = true
               end
             end
@@ -68,13 +96,13 @@ module Ai
           end
 
           def parse_lib(line)
-            line.gsub!(self.class::PREFIX_REGEX, '')
+            line.gsub!(PREFIX_REGEX, '')
             return if line.include?(EXCLUDE_KEYWORD)
 
             long_form_name_match = LONG_FORM_NAME_REGEX.match(line)
 
             if long_form_name_match
-              # Parse long form (not used in Kotlin Gradle)
+              # Parse long form
               name = long_form_name_match[:value].delete('"\'')
               version_match = LONG_FORM_VERSION_REGEX.match(line)
               version = version_match[:value].delete('"\'') if version_match
@@ -84,8 +112,13 @@ module Ai
               _group, name, version = match[:value].split(':') if match
             end
 
-            name = nil if name&.include?(STRING_INTERPOLATION_CHAR)
-            version = nil if version&.include?(STRING_INTERPOLATION_CHAR)
+            if name&.include?(STRING_INTERPOLATION_CHAR)
+              name = names_to_be_interpolated.key?(name) ? names_to_be_interpolated[name] : return
+            end
+
+            if version&.include?(STRING_INTERPOLATION_CHAR)
+              version = versions_to_be_interpolated.key?(version) ? versions_to_be_interpolated[version] : nil
+            end
 
             Lib.new(name: name, version: version) if name
           end

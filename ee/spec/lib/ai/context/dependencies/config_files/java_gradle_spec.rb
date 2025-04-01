@@ -22,6 +22,7 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::JavaGradle, feature_categ
 
         ext {
             arcgisVersion = '4.5.0'
+            libName = 'test-lib'
         }
 
         dependencies { // Comment
@@ -36,8 +37,8 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::JavaGradle, feature_categ
             implementation project(':utils')
             runtimeOnly files('libs/a.jar', 'libs/b.jar')
 
-            // String interpolation is not currently supported
             implementation "com.esri.arcgisruntime:arcgis-java:$arcgisVersion"
+            implementation "com.esri.arcgisruntime:$libName:2.0.0"
         }
 
         license {
@@ -55,7 +56,8 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::JavaGradle, feature_categ
         'neo4j-jmx (1.3)',
         'junit (4.11)',
         'ant (1.10.14)',
-        'arcgis-java'
+        'arcgis-java (4.5.0)',
+        'test-lib (2.0.0)'
       ]
     end
   end
