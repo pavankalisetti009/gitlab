@@ -37804,6 +37804,8 @@ CREATE INDEX index_zoekt_indices_on_replica_id ON zoekt_indices USING btree (zoe
 
 CREATE UNIQUE INDEX index_zoekt_indices_on_state_and_id ON zoekt_indices USING btree (state, id);
 
+CREATE INDEX index_zoekt_indices_on_state_and_zoekt_node_id ON zoekt_indices USING btree (state, zoekt_node_id);
+
 CREATE INDEX index_zoekt_indices_on_watermark_level_and_id ON zoekt_indices USING btree (watermark_level, id);
 
 CREATE INDEX index_zoekt_indices_on_watermark_level_reserved_storage_bytes ON zoekt_indices USING btree (watermark_level, id) WHERE (reserved_storage_bytes > 0);

@@ -52,6 +52,9 @@ module Search
                   .merge(Repository.searchable)
                   .where(zoekt_repositories: { project: project })
       end
+      scope :with_pending_indices, -> do
+        where_exists(::Search::Zoekt::Index.pending.where('zoekt_indices.zoekt_node_id = zoekt_nodes.id'))
+      end
       scope :with_positive_unclaimed_storage_bytes, -> do
         sql = <<~SQL
           zoekt_nodes.*, #{UNCLAIMED_STORAGE_BYTES_FORMULA} AS unclaimed_storage_bytes

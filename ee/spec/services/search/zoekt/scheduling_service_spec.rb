@@ -331,7 +331,11 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
 
   describe '#initial_indexing' do
     let(:task) { :initial_indexing }
-    let_it_be_with_reload(:index) { create(:zoekt_index, state: :pending) }
+    let_it_be_with_reload(:online_node) { create(:zoekt_node) }
+    let_it_be_with_reload(:offline_node) { create(:zoekt_node, :offline) }
+    let_it_be_with_reload(:index1) { create(:zoekt_index, state: :pending, node: online_node) }
+    let_it_be_with_reload(:index2) { create(:zoekt_index, state: :pending, node: online_node) }
+    let_it_be_with_reload(:index3) { create(:zoekt_index, state: :pending, node: offline_node) }
 
     context 'when there are no zoekt_indices in pending state' do
       before do
@@ -343,8 +347,48 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
       end
     end
 
-    it 'publishes the event Search::Zoekt::InitialIndexingEvent for the pending indices' do
-      expect { execute_task }.to publish_event(Search::Zoekt::InitialIndexingEvent).with({ index_id: index.id })
+    context 'when there are pending indices on online nodes' do
+      it 'publishes the event Search::Zoekt::InitialIndexingEvent for pending indices on online nodes' do
+        expect { execute_task }.to publish_event(Search::Zoekt::InitialIndexingEvent)
+          .with({ index_id: index1.id }).and publish_event(Search::Zoekt::InitialIndexingEvent)
+          .with({ index_id: index2.id })
+      end
+
+      it 'does not publish events for pending indices on offline nodes' do
+        allow(Search::Zoekt::Node).to receive(:online).and_return(Search::Zoekt::Node.where(id: online_node.id))
+
+        # Double check that our offline node's index is not processed
+        expect { execute_task }.not_to publish_event(Search::Zoekt::InitialIndexingEvent)
+          .with({ index_id: index3.id })
+      end
+    end
+
+    context 'when there are more pending indices than the limit per node' do
+      let_it_be(:indices) do
+        create_list(:zoekt_index, described_class::INITIAL_INDEXING_LIMIT, state: :pending, node: online_node)
+      end
+
+      let_it_be(:extra_index) do
+        create(:zoekt_index, state: :pending, node: online_node)
+      end
+
+      it 'respects the INITIAL_INDEXING_LIMIT per node' do
+        # We should process INITIAL_INDEXING_LIMIT indices and not process the extra one
+        expect { execute_task }.not_to publish_event(Search::Zoekt::InitialIndexingEvent)
+          .with({ index_id: extra_index.id })
+      end
+    end
+
+    context 'with multiple nodes having pending indices' do
+      let_it_be_with_reload(:another_online_node) { create(:zoekt_node) }
+      let_it_be_with_reload(:another_index) { create(:zoekt_index, state: :pending, node: another_online_node) }
+
+      it 'processes pending indices for each node up to the limit' do
+        expect { execute_task }.to publish_event(Search::Zoekt::InitialIndexingEvent)
+          .with({ index_id: index1.id }).and publish_event(Search::Zoekt::InitialIndexingEvent)
+          .with({ index_id: index2.id }).and publish_event(Search::Zoekt::InitialIndexingEvent)
+          .with({ index_id: another_index.id })
+      end
     end
   end
 

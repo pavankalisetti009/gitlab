@@ -46,6 +46,26 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
       end
     end
 
+    describe '.with_pending_indices' do
+      let_it_be(:node_with_pending_indices) { create(:zoekt_node) }
+      let_it_be(:node_without_pending_indices) { create(:zoekt_node) }
+      let_it_be(:node_with_ready_indices) { create(:zoekt_node) }
+
+      before do
+        create(:zoekt_index, state: :pending, node: node_with_pending_indices)
+        create(:zoekt_index, state: :ready, node: node_with_ready_indices)
+      end
+
+      it 'returns only nodes that have pending indices' do
+        expect(described_class.with_pending_indices).to contain_exactly(node_with_pending_indices)
+      end
+
+      it 'does not include nodes without pending indices' do
+        expect(described_class.with_pending_indices).not_to include(node_without_pending_indices)
+        expect(described_class.with_pending_indices).not_to include(node_with_ready_indices)
+      end
+    end
+
     describe '.online', :freeze_time do
       let_it_be(:online_node) { create(:zoekt_node) }
       let_it_be(:offline_node) { create(:zoekt_node, :offline) }
