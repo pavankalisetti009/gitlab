@@ -25,7 +25,7 @@ export default {
 </script>
 
 <template>
-  <div>
+  <div class="gl-mt-7">
     <slot name="title"></slot>
     <gl-alert
       v-if="disabled"
