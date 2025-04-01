@@ -21,7 +21,14 @@ RSpec.describe ::RemoteDevelopment::NamespaceClusterAgentMappingOperations::Dele
 
       expect(response.fetch(:status)).to eq(:success)
       expect(response[:message]).to be_nil
-      expect(response[:payload]).to be_empty
+      expect(response[:payload]).not_to be_nil
+      response => {
+        payload: {
+          namespace_cluster_agent_mapping: deleted_mapping
+        }
+      }
+
+      expect(deleted_mapping).to eq(namespace_cluster_agent_mapping)
     end
   end
 

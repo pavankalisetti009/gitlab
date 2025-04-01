@@ -22,23 +22,23 @@ RSpec.describe RemoteDevelopment::NamespaceClusterAgentMapping, feature_category
       it "belongs to user" do
         is_expected
           .to belong_to(:user)
-            .class_name('User')
-            .with_foreign_key(:creator_id)
-            .inverse_of(:created_namespace_cluster_agent_mappings)
+                .class_name('User')
+                .with_foreign_key(:creator_id)
+                .inverse_of(:created_namespace_cluster_agent_mappings)
       end
 
       it "belongs to namespace" do
         is_expected
           .to belong_to(:namespace)
-            .inverse_of(:namespace_cluster_agent_mappings)
+                .inverse_of(:namespace_cluster_agent_mappings)
       end
 
       it "belongs to agent" do
         is_expected
           .to belong_to(:agent)
-            .class_name('Clusters::Agent')
-            .with_foreign_key(:cluster_agent_id)
-            .inverse_of(:namespace_cluster_agent_mappings)
+                .class_name('Clusters::Agent')
+                .with_foreign_key(:cluster_agent_id)
+                .inverse_of(:namespace_cluster_agent_mappings)
       end
     end
 

@@ -16,9 +16,13 @@ RSpec.describe 'Remove existing mapping between a cluster and a group', feature_
     graphql_mutation(:namespace_delete_remote_development_cluster_agent_mapping, mutation_args)
   end
 
-  let(:stub_service_payload) { {} }
+  let(:stub_service_payload) { { namespace_cluster_agent_mapping: deleted_mapping } }
   let(:stub_service_response) do
     ServiceResponse.success(payload: stub_service_payload)
+  end
+
+  let(:deleted_mapping) do
+    create(:namespace_cluster_agent_mapping, namespace: namespace, agent: agent)
   end
 
   let(:all_mutation_args) do
@@ -49,7 +53,7 @@ RSpec.describe 'Remove existing mapping between a cluster and a group', feature_
   end
 
   context 'when the params are valid' do
-    context 'when user has owner access to the group' do
+    shared_examples 'a successful mutation' do
       it 'deletes a mapping' do
         expect(RemoteDevelopment::CommonService).to receive(:execute).with(expected_service_args) do
           stub_service_response
@@ -58,17 +62,18 @@ RSpec.describe 'Remove existing mapping between a cluster and a group', feature_
         post_graphql_mutation(mutation, current_user: current_user)
 
         expect_graphql_errors_to_be_empty
+        expect(mutation_response.dig('namespaceClusterAgentMapping', 'id')).not_to be_empty
       end
+    end
+
+    context 'when user has owner access to the group' do
+      it_behaves_like 'a successful mutation'
     end
 
     context 'when user is an admin' do
       let_it_be(:current_user) { create(:admin) }
 
-      it 'deletes a mapping' do
-        post_graphql_mutation(mutation, current_user: current_user)
-
-        expect_graphql_errors_to_be_empty
-      end
+      it_behaves_like 'a successful mutation'
     end
   end
 

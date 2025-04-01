@@ -628,12 +628,12 @@ export const CREATE_CLUSTER_AGENT_MAPPING_MUTATION_RESULT = {
       clientMutationId: null,
       errors: [],
       namespaceClusterAgentMapping: {
-        id: '',
-        namespaceId: '',
-        clusterAgentId: '',
-        creatorId: '',
-        createdAt: '',
-        updatedAt: '',
+        id: '321',
+        namespaceId: 'gid://gitlab/Namespace/2',
+        clusterAgentId: 'gid://gitlab/Clusters::Agent/2',
+        creatorId: 'gid://gitlab/User/1',
+        createdAt: '2025-03-24T12:16:48Z',
+        updatedAt: '2025-03-26T20:15:04Z',
       },
     },
   },
@@ -654,6 +654,14 @@ export const DELETE_CLUSTER_AGENT_MAPPING_MUTATION_RESULT = {
     namespaceDeleteRemoteDevelopmentClusterAgentMapping: {
       clientMutationId: null,
       errors: [],
+      namespaceClusterAgentMapping: {
+        id: '321',
+        namespaceId: 'gid://gitlab/Namespace/2',
+        clusterAgentId: 'gid://gitlab/Clusters::Agent/2',
+        creatorId: 'gid://gitlab/User/1',
+        createdAt: '2025-03-24T12:16:48Z',
+        updatedAt: '2025-03-26T20:15:04Z',
+      },
     },
   },
 };
@@ -663,6 +671,7 @@ export const DELETE_CLUSTER_AGENT_MAPPING_MUTATION_WITH_ERROR_RESULT = {
     namespaceDeleteRemoteDevelopmentClusterAgentMapping: {
       clientMutationId: null,
       errors: ['Namespace cluster agent mapping not found'],
+      namespaceClusterAgentMapping: null,
     },
   },
 };
