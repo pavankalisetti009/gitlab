@@ -15561,6 +15561,7 @@ CREATE TABLE incident_management_escalation_rules (
     is_removed boolean DEFAULT false NOT NULL,
     user_id bigint,
     project_id bigint,
+    CONSTRAINT check_a54b79b2fa CHECK ((project_id IS NOT NULL)),
     CONSTRAINT escalation_rules_one_of_oncall_schedule_or_user CHECK ((num_nonnulls(oncall_schedule_id, user_id) = 1))
 );
 
@@ -17489,7 +17490,8 @@ ALTER SEQUENCE metrics_users_starred_dashboards_id_seq OWNED BY metrics_users_st
 CREATE TABLE milestone_releases (
     milestone_id bigint NOT NULL,
     release_id bigint NOT NULL,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_8141b5b804 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE TABLE milestones (
