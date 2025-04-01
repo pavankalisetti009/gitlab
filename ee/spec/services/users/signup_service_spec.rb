@@ -5,17 +5,18 @@ require 'spec_helper'
 RSpec.describe Users::SignupService, feature_category: :system_access do
   let_it_be(:user) { create(:user, setup_for_company: true) }
   let(:params) { {} }
+  let(:update_params) { { onboarding_status_role: 0 }.merge(params) }
   let(:user_return_to) { nil }
 
   describe '#execute' do
     let(:updated_user) { execute[:user].reset }
 
-    subject(:execute) { described_class.new(user, params: params, user_return_to: user_return_to).execute }
+    subject(:execute) { described_class.new(user, params: update_params, user_return_to: user_return_to).execute }
 
     it 'logs the passed params' do
       allow(Gitlab::AppLogger).to receive(:info).and_call_original
       expect(Gitlab::AppLogger).to receive(:info).with(
-        message: "#{described_class.name}: user_return_to: #{user_return_to}, params: #{params.to_json}",
+        message: "#{described_class.name}: user_return_to: #{user_return_to}, params: #{update_params.to_json}",
         user_id: user.id)
 
       execute
@@ -52,21 +53,20 @@ RSpec.describe Users::SignupService, feature_category: :system_access do
       end
     end
 
-    context 'when updating role' do
-      let(:params) { { role: 'development_team_lead' } }
+    context 'when updating onboarding_status_role' do
+      let(:params) { { onboarding_status_role: 1 } }
 
-      it 'updates the role attribute' do
+      it 'updates the onboarding_status_role attribute' do
         expect(execute).to be_success
-        expect(updated_user.role).to eq('development_team_lead')
+        expect(updated_user.onboarding_status_role_name).to eq('development_team_lead')
       end
 
-      context 'when role is missing' do
-        let(:params) { { role: '' } }
+      context 'when onboarding_status_role is missing' do
+        let(:params) { { onboarding_status_role: nil } }
 
         it 'returns an error result' do
-          expect(updated_user.role).not_to be_blank
           expect(execute).to be_error
-          expect(execute.message).to eq("Role can't be blank")
+          expect(execute.message).to include("User detail onboarding status role can't be blank")
         end
       end
     end
@@ -94,7 +94,6 @@ RSpec.describe Users::SignupService, feature_category: :system_access do
       context 'when eligible for iterable trigger' do
         let(:params) do
           {
-            role: 'software_developer',
             setup_for_company: 'false',
             registration_objective: 'code_storage',
             jobs_to_be_done_other: '_jobs_to_be_done_other_'

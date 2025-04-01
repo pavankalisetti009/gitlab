@@ -17,6 +17,10 @@ module EE
         :glm_content, :glm_source, :joining_project, :role, prefix: true
       )
 
+      def self.onboarding_status_registration_objectives
+        ::UserDetail::REGISTRATION_OBJECTIVE_PAIRS.transform_keys(&:to_s)
+      end
+
       # Values here should match the role enums in app/validators/json_schemas/user_detail_onboarding_status.json
       def self.onboarding_status_roles
         {
@@ -30,6 +34,19 @@ module EE
           'product_designer' => 7,
           'other' => 8
         }
+      end
+
+      def onboarding_status_role_name
+        self.class.onboarding_status_roles.key(onboarding_status_role)
+      end
+
+      def onboarding_status_role=(value)
+        if value.present?
+          int_value = value.is_a?(String) ? value.to_i : value
+          super(int_value)
+        else
+          super(nil)
+        end
       end
 
       def onboarding_status_registration_objective
@@ -46,10 +63,6 @@ module EE
         else
           super
         end
-      end
-
-      def self.onboarding_status_registration_objectives
-        ::UserDetail::REGISTRATION_OBJECTIVE_PAIRS.transform_keys(&:to_s)
       end
     end
   end

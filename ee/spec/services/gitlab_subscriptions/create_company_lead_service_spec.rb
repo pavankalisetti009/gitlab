@@ -25,6 +25,7 @@ RSpec.describe GitlabSubscriptions::CreateCompanyLeadService, feature_category: 
         work_email: user.email,
         setup_for_company: user.setup_for_company,
         opt_in: user.onboarding_status_email_opt_in,
+        role: user.onboarding_status_role_name,
         preferred_language: 'English',
         provider: 'gitlab',
         skip_email_confirmation: true,

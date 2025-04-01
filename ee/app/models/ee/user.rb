@@ -58,7 +58,7 @@ module EE
         :onboarding_status_glm_content, :onboarding_status_glm_content=,
         :onboarding_status_glm_source, :onboarding_status_glm_source=,
         :onboarding_status_joining_project, :onboarding_status_joining_project=,
-        :onboarding_status_role, :onboarding_status_role=,
+        :onboarding_status_role, :onboarding_status_role=, :onboarding_status_role_name,
         :enterprise_group, :enterprise_group=,
         :enterprise_group_id, :enterprise_group_id=, :enterprise_group_associated_at, :enterprise_group_associated_at=,
         to: :user_detail, allow_nil: true

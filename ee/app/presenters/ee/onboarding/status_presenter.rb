@@ -6,7 +6,7 @@ module EE
       extend ::Gitlab::Utils::Override
 
       GLM_PARAMS = [:glm_source, :glm_content].freeze
-      PASSED_THROUGH_PARAMS = [:role, :registration_objective, :jobs_to_be_done_other].freeze
+      PASSED_THROUGH_PARAMS = [:registration_objective, :jobs_to_be_done_other].freeze
 
       attr_reader :registration_type, :user_return_to
 
