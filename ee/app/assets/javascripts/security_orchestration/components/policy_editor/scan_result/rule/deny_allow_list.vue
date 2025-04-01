@@ -75,7 +75,7 @@ export default {
 <template>
   <section-layout
     :rule-label="$options.i18n.label"
-    class="gl-w-full gl-bg-white gl-pr-1 md:gl-items-center"
+    class="gl-w-full gl-bg-default gl-pr-1 md:gl-items-center"
     :class="{ 'gl-border gl-border-red-400': hasError }"
     label-classes="!gl-text-base !gl-w-10 md:!gl-w-12 !gl-pl-0 !gl-font-bold gl-mr-4"
     @remove="$emit('remove')"

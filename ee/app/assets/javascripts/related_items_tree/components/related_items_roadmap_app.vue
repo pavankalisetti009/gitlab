@@ -58,7 +58,7 @@ export default {
 </script>
 
 <template>
-  <div id="roadmap" class="roadmap-app gl-border-t gl-rounded-b-base gl-bg-white">
+  <div id="roadmap" class="roadmap-app gl-border-t gl-rounded-b-base gl-bg-default">
     <gl-alert v-if="loadingError" variant="danger" :dismissible="false">
       {{ $options.loadingFailedText }}
     </gl-alert>

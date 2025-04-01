@@ -48,7 +48,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-w-full gl-rounded-base gl-bg-white">
+  <div class="gl-w-full gl-rounded-base gl-bg-default">
     <attribute-filter
       v-for="({ attribute, value }, idx) in selectedItems"
       :key="attribute"

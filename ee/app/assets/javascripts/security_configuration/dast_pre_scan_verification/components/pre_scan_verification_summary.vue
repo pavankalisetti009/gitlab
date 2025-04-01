@@ -53,7 +53,7 @@ export default {
     <div
       v-gl-tooltip
       :title="tooltipLabel"
-      class="gl-border gl-flex gl-items-center gl-justify-center gl-rounded-base gl-bg-white gl-py-2"
+      class="gl-border gl-flex gl-items-center gl-justify-center gl-rounded-base gl-bg-default gl-py-2"
       data-testid="pre-scan-status"
       :style="styling.borderColor"
     >

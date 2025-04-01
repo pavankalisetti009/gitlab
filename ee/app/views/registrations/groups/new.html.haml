@@ -26,7 +26,7 @@
               data: { toggle: 'tab', track_action: 'click_tab', track_label: 'import_project' } }
               %span= s_('ProjectsNew|Import')
 
-        .tab-content.gitlab-tab-content.gl-bg-white.js-group-project-tab-contents
+        .tab-content.gitlab-tab-content.gl-bg-default.js-group-project-tab-contents
           #blank-project-pane.tab-pane.js-toggle-container.active{ role: 'tabpanel' }
             = gitlab_ui_form_for :project_group,
               url: users_sign_up_groups_path,

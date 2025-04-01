@@ -197,7 +197,7 @@ export default {
           </gl-button>
           <gl-collapse
             :visible="isExpanded(environment)"
-            class="gl-flex gl-flex-col gl-rounded-b-base gl-bg-white gl-pb-5"
+            class="gl-flex gl-flex-col gl-rounded-b-base gl-bg-default gl-pb-5"
           >
             <slot :environment="environment"></slot>
             <gl-button

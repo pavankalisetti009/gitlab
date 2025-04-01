@@ -20,7 +20,7 @@ export default {
 </script>
 
 <template>
-  <div class="index-entities-list gl-border gl-overflow-auto gl-rounded-small gl-bg-white">
+  <div class="index-entities-list gl-border gl-overflow-auto gl-rounded-small gl-bg-default">
     <ul v-if="entities.length" class="gl-my-2 gl-list-none gl-p-0">
       <li v-for="entity in entities" :key="entity.id" class="gl-px-5 gl-py-2">
         <div class="gl-flex gl-items-center">

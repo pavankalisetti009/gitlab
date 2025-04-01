@@ -87,7 +87,7 @@ export default {
 <template>
   <section-layout class="gl-pr-0" :type="initRule.type" :show-remove-button="false">
     <template #content>
-      <section-layout class="!gl-bg-white" :type="initRule.type" :show-remove-button="false">
+      <section-layout class="!gl-bg-default" :type="initRule.type" :show-remove-button="false">
         <template #content>
           <gl-sprintf :message="$options.i18n.anyMergeRequestRuleCopy">
             <template #scanType>

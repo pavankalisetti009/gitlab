@@ -273,7 +273,7 @@ export default {
       :fields="$options.tableHeaderFields"
       :items="throughputTableData.list"
       stacked="sm"
-      thead-class="gl-bg-white gl-border-t-0 gl-border-b-solid gl-border-b-1 gl-border-b-default"
+      thead-class="gl-bg-default gl-border-t-0 gl-border-b-solid gl-border-b-1 gl-border-b-default"
       data-testid="mr-table"
     >
       <template #cell(mr_details)="{ item }">

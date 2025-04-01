@@ -137,7 +137,7 @@ export default {
 
 <template>
   <section-layout
-    class="gl-w-full gl-items-end gl-rounded-none gl-bg-white gl-py-0 gl-pr-0 md:gl-items-start"
+    class="gl-w-full gl-items-end gl-rounded-none gl-bg-default gl-py-0 gl-pr-0 md:gl-items-start"
     content-classes="gl-flex gl-w-full "
     :show-remove-button="showRemoveButton"
     @remove="removeApprover"

@@ -61,8 +61,8 @@ export default {
 
 <template>
   <section-layout
-    class="gl-w-full gl-bg-white gl-pr-2"
-    content-class="gl-bg-white gl-rounded-base gl-p-5"
+    class="gl-w-full gl-bg-default gl-pr-2"
+    content-class="gl-bg-default gl-rounded-base gl-p-5"
     :show-remove-button="showRemoveButton"
     @remove="remove"
   >

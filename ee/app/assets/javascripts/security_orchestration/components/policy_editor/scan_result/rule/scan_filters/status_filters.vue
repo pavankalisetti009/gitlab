@@ -84,7 +84,7 @@ export default {
 <template>
   <section-layout
     :show-remove-button="false"
-    class="gl-w-full gl-bg-white !gl-p-0"
+    class="gl-w-full gl-bg-default !gl-p-0"
     content-classes="!gl-gap-0"
   >
     <template #content>
@@ -97,7 +97,7 @@ export default {
         :label="$options.i18n.firstFilterLabel"
         :class="{ 'gl-pb-3': allFiltersSelected }"
         label-classes="!gl-text-base !gl-w-10 md:!gl-w-12 !gl-pl-0 !gl-font-bold"
-        class="gl-w-full gl-bg-white md:gl-items-center"
+        class="gl-w-full gl-bg-default md:gl-items-center"
         @input="setStatuses($event, $options.NEWLY_DETECTED)"
         @change-group="setStatusFilter"
         @remove="removeFilter"

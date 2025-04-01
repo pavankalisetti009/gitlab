@@ -19,7 +19,7 @@ export default {
 
     <div
       v-if="disabled"
-      class="gl-absolute gl-bottom-0 gl-left-0 gl-right-0 gl-top-0 gl-bg-white gl-opacity-5"
+      class="gl-absolute gl-bottom-0 gl-left-0 gl-right-0 gl-top-0 gl-bg-default gl-opacity-5"
       data-testid="overlay"
     ></div>
   </div>

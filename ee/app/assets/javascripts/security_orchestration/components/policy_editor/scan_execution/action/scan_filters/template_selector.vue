@@ -57,7 +57,7 @@ export default {
 
 <template>
   <section-layout
-    class="gl-w-full gl-bg-white"
+    class="gl-w-full gl-bg-default"
     content-classes="gl-justify-between"
     :show-remove-button="false"
   >

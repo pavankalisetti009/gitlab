@@ -91,7 +91,7 @@ export default {
 <template>
   <section-layout
     :key="filter"
-    class="gl-w-full gl-bg-white gl-pr-2"
+    class="gl-w-full gl-bg-default gl-pr-2"
     :rule-label="label"
     :label-classes="labelClasses"
     :show-remove-button="showRemoveButton"
