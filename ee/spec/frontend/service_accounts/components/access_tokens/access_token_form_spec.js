@@ -119,20 +119,41 @@ describe('AccessTokenForm', () => {
     });
 
     describe('when mandatory fields are filled', () => {
-      it('creates token if mandatory fields are present', async () => {
-        createComponent();
-        findInput().setValue('my-token');
-        findCheckboxes().at(0).find('input').setChecked();
-        await nextTick();
-        findFormFields().vm.$emit('submit');
+      describe('when the expiration date is mandatory', () => {
+        it('creates token if mandatory fields are present', async () => {
+          createComponent();
+          findInput().setValue('my-token');
+          findCheckboxes().at(0).find('input').setChecked();
+          await nextTick();
+          findFormFields().vm.$emit('submit');
 
-        expect(store.createToken).toHaveBeenCalledWith(
-          expect.objectContaining({
-            name: 'my-token',
-            expiresAt: '2020-08-05',
-            scopes: ['read_service_ping'],
-          }),
-        );
+          expect(store.createToken).toHaveBeenCalledWith(
+            expect.objectContaining({
+              name: 'my-token',
+              expiresAt: '2020-08-05',
+              scopes: ['read_service_ping'],
+            }),
+          );
+        });
+      });
+
+      describe('when the expiration date is not mandatory', () => {
+        it('creates token if mandatory fields are present', async () => {
+          createComponent();
+          findInput().setValue('my-token');
+          findCheckboxes().at(0).find('input').setChecked();
+          findDatepicker().vm.$emit('clear');
+          await nextTick();
+          findFormFields().vm.$emit('submit');
+
+          expect(store.createToken).toHaveBeenCalledWith(
+            expect.objectContaining({
+              name: 'my-token',
+              expiresAt: null,
+              scopes: ['read_service_ping'],
+            }),
+          );
+        });
       });
     });
   });

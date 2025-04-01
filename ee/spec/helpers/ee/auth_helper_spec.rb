@@ -339,23 +339,19 @@ RSpec.describe EE::AuthHelper do
         access_token: {
           max_date: '2022-03-02',
           min_date: '2022-03-02',
-          create: 'http://localhost/api/v4/users/:id/personal_access_tokens',
-          revoke: 'http://localhost/api/v4/personal_access_tokens',
-          rotate: 'http://localhost/api/v4/personal_access_tokens',
-          show: 'http://localhost/api/v4/personal_access_tokens'
+          create: '/api/v4/users/:id/personal_access_tokens',
+          revoke: '/api/v4/personal_access_tokens',
+          rotate: '/api/v4/personal_access_tokens',
+          show: '/api/v4/personal_access_tokens'
         }
       }))
     end
   end
 
-  describe '#groups_service_accounts_data' do
-    let_it_be(:group) { build_stubbed(:group, path: 'my-group-path', id: 4) }
-
-    before do
-      allow(helper).to receive_messages(
-        expires_at_field_data: { max_date: '2022-03-02',
-                                 min_date: '2022-03-02' }
-      )
+  describe '#groups_service_accounts_data', :freeze_time do
+    let_it_be(:settings) { build(:namespace_settings, service_access_tokens_expiration_enforced: false) }
+    let_it_be(:group) do
+      build_stubbed(:group, path: 'my-group-path', id: 4, namespace_settings: settings)
     end
 
     it 'returns data for the service accounts UI' do
@@ -369,12 +365,11 @@ RSpec.describe EE::AuthHelper do
           docs_path: '/help/user/profile/service_accounts.md'
         },
         access_token: {
-          max_date: '2022-03-02',
-          min_date: '2022-03-02',
-          create: 'http://localhost/api/v4/groups/4/service_accounts/:id/personal_access_tokens',
-          revoke: 'http://localhost/api/v4/groups/4/service_accounts/:id/personal_access_tokens',
-          rotate: 'http://localhost/api/v4/groups/4/service_accounts/:id/personal_access_tokens',
-          show: 'http://localhost/api/v4/personal_access_tokens'
+          min_date: 1.day.from_now.iso8601,
+          create: '/api/v4/groups/4/service_accounts/:id/personal_access_tokens',
+          revoke: '/api/v4/groups/4/service_accounts/:id/personal_access_tokens',
+          rotate: '/api/v4/groups/4/service_accounts/:id/personal_access_tokens',
+          show: '/api/v4/groups/4/service_accounts/:id/personal_access_tokens'
         }
       }))
     end
