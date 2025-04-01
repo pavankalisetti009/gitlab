@@ -70,7 +70,7 @@ RSpec.describe RemoteDevelopment::Settings::SettingsInitializer,
           partial_reconciliation_interval_seconds: 10,
           project_cloner_image: "alpine/git:2.45.2",
           shared_namespace: "",
-          tools_injector_image: "registry.gitlab.com/gitlab-org/workspaces/gitlab-workspaces-tools:8.0.0",
+          tools_injector_image: "registry.gitlab.com/gitlab-org/workspaces/gitlab-workspaces-tools:9.0.0",
           use_kubernetes_user_namespaces: false,
           workspaces_per_user_quota: -1,
           workspaces_quota: -1
