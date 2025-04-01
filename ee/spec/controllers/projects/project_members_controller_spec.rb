@@ -7,8 +7,8 @@ RSpec.describe Projects::ProjectMembersController, feature_category: :groups_and
   let_it_be(:group) { create(:group, :public) }
   let_it_be(:sub_group) { create(:group, parent: group) }
   let_it_be(:project, reload: true) { create(:project, :public) }
-  let(:requester) { create(:project_member, :access_request, project: project) }
-  let(:requester2) { create(:project_member, :access_request, project: project) }
+  let(:requester) { create(:project_member, :guest, project: project) }
+  let(:requester2) { create(:project_member, :guest, project: project) }
 
   let(:params) do
     {

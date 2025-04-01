@@ -60,8 +60,8 @@ RSpec.describe Groups::GroupMembersController, feature_category: :groups_and_pro
     end
 
     context 'when promotion management is enabled' do
-      let(:requester) { create(:group_member, :access_request, group: group) }
-      let(:requester2) { create(:group_member, :access_request, group: group) }
+      let(:requester) { create(:group_member, :guest, group: group) }
+      let(:requester2) { create(:group_member, :guest, group: group) }
 
       let(:params) do
         {

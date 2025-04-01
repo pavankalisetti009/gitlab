@@ -256,7 +256,7 @@ RSpec.describe User, feature_category: :system_access do
       end
     end
 
-    describe '.excluding_guests_and_optionally_requests' do
+    describe '.excluding_guests_and_requests' do
       let!(:user_without_membership) { create(:user).id }
       let!(:project_guest_user)      { create(:project_member, :guest).user_id }
       let!(:project_reporter_user)   { create(:project_member, :reporter).user_id }
@@ -265,7 +265,7 @@ RSpec.describe User, feature_category: :system_access do
       let_it_be(:requested_user)     { create(:group_member, :reporter, :access_request).user_id }
 
       it 'exclude users with a Guest role in a Project/Group' do
-        user_ids = described_class.excluding_guests_and_optionally_requests.pluck(:id)
+        user_ids = described_class.excluding_guests_and_requests.pluck(:id)
 
         expect(user_ids).to include(project_reporter_user)
         expect(user_ids).to include(group_reporter_user)
@@ -274,13 +274,6 @@ RSpec.describe User, feature_category: :system_access do
         expect(user_ids).not_to include(project_guest_user)
         expect(user_ids).not_to include(group_guest_user)
         expect(user_ids).not_to include(requested_user)
-      end
-
-      context 'when include_requests is true' do
-        it 'excludes only guest users' do
-          user_ids = described_class.excluding_guests_and_optionally_requests(true).pluck(:id)
-          expect(user_ids).to include(requested_user, project_reporter_user, group_reporter_user)
-        end
       end
     end
 
@@ -1485,15 +1478,8 @@ RSpec.describe User, feature_category: :system_access do
       end
 
       context 'with requested members' do
-        it 'does not return > GUEST request membership users' do
-          user_ids << create(:group_member, :developer, :access_request).user_id
-          users = described_class.non_billable_users_for_billable_management(user_ids)
-
-          expect(users.pluck(:id)).to match_array(non_billable_user_ids)
-        end
-
-        it 'returns <= GUEST request membership users' do
-          requested_user_id = create(:group_member, :guest, :access_request).user_id
+        it 'considers requested user as non billable' do
+          requested_user_id = create(:group_member, :developer, :access_request).user_id
           user_ids << requested_user_id
           users = described_class.non_billable_users_for_billable_management(user_ids)
 
