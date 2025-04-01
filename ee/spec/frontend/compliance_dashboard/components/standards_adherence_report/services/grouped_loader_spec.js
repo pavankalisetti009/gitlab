@@ -29,6 +29,7 @@ describe('GroupedLoader', () => {
 
       expect(mockGroupRequirementsStatusQuery).toHaveBeenCalledWith({
         fullPath,
+        filters: {},
         first: DEFAULT_PAGESIZE,
       });
     });
@@ -39,6 +40,7 @@ describe('GroupedLoader', () => {
 
       expect(mockGroupRequirementsStatusQuery).toHaveBeenCalledWith({
         fullPath,
+        filters: {},
         first: DEFAULT_PAGESIZE,
         after,
       });
@@ -50,6 +52,7 @@ describe('GroupedLoader', () => {
 
       expect(mockGroupRequirementsStatusQuery).toHaveBeenCalledWith({
         fullPath,
+        filters: {},
         last: DEFAULT_PAGESIZE,
         before,
       });
@@ -103,6 +106,7 @@ describe('GroupedLoader', () => {
 
         expect(mockGroupRequirementsStatusQuery).toHaveBeenCalledWith({
           first: newPageSize,
+          filters: {},
           fullPath,
         });
       });
@@ -118,6 +122,7 @@ describe('GroupedLoader', () => {
           after: data.pageInfo.endCursor,
           first: DEFAULT_PAGESIZE,
           fullPath,
+          filters: {},
         });
       });
     });
@@ -132,6 +137,36 @@ describe('GroupedLoader', () => {
           before: data.pageInfo.startCursor,
           last: DEFAULT_PAGESIZE,
           fullPath,
+          filters: {},
+        });
+      });
+    });
+
+    describe('setFilters', () => {
+      it('updates filters and resets pagination', async () => {
+        const filters = { projectId: 123, status: 'FAILED' };
+
+        // First, load a page to populate pageInfo
+        await loader.loadPage();
+
+        // Set filters and verify pagination is reset
+        loader.setFilters(filters);
+
+        expect(loader.pageInfo).toStrictEqual({
+          startCursor: null,
+          endCursor: null,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        });
+
+        // Verify the next query includes the filters
+        mockGroupRequirementsStatusQuery.mockClear();
+        await loader.loadPage();
+
+        expect(mockGroupRequirementsStatusQuery).toHaveBeenCalledWith({
+          fullPath,
+          filters,
+          first: DEFAULT_PAGESIZE,
         });
       });
     });

@@ -16,6 +16,8 @@ export class GroupedLoader {
     this.pageSize = options.pageSize || DEFAULT_PAGESIZE;
 
     this.fullPath = options.fullPath;
+    this.filters = {};
+
     if (!this.apollo || !this.fullPath) {
       throw new Error('Missing apollo client or fullPath');
     }
@@ -26,6 +28,7 @@ export class GroupedLoader {
       query: groupComplianceRequirementsStatusesQuery,
       variables: {
         fullPath: this.fullPath,
+        filters: this.filters,
         [options.before ? 'last' : 'first']: this.pageSize,
         ...options,
       },
@@ -64,5 +67,10 @@ export class GroupedLoader {
     return this.loadPage({
       before: this.pageInfo.startCursor,
     });
+  }
+
+  setFilters(newFilters) {
+    this.filters = newFilters;
+    this.resetPagination();
   }
 }
