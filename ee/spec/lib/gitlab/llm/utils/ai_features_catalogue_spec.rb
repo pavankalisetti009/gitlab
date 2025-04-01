@@ -76,5 +76,9 @@ RSpec.describe Gitlab::Llm::Utils::AiFeaturesCatalogue, feature_category: :ai_ab
       expect(described_class.search_by_name(:test))
         .to be_nil
     end
+
+    it 'returns nil when name is nil' do
+      expect(described_class.search_by_name(nil)).to be_nil
+    end
   end
 end

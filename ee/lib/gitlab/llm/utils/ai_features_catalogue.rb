@@ -204,6 +204,7 @@ module Gitlab
         end
 
         def self.search_by_name(name)
+          return unless name
           return LIST[name] if LIST.key?(name)
 
           LIST.select { |_, v| v[:alternate_name] == name }.values.first

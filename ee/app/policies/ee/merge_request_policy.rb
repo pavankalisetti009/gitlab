@@ -64,12 +64,9 @@ module EE
           ::Gitlab::Llm::FeatureAuthorizer.new(
             container: @subject.project,
             feature_name: :summarize_review,
-            user: @user
+            user: @user,
+            licensed_feature: :summarize_review
           ).allowed?
-      end
-
-      condition(:user_allowed_to_use_summarize_review) do
-        @user.allowed_to_use?(:summarize_review, licensed_feature: :summarize_review)
       end
 
       def read_only?
@@ -115,9 +112,7 @@ module EE
       end.enable :access_generate_commit_message
 
       rule do
-        summarize_review_enabled &
-          user_allowed_to_use_summarize_review &
-          can?(:read_merge_request)
+        summarize_review_enabled & can?(:read_merge_request)
       end.enable :access_summarize_review
     end
 

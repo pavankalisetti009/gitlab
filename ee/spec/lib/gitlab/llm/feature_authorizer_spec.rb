@@ -95,5 +95,29 @@ RSpec.describe Gitlab::Llm::FeatureAuthorizer, feature_category: :ai_abstraction
         expect(allowed?).to be false
       end
     end
+
+    context 'when using custom licensed feature values' do
+      before do
+        allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_return(true)
+        group.namespace_settings.update!(duo_features_enabled: true)
+      end
+
+      context 'when custom licensed_feature is specified' do
+        let(:instance) do
+          described_class.new(
+            container: group,
+            feature_name: feature_name,
+            user: user,
+            licensed_feature: :custom_feature
+          )
+        end
+
+        it 'uses the specified licensed_feature' do
+          expect(user).to receive(:allowed_to_use?).with(feature_name,
+            licensed_feature: :custom_feature).and_return(true)
+          expect(allowed?).to be true
+        end
+      end
+    end
   end
 end

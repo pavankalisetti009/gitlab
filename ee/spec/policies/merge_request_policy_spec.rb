@@ -397,13 +397,12 @@ RSpec.describe MergeRequestPolicy, :aggregate_failures, feature_category: :code_
     let(:authorizer) { instance_double(::Gitlab::Llm::FeatureAuthorizer) }
     let(:user) { can_read_mr ? reporter : nil }
 
-    where(:duo_features_enabled, :feature_flag_enabled, :llm_authorized, :can_read_mr, :allowed_to_use, :expected_result) do
-      true  | true  | true  | true  | true  | be_allowed(:access_summarize_review)
-      true  | true  | true  | false | true  | be_disallowed(:access_summarize_review)
-      true  | false | true  | true  | true  | be_disallowed(:access_summarize_review)
-      true  | true  | false | true  | true  | be_disallowed(:access_summarize_review)
-      false | true  | true  | true  | true  | be_disallowed(:access_summarize_review)
-      true  | true  | true  | true  | false | be_disallowed(:access_summarize_review)
+    where(:duo_features_enabled, :feature_flag_enabled, :llm_authorized, :can_read_mr, :expected_result) do
+      true  | true  | true  | true  | be_allowed(:access_summarize_review)
+      true  | true  | true  | false | be_disallowed(:access_summarize_review)
+      true  | false | true  | true  | be_disallowed(:access_summarize_review)
+      true  | true  | false | true  | be_disallowed(:access_summarize_review)
+      false | true  | true  | true  | be_disallowed(:access_summarize_review)
     end
 
     with_them do
@@ -421,13 +420,6 @@ RSpec.describe MergeRequestPolicy, :aggregate_failures, feature_category: :code_
         # Setup LLM authorizer
         allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:new).and_return(authorizer)
         allow(authorizer).to receive(:allowed?).and_return(llm_authorized)
-
-        # Setup user permissions
-        if user
-          allow(user).to receive(:allowed_to_use?)
-              .with(:summarize_review, licensed_feature: :summarize_review)
-              .and_return(allowed_to_use)
-        end
       end
 
       it { is_expected.to expected_result }
