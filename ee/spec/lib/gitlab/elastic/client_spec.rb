@@ -121,7 +121,7 @@ RSpec.describe Gitlab::Elastic::Client, feature_category: :global_search do
   end
 
   describe '.resolve_aws_credentials' do
-    let(:creds) { described_class.resolve_aws_credentials(params) }
+    subject(:creds) { described_class.resolve_aws_credentials(params) }
 
     context 'when the AWS IAM static credentials are valid' do
       let(:params) do
@@ -134,9 +134,79 @@ RSpec.describe Gitlab::Elastic::Client, feature_category: :global_search do
         }
       end
 
+      let(:mock_static_credentials) { instance_double(Aws::Credentials, set?: true) }
+
+      before do
+        allow(Aws::Credentials).to receive(:new).with('0', '0').and_return(mock_static_credentials)
+      end
+
       it 'returns credentials from static credentials without making an HTTP request' do
-        expect(creds.credentials.access_key_id).to eq '0'
-        expect(creds.credentials.secret_access_key).to eq '0'
+        expect(Aws::Credentials).to receive(:new).with('0', '0')
+        expect(creds).to eq(mock_static_credentials)
+      end
+
+      context 'when AWS IAM role ARN is provided' do
+        let(:params) do
+          {
+            url: 'http://example-elastic:9200',
+            aws: true,
+            aws_region: 'us-east-1',
+            aws_role_arn: 'arn:aws:iam::123456789012:role/elasticsearch-role'
+          }
+        end
+
+        let(:mock_sts_client) { instance_double(Aws::STS::Client) }
+        let(:mock_assume_role_credentials) do
+          instance_double(Aws::AssumeRoleCredentials, set?: true)
+        end
+
+        it 'returns credentials from the assumed role' do
+          expect(Aws::STS::Client).to receive(:new).with(region: 'us-east-1').and_return(mock_sts_client)
+          expect(Aws::AssumeRoleCredentials).to receive(:new)
+            .with(
+              client: mock_sts_client,
+              role_arn: 'arn:aws:iam::123456789012:role/elasticsearch-role',
+              role_session_name: described_class::AWS_ROLE_SESSION_NAME
+            ).and_return(mock_assume_role_credentials)
+
+          expect(creds).to eq(mock_assume_role_credentials)
+        end
+      end
+
+      context 'when both AWS IAM role ARN and static credentials are provided' do
+        let(:params) do
+          {
+            url: 'http://example-elastic:9200',
+            aws: true,
+            aws_region: 'us-east-1',
+            aws_role_arn: 'arn:aws:iam::123456789012:role/elasticsearch-role',
+            aws_access_key: 'static-access-key',
+            aws_secret_access_key: 'static-secret-key'
+          }
+        end
+
+        let(:mock_sts_client) { instance_double(Aws::STS::Client) }
+        let(:mock_assume_role_credentials) do
+          instance_double(Aws::AssumeRoleCredentials, set?: true)
+        end
+
+        before do
+          allow(Aws::STS::Client).to receive(:new).with(region: 'us-east-1').and_return(mock_sts_client)
+          allow(Aws::AssumeRoleCredentials).to receive(:new)
+            .with(
+              client: mock_sts_client,
+              role_arn: 'arn:aws:iam::123456789012:role/elasticsearch-role',
+              role_session_name: described_class::AWS_ROLE_SESSION_NAME
+            )
+            .and_return(mock_assume_role_credentials)
+        end
+
+        it 'prioritizes role ARN over static credentials' do
+          # The test should not try to create static credentials when role ARN is provided
+          expect(Aws::Credentials).not_to receive(:new).with('static-access-key', 'static-secret-key')
+
+          expect(creds).to eq(mock_assume_role_credentials)
+        end
       end
     end
 
@@ -149,34 +219,37 @@ RSpec.describe Gitlab::Elastic::Client, feature_category: :global_search do
         }
       end
 
+      let(:mock_static_credentials) { instance_double(Aws::Credentials, set?: false) }
+
       before do
+        allow(Aws::Credentials).to receive(:new).with(nil, nil).and_return(mock_static_credentials)
         described_class.clear_memoization(:instance_credentials)
         allow_next_instance_of(Aws::CredentialProviderChain) do |instance|
-          allow(instance).to receive(:resolve).and_return(credentials)
+          allow(instance).to receive(:resolve).and_return(provider_credentials)
         end
       end
 
-      context 'when aws sdk provides credentials' do
-        let(:credentials) { double(:aws_credentials, set?: true) }
+      context 'when aws sdk provides credentials through provider chain' do
+        let(:provider_credentials) { instance_double(Aws::Credentials, set?: true) }
 
-        it 'return the credentials' do
-          expect(creds).to eq(credentials)
+        it 'returns the credentials from provider chain' do
+          expect(creds).to eq(provider_credentials)
         end
       end
 
-      context 'when aws sdk does not provide credentials' do
-        let(:credentials) { nil }
+      context 'when aws sdk does not provide credentials through provider chain' do
+        let(:provider_credentials) { nil }
 
-        it 'return the credentials' do
-          expect(creds).to eq(nil)
+        it 'returns nil' do
+          expect(creds).to be_nil
         end
       end
 
       context 'when Aws::CredentialProviderChain returns unset credentials' do
-        let(:credentials) { double(:aws_credentials, set?: false) }
+        let(:provider_credentials) { instance_double(Aws::Credentials, set?: false) }
 
         it 'returns nil' do
-          expect(creds).to eq(nil)
+          expect(creds).to be_nil
         end
       end
     end
@@ -193,7 +266,7 @@ RSpec.describe Gitlab::Elastic::Client, feature_category: :global_search do
     end
 
     context 'when Aws::CredentialProviderChain returns set credentials' do
-      let(:credentials) { double(:aws_credentials) }
+      let(:credentials) { instance_double(Aws::Credentials) }
 
       it 'returns credentials' do
         expect(creds).to eq(credentials)
@@ -204,7 +277,7 @@ RSpec.describe Gitlab::Elastic::Client, feature_category: :global_search do
       let(:credentials) { nil }
 
       it 'returns nil' do
-        expect(creds).to eq(nil)
+        expect(creds).to be_nil
       end
     end
   end

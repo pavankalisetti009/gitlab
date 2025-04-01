@@ -210,6 +210,12 @@
             .form-text.gl-text-subtle.gl-mt-0
               = _('Required only if you are not using role instance credentials.')
 
+          .form-group
+            = f.label :elasticsearch_aws_role_arn, _('AWS Role ARN'), class: 'label-bold'
+            = f.text_field :elasticsearch_aws_role_arn, value: @application_setting.elasticsearch_aws_role_arn, class: 'form-control gl-form-input'
+            .form-text.gl-text-subtle.gl-mt-0
+              = _('Required only if you are using AssumeRole for authorization across accounts.')
+
         %div
           = f.submit _('Save changes'), data: { testid: 'submit-button' }, pajamas_button: true
 
