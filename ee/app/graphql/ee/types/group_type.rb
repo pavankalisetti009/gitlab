@@ -4,6 +4,7 @@ module EE
   module Types
     module GroupType
       extend ActiveSupport::Concern
+      include ::NamespacesHelper
 
       prepended do
         field :epics_enabled, GraphQL::Types::Boolean,
@@ -393,7 +394,7 @@ module EE
         def permanent_deletion_date
           return unless group.adjourned_deletion?
 
-          group.permanent_deletion_date(Time.now.utc).strftime('%F')
+          permanent_deletion_date_formatted(Date.current)
         end
       end
     end

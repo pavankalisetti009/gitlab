@@ -1,7 +1,8 @@
 - return unless context.is_a?(Group) || context.is_a?(Project)
 - return unless context.marked_for_deletion?
 
-- date = permanent_deletion_date_formatted(context, context.marked_for_deletion_on)
+-# FIXME: Replace `context.marked_for_deletion_on` with `context` after https://gitlab.com/gitlab-org/gitlab/-/work_items/527085
+- date = permanent_deletion_date_formatted(context.marked_for_deletion_on)
 
 - if context.is_a?(Group)
   - context_name = _('group')

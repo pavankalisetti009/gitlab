@@ -910,8 +910,9 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
         expect(project_data[:is_adjourned_deletion_enabled]).to be true
       end
 
-      it 'permanent_deletion_date returns correct date' do
-        expect(project_data[:permanent_deletion_date]).to eq(pending_delete_project.permanent_deletion_date(Time.now.utc).strftime('%F'))
+      it 'permanent_deletion_date returns correct date', :freeze_time do
+        expect(project_data[:permanent_deletion_date])
+          .to eq(::Gitlab::CurrentSettings.deletion_adjourned_period.days.since(Date.current).strftime('%F'))
       end
     end
 
@@ -920,8 +921,9 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
         stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
       end
 
-      it 'returns correct date for permanent_deletion_date field' do
-        expect(project_data[:permanent_deletion_date]).to eq(pending_delete_project.permanent_deletion_date(Time.now.utc).strftime('%F'))
+      it 'permanent_deletion_date returns correct date', :freeze_time do
+        expect(project_data[:permanent_deletion_date])
+          .to eq(::Gitlab::CurrentSettings.deletion_adjourned_period.days.since(Date.current).strftime('%F'))
       end
     end
   end

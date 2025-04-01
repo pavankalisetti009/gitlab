@@ -68,23 +68,6 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
     end
   end
 
-  describe '#permanent_deletion_date_formatted' do
-    let_it_be(:group) { create(:group) }
-    let(:date) { 2.days.from_now }
-
-    subject { helper.permanent_deletion_date_formatted(group, date) }
-
-    before do
-      stub_application_setting(deletion_adjourned_period: 5)
-    end
-
-    it 'returns the sum of the date passed as argument and the deletion_adjourned_period set in application setting' do
-      expected_date = date + 5.days
-
-      expect(subject).to eq(expected_date.strftime('%F'))
-    end
-  end
-
   describe '#remove_group_message' do
     let(:delayed_deletion_message) { "The contents of this group, its subgroups and projects will be permanently deleted after" }
     let(:permanent_deletion_message) { ["You are about to delete the group #{group.name}", "After you delete a group, you <strong>cannot</strong> restore it or its components."] }

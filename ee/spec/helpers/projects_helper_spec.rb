@@ -550,7 +550,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
       let(:enabled) { true }
 
       specify do
-        deletion_date = helper.permanent_deletion_date_formatted(project, Time.now.utc)
+        deletion_date = helper.permanent_deletion_date_formatted(Date.current)
 
         expect(message).to eq "Deleting a project places it into a read-only state until #{deletion_date}, " \
           "at which point the project will be permanently deleted. Are you ABSOLUTELY sure?"
@@ -580,7 +580,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
 
       specify do
         deletion_adjourned_period = ::Gitlab::CurrentSettings.deletion_adjourned_period
-        deletion_date = helper.permanent_deletion_date_formatted(project, Time.now.utc)
+        deletion_date = helper.permanent_deletion_date_formatted(Date.current)
 
         expect(message).to eq "This action will place this project, " \
           "including all its resources, in a pending deletion state for #{deletion_adjourned_period} days, " \
@@ -1124,7 +1124,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
       let(:allowed) { true }
 
       it 'returns correct message' do
-        deletion_date = helper.permanent_deletion_date_formatted(project, Time.now.utc)
+        deletion_date = helper.permanent_deletion_date_formatted(Date.current)
 
         expect(message).to eq "This project is scheduled for deletion on <strong>#{deletion_date}</strong>. " \
           "This action will permanently delete this project, including all its resources, " \

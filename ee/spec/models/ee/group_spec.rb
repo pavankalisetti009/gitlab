@@ -3220,21 +3220,6 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     end
   end
 
-  describe '#permanent_deletion_date' do
-    let(:group) { create(:group) }
-    let(:date) { 2.days.from_now }
-
-    before do
-      stub_application_setting(deletion_adjourned_period: 5)
-    end
-
-    it 'returns the sum of the date passed as argument and the deletion_adjourned_period set in application setting' do
-      expected_date = date + 5.days
-
-      expect(group.permanent_deletion_date(date)).to eq(expected_date)
-    end
-  end
-
   describe '#personal_access_token_expiration_policy_available?' do
     subject { group.personal_access_token_expiration_policy_available? }
 

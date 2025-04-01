@@ -1,5 +1,6 @@
 - remove_form_id = local_assigns.fetch(:remove_form_id, nil)
-- date = permanent_deletion_date_formatted(group, Time.now.utc)
+-# FIXME: Replace `Date.current` with `group` after https://gitlab.com/gitlab-org/gitlab/-/work_items/527085
+- date = permanent_deletion_date_formatted(Date.current)
 
 - if group.marked_for_deletion?
   = render Pajamas::CardComponent.new(body_options: { class: 'gl-bg-feedback-danger' }) do |c|
