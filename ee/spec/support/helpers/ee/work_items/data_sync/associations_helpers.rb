@@ -24,9 +24,7 @@ module EE
           requirement_legacy: [:requirement],
           test_reports: [:test_reports],
           weight: [:resource_weight_events],
-          # Needs to be implemented
-          # See https://gitlab.com/gitlab-org/gitlab/-/issues/521033
-          custom_status: [:current_status]
+          status: [:current_status]
         }.freeze
 
         NON_WIDGETS_ASSOCIATIONS = {

@@ -28,6 +28,17 @@ RSpec.shared_examples 'cloneable and moveable for ee widget data' do
     work_item.reload.pending_escalations
   end
 
+  def wi_status(work_item)
+    return unless work_item_status_present?
+
+    work_item.reload.current_status&.slice(:system_defined_status_id, :custom_status_id)
+  end
+
+  def work_item_status_present?
+    work_item_widgets.include?(::WorkItems::Widgets::Status) &&
+      original_work_item.current_status.present?
+  end
+
   let_it_be(:weights_source) do
     weights_source = create(:work_item_weights_source, work_item: original_work_item, rolled_up_weight: 20,
       rolled_up_completed_weight: 50)
@@ -80,6 +91,13 @@ RSpec.shared_examples 'cloneable and moveable for ee widget data' do
     []
   end
 
+  let_it_be(:status) do
+    if work_item_status_present?
+      current_status = create(:work_item_current_status, namespace: target_namespace)
+      current_status&.slice(:system_defined_status_id, :custom_status_id)
+    end
+  end
+
   let_it_be(:move) { WorkItems::DataSync::MoveService }
   let_it_be(:clone) { WorkItems::DataSync::CloneService }
 
@@ -90,6 +108,7 @@ RSpec.shared_examples 'cloneable and moveable for ee widget data' do
       { widget: :hierarchy,       assoc_name: :epic,                    eval_value: :wi_epic,                expected: epic,                    operations: [move, clone] },
       { widget: :weight,          assoc_name: :weights_source,          eval_value: :wi_weights_source,      expected: weights_source,          operations: [move, clone] },
       { widget: :linked_items,    assoc_name: :linked_work_items,       eval_value: :wi_linked_items,        expected: related_items,           operations: [move] },
+      { widget: :status,          assoc_name: :current_status,          eval_value: :wi_status,              expected: status,                  operations: [move, clone] },
       # these are non widget associations, but we can test these the same way
       { widget: :vulnerabilities, assoc_name: :related_vulnerabilities, eval_value: :wi_vulnerabilities,     expected: related_vulnerabilities, operations: [move] },
       {                           assoc_name: :pending_escalations,     eval_value: :wi_pending_escalations, expected: pending_escalations,     operations: [move] }

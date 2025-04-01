@@ -23,6 +23,10 @@ RSpec.describe WorkItems::DataSync::MoveService, feature_category: :team_plannin
     )
   end
 
+  let_it_be(:work_item_widgets) do
+    original_work_item.work_item_type.widget_classes(original_work_item.resource_parent.root_ancestor)
+  end
+
   before_all do
     # Ensure support bot user is created so creation doesn't count towards query limit
     # and we don't try to obtain an exclusive lease within a transaction.
@@ -31,7 +35,7 @@ RSpec.describe WorkItems::DataSync::MoveService, feature_category: :team_plannin
   end
 
   before do
-    stub_licensed_features(epics: true)
+    stub_licensed_features(epics: true, work_item_status: true)
   end
 
   context 'when user does not have permissions' do
@@ -182,6 +186,92 @@ RSpec.describe WorkItems::DataSync::MoveService, feature_category: :team_plannin
 
           it_behaves_like 'cloneable and moveable widget data'
           it_behaves_like 'cloneable and moveable for ee widget data'
+        end
+      end
+
+      context 'with task work item' do
+        context 'with group-level task' do
+          let_it_be_with_reload(:original_work_item) do
+            create(:work_item, :task, :group_level, namespace: group)
+          end
+
+          before do
+            allow(original_work_item).to receive(:supports_move_and_clone?).and_return(true)
+          end
+
+          context 'with current status' do
+            let_it_be(:current_status) do
+              create(:work_item_current_status, work_item: original_work_item, namespace: original_work_item.namespace)
+            end
+
+            it_behaves_like 'cloneable and moveable work item'
+            it_behaves_like 'cloneable and moveable for ee widget data'
+
+            context 'when cleanup original data is disabled' do
+              before do
+                stub_feature_flags(cleanup_data_source_work_item_data: false)
+              end
+
+              it_behaves_like 'cloneable and moveable work item'
+              it_behaves_like 'cloneable and moveable for ee widget data'
+            end
+          end
+
+          context 'without current status' do
+            it_behaves_like 'cloneable and moveable work item'
+            it_behaves_like 'cloneable and moveable for ee widget data'
+
+            context 'when cleanup original data is disabled' do
+              before do
+                stub_feature_flags(cleanup_data_source_work_item_data: false)
+              end
+
+              it_behaves_like 'cloneable and moveable work item'
+              it_behaves_like 'cloneable and moveable for ee widget data'
+            end
+          end
+        end
+
+        context 'with project-level task' do
+          let_it_be_with_reload(:original_work_item) do
+            create(:work_item, :task, project: project, namespace: group)
+          end
+
+          before do
+            allow(original_work_item).to receive(:supports_move_and_clone?).and_return(true)
+          end
+
+          context 'with current status' do
+            let_it_be(:current_status) do
+              create(:work_item_current_status, work_item: original_work_item, namespace: original_work_item.namespace)
+            end
+
+            it_behaves_like 'cloneable and moveable work item'
+            it_behaves_like 'cloneable and moveable for ee widget data'
+
+            context 'when cleanup original data is disabled' do
+              before do
+                stub_feature_flags(cleanup_data_source_work_item_data: false)
+              end
+
+              it_behaves_like 'cloneable and moveable work item'
+              it_behaves_like 'cloneable and moveable for ee widget data'
+            end
+          end
+
+          context 'without current status' do
+            it_behaves_like 'cloneable and moveable work item'
+            it_behaves_like 'cloneable and moveable for ee widget data'
+
+            context 'when cleanup original data is disabled' do
+              before do
+                stub_feature_flags(cleanup_data_source_work_item_data: false)
+              end
+
+              it_behaves_like 'cloneable and moveable work item'
+              it_behaves_like 'cloneable and moveable for ee widget data'
+            end
+          end
         end
       end
     end
