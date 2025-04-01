@@ -1813,9 +1813,6 @@ msgstr ""
 msgid "- Add or remove a user."
 msgstr ""
 
-msgid "- Available to run jobs."
-msgstr ""
-
 msgid "- Create or close an issue."
 msgstr ""
 
@@ -1831,9 +1828,6 @@ msgid "- Go to the Activity page for %{project_name}."
 msgstr ""
 
 msgid "- List the visible events for %{project_name} using the Events API %{events_api_link}."
-msgstr ""
-
-msgid "- Not available to run jobs."
 msgstr ""
 
 msgid "- Push code to the repository."
@@ -28631,9 +28625,6 @@ msgstr ""
 msgid "Group requires separate account"
 msgstr ""
 
-msgid "Group runners"
-msgstr ""
-
 msgid "Group runners can be managed with the %{link}."
 msgstr ""
 
@@ -44386,9 +44377,6 @@ msgstr ""
 msgid "Please confirm your email address"
 msgstr ""
 
-msgid "Please contact an admin to create runners."
-msgstr ""
-
 msgid "Please contact your GitLab administrator if you think this is an error."
 msgstr ""
 
@@ -50529,7 +50517,7 @@ msgstr ""
 msgid "Runners|Available"
 msgstr ""
 
-msgid "Runners|Available instance runners: %{count}"
+msgid "Runners|Available instance runners"
 msgstr ""
 
 msgid "Runners|Available to all projects"
@@ -50738,7 +50726,7 @@ msgstr ""
 msgid "Runners|Group area › Runners"
 msgstr ""
 
-msgid "Runners|How do runners pick up jobs?"
+msgid "Runners|Group runners"
 msgstr ""
 
 msgid "Runners|How is this calculated?"
@@ -50778,9 +50766,6 @@ msgid "Runners|Install the %{gcloudLinkStart}Google Cloud CLI%{gcloudLinkEnd} an
 msgstr ""
 
 msgid "Runners|Instance"
-msgstr ""
-
-msgid "Runners|Instance runners"
 msgstr ""
 
 msgid "Runners|Instance runners are disabled in the group settings."
@@ -51000,6 +50985,9 @@ msgstr ""
 msgid "Runners|Platform"
 msgstr ""
 
+msgid "Runners|Please contact an admin to create runners."
+msgstr ""
+
 msgid "Runners|Project"
 msgstr ""
 
@@ -51052,9 +51040,6 @@ msgid "Runners|Register a runner"
 msgstr ""
 
 msgid "Runners|Register an instance runner"
-msgstr ""
-
-msgid "Runners|Register as many runners as you want. You can register runners as separate users, on separate servers, and on your local machine."
 msgstr ""
 
 msgid "Runners|Register runner"
@@ -51168,9 +51153,6 @@ msgstr ""
 msgid "Runners|Runners"
 msgstr ""
 
-msgid "Runners|Runners are either:"
-msgstr ""
-
 msgid "Runners|Runners are grouped when they have the same authentication token. This happens when you re-use a runner configuration in more than one runner manager. %{linkStart}How does this work?%{linkEnd}"
 msgstr ""
 
@@ -51265,9 +51247,6 @@ msgid "Runners|System ID"
 msgstr ""
 
 msgid "Runners|Tags"
-msgstr ""
-
-msgid "Runners|Tags control which type of jobs a runner can handle. By tagging a runner, you make sure runners only handle the jobs they are equipped to run."
 msgstr ""
 
 msgid "Runners|The %{boldStart}runner authentication token%{boldEnd} %{token} displays here %{boldStart}for a short time only%{boldEnd}. After you register the runner, this token is stored in the %{codeStart}config.toml%{codeEnd} and cannot be accessed again from the UI."
@@ -51484,13 +51463,7 @@ msgstr ""
 msgid "Runners|Zone must have the right format."
 msgstr ""
 
-msgid "Runners|active"
-msgstr ""
-
 msgid "Runners|group"
-msgstr ""
-
-msgid "Runners|paused"
 msgstr ""
 
 msgid "Runners|project"
