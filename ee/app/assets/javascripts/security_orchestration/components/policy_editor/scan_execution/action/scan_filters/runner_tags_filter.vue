@@ -41,7 +41,7 @@ export default {
 </script>
 
 <template>
-  <section-layout class="gl-w-full gl-bg-white" :show-remove-button="false">
+  <section-layout class="gl-w-full gl-bg-default" :show-remove-button="false">
     <template #selector>
       <label class="gl-mb-0 gl-mr-4" for="policy-tags" :title="$options.i18n.label">
         {{ $options.i18n.label }}

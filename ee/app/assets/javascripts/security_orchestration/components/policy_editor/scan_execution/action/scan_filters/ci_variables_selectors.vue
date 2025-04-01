@@ -101,9 +101,9 @@ export default {
 </script>
 
 <template>
-  <div class="gl-w-full gl-rounded-base gl-bg-white">
+  <div class="gl-w-full gl-rounded-base gl-bg-default">
     <section-layout
-      class="gl-mb-2 gl-bg-white gl-pb-0 gl-pr-2"
+      class="gl-mb-2 gl-bg-default gl-pb-0 gl-pr-2"
       content-classes="gl-gap-y-2"
       @remove="remove"
     >

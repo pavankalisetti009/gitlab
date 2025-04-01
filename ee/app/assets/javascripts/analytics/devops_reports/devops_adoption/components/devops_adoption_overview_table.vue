@@ -26,7 +26,7 @@ import {
 import { getGroupAdoptionPath } from '../utils/helpers';
 import DevopsAdoptionDeleteModal from './devops_adoption_delete_modal.vue';
 
-const thClass = ['!gl-bg-white', 'gl-text-subtle'];
+const thClass = ['!gl-bg-default', 'gl-text-subtle'];
 
 const formatter = (value, key, item) => {
   if (key === OVERVIEW_TABLE_NAME_KEY) {

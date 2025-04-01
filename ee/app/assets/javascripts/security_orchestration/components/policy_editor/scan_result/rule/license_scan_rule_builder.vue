@@ -199,7 +199,7 @@ export default {
   <div>
     <section-layout class="gl-pb-0 gl-pr-0" :show-remove-button="false">
       <template #content>
-        <section-layout class="!gl-bg-white" :show-remove-button="false">
+        <section-layout class="!gl-bg-default" :show-remove-button="false">
           <template #content>
             <gl-sprintf :message="$options.i18n.licenseScanResultRuleCopy">
               <template #scanType>
@@ -232,7 +232,7 @@ export default {
       <template #content>
         <status-filter
           :show-remove-button="false"
-          class="!gl-bg-white md:gl-items-center"
+          class="!gl-bg-default md:gl-items-center"
           label-classes="!gl-text-base !gl-w-12 !gl-pl-0 !gl-font-bold"
         >
           <rule-multi-select
@@ -250,7 +250,7 @@ export default {
 
         <license-filter
           v-if="showLicensesTypesFilter"
-          class="!gl-bg-white"
+          class="!gl-bg-default"
           :has-error="hasValidationError"
           :init-rule="initRule"
           @changed="triggerChanged"
@@ -272,7 +272,7 @@ export default {
           :filters="filters"
           :tooltip-title="filtersTooltip"
           :should-disable-filter="shouldDisableFilterSelector"
-          class="gl-w-full gl-bg-white"
+          class="gl-w-full gl-bg-default"
           @select="selectFilter"
         />
       </template>

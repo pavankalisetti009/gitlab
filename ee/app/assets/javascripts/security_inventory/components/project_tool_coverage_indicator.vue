@@ -63,7 +63,7 @@ export default {
         return { variant: 'danger', class: 'gl-border-red-600' };
       }
       // otherwise assume status is SCANNER_DISABLED
-      return { class: '!gl-bg-white gl-border-gray-200 gl-border-dashed' };
+      return { class: '!gl-bg-default gl-border-gray-200 gl-border-dashed' };
     },
   },
   SCANNERS,

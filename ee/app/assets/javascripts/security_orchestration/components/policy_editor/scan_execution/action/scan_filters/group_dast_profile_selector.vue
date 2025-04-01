@@ -41,7 +41,7 @@ export default {
 
 <template>
   <div class="gl-w-full">
-    <section-layout class="gl-mb-3 gl-w-full gl-bg-white" :show-remove-button="false">
+    <section-layout class="gl-mb-3 gl-w-full gl-bg-default" :show-remove-button="false">
       <template #selector>
         <label class="gl-mb-0 gl-mr-4" for="scanner-profile">
           {{ $options.i18n.scanLabel }}
@@ -57,7 +57,7 @@ export default {
         />
       </template>
     </section-layout>
-    <section-layout class="gl-w-full gl-bg-white" :show-remove-button="false">
+    <section-layout class="gl-w-full gl-bg-default" :show-remove-button="false">
       <template #selector>
         <label class="gl-mb-0 gl-mr-4" for="site-profile">
           {{ $options.i18n.siteLabel }}

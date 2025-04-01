@@ -198,7 +198,7 @@ export default {
       <div class="gl-flex-1">
         <section-layout class="gl-pb-0 gl-pr-0" :show-remove-button="false">
           <template #content>
-            <section-layout class="gl-w-full gl-bg-white" :show-remove-button="false">
+            <section-layout class="gl-w-full gl-bg-default" :show-remove-button="false">
               <template #content>
                 <gl-sprintf :message="scannerHumanizedMessage">
                   <template #scan>

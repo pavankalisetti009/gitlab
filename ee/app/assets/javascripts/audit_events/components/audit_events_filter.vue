@@ -66,7 +66,7 @@ export default {
 </script>
 
 <template>
-  <div class="input-group gl-flex-grow gl-bg-white" data-testid="audit-events-filter">
+  <div class="input-group gl-flex-grow gl-bg-default" data-testid="audit-events-filter">
     <gl-filtered-search
       :value="value"
       :placeholder="__('Search')"

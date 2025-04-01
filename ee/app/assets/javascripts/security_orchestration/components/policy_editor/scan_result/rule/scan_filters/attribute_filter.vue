@@ -66,7 +66,7 @@ export default {
 </script>
 
 <template>
-  <section-layout class="gl-w-full !gl-bg-white gl-pr-2" @remove="remove">
+  <section-layout class="gl-w-full !gl-bg-default gl-pr-2" @remove="remove">
     <template #selector>
       <slot name="label">
         <label class="gl-mb-0" :title="$options.i18n.label">{{ $options.i18n.label }}</label>

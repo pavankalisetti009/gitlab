@@ -42,7 +42,7 @@ export default {
     <template v-else>
       <gl-icon class="gl-button-icon" name="retry" />
       <gl-popover
-        :css-classes="['gl-bg-white']"
+        :css-classes="['gl-bg-overlap']"
         :content="$options.i18n.syncSubscriptionTooltipText"
         :target="$options.SYNC_BUTTON_ID"
         placement="right"

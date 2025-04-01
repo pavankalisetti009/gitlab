@@ -23,7 +23,7 @@
         tag_pair(last_tag, :last_start, :last_end))
 
     .signup-box.gl-max-w-75
-      .gl-mb-3.gl-p-6.gl-border-default.gl-border-1.gl-border-solid.gl-rounded-base.gl-bg-white
+      .gl-mb-3.gl-p-6.gl-border-default.gl-border-1.gl-border-solid.gl-rounded-base.gl-bg-default
         = render 'signup_box_form',
           url: trial_registrations_path(::Onboarding::StatusPresenter.glm_tracking_params(params)),
           button_text: _('Continue'),

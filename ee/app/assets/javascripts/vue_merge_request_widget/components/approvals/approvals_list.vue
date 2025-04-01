@@ -161,12 +161,12 @@ export default {
   <table class="table gl-border-t gl-m-0 gl-border-t-section gl-bg-subtle">
     <thead class="thead-white text-nowrap">
       <tr class="gl-hidden gl-text-sm md:gl-table-row">
-        <th class="!gl-bg-white"></th>
-        <th class="gl-w-full !gl-bg-white !gl-pl-0">{{ s__('MRApprovals|Approvers') }}</th>
-        <th class="gl-w-full !gl-bg-white"></th>
-        <th class="gl-w-full !gl-bg-white">{{ s__('MRApprovals|Approvals') }}</th>
-        <th class="gl-w-full !gl-bg-white">{{ s__('MRApprovals|Commented by') }}</th>
-        <th class="gl-w-full !gl-bg-white">{{ s__('MRApprovals|Approved by') }}</th>
+        <th class="!gl-bg-default"></th>
+        <th class="gl-w-full !gl-bg-default !gl-pl-0">{{ s__('MRApprovals|Approvers') }}</th>
+        <th class="gl-w-full !gl-bg-default"></th>
+        <th class="gl-w-full !gl-bg-default">{{ s__('MRApprovals|Approvals') }}</th>
+        <th class="gl-w-full !gl-bg-default">{{ s__('MRApprovals|Commented by') }}</th>
+        <th class="gl-w-full !gl-bg-default">{{ s__('MRApprovals|Approved by') }}</th>
       </tr>
     </thead>
     <tbody v-if="$apollo.queries.mergeRequest.loading || !mergeRequest" class="border-top-0">
@@ -205,7 +205,7 @@ export default {
     </tbody>
     <template v-else>
       <tbody v-for="{ id, title, rules } in sections" :key="id" class="border-top-0">
-        <tr v-if="title" class="js-section-title gl-bg-white">
+        <tr v-if="title" class="js-section-title gl-bg-default">
           <td class="w-0"></td>
           <td colspan="99" class="!gl-pl-0 gl-text-sm gl-text-subtle">
             <strong>{{ title }}</strong>

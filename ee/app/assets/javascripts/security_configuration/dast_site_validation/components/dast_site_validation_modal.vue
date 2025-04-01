@@ -298,7 +298,7 @@ export default {
           </template>
           <gl-form-input
             v-model="validationPath"
-            class="!gl-bg-white"
+            class="!gl-bg-default"
             data-testid="dast-site-validation-path-input"
             @input="onValidationPathInput()"
           />

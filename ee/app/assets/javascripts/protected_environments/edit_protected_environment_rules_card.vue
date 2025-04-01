@@ -39,7 +39,7 @@ export default {
   <div>
     <slot name="table"></slot>
 
-    <div v-if="!rules.length" data-testid="empty-state" class="gl-bg-white gl-p-5">
+    <div v-if="!rules.length" data-testid="empty-state" class="gl-bg-default gl-p-5">
       <slot name="empty-state"></slot>
     </div>
 
