@@ -55,7 +55,40 @@ describe('AI Utils', () => {
       `('Adds new command to existing commands $text', ({ commands }) => {
         duoChatGlobalState.commands = [...commands];
         sendDuoChatCommand(newCommand);
-        expect(duoChatGlobalState.commands).toEqual([...commands, newCommand]);
+        expect(duoChatGlobalState.commands).toEqual([
+          ...commands,
+          { ...newCommand, fromButton: false },
+        ]);
+      });
+    });
+
+    describe('fromButton parameter', () => {
+      afterEach(() => {
+        duoChatGlobalState.commands = [];
+      });
+
+      it('adds command with fromButton=false by default', () => {
+        sendDuoChatCommand({ question: '/feedback', resourceId: '1' });
+        expect(duoChatGlobalState.commands[0]).toEqual({
+          question: '/feedback',
+          resourceId: '1',
+          variables: {},
+          fromButton: false,
+        });
+      });
+
+      it('adds command with fromButton=true when specified', () => {
+        sendDuoChatCommand({
+          question: '/feedback',
+          resourceId: '1',
+          fromButton: true,
+        });
+        expect(duoChatGlobalState.commands[0]).toEqual({
+          question: '/feedback',
+          resourceId: '1',
+          variables: {},
+          fromButton: true,
+        });
       });
     });
   });
