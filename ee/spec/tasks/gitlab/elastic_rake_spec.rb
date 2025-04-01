@@ -111,7 +111,7 @@ RSpec.describe 'gitlab:elastic namespace rake tasks', :silence_stdout, feature_c
     subject(:task) { run_rake_task('gitlab:elastic:index') }
 
     before do
-      allow(main_object).to receive(:stdout_logger).and_return(logger)
+      allow(Search::RakeTask::Elastic).to receive(:stdout_logger).and_return(logger)
       allow(logger).to receive(:info)
     end
 
