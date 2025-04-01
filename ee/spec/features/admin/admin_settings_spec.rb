@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Admin updates EE-only settings' do
+RSpec.describe 'Admin updates EE-only settings', feature_category: :shared do
   include StubENV
   include Spec::Support::Helpers::ModalHelpers
   include ListboxHelpers
@@ -16,7 +16,7 @@ RSpec.describe 'Admin updates EE-only settings' do
     allow(Gitlab::Elastic::Helper.default).to receive(:index_exists?).and_return(true)
   end
 
-  context 'Geo settings', feature_category: :geo_replication do
+  describe 'Geo settings', feature_category: :geo_replication do
     context 'when the license has Geo feature' do
       before do
         visit admin_geo_settings_path
@@ -43,18 +43,20 @@ RSpec.describe 'Admin updates EE-only settings' do
     end
   end
 
-  it 'enables external authentication', feature_category: :system_access do
-    visit general_admin_application_settings_path
-    within_testid('external-auth-settings') do
-      check 'Enable classification control using an external service'
-      fill_in 'Default classification label', with: 'default'
-      click_button 'Save changes'
-    end
+  describe 'external authentication', feature_category: :system_access do
+    it 'enables external authentication' do
+      visit general_admin_application_settings_path
+      within_testid('external-auth-settings') do
+        check 'Enable classification control using an external service'
+        fill_in 'Default classification label', with: 'default'
+        click_button 'Save changes'
+      end
 
-    expect(page).to have_content 'Application settings saved successfully'
+      expect(page).to have_content 'Application settings saved successfully'
+    end
   end
 
-  context 'Elasticsearch settings', :elastic_delete_by_query, feature_category: :global_search do
+  describe 'Search settings', :elastic_delete_by_query, feature_category: :global_search do
     let(:elastic_search_license) { true }
     let(:admin) { create(:admin) }
 
@@ -231,7 +233,7 @@ RSpec.describe 'Admin updates EE-only settings' do
     end
   end
 
-  context 'Templates page', feature_category: :importers do
+  describe 'Templates page', feature_category: :importers do
     before do
       visit templates_admin_application_settings_path
     end
@@ -279,7 +281,7 @@ RSpec.describe 'Admin updates EE-only settings' do
     end
   end
 
-  context 'Disable personal access tokens', feature_category: :system_access do
+  describe 'Disable personal access tokens', feature_category: :system_access do
     it 'does not show the setting when the feature is not licensed' do
       stub_licensed_features(disable_personal_access_tokens: false)
 
@@ -302,7 +304,7 @@ RSpec.describe 'Admin updates EE-only settings' do
     end
   end
 
-  context 'package registry settings', feature_category: :package_registry do
+  describe 'package registry settings', feature_category: :package_registry do
     before do
       visit ci_cd_admin_application_settings_path
     end
@@ -362,7 +364,7 @@ RSpec.describe 'Admin updates EE-only settings' do
     end
   end
 
-  context 'sign up settings', :js, feature_category: :user_profile do
+  describe 'sign up settings', :js, feature_category: :user_profile do
     before do
       visit general_admin_application_settings_path
     end

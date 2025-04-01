@@ -52,6 +52,7 @@ module EE
         elasticsearch_indexing: [:boolean, { default: false }],
         elasticsearch_username: [:string],
         elasticsearch_aws_region: [:string, { default: 'us-east-1' }],
+        elasticsearch_aws_role_arn: [:string],
         elasticsearch_aws_access_key: [:string],
         elasticsearch_limit_indexing: [:boolean, { default: false }],
         elasticsearch_pause_indexing: [:boolean, { default: false }],
@@ -519,6 +520,7 @@ module EE
         aws_access_key: elasticsearch_aws_access_key,
         aws_secret_access_key: elasticsearch_aws_secret_access_key,
         aws_region: elasticsearch_aws_region,
+        aws_role_arn: elasticsearch_aws_role_arn,
         max_bulk_size_bytes: elasticsearch_max_bulk_size_mb.megabytes,
         max_bulk_concurrency: elasticsearch_max_bulk_concurrency,
         client_request_timeout: (client_request_timeout if client_request_timeout > 0)

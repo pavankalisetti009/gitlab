@@ -2579,6 +2579,9 @@ msgstr ""
 msgid "AWS OpenSearch IAM credentials"
 msgstr ""
 
+msgid "AWS Role ARN"
+msgstr ""
+
 msgid "AWS Secret Access Key"
 msgstr ""
 
@@ -49851,6 +49854,9 @@ msgid "Required in this project."
 msgstr ""
 
 msgid "Required only if you are not using role instance credentials."
+msgstr ""
+
+msgid "Required only if you are using AssumeRole for authorization across accounts."
 msgstr ""
 
 msgid "Requirement"

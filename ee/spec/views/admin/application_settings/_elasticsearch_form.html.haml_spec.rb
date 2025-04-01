@@ -29,12 +29,9 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
 
   let(:task) do
     build_stubbed(:elastic_reindexing_task).tap do |t|
-      allow(t).to receive(:subtasks).and_return(fake_subtasks)
       allow(fake_subtasks).to receive(:order_by_alias_name_asc).and_return(fake_subtasks)
 
-      allow(t).to receive(:in_progress?).and_return(true)
-      allow(t).to receive(:error_message).and_return(nil)
-      allow(t).to receive(:state).and_return(:in_progress)
+      allow(t).to receive_messages(subtasks: fake_subtasks, in_progress?: true, error_message: nil, state: :in_progress)
     end
   end
 
@@ -45,21 +42,21 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
     assign(:projects_not_indexed, projects_not_indexed)
     assign(:last_elasticsearch_reindexing_task, task)
 
-    allow(Elastic::DataMigrationService).to receive(:halted_migrations?).and_return(halted_migrations)
-    allow(Elastic::DataMigrationService).to receive(:pending_migrations?).and_return(pending_migrations)
+    allow(Elastic::DataMigrationService).to receive_messages(halted_migrations?: halted_migrations,
+      pending_migrations?: pending_migrations)
     allow(Elastic::IndexSetting).to receive(:every_alias).and_return([])
     allow(Gitlab::Elastic::Helper).to receive_message_chain(:default, :ping?).and_return(elasticsearch_available)
-    allow(Gitlab::CurrentSettings).to receive(:elasticsearch_indexing?).and_return(es_indexing)
-    allow(Gitlab::CurrentSettings).to receive(:elasticsearch_pause_indexing?).and_return(pause_indexing)
+    allow(Gitlab::CurrentSettings).to receive_messages(elasticsearch_indexing?: es_indexing,
+      elasticsearch_pause_indexing?: pause_indexing)
     allow(view).to receive(:current_user) { admin }
-    allow(view).to receive(:expanded) { true }
+    allow(view).to receive(:expanded).and_return(true)
   end
 
-  context 'es indexing' do
+  describe 'es indexing' do
     let(:application_setting) { build(:application_setting) }
     let(:button_text) { 'Index the instance' }
 
-    context 'indexing is enabled' do
+    context 'when indexing is enabled' do
       let(:es_indexing) { true }
 
       it 'hides index button when indexing is disabled' do
@@ -68,7 +65,7 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
         expect(rendered).to have_css('a.btn-confirm', text: button_text)
       end
 
-      context 'indexing is enabled' do
+      context 'when indexing is enabled' do
         let(:es_indexing) { true }
         let(:pause_indexing) { false }
         let(:task) do
@@ -80,19 +77,20 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
         before do
           assign(:last_elasticsearch_reindexing_task, task)
 
-          allow(Gitlab::CurrentSettings).to receive(:elasticsearch_indexing?).and_return(es_indexing)
-          allow(Gitlab::CurrentSettings).to receive(:elasticsearch_pause_indexing?).and_return(pause_indexing)
+          allow(Gitlab::CurrentSettings).to receive_messages(elasticsearch_indexing?: es_indexing,
+            elasticsearch_pause_indexing?: pause_indexing)
         end
 
         it 'renders an enabled pause checkbox' do
           render
 
           expect(rendered).to have_css('input[id=application_setting_elasticsearch_pause_indexing]')
-          expect(rendered).not_to have_css('input[id=application_setting_elasticsearch_pause_indexing][disabled="disabled"]')
+          expect(rendered)
+            .not_to have_css('input[id=application_setting_elasticsearch_pause_indexing][disabled="disabled"]')
         end
       end
 
-      context 'pending migrations' do
+      context 'when pending migrations exist' do
         using RSpec::Parameterized::TableSyntax
 
         let(:elasticsearch_available) { true }
@@ -104,8 +102,7 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
 
         before do
           allow(Elastic::DataMigrationService).to receive(:pending_migrations).and_return([migration])
-          allow(migration).to receive(:running?).and_return(running)
-          allow(migration).to receive(:pause_indexing?).and_return(pause_indexing)
+          allow(migration).to receive_messages(running?: running, pause_indexing?: pause_indexing)
           assign(:last_elasticsearch_reindexing_task, task)
         end
 
@@ -121,16 +118,18 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
             render
 
             if disabled
-              expect(rendered).to have_css('input[id=application_setting_elasticsearch_pause_indexing][disabled="disabled"]')
+              expect(rendered)
+                .to have_css('input[id=application_setting_elasticsearch_pause_indexing][disabled="disabled"]')
             else
-              expect(rendered).not_to have_css('input[id=application_setting_elasticsearch_pause_indexing][disabled="disabled"]')
+              expect(rendered)
+                .not_to have_css('input[id=application_setting_elasticsearch_pause_indexing][disabled="disabled"]')
             end
           end
         end
       end
     end
 
-    context 'indexing is disabled' do
+    context 'when indexing is disabled' do
       let(:es_indexing) { false }
 
       it 'shows index button when indexing is enabled' do
@@ -147,44 +146,49 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
     end
   end
 
-  context 'when elasticsearch_aws_secret_access_key is not set' do
-    let(:application_setting) { build(:application_setting) }
+  describe 'shard setting' do
+    context 'when number of shards is set' do
+      let(:application_setting) { build(:application_setting, elasticsearch_worker_number_of_shards: 4) }
 
-    it 'has field with "AWS Secret Access Key" label and no value' do
-      render
-      expect(rendered).to have_field('AWS Secret Access Key', type: 'password')
-      expect(page.find_field('AWS Secret Access Key').value).to be_blank
+      it 'has field with "Number of shards for non-code indexing" label and correct value' do
+        render
+        expect(rendered).to have_field('Number of shards for non-code indexing')
+        expect(page.find_field('Number of shards for non-code indexing').value).to eq('4')
+      end
     end
   end
 
-  context 'when number of shards is set' do
-    let(:application_setting) { build(:application_setting, elasticsearch_worker_number_of_shards: 4) }
+  describe 'aws' do
+    context 'when elasticsearch_aws_secret_access_key is not set' do
+      let(:application_setting) { build(:application_setting) }
 
-    it 'has field with "Number of shards for non-code indexing" label and correct value' do
-      render
-      expect(rendered).to have_field('Number of shards for non-code indexing')
-      expect(page.find_field('Number of shards for non-code indexing').value).to eq('4')
+      it 'has field with "AWS Secret Access Key" label and no value' do
+        render
+        expect(rendered).to have_field('AWS Secret Access Key', type: 'password')
+        expect(page.find_field('AWS Secret Access Key').value).to be_blank
+      end
+    end
+
+    context 'when elasticsearch_aws_secret_access_key is set' do
+      let(:application_setting) do
+        build(:application_setting, elasticsearch_aws_secret_access_key: 'elasticsearch_aws_secret_access_key')
+      end
+
+      it 'has field with "Enter new AWS Secret Access Key" label and a masked value' do
+        render
+        expect(rendered).to have_field('Enter new AWS Secret Access Key', type: 'password')
+        expect(page.find_field('Enter new AWS Secret Access Key').value).to eq(ApplicationSetting::MASK_PASSWORD)
+      end
     end
   end
 
-  context 'when elasticsearch_aws_secret_access_key is set' do
-    let(:application_setting) { build(:application_setting, elasticsearch_aws_secret_access_key: 'elasticsearch_aws_secret_access_key') }
-
-    it 'has field with "Enter new AWS Secret Access Key" label and a masked value' do
-      render
-      expect(rendered).to have_field('Enter new AWS Secret Access Key', type: 'password')
-      expect(page.find_field('Enter new AWS Secret Access Key').value).to eq(ApplicationSetting::MASK_PASSWORD)
-    end
-  end
-
-  context 'zero-downtime elasticsearch reindexing' do
+  describe 'zero-downtime elasticsearch reindexing' do
     let(:application_setting) { build(:application_setting) }
     let(:subtask) { build_stubbed(:elastic_reindexing_subtask) }
     let(:task) do
       build_stubbed(:elastic_reindexing_task).tap do |t|
         allow(t).to receive_message_chain(:subtasks, :order_by_alias_name_asc).and_return([subtask])
-        allow(t).to receive(:in_progress?).and_return(true)
-        allow(t).to receive(:error_message).and_return(nil)
+        allow(t).to receive_messages(in_progress?: true, error_message: nil)
       end
     end
 
@@ -219,7 +223,7 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
         assign(:elasticsearch_reindexing_human_state, "starting")
         assign(:elasticsearch_reindexing_human_state_color, "tip")
 
-        allow(view).to receive(:expanded) { true }
+        allow(view).to receive(:expanded).and_return(true)
       end
 
       it 'renders the task' do
@@ -234,10 +238,8 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
       let(:application_setting) { build(:application_setting) }
       let(:task) do
         build_stubbed(:elastic_reindexing_task, state: :reindexing, error_message: 'error-message').tap do |t|
-          allow(t).to receive(:in_progress?).and_return(true)
-          allow(t).to receive(:state).and_return(:reindexing)
-          allow(t).to receive(:documents_count).and_return(50)
-          allow(t).to receive(:documents_count_target).and_return(100)
+          allow(t).to receive_messages(in_progress?: true, state: :reindexing, documents_count: 50,
+            documents_count_target: 100)
         end
       end
 
@@ -257,9 +259,7 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
         assign(:last_elasticsearch_reindexing_task, task)
 
         allow(task).to receive(:subtasks).and_return(ordered_subtasks)
-        allow(ordered_subtasks).to receive(:count).and_return(1)
-        allow(ordered_subtasks).to receive(:any?).and_return(true)
-        allow(ordered_subtasks).to receive(:order_by_alias_name_asc).and_return(ordered_subtasks)
+        allow(ordered_subtasks).to receive_messages(count: 1, any?: true, order_by_alias_name_asc: ordered_subtasks)
 
         assign(:elasticsearch_reindexing_human_state, "reindexing")
         assign(:elasticsearch_reindexing_human_state_color, "info")
@@ -292,8 +292,7 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
 
       before do
         allow(task).to receive_message_chain(:subtasks, :order_by_alias_name_asc).and_return([subtask])
-        allow(task.subtasks).to receive(:any?).and_return(true)
-        allow(task.subtasks).to receive(:count).and_return(1)
+        allow(task.subtasks).to receive_messages(any?: true, count: 1)
         assign(:last_elasticsearch_reindexing_task, task)
         assign(:application_setting, build(:application_setting))
         assign(:projects_not_indexed_count, 0)
@@ -311,51 +310,53 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
     end
   end
 
-  context 'when there are elasticsearch indexed namespaces' do
-    let(:application_setting) { build(:application_setting, elasticsearch_limit_indexing: true) }
+  describe 'limited indexing' do
+    context 'when there are elasticsearch indexed namespaces' do
+      let(:application_setting) { build(:application_setting, elasticsearch_limit_indexing: true) }
 
-    it 'shows the input' do
-      render
-      expect(rendered).to have_selector('.js-namespaces-indexing-restrictions')
-    end
-
-    context 'when there are too many elasticsearch indexed namespaces' do
-      before do
-        allow(view).to receive(:elasticsearch_too_many_namespaces?) { true }
+      it 'shows the input' do
+        render
+        expect(rendered).to have_selector('.js-namespaces-indexing-restrictions')
       end
 
-      it 'hides the input' do
+      context 'when there are too many elasticsearch indexed namespaces' do
+        before do
+          allow(view).to receive(:elasticsearch_too_many_namespaces?).and_return(true)
+        end
+
+        it 'hides the input' do
+          render
+          expect(rendered).not_to have_selector('.js-namespaces-indexing-restrictions')
+        end
+      end
+    end
+
+    context 'when there are elasticsearch indexed projects' do
+      let(:application_setting) { build(:application_setting, elasticsearch_limit_indexing: true) }
+
+      before do
+        allow(view).to receive(:elasticsearch_too_many_projects?).and_return(false)
+      end
+
+      it 'shows the input' do
         render
-        expect(rendered).not_to have_selector('.js-namespaces-indexing-restrictions')
+        expect(rendered).to have_selector('.js-projects-indexing-restrictions')
+      end
+
+      context 'when there are too many elasticsearch indexed projects' do
+        before do
+          allow(view).to receive(:elasticsearch_too_many_projects?).and_return(true)
+        end
+
+        it 'hides the input' do
+          render
+          expect(rendered).not_to have_selector('.js-projects-indexing-restrictions')
+        end
       end
     end
   end
 
-  context 'when there are elasticsearch indexed projects' do
-    let(:application_setting) { build(:application_setting, elasticsearch_limit_indexing: true) }
-
-    before do
-      allow(view).to receive(:elasticsearch_too_many_projects?) { false }
-    end
-
-    it 'shows the input' do
-      render
-      expect(rendered).to have_selector('.js-projects-indexing-restrictions')
-    end
-
-    context 'when there are too many elasticsearch indexed projects' do
-      before do
-        allow(view).to receive(:elasticsearch_too_many_projects?) { true }
-      end
-
-      it 'hides the input' do
-        render
-        expect(rendered).not_to have_selector('.js-projects-indexing-restrictions')
-      end
-    end
-  end
-
-  context 'elasticsearch migrations' do
+  describe 'elasticsearch migrations' do
     let(:application_setting) { build(:application_setting) }
 
     it 'does not show the retry migration card' do
@@ -414,7 +415,7 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
     end
   end
 
-  context 'indexing status' do
+  describe 'indexing status' do
     let(:projects_not_indexed_max_shown) { 50 }
     let(:application_setting) { build(:application_setting) }
 
@@ -464,7 +465,7 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
 
     context 'when there are projects not indexed' do
       context 'when there is 20 projects not indexed' do
-        let(:namespace) { instance_double("Namespace", human_name: "Namespace 1") }
+        let(:namespace) { instance_double(Namespace, human_name: "Namespace 1") }
         let(:projects_not_indexed) { build_stubbed_list(:project, 20, :repository) }
         let(:projects_not_indexed_count) { 20 }
         let(:initial_queue_size) { 10 }
@@ -503,7 +504,7 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
       end
 
       context 'when there is 100 projects not indexed' do
-        let(:namespace) { instance_double("Namespace", human_name: "Namespace 1") }
+        let(:namespace) { instance_double(Namespace, human_name: "Namespace 1") }
         let(:projects_not_indexed) { build_stubbed_list(:project, 100, :repository) }
         let(:projects_not_indexed_count) { 100 }
         let(:initial_queue_size) { 10 }
@@ -523,7 +524,8 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
         end
 
         it 'shows text “Only first 50 of not indexed projects is shown"' do
-          expect(rendered).to have_selector('[data-testid="projects_not_indexed_max_shown"]', text: 'Only first 50 of not indexed projects is shown')
+          expect(rendered).to have_selector('[data-testid="projects_not_indexed_max_shown"]',
+            text: 'Only first 50 of not indexed projects is shown')
         end
 
         it 'shows 100 items in the list .project-row' do
@@ -548,7 +550,7 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
       context 'when there is 0 projects not indexed' do
         let(:incremental_queue_size) { 10 }
         let(:initial_queue_size) { 10 }
-        let(:namespace) { instance_double("Namespace", human_name: "Namespace 1") }
+        let(:namespace) { instance_double(Namespace, human_name: "Namespace 1") }
         let(:projects_not_indexed_count) { 0 }
         let(:projects_not_indexed) { [] }
 

@@ -9,6 +9,7 @@ module Gitlab
 
       OPEN_TIMEOUT = 5
       NO_RETRY = 0
+      AWS_ROLE_SESSION_NAME = 'gitlab_advanced_search'
 
       # Takes a hash as returned by `ApplicationSetting#elasticsearch_config`,
       # and configures itself based on those parameters
@@ -48,9 +49,21 @@ module Gitlab
 
       def self.resolve_aws_credentials(config)
         # Resolve credentials in order
-        # 1.  Static config
-        # 2.  ec2 instance profile
-        static_credentials = Aws::Credentials.new(config[:aws_access_key], config[:aws_secret_access_key])
+        # 1.  assume role if role arn is set
+        # 2.  static config
+        # 3.  ec2 instance profile
+
+        static_credentials = if config[:aws_role_arn].present?
+                               sts_client = Aws::STS::Client.new(region: config[:aws_region])
+
+                               Aws::AssumeRoleCredentials.new(
+                                 client: sts_client,
+                                 role_arn: config[:aws_role_arn],
+                                 role_session_name: AWS_ROLE_SESSION_NAME
+                               )
+                             else
+                               Aws::Credentials.new(config[:aws_access_key], config[:aws_secret_access_key])
+                             end
 
         return static_credentials if static_credentials&.set?
 

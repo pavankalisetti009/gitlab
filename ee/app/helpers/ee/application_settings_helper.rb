@@ -15,6 +15,7 @@ module EE
         :check_namespace_plan,
         :elasticsearch_aws_access_key,
         :elasticsearch_aws_region,
+        :elasticsearch_aws_role_arn,
         :elasticsearch_aws_secret_access_key,
         :elasticsearch_aws,
         :elasticsearch_client_request_timeout,
