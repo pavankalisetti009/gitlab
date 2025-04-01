@@ -158,13 +158,13 @@ module EE
       scope :auditors, -> { where('auditor IS true') }
       scope :managed_by, ->(group) { where(managing_group: group) }
 
-      scope :excluding_guests_and_optionally_requests, ->(include_requests = false) do
+      scope :excluding_guests_and_requests, -> do
         subquery = ::Member
           .select(1)
           .where(::Member.arel_table[:user_id].eq(::User.arel_table[:id]))
           .with_elevated_guests
 
-        subquery = subquery.non_request unless include_requests
+        subquery = subquery.non_request
 
         where('EXISTS (?)', subquery)
           .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/422405')
@@ -260,7 +260,7 @@ module EE
         scope = active.without_bots
 
         if License.current&.exclude_guests_from_active_count?
-          scope = scope.excluding_guests_and_optionally_requests
+          scope = scope.excluding_guests_and_requests
         end
 
         scope
@@ -271,9 +271,9 @@ module EE
         return ::User.none unless License.current&.exclude_guests_from_active_count?
 
         scope = active.without_bots
-        billable_user_ids_excluding_lte_guests = ::User.select(:id).where(id: user_ids)
-                                                       .excluding_guests_and_optionally_requests(true)
-        scope.where(id: user_ids).where.not(id: billable_user_ids_excluding_lte_guests)
+        billable_user_ids_excluding_lte_guests_and_requests = ::User.select(:id).where(id: user_ids)
+                                                       .excluding_guests_and_requests
+        scope.where(id: user_ids).where.not(id: billable_user_ids_excluding_lte_guests_and_requests)
       end
 
       def user_cap_reached?
