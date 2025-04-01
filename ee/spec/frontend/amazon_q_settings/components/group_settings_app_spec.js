@@ -20,11 +20,13 @@ describe('ee/amazon_q_settings/components/group_settings_app.vue', () => {
   let resolveUpdateGroupSettings;
   let rejectUpdateGroupSettings;
 
-  const createComponent = () => {
+  const createComponent = (props = {}) => {
     wrapper = shallowMountExtended(GroupSettingsApp, {
       propsData: {
         groupId: TEST_GROUP_ID,
         initAvailability: TEST_INIT_AVAILABILITY,
+        initAutoReviewEnabled: false,
+        ...props,
       },
     });
   };
@@ -48,6 +50,7 @@ describe('ee/amazon_q_settings/components/group_settings_app.vue', () => {
     it('renders settings block', () => {
       expect(findSettingsBlock().props()).toEqual({
         initAvailability: TEST_INIT_AVAILABILITY,
+        initAutoReviewEnabled: false,
         isLoading: false,
       });
     });
@@ -86,6 +89,7 @@ describe('ee/amazon_q_settings/components/group_settings_app.vue', () => {
       });
       expect(findSettingsBlock().props()).toEqual({
         initAvailability: TEST_NEW_AVAILABILITY,
+        initAutoReviewEnabled: false,
         isLoading: false,
       });
     });

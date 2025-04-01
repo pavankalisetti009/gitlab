@@ -20,6 +20,11 @@ export default {
       type: String,
       required: true,
     },
+    initAutoReviewEnabled: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
     initAvailability: {
       type: String,
       required: false,
@@ -45,19 +50,22 @@ export default {
   data() {
     return {
       availability: this.initAvailability,
+      autoReviewEnabled: this.initAutoReviewEnabled,
       isLoading: false,
     };
   },
   methods: {
-    async onSubmit({ availability }) {
+    async onSubmit({ availability, autoReviewEnabled }) {
       try {
         this.isLoading = true;
 
         await updateGroupSettings(this.groupId, {
           duo_availability: availability,
+          amazon_q_auto_review_enabled: autoReviewEnabled,
         });
 
         this.availability = availability;
+        this.autoReviewEnabled = autoReviewEnabled;
         showToast(this.$options.i18n.successMessage, { variant: 'success' });
       } catch (error) {
         createAlert({
@@ -75,6 +83,7 @@ export default {
 <template>
   <amazon-q-settings-block
     :init-availability="availability"
+    :init-auto-review-enabled="autoReviewEnabled"
     :is-loading="isLoading"
     @submit="onSubmit"
   />

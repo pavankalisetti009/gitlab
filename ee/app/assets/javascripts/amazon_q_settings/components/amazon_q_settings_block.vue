@@ -1,5 +1,5 @@
 <script>
-import { GlLink, GlSprintf, GlForm, GlAlert, GlButton } from '@gitlab/ui';
+import { GlFormCheckbox, GlLink, GlSprintf, GlForm, GlAlert, GlButton } from '@gitlab/ui';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { s__, __ } from '~/locale';
 import SettingsBlock from '~/vue_shared/components/settings/settings_block.vue';
@@ -9,6 +9,7 @@ import { AVAILABILITY_OPTIONS } from 'ee/ai/settings/constants';
 export default {
   name: 'AmazonQSettings',
   components: {
+    GlFormCheckbox,
     GlLink,
     GlSprintf,
     GlForm,
@@ -27,6 +28,7 @@ export default {
       'AmazonQ|Use GitLab Duo with Amazon Q to create and review merge requests and upgrade Java. GitLab Duo with Amazon Q is separate from GitLab Duo Pro and Enterprise. %{linkStart}Learn more%{linkEnd}.',
     ),
   },
+  inject: ['areDuoSettingsLocked'],
   props: {
     initAvailability: {
       type: String,
@@ -38,15 +40,30 @@ export default {
       required: false,
       default: false,
     },
+    initAutoReviewEnabled: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
       availability: this.initAvailability,
+      autoReviewEnabled: this.initAutoReviewEnabled,
     };
   },
   computed: {
     hasAvailabilityChanged() {
       return this.availability !== this.initAvailability;
+    },
+    hasAutoReviewChanged() {
+      return this.autoReviewEnabled !== this.initAutoReviewEnabled;
+    },
+    hasAnyChanges() {
+      return this.hasAvailabilityChanged || this.hasAutoReviewChanged;
+    },
+    isAutoReviewDisabled() {
+      return this.areDuoSettingsLocked || this.availability !== AVAILABILITY_OPTIONS.DEFAULT_ON;
     },
     warningMessage() {
       if (this.hasAvailabilityChanged && this.availability === AVAILABILITY_OPTIONS.NEVER_ON) {
@@ -56,10 +73,18 @@ export default {
       return null;
     },
   },
+  watch: {
+    duoAvailabilityState(newValue) {
+      if (newValue !== AVAILABILITY_OPTIONS.defaultOn && this.autoReviewEnabled) {
+        this.autoReviewEnabled = false;
+      }
+    },
+  },
   methods: {
     submitForm() {
       this.$emit('submit', {
         availability: this.availability,
+        autoReviewEnabled: this.autoReviewEnabled,
       });
     },
     onRadioChanged(value) {
@@ -80,7 +105,18 @@ export default {
     </template>
     <template #default>
       <gl-form @submit.prevent="submitForm">
-        <duo-availability :duo-availability="availability" @change="onRadioChanged" />
+        <duo-availability :duo-availability="availability" @change="onRadioChanged">
+          <template #amazon-q-settings>
+            <gl-form-checkbox
+              v-model="autoReviewEnabled"
+              name="amazon_q_auto_review_enabled"
+              :disabled="isAutoReviewDisabled"
+              class="gl-ml-6 gl-mt-3"
+            >
+              {{ s__('AmazonQ|Enable automatic code reviews') }}
+            </gl-form-checkbox>
+          </template>
+        </duo-availability>
         <gl-alert v-if="warningMessage" :dismissible="false" variant="warning">
           <gl-sprintf :message="warningMessage">
             <template #br>
@@ -92,7 +128,7 @@ export default {
           <gl-button
             type="submit"
             variant="confirm"
-            :disabled="!hasAvailabilityChanged"
+            :disabled="!hasAnyChanges"
             :loading="isLoading"
           >
             {{ $options.i18n.confirmButtonText }}

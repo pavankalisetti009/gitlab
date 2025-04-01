@@ -10,11 +10,16 @@ import DuoAvailability from 'ee/ai/settings/components/duo_availability_form.vue
 describe('ee/amazon_q_settings/components/amazon_q_settings_block.vue', () => {
   let wrapper;
 
-  const createComponent = (props = {}) => {
+  const createComponent = (props = {}, provide = {}) => {
     wrapper = shallowMountExtended(AmazonQSettingsBlock, {
+      provide: {
+        areDuoSettingsLocked: false,
+        ...provide,
+      },
       propsData: {
         initAvailability: AVAILABILITY_OPTIONS.DEFAULT_ON,
         isLoading: false,
+        initAutoReviewEnabled: false,
         ...props,
       },
       stubs: {
@@ -34,6 +39,7 @@ describe('ee/amazon_q_settings/components/amazon_q_settings_block.vue', () => {
   const findDuoAvailabilityInput = () => findForm().findComponent(DuoAvailability);
   const findWarningAlert = () => findForm().findComponent(GlAlert);
   const findSubmitButton = () => findForm().findComponent(GlButton);
+  const findAutoReviewCheckbox = () => wrapper.find('[name="amazon_q_auto_review_enabled"]');
 
   describe('default', () => {
     beforeEach(() => {
@@ -54,10 +60,12 @@ describe('ee/amazon_q_settings/components/amazon_q_settings_block.vue', () => {
       );
     });
 
-    it('renders duo availability input', () => {
+    it('renders duo availability input with Amazon Q section flag', () => {
       expect(findDuoAvailabilityInput().props()).toMatchObject({
         duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_ON,
       });
+
+      expect(findAutoReviewCheckbox().exists()).toBe(true);
     });
 
     it('does not render warning alert', () => {
@@ -70,6 +78,114 @@ describe('ee/amazon_q_settings/components/amazon_q_settings_block.vue', () => {
       expect(findSubmitButton().attributes()).toMatchObject({
         type: 'submit',
         disabled: 'true',
+      });
+    });
+
+    describe('auto review checkbox', () => {
+      it('renders', () => {
+        expect(findAutoReviewCheckbox().exists()).toBe(true);
+      });
+
+      it('disables checkbox when settings are locked', () => {
+        createComponent(
+          {
+            initAvailability: AVAILABILITY_OPTIONS.DEFAULT_ON,
+          },
+          {
+            areDuoSettingsLocked: true,
+          },
+        );
+
+        // Vue2 and Vue3 have different matchers for disabled attributes
+        // eslint-disable-next-line jest/no-restricted-matchers
+        expect(findAutoReviewCheckbox().attributes('disabled')).toBeTruthy();
+      });
+
+      describe('when availability changes to on', () => {
+        beforeEach(() => {
+          createComponent({
+            initAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
+            initAutoReviewEnabled: false,
+          });
+        });
+
+        it('submit button is disabled initially', () => {
+          expect(findSubmitButton().props('disabled')).toBe(true);
+        });
+
+        it('enables the checkbox', async () => {
+          // Vue2 and Vue3 have different matchers for disabled attributes
+          // eslint-disable-next-line jest/no-restricted-matchers
+          expect(findAutoReviewCheckbox().attributes('disabled')).toBeTruthy();
+
+          await findDuoAvailabilityInput().vm.$emit('change', AVAILABILITY_OPTIONS.DEFAULT_ON);
+
+          expect(findAutoReviewCheckbox().attributes('disabled')).toBeUndefined();
+        });
+      });
+
+      describe.each`
+        availability
+        ${AVAILABILITY_OPTIONS.DEFAULT_OFF}
+        ${AVAILABILITY_OPTIONS.NEVER_ON}
+      `('when availability change to $availability', ({ startingAvailability, availability }) => {
+        beforeEach(() => {
+          createComponent({
+            initAvailability: startingAvailability,
+            initAutoReviewEnabled: true,
+          });
+        });
+
+        it('disables the checkbox', async () => {
+          expect(findAutoReviewCheckbox().attributes('disabled')).toBeUndefined();
+
+          await findDuoAvailabilityInput().vm.$emit('change', availability);
+
+          // eslint-disable-next-line jest/no-restricted-matchers
+          expect(findAutoReviewCheckbox().attributes('disabled')).toBeTruthy();
+        });
+      });
+
+      describe('when auto review checkbox is toggled on', () => {
+        beforeEach(async () => {
+          await findAutoReviewCheckbox().vm.$emit('input', true);
+        });
+
+        it('emits submit event with auto review enabled when form is submitted', async () => {
+          expect(wrapper.emitted('submit')).toBeUndefined();
+
+          findForm().vm.$emit('submit', new Event('submit'));
+          await nextTick();
+
+          expect(wrapper.emitted('submit')).toEqual([
+            [
+              {
+                availability: AVAILABILITY_OPTIONS.DEFAULT_ON,
+                autoReviewEnabled: true,
+              },
+            ],
+          ]);
+        });
+      });
+
+      describe('when auto review checkbox is toggled off', () => {
+        beforeEach(async () => {
+          await findAutoReviewCheckbox().vm.$emit('input', false);
+        });
+
+        it('emits submit event with auto review disabled', async () => {
+          findForm().vm.$emit('submit', new Event('submit'));
+          await nextTick();
+
+          expect(wrapper.emitted('submit')).toEqual([
+            [
+              {
+                availability: AVAILABILITY_OPTIONS.DEFAULT_ON,
+                autoReviewEnabled: false,
+              },
+            ],
+          ]);
+        });
       });
     });
 
@@ -104,6 +220,7 @@ describe('ee/amazon_q_settings/components/amazon_q_settings_block.vue', () => {
           [
             {
               availability: AVAILABILITY_OPTIONS.NEVER_ON,
+              autoReviewEnabled: false,
             },
           ],
         ]);
@@ -115,5 +232,32 @@ describe('ee/amazon_q_settings/components/amazon_q_settings_block.vue', () => {
     createComponent({ isLoading: true });
 
     expect(findSubmitButton().props('loading')).toBe(true);
+  });
+
+  describe('when both availability and auto review are changed', () => {
+    beforeEach(async () => {
+      createComponent();
+      findDuoAvailabilityInput().vm.$emit('change', AVAILABILITY_OPTIONS.DEFAULT_OFF);
+      findAutoReviewCheckbox().vm.$emit('input', true);
+      await nextTick();
+    });
+
+    it('enables submit button', () => {
+      expect(findSubmitButton().props('disabled')).toBe(false);
+    });
+
+    it('emits submit event with updated values when form is submitted', async () => {
+      findForm().vm.$emit('submit', new Event('submit'));
+      await nextTick();
+
+      expect(wrapper.emitted('submit')).toEqual([
+        [
+          {
+            availability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
+            autoReviewEnabled: true,
+          },
+        ],
+      ]);
+    });
   });
 });
