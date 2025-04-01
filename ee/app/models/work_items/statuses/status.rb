@@ -2,7 +2,10 @@
 
 module WorkItems
   module Statuses
-    module SharedConstants
+    # Not an ancestor class but a module because system-defined status isn't a model.
+    # Using a shared module allows us to use it for GraphQL GlobalID input validation.
+    # We're not using `BaseStatus` here because it's not a class.
+    module Status
       CATEGORIES = {
         triage: 1,
         to_do: 2,

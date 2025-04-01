@@ -1248,6 +1248,50 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
     end
   end
 
+  context 'with status widget input' do
+    let_it_be(:task_type) { create(:work_item_type, :task) }
+    let_it_be(:work_item) { create(:work_item, work_item_type: task_type, project: project) }
+
+    let(:status_id) { 2 }
+    let(:status_gid) { 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/2' }
+    let(:expected_error_message) { 'Following widget keys are not supported by Task type: [:status_widget]' }
+
+    let(:current_user) { reporter }
+    let(:fields) { 'workItem { id }' }
+    let(:input) do
+      {
+        'statusWidget' => {
+          'status' => status_gid
+        }
+      }
+    end
+
+    it_behaves_like 'work item mutation with status widget with error'
+
+    context 'when work_item_status feature is licensed' do
+      before do
+        stub_licensed_features(work_item_status: true)
+      end
+
+      it_behaves_like 'successful work item mutation with status widget'
+
+      context 'when current_status exists' do
+        let_it_be(:current_status) { create(:work_item_current_status, work_item: work_item) }
+
+        it_behaves_like 'successful work item mutation with status widget'
+
+        context 'when input is nil' do
+          let(:status_gid) { nil }
+          let(:status_id) { 1 } # status is unchanged because we cannot set status to nil
+
+          it_behaves_like 'successful work item mutation with status widget'
+        end
+      end
+
+      it_behaves_like 'work item status widget mutation rejects invalid inputs'
+    end
+  end
+
   def mutation_for(item)
     graphql_mutation(:workItemUpdate, input.merge('id' => item.to_global_id.to_s), fields)
   end

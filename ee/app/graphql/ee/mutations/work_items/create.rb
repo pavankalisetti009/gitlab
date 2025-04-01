@@ -37,6 +37,11 @@ module EE
             required: false,
             description: 'Input for linking an existing vulnerability to created work item.',
             experiment: { milestone: '17.9' }
+
+          argument :status_widget, ::Types::WorkItems::Widgets::StatusInputType,
+            required: false,
+            description: 'Input for status widget.',
+            experiment: { milestone: '17.11' }
         end
 
         override :raise_feature_not_available_error!
