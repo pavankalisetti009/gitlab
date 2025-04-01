@@ -96,6 +96,7 @@ module Gitlab
             if on_demand_scan_template.present?
               insert_stage_before_or_append(defined_stages, DEFAULT_ON_DEMAND_STAGE, ['.post'])
               merged_config.except!(*on_demand_scan_job_names).deep_merge!(on_demand_scan_template)
+              scan_execution_policy_context.collect_injected_job_names(on_demand_scan_job_names)
             end
           end
 
@@ -112,6 +113,8 @@ module Gitlab
               end
 
               merged_config.except!(*pipeline_scan_job_names).deep_merge!(pipeline_scan_template)
+
+              scan_execution_policy_context.collect_injected_job_names(pipeline_scan_job_names)
             end
           end
 

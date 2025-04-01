@@ -37,7 +37,8 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::SetBuildSources, feature_category: :
             build_double(name: "rspec", options: {}),
             build_double(name: "secret-detection-0", options: {}),
             build_double(name: "project_policy_job", options: { execution_policy_job: true }),
-            build_double(name: "secret-detection-1", options: { execution_policy_job: true })
+            build_double(name: "secret-detection-1", options: { execution_policy_job: true }),
+            build_double(name: "arbitrary-job-name", options: {})
           ])
         ]
       )
@@ -49,6 +50,10 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::SetBuildSources, feature_category: :
     end
 
     context 'with security policy' do
+      let(:scan_execution_context) do
+        instance_double(::Gitlab::Ci::Pipeline::ScanExecutionPolicies::PipelineContext)
+      end
+
       it 'sets correct build and pipeline source for jobs' do
         expected_sources = {
           "build" => pipeline.source,
@@ -56,17 +61,25 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::SetBuildSources, feature_category: :
           "rspec" => pipeline.source,
           "secret-detection-0" => "scan_execution_policy",
           "project_policy_job" => "pipeline_execution_policy",
-          "secret-detection-1" => "pipeline_execution_policy"
+          "secret-detection-1" => "pipeline_execution_policy",
+          "arbitrary-job-name" => "scan_execution_policy"
         }
 
-        # rubocop:disable RSpec/IteratedExpectation -- setting mock expectations individually
+        expect(command.pipeline_policy_context).to receive(:scan_execution_context)
+          .with(pipeline.source_ref_path)
+          .at_least(:once)
+          .and_return(scan_execution_context)
+
         pipeline_seed.stages.flat_map(&:statuses).each do |build|
+          allow(scan_execution_context).to receive(:job_injected?)
+            .with(build)
+            .and_return(expected_sources[build.name] == "scan_execution_policy")
+
           expect(build).to receive(:build_build_source).with(
             source: expected_sources[build.name],
             project_id: project.id
           )
         end
-        # rubocop:enable RSpec/IteratedExpectation
 
         perform
       end
@@ -89,7 +102,7 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::SetBuildSources, feature_category: :
   private
 
   def build_double(**args)
-    double = instance_double(::Ci::Build, **args)
+    double = instance_double(::Ci::Build, args[:name], **args)
     allow(double).to receive(:instance_of?).with(::Ci::Build).and_return(true)
     double
   end

@@ -13,6 +13,7 @@ module Gitlab
             @ref = ref
             @current_user = current_user
             @source = source
+            @injected_job_names = []
           end
 
           def has_scan_execution_policies?
@@ -28,6 +29,14 @@ module Gitlab
             return true unless has_scan_execution_policies?
 
             policies.all? { |policy| policy.skip_ci_allowed?(current_user&.id) }
+          end
+
+          def collect_injected_job_names(job_names)
+            @injected_job_names.concat(job_names.map(&:to_s))
+          end
+
+          def job_injected?(job)
+            @injected_job_names.include?(job.name)
           end
 
           private
