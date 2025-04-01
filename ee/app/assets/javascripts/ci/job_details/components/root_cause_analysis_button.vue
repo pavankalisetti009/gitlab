@@ -60,6 +60,7 @@ export default {
       sendDuoChatCommand({
         question: '/troubleshoot',
         resourceId: this.resourceId,
+        fromButton: true,
       });
     },
   },

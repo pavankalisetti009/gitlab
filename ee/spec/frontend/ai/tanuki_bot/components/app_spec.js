@@ -313,6 +313,38 @@ describeSkipVue3(skipReason, () => {
           threadId: null,
         });
       });
+
+      it('correctly handles fromButton parameter from global state', async () => {
+        createComponent({
+          glFeatures: { duoChatMultiThread: true },
+        });
+        await waitForPromises();
+
+        const onNewChatSpy = jest.spyOn(wrapper.vm, 'onNewChat');
+        const onSendChatPromptSpy = jest.spyOn(wrapper.vm, 'onSendChatPrompt');
+
+        duoChatGlobalState.commands = [
+          {
+            question: 'Button triggered question',
+            fromButton: true,
+          },
+        ];
+
+        duoChatGlobalState.isShown = true;
+        await findSubscriptions().vm.$emit('subscription-ready');
+        await nextTick();
+
+        expect(onNewChatSpy).toHaveBeenCalled();
+
+        expect(onSendChatPromptSpy).toHaveBeenCalledWith(
+          'Button triggered question',
+          undefined,
+          true,
+        );
+
+        onNewChatSpy.mockRestore();
+        onSendChatPromptSpy.mockRestore();
+      });
     });
   });
 
@@ -357,6 +389,32 @@ describeSkipVue3(skipReason, () => {
           expect(chatMutationHandlerMock).not.toHaveBeenCalled();
         },
       );
+
+      describe('from button functionality', () => {
+        it('resets chat state when fromButton is true with multi-thread enabled', () => {
+          createComponent({
+            glFeatures: { duoChatMultiThread: true },
+          });
+
+          const onNewChatSpy = jest.spyOn(wrapper.vm, 'onNewChat');
+          findDuoChat().vm.$emit('send-chat-prompt', 'Test message', {}, true);
+
+          expect(onNewChatSpy).toHaveBeenCalled();
+          onNewChatSpy.mockRestore();
+        });
+
+        it('does not reset chat state when fromButton is false with multi-thread enabled', () => {
+          createComponent({
+            glFeatures: { duoChatMultiThread: true },
+          });
+
+          const onNewChatSpy = jest.spyOn(wrapper.vm, 'onNewChat');
+          findDuoChat().vm.$emit('send-chat-prompt', 'Test message');
+
+          expect(onNewChatSpy).not.toHaveBeenCalled();
+          onNewChatSpy.mockRestore();
+        });
+      });
 
       it('does set loading to `true` for a message other than the reset or clear messages', () => {
         findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
@@ -998,6 +1056,16 @@ describeSkipVue3(skipReason, () => {
           expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), false);
           expect(duoChat.props('canceledRequestIds')).toEqual([]);
         });
+
+        it('clears duo chat commands when new chat is opened', async () => {
+          duoChatGlobalState.commands = [{ question: 'test command' }];
+          expect(duoChatGlobalState.commands).toHaveLength(1);
+
+          findDuoChat().vm.$emit('new-chat');
+          await nextTick();
+
+          expect(duoChatGlobalState.commands).toHaveLength(0);
+        });
       });
 
       describe('onBackToList', () => {
@@ -1125,6 +1193,20 @@ describeSkipVue3(skipReason, () => {
           await waitForPromises();
           expect(duoChat.props('activeThreadId')).toBe('');
           expect(duoChat.props('threadList')).toHaveLength(0);
+        });
+
+        it('does not auto-select thread when command is from button', async () => {
+          conversationThreadsQueryHandlerMock.mockResolvedValue(MOCK_THREADS_RESPONSE);
+
+          duoChatGlobalState.commands = [{ question: 'Button command', fromButton: true }];
+
+          createComponent({
+            glFeatures: { duoChatMultiThread: true },
+          });
+
+          await waitForPromises();
+
+          expect(wrapper.vm.activeThread).toBe(undefined);
         });
       });
     });

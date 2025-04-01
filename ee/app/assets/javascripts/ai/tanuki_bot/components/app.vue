@@ -113,8 +113,16 @@ export default {
         return data?.aiConversationThreads?.nodes || [];
       },
       async result() {
-        // Only auto-select if we don't have an active thread AND we're not in list view
-        if (this.multithreadedView === 'chat' && this.aiConversationThreads.length > 0) {
+        const isFromButton =
+          this.duoChatGlobalState.commands.length > 0 &&
+          Boolean(this.duoChatGlobalState.commands[0].fromButton);
+
+        // Only auto-select if we don't have an active thread AND we're not in list view AND chat was not opened by an external button
+        if (
+          this.multithreadedView === 'chat' &&
+          this.aiConversationThreads.length > 0 &&
+          !isFromButton
+        ) {
           const activeThreadId =
             this.activeThread || this.selectLatestThread(this.aiConversationThreads).id;
           await this.onThreadSelected({ id: activeThreadId });
@@ -208,8 +216,8 @@ export default {
       handler(flag) {
         if (flag) {
           this.$nextTick(() => {
-            const { question, variables } = this.duoChatGlobalState.commands[0];
-            this.onSendChatPrompt(question, variables);
+            const { question, variables, fromButton } = this.duoChatGlobalState.commands[0];
+            this.onSendChatPrompt(question, variables, fromButton);
           });
         }
       },
@@ -267,6 +275,7 @@ export default {
       }
     },
     onNewChat() {
+      clearDuoChatCommands();
       this.activeThread = undefined;
       this.setMessages([]);
       this.multithreadedView = DUO_CHAT_VIEWS.CHAT;
@@ -309,16 +318,23 @@ export default {
       performance.clearMeasures();
       this.isResponseTracked = true;
     },
-    onSendChatPrompt(question, variables = {}) {
+    onSendChatPrompt(question, variables = {}, fromButton = false) {
       const CHAT_RESET_COMMANDS = [
         GENIE_CHAT_NEW_MESSAGE,
         GENIE_CHAT_RESET_MESSAGE,
         GENIE_CHAT_CLEAR_MESSAGE,
       ];
 
-      if (this.glFeatures.duoChatMultiThread && CHAT_RESET_COMMANDS.includes(question)) {
+      // Create a new thread if chat is reset or request comes from button
+      if (
+        this.glFeatures.duoChatMultiThread &&
+        (CHAT_RESET_COMMANDS.includes(question) || fromButton)
+      ) {
         this.onNewChat();
-        return;
+
+        if (CHAT_RESET_COMMANDS.includes(question)) {
+          return;
+        }
       }
       performance.mark('prompt-sent');
       this.completedRequestId = null;
