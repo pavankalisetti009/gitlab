@@ -198,6 +198,18 @@ export const mockMemberRole = {
   __typename: 'MemberRole',
 };
 
+export const mockAdminRole = {
+  id: 2,
+  name: 'Admin role',
+  description: 'Admin role description',
+  createdAt: '2024-08-04T12:20:43Z',
+  editPath: 'role/path/2/edit',
+  detailsPath: 'role/path/2',
+  usersCount: 0,
+  enabledPermissions: { nodes: [{ value: 'C' }, { value: 'D' }] },
+  __typename: 'AdminMemberRole',
+};
+
 export const getMemberRoleQueryResponse = (memberRole = mockMemberRole) => ({
   data: { memberRole },
 });

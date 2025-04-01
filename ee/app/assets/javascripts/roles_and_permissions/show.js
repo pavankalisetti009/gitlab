@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
+import { parseBoolean } from '~/lib/utils/common_utils';
 import RoleDetails from './components/role_details/role_details.vue';
 
 Vue.use(VueApollo);
@@ -25,6 +26,7 @@ export const initRoleDetailsApp = () => {
         props: {
           roleId: el.dataset.id,
           listPagePath: el.dataset.listPagePath,
+          isAdminRole: parseBoolean(el.dataset.isAdminRole),
         },
       });
     },
