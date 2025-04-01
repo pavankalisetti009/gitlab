@@ -14,7 +14,7 @@ module Gitlab
         )
         USER_MESSAGE = Gitlab::Llm::Chain::Utils::Prompt.as_user(
           <<~PROMPT.chomp
-            First, you will be given a filename and the git diff of that file. This diff contains the changes made in the MR that you need to review.
+            First, you will be given a filename and a structured representation of the git diff for that file. This structured diff contains the changes made in the MR that you need to review.
 
             Here is the filename of the git diff:
 
@@ -32,11 +32,13 @@ module Gitlab
 
             1. Parse the git diff:
                - Each `<line>` tag inside of the `<git_diff>` tag represents a line in git diff
+               - The `type` attribute in `<line>` tag specifies whether the line is "context" (unchanged), "added", or "deleted"
                - `old_line` attribute in `<line>` tag represents the old line number before the change
                - `old_line` will be empty if the line is a newly added line
-               - `new_line` attribute  in `<line>` tag represents the new line number after the change
+               - `new_line` attribute in `<line>` tag represents the new line number after the change
                - `new_line` will be empty if the line is a deleted line
-               - Unchanged lines will have both `old_line` and `new_line`, but the line number may have changed if any changes were made above the line
+               - Context (unchanged) lines will have both `old_line` and `new_line`, but the line number may have changed if any changes were made above the line
+               - `<chunk_header>` tags may be present to indicate the location of changes in the file (e.g., "@@ -13,6 +16,7 @@")
 
             2. Analyze the changes carefully, strictly focus on the following criteria:
                - Code correctness and functionality
@@ -118,10 +120,27 @@ module Gitlab
           lines = Gitlab::Diff::Parser.new.parse(raw_diff.lines)
 
           lines.map do |line|
+            format_diff_line(line)
+          end.join("\n")
+        end
+
+        def format_diff_line(line)
+          if line.type == 'match'
+            %(<chunk_header>#{line.text}</chunk_header>)
+          else
             # NOTE: We are passing in diffs without the prefixes as the LLM seems to get confused sometimes and thinking
             # that's a part of the actual content.
-            %(<line old_line="#{line.old_line}" new_line="#{line.new_line}">#{line.text(prefix: false)}</line>)
-          end.join("\n")
+            text = line.text(prefix: false)
+            type = if line.added?
+                     'added'
+                   elsif line.removed?
+                     'deleted'
+                   else
+                     'context'
+                   end
+
+            %(<line type="#{type}" old_line="#{line.old_line}" new_line="#{line.new_line}">#{text}</line>)
+          end
         end
 
         attr_reader :new_path, :raw_diff, :hunk, :user
