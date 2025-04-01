@@ -22,7 +22,7 @@ module Geo
       end
 
       def data_type_title
-        _('File')
+        _('Blob')
       end
 
       def data_type_sort_order
