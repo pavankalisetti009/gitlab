@@ -68,6 +68,7 @@ module EE
         {
           group_id: @group.id.to_s,
           init_availability: @group.namespace_settings.duo_availability.to_s,
+          init_auto_review_enabled: @group.amazon_q_integration&.auto_review_enabled.present?,
           are_duo_settings_locked: @group.namespace_settings.duo_features_enabled_locked?,
           cascading_settings_data: cascading_namespace_settings_tooltip_raw_data(:duo_features_enabled, @group, method(:edit_group_path))
         }

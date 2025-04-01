@@ -48,6 +48,7 @@ module EE
       has_one :index_status, class_name: 'Elastic::GroupIndexStatus', foreign_key: :namespace_id, dependent: :destroy
       # rubocop:enable Cop/ActiveRecordDependent -- legacy usage
       has_one :google_cloud_platform_workload_identity_federation_integration, class_name: 'Integrations::GoogleCloudPlatform::WorkloadIdentityFederation'
+      has_one :amazon_q_integration, class_name: 'Integrations::AmazonQ'
       has_many :external_audit_event_destinations, class_name: "AuditEvents::ExternalAuditEventDestination", foreign_key: 'namespace_id'
       has_many :external_audit_event_streaming_destinations, class_name: "AuditEvents::Group::ExternalStreamingDestination", foreign_key: 'group_id'
       has_many :google_cloud_logging_configurations, class_name: "AuditEvents::GoogleCloudLoggingConfiguration",

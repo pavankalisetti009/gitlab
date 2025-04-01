@@ -15,6 +15,7 @@ module EE
             optional :extra_shared_runners_minutes_limit, type: Integer, desc: '(admin-only) Extra compute minutes quota for this group'
             optional :wiki_access_level, type: String, values: %w[disabled private enabled], desc: 'Wiki access level. One of `disabled`, `private` or `enabled`'
             optional :duo_availability, type: String, values: %w[default_on default_off never_on], desc: 'Duo availability. One of `default_on`, `default_off` or `never_on`'
+            optional :amazon_q_auto_review_enabled, type: ::Grape::API::Boolean, desc: 'Enable Amazon Q auto review for merge request'
             optional :experiment_features_enabled, type: ::Grape::API::Boolean, desc: 'Enable experiment features for this group'
             all_or_none_of :ldap_cn, :ldap_access
           end

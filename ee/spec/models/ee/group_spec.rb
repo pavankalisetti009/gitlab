@@ -22,6 +22,7 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     it { is_expected.to have_many(:allowed_email_domains) }
     it { is_expected.to have_many(:compliance_management_frameworks) }
     it { is_expected.to have_one(:google_cloud_platform_workload_identity_federation_integration) }
+    it { is_expected.to have_one(:amazon_q_integration) }
     it { is_expected.to have_one(:group_wiki_repository) }
     it { is_expected.to belong_to(:push_rule).inverse_of(:group) }
     it { is_expected.to have_many(:saml_group_links) }
