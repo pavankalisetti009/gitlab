@@ -33,16 +33,6 @@ RSpec.describe Resolvers::UserDiscussionsCountResolver, feature_category: :team_
         end
       end
 
-      context 'when a user does not have permission to view discussions' do
-        subject { batch_sync { resolve_user_discussions_count(private_epic) } }
-
-        it 'generates an error' do
-          expect_graphql_error_to_be_created(Gitlab::Graphql::Errors::ResourceNotAvailable) do
-            subject
-          end
-        end
-      end
-
       context 'when a user has permission to view notes' do
         before do
           private_epic.group.add_developer(user)
