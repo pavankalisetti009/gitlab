@@ -14,6 +14,7 @@ import {
   GlTruncate,
 } from '@gitlab/ui';
 import { cloneDeep, omit } from 'lodash';
+import { isValidURL } from '~/lib/utils/url_utility';
 import { s__, __, sprintf } from '~/locale';
 import {
   requirementDefaultValidationState,
@@ -55,9 +56,13 @@ export default {
   data() {
     return {
       requirementData: null,
-      validation: { ...requirementDefaultValidationState },
+      validation: {
+        ...requirementDefaultValidationState,
+      },
       controls: [],
       searchQuery: '',
+      controlValidation: {},
+      validationWatchersRegistered: false,
     };
   },
   computed: {
@@ -101,7 +106,6 @@ export default {
         },
       };
     },
-
     canAddControl() {
       return this.controls.length < maxControlsNumber;
     },
@@ -157,20 +161,113 @@ export default {
       } else {
         this.controls = [null];
       }
+      this.controlValidation = {};
     },
     validateField(key) {
+      if (key === 'externalUrl') {
+        const hasValidUrl = this.controls.every((control) => {
+          if (control?.controlType === 'external') {
+            return isValidURL(control.externalUrl);
+          }
+          return true;
+        });
+        this.validation.externalUrl = hasValidUrl;
+        return;
+      }
+
+      if (key === 'secretToken') {
+        const hasValidToken = this.controls.every(
+          (control) => control?.controlType !== 'external' || control.secretToken.trim(),
+        );
+        this.validation.secretToken = hasValidToken;
+        return;
+      }
+
       this.validation[key] = Boolean(this.requirementData[key]);
     },
+    validateControl(control) {
+      if (!control) return true;
+
+      const validations = {
+        internal: () => true,
+        external: () => {
+          const urlValid = isValidURL(control.externalUrl);
+          const secretValid = Boolean(control.secretToken?.trim());
+          return { isValid: urlValid && secretValid, urlValid, secretValid };
+        },
+      };
+
+      const validator = validations[control.controlType];
+      return validator ? validator() : true;
+    },
+    validateExternalControl(control, index) {
+      if (!control || control.controlType !== 'external') {
+        return true;
+      }
+
+      const validation = this.validateControl(control);
+      this.controlValidation[index] = {
+        externalUrl: validation.urlValid,
+        secretToken: validation.secretValid,
+      };
+
+      return validation.isValid;
+    },
     validateForm() {
-      Object.keys(this.validation).forEach(this.validateField);
+      const requirementValidation = {
+        name: Boolean(this.requirementData.name?.trim()),
+        description: Boolean(this.requirementData.description?.trim()),
+      };
+
+      const controlsValidation = this.controls.map((control, index) => {
+        const validation = this.validateControl(control);
+        if (typeof validation === 'object') {
+          this.controlValidation[index] = {
+            externalUrl: validation.urlValid,
+            secretToken: validation.secretValid,
+          };
+          return validation.isValid;
+        }
+        return validation;
+      });
+
+      this.validation = {
+        ...requirementValidation,
+        controls: controlsValidation.every(Boolean),
+      };
+
+      return Object.values(this.validation).every(Boolean);
     },
     removeTypename(obj) {
       const { __typename, ...rest } = obj;
       return rest;
     },
     handleSubmit(event) {
-      this.validateForm();
-      if (this.isFormValid) {
+      if (!this.validationWatchersRegistered) {
+        this.$watch(
+          'controls',
+          () => {
+            this.controls.forEach((control, index) => {
+              if (control?.controlType === 'external') {
+                this.validateExternalControl(control, index);
+              }
+            });
+          },
+          { deep: true },
+        );
+
+        this.$watch('requirementData.name', () => {
+          this.validation.name = Boolean(this.requirementData.name);
+        });
+
+        this.$watch('requirementData.description', () => {
+          this.validation.description = Boolean(this.requirementData.description);
+        });
+
+        this.validationWatchersRegistered = true;
+      }
+
+      if (this.validateForm()) {
         const stagedControls = this.controls
           .map((control) => {
             if (!control) return null;
@@ -222,12 +319,19 @@ export default {
     },
     addControl(type = 'internal') {
       if (this.canAddControl) {
+        const newIndex = this.controls.length;
         this.controls.push({
           controlType: type,
           externalUrl: '',
           secretToken: '',
           name: type === 'external' ? 'external_control' : '',
         });
+        if (type === 'external') {
+          this.controlValidation[newIndex] = {
+            externalUrl: false,
+            secretToken: false,
+          };
+        }
       }
     },
     addExternalControl() {
@@ -256,6 +360,16 @@ export default {
     isExternalControl(control) {
       return control?.controlType === 'external';
     },
+    controlInputState(index, field) {
+      return !(
+        this.validationWatchersRegistered &&
+        this.controlValidation[index] &&
+        !this.controlValidation[index][field]
+      );
+    },
+    requirementInputState(field) {
+      return !this.validationWatchersRegistered || this.validation[field];
+    },
   },
   requirementsDocsUrl,
   i18n: {
@@ -274,7 +388,7 @@ export default {
     descriptionInputInvalid: s__('ComplianceFrameworks|Description is required'),
     addControl: s__('ComplianceFrameworks|Add a GitLab control'),
     addExternalControl: s__('ComplianceFrameworks|Add an external control'),
-    toggleText: s__('ComplianceFrameworks|Choose a standard control'),
+    toggleText: s__('ComplianceFrameworks|Choose a GitLab control'),
     externalControl: s__('ComplianceFrameworks|External control'),
     removeControl: s__('ComplianceFrameworks|Remove control'),
     externalUrlLabel: s__('ComplianceFrameworks|External URL'),
@@ -283,6 +397,8 @@ export default {
     secretDescription: s__(
       'ComplianceFrameworks|Provide a shared secret to be used when sending a request for an external check to authenticate request using HMAC.',
     ),
+    invalidUrlError: s__('ComplianceFrameworks|Please enter a valid URL'),
+    secretTokenRequired: s__('ComplianceFrameworks|Secret token is required'),
   },
 };
 </script>
@@ -301,7 +417,7 @@ export default {
       :label="$options.i18n.nameInput"
       label-for="name-input"
       :invalid-feedback="$options.i18n.nameInputInvalid"
-      :state="validation.name"
+      :state="requirementInputState('name')"
       data-testid="name-input-group"
     >
       <gl-form-input
@@ -315,7 +431,7 @@ export default {
     <gl-form-group
       :label="$options.i18n.descriptionInput"
       :invalid-feedback="$options.i18n.descriptionInputInvalid"
-      :state="validation.description"
+      :state="requirementInputState('description')"
       data-testid="description-input-group"
     >
       <gl-form-textarea
@@ -339,42 +455,63 @@ export default {
     <div
       v-for="(control, index) in controls"
       :key="index"
-      class="gl-mb-3 gl-flex gl-justify-between gl-rounded-base gl-bg-gray-10 gl-p-3"
+      class="gl-mb-3 gl-flex gl-items-start gl-justify-between gl-rounded-base gl-bg-gray-10 gl-p-3"
     >
       <div class="gl-flex-grow-1 gl-mr-3 gl-w-full">
         <template v-if="isExternalControl(control)">
-          <gl-form-input-group class="">
-            <template #prepend>
-              <gl-input-group-text>
-                <gl-truncate :text="$options.i18n.externalUrlLabel" position="middle" />
-              </gl-input-group-text>
+          <gl-form-group
+            :label="$options.i18n.externalUrlLabel"
+            label-sr-only="true"
+            :invalid-feedback="$options.i18n.invalidUrlError"
+            :state="controlInputState(index, 'externalUrl')"
+            :data-testid="`external-url-input-group-${index}`"
+          >
+            <gl-form-input-group>
+              <template #prepend>
+                <gl-input-group-text>
+                  <gl-truncate :text="$options.i18n.externalUrlLabel" position="middle" />
+                </gl-input-group-text>
+              </template>
+              <gl-form-input
+                v-model="control.externalUrl"
+                type="url"
+                :data-testid="`external-url-input-${index}`"
+                class="gl-w-full"
+              />
+            </gl-form-input-group>
+            <template #description>
+              <div class="gl-text-sm">
+                {{ $options.i18n.externalUrlDescription }}
+              </div>
             </template>
-            <gl-form-input
-              v-model="control.externalUrl"
-              type="url"
-              :data-testid="`external-url-input-${index}`"
-              class="gl-w-full"
-            />
-          </gl-form-input-group>
-          <p class="gl-mb-0 gl-mt-2 gl-text-sm gl-text-gray-500">
-            {{ $options.i18n.externalUrlDescription }}
-          </p>
+          </gl-form-group>
 
-          <gl-form-input-group class="gl-mt-3">
-            <template #prepend>
-              <gl-input-group-text>
-                <gl-truncate :text="$options.i18n.secretLabel" position="middle" />
-              </gl-input-group-text>
+          <gl-form-group
+            :label="$options.i18n.secretLabel"
+            label-sr-only="true"
+            :invalid-feedback="$options.i18n.secretTokenRequired"
+            :state="controlInputState(index, 'secretToken')"
+            class="gl-mt-3"
+            :data-testid="`external-secret-input-group-${index}`"
+          >
+            <gl-form-input-group>
+              <template #prepend>
+                <gl-input-group-text>
+                  <gl-truncate :text="$options.i18n.secretLabel" position="middle" />
+                </gl-input-group-text>
+              </template>
+              <gl-form-input
+                v-model="control.secretToken"
+                type="password"
+                :data-testid="`external-secret-input-${index}`"
+              />
+            </gl-form-input-group>
+            <template #description>
+              <div class="gl-text-sm">
+                {{ $options.i18n.secretDescription }}
+              </div>
             </template>
-            <gl-form-input
-              v-model="control.secretToken"
-              type="password"
-              :data-testid="`external-secret-input-${index}`"
-            />
-          </gl-form-input-group>
-          <p class="gl-mb-0 gl-mt-2 gl-text-sm gl-text-gray-500">
-            {{ $options.i18n.secretDescription }}
-          </p>
+          </gl-form-group>
         </template>
         <gl-collapsible-listbox
           v-else
@@ -408,7 +545,6 @@ export default {
     />
     <div ref="addControlBtn" class="gl-inline-block">
       <gl-button
-        size="small"
         category="secondary"
         variant="confirm"
         class="gl-mt-3 gl-block"
@@ -422,9 +558,7 @@ export default {
 
     <div ref="addExternalControlBtn" class="gl-ml-3 gl-inline-block">
       <gl-button
-        size="small"
         category="secondary"
-        variant="confirm"
         class="gl-mt-3 gl-block"
         data-testid="add-external-control-button"
         :disabled="!canAddControl"

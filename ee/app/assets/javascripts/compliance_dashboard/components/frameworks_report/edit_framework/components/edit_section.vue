@@ -116,12 +116,10 @@ export default {
         :aria-expanded="isExpanded"
       />
     </div>
-    <gl-collapse
-      :id="$options.collapseId"
-      :visible="isExpanded"
-      class="gl-bg-subtle gl-px-5 gl-py-6"
-    >
-      <slot></slot>
+    <gl-collapse :id="$options.collapseId" :visible="isExpanded" class="gl-bg-subtle">
+      <div class="gl-px-5 gl-py-6">
+        <slot></slot>
+      </div>
     </gl-collapse>
   </div>
 </template>

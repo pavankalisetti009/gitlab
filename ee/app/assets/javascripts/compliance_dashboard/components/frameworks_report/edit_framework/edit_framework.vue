@@ -88,7 +88,11 @@ export default {
           const { complianceRequirements, ...rest } = complianceFramework;
           this.formData = { ...rest };
           this.requirements = complianceRequirements?.nodes
-            ? [...complianceRequirements.nodes]
+            ? [...complianceRequirements.nodes].sort((a, b) => {
+                const idA = getIdFromGraphQLId(a.id);
+                const idB = getIdFromGraphQLId(b.id);
+                return Number(idA) - Number(idB);
+              })
             : [];
           this.originalName = complianceFramework.name;
           const policyBlob =

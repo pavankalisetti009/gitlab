@@ -234,7 +234,15 @@ describe('RequirementModal', () => {
       expect(findDescriptionInputGroup().attributes('state')).toBe('true');
     });
 
-    it('emits save event with requirement data', async () => {
+    it('validates that name and description cannot be empty strings', async () => {
+      await fillForm(' ', ' ');
+      submitModalForm();
+      await waitForPromises();
+      expect(findNameInputGroup().attributes('state')).toBeUndefined();
+      expect(findDescriptionInputGroup().attributes('state')).toBeUndefined();
+    });
+
+    it('emits save event with requirement data when form is valid', async () => {
       const name = 'Test Name';
       const description = 'Test Description';
       await fillForm(name, description);
@@ -336,6 +344,124 @@ describe('RequirementModal', () => {
       }
 
       expect(findAddExternalControlButton().attributes('disabled')).toBeDefined();
+    });
+
+    describe('External Control Validations', () => {
+      beforeEach(() => {
+        createComponent();
+      });
+
+      const findExternalUrlInputGroup = (index) =>
+        wrapper.findByTestId(`external-url-input-group-${index}`);
+      const findExternalSecretInputGroup = (index) =>
+        wrapper.findByTestId(`external-secret-input-group-${index}`);
+
+      it.each([' ', 'not-a-url', 'api.example.com', 'ftp://api.example.com'])(
+        'flags %s as an invalid URL',
+        async (value) => {
+          await findAddExternalControlButton().vm.$emit('click');
+          await nextTick();
+
+          await findExternalUrlInput(1).vm.$emit('input', value);
+          await fillForm('Test Name', 'Test Description');
+          submitModalForm();
+          await waitForPromises();
+          await nextTick();
+
+          expect(findExternalUrlInput(1).attributes('state')).toBeUndefined();
+          expect(wrapper.emitted(requirementEvents.create)).toBeUndefined();
+        },
+      );
+
+      it.each(['https://api.example.com', 'https://api.example.com'])(
+        'flags %s as a valid URL',
+        async (value) => {
+          await findAddExternalControlButton().vm.$emit('click');
+          await nextTick();
+
+          await findExternalUrlInput(1).vm.$emit('input', value);
+          await fillForm('Test Name', 'Test Description');
+          submitModalForm();
+          await waitForPromises();
+          await nextTick();
+
+          expect(findExternalUrlInputGroup(1).attributes('state')).toBe('true');
+        },
+      );
+
+      it('validates secret token is not empty', async () => {
+        await findAddExternalControlButton().vm.$emit('click');
+        await nextTick();
+
+        await findExternalUrlInput(1).vm.$emit('input', 'https://api.example.com');
+        await findExternalSecretInput(1).vm.$emit('input', '');
+        await fillForm('Test Name', 'Test Description');
+        submitModalForm();
+        await waitForPromises();
+        await nextTick();
+
+        expect(findExternalSecretInput(1).attributes('state')).toBeUndefined();
+        expect(wrapper.emitted(requirementEvents.create)).toBeUndefined();
+
+        await findExternalSecretInput(1).vm.$emit('input', 'secret123');
+        submitModalForm();
+        await waitForPromises();
+        await nextTick();
+
+        expect(findExternalSecretInputGroup(1).attributes('state')).toBe('true');
+      });
+
+      it('flags multiple external controls as invalid if any are invalid', async () => {
+        await findAddExternalControlButton().vm.$emit('click');
+        await findAddExternalControlButton().vm.$emit('click');
+        await nextTick();
+
+        await findExternalUrlInput(1).vm.$emit('input', 'https://api1.example.com');
+        await findExternalSecretInput(1).vm.$emit('input', 'secret1');
+
+        await findExternalUrlInput(2).vm.$emit('input', 'not-a-url');
+        await findExternalSecretInput(2).vm.$emit('input', 'secret2');
+
+        await fillForm('Test Name', 'Test Description');
+        submitModalForm();
+        await waitForPromises();
+        await nextTick();
+
+        expect(findExternalUrlInputGroup(1).attributes('state')).toBe('true');
+        expect(findExternalUrlInputGroup(2).attributes('state')).toBeUndefined();
+        expect(wrapper.emitted(requirementEvents.create)).toBeUndefined();
+      });
+
+      it('flags multiple external controls as valid if all are valid', async () => {
+        await findAddExternalControlButton().vm.$emit('click');
+        await findAddExternalControlButton().vm.$emit('click');
+        await nextTick();
+
+        await findExternalUrlInput(1).vm.$emit('input', 'https://api1.example.com');
+        await findExternalSecretInput(1).vm.$emit('input', 'secret1');
+
+        await findExternalUrlInput(2).vm.$emit('input', 'https://api2.example.com');
+        await findExternalSecretInput(2).vm.$emit('input', 'secret2');
+
+        await fillForm('Test Name', 'Test Description');
+        submitModalForm();
+        await waitForPromises();
+        await nextTick();
+
+        expect(findExternalUrlInputGroup(1).attributes('state')).toBe('true');
+        expect(findExternalUrlInputGroup(2).attributes('state')).toBe('true');
+        expect(wrapper.emitted(requirementEvents.create)).toBeDefined();
+      });
+
+      it('validates internal controls are valid', async () => {
+        await addControl('scanner_sast_running');
+        await fillForm('Test Name', 'Test Description');
+        submitModalForm();
+        await waitForPromises();
+        await nextTick();
+
+        expect(wrapper.emitted(requirementEvents.create)).toBeDefined();
+      });
     });
   });
 
