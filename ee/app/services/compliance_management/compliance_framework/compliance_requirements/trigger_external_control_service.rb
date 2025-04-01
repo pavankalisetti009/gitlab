@@ -29,25 +29,10 @@ module ComplianceManagement
         private
 
         def mark_compliance_status_pending!
-          @project_control_compliance_status = create_or_find_project_control_compliance_status
+          @project_control_compliance_status = ComplianceManagement::ComplianceFramework::ProjectControlComplianceStatus
+                                                 .create_or_find_for_project_and_control(project, control)
 
           @project_control_compliance_status.pending!
-        end
-
-        def create_or_find_project_control_compliance_status
-          ComplianceManagement::ComplianceFramework::ProjectControlComplianceStatus
-                                                .for_project_and_control(project.id, control.id).last ||
-            ComplianceManagement::ComplianceFramework::ProjectControlComplianceStatus.create!(attributes)
-        end
-
-        def attributes
-          {
-            compliance_requirements_control_id: control.id,
-            project_id: project.id,
-            namespace_id: project.namespace_id,
-            compliance_requirement_id: control.compliance_requirement.id,
-            status: :pending
-          }
         end
 
         def send_external_request
