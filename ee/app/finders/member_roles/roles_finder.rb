@@ -82,7 +82,6 @@ module MemberRoles
 
     # This is used by the AllRolesFinder and AdminRolesFinder subclasses.
     def can_return_admin_roles?
-      return false if gitlab_com_subscription?
       return false if Feature.disabled?(:custom_admin_roles, :instance)
 
       current_user.can?(:read_admin_member_role)
