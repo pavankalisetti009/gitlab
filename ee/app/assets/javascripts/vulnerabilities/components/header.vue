@@ -285,6 +285,7 @@ export default {
       sendDuoChatCommand({
         question: '/vulnerability_explain',
         resourceId: this.vulnerabilityGraphqlId,
+        fromButton: true,
       });
     },
     resolveVulnerability() {
