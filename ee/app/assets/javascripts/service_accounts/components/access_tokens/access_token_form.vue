@@ -14,7 +14,7 @@ import { formValidators } from '@gitlab/ui/dist/utils';
 import { mapActions, mapState } from 'pinia';
 import MaxExpirationDateMessage from 'ee/access_tokens/components/max_expiration_date_message.vue';
 import { helpPagePath } from '~/helpers/help_page_helper';
-import { formatDate } from '~/lib/utils/datetime_utility';
+import { toISODateFormat } from '~/lib/utils/datetime_utility';
 import { __, s__ } from '~/locale';
 
 import { useAccessTokens } from '../../stores/access_tokens';
@@ -36,6 +36,11 @@ export default {
   inject: ['accessTokenMaxDate', 'accessTokenMinDate'],
   data() {
     const maxDate = this.accessTokenMaxDate ? new Date(this.accessTokenMaxDate) : null;
+    if (maxDate) {
+      this.$options.fields.expiresAt.validators.push(
+        formValidators.required(s__('AccessTokens|Expiration date is required.')),
+      );
+    }
     const minDate = new Date(this.accessTokenMinDate);
     const expiresAt = defaultDate(maxDate);
     return { maxDate, minDate, values: { expiresAt } };
@@ -52,7 +57,7 @@ export default {
       this.setShowCreateForm(false);
     },
     submit() {
-      const expiresAt = formatDate(this.values.expiresAt, 'yyyy-mm-dd');
+      const expiresAt = this.values.expiresAt ? toISODateFormat(this.values.expiresAt) : null;
       this.createToken({ ...this.values, expiresAt });
     },
   },
@@ -142,7 +147,7 @@ export default {
     },
     expiresAt: {
       label: s__('AccessTokens|Expiration date'),
-      validators: [formValidators.required(s__('AccessTokens|Expiration date is required.'))],
+      validators: [],
     },
     scopes: {
       label: s__('AccessTokens|Select scopes'),

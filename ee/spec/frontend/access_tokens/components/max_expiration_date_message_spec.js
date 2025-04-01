@@ -23,7 +23,7 @@ describe('MaxExpirationDateMessage', () => {
 
     it('renders max date expiration message', () => {
       expect(wrapper.text()).toContain(
-        `An Administrator has set the maximum expiration date to ${date}`,
+        `An administrator has set the maximum expiration date to ${date}`,
       );
     });
   });
@@ -33,8 +33,8 @@ describe('MaxExpirationDateMessage', () => {
       createComponent({});
     });
 
-    it('does not render anything', () => {
-      expect(wrapper.text()).toBe('');
+    it('renders message about token creation without expiration date', () => {
+      expect(wrapper.text()).toBe('Clear the date to create access tokens without expiration.');
     });
   });
 });

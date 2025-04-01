@@ -110,6 +110,14 @@ module EE
       end
     end
 
+    def expires_at_for_service_access_tokens(enforce_expiration)
+      return expires_at_field_data if enforce_expiration
+
+      {
+        min_date: 1.day.from_now.iso8601
+      }
+    end
+
     def admin_service_accounts_data
       {
         base_path: admin_application_settings_service_accounts_path,
@@ -121,11 +129,13 @@ module EE
           delete_path: expose_url(api_v4_users_path)
         },
         access_token: {
-          **expires_at_field_data,
-          create: expose_url(api_v4_users_personal_access_tokens_path(user_id: ':id')),
-          revoke: expose_url(api_v4_personal_access_tokens_path),
-          rotate: expose_url(api_v4_personal_access_tokens_path),
-          show: expose_url(api_v4_personal_access_tokens_path)
+          **expires_at_for_service_access_tokens(
+            ::Gitlab::CurrentSettings.current_application_settings.service_access_tokens_expiration_enforced
+          ),
+          create: api_v4_users_personal_access_tokens_path(user_id: ':id'),
+          revoke: api_v4_personal_access_tokens_path,
+          rotate: api_v4_personal_access_tokens_path,
+          show: api_v4_personal_access_tokens_path
         }
       }
     end
@@ -141,11 +151,11 @@ module EE
           delete_path: expose_url(api_v4_groups_service_accounts_path(id: group.id))
         },
         access_token: {
-          **expires_at_field_data,
-          create: expose_url(api_v4_groups_service_accounts_personal_access_tokens_path(id: group.id, user_id: ':id')),
-          revoke: expose_url(api_v4_groups_service_accounts_personal_access_tokens_path(id: group.id, user_id: ':id')),
-          rotate: expose_url(api_v4_groups_service_accounts_personal_access_tokens_path(id: group.id, user_id: ':id')),
-          show: expose_url(api_v4_personal_access_tokens_path)
+          **expires_at_for_service_access_tokens(group.namespace_settings.service_access_tokens_expiration_enforced),
+          create: api_v4_groups_service_accounts_personal_access_tokens_path(id: group.id, user_id: ':id'),
+          revoke: api_v4_groups_service_accounts_personal_access_tokens_path(id: group.id, user_id: ':id'),
+          rotate: api_v4_groups_service_accounts_personal_access_tokens_path(id: group.id, user_id: ':id'),
+          show: api_v4_groups_service_accounts_personal_access_tokens_path(id: group.id, user_id: ':id')
         }
       }
     end

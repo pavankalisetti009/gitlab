@@ -1,16 +1,10 @@
 <script>
 import { GlSprintf, GlLink } from '@gitlab/ui';
 
-import { __ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { formatDate } from '~/lib/utils/datetime_utility';
 
 export default {
-  i18n: {
-    message: __(
-      'An Administrator has set the maximum expiration date to %{maxDate}. %{helpLinkStart}Learn more%{helpLinkEnd}.',
-    ),
-  },
   components: { GlSprintf, GlLink },
   props: {
     maxDate: {
@@ -21,10 +15,6 @@ export default {
   },
   computed: {
     formattedMaxDate() {
-      if (!this.maxDate) {
-        return '';
-      }
-
       return formatDate(this.maxDate, 'isoDate');
     },
   },
@@ -34,7 +24,13 @@ export default {
 
 <template>
   <span v-if="maxDate">
-    <gl-sprintf :message="$options.i18n.message">
+    <gl-sprintf
+      :message="
+        __(
+          'An administrator has set the maximum expiration date to %{maxDate}. %{helpLinkStart}Learn more%{helpLinkEnd}.',
+        )
+      "
+    >
       <template #maxDate>{{ formattedMaxDate }}</template>
       <template #helpLink="{ content }"
         ><gl-link
@@ -49,5 +45,8 @@ export default {
         ></template
       >
     </gl-sprintf>
+  </span>
+  <span v-else>
+    {{ __('Clear the date to create access tokens without expiration.') }}
   </span>
 </template>
