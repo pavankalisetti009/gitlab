@@ -79,7 +79,7 @@ module Namespaces
       end
 
       def secondary_cta
-        return if current_page?(group_billings_path(namespace))
+        return if current_page?(group_billings_path(namespace)) || current_page?(group_group_members_path(namespace))
 
         render Pajamas::ButtonComponent.new(href: group_billings_path(namespace)) do
           s_('UnlimitedMembersDuringTrialAlert|Explore paid plans')

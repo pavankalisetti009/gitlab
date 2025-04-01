@@ -120,5 +120,19 @@ RSpec.describe Namespaces::FreeUserCap::UnlimitedMembersDuringTrialAlertComponen
           .not_to have_link('Explore paid plans', href: group_billings_path(namespace), class: 'gl-button-default')
       end
     end
+
+    context 'when on the group members invite page' do
+      before do
+        allow(component).to receive(:current_page?).with(group_billings_path(namespace)).and_return(false)
+        allow(component).to receive(:current_page?).with(group_group_members_path(namespace)).and_return(true)
+      end
+
+      it 'does not render the secondary CTA' do
+        render_inline(component)
+
+        expect(page)
+          .not_to have_link('Explore paid plans', href: group_billings_path(namespace), class: 'gl-button-default')
+      end
+    end
   end
 end
