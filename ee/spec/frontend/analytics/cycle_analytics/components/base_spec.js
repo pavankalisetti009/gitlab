@@ -1,8 +1,6 @@
 import { GlEmptyState, GlLoadingIcon } from '@gitlab/ui';
-import { shallowMount, mount } from '@vue/test-utils';
-import axios from 'axios';
-import MockAdapter from 'axios-mock-adapter';
-import Vue, { nextTick } from 'vue';
+import { shallowMount } from '@vue/test-utils';
+import Vue from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
 import Component from 'ee/analytics/cycle_analytics/components/base.vue';
@@ -11,11 +9,7 @@ import TypeOfWorkChartsLoader from 'ee/analytics/cycle_analytics/components/task
 import ValueStreamSelect from 'ee/analytics/cycle_analytics/components/value_stream_select.vue';
 import ValueStreamAggregationStatus from 'ee/analytics/cycle_analytics/components/value_stream_aggregation_status.vue';
 import ValueStreamEmptyState from 'ee/analytics/cycle_analytics/components/value_stream_empty_state.vue';
-import * as actions from 'ee/analytics/cycle_analytics/store/actions';
-import * as getters from 'ee/analytics/cycle_analytics/store/getters';
-import mutations from 'ee/analytics/cycle_analytics/store/mutations';
-import state from 'ee/analytics/cycle_analytics/store/state';
-import waitForPromises from 'helpers/wait_for_promises';
+import { OVERVIEW_STAGE_CONFIG } from 'ee/analytics/cycle_analytics/constants';
 import {
   currentGroup,
   groupNamespace as namespace,
@@ -23,180 +17,101 @@ import {
   createdBefore,
   createdAfter,
   initialPaginationQuery,
-  selectedProjects as rawSelectedProjects,
 } from 'jest/analytics/cycle_analytics/mock_data';
-import filters from '~/vue_shared/components/filtered_search_bar/store/modules/filters';
 import ValueStreamMetrics from '~/analytics/shared/components/value_stream_metrics.vue';
+import { OVERVIEW_STAGE_ID } from '~/analytics/cycle_analytics/constants';
 import { toYmd } from '~/analytics/shared/utils';
 import PathNavigation from '~/analytics/cycle_analytics/components/path_navigation.vue';
 import StageTable from '~/analytics/cycle_analytics/components/stage_table.vue';
 import ValueStreamFilters from '~/analytics/cycle_analytics/components/value_stream_filters.vue';
-import {
-  OVERVIEW_STAGE_ID,
-  I18N_VSA_ERROR_STAGES,
-  I18N_VSA_ERROR_STAGE_MEDIAN,
-  I18N_VSA_ERROR_SELECTED_STAGE,
-} from '~/analytics/cycle_analytics/constants';
-import { createAlert } from '~/alert';
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import * as commonUtils from '~/lib/utils/common_utils';
-import {
-  HTTP_STATUS_FORBIDDEN,
-  HTTP_STATUS_NOT_FOUND,
-  HTTP_STATUS_OK,
-} from '~/lib/utils/http_status';
-import * as urlUtils from '~/lib/utils/url_utility';
 import UrlSync from '~/vue_shared/components/url_sync.vue';
 import {
   valueStreams,
-  endpoints,
   customizableStagesAndEvents,
   issueStage,
-  issueEvents,
-  groupLabels,
-  tasksByTypeData,
   aggregationData,
 } from '../mock_data';
 
-const noDataSvgPath = 'path/to/no/data';
-const noAccessSvgPath = 'path/to/no/access';
-const emptyStateSvgPath = 'path/to/empty/state';
-const stage = null;
-
 Vue.use(Vuex);
-jest.mock('~/alert');
-
-const defaultStubs = {
-  'tasks-by-type-chart': true,
-  'labels-selector': true,
-  DurationChartLoader: true,
-  ValueStreamSelect: true,
-  Metrics: true,
-  UrlSync,
-};
-
-const [selectedValueStream] = valueStreams;
-const selectedProjects = rawSelectedProjects.map(({ pathWithNamespace: fullPath, ...rest }) => ({
-  ...rest,
-  fullPath,
-}));
-const initialCycleAnalyticsState = {
-  selectedValueStream,
-  createdAfter,
-  createdBefore,
-  groupPath: currentGroup.fullPath,
-  stage,
-  aggregation: aggregationData,
-  namespace,
-  enableProjectsFilter: true,
-  enableCustomizableStages: true,
-};
-
-const mocks = {
-  $toast: {
-    show: jest.fn(),
-  },
-  $apollo: {
-    query: jest.fn().mockResolvedValue({
-      data: { group: { projects: { nodes: [] } } },
-    }),
-  },
-};
-
-function mockRequiredRoutes(mockAdapter, { selectedStageEvents = issueEvents, page = 1 } = {}) {
-  mockAdapter
-    .onGet(endpoints.stageData)
-    .reply(HTTP_STATUS_OK, selectedStageEvents, { 'x-page': page });
-  mockAdapter.onGet(endpoints.tasksByTypeTopLabelsData).reply(HTTP_STATUS_OK, groupLabels);
-  mockAdapter.onGet(endpoints.tasksByTypeData).reply(HTTP_STATUS_OK, { ...tasksByTypeData });
-  mockAdapter
-    .onGet(endpoints.baseStagesEndpoint)
-    .reply(HTTP_STATUS_OK, { ...customizableStagesAndEvents });
-  mockAdapter
-    .onGet(endpoints.durationData)
-    .reply(HTTP_STATUS_OK, customizableStagesAndEvents.stages);
-  mockAdapter.onGet(endpoints.stageMedian).reply(HTTP_STATUS_OK, { value: null });
-  mockAdapter.onGet(endpoints.valueStreamData).reply(HTTP_STATUS_OK, valueStreams);
-}
-
-async function shouldMergeUrlParams(wrapper, result) {
-  await nextTick();
-  expect(urlUtils.mergeUrlParams).toHaveBeenCalledWith(result, window.location.href, {
-    spreadArrays: true,
-  });
-  expect(commonUtils.historyPushState).toHaveBeenCalled();
-}
 
 describe('EE Value Stream Analytics component', () => {
   let wrapper;
-  let mock;
-  let store;
 
-  async function createComponent(options = {}) {
-    const {
-      opts = {
-        stubs: defaultStubs,
+  const [selectedValueStream] = valueStreams;
+  const noAccessSvgPath = 'path/to/no/access';
+  const emptyStateSvgPath = 'path/to/empty/state';
+
+  const setSelectedProjects = jest.fn();
+  const setSelectedStage = jest.fn();
+  const setDefaultSelectedStage = jest.fn();
+  const setDateRange = jest.fn();
+  const setPredefinedDateRange = jest.fn();
+  const updateStageTablePagination = jest.fn();
+
+  const createWrapper = ({ props = {}, state = {}, getters = {}, actions = {} } = {}) => {
+    const store = new Vuex.Store({
+      actions: {
+        setSelectedProjects,
+        setSelectedStage,
+        setDefaultSelectedStage,
+        setDateRange,
+        setPredefinedDateRange,
+        updateStageTablePagination,
+        ...actions,
       },
-      shallow = true,
-      withStageSelected = false,
-      features = {},
-      initialState = initialCycleAnalyticsState,
-      initializeStore = true,
-      stateOverrides = {},
-      props = {},
-      selectedStage = null,
-    } = options;
-
-    store = new Vuex.Store({
-      actions,
-      getters,
-      mutations,
+      getters: {
+        hasNoAccessError: () => false,
+        namespaceRestApiRequestPath: () => 'namespace/path',
+        activeStages: () => customizableStagesAndEvents.stages,
+        selectedProjectIds: () => [],
+        cycleAnalyticsRequestParams: () => ({}),
+        pathNavigationData: () => [],
+        isOverviewStageSelected: ({ selectedStage }) => selectedStage?.id === OVERVIEW_STAGE_ID,
+        selectedStageCount: () => 0,
+        hasValueStreams: () => true,
+        isProjectNamespace: () => false,
+        ...getters,
+      },
       state: {
-        ...state(),
-        ...stateOverrides,
+        isLoading: false,
+        isLoadingStage: false,
+        selectedProjects: [],
+        selectedStageEvents: [],
+        isLoadingValueStreams: false,
+        selectedStageError: '',
+        pagination: {},
+        features: {},
+        canEdit: false,
+        predefinedDateRange: null,
+        enableVsdLink: false,
+        canReadCycleAnalytics: false,
+        selectedValueStream,
+        createdAfter,
+        createdBefore,
+        groupPath: currentGroup.fullPath,
+        aggregation: aggregationData,
+        namespace,
+        selectedStage: OVERVIEW_STAGE_CONFIG,
+        enableProjectsFilter: true,
+        enableCustomizableStages: true,
+        ...state,
       },
-      modules: { filters },
     });
 
-    if (initializeStore) {
-      await store.dispatch('initializeCycleAnalytics', {
-        ...initialState,
-        features: {
-          ...features,
-        },
-      });
-    }
-
-    const func = shallow ? shallowMount : mount;
-    const comp = func(Component, {
+    wrapper = shallowMount(Component, {
       store,
       propsData: {
         emptyStateSvgPath,
-        noDataSvgPath,
+        noDataSvgPath: 'path/to/no/data',
         noAccessSvgPath,
         enableTasksByTypeChart: true,
         ...props,
       },
-      provide: {
-        glFeatures: {
-          ...features,
-        },
+      stubs: {
+        UrlSync,
       },
-      mocks,
-      ...opts,
     });
-
-    if (withStageSelected || selectedStage) {
-      await store.dispatch('receiveGroupStagesSuccess', customizableStagesAndEvents.stages);
-      if (selectedStage) {
-        await store.dispatch('setSelectedStage', selectedStage);
-        await store.dispatch('fetchStageData', selectedStage.slug);
-      } else {
-        await store.dispatch('setDefaultSelectedStage');
-      }
-    }
-    return comp;
-  }
+  };
 
   const findAggregationStatus = () => wrapper.findComponent(ValueStreamAggregationStatus);
   const findPathNavigation = () => wrapper.findComponent(PathNavigation);
@@ -208,19 +123,10 @@ describe('EE Value Stream Analytics component', () => {
   const findValueStreamSelect = () => wrapper.findComponent(ValueStreamSelect);
   const findUrlSync = () => wrapper.findComponent(UrlSync);
 
-  beforeEach(() => {
-    mock = new MockAdapter(axios);
-  });
-
-  afterEach(() => {
-    mock.restore();
-  });
-
   describe('when loading', () => {
-    beforeEach(async () => {
-      wrapper = await createComponent({
-        initializeStore: false,
-        stateOverrides: { isLoadingValueStreams: true },
+    beforeEach(() => {
+      createWrapper({
+        state: { isLoadingValueStreams: true },
       });
     });
 
@@ -230,9 +136,11 @@ describe('EE Value Stream Analytics component', () => {
   });
 
   describe('with no value streams', () => {
-    beforeEach(async () => {
-      wrapper = await createComponent({
-        initialState: { ...initialCycleAnalyticsState, valueStreams: [] },
+    beforeEach(() => {
+      createWrapper({
+        getters: {
+          hasValueStreams: () => false,
+        },
       });
     });
 
@@ -258,15 +166,9 @@ describe('EE Value Stream Analytics component', () => {
   });
 
   describe('the user does not have access to the group', () => {
-    beforeEach(async () => {
-      mockRequiredRoutes(mock);
-
-      wrapper = await createComponent({
-        initialState: { ...initialCycleAnalyticsState, valueStreams: [] },
-      });
-
-      await store.dispatch('receiveCycleAnalyticsDataError', {
-        response: { status: HTTP_STATUS_FORBIDDEN },
+    beforeEach(() => {
+      createWrapper({
+        getters: { hasNoAccessError: () => true },
       });
     });
 
@@ -292,9 +194,8 @@ describe('EE Value Stream Analytics component', () => {
   });
 
   describe('the user has access to the group', () => {
-    beforeEach(async () => {
-      mockRequiredRoutes(mock);
-      wrapper = await createComponent({ withStageSelected: true });
+    beforeEach(() => {
+      createWrapper();
     });
 
     it('hides the empty state', () => {
@@ -328,9 +229,13 @@ describe('EE Value Stream Analytics component', () => {
     });
 
     describe('without the overview stage selected', () => {
-      beforeEach(async () => {
-        mockRequiredRoutes(mock, { selectedStageEvents: [{}] });
-        wrapper = await createComponent({ selectedStage: issueStage });
+      beforeEach(() => {
+        createWrapper({
+          state: {
+            selectedStage: issueStage,
+            selectedStageEvents: [{}],
+          },
+        });
       });
 
       describe.each`
@@ -357,9 +262,13 @@ describe('EE Value Stream Analytics component', () => {
       });
 
       describe('without issue events', () => {
-        beforeEach(async () => {
-          mockRequiredRoutes(mock, { selectedStageEvents: [] });
-          wrapper = await createComponent({ selectedStage: issueStage });
+        beforeEach(() => {
+          createWrapper({
+            state: {
+              selectedStage: issueStage,
+              selectedStageEvents: [],
+            },
+          });
         });
 
         describe.each`
@@ -385,10 +294,9 @@ describe('EE Value Stream Analytics component', () => {
   });
 
   describe('with no aggregation data', () => {
-    beforeEach(async () => {
-      wrapper = await createComponent({
-        initialState: {
-          ...initialCycleAnalyticsState,
+    beforeEach(() => {
+      createWrapper({
+        state: {
           aggregation: {
             ...aggregationData,
             lastRunAt: null,
@@ -402,75 +310,29 @@ describe('EE Value Stream Analytics component', () => {
     });
   });
 
-  describe('with failed requests while loading', () => {
-    beforeEach(() => {
-      mockRequiredRoutes(mock);
-    });
-
-    it('will display an error if the fetchGroupStagesAndEvents request fails', async () => {
-      expect(createAlert).not.toHaveBeenCalled();
-
-      mock
-        .onGet(endpoints.baseStagesEndpoint)
-        .reply(HTTP_STATUS_NOT_FOUND, { response: { status: HTTP_STATUS_NOT_FOUND } });
-      wrapper = await createComponent();
-
-      expect(createAlert).toHaveBeenCalledWith({ message: I18N_VSA_ERROR_STAGES });
-    });
-
-    it('will display an error if the fetchStageData request fails', async () => {
-      expect(createAlert).not.toHaveBeenCalled();
-
-      mock
-        .onGet(endpoints.stageData)
-        .reply(HTTP_STATUS_NOT_FOUND, { response: { status: HTTP_STATUS_NOT_FOUND } });
-
-      wrapper = await createComponent({ selectedStage: issueStage });
-
-      expect(createAlert).toHaveBeenCalledWith({ message: I18N_VSA_ERROR_SELECTED_STAGE });
-    });
-
-    it('will display an error if the fetchStageMedian request fails', async () => {
-      expect(createAlert).not.toHaveBeenCalled();
-
-      mock
-        .onGet(endpoints.stageMedian)
-        .reply(HTTP_STATUS_NOT_FOUND, { response: { status: HTTP_STATUS_NOT_FOUND } });
-      wrapper = await createComponent();
-
-      expect(createAlert).toHaveBeenCalledWith({ message: I18N_VSA_ERROR_STAGE_MEDIAN });
-    });
-  });
   describe('Path navigation', () => {
-    const selectedStage = { id: 2, title: 'Plan' };
-    const overviewStage = { id: OVERVIEW_STAGE_ID, title: 'Overview' };
+    it('when a stage is selected', () => {
+      createWrapper({
+        state: {
+          pagination: initialPaginationQuery,
+        },
+      });
 
-    beforeEach(() => {
-      mockRequiredRoutes(mock);
+      findPathNavigation().vm.$emit('selected', issueStage);
+
+      expect(setSelectedStage).toHaveBeenCalledWith(expect.anything(), issueStage);
+      expect(updateStageTablePagination).toHaveBeenCalledWith(expect.anything(), {
+        ...initialPaginationQuery,
+        page: 1,
+      });
     });
 
-    it('when a stage is selected', async () => {
-      wrapper = await createComponent();
+    it('when the overview is selected', () => {
+      createWrapper({ state: { issueStage } });
 
-      findPathNavigation().vm.$emit('selected', selectedStage);
+      findPathNavigation().vm.$emit('selected', OVERVIEW_STAGE_CONFIG);
 
-      await waitForPromises();
-
-      expect(findUrlSync().props('query')).toEqual(
-        expect.objectContaining({ stage_id: selectedStage.id, page: 1 }),
-      );
-    });
-
-    it('when the overview is selected', async () => {
-      wrapper = await createComponent({ selectedStage });
-
-      findPathNavigation().vm.$emit('selected', overviewStage);
-
-      await waitForPromises();
-
-      expect(findUrlSync().props('query')).toEqual(
-        expect.objectContaining({ stage_id: null, page: null }),
-      );
+      expect(setDefaultSelectedStage).toHaveBeenCalled();
     });
   });
 
@@ -486,99 +348,70 @@ describe('EE Value Stream Analytics component', () => {
       page: null,
     };
 
-    const selectedStage = { title: 'Plan', id: 2 };
-    const selectedProjectIds = selectedProjects.map(({ id }) => getIdFromGraphQLId(id));
-
-    beforeEach(() => {
-      commonUtils.historyPushState = jest.fn();
-      urlUtils.mergeUrlParams = jest.fn();
-
-      mockRequiredRoutes(mock);
-    });
-
     describe('with minimal parameters set', () => {
-      beforeEach(async () => {
-        wrapper = await createComponent();
-
-        await store.dispatch('initializeCycleAnalytics', {
-          ...initialCycleAnalyticsState,
-          selectedValueStream: null,
+      beforeEach(() => {
+        createWrapper({
+          getters: {
+            cycleAnalyticsRequestParams: () => defaultParams,
+          },
         });
       });
 
-      it('sets the created_after and created_before url parameters', async () => {
-        await shouldMergeUrlParams(wrapper, defaultParams);
-      });
-    });
-
-    describe('with selectedValueStream set', () => {
-      beforeEach(async () => {
-        wrapper = await createComponent();
-        await store.dispatch('initializeCycleAnalytics', initialCycleAnalyticsState);
-        await nextTick();
-      });
-
-      it('sets the value_stream_id url parameter', async () => {
-        await shouldMergeUrlParams(wrapper, {
-          ...defaultParams,
-          created_after: toYmd(createdAfter),
-          created_before: toYmd(createdBefore),
-          project_ids: null,
-        });
+      it('sets the created_after and created_before url parameters', () => {
+        expect(findUrlSync().props('query')).toMatchObject(defaultParams);
       });
     });
 
     describe('with selectedProjectIds set', () => {
-      beforeEach(async () => {
-        wrapper = await createComponent();
-        await store.dispatch('setSelectedProjects', selectedProjects);
-        await nextTick();
+      const selectedProjectIds = [1, 2, 3];
+
+      beforeEach(() => {
+        createWrapper({
+          getters: {
+            selectedProjectIds: () => selectedProjectIds,
+            cycleAnalyticsRequestParams: () => ({
+              ...defaultParams,
+              project_ids: selectedProjectIds,
+            }),
+          },
+        });
       });
 
-      it('sets the project_ids url parameter', async () => {
-        await shouldMergeUrlParams(wrapper, {
-          ...defaultParams,
-          created_after: toYmd(createdAfter),
-          created_before: toYmd(createdBefore),
+      it('sets the project_ids url parameter', () => {
+        expect(findUrlSync().props('query')).toMatchObject({
           project_ids: selectedProjectIds,
-          stage_id: null,
         });
       });
     });
 
     describe('with selectedStage set', () => {
-      beforeEach(async () => {
-        wrapper = await createComponent({
-          initialState: {
-            ...initialCycleAnalyticsState,
+      beforeEach(() => {
+        createWrapper({
+          state: {
+            selectedStage: issueStage,
             pagination: initialPaginationQuery,
           },
-          selectedStage,
+          getters: {
+            cycleAnalyticsRequestParams: () => defaultParams,
+          },
         });
       });
 
-      it('sets the stage, sort, direction and page parameters', async () => {
-        await shouldMergeUrlParams(wrapper, {
-          ...defaultParams,
+      it('sets the stage, sort, direction and page parameters', () => {
+        expect(findUrlSync().props('query')).toMatchObject({
           ...initialPaginationQuery,
-          stage_id: selectedStage.id,
+          stage_id: issueStage.id,
         });
       });
     });
   });
 
   describe('with`groupLevelAnalyticsDashboard=true`', () => {
-    beforeEach(() => {
-      mockRequiredRoutes(mock);
-    });
-
-    it('renders a link to the value streams dashboard', async () => {
-      wrapper = await createComponent({
-        withStageSelected: true,
-        features: { groupLevelAnalyticsDashboard: true },
-        initialState: {
-          ...initialCycleAnalyticsState,
+    it('renders a link to the value streams dashboard', () => {
+      createWrapper({
+        state: {
           enableVsdLink: true,
+          features: { groupLevelAnalyticsDashboard: true },
         },
       });
 
@@ -589,10 +422,8 @@ describe('EE Value Stream Analytics component', () => {
   });
 
   describe('with `enableTasksByTypeChart=false`', () => {
-    beforeEach(async () => {
-      mockRequiredRoutes(mock);
-      wrapper = await createComponent({
-        withStageSelected: true,
+    beforeEach(() => {
+      createWrapper({
         props: {
           enableTasksByTypeChart: false,
         },
@@ -605,14 +436,11 @@ describe('EE Value Stream Analytics component', () => {
   });
 
   describe('with `enableCustomizableStages=false`', () => {
-    beforeEach(async () => {
-      mockRequiredRoutes(mock);
-      wrapper = await createComponent({
-        withStageSelected: true,
-        features: { groupLevelAnalyticsDashboard: true },
-        initialState: {
-          ...initialCycleAnalyticsState,
+    beforeEach(() => {
+      createWrapper({
+        state: {
           enableCustomizableStages: false,
+          features: { groupLevelAnalyticsDashboard: true },
         },
       });
     });
@@ -623,14 +451,11 @@ describe('EE Value Stream Analytics component', () => {
   });
 
   describe('with `enableProjectsFilter=false`', () => {
-    beforeEach(async () => {
-      mockRequiredRoutes(mock);
-      wrapper = await createComponent({
-        withStageSelected: true,
-        features: { groupLevelAnalyticsDashboard: true },
-        initialState: {
-          ...initialCycleAnalyticsState,
+    beforeEach(() => {
+      createWrapper({
+        state: {
           enableProjectsFilter: false,
+          features: { groupLevelAnalyticsDashboard: true },
         },
       });
     });
@@ -641,17 +466,17 @@ describe('EE Value Stream Analytics component', () => {
   });
 
   describe('with a project namespace', () => {
-    beforeEach(async () => {
-      mockRequiredRoutes(mock);
-      wrapper = await createComponent({
-        withStageSelected: true,
-        features: { groupLevelAnalyticsDashboard: true },
-        initialState: {
-          ...initialCycleAnalyticsState,
+    beforeEach(() => {
+      createWrapper({
+        state: {
           enableProjectsFilter: false,
           enableVsdLink: true,
           namespace: projectNamespace,
           project: 'fake-id',
+          features: { groupLevelAnalyticsDashboard: true },
+        },
+        getters: {
+          isProjectNamespace: () => true,
         },
       });
     });
@@ -664,17 +489,17 @@ describe('EE Value Stream Analytics component', () => {
   });
 
   describe('when dashboard link is disabled for the project namespace`', () => {
-    beforeEach(async () => {
-      mockRequiredRoutes(mock);
-      wrapper = await createComponent({
-        withStageSelected: true,
-        features: { groupLevelAnalyticsDashboard: true },
-        initialState: {
-          ...initialCycleAnalyticsState,
+    beforeEach(() => {
+      createWrapper({
+        state: {
           enableProjectsFilter: false,
           enableVsdLink: false,
           namespace: projectNamespace,
           project: 'fake-id',
+          features: { groupLevelAnalyticsDashboard: true },
+        },
+        getters: {
+          isProjectNamespace: () => true,
         },
       });
     });

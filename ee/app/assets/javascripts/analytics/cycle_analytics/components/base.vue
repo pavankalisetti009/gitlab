@@ -65,7 +65,6 @@ export default {
       'isLoadingStage',
       'selectedProjects',
       'selectedStage',
-      'stages',
       'selectedStageEvents',
       'createdAfter',
       'createdBefore',
@@ -160,8 +159,6 @@ export default {
   },
   methods: {
     ...mapActions([
-      'fetchCycleAnalyticsData',
-      'fetchStageData',
       'setSelectedProjects',
       'setSelectedStage',
       'setDefaultSelectedStage',
