@@ -75,7 +75,8 @@ module API
       def forbid_direct_access?
         Gitlab::CurrentSettings.disabled_direct_code_suggestions ||
           Feature.enabled?(:incident_fail_over_completion_provider, current_user) ||
-          completion_model_details.any_user_groups_claude_code_completion?
+          completion_model_details.any_user_groups_claude_code_completion? ||
+          ::Ai::AmazonQ.connected?
       end
     end
 

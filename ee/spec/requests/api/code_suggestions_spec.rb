@@ -1260,6 +1260,19 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           end
         end
       end
+
+      context 'when amazon q is connected' do
+        before do
+          allow(::Ai::AmazonQ).to receive(:connected?).and_return(true)
+        end
+
+        include_examples 'a response', 'unauthorized' do
+          let(:result) { :forbidden }
+          let(:response_body) do
+            { 'message' => '403 Forbidden - Direct connections are disabled' }
+          end
+        end
+      end
     end
   end
 
