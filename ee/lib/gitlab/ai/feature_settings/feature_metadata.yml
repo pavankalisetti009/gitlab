@@ -89,6 +89,16 @@ duo_chat_troubleshoot_job:
     - claude_3
     - gpt
     - llama3
+duo_chat_explain_vulnerability:
+  title: Explain Vulnerability
+  release_state: BETA
+  main_feature: GitLab Duo Chat
+  compatible_llms:
+    - mistral
+    - mixtral
+    - claude_3
+    - gpt
+    - llama3
 generate_commit_message:
   title: Generate Commit Message
   release_state: BETA
