@@ -9,7 +9,9 @@ RSpec.describe AdjournedProjectsDeletionCronWorker, feature_category: :complianc
     let_it_be(:user) { create(:user) }
     let_it_be(:marked_for_deletion_at) { 14.days.ago }
 
-    let!(:project_marked_for_deletion) { create(:project, marked_for_deletion_at: marked_for_deletion_at, deleting_user: user) }
+    let!(:project_marked_for_deletion) do
+      create(:project, marked_for_deletion_at: marked_for_deletion_at, deleting_user: user)
+    end
 
     before do
       create(:project)
@@ -23,7 +25,9 @@ RSpec.describe AdjournedProjectsDeletionCronWorker, feature_category: :complianc
     end
 
     context 'when two projects are scheduled for deletion' do
-      let_it_be(:project_marked_for_deletion_two) { create(:project, marked_for_deletion_at: marked_for_deletion_at, deleting_user: user) }
+      let_it_be(:project_marked_for_deletion_two) do
+        create(:project, marked_for_deletion_at: marked_for_deletion_at, deleting_user: user)
+      end
 
       it 'schedules the second job 10 seconds after the first' do
         expect(AdjournedProjectDeletionWorker).to receive(:perform_in).with(10, project_marked_for_deletion.id)
@@ -33,10 +37,10 @@ RSpec.describe AdjournedProjectsDeletionCronWorker, feature_category: :complianc
       end
     end
 
-    context 'marked for deletion exectly before number of days from settings' do
+    context 'with marked for deletion exectly before number of days from settings' do
       let(:marked_for_deletion_at) { 7.days.ago }
 
-      it 'schedules to delete project' do
+      it 'schedules to delete project', :freeze_time do
         expect(AdjournedProjectDeletionWorker).to receive(:perform_in).with(0, project_marked_for_deletion.id)
 
         worker.perform

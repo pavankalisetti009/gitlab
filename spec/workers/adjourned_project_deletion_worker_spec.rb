@@ -10,6 +10,13 @@ RSpec.describe AdjournedProjectDeletionWorker, feature_category: :groups_and_pro
     let_it_be(:group) { create(:group) }
     let_it_be(:project) { create(:project, group: group, marked_for_deletion_at: 8.days.ago, deleting_user: user) }
 
+    context 'when the project is not found' do
+      it 'does not call the adjourned deletion service' do
+        expect(Projects::AdjournedDeletionService).not_to receive(:new)
+        worker.perform(non_existing_record_id)
+      end
+    end
+
     context 'when deleting user has access to remove the project', :sidekiq_inline do
       shared_examples 'destroys the project' do
         specify do

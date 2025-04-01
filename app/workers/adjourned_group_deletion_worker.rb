@@ -1,9 +1,12 @@
 # frozen_string_literal: true
 
-class AdjournedGroupDeletionWorker # rubocop:disable Scalability/IdempotentWorker
+# rubocop:disable Scalability/IdempotentWorker -- existing class moved from EE to CE
+# rubocop:disable Gitlab/BoundedContexts -- existing class moved from EE to CE
+# rubocop:disable Gitlab/NamespacedClass -- existing class moved from EE to CE
+class AdjournedGroupDeletionWorker
   include ApplicationWorker
 
-  data_consistency :always
+  data_consistency :sticky
 
   include CronjobQueue
 
@@ -16,7 +19,7 @@ class AdjournedGroupDeletionWorker # rubocop:disable Scalability/IdempotentWorke
 
     Group.with_route.aimed_for_deletion(deletion_cutoff)
       .with_deletion_schedule
-      .find_each(batch_size: 100) # rubocop: disable CodeReuse/ActiveRecord
+      .find_each(batch_size: 100) # rubocop: disable CodeReuse/ActiveRecord -- existing class moved from EE to CE
       .with_index do |group, index|
       deletion_schedule = group.deletion_schedule
       delay = index * INTERVAL
@@ -31,3 +34,6 @@ class AdjournedGroupDeletionWorker # rubocop:disable Scalability/IdempotentWorke
     end
   end
 end
+# rubocop:enable Scalability/IdempotentWorker
+# rubocop:enable Gitlab/BoundedContexts
+# rubocop:enable Gitlab/NamespacedClass

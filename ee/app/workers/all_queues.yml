@@ -33,26 +33,6 @@
   :idempotent: false
   :tags: []
   :queue_namespace: :cronjob
-- :name: cronjob:adjourned_group_deletion
-  :worker_name: AdjournedGroupDeletionWorker
-  :feature_category: :groups_and_projects
-  :has_external_dependencies: false
-  :urgency: :low
-  :resource_boundary: :unknown
-  :weight: 1
-  :idempotent: false
-  :tags: []
-  :queue_namespace: :cronjob
-- :name: cronjob:adjourned_projects_deletion_cron
-  :worker_name: AdjournedProjectsDeletionCronWorker
-  :feature_category: :compliance_management
-  :has_external_dependencies: false
-  :urgency: :low
-  :resource_boundary: :unknown
-  :weight: 1
-  :idempotent: false
-  :tags: []
-  :queue_namespace: :cronjob
 - :name: cronjob:ai_active_context_bulk_process
   :worker_name: Ai::ActiveContext::BulkProcessWorker
   :feature_category: :global_search
@@ -1313,16 +1293,6 @@
   :idempotent: false
   :tags: []
   :queue_namespace: :todos_destroyer
-- :name: adjourned_project_deletion
-  :worker_name: AdjournedProjectDeletionWorker
-  :feature_category: :groups_and_projects
-  :has_external_dependencies: false
-  :urgency: :low
-  :resource_boundary: :unknown
-  :weight: 1
-  :idempotent: false
-  :tags: []
-  :queue_namespace:
 - :name: admin_emails
   :worker_name: AdminEmailsWorker
   :feature_category: :team_planning
