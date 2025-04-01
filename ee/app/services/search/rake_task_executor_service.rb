@@ -211,18 +211,30 @@ module Search
     end
 
     def estimate_cluster_size
-      total_repository_size = Namespace::RootStorageStatistics.sum(:repository_size).to_i
-      total_wiki_size = Namespace::RootStorageStatistics.sum(:wiki_size).to_i
-      total_size = total_wiki_size + total_repository_size
-      total_size_human = number_to_human_size(total_size, delimiter: ',', precision: 1, significant: false)
+      total_code_size = Namespace::RootStorageStatistics.sum(:repository_size).to_i
+      total_code_size_human = number_to_human_size(total_code_size, delimiter: ',', precision: 1, significant: false)
+      estimated_code_index_size = total_code_size * REPOSITORY_MULTIPLIER
+      estimated_code_index_size_human = number_to_human_size(estimated_code_index_size, delimiter: ',', precision: 1,
+        significant: false)
+      code_index_name = helper.klass_to_alias_name(klass: ::Repository)
 
-      estimated_cluster_size = total_size * REPOSITORY_MULTIPLIER
-      estimated_cluster_size_human = number_to_human_size(estimated_cluster_size, delimiter: ',', precision: 1,
+      total_wiki_size = Namespace::RootStorageStatistics.sum(:wiki_size).to_i
+      total_wiki_size_human = number_to_human_size(total_wiki_size, delimiter: ',', precision: 1, significant: false)
+      estimated_wiki_index_size = total_wiki_size * REPOSITORY_MULTIPLIER
+      estimated_wiki_index_size_human = number_to_human_size(estimated_wiki_index_size, delimiter: ',', precision: 1,
+        significant: false)
+      wiki_index_name = helper.klass_to_alias_name(klass: ::Wiki)
+
+      total_cluster_size = estimated_code_index_size + estimated_wiki_index_size
+      total_cluster_size_human = number_to_human_size(total_cluster_size, delimiter: ',', precision: 1,
         significant: false)
 
-      logger.info("This GitLab instance combined repository and wiki size is #{total_size_human}. ")
+      logger.info("This GitLab instance repository size is #{total_code_size_human} " \
+        "and wiki size is #{total_wiki_size_human}.")
+      logger.info("The #{code_index_name} index size will be #{estimated_code_index_size_human} and " \
+        "#{wiki_index_name} index size will be #{estimated_wiki_index_size_human}.")
       logger.info(Rainbow('By our estimates, ' \
-        "your cluster size should be at least #{estimated_cluster_size_human}. ").green)
+        "your cluster size will be at least #{total_cluster_size_human}.").green)
       logger.info('Please note that it is possible to index only selected namespaces/projects by using ' \
         'Advanced search indexing restrictions.')
     end

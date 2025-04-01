@@ -240,14 +240,16 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
 
   describe '#estimate_cluster_size' do
     before do
-      create(:namespace_root_storage_statistics, repository_size: 1.megabyte)
-      create(:namespace_root_storage_statistics, repository_size: 10.megabytes)
-      create(:namespace_root_storage_statistics, repository_size: 30.megabytes)
+      create(:namespace_root_storage_statistics, repository_size: 1.megabyte, wiki_size: 30.megabytes)
+      create(:namespace_root_storage_statistics, repository_size: 10.megabytes, wiki_size: 20.megabytes)
+      create(:namespace_root_storage_statistics, repository_size: 30.megabytes, wiki_size: 10.megabytes)
     end
 
     it 'outputs estimates' do
-      expect(logger).to receive(:info).with("This GitLab instance combined repository and wiki size is 41 MiB. ")
-      expect(logger).to receive(:info).with("By our estimates, your cluster size should be at least 20.5 MiB. ")
+      expect(logger).to receive(:info).with("This GitLab instance repository size is 41 MiB and wiki size is 60 MiB.")
+      expect(logger).to receive(:info)
+        .with("The gitlab-test index size will be 20.5 MiB and gitlab-test-wikis index size will be 30 MiB.")
+      expect(logger).to receive(:info).with("By our estimates, your cluster size will be at least 50.5 MiB.")
 
       service.execute(:estimate_cluster_size)
     end
