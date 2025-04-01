@@ -36,17 +36,17 @@ RSpec.describe Onboarding::StatusPresenter, feature_category: :onboarding do
 
   describe '.passed_through_params' do
     let(:params) do
-      ActionController::Parameters.new(role: '_role_', registration_objective: '_ro_', jobs_to_be_done_other: 'jtbd_o')
+      ActionController::Parameters.new(registration_objective: '_ro_', jobs_to_be_done_other: 'jtbd_o')
     end
 
     subject { described_class.passed_through_params(params) }
 
-    it { is_expected.to eq(params.slice(:role, :registration_objective, :jobs_to_be_done_other).permit!) }
+    it { is_expected.to eq(params.slice(:registration_objective, :jobs_to_be_done_other).permit!) }
 
     context 'when not all are present' do
-      let(:params) { ActionController::Parameters.new(role: '_role_', registration_objective: '_ro_') }
+      let(:params) { ActionController::Parameters.new(registration_objective: '_ro_') }
 
-      it { is_expected.to eq(params.slice(:role, :registration_objective).permit!) }
+      it { is_expected.to eq(params.slice(:registration_objective).permit!) }
     end
   end
 

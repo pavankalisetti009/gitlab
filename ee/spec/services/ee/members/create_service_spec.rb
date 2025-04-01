@@ -8,7 +8,7 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
   let_it_be(:project, reload: true) { create(:project, group: root_ancestor) }
   let_it_be(:subgroup) { create(:group, parent: root_ancestor) }
   let_it_be(:subgroup_project) { create(:project, group: subgroup) }
-  let_it_be(:project_users) { create_list(:user, 2) }
+  let_it_be(:project_users, reload: true) { create_list(:user, 2) }
 
   let(:invites) { project_users.map(&:id).join(',') }
   let(:params) do
@@ -155,7 +155,7 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
 
       context 'when user has finished the welcome step' do
         before do
-          onboarding_user.update!(onboarding_in_progress: true)
+          onboarding_user.update!(onboarding_status_role: 0, onboarding_in_progress: true)
         end
 
         it 'finishes onboarding' do
@@ -167,7 +167,7 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
 
       context 'when user has not finished the welcome step' do
         before do
-          onboarding_user.update!(role: nil, onboarding_in_progress: true)
+          onboarding_user.update!(onboarding_in_progress: true)
         end
 
         it 'does not finish onboarding' do

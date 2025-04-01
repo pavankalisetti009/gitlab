@@ -66,7 +66,6 @@ module Registrations
       base_params = params
                       .require(:user)
                       .permit(
-                        :role,
                         :setup_for_company,
                         :registration_objective,
                         :onboarding_status_joining_project,
@@ -82,14 +81,6 @@ module Registrations
       # boolean at this level.
       base_params[:onboarding_status_joining_project] =
         ::Gitlab::Utils.to_boolean(base_params[:onboarding_status_joining_project])
-
-      # Duplicate role information for role and onboarding_status_role
-      if base_params[:role].present?
-        base_params[:onboarding_status_role] = ::UserDetail.onboarding_status_roles[base_params[:role]]
-      else
-        base_params[:onboarding_status_role] = base_params[:onboarding_status_role].to_i
-        base_params[:role] = ::UserDetail.onboarding_status_roles.key(base_params[:onboarding_status_role])
-      end
 
       # Dup registration_objective info for registration_objective and onboarding_status_registration_objective
       if base_params[:registration_objective].present?

@@ -7,7 +7,6 @@ RSpec.describe Registrations::CompanyHelper, feature_category: :onboarding do
     let(:user) { build_stubbed(:user, onboarding_status_registration_type: 'trial') }
     let(:extra_params) do
       {
-        role: '_params_role_',
         registration_objective: '_params_registration_objective_',
         jobs_to_be_done_other: '_params_jobs_to_be_done_other'
       }

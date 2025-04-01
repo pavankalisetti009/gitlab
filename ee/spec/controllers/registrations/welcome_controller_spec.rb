@@ -104,17 +104,15 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
   describe '#update' do
     let(:setup_for_company) { 'false' }
     let(:joining_project) { 'false' }
-    let(:role) { 'software_developer' }
 
     let(:onboarding_status_setup_for_company) { 'false' }
-    let(:onboarding_status_role) { nil }
+    let(:onboarding_status_role) { 0 }
     let(:onboarding_status_registration_objective) { nil }
 
     let(:extra_params) { {} }
     let(:update_params) do
       {
         user: {
-          role: role,
           setup_for_company: setup_for_company,
           registration_objective: 'code_storage',
           onboarding_status_joining_project: joining_project,
@@ -158,27 +156,11 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
         end
       end
 
-      context 'with role updates' do
-        before do
+      context 'with onboarding_status_role updates' do
+        it 'sets the role in onboarding_status' do
           patch_update
-          user.reset
-        end
 
-        context 'when role field is provided' do
-          it 'sets role and onboarding_status_role' do
-            expect(user.role).to eq('software_developer')
-            expect(user.onboarding_status_role).to eq(0)
-          end
-        end
-
-        context 'when onboarding_status_role field is provided' do
-          let(:role) { nil }
-          let(:onboarding_status_role) { '2' }
-
-          it 'sets onboarding_status_role and role' do
-            expect(user.role).to eq('devops_engineer')
-            expect(user.onboarding_status_role).to eq(2)
-          end
+          expect(user.onboarding_status_role_name).to eq('software_developer')
         end
       end
 
@@ -298,8 +280,8 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
             let(:update_params) do
               {
                 user: {
-                  role: 'software_developer',
-                  setup_for_company: setup_for_company
+                  setup_for_company: setup_for_company,
+                  onboarding_status_role: onboarding_status_role
                 }
               }
             end
@@ -333,7 +315,6 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
             let(:expected_params) do
               {
                 registration_objective: 'code_storage',
-                role: 'software_developer',
                 jobs_to_be_done_other: '_jobs_to_be_done_other_'
               }
             end
@@ -431,7 +412,6 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
                 it 'redirects to the company path with expected db values' do
                   expected_params = {
                     registration_objective: 'code_storage',
-                    role: 'software_developer',
                     jobs_to_be_done_other: '_jobs_to_be_done_other_'
                   }
 
@@ -534,7 +514,13 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
 
         context 'when failed request' do
           subject(:patch_update) do
-            patch :update, params: { user: { role: 'software_developer', onboarding_status_joining_project: 'true' } }
+            patch :update,
+              params: {
+                user: {
+                  onboarding_status_role: onboarding_status_role,
+                  onboarding_status_joining_project: 'true'
+                }
+              }
           end
 
           before do

@@ -9,7 +9,6 @@ RSpec.describe ApplicationController, type: :request, feature_category: :shared 
     let(:user) do
       create(
         :user,
-        role: nil,
         onboarding_in_progress: onboarding_in_progress,
         onboarding_status_step_url: onboarding_status_step_url
       )

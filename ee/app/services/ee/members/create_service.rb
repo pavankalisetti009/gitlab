@@ -165,7 +165,7 @@ module EE
       end
 
       def finished_welcome_step?(member:)
-        member.user&.role?
+        member.user&.onboarding_status_role.present?
       end
 
       def append_added_member_ids_with_users(member:)

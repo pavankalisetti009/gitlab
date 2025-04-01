@@ -28,7 +28,7 @@ RSpec.describe 'Signup on EE', :with_current_organization, :js, feature_category
       click_button 'Continue'
       user = User.find_by_username(new_user[:username])
 
-      expect(user.software_developer_role?).to be_truthy
+      expect(user.onboarding_status_role_name).to eq('software_developer')
       expect(user.setup_for_company).to be_truthy
     end
   end

@@ -128,7 +128,7 @@ RSpec.describe Gitlab::CodeOwners::Loader, feature_category: :source_code_manage
         expect(loader.entries).to contain_exactly(expected_entry)
 
         expect(loader.members.size).to eq(4)
-        expect(loader.members.flat_map(&:role).uniq).to match_array(['software_developer'])
+        expect(loader.members).to all(satisfy { |user| project.team.developer?(user) })
 
         entry = loader.entries.first
         expect(entry.roles).to contain_exactly(30)
