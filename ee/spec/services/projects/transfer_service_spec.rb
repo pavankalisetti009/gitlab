@@ -23,22 +23,22 @@ RSpec.describe Projects::TransferService, feature_category: :groups_and_projects
 
       let(:attributes) do
         {
-           author_id: user.id,
-           entity_id: project.id,
-           entity_type: 'Project',
-           details: {
-             change: 'namespace',
-             event_name: "project_namespace_updated",
-             from: project.old_path_with_namespace,
-             to: project.full_path,
-             author_name: user.name,
-             author_class: user.class.name,
-             target_id: project.id,
-             target_type: 'Project',
-             target_details: project.full_path,
-             custom_message: "Changed namespace from #{project.old_path_with_namespace} to #{project.full_path}"
-           }
-         }
+          author_id: user.id,
+          entity_id: project.id,
+          entity_type: 'Project',
+          details: {
+            change: 'namespace',
+            event_name: "project_namespace_updated",
+            from: project.old_path_with_namespace,
+            to: project.full_path,
+            author_name: user.name,
+            author_class: user.class.name,
+            target_id: project.id,
+            target_type: 'Project',
+            target_details: project.full_path,
+            custom_message: "Changed namespace from #{project.old_path_with_namespace} to #{project.full_path}"
+          }
+        }
       end
     end
   end

@@ -24,20 +24,20 @@ RSpec.describe Projects::GroupLinks::DestroyService, feature_category: :groups_a
 
       let(:attributes) do
         {
-           author_id: user.id,
-           entity_id: group.id,
-           entity_type: 'Group',
-           details: {
-             remove: 'project_access',
-             author_name: user.name,
-             author_class: 'User',
-             event_name: "project_group_link_deleted",
-             target_id: project.id,
-             target_type: 'Project',
-             target_details: project.full_path,
-             custom_message: 'Removed project group link'
-           }
-         }
+          author_id: user.id,
+          entity_id: group.id,
+          entity_type: 'Group',
+          details: {
+            remove: 'project_access',
+            author_name: user.name,
+            author_class: 'User',
+            event_name: "project_group_link_deleted",
+            target_id: project.id,
+            target_type: 'Project',
+            target_details: project.full_path,
+            custom_message: 'Removed project group link'
+          }
+        }
       end
     end
 

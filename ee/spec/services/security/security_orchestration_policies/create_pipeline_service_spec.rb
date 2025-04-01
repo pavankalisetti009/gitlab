@@ -13,8 +13,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CreatePipelineService, f
 
     let(:service) do
       described_class.new(project: project, current_user: current_user, params: {
-                            actions: actions, branch: branch
-                          })
+        actions: actions, branch: branch
+      })
     end
 
     describe "#pipeline_scan_config" do

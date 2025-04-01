@@ -26,22 +26,22 @@ RSpec.describe Security::TrackScanService, feature_category: :security_policy_ma
           category: 'secure::scan',
           action: 'scan',
           context: [{
-                      schema: described_class::SECURE_SCAN_SCHEMA_URL,
-                      data: {
-                        analyzer: 'a-dast-scanner',
-                        analyzer_vendor: 'GitLab',
-                        analyzer_version: '1.0.0',
-                        end_time: '2022-08-10T22:37:00',
-                        findings_count: 24,
-                        scan_type: 'dast',
-                        scanner: 'a-dast-scanner',
-                        scanner_vendor: 'GitLab',
-                        scanner_version: '1.0.0',
-                        start_time: '2022-08-10T22:37:00',
-                        status: 'success',
-                        report_schema_version: '15.0.6'
-                      }
-                    }],
+            schema: described_class::SECURE_SCAN_SCHEMA_URL,
+            data: {
+              analyzer: 'a-dast-scanner',
+              analyzer_vendor: 'GitLab',
+              analyzer_version: '1.0.0',
+              end_time: '2022-08-10T22:37:00',
+              findings_count: 24,
+              scan_type: 'dast',
+              scanner: 'a-dast-scanner',
+              scanner_vendor: 'GitLab',
+              scanner_version: '1.0.0',
+              start_time: '2022-08-10T22:37:00',
+              status: 'success',
+              report_schema_version: '15.0.6'
+            }
+          }],
           idempotency_key: '82fc6391e4be61e03e51fa8c5c6bfc32b3d3f0065ad2fe0a01211606952b8d82',
           user: user,
           project: project.id,
@@ -64,22 +64,22 @@ RSpec.describe Security::TrackScanService, feature_category: :security_policy_ma
           category: 'secure::scan',
           action: 'scan',
           context: [{
-                      schema: described_class::SECURE_SCAN_SCHEMA_URL,
-                      data: {
-                        analyzer: nil,
-                        analyzer_vendor: nil,
-                        analyzer_version: nil,
-                        end_time: nil,
-                        findings_count: 1,
-                        scan_type: 'dast',
-                        scanner: "zaproxy",
-                        scanner_vendor: nil,
-                        scanner_version: nil,
-                        start_time: nil,
-                        status: 'success',
-                        report_schema_version: '15.0.6'
-                      }
-                    }],
+            schema: described_class::SECURE_SCAN_SCHEMA_URL,
+            data: {
+              analyzer: nil,
+              analyzer_vendor: nil,
+              analyzer_version: nil,
+              end_time: nil,
+              findings_count: 1,
+              scan_type: 'dast',
+              scanner: "zaproxy",
+              scanner_vendor: nil,
+              scanner_version: nil,
+              start_time: nil,
+              status: 'success',
+              report_schema_version: '15.0.6'
+            }
+          }],
           idempotency_key: '62bc6c62686b327dbf420f8891e1418406b60f49e574b6ff22f4d6a272dbc595',
           user: user,
           project: project.id,
