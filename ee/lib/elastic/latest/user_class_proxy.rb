@@ -114,10 +114,14 @@ module Elastic
 
         return query_hash if traversal_ids_from_groups_and_projects.empty?
 
+        options.merge!(
+          traversal_ids_prefix: :namespace_ancestry_ids,
+          traversal_ids: traversal_ids_from_groups_and_projects.flatten
+        )
+
         Search::Elastic::Filters.by_traversal_ids(
           query_hash: query_hash,
-          traversal_ids: traversal_ids_from_groups_and_projects.flatten,
-          options: options.merge(traversal_ids_prefix: :namespace_ancestry_ids)
+          options: options
         )
       end
 
