@@ -29,9 +29,18 @@ RSpec.describe 'admin/application_settings/roles_and_permissions/show', feature_
     list_page_path = admin_application_settings_roles_and_permissions_path
     expect(rendered).to have_selector "#js-role-details[data-id='#{role.id}']"
     expect(rendered).to have_selector "#js-role-details[data-list-page-path='#{list_page_path}']"
+    expect(rendered).to have_selector "#js-role-details[data-is-admin-role='false']"
   end
 
   it 'renders the loading spinner' do
     expect(rendered).to have_selector '#js-role-details .gl-spinner'
+  end
+
+  context 'for admin role' do
+    let_it_be(:role) { build(:member_role, :admin) }
+
+    it 'renders frontend placeholder' do
+      expect(rendered).to have_selector "#js-role-details[data-is-admin-role='true']"
+    end
   end
 end

@@ -15,6 +15,7 @@ import { TYPENAME_MEMBER_ROLE } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import DeleteRoleModal from '../delete_role_modal.vue';
 import memberRoleQuery from '../../graphql/role_details/member_role.query.graphql';
+import adminRoleQuery from '../../graphql/admin_role/role.query.graphql';
 import DetailsTab from './details_tab.vue';
 
 export const DETAILS_QUERYSTRING = 'from_details';
@@ -41,6 +42,10 @@ export default {
       type: String,
       required: true,
     },
+    isAdminRole: {
+      type: Boolean,
+      required: true,
+    },
   },
   data() {
     return {
@@ -50,7 +55,9 @@ export default {
   },
   apollo: {
     memberRole: {
-      query: memberRoleQuery,
+      query() {
+        return this.isAdminRole ? adminRoleQuery : memberRoleQuery;
+      },
       variables() {
         return { id: convertToGraphQLId(TYPENAME_MEMBER_ROLE, this.roleId) };
       },

@@ -5,7 +5,8 @@ import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { createAlert } from '~/alert';
 import memberRolePermissionsQuery from '../../graphql/member_role_permissions.query.graphql';
-import { isCustomRole, isPermissionPreselected } from '../../utils';
+import adminRolePermissionsQuery from '../../graphql/admin_role/role_permissions.query.graphql';
+import { isCustomRole, isAdminRole, isPermissionPreselected } from '../../utils';
 
 export default {
   i18n: {
@@ -25,13 +26,15 @@ export default {
   },
   apollo: {
     allPermissions: {
-      query: memberRolePermissionsQuery,
+      query() {
+        return this.isAdminRole ? adminRolePermissionsQuery : memberRolePermissionsQuery;
+      },
       variables: { includeDescription: false },
       update(data) {
         return data.memberRolePermissions.nodes.map((permission) => {
           const isPreselected = isPermissionPreselected(
             permission,
-            this.role.baseAccessLevel.stringValue,
+            this.role.baseAccessLevel?.stringValue,
           );
 
           return {
@@ -45,8 +48,8 @@ export default {
         createAlert({ message: s__('MemberRole|Could not fetch available permissions.') });
       },
       skip() {
-        // Base roles don't show permissions, so don't fetch the available permissions.
-        return !this.isCustomRole;
+        // Default roles don't have custom permissions, so don't fetch the available permissions.
+        return this.isDefaultRole;
       },
     },
   },
@@ -57,18 +60,33 @@ export default {
     checkedPermissionsCount() {
       return this.allPermissions.filter(({ checked }) => checked).length;
     },
+    isDefaultRole() {
+      return !this.isCustomRole && !this.isAdminRole;
+    },
     isCustomRole() {
       return isCustomRole(this.role);
     },
+    isAdminRole() {
+      return isAdminRole(this.role);
+    },
     idLabel() {
-      return this.isCustomRole ? s__('MemberRole|Role ID') : s__('MemberRole|Access level');
+      return this.isCustomRole || this.isAdminRole
+        ? s__('MemberRole|Role ID')
+        : s__('MemberRole|Access level');
     },
     roleId() {
       // Custom roles should show the custom role ID. Base roles don't have an ID, so show the access level instead.
       return getIdFromGraphQLId(this.role.id) || this.role.accessLevel;
     },
     roleType() {
-      return this.isCustomRole ? __('Custom') : s__('MemberRole|Default');
+      if (this.isCustomRole) {
+        return __('Custom');
+      }
+      if (this.isAdminRole) {
+        return s__('MemberRole|Custom admin role');
+      }
+
+      return s__('MemberRole|Default');
     },
   },
   userPermissionsDocsPath: helpPagePath('user/permissions'),
@@ -93,7 +111,10 @@ export default {
     <h4>{{ __('Permissions') }}</h4>
     <dl>
       <dt v-if="isCustomRole" data-testid="base-role-header">{{ s__('MemberRole|Base role') }}</dt>
-      <dd class="gl-mb-6 gl-mt-3 gl-flex gl-gap-x-5 gl-text-subtle">
+      <dd
+        v-if="isCustomRole || isDefaultRole"
+        class="gl-mb-6 gl-mt-3 gl-flex gl-gap-x-5 gl-text-subtle"
+      >
         <span v-if="isCustomRole" data-testid="base-role-value">
           {{ role.baseAccessLevel.humanAccess }}
         </span>
@@ -108,8 +129,10 @@ export default {
         </gl-button>
       </dd>
 
-      <template v-if="isCustomRole">
-        <dt data-testid="custom-permissions-header">{{ s__('MemberRole|Custom permissions') }}</dt>
+      <template v-if="isCustomRole || isAdminRole">
+        <dt data-testid="custom-permissions-header" class="gl-mt-5">
+          {{ s__('MemberRole|Custom permissions') }}
+        </dt>
         <dd
           v-if="allPermissions.length"
           class="gl-mb-6 gl-mt-3 gl-text-subtle"

@@ -10,6 +10,7 @@ import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import { visitUrl } from '~/lib/utils/url_utility';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import memberRoleQuery from 'ee/roles_and_permissions/graphql/role_details/member_role.query.graphql';
+import adminRoleQuery from 'ee/roles_and_permissions/graphql/admin_role/role.query.graphql';
 import waitForPromises from 'helpers/wait_for_promises';
 import { mockMemberRole, getMemberRoleQueryResponse } from '../../mock_data';
 
@@ -26,12 +27,14 @@ describe('Role details', () => {
 
   const createWrapper = ({
     roleId = '5',
+    roleQuery = memberRoleQuery,
     memberRoleHandler = defaultMemberRoleHandler,
     listPagePath = '/list/page/path',
+    isAdminRole = false,
   } = {}) => {
     wrapper = shallowMountExtended(RoleDetails, {
-      apolloProvider: createMockApollo([[memberRoleQuery, memberRoleHandler]]),
-      propsData: { roleId, listPagePath },
+      apolloProvider: createMockApollo([[roleQuery, memberRoleHandler]]),
+      propsData: { roleId, listPagePath, isAdminRole },
       stubs: { GlSprintf },
       directives: { GlTooltip: createMockDirective('gl-tooltip') },
     });
@@ -126,6 +129,15 @@ describe('Role details', () => {
       it('shows header description', () => {
         expect(findHeaderDescription().text()).toBe('Custom role created on Aug 4, 2024');
       });
+    });
+  });
+
+  describe('when the role is an admin role', () => {
+    beforeEach(() => createWrapper({ isAdminRole: true, roleQuery: adminRoleQuery }));
+
+    it('calls admin role query', () => {
+      expect(defaultMemberRoleHandler).toHaveBeenCalledTimes(1);
+      expect(defaultMemberRoleHandler).toHaveBeenCalledWith({ id: 'gid://gitlab/MemberRole/5' });
     });
   });
 

@@ -5,10 +5,16 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import DetailsTab from 'ee/roles_and_permissions/components/role_details/details_tab.vue';
 import { BASE_ROLES } from '~/access_level/constants';
 import createMockApollo from 'helpers/mock_apollo_helper';
-import permissionsQuery from 'ee/roles_and_permissions/graphql/member_role_permissions.query.graphql';
+import memberPermissionsQuery from 'ee/roles_and_permissions/graphql/member_role_permissions.query.graphql';
+import adminPermissionsQuery from 'ee/roles_and_permissions/graphql/admin_role/role_permissions.query.graphql';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
-import { mockMemberRole, mockPermissionsResponse, mockDefaultPermissions } from '../../mock_data';
+import {
+  mockMemberRole,
+  mockAdminRole,
+  mockPermissionsResponse,
+  mockDefaultPermissions,
+} from '../../mock_data';
 
 Vue.use(VueApollo);
 global.gon = { relative_url_root: '' };
@@ -30,6 +36,7 @@ describe('Role details tab', () => {
 
   const createWrapper = ({
     role = mockMemberRole,
+    permissionsQuery = memberPermissionsQuery,
     permissionsHandler = defaultPermissionsHandler,
   } = {}) => {
     wrapper = shallowMountExtended(DetailsTab, {
@@ -213,6 +220,25 @@ describe('Role details tab', () => {
           });
         });
       });
+    });
+  });
+
+  describe('for admin role', () => {
+    beforeEach(() =>
+      createWrapper({ role: mockAdminRole, permissionsQuery: adminPermissionsQuery }),
+    );
+
+    it('calls admin permissions query', () => {
+      expect(defaultPermissionsHandler).toHaveBeenCalledTimes(1);
+      expect(defaultPermissionsHandler).toHaveBeenCalledWith({ includeDescription: false });
+    });
+
+    it('shows role ID header', () => {
+      expect(findHeaderText('id')).toBe('Role ID');
+    });
+
+    it('shows role type', () => {
+      expect(findValueText('type')).toBe('Custom admin role');
     });
   });
 
