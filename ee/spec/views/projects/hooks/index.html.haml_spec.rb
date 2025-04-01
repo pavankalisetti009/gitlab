@@ -14,23 +14,9 @@ RSpec.describe 'projects/hooks/index', feature_category: :webhooks do
     assign :hook, new_hook
   end
 
-  context 'when the vulnerabilities_as_webhook_events FF is enabled' do
-    it "renders the 'Vulnerability events' checkbox" do
-      stub_feature_flags(vulnerabilities_as_webhook_events: true)
+  it "renders the 'Vulnerability events' checkbox" do
+    render
 
-      render
-
-      expect(rendered).to have_text('Vulnerability events')
-    end
-  end
-
-  context 'when the vulnerabilities_as_webhook_events FF is disabled' do
-    it "renders the 'Vulnerability events' checkbox" do
-      stub_feature_flags(vulnerabilities_as_webhook_events: false)
-
-      render
-
-      expect(rendered).not_to have_text('Vulnerability events')
-    end
+    expect(rendered).to have_text('Vulnerability events')
   end
 end
