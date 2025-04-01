@@ -36,38 +36,43 @@ export const CODEOWNERS_VALIDATION_I18N = {
   errorMessage: ERROR_MESSAGE,
 };
 
-export const INVALID_SECTION_OWNER_FORMAT = s__('CodeownersValidation|Inaccessible owners');
-
-export const MISSING_ENTRY_OWNER = s__('CodeownersValidation|Zero owners');
-
-export const MALFORMED_ENTRY_OWNER = s__('CodeownersValidation|Malformed owners');
-
-export const INVALID_ENTRY_OWNER_FORMAT = s__('CodeownersValidation|Entries with spaces');
-
-export const MISSING_SECTION_NAME = s__('CodeownersValidation|Missing section name');
+export const INACCESSIBLE_OWNER = s__(
+  'CodeownersValidation|Contains owners which are not accessible within the project',
+);
 
 export const INVALID_APPROVAL_REQUIREMENT = s__(
   'CodeownersValidation|Less than 1 required approvals',
 );
 
+export const INVALID_ENTRY_OWNER_FORMAT = s__('CodeownersValidation|Entries with spaces');
+
 export const INVALID_SECTION_FORMAT = s__('CodeownersValidation|Unparsable sections');
 
-export const INACCESSIBLE_OWNER = s__(
-  'CodeownersValidation|Contains owners which are not accessible within the project',
-);
+export const INVALID_SECTION_OWNER_FORMAT = s__('CodeownersValidation|Inaccessible owners');
+
+export const MALFORMED_ENTRY_OWNER = s__('CodeownersValidation|Malformed owners');
+
+export const MISSING_ENTRY_OWNER = s__('CodeownersValidation|Zero owners');
+
+export const MISSING_SECTION_NAME = s__('CodeownersValidation|Missing section name');
 
 export const OWNER_WITHOUT_PERMISSION = s__(
   'CodeownersValidation|Contains owners without permission to approve merge requests',
 );
 
+export const UNQUALIFIED_GROUP = s__(
+  'CodeownersValidation|Group needs at least Developer access to the project for its members to approve merge requests',
+);
+
 export const CODE_TO_MESSAGE = {
-  invalid_section_owner_format: INVALID_SECTION_OWNER_FORMAT,
-  missing_entry_owner: MISSING_ENTRY_OWNER,
-  malformed_entry_owner: MALFORMED_ENTRY_OWNER,
-  invalid_entry_owner_format: INVALID_ENTRY_OWNER_FORMAT,
-  missing_section_name: MISSING_SECTION_NAME,
-  invalid_approval_requirement: INVALID_APPROVAL_REQUIREMENT,
-  invalid_section_format: INVALID_SECTION_FORMAT,
   inaccessible_owner: INACCESSIBLE_OWNER,
+  invalid_approval_requirement: INVALID_APPROVAL_REQUIREMENT,
+  invalid_entry_owner_format: INVALID_ENTRY_OWNER_FORMAT,
+  invalid_section_format: INVALID_SECTION_FORMAT,
+  invalid_section_owner_format: INVALID_SECTION_OWNER_FORMAT,
+  malformed_entry_owner: MALFORMED_ENTRY_OWNER,
+  missing_entry_owner: MISSING_ENTRY_OWNER,
+  missing_section_name: MISSING_SECTION_NAME,
   owner_without_permission: OWNER_WITHOUT_PERMISSION,
+  unqualified_group: UNQUALIFIED_GROUP,
 };

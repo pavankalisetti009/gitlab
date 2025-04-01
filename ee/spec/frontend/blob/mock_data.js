@@ -5,7 +5,7 @@ export const propsMock = {
 };
 
 export const validateCodeownerFile = {
-  total: 8,
+  total: 9,
   validationErrors: [
     {
       code: 'invalid_entry_owner_format',
@@ -35,6 +35,11 @@ export const validateCodeownerFile = {
     {
       code: 'inaccessible_owner',
       lines: [22],
+      __typename: 'RepositoryCodeownerError',
+    },
+    {
+      code: 'unqualified_group',
+      lines: [12],
       __typename: 'RepositoryCodeownerError',
     },
   ],
