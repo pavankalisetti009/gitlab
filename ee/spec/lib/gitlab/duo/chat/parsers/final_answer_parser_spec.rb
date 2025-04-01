@@ -407,6 +407,18 @@ RSpec.describe Gitlab::Duo::Chat::Parsers::FinalAnswerParser, feature_category: 
         '`[google](https://google.com)` `https://google.com`'
     end
 
+    context 'when markdown and relative URLs' do
+      include_examples 'sanitizes URLs correctly',
+        '[Sources](/example/source)',
+        '[Sources](/example/source)'
+    end
+
+    context 'when markdown and relative URL but it contains a real URL within it' do
+      include_examples 'sanitizes URLs correctly',
+        '[Sources](/example/https://example.com/source)',
+        '`[Sources](/example/https://example.com/source)`'
+    end
+
     # Single Line Response With Complex Escaped Patterns
     context 'when URLs have multiple spaced out evenly escaped backticks and other oddities' do
       include_examples 'sanitizes URLs correctly',
