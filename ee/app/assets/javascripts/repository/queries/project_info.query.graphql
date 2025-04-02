@@ -8,17 +8,7 @@ query getProjectInfoEE($projectPath: ID!) {
       downloadCode
       createMergeRequestIn
       forkProject
-    }
-    projectMembers {
-      nodes {
-        id
-        accessLevel {
-          integerValue
-        }
-        user {
-          id
-        }
-      }
+      createPathLock
     }
     ...ProjectPathLocksFragment
   }

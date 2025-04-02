@@ -74,32 +74,11 @@ export const userPermissionsMock = {
   forkProject: true,
   downloadCode: true,
   createMergeRequestIn: true,
-  adminPathLocks: true,
+  createPathLock: true,
   __typename: 'ProjectPermissions',
 };
 
-const getProjectMembersWithAccessLevel = (accessLevel) => {
-  return {
-    __typename: 'MemberInterfaceConnection',
-    nodes: [
-      {
-        __typename: 'ProjectMember',
-        id: 'gid://gitlab/ProjectMember/685',
-        accessLevel: {
-          __typename: 'AccessLevel',
-          integerValue: accessLevel,
-        },
-        user: {
-          __typename: 'UserCore',
-          id: 'gid://gitlab/User/1',
-        },
-      },
-    ],
-  };
-};
-
 export const getProjectMockWithOverrides = ({
-  accessLevel = 30,
   userPermissionsOverride = {},
   pathLockNodesOverride = null,
 } = {}) => ({
@@ -122,13 +101,15 @@ export const getProjectMockWithOverrides = ({
                 name: 'Administrator',
                 __typename: 'UserCore',
               },
+              userPermissions: {
+                destroyPathLock: true,
+              },
             },
           ],
   },
   repository: {
     empty: false,
   },
-  projectMembers: getProjectMembersWithAccessLevel(accessLevel),
 });
 
 export const projectMock = getProjectMockWithOverrides();
@@ -143,6 +124,9 @@ export const exactDirectoryLock = {
     username: 'user2',
     name: 'User2',
   },
+  userPermissions: {
+    destroyPathLock: true,
+  },
 };
 
 export const upstreamDirectoryLock = {
@@ -155,6 +139,9 @@ export const upstreamDirectoryLock = {
     username: 'user2',
     name: 'User2',
   },
+  userPermissions: {
+    destroyPathLock: true,
+  },
 };
 
 export const downstreamDirectoryLock = {
@@ -166,6 +153,9 @@ export const downstreamDirectoryLock = {
     id: 'gid://gitlab/User/2',
     username: 'user2',
     name: 'User2',
+  },
+  userPermissions: {
+    destroyPathLock: true,
   },
 };
 
