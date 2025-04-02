@@ -29,6 +29,17 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::GitlabCom::ProvisionService,
       }
     end
 
+    let(:expected_attributes) do
+      {
+        started_at: started_at.to_date,
+        expires_on: expires_on.to_date,
+        namespace: namespace,
+        purchase_xid: purchase_xid,
+        quantity: quantity,
+        trial: trial
+      }
+    end
+
     let(:add_on_products) { { add_on_name => [add_on_product] } }
 
     it 'creates add-on' do
@@ -40,14 +51,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::GitlabCom::ProvisionService,
     it 'creates add-on purchase' do
       expect { execute_service }.to change { GitlabSubscriptions::AddOnPurchase.count }.by(1)
 
-      expect(GitlabSubscriptions::AddOnPurchase.first).to have_attributes(
-        started_at: started_at.to_date,
-        expires_on: expires_on.to_date,
-        namespace: namespace,
-        purchase_xid: purchase_xid,
-        quantity: quantity,
-        trial: trial
-      )
+      expect(GitlabSubscriptions::AddOnPurchase.first).to have_attributes(expected_attributes)
     end
 
     it 'returns successful service response' do
@@ -115,14 +119,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::GitlabCom::ProvisionService,
         execute_service
 
         expect(GitlabSubscriptions::AddOnPurchase.count).to eq 1
-        expect(GitlabSubscriptions::AddOnPurchase.first).to have_attributes(
-          started_at: started_at.to_date,
-          expires_on: expires_on.to_date,
-          namespace: namespace,
-          purchase_xid: purchase_xid,
-          quantity: quantity,
-          trial: trial
-        )
+        expect(GitlabSubscriptions::AddOnPurchase.first).to have_attributes(expected_attributes)
       end
     end
 
@@ -311,13 +308,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::GitlabCom::ProvisionService,
 
           expect(add_on_purchases.first).to be_persisted
           expect(add_on_purchases.first).to have_attributes(
-            add_on: have_attributes(name: 'product_analytics'),
-            started_at: started_at.to_date,
-            expires_on: expires_on.to_date,
-            namespace: namespace,
-            purchase_xid: purchase_xid,
-            quantity: quantity,
-            trial: trial
+            expected_attributes.merge(add_on: have_attributes(name: 'product_analytics'))
           )
         end
 
@@ -346,13 +337,36 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::GitlabCom::ProvisionService,
 
           expect(GitlabSubscriptions::AddOnPurchase.count).to eq 1
           expect(GitlabSubscriptions::AddOnPurchase.first).to have_attributes(
-            add_on: have_attributes(name: 'duo_enterprise'),
-            started_at: started_at.to_date,
-            expires_on: expires_on.to_date,
-            namespace: namespace,
-            purchase_xid: purchase_xid,
-            quantity: quantity,
-            trial: trial
+            expected_attributes.merge(add_on: have_attributes(name: 'duo_enterprise'))
+          )
+        end
+      end
+
+      context 'with Duo Nano and another Duo add-on' do
+        let(:add_on_products) do
+          {
+            'duo_nano' => [add_on_product],
+            'duo_pro' => [add_on_product]
+          }
+        end
+
+        it 'creates multiple add-ons' do
+          expect { execute_service }.to change { GitlabSubscriptions::AddOn.count }.by(2)
+        end
+
+        it 'provisions multiple add-ons purchases' do
+          expect { execute_service }.to change { GitlabSubscriptions::AddOnPurchase.count }.by(2)
+        end
+
+        it 'provisions both add-on purchases' do
+          execute_service
+
+          expect(GitlabSubscriptions::AddOnPurchase.first).to have_attributes(
+            expected_attributes.merge(add_on: have_attributes(name: 'duo_nano'))
+          )
+
+          expect(GitlabSubscriptions::AddOnPurchase.second).to have_attributes(
+            expected_attributes.merge(add_on: have_attributes(name: 'code_suggestions'))
           )
         end
       end
@@ -369,6 +383,45 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::GitlabCom::ProvisionService,
           expect { execute_service }.to change { GitlabSubscriptions::AddOn.count }.by(1)
 
           expect(GitlabSubscriptions::AddOnPurchase.first.add_on).to be_code_suggestions
+        end
+      end
+
+      context 'with Duo Nano to deprovision' do
+        let!(:add_on_purchase) do
+          create(
+            :gitlab_subscription_add_on_purchase,
+            :duo_nano,
+            started_at: started_at,
+            expires_on: expires_on,
+            namespace: namespace,
+            purchase_xid: purchase_xid,
+            quantity: quantity,
+            trial: trial
+          )
+        end
+
+        let(:add_on_products) do
+          {
+            'duo_nano' => [{
+              'started_on' => yesterday,
+              'expires_on' => yesterday,
+              'purchase_xid' => nil,
+              'quantity' => nil,
+              'trial' => false
+            }]
+          }
+        end
+
+        it 'deprovisions add-on purchase' do
+          execute_service
+
+          expect(add_on_purchase.reload).to have_attributes(
+            add_on: be_duo_nano,
+            started_at: yesterday,
+            expires_on: yesterday,
+            purchase_xid: 'S-A00000001',
+            quantity: 1
+          )
         end
       end
 
@@ -417,8 +470,8 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::GitlabCom::ProvisionService,
           create(
             :gitlab_subscription_add_on_purchase,
             :gitlab_duo_pro,
-            started_at: Date.current.to_s,
-            expires_on: 1.year.from_now.to_date.to_s,
+            started_at: started_at,
+            expires_on: expires_on,
             namespace: namespace,
             purchase_xid: '123',
             quantity: 2,

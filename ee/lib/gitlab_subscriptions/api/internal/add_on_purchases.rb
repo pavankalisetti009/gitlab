@@ -41,6 +41,9 @@ module GitlabSubscriptions
 
               params do
                 requires :add_on_purchases, type: Hash, desc: 'Hash of add-on names to list of purchase details' do
+                  optional :duo_nano, type: Array, desc: 'List of Duo Nano add-on purchases' do
+                    use :add_on
+                  end
                   optional :duo_pro, type: Array, desc: 'List of Duo Pro add-on purchases' do
                     use :add_on
                   end
