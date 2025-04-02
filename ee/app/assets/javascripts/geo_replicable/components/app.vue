@@ -3,8 +3,14 @@ import { GlLoadingIcon } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import { visitUrl, pathSegments, setUrlParams } from '~/lib/utils/url_utility';
-import { getReplicableTypeFilter, processFilters } from '../filters';
+import { visitUrl, pathSegments, queryToObject, setUrlParams } from '~/lib/utils/url_utility';
+import {
+  isValidFilter,
+  getReplicationStatusFilter,
+  getReplicableTypeFilter,
+  processFilters,
+} from '../filters';
+import { REPLICATION_STATUS_STATES_ARRAY } from '../constants';
 import GeoReplicable from './geo_replicable.vue';
 import GeoReplicableEmptyState from './geo_replicable_empty_state.vue';
 import GeoReplicableFilterBar from './geo_replicable_filter_bar.vue';
@@ -45,12 +51,19 @@ export default {
     this.fetchReplicableItems();
   },
   methods: {
-    ...mapActions(['fetchReplicableItems']),
+    ...mapActions(['fetchReplicableItems', 'setStatusFilter']),
     getFiltersFromQuery() {
+      const filters = [];
       const url = new URL(window.location.href);
       const segments = pathSegments(url);
+      const { replication_status: replicationStatus } = queryToObject(window.location.search || '');
 
-      this.activeFilters = [getReplicableTypeFilter(segments.pop())];
+      if (isValidFilter(replicationStatus, REPLICATION_STATUS_STATES_ARRAY)) {
+        filters.push(getReplicationStatusFilter(replicationStatus));
+        this.setStatusFilter(replicationStatus);
+      }
+
+      this.activeFilters = [getReplicableTypeFilter(segments.pop()), ...filters];
     },
     onSearch(filters) {
       const { query, url } = processFilters(filters);
