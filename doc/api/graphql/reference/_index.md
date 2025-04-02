@@ -43938,7 +43938,7 @@ Package type of a package protection rule resource.
 | Value | Description |
 | ----- | ----------- |
 | <a id="packagesprotectionrulepackagetypeconan"></a>`CONAN` {{< icon name="warning-solid" >}} | **Introduced** in GitLab 17.6. **Status**: Experiment. Packages of the Conan format. Available only when feature flag `packages_protected_packages_conan` is enabled. |
-| <a id="packagesprotectionrulepackagetypemaven"></a>`MAVEN` {{< icon name="warning-solid" >}} | **Introduced** in GitLab 17.9. **Status**: Experiment. Packages of the Maven format. Available only when feature flag `packages_protected_packages_maven` is enabled. |
+| <a id="packagesprotectionrulepackagetypemaven"></a>`MAVEN` | Packages of the Maven format. |
 | <a id="packagesprotectionrulepackagetypenpm"></a>`NPM` | Packages of the npm format. |
 | <a id="packagesprotectionrulepackagetypepypi"></a>`PYPI` | Packages of the PyPI format. |
 
