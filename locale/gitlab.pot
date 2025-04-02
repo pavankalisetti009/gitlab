@@ -14493,6 +14493,9 @@ msgstr ""
 msgid "CodeownersValidation|Entries with spaces"
 msgstr ""
 
+msgid "CodeownersValidation|Group needs at least Developer access to the project for its members to approve merge requests"
+msgstr ""
+
 msgid "CodeownersValidation|Hide errors"
 msgstr ""
 
