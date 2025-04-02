@@ -69,3 +69,10 @@ export const MOCK_REPLICABLE_TYPE_FILTER = {
   type: TOKEN_TYPES.REPLICABLE_TYPE,
   value: 'project_repositories',
 };
+
+export const MOCK_REPLICATION_STATUS_FILTER = {
+  type: TOKEN_TYPES.REPLICATION_STATUS,
+  value: {
+    data: 'synced',
+  },
+};

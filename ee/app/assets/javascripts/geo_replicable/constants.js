@@ -1,5 +1,7 @@
-import { __ } from '~/locale';
+import { GlFilteredSearchToken } from '@gitlab/ui';
+import { __, s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
+import { OPERATORS_IS } from '~/vue_shared/components/filtered_search_bar/constants';
 
 export const FILTER_STATES = {
   ALL: {
@@ -65,6 +67,39 @@ export const GEO_TROUBLESHOOTING_LINK = helpPagePath(
   'administration/geo/replication/troubleshooting/_index.md',
 );
 
+export const REPLICATION_STATUS_STATES = {
+  PENDING: {
+    title: __('Pending'),
+    value: 'pending',
+  },
+  STARTED: {
+    title: __('Started'),
+    value: 'started',
+  },
+  SYNCED: {
+    title: __('Synced'),
+    value: 'synced',
+  },
+  FAILED: {
+    title: __('Failed'),
+    value: 'failed',
+  },
+};
+
+export const REPLICATION_STATUS_STATES_ARRAY = Object.values(REPLICATION_STATUS_STATES);
+
 export const TOKEN_TYPES = {
   REPLICABLE_TYPE: 'replicable_type',
+  REPLICATION_STATUS: 'replication_status',
 };
+
+export const FILTERED_SEARCH_TOKEN_DEFINITIONS = [
+  {
+    title: s__('Geo|Replication status'),
+    type: TOKEN_TYPES.REPLICATION_STATUS,
+    icon: 'substitute',
+    token: GlFilteredSearchToken,
+    operators: OPERATORS_IS,
+    unique: true,
+  },
+];

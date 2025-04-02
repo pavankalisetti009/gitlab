@@ -3,6 +3,7 @@ import { GlCollapsibleListbox } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { getReplicableTypeFilter } from '../filters';
 import { TOKEN_TYPES } from '../constants';
+import GeoReplicableFilteredSearch from './geo_replicable_filtered_search.vue';
 
 export default {
   name: 'GeoReplicableFilteredSearchBar',
@@ -12,6 +13,7 @@ export default {
   },
   components: {
     GlCollapsibleListbox,
+    GeoReplicableFilteredSearch,
   },
   inject: {
     replicableTypes: {
@@ -53,13 +55,19 @@ export default {
         return activeFilter?.value;
       },
       set(val) {
-        this.$emit('search', [getReplicableTypeFilter(val)]);
+        this.$emit('search', [getReplicableTypeFilter(val), ...this.activeSearchFilters]);
       },
+    },
+    activeSearchFilters() {
+      return this.activeFilters.filter(({ type }) => type !== TOKEN_TYPES.REPLICABLE_TYPE);
     },
   },
   methods: {
     onReplicableTypeSearch(search) {
       this.replicableTypeSearch = search;
+    },
+    handleSearch(val) {
+      this.$emit('search', val);
     },
   },
 };
@@ -80,6 +88,12 @@ export default {
         class="gl-mb-4 sm:gl-mb-0"
         @search="onReplicableTypeSearch"
       />
+      <div class="flex-grow-1 gl-flex">
+        <geo-replicable-filtered-search
+          :active-filters="activeSearchFilters"
+          @search="handleSearch"
+        />
+      </div>
     </div>
   </div>
 </template>

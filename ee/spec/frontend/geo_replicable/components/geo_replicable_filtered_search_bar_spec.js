@@ -2,14 +2,19 @@ import { GlCollapsibleListbox } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GeoReplicableFilteredSearchBar from 'ee/geo_replicable/components/geo_replicable_filtered_search_bar.vue';
+import GeoReplicableFilteredSearch from 'ee/geo_replicable/components/geo_replicable_filtered_search.vue';
 import { getReplicableTypeFilter } from 'ee/geo_replicable/filters';
-import { MOCK_REPLICABLE_TYPES, MOCK_REPLICABLE_TYPE_FILTER } from '../mock_data';
+import {
+  MOCK_REPLICABLE_TYPES,
+  MOCK_REPLICABLE_TYPE_FILTER,
+  MOCK_REPLICATION_STATUS_FILTER,
+} from '../mock_data';
 
 describe('GeoReplicableFilteredSearchBar', () => {
   let wrapper;
 
   const defaultProps = {
-    activeFilters: [MOCK_REPLICABLE_TYPE_FILTER],
+    activeFilters: [MOCK_REPLICABLE_TYPE_FILTER, MOCK_REPLICATION_STATUS_FILTER],
   };
 
   const createComponent = ({ props = {} } = {}) => {
@@ -27,6 +32,7 @@ describe('GeoReplicableFilteredSearchBar', () => {
   };
 
   const findCollapsibleListbox = () => wrapper.findComponent(GlCollapsibleListbox);
+  const findFilteredSearch = () => wrapper.findComponent(GeoReplicableFilteredSearch);
 
   describe('Replicable type listbox', () => {
     beforeEach(() => {
@@ -61,13 +67,37 @@ describe('GeoReplicableFilteredSearchBar', () => {
       expect(findCollapsibleListbox().props('items')).toStrictEqual(expectedSearchedItems);
     });
 
-    it('on select emits search to the parent with the replicable type filter', async () => {
+    it('on select emits search to the parent with the replicable type filter and any existing search filters', async () => {
       findCollapsibleListbox().vm.$emit('select', MOCK_REPLICABLE_TYPES[0].namePlural);
       await nextTick();
 
       expect(wrapper.emitted('search')).toStrictEqual([
-        [[getReplicableTypeFilter(MOCK_REPLICABLE_TYPES[0].namePlural)]],
+        [
+          [
+            getReplicableTypeFilter(MOCK_REPLICABLE_TYPES[0].namePlural),
+            MOCK_REPLICATION_STATUS_FILTER,
+          ],
+        ],
       ]);
+    });
+  });
+
+  describe('Replicable filtered search', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('renders with the correct active filters', () => {
+      expect(findFilteredSearch().props('activeFilters')).toStrictEqual([
+        MOCK_REPLICATION_STATUS_FILTER,
+      ]);
+    });
+
+    it('on search event emits search to the parent with the passed arguments', async () => {
+      findFilteredSearch().vm.$emit('search', [MOCK_REPLICATION_STATUS_FILTER]);
+      await nextTick();
+
+      expect(wrapper.emitted('search')).toStrictEqual([[[MOCK_REPLICATION_STATUS_FILTER]]]);
     });
   });
 });
