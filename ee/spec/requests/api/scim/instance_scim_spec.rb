@@ -589,6 +589,21 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
             expect(another_group_link.reload.scim_group_uid).to eq(scim_group_uid)
           end
         end
+
+        context 'when externalId is not provided' do
+          let(:post_params) { { displayName: group_name } }
+
+          it 'generates a UUID and creates the group' do
+            api_request
+
+            expect(response).to have_gitlab_http_status(:created)
+
+            expect(json_response['id']).to be_present
+            expect(json_response['displayName']).to eq(group_name)
+
+            expect(saml_group_link.reload.scim_group_uid).to eq(json_response['id'])
+          end
+        end
       end
 
       context 'when no matching SAML group exists' do
@@ -616,17 +631,6 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
 
             expect(response).to have_gitlab_http_status(:bad_request)
             expect(json_response['error']).to include('displayName is missing')
-          end
-        end
-
-        context 'when externalId is missing' do
-          let(:post_params) { { displayName: group_name } }
-
-          it 'returns a 400 bad request' do
-            api_request
-
-            expect(response).to have_gitlab_http_status(:bad_request)
-            expect(json_response['error']).to include('externalId is missing')
           end
         end
 
