@@ -364,6 +364,43 @@ RSpec.describe 'Admin updates EE-only settings', feature_category: :shared do
     end
   end
 
+  context 'virtual registries settings', feature_category: :virtual_registry do
+    let(:dependency_proxy_feature_enabled) { true }
+
+    before do
+      stub_config(dependency_proxy: { enabled: dependency_proxy_feature_enabled })
+      visit ci_cd_admin_application_settings_path
+    end
+
+    it 'allows you to change the virtual_registries_endpoints_api_limit setting' do
+      within_testid('virtual-registries-form') do
+        fill_in 'application_setting[virtual_registries_endpoints_api_limit]', with: 500
+        click_button 'Save'
+      end
+
+      expect(current_settings.virtual_registries_endpoints_api_limit).to be 500
+    end
+
+    context 'when virtual_registry_maven is disabled' do
+      before do
+        stub_feature_flags(virtual_registry_maven: false)
+        visit ci_cd_admin_application_settings_path
+      end
+
+      it 'does not display the virtual registry settings' do
+        expect(page).not_to have_selector('[data-testid="virtual-registries-form"]')
+      end
+    end
+
+    context 'when dependency_proxy feature is disabled' do
+      let(:dependency_proxy_feature_enabled) { false }
+
+      it 'does not display the virtual registry settings' do
+        expect(page).not_to have_selector('[data-testid="virtual-registries-form"]')
+      end
+    end
+  end
+
   describe 'sign up settings', :js, feature_category: :user_profile do
     before do
       visit general_admin_application_settings_path

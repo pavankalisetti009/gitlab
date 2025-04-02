@@ -163,7 +163,8 @@ module EE
           service_accounts: [:service_access_tokens_expiration_enforced,
             :allow_top_level_group_owners_to_create_service_accounts],
           disable_personal_access_tokens: :disable_personal_access_tokens,
-          integrations_allow_list: :allowed_integrations_raw
+          integrations_allow_list: :allowed_integrations_raw,
+          packages_virtual_registry: :virtual_registries_endpoints_api_limit
         }.each do |license_feature, attribute_names|
           attrs += Array.wrap(attribute_names) if License.feature_available?(license_feature)
         end

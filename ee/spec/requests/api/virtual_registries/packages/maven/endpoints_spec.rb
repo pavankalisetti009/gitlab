@@ -176,6 +176,16 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Endpoints, :aggregate_fa
         end
       end
 
+      context 'when the endpoint is called too many times' do
+        before do
+          allow(Gitlab::ApplicationRateLimiter).to(
+            receive(:throttled?).with(:virtual_registries_endpoints_api_limit, scope: ['127.0.0.1']).and_return(true)
+          )
+        end
+
+        it_behaves_like 'returning response status', :too_many_requests
+      end
+
       context 'for a invalid registry id' do
         let(:url) { "/virtual_registries/packages/maven/#{non_existing_record_id}/#{path}" }
 

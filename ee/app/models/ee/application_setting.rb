@@ -75,6 +75,8 @@ module EE
       validates :integrations, json_schema: { filename: "application_setting_integrations" }
       validates :elasticsearch, json_schema: { filename: "application_setting_elasticsearch" }
 
+      jsonb_accessor :rate_limits, rate_limits_definition
+
       jsonb_accessor :identity_verification_settings,
         soft_phone_verification_transactions_daily_limit: [::Gitlab::Database::Type::JsonbInteger.new,
           { default: 16_000 }],
@@ -208,6 +210,7 @@ module EE
         :repository_size_limit,
         :elasticsearch_indexed_field_length_limit,
         :elasticsearch_client_request_timeout,
+        :virtual_registries_endpoints_api_limit,
         numericality: { only_integer: true, greater_than_or_equal_to: 0 }
 
       validates :dashboard_limit_enabled, inclusion: { in: [true, false], message: 'must be a boolean value' }
@@ -366,6 +369,13 @@ module EE
           search_max_shard_size_gb: 1,
           search_max_docs_denominator: 100,
           search_min_docs_before_rollover: 50
+        )
+      end
+
+      override :rate_limits_definition
+      def rate_limits_definition
+        super.merge(
+          virtual_registries_endpoints_api_limit: [:integer, { default: 1000 }]
         )
       end
     end

@@ -34,7 +34,10 @@ module EE
               threshold: application_settings.hard_phone_verification_transactions_daily_limit,
               interval: 1.day
             },
-            container_scanning_for_registry_scans: { threshold: 50, interval: 1.day }
+            container_scanning_for_registry_scans: { threshold: 50, interval: 1.day },
+            virtual_registries_endpoints_api_limit: { threshold: -> {
+              application_settings.virtual_registries_endpoints_api_limit
+            }, interval: 15.seconds }
           }).freeze
         end
       end

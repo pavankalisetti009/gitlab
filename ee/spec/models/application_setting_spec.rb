@@ -54,6 +54,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     it { expect(setting.global_search_wiki_enabled).to be(true) }
     it { expect(setting.global_search_block_anonymous_searches_enabled).to be(false) }
     it { expect(setting.global_search_limited_indexing_enabled).to be(false) }
+    it { expect(setting.virtual_registries_endpoints_api_limit).to eq(1000) }
   end
 
   describe 'validations' do
@@ -886,6 +887,19 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
           setting.allowed_integrations = ['asana']
           expect(setting).to be_valid
         end
+      end
+    end
+
+    context 'for non-null integer attributes starting from 0' do
+      where(:attribute) do
+        %i[
+          virtual_registries_endpoints_api_limit
+        ]
+      end
+
+      with_them do
+        it { is_expected.to validate_numericality_of(attribute).only_integer.is_greater_than_or_equal_to(0) }
+        it { is_expected.not_to allow_value(nil).for(attribute) }
       end
     end
   end
