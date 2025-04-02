@@ -3,7 +3,6 @@ import { SCANNERS } from '../constants';
 import SegmentedBar from './segmented_bar.vue';
 
 export default {
-  name: 'GroupToolCoverageIndicator',
   components: {
     SegmentedBar,
   },
@@ -38,12 +37,24 @@ export default {
   <div class="gl-flex gl-flex-row gl-gap-2">
     <div v-for="{ scanner, label } in $options.SCANNERS" :key="scanner" class="gl-w-8">
       <segmented-bar
+        :aria-labelledby="`${scanner}-label`"
         :segments="coverageSegments(scanner)"
         class="gl-mb-1"
         :data-testid="`${scanner}-bar`"
       />
-      <span class="gl-text-sm gl-text-status-neutral" :data-testid="`${scanner}-label`">
+      <span
+        :id="`${scanner}-label`"
+        class="gl-text-sm gl-text-status-neutral"
+        :data-testid="`${scanner}-label`"
+      >
         {{ label }}
+        <span class="gl-sr-only">
+          {{
+            sprintf(s__('SecurityInventory|Tool coverage: %{coverage}%%'), {
+              coverage: scanners[scanner],
+            })
+          }}
+        </span>
       </span>
     </div>
   </div>
