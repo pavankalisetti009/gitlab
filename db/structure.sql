@@ -13618,6 +13618,7 @@ CREATE TABLE deployment_approvals (
     comment text,
     approval_rule_id bigint,
     project_id bigint,
+    ci_build_id bigint,
     CONSTRAINT check_692c1d1b90 CHECK ((project_id IS NOT NULL)),
     CONSTRAINT check_e2eb6a17d8 CHECK ((char_length(comment) <= 255))
 );
@@ -34574,6 +34575,8 @@ CREATE INDEX index_deploy_tokens_on_project_id ON deploy_tokens USING btree (pro
 CREATE UNIQUE INDEX index_deploy_tokens_on_token_encrypted ON deploy_tokens USING btree (token_encrypted);
 
 CREATE INDEX index_deployment_approvals_on_approval_rule_id ON deployment_approvals USING btree (approval_rule_id);
+
+CREATE INDEX index_deployment_approvals_on_ci_build_id ON deployment_approvals USING btree (ci_build_id);
 
 CREATE INDEX index_deployment_approvals_on_created_at_and_id ON deployment_approvals USING btree (created_at, id);
 
