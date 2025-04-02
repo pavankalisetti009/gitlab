@@ -6373,9 +6373,6 @@ msgstr ""
 msgid "AmazonQ|Audience"
 msgstr ""
 
-msgid "AmazonQ|Automatic code reviews can only be enabled when Amazon Q is set to \"On by default\""
-msgstr ""
-
 msgid "AmazonQ|Availability"
 msgstr ""
 
@@ -6415,9 +6412,6 @@ msgstr ""
 msgid "AmazonQ|Delete the IAM role."
 msgstr ""
 
-msgid "AmazonQ|Enable automatic code reviews"
-msgstr ""
-
 msgid "AmazonQ|Enter the IAM role's ARN."
 msgstr ""
 
@@ -6440,6 +6434,9 @@ msgid "AmazonQ|GitLab Duo with Amazon Q has been successfully disconnected"
 msgstr ""
 
 msgid "AmazonQ|GitLab Duo with Amazon Q is ready to go! 🎉"
+msgstr ""
+
+msgid "AmazonQ|Have Amazon Q review code in merge requests automatically"
 msgstr ""
 
 msgid "AmazonQ|I understand that by selecting Save changes, GitLab creates a service account for Amazon Q and sends its credentials to AWS. Use of the Amazon Q Developer capabilities as part of GitLab Duo with Amazon Q is governed by the %{helpStart}AWS Customer Agreement%{helpEnd} or other written agreement between you and AWS governing your use of AWS services. Amazon Q Developer processes data across all US Regions and makes cross-region API calls when your requests require it."

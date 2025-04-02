@@ -73,12 +73,12 @@ export default {
       >
         {{ $options.i18n.defaultOnText }}
 
-        <slot name="amazon-q-settings"></slot>
-
         <template #help>
           <gl-sprintf :message="$options.i18n.defaultOnHelpText" />
         </template>
       </gl-form-radio>
+      <slot name="amazon-q-settings"></slot>
+
       <gl-form-radio
         :value="$options.availabilityOptions.defaultOff"
         :disabled="areDuoSettingsLocked"

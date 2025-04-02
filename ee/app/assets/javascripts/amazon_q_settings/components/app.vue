@@ -11,7 +11,6 @@ import {
   GlSprintf,
   GlModalDirective,
   GlFormCheckbox,
-  GlTooltipDirective,
 } from '@gitlab/ui';
 import axios from '~/lib/utils/axios_utils';
 import { createAndSubmitForm } from '~/lib/utils/create_and_submit_form';
@@ -69,7 +68,6 @@ export default {
   },
   directives: {
     GlModal: GlModalDirective,
-    GlTooltip: GlTooltipDirective,
   },
   props: {
     submitUrl: {
@@ -249,9 +247,8 @@ export default {
   I18N_WARNING_NEVER_ON: s__(
     'AmazonQ|Amazon Q will be turned off for all groups, subgroups, and projects, even if they have previously enabled it.',
   ),
-  I18N_AMAZON_Q_CODE_REVIEW: s__('AmazonQ|Enable automatic code reviews'),
-  I18N_CODE_REVIEW_DISABLED_TOOLTIP: s__(
-    'AmazonQ|Automatic code reviews can only be enabled when Amazon Q is set to "On by default"',
+  I18N_AMAZON_Q_CODE_REVIEW: s__(
+    'AmazonQ|Have Amazon Q review code in merge requests automatically',
   ),
   I18N_COPY: s__('AmazonQ|Copy to clipboard'),
   INPUT_PLACEHOLDER_ARN: 'arn:aws:iam::account-id:role/role-name',
@@ -356,9 +353,6 @@ export default {
           >
             <gl-form-checkbox
               v-model="amazonQCodeReviewEnabled"
-              v-gl-tooltip="
-                availability !== value ? $options.I18N_CODE_REVIEW_DISABLED_TOOLTIP : ''
-              "
               class="gl-pl-6"
               name="auto_review_enabled"
               :disabled="availability !== value"
