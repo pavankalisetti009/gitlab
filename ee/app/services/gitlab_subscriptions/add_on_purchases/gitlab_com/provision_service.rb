@@ -98,7 +98,7 @@ module GitlabSubscriptions
           if name == DUO_PRO || name == DUO_ENTERPRISE
             GitlabSubscriptions::Duo.enterprise_or_pro_for_namespace(namespace.id)
           else
-            GitlabSubscriptions::AddOnPurchase.by_namespace(namespace).by_add_on_name(name).presence
+            GitlabSubscriptions::AddOnPurchase.by_namespace(namespace).by_add_on_name(name).first
           end
         end
 

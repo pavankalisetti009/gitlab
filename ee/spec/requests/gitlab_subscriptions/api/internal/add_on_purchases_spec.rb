@@ -6,12 +6,11 @@ RSpec.describe GitlabSubscriptions::API::Internal::AddOnPurchases, :aggregate_fa
   include GitlabSubscriptions::InternalApiHelpers
 
   let_it_be(:namespace) { create(:group, :with_organization) }
-  let_it_be(:add_on) { create(:gitlab_subscription_add_on, :code_suggestions) }
+
+  let!(:add_on) { create(:gitlab_subscription_add_on, add_on_name.to_sym) }
+
+  let(:add_on_name) { :duo_pro }
   let(:namespace_id) { namespace.id }
-  let(:add_on_name) { add_on.name }
-  let(:add_on_purchases_path) do
-    internal_api("namespaces/#{namespace_id}/subscription_add_on_purchases/#{add_on_name}")
-  end
 
   describe 'POST /internal/gitlab_subscriptions/namespaces/:id/subscription_add_on_purchases' do
     let(:add_on_purchases_path) do
@@ -28,7 +27,7 @@ RSpec.describe GitlabSubscriptions::API::Internal::AddOnPurchases, :aggregate_fa
     let(:params) do
       {
         add_on_purchases: {
-          duo_pro: [
+          "#{add_on_name}": [
             add_on_product
           ]
         }
@@ -45,13 +44,7 @@ RSpec.describe GitlabSubscriptions::API::Internal::AddOnPurchases, :aggregate_fa
       }
     end
 
-    shared_examples 'bulk add-on purchase provision service endpoint' do
-      context 'when the namespace cannot be found' do
-        let(:namespace_id) { non_existing_record_id }
-
-        it { is_expected.to have_gitlab_http_status(:not_found) }
-      end
-
+    shared_examples 'successful request' do
       it 'creates a new add-on purchase', :freeze_time do
         expect { result }.to change { GitlabSubscriptions::AddOnPurchase.count }.by(1)
 
@@ -67,6 +60,16 @@ RSpec.describe GitlabSubscriptions::API::Internal::AddOnPurchases, :aggregate_fa
           'trial' => add_on_product[:trial]
         )
       end
+    end
+
+    shared_examples 'bulk add-on purchase provision service endpoint' do
+      context 'when the namespace cannot be found' do
+        let(:namespace_id) { non_existing_record_id }
+
+        it { is_expected.to have_gitlab_http_status(:not_found) }
+      end
+
+      it_behaves_like 'successful request'
 
       context 'when body is missing parameters' do
         let(:add_on_product) do
@@ -176,6 +179,24 @@ RSpec.describe GitlabSubscriptions::API::Internal::AddOnPurchases, :aggregate_fa
           expect(result.body).to include('Something went wrong')
         end
       end
+
+      context 'with Duo Nano' do
+        let(:add_on_name) { :duo_nano }
+
+        it_behaves_like 'successful request'
+      end
+
+      context 'with Duo Enterprise' do
+        let(:add_on_name) { :duo_enterprise }
+
+        it_behaves_like 'successful request'
+      end
+
+      context 'with Product Analytics' do
+        let(:add_on_name) { :product_analytics }
+
+        it_behaves_like 'successful request'
+      end
     end
 
     subject do
@@ -200,9 +221,13 @@ RSpec.describe GitlabSubscriptions::API::Internal::AddOnPurchases, :aggregate_fa
   end
 
   describe 'GET /namespaces/:id/subscription_add_on_purchases/:add_on_name' do
+    let(:add_on_purchase_path) do
+      internal_api("namespaces/#{namespace_id}/subscription_add_on_purchases/#{add_on.name}")
+    end
+
     context 'when unauthenticated' do
       it 'returns authentication error' do
-        get add_on_purchases_path
+        get add_on_purchase_path
 
         expect(response).to have_gitlab_http_status(:unauthorized)
       end
@@ -217,17 +242,18 @@ RSpec.describe GitlabSubscriptions::API::Internal::AddOnPurchases, :aggregate_fa
         let(:namespace_id) { non_existing_record_id }
 
         it 'returns a not_found error' do
-          get add_on_purchases_path, headers: internal_api_headers
+          get add_on_purchase_path, headers: internal_api_headers
 
           expect(response).to have_gitlab_http_status(:not_found)
         end
       end
 
       context 'when the add-on cannot be found' do
+        let!(:add_on) { create(:gitlab_subscription_add_on) }
         let(:add_on_name) { 'non-existing-add-on' }
 
         it 'returns a not_found error' do
-          get add_on_purchases_path, headers: internal_api_headers
+          get add_on_purchase_path, headers: internal_api_headers
 
           expect(response).to have_gitlab_http_status(:not_found)
         end
@@ -235,7 +261,7 @@ RSpec.describe GitlabSubscriptions::API::Internal::AddOnPurchases, :aggregate_fa
 
       context 'when the add-on purchase does not exist' do
         it 'returns a not_found error' do
-          get add_on_purchases_path, headers: internal_api_headers
+          get add_on_purchase_path, headers: internal_api_headers
 
           expect(response).to have_gitlab_http_status(:not_found)
         end
@@ -245,7 +271,7 @@ RSpec.describe GitlabSubscriptions::API::Internal::AddOnPurchases, :aggregate_fa
         it 'returns the found add-on purchase' do
           add_on_purchase = create(:gitlab_subscription_add_on_purchase, namespace: namespace, add_on: add_on)
 
-          get add_on_purchases_path, headers: internal_api_headers
+          get add_on_purchase_path, headers: internal_api_headers
 
           expect(response).to have_gitlab_http_status(:success)
           expect(json_response).to eq(

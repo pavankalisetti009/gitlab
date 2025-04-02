@@ -33,5 +33,10 @@ FactoryBot.define do
       name { GitlabSubscriptions::AddOn.names[:duo_nano] }
       description { GitlabSubscriptions::AddOn.descriptions[:duo_nano] }
     end
+
+    trait :duo_pro do
+      name { GitlabSubscriptions::AddOn.names[:code_suggestions] }
+      description { GitlabSubscriptions::AddOn.descriptions[:code_suggestions] }
+    end
   end
 end
