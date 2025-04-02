@@ -40431,6 +40431,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="workitemdescription"></a>`description` | [`String`](#string) | Description of the work item. |
 | <a id="workitemdescriptionhtml"></a>`descriptionHtml` | [`String`](#string) | GitLab Flavored Markdown rendering of `description`. |
 | <a id="workitemduplicatedtoworkitemurl"></a>`duplicatedToWorkItemUrl` | [`String`](#string) | URL of the work item that the work item is marked as a duplicate of. |
+| <a id="workitemhidden"></a>`hidden` | [`Boolean`](#boolean) | Indicates the work item is hidden because the author has been banned. |
 | <a id="workitemid"></a>`id` | [`WorkItemID!`](#workitemid) | Global ID of the work item. |
 | <a id="workitemiid"></a>`iid` | [`String!`](#string) | Internal ID of the work item. |
 | <a id="workitemlockversion"></a>`lockVersion` | [`Int!`](#int) | Lock version of the work item. Incremented each time the work item is updated. |
@@ -41150,16 +41151,28 @@ Represents a test reports widget.
 
 ### `WorkItemWidgetTimeTracking`
 
-Represents a time tracking widget.
+Represents the time tracking widget on the work item.
 
 #### Fields
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="workitemwidgettimetrackinghumanreadableattributes"></a>`humanReadableAttributes` | [`WorkItemWidgetTimeTrackingHumanReadableAttributes`](#workitemwidgettimetrackinghumanreadableattributes) | Human-readable attributes of the work item. |
 | <a id="workitemwidgettimetrackingtimeestimate"></a>`timeEstimate` | [`Int`](#int) | Time estimate of the work item. |
 | <a id="workitemwidgettimetrackingtimelogs"></a>`timelogs` | [`WorkItemTimelogConnection`](#workitemtimelogconnection) | Timelogs on the work item. (see [Connections](#connections)) |
 | <a id="workitemwidgettimetrackingtotaltimespent"></a>`totalTimeSpent` | [`Int`](#int) | Total time (in seconds) reported as spent on the work item. |
 | <a id="workitemwidgettimetrackingtype"></a>`type` | [`WorkItemWidgetType`](#workitemwidgettype) | Widget type. |
+
+### `WorkItemWidgetTimeTrackingHumanReadableAttributes`
+
+Represents a time tracking human readable attributes.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="workitemwidgettimetrackinghumanreadableattributestimeestimate"></a>`timeEstimate` | [`String`](#string) | Human-readable time estimate of the work item. |
+| <a id="workitemwidgettimetrackinghumanreadableattributestotaltimespent"></a>`totalTimeSpent` | [`String`](#string) | Human-readable total time reported as spent on the work item. |
 
 ### `WorkItemWidgetVerificationStatus`
 
