@@ -33,6 +33,7 @@ import {
   ADD_ON_PURCHASE_FETCH_ERROR_CODE,
 } from 'ee/usage_quotas/error_constants';
 import ErrorAlert from 'ee/vue_shared/components/error_alert/error_alert.vue';
+import DuoAmazonQInfoCard from 'ee/ai/settings/components/duo_amazon_q_info_card.vue';
 import CodeSuggestionsIntro from './code_suggestions_intro.vue';
 import CodeSuggestionsInfoCard from './code_suggestions_info_card.vue';
 import CodeSuggestionsStatisticsCard from './code_suggestions_usage_statistics_card.vue';
@@ -48,6 +49,7 @@ export default {
     CodeSuggestionsIntro,
     CodeSuggestionsStatisticsCard,
     CodeSuggestionsUsageLoader,
+    DuoAmazonQInfoCard,
     GlBadge,
     GlAlert,
     GlSprintf,
@@ -299,9 +301,7 @@ export default {
         <slot name="health-check"></slot>
       </template>
 
-      <section v-if="isDuoTierAmazonQ" data-testid="duo-amazon-q-info-card">
-        <!-- This section is a placeholder, it'll be replaced by a `duo-amazon-q-info-card` component, see issue: https://gitlab.com/gitlab-org/gitlab/-/issues/532330 -->
-      </section>
+      <duo-amazon-q-info-card v-if="isDuoTierAmazonQ" />
       <section v-else-if="hasCodeSuggestions">
         <slot name="duo-card" v-bind="{ totalValue, usageValue, duoTier }">
           <template v-if="isSaaS && !isStandalonePage && duoPagePath">
