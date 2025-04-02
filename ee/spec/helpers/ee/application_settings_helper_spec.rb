@@ -83,10 +83,13 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
   end
 
   describe '.possible_licensed_attributes' do
-    it 'contains secret_push_protection_enabled' do
-      expect(described_class.possible_licensed_attributes).to include(
-        :secret_push_protection_available
-      )
+    %i[
+      secret_push_protection_available
+      virtual_registries_endpoints_api_limit
+    ].each do |setting|
+      it "contains #{setting}" do
+        expect(described_class.possible_licensed_attributes).to include(setting)
+      end
     end
   end
 

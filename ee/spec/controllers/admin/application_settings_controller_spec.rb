@@ -147,6 +147,16 @@ RSpec.describe Admin::ApplicationSettingsController do
       it_behaves_like 'settings for licensed features'
     end
 
+    context 'for virtual registries' do
+      let(:license_feature) { :packages_virtual_registry }
+
+      context 'when updating the API rate limit' do
+        let(:settings) { { virtual_registries_endpoints_api_limit: 500 } }
+
+        it_behaves_like 'settings for licensed features'
+      end
+    end
+
     context 'for sign-up restrictions' do
       context 'with seat control' do
         context 'and member promotion management' do

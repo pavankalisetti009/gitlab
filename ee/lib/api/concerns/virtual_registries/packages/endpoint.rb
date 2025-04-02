@@ -100,6 +100,7 @@ module API
 
             after_validation do
               require_non_web_browser!
+              check_rate_limit!(:virtual_registries_endpoints_api_limit, scope: [ip_address])
             end
           end
         end

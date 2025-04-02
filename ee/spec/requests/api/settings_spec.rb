@@ -437,6 +437,13 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
     it_behaves_like 'settings for licensed features'
   end
 
+  context 'updating virtual registries endpoints api limit' do
+    let(:settings) { { virtual_registries_endpoints_api_limit: 500 } }
+    let(:feature) { :packages_virtual_registry }
+
+    it_behaves_like 'settings for licensed features'
+  end
+
   context 'maintenance mode' do
     let(:settings) do
       {

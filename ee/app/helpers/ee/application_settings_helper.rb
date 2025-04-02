@@ -156,6 +156,7 @@ module EE
           allow_top_level_group_owners_to_create_service_accounts
           secret_detection_service_auth_token
           secret_detection_service_url
+          virtual_registries_endpoints_api_limit
         ]
     end
 

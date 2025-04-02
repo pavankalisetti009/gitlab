@@ -50,6 +50,12 @@ module EE
               )
             end
 
+            unless License.feature_available?(:packages_virtual_registry)
+              attrs = attrs.except(
+                :virtual_registries_endpoints_api_limit
+              )
+            end
+
             unless ::License.feature_available?(:password_complexity)
               attrs = attrs.except(*EE::ApplicationSettingsHelper.password_complexity_attributes)
             end
