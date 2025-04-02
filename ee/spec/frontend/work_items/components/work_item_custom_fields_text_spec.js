@@ -10,6 +10,7 @@ import WorkItemCustomFieldText from 'ee/work_items/components/work_item_custom_f
 import { ENTER_KEY } from '~/lib/utils/keys';
 import WorkItemSidebarWidget from '~/work_items/components/shared/work_item_sidebar_widget.vue';
 import { CUSTOM_FIELDS_TYPE_NUMBER, CUSTOM_FIELDS_TYPE_TEXT } from '~/work_items/constants';
+import { newWorkItemId } from '~/work_items/utils';
 import updateWorkItemCustomFieldsMutation from 'ee/work_items/graphql/update_work_item_custom_fields.mutation.graphql';
 import { customFieldsWidgetResponseFactory } from 'jest/work_items/mock_data';
 
@@ -180,6 +181,21 @@ describe('WorkItemCustomFieldsText', () => {
   });
 
   describe('updating the value', () => {
+    it('does not call "workItemUpdate" mutation when option is selected if is create flow', async () => {
+      createComponent({ workItemId: newWorkItemId('Issue') });
+      await nextTick();
+
+      const newValue = 'Updated text';
+
+      await findEditButton().vm.$emit('click');
+      findInput().vm.$emit('input', newValue);
+      findInput().vm.$emit('blur');
+
+      await waitForPromises();
+
+      expect(mutationSuccessHandler).not.toHaveBeenCalled();
+    });
+
     it('sends mutation with correct variables when updating text', async () => {
       createComponent();
       const newValue = 'Updated text';

@@ -9,12 +9,14 @@ import {
 } from '@gitlab/ui';
 import { n__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import { newWorkItemId } from '~/work_items/utils';
 import {
   CUSTOM_FIELDS_TYPE_TEXT,
   I18N_WORK_ITEM_ERROR_UPDATING,
   sprintfWorkItem,
 } from '~/work_items/constants';
 import updateWorkItemCustomFieldsMutation from 'ee/work_items/graphql/update_work_item_custom_fields.mutation.graphql';
+import updateNewWorkItemMutation from '~/work_items/graphql/update_new_work_item.mutation.graphql';
 import { isValidURL } from '~/lib/utils/url_utility';
 import WorkItemSidebarWidget from '~/work_items/components/shared/work_item_sidebar_widget.vue';
 
@@ -58,6 +60,10 @@ export default {
         );
       },
     },
+    fullPath: {
+      type: String,
+      required: true,
+    },
   },
   data() {
     return {
@@ -69,7 +75,7 @@ export default {
     customFieldId() {
       return this.customField.customField?.id;
     },
-    label() {
+    customFieldName() {
       return this.customField.customField?.name;
     },
     charactersRemaining() {
@@ -137,6 +143,27 @@ export default {
       }
 
       this.isUpdating = true;
+      this.isEditing = false;
+
+      // Create work item flow
+      if (this.workItemId === newWorkItemId(this.workItemType)) {
+        this.$apollo.mutate({
+          mutation: updateNewWorkItemMutation,
+          variables: {
+            input: {
+              workItemType: this.workItemType,
+              fullPath: this.fullPath,
+              customField: {
+                id: this.customFieldId,
+                textValue,
+              },
+            },
+          },
+        });
+
+        this.isUpdating = false;
+        return;
+      }
 
       this.$apollo
         .mutate({
@@ -179,7 +206,7 @@ export default {
     @stopEditing="updateText"
   >
     <template #title>
-      {{ label }}
+      {{ customFieldName }}
     </template>
     <template #content>
       <template v-if="hasValue">
@@ -206,7 +233,7 @@ export default {
       <div class="gl-relative gl-px-2">
         <gl-form-group
           :description="inputWarning"
-          :label="label"
+          :label="customFieldName"
           label-for="custom-field-text-input"
           label-sr-only
         >
