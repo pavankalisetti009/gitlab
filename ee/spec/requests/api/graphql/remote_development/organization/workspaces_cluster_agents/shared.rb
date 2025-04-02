@@ -76,7 +76,7 @@ end
 # SHARED EXAMPLES - MAIN ENTRY POINTS FOR TESTING
 #------------------------------------------------
 
-RSpec.shared_examples "multiple agents query" do
+RSpec.shared_examples "multiple agents in organization query" do
   include_context "in licensed environment"
 
   let(:agent_names) { actual_agents.pluck("name") }
