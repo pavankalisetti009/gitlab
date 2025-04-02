@@ -163,6 +163,18 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
         expect(identity_verified?).to eq(false)
       end
 
+      context 'when identity verification is not enabled' do
+        before do
+          allow(user).to receive(:identity_verification_enabled?).and_return(false)
+        end
+
+        it 'returns true without performing the bot check' do
+          expect(user).not_to receive(:project_bot?)
+
+          expect(identity_verified?).to eq(true)
+        end
+      end
+
       context 'when the user is not a project bot' do
         let(:user) { build_stubbed(:user, :admin_bot) }
 
@@ -189,22 +201,24 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
         let_it_be(:user) { build_stubbed(:user, :project_bot) }
 
         context 'when the bot was created after the feature release date' do
-          it 'does not verify the user', :aggregate_failures do
-            expect(user).to receive(:created_after_require_identity_verification_release_day?).and_return(true)
+          it 'fails the identity verification check' do
+            user.created_at = described_class::IDENTITY_VERIFICATION_RELEASE_DATE + 1.day
+
             expect(identity_verified?).to eq(false)
           end
         end
 
         context 'when the bot was created before the feature release date' do
-          it 'verifies the user' do
-            expect(user).to receive(:created_after_require_identity_verification_release_day?).and_return(false)
+          it 'passes the identity verification check' do
+            user.created_at = described_class::IDENTITY_VERIFICATION_RELEASE_DATE - 1.day
+
             expect(identity_verified?).to eq(true)
           end
         end
       end
 
       context 'when the bot creator has been banned' do
-        it 'does not verify the user', :aggregate_failures do
+        it 'fails the identity verification check', :aggregate_failures do
           expect(human_user).to receive(:banned?).and_return(true)
           expect(human_user).not_to receive(:identity_verified?)
 
