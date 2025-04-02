@@ -65,12 +65,22 @@ RSpec.describe GitlabSubscriptions::API::Internal::Members, :aggregate_failures,
         it 'returns only direct owners of the namespace' do
           expected_response = [
             {
-              'user' => { 'id' => owner_1.id, 'username' => a_kind_of(String), 'name' => a_kind_of(String) },
+              'user' => {
+                'id' => owner_1.id,
+                'username' => a_kind_of(String),
+                'name' => a_kind_of(String),
+                'public_email' => nil
+              },
               'access_level' => 50,
               'notification_email' => a_kind_of(String)
             },
             {
-              'user' => { 'id' => owner_2.id, 'username' => a_kind_of(String), 'name' => a_kind_of(String) },
+              'user' => {
+                'id' => owner_2.id,
+                'username' => a_kind_of(String),
+                'name' => a_kind_of(String),
+                'public_email' => nil
+              },
               'access_level' => 50,
               'notification_email' => a_kind_of(String)
             }

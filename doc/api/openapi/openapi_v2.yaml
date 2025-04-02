@@ -43507,6 +43507,9 @@ definitions:
       username:
         type: string
         example: admin
+      public_email:
+        type: string
+        example: john@example.com
       name:
         type: string
         example: Administrator
@@ -43591,6 +43594,9 @@ definitions:
       username:
         type: string
         example: admin
+      public_email:
+        type: string
+        example: john@example.com
       name:
         type: string
         example: Administrator
@@ -45139,6 +45145,9 @@ definitions:
       username:
         type: string
         example: admin
+      public_email:
+        type: string
+        example: john@example.com
       name:
         type: string
         example: Administrator
@@ -45165,8 +45174,6 @@ definitions:
       bio:
         type: string
       location:
-        type: string
-      public_email:
         type: string
       skype:
         type: string
@@ -48158,6 +48165,9 @@ definitions:
       username:
         type: string
         example: admin
+      public_email:
+        type: string
+        example: john@example.com
       name:
         type: string
         example: Administrator
@@ -48171,6 +48181,9 @@ definitions:
       username:
         type: string
         example: admin
+      public_email:
+        type: string
+        example: john@example.com
       name:
         type: string
         example: Administrator
@@ -49500,6 +49513,9 @@ definitions:
       username:
         type: string
         example: admin
+      public_email:
+        type: string
+        example: john@example.com
       name:
         type: string
         example: Administrator
@@ -49526,8 +49542,6 @@ definitions:
       bio:
         type: string
       location:
-        type: string
-      public_email:
         type: string
       skype:
         type: string
@@ -64616,6 +64630,9 @@ definitions:
       username:
         type: string
         example: admin
+      public_email:
+        type: string
+        example: john@example.com
       name:
         type: string
         example: Administrator
@@ -64642,8 +64659,6 @@ definitions:
       bio:
         type: string
       location:
-        type: string
-      public_email:
         type: string
       skype:
         type: string

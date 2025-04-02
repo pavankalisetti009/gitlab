@@ -33,7 +33,7 @@ RSpec.describe GitlabSubscriptions::API::Internal::Users, :aggregate_failures, :
           expect(response).to have_gitlab_http_status(:ok)
 
           expect(json_response["id"]).to eq(user.id)
-          expect(json_response.keys).to eq(%w[id username name web_url])
+          expect(json_response.keys).to eq(%w[id username public_email name web_url])
         end
       end
 

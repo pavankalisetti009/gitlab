@@ -684,7 +684,7 @@ RSpec.describe Projects::IssuesController, feature_category: :team_planning do
         update_issue(issue_params: { assignee_ids: [assignee.id] })
 
         expect(json_response['assignees'].first.keys)
-          .to match_array(%w[id name username avatar_url state locked web_url])
+          .to match_array(%w[id name username public_email avatar_url state locked web_url])
       end
     end
   end

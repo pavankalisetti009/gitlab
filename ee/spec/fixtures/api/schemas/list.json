@@ -31,6 +31,9 @@
             "username": {
               "type": "string"
             },
+            "public_email": {
+              "type": ["string", "null"]
+            },
             "state": {
               "type": "string"
             },
