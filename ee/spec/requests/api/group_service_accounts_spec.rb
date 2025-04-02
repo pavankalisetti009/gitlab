@@ -740,6 +740,17 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
           perform_request
 
           expect(response).to have_gitlab_http_status(:not_found)
+          expect(json_response['message']).to eq("404 Group Not Found")
+        end
+      end
+
+      context 'when service account does not exist' do
+        let(:service_account) { non_existing_record_id }
+
+        it "returns error" do
+          perform_request
+
+          expect(response).to have_gitlab_http_status(:forbidden)
         end
       end
 
@@ -1022,7 +1033,6 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
 
           context 'when the service account does not belong to the group' do
             let(:other_group) { create(:group) }
-            let_it_be(:service_account_user) { create(:user, :service_account) }
 
             before do
               service_account_user.provisioned_by_group_id = other_group.id

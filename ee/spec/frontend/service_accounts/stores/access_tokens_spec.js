@@ -62,7 +62,7 @@ describe('useAccessTokens store', () => {
     const urlCreate = '/api/v4/groups/1/service_accounts/:id/personal_access_tokens';
     const urlRevoke = '/api/v4/groups/2/service_accounts/:id/personal_access_tokens';
     const urlRotate = '/api/v4/groups/3/service_accounts/:id/personal_access_tokens';
-    const urlShow = '/api/v4/personal_access_tokens';
+    const urlShow = '/api/v4/groups/4/service_accounts/:id/personal_access_token';
 
     const headers = {
       'X-Page': 1,
@@ -186,6 +186,23 @@ describe('useAccessTokens store', () => {
         update2WeekFromNow.mockReturnValueOnce([{ title, tooltipTitle, filters }]);
       });
 
+      it('uses correct params in the fetch', async () => {
+        await store.fetchStatistics();
+
+        expect(mockAxios.history.get).toHaveLength(1);
+        expect(mockAxios.history.get[0]).toEqual(
+          expect.objectContaining({
+            url: '/api/v4/groups/4/service_accounts/235/personal_access_token',
+            params: {
+              page: 1,
+              sort: 'expires_asc',
+              search: 'dummy',
+              user_id: 235,
+            },
+          }),
+        );
+      });
+
       it('fetches all statistics successfully and updates the store', async () => {
         mockAxios.onGet().replyOnce(HTTP_STATUS_OK, [], headers);
         await store.fetchStatistics();
@@ -237,9 +254,7 @@ describe('useAccessTokens store', () => {
       });
 
       it('updates tokens and sets busy to false after fetching', async () => {
-        mockAxios
-          .onGet(urlShow)
-          .replyOnce(HTTP_STATUS_OK, [{ active: true, name: 'Token' }], headers);
+        mockAxios.onGet().replyOnce(HTTP_STATUS_OK, [{ active: true, name: 'Token' }], headers);
         await store.fetchTokens();
 
         expect(store.tokens).toHaveLength(1);
@@ -269,7 +284,7 @@ describe('useAccessTokens store', () => {
         expect(mockAxios.history.get).toHaveLength(1);
         expect(mockAxios.history.get[0]).toEqual(
           expect.objectContaining({
-            url: urlShow,
+            url: '/api/v4/groups/4/service_accounts/235/personal_access_token',
             params: {
               page: 1,
               sort: 'expires_asc',
