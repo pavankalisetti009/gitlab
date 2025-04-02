@@ -414,30 +414,58 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectApprovalPolic
     end
 
     context 'with license_finding rule_type' do
-      let_it_be(:approval_policy_rule) do
-        create(:approval_policy_rule, :license_finding, security_policy: security_policy)
+      shared_examples_for 'creates approval_rules with valid params' do
+        it 'creates approval_rules with valid params' do
+          create_rules
+
+          approval_rule = project.approval_rules.first
+
+          expect(approval_rule.severity_levels).to be_empty
+        end
       end
 
-      it 'creates scan_result_policy_read' do
-        create_rules
+      context 'when approval_policy_rule does not contains the license_types attribute' do
+        let_it_be(:approval_policy_rule) do
+          create(:approval_policy_rule, :license_finding_with_allowed_licenses, security_policy: security_policy)
+        end
 
-        scan_result_policy_read = project.approval_rules.first.scan_result_policy_read
-        expect(scan_result_policy_read).to eq(Security::ScanResultPolicyRead.first)
-        expect(scan_result_policy_read.match_on_inclusion_license).to be_truthy
-        expect(scan_result_policy_read.license_states).to match_array(%w[newly_detected detected])
-        expect(scan_result_policy_read.rule_idx).to be(approval_policy_rule.rule_index)
+        it 'creates scan_result_policy_read' do
+          create_rules
+
+          scan_result_policy_read = project.approval_rules.first.scan_result_policy_read
+          expect(scan_result_policy_read).to eq(Security::ScanResultPolicyRead.first)
+          expect(scan_result_policy_read.licenses).to be_present
+          expect(scan_result_policy_read.license_states).to match_array(%w[newly_detected detected])
+          expect(scan_result_policy_read.rule_idx).to be(approval_policy_rule.rule_index)
+        end
+
+        it 'does not creates software_license_policies' do
+          expect { create_rules }.not_to change { project.software_license_policies.count }
+        end
+
+        it_behaves_like 'creates approval_rules with valid params'
       end
 
-      it 'creates software_license_policies' do
-        expect { create_rules }.to change { project.software_license_policies.count }.by(2)
-      end
+      context 'when approval_policy_rule contains the license_types attribute' do
+        let_it_be(:approval_policy_rule) do
+          create(:approval_policy_rule, :license_finding, security_policy: security_policy)
+        end
 
-      it 'creates approval_rules with valid params' do
-        create_rules
+        it 'creates scan_result_policy_read' do
+          create_rules
 
-        approval_rule = project.approval_rules.first
+          scan_result_policy_read = project.approval_rules.first.scan_result_policy_read
+          expect(scan_result_policy_read).to eq(Security::ScanResultPolicyRead.first)
+          expect(scan_result_policy_read.match_on_inclusion_license).to be_truthy
+          expect(scan_result_policy_read.license_states).to match_array(%w[newly_detected detected])
+          expect(scan_result_policy_read.rule_idx).to be(approval_policy_rule.rule_index)
+        end
 
-        expect(approval_rule.severity_levels).to be_empty
+        it 'creates software_license_policies' do
+          expect { create_rules }.to change { project.software_license_policies.count }.by(2)
+        end
+
+        it_behaves_like 'creates approval_rules with valid params'
       end
     end
 

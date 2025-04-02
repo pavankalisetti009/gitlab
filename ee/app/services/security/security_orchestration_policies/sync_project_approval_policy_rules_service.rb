@@ -151,7 +151,7 @@ module Security
       strong_memoize_attr :approval_action
 
       def sync_license_scanning_rule(approval_policy_rule, scan_result_policy_read)
-        return unless approval_policy_rule.type_license_finding?
+        return unless approval_policy_rule.type_license_finding? && approval_policy_rule.license_types.present?
 
         Security::SecurityOrchestrationPolicies::SyncLicensePolicyRuleService.new(
           project: project,
@@ -235,6 +235,7 @@ module Security
           orchestration_policy_idx: security_policy.policy_index,
           rule_idx: approval_policy_rule.rule_index,
           license_states: rule_content[:license_states],
+          licenses: rule_content[:licenses] || {},
           match_on_inclusion_license: rule_content[:match_on_inclusion_license] || false,
           role_approvers: role_access_levels(approval_action&.dig(:role_approvers)),
           custom_roles: custom_role_approvers(approval_action&.dig(:role_approvers)),

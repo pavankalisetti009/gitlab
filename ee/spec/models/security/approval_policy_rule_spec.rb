@@ -128,4 +128,73 @@ RSpec.describe Security::ApprovalPolicyRule, feature_category: :security_policy_
       expect(result).not_to include(rule_with_negative_index)
     end
   end
+
+  describe '.licenses' do
+    let_it_be(:rule) { build(:approval_policy_rule, :any_merge_request) }
+
+    subject(:licenses) { rule.licenses }
+
+    context 'when typed_content does not contain licenses information' do
+      it 'returns nil' do
+        expect(licenses).to be_nil
+      end
+    end
+
+    context 'when typed_content contain licenses information' do
+      let_it_be(:allowed_licenses) do
+        { "allowed" => [{ "name" => "MIT License",
+                          "packages" => { "excluding" => { "purls" => ["pkg:gem/bundler@1.0.0"] } } }] }
+      end
+
+      let_it_be(:rule) { build(:approval_policy_rule, :license_finding_with_allowed_licenses) }
+
+      it 'returns the list of licenses' do
+        expect(licenses).to eq(allowed_licenses)
+      end
+    end
+  end
+
+  describe '.license_states' do
+    let_it_be(:rule) { build(:approval_policy_rule, :any_merge_request) }
+
+    subject(:license_states) { rule.license_states }
+
+    context 'when typed_content does not contain license_states information' do
+      it 'returns nil' do
+        expect(license_states).to be_nil
+      end
+    end
+
+    context 'when typed_content contain license_states information' do
+      let_it_be(:expected_license_states) { %w[newly_detected detected] }
+
+      let_it_be(:rule) { build(:approval_policy_rule, :license_finding_with_allowed_licenses) }
+
+      it 'returns the list of licenses' do
+        expect(license_states).to eq(expected_license_states)
+      end
+    end
+  end
+
+  describe '.license_types' do
+    let_it_be(:rule) { build(:approval_policy_rule, :any_merge_request) }
+
+    subject(:license_types) { rule.license_types }
+
+    context 'when typed_content does not contain license_types information' do
+      it 'returns nil' do
+        expect(license_types).to be_nil
+      end
+    end
+
+    context 'when typed_content contain license_states information' do
+      let_it_be(:expected_license_types) { %w[BSD MIT] }
+
+      let_it_be(:rule) { build(:approval_policy_rule, :license_finding) }
+
+      it 'returns the list of licenses' do
+        expect(license_types).to eq(expected_license_types)
+      end
+    end
+  end
 end

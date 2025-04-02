@@ -5,16 +5,16 @@ module Security
     class DeniedLicensesChecker
       include Gitlab::Utils::StrongMemoize
 
-      def initialize(project, report, target_branch_report, scan_result_policy_read)
+      def initialize(project, report, target_branch_report, scan_result_policy_read, approval_policy_rule)
         @project = project
         @report = report
         @target_branch_report = target_branch_report
         @scan_result_policy_read = scan_result_policy_read
+        @approval_policy_rule = approval_policy_rule
       end
 
       def denied_licenses_with_dependencies
         licenses_violating_policy = []
-        policy_licenses = scan_result_policy_read.licenses
         policy_denied_licenses = policy_licenses["denied"]
         policy_allowed_licenses = policy_licenses["allowed"]
 
@@ -31,7 +31,21 @@ module Security
 
       private
 
-      attr_reader :project, :report, :target_branch_report, :scan_result_policy_read
+      attr_reader :project, :report, :target_branch_report, :scan_result_policy_read, :approval_policy_rule
+
+      def policy_licenses
+        if read_model_enabled && approval_policy_rule&.licenses.present?
+          approval_policy_rule.licenses
+        else
+          scan_result_policy_read&.licenses
+        end
+      end
+      strong_memoize_attr :policy_licenses
+
+      def read_model_enabled
+        Feature.enabled?(:use_approval_policy_rules_for_approval_rules, project)
+      end
+      strong_memoize_attr :read_model_enabled
 
       def license_dependencies_map(licenses_violating_policy)
         licenses_violating_policy_map = Hash.new(Set.new)
@@ -157,12 +171,10 @@ module Security
       end
 
       def licenses_to_check
-        only_newly_detected = scan_result_policy_read.license_states == [ApprovalProjectRule::NEWLY_DETECTED]
-
-        if only_newly_detected
+        if only_newly_detected?
           diff = target_branch_report.diff_with_including_new_dependencies_for_unchanged_licenses(report)
           licenses_to_check = diff[:added]
-        elsif scan_result_policy_read.newly_detected?
+        elsif include_newly_detected?
           licenses_to_check = report.licenses + target_branch_report.licenses
         else
           licenses_to_check = target_branch_report.licenses
@@ -171,6 +183,23 @@ module Security
         licenses_to_check
       end
       strong_memoize_attr :licenses_to_check
+
+      def only_newly_detected?
+        license_states == [ApprovalProjectRule::NEWLY_DETECTED]
+      end
+
+      def include_newly_detected?
+        license_states.include?(ApprovalProjectRule::NEWLY_DETECTED)
+      end
+
+      def license_states
+        if read_model_enabled && approval_policy_rule&.license_states.present?
+          approval_policy_rule.license_states
+        else
+          scan_result_policy_read.license_states
+        end
+      end
+      strong_memoize_attr :license_states
     end
   end
 end

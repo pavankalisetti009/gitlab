@@ -180,17 +180,46 @@ RSpec.describe Security::ScanResultPolicies::UpdateLicenseApprovalsService, feat
 
     context 'when the licenses field is present' do
       let(:licenses) { { denied: [{ name: 'MIT License' }] } }
-      let(:scan_result_policy_read) do
-        create(:scan_result_policy_read, project: project, license_states: license_states, licenses: licenses)
-      end
 
-      before do
-        allow_next_instance_of(Security::MergeRequestApprovalPolicies::DeniedLicensesChecker) do |checker|
-          allow(checker).to receive(:denied_licenses_with_dependencies).and_return({ 'GNU' => ['A'] })
+      context 'when the scan_result_policy_read has the license information' do
+        let(:scan_result_policy_read) do
+          create(:scan_result_policy_read, project: project, license_states: license_states, licenses: licenses)
         end
+
+        before do
+          allow_next_instance_of(Security::MergeRequestApprovalPolicies::DeniedLicensesChecker,
+            project, anything, anything, scan_result_policy_read, nil) do |checker|
+            allow(checker).to receive(:denied_licenses_with_dependencies).and_return({ 'GNU' => ['A'] })
+          end
+        end
+
+        it_behaves_like 'saves violation without pipeline id'
       end
 
-      it_behaves_like 'saves violation without pipeline id'
+      context 'when the approval_policy_rule has the license information' do
+        let(:approval_policy_rule_content) do
+          {
+            type: 'license_finding',
+            branches: [],
+            license_states: license_states,
+            licenses: licenses
+          }
+        end
+
+        let(:approval_policy_rule) do
+          create(:approval_policy_rule, :license_finding_with_allowed_licenses,
+            content: approval_policy_rule_content)
+        end
+
+        before do
+          allow_next_instance_of(Security::MergeRequestApprovalPolicies::DeniedLicensesChecker,
+            project, anything, anything, nil, approval_policy_rule) do |checker|
+            allow(checker).to receive(:denied_licenses_with_dependencies).and_return({ 'GNU' => ['A'] })
+          end
+        end
+
+        it_behaves_like 'saves violation without pipeline id'
+      end
     end
 
     context 'when there are no violations' do
