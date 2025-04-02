@@ -1,5 +1,9 @@
 import { shallowMount } from '@vue/test-utils';
 import { GlPopover, GlSprintf } from '@gitlab/ui';
+import {
+  OPERATORS_IS,
+  OPERATORS_IS_NOT,
+} from '~/vue_shared/components/filtered_search_bar/constants';
 import GroupDependenciesFilteredSearch from 'ee/dependencies/components/filtered_search/group_dependencies_filtered_search.vue';
 import DependenciesFilteredSearch from 'ee/dependencies/components/filtered_search/dependencies_filtered_search.vue';
 import LicenseToken from 'ee/dependencies/components/filtered_search/tokens/license_token.vue';
@@ -52,10 +56,10 @@ describe('GroupDependenciesFilteredSearch', () => {
 
     it.each`
       tokenTitle     | tokenConfig
-      ${'License'}   | ${{ title: 'License', type: 'licenses', multiSelect: true, token: LicenseToken }}
-      ${'Project'}   | ${{ title: 'Project', type: 'project_ids', multiSelect: true, token: ProjectToken }}
-      ${'Component'} | ${{ title: 'Component', type: 'component_names', multiSelect: true, token: ComponentToken }}
-      ${'Version'}   | ${{ title: 'Version', type: 'component_version_ids', multiSelect: true, token: VersionToken }}
+      ${'License'}   | ${{ title: 'License', type: 'licenses', multiSelect: true, token: LicenseToken, operators: OPERATORS_IS }}
+      ${'Project'}   | ${{ title: 'Project', type: 'project_ids', multiSelect: true, token: ProjectToken, operators: OPERATORS_IS }}
+      ${'Component'} | ${{ title: 'Component', type: 'component_names', multiSelect: true, token: ComponentToken, operators: OPERATORS_IS }}
+      ${'Version'}   | ${{ title: 'Version', type: 'component_version_ids', multiSelect: true, token: VersionToken, operators: OPERATORS_IS_NOT }}
     `('contains a "$tokenTitle" search token', ({ tokenConfig }) => {
       expect(findDependenciesFilteredSearch().props('tokens')).toMatchObject(
         expect.arrayContaining([

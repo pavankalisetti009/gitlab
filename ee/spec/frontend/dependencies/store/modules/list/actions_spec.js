@@ -576,6 +576,10 @@ describe('Dependencies actions', () => {
           type: 'project',
           value: { data: ['GitLab', 'Gnome'] },
         },
+        {
+          type: 'component_version_ids',
+          value: { data: ['1', '2'], operator: '=' },
+        },
         // filters that contain strings (this happens when a user types in a value) should be ignored
         {
           type: 'ignored',
@@ -586,6 +590,7 @@ describe('Dependencies actions', () => {
       const expected = {
         project: ['GitLab', 'Gnome'],
         packager: ['bundler'],
+        component_version_ids: ['1', '2'],
       };
 
       return testAction(
@@ -636,6 +641,32 @@ describe('Dependencies actions', () => {
           [],
         );
       });
+    });
+
+    it('wraps the type with "not[...]" if the "!=" operator is used', () => {
+      const filters = [
+        {
+          type: 'component_version_ids',
+          value: { data: ['1', '2'], operator: '!=' },
+        },
+      ];
+
+      const expected = {
+        'not[component_version_ids]': ['1', '2'],
+      };
+
+      return testAction(
+        actions.setSearchFilterParameters,
+        filters,
+        getInitialState(),
+        [
+          {
+            type: types.SET_SEARCH_FILTER_PARAMETERS,
+            payload: expected,
+          },
+        ],
+        [],
+      );
     });
   });
 
