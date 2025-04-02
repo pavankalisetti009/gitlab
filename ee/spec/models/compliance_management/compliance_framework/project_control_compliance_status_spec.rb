@@ -9,6 +9,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectControlComplian
     it { is_expected.to belong_to(:project) }
     it { is_expected.to belong_to(:namespace) }
     it { is_expected.to belong_to(:compliance_requirement) }
+    it { is_expected.to belong_to(:requirement_status) }
   end
 
   describe 'validations' do
@@ -274,6 +275,89 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectControlComplian
               expect(status).not_to be_valid
               expect(status.errors[:project]).to include(_('must belong to the same namespace.'))
             end
+          end
+        end
+      end
+    end
+
+    describe '#validate_requirement_status' do
+      let_it_be(:namespace) { create(:group) }
+      let_it_be(:subgroup) { create(:group, parent: namespace) }
+      let_it_be(:project) { create(:project, group: subgroup) }
+      let_it_be(:compliance_framework) { create(:compliance_framework, namespace: namespace) }
+      let_it_be(:requirement) do
+        create(:compliance_requirement, framework: compliance_framework, namespace: namespace, name: 'requirement1')
+      end
+
+      let_it_be(:other_requirement) do
+        create(:compliance_requirement, framework: compliance_framework, namespace: namespace, name: 'requirement2')
+      end
+
+      let_it_be(:control) { create(:compliance_requirements_control, compliance_requirement: requirement) }
+      let_it_be(:requirement_status1) do
+        create(:project_requirement_compliance_status, project: project, compliance_requirement: requirement)
+      end
+
+      let_it_be(:requirement_status2) do
+        create(:project_requirement_compliance_status, project: project, compliance_requirement: other_requirement)
+      end
+
+      let_it_be(:control_status) do
+        build(:project_control_compliance_status, project: project, compliance_requirements_control: control,
+          compliance_requirement: requirement)
+      end
+
+      context 'when requirement_status is provided' do
+        context 'when requirement_status is of same requirement' do
+          it 'is valid' do
+            control_status.requirement_status = requirement_status1
+
+            expect(control_status).to be_valid
+          end
+        end
+
+        context 'when requirement_status is of different requirement' do
+          it 'is invalid' do
+            control_status.requirement_status = requirement_status2
+
+            expect(control_status).to be_invalid
+            expect(control_status.errors[:requirement_status])
+              .to include(_("must belong to the same compliance requirement."))
+          end
+        end
+      end
+
+      context 'when requirement_status is nil' do
+        before do
+          control_status.requirement_status = nil
+        end
+
+        it 'is valid' do
+          expect(control_status).to be_valid
+        end
+      end
+
+      context 'when updating an existing record' do
+        let!(:existing_status) do
+          create(:project_control_compliance_status, project: project, compliance_requirements_control: control,
+            compliance_requirement: requirement)
+        end
+
+        context 'when requirement_status is of same requirement' do
+          it 'is valid' do
+            existing_status.requirement_status = requirement_status1
+
+            expect(existing_status).to be_valid
+          end
+        end
+
+        context 'when requirement_status is of different requirement' do
+          it 'is invalid' do
+            existing_status.requirement_status = requirement_status2
+
+            expect(existing_status).to be_invalid
+            expect(existing_status.errors[:requirement_status])
+              .to include(_("must belong to the same compliance requirement."))
           end
         end
       end

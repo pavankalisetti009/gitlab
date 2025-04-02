@@ -11,6 +11,11 @@ module ComplianceManagement
       belongs_to :namespace
       belongs_to :compliance_requirement
 
+      has_many :control_statuses,
+        class_name: '::ComplianceManagement::ComplianceFramework::ProjectControlComplianceStatus',
+        foreign_key: :requirement_status_id,
+        inverse_of: :requirement_status
+
       validates :project_id, uniqueness: { scope: :compliance_requirement_id }
       validates_presence_of :pass_count, :fail_count, :pending_count, :project, :namespace,
         :compliance_requirement, :compliance_framework

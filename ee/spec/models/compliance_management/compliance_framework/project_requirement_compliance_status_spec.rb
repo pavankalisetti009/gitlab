@@ -9,6 +9,8 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectRequirementComp
     it { is_expected.to belong_to(:compliance_framework) }
     it { is_expected.to belong_to(:namespace) }
     it { is_expected.to belong_to(:compliance_requirement) }
+
+    it { is_expected.to have_many(:control_statuses) }
   end
 
   describe 'validations' do
