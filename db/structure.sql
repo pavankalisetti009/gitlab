@@ -20972,8 +20972,6 @@ ALTER SEQUENCE project_mirror_data_id_seq OWNED BY project_mirror_data.id;
 
 CREATE TABLE project_pages_metadata (
     project_id bigint NOT NULL,
-    deployed boolean DEFAULT false NOT NULL,
-    pages_deployment_id bigint,
     onboarding_complete boolean DEFAULT false NOT NULL
 );
 
@@ -35979,8 +35977,6 @@ CREATE INDEX index_on_namespaces_namespaces_by_top_level_namespace ON namespaces
 
 CREATE INDEX index_on_oncall_schedule_escalation_rule ON incident_management_escalation_rules USING btree (oncall_schedule_id);
 
-CREATE INDEX index_on_pages_metadata_not_migrated ON project_pages_metadata USING btree (project_id) WHERE ((deployed = true) AND (pages_deployment_id IS NULL));
-
 CREATE UNIQUE INDEX index_on_project_id_escalation_policy_name_unique ON incident_management_escalation_policies USING btree (project_id, name);
 
 CREATE INDEX index_on_routes_lower_path ON routes USING btree (lower((path)::text));
@@ -36472,10 +36468,6 @@ CREATE INDEX index_project_mirror_data_on_last_update_at_and_retry_count ON proj
 CREATE UNIQUE INDEX index_project_mirror_data_on_project_id ON project_mirror_data USING btree (project_id);
 
 CREATE INDEX index_project_mirror_data_on_status ON project_mirror_data USING btree (status);
-
-CREATE INDEX index_project_pages_metadata_on_pages_deployment_id ON project_pages_metadata USING btree (pages_deployment_id);
-
-CREATE INDEX index_project_pages_metadata_on_project_id_and_deployed_is_true ON project_pages_metadata USING btree (project_id) WHERE (deployed = true);
 
 CREATE INDEX index_project_relation_export_upload_id ON project_relation_export_uploads USING btree (project_relation_export_id);
 
@@ -41564,9 +41556,6 @@ ALTER TABLE ONLY deployment_approvals
 
 ALTER TABLE ONLY project_relation_export_uploads
     ADD CONSTRAINT fk_0f7fad01a3 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
-
-ALTER TABLE ONLY project_pages_metadata
-    ADD CONSTRAINT fk_0fd5b22688 FOREIGN KEY (pages_deployment_id) REFERENCES pages_deployments(id) ON DELETE SET NULL;
 
 ALTER TABLE ONLY board_assignees
     ADD CONSTRAINT fk_105c1d6d08 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
