@@ -2,14 +2,12 @@
 import { GlButton, GlTooltip, GlModal, GlModalDirective } from '@gitlab/ui';
 import { sprintf, __ } from '~/locale';
 import { createAlert } from '~/alert';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import { logError } from '~/lib/logger';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import currentUserQuery from '~/graphql_shared/queries/current_user.query.graphql';
 import projectInfoQuery from 'ee_else_ce/repository/queries/project_info.query.graphql';
 import lockPathMutation from '~/repository/mutations/lock_path.mutation.graphql';
-import {
-  ACCESS_LEVEL_DEVELOPER_INTEGER,
-  ACCESS_LEVEL_MAINTAINER_INTEGER,
-} from '~/access_level/constants';
 
 export default {
   name: 'LockDirectoryButton',
@@ -56,17 +54,17 @@ export default {
         };
       },
       update({ project }) {
-        this.projectMembers = project.projectMembers?.nodes;
-        this.canPushCode = project.userPermissions.pushCode;
-        this.allPathLocks = project.pathLocks?.nodes?.map((lock) => this.mapPathLocks(lock));
+        const allPathLocks = project.pathLocks?.nodes?.map((lock) => this.mapPathLocks(lock));
         this.pathLock =
-          this.allPathLocks.find(
+          allPathLocks.find(
             (lock) =>
               this.isDownstreamLock(lock) || this.isUpstreamLock(lock) || this.isExactLock(lock),
           ) || {};
+        this.projectUserPermissions = project.userPermissions;
       },
-      error() {
-        this.onFetchError();
+      error(error) {
+        logError(`Unexpected error while fetching projectInfo query`, error);
+        this.onFetchError(error);
       },
     },
     // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
@@ -75,19 +73,18 @@ export default {
       update({ currentUser }) {
         this.user = { ...currentUser };
       },
-      error() {
-        this.onFetchError();
+      error(error) {
+        logError(`Unexpected error while fetching currentUser query`, error);
+        this.onFetchError(error);
       },
     },
   },
   data() {
     return {
       isUpdating: false,
-      canPushCode: false,
-      allPathLocks: [],
       pathLock: {},
       user: {},
-      projectMembers: [],
+      projectUserPermissions: {},
     };
   },
   computed: {
@@ -112,38 +109,26 @@ export default {
     buttonState() {
       return this.isLocked ? 'unlock' : 'lock';
     },
-    currentUserMembershipInProject() {
-      return this.projectMembers?.find((member) => member?.user?.id === this.user.id);
-    },
-    userAccessLevel() {
-      return this.currentUserMembershipInProject?.accessLevel?.integerValue || 0;
-    },
-    hasMaintainerAccess() {
-      return this.userAccessLevel >= ACCESS_LEVEL_MAINTAINER_INTEGER;
-    },
-    hasDeveloperAccess() {
-      return this.userAccessLevel >= ACCESS_LEVEL_DEVELOPER_INTEGER;
-    },
     isLockAuthor() {
       return this.pathLock.user?.id === this.user.id;
     },
-    hasPermission() {
-      return this.canPushCode && this.hasDeveloperAccess;
+    canCreatePathLock() {
+      return this.projectUserPermissions.createPathLock;
     },
     canDestroyExactLock() {
-      return this.hasMaintainerAccess || (this.isLockAuthor && this.hasPermission);
+      return this.pathLock?.userPermissions.destroyPathLock;
     },
     isDisabled() {
       return (
         this.pathLock.isUpstreamLock ||
         this.pathLock.isDownstreamLock ||
         (this.pathLock.isExactLock && !this.canDestroyExactLock) ||
-        !this.hasPermission ||
+        !this.canCreatePathLock ||
         this.isUpdating
       );
     },
     getExactLockTooltip() {
-      if (!this.hasPermission) {
+      if (!this.canCreatePathLock) {
         return sprintf(__('Locked by %{locker}. You do not have permission to unlock this'), {
           locker: this.locker,
         });
@@ -151,7 +136,7 @@ export default {
       return this.isLockAuthor ? '' : sprintf(__('Locked by %{locker}'), { locker: this.locker });
     },
     getUpstreamLockTooltip() {
-      const additionalPhrase = this.hasPermission
+      const additionalPhrase = this.canCreatePathLock
         ? __('Unlock that directory in order to unlock this')
         : __('You do not have permission to unlock it');
       return sprintf(__('%{locker} has a lock on "%{path}". %{additionalPhrase}'), {
@@ -161,7 +146,7 @@ export default {
       });
     },
     getDownstreamLockTooltip() {
-      const additionalPhrase = this.hasPermission
+      const additionalPhrase = this.canCreatePathLock
         ? __('Unlock this in order to proceed')
         : __('You do not have permission to unlock it');
       return sprintf(
@@ -176,7 +161,7 @@ export default {
       );
     },
     tooltipText() {
-      if (!this.hasPermission && !this.hasPathLocks) {
+      if (!this.canCreatePathLock && !this.hasPathLocks) {
         return __('You do not have permission to lock this');
       }
       if (this.pathLock.isDownstreamLock) {
@@ -203,13 +188,15 @@ export default {
     async path() {
       try {
         await this.$apollo.queries.projectInfo.refetch();
-      } catch {
-        this.onFetchError();
+      } catch (error) {
+        logError(`Unexpected error while refetch projectInfo query`, error);
+        this.onFetchError(error);
       }
     },
   },
   methods: {
-    onFetchError() {
+    onFetchError(error) {
+      Sentry.captureException(error);
       createAlert({ message: this.$options.i18n.fetchError });
     },
     isExactLock(lock) {
@@ -245,6 +232,8 @@ export default {
           window.location.reload();
         })
         .catch((error) => {
+          logError(`Unexpected error while Locking/Unlocking path`, error);
+          Sentry.captureException(error);
           createAlert({ message: this.$options.i18n.mutationError, error, captureError: true });
         });
     },

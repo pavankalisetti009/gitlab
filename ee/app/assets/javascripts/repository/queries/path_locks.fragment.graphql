@@ -9,6 +9,9 @@ fragment ProjectPathLocksFragment on Project {
         username
         name
       }
+      userPermissions {
+        destroyPathLock
+      }
     }
   }
 }

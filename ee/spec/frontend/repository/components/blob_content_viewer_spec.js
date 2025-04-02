@@ -18,6 +18,7 @@ import highlightMixin from '~/repository/mixins/highlight_mixin';
 import getRefMixin from '~/repository/mixins/get_ref';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import {
+  getProjectMockWithOverrides,
   projectMock,
   userPermissionsMock,
   simpleViewerMock,
@@ -76,13 +77,14 @@ const createComponent = async (mockData = {}) => {
   blob.fileType = 'podspec';
 
   const project = {
-    ...projectMock,
-    userPermissions: {
-      pushCode,
-      forkProject,
-      downloadCode,
-      createMergeRequestIn,
-    },
+    ...getProjectMockWithOverrides({
+      userPermissionsOverride: {
+        pushCode,
+        forkProject,
+        downloadCode,
+        createMergeRequestIn,
+      },
+    }),
     repository: {
       __typename: 'Repository',
       empty,
