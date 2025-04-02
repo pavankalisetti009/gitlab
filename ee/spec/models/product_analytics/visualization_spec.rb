@@ -225,16 +225,6 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
         end
       end
 
-      context 'when the VSD dashboard editor feature is disabled' do
-        before do
-          stub_feature_flags(vsd_visualizations_in_analytics_dashboard_editor: false)
-        end
-
-        it 'does not include built in visualizations for VSD' do
-          expect(subject.map(&:slug)).not_to match_array(group_vsd_available_visualizations)
-        end
-      end
-
       context 'when a custom configuration project is defined' do
         let_it_be(:config_project) { create(:project, :with_product_analytics_custom_visualization, group: group) }
 

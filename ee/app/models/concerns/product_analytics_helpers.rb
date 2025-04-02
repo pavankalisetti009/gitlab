@@ -19,10 +19,6 @@ module ProductAnalyticsHelpers
     true
   end
 
-  def vsd_dashboard_editor_enabled?
-    value_streams_dashboard_available? && Feature.enabled?(:vsd_visualizations_in_analytics_dashboard_editor, self)
-  end
-
   def product_analytics_stored_events_limit
     return unless product_analytics_billing_enabled?
 
