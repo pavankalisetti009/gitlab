@@ -30,6 +30,8 @@ module ComplianceManagement
         where(compliance_requirement_id: requirement_ids)
       }
 
+      after_save :update_requirement_status_count
+
       def self.create_or_find_for_project_and_control(project, control)
         record = for_project_and_control(project.id, control.id).first
         return record if record.present?
@@ -76,6 +78,18 @@ module ComplianceManagement
         return if namespace_id.nil? || project.nil? || project.namespace_id == namespace_id
 
         errors.add(:project, _("must belong to the same namespace."))
+      end
+
+      def update_requirement_status_count
+        old_status = status_before_last_save
+        new_status = status
+
+        return if old_status == new_status
+
+        requirement_status = ComplianceManagement::ComplianceFramework::ProjectRequirementComplianceStatus
+          .find_or_create_project_and_requirement(project, compliance_requirement)
+
+        requirement_status.update_status_count(old_status, new_status)
       end
     end
   end

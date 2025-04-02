@@ -4,6 +4,7 @@ module ComplianceManagement
   module ComplianceFramework
     class ProjectRequirementComplianceStatus < ApplicationRecord
       include EachBatch
+      include CounterAttribute
 
       belongs_to :compliance_framework, class_name: 'ComplianceManagement::Framework'
       belongs_to :project
@@ -30,9 +31,54 @@ module ComplianceManagement
       scope :for_requirements, ->(requirement_ids) { where(compliance_requirement_id: requirement_ids) }
       scope :for_frameworks, ->(framework_ids) { where(compliance_framework_id: framework_ids) }
 
+      scope :for_project_and_requirement, ->(project_id, requirement_id) {
+        where(project_id: project_id, compliance_requirement_id: requirement_id)
+      }
+
       def self.delete_all_project_statuses(project_id)
         where(project_id: project_id).each_batch(of: 100) do |batch|
           batch.delete_all
+        end
+      end
+
+      def self.find_or_create_project_and_requirement(project, requirement)
+        record = for_project_and_requirement(project.id, requirement.id).first
+        return record if record.present?
+
+        create!(
+          project: project,
+          compliance_requirement_id: requirement.id,
+          compliance_framework_id: requirement.framework_id,
+          compliance_requirement: requirement,
+          namespace_id: project.namespace_id,
+          pass_count: 0,
+          fail_count: 0,
+          pending_count: 0
+        )
+      rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid => e
+        if e.is_a?(ActiveRecord::RecordNotUnique) ||
+            (e.is_a?(ActiveRecord::RecordInvalid) && e.record&.errors&.of_kind?(:project_id, :taken))
+          retry
+        else
+          raise e
+        end
+      end
+
+      def update_status_count(control_old_status, control_new_status)
+        return unless ["pass", "pending", "fail", nil].include?(control_old_status)
+        return unless %w[pass pending fail].include?(control_new_status)
+
+        return if control_old_status == control_new_status
+
+        new_count_field = "#{control_new_status}_count"
+
+        if control_old_status.present?
+          old_count_field = "#{control_old_status}_count"
+          old_field_decrement = self[old_count_field] > 0 ? -1 : 0
+
+          update_counters({ new_count_field => 1, old_count_field => old_field_decrement })
+        else
+          update_counters({ new_count_field => 1 })
         end
       end
 

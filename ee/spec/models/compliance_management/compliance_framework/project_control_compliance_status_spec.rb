@@ -639,4 +639,141 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectControlComplian
       end
     end
   end
+
+  describe '.update_requirement_status_count' do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:project) { create(:project, group: namespace) }
+    let_it_be(:compliance_framework) { create(:compliance_framework, namespace: namespace) }
+    let_it_be(:requirement) do
+      create(:compliance_requirement, framework: compliance_framework, namespace: namespace)
+    end
+
+    let_it_be(:control) { create(:compliance_requirements_control, compliance_requirement: requirement) }
+    let_it_be(:requirement_status) do
+      create(:project_requirement_compliance_status, project: project, compliance_requirement: requirement,
+        pass_count: 2,
+        fail_count: 1,
+        pending_count: 1
+      )
+    end
+
+    context 'when a new control status is created' do
+      let(:status) { :pass }
+
+      subject(:status_creator) do
+        create(:project_control_compliance_status,
+          project: project,
+          compliance_requirement: requirement,
+          compliance_requirements_control: control,
+          status: status
+        )
+      end
+
+      context 'when requirement status exists' do
+        context 'when the status is pass' do
+          let(:status) { :pass }
+
+          it 'updates the requirement status count' do
+            expect { status_creator }.to change { requirement_status.reload.pass_count }.from(2).to(3)
+              .and not_change { requirement_status.fail_count }.from(1)
+                     .and not_change { requirement_status.reload.pending_count }.from(1)
+          end
+        end
+
+        context 'when the status is fail' do
+          let(:status) { :fail }
+
+          it 'updates the requirement status count' do
+            expect { status_creator }.to change { requirement_status.reload.fail_count }.from(1).to(2)
+              .and not_change { requirement_status.pass_count }
+              .and not_change { requirement_status.reload.pending_count }
+          end
+        end
+
+        context 'when the status is pending' do
+          let(:status) { :pending }
+
+          it 'updates the requirement status count' do
+            expect { status_creator }.to change { requirement_status.reload.pending_count }.from(1).to(2)
+              .and not_change { requirement_status.fail_count }
+              .and not_change { requirement_status.reload.pass_count }
+          end
+        end
+      end
+
+      context 'when requirement status does not exist' do
+        before do
+          ComplianceManagement::ComplianceFramework::ProjectRequirementComplianceStatus.delete_all
+        end
+
+        it 'creates a new requirement status' do
+          expect { status_creator }
+            .to change {
+                  ComplianceManagement::ComplianceFramework::ProjectRequirementComplianceStatus.count
+                }.from(0).to(1)
+
+          expect(ComplianceManagement::ComplianceFramework::ProjectRequirementComplianceStatus.last.attributes)
+            .to include(
+              "project_id" => project.id,
+              "compliance_requirement_id" => requirement.id,
+              "compliance_framework_id" => compliance_framework.id,
+              "pass_count" => 1,
+              "fail_count" => 0,
+              "pending_count" => 0
+            )
+        end
+      end
+    end
+
+    context 'when a control status is updated' do
+      using RSpec::Parameterized::TableSyntax
+
+      context 'when old and new status are different' do
+        where(:old_status, :new_status, :unchanged_status) do
+          :fail | :pass | :pending
+          :pass | :fail | :pending
+          :pending | :pass | :fail
+          :pending | :fail | :pass
+        end
+
+        with_them do
+          let!(:control_status) do
+            create(:project_control_compliance_status,
+              project: project,
+              compliance_requirement: requirement,
+              compliance_requirements_control: control,
+              status: old_status
+            )
+          end
+
+          it 'updates the requirement status counts' do
+            expect { control_status.update!(status: new_status) }
+              .to change { requirement_status.reload.send(:"#{old_status}_count") }.by(-1)
+                .and change { requirement_status.reload.send(:"#{new_status}_count") }.by(1)
+                .and not_change { requirement_status.reload.send(:"#{unchanged_status}_count") }
+          end
+        end
+      end
+
+      context 'when old and new status are the same' do
+        let!(:control_status) do
+          create(:project_control_compliance_status,
+            project: project,
+            compliance_requirement: requirement,
+            compliance_requirements_control: control
+          )
+        end
+
+        it 'does not change any of the requirement status counts', :aggregate_failures do
+          expect(ComplianceManagement::ComplianceFramework::ProjectRequirementComplianceStatus)
+            .not_to receive(:find_or_create_project_and_requirement)
+
+          expect { control_status.update!(status: control_status.status) }
+            .to not_change { requirement_status.reload.pass_count }
+            .and not_change { requirement_status.fail_count }
+            .and not_change { requirement_status.reload.pending_count }
+        end
+      end
+    end
+  end
 end
