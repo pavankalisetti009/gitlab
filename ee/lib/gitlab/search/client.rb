@@ -25,6 +25,10 @@ module Gitlab
         new(adapter: search_adapter).execute_search(...)
       end
 
+      def self.execute_count(...)
+        new(adapter: search_adapter).execute_count(...)
+      end
+
       def self.search_adapter
         Gitlab::Elastic::Helper.new(operation: :search).client
       end
@@ -41,6 +45,16 @@ module Gitlab
         )
 
         yield search(es_query)
+      end
+
+      def execute_count(query:, options:)
+        es_query = routing_options(options).merge(
+          timeout: '1s',
+          index: options[:index_name] || options[:klass].index_name,
+          body: query
+        )
+
+        yield count(es_query)
       end
 
       private
