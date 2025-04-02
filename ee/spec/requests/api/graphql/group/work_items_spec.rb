@@ -6,15 +6,16 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
   include GraphqlHelpers
 
   let_it_be(:group) { create(:group, :public) }
+  let_it_be(:private_group) { create(:group, :private) }
   let_it_be(:sub_group) { create(:group, parent: group) }
   let_it_be(:project) { create(:project, :repository, :public, group: group) }
   let_it_be(:user) { create(:user) }
-  let_it_be(:reporter) { create(:user, reporter_of: group) }
+  let_it_be(:reporter) { create(:user, reporter_of: [group, private_group]) }
 
   let(:work_items_data) { graphql_data['group']['workItems']['nodes'] }
   let(:item_filter_params) { {} }
   let(:current_user) { user }
-  let(:query_group) { group }
+  let(:query_full_path) { group.full_path }
 
   let(:fields) do
     <<~QUERY
@@ -90,7 +91,7 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
 
         expect do
           post_graphql(query, current_user: current_user)
-        end.not_to exceed_all_query_limit(control).with_threshold(1)
+        end.not_to exceed_all_query_limit(control)
         expect_graphql_errors_to_be_empty
       end
     end
@@ -253,6 +254,158 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
                 )
               )
             )
+          end
+        end
+      end
+
+      context 'when querying WorkItemWidgetLinkedItems' do
+        let_it_be(:work_items) { create_list(:work_item, 2, :issue, namespace: group) }
+        let_it_be(:related_items) { create_list(:work_item, 3, namespace: private_group) }
+        let_it_be(:blocked_items) { create_list(:work_item, 3, namespace: private_group) }
+        let_it_be(:blocking_items) { create_list(:work_item, 3, namespace: private_group) }
+
+        let(:work_items_data) { graphql_data_at(:group, :workItems, :nodes) }
+
+        let(:item_filter_params) { { iids: [work_items[0].iid.to_s, work_items[1].iid.to_s] } }
+        let(:linked_type_filter) { '' }
+
+        let(:fields) do
+          <<~GRAPHQL
+            nodes {
+              widgets {
+                type
+                ... on WorkItemWidgetLinkedItems {
+                  linkedItems#{linked_type_filter} {
+                    nodes {
+                      linkType
+                      workItem { id }
+                    }
+                  }
+                }
+              }
+            }
+          GRAPHQL
+        end
+
+        before do
+          create(:work_item_link, source: work_items[0], target: related_items[0], link_type: 'relates_to')
+          create(:work_item_link, source: work_items[1], target: related_items[1], link_type: 'relates_to')
+          create(:work_item_link, source: work_items[0], target: blocked_items[0], link_type: 'blocks')
+          create(:work_item_link, source: work_items[1], target: blocked_items[1], link_type: 'blocks')
+          create(:work_item_link, source: blocking_items[0], target: work_items[0], link_type: 'blocks')
+          create(:work_item_link, source: blocking_items[1], target: work_items[1], link_type: 'blocks')
+        end
+
+        context 'when user is not authorized to read linked items' do
+          it 'returns empty linked items data' do
+            post_graphql(query, current_user: current_user)
+
+            expect(work_items_data).to include(
+              'widgets' => include(
+                hash_including(
+                  'type' => 'LINKED_ITEMS',
+                  'linkedItems' => { 'nodes' => [] }
+                )
+              )
+            )
+          end
+        end
+
+        context 'when user is authorized to read linked items' do
+          let(:current_user) { reporter }
+
+          it 'returns linked items data' do
+            post_graphql(query, current_user: current_user)
+
+            expect(work_items_data).to include(
+              hash_including(
+                'widgets' => include(
+                  'type' => 'LINKED_ITEMS',
+                  'linkedItems' => { 'nodes' => [
+                    { 'linkType' => 'is_blocked_by', 'workItem' => { 'id' => blocking_items[1].to_global_id.to_s } },
+                    { 'linkType' => 'blocks', 'workItem' => { 'id' => blocked_items[1].to_global_id.to_s } },
+                    { 'linkType' => 'relates_to', 'workItem' => { 'id' => related_items[1].to_global_id.to_s } }
+                  ] }
+                )
+              ),
+              hash_including(
+                'widgets' => include(
+                  'type' => 'LINKED_ITEMS',
+                  'linkedItems' => { 'nodes' => [
+                    { 'linkType' => 'is_blocked_by', 'workItem' => { 'id' => blocking_items[0].to_global_id.to_s } },
+                    { 'linkType' => 'blocks', 'workItem' => { 'id' => blocked_items[0].to_global_id.to_s } },
+                    { 'linkType' => 'relates_to', 'workItem' => { 'id' => related_items[0].to_global_id.to_s } }
+                  ] }
+                )
+              )
+            )
+          end
+
+          context 'when filtering by link type' do
+            using RSpec::Parameterized::TableSyntax
+
+            where(:linked_type_filter, :items, :expected_link_type) do
+              '(filter: RELATED)'    | ref(:related_items)  | 'relates_to'
+              '(filter: BLOCKS)'     | ref(:blocked_items)  | 'blocks'
+              '(filter: BLOCKED_BY)' | ref(:blocking_items) | 'is_blocked_by'
+            end
+
+            with_them do
+              it 'returns linked items data filtered by link type' do
+                post_graphql(query, current_user: current_user)
+
+                expect(work_items_data).to include(
+                  hash_including(
+                    'widgets' => include({
+                      'type' => 'LINKED_ITEMS',
+                      'linkedItems' => { 'nodes' => [
+                        { 'linkType' => expected_link_type, 'workItem' => { 'id' => items[0].to_global_id.to_s } }
+                      ] }
+                    })
+                  ),
+                  hash_including(
+                    'widgets' => include({
+                      'type' => 'LINKED_ITEMS',
+                      'linkedItems' => { 'nodes' => [
+                        { 'linkType' => expected_link_type, 'workItem' => { 'id' => items[1].to_global_id.to_s } }
+                      ] }
+                    })
+                  )
+                )
+              end
+            end
+          end
+
+          context 'for N+1 queries' do
+            shared_examples 'request without extra queries' do
+              it 'does not execute extra queries' do
+                post_graphql(query, current_user: current_user) # Warmup
+
+                control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
+                  post_graphql(query, current_user: current_user)
+                end
+
+                expect_graphql_errors_to_be_empty
+
+                work_item2 = create(:work_item, :issue, namespace: group)
+                create(:work_item_link, source: work_item2, target: related_items[2], link_type: 'relates_to')
+                create(:work_item_link, source: work_item2, target: blocked_items[2], link_type: 'blocks')
+                create(:work_item_link, source: blocking_items[2], target: work_item2, link_type: 'blocks')
+
+                expect do
+                  post_graphql(query, current_user: current_user)
+                end.not_to exceed_all_query_limit(control)
+                expect_graphql_errors_to_be_empty
+              end
+            end
+
+            it_behaves_like 'request without extra queries'
+
+            context 'with link type filter' do
+              let(:linked_type_filter) { '(filter: BLOCKED_BY)' }
+
+              it_behaves_like 'request without extra queries'
+            end
           end
         end
       end
@@ -458,7 +611,7 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
   def query(params = item_filter_params)
     graphql_query_for(
       'group',
-      { 'fullPath' => query_group.full_path },
+      { 'fullPath' => query_full_path },
       query_graphql_field('workItems', params, fields)
     )
   end

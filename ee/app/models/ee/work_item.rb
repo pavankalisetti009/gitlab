@@ -85,6 +85,31 @@ module EE
         end
       end
       strong_memoize_attr :available_features_for_issue_types
+
+      override :ordered_linked_items
+      def ordered_linked_items(select_query, ids: [], link_type: nil, preload: nil)
+        case link_type
+        when ::WorkItems::RelatedWorkItemLink::TYPE_BLOCKS
+          blocking_work_items(select_query, ids, preload)
+        when ::WorkItems::RelatedWorkItemLink::TYPE_IS_BLOCKED_BY
+          blocking_work_items(select_query, ids, preload, inverse_direction: true)
+        else
+          super
+        end
+      end
+
+      def blocking_work_items(select_query, ids, preload, inverse_direction: false)
+        link_class = ::WorkItems::RelatedWorkItemLink
+        columns = %w[target_id source_id]
+        columns.reverse! if inverse_direction
+
+        select_query
+          .joins("INNER JOIN issue_links ON issue_links.#{columns[0]} = issues.id")
+          .where(issue_links: { columns[1] => ids, link_type: link_class.link_types[link_class::TYPE_BLOCKS] })
+          .preload(preload)
+          .reorder(linked_items_keyset_order)
+          .references(:issue_links)
+      end
     end
 
     def average_progress_of_children
@@ -147,28 +172,6 @@ module EE
     end
 
     private
-
-    override :linked_work_items_query
-    def linked_work_items_query(link_type)
-      case link_type
-      when ::WorkItems::RelatedWorkItemLink::TYPE_BLOCKS
-        blocking_work_items_query
-      when ::WorkItems::RelatedWorkItemLink::TYPE_IS_BLOCKED_BY
-        blocking_work_items_query(inverse_direction: true)
-      else
-        super
-      end
-    end
-
-    def blocking_work_items_query(inverse_direction: false)
-      link_class = ::WorkItems::RelatedWorkItemLink
-      columns = %w[target_id source_id]
-      columns.reverse! if inverse_direction
-
-      linked_issues_select
-        .joins("INNER JOIN issue_links ON issue_links.#{columns[0]} = issues.id")
-        .where(issue_links: { columns[1] => id, link_type: link_class.link_types[link_class::TYPE_BLOCKS] })
-    end
 
     override :allowed_work_item_type_change
     def allowed_work_item_type_change
