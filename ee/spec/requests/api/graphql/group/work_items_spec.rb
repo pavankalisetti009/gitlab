@@ -365,7 +365,7 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
           data = execute['data'][container_name]['workItems']
 
           expect(data['edges']).to be_empty
-          expect(data['count']).to eq(10)
+          expect(data['count']).to eq(0)
         end
       end
     end
@@ -445,7 +445,7 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
         it 'does not return licensed work items' do
           data = execute['data'][container_name]['workItems']
 
-          expect(data['count']).to eq(20)
+          expect(data['count']).to eq(10)
           expect(data['edges'].count).to eq(5)
           expect(data['edges'].map { |node| node.dig('node', 'id') }).to match_array(
             project_issues.flat_map(&:to_gid).map(&:to_s)
