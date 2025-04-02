@@ -6,6 +6,7 @@ module Deployments
 
     belongs_to :deployment
     belongs_to :user
+    belongs_to :ci_build, class_name: 'Ci::Build', optional: true
 
     belongs_to :approval_rule,
       class_name: 'ProtectedEnvironments::ApprovalRule',
