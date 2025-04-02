@@ -12,6 +12,8 @@ module EE
   #     aimed_for_deletion: Symbol
   #     include_hidden: boolean
   #     filter_expired_saml_session_projects: boolean
+  #     active: boolean - Whether to include projects that are neither archived or marked
+  #                               for deletion.
   module ProjectsFinder
     include Gitlab::Auth::Saml::SsoSessionFilterable
     extend ::Gitlab::Utils::Override
@@ -66,6 +68,20 @@ module EE
 
     def by_saml_sso_session(collection)
       filter_by_saml_sso_session(collection, :filter_expired_saml_session_projects)
+    end
+
+    override :active
+    def active(items)
+      return super unless License.feature_available?(:adjourned_deletion_for_projects_and_groups)
+
+      super.not_aimed_for_deletion
+    end
+
+    override :inactive
+    def inactive(items)
+      return super unless License.feature_available?(:adjourned_deletion_for_projects_and_groups)
+
+      super.or(items.aimed_for_deletion(Date.current))
     end
   end
 end
