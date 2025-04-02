@@ -11,6 +11,7 @@ module RemoteDevelopment
     validates :encrypted_value, presence: true
     validates :key,
       presence: true,
+      format: { with: /\A[a-zA-Z0-9\-_.]+\z/, message: 'must contain only alphanumeric characters, -, _ or .' },
       length: { maximum: 255 }
 
     scope :with_variable_type_environment, -> { where(variable_type: ENVIRONMENT_TYPE) }
