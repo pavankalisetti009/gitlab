@@ -29,5 +29,17 @@ module Security
         }
       )
     end
+
+    def licenses
+      typed_content['licenses']
+    end
+
+    def license_states
+      typed_content['license_states']
+    end
+
+    def license_types
+      typed_content['license_types']
+    end
   end
 end

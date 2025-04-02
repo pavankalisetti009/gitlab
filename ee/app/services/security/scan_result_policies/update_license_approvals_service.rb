@@ -80,14 +80,19 @@ module Security
       end
 
       def denied_licenses_with_dependency(rule)
-        if Feature.enabled?(:exclude_license_packages, project) && rule.scan_result_policy_read.licenses.present?
+        if Feature.enabled?(:exclude_license_packages, project) && licenses_with_package_exclusions?(rule)
           denied_licenses_with_dependencies = Security::MergeRequestApprovalPolicies::DeniedLicensesChecker.new(
-            project, report, target_branch_report, rule.scan_result_policy_read).denied_licenses_with_dependencies
+            project, report, target_branch_report, rule.scan_result_policy_read,
+            rule.approval_policy_rule).denied_licenses_with_dependencies
         else
           denied_licenses_with_dependencies = violation_checker.execute(rule.scan_result_policy_read)
         end
 
         denied_licenses_with_dependencies
+      end
+
+      def licenses_with_package_exclusions?(rule)
+        rule.scan_result_policy_read.licenses.present? || rule&.approval_policy_rule&.licenses.present?
       end
 
       def violation_checker
