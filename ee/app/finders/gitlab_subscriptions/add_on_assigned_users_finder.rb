@@ -12,7 +12,7 @@ module GitlabSubscriptions
 
     def execute
       add_on_purchase = GitlabSubscriptions::AddOnPurchase
-        .by_add_on_name(add_on_name).by_namespace(namespace.root_ancestor).active.first
+        .by_add_on_name(add_on_name).by_namespace([namespace.root_ancestor, nil]).active.first
 
       return User.none unless add_on_purchase
 
