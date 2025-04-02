@@ -8,7 +8,6 @@ module Search
       prepend ::Geo::SkipSecondary
 
       idempotent!
-      deduplicate :until_executed
 
       defer_on_database_health_signal :gitlab_main, [:zoekt_nodes, :zoekt_indices, :zoekt_repositories], 10.minutes
 

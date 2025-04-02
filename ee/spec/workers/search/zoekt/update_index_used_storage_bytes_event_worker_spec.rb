@@ -48,11 +48,6 @@ RSpec.describe Search::Zoekt::UpdateIndexUsedStorageBytesEventWorker, feature_ca
 
   it_behaves_like 'subscribes to event'
 
-  it 'has the `until_executed` deduplicate strategy' do
-    expect(described_class.get_deduplicate_strategy).to eq(:until_executed)
-    expect(described_class.get_deduplication_options).to include({ if_deduplicated: :reschedule_once })
-  end
-
   it_behaves_like 'an idempotent worker', :freeze_time do
     it 'updates used_storage_bytes of indices which are the part of with_stale_used_storage_bytes_updated_at' do
       expect(indices.map { |i| i.reload.used_storage_bytes }).to eq [10, 10, 0, 0, 90, 10]

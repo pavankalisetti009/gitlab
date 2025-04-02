@@ -7,7 +7,6 @@ module Search
       include Search::Zoekt::EventWorker
       prepend ::Geo::SkipSecondary
 
-      deduplicate :until_executed
       idempotent!
 
       # Deprecated worker

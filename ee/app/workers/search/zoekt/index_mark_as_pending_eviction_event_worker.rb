@@ -7,7 +7,6 @@ module Search
       include Search::Zoekt::EventWorker
       prepend ::Geo::SkipSecondary
 
-      deduplicate :until_executed
       idempotent!
 
       defer_on_database_health_signal :gitlab_main, [:zoekt_indices], 10.minutes

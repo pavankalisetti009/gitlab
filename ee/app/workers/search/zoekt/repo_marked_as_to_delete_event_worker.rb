@@ -7,7 +7,6 @@ module Search
       include Search::Zoekt::EventWorker
       prepend ::Geo::SkipSecondary
 
-      deduplicate :until_executed, if_deduplicated: :reschedule_once
       idempotent!
 
       defer_on_database_health_signal :gitlab_main, [:zoekt_repositories, :zoekt_tasks], 10.minutes

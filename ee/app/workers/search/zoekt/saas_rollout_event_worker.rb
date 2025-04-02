@@ -4,11 +4,10 @@ module Search
   module Zoekt
     class SaasRolloutEventWorker
       include Gitlab::EventStore::Subscriber
-      include EventWorker
+      include Search::Zoekt::EventWorker
       prepend ::Geo::SkipSecondary
 
       idempotent!
-      deduplicate :until_executed
       defer_on_database_health_signal :gitlab_main, [:zoekt_enabled_namespaces], 10.minutes
 
       BATCH_SIZE = 2000

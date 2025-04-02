@@ -10,10 +10,6 @@ RSpec.describe Search::Zoekt::IndexMarkedAsToDeleteEventWorker, :zoekt_settings_
 
   it_behaves_like 'subscribes to event'
 
-  it 'has the `until_executed` deduplicate strategy' do
-    expect(described_class.get_deduplicate_strategy).to eq(:until_executed)
-  end
-
   it_behaves_like 'an idempotent worker' do
     context 'when there an index that has zoekt repositories' do
       let_it_be(:repo_ready) { create(:zoekt_repository, zoekt_index: idx, project: idx_project, state: :ready) }
