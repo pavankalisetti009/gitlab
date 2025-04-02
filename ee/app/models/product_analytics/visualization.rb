@@ -188,9 +188,11 @@ module ProductAnalytics
         visualizations << product_analytics_visualizations(is_project)
       end
 
-      visualizations << value_stream_dashboard_visualizations(is_project) if container.vsd_dashboard_editor_enabled?
+      if container.value_streams_dashboard_available?
+        visualizations << value_stream_dashboard_visualizations(is_project)
+      end
 
-      if container.vsd_dashboard_editor_enabled? && container.dora_metrics_dashboard_enabled?(user)
+      if container.value_streams_dashboard_available? && container.dora_metrics_dashboard_enabled?(user)
         visualizations << dora_metrics_visualizations(is_project)
       end
 
