@@ -105,6 +105,18 @@ RSpec.describe Registrations::CompanyController, feature_category: :onboarding d
 
     it_behaves_like 'user not in onboarding'
 
+    it 'has an urgency of :low' do
+      expect_next_instance_of(
+        GitlabSubscriptions::CreateCompanyLeadService,
+        user: user,
+        params: ActionController::Parameters.new(params).permit!
+      ) do |service|
+        expect(service).to receive(:execute).and_return(ServiceResponse.success)
+      end
+
+      expect(post_create).to have_request_urgency(:low)
+    end
+
     context 'on success' do
       before do
         user.update!(onboarding_status_initial_registration_type: 'free')
