@@ -65365,6 +65365,9 @@ msgstr ""
 msgid "Vulnerabilities|Vulnerability report export"
 msgstr ""
 
+msgid "Vulnerabilities|changed vulnerability status to Needs Triage because it was redetected in pipeline %{pipeline_link}"
+msgstr ""
+
 msgid "Vulnerability"
 msgstr ""
 
