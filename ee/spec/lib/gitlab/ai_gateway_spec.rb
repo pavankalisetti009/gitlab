@@ -103,6 +103,7 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
     let(:agent) { nil }
     let(:lsp_version) { nil }
     let(:standard_context) { instance_double(::Gitlab::Tracking::StandardContext) }
+    let(:enabled_instance_verbose_ai_logs) { false }
     let(:is_team_member) { false }
     let(:cloud_connector_headers) do
       {
@@ -130,13 +131,18 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
         'X-Gitlab-Client-Type' => 'ide',
         'X-Gitlab-Client-Version' => '1.0',
         'X-Gitlab-Client-Name' => 'gitlab-extension',
-        'X-Gitlab-Interface' => 'vscode'
+        'X-Gitlab-Interface' => 'vscode',
+        'x-gitlab-enabled-instance-verbose-ai-logs' => 'false'
       }.merge(cloud_connector_headers)
     end
 
     subject(:headers) { described_class.headers(user: user, service: service, agent: agent, lsp_version: lsp_version) }
 
     before do
+      allow_next_instance_of(::Ai::Setting) do |setting|
+        allow(setting).to receive(:enabled_instance_verbose_ai_logs).and_return(enabled_instance_verbose_ai_logs)
+      end
+
       allow(service).to receive(:access_token).with(user).and_return(token)
       allow(user).to receive(:allowed_to_use).with(service_name).and_return(auth_response)
       allow(::CloudConnector).to(
@@ -180,6 +186,14 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
       end
     end
 
+    context 'when verbose logs are enabled for instance' do
+      let(:enabled_instance_verbose_ai_logs) { true }
+
+      it 'updates the header' do
+        expect(headers).to include('x-gitlab-enabled-instance-verbose-ai-logs' => "true")
+      end
+    end
+
     context 'when feature flag is pushed' do
       before do
         allow(described_class).to receive(:enabled_feature_flags).and_return(%w[feature_a feature_b])
@@ -216,6 +230,10 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
     subject(:public_headers) { described_class.public_headers(user: user, service_name: service_name) }
 
     before do
+      allow_next_instance_of(::Ai::Setting) do |setting|
+        allow(setting).to receive(:enabled_instance_verbose_ai_logs).and_return(false)
+      end
+
       allow(user).to receive(:allowed_to_use)
         .with(service_name)
         .and_return(auth_response)
@@ -233,7 +251,8 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
         'X-Gitlab-Duo-Seat-Count' => 1,
         'X-Gitlab-Feature-Enablement-Type' => enablement_type,
         'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => '',
-        'x-gitlab-enabled-feature-flags' => 'feature_a,feature_b'
+        'x-gitlab-enabled-feature-flags' => 'feature_a,feature_b',
+        'x-gitlab-enabled-instance-verbose-ai-logs' => 'false'
       }
 
       expect(public_headers).to eq(expected_headers)
@@ -247,7 +266,8 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
           'X-Gitlab-Duo-Seat-Count' => 1,
           'X-Gitlab-Feature-Enablement-Type' => enablement_type,
           'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => '',
-          'x-gitlab-enabled-feature-flags' => ''
+          'x-gitlab-enabled-feature-flags' => '',
+          'x-gitlab-enabled-instance-verbose-ai-logs' => 'false'
         }
 
         expect(public_headers).to eq(expected_headers)
@@ -262,7 +282,8 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
           'X-Gitlab-Duo-Seat-Count' => 1,
           'X-Gitlab-Feature-Enablement-Type' => enablement_type,
           'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => '',
-          'x-gitlab-enabled-feature-flags' => 'feature_a,feature_b'
+          'x-gitlab-enabled-feature-flags' => 'feature_a,feature_b',
+          'x-gitlab-enabled-instance-verbose-ai-logs' => 'false'
         }
 
         expect(public_headers).to eq(expected_headers)

@@ -950,6 +950,8 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               allow(client).to receive(:direct_access_token)
                 .and_return({ status: :success, token: token, expires_at: expected_expiration })
             end
+
+            ::Ai::Setting.instance.update!(enabled_instance_verbose_ai_logs: false)
           end
 
           let(:expected_response) do
@@ -1035,7 +1037,8 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           'X-Gitlab-Duo-Seat-Count' => duo_seat_count,
           'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => enabled_by_namespace_ids.join(','),
           "X-Gitlab-Feature-Enablement-Type" => enablement_type,
-          'x-gitlab-enabled-feature-flags' => ''
+          'x-gitlab-enabled-feature-flags' => '',
+          "x-gitlab-enabled-instance-verbose-ai-logs" => 'false'
         }
       end
 

@@ -8000,6 +8000,7 @@ CREATE TABLE ai_settings (
     duo_workflow_service_account_user_id bigint,
     duo_workflow_oauth_application_id bigint,
     duo_nano_features_enabled boolean,
+    enabled_instance_verbose_ai_logs boolean,
     CONSTRAINT check_3cf9826589 CHECK ((char_length(ai_gateway_url) <= 2048)),
     CONSTRAINT check_a02bd8868c CHECK ((char_length(amazon_q_role_arn) <= 2048)),
     CONSTRAINT check_singleton CHECK ((singleton IS TRUE))

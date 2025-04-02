@@ -167,4 +167,11 @@ RSpec.describe Ai::Setting, feature_category: :ai_abstraction_layer do
       it { is_expected.to be false }
     end
   end
+
+  describe "#instance" do
+    it 'updates defaults enabled_instance_verbose_ai_logs default' do
+      stub_feature_flags(expanded_ai_logging: true)
+      expect(described_class.instance.enabled_instance_verbose_ai_logs).to be true
+    end
+  end
 end

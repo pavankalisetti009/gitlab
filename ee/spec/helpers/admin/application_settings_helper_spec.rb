@@ -95,6 +95,8 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
           allow(::GitlabSubscriptions::AddOnPurchase).to receive_message_chain(:for_duo_enterprise, :active,
             :exists?).and_return(true)
           allow(::Ai::Setting).to receive_message_chain(:instance, :ai_gateway_url).and_return(ai_gateway_url)
+          allow(::Ai::Setting).to receive_message_chain(:instance, :enabled_instance_verbose_ai_logs)
+            .and_return(enabled_expanded_logging)
 
           if purchased.nil?
             allow(CloudConnector::AvailableServices)

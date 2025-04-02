@@ -53,8 +53,13 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
         "X-Request-ID" => [an_instance_of(String)],
         "X-Gitlab-Rails-Send-Start" => [an_instance_of(String)],
         "X-Gitlab-Duo-Seat-Count" => [duo_seat_count],
-        "x-gitlab-enabled-feature-flags" => [""]
+        "x-gitlab-enabled-feature-flags" => [""],
+        "x-gitlab-enabled-instance-verbose-ai-logs" => ["false"]
       }
+    end
+
+    before do
+      ::Ai::Setting.instance.update!(enabled_instance_verbose_ai_logs: false)
     end
 
     subject(:post_api) do
