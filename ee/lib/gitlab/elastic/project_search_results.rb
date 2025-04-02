@@ -8,13 +8,20 @@ module Gitlab
     class ProjectSearchResults < Gitlab::Elastic::SearchResults
       extend Gitlab::Utils::Override
 
-      attr_reader :project, :repository_ref, :filters
+      attr_reader :project, :filters
 
       def initialize(current_user, query, project:, root_ancestor_ids: nil, repository_ref: nil, order_by: nil, sort: nil, filters: {})
         @project = project
-        @repository_ref = repository_ref.presence || project.default_branch
+        @original_repository_ref = repository_ref
 
         super(current_user, query, [project.id], root_ancestor_ids: root_ancestor_ids, public_and_internal_projects: false, order_by: order_by, sort: sort, filters: filters)
+      end
+
+      # Lazily compute the repository reference only when needed.
+      # This avoids unnecessary evaluation (and potential errors)
+      # when the repository reference isn't required, for example, for work item searches.
+      def repository_ref
+        @repository_ref ||= @original_repository_ref.presence || project.default_branch
       end
 
       private
