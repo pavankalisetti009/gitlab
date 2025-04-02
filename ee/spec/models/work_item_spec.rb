@@ -792,4 +792,26 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
       expect(recorder.count).to eq(11)
     end
   end
+
+  describe '.linked_items_for' do
+    let_it_be(:items) { create_list(:work_item, 3, project: reusable_project) }
+    let_it_be(:linked_items) { create_list(:work_item, 3, project: reusable_project) }
+
+    subject(:linked_by_type) { described_class.linked_items_for(items.pluck(:id), link_type: type_filter) }
+
+    before do
+      create(:work_item_link, source: items[0], target: linked_items[0], link_type: 'relates_to')
+      create(:work_item_link, source: items[1], target: linked_items[1], link_type: 'blocks')
+      create(:work_item_link, source: linked_items[2], target: items[2], link_type: 'blocks')
+    end
+
+    where(type_filter: %w[relates_to blocks is_blocked_by])
+
+    with_them do
+      it 'returns the linked items with the specified link type' do
+        expect(linked_by_type.first.issue_link_type).to eq(type_filter)
+        expect(linked_by_type.first.issue_link_type).to eq(type_filter)
+      end
+    end
+  end
 end
