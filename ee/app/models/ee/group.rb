@@ -21,7 +21,7 @@ module EE
       include Elastic::MaintainElasticsearchOnGroupUpdate
       include ProductAnalyticsHelpers
 
-      ALLOWED_ACTIONS_TO_USE_FILTERING_OPTIMIZATION = [:read_epic, :read_confidential_epic].freeze
+      ALLOWED_ACTIONS_TO_USE_FILTERING_OPTIMIZATION = [:read_epic, :read_confidential_epic, :read_work_item, :read_confidential_issues].freeze
       EPIC_BATCH_SIZE = 500
 
       self.reactive_cache_work_type = :no_dependency
@@ -336,7 +336,11 @@ module EE
 
       def can_use_epics_filtering_optimization?(groups, action)
         return false unless ALLOWED_ACTIONS_TO_USE_FILTERING_OPTIMIZATION.include?(action)
+
         return false unless groups.any?
+
+        return false if [:read_work_item, :read_confidential_issues].include?(action) &&
+          !::Feature.enabled?(:filtering_optimization_for_work_items, groups.first.root_ancestor)
 
         groups.first.use_traversal_ids?
       end
@@ -366,11 +370,11 @@ module EE
 
       private
 
-      # Used when all groups that user is fetching epics for belongs to the same hierarchy.
+      # Used when all groups that user is fetching epics (or work item epics) for belongs to the same hierarchy.
       # It prevents doing one query to check user access for each group which causes
       # timeouts on big hierarchies.
       # Instead of iterating over all groups over policies we perform a union of queries
-      # to get all groups that users can read epics with:
+      # to get all groups that users can read epics / work item epics with:
       #
       #  1 fragment takes all groups via direct authorization
       #  1 fragment to take groups authorized by shares
@@ -385,7 +389,7 @@ module EE
         return ::Group.none unless top_level_group.feature_available?(:epics)
 
         access_level =
-          if action == :read_confidential_epic
+          if [:read_confidential_epic, :read_confidential_issues].include?(action)
             ::Gitlab::Access::PLANNER
           else
             ::Gitlab::Access::GUEST
@@ -396,7 +400,7 @@ module EE
           hierarchy_group_ids_authorized_by_share(user, groups, access_level)
         ]
 
-        if action == :read_epic
+        if [:read_epic, :read_work_item].include?(action)
           queries_for_union << hierarchy_groups_authorized_by_project_membership(user, top_level_group)
 
           # Gets public and internal groups

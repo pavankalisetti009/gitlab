@@ -15,6 +15,10 @@ RSpec.describe Groups::AutocompleteSourcesController, feature_category: :team_pl
   end
 
   describe '#issues', feature_category: :portfolio_management do
+    before do
+      stub_licensed_features(epics: true)
+    end
+
     it 'returns response with group level work items', :aggregate_failures do
       issues_json_response = [
         {

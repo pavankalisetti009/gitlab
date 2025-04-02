@@ -12,6 +12,29 @@ RSpec.describe WorkItems::WorkItemsFinder, feature_category: :team_planning do
       described_class.new(user, params).execute
     end
 
+    context 'with group parameter' do
+      include_context 'Issues or WorkItems Finder context', :work_item
+
+      include_context '{Issues|WorkItems}Finder#execute context', :work_item
+
+      it_behaves_like 'work items finder group parameter'
+
+      context 'when epics are enabled and namespace_level_work_items is disabled' do
+        before do
+          stub_licensed_features(epics: true)
+          stub_feature_flags(namespace_level_work_items: false)
+        end
+
+        let(:scope) { 'all' }
+        let(:params) { { group_id: group } }
+        let_it_be(:group_work_item) { create(:work_item, :group_level, namespace: group, author: user) }
+
+        it 'returns group level work items' do
+          expect(items).to contain_exactly(group_work_item)
+        end
+      end
+    end
+
     context 'with verification status widget' do
       let_it_be(:work_item1) { create(:work_item, project: project) }
       let_it_be(:work_item2) { create(:work_item, :satisfied_status, project: project) }
@@ -133,6 +156,10 @@ RSpec.describe WorkItems::WorkItemsFinder, feature_category: :team_planning do
     end
 
     context 'when emojis are present on its associated legacy epic' do
+      before do
+        stub_licensed_features(epics: true)
+      end
+
       let_it_be(:object1) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
       let_it_be(:object2) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
       let_it_be(:object3) { create(:work_item, :epic_with_legacy_epic, namespace: group) }

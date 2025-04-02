@@ -395,53 +395,57 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       described_class.groups_user_can(groups, user, action, **params)
     end
 
-    shared_examples 'a filter for permissioned groups' do
-      context 'with epics enabled' do
+    shared_examples 'confidential group access permission' do
+      context 'when user is guest' do
         before do
-          stub_licensed_features(epics: true)
+          private_subgroup_1.add_guest(user)
         end
 
-        context 'when groups array is empty' do
-          let(:groups) { [] }
-
-          it 'does not use filter optimization' do
-            expect(described_class).not_to receive(:filter_groups_user_can)
-
-            expect(subject).to be_empty
-          end
-        end
-
-        it 'uses filter optmization to return groups with access' do
-          expect(described_class).not_to receive(:filter_groups_user_can)
-
-          expect(subject).to match_array(expected_groups)
-        end
-
-        context 'when same_root is false' do
-          let(:params) { { same_root: false } }
-
-          it 'does not use filter optimization' do
-            expect(described_class).not_to receive(:filter_groups_user_can)
-
-            expect(subject).to match_array(expected_groups)
-          end
+        it_behaves_like 'a filter for permissioned groups' do
+          let(:expected_groups) { [] }
         end
       end
 
-      context 'with epics disabled' do
+      context 'when user is planner' do
         before do
-          stub_licensed_features(epics: false)
+          private_subgroup_1.add_planner(user)
         end
 
-        it 'returns an empty list' do
-          expect(subject).to be_empty
+        it_behaves_like 'a filter for permissioned groups' do
+          let(:expected_groups) { [private_subgroup_1, private_subgroup_2] }
+        end
+      end
+
+      context 'when user is planner via shared group' do
+        let(:shared_group_access) { GroupMember::PLANNER }
+
+        before do
+          shared_with_group.add_planner(user)
+        end
+
+        it_behaves_like 'a filter for permissioned groups' do
+          let(:expected_groups) { [private_subgroup_1, private_subgroup_2] }
+        end
+      end
+
+      context 'when user is member of a project in the hierarchy' do
+        let_it_be(:private_subgroup_with_project) { create(:group, :private, parent: public_group) }
+        let_it_be(:project) { create(:project, group: private_subgroup_with_project) }
+
+        let(:user) { create(:user) }
+        let(:groups) { described_class.where(id: [private_subgroup_with_project, public_group.id, internal_subgroup.id, private_subgroup_1.id, private_subgroup_2.id]) }
+
+        before do
+          project.add_developer(user)
+        end
+
+        it_behaves_like 'a filter for permissioned groups' do
+          let(:expected_groups) { [] }
         end
       end
     end
 
-    context 'for :read_epic permission' do
-      let(:action) { :read_epic }
-
+    shared_examples 'non-confidential group access permission' do
       context 'when user has minimal access to group' do
         before do
           public_group.add_member(user, Gitlab::Access::MINIMAL_ACCESS)
@@ -510,56 +514,72 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       end
     end
 
+    shared_examples 'a filter for permissioned groups' do
+      context 'with epics enabled' do
+        before do
+          stub_licensed_features(epics: true)
+        end
+
+        context 'when groups array is empty' do
+          let(:groups) { [] }
+
+          it 'does not use filter optimization' do
+            expect(described_class).not_to receive(:filter_groups_user_can)
+
+            expect(subject).to be_empty
+          end
+        end
+
+        it 'uses filter optmization to return groups with access' do
+          expect(described_class).not_to receive(:filter_groups_user_can)
+
+          expect(subject).to match_array(expected_groups)
+        end
+
+        context 'when same_root is false' do
+          let(:params) { { same_root: false } }
+
+          it 'does not use filter optimization' do
+            expect(described_class).not_to receive(:filter_groups_user_can)
+
+            expect(subject).to match_array(expected_groups)
+          end
+        end
+      end
+
+      context 'with epics disabled' do
+        before do
+          stub_licensed_features(epics: false)
+        end
+
+        it 'returns an empty list' do
+          expect(subject).to be_empty
+        end
+      end
+    end
+
+    context 'for :read_epic permission' do
+      let(:action) { :read_epic }
+
+      it_behaves_like 'non-confidential group access permission'
+    end
+
+    context 'for :read_work_item permission' do
+      let(:action) { :read_work_item }
+
+      it_behaves_like 'non-confidential group access permission'
+    end
+
     context 'for :read_confidential_epic permission' do
       let(:action) { :read_confidential_epic }
 
-      context 'when user is guest' do
-        before do
-          private_subgroup_1.add_guest(user)
-        end
+      it_behaves_like 'confidential group access permission'
+    end
 
-        it_behaves_like 'a filter for permissioned groups' do
-          let(:expected_groups) { [] }
-        end
-      end
+    context 'for :read_confidential_issues permission' do
+      let(:action) { :read_confidential_issues }
 
-      context 'when user is planner' do
-        before do
-          private_subgroup_1.add_planner(user)
-        end
-
-        it_behaves_like 'a filter for permissioned groups' do
-          let(:expected_groups) { [private_subgroup_1, private_subgroup_2] }
-        end
-      end
-
-      context 'when user is planner via shared group' do
-        let(:shared_group_access) { GroupMember::PLANNER }
-
-        before do
-          shared_with_group.add_planner(user)
-        end
-
-        it_behaves_like 'a filter for permissioned groups' do
-          let(:expected_groups) { [private_subgroup_1, private_subgroup_2] }
-        end
-      end
-
-      context 'when user is member of a project in the hierarchy' do
-        let_it_be(:private_subgroup_with_project) { create(:group, :private, parent: public_group) }
-        let_it_be(:project) { create(:project, group: private_subgroup_with_project) }
-
-        let(:user) { create(:user) }
-        let(:groups) { described_class.where(id: [private_subgroup_with_project, public_group.id, internal_subgroup.id, private_subgroup_1.id, private_subgroup_2.id]) }
-
-        before do
-          project.add_developer(user)
-        end
-
-        it_behaves_like 'a filter for permissioned groups' do
-          let(:expected_groups) { [] }
-        end
-      end
+      it_behaves_like 'confidential group access permission'
     end
 
     context 'when action is not allowed to use filtering optmization' do
@@ -573,6 +593,41 @@ RSpec.describe Group, feature_category: :groups_and_projects do
         expect(described_class).not_to receive(:filter_groups_user_can)
 
         expect(subject).to match_array([public_group, internal_subgroup, private_subgroup_1, private_subgroup_2])
+      end
+    end
+
+    context 'with filtering_optimization_for_work_items feature flag' do
+      before do
+        stub_licensed_features(epics: true)
+      end
+
+      let(:expected_groups) { [public_group, internal_subgroup] }
+      let(:action) { :read_work_item }
+
+      context 'when filtering_optimization_for_work_items is false' do
+        before do
+          stub_feature_flags(filtering_optimization_for_work_items: false)
+        end
+
+        it 'does not allow the optimization for the read_work_item permission' do
+          expect(described_class).to receive(:can_use_epics_filtering_optimization?).with(groups, action)
+                                                                                    .and_return(false)
+
+          expect(subject).to match_array(expected_groups)
+        end
+      end
+
+      context 'when filtering_optimization_for_work_items is true' do
+        before do
+          stub_feature_flags(filtering_optimization_for_work_items: true)
+        end
+
+        it 'does not allow the optimization for the read_work_item permission' do
+          expect(described_class).to receive(:can_use_epics_filtering_optimization?).with(groups, action)
+                                                                                    .and_return(true)
+
+          expect(subject).to match_array(expected_groups)
+        end
       end
     end
 
