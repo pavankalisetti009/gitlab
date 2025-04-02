@@ -35,8 +35,8 @@ require (
 	golang.org/x/image v0.20.0
 	golang.org/x/net v0.35.0
 	golang.org/x/oauth2 v0.28.0
-	google.golang.org/grpc v1.67.1
-	google.golang.org/protobuf v1.36.5
+	google.golang.org/grpc v1.71.0
+	google.golang.org/protobuf v1.36.6
 )
 
 require (
