@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'admin/dashboard/index.html.haml' do
+RSpec.describe 'admin/dashboard/index.html.haml', :enable_admin_mode, feature_category: :shared do
   include Devise::Test::ControllerHelpers
 
   let(:reflections) do
@@ -191,6 +191,81 @@ RSpec.describe 'admin/dashboard/index.html.haml' do
             end
           end
         end
+      end
+    end
+  end
+
+  describe 'Features' do
+    it 'shows EE features together with settings links', :aggregate_failures do
+      render
+
+      expect(rendered).to have_content 'Advanced Search'
+      expect(rendered).to have_link href: search_admin_application_settings_path(anchor: 'js-elasticsearch-settings')
+      expect(rendered).to have_content 'Geo'
+      expect(rendered).to have_link href: admin_geo_nodes_path
+    end
+  end
+
+  context 'with user having read_admin_dashboard custom permission' do
+    let_it_be(:user) { create(:user) }
+    let_it_be(:role) { create(:admin_member_role, :read_admin_dashboard, user: user) }
+
+    before do
+      assign(:license, create(:license))
+    end
+
+    it 'includes license overview without the link to details', :aggregate_failures do
+      render
+
+      expect(rendered).to have_content _('License overview')
+      expect(rendered).to have_content _('Plan:')
+      expect(rendered).to have_content s_('Subscriptions|End date:')
+      expect(rendered).to have_content _('Licensed to:')
+      expect(rendered).to have_content _('Type:')
+      expect(rendered).not_to have_link _('View details'), href: admin_subscription_path
+    end
+
+    it 'does not show Projects, Groups and Users lists and links to create new entities', :aggregate_failures do
+      render
+
+      expect(rendered).not_to have_content 'Projects'
+      expect(rendered).not_to have_content 'Total Users'
+      expect(rendered).not_to have_content 'Groups'
+
+      expect(rendered).not_to have_link _('New project'), href: new_project_path
+      expect(rendered).not_to have_link _('New user'), href: new_admin_user_path
+      expect(rendered).not_to have_link _('New group'), href: new_admin_group_path
+
+      expect(rendered).not_to have_link _('View latest projects'), href: admin_projects_path(sort: 'created_desc')
+      expect(rendered).not_to have_link _('View latest users'), href: admin_users_path(sort: 'created_desc')
+      expect(rendered).not_to have_link _('Users statistics'), href: admin_dashboard_stats_path
+      expect(rendered).not_to have_link _('View latest groups'), href: admin_groups_path(sort: 'created_desc')
+    end
+
+    describe 'Features' do
+      it 'shows features but without settings links', :aggregate_failures do
+        render
+
+        expect(rendered).to have_content 'Sign up'
+        expect(rendered).not_to have_link href: general_admin_application_settings_path(anchor: 'js-signup-settings')
+        expect(rendered).to have_content 'LDAP'
+        expect(rendered).to have_link href: help_page_path('administration/auth/ldap/_index.md') # just a help page
+        expect(rendered).to have_content 'Gravatar'
+        expect(rendered).not_to have_link href: general_admin_application_settings_path(anchor: 'js-account-settings')
+        expect(rendered).to have_content 'OmniAuth'
+        expect(rendered).not_to have_link href: general_admin_application_settings_path(anchor: 'js-signin-settings')
+        expect(rendered).to have_content 'Reply by email'
+        expect(rendered).to have_link href: help_page_path('administration/reply_by_email.md') # just a help page
+        expect(rendered).to have_content 'Advanced Search'
+        expect(rendered).not_to have_link href: search_admin_application_settings_path(anchor: 'js-elasticsearch-settings')
+        expect(rendered).to have_content 'Geo'
+        expect(rendered).not_to have_link href: admin_geo_nodes_path
+        expect(rendered).to have_content 'Container registry'
+        expect(rendered).not_to have_link href: ci_cd_admin_application_settings_path(anchor: 'js-registry-settings')
+        expect(rendered).to have_content 'GitLab Pages'
+        expect(rendered).to have_link href: help_instance_configuration_url # just a help page
+        expect(rendered).to have_content 'Instance Runners'
+        expect(rendered).not_to have_link href: admin_runners_path
       end
     end
   end

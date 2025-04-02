@@ -23,4 +23,5 @@
         - when 'legacy_license'
           %strong= _('Legacy license')
     %div
-      = link_button_to _('View details'), admin_subscription_path, class: 'gl-w-full gl-mt-3 sm:gl-mt-0'
+      - if current_user.can_admin_all_resources?
+        = link_button_to _('View details'), admin_subscription_path, class: 'gl-w-full gl-mt-3 sm:gl-mt-0'

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe DashboardHelper, type: :helper do
+RSpec.describe DashboardHelper, type: :helper, feature_category: :shared do
   let(:user) { build(:user) }
 
   describe '.has_start_trial?', :do_not_mock_admin_mode_setting do
@@ -26,6 +26,23 @@ RSpec.describe DashboardHelper, type: :helper do
       end
 
       it { is_expected.to eq(output) }
+    end
+  end
+
+  describe '#feature_entry' do
+    context 'with user having read_admin_dashboard custom permission' do
+      let_it_be(:user) { create(:user) }
+      let_it_be(:role) { create(:admin_member_role, :read_admin_dashboard, user: user) }
+
+      subject(:feature_entry) { helper.feature_entry('Demo', href: 'demo.link') }
+
+      before do
+        allow(helper).to receive(:current_user).and_return(user)
+      end
+
+      it 'does not have configuration lin' do
+        is_expected.not_to have_link('Configure')
+      end
     end
   end
 
