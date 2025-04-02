@@ -577,7 +577,8 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
                 'location' => {
                   "blob_path" => location_bundler[:blob_path],
                   "path" => location_bundler[:path],
-                  "top_level" => location_bundler[:top_level]
+                  "top_level" => location_bundler[:top_level],
+                  "dependency_paths" => []
                 },
                 'project' => {
                   "name" => project.name
@@ -600,6 +601,81 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
 
               expect(json_response['locations']).to be_empty
             end
+          end
+        end
+
+        context 'when dependency paths feature is enabled' do
+          let_it_be(:source_bundler) { create(:sbom_source, packager_name: 'bundler', input_file_path: 'Gemfile.lock') }
+
+          let_it_be(:component_ancestor) { create(:sbom_component, name: "parent") }
+          let_it_be(:component_version_ancestor) do
+            create(:sbom_component_version, component: component_ancestor, version: 'v1.2.3')
+          end
+
+          let_it_be(:occurrence_ancestor) do
+            create(:sbom_occurrence,
+              source: source_bundler,
+              component: component_ancestor,
+              component_version: component_version_ancestor,
+              project: project
+            )
+          end
+
+          let_it_be(:occurrence) do
+            create(:sbom_occurrence,
+              source: source_bundler,
+              component: component_version.component,
+              component_version: component_version,
+              project: project,
+              ancestors: [{ name: component_ancestor.name, version: component_version_ancestor.version }]
+            )
+          end
+
+          let_it_be(:location_bundler) { occurrence.location }
+
+          let(:dependency_paths) do
+            [
+              {
+                "is_cyclic" => false,
+                "max_depth_reached" => false,
+                "path" => [
+                  {
+                    "name" => component_ancestor.name,
+                    "version" => component_version_ancestor.version
+                  },
+                  {
+                    "name" => component_version.component.name,
+                    "version" => component_version.version
+                  }
+                ]
+              }
+            ]
+          end
+
+          let(:expected_response) do
+            [
+              {
+                'location' => {
+                  "blob_path" => location_bundler[:blob_path],
+                  "dependency_paths" => dependency_paths,
+                  "path" => location_bundler[:path],
+                  "top_level" => location_bundler[:top_level]
+                },
+                'project' => {
+                  "name" => project.name
+                }
+              }
+            ]
+          end
+
+          before do
+            stub_feature_flags(dependency_paths: true)
+          end
+
+          it 'returns path related data' do
+            subject
+
+            expect(json_response['locations']).to eq(expected_response)
           end
         end
       end

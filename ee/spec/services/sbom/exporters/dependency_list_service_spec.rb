@@ -42,6 +42,7 @@ RSpec.describe Sbom::Exporters::DependencyListService, feature_category: :depend
           'location' => {
             'blob_path' =>
               "/#{project.full_path}/-/blob/#{occurrence.commit_sha}/#{occurrence.input_file_path}",
+            'dependency_paths' => [],
             'path' => occurrence.input_file_path,
             'top_level' => false,
             'ancestors' => occurrence.ancestors
