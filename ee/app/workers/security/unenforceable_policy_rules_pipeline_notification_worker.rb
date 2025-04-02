@@ -22,12 +22,15 @@ module Security
       return unless project.licensed_feature_available?(:security_orchestration_policies)
       return if project.approval_rules.with_scan_result_policy_read.none?
 
+      related_merge_requests = pipeline.opened_merge_requests_with_head_sha
+      return if related_merge_requests.none?
+
       if ::Feature.enabled?(:policy_mergability_check, project)
         Security::ScanResultPolicies::UnblockPendingMergeRequestViolationsWorker
           .perform_in(UNBLOCK_PENDING_VIOLATIONS_TIMEOUT, pipeline_id)
       end
 
-      pipeline.opened_merge_requests_with_head_sha.each do |merge_request|
+      related_merge_requests.each do |merge_request|
         Security::UnenforceablePolicyRulesNotificationService.new(merge_request).execute
       end
     end
