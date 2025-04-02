@@ -893,10 +893,6 @@ module EE
       ::Namespaces::FreeUserCap::Enforcement.new(self).enforce_cap?
     end
 
-    def cluster_agents
-      ::Clusters::Agent.for_projects(all_projects)
-    end
-
     # Members belonging directly to Group or its subgroups
     def billed_group_users(exclude_guests: false)
       members = billed_group_members(exclude_guests: exclude_guests)
