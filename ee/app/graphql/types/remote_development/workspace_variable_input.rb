@@ -9,11 +9,7 @@ module Types
       # do not allow empty values. also validate that the key contains only alphanumeric characters, -, _ or .
       # https://kubernetes.io/docs/concepts/configuration/secret/#restriction-names-data
       argument :key, GraphQL::Types::String,
-        description: 'Name of the workspace variable.',
-        validates: {
-          allow_blank: false,
-          format: { with: /\A[a-zA-Z0-9\-_.]+\z/, message: 'must contain only alphanumeric characters, -, _ or .' }
-        }
+        description: 'Name of the workspace variable.'
       argument :type, Types::RemoteDevelopment::WorkspaceVariableInputTypeEnum,
         required: false,
         default_value: Types::RemoteDevelopment::WorkspaceVariableInputTypeEnum.environment,

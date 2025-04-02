@@ -37,6 +37,25 @@ RSpec.describe RemoteDevelopment::WorkspaceVariable, feature_category: :workspac
     it { is_expected.to validate_inclusion_of(:variable_type).in_array(variable_type_values) }
   end
 
+  describe '#key' do
+    it 'allows keys with alphanumeric characters, hyphens, underscores, and periods' do
+      %w[aA1-_.].each do |key|
+        workspace_variable = build(:workspace_variable, workspace: workspace, key: key)
+
+        expect(workspace_variable).to be_valid
+      end
+    end
+
+    it 'rejects keys with special characters other than alphanumeric, hyphens, underscores, and periods' do
+      %w[= $/@!*].each do |key|
+        workspace_variable = build(:workspace_variable, workspace: workspace, key: key)
+
+        expect(workspace_variable).not_to be_valid
+        expect(workspace_variable.errors[:key]).to include('must contain only alphanumeric characters, -, _ or .')
+      end
+    end
+  end
+
   describe '#value' do
     it 'can be decrypted' do
       expect(workspace_variable.value).to eq(value)
