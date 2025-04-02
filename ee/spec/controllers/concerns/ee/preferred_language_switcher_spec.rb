@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe PreferredLanguageSwitcher, type: :controller, feature_category: :acquisition do
+  include StubLanguagesTranslationPercentage
+
   controller(ActionController::Base) do
     include PreferredLanguageSwitcher
 
@@ -17,6 +19,7 @@ RSpec.describe PreferredLanguageSwitcher, type: :controller, feature_category: :
 
   before do
     stub_feature_flags(disable_preferred_language_cookie: false)
+    stub_languages_translation_percentage(fr: 99, de: 7)
   end
 
   context 'when the marketing_site_language SaaS feature is available' do
@@ -52,9 +55,18 @@ RSpec.describe PreferredLanguageSwitcher, type: :controller, feature_category: :
 
           it { is_expected.to eq 'fr' }
         end
+      end
 
-        context 'when language param is invalid' do
-          let(:glm_source) { 'about.gitlab.com/ko-ko/' }
+      context 'when language param is invalid' do
+        context 'when language is non-sense' do
+          # QA is a language code preserved for testing
+          let(:glm_source) { 'about.gitlab.com/qa-qa/' }
+
+          it { is_expected.to eq Gitlab::CurrentSettings.default_preferred_language }
+        end
+
+        context 'when the language has not high levels of translation' do
+          let(:glm_source) { 'about.gitlab.com/de-de/' }
 
           it { is_expected.to eq Gitlab::CurrentSettings.default_preferred_language }
         end
