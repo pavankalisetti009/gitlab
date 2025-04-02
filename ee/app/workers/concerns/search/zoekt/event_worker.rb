@@ -11,6 +11,8 @@ module Search
         pause_control :zoekt
         sidekiq_options retry: 1
 
+        deduplicate :until_executed, if_deduplicated: :reschedule_once
+
         private
 
         def logger

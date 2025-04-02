@@ -4,11 +4,10 @@ module Search
   module Zoekt
     class IndexMarkedAsReadyEventWorker
       include Gitlab::EventStore::Subscriber
-      include EventWorker
+      include Search::Zoekt::EventWorker
       prepend ::Geo::SkipSecondary
 
       idempotent!
-      deduplicate :until_executed
       defer_on_database_health_signal :gitlab_main, [:zoekt_indices], 10.minutes
 
       BATCH_SIZE = 1000

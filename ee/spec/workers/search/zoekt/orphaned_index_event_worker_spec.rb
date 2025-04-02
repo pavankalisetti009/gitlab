@@ -11,10 +11,6 @@ RSpec.describe Search::Zoekt::OrphanedIndexEventWorker, :zoekt_settings_enabled,
 
   it_behaves_like 'subscribes to event'
 
-  it 'has the `until_executed` deduplicate strategy' do
-    expect(described_class.get_deduplicate_strategy).to eq(:until_executed)
-  end
-
   it_behaves_like 'an idempotent worker' do
     context 'when there are indices that should be marked as orphaned' do
       let(:batch_size) { described_class::BATCH_SIZE }

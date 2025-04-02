@@ -11,7 +11,6 @@ module Search
       REPO_BATCH_SIZE = 5_000
 
       idempotent!
-      deduplicate :until_executed
 
       defer_on_database_health_signal :gitlab_main, [:zoekt_indices, :zoekt_repositories], 10.minutes
 
