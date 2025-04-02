@@ -317,7 +317,7 @@ FactoryBot.define do
   end
 
   factory :pipeline_execution_schedule_policy,
-    class: Struct.new(:name, :description, :enabled, :content, :schedule, :policy_scope, :metadata) do
+    class: Struct.new(:name, :description, :enabled, :content, :schedules, :policy_scope, :metadata) do
     skip_create
 
     initialize_with do
@@ -325,11 +325,11 @@ FactoryBot.define do
       description = attributes[:description]
       enabled = attributes[:enabled]
       content = attributes[:content]
-      schedule = attributes[:schedule]
+      schedules = attributes[:schedules]
       policy_scope = attributes[:policy_scope]
       metadata = attributes[:metadata]
 
-      new(name, description, enabled, content, schedule, policy_scope, metadata).to_h
+      new(name, description, enabled, content, schedules, policy_scope, metadata).to_h
     end
 
     sequence(:name) { |n| "test-pipeline-execution-schedule-policy-#{n}" }
