@@ -49,6 +49,25 @@ RSpec.describe DependencyEntity, feature_category: :dependency_management do
       let_it_be(:project) { create(:project, organization: organization) }
       let_it_be(:ancestor) { { 'name' => 'libc', 'version' => '1.2.3' } }
       let_it_be(:sbom_occurrence) { create(:sbom_occurrence, :mit, :bundler, project: project, ancestors: [ancestor]) }
+      let_it_be(:dependency_paths) do
+        [
+          {
+            "is_cyclic" => false,
+            "max_depth_reached" => false,
+            "path" => [
+              {
+                "name" => "libc",
+                "version" => "1.2.3"
+              },
+              {
+                "name" => sbom_occurrence.component_name,
+                "version" => sbom_occurrence.version
+              }
+            ]
+          }
+        ]
+      end
+
       let(:request_params) { { project: nil, group: nil, user: user, organization: organization } }
 
       it 'renders the proper representation' do
@@ -65,6 +84,7 @@ RSpec.describe DependencyEntity, feature_category: :dependency_management do
         expect(subject.dig(:location, :blob_path)).to eq(sbom_occurrence.location[:blob_path])
         expect(subject.dig(:location, :path)).to eq(sbom_occurrence.location[:path])
         expect(subject.dig(:location, :ancestors).as_json).to eq([ancestor])
+        expect(subject.dig(:location, :dependency_paths).as_json).to eq(dependency_paths)
         expect(subject.dig(:location, :top_level)).to be false
       end
 

@@ -20,6 +20,7 @@ class DependencyEntity < Grape::Entity
     expose :ancestors, using: AncestorEntity do |location|
       location[:ancestors].map(&:compact).reject(&:empty?)
     end
+    expose :dependency_paths, using: Sbom::DependencyPathEntity
   end
 
   class VulnerabilityEntity < Grape::Entity

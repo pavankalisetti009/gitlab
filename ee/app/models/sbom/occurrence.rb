@@ -211,11 +211,20 @@ module Sbom
         blob_path: input_file_blob_path,
         path: input_file_path,
         top_level: top_level?,
-        ancestors: ancestors
+        ancestors: ancestors,
+        dependency_paths: dependency_paths
       }
     end
 
     private
+
+    def dependency_paths
+      if Feature.enabled?(:dependency_paths, project)
+        Sbom::DependencyPath.find(occurrence_id: id, project_id: project.id)
+      else
+        []
+      end
+    end
 
     def input_file_blob_path
       return unless input_file_path.present?

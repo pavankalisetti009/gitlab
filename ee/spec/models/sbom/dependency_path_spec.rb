@@ -8,13 +8,13 @@ RSpec.describe Sbom::DependencyPath, feature_category: :vulnerability_management
   let_it_be(:project) { create(:project, namespace: namespace) }
 
   let_it_be(:component_1) { create(:sbom_component, name: "activestorage") }
-  let_it_be(:component_version_1) { create(:sbom_component_version, component: component_1, version: '1.2.3') }
+  let_it_be(:component_version_1) { create(:sbom_component_version, component: component_1, version: 'v1.2.3') }
 
   let_it_be(:component_2) { create(:sbom_component, name: "activesupport") }
-  let_it_be(:component_version_2) { create(:sbom_component_version, component: component_2, version: '2.3.4') }
+  let_it_be(:component_version_2) { create(:sbom_component_version, component: component_2, version: 'v2.3.4') }
 
   let_it_be(:component_3) { create(:sbom_component, name: "activejob") }
-  let_it_be(:component_version_3) { create(:sbom_component_version, component: component_3, version: '3.4.5') }
+  let_it_be(:component_version_3) { create(:sbom_component_version, component: component_3, version: 'v3.4.5') }
 
   subject(:find_dependencies) { described_class.find(occurrence_id: occurrence_id, project_id: project.id) }
 
