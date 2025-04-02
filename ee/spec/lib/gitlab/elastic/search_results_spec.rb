@@ -124,6 +124,14 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
     end
   end
 
+  describe '#counts' do
+    let(:results) { described_class.new(user, query, limit_project_ids) }
+
+    it 'returns an empty array' do
+      expect(results.counts).to be_empty
+    end
+  end
+
   describe 'parse_search_result' do
     let_it_be(:project) { create(:project) }
     let(:content) { "foo\nbar\nbaz\n" }

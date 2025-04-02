@@ -305,6 +305,11 @@ module Gitlab
         end
       end
 
+      # TODO add call to Vulnerability Query builder https://gitlab.com/gitlab-org/gitlab/-/issues/525479
+      def counts(*)
+        {}
+      end
+
       private
 
       # Apply some eager loading to the `records` of an ES result object without

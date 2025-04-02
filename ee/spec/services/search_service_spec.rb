@@ -13,6 +13,24 @@ RSpec.describe SearchService, feature_category: :global_search do
     it_behaves_like 'a redacted search results'
   end
 
+  describe '#search_counts' do
+    let_it_be(:user) { create(:user) }
+    let(:search) { 'anything' }
+    let(:scope) { nil }
+    let(:page) { 1 }
+    let(:per_page) { described_class::DEFAULT_PER_PAGE }
+
+    subject(:search_service) { described_class.new(user, search: search, scope: scope, page: page, per_page: per_page) }
+
+    it 'calls search_results.counts' do
+      expect_next_instance_of(Gitlab::SearchResults) do |search_results|
+        expect(search_results).to receive(:counts)
+      end
+
+      search_service.search_counts
+    end
+  end
+
   describe '#projects' do
     let_it_be(:user) { create(:user) }
     let_it_be(:accessible_project) { create(:project, :public) }
