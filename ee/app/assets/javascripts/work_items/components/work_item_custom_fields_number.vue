@@ -1,12 +1,14 @@
 <script>
 import { GlButton, GlForm, GlFormInput, GlLoadingIcon, GlTooltipDirective } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import { newWorkItemId } from '~/work_items/utils';
 import {
   CUSTOM_FIELDS_TYPE_NUMBER,
   sprintfWorkItem,
   I18N_WORK_ITEM_ERROR_UPDATING,
 } from '~/work_items/constants';
 import updateWorkItemCustomFieldsMutation from 'ee/work_items/graphql/update_work_item_custom_fields.mutation.graphql';
+import updateNewWorkItemMutation from '~/work_items/graphql/update_new_work_item.mutation.graphql';
 
 export default {
   inputId: 'custom-field-number-input',
@@ -40,9 +42,13 @@ export default {
       validator: (customField) => {
         return (
           customField.customField?.fieldType === CUSTOM_FIELDS_TYPE_NUMBER &&
-          (customField.value === null || Number.isFinite(Number(customField.value)))
+          (customField.value == null || Number.isFinite(Number(customField.value)))
         );
       },
+    },
+    fullPath: {
+      type: String,
+      required: true,
     },
   },
   data() {
@@ -56,7 +62,7 @@ export default {
     customFieldId() {
       return this.customField.customField?.id;
     },
-    label() {
+    customFieldName() {
       return this.customField.customField?.name;
     },
     hasValue() {
@@ -81,11 +87,8 @@ export default {
     blurInput() {
       this.$refs.input.$el.blur();
     },
-    handleFocus() {
-      this.isEditing = true;
-    },
     updateNumberFromInput() {
-      if (this.value === '') {
+      if (this.value === '' || !this.value) {
         this.updateNumber(null);
         return;
       }
@@ -93,18 +96,34 @@ export default {
       const value = Number(this.value);
       this.updateNumber(value);
     },
-    updateNumber(number) {
+    async updateNumber(number) {
       if (this.clickingClearButton) return;
       if (!this.canUpdate) return;
 
-      if (this.value === number) {
-        this.isEditing = false;
+      this.isUpdating = true;
+      this.isEditing = false;
+
+      // Create work item flow
+      if (this.workItemId === newWorkItemId(this.workItemType)) {
+        await this.$apollo.mutate({
+          mutation: updateNewWorkItemMutation,
+          variables: {
+            input: {
+              workItemType: this.workItemType,
+              fullPath: this.fullPath,
+              customField: {
+                id: this.customFieldId,
+                numberValue: number,
+              },
+            },
+          },
+        });
+
+        this.isUpdating = false;
         return;
       }
 
-      this.isUpdating = true;
-
-      this.$apollo
+      await this.$apollo
         .mutate({
           mutation: updateWorkItemCustomFieldsMutation,
           variables: {
@@ -144,7 +163,7 @@ export default {
     <div class="gl-flex gl-items-center gl-justify-between">
       <!-- hide header when editing, since we then have a form label. Keep it reachable for screenreader nav  -->
       <h3 :class="{ 'gl-sr-only': isEditing }" class="gl-heading-5 !gl-mb-0">
-        {{ label }}
+        {{ customFieldName }}
       </h3>
       <gl-button
         v-if="canUpdate && !isEditing"
@@ -158,7 +177,7 @@ export default {
     </div>
     <gl-form v-if="isEditing" @submit.prevent="blurInput">
       <div class="gl-flex gl-items-center">
-        <label :for="$options.inputId" class="gl-mb-0">{{ label }}</label>
+        <label :for="$options.inputId" class="gl-mb-0">{{ customFieldName }}</label>
         <gl-loading-icon v-if="isUpdating" size="sm" inline class="gl-ml-3" />
         <gl-button
           data-testid="apply-number"
@@ -183,7 +202,6 @@ export default {
           :placeholder="__('Enter a number')"
           autofocus
           @blur="updateNumberFromInput"
-          @focus="handleFocus"
           @keydown.exact.esc.stop="blurInput"
         />
         <gl-button

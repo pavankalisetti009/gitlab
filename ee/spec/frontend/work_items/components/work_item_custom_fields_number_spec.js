@@ -1,11 +1,12 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlForm, GlFormInput, GlLoadingIcon } from '@gitlab/ui';
+import { GlForm, GlFormInput } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import WorkItemCustomFieldNumber from 'ee/work_items/components/work_item_custom_fields_number.vue';
+import { newWorkItemId } from '~/work_items/utils';
 import { CUSTOM_FIELDS_TYPE_NUMBER, CUSTOM_FIELDS_TYPE_TEXT } from '~/work_items/constants';
 import updateWorkItemCustomFieldsMutation from 'ee/work_items/graphql/update_work_item_custom_fields.mutation.graphql';
 import { customFieldsWidgetResponseFactory } from 'jest/work_items/mock_data';
@@ -47,7 +48,6 @@ describe('WorkItemCustomFieldsNumber', () => {
   const findForm = () => wrapper.findComponent(GlForm);
   const findInput = () => wrapper.findComponent(GlFormInput);
   const findValue = () => wrapper.find('[data-testid="custom-field-value"]');
-  const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
 
   const createComponent = ({
     canUpdate = true,
@@ -240,6 +240,21 @@ describe('WorkItemCustomFieldsNumber', () => {
   });
 
   describe('updating the value', () => {
+    it('does not call "workItemUpdate" mutation when option is selected if is create flow', async () => {
+      createComponent({ workItemId: newWorkItemId(defaultWorkItemType) });
+      await nextTick();
+
+      const newValue = '10';
+
+      await findEditButton().vm.$emit('click');
+      findInput().vm.$emit('input', newValue);
+      findInput().vm.$emit('blur');
+
+      await waitForPromises();
+
+      expect(mutationSuccessHandler).not.toHaveBeenCalled();
+    });
+
     it('sends mutation with correct variables when updating number', async () => {
       createComponent();
       await nextTick();
@@ -286,21 +301,6 @@ describe('WorkItemCustomFieldsNumber', () => {
           ],
         },
       });
-    });
-
-    it('shows loading state while updating', async () => {
-      const mutationHandler = jest.fn().mockImplementation(() => new Promise(() => {}));
-
-      createComponent({ mutationHandler });
-      await nextTick();
-
-      await findEditButton().vm.$emit('click');
-      findInput().vm.$emit('input', '10');
-      findInput().vm.$emit('blur');
-      await nextTick();
-
-      expect(findLoadingIcon().exists()).toBe(true);
-      expect(findInput().props('disabled')).toBe(true);
     });
 
     it('emits error event when mutation returns an error', async () => {

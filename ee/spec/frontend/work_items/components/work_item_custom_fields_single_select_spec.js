@@ -6,6 +6,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import WorkItemSidebarDropdownWidget from '~/work_items/components/shared/work_item_sidebar_dropdown_widget.vue';
 import WorkItemCustomFieldsSingleSelect from 'ee/work_items/components/work_item_custom_fields_single_select.vue';
+import { newWorkItemId } from '~/work_items/utils';
 import {
   CUSTOM_FIELDS_TYPE_SINGLE_SELECT,
   CUSTOM_FIELDS_TYPE_NUMBER,
@@ -259,6 +260,16 @@ describe('WorkItemCustomFieldsSingleSelect', () => {
   });
 
   describe('updating the selection', () => {
+    it('does not call "workItemUpdate" mutation when option is selected if is create flow', async () => {
+      createComponent({ workItemId: newWorkItemId(defaultWorkItemType) });
+      await nextTick();
+
+      findSidebarDropdownWidget().vm.$emit('updateValue', 'select-2');
+      await nextTick();
+
+      expect(mutationSuccessHandler).not.toHaveBeenCalled();
+    });
+
     it('sends mutation with correct variables when selecting an option', async () => {
       createComponent();
       await nextTick();

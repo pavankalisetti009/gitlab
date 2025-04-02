@@ -2,7 +2,7 @@
 import { GlTruncate, GlTooltipDirective } from '@gitlab/ui';
 import fuzzaldrinPlus from 'fuzzaldrin-plus';
 import { s__, __, sprintf } from '~/locale';
-import { formatSelectOptionForCustomField } from '~/work_items/utils';
+import { formatSelectOptionForCustomField, newWorkItemId } from '~/work_items/utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import {
   CUSTOM_FIELDS_TYPE_SINGLE_SELECT,
@@ -10,6 +10,7 @@ import {
   I18N_WORK_ITEM_ERROR_UPDATING,
 } from '~/work_items/constants';
 import updateWorkItemCustomFieldsMutation from 'ee/work_items/graphql/update_work_item_custom_fields.mutation.graphql';
+import updateNewWorkItemMutation from '~/work_items/graphql/update_new_work_item.mutation.graphql';
 import WorkItemSidebarDropdownWidget from '~/work_items/components/shared/work_item_sidebar_dropdown_widget.vue';
 import customFieldSelectOptionsQuery from 'ee/work_items/graphql/work_item_custom_field_select_options.query.graphql';
 
@@ -42,7 +43,7 @@ export default {
       validator: (customField) => {
         return (
           customField.customField?.fieldType === CUSTOM_FIELDS_TYPE_SINGLE_SELECT &&
-          (customField.selectedOptions === null || Array.isArray(customField.selectedOptions))
+          (customField.selectedOptions == null || Array.isArray(customField.selectedOptions))
         );
       },
     },
@@ -69,7 +70,7 @@ export default {
     customFieldId() {
       return this.customField.customField?.id;
     },
-    dropdownLabel() {
+    customFieldName() {
       return this.customField.customField?.name;
     },
     editingValueText() {
@@ -152,10 +153,10 @@ export default {
       error(e) {
         const msg = sprintf(
           s__(
-            'WorkItemCustomFields|Options could not be loaded for field: %{dropdownLabel}. Please try again.',
+            'WorkItemCustomFields|Options could not be loaded for field: %{customFieldName}. Please try again.',
           ),
           {
-            dropdownLabel: this.dropdownLabel,
+            customFieldName: this.customFieldName,
           },
         );
 
@@ -182,7 +183,39 @@ export default {
         ? this.defaultOptions.find(({ value }) => value === selectedOptionId)
         : null;
 
-      this.$apollo
+      // Create work item flow
+      if (this.workItemId === newWorkItemId(this.workItemType)) {
+        const selectedOption = this.selectedOption
+          ? { id: this.selectedOption.value, value: this.selectedOption.text }
+          : null;
+
+        await this.$apollo
+          .mutate({
+            mutation: updateNewWorkItemMutation,
+            variables: {
+              input: {
+                workItemType: this.workItemType,
+                fullPath: this.fullPath,
+                customField: {
+                  id: this.customFieldId,
+                  selectedOptions: selectedOption ? [selectedOption] : [],
+                },
+              },
+            },
+          })
+          .catch((error) => {
+            const msg = sprintfWorkItem(I18N_WORK_ITEM_ERROR_UPDATING, this.workItemType);
+            this.$emit('error', msg);
+            Sentry.captureException(error);
+          })
+          .finally(() => {
+            this.isUpdating = false;
+          });
+
+        return;
+      }
+
+      await this.$apollo
         .mutate({
           mutation: updateWorkItemCustomFieldsMutation,
           variables: {
@@ -221,7 +254,7 @@ export default {
     v-if="displayWidget"
     :key="customFieldId"
     dropdown-name="single-select"
-    :dropdown-label="dropdownLabel"
+    :dropdown-label="customFieldName"
     :can-update="canUpdate"
     :loading="isLoadingOptionsList"
     :list-items="optionsList"
