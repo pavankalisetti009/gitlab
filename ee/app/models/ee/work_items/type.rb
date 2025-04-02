@@ -63,7 +63,7 @@ module EE
             unavailable_widgets << ::WorkItems::Widgets::CustomFields
           end
 
-          unless resource_parent.try(:work_item_status_feature_available?)
+          unless resource_parent.root_ancestor.try(:work_item_status_feature_available?)
             unavailable_widgets << ::WorkItems::Widgets::Status
           end
 

@@ -100,6 +100,8 @@ RSpec.shared_examples 'graphql work item type list request spec EE' do
       context 'when feature is available' do
         it 'returns the associated licensesd widget' do
           widgets.each do |widget|
+            next unless status_widget_available?(widget)
+
             expect(returned_widgets).to include(widget_to_enum_string(widget))
           end
         end
@@ -133,5 +135,10 @@ RSpec.shared_examples 'graphql work item type list request spec EE' do
     work_item_types.flat_map do |work_item_type|
       work_item_type['widgetDefinitions'].select { |widget| widget['type'] == 'STATUS' }
     end
+  end
+
+  def status_widget_available?(widget)
+    widget == WorkItems::Widgets::Status &&
+      parent.resource_parent&.root_ancestor&.try(:work_item_status_feature_available?)
   end
 end
