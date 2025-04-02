@@ -154,8 +154,8 @@ export default {
         updateQuery: (previousResult, { fetchMoreResult }) => {
           return produce(fetchMoreResult, (draftData) => {
             draftData[this.namespaceType].runners.nodes = [
-              ...(previousResult[this.namespaceType].runners?.nodes || []),
-              ...draftData[this.namespaceType].runners.nodes,
+              ...((previousResult[this.namespaceType] || {}).runners?.nodes || []),
+              ...((draftData[this.namespaceType] || {}).runners?.nodes || []),
             ];
           });
         },
