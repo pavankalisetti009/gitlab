@@ -41,6 +41,32 @@ export function addAuditEventsStreamingDestinationToCache({
   store.writeQuery({ query: getDestinationQuery, variables: { fullPath }, data });
 }
 
+export function updateAuditEventsStreamingDestinationFromCache({ store, isInstance, updatedData }) {
+  const storedDestinationId = isInstance
+    ? getInstanceDestinationId(store, updatedData?.id)
+    : getGroupDestinationId(store, updatedData?.id);
+
+  if (!storedDestinationId) return;
+
+  store.modify({
+    id: storedDestinationId,
+    fields: {
+      name() {
+        return updatedData.name;
+      },
+      config() {
+        return updatedData.config;
+      },
+      eventTypeFilters() {
+        return updatedData.eventTypeFilters;
+      },
+      namespaceFilters() {
+        return updatedData.namespaceFilters;
+      },
+    },
+  });
+}
+
 export function updateEventTypeFiltersFromCache({ store, isInstance, destinationId, filters }) {
   const storedDestinationId = isInstance
     ? getInstanceDestinationId(store, destinationId)

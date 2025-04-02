@@ -2,23 +2,13 @@
 import { GlAlert, GlForm, GlFormGroup, GlFormInput, GlButton } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import createGroupStreamingDestination from '../../graphql/mutations/create_group_streaming_destination.mutation.graphql';
-import addGroupEventTypeFiltersToDestination from '../../graphql/mutations/add_group_event_type_filters.mutation.graphql';
-import addGroupNamespaceFiltersToDestination from '../../graphql/mutations/add_group_namespace_filters.mutation.graphql';
-import createInstanceStreamingDestination from '../../graphql/mutations/create_instance_streaming_destination.mutation.graphql';
-import addInstanceEventTypeFiltersToDestination from '../../graphql/mutations/add_instance_event_type_filters.mutation.graphql';
-
+import { createDestination, updateDestination } from '../../graphql/apollo';
+import { getFormattedFormItem } from '../../utils';
 import {
   DESTINATION_TYPE_HTTP,
   DESTINATION_TYPE_AMAZON_S3,
   DESTINATION_TYPE_GCP_LOGGING,
 } from '../../constants';
-import {
-  addAuditEventsStreamingDestinationToCache,
-  updateEventTypeFiltersFromCache,
-  addNamespaceFilterToCache,
-} from '../../graphql/cache_update_consolidated_api';
-import { getFormattedFormItem } from '../../utils';
 import StreamDestinationEditorHttpFields from './stream_destination_editor_http_fields.vue';
 import StreamDestinationEditorAwsFields from './stream_destination_editor_aws_fields.vue';
 import StreamDestinationEditorGcpFields from './stream_destination_editor_gcp_fields.vue';
@@ -73,7 +63,11 @@ export default {
       return (
         JSON.stringify(this.item.config) === JSON.stringify(this.formItem.config) &&
         this.item.secretToken === this.formItem.secretToken &&
-        this.item.name === this.formItem.name
+        this.item.name === this.formItem.name &&
+        !this.eventTypeFiltersToAdd.length &&
+        !this.eventTypeFiltersToRemove.length &&
+        this.formItem.namespaceFilter?.namespace ===
+          this.item.namespaceFilters?.at(0)?.namespace.fullPath
       );
     },
     submitButtonName() {
@@ -87,18 +81,8 @@ export default {
     eventTypeFiltersToAdd() {
       return this.formItem.eventTypeFilters.filter((e) => !this.item.eventTypeFilters.includes(e));
     },
-    formattedCategory() {
-      switch (this.formItem.category) {
-        case DESTINATION_TYPE_HTTP:
-          return 'http';
-        case DESTINATION_TYPE_GCP_LOGGING:
-          return 'gcp';
-        case DESTINATION_TYPE_AMAZON_S3:
-          return 'aws';
-        default:
-          Sentry.captureException(Error(`Unknown destination category: ${this.formItem.category}`));
-          return this.formItem.category;
-      }
+    eventTypeFiltersToRemove() {
+      return this.item.eventTypeFilters.filter((e) => !this.formItem.eventTypeFilters.includes(e));
     },
   },
   watch: {
@@ -133,164 +117,53 @@ export default {
     deleteDestination() {
       this.$refs.deleteModal.show();
     },
-    formSubmission() {
-      // To be implemented in the next MR
-      // part of https://gitlab.com/gitlab-org/gitlab/-/issues/524939
-      // FF use_consolidated_audit_event_stream_dest_api
-      // eslint-disable-next-line @gitlab/require-i18n-strings
-      return this.isUpdatingExistingItem ? 'update not implemented' : this.addDestination();
-    },
-    getCreatedEventTypeFiltersData(data) {
-      return this.isInstance
-        ? data.auditEventsInstanceDestinationEventsAdd
-        : data.auditEventsGroupDestinationEventsAdd;
-    },
-    getDestinationCreateErrors(data) {
-      return this.isInstance
-        ? data.instanceAuditEventStreamingDestinationsCreate.errors
-        : data.groupAuditEventStreamingDestinationsCreate.errors;
-    },
-    getCreatedDestinationData(data) {
-      return this.isInstance
-        ? data.instanceAuditEventStreamingDestinationsCreate.externalAuditEventDestination
-        : data.groupAuditEventStreamingDestinationsCreate.externalAuditEventDestination;
-    },
-    async addDestination() {
+    async formSubmission() {
       this.loading = true;
       this.errors = [];
 
       try {
-        const update = (cache, { data }) => {
-          const destinationErrors = this.getDestinationCreateErrors(data);
+        const hasChangedNamespaceFilter =
+          this.formItem?.namespaceFilter?.namespace !==
+          this.item?.namespaceFilters?.at(0)?.namespace.fullPath;
+        const { errors } = this.isUpdatingExistingItem
+          ? await updateDestination({
+              $apollo: this.$apollo,
+              destination: this.formItem,
+              isInstance: this.isInstance,
+              groupPath: this.groupPath,
+              eventTypeFiltersToAdd: this.eventTypeFiltersToAdd,
+              eventTypeFiltersToRemove: this.eventTypeFiltersToRemove,
+              hasChangedNamespaceFilter,
+            })
+          : await createDestination({
+              $apollo: this.$apollo,
+              destination: this.formItem,
+              isInstance: this.isInstance,
+              groupPath: this.groupPath,
+              eventTypeFiltersToAdd: this.eventTypeFiltersToAdd,
+              hasChangedNamespaceFilter,
+            });
 
-          if (destinationErrors.length) {
-            return;
-          }
-
-          const newDestination = this.getCreatedDestinationData(data);
-          this.formItem.id = newDestination.id;
-
-          addAuditEventsStreamingDestinationToCache({
-            store: cache,
-            isInstance: this.isInstance,
-            fullPath: this.groupPath,
-            newDestination,
-          });
-        };
-
-        const variables = {
-          input: {
-            name: this.formItem.name,
-            secretToken: this.formItem.secretToken,
-            category: this.formattedCategory,
-            config: {
-              ...this.formItem.config,
-            },
-            ...(this.isInstance ? {} : { groupPath: this.groupPath }),
-          },
-        };
-
-        const { data } = await this.$apollo.mutate({
-          mutation: this.isInstance
-            ? createInstanceStreamingDestination
-            : createGroupStreamingDestination,
-          variables,
-          update,
-        });
-
-        const destinationErrors = this.getDestinationCreateErrors(data);
-
-        if (destinationErrors.length) {
-          this.errors.push(...destinationErrors);
+        if (errors.length) {
+          this.errors.push(...errors);
           this.$emit('error');
           return;
         }
-
-        this.errors.push(...(await this.addEventTypeFilters()));
-        this.errors.push(...(await this.addNamespaceFilterToCaches()));
-
-        if (this.errors.length) {
-          this.$emit('error');
-          return;
-        }
-
-        this.$emit('added');
+        this.$emit(this.isUpdatingExistingItem ? 'updated' : 'added');
       } catch (error) {
-        this.errors.push(
-          s__(
-            'AuditStreams|An error occurred when creating external audit event stream destination. Please try it again.',
-          ),
-        );
+        const defaultErrorMessage = this.isUpdatingExistingItem
+          ? s__(
+              'AuditStreams|An error occurred when updating external audit event stream destination. Please try it again.',
+            )
+          : s__(
+              'AuditStreams|An error occurred when creating external audit event stream destination. Please try it again.',
+            );
+        this.errors.push(defaultErrorMessage);
         Sentry.captureException(error);
         this.$emit('error');
       } finally {
         this.loading = false;
       }
-    },
-    async addEventTypeFilters() {
-      if (!this.eventTypeFiltersToAdd.length || !this.formItem.id) {
-        return [];
-      }
-
-      const variables = {
-        destinationId: this.formItem.id,
-        eventTypeFilters: this.eventTypeFiltersToAdd,
-      };
-
-      const update = (cache, { data }) => {
-        const { errors, eventTypeFilters } = this.getCreatedEventTypeFiltersData(data);
-
-        if (errors.length) {
-          return;
-        }
-
-        updateEventTypeFiltersFromCache({
-          store: cache,
-          isInstance: this.isInstance,
-          destinationId: this.formItem.id,
-          filters: eventTypeFilters,
-        });
-      };
-
-      const { data } = await this.$apollo.mutate({
-        mutation: this.isInstance
-          ? addInstanceEventTypeFiltersToDestination
-          : addGroupEventTypeFiltersToDestination,
-        variables,
-        update,
-      });
-
-      return this.getCreatedEventTypeFiltersData(data).errors;
-    },
-    async addNamespaceFilterToCaches() {
-      if (!this.formItem.namespaceFilter.namespace || !this.formItem.id) {
-        return [];
-      }
-
-      const variables = {
-        destinationId: this.formItem.id,
-        namespacePath: this.formItem.namespaceFilter.namespace,
-      };
-
-      const update = (cache, { data }) => {
-        if (data.auditEventsGroupDestinationNamespaceFilterCreate.errors.length) {
-          return;
-        }
-
-        addNamespaceFilterToCache({
-          store: cache,
-          destinationId: this.formItem.id,
-          filter: data.auditEventsGroupDestinationNamespaceFilterCreate.namespaceFilter,
-        });
-      };
-
-      const { data } = await this.$apollo.mutate({
-        mutation: addGroupNamespaceFiltersToDestination,
-        variables,
-        update,
-      });
-
-      return data.auditEventsGroupDestinationNamespaceFilterCreate.errors;
     },
   },
   DESTINATION_TYPE_HTTP,
