@@ -15,8 +15,8 @@ RSpec.describe API::Commits, feature_category: :source_code_management do
   end
 
   shared_examples_for "handling the codeowners interaction" do
-    it "does not create a new validator" do
-      expect(Gitlab::CodeOwners::Validator)
+    it "does not create a new check" do
+      expect(Gitlab::Checks::Diffs::CodeOwnersCheck)
         .not_to receive(:new)
 
       subject

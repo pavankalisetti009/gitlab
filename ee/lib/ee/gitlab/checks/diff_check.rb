@@ -27,7 +27,7 @@ module EE
 
         def validate_code_owners
           ->(paths) do
-            validator = ::Gitlab::CodeOwners::Validator.new(project, branch_name, paths)
+            validator = ::Gitlab::Checks::Diffs::CodeOwnersCheck.new(project, branch_name, paths)
 
             validator.execute
           end
