@@ -85,16 +85,6 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignments::BaseCreateService, fea
 
         expect(user.todos.last.action).to eq(::Todo::DUO_ENTERPRISE_ACCESS_GRANTED)
       end
-
-      context 'when duo_seat_assignment_todo feature flag is disabled' do
-        it 'does not create related notification todo' do
-          stub_feature_flags(duo_seat_assignment_todo: false)
-
-          expect { described_class.new(add_on_purchase: add_on_purchase, user: user).execute }.not_to change {
-            user.todos.count
-          }
-        end
-      end
     end
 
     context 'when user membership is invalid' do
