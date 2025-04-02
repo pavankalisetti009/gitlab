@@ -77,6 +77,7 @@ describe('GitLab Duo Usage', () => {
   const findCodeSuggestionsStatistics = () => wrapper.findComponent(CodeSuggestionsStatisticsCard);
   const findCodeSuggestionsSubtitle = () => wrapper.findByTestId('code-suggestions-subtitle');
   const findCodeSuggestionsTitle = () => wrapper.findByTestId('code-suggestions-title');
+  const findAmazonQInfoCard = () => wrapper.findByTestId('duo-amazon-q-info-card');
   const findSaasAddOnEligibleUserList = () => wrapper.findComponent(SaasAddOnEligibleUserList);
   const findCodeSuggestionsUsageLoader = () => wrapper.findComponent(CodeSuggestionsUsageLoader);
   const findSelfManagedAddOnEligibleUserList = () =>
@@ -295,30 +296,27 @@ describe('GitLab Duo Usage', () => {
             duoTier: DUO_ENTERPRISE,
           });
         });
+
+        it('does not render amazon Q info card', () => {
+          expect(findAmazonQInfoCard().exists()).toBe(false);
+        });
       });
 
       describe('with Duo with Amazon Q add-on enabled', () => {
         beforeEach(() => {
           return createComponent({
             addOnPurchasesHandler: noAssignedAmazonQAddonDataHandler,
-            provideProps: { isStandalonePage: true, groupId: 289561 },
+            provideProps: { isStandalonePage: true, groupId: 289561, isSaaS: false },
           });
         });
 
-        it('renders code suggestions statistics card for Duo with Amazon Q', () => {
-          expect(findCodeSuggestionsStatistics().props()).toEqual({
-            usageValue: 0,
-            totalValue: 20,
-            duoTier: DUO_AMAZON_Q,
-          });
+        it('does not render code suggestions statistics and info cards', () => {
+          expect(findCodeSuggestionsStatistics().exists()).toBe(false);
+          expect(findCodeSuggestionsInfo().exists()).toBe(false);
         });
 
-        it('renders code suggestions info card for Duo with Amazon Q', () => {
-          expect(findCodeSuggestionsInfo().exists()).toBe(true);
-          expect(findCodeSuggestionsInfo().props()).toEqual({
-            groupId: 289561,
-            duoTier: DUO_AMAZON_Q,
-          });
+        it('renders amazon Q info card', () => {
+          expect(findAmazonQInfoCard().exists()).toBe(true);
         });
       });
 
@@ -351,6 +349,10 @@ describe('GitLab Duo Usage', () => {
             groupId: 289561,
             duoTier: DUO_AMAZON_Q,
           });
+        });
+
+        it('does not render amazon Q info card', () => {
+          expect(findAmazonQInfoCard().exists()).toBe(false);
         });
       });
     });
