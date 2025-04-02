@@ -236,7 +236,11 @@ class Gitlab::Seeder::ProductivityAnalytics
       travel_to(issue.created_at) do
         mr = MergeRequests::CreateService.new(project: issue.project, current_user: maintainers.sample, params: opts).execute
         mr.ensure_metrics!
-        mr.prepare
+        # We need to manually do this because seed-fu gem runs fixtures inside a transaction, which means the usual
+        #   NewMergeRequestWorker job would not run until the end of the fixture.
+        # We need to merge the MRs before the end of the fixture execution otherwise, without merged MRs,
+        #   the productivity analytics chart will render an empty state.
+        NewMergeRequestWorker.perform_async(mr.id, mr.author_id)
         mr
       end
     end
