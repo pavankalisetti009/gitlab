@@ -156,5 +156,62 @@ RSpec.describe Notes::CreateService, feature_category: :team_planning do
         described_class.new(nil, user, opts).execute
       end
     end
+
+    context 'for group wikis', feature_category: :wiki do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:wiki_page_meta) { create(:wiki_page_meta, :for_wiki_page, container: group) }
+      let(:opts) do
+        {
+          note: 'reply',
+          noteable_type: 'WikiPage::Meta',
+          noteable_id: wiki_page_meta.id,
+          namespace: wiki_page_meta.namespace
+        }
+      end
+
+      before do
+        stub_licensed_features(group_wikis: true)
+      end
+
+      it_behaves_like 'internal event tracking' do
+        let(:event) { 'create_wiki_page_note' }
+        let(:category) { described_class.name }
+        let(:project) { nil }
+        let(:namespace) { wiki_page_meta.namespace }
+
+        subject(:track_event) { described_class.new(nil, user, opts).execute }
+      end
+
+      context 'for a non-first note in a discussion' do
+        let_it_be(:previous_note) do
+          create(:note, noteable: wiki_page_meta, project: nil, namespace: wiki_page_meta.namespace)
+        end
+
+        let(:opts) do
+          {
+            in_reply_to_discussion_id: previous_note.discussion_id,
+            note: 'reply',
+            noteable_type: 'WikiPage::Meta',
+            noteable_id: wiki_page_meta.id,
+            namespace: wiki_page_meta.namespace
+          }
+        end
+
+        it 'creates the note' do
+          note = described_class.new(nil, user, opts).execute
+
+          expect(note).to be_valid
+        end
+
+        it_behaves_like 'internal event tracking' do
+          let(:event) { 'create_wiki_page_reply_note' }
+          let(:category) { described_class.name }
+          let(:project) { nil }
+          let(:namespace) { wiki_page_meta.namespace }
+
+          subject(:track_event) { described_class.new(nil, user, opts).execute }
+        end
+      end
+    end
   end
 end
