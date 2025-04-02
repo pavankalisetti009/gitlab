@@ -7,6 +7,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
   describe '#execute', :aggregate_failures do
     subject(:provision_service) { described_class.new }
 
+    let_it_be(:add_on_duo_nano) { create(:gitlab_subscription_add_on, :duo_nano) }
     let_it_be(:add_on_duo_pro) { create(:gitlab_subscription_add_on, :code_suggestions) }
     let_it_be(:add_on_duo_enterprise) { create(:gitlab_subscription_add_on, :duo_enterprise) }
     let_it_be(:add_on_duo_amazon_q) { create(:gitlab_subscription_add_on, :duo_amazon_q) }
@@ -204,6 +205,29 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
       let(:add_ons) { %i[duo_enterprise] }
       let(:initial_add_on) { add_on_duo_amazon_q }
       let(:expected_add_on) { add_on_duo_enterprise }
+
+      it_behaves_like 'update existing Duo add-on purchase'
+    end
+
+    context 'with Duo Nano' do
+      let(:add_ons) { %i[duo_nano] }
+      let(:expected_add_on) { add_on_duo_nano }
+
+      it_behaves_like 'provision duo add-on purchase'
+    end
+
+    context 'with existing Duo Nano and additional purchase of Duo Enterprise' do
+      let(:add_ons) { %i[duo_nano duo_enterprise] }
+      let(:initial_add_on) { add_on_duo_nano }
+      let(:expected_add_on) { add_on_duo_enterprise }
+
+      it_behaves_like 'update existing Duo add-on purchase'
+    end
+
+    context 'with existing Duo Enterprise and downgrade to Duo Nano' do
+      let(:add_ons) { %i[duo_nano] }
+      let(:initial_add_on) { add_on_duo_enterprise }
+      let(:expected_add_on) { add_on_duo_nano }
 
       it_behaves_like 'update existing Duo add-on purchase'
     end
