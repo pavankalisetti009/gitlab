@@ -7,6 +7,7 @@ import {
   EXPORT_FORMAT_CSV,
   EXPORT_FORMAT_DEPENDENCY_LIST,
   EXPORT_FORMAT_JSON_ARRAY,
+  EXPORT_FORMAT_CYCLONEDX_1_6_JSON,
   NAMESPACE_GROUP,
   NAMESPACE_ORGANIZATION,
   NAMESPACE_PROJECT,
@@ -43,6 +44,10 @@ describe('DependencyExportDropdown component', () => {
   const jsonArrayItem = {
     testId: 'json-array-item',
     exportType: EXPORT_FORMAT_JSON_ARRAY,
+  };
+  const cyclonedxItem = {
+    testId: 'cyclonedx-1-6-item',
+    exportType: EXPORT_FORMAT_CYCLONEDX_1_6_JSON,
   };
 
   const itHasCorrectLoadingLogic = (selector) => {
@@ -86,11 +91,27 @@ describe('DependencyExportDropdown component', () => {
 
   describe('when container is a project', () => {
     beforeEach(() => {
-      factory({ props: { container: NAMESPACE_PROJECT } });
+      factory({
+        props: { container: NAMESPACE_PROJECT },
+        provide: { glFeatures: { cyclonedxDependencyListExport: true } },
+      });
     });
 
     itHasCorrectLoadingLogic(() => findDisclosure());
-    itShowsDisclosureWithItems([dependencyListItem, csvItem]);
+    itShowsDisclosureWithItems([dependencyListItem, csvItem, cyclonedxItem]);
+
+    describe('when cyclonedxDependencyListExport feature flag is disabled', () => {
+      beforeEach(() => {
+        factory({
+          props: { container: NAMESPACE_PROJECT },
+          provide: { glFeatures: { cyclonedxDependencyListExport: false } },
+        });
+      });
+
+      it('does not show cyclonedx item', () => {
+        expect(wrapper.findByTestId(cyclonedxItem.testId).exists()).toBe(false);
+      });
+    });
   });
 
   describe('when container is a group', () => {

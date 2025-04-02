@@ -7,6 +7,7 @@ export const NAMESPACE_ORGANIZATION = 'organization';
 export const EXPORT_FORMAT_CSV = 'csv';
 export const EXPORT_FORMAT_DEPENDENCY_LIST = 'dependency_list';
 export const EXPORT_FORMAT_JSON_ARRAY = 'json_array';
+export const EXPORT_FORMAT_CYCLONEDX_1_6_JSON = 'cyclonedx_1_6_json';
 
 export const DEPENDENCIES_TABLE_I18N = {
   component: s__('Dependencies|Component'),

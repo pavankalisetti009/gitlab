@@ -20239,6 +20239,9 @@ msgstr ""
 msgid "Dependencies|Export as CSV"
 msgstr ""
 
+msgid "Dependencies|Export as CycloneDX (JSON)"
+msgstr ""
+
 msgid "Dependencies|Export as JSON"
 msgstr ""
 
