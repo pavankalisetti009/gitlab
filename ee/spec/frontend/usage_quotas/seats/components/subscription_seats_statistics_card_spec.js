@@ -103,13 +103,14 @@ describe('SubscriptionSeatsStatisticsCard', () => {
   describe('with a limited free plan', () => {
     beforeEach(() => {
       const provide = { hasLimitedFreePlan: true };
-      createWrapper({ provide });
+      const props = { hasFreePlan: true };
+      createWrapper({ props, provide });
       return waitForPromises();
     });
 
     it('passes the correct seats data', () => {
       expect(findUsageStatistics().props()).toMatchObject({
-        percentage: 60,
+        percentage: null,
         totalValue: '5',
         usageValue: '3',
       });
@@ -120,7 +121,7 @@ describe('SubscriptionSeatsStatisticsCard', () => {
     });
 
     it('shows correct seat info', () => {
-      expect(findSeatsInfo().text()).toBe('Seats in use / Seats available');
+      expect(findSeatsInfo().text()).toBe('Free seats used');
     });
 
     it('renders the tooltip link', () => {
