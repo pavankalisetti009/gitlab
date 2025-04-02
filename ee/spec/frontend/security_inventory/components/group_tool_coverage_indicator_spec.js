@@ -6,6 +6,7 @@ describe('GroupToolCoverageIndicator', () => {
   let wrapper;
 
   const findScannerBar = (scanner) => wrapper.findComponentByTestId(`${scanner}-bar`);
+  const findScannerLabel = (scanner) => wrapper.findByTestId(`${scanner}-label`).text();
 
   const createComponent = (propsData) => {
     wrapper = shallowMountExtended(GroupToolCoverageIndicator, { propsData });
@@ -28,7 +29,11 @@ describe('GroupToolCoverageIndicator', () => {
             },
           ],
         });
-        expect(wrapper.findByTestId(`${scanner}-label`).text()).toBe(label);
+
+        const scannerLabel = findScannerLabel(scanner);
+
+        expect(scannerLabel).toContain(label);
+        expect(scannerLabel).toContain(`${value}%`);
       });
     });
   });
