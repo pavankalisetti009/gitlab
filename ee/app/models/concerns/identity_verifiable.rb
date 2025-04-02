@@ -66,9 +66,9 @@ module IdentityVerifiable
   end
 
   def identity_verified?
-    return bot_identity_verified? unless human?
     return true unless identity_verification_enabled?
-    return true if created_at < IDENTITY_VERIFICATION_RELEASE_DATE
+    return true unless created_after_require_identity_verification_release_day?
+    return bot_identity_verified? unless human?
 
     # Allow an existing credit card validation to override the identity verification state if
     # credit_card is not a required verification method.
@@ -261,18 +261,19 @@ module IdentityVerifiable
     created_top_level_group_count >= ::Gitlab::CurrentSettings.unverified_account_group_creation_limit
   end
 
+  def created_after_require_identity_verification_release_day?
+    created_at >= IDENTITY_VERIFICATION_RELEASE_DATE
+  end
+
   def bot_identity_verified?
     return true unless project_bot?
 
     member = members.first
     return true if member && member.source.root_ancestor.actual_plan.paid_excluding_trials?
 
-    if created_by
-      return false if created_by.banned?
+    return false unless created_by.present?
+    return false if created_by.banned?
 
-      return created_by.identity_verified?
-    end
-
-    !created_after_require_identity_verification_release_day?
+    created_by.identity_verified?
   end
 end
