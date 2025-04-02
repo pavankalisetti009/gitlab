@@ -920,6 +920,10 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
     end
 
     shared_examples 'marks free project for deletion' do
+      before do
+        stub_feature_flags(downtier_delayed_deletion: false)
+      end
+
       it do
         delete :destroy, params: { namespace_id: project.namespace, id: project }
 

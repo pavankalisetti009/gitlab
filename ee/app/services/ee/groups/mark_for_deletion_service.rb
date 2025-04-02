@@ -7,19 +7,12 @@ module EE
 
       override :execute
       def execute(*)
-        return error(_('You are not authorized to perform this action')) unless can?(current_user, :remove_group, group)
-        return error(_('Group has been already marked for deletion')) if group.marked_for_deletion?
-
-        result = create_deletion_schedule
-        log_audit_event if result[:status] == :success
-
-        send_group_deletion_notification
-
-        result
+        super(licensed: License.feature_available?(:adjourned_deletion_for_projects_and_groups))
       end
 
       private
 
+      override :send_group_deletion_notification
       def send_group_deletion_notification
         return unless ::Feature.enabled?(:group_deletion_notification_email, group) &&
           group.adjourned_deletion?
@@ -27,20 +20,11 @@ module EE
         ::NotificationService.new.group_scheduled_for_deletion(group)
       end
 
-      def create_deletion_schedule
-        deletion_schedule = group.build_deletion_schedule(deletion_schedule_params)
+      override :log_event
+      def log_event
+        log_audit_event
 
-        if deletion_schedule.save
-          success
-        else
-          errors = deletion_schedule.errors.full_messages.to_sentence
-
-          error(errors)
-        end
-      end
-
-      def deletion_schedule_params
-        { marked_for_deletion_on: Time.current.utc, deleting_user: current_user }
+        super
       end
 
       def log_audit_event
