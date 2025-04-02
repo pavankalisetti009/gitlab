@@ -78,14 +78,7 @@ module Sbom
     def filter_by_licences
       return if params[:licenses].blank?
 
-      empty_licenses_as_unknown =
-        if dependable.is_a?(::Group)
-          Feature.disabled?(:filter_unknown_licenses_by_spdx_identifier, dependable.root_ancestor)
-        else
-          true
-        end
-
-      @collection = @collection.by_licenses(params[:licenses], empty_licenses_as_unknown:)
+      @collection = @collection.by_licenses(params[:licenses])
     end
 
     def filter_by_component_version_ids
