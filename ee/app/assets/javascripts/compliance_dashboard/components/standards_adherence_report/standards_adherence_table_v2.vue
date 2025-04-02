@@ -1,10 +1,12 @@
 <script>
 import { nextTick } from 'vue';
-import { GlAlert, GlLoadingIcon } from '@gitlab/ui';
+import { GlAlert, GlLoadingIcon, GlKeysetPagination } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import PageSizeSelector from '~/vue_shared/components/page_size_selector.vue';
 
-import { GRAPHQL_FIELD_MISSING_ERROR_MESSAGE } from '../../constants';
+import { GRAPHQL_PAGE_SIZE, GRAPHQL_FIELD_MISSING_ERROR_MESSAGE } from '../../constants';
 import { isGraphqlFieldMissingError } from '../../utils';
+
 import DetailsDrawer from './components/details_drawer/details_drawer.vue';
 import GroupedTable from './components/grouped_table/grouped_table.vue';
 import { GroupedLoader } from './services/grouped_loader';
@@ -14,8 +16,10 @@ export default {
   components: {
     GlAlert,
     GlLoadingIcon,
+    GlKeysetPagination,
 
     DetailsDrawer,
+    PageSizeSelector,
     GroupedTable,
   },
   props: {
@@ -33,6 +37,8 @@ export default {
         pageInfo: {},
       },
       isInitiallyLoading: true,
+      isLoading: true,
+      perPage: GRAPHQL_PAGE_SIZE,
 
       errorMessage: null,
     };
@@ -59,6 +65,7 @@ export default {
     async invokeLoader(loaderMethod = 'loadPage') {
       try {
         this.errorMessage = null;
+        this.isLoading = true;
         this.items = await this.groupedLoader[loaderMethod]();
       } catch (error) {
         if (isGraphqlFieldMissingError(error, 'projectComplianceRequirementsStatus')) {
@@ -68,11 +75,23 @@ export default {
         }
       } finally {
         this.isInitiallyLoading = false;
+        this.isLoading = false;
       }
     },
 
     loadFirstPage() {
       return this.invokeLoader();
+    },
+    onPageSizeChange(perPage) {
+      this.perPage = perPage;
+      this.groupedLoader.setPageSize(perPage);
+      this.loadFirstPage();
+    },
+    loadPrevPage() {
+      this.invokeLoader('loadPrevPage');
+    },
+    loadNextPage() {
+      this.invokeLoader('loadNextPage');
     },
   },
   i18n: {
@@ -92,7 +111,24 @@ export default {
       <gl-loading-icon size="lg" class="gl-mt-5" />
     </template>
     <div v-else>
-      <grouped-table v-if="items.data.length" :items="items.data" @row-selected="onRowSelected" />
+      <gl-loading-icon v-if="isLoading" size="md" class="gl-m-5" />
+      <template v-else-if="items.data.length">
+        <grouped-table :items="items.data" @row-selected="onRowSelected" />
+        <div v-if="items.pageInfo" class="gl-justify-between md:gl-flex">
+          <div class="gl-hidden gl-grow gl-basis-0 md:gl-flex"></div>
+          <div class="gl-float-leftmd:gl-flex gl-grow gl-basis-0 gl-justify-center">
+            <gl-keyset-pagination
+              v-bind="items.pageInfo"
+              :disabled="isLoading"
+              @prev="loadPrevPage"
+              @next="loadNextPage"
+            />
+          </div>
+          <div class="gl-float-right gl-grow gl-basis-0 gl-justify-end md:gl-flex">
+            <page-size-selector :value="perPage" @input="onPageSizeChange" />
+          </div>
+        </div>
+      </template>
       <div v-else class="gl-m-3">{{ $options.i18n.emptyReport }}</div>
     </div>
   </section>
