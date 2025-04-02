@@ -27,7 +27,10 @@ module Namespaces
 
       override :default_user_params
       def default_user_params
-        super.merge(provisioned_by_group_id: params[:namespace_id])
+        super.merge(
+          group_id: params[:namespace_id],
+          provisioned_by_group_id: params[:namespace_id]
+        )
       end
 
       override :error_messages

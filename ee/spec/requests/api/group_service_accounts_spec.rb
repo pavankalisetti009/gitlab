@@ -362,6 +362,34 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
             end
 
             it_behaves_like "service account user creation"
+
+            context 'when group has a verified domain' do
+              let(:group_id) { group.id }
+              let_it_be(:params) do
+                {
+                  name: 'John Doe',
+                  username: 'test',
+                  email: 'test_service_account@example.com'
+                }
+              end
+
+              before do
+                stub_licensed_features(domain_verification: true)
+                project = create(:project, group: group)
+                create(:pages_domain, project: project, domain: 'example.com')
+              end
+
+              it 'creates a confirmed user' do
+                perform_request
+
+                user = User.find(json_response['id'])
+
+                expect(user.namespace.organization).to eq(organization)
+                expect(user.user_type).to eq('service_account')
+                expect(user.email).to eq('test_service_account@example.com')
+                expect(user).to be_confirmed
+              end
+            end
           end
         end
 
