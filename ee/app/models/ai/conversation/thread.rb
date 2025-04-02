@@ -5,6 +5,8 @@ module Ai
     class Thread < ApplicationRecord
       include EachBatch
 
+      EXPIRATION_PERIOD = 30.days
+
       self.table_name = :ai_conversation_threads
 
       has_many :messages, class_name: 'Ai::Conversation::Message', inverse_of: :thread
@@ -13,7 +15,7 @@ module Ai
 
       validates :conversation_type, :user_id, presence: true
 
-      scope :expired, -> { where(last_updated_at: ...30.days.ago) }
+      scope :expired, -> { where(last_updated_at: ...EXPIRATION_PERIOD.ago) }
       scope :for_conversation_type, ->(conversation_type) { where(conversation_type: conversation_type) }
       scope :ordered, -> { order(last_updated_at: :desc) }
 
