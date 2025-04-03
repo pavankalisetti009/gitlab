@@ -2,6 +2,7 @@
 description: Comment Temperature measurement requested
 internal_events: true
 action: requested_comment_temperature
+classification: duo
 identifiers:
 - project
 - namespace

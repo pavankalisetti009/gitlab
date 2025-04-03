@@ -1,6 +1,7 @@
 ---
 description: This event represents a single tool used to answer a user question, on the span of a single request Id there can be multiple event records marking that array of tools was used to answer one question.
 category: Gitlab::Llm::Completions::Chat
+classification: duo
 action: process_gitlab_duo_question
 extra_properties:
 identifiers:

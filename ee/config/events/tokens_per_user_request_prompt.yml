@@ -1,6 +1,7 @@
 ---
 description: Tracks the number of tokens in a request to an LLM
 action: tokens_per_user_request_prompt
+classification: duo
 identifiers:
 - user
 product_group: ai_framework

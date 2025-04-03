@@ -1,6 +1,7 @@
 ---
 description: This event represents the time from DuoChat prompt being sent to first chunk received on client
 action: ai_response_time
+classification: duo
 internal_events: true
 identifiers:
 - project
