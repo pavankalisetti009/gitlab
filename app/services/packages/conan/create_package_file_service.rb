@@ -34,7 +34,7 @@ module Packages
           package_file.save!
         end
 
-        if package_file.file_name == ::Packages::Conan::FileMetadatum::CONANINFO_TXT && Feature.enabled?(:parse_conan_metadata_on_upload, Project.actor_from_id(package_file.project_id))
+        if package_file.file_name == ::Packages::Conan::FileMetadatum::CONANINFO_TXT
           ::Packages::Conan::ProcessPackageFileWorker.perform_async(package_file.id)
         end
 

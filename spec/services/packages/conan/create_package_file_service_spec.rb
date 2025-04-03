@@ -240,27 +240,10 @@ RSpec.describe Packages::Conan::CreatePackageFileService, feature_category: :pac
           fixture_file_upload('spec/fixtures/packages/conan/package_files/conaninfo.txt', 'text/plain')
         end
 
-        context 'when the feature flag is enabled' do
-          before do
-            stub_feature_flags(parse_conan_metadata_on_upload: true)
-          end
-
-          it 'queues the Conan package file processing worker' do
-            expect(response).to be_success
-            expect(::Packages::Conan::ProcessPackageFileWorker).to have_received(:perform_async)
-              .with(response[:package_file].id)
-          end
-        end
-
-        context 'when the feature flag is disabled' do
-          before do
-            stub_feature_flags(parse_conan_metadata_on_upload: false)
-          end
-
-          it 'does not queue the Conan package file processing worker' do
-            expect(response).to be_success
-            expect(::Packages::Conan::ProcessPackageFileWorker).not_to have_received(:perform_async)
-          end
+        it 'queues the Conan package file processing worker' do
+          expect(response).to be_success
+          expect(::Packages::Conan::ProcessPackageFileWorker).to have_received(:perform_async)
+            .with(response[:package_file].id)
         end
       end
 
