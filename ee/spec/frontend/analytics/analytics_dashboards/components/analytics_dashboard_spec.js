@@ -231,16 +231,18 @@ describe('AnalyticsDashboard', () => {
         isGroup: false,
         isProject: true,
         overviewCountsAggregationEnabled: true,
+        customizableDashboardsAvailable: true,
         ...provide,
       },
     });
   };
 
-  const setupDashboard = (dashboardResponse, slug = '') => {
+  const setupDashboard = (dashboardResponse, slug = '', provide = {}) => {
     mockDashboardResponse(dashboardResponse);
     mockAvailableVisualizationsResponse(TEST_VISUALIZATIONS_GRAPHQL_SUCCESS_RESPONSE);
     createWrapper({
       routeSlug: slug,
+      provide,
     });
 
     return waitForPromises();
@@ -580,20 +582,25 @@ describe('AnalyticsDashboard', () => {
 
   describe('editingEnabled', () => {
     describe.each`
-      userDefined | slug                             | editingEnabled
-      ${true}     | ${'some_dashboard'}              | ${true}
-      ${false}    | ${'some_dashboard'}              | ${false}
-      ${true}     | ${CUSTOM_VALUE_STREAM_DASHBOARD} | ${false}
-      ${false}    | ${CUSTOM_VALUE_STREAM_DASHBOARD} | ${false}
+      userDefined | slug                             | customizableDashboardsAvailable | editingEnabled
+      ${true}     | ${'some_dashboard'}              | ${true}                         | ${true}
+      ${false}    | ${'some_dashboard'}              | ${true}                         | ${false}
+      ${true}     | ${CUSTOM_VALUE_STREAM_DASHBOARD} | ${true}                         | ${false}
+      ${false}    | ${CUSTOM_VALUE_STREAM_DASHBOARD} | ${true}                         | ${false}
+      ${true}     | ${'some_dashboard'}              | ${false}                        | ${false}
+      ${false}    | ${'some_dashboard'}              | ${false}                        | ${false}
+      ${true}     | ${CUSTOM_VALUE_STREAM_DASHBOARD} | ${false}                        | ${false}
+      ${false}    | ${CUSTOM_VALUE_STREAM_DASHBOARD} | ${false}                        | ${false}
     `(
-      'when userDefined is $userDefined, slug is $slug',
-      ({ userDefined, slug, editingEnabled }) => {
+      'when userDefined is $userDefined, customizableDashboardsAvailable is $customizableDashboardsAvailable, slug is $slug',
+      ({ userDefined, slug, customizableDashboardsAvailable, editingEnabled }) => {
         beforeEach(async () => {
           setupDashboard(
             createDashboardGraphqlSuccessResponse(
               getGraphQLDashboardWithPanels({ userDefined, slug }),
             ),
             slug,
+            { customizableDashboardsAvailable },
           );
 
           await waitForPromises();
@@ -1369,8 +1376,8 @@ describe('AnalyticsDashboard', () => {
       mockDashboardResponse(TEST_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE);
     });
 
-    const setupWithConfirmation = async (confirmMock) => {
-      createWrapper({ stubMockMethods: { confirmDiscardIfChanged: confirmMock } });
+    const setupWithConfirmation = async (confirmMock, provide = {}) => {
+      createWrapper({ stubMockMethods: { confirmDiscardIfChanged: confirmMock }, provide });
 
       await waitForPromises();
 
@@ -1395,6 +1402,19 @@ describe('AnalyticsDashboard', () => {
 
       expect(confirmMock).toHaveBeenCalledTimes(1);
       expect(nextMock).not.toHaveBeenCalled();
+    });
+
+    describe('when customizableDashboardsAvailable is false', () => {
+      it.each([true, false])(
+        'routes to the next page when confirmed changes is %s',
+        async (confirmed) => {
+          const confirmMock = jest.fn().mockResolvedValue(confirmed);
+
+          await setupWithConfirmation(confirmMock, { customizableDashboardsAvailable: false });
+
+          expect(nextMock).toHaveBeenCalled();
+        },
+      );
     });
   });
 

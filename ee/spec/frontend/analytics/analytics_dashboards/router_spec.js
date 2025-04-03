@@ -90,4 +90,37 @@ describe('Dashboards list router', () => {
       },
     );
   });
+
+  describe('/new route', () => {
+    const getNewRoute = () => router.options.routes.find((route) => route.path === '/new');
+
+    describe('when canCreateNewDashboard is true', () => {
+      beforeEach(() => {
+        router = createRouter(base, breadcrumbState, {
+          canCreateNewDashboard: true,
+        });
+      });
+
+      it('includes the /new route', () => {
+        const newDashboardRoute = getNewRoute();
+
+        expect(newDashboardRoute).toBeDefined();
+        expect(newDashboardRoute.meta.getName()).toBe('New dashboard');
+      });
+    });
+
+    describe('when canCreateNewDashboard is false', () => {
+      beforeEach(() => {
+        router = createRouter(base, breadcrumbState, {
+          canCreateNewDashboard: false,
+        });
+      });
+
+      it('does not include the /new route', () => {
+        const newDashboardRoute = getNewRoute();
+
+        expect(newDashboardRoute).toBeUndefined();
+      });
+    });
+  });
 });
