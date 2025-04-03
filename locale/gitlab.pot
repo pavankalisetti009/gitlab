@@ -71290,6 +71290,9 @@ msgstr ""
 msgid "must belong to the compliance requirement."
 msgstr ""
 
+msgid "must belong to the same compliance requirement."
+msgstr ""
+
 msgid "must belong to the same namespace."
 msgstr ""
 

@@ -7,6 +7,8 @@ module ComplianceManagement
       belongs_to :project
       belongs_to :namespace
       belongs_to :compliance_requirement
+      belongs_to :requirement_status,
+        class_name: '::ComplianceManagement::ComplianceFramework::ProjectRequirementComplianceStatus', optional: true
 
       enum status: ::Enums::ComplianceManagement::ComplianceFramework::ProjectControlComplianceStatus.status
 
@@ -17,6 +19,7 @@ module ComplianceManagement
       validate :control_belongs_to_requirement
       validate :framework_applied_to_project
       validate :project_belongs_to_same_namespace
+      validate :validate_requirement_status
 
       scope :for_project_and_control, ->(project_id, control_id) {
         where(project_id: project_id, compliance_requirements_control_id: control_id)
@@ -90,6 +93,14 @@ module ComplianceManagement
           .find_or_create_project_and_requirement(project, compliance_requirement)
 
         requirement_status.update_status_count(old_status, new_status)
+      end
+
+      def validate_requirement_status
+        return if requirement_status_id.nil?
+
+        return if requirement_status.compliance_requirement_id == compliance_requirement_id
+
+        errors.add(:requirement_status, _("must belong to the same compliance requirement."))
       end
     end
   end
