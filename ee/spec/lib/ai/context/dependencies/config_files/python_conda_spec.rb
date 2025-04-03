@@ -24,18 +24,16 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::PythonConda, feature_cate
   context 'when the content is an array' do
     it_behaves_like 'parsing an invalid dependency config file' do
       let(:invalid_config_file_content) { '[]' }
-      let(:expected_error) do
-        Ai::Context::Dependencies::ConfigFiles::ParsingErrors::UnexpectedNodeError.new
-      end
+      let(:expected_error_class_name) { 'ParsingErrors::UnexpectedNodeError' }
+      let(:expected_error_message) { 'encountered unexpected node' }
     end
   end
 
   context 'when the content is an invalid string' do
     it_behaves_like 'parsing an invalid dependency config file' do
       let(:invalid_config_file_content) { '*' }
-      let(:expected_error) do
-        Ai::Context::Dependencies::ConfigFiles::ParsingErrors::InvalidSerializationFormatError.new('YAML')
-      end
+      let(:expected_error_class_name) { 'ParsingErrors::DeserializationException' }
+      let(:expected_error_message) { 'content is not valid YAML' }
     end
   end
 
@@ -48,11 +46,8 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::PythonConda, feature_cate
         YAML
       end
 
-      let(:expected_error) do
-        Ai::Context::Dependencies::ConfigFiles::ParsingErrors::DataSerializationException.new(
-          'YAML exception - Tried to load unspecified class: Date'
-        )
-      end
+      let(:expected_error_class_name) { 'ParsingErrors::DeserializationException' }
+      let(:expected_error_message) { 'YAML exception - Tried to load unspecified class: Date' }
     end
   end
 

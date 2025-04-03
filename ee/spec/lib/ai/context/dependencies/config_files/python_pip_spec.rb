@@ -52,9 +52,8 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::PythonPip, feature_catego
 
   it_behaves_like 'parsing an invalid dependency config file' do
     let(:invalid_config_file_content) { '' }
-    let(:expected_error) do
-      Ai::Context::Dependencies::ConfigFiles::ParsingErrors::FileEmptyError.new
-    end
+    let(:expected_error_class_name) { 'ParsingErrors::FileEmptyError' }
+    let(:expected_error_message) { 'file empty' }
   end
 
   describe '.matches?' do

@@ -60,7 +60,6 @@ module Ai
             @project = project
             @content = sanitize_content(blob.data)
             @path = blob.path
-            @errors = []
           end
 
           def parse!
@@ -68,10 +67,10 @@ module Ai
 
             @libs = process_libs(extract_libs)
 
-            # Default error message if there are no other errors
-            raise ParsingErrors::UnexpectedFormatOrDependenciesNotPresentError if libs.blank? && errors.empty?
+            raise ParsingErrors::UnexpectedFormatOrDependenciesNotPresentError if libs.blank?
           rescue ParsingErrors::BaseError, StringValidationError => e
-            error(e)
+            @error = e
+            log_error
           end
 
           def payload
@@ -84,21 +83,19 @@ module Ai
           end
 
           def valid?
-            errors.empty?
+            error.nil?
           end
 
           def error_message
             return if valid?
 
-            joint_errors = errors.map(&:message).join(', ')
-            "Error(s) while parsing file `#{path}`: #{joint_errors}"
+            "Error while parsing file `#{path}`: #{error.message}"
           end
 
           private
 
-          attr_reader :blob, :content, :path, :libs, :errors, :project
+          attr_reader :blob, :content, :path, :libs, :error, :project
 
-          # To record an error, either use error() directly or raise a custom ParsingError error
           def extract_libs
             raise NotImplementedError
           end
@@ -162,12 +159,6 @@ module Ai
             end
           end
 
-          def error(error_obj)
-            @errors << error_obj
-
-            log_error(error_obj)
-          end
-
           # dig() throws a generic error in certain cases, e.g. when accessing an array with
           # a string key or calling it on an integer or nil. This method wraps dig() so that
           # we can capture these exceptions and re-raise them with a specific error message.
@@ -177,7 +168,7 @@ module Ai
             raise ParsingErrors::UnexpectedNodeError
           end
 
-          def log_error(error)
+          def log_error
             ::Gitlab::AppJsonLogger.info(
               class: self.class.name,
               error_class: error.class.name,
