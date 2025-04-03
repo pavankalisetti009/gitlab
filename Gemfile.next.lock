@@ -774,7 +774,7 @@ GEM
       nokogiri (~> 1, >= 1.10.8)
     gitlab-glfm-markdown (0.0.29)
       rb_sys (~> 0.9.109)
-    gitlab-kas-grpc (17.9.1)
+    gitlab-kas-grpc (17.10.4)
       grpc (~> 1.0)
     gitlab-labkit (0.37.0)
       actionpack (>= 5.0.0, < 8.1.0)
@@ -925,7 +925,7 @@ GEM
       google-protobuf (~> 3.14)
       googleapis-common-protos-types (~> 1.2)
       grpc (~> 1.27)
-    googleapis-common-protos-types (1.18.0)
+    googleapis-common-protos-types (1.19.0)
       google-protobuf (>= 3.18, < 5.a)
     googleauth (1.8.1)
       faraday (>= 0.17.3, < 3.a)
@@ -1870,7 +1870,7 @@ GEM
       activesupport
       rspec (~> 3.3)
       state_machines
-    stringio (3.1.6)
+    stringio (3.1.7)
     strings (0.2.1)
       strings-ansi (~> 0.2)
       unicode-display_width (>= 1.5, < 3.0)
@@ -2157,7 +2157,7 @@ DEPENDENCIES
   gitlab-glfm-markdown (~> 0.0.29)
   gitlab-housekeeper!
   gitlab-http!
-  gitlab-kas-grpc (~> 17.9.0.pre.rc2)
+  gitlab-kas-grpc (~> 17.10.4)
   gitlab-labkit (~> 0.37.0)
   gitlab-license (~> 2.6)
   gitlab-mail_room (~> 0.0.24)
