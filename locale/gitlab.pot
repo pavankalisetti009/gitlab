@@ -71266,6 +71266,12 @@ msgstr ""
 msgid "must be owned by the user's enterprise group"
 msgstr ""
 
+msgid "must be present when package revision exists"
+msgstr ""
+
+msgid "must be present when recipe revision exists"
+msgstr ""
+
 msgid "must be set for a project namespace"
 msgstr ""
 
