@@ -20,7 +20,7 @@ RSpec.describe GitlabSubscriptions::Trials::CreateDuoProService, feature_categor
     let(:add_on_purchase) { build(:gitlab_subscription_add_on_purchase) }
 
     before_all do
-      create(:gitlab_subscription_add_on, :gitlab_duo_pro)
+      create(:gitlab_subscription_add_on, :duo_pro)
     end
 
     subject(:execute) do

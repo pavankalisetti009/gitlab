@@ -8,7 +8,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::LicenseAddOns::
     subject(:add_on_license) { dummy_add_on_license_class.new(restrictions) }
 
     let(:add_on_license_base) { described_class.new(restrictions) }
-    let!(:add_on) { create(:gitlab_subscription_add_on, :code_suggestions) }
+    let!(:add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
 
     let(:dummy_add_on_license_class) do
       Class.new(described_class) do

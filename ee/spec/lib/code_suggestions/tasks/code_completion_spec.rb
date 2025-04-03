@@ -181,7 +181,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
 
         let_it_be(:group1) do
           create(:group).tap do |g|
-            setup_addon_purchase_and_seat_assignment(current_user, g, :code_suggestions)
+            setup_addon_purchase_and_seat_assignment(current_user, g, :duo_pro)
           end
         end
 
@@ -296,7 +296,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
 
         let_it_be(:group1) do
           create(:group).tap do |g|
-            setup_addon_purchase_and_seat_assignment(current_user, g, :code_suggestions)
+            setup_addon_purchase_and_seat_assignment(current_user, g, :duo_pro)
           end
         end
 

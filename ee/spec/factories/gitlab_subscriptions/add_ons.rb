@@ -5,28 +5,9 @@ FactoryBot.define do
     name { GitlabSubscriptions::AddOn.names[:code_suggestions] }
     description { GitlabSubscriptions::AddOn.descriptions[:code_suggestions] }
 
-    trait :code_suggestions do
-      name { GitlabSubscriptions::AddOn.names[:code_suggestions] }
-      description { GitlabSubscriptions::AddOn.descriptions[:code_suggestions] }
-    end
-
-    trait :gitlab_duo_pro do
-      name { GitlabSubscriptions::AddOn.names[:code_suggestions] }
-    end
-
     trait :product_analytics do
       name { GitlabSubscriptions::AddOn.names[:product_analytics] }
       description { GitlabSubscriptions::AddOn.descriptions[:product_analytics] }
-    end
-
-    trait :duo_enterprise do
-      name { GitlabSubscriptions::AddOn.names[:duo_enterprise] }
-      description { GitlabSubscriptions::AddOn.descriptions[:duo_enterprise] }
-    end
-
-    trait :duo_amazon_q do
-      name { GitlabSubscriptions::AddOn.names[:duo_amazon_q] }
-      description { GitlabSubscriptions::AddOn.descriptions[:duo_amazon_q] }
     end
 
     trait :duo_nano do
@@ -37,6 +18,16 @@ FactoryBot.define do
     trait :duo_pro do
       name { GitlabSubscriptions::AddOn.names[:code_suggestions] }
       description { GitlabSubscriptions::AddOn.descriptions[:code_suggestions] }
+    end
+
+    trait :duo_enterprise do
+      name { GitlabSubscriptions::AddOn.names[:duo_enterprise] }
+      description { GitlabSubscriptions::AddOn.descriptions[:duo_enterprise] }
+    end
+
+    trait :duo_amazon_q do
+      name { GitlabSubscriptions::AddOn.names[:duo_amazon_q] }
+      description { GitlabSubscriptions::AddOn.descriptions[:duo_amazon_q] }
     end
   end
 end

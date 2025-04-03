@@ -9,7 +9,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
   let_it_be(:another_free_group) { create(:group, owners: user) }
   let_it_be(:another_premium_group) { create(:group_with_plan, plan: :premium_plan, developers: user) }
   let_it_be(:ineligible_paid_group) { create(:group_with_plan, plan: :ultimate_plan, owners: user) }
-  let_it_be(:add_on) { create(:gitlab_subscription_add_on, :gitlab_duo_pro) }
+  let_it_be(:add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
 
   let(:subscriptions_trials_saas_feature) { true }
 

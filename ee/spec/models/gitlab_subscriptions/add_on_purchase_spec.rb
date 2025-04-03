@@ -476,7 +476,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
     end
 
     describe '.requiring_assigned_users_refresh' do
-      let_it_be(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :code_suggestions) }
+      let_it_be(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
       let_it_be(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
       let_it_be(:duo_amazon_q_add_on) { create(:gitlab_subscription_add_on, :duo_amazon_q) }
       let_it_be(:product_analytics_add_on) { create(:gitlab_subscription_add_on, :product_analytics) }
@@ -580,7 +580,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
 
       let(:namespace) { create(:group) }
 
-      let(:add_on_1) { create(:gitlab_subscription_add_on, :code_suggestions) }
+      let(:add_on_1) { create(:gitlab_subscription_add_on, :duo_pro) }
       let(:add_on_2) { create(:gitlab_subscription_add_on, :product_analytics) }
 
       let!(:add_on_purchase_1) { create(:gitlab_subscription_add_on_purchase, namespace: nil, add_on: add_on_1) }
@@ -617,7 +617,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
     let(:namespace_1) { create(:group) }
     let(:namespace_2) { create(:group) }
 
-    let(:add_on_1) { create(:gitlab_subscription_add_on, :code_suggestions) }
+    let(:add_on_1) { create(:gitlab_subscription_add_on, :duo_pro) }
     let(:add_on_2) { create(:gitlab_subscription_add_on, :product_analytics) }
 
     let!(:add_on_purchase_1) { create(:gitlab_subscription_add_on_purchase, namespace: nil, add_on: add_on_1) }

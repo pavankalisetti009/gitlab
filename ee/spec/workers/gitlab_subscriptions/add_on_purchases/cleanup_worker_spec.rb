@@ -10,7 +10,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::CleanupWorker, feature_categ
 
   describe '#perform' do
     let_it_be(:add_on_name) { 'code_suggestions' }
-    let_it_be(:add_on) { create(:gitlab_subscription_add_on, :gitlab_duo_pro) }
+    let_it_be(:add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
     let_it_be(:expires_on) { 1.day.from_now }
     let_it_be(:namespace_path) { 'Socotra' }
 

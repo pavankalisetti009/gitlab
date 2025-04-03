@@ -9,7 +9,7 @@ RSpec.describe 'Query.namespace.addOnEligibleUsers', feature_category: :seat_cos
   let_it_be(:organization) { create(:organization) }
   let_it_be(:group) { create(:group, organization: organization) }
   let_it_be(:group_1) { create(:group, organization: organization) }
-  let_it_be(:gitlab_duo_pro) { create(:gitlab_subscription_add_on, :gitlab_duo_pro) }
+  let_it_be(:gitlab_duo_pro) { create(:gitlab_subscription_add_on, :duo_pro) }
 
   let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, add_on: gitlab_duo_pro, namespace: group) }
   let(:query_add_on_purchase_ids) { [global_id_of(add_on_purchase)] }

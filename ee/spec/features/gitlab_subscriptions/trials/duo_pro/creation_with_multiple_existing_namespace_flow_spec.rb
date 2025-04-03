@@ -11,7 +11,7 @@ RSpec.describe 'Duo Pro trial lead submission and creation with multiple eligibl
   end
 
   before_all do
-    create(:gitlab_subscription_add_on, :gitlab_duo_pro)
+    create(:gitlab_subscription_add_on, :duo_pro)
   end
   # rubocop:enable Gitlab/RSpec/AvoidSetup
 
