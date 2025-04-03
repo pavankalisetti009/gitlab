@@ -19,7 +19,8 @@ module Ai
       generate_commit_message: 8,
       summarize_new_merge_request: 9,
       duo_chat_explain_vulnerability: 10,
-      resolve_vulnerability: 11
+      resolve_vulnerability: 11,
+      summarize_review: 12
     }.freeze
 
     FEATURES = STABLE_FEATURES.merge(FLAGGED_FEATURES)

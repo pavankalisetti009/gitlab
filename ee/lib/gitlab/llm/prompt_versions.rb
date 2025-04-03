@@ -144,7 +144,13 @@ module Gitlab
           "summarize_new_merge_request/mixtral": "^1.0.0",
           "summarize_new_merge_request/gpt": "^1.0.0",
           "summarize_new_merge_request/llama3": "^1.0.0",
-          "summarize_review/base": "^2.0.0"
+          "summarize_review/base": "^2.0.0",
+          "summarize_review/amazon_q": "^1.0.0",
+          "summarize_review/claude_3": "^1.0.0",
+          "summarize_review/mistral": "^1.0.0",
+          "summarize_review/mixtral": "^1.0.0",
+          "summarize_review/gpt": "^1.0.0",
+          "summarize_review/llama3": "^1.0.0"
         }.freeze
 
         def version_for_prompt(prompt_name, model_family)

@@ -129,3 +129,13 @@ resolve_vulnerability:
     - claude_3
     - gpt
     - llama3
+summarize_review:
+  title: Summarize Review
+  release_state: EXPERIMENT
+  main_feature: Other GitLab Duo features
+  compatible_llms:
+    - mistral
+    - mixtral
+    - claude_3
+    - gpt
+    - llama3

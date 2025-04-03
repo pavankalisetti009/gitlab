@@ -79,4 +79,13 @@ export const mockAiFeatureSettings = [
     },
     validModels: { nodes: mockSelfHostedModels },
   },
+  {
+    feature: 'summarize_review',
+    title: 'Summarize Review',
+    mainFeature: 'Other GitLab Duo features',
+    releaseState: 'EXPERIMENT',
+    provider: 'self_hosted',
+    selfHostedModel: null,
+    validModels: { nodes: mockSelfHostedModels },
+  },
 ];

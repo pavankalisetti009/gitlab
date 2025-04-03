@@ -293,7 +293,7 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
   end
 
   describe 'feature constants' do
-    shared_examples_for 'feature metadata validation' do |features, expected_release_state|
+    shared_examples_for 'feature metadata validation' do |features, expected_release_states|
       it 'has valid metadata for all features', :aggregate_failures do
         features.each_key do |feature|
           expect(described_class::FEATURE_METADATA.keys).to include(feature.to_s),
@@ -301,8 +301,8 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
               "Please add it."
           metadata = described_class::FEATURE_METADATA.fetch(feature.to_s, {})
           expect(metadata).to include('title', 'main_feature', 'compatible_llms', 'release_state')
-          expect(metadata.fetch('release_state', 'no value')).to eq(expected_release_state),
-            "Expected #{feature} to have #{expected_release_state} release state," \
+          expect(metadata.fetch('release_state', 'no value')).to be_in(expected_release_states),
+            "Expected #{feature} to have one of #{expected_release_states} release state," \
               "but got #{metadata.fetch('release_state', 'no value')}"
         end
       end
@@ -321,7 +321,7 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
         }.freeze)
       end
 
-      include_examples 'feature metadata validation', described_class::STABLE_FEATURES, 'GA'
+      include_examples 'feature metadata validation', described_class::STABLE_FEATURES, %w[GA]
     end
 
     describe 'FLAGGED_FEATURES' do
@@ -331,11 +331,12 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
           generate_commit_message: 8,
           summarize_new_merge_request: 9,
           duo_chat_explain_vulnerability: 10,
-          resolve_vulnerability: 11
+          resolve_vulnerability: 11,
+          summarize_review: 12
         }.freeze)
       end
 
-      include_examples 'feature metadata validation', described_class::FLAGGED_FEATURES, 'BETA'
+      include_examples 'feature metadata validation', described_class::FLAGGED_FEATURES, %w[BETA EXPERIMENT]
     end
 
     describe 'feature metadata completeness' do
