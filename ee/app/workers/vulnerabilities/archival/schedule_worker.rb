@@ -32,6 +32,8 @@ module Vulnerabilities
           ::Namespaces::Preloaders::GroupRootAncestorPreloader.new(groups).execute
 
           projects = projects.select do |project|
+            next unless project.group
+
             Feature.enabled?(:vulnerability_archival, project.group.root_ancestor)
           end
 
