@@ -102,8 +102,9 @@ export const useAccessTokens = defineStore('accessTokens', {
         this.statistics = await Promise.all(
           updatedFilters.map(async (stat) => {
             const params = serializeParams(stat.filters);
+            const url = Api.buildUrl(this.urlShow.replace(':id', this.id));
             const { total } = await fetchTokens({
-              url: this.urlShow,
+              url,
               id: this.id,
               params,
               sort: this.sort,
@@ -131,7 +132,7 @@ export const useAccessTokens = defineStore('accessTokens', {
       }
       this.busy = true;
       try {
-        const url = Api.buildUrl(this.urlShow);
+        const url = Api.buildUrl(this.urlShow.replace(':id', this.id));
         const { data, perPage, total } = await fetchTokens({
           url,
           id: this.id,

@@ -160,8 +160,10 @@ module API
             detail 'Get a list of all personal access tokens'
             success Entities::PersonalAccessToken
             failure [
+              { code: 400, message: 'Bad Request' },
               { code: 401, message: '401 Unauthorized' },
-              { code: 404, message: '404 Personal access token(s) Not Found' }
+              { code: 404, message: '404 Group Not Found' },
+              { code: 403, message: 'Forbidden' }
             ]
           end
 
@@ -174,8 +176,6 @@ module API
             validate_service_account_user
 
             service_account_pats = ::PersonalAccessTokensFinder.new(finder_params(user), user).execute
-
-            next not_found!('Personal access token(s)') if service_account_pats.empty?
 
             present paginate_with_strategies(service_account_pats), with: Entities::PersonalAccessToken
           end
