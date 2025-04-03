@@ -8,7 +8,6 @@ module Gitlab
           include Gitlab::Utils::StrongMemoize
 
           DRAFT_NOTES_COUNT_LIMIT = 50
-          OUTPUT_TOKEN_LIMIT = 8000
           PRIORITY_THRESHOLD = 3
 
           def execute
