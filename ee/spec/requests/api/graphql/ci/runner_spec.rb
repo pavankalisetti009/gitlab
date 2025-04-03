@@ -342,4 +342,69 @@ RSpec.describe 'Query.runner(id)', feature_category: :fleet_visibility do
       end
     end
   end
+
+  describe 'groups' do
+    let_it_be(:group) { create(:group, :private, :with_avatar) }
+    let_it_be(:runner) { create(:ci_runner, :group, groups: [group]) }
+
+    let(:query) do
+      group_path = query_graphql_path(%i[groups nodes], all_graphql_fields_for('GroupInterface'))
+
+      wrap_fields(query_graphql_path(query_path, group_path))
+    end
+
+    let(:query_path) do
+      [
+        [:runner, { id: runner.to_global_id.to_s }]
+      ]
+    end
+
+    context 'when current user is not an admin but has read_admin_cicd custom admin role',
+      :enable_admin_mode, feature_category: :permissions do
+      let_it_be(:role) { create(:admin_member_role, :read_admin_cicd) }
+      let_it_be(:current_user) { role.user }
+
+      let(:exposed_field_names) do
+        %w[avatar_url full_name name]
+      end
+
+      let(:unexposed_field_names) do
+        ::Types::Namespaces::GroupInterface.fields.keys.map(&:underscore) - exposed_field_names
+      end
+
+      before do
+        stub_licensed_features(custom_roles: true)
+
+        post_graphql(query, current_user: current_user)
+      end
+
+      it 'retrieves expected field values' do
+        exposed_field_values = {
+          full_name: group.full_name,
+          name: group.name,
+          avatar_url: group.avatar_url(only_path: false)
+        }
+
+        expect(exposed_field_names).to match_array(
+          ::Types::Namespaces::GroupMinimalAccessType.own_fields.keys.map(&:underscore)
+        )
+        expect(exposed_field_names.map(&:to_sym)).to match_array(exposed_field_values.keys)
+
+        unexposed_field_values = unexposed_field_names.index_with { |_f| nil }
+
+        group_values = a_graphql_entity_for(
+          group,
+          **exposed_field_values.merge(unexposed_field_values)
+        ).to_hash
+        group_values["id"] = nil # a_graphql_entity_for sets id but we expect it to be nil
+
+        runner_data = graphql_data_at(:runner)
+
+        expect(runner_data).not_to be_nil
+        expect(graphql_dig_at(runner_data, :groups, :nodes)).to match [
+          group_values
+        ]
+      end
+    end
+  end
 end
