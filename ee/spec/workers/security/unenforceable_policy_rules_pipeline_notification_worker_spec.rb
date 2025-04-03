@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Security::UnenforceablePolicyRulesPipelineNotificationWorker, feature_category: :security_policy_management do
   let_it_be(:project) { create(:project, :repository) }
-  let_it_be(:merge_request) { create(:ee_merge_request, source_project: project) }
+  let_it_be(:merge_request, reload: true) { create(:ee_merge_request, source_project: project) }
   let_it_be_with_reload(:pipeline) do
     create(:ci_empty_pipeline,
       status: :success,
@@ -37,6 +37,22 @@ RSpec.describe Security::UnenforceablePolicyRulesPipelineNotificationWorker, fea
       run_worker
     end
 
+    shared_examples_for 'does not schedule UnblockPendingMergeRequestViolationsWorker' do
+      it 'does not schedule UnblockPendingMergeRequestViolationsWorker for the pipeline' do
+        expect(::Security::ScanResultPolicies::UnblockPendingMergeRequestViolationsWorker).not_to receive(:perform_in)
+
+        run_worker
+      end
+    end
+
+    shared_examples_for 'does not call UnenforceablePolicyRulesNotificationService' do
+      it 'does not call UnenforceablePolicyRulesNotificationService' do
+        expect(Security::UnenforceablePolicyRulesNotificationService).not_to receive(:new)
+
+        run_worker
+      end
+    end
+
     describe 'trigger of UnblockPendingMergeRequestViolationsWorker' do
       it 'schedules UnblockPendingMergeRequestViolationsWorker for the pipeline' do
         expect(::Security::ScanResultPolicies::UnblockPendingMergeRequestViolationsWorker)
@@ -45,17 +61,20 @@ RSpec.describe Security::UnenforceablePolicyRulesPipelineNotificationWorker, fea
         run_worker
       end
 
+      context 'when there are no opened merge requests for the sha' do
+        before do
+          merge_request.update!(state: :merged)
+        end
+
+        it_behaves_like 'does not schedule UnblockPendingMergeRequestViolationsWorker'
+      end
+
       context 'when feature flag "policy_mergability_check" is disabled' do
         before do
           stub_feature_flags(policy_mergability_check: false)
         end
 
-        it 'does not schedule UnblockPendingMergeRequestViolationsWorker for the pipeline' do
-          expect(::Security::ScanResultPolicies::UnblockPendingMergeRequestViolationsWorker)
-            .not_to receive(:perform_in)
-
-          run_worker
-        end
+        it_behaves_like 'does not schedule UnblockPendingMergeRequestViolationsWorker'
       end
     end
 
@@ -76,31 +95,19 @@ RSpec.describe Security::UnenforceablePolicyRulesPipelineNotificationWorker, fea
     context 'when pipeline does not exist' do
       let(:pipeline_id) { non_existing_record_id }
 
-      it 'does not call UnenforceablePolicyRulesNotificationService' do
-        expect(Security::UnenforceablePolicyRulesNotificationService).not_to receive(:new)
-
-        run_worker
-      end
+      it_behaves_like 'does not call UnenforceablePolicyRulesNotificationService'
     end
 
     context 'when feature is not licensed' do
       let(:feature_licensed) { false }
 
-      it 'does not call UnenforceablePolicyRulesNotificationService' do
-        expect(Security::UnenforceablePolicyRulesNotificationService).not_to receive(:new)
-
-        run_worker
-      end
+      it_behaves_like 'does not call UnenforceablePolicyRulesNotificationService'
     end
 
     context 'when there are no approval rules with scan result policy reads' do
       let!(:approval_project_rule) { nil }
 
-      it 'does not call UnenforceablePolicyRulesNotificationService' do
-        expect(Security::UnenforceablePolicyRulesNotificationService).not_to receive(:new)
-
-        run_worker
-      end
+      it_behaves_like 'does not call UnenforceablePolicyRulesNotificationService'
     end
 
     context 'when pipeline is still running' do
@@ -108,11 +115,7 @@ RSpec.describe Security::UnenforceablePolicyRulesPipelineNotificationWorker, fea
         pipeline.update!(status: :running)
       end
 
-      it 'does not call UnenforceablePolicyRulesNotificationService' do
-        expect(Security::UnenforceablePolicyRulesNotificationService).not_to receive(:new)
-
-        run_worker
-      end
+      it_behaves_like 'does not call UnenforceablePolicyRulesNotificationService'
     end
 
     context 'when the pipeline is not the head_pipeline but ran for diff_head_sha of the merge request' do
