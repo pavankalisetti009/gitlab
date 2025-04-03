@@ -46,7 +46,7 @@ export default {
             }}
           </li>
         </ul>
-        <gl-link :href="eligibleApproversDocsPath" class="text-1" target="_blank">{{
+        <gl-link :href="eligibleApproversDocsPath" target="_blank">{{
           __('More information')
         }}</gl-link>
       </gl-popover>
