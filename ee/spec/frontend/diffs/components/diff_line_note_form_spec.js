@@ -3,6 +3,7 @@ import Vue from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
 import { createTestingPinia } from '@pinia/testing';
+import { PiniaVuePlugin } from 'pinia';
 import waitForPromises from 'helpers/wait_for_promises';
 import { sprintf } from '~/locale';
 import { createAlert } from '~/alert';
@@ -17,14 +18,16 @@ import { useNotes } from '~/notes/store/legacy_notes';
 import { useBatchComments } from '~/batch_comments/store';
 
 Vue.use(Vuex);
+Vue.use(PiniaVuePlugin);
 jest.mock('~/alert');
 
 describe('EE DiffLineNoteForm', () => {
   let wrapper;
+  let pinia;
 
   let saveDraft;
 
-  const createStoreOptions = (headSha) => {
+  const createStoreOptions = () => {
     const state = {
       notes: {
         notesData: { draftsPath: null },
@@ -41,28 +44,11 @@ describe('EE DiffLineNoteForm', () => {
     return {
       state,
       getters,
-      modules: {
-        diffs: {
-          namespaced: true,
-          state: { commit: headSha || null },
-          getters: {
-            getDiffFileByHash: jest.fn().mockReturnValue(() => ({
-              diff_refs: {
-                head_sha: headSha || null,
-              },
-              highlighted_diff_lines: [],
-            })),
-          },
-          actions: {
-            cancelCommentForm: jest.fn(),
-          },
-        },
-      },
     };
   };
 
-  const createComponent = (HEAD_SHA, props = {}) => {
-    const storeOptions = createStoreOptions(HEAD_SHA);
+  const createComponent = (props = {}) => {
+    const storeOptions = createStoreOptions();
     const store = new Vuex.Store(storeOptions);
 
     const diffFile = getDiffFileMock();
@@ -77,6 +63,7 @@ describe('EE DiffLineNoteForm', () => {
         ...props,
       },
       store,
+      pinia,
       mocks: {
         resetAutoSave: jest.fn(),
       },
@@ -88,8 +75,8 @@ describe('EE DiffLineNoteForm', () => {
   const saveDraftCommitId = () => saveDraft.mock.calls[0][0].data.note.commit_id;
 
   beforeEach(() => {
-    createTestingPinia({ plugins: [globalAccessorPlugin] });
-    useLegacyDiffs();
+    pinia = createTestingPinia({ plugins: [globalAccessorPlugin] });
+    useLegacyDiffs().diffFiles = [getDiffFileMock()];
     useNotes();
     saveDraft = useBatchComments().saveDraft.mockImplementation(() => Promise.resolve());
   });
@@ -106,7 +93,15 @@ describe('EE DiffLineNoteForm', () => {
 
     it('should call saveDraft action with commit_id when store has commit', () => {
       const HEAD_SHA = 'abc123';
-      createComponent(HEAD_SHA);
+      useLegacyDiffs().commit = {};
+      useLegacyDiffs().diffFiles = [
+        {
+          file_hash: getDiffFileMock().file_hash,
+          diff_refs: { head_sha: HEAD_SHA },
+          highlighted_diff_lines: [],
+        },
+      ];
+      createComponent();
 
       submitNoteAddToReview();
 

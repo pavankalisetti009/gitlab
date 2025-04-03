@@ -8,8 +8,7 @@ import {
   GlTabs,
   GlTab,
 } from '@gitlab/ui';
-// eslint-disable-next-line no-restricted-imports
-import { mapState } from 'vuex';
+import { mapState } from 'pinia';
 import { VULNERABILITY_TAB_NAMES } from 'ee/vulnerabilities/constants';
 import { VULNERABILITY_DETAIL_CODE_FLOWS } from 'ee/security_dashboard/constants';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
@@ -17,6 +16,7 @@ import { getSeverity } from '~/ci/reports/utils';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
 import { s__ } from '~/locale';
 import VulnerabilityCodeFlow from 'ee/vue_shared/components/code_flow/vulnerability_code_flow.vue';
+import { useLegacyDiffs } from '~/diffs/stores/legacy_diffs';
 import FindingsDrawerDetails from './findings_drawer_details.vue';
 
 export const i18n = {
@@ -64,7 +64,7 @@ export default {
     };
   },
   computed: {
-    ...mapState('diffs', ['branchName']),
+    ...mapState(useLegacyDiffs, ['branchName']),
     getDrawerHeaderHeight() {
       return getContentWrapperHeight();
     },

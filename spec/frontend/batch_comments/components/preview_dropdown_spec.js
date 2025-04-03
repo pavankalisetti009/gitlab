@@ -29,26 +29,15 @@ describe('Batch comments preview dropdown', () => {
   let pinia;
   let batchCommentsGetters;
 
-  const goToFile = jest.fn();
-
   const findPreviewItem = () => wrapper.findComponent(PreviewItem);
 
-  function factory({ viewDiffsFileByFile = false, draftsCount = 1, sortedDrafts = [] } = {}) {
+  function factory({ draftsCount = 1, sortedDrafts = [] } = {}) {
     batchCommentsGetters = {
       draftsCount,
       sortedDrafts,
     };
     const store = new Vuex.Store({
       modules: {
-        diffs: {
-          namespaced: true,
-          actions: {
-            goToFile,
-          },
-          state: {
-            viewDiffsFileByFile,
-          },
-        },
         notes: {
           getters: {
             getNoteableData: () => ({ diff_head_sha: '123' }),
@@ -84,14 +73,14 @@ describe('Batch comments preview dropdown', () => {
 
   describe('clicking draft', () => {
     it('toggles active file when viewDiffsFileByFile is true', async () => {
+      useLegacyDiffs().viewDiffsFileByFile = true;
       factory({
-        viewDiffsFileByFile: true,
         sortedDrafts: [{ id: 1, file_hash: 'hash', file_path: 'foo' }],
       });
       findPreviewItem().trigger('click');
       await nextTick();
 
-      expect(goToFile).toHaveBeenCalledWith(expect.anything(), { path: 'foo' });
+      expect(useLegacyDiffs().goToFile).toHaveBeenCalledWith({ path: 'foo' });
 
       await nextTick();
       expect(useBatchComments().scrollToDraft).toHaveBeenCalledWith(
@@ -100,8 +89,8 @@ describe('Batch comments preview dropdown', () => {
     });
 
     it('calls scrollToDraft', async () => {
+      useLegacyDiffs().viewDiffsFileByFile = false;
       factory({
-        viewDiffsFileByFile: false,
         sortedDrafts: [{ id: 1 }],
       });
 
@@ -115,8 +104,8 @@ describe('Batch comments preview dropdown', () => {
     });
 
     it('changes window location to navigate to commit', async () => {
+      useLegacyDiffs().viewDiffsFileByFile = false;
       factory({
-        viewDiffsFileByFile: false,
         sortedDrafts: [{ id: 1, position: { head_sha: '1234' } }],
       });
 

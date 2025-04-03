@@ -1,7 +1,7 @@
 import Vue, { nextTick } from 'vue';
 import { GlDrawer, GlTab, GlTabs } from '@gitlab/ui';
-// eslint-disable-next-line no-restricted-imports
-import Vuex from 'vuex';
+import { PiniaVuePlugin } from 'pinia';
+import { createTestingPinia } from '@pinia/testing';
 import FindingsDrawer from 'ee/diffs/components/shared/findings_drawer.vue';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { VULNERABILITY_TAB_NAMES } from 'ee/vulnerabilities/constants';
@@ -14,11 +14,14 @@ import {
   mockFindingsMultiple,
   mockFindingDetails,
 } from 'jest/diffs/mock_data/findings_drawer';
+import { globalAccessorPlugin } from '~/pinia/plugins';
+import { useLegacyDiffs } from '~/diffs/stores/legacy_diffs';
 
-Vue.use(Vuex);
+Vue.use(PiniaVuePlugin);
 
 describe('FindingsDrawer', () => {
   let wrapper;
+  let pinia;
 
   const findingDrawerProps = {
     drawer: { findings: [mockFindingDetected], index: 0 },
@@ -32,20 +35,9 @@ describe('FindingsDrawer', () => {
       ...findingDrawerOverrides,
     };
 
-    const store = new Vuex.Store({
-      modules: {
-        diffs: {
-          namespaced: true,
-          state: {
-            branchName: 'test-branch',
-          },
-        },
-      },
-    });
-
     wrapper = mountFn(FindingsDrawer, {
       propsData,
-      store,
+      pinia,
     });
   };
 
@@ -57,6 +49,11 @@ describe('FindingsDrawer', () => {
   const findTabs = () => wrapper.findComponent(GlTabs);
   const findAllTabs = () => wrapper.findAllComponents(GlTab);
   const findTabAtIndex = (index) => findAllTabs().at(index);
+
+  beforeEach(() => {
+    pinia = createTestingPinia({ plugins: [globalAccessorPlugin] });
+    useLegacyDiffs();
+  });
 
   describe('General Rendering', () => {
     beforeEach(() => {
