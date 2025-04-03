@@ -24,7 +24,7 @@ const createComponent = ({ provide = {}, props = {} } = {}) => {
       helpLinks: storageTypeHelpPaths,
       isLoading: false,
       sortBy: 'storage',
-      sortableFields: { storage: false },
+      enableSortableFields: true,
       ...props,
     },
   });
