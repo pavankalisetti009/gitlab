@@ -12,42 +12,44 @@ module Search
       def initialize(plan)
         @plan = plan
         @errors = []
+        @success = []
       end
 
       def execute
-        ApplicationRecord.transaction do
-          plan[:namespaces].each do |namespace_plan|
-            next if namespace_plan[:errors].present?
+        plan[:namespaces].each do |namespace_plan|
+          next if namespace_plan[:errors].present?
 
+          ApplicationRecord.transaction do
             process_namespace(namespace_plan)
           end
+        rescue NodeStorageError => e
+          json = Gitlab::Json.parse(e.message, symbolize_names: true)
+          aggregate_error(json[:message], failed_namespace_id: json[:namespace_id], node_id: json[:node_id])
+        rescue StandardError => e
+          aggregate_error(e.message)
         end
-        { errors: @errors }
-      rescue StandardError => e
-        log_error(:transaction_failed, e.message, e.backtrace)
-        { errors: @errors }
+        { errors: @errors, success: @success }
       end
 
       private
 
       def process_namespace(namespace_plan)
         namespace_id = namespace_plan.fetch(:namespace_id)
-        enabled_namespace_id = namespace_plan.fetch(:enabled_namespace_id)
-
         # Remove any pre-existing replicas for this namespace since we are provisioning new ones.
         enabled_namespace = Search::Zoekt::EnabledNamespace.for_root_namespace_id(namespace_id).first
         if enabled_namespace.nil?
-          log_error(:missing_enabled_namespace, "Enabled namespace not found for namespace ID: #{namespace_id}")
+          aggregate_error(:missing_enabled_namespace, failed_namespace_id: namespace_id)
           return
         end
 
         enabled_namespace.replicas.delete_all
 
         if Index.for_root_namespace_id(namespace_id).exists?
-          log_error(:index_already_exists, "Indices already exists for namespace ID: #{namespace_id}")
+          aggregate_error(:index_already_exists, failed_namespace_id: namespace_id)
           return
         end
 
+        enabled_namespace_id = namespace_plan.fetch(:enabled_namespace_id)
         namespace_plan[:replicas].each do |replica_plan|
           process_replica(
             namespace_id: namespace_id,
@@ -67,10 +69,9 @@ module Search
           node = Node.find(index_plan[:node_id])
           required_storage_bytes = index_plan[:required_storage_bytes]
           if required_storage_bytes > node.unclaimed_storage_bytes
-            error_details = "Node #{node.id} has #{node.unclaimed_storage_bytes} unclaimed storage bytes and " \
-              "cannot fit #{required_storage_bytes} bytes."
-            log_error(:node_capacity_exceeded, error_details)
-            raise StandardError, error_details
+            raise NodeStorageError, {
+              message: 'node_capacity_exceeded', namespace_id: replica.namespace_id, node_id: node.id
+            }.to_json
           end
 
           {
@@ -83,24 +84,18 @@ module Search
           } # Workaround: we remove nil project_namespace_id_to since it is not a valid property in json validator.
         end
         Index.insert_all(zoekt_indices) if zoekt_indices.present?
+        aggregate_success(replica)
       end
 
-      def log_error(message, details, trace = [])
-        err = {
-          class: self.class.name,
-          message: message,
-          details: details,
-          trace: trace.slice(0, 5)
-        }
-
-        @errors << err
-
-        logger.error(**err)
+      def aggregate_error(message, failed_namespace_id: nil, node_id: nil)
+        @errors << { message: message, failed_namespace_id: failed_namespace_id, node_id: node_id }
       end
 
-      def logger
-        @logger ||= Search::Zoekt::Logger.build
+      def aggregate_success(replica)
+        @success << { namespace_id: replica.namespace_id, replica_id: replica.id }
       end
     end
+
+    NodeStorageError = Class.new(StandardError)
   end
 end

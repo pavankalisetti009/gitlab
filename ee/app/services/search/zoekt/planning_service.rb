@@ -18,15 +18,9 @@ module Search
 
       def plan
         all_plans = enabled_namespaces.map do |enabled_namespace|
-          Plan.new(
-            enabled_namespace: enabled_namespace,
-            nodes: nodes,
-            **options
-          ).generate
+          Plan.new(enabled_namespace: enabled_namespace, nodes: nodes, **options).generate
         end
-
         failed_plans, successful_plans = all_plans.partition { |plan| plan[:errors].present? }
-
         {
           total_required_storage_bytes: successful_plans.sum { |plan| plan[:namespace_required_storage_bytes] },
           namespaces: successful_plans,
@@ -113,7 +107,7 @@ module Search
             next unless stats
 
             if replica_indices.size >= max_indices_per_replica
-              log_error(replica_plans.size, :index_limit_exceeded,
+              accumulate_error(replica_plans.size, :index_limit_exceeded,
                 "Replica reached maximum index limit (#{max_indices_per_replica})")
               break
             end
@@ -126,7 +120,7 @@ module Search
         end
 
         def create_empty_replica
-          candidate_nodes = nodes.reject { |node| @used_node_ids.include?(node[:id]) }
+          candidate_nodes = nodes.reject { |n| @used_node_ids.include?(n[:id]) || n[:unclaimed_storage_bytes] < 0 }
           best_node = candidate_nodes.max_by { |node| node[:unclaimed_storage_bytes] }
 
           if best_node
@@ -134,7 +128,7 @@ module Search
             add_replica_plan(replica_indices)
             @used_node_ids.add(best_node[:id])
           else
-            log_error(nil, :node_unavailable, "No nodes available to create an empty replica")
+            accumulate_error(nil, :node_unavailable, "No nodes available to create an empty replica")
           end
         end
 
@@ -149,7 +143,7 @@ module Search
           if best_node
             assign_project_to_index(best_node, stats, replica_indices)
           else
-            log_error(replica_plans.size, :node_unavailable,
+            accumulate_error(replica_plans.size, :node_unavailable,
               "No node can accommodate project #{stats.project_id} with size #{scaled_size(stats)}")
           end
         end
@@ -169,14 +163,8 @@ module Search
           end
 
           unless index
-            if replica_indices.size >= max_indices_per_replica
-              log_error(nil, :index_limit_exceeded, "Max indices per replica reached")
-              return
-            end
-
             index = simulate_index(node)
             replica_indices << index
-
             node[:indices] ||= []
             node[:indices] << index
             node[:namespace_ids] << namespace.id unless node[:namespace_ids].include?(namespace.id)
@@ -224,7 +212,7 @@ module Search
           stats.repository_size * buffer_factor
         end
 
-        def log_error(replica_idx, type, details)
+        def accumulate_error(replica_idx, type, details)
           @errors << { namespace_id: namespace.id, replica_idx: replica_idx, type: type, details: details }
         end
       end

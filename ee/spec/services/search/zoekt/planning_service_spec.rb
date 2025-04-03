@@ -65,6 +65,15 @@ RSpec.describe Search::Zoekt::PlanningService, feature_category: :global_search 
       end
     end
 
+    context 'when there are no nodes' do
+      let_it_be(:nodes) { Search::Zoekt::Node.none }
+
+      it 'creates plan with failure 0 total_required_storage_bytes' do
+        expect(plan[:failures]).not_to be_empty
+        expect(plan[:namespaces]).to be_empty
+      end
+    end
+
     context 'when max indices per replica is reached' do
       let(:max_indices_per_replica) { 1 }
 
@@ -105,70 +114,95 @@ RSpec.describe Search::Zoekt::PlanningService, feature_category: :global_search 
         expect(projects).to eq({ project_namespace_id_from: nil, project_namespace_id_to: nil })
       end
     end
-  end
 
-  context 'when there are more projects than the batch size' do
-    let(:batch_size) { 2 }
-    let(:num_replicas) { 2 }
-    let(:buffer_factor) { 1.5 }
+    context 'when there are more projects than the batch size' do
+      let(:batch_size) { 2 }
+      let(:num_replicas) { 2 }
+      let(:buffer_factor) { 1.5 }
 
-    before do
-      # Create more projects than the batch size
-      (1..6).each do |i|
-        create(:project, namespace: group1, statistics: create(:project_statistics, repository_size: i.megabytes))
+      before do
+        # Create more projects than the batch size
+        (1..6).each do |i|
+          create(:project, namespace: group1, statistics: create(:project_statistics, repository_size: i.megabytes))
+        end
+      end
+
+      it 'processes all projects in batches without skipping any' do
+        # Run the planning service with a specific batch size
+        result = described_class.plan(
+          enabled_namespaces: [enabled_namespace1],
+          nodes: nodes,
+          num_replicas: num_replicas,
+          buffer_factor: buffer_factor
+        )
+
+        # Total storage should account for all projects
+        total_storage = group1.projects.sum do |p|
+          p.statistics.repository_size
+        end
+
+        buffered_storage = total_storage * buffer_factor * num_replicas
+
+        expect(result[:total_required_storage_bytes]).to eq(buffered_storage)
+
+        # Ensure all projects are assigned
+        assigned_projects = result[:namespaces][0][:replicas].flat_map { |r| r[:indices].flat_map { |i| i[:projects] } }
+        lower, upper = assigned_projects.pluck(:project_namespace_id_from, :project_namespace_id_to).flatten.uniq
+        id_range = upper.blank? ? lower.. : lower..upper
+        project_ids = group1.projects.by_project_namespace(id_range).pluck(:id)
+
+        expect(project_ids).to match_array(group1.projects.pluck(:id))
       end
     end
 
-    it 'processes all projects in batches without skipping any' do
-      # Run the planning service with a specific batch size
-      result = described_class.plan(
-        enabled_namespaces: [enabled_namespace1],
-        nodes: nodes,
-        num_replicas: num_replicas,
-        buffer_factor: buffer_factor
-      )
+    context 'when a project has nil statistics' do
+      let(:num_replicas) { 1 }
+      let(:buffer_factor) { 1.5 }
+      let_it_be(:project_with_nil_statistics) { create(:project, namespace: group1) }
 
-      # Total storage should account for all projects
-      total_storage = group1.projects.sum do |p|
-        p.statistics.repository_size
+      before do
+        project_with_nil_statistics.statistics.delete
       end
 
-      buffered_storage = total_storage * buffer_factor * num_replicas
+      it 'skips the project with nil statistics and continues processing other projects' do
+        result = described_class.plan(
+          enabled_namespaces: [enabled_namespace1],
+          nodes: nodes,
+          num_replicas: num_replicas,
+          buffer_factor: buffer_factor
+        )
 
-      expect(result[:total_required_storage_bytes]).to eq(buffered_storage)
+        expected_storage = projects_namespace1.sum { |p| p.statistics.repository_size * buffer_factor * num_replicas }
+        expect(result[:total_required_storage_bytes]).to eq(expected_storage)
 
-      # Ensure all projects are assigned
-      assigned_projects = result[:namespaces][0][:replicas].flat_map { |r| r[:indices].flat_map { |i| i[:projects] } }
-      lower, upper = assigned_projects.pluck(:project_namespace_id_from, :project_namespace_id_to).flatten.uniq
-      id_range = upper.blank? ? lower.. : lower..upper
-      project_ids = group1.projects.by_project_namespace(id_range).pluck(:id)
-
-      expect(project_ids).to match_array(group1.projects.pluck(:id))
-    end
-  end
-
-  context 'when a project has nil statistics' do
-    let(:num_replicas) { 1 }
-    let(:buffer_factor) { 1.5 }
-    let_it_be(:project_with_nil_statistics) { create(:project, namespace: group1) }
-
-    before do
-      project_with_nil_statistics.statistics.delete
+        namespace_plan = result[:namespaces].find { |n| n[:namespace_id] == group1.id }
+        expect(namespace_plan[:errors]).to be_empty
+      end
     end
 
-    it 'skips the project with nil statistics and continues processing other projects' do
-      result = described_class.plan(
-        enabled_namespaces: [enabled_namespace1],
-        nodes: nodes,
-        num_replicas: num_replicas,
-        buffer_factor: buffer_factor
-      )
+    context 'when a namespace does not have any project_namespaces' do
+      let_it_be(:namespace_without_project_namespace) { create(:group) }
+      let_it_be(:enabled_namespace) { create(:zoekt_enabled_namespace, namespace: namespace_without_project_namespace) }
 
-      expected_storage = projects_namespace1.sum { |p| p.statistics.repository_size * buffer_factor * num_replicas }
-      expect(result[:total_required_storage_bytes]).to eq(expected_storage)
+      subject(:plan) do
+        described_class.plan(enabled_namespaces: [enabled_namespace], nodes: nodes, num_replicas: num_replicas)
+      end
 
-      namespace_plan = result[:namespaces].find { |n| n[:namespace_id] == group1.id }
-      expect(namespace_plan[:errors]).to be_empty
+      it 'creates plan with 0 total_required_storage_bytes' do
+        expect(plan[:total_required_storage_bytes]).to eq(0)
+        expect(plan[:failures]).to be_empty
+        projects_plan = plan[:namespaces][0][:replicas][0][:indices][0][:projects]
+        expect(projects_plan).to eq({ project_namespace_id_from: nil, project_namespace_id_to: nil })
+      end
+
+      context 'when node is not available' do
+        let_it_be(:nodes) { Search::Zoekt::Node.none }
+
+        it 'creates plan with failure 0 total_required_storage_bytes' do
+          expect(plan[:failures]).not_to be_empty
+          expect(plan[:namespaces]).to be_empty
+        end
+      end
     end
   end
 end

@@ -24,10 +24,6 @@ module Search
 
       private
 
-      def log_info(str)
-        logger&.info(str)
-      end
-
       def fetch_enabled_namespace_for_indexing(project_count_limit: 20_000)
         [].tap do |batch|
           ::Search::Zoekt::EnabledNamespace.with_missing_indices.find_each do |ns|

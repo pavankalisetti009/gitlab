@@ -8,6 +8,7 @@ module Search
       include CronjobQueue # rubocop:disable Scalability/CronWorkerContext -- there is no relevant metadata
       include Gitlab::ExclusiveLeaseHelpers
       prepend ::Geo::SkipSecondary
+      include Gitlab::Loggable
 
       deduplicate :until_executed
       data_consistency :sticky
@@ -31,19 +32,17 @@ module Search
             dry_run: false,
             batch_size: Gitlab::CurrentSettings.zoekt_rollout_batch_size
           )
+          logger.info(build_structured_payload(**{ message: result.message, changes: result.changes }))
 
-          if result.success?
-            log_info message: "RolloutWorker succeeded: #{result.message}"
+          if result.changes[:success]&.any?
             self.class.perform_async # Immediately schedule another job
-          else
-            log_info message: "RolloutWorker did not do any work: #{result.message}"
-
+          elsif result.changes[:errors]&.any?
             if retry_count < MAX_RETRIES
               backoff_time = INITIAL_BACKOFF * (2**retry_count)
-
-              self.class.perform_at(backoff_time.from_now, retry_count + 1)
+              self.class.perform_in(backoff_time, retry_count + 1)
             else
-              log_info message: "RolloutWorker exceeded max back off interval. Last message: #{result.message}"
+              log_data = { message: "RolloutWorker exceeded max back off interval: #{result.message}" }
+              logger.info(build_structured_payload(**log_data))
             end
           end
         end
@@ -53,10 +52,6 @@ module Search
 
       def logger
         @logger ||= ::Search::Zoekt::Logger.build
-      end
-
-      def log_info(**payload)
-        logger.info(build_structured_payload(**payload))
       end
     end
   end
