@@ -50,6 +50,7 @@ export default {
       sendDuoChatCommand({
         question: '/summarize_comments',
         resourceId: this.resourceGlobalId,
+        fromButton: true,
       });
     },
     hideTooltips() {
