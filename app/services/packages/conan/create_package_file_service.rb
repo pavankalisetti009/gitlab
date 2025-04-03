@@ -23,7 +23,8 @@ module Packages
             conan_file_metadatum_attributes: {
               conan_file_type: params[:conan_file_type],
               package_reference_id: package_reference_id,
-              recipe_revision_id: recipe_revision_id
+              recipe_revision_id: recipe_revision_id,
+              package_revision_id: package_revision_id
             }
           )
 
@@ -53,6 +54,7 @@ module Packages
         package_reference_result = ::Packages::Conan::UpsertPackageReferenceService.new(package, params[:conan_package_reference], recipe_revision_id).execute!
         package_reference_result[:package_reference_id]
       end
+      strong_memoize_attr :package_reference_id
 
       def recipe_revision_id
         unless params[:recipe_revision].present? && params[:recipe_revision] != ::Packages::Conan::FileMetadatum::DEFAULT_REVISION
@@ -63,6 +65,17 @@ module Packages
         recipe_reference_result[:recipe_revision_id]
       end
       strong_memoize_attr :recipe_revision_id
+
+      def package_revision_id
+        unless params[:package_revision].present? && params[:package_revision] != ::Packages::Conan::FileMetadatum::DEFAULT_REVISION
+          return
+        end
+
+        return unless package_reference_id.present?
+
+        package_revision_result = ::Packages::Conan::UpsertPackageRevisionService.new(package, package_reference_id, params[:package_revision]).execute!
+        package_revision_result[:package_revision_id]
+      end
     end
   end
 end
