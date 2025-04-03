@@ -16,6 +16,13 @@ module GitlabSubscriptions
         .includes(:user)
     }
 
+    enum seat_type: {
+      base: 0,
+      free: 1,
+      plan: 2,
+      system: 3
+    }
+
     def self.find_by_namespace_and_user(namespace, user)
       by_namespace(namespace).by_user(user).first
     end

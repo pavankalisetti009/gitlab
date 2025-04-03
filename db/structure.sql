@@ -23169,7 +23169,8 @@ CREATE TABLE subscription_seat_assignments (
     last_activity_on timestamp with time zone,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
-    organization_id bigint DEFAULT 1 NOT NULL
+    organization_id bigint DEFAULT 1 NOT NULL,
+    seat_type smallint
 );
 
 CREATE SEQUENCE subscription_seat_assignments_id_seq

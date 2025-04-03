@@ -80,4 +80,17 @@ RSpec.describe GitlabSubscriptions::SeatAssignment, feature_category: :seat_cost
       end
     end
   end
+
+  describe 'enums' do
+    let(:seat_types) do
+      {
+        base: 0,
+        free: 1,
+        plan: 2,
+        system: 3
+      }
+    end
+
+    it { is_expected.to define_enum_for(:seat_type).with_values(**seat_types) }
+  end
 end
