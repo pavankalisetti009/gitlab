@@ -288,6 +288,7 @@ RSpec.describe Projects::PipelineHelper, feature_category: :pipeline_composition
         full_path: project.full_path,
         graphql_resource_etag: graphql_etag_pipeline_path(pipeline),
         pipeline_iid: pipeline.iid,
+        pipeline_id: pipeline.id,
         pipelines_path: project_pipelines_path(project),
         identity_verification_required: 'false',
         identity_verification_path: identity_verification_path,

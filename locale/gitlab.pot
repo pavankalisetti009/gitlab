@@ -6652,9 +6652,6 @@ msgstr ""
 msgid "An error occurred fetching the dropdown data."
 msgstr ""
 
-msgid "An error occurred fetching the pipeline status."
-msgstr ""
-
 msgid "An error occurred fetching the project authors."
 msgstr ""
 
