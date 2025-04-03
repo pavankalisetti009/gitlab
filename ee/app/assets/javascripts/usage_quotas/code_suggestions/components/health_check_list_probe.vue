@@ -15,8 +15,8 @@ export default {
   computed: {
     probeCSS() {
       return this.probe.success
-        ? 'gl-text-green-900 gl-bg-green-50'
-        : 'gl-text-red-900 gl-bg-red-50';
+        ? 'gl-text-feedback-success gl-bg-feedback-success'
+        : 'gl-text-feedback-danger gl-bg-feedback-danger';
     },
     probeIcon() {
       return this.probe.success
