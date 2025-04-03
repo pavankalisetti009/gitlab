@@ -3,6 +3,7 @@ module EE
   module SystemNotes
     module IssuablesService
       extend ::Gitlab::Utils::Override
+      include ActionView::Helpers::NumberHelper
       # Called when the health_status of an Issue is changed
       #
       # Example Note text:
@@ -25,6 +26,68 @@ module EE
         end
 
         create_note(NoteSummary.new(noteable, project, author, body, action: 'health_status'))
+      end
+
+      # Called when a custom field of type number of a WorkItem is changed
+      #
+      # Example Note text:
+      #
+      #   "changed custom_field_name to 10"
+      #
+      #   "removed custom_field_name: 10"
+      #
+      # Returns the created Note object
+      def change_custom_field_number_type_note(custom_field, previous_value: nil, value: nil)
+        # we are inserting HTML instead of markdown, as users can inject markdown in the custom field name
+        body = if value.nil? && previous_value.present?
+                 custom_field_note(custom_field.name,
+                   number_with_precision(previous_value, strip_insignificant_zeros: true),
+                   :removed)
+               else
+                 custom_field_note(custom_field.name,
+                   number_with_precision(value, strip_insignificant_zeros: true),
+                   :changed)
+               end
+
+        create_note(NoteSummary.new(noteable, project, author, body, action: "custom_field"))
+      end
+
+      # Called when a custom field of type text of a WorkItem is changed
+      #
+      # Example Note text:
+      #
+      #   "changed custom_field_name to red text"
+      #
+      #   "removed custom_field_name: red text"
+      #
+      # Returns the created Note object
+      def change_custom_field_text_type_note(custom_field, previous_value: nil, value: nil)
+        body = if value.nil? && previous_value.present?
+                 custom_field_note(custom_field.name, previous_value.strip, :removed)
+               else
+                 custom_field_note(custom_field.name, value.strip, :changed)
+               end
+
+        create_note(NoteSummary.new(noteable, project, author, body, action: "custom_field"))
+      end
+
+      # Called when a custom field of type select of a WorkItem is changed
+      #
+      # Example Note text:
+      #
+      #   "changed custom_field_name to red, blue"
+      #
+      #   "removed custom_field_name: red, blue"
+      #
+      # Returns the created Note object
+      def change_custom_field_select_type_note(custom_field, new_options: [], previous_options: [])
+        body = if new_options.blank? && previous_options.present?
+                 custom_field_note(custom_field.name, previous_options.map(&:strip).join(", "), :removed)
+               else
+                 custom_field_note(custom_field.name, new_options.map(&:strip).join(", "), :changed)
+               end
+
+        create_note(NoteSummary.new(noteable, project, author, body, action: "custom_field"))
       end
 
       # Called when the progress of a WorkItem is changed
@@ -196,6 +259,17 @@ module EE
         noteable.is_a?(Epic) &&
           (mentioned_in.is_a?(Issue) || mentioned_in.is_a?(WorkItem)) &&
           noteable == mentioned_in&.synced_epic
+      end
+
+      def custom_field_note(name, value, action)
+        name = ERB::Util.html_escape(name)
+        value = ERB::Util.html_escape(value)
+
+        if action == :removed
+          "<div>removed #{name}: <strong>#{value}</strong></div>"
+        else
+          "<div>changed #{name} to <strong>#{value}</strong></div>"
+        end
       end
     end
   end

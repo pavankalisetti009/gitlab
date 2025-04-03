@@ -60,6 +60,164 @@ RSpec.describe ::SystemNotes::IssuablesService, feature_category: :team_planning
     end
   end
 
+  describe "#change_custom_field_number_type_note" do
+    let(:custom_field) { build(:custom_field, field_type: :number) }
+    let(:previous_value) { 2 }
+    let(:value) { 5 }
+
+    subject { service.change_custom_field_number_type_note(custom_field, previous_value: previous_value, value: value) }
+
+    it_behaves_like 'a system note', skip_persistence_check: true do
+      let(:action) { "custom_field" }
+    end
+
+    context "when the value is set" do
+      let(:previous_value) { nil }
+      let(:value) { 5 }
+
+      it 'sets the note text' do
+        note_text = "<div>changed #{custom_field.name} to <strong>5</strong></div>"
+        expect(subject.note).to eq note_text
+      end
+    end
+
+    context "when a value is removed" do
+      let(:previous_value) { 2 }
+      let(:value) { nil }
+
+      it 'sets the note text' do
+        note_text = "<div>removed #{custom_field.name}: <strong>2</strong></div>"
+        expect(subject.note).to eq note_text
+      end
+    end
+
+    context "when value is a decimal" do
+      context "when there are unnecessary zeros" do
+        let(:previous_value) { nil }
+        let(:value) { 5.0 }
+
+        it 'strips unnecessary zeros' do
+          note_text = "<div>changed #{custom_field.name} to <strong>5</strong></div>"
+          expect(subject.note).to eq note_text
+        end
+      end
+
+      context "when there are no unnecessary zeros" do
+        let(:previous_value) { nil }
+        let(:value) { 5.5 }
+
+        it 'strips unnecessary zeros' do
+          note_text = "<div>changed #{custom_field.name} to <strong>5.5</strong></div>"
+          expect(subject.note).to eq note_text
+        end
+      end
+    end
+  end
+
+  describe "#change_custom_field_text_type_note" do
+    let(:custom_field) { build(:custom_field, field_type: :number) }
+    let(:previous_value) { "previous text" }
+    let(:value) { "new text" }
+
+    subject { service.change_custom_field_text_type_note(custom_field, previous_value: previous_value, value: value) }
+
+    it_behaves_like 'a system note', skip_persistence_check: true do
+      let(:action) { "custom_field" }
+    end
+
+    context "when the value is set" do
+      let(:previous_value) { nil }
+      let(:value) { "new text" }
+
+      it 'sets the note text' do
+        note_text = "<div>changed #{custom_field.name} to <strong>#{value}</strong></div>"
+        expect(subject.note).to eq note_text
+      end
+    end
+
+    context "when a value is removed" do
+      let(:previous_value) { "previous text" }
+      let(:value) { nil }
+
+      it 'sets the note text' do
+        note_text = "<div>removed #{custom_field.name}: <strong>#{previous_value}</strong></div>"
+        expect(subject.note).to eq note_text
+      end
+    end
+
+    context "when the value has extra spaces" do
+      let(:previous_value) { nil }
+      let(:value) { "text  " }
+
+      it 'strips the unnecessary spaces' do
+        note_text = "<div>changed #{custom_field.name} to <strong>text</strong></div>"
+        expect(subject.note).to eq note_text
+      end
+    end
+
+    context "when the value contains html characters" do
+      let(:previous_value) { nil }
+      let(:value) { "<b>text</b>" }
+
+      it 'escape the html characters' do
+        note_text = "<div>changed #{custom_field.name} to <strong>&lt;b&gt;text&lt;/b&gt;</strong></div>"
+        expect(subject.note).to eq note_text
+      end
+    end
+  end
+
+  describe "#change_custom_field_select_type_note" do
+    let(:custom_field) { build(:custom_field, field_type: :multi_select) }
+    let(:previous_options) { [] }
+    let(:new_options) { ["red"] }
+
+    subject { service.change_custom_field_select_type_note(custom_field, previous_options: previous_options, new_options: new_options) }
+
+    it_behaves_like 'a system note', skip_persistence_check: true do
+      let(:action) { "custom_field" }
+    end
+
+    context "when there is only 1 added options" do
+      let(:previous_options) { [] }
+      let(:new_options) { ["red"] }
+
+      it 'sets the note text' do
+        note_text = "<div>changed #{custom_field.name} to <strong>red</strong></div>"
+        expect(subject.note).to eq note_text
+      end
+    end
+
+    context "when there are multiple added options" do
+      let(:previous_options) { [] }
+      let(:new_options) { %w[red black] }
+
+      it 'sets the note text' do
+        note_text = "<div>changed #{custom_field.name} to <strong>red, black</strong></div>"
+        expect(subject.note).to eq note_text
+      end
+    end
+
+    context "when there is only 1 removed option" do
+      let(:previous_options) { ["red"] }
+      let(:new_options) { [] }
+
+      it 'sets the note text' do
+        note_text = "<div>removed #{custom_field.name}: <strong>red</strong></div>"
+        expect(subject.note).to eq note_text
+      end
+    end
+
+    context "when there are multiple removed options" do
+      let(:previous_options) { %w[red black] }
+      let(:new_options) { [] }
+
+      it 'sets the note text' do
+        note_text = "<div>removed #{custom_field.name}: <strong>red, black</strong></div>"
+        expect(subject.note).to eq note_text
+      end
+    end
+  end
+
   describe '#change_progress_note' do
     let_it_be(:noteable) { create(:work_item, :objective, project: project) }
     let_it_be(:progress) { create(:progress, work_item: noteable) }
