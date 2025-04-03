@@ -708,6 +708,7 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
     let(:scan_execution_policy) { nil }
     let(:scan_result_policy) { nil }
     let(:pipeline_execution_policy) { nil }
+    let(:pipeline_execution_schedule_policy) { nil }
     let(:experiments) { {} }
 
     let(:policy_yaml) do
@@ -715,6 +716,7 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
         scan_execution_policy: [scan_execution_policy].compact,
         scan_result_policy: [scan_result_policy].compact,
         pipeline_execution_policy: [pipeline_execution_policy].compact,
+        pipeline_execution_schedule_policy: [pipeline_execution_schedule_policy].compact,
         experiments: experiments
       }
     end
@@ -2387,6 +2389,34 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
                 "property '/pipeline_execution_policy/0/skip_ci/allowlist/users/0/id' is not of type: integer"
               )
             end
+          end
+        end
+      end
+    end
+
+    describe "pipeline execution schedule policies" do
+      let(:pipeline_execution_schedule_policy) { build(:pipeline_execution_schedule_policy) }
+
+      describe "schedules" do
+        context "when empty" do
+          before do
+            pipeline_execution_schedule_policy[:schedules] = []
+          end
+
+          specify do
+            expect(errors).to contain_exactly("property '/pipeline_execution_schedule_policy/0/schedules' is invalid: error_type=minItems")
+          end
+        end
+
+        context "when exceeding 1" do
+          before do
+            pipeline_execution_schedule_policy[:schedules] *= 2
+          end
+
+          specify do
+            expect(errors).to contain_exactly(
+              "property '/pipeline_execution_schedule_policy/0/schedules' is invalid: error_type=maxItems",
+              "property '/pipeline_execution_schedule_policy/0/schedules' is invalid: error_type=uniqueItems")
           end
         end
       end
