@@ -221,7 +221,7 @@ describe('ee/dependencies/components/filtered_search/tokens/component_token.vue'
         await selectComponent(TEST_COMPONENTS[0]);
         await selectComponent(TEST_COMPONENTS[1], true);
 
-        expect(store.dispatch).toHaveBeenCalledWith('allDependencies/setComponentIds', [
+        expect(store.dispatch).toHaveBeenCalledWith('setComponentIds', [
           TEST_COMPONENTS[0].id,
           TEST_COMPONENTS[1].id,
         ]);

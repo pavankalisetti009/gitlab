@@ -70,7 +70,7 @@ export default {
     },
   },
   computed: {
-    ...mapState('allDependencies', ['componentIds']),
+    ...mapState(['componentIds']),
     tokenValue() {
       return {
         ...this.value,

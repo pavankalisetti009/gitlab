@@ -20230,9 +20230,6 @@ msgstr ""
 msgid "Dependencies|+%{remainingLicensesCount} more"
 msgstr ""
 
-msgid "Dependencies|All"
-msgstr ""
-
 msgid "Dependencies|Component"
 msgstr ""
 
@@ -20351,9 +20348,6 @@ msgid "Dependencies|View dependency paths"
 msgstr ""
 
 msgid "Dependencies|Vulnerabilities"
-msgstr ""
-
-msgid "Dependencies|Vulnerable components"
 msgstr ""
 
 msgid "Dependencies|unknown"

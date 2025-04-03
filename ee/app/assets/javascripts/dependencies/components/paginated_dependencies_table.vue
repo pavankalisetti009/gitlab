@@ -4,7 +4,6 @@ import { mapActions, mapState } from 'vuex';
 import { GlKeysetPagination } from '@gitlab/ui';
 import TablePagination from '~/vue_shared/components/pagination/table_pagination.vue';
 import { setUrlParams, updateHistory } from '~/lib/utils/url_utility';
-import { DEPENDENCY_LIST_TYPES } from '../store/constants';
 import DependenciesTable from './dependencies_table.vue';
 
 export default {
@@ -15,43 +14,39 @@ export default {
     TablePagination,
   },
   inject: ['vulnerabilitiesEndpoint'],
-  props: {
-    namespace: {
-      type: String,
-      required: true,
-      validator: (value) =>
-        Object.values(DEPENDENCY_LIST_TYPES).some(({ namespace }) => value === namespace),
-    },
-  },
   computed: {
     ...mapState({
-      module(state) {
-        return state[this.namespace];
-      },
-      shouldShowPagination() {
-        const { isLoading, errorLoading, pageInfo } = this.module;
+      shouldShowPagination(state) {
+        const { isLoading, errorLoading, pageInfo } = state;
         return Boolean(!isLoading && !errorLoading && !this.showKeysetPagination && pageInfo);
       },
-      showKeysetPagination() {
-        const { isLoading, errorLoading, pageInfo } = this.module;
+      showKeysetPagination(state) {
+        const { isLoading, errorLoading, pageInfo } = state;
 
         if (isLoading || errorLoading || !pageInfo) return false;
 
         return pageInfo.hasNextPage || pageInfo.hasPreviousPage;
       },
     }),
+    ...mapState([
+      'dependencies',
+      'vulnerabilityItemsLoading',
+      'vulnerabilityInfo',
+      'isLoading',
+      'pageInfo',
+    ]),
   },
   methods: {
     ...mapActions({
       fetchPage(dispatch, page) {
-        return dispatch(`${this.namespace}/fetchDependencies`, { page });
+        return dispatch('fetchDependencies', { page });
       },
       fetchCursorPage(dispatch, cursor) {
         updateHistory({ url: setUrlParams({ cursor }) });
-        return dispatch(`${this.namespace}/fetchDependencies`, { cursor });
+        return dispatch('fetchDependencies', { cursor });
       },
       fetchVulnerabilities(dispatch, item) {
-        return dispatch(`${this.namespace}/fetchVulnerabilities`, {
+        return dispatch('fetchVulnerabilities', {
           item,
           vulnerabilitiesEndpoint: this.vulnerabilitiesEndpoint,
         });
@@ -64,25 +59,21 @@ export default {
 <template>
   <div>
     <dependencies-table
-      :dependencies="module.dependencies"
-      :vulnerability-info="module.vulnerabilityInfo"
-      :vulnerability-items-loading="module.vulnerabilityItemsLoading"
-      :is-loading="module.isLoading"
+      :dependencies="dependencies"
+      :vulnerability-info="vulnerabilityInfo"
+      :vulnerability-items-loading="vulnerabilityItemsLoading"
+      :is-loading="isLoading"
       @row-click="fetchVulnerabilities"
     />
 
     <table-pagination
       v-if="shouldShowPagination"
       :change="fetchPage"
-      :page-info="module.pageInfo"
+      :page-info="pageInfo"
       align="center"
     />
     <div v-if="showKeysetPagination" class="gl-mt-5 gl-text-center">
-      <gl-keyset-pagination
-        v-bind="module.pageInfo"
-        @prev="fetchCursorPage"
-        @next="fetchCursorPage"
-      />
+      <gl-keyset-pagination v-bind="pageInfo" @prev="fetchCursorPage" @next="fetchCursorPage" />
     </div>
   </div>
 </template>

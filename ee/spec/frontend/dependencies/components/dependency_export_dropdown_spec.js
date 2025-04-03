@@ -2,7 +2,6 @@ import { GlButton } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import DependencyExportDropdown from 'ee/dependencies/components/dependency_export_dropdown.vue';
 import createStore from 'ee/dependencies/store';
-import { DEPENDENCY_LIST_TYPES } from 'ee/dependencies/store/constants';
 import {
   EXPORT_FORMAT_CSV,
   EXPORT_FORMAT_DEPENDENCY_LIST,
@@ -16,8 +15,6 @@ import {
 describe('DependencyExportDropdown component', () => {
   let store;
   let wrapper;
-
-  const { namespace: allNamespace } = DEPENDENCY_LIST_TYPES.all;
 
   const factory = ({ provide, props } = {}) => {
     store = createStore();
@@ -59,7 +56,7 @@ describe('DependencyExportDropdown component', () => {
 
     describe('when request is pending', () => {
       beforeEach(() => {
-        store.state[allNamespace].fetchingInProgress = true;
+        store.state.fetchingInProgress = true;
       });
 
       it('shows loading spinner', () => {
@@ -82,7 +79,7 @@ describe('DependencyExportDropdown component', () => {
     it('dispatches export when item is clicked', () => {
       items.forEach((item) => {
         wrapper.findByTestId(item.testId).vm.$emit('action');
-        expect(store.dispatch).toHaveBeenCalledWith(`${allNamespace}/fetchExport`, {
+        expect(store.dispatch).toHaveBeenCalledWith('fetchExport', {
           export_type: item.exportType,
         });
       });
@@ -137,7 +134,7 @@ describe('DependencyExportDropdown component', () => {
 
       button.vm.$emit('click');
 
-      expect(store.dispatch).toHaveBeenCalledWith(`${allNamespace}/fetchExport`, {
+      expect(store.dispatch).toHaveBeenCalledWith('fetchExport', {
         export_type: EXPORT_FORMAT_CSV,
       });
     });

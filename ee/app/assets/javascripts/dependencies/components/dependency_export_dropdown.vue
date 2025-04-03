@@ -70,12 +70,7 @@ export default {
     },
   },
   computed: {
-    ...mapState(['currentList']),
-    ...mapState({
-      fetchingInProgress(state) {
-        return state[this.currentList].fetchingInProgress;
-      },
-    }),
+    ...mapState(['fetchingInProgress']),
     availableFormats() {
       return exportFormats.filter((format) => format.available(this));
     },
@@ -92,7 +87,7 @@ export default {
   methods: {
     ...mapActions({
       createExport(dispatch, type) {
-        return dispatch(`${this.currentList}/fetchExport`, { export_type: type });
+        return dispatch('fetchExport', { export_type: type });
       },
     }),
   },

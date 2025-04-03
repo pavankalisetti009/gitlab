@@ -43,7 +43,7 @@ export default {
     };
   },
   computed: {
-    ...mapState('allDependencies', ['licenses', 'fetchingLicensesInProgress']),
+    ...mapState(['licenses', 'fetchingLicensesInProgress']),
     filteredLicenses() {
       if (!this.searchTerm) {
         return this.licenses;
@@ -71,7 +71,7 @@ export default {
     this.fetchLicenses(this.licensesEndpoint);
   },
   methods: {
-    ...mapActions('allDependencies', ['setLicensesEndpoint', 'fetchLicenses', 'setSearchFilters']),
+    ...mapActions(['setLicensesEndpoint', 'fetchLicenses', 'setSearchFilters']),
     setSearchTerm(token) {
       // the data can be either a string or an array, in which case we don't want to perform the search
       if (typeof token.data === 'string') {
