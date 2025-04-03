@@ -4518,4 +4518,33 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       it { is_expected.to enabled_for_user }
     end
   end
+
+  describe 'admin custom roles', :enable_admin_mode do
+    let_it_be(:group) { create(:group, :private) }
+    let_it_be(:user) { create(:user) }
+
+    subject { described_class.new(user, group) }
+
+    before do
+      create(:admin_member_role, :read_admin_cicd, user: user)
+    end
+
+    context 'when user can read_admin_cicd' do
+      context 'when custom roles feature is unavailable' do
+        before do
+          stub_licensed_features(custom_roles: false)
+        end
+
+        it { is_expected.to be_disallowed(:read_group_metadata) }
+      end
+
+      context 'when custom roles feature is available' do
+        before do
+          stub_licensed_features(custom_roles: true)
+        end
+
+        it { is_expected.to be_allowed(:read_group_metadata) }
+      end
+    end
+  end
 end

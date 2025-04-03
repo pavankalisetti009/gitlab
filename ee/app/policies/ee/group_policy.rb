@@ -231,6 +231,14 @@ module EE
         end
       end
 
+      condition(:admin_custom_role_enables_read_admin_cicd, scope: :user) do
+        ::Authz::CustomAbility.allowed?(@user, :read_admin_cicd)
+      end
+
+      rule { admin_custom_role_enables_read_admin_cicd }.policy do
+        enable :read_group_metadata
+      end
+
       with_scope :subject
       condition(:generate_description_enabled) do
         ::Gitlab::Llm::FeatureAuthorizer.new(
