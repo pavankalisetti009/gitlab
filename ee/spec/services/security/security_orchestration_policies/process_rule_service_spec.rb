@@ -4,7 +4,6 @@ require 'spec_helper'
 
 RSpec.describe Security::SecurityOrchestrationPolicies::ProcessRuleService, feature_category: :security_policy_management do
   describe '#execute' do
-    let_it_be(:plan_limits) { create(:plan_limits, :default_plan, security_policy_scan_execution_schedules: 1) }
     let_it_be(:policy_configuration) { create(:security_orchestration_policy_configuration) }
     let_it_be(:owner) { create(:user) }
 
@@ -38,22 +37,60 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessRuleService, feat
         expect(schedule.next_run_at).to be_future
       end
 
-      context 'when limits are exceeded' do
-        let(:policy) do
-          rules = [
+      describe "rule schedule limit" do
+        before do
+          allow(Gitlab::CurrentSettings).to receive(:scan_execution_policies_schedule_limit).and_return(limit)
+        end
+
+        let(:rules) do
+          [
             { type: 'pipeline', branches: %w[production] },
             { type: 'schedule', branches: %w[production], cadence: '*/15 * * * *' },
             { type: 'schedule', branches: %w[production], cadence: '2 * * * *' },
             { type: 'schedule', branches: %w[production], cadence: '4 * * * *' }
           ]
-
-          build(:scan_execution_policy, rules: rules)
         end
 
-        it 'creates schedules only to a configured limit' do
-          service.execute
+        let(:policy) { build(:scan_execution_policy, rules: rules) }
 
-          expect(Security::OrchestrationPolicyRuleSchedule.count).to eq(1)
+        context 'with zero schedule limit' do
+          let(:limit) { 0 }
+
+          it 'creates all schedules' do
+            service.execute
+
+            expect(Security::OrchestrationPolicyRuleSchedule.count).to be(3)
+          end
+        end
+
+        context 'when below schedule limit' do
+          let(:limit) { 4 }
+
+          it 'creates all schedules' do
+            service.execute
+
+            expect(Security::OrchestrationPolicyRuleSchedule.count).to be(3)
+          end
+        end
+
+        context 'when equal to limit' do
+          let(:limit) { 3 }
+
+          it 'creates all schedules' do
+            service.execute
+
+            expect(Security::OrchestrationPolicyRuleSchedule.count).to be(3)
+          end
+        end
+
+        context 'when exceeding schedule limit' do
+          let(:limit) { 2 }
+
+          it 'creates schedules only to a configured limit' do
+            service.execute
+
+            expect(Security::OrchestrationPolicyRuleSchedule.count).to be(2)
+          end
         end
       end
     end

@@ -55,7 +55,8 @@ module EE::SecurityOrchestrationHelper
       max_active_vulnerability_management_policies_reached:
         max_active_vulnerability_management_policies_reached?(container).to_s,
       max_vulnerability_management_policies_allowed: Security::VulnerabilityManagementPolicy::POLICY_LIMIT,
-      max_scan_execution_policy_actions: max_scan_execution_policy_actions
+      max_scan_execution_policy_actions: max_scan_execution_policy_actions,
+      max_scan_execution_policy_schedules: max_scan_execution_policy_schedules
     }
 
     if container.is_a?(::Project)
@@ -132,6 +133,10 @@ module EE::SecurityOrchestrationHelper
 
   def max_scan_execution_policy_actions
     Gitlab::CurrentSettings.scan_execution_policies_action_limit
+  end
+
+  def max_scan_execution_policy_schedules
+    Gitlab::CurrentSettings.scan_execution_policies_schedule_limit
   end
 
   def breadcrumb_by_type(policy_type)

@@ -53837,6 +53837,9 @@ msgstr ""
 msgid "SecurityOrchestration|Policy exceeds the maximum of %{limit} approver actions"
 msgstr ""
 
+msgid "SecurityOrchestration|Policy exceeds the maximum of %{limit} rule schedules"
+msgstr ""
+
 msgid "SecurityOrchestration|Policy has reached the maximum of %{actionsCount} %{actions}"
 msgstr ""
 

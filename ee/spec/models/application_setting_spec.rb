@@ -29,6 +29,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     it { expect(setting.zoekt_indexing_paused).to be false }
     it { expect(setting.zoekt_search_enabled).to be false }
     it { expect(setting.scan_execution_policies_action_limit).to be(10) }
+    it { expect(setting.scan_execution_policies_schedule_limit).to be(0) }
     it { expect(setting.allow_all_integrations).to be true }
     it { expect(setting.allowed_integrations).to eq([]) }
     it { expect(setting.seat_control).to eq(0) }
@@ -147,6 +148,20 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
                          .only_integer
                          .is_greater_than_or_equal_to(5)
                          .is_less_than_or_equal_to(::Security::ScanResultPolicy::POLICIES_LIMIT)
+      end
+
+      it 'validates scan_execution_policies_action_limit' do
+        is_expected.to validate_numericality_of(:scan_execution_policies_action_limit)
+                         .only_integer
+                         .is_greater_than_or_equal_to(0)
+                         .is_less_than_or_equal_to(20)
+      end
+
+      it 'validates scan_execution_policies_schedule_limit' do
+        is_expected.to validate_numericality_of(:scan_execution_policies_schedule_limit)
+                         .only_integer
+                         .is_greater_than_or_equal_to(0)
+                         .is_less_than_or_equal_to(20)
       end
     end
 

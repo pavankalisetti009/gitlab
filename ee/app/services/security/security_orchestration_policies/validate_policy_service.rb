@@ -12,6 +12,7 @@ module Security
 
       # rubocop:disable Metrics/CyclomaticComplexity -- flat branching
       # rubocop:disable Metrics/PerceivedComplexity -- policy validation
+      # rubocop:disable Metrics/AbcSize -- policy validation
       def execute
         return error_with_title(s_('SecurityOrchestration|Empty policy name')) if blank_name?
 
@@ -19,6 +20,7 @@ module Security
 
         return error_with_title(s_('SecurityOrchestration|Invalid policy type')) if invalid_policy_type?
         return error_with_title(format(s_('SecurityOrchestration|Policy exceeds the maximum of %{limit} actions'), limit: scan_execution_policies_action_limit)) if exceeds_action_limit?
+        return error_with_title(format(s_('SecurityOrchestration|Policy exceeds the maximum of %{limit} rule schedules'), limit: scan_execution_policies_schedule_limit)) if exceeds_schedule_limit?
         return error_with_title(format(s_('SecurityOrchestration|Policy exceeds the maximum of %{limit} approver actions'), limit: approval_action_limit)) if exceeds_approver_action_limit?
 
         return error_with_title(s_('SecurityOrchestration|Policy cannot be enabled without branch information'), field: :branches) if blank_branch_for_rule?
@@ -39,6 +41,7 @@ module Security
       end
       # rubocop:enable Metrics/CyclomaticComplexity
       # rubocop:enable Metrics/PerceivedComplexity
+      # rubocop:enable Metrics/AbcSize
 
       private
 
@@ -101,6 +104,16 @@ module Security
         return false unless limit_enforced
 
         (policy[:actions]&.count || 0) > scan_execution_policies_action_limit
+      end
+
+      def exceeds_schedule_limit?
+        return false if !scan_execution_policy? || scan_execution_policies_schedule_limit == 0
+
+        (schedule_rules&.size || 0) > scan_execution_policies_schedule_limit
+      end
+
+      def schedule_rules
+        policy[:rules]&.select { |rule| rule[:type] == ::Security::ScanExecutionPolicy::RULE_TYPES[:schedule] }
       end
 
       def blank_name?
@@ -291,6 +304,11 @@ module Security
         Gitlab::CurrentSettings.scan_execution_policies_action_limit
       end
       strong_memoize_attr :scan_execution_policies_action_limit
+
+      def scan_execution_policies_schedule_limit
+        Gitlab::CurrentSettings.scan_execution_policies_schedule_limit
+      end
+      strong_memoize_attr :scan_execution_policies_schedule_limit
 
       def approval_action_limit
         Security::ScanResultPolicy::APPROVERS_ACTIONS_LIMIT
