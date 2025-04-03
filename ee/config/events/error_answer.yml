@@ -1,6 +1,7 @@
 ---
 description: Tracks when Duo Chat responds with an error
 action: error_answer
+classification: duo
 identifiers:
 - namespace
 - user

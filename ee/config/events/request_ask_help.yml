@@ -2,6 +2,7 @@
 description: Ask help from Duo Chat
 internal_events: true
 action: request_ask_help
+classification: duo
 identifiers:
 - namespace
 - project

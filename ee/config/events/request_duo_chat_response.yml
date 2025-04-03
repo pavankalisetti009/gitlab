@@ -2,6 +2,7 @@
 description: Duo Chat requested
 internal_events: true
 action: request_duo_chat_response
+classification: duo
 identifiers:
 - user
 - project
