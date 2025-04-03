@@ -119,18 +119,6 @@ module Vulnerabilities
       -> {
         includes(vulnerability: { findings: [:scanner, :identifiers, { finding_identifiers: :identifier }] })
       }
-    scope :preload_indexing_data, -> {
-      preload(
-        :scanner,
-        { vulnerability: [
-          { findings: [
-            { identifiers: [] },
-            { finding_identifiers: :identifier }
-          ] }
-        ] },
-        { project: { namespace: :route } }
-      )
-    }
     scope :resolved_on_default_branch, -> { where('resolved_on_default_branch IS TRUE') }
     scope :with_dismissal_reason, ->(dismissal_reason) { where(dismissal_reason: dismissal_reason) }
     scope :with_export_entities, -> do
@@ -255,14 +243,6 @@ module Vulnerabilities
 
     def arel_grouping_by_traversal_ids_and_id
       self.class.arel_table.grouping([database_serialized_traversal_ids, id])
-    end
-
-    def es_parent
-      "group_#{project.namespace.root_ancestor.id}"
-    end
-
-    def elastic_reference
-      ::Search::Elastic::References::Vulnerability.serialize(self)
     end
 
     private

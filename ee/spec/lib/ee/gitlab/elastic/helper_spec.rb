@@ -559,7 +559,7 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
     end
 
     context 'when exclude_classes is provided' do
-      let(:exclude_classes) { [Epic, Wiki, Vulnerability] }
+      let(:exclude_classes) { [Epic, Wiki] }
 
       it 'creates proxies for each separate classes except exclude_classes' do
         expected = Gitlab::Elastic::Helper::ES_SEPARATE_CLASSES - exclude_classes
@@ -589,9 +589,7 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
           hashed_root_namespace_id: :all,
           work_item_type_id: :all,
           noteable_id: :all,
-          owner_id: :all,
-          cluster_agent_id: [Vulnerability],
-          scanner_external_id: [Vulnerability]
+          owner_id: :all
         }.with_indifferent_access
       end
 
@@ -602,10 +600,9 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
           mappings = proxy.mappings.to_hash.with_indifferent_access
 
           mappings['properties'].select { |k, _| k =~ /(^id$)|(_id$)/ }.each do |key, value|
-            index_target = proxy.respond_to?(:target) ? proxy.target : proxy.name.demodulize.constantize
-            next if ignore_columns[key] == :all || ignore_columns[key]&.include?(index_target)
+            next if ignore_columns[key] == :all || ignore_columns[key]&.include?(proxy.target)
 
-            expect([:long, 'long']).to include(value[:type]), "#{index_target}.#{key} is not a long"
+            expect([:long, 'long']).to include(value[:type]), "#{proxy.target}.#{key} is not a long"
           end
         end
       end

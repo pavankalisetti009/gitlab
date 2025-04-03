@@ -31,7 +31,7 @@ class ElasticDeleteProjectWorker
     # Exclude Epic as projects can not have epics
     # Exclude Wiki and WorkItem as both have a different routing structure
     # Project will be removed independently
-    excluded_classes = [Epic, Wiki, Project, WorkItem, Vulnerability]
+    excluded_classes = [Epic, Wiki, Project, WorkItem]
 
     standalone_indices = helper.standalone_indices_proxies(exclude_classes: excluded_classes).select do |klass|
       alias_name = helper.klass_to_alias_name(klass: klass)

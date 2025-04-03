@@ -32,8 +32,7 @@ module Search
       resume_indexing
     ].freeze
 
-    # Vulnerability is not available for onpremise and rake tasks can be revisited from https://gitlab.com/gitlab-org/gitlab/-/issues/525484
-    CLASSES_TO_COUNT = Gitlab::Elastic::Helper::ES_SEPARATE_CLASSES - [Repository, Commit, ::Wiki, Vulnerability].freeze
+    CLASSES_TO_COUNT = Gitlab::Elastic::Helper::ES_SEPARATE_CLASSES - [Repository, Commit, ::Wiki].freeze
     SHARDS_MIN = 5
     SHARDS_DIVISOR = 5_000_000
     REPOSITORY_MULTIPLIER = 0.5

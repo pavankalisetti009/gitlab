@@ -423,15 +423,6 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
 
       expect(recorder.count).to eq(9)
     end
-
-    # Generate test for the scope preload_for_es_indexing
-    it '.preload_indexing_data' do
-      recorder = ActiveRecord::QueryRecorder.new do
-        described_class.preload_indexing_data.find_by_vulnerability_id(vulnerability)
-      end
-
-      expect(recorder.count).to eq(8)
-    end
   end
 
   describe '.with_container_image' do
@@ -966,26 +957,6 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
     subject { described_class.arel_grouping_by_traversal_ids_and_vulnerability_id.to_sql }
 
     it { is_expected.to eq('("vulnerability_reads"."traversal_ids", "vulnerability_reads"."vulnerability_id")') }
-  end
-
-  describe '#es_parent' do
-    let_it_be(:group) { create(:group) }
-    let_it_be(:project) { create(:project, group: group) }
-    let_it_be(:vulnerability_read) { create(:vulnerability_read, project: project) }
-
-    it 'returns the correct es_parent string' do
-      expect(vulnerability_read.es_parent).to eq("group_#{group.id}")
-    end
-  end
-
-  describe '#elastic_reference' do
-    let_it_be(:vulnerability_read) { create(:vulnerability_read) }
-
-    it 'calls serialize on Search::Elastic::References::Vulnerability' do
-      expect(Search::Elastic::References::Vulnerability).to receive(:serialize).with(vulnerability_read)
-
-      vulnerability_read.elastic_reference
-    end
   end
 
   describe '#arel_grouping_by_traversal_ids_and_id' do
