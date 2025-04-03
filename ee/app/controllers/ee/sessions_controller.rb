@@ -12,6 +12,7 @@ module EE
 
       before_action :gitlab_geo_logout, only: [:destroy]
       prepend_before_action :complete_identity_verification, only: :create
+      after_action :check_and_log_cloudflare_exposed_credentials, only: [:create]
     end
 
     override :new
@@ -82,6 +83,21 @@ module EE
       # identity verification page instead of displaying a Devise flash alert on the sign in page.
       session[:verification_user_id] = user.id
       redirect_to signup_identity_verification_path
+    end
+
+    def check_and_log_cloudflare_exposed_credentials
+      return unless current_user
+
+      check = ::Gitlab::Auth::CloudflareExposedCredentialChecker.new(request)
+
+      return unless check.result.present?
+
+      ::Gitlab::AppLogger.info(
+        message: "User signed in with CloudFlare-detected leaked credentials (#{check.result})",
+        username: current_user.username,
+        ip: request.remote_ip,
+        check_result: check.result
+      )
     end
 
     override :onboarding_status_tracking_label

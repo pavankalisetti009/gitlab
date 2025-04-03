@@ -135,6 +135,30 @@ RSpec.describe SessionsController, :geo, feature_category: :system_access do
       end
     end
 
+    context 'when CloudFlare leaked credentials header is present' do
+      let(:user) { create(:user) }
+
+      before do
+        request.headers['Exposed-Credential-Check'] = '1'
+      end
+
+      it 'logs the username and check result value' do
+        allow(Gitlab::AppLogger).to receive(:info).with(an_instance_of(String))
+
+        expect(Gitlab::AppLogger).to receive(:info)
+          .with(
+            hash_including(
+              message: "User signed in with CloudFlare-detected leaked credentials (exact_username_and_password)",
+              username: user.username,
+              ip: request.remote_addr,
+              check_result: :exact_username_and_password
+            )
+          )
+
+        post :create, params: { user: { login: user.username, password: user.password } }
+      end
+    end
+
     context 'when using two-factor authentication' do
       def authenticate_2fa(otp_user_id: user.id, **user_params)
         post(:create, params: { user: user_params }, session: { otp_user_id: otp_user_id })
