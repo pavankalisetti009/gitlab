@@ -8,7 +8,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
     subject(:provision_service) { described_class.new }
 
     let_it_be(:add_on_duo_nano) { create(:gitlab_subscription_add_on, :duo_nano) }
-    let_it_be(:add_on_duo_pro) { create(:gitlab_subscription_add_on, :code_suggestions) }
+    let_it_be(:add_on_duo_pro) { create(:gitlab_subscription_add_on, :duo_pro) }
     let_it_be(:add_on_duo_enterprise) { create(:gitlab_subscription_add_on, :duo_enterprise) }
     let_it_be(:add_on_duo_amazon_q) { create(:gitlab_subscription_add_on, :duo_amazon_q) }
 

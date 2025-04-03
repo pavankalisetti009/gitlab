@@ -13,7 +13,7 @@ RSpec.describe GitlabSubscriptions::NamespaceAddOnPurchasesFinder, feature_categ
     end
 
     context 'when add_on is available' do
-      let_it_be(:add_on) { create(:gitlab_subscription_add_on, :gitlab_duo_pro) }
+      let_it_be(:add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
 
       context 'with non trial add_on_purchase' do
         context 'with active add_on purchase' do

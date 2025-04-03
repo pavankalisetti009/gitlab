@@ -19,7 +19,7 @@ RSpec.describe GitlabSubscriptions::AddOn, feature_category: :subscription_manag
 
   describe 'scopes' do
     describe '.duo_add_ons' do
-      let!(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :code_suggestions) }
+      let!(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
       let!(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
       let!(:duo_amazon_q_add_on) { create(:gitlab_subscription_add_on, :duo_amazon_q) }
       let!(:product_analytics_add_on) { create(:gitlab_subscription_add_on, :product_analytics) }

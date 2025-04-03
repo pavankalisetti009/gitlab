@@ -8,7 +8,7 @@ RSpec.describe Mutations::Projects::ProjectSettingsUpdate, feature_category: :co
 
   let_it_be(:current_user) { create(:user) }
   let_it_be(:namespace) { create(:group) }
-  let_it_be(:add_on) { create(:gitlab_subscription_add_on, :gitlab_duo_pro) }
+  let_it_be(:add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
   let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, namespace: namespace, add_on: add_on) }
   let_it_be(:project) { create(:project, namespace: namespace) }
 

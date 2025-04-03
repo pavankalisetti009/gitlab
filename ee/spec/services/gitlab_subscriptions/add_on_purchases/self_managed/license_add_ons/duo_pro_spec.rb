@@ -7,7 +7,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::LicenseAddOns::
   describe '#execute' do
     subject(:add_on_license) { described_class.new(restrictions) }
 
-    let_it_be(:add_on) { create(:gitlab_subscription_add_on, :code_suggestions) }
+    let_it_be(:add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
     let(:restrictions) do
       start_date = Date.current
 

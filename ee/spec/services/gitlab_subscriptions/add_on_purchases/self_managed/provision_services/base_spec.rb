@@ -216,7 +216,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
     context 'with implemented class', :aggregate_failures do
       subject(:result) { provision_services_base_class.new.execute }
 
-      let_it_be(:add_on) { create(:gitlab_subscription_add_on, :code_suggestions) }
+      let_it_be(:add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
       let_it_be(:add_on_purchase) { nil }
       let_it_be(:organization) { create(:organization) }
       let_it_be(:namespace) { nil }

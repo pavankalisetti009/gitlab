@@ -6,7 +6,7 @@ RSpec.describe GitlabSubscriptions::Duo, feature_category: :"add-on_provisioning
   describe '.enterprise_or_pro_for_namespace' do
     subject { described_class.enterprise_or_pro_for_namespace(namespace) }
 
-    let(:add_on) { create(:gitlab_subscription_add_on, :code_suggestions) }
+    let(:add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
     let(:expires_on) { 1.year.from_now.to_date }
     let(:namespace) { create(:namespace) }
 
@@ -58,7 +58,7 @@ RSpec.describe GitlabSubscriptions::Duo, feature_category: :"add-on_provisioning
 
   describe '.no_add_on_purchase_for_namespace?' do
     let_it_be(:namespace) { create(:namespace) }
-    let_it_be(:add_on) { create(:gitlab_subscription_add_on, :code_suggestions) }
+    let_it_be(:add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
 
     subject { described_class.no_add_on_purchase_for_namespace?(namespace) }
 

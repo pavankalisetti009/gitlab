@@ -42,7 +42,7 @@ FactoryBot.define do
     end
 
     trait :gitlab_duo_pro do
-      add_on { association(:gitlab_subscription_add_on, :gitlab_duo_pro) }
+      add_on { association(:gitlab_subscription_add_on, :duo_pro) }
     end
 
     trait :product_analytics do

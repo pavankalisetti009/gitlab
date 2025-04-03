@@ -9,7 +9,7 @@ RSpec.describe "Project settings update", feature_category: :code_suggestions do
 
   let_it_be(:user) { create(:user) }
   let_it_be(:namespace) { create(:group) }
-  let_it_be(:add_on) { create(:gitlab_subscription_add_on, :gitlab_duo_pro) }
+  let_it_be(:add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
   let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, namespace: namespace, add_on: add_on) }
   let_it_be(:project) { create(:project, namespace: namespace) }
   let_it_be(:duo_features_enabled) { true }

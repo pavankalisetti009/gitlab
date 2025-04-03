@@ -9,7 +9,7 @@ RSpec.describe GitlabSubscriptions::AddOnAssignedUsersFinder, feature_category: 
     let_it_be(:subgroup) { create(:group, parent: namespace) }
     let_it_be(:another_subgroup) { create(:group, parent: namespace) }
     let_it_be(:project) { create(:project, group: another_subgroup) }
-    let_it_be(:add_on) { create(:gitlab_subscription_add_on, :gitlab_duo_pro) }
+    let_it_be(:add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
 
     subject(:assigned_users) { described_class.new(user, namespace, add_on_name: :code_suggestions).execute }
 

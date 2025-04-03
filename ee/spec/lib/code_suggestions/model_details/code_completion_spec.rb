@@ -8,7 +8,7 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
   let_it_be(:user) { create(:user) }
   let_it_be(:group1) do
     create(:group).tap do |g|
-      setup_addon_purchase_and_seat_assignment(user, g, :code_suggestions)
+      setup_addon_purchase_and_seat_assignment(user, g, :duo_pro)
     end
   end
 
