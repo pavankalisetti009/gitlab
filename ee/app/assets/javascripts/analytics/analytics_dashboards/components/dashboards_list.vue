@@ -1,9 +1,8 @@
 <script>
-import { GlLink, GlAlert, GlButton, GlSkeletonLoader } from '@gitlab/ui';
+import { GlLink, GlAlert, GlButton, GlSkeletonLoader, GlSprintf } from '@gitlab/ui';
 import { InternalEvents } from '~/tracking';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { createAlert } from '~/alert';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { getDashboardConfig } from '~/vue_shared/components/customizable_dashboard/utils';
 import { HTTP_STATUS_CREATED } from '~/lib/utils/http_status';
@@ -30,8 +29,9 @@ export default {
     GlAlert,
     GlSkeletonLoader,
     DashboardListItem,
+    GlSprintf,
   },
-  mixins: [glFeatureFlagsMixin(), InternalEvents.mixin()],
+  mixins: [InternalEvents.mixin()],
   inject: {
     isProject: {
       type: Boolean,
@@ -56,6 +56,12 @@ export default {
     analyticsSettingsPath: {
       type: String,
     },
+    canCreateNewDashboard: {
+      type: Boolean,
+    },
+    customizableDashboardsAvailable: {
+      type: Boolean,
+    },
   },
   data() {
     return {
@@ -70,14 +76,8 @@ export default {
     showVizDesignerButton() {
       return this.isProject && this.customDashboardsProject && this.productAnalyticsIsOnboarded;
     },
-    showNewDashboardButton() {
-      return (
-        this.customDashboardsProject &&
-        (this.isProject || this.glFeatures.groupAnalyticsDashboardEditor)
-      );
-    },
     showUserActions() {
-      return Boolean(this.showNewDashboardButton);
+      return Boolean(this.canCreateNewDashboard);
     },
     dashboards() {
       return this.userDashboards;
@@ -93,7 +93,11 @@ export default {
       );
     },
     showCustomDashboardSetupBanner() {
-      return !this.customDashboardsProject && this.canConfigureProjectSettings;
+      return (
+        this.customizableDashboardsAvailable &&
+        !this.customDashboardsProject &&
+        this.canConfigureProjectSettings
+      );
     },
     productAnalyticsIsOnboarded() {
       return (
@@ -248,17 +252,32 @@ export default {
   <div>
     <page-heading :heading="s__('Analytics|Analytics dashboards')">
       <template #description>
-        {{
-          isProject
-            ? s__('Analytics|Dashboards are created by editing the projects dashboard files.')
-            : s__('Analytics|Dashboards are created by editing the groups dashboard files.')
-        }}
-        <gl-link data-testid="help-link" :href="$options.helpPageUrl">{{
-          __('Learn more.')
-        }}</gl-link>
+        <template v-if="customizableDashboardsAvailable">
+          {{
+            isProject
+              ? s__('Analytics|Dashboards are created by editing the projects dashboard files.')
+              : s__('Analytics|Dashboards are created by editing the groups dashboard files.')
+          }}
+          <gl-link data-testid="help-link" :href="$options.helpPageUrl">{{
+            __('Learn more.')
+          }}</gl-link>
+        </template>
+        <template v-else>
+          <gl-sprintf
+            :message="
+              s__(
+                'Analytics|%{linkStart}Learn more%{linkEnd} about managing and interacting with analytics dashboards.',
+              )
+            "
+          >
+            <template #link="{ content }">
+              <gl-link data-testid="help-link" :href="$options.helpPageUrl">{{ content }}</gl-link>
+            </template>
+          </gl-sprintf>
+        </template>
       </template>
 
-      <template v-if="showVizDesignerButton || showNewDashboardButton" #actions>
+      <template v-if="showVizDesignerButton || canCreateNewDashboard" #actions>
         <gl-button
           v-if="showVizDesignerButton"
           to="data-explorer"
@@ -267,7 +286,7 @@ export default {
           {{ s__('Analytics|Data explorer') }}
         </gl-button>
         <router-link
-          v-if="showNewDashboardButton"
+          v-if="canCreateNewDashboard"
           to="/new"
           class="btn btn-confirm btn-md gl-button"
           data-testid="new-dashboard-button"

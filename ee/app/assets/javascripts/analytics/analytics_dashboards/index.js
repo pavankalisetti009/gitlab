@@ -33,7 +33,7 @@ export default () => {
     namespaceId,
     namespaceName,
     namespaceFullPath,
-    isProject,
+    isProject: isProjectStr,
     isGroup,
     collectorHost,
     dashboardEmptyStateIllustrationPath,
@@ -85,8 +85,21 @@ export default () => {
       this.name = value;
     },
   });
+  const customizableDashboardsAvailable = window.gon?.features?.customizableDashboards || false;
+  const groupAnalyticsDashboardEditorEnabled =
+    window.gon?.features?.groupAnalyticsDashboardEditor || false;
+  const customDashboardsProject = analyticsDashboardPointer;
+  const isProject = parseBoolean(isProjectStr);
 
-  const router = createRouter(routerBase, breadcrumbState, { canConfigureProjectSettings });
+  const canCreateNewDashboard =
+    customizableDashboardsAvailable &&
+    customDashboardsProject &&
+    (isProject || groupAnalyticsDashboardEditorEnabled);
+
+  const router = createRouter(routerBase, breadcrumbState, {
+    canConfigureProjectSettings,
+    canCreateNewDashboard,
+  });
 
   injectVueAppBreadcrumbs(router, AnalyticsDashboardsBreadcrumbs);
 
@@ -98,14 +111,14 @@ export default () => {
     provide: {
       aiGenerateCubeQueryEnabled: parseBoolean(aiGenerateCubeQueryEnabled),
       breadcrumbState,
-      customDashboardsProject: analyticsDashboardPointer,
+      customDashboardsProject,
       canConfigureProjectSettings,
       canSelectGitlabManagedProvider: parseBoolean(canSelectGitlabManagedProvider),
       managedClusterPurchased: parseBoolean(managedClusterPurchased),
       trackingKey,
       namespaceFullPath,
       namespaceId,
-      isProject: parseBoolean(isProject),
+      isProject,
       isGroup: parseBoolean(isGroup),
       namespaceName,
       collectorHost,
@@ -124,6 +137,8 @@ export default () => {
       defaultUseInstanceConfiguration: parseBoolean(defaultUseInstanceConfiguration),
       overviewCountsAggregationEnabled: parseBoolean(overviewCountsAggregationEnabled),
       hasScopedLabelsFeature: parseBoolean(hasScopedLabelsFeature),
+      canCreateNewDashboard,
+      customizableDashboardsAvailable,
     },
     render(h) {
       return h(DashboardsApp);

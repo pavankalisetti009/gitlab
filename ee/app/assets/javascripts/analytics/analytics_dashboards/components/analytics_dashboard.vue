@@ -70,6 +70,9 @@ export default {
       type: Object,
       default: null,
     },
+    customizableDashboardsAvailable: {
+      type: Boolean,
+    },
     namespaceFullPath: {
       type: String,
     },
@@ -93,6 +96,11 @@ export default {
     },
   },
   async beforeRouteLeave(to, from, next) {
+    if (!this.customizableDashboardsAvailable) {
+      next();
+      return;
+    }
+
     const confirmed = await this.$refs.dashboard.confirmDiscardIfChanged();
 
     if (!confirmed) return;
@@ -194,6 +202,7 @@ export default {
     },
     editingEnabled() {
       return (
+        this.customizableDashboardsAvailable &&
         this.currentDashboard.userDefined &&
         this.currentDashboard.slug !== CUSTOM_VALUE_STREAM_DASHBOARD
       );

@@ -1,6 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlAlert, GlSkeletonLoader } from '@gitlab/ui';
+import { GlAlert, GlSkeletonLoader, GlSprintf } from '@gitlab/ui';
 import { mockTracking } from 'helpers/tracking_helper';
 import ProductAnalyticsOnboarding from 'ee/product_analytics/onboarding/components/onboarding_list_item.vue';
 import DashboardsList from 'ee/analytics/analytics_dashboards/components/dashboards_list.vue';
@@ -82,6 +82,7 @@ describe('DashboardsList', () => {
       stubs: {
         RouterLink: true,
         PageHeading,
+        GlSprintf,
       },
       mocks: {
         $router,
@@ -95,6 +96,8 @@ describe('DashboardsList', () => {
         canConfigureProjectSettings: true,
         namespaceFullPath: TEST_CUSTOM_DASHBOARDS_PROJECT.fullPath,
         analyticsSettingsPath: '/test/-/settings#foo',
+        canCreateNewDashboard: false,
+        customizableDashboardsAvailable: false,
         ...provided,
       },
     });
@@ -114,11 +117,11 @@ describe('DashboardsList', () => {
       expect(findPageTitle().text()).toBe('Analytics dashboards');
     });
 
-    it('should render the help link', () => {
-      expect(findHelpLink().text()).toBe('Learn more.');
-      expect(findHelpLink().attributes('href')).toBe(
-        helpPagePath('user/analytics/analytics_dashboards'),
+    it('should render the default description with link', () => {
+      expect(findPageDescription().text()).toBe(
+        'Learn more about managing and interacting with analytics dashboards.',
       );
+      expect(findHelpLink().text()).toBe('Learn more');
     });
 
     it('does not render any custom dashboards', () => {
@@ -146,36 +149,73 @@ describe('DashboardsList', () => {
     });
   });
 
-  describe('for projects', () => {
-    it('should render the page description', () => {
-      createWrapper();
+  describe('with successful dashboards query', () => {
+    const setupDashboardQuery = (options) => {
+      mockAnalyticsDashboardsHandler = jest
+        .fn()
+        .mockResolvedValue(TEST_ALL_DASHBOARDS_GRAPHQL_SUCCESS_RESPONSE);
 
-      expect(findPageDescription().text()).toContain(
-        'Dashboards are created by editing the projects dashboard files.',
+      createWrapper(options);
+
+      return waitForPromises();
+    };
+
+    describe('dashboard actions dropdown visibility', () => {
+      it.each`
+        canCreateNewDashboard | expectedVisibility
+        ${false}              | ${false}
+        ${true}               | ${true}
+      `(
+        'shows user actions=$expectedVisibility when canCreateNewDashboard=$canCreateNewDashboard',
+        async ({ canCreateNewDashboard, expectedVisibility }) => {
+          await setupDashboardQuery({ canCreateNewDashboard });
+
+          expect(findListItems().at(0).props('showUserActions')).toBe(expectedVisibility);
+        },
       );
     });
+  });
 
+  describe('new dashboard button visibility', () => {
+    it.each`
+      canCreateNewDashboard | expectedVisibility
+      ${false}              | ${false}
+      ${true}               | ${true}
+    `(
+      'shows user actions=$expectedVisibility when canCreateNewDashboard=$canCreateNewDashboard',
+      ({ canCreateNewDashboard, expectedVisibility }) => {
+        createWrapper({ canCreateNewDashboard });
+
+        expect(findNewDashboardButton().exists()).toBe(expectedVisibility);
+      },
+    );
+  });
+
+  describe('for projects', () => {
     it('does not render the data explorer button', () => {
       createWrapper();
 
       expect(findDataExplorerButton().exists()).toBe(false);
     });
 
-    it('does not render the new dashboard button', () => {
-      createWrapper();
-
-      expect(findNewDashboardButton().exists()).toBe(false);
+    describe('when customizableDashboardsAvailable = true', () => {
+      beforeEach(() => {
+        createWrapper({ customizableDashboardsAvailable: true });
+      });
+      it('should render the page description', () => {
+        expect(findPageDescription().text()).toContain(
+          'Dashboards are created by editing the projects dashboard files.',
+        );
+      });
+      it('should render the help link', () => {
+        expect(findHelpLink().text()).toBe('Learn more.');
+        expect(findHelpLink().attributes('href')).toBe(
+          helpPagePath('user/analytics/analytics_dashboards'),
+        );
+      });
     });
 
     describe('when custom dashboards project is configured', () => {
-      it('should display the new dashboard button', () => {
-        createWrapper({
-          customDashboardsProject: TEST_CUSTOM_DASHBOARDS_PROJECT,
-        });
-
-        expect(findNewDashboardButton().exists()).toBe(true);
-      });
-
       it('does not render the data explorer button', () => {
         createWrapper();
 
@@ -212,10 +252,21 @@ describe('DashboardsList', () => {
       expect(findDataExplorerButton().exists()).toBe(false);
     });
 
-    it('does not render the new dashboard button', () => {
-      createWrapper({ isProject: false, isGroup: true });
-
-      expect(findNewDashboardButton().exists()).toBe(false);
+    describe('when customizableDashboardsAvailable = true', () => {
+      beforeEach(() => {
+        createWrapper({ customizableDashboardsAvailable: true, isProject: false, isGroup: true });
+      });
+      it('should render the page description', () => {
+        expect(findPageDescription().text()).toContain(
+          'Dashboards are created by editing the groups dashboard files.',
+        );
+      });
+      it('should render the help link', () => {
+        expect(findHelpLink().text()).toBe('Learn more.');
+        expect(findHelpLink().attributes('href')).toBe(
+          helpPagePath('user/analytics/analytics_dashboards'),
+        );
+      });
     });
 
     describe('with successful dashboards query', () => {
@@ -239,62 +290,32 @@ describe('DashboardsList', () => {
           title: 'Value Streams Dashboard',
         });
       });
-
-      it('does not render the dashboard actions dropdown', () => {
-        expect(findListItems().at(0).props('showUserActions')).toBe(false);
-      });
     });
-
-    describe.each`
-      customDashboardsProject | groupAnalyticsDashboardEditor | showNewButton
-      ${true}                 | ${false}                      | ${false}
-      ${false}                | ${true}                       | ${false}
-      ${true}                 | ${true}                       | ${true}
-    `(
-      'with customDashboardsProject=$customDashboardsProject, groupAnalyticsDashboardEditor=$groupAnalyticsDashboardEditor',
-      ({ customDashboardsProject, groupAnalyticsDashboardEditor, showNewButton }) => {
-        beforeEach(() => {
-          createWrapper({
-            isProject: false,
-            isGroup: true,
-            customDashboardsProject: customDashboardsProject
-              ? TEST_CUSTOM_DASHBOARDS_PROJECT
-              : null,
-            glFeatures: {
-              groupAnalyticsDashboardEditor,
-            },
-          });
-        });
-
-        it('does not render the data explorer button', () => {
-          expect(findDataExplorerButton().exists()).toBe(false);
-        });
-
-        it(`${showNewButton ? 'renders' : 'does not render'} the new dashboard button`, () => {
-          expect(findNewDashboardButton().exists()).toBe(showNewButton);
-        });
-      },
-    );
   });
 
   describe('configure custom dashboards project', () => {
-    describe('when user has permission', () => {
-      it('shows the custom dashboard setup alert', () => {
-        createWrapper({ customDashboardsProject: null, canConfigureProjectSettings: true });
+    describe.each`
+      customizableDashboardsAvailable | canConfigureProjectSettings | showBanner
+      ${true}                         | ${true}                     | ${true}
+      ${true}                         | ${false}                    | ${false}
+      ${false}                        | ${true}                     | ${false}
+      ${false}                        | ${false}                    | ${false}
+    `(
+      'with customizableDashboardsAvailable=$customizableDashboardsAvailable, canConfigureProjectSettings=$canConfigureProjectSettings',
+      ({ canConfigureProjectSettings, customizableDashboardsAvailable, showBanner }) => {
+        beforeEach(() => {
+          createWrapper({
+            customDashboardsProject: null,
+            customizableDashboardsAvailable,
+            canConfigureProjectSettings,
+          });
+        });
 
-        expect(findConfigureAlert().exists()).toBe(true);
-      });
-    });
-
-    describe('when user does not have permission', () => {
-      beforeEach(() => {
-        createWrapper({ customDashboardsProject: null, canConfigureProjectSettings: false });
-      });
-
-      it('does not show the custom dashboard setup alert', () => {
-        expect(findConfigureAlert().exists()).toBe(false);
-      });
-    });
+        it(`does ${showBanner ? '' : 'not '}show the custom dashboard setup alert`, () => {
+          expect(findConfigureAlert().exists()).toBe(showBanner);
+        });
+      },
+    );
   });
 
   describe('when the product analytics feature is enabled', () => {
@@ -364,7 +385,7 @@ describe('DashboardsList', () => {
       return waitForPromises();
     };
 
-    describe('and there are dashbaords', () => {
+    describe('and there are dashboards', () => {
       beforeEach(() => {
         return setupWithResponse(TEST_ALL_DASHBOARDS_GRAPHQL_SUCCESS_RESPONSE);
       });

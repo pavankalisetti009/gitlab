@@ -83,7 +83,7 @@ describe('AiCubeQueryGenerator', () => {
 
     expect(findLearnMoreLink().text()).toBe('Learn more');
     expect(findLearnMoreLink().attributes('href')).toBe(
-      '/help/user/analytics/analytics_dashboards#generate-a-custom-visualization-with-gitlab-duo',
+      '/help/user/analytics/analytics_dashboards',
     );
   });
 

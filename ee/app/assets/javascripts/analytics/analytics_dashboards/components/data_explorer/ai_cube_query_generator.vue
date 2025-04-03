@@ -183,9 +183,7 @@ export default {
       },
     },
   },
-  helpPageUrl: helpPagePath('user/analytics/analytics_dashboards', {
-    anchor: 'generate-a-custom-visualization-with-gitlab-duo',
-  }),
+  helpPageUrl: helpPagePath('user/analytics/analytics_dashboards'),
 };
 </script>
 
