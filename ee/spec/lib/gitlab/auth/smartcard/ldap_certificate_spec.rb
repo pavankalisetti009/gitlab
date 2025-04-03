@@ -10,7 +10,19 @@ RSpec.describe Gitlab::Auth::Smartcard::LdapCertificate, feature_category: :syst
   let(:openssl_certificate_store) { instance_double(OpenSSL::X509::Store) }
   let(:user_build_service) { instance_double(Users::BuildService) }
   let(:subject_ldap_dn) { 'subject_ldap_dn' }
-  let(:issuer) { instance_double(OpenSSL::X509::Name, to_s: 'issuer_dn') }
+  let(:issuer_string) { 'CN=generating_tool,OU=authority_department,O=authority_name' }
+  let(:reverse_issuer_string) { 'O=authority_name,OU=authority_department,CN=generating_tool' }
+  let(:issuer) do
+    instance_double(OpenSSL::X509::Name,
+      to_s: issuer_string,
+      to_a: [
+        ['O', 'authority_name', 19],
+        ['OU', 'authority_department', 12],
+        ['CN', 'generating_tool', 12]
+      ]
+    )
+  end
+
   let(:openssl_certificate) do
     instance_double(OpenSSL::X509::Certificate,
       { issuer: issuer,
@@ -125,7 +137,7 @@ RSpec.describe Gitlab::Auth::Smartcard::LdapCertificate, feature_category: :syst
           expect(ldap_connection).to have_received(:search).with(
             a_hash_including(
               filter: Net::LDAP::Filter.ex('userCertificate:certificateExactMatch',
-                "{ serialNumber 42, issuer \"issuer_dn\" }")
+                "{ serialNumber 42, issuer \"#{issuer_string}\" }")
             )
           ).at_least(:once)
         end
@@ -133,12 +145,30 @@ RSpec.describe Gitlab::Auth::Smartcard::LdapCertificate, feature_category: :syst
         context 'when smartcard_ad_cert_format is specified' do
           using RSpec::Parameterized::TableSyntax
 
+          let(:issuer_and_serial_number_formatted) do
+            "X509:<I>#{issuer_string}<SR>2a"
+          end
+
+          let(:reverse_issuer_and_serial_number_formatted) do
+            "X509:<I>#{reverse_issuer_string}<SR>2a"
+          end
+
+          let(:issuer_and_subject_formatted) do
+            "X509:<I>#{issuer_string}<S>subject_ldap_dn"
+          end
+
+          let(:reverse_issuer_and_subject_formatted) do
+            "X509:<I>#{reverse_issuer_string}<S>subject_ldap_dn"
+          end
+
           where(:ad_format, :result) do
-            'issuer_and_serial_number' | 'X509:<I>issuer_dn<SR>2a'
-            'principal_name'           | 'X509:<PN>subject_ldap_dn'
-            'rfc822_name'              | 'X509:<RFC822>subject_ldap_dn'
-            'issuer_and_subject'       | 'X509:<I>issuer_dn<S>subject_ldap_dn'
-            'subject'                  | 'X509:<S>subject_ldap_dn'
+            'issuer_and_serial_number'         | ref(:issuer_and_serial_number_formatted)
+            'reverse_issuer_and_serial_number' | ref(:reverse_issuer_and_serial_number_formatted)
+            'principal_name'                   | 'X509:<PN>subject_ldap_dn'
+            'rfc822_name'                      | 'X509:<RFC822>subject_ldap_dn'
+            'issuer_and_subject'               | ref(:issuer_and_subject_formatted)
+            'reverse_issuer_and_subject'       | ref(:reverse_issuer_and_subject_formatted)
+            'subject'                          | 'X509:<S>subject_ldap_dn'
           end
 
           with_them do
@@ -187,7 +217,7 @@ RSpec.describe Gitlab::Auth::Smartcard::LdapCertificate, feature_category: :syst
 
             expect(ldap_connection).to have_received(:search).with(
               a_hash_including(
-                filter: Net::LDAP::Filter.eq(smartcard_ad_cert_field, 'X509:<I>issuer_dn<SR>2a')
+                filter: Net::LDAP::Filter.eq(smartcard_ad_cert_field, "X509:<I>#{issuer_string}<SR>2a")
               )
             ).at_least(:once)
           end

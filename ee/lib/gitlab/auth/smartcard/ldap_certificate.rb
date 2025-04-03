@@ -67,6 +67,13 @@ module Gitlab
           @issuer ||= @certificate.issuer.to_s(OpenSSL::X509::Name::RFC2253)
         end
 
+        def reverse_issuer_dn
+          @reverse_issuer_dn ||= begin
+            reverse_issuer = @certificate.issuer.to_a.reverse
+            OpenSSL::X509::Name.new(reverse_issuer).to_s(OpenSSL::X509::Name::RFC2253)
+          end
+        end
+
         def serial
           @serial ||= @certificate.serial.to_s
         end
@@ -99,6 +106,9 @@ module Gitlab
 
         # formats gathered from:
         # https://learn.microsoft.com/en-us/entra/identity/authentication/concept-certificate-based-authentication-certificateuserids#supported-patterns-for-certificate-user-ids
+        #
+        # issuer_fbo formats added because some AD servers match issuer DN using forward-byte-order rather than
+        # the typical byte order cited in the Microsoft docs
         def alt_security_id
           case smartcard_ad_cert_format
           when 'principal_name'
@@ -107,10 +117,14 @@ module Gitlab
             "X509:<RFC822>#{subject}"
           when 'issuer_and_subject'
             "X509:<I>#{issuer_dn}<S>#{subject}"
+          when 'reverse_issuer_and_subject'
+            "X509:<I>#{reverse_issuer_dn}<S>#{subject}"
           when 'subject'
             "X509:<S>#{subject}"
           when 'issuer_and_serial_number'
             "X509:<I>#{issuer_dn}<SR>#{reverse_serial}"
+          when 'reverse_issuer_and_serial_number'
+            "X509:<I>#{reverse_issuer_dn}<SR>#{reverse_serial}"
           else
             raise _('Missing or invalid configuration field: :smartcard_ad_cert_format')
           end
