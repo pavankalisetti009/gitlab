@@ -35,7 +35,7 @@ module Ai
               Lib.new(name: dig_in(dep, 'name'), version: dig_in(dep, 'version'))
             end
           rescue Gitlab::Utils::TomlParser::ParseError => e
-            raise ParsingError, e.message
+            raise ParsingErrors::BaseError, e.message
           end
         end
       end

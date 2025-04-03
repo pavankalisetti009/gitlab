@@ -66,12 +66,16 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::PhpComposer, feature_cate
   context 'when config file content is an array' do
     it_behaves_like 'parsing an invalid dependency config file' do
       let(:invalid_config_file_content) { '[]' }
-      let(:expected_error_message) { 'encountered unexpected node' }
+      let(:expected_error) do
+        Ai::Context::Dependencies::ConfigFiles::ParsingErrors::UnexpectedNodeError.new
+      end
     end
   end
 
   it_behaves_like 'parsing an invalid dependency config file' do
-    let(:expected_error_message) { 'content is not valid JSON' }
+    let(:expected_error) do
+      Ai::Context::Dependencies::ConfigFiles::ParsingErrors::InvalidSerializationFormatError.new('JSON')
+    end
   end
 
   describe '.matches?' do

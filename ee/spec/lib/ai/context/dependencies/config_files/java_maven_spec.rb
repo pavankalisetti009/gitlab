@@ -91,7 +91,9 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::JavaMaven, feature_catego
   end
 
   it_behaves_like 'parsing an invalid dependency config file' do
-    let(:expected_error_message) { 'content is not valid XML' }
+    let(:expected_error) do
+      Ai::Context::Dependencies::ConfigFiles::ParsingErrors::InvalidSerializationFormatError.new('XML')
+    end
   end
 
   describe '.matches?' do

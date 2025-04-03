@@ -37,7 +37,7 @@ module Ai
               Lib.new(name: dig_in(dep, 'name'), version: dig_in(dep, 'version'))
             end
           rescue JSON::ParserError
-            raise ParsingError, 'content is not valid JSON'
+            raise ParsingErrors::InvalidSerializationFormatError, 'JSON'
           end
         end
       end

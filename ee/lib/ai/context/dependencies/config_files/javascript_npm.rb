@@ -39,7 +39,7 @@ module Ai
               end
             end.compact
           rescue JSON::ParserError
-            raise ParsingError, 'content is not valid JSON'
+            raise ParsingErrors::InvalidSerializationFormatError, 'JSON'
           end
         end
       end

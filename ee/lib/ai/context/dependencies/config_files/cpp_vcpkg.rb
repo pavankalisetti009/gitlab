@@ -49,8 +49,7 @@ module Ai
               Lib.new(name: name, version: version)
             end
           rescue JSON::ParserError
-            error('content is not valid JSON')
-            nil
+            raise ParsingErrors::InvalidSerializationFormatError, 'JSON'
           end
         end
       end

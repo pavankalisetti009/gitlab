@@ -15,12 +15,16 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::PythonPoetryLock, feature
   context 'when the content is an array' do
     it_behaves_like 'parsing an invalid dependency config file' do
       let(:invalid_config_file_content) { '[]' }
-      let(:expected_error_message) { 'content is not valid TOML' }
+      let(:expected_error) do
+        Ai::Context::Dependencies::ConfigFiles::ParsingErrors::BaseError.new('content is not valid TOML')
+      end
     end
   end
 
   it_behaves_like 'parsing an invalid dependency config file' do
-    let(:expected_error_message) { 'content is not valid TOML' }
+    let(:expected_error) do
+      Ai::Context::Dependencies::ConfigFiles::ParsingErrors::BaseError.new('content is not valid TOML')
+    end
   end
 
   context 'when the content contains duplicate keys' do
@@ -34,7 +38,11 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::PythonPoetryLock, feature
         TOML
       end
 
-      let(:expected_error_message) { 'error parsing TOML: Key "version" is defined more than once' }
+      let(:expected_error) do
+        Ai::Context::Dependencies::ConfigFiles::ParsingErrors::BaseError.new(
+          'error parsing TOML: Key "version" is defined more than once'
+        )
+      end
     end
   end
 

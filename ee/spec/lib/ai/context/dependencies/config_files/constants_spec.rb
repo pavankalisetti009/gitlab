@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Ai::Context::Dependencies::ConfigFiles::Constants, feature_category: :code_suggestions do
   let(:config_files_dir) { Rails.root.join('ee/lib/ai/context/dependencies/config_files') }
-  let(:ignored_file_names) { ['base.rb', 'constants.rb'] }
+  let(:ignored_file_names) { ['base.rb', 'constants.rb', 'parsing_errors.rb'] }
 
   subject(:config_file_class_names) { described_class::CONFIG_FILE_CLASSES.map { |klass| klass.name.demodulize } }
 
