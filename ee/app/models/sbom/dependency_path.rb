@@ -24,21 +24,23 @@ module Sbom
         WITH RECURSIVE dependency_tree AS (
           SELECT
               so.id,
-              so.component_name as dependency_name,
+              sc.name as dependency_name,
               so.project_id,
               so.traversal_ids,
-              ARRAY [a->>'name', so.component_name] as full_path,
+              ARRAY [a->>'name', sc.name] as full_path,
               ARRAY [a->>'version', versions.version] as version,
-              concat_ws('>', concat_ws('@', a->>'name', a->>'version'), concat_ws('@', so.component_name, versions.version)) as combined_path,
+              concat_ws('>', concat_ws('@', a->>'name', a->>'version'), concat_ws('@', sc.name, versions.version)) as combined_path,
               false as is_cyclic,
               false as max_depth_reached
           FROM
               sbom_occurrences so
+              inner join sbom_components sc on sc.id = so.component_id
               inner join sbom_component_versions versions on versions.id = so.component_version_id
               CROSS JOIN LATERAL jsonb_array_elements(so.ancestors) as a
           where
               so.id = :occurrence_id
               and so.project_id = :project_id
+              and a->>'name' IS NOT NULL
           UNION
           ALL
           SELECT
@@ -53,13 +55,15 @@ module Sbom
               array_length(dt.full_path, 1) = :max_depth
           FROM
               dependency_tree dt
-              JOIN sbom_occurrences so ON so.traversal_ids = dt.traversal_ids and so.component_name = dt.full_path [1]
-              join sbom_component_versions versions on versions.id = so.component_version_id and versions.version = dt.version [1]
+              JOIN sbom_occurrences so ON so.traversal_ids = dt.traversal_ids
+              join sbom_components sc ON sc.id = so.component_id and sc.name = dt.full_path[1]
+              join sbom_component_versions versions on versions.id = so.component_version_id and versions.version = dt.version[1]
               CROSS JOIN LATERAL jsonb_array_elements(so.ancestors) as a
           WHERE
               array_length(dt.full_path, 1) <= :max_depth
               and so.project_id = :project_id
               and not dt.is_cyclic
+              and a->>'name' IS NOT NULL
         )
         SELECT
             id,

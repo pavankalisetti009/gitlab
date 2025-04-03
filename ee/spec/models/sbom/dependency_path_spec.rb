@@ -21,7 +21,12 @@ RSpec.describe Sbom::DependencyPath, feature_category: :vulnerability_management
   context 'when given a project' do
     context 'without cycles or exceeding the max depth' do
       let_it_be(:occurrence_1) do
-        create(:sbom_occurrence, component: component_1, project: project, component_version: component_version_1)
+        create(:sbom_occurrence,
+          component: component_1,
+          project: project,
+          component_version: component_version_1,
+          ancestors: [{}]
+        )
       end
 
       let_it_be(:occurrence_2) do
