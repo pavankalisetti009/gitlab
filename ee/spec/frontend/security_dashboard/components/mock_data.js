@@ -258,6 +258,7 @@ export const generateVulnerabilities = () => [
       aboutToBeArchived: true,
       expectedToBeArchivedOn: '2025-03-01',
     },
+    reachability: 'UNKNOWN',
     __typename: 'Vulnerability',
   },
   {
@@ -299,6 +300,7 @@ export const generateVulnerabilities = () => [
       aboutToBeArchived: false,
       expectedToBeArchivedOn: '2026-03-01',
     },
+    reachability: 'UNKNOWN',
     __typename: 'Vulnerability',
   },
   {
@@ -336,6 +338,7 @@ export const generateVulnerabilities = () => [
       aboutToBeArchived: false,
       expectedToBeArchivedOn: '2026-03-04',
     },
+    reachability: 'UNKNOWN',
     __typename: 'Vulnerability',
   },
   {
@@ -369,6 +372,7 @@ export const generateVulnerabilities = () => [
       aboutToBeArchived: false,
       expectedToBeArchivedOn: '2026-03-07',
     },
+    reachability: 'UNKNOWN',
     __typename: 'Vulnerability',
   },
   {
@@ -400,6 +404,7 @@ export const generateVulnerabilities = () => [
       aboutToBeArchived: false,
       expectedToBeArchivedOn: '2026-03-10',
     },
+    reachability: 'UNKNOWN',
     __typename: 'Vulnerability',
   },
   {
@@ -433,6 +438,7 @@ export const generateVulnerabilities = () => [
       aboutToBeArchived: false,
       expectedToBeArchivedOn: '2026-03-20',
     },
+    reachability: 'UNKNOWN',
     __typename: 'Vulnerability',
   },
   {
@@ -467,6 +473,7 @@ export const generateVulnerabilities = () => [
       aboutToBeArchived: false,
       expectedToBeArchivedOn: '2026-03-30',
     },
+    reachability: 'UNKNOWN',
     __typename: 'Vulnerability',
   },
 ];
