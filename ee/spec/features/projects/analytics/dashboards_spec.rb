@@ -29,8 +29,9 @@ RSpec.describe 'Analytics Dashboard - Product Analytics', :js, feature_category:
   end
 end
 
-RSpec.describe 'Analytics Dashboard - Value Streams Dashboard', :js, feature_category: :value_stream_management do
+RSpec.describe 'Analytics Dashboards', :js, feature_category: :value_stream_management do
   include ValueStreamsDashboardHelpers
+  include DoraMetricsDashboardHelpers
 
   let_it_be(:current_user) { create(:user) }
   let_it_be(:user) { current_user }
@@ -174,6 +175,40 @@ RSpec.describe 'Analytics Dashboard - Value Streams Dashboard', :js, feature_cat
                 let(:usage_overview_metrics) { expected_usage_overview_metrics_zero_values(is_project: true) }
               end
             end
+          end
+        end
+      end
+
+      context 'for DORA metrics analytics dashboard' do
+        context 'without data available' do
+          before do
+            visit_project_dora_metrics_dashboard(project)
+          end
+
+          it_behaves_like 'DORA metrics analytics renders as an analytics dashboard'
+
+          it_behaves_like 'renders DORA metrics stats with zero values'
+
+          it_behaves_like 'renders DORA metrics chart panels with empty states'
+        end
+
+        context 'with data available', time_travel_to: '2025-04-03' do
+          before do
+            create_mock_dora_metrics(environment)
+
+            visit_project_dora_metrics_dashboard(project)
+          end
+
+          it_behaves_like 'DORA metrics analytics renders as an analytics dashboard'
+
+          it_behaves_like 'renders DORA metrics analytics stats' do
+            let(:expected_dora_metrics_stats) { ['0.1 /day', '26.1 %', '5.0 days', '3.0 days'] }
+          end
+
+          it_behaves_like 'renders DORA metrics time series charts'
+
+          it_behaves_like 'updates DORA metrics visualizations when filters applied', days_back: 90 do
+            let(:filtered_dora_metrics_stats) { ['0.2 /day', '33.3 %', '4.0 days', '2.0 days'] }
           end
         end
       end
