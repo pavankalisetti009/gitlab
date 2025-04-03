@@ -64,6 +64,10 @@ module EE
           super
         end
       end
+
+      def onboarding_status_joining_project=(value)
+        super(::Gitlab::Utils.to_boolean(value, default: false))
+      end
     end
   end
 end
