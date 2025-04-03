@@ -26,6 +26,12 @@ RSpec.describe ComplianceManagement::Framework, :models, feature_category: :comp
       is_expected.to have_many(:compliance_requirements)
         .class_name('ComplianceManagement::ComplianceFramework::ComplianceRequirement')
     }
+
+    it {
+      is_expected.to have_many(:security_policies)
+        .class_name('Security::Policy')
+        .through(:compliance_framework_security_policies)
+    }
   end
 
   describe 'validations' do

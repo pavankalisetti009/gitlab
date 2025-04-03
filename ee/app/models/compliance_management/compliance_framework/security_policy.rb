@@ -9,8 +9,12 @@ module ComplianceManagement
 
       belongs_to :policy_configuration, class_name: 'Security::OrchestrationPolicyConfiguration'
       belongs_to :framework, class_name: 'ComplianceManagement::Framework'
+      belongs_to :security_policy, class_name: 'Security::Policy', optional: true
 
-      validates :framework, uniqueness: { scope: [:policy_configuration_id, :policy_index] }
+      validates :framework, uniqueness: { scope: [:policy_configuration_id, :policy_index] }, if: -> {
+        security_policy_id.blank?
+      }
+      validates :framework, uniqueness: { scope: :security_policy_id }, if: -> { security_policy_id.present? }
 
       scope :for_framework, ->(framework) { where(framework: framework) }
       scope :for_policy_configuration, ->(policy_configuration) { where(policy_configuration: policy_configuration) }
