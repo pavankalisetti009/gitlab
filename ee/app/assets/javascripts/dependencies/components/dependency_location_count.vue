@@ -85,6 +85,9 @@ export default {
     isTopLevelDependency(item) {
       return item.location.top_level;
     },
+    hasDependencyPaths(item) {
+      return item.location.dependency_paths?.length > 0;
+    },
     async fetchData() {
       this.loading = true;
 
@@ -149,7 +152,7 @@ export default {
         </div>
         <gl-truncate :text="item.project.name" class="gl-mt-2 gl-pl-6 gl-text-subtle" />
         <gl-button
-          v-if="glFeatures.dependencyPaths"
+          v-if="glFeatures.dependencyPaths && hasDependencyPaths(item)"
           class="gl-mt-2"
           size="small"
           data-testid="dependency-path-button"

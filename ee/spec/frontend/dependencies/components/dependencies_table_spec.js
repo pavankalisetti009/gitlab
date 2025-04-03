@@ -439,8 +439,10 @@ describe('DependenciesTable component', () => {
   });
 
   describe('dependency paths', () => {
+    const dependencyPathsData = [{ path: [{ name: 'eslint', version: '9.17.0' }] }];
+
     describe('for project level when there is location data', () => {
-      const dependency = makeDependency();
+      const dependency = makeDependency({ location: { dependencyPaths: dependencyPathsData } });
       const { name, version } = dependency;
 
       beforeEach(() => {
@@ -466,6 +468,7 @@ describe('DependenciesTable component', () => {
         expect(findDependencyPathDrawer().props()).toMatchObject({
           showDrawer: true,
           component: { name, version },
+          dependencyPaths: dependency.location.dependencyPaths,
         });
       });
 
@@ -503,16 +506,10 @@ describe('DependenciesTable component', () => {
     });
 
     describe('for group level when there is occurrenceCount data', () => {
-      const location = {
-        blob_path: '/blob_path/Gemfile.lock',
-        path: 'Gemfile.lock',
-      };
-
       const dependency = makeDependency({
         componentId: 1,
         occurrenceCount: 2,
         project: { full_path: 'full_path', name: 'name' },
-        location,
       });
 
       beforeEach(() => {
@@ -529,20 +526,21 @@ describe('DependenciesTable component', () => {
       });
 
       it('passes the correct prop to the DependencyPathDrawer component when triggered', async () => {
-        const project = { name: 'emitted-project' };
         const { name, version } = dependency;
+        const emittedItem = {
+          location: { dependency_paths: dependencyPathsData },
+          project: { name: 'emitted-project' },
+        };
 
-        findDependencyLocationCount().vm.$emit('click-dependency-path', {
-          location,
-          project,
-        });
+        findDependencyLocationCount().vm.$emit('click-dependency-path', emittedItem);
 
         await nextTick();
 
         expect(findDependencyPathDrawer().props()).toMatchObject({
           showDrawer: true,
-          project,
           component: { name, version },
+          project: emittedItem.project,
+          dependencyPaths: emittedItem.location.dependency_paths,
         });
       });
     });

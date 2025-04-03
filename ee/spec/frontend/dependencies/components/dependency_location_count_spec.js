@@ -222,6 +222,22 @@ describe('Dependency Location Count component', () => {
     });
 
     describe('with dependency path', () => {
+      const dependencyPathsLocationsData = {
+        locations: [
+          {
+            location: {
+              path: 'yarn.lock',
+              dependency_paths: [{ path: [{ name: 'eslint', version: '9.17.0' }] }],
+            },
+            project: { name: projectName },
+          },
+        ],
+      };
+
+      beforeEach(() => {
+        mockAxios.onGet(endpoint).reply(HTTP_STATUS_OK, dependencyPathsLocationsData);
+      });
+
       it('shows the dependency path', async () => {
         await clickLocationList();
         expect(findDependencyPathButton().exists()).toBe(true);
@@ -234,9 +250,10 @@ describe('Dependency Location Count component', () => {
         await waitForPromises();
 
         const emittedData = wrapper.emitted('click-dependency-path')[0][0];
+        const { location } = dependencyPathsLocationsData.locations[0];
 
-        expect(emittedData.location).toEqual(locationsData.locations[0].location);
-        expect(emittedData.project).toEqual(locationsData.locations[0].project);
+        expect(emittedData.location.dependency_paths).toEqual(location.dependency_paths);
+        expect(emittedData.location.path).toEqual(location.path);
       });
 
       describe('when feature flag "dependencyPaths" is disabled', () => {

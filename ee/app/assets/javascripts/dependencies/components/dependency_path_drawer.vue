@@ -4,23 +4,6 @@ import { s__ } from '~/locale';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
 
-// This is temporary and will be deleted
-// Will be replaced with proper API data once the BE completes
-export const TEST_PATHS = [
-  {
-    path: [
-      { name: 'jest', version: '29.7.0' },
-      { name: 'jest-cli', version: '29.7.0' },
-      { name: '@jest/core', version: '29.7.0' },
-      { name: '@jest/reporters', version: '29.7.0' },
-      { name: 'istanbul-lib-instrument', version: '6.0.3' },
-      { name: '@babel/core', version: '7.24.7' },
-    ],
-    isCyclic: false,
-    maxDepthReached: false,
-  },
-];
-
 export default {
   name: 'DependencyPathDrawer',
   components: {
@@ -31,8 +14,7 @@ export default {
   props: {
     dependencyPaths: {
       type: Array,
-      required: false,
-      default: () => TEST_PATHS,
+      required: true,
     },
     component: {
       type: Object,
