@@ -67,25 +67,8 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
 
   describe 'enums' do
     it 'name has correct values' do
-      is_expected.to define_enum_for(:name).with_values(
-        scanner_sast_running: 0,
-        minimum_approvals_required_2: 1,
-        merge_request_prevent_author_approval: 2,
-        merge_request_prevent_committers_approval: 3,
-        project_visibility_not_internal: 4,
-        default_branch_protected: 5,
-        auth_sso_enabled: 6,
-        scanner_secret_detection_running: 7,
-        scanner_dep_scanning_running: 8,
-        scanner_container_scanning_running: 9,
-        scanner_license_compliance_running: 10,
-        scanner_dast_running: 11,
-        scanner_api_security_running: 12,
-        scanner_fuzz_testing_running: 13,
-        scanner_code_quality_running: 14,
-        scanner_iac_running: 15,
-        external_control: 10000
-      )
+      enum_definitions = ComplianceManagement::ComplianceFramework::Controls::Registry.enum_definitions
+      is_expected.to define_enum_for(:name).with_values(enum_definitions)
     end
 
     it { is_expected.to define_enum_for(:control_type).with_values(internal: 0, external: 1) }
@@ -111,6 +94,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
       end
 
       it 'creates control with no error' do
+        new_control.name = :default_branch_protected
         expect(new_control.valid?).to be(true)
         expect(new_control.errors).to be_empty
       end
@@ -132,6 +116,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
       end
 
       it 'returns error' do
+        new_control.name = :auth_sso_enabled
         expect(new_control.valid?).to be(false)
         expect(new_control.errors.full_messages)
           .to contain_exactly("Compliance requirement cannot have more than 5 controls")

@@ -9,7 +9,9 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
     create(:compliance_requirement, framework: create(:compliance_framework, namespace: namespace))
   end
 
-  let_it_be(:control) { create(:compliance_requirements_control, compliance_requirement: requirement) }
+  let_it_be(:control) do
+    create(:compliance_requirements_control, :minimum_approvals_required_2, compliance_requirement: requirement)
+  end
 
   let_it_be(:owner) { create(:user, owner_of: namespace) }
   let_it_be(:maintainer) { create(:user) }

@@ -1,0 +1,219 @@
+# Compliance Framework Control Registry
+#
+# IMPORTANT: The order and values of controls should not be changed once deployed.
+# New controls should be added at the end to preserve enum values.
+#
+# Supported control types:
+# - boolean: {=, !=}
+# - numeric: {=, !=, >, <, >=, <=}
+# - enum: {=, !=}
+
+special_controls:
+  external_control: 10000
+
+controls:
+  scanner_sast_running:
+    name: "SAST Running"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: scanner_sast_running?
+    enum_value: 0
+
+  minimum_approvals_required_2:
+    name: "At least two approvals"
+    type: numeric
+    field_id: minimum_approvals_required
+    compliant_value: 2
+    compliant_operator: ">="
+    field_method: minimum_approvals_required
+    enum_value: 1
+
+  merge_request_prevent_author_approval:
+    name: "Author approved merge request"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: merge_request_prevent_author_approval?
+    enum_value: 2
+
+  merge_request_prevent_committers_approval:
+    name: "Committers approved merge request"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: merge_requests_disable_committers_approval?
+    enum_value: 3
+
+  project_visibility_not_internal:
+    name: "Internal visibility is forbidden"
+    type: enum
+    field_id: project_visibility
+    compliant_value: "internal"
+    compliant_operator: "!="
+    field_method: project_visibility
+    valid_values:
+      - private
+      - internal
+      - public
+    enum_value: 4
+
+  default_branch_protected:
+    name: "Default branch protected"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: default_branch_protected?
+    enum_value: 5
+
+  auth_sso_enabled:
+    name: "Auth SSO Enabled"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: auth_sso_enabled?
+    enum_value: 6
+
+  scanner_secret_detection_running:
+    name: "Secret Detection Running"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: scanner_secret_detection_running?
+    enum_value: 7
+
+  scanner_dep_scanning_running:
+    name: "Dependency Scanning Running"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: scanner_dep_scanning_running?
+    enum_value: 8
+
+  scanner_container_scanning_running:
+    name: "Container Scanning Running"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: scanner_container_scanning_running?
+    enum_value: 9
+
+  scanner_license_compliance_running:
+    name: "License Compliance Running"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: scanner_license_compliance_running?
+    enum_value: 10
+
+  scanner_dast_running:
+    name: "DAST Running"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: scanner_dast_running?
+    enum_value: 11
+
+  scanner_api_security_running:
+    name: "API Security Running"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: scanner_api_security_running?
+    enum_value: 12
+
+  scanner_fuzz_testing_running:
+    name: "Fuzz Testing Running"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: scanner_fuzz_testing_running?
+    enum_value: 13
+
+  scanner_code_quality_running:
+    name: "Code Quality Running"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: scanner_code_quality_running?
+    enum_value: 14
+
+  scanner_iac_running:
+    name: "IaC Scanning Running"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: scanner_iac_running?
+    enum_value: 15
+
+  code_changes_requires_code_owners:
+    name: "Code Changes Requires Code Owners"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: code_changes_requires_code_owners?
+    enum_value: 16
+
+  reset_approvals_on_push:
+    name: "Reset Approvals on Push"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: reset_approvals_on_push?
+    enum_value: 17
+
+  status_checks_required:
+    name: "Status Checks Required"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: status_checks_required?
+    enum_value: 18
+
+  require_branch_up_to_date:
+    name: "Require Branch Up to Date"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: require_branch_up_to_date?
+    enum_value: 19
+
+  resolve_discussions_required:
+    name: "Resolve Discussions Required"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: resolve_discussions_required?
+    enum_value: 20
+
+  require_linear_history:
+    name: "Require Linear History"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: require_linear_history?
+    enum_value: 21
+
+  restrict_push_merge_access:
+    name: "Restrict Push/Merge Access"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: restrict_push_merge_access?
+    enum_value: 22
+
+  force_push_disabled:
+    name: "Force Push Disabled"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: force_push_disabled?
+    enum_value: 23
+
+  terraform_enabled:
+    name: "Terraform Enabled"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: terraform_enabled?
+    enum_value: 24
