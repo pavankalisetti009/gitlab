@@ -71,7 +71,7 @@ export default {
       <img class="gl-dark-invert-keep-hue" :src="$options.CloudTanukiIllustrationPath" :alt="''" />
     </div>
     <div class="gl-flex gl-w-full gl-grow gl-flex-col">
-      <h3 class="text-4 gl-mt-0">
+      <h3 class="gl-mt-0">
         {{ s__('ProductAnalytics|GitLab-managed provider') }}
       </h3>
       <p class="gl-mb-6">
