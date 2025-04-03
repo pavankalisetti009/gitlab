@@ -3,7 +3,7 @@
 - billable_users_updated_string = s_("AdminArea|Updated %{last_update_time}") % { last_update_time: @license.daily_billable_users_updated_time }
 
 .gl-grid.sm:gl-grid-cols-2.gl-gap-5.gl-mb-6
-  = render Pajamas::CardComponent.new(header_options: { class: 'gl-grow' }) do |c|
+  = render Pajamas::CardComponent.new(body_options: { class: 'gl-grow' }, footer_options: { class: 'gl-text-subtle' }) do |c|
     - c.with_body do
       = render Pajamas::SingleStatComponent.new(title: _('Users in subscription'), stat_value: licensed_users(@license) || _('Unlimited'), stat_value_testid: 'users-in-license-content', title_tag: 'h3')
       - if @license.will_expire?
@@ -15,7 +15,7 @@
       - c.with_footer do
         = billable_users_updated_string
 
-  = render Pajamas::CardComponent.new(header_options: { class: 'gl-grow' }) do |c|
+  = render Pajamas::CardComponent.new(body_options: { class: 'gl-grow' }, footer_options: { class: 'gl-text-subtle' }) do |c|
     - c.with_body do
       - billable_users_count = number_with_delimiter @license.daily_billable_users_count
       = render Pajamas::SingleStatComponent.new(title: _('Billable users'), stat_value: billable_users_count, stat_value_testid: 'billable-users-content', title_tag: 'h3')
@@ -23,7 +23,7 @@
     - c.with_footer do
       = billable_users_updated_string
 
-  = render Pajamas::CardComponent.new(body_options: { class: 'gl-grow' }, card_options: { class: 'flex-fill' }, header_options: { class: 'gl-grow' }) do |c|
+  = render Pajamas::CardComponent.new(body_options: { class: 'gl-grow' }, card_options: { class: 'flex-fill' }, header_options: { class: 'gl-grow' }, footer_options: { class: 'gl-text-subtle' }) do |c|
     - c.with_body do
       - maximum_user_count = number_with_delimiter @license.maximum_user_count
       = render Pajamas::SingleStatComponent.new(title: _('Maximum Users'), stat_value: maximum_user_count, title_tag: 'h3')
@@ -31,7 +31,7 @@
     - c.with_footer do
       = billable_users_updated_string
 
-  = render Pajamas::CardComponent.new(header_options: { class: 'gl-grow' }) do |c|
+  = render Pajamas::CardComponent.new(header_options: { class: 'gl-grow' }, footer_options: { class: 'gl-text-subtle' }) do |c|
     - c.with_body do
       - users_over_licence_count = number_with_delimiter users_over_license
       = render Pajamas::SingleStatComponent.new(title: _('Users over License'), stat_value: users_over_licence_count, title_tag: 'h3')
