@@ -16,7 +16,7 @@ module Resolvers
       def resolve(id:)
         custom_field = authorized_find!(id: id)
 
-        return unless Feature.enabled?('custom_fields_feature', custom_field.namespace)
+        return unless Feature.enabled?(:custom_fields_feature, custom_field.namespace)
 
         custom_field
       end

@@ -13,7 +13,7 @@ module Issuables
       )
 
       def execute
-        return FeatureNotAvailableError unless Feature.enabled?('custom_fields_feature', group)
+        return FeatureNotAvailableError unless Feature.enabled?(:custom_fields_feature, group)
         return NotAuthorizedError unless can?(current_user, :admin_custom_field, group)
 
         custom_field = Issuables::CustomField.new(
