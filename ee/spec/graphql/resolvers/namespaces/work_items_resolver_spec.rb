@@ -25,8 +25,8 @@ RSpec.describe Resolvers::Namespaces::WorkItemsResolver, feature_category: :team
       resolve(described_class, obj: group, args: args, ctx: context, arg_style: :internal)
     end
 
-    def perform_with_timeframe
-      resolve_items(timeframe: { start: '2020-08-12', end: '2020-08-14' })
+    def perform_with_timeframe(timeframe: { start: '2020-08-12', end: '2020-08-14' })
+      resolve_items(timeframe: timeframe)
     end
 
     context 'when namespace level work items are enabled' do
@@ -38,6 +38,13 @@ RSpec.describe Resolvers::Namespaces::WorkItemsResolver, feature_category: :team
       context 'with timeframe filtering' do
         it 'does not return work items without a dates source' do
           expect(perform_with_timeframe).to be_empty
+        end
+
+        it 'raises an error if the timeframe exceeds 3.5 years' do
+          expect_graphql_error_to_be_created(Gitlab::Graphql::Errors::ArgumentError,
+            'Timeframe cannot exceed 3.5 years for work item queries') do
+            perform_with_timeframe(timeframe: { start: '2020-01-01', end: '2023-08-01' })
+          end
         end
 
         context 'when work item start and due dates are both present' do

@@ -61346,6 +61346,9 @@ msgstr ""
 msgid "Timeago|right now"
 msgstr ""
 
+msgid "Timeframe cannot exceed %{limit} years for work item queries"
+msgstr ""
+
 msgid "Timeline"
 msgstr ""
 
