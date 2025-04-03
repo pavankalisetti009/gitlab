@@ -1,9 +1,10 @@
 <script>
-import { GlBadge } from '@gitlab/ui';
+import { GlBadge, GlPopover } from '@gitlab/ui';
 import { SCANNERS } from '../constants';
+import ToolCoverageDetails from './tool_coverage_details.vue';
 
 export default {
-  components: { GlBadge },
+  components: { GlBadge, GlPopover, ToolCoverageDetails },
   props: {
     securityScanners: {
       type: Object,
@@ -12,6 +13,10 @@ export default {
         enabled: [],
         pipelineRun: [],
       }),
+    },
+    projectName: {
+      type: String,
+      required: true,
     },
     // TODO: switch to object with status enum
     //    scanners: {
@@ -64,6 +69,11 @@ export default {
       // otherwise assume status is SCANNER_DISABLED
       return { class: '!gl-bg-default !gl-text-neutral-600 gl-border-gray-200 gl-border-dashed' };
     },
+    getToolCoverageTitle(scanner) {
+      return SCANNERS.find((item) => {
+        return item.scanner === scanner;
+      }).name;
+    },
   },
   SCANNERS,
 };
@@ -71,14 +81,23 @@ export default {
 
 <template>
   <div class="gl-flex gl-flex-row gl-gap-2">
-    <gl-badge
-      v-for="{ scanner, label } in $options.SCANNERS"
-      :key="scanner"
-      v-bind="scannerStyling(scanner)"
-      class="gl-border gl-w-8 gl-text-xs gl-font-bold"
-      :data-testid="`${scanner}-badge`"
-    >
-      {{ label }}
-    </gl-badge>
+    <div v-for="{ scanner, label } in $options.SCANNERS" :key="label">
+      <gl-badge
+        :id="`tool-coverage-${label}-${projectName}`"
+        v-bind="scannerStyling(scanner)"
+        class="gl-border gl-w-8 gl-text-xs gl-font-bold"
+        :data-testid="`badge-${label}-${projectName}`"
+      >
+        {{ label }}
+      </gl-badge>
+      <gl-popover
+        :title="getToolCoverageTitle(scanner)"
+        :target="`tool-coverage-${label}-${projectName}`"
+        :data-testid="`popover-${label}-${projectName}`"
+        show-close-button
+      >
+        <tool-coverage-details />
+      </gl-popover>
+    </div>
   </div>
 </template>

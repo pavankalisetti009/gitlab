@@ -268,8 +268,14 @@ export default {
       </template>
 
       <template #cell(toolCoverage)="{ item }">
-        <group-tool-coverage-indicator v-if="isSubGroup(item)" />
-        <project-tool-coverage-indicator v-else :security-scanners="item.securityScanners" />
+        <div id="tool-coverage" class="gl-cursor-pointer">
+          <group-tool-coverage-indicator v-if="isSubGroup(item)" />
+          <project-tool-coverage-indicator
+            v-else
+            :security-scanners="item.securityScanners"
+            :project-name="item.name"
+          />
+        </div>
       </template>
 
       <template #cell(actions)="{ item }">
