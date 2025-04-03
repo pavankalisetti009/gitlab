@@ -1,6 +1,7 @@
 ---
 description: Tracks when the default Duo Chat answer is returned
 action: default_answer
+classification: duo
 identifiers:
 - namespace
 - user

@@ -2,6 +2,7 @@
 description: Tracks when a call was made to an LLM
 internal_events: true
 action: execute_llm_method
+classification: duo
 identifiers:
 - project
 - namespace
