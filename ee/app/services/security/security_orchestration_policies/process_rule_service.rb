@@ -18,8 +18,12 @@ module Security
       attr_reader :policy_configuration, :policy_index, :policy
 
       def create_new_schedule_rules
+        limit = Gitlab::CurrentSettings.scan_execution_policies_schedule_limit
+        limited = limit > 0
+
         policy[:rules].each_with_index do |rule, rule_index|
           next if rule[:type] != Security::ScanExecutionPolicy::RULE_TYPES[:schedule]
+          break if limited && limit == 0
 
           rule_schedule = Security::OrchestrationPolicyRuleSchedule.new(
             security_orchestration_policy_configuration: policy_configuration,
@@ -30,9 +34,11 @@ module Security
             policy_type: 'scan_execution_policy'
           )
 
-          next if rule_schedule.exceeds_limits? || !rule_schedule.valid?
+          next unless rule_schedule.valid?
 
           rule_schedule.save!
+
+          limit -= 1
         end
       end
     end

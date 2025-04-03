@@ -667,6 +667,43 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
       end
     end
 
+    shared_examples 'checks scan execution policy schedule limit' do
+      let(:limit) { 2 }
+      let(:rule) { { type: 'schedule', branch_type: 'default' } }
+
+      before do
+        allow(Gitlab::CurrentSettings).to receive(:scan_execution_policies_schedule_limit).and_return(limit)
+      end
+
+      context 'when below limit' do
+        before do
+          policy[:rules] = [rule]
+        end
+
+        it { expect(result[:status]).to eq(:success) }
+      end
+
+      context 'when exceeding limit' do
+        before do
+          policy[:rules] = [rule] * (limit + 1)
+        end
+
+        it { expect(result[:status]).to eq(:error) }
+
+        it_behaves_like 'sets validation errors', message: "Policy exceeds the maximum of 2 rule schedules"
+      end
+
+      context 'when limit is zero' do
+        let(:limit) { 0 }
+
+        before do
+          policy[:rules] = [rule] * (limit + 1)
+        end
+
+        it { expect(result[:status]).to eq(:success) }
+      end
+    end
+
     shared_examples 'checks merge request approval policy action limit' do
       let(:policy_type) { 'approval_policy' }
       let(:limit) { Security::ScanResultPolicy::APPROVERS_ACTIONS_LIMIT }
@@ -741,6 +778,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
       it_behaves_like 'checks if vulnerability_age is valid'
       it_behaves_like 'checks if cadence is valid'
       it_behaves_like 'checks scan execution policy action limit'
+      it_behaves_like 'checks scan execution policy schedule limit'
       it_behaves_like 'checks merge request approval policy action limit'
     end
 
@@ -797,6 +835,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
         it_behaves_like 'checks if cadence is valid'
         it_behaves_like 'checks if vulnerability_age is valid'
         it_behaves_like 'checks scan execution policy action limit'
+        it_behaves_like 'checks scan execution policy schedule limit'
         it_behaves_like 'checks merge request approval policy action limit'
         it_behaves_like 'checks if branches exist for the provided branch_type' do
           where(:policy_type, :branch_type, :status) do
@@ -896,6 +935,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
       it_behaves_like 'checks if cadence is valid'
       it_behaves_like 'checks if vulnerability_age is valid'
       it_behaves_like 'checks scan execution policy action limit'
+      it_behaves_like 'checks scan execution policy schedule limit'
       it_behaves_like 'checks merge request approval policy action limit'
 
       it_behaves_like 'pipeline execution policy validation'

@@ -246,6 +246,12 @@ module EE
       validates :security_policies, json_schema: { filename: "application_setting_security_policies" }
 
       jsonb_accessor :security_policies, scan_execution_policies_action_limit: [:integer, { default: 10 }]
+      jsonb_accessor :security_policies, scan_execution_policies_schedule_limit: [:integer, { default: 0 }]
+
+      validates :scan_execution_policies_action_limit,
+        numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 20 }
+      validates :scan_execution_policies_schedule_limit,
+        numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 20 }
 
       validates :product_analytics_data_collector_host,
         length: { maximum: 255 },
