@@ -71323,6 +71323,9 @@ msgstr ""
 msgid "must match one of the following file types: %{extension_list}"
 msgstr ""
 
+msgid "must match the bulk import organization's ID"
+msgstr ""
+
 msgid "must match the parent organization's ID"
 msgstr ""
 
