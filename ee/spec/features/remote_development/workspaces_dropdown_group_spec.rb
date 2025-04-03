@@ -36,7 +36,6 @@ RSpec.describe 'Remote Development workspaces dropdown group', :api, :js, featur
     allow(Gitlab::Kas).to receive(:verify_api_request).and_return(true)
 
     stub_licensed_features(remote_development: true)
-    stub_feature_flags(directory_code_dropdown_updates: false)
 
     # rubocop:disable RSpec/AnyInstanceOf -- It's NOT the next instance...
     allow_any_instance_of(Gitlab::Auth::AuthFinders)
@@ -56,7 +55,7 @@ RSpec.describe 'Remote Development workspaces dropdown group', :api, :js, featur
 
     context "when remote_development feature availability=#{feature_available}" do
       it 'does not display workspaces dropdown group' do
-        click_button 'Edit'
+        click_code_dropdown
 
         expect(page.has_css?(workspaces_dropdown_selector)).to be(visible)
       end
@@ -78,7 +77,8 @@ RSpec.describe 'Remote Development workspaces dropdown group', :api, :js, featur
     context 'when workspaces dropdown group is visible' do
       before do
         visit subject
-        click_button 'Edit'
+
+        click_code_dropdown
       end
 
       it 'allows navigating to the new workspace page' do
@@ -127,12 +127,34 @@ RSpec.describe 'Remote Development workspaces dropdown group', :api, :js, featur
   describe 'when viewing project overview page' do
     subject { project_path(project) }
 
+    def click_code_dropdown
+      find_by_testid("code-dropdown").click
+    end
+
     it_behaves_like 'views and manages workspaces in workspaces dropdown group'
   end
 
   describe 'when viewing blob page' do
     # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
     subject { project_blob_path(project, "#{project.default_branch}/#{devfile_path}") }
+
+    def click_code_dropdown
+      click_button 'Edit'
+    end
+
+    it_behaves_like 'views and manages workspaces in workspaces dropdown group'
+  end
+
+  describe 'when directory_code_dropdown_updates is disabled and viewing project overview page' do
+    subject { project_path(project) }
+
+    before do
+      stub_feature_flags(directory_code_dropdown_updates: false)
+    end
+
+    def click_code_dropdown
+      click_button 'Edit'
+    end
 
     it_behaves_like 'views and manages workspaces in workspaces dropdown group'
   end

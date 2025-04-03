@@ -10,4 +10,7 @@
       kerberos_url: alternative_kerberos_url? ? project.kerberos_url_to_repo : '',
       xcode_url: show_xcode_link?(@project) ? xcode_uri_to_repo(@project) : '',
       directory_download_links: directory_download_links(project, ref, archive_prefix).to_json,
+      project_id: @project.id,
+      project_path: @project.full_path,
+      new_workspace_path: new_remote_development_workspace_path
     } }
