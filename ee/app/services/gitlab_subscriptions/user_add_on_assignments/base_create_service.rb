@@ -56,8 +56,6 @@ module GitlabSubscriptions
       attr_reader :add_on_purchase, :user
 
       def after_success_hook
-        return unless Feature.enabled?(:duo_seat_assignment_todo, user)
-
         todo_service.duo_pro_access_granted(user) if duo_pro?
         todo_service.duo_enterprise_access_granted(user) if duo_enterprise?
       end
