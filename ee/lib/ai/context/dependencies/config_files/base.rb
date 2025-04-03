@@ -26,7 +26,6 @@ module Ai
           VERSION_QUALIFIER_REGEX = /(?<=\d)([-|+][0-9A-Za-z.\-\+]+)/ # Pre-release and/or build metadata
           VERSION_ALPHABETIC_POSTFIX_REGEX = /(?<=\d)([a-zA-Z]+)/
 
-          ParsingError = Class.new(StandardError)
           StringValidationError = Class.new(StandardError)
 
           Lib = Struct.new(:name, :version, keyword_init: true)
@@ -56,21 +55,22 @@ module Ai
             supports_multiple_files? ? paths.select { |p| matches?(p) } : Array.wrap(paths.find { |p| matches?(p) })
           end
 
-          def initialize(blob)
+          def initialize(blob, project)
             @blob = blob
+            @project = project
             @content = sanitize_content(blob.data)
             @path = blob.path
             @errors = []
           end
 
           def parse!
-            return error('file empty') if content.blank?
+            raise ParsingErrors::FileEmptyError if content.blank?
 
             @libs = process_libs(extract_libs)
 
             # Default error message if there are no other errors
-            error('unexpected format or dependencies not present') if libs.blank? && errors.empty?
-          rescue ParsingError, StringValidationError => e
+            raise ParsingErrors::UnexpectedFormatOrDependenciesNotPresentError if libs.blank? && errors.empty?
+          rescue ParsingErrors::BaseError, StringValidationError => e
             error(e)
           end
 
@@ -90,25 +90,26 @@ module Ai
           def error_message
             return if valid?
 
-            "Error(s) while parsing file `#{path}`: #{errors.join(', ')}"
+            joint_errors = errors.map(&:message).join(', ')
+            "Error(s) while parsing file `#{path}`: #{joint_errors}"
           end
 
           private
 
-          attr_reader :blob, :content, :path, :libs, :errors
+          attr_reader :blob, :content, :path, :libs, :errors, :project
 
-          # To record an error, either use error() directly or raise ParsingError
+          # To record an error, either use error() directly or raise a custom ParsingError error
           def extract_libs
             raise NotImplementedError
           end
 
           def process_libs(libs)
             Array.wrap(libs).each do |lib|
-              raise ParsingError, "unexpected dependency name type `#{lib.name.class}`" unless lib.name.is_a?(String)
-              raise ParsingError, 'dependency name is blank' if lib.name.blank?
+              raise ParsingErrors::UnexpectedDependencyNameTypeError, lib.name.class unless lib.name.is_a?(String)
+              raise ParsingErrors::BlankDependencyNameError if lib.name.blank?
 
               unless lib.version.class.in?(EXPECTED_VERSION_TYPES)
-                raise ParsingError, "unexpected dependency version type `#{lib.version.class}`"
+                raise ParsingErrors::UnexpectedDependencyVersionTypeError, lib.version.class
               end
 
               lib.name = lib.name.strip
@@ -161,8 +162,10 @@ module Ai
             end
           end
 
-          def error(message)
-            @errors << message
+          def error(error_obj)
+            @errors << error_obj
+
+            log_error(error_obj)
           end
 
           # dig() throws a generic error in certain cases, e.g. when accessing an array with
@@ -171,7 +174,16 @@ module Ai
           def dig_in(obj, *keys)
             obj.dig(*keys)
           rescue NoMethodError, TypeError
-            raise ParsingError, 'encountered unexpected node'
+            raise ParsingErrors::UnexpectedNodeError
+          end
+
+          def log_error(error)
+            ::Gitlab::AppJsonLogger.info(
+              class: self.class.name,
+              error_class: error.class.name,
+              message: "#{self.class.name}: #{error.message}",
+              project_id: project.id
+            )
           end
         end
       end

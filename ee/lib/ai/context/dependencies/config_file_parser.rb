@@ -23,7 +23,7 @@ module Ai
           blobs = fetch_blobs(config_file_classes_by_path.keys)
 
           config_files = blobs.flat_map do |blob|
-            config_file_classes_by_path[blob.path].map { |klass| klass.new(blob) }
+            config_file_classes_by_path[blob.path].map { |klass| klass.new(blob, project) }
           end
 
           config_files.each(&:parse!)

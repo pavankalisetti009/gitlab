@@ -29,7 +29,7 @@ module Ai
           #
           def extract_libs
             doc = Nokogiri::XML(content)
-            raise ParsingError, 'content is not valid XML' if doc.errors.any?
+            raise ParsingErrors::InvalidSerializationFormatError, 'XML' if doc.errors.any?
 
             doc.remove_namespaces!
 

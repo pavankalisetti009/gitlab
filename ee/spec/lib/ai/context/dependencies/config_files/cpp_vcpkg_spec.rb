@@ -70,7 +70,9 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::CppVcpkg, feature_categor
   end
 
   it_behaves_like 'parsing an invalid dependency config file' do
-    let(:expected_error_message) { 'content is not valid JSON' }
+    let(:expected_error) do
+      Ai::Context::Dependencies::ConfigFiles::ParsingErrors::InvalidSerializationFormatError.new('JSON')
+    end
   end
 
   describe '.matches?' do
